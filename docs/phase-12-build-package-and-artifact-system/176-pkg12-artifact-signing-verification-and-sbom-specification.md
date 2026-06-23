@@ -34,6 +34,8 @@ A signature covers canonical data containing:
 - attestation policy level and verification track;
 - transparency log or timestamp evidence hash;
 - signer identity and signing policy id.
+- keyless signing issuer, subject, audience, certificate, and root metadata
+  hashes when identity-based signing is used.
 
 Signing noncanonical data is invalid.
 
@@ -68,6 +70,9 @@ An attestation records:
 - attestation id and schema version;
 - artifact subject hash and manifest hash;
 - builder identity, signing identity, and key or workload identity;
+- OIDC issuer, subject, audience, token claim summary, certificate subject
+  alternative names, certificate validity window, and root metadata when
+  keyless or workload-identity signing is used;
 - build platform, runner image, and isolation boundary;
 - source material, including repository, revision, archive hash, generated-input hashes, and patch ids;
 - lockfile, dependency graph, compiler, toolchain, and build recipe hashes;
@@ -80,6 +85,41 @@ An attestation records:
 Attestation schemas may map to external SLSA or in-toto predicates, but
 Gravity's internal canonical schema remains the source of truth for signing and
 verification.
+
+## Keyless and Transparency-Log Signing
+
+Gravity supports key-managed signing and keyless identity-based signing. A
+keyless signing profile is compatible with Sigstore-style systems, but the
+Gravity artifact schema records the semantics directly instead of depending on a
+single external service.
+
+A keyless signing record includes:
+
+- signing profile id and provider family, such as `:sigstore-compatible`;
+- OIDC issuer, subject, audience, issued-at and expiration claims, and selected
+  provider-specific claims such as repository, workflow, revision, service
+  account, SPIFFE id, or workload identity;
+- ephemeral public key or certificate public key hash;
+- short-lived certificate, certificate authority identity, certificate subject
+  alternative names, validity window, and chain/root metadata;
+- transparency log service, log entry id, integrated time, inclusion proof,
+  signed entry timestamp or equivalent timestamp evidence, and log checkpoint
+  or consistency proof when policy requires it;
+- TUF or other root-update metadata used to select trusted certificate
+  authority and log keys;
+- identity-monitoring policy for detecting unexpected signatures by the same
+  subject.
+
+Verification of a keyless signature must check the artifact signature, subject
+hash, certificate validity at signing time, OIDC issuer and audience, subject
+pattern, certificate identity claims, transparency log inclusion, root metadata,
+revocation and expiration policy, and the consumer's required identity policy.
+The verifier must fail closed when it cannot determine whether the identity,
+certificate, log, or root metadata satisfies policy.
+
+Transparency-log evidence is not a substitute for policy. It proves that a
+signing event was witnessed by the selected log, but the consumer still decides
+whether the identity, issuer, subject, builder, and artifact are acceptable.
 
 ## Attestation Policy Levels
 
@@ -105,6 +145,9 @@ publisher used, but it may not silently downgrade a required gate.
 - Generated source and binary blobs MUST be visible in SBOM records.
 - Required provenance attestations MUST bind to the exact artifact subject hash and manifest hash.
 - Attestations MUST identify builder identity, build platform, source material, dependency lock, compiler or toolchain, and build recipe.
+- Keyless signing MUST identify the OIDC issuer, subject, audience, certificate
+  identity, validity window, transparency log inclusion proof, and root metadata
+  required by policy.
 - Isolated, hermetic, reproducible, or non-hermetic claims MUST be explicit and evidence-backed.
 - Transparency log inclusion proof or trusted timestamp evidence MUST be checked when policy requires ordering, freshness, or public auditability.
 - Consumer verification gates MUST evaluate attestation policy level and verification track before accepting an artifact.
@@ -136,7 +179,9 @@ Signing emits:
 - signing policy id;
 - provenance attestation artifact;
 - attestation payload hash;
+- keyless signing identity artifact when selected;
 - transparency log or timestamp evidence;
+- root metadata and transparency log verification bundle;
 - attestation policy level and verification track;
 - key validity proof;
 - release verification input bundle.
@@ -156,10 +201,15 @@ Verification emits:
 ```clojure
 (sign-artifact
   {:artifact acme/support-agent:0.3.0
-   :key :release-2026-q2
+   :keyless {:provider :sigstore-compatible
+             :issuer "https://token.actions.githubusercontent.com"
+             :subject "https://github.com/acme/support/.github/workflows/release.yml@refs/heads/main"
+             :audience "sigstore"}
    :payload [:artifact-manifest :content :provenance :attestation :sbom :safety]
    :attestation-level :hermetic
-   :verification [:schema :signature :hash :provenance :attestation :timestamp :revocation :policy]})
+   :verification [:schema :signature :hash :identity :provenance
+                  :attestation :transparency-log :timestamp
+                  :revocation :policy]})
 ```
 
 ## Rejection Rules
@@ -173,6 +223,9 @@ Verification emits:
 - Reject attestations that omit builder identity, build platform, source material, dependency lock, or build recipe.
 - Reject isolated, hermetic, or reproducible claims without matching evidence.
 - Reject required transparency log or timestamp evidence that is missing, unverifiable, or outside the freshness window.
+- Reject keyless signatures with missing, expired, revoked, mismatched, or
+  policy-incompatible certificate, OIDC issuer, subject, audience, root
+  metadata, or transparency log evidence.
 - Reject consumer verification that downgrades the required attestation policy level or track.
 - Reject revoked keys, signatures, packages, or provenance inputs.
 - Reject consumers using artifacts before required verification.
@@ -196,11 +249,19 @@ Verification emits:
 - `PKG12014` reports missing or unverifiable transparency log or timestamp evidence.
 - `PKG12015` reports stale attestation.
 - `PKG12016` reports attestation policy level or track failure.
+- `PKG12017` reports missing or invalid keyless signing identity evidence.
+- `PKG12018` reports OIDC issuer, subject, audience, claim, or certificate
+  identity mismatch.
+- `PKG12019` reports missing, stale, or untrusted root metadata for certificate
+  authority or transparency log verification.
+- `PKG12020` reports transparency log inclusion, timestamp, checkpoint, or
+  consistency evidence that fails policy.
 
 Diagnostics include artifact id, signature id, signer id, SBOM id, dependency
 id, attestation id, builder id, build platform id, source material hash,
-timestamp evidence id, failed check, policy level, verification track, and
-policy rule.
+timestamp evidence id, OIDC issuer, signing subject, certificate id,
+transparency log entry, root metadata id, failed check, policy level,
+verification track, and policy rule.
 
 ## Conformance Criteria
 
@@ -210,9 +271,13 @@ policy rule.
 - Capability and unsafe summaries appear in SBOM output.
 - Generated source and binary blobs are represented when present.
 - A signed attestation bound to the artifact subject hash is verified when policy requires it.
+- Keyless signing fixtures verify OIDC issuer, subject, audience, certificate
+  identity, validity window, transparency log inclusion, and root metadata.
 - Missing, stale, revoked, or mismatched attestations fail consumer verification gates.
 - Builder identity, build platform, and source material omissions produce specific diagnostics.
 - Isolated, hermetic, and reproducible claims are rejected unless the required evidence is present.
 - Transparency log inclusion or timestamp evidence is checked for policy levels that require it.
+- Keyless signatures with mismatched issuer, subject, audience, certificate,
+  root metadata, or transparency log evidence are rejected.
 - Revoked signing keys invalidate verification under release policy.
 - Consumers fail closed when verification is required but absent.

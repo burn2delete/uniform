@@ -9,7 +9,8 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 The Wasm backend emits WebAssembly modules, Component Model artifacts,
 WIT-like interface bindings, and sandbox integration manifests for browser,
-plugin, edge, server-side sandbox, embedded, and native-Wasm deployments.
+plugin, edge, server-side sandbox, embedded, WASI 0.3 async-component, and
+native-Wasm deployments.
 
 Wasm is a capability boundary for Gravity. Host authority enters only through
 declared imports with effect, capability, schema, replay, and provenance
@@ -30,6 +31,9 @@ or model provider.
   resources for every selected host and guest boundary.
 - Canonical ABI records must describe lifted and lowered value forms, ownership,
   borrowing, resource handles, traps, and async behavior.
+- WASI 0.3 or equivalent async-component targets must model `async func`,
+  `stream<T>`, and `future<T>` as typed ABI items with completion, cancellation,
+  backpressure, resource ownership, scheduling, and replay policy.
 - Every import must have effects, capabilities, schema, determinism, replay, and
   host-provider metadata.
 - Imports and exports that cross a component boundary must declare capability
@@ -69,6 +73,7 @@ or model provider.
 - Import capability manifest.
 - Export schema manifest.
 - Host boundary schema manifest.
+- WASI/component async ABI manifest.
 - Component composition plan.
 - Host binding stubs.
 - Runtime helper manifest.
@@ -83,6 +88,8 @@ or model provider.
  :backend :gravity.backend/wasm
  :target {:kind :component
           :memory :wasm32
+          :component-model :wasi-0.3
+          :async-abi #{:async-func :stream :future}
           :features #{:simd :bulk-memory}}
  :emits #{:wasm-module :component :component-contracts :canonical-abi
           :bindings :source-map}
@@ -111,8 +118,11 @@ The feature record includes:
 - SIMD and relaxed SIMD support,
 - atomics and shared-memory support,
 - Component Model ABI version,
+- WASI preview/profile and async-component ABI version,
 - canonical ABI adapter support,
 - resource handle and borrow support,
+- `async func`, `stream<T>`, and `future<T>` support,
+- completion, cancellation, and backpressure strategy,
 - WASI or host-specific import namespace,
 - deterministic or replay-required mode.
 
@@ -139,6 +149,7 @@ Worlds are the unit of host boundary eligibility. A world record includes:
 - replay and nondeterminism policy,
 - resource construction, borrow, transfer, and drop rules,
 - async and streaming policy,
+- cancellation, completion, and backpressure policy,
 - version and compatibility constraints.
 
 Resources are linear unless the Gravity type and host boundary schema prove a
@@ -159,6 +170,38 @@ Component composition is allowed only through an explicit composition plan. The
 plan links interfaces and worlds, records adapters, preserves effect and
 capability requirements, rejects undeclared authority amplification, and explains
 how replay metadata is combined across composed components.
+
+## WASI 0.3 Async Components
+
+When B4 targets WASI 0.3 or an equivalent async component environment, async is
+part of the component contract rather than an untyped host callback convention.
+
+The backend must map:
+
+- WIT-like `async func` items to Gravity functions with explicit scheduling,
+  cancellation, trap, error, and effect metadata;
+- `future<T>` to a single-completion typed value with owner, await/cancel/drop
+  rules, result schema, and replay policy;
+- `stream<T>` to a typed sequence resource with producer/consumer ownership,
+  backpressure, close, cancellation, item schema, and partial-consumption
+  behavior;
+- pollable, completion-based, or host-specific waiting mechanisms to the active
+  concurrency profile without hiding nondeterministic host events.
+
+Async component imports are still capability imports. A host-provided async
+filesystem, network, clock, randomness, workflow, tool, model, or custom service
+requires the same effect and capability grant as its synchronous equivalent,
+plus cancellation and scheduling metadata. A component export that returns a
+future or stream must publish who owns outstanding work, how dropped handles are
+cancelled or leaked, and which effects may continue after the initial call
+returns.
+
+Replay-sensitive profiles must record async completions, stream item ordering,
+host wakeups, cancellation decisions, and external errors as replay events unless
+the imported world proves deterministic behavior. Component composition must not
+adapt an async interface to a synchronous one by blocking on undeclared host
+scheduling, dropping cancellation, buffering unbounded streams, or erasing
+backpressure.
 
 ## Linear Memory and ABI
 
@@ -249,6 +292,7 @@ Runtime helpers may cover:
 - resource tables,
 - string and buffer conversion,
 - async host calls,
+- futures, streams, completion queues, cancellation, and backpressure,
 - traps and panic formatting,
 - math functions,
 - debug hooks.
@@ -274,6 +318,8 @@ Wasm backend diagnostics use `B4` identifiers:
 - `B4-NONDETERMINISM` for unrecorded clock, randomness, IO, model, tool, or
   host callback behavior in replay-required code.
 - `B4-ASYNC` for host async behavior that lacks effect and scheduling metadata.
+- `B4-WASI-ASYNC` for WASI/component async functions, streams, or futures that
+  lack completion, cancellation, backpressure, ownership, or replay metadata.
 - `B4-SIMD` for unsupported or uncertified vector lowering.
 - `B4-ATOMIC` for shared-memory or memory-order violations.
 - `B4-HOST-SCHEMA` for missing or incompatible host boundary schemas.
@@ -281,8 +327,8 @@ Wasm backend diagnostics use `B4` identifiers:
 
 Diagnostics must include source span, MIR operation or domain anchor, import or
 export id, interface item or world id when present, canonical ABI record id when
-present, profile, embedding, feature requirement, missing evidence, fallback
-status, and remediation.
+present, async item id when present, profile, embedding, feature requirement,
+missing evidence, fallback status, and remediation.
 
 ## Rejected Designs
 
@@ -303,6 +349,10 @@ Gravity rejects composing components when the composition would hide an imported
 capability, weaken a host boundary schema, drop replay metadata, or erase a
 resource ownership rule.
 
+Gravity rejects WASI/component async lowering that treats `async func`,
+`stream<T>`, or `future<T>` as opaque host promises without typed ownership,
+completion, cancellation, backpressure, and replay records.
+
 ## Conformance Criteria
 
 A conforming Wasm backend must demonstrate:
@@ -311,6 +361,8 @@ A conforming Wasm backend must demonstrate:
 - WIT-like package, interface, world, and resource contract emission,
 - canonical ABI record validation for records, variants, lists, strings,
   buffers, resources, streams, and futures,
+- WASI 0.3 async-component fixtures for `async func`, `stream<T>`, and
+  `future<T>` imports and exports,
 - import capability manifests for browser, WASI, and custom host fixtures,
 - capability import and export preservation across component composition,
 - export schema validation,
@@ -322,6 +374,8 @@ A conforming Wasm backend must demonstrate:
 - diagnostics for missing canonical ABI records and incompatible host boundary
   schemas,
 - replay records for nondeterministic imports,
+- replay, cancellation, ordering, and backpressure records for async component
+  imports, exports, and adapters,
 - SIMD and atomics acceptance and rejection based on feature records,
 - source map, proof, safety, capability, and manifest preservation,
 - differential execution against MIR reference fixtures.

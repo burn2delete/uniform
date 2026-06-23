@@ -13,9 +13,9 @@ APIs.
 
 The replacement scope is secret types, capability-gated randomness, key
 management adapters, password hashing, signatures, encryption wrappers,
-encrypted value types, private-computation adapters, protocol parsers,
-taint-safe sinks, constant-time annotations, vetted provider bindings, and
-audit/test-vector artifacts.
+encrypted value types, WebAuthn/passkey credential ceremonies,
+private-computation adapters, protocol parsers, taint-safe sinks, constant-time
+annotations, vetted provider bindings, and audit/test-vector artifacts.
 
 ## Requirements
 
@@ -25,6 +25,11 @@ audit/test-vector artifacts.
   filesystem, HSM/KMS, model, tool, and logging effects require capabilities.
 - Crypto providers must be declared with algorithm, version, parameters, side
   channel policy, FFI boundary, and test vector evidence.
+- WebAuthn, FIDO, and passkey providers must declare relying-party id, origin
+  policy, challenge generation, user-presence and user-verification policy,
+  authenticator attachment, transport, attestation conveyance, credential
+  backup/sync state, device-bound versus synced-passkey policy, resident or
+  discoverable credential policy, and privacy leakage model.
 - FHE, MPC, threshold, secure-enclave, and private-computation providers must be
   declared with scheme/protocol, participants, key custody, parameter set,
   leakage model, capability surface, and audit evidence.
@@ -66,6 +71,8 @@ audit/test-vector artifacts.
 - Randomness capability manifest.
 - Crypto provider manifest.
 - Private-computation provider manifest.
+- WebAuthn/passkey credential policy manifest.
+- Registration and authentication ceremony transcript fixtures.
 - Encrypted value and plaintext/ciphertext boundary report.
 - Scheme parameter, noise/depth, and leakage diagnostics.
 - Constant-time analysis report.
@@ -83,11 +90,14 @@ audit/test-vector artifacts.
  :backends #{:llvm :c :wasm}
  :artifacts #{:constant-time-report :test-vectors :fuzz-fixtures
               :taint-policy :provider-audit :private-compute-report
+              :webauthn-passkey-policy :credential-ceremony-transcript
               :leakage-diagnostics}
  :examples #{:password-hash :signature :encrypted-storage :protocol-parser
-             :fhe-evaluation :mpc-aggregation}
+             :passkey-login :webauthn-registration :fhe-evaluation
+             :mpc-aggregation}
  :rejects #{:secret-log :insecure-random :unreviewed-custom-crypto
             :timing-branch-on-secret :implicit-decrypt
+            :webauthn-origin-mismatch :passkey-policy-mismatch
             :noise-budget-exceeded :unaudited-reveal}}
 ```
 
@@ -98,6 +108,8 @@ Gravity should replace:
 - secret-safe application crypto wrappers,
 - password hashing and token signing APIs,
 - encrypted storage adapters,
+- WebAuthn and passkey registration, authentication, decommissioning, and
+  relying-party credential policy adapters,
 - encrypted value APIs for FHE, MPC, threshold, and private-computation
   workflows,
 - secure random provider calls,
@@ -107,6 +119,65 @@ Gravity should replace:
 
 Vetted external crypto libraries, HSM/KMS systems, FHE runtimes, MPC networks,
 threshold signing services, and secure-enclave systems remain providers.
+
+## WebAuthn and Passkey Credential Model
+
+Gravity models WebAuthn and passkeys as capability-gated public-key credential
+ceremonies, not as ambient browser or platform authentication.
+
+A WebAuthn/passkey provider manifest must record:
+
+- relying-party id, expected origins, cross-origin and iframe policy, and
+  related-origin policy where supported;
+- challenge source, freshness window, replay cache, and ceremony id;
+- credential id, public-key algorithm, COSE key metadata, signature counter or
+  counter policy, and credential lifecycle state;
+- user-presence and user-verification requirements, including whether the
+  authenticator, platform, or relying party enforces each requirement;
+- authenticator attachment, transport, resident/discoverable credential mode,
+  and client capability assumptions;
+- attestation conveyance, attestation statement format, trust path, revocation
+  and metadata policy, and when `none` or self attestation is acceptable;
+- credential backup eligibility and backup state, including whether the
+  credential is a synced passkey, device-bound passkey, roaming authenticator,
+  or enterprise-managed credential;
+- account binding, account recovery, credential rotation, decommissioning, and
+  unknown-credential signaling policy;
+- privacy labels for credential ids, user handles, attestation data,
+  authenticator metadata, client capabilities, and cross-origin use.
+
+Registration and authentication ceremony transcripts are audit artifacts. They
+must include public challenge data, relying-party inputs, client data hash,
+authenticator data, assertion or attestation verification result, provider
+version, and redaction policy. They must not include private keys, biometric
+data, unrevealed local authenticator state, or raw user secrets.
+
+Gravity distinguishes synced passkeys from device-bound credentials. A synced
+passkey may improve recovery and multi-device usability, but it must not be used
+as proof that one physical device or hardware key was present unless the
+attestation and provider policy explicitly establish that property. A
+device-bound or enterprise credential may carry stronger custody assumptions,
+but the relying party must still declare the accepted trust roots and
+attestation privacy tradeoff.
+
+Boundary rules are explicit:
+
+- creating a credential requires a fresh challenge, relying-party policy,
+  user-consent boundary, and credential-storage decision;
+- asserting a credential requires origin and relying-party id validation,
+  challenge replay protection, signature verification, user-presence and
+  user-verification checks, and account-binding validation;
+- decommissioning, unknown-credential signaling, and accepted-credential
+  signaling are credential lifecycle operations with audit records;
+- attestation may influence policy only through a declared trust model and
+  accepted root or metadata source;
+- credential ids, user handles, and attestation data are privacy-sensitive
+  values subject to taint and redaction policy.
+
+Negative fixtures reject reused challenges, origin or relying-party mismatch,
+authentication without signature verification, relying on user verification when
+the provider did not prove it, treating synced credentials as device-bound, and
+using attestation as a tracking identifier outside declared policy.
 
 ## Private Computation Model
 
@@ -179,6 +250,12 @@ Security/crypto diagnostics use `DOM15` identifiers:
   artifacts.
 - `DOM15-RANDOM` for crypto/random use without approved randomness capability.
 - `DOM15-PROVIDER` for undeclared or unsupported crypto provider behavior.
+- `DOM15-WEBAUTHN` for WebAuthn registration or authentication ceremonies that
+  omit relying-party id, origin, challenge, signature, user-verification,
+  user-presence, or attestation policy checks.
+- `DOM15-PASSKEY` for passkey providers that omit synced versus device-bound
+  credential policy, backup state, discoverable credential policy, lifecycle
+  handling, or privacy labels.
 - `DOM15-PRIVATE-COMPUTE` for encrypted value, FHE, MPC, threshold, or enclave
   computation that lacks a declared scheme/protocol, participant set, parameter
   set, capability, or provider evidence.
@@ -200,9 +277,9 @@ Security/crypto diagnostics use `DOM15` identifiers:
 - `DOM15-CONFORMANCE` for missing test vectors, fuzzing, or audit evidence.
 
 Diagnostics must include source span, secret id or provider id, algorithm,
-scheme/protocol, parameter set, key custody, effect, capability, taint category,
-leakage category, budget/depth state, participant set, missing evidence, and
-remediation.
+scheme/protocol, parameter set, key custody, relying-party id, origin,
+credential id, attestation policy, effect, capability, taint category, leakage
+category, budget/depth state, participant set, missing evidence, and remediation.
 
 ## Rejected Designs
 
@@ -215,6 +292,13 @@ Gravity rejects custom crypto by default.
 Gravity rejects constant-time claims without analysis or audit evidence.
 
 Gravity rejects provider bindings without test vectors and boundary metadata.
+
+Gravity rejects WebAuthn/passkey ceremonies that omit origin and relying-party
+checks, challenge replay protection, signature verification, user-presence and
+user-verification policy, credential lifecycle state, or privacy labels.
+
+Gravity rejects treating synced passkeys as device-bound credentials unless the
+declared provider and attestation policy prove equivalent custody.
 
 Gravity rejects private-computation providers without scheme parameters, key
 custody, participant/leakage policy, test vectors, and audit evidence.
@@ -234,6 +318,9 @@ A conforming security/crypto slice must demonstrate:
 - secret redaction and taint-flow tests,
 - randomness capability enforcement,
 - provider manifests and test vectors,
+- WebAuthn/passkey registration, authentication, and decommissioning fixtures,
+- relying-party origin, challenge, attestation, user-verification, backup-state,
+  synced-passkey, and device-bound credential policy tests,
 - encrypted value type checking,
 - FHE/MPC/provider capability enforcement,
 - scheme parameter manifests covering noise budget, depth, precision, key
@@ -248,5 +335,8 @@ A conforming security/crypto slice must demonstrate:
 - fuzz fixtures for parsers,
 - rejection of secret logs, insecure randomness, unreviewed custom crypto, and
   unsafe provider wrappers,
+- rejection of reused WebAuthn challenges, origin mismatch, missing
+  user-verification evidence, unsafe attestation reliance, synced/device-bound
+  policy mismatch, and credential privacy leakage,
 - rejection of implicit decrypt/reveal, missing key custody evidence,
   unaudited private-computation providers, and noise/depth budget violations.

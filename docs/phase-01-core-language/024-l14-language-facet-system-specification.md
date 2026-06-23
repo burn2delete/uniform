@@ -115,6 +115,9 @@ Gravity's initial facet set is:
 - `:gravity.facet.schema` for schemas, validation, codecs, and contract data.
 - `:gravity.facet.efir` for elementary functions, differentiable expressions,
   numeric simplification, and proof-oriented math IR.
+- `:gravity.facet.zk` for zero-knowledge and privacy-preserving relation
+  declarations, witness boundaries, public/private input manifests, proof
+  system selection, verifier artifacts, and disclosure policy records.
 - `:gravity.facet.hardware` for circuits, modules, registers, clocks, buses,
   memory maps, and hardware synthesis artifacts.
 - `:gravity.facet.workflow` for durable workflows, steps, retries, timers,
@@ -237,6 +240,7 @@ facts such as:
 - A circuit signal has a fixed width.
 - A workflow step is replay-safe.
 - A query only returns rows matching a declared shape.
+- A zero-knowledge proof exposes only declared public inputs and public outputs.
 - A prompt tool call matches a schema.
 - A UI event handler runs in an allowed effect context.
 - A numeric expression satisfies an EFIR proof obligation.
@@ -298,6 +302,9 @@ Facets may compose only through declared boundaries. For example:
 - A UI component may use a schema facet for form validation.
 - A hardware memory map may use a schema facet for register layout.
 - A compiler facet may read EFIR proof artifacts for numeric optimization.
+- A zero-knowledge facet may use the schema facet for public input formats,
+  the security/crypto domain for witness custody, and the formal-verification
+  domain for relation and proof-check records.
 
 When two facets claim the same surface form, the namespace must disambiguate
 through aliases or explicit activation. The compiler must reject ambiguous facet
@@ -306,6 +313,13 @@ dispatch.
 Facet composition must not create hidden effects. If an agent facet invokes a
 query facet through a tool, the resulting artifacts must show model effects,
 tool effects, query effects, and capability requirements.
+
+Privacy-preserving facets must also preserve disclosure boundaries across
+composition. A facet that converts a private witness, encrypted value,
+commitment, credential assertion, or proof artifact into another representation
+must carry the original privacy label, witness-generation provenance, reveal
+reason, and public-output schema unless a checked boundary operation explicitly
+declassifies it.
 
 ## Versioning and Stability
 
@@ -338,10 +352,15 @@ Facet diagnostics use `L14` identifiers:
 - `L14-GENERATED-CODE` for generated Gravity code that fails normal checking.
 - `L14-IR-SCHEMA` for invalid, stale, or incompatible facet IR.
 - `L14-COMPOSITION` for illegal interaction between facets.
+- `L14-PRIVACY-BOUNDARY` for facet lowering or composition that drops a
+  private-input, witness, encrypted-value, credential, or disclosure-policy
+  boundary.
 
 Diagnostics must include facet id, facet version, active profile, source span,
 generated-origin chain when present, requested effects and capabilities, and the
-domain rule that failed.
+domain rule that failed. Privacy-boundary diagnostics must also include the
+private value or witness id, public-output schema id, reveal reason when present,
+and the facet edge that attempted to erase the boundary.
 
 ## Rejected Designs
 
@@ -362,6 +381,12 @@ information to make the decision.
 Gravity rejects unversioned domain IR. Artifacts emitted by facets must be
 stable enough for tools, audits, replay, and self-hosting.
 
+Gravity rejects privacy-preserving facets that treat proof generation,
+credential assertion, or private computation as opaque backend calls. The facet
+IR must expose the declared relation, public/private input split, witness or
+credential custody, disclosure policy, provider trust basis, and verification
+artifact shape.
+
 ## Conformance Criteria
 
 A conforming facet implementation must demonstrate:
@@ -374,5 +399,7 @@ A conforming facet implementation must demonstrate:
 - Domain IR with source maps, profile assumptions, type/effect annotations, and
   artifact schema version.
 - Composition tests for at least two facets.
+- Privacy-boundary preservation tests for `:gravity.facet.zk` composed with
+  schema, security/crypto, and formal-verification artifacts.
 - Version compatibility diagnostics and migration records.
 - Negative tests for opaque, untracked, or privilege-bypassing facet behavior.

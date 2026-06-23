@@ -31,6 +31,9 @@ verifiable-computation proof records, and verified artifact manifests.
   circuit, constraint system, AIR, R1CS, or Plonkish relation identifiers.
 - Zero-knowledge proofs must distinguish public inputs, private inputs, witness
   generation inputs, setup parameters, trust model, verifier key, and proof id.
+- Zero-knowledge/privacy facets must declare disclosure policy, witness custody,
+  declassification rules, proof-system family, verifier artifact shape, and
+  which public outputs are intentionally revealed.
 - Prover and verifier cost records must be emitted for proof-producing targets.
 - Recursive, folding, and IVC proof chains must preserve parent links, root
   state, step relation hashes, and stale-proof invalidation metadata.
@@ -53,6 +56,7 @@ verifiable-computation proof records, and verified artifact manifests.
 - Theorem-prover script.
 - Counterexample artifact.
 - Zk relation artifact.
+- Zk/privacy facet manifest.
 - Public/private input manifest.
 - Witness-generation record.
 - Setup and trust-model manifest.
@@ -71,6 +75,7 @@ verifiable-computation proof records, and verified artifact manifests.
  :backends #{:proof-kernel :mlir :zkvm}
  :artifacts #{:proof-object :assumption-manifest :certificate
               :counterexample :proof-check-report :zk-relation
+              :zk-privacy-facet-manifest
               :witness-record :setup-trust-manifest
               :prover-verifier-cost :recursive-proof-chain}
  :examples #{:bounds-proof :region-escape-proof :mir-equivalence
@@ -90,6 +95,8 @@ Gravity should replace:
 - pass equivalence fixtures,
 - math interval/certificate checks,
 - circuit, constraint, AIR, R1CS, and Plonkish relation fixtures,
+- zero-knowledge/privacy facet manifests for relation, witness, public output,
+  disclosure, and verifier artifact boundaries,
 - public/private input and witness-generation manifests,
 - setup, trust-model, prover-cost, and verifier-cost records,
 - recursive, folding, and IVC proof-chain manifests,
@@ -99,6 +106,43 @@ Gravity should replace:
 
 External theorem provers, zkVMs, proving networks, and specialized proof
 kernels remain providers unless Gravity implements the proof kernel.
+
+## ZK and Privacy Facet Contract
+
+`L14` defines `:gravity.facet.zk` as the source-facing facet for
+zero-knowledge and privacy-preserving proof declarations. DOM19 owns the formal
+artifact contract for that facet.
+
+A zk/privacy facet manifest must record:
+
+- relation form and proof-system family, including circuit, constraint system,
+  AIR, R1CS, Plonkish, custom constraint system, SNARK, STARK, folding,
+  recursive, IVC, or zkVM-backed execution where selected;
+- source, MIR, schema, and domain-IR hashes for the relation and verifier;
+- public input schema, private input schema, witness-generation input schema,
+  public output schema, and declassification policy;
+- witness custody, secret handling, randomness, nondeterministic input, and
+  transcript policy, including links to `DOM15` privacy/leakage records when
+  encrypted values, credentials, commitments, or private computation are used;
+- setup trust model, including transparent setup, trusted setup, ceremony
+  transcript, universal setup, or provider-specific setup assumptions;
+- proving key, verifier key, verification algorithm, proof object format, and
+  verifier artifact target;
+- prover cost, verifier cost, proof size, recursion/folding accumulator state,
+  and stale-proof invalidation inputs.
+
+The facet may lower to Gravity code, domain IR, backend artifacts, or external
+provider calls, but it may not hide the relation, witness boundary, setup trust,
+or verifier contract. A proof artifact is usable by release gates, optimization
+passes, smart contracts, or package policy only after the verifier or proof
+kernel checks it against the declared relation, public inputs, setup, verifier
+key, and provider assumptions.
+
+Privacy boundaries are part of proof correctness. The verifier artifact must not
+claim privacy unless the manifest proves that every private input, witness
+input, credential assertion, encrypted value, commitment, transcript, and
+intermediate proof state is either kept private, explicitly revealed through a
+declared public-output schema, or rejected by policy.
 
 ## Minimum End-to-End Slice
 
@@ -143,6 +187,9 @@ Formal verification diagnostics use `DOM19` identifiers:
   record.
 - `DOM19-ZK-SETUP` for missing setup, trust model, proving key, verifier key, or
   provider trust assumption.
+- `DOM19-ZK-PRIVACY` for missing or contradictory disclosure policy, witness
+  custody, public-output schema, declassification rule, transcript policy, or
+  privacy-boundary linkage.
 - `DOM19-ZK-COST` for missing prover or verifier cost record.
 - `DOM19-ZK-CHAIN` for recursive, folding, or IVC proof chains with missing
   parent links, stale step proofs, or invalid root state.
@@ -151,8 +198,8 @@ Formal verification diagnostics use `DOM19` identifiers:
 
 Diagnostics must include claim id, source span, artifact hash, theorem/prover,
 assumption id, proof/counterexample id, relation id, input manifest, setup id,
-verifier key hash, provider id, chain edge when applicable, cost record, and
-remediation.
+verifier key hash, provider id, privacy-boundary id, disclosure policy id,
+chain edge when applicable, cost record, and remediation.
 
 ## Rejected Designs
 
@@ -168,6 +215,10 @@ Gravity rejects treating EML normal-form equality as semantic equality.
 
 Gravity rejects zero-knowledge proofs without relation, input, witness, setup,
 and verifier-key linkage.
+
+Gravity rejects zk/privacy facet artifacts that hide witness custody, treat
+public/private input separation as a comment, omit disclosure policy, or claim
+privacy without proof-system and verifier artifact records.
 
 Gravity rejects proving setup records without trust model and key provenance.
 
@@ -187,11 +238,16 @@ A conforming formal verification slice must demonstrate:
   provider, compiler pass, backend, and target-assumption changes,
 - bounds, region, math, and MIR-equivalence examples,
 - circuit, constraint, AIR, R1CS, and Plonkish relation fixtures where supported,
+- zk/privacy facet fixtures for SNARK, STARK, folding, recursive, IVC, or zkVM
+  proof families where selected,
 - public/private input manifests and witness-generation records,
+- disclosure-policy, public-output, witness-custody, transcript, and leakage
+  boundary tests,
 - setup/trust-model records and prover/verifier cost records,
 - recursive, folding, and IVC proof-chain fixtures,
 - zkVM or proof-kernel provider records and policy rejection fixtures,
 - counterexample source mapping,
 - rejection of hidden assumptions, unverified claims, stale certificates,
   proofless check elision, stale zk proofs, hidden setup assumptions, malformed
-  witnesses, and invalid recursive proof chains.
+  witnesses, invalid recursive proof chains, and privacy claims with missing or
+  contradictory disclosure evidence.
