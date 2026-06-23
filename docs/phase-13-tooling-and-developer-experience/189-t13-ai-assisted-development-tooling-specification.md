@@ -10,11 +10,11 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 This specification defines AI-assisted development tooling for Gravity. AI
 tools may search code, explain diagnostics, propose patches, generate tests,
 draft documentation, or review artifacts. They must operate as Gravity AI
-agents with typed prompts, tools, memory, policy, evaluation, approval, replay,
-and artifact records.
+agents with typed prompts, tools, memory, policy, evaluation, human-review,
+replay, and artifact records.
 
 AI assistance proposes changes. It does not bypass compiler, safety, package,
-test, or `:ai/human-approval` gates.
+test, or `:ai/human-review` gates.
 
 ## Tooling Modes
 
@@ -41,18 +41,18 @@ required checks.
 - Generated source MUST be parsed and checked by the compiler before use.
 - Generated tests MUST be identified as generated and linked to prompts and inputs.
 - Tool calls MUST be limited by the agent toolset and capabilities.
-- Write actions MUST require explicit approval policy.
+- Write actions MUST require explicit human-review policy.
 - Prompt injection defenses MUST apply to repository files, docs, issues, package metadata, and tool output.
 - AI output MUST be schema-validated before application.
 - AI traces MUST be replayable or marked live-only according to policy.
-- Final applied changes MUST record model, prompt, tool, and approval provenance.
+- Final applied changes MUST record model, prompt, tool, and human-review provenance.
 
 ## Semantic Dependencies
 
 - `A1` through `A11` define AI program behavior.
 - `T1`, `T4`, `T10`, and `T12` define CLI, lint, IR, and safety integration.
 - `PKG10` defines provenance for generated code.
-- `A10` defines approval.
+- `A10` defines human-review.
 - `TEST1` through `TEST13` define validation checks.
 
 ## Outputs and Artifacts
@@ -65,7 +65,7 @@ AI tooling emits:
 - prompt and model ledger links;
 - tool-call ledger;
 - validation report;
-- approval record;
+- human-review record;
 - replay trace;
 - final applied-change provenance.
 
@@ -74,7 +74,7 @@ AI tooling emits:
 ```bash
 gravity ai propose --task "add schema validator" --emit plan --emit patch-artifact
 gravity ai review patch.plan --require-checks type,effect,safety,test
-gravity ai apply patch.plan --approval human-required
+gravity ai apply patch.plan --human-review required
 gravity ai replay trace.jsonl --verify-no-hidden-tool-use
 ```
 
@@ -83,7 +83,7 @@ gravity ai replay trace.jsonl --verify-no-hidden-tool-use
 - Reject AI patches applied without schema-valid patch artifacts.
 - Reject generated source not checked by the compiler.
 - Reject hidden tool use.
-- Reject write actions without approval.
+- Reject write actions without required human-review.
 - Reject prompts that treat repository content as instruction authority.
 - Reject generated tests whose provenance is missing.
 - Reject package updates proposed without capability and safety diff.
@@ -94,7 +94,7 @@ gravity ai replay trace.jsonl --verify-no-hidden-tool-use
 - `T13001` reports invalid AI patch artifact.
 - `T13002` reports unchecked generated source.
 - `T13003` reports hidden or unauthorized tool use.
-- `T13004` reports missing approval.
+- `T13004` reports missing required human-review.
 - `T13005` reports prompt authority violation.
 - `T13006` reports missing generated-test provenance.
 - `T13007` reports missing package safety diff.
@@ -104,7 +104,7 @@ gravity ai replay trace.jsonl --verify-no-hidden-tool-use
 
 - A patch proposal emits plan and patch artifacts.
 - Generated source is checked by reader, macro, type, effect, profile, and safety phases before use.
-- Applying a patch requires approval when policy says so.
+- Applying a patch requires human-review when policy says so.
 - Repository files and package metadata are treated as untrusted data in prompts.
 - Tool calls are limited to the declared agent toolset.
 - Validation reports include type, effect, safety, and test results as requested.

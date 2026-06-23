@@ -26,7 +26,7 @@ The network library must preserve type, schema, timeout, retry, authentication, 
 - Request and response bodies MUST use STD10 schemas or explicit byte/text policies.
 - Secrets in headers, URLs, and bodies MUST be marked and redacted in diagnostics and artifacts.
 - Distributed workflow network calls MUST be recorded, idempotent, or isolated as workflow activities.
-- AI tool network calls MUST pass through Phase 11 tool, policy, and `:ai/human-approval` checks.
+- AI tool network calls MUST pass through Phase 11 tool, policy, and `:ai/human-review` checks.
 
 ## Module Surface
 
@@ -76,7 +76,7 @@ In `:distributed`, the call must run as a recorded or activity-isolated step.
 - `:native` receives sockets, clients, servers, TLS, and streaming under capabilities.
 - `:hosted` may delegate to host fetch, HTTP, TLS, or socket libraries with provider records.
 - `:distributed` receives network APIs only through workflow-safe activity and replay contracts.
-- `:ai` receives network behavior only through tool definitions, model policy, and `:ai/human-approval` gates.
+- `:ai` receives network behavior only through tool definitions, model policy, and `:ai/human-review` gates.
 - `:meta` may access network services only when compiler tooling is granted an explicit capability.
 
 ## Outputs and Artifacts
@@ -98,7 +98,7 @@ In `:distributed`, the call must run as a recorded or activity-isolated step.
 - `STD9005` when request or response body lacks schema, encoding, or byte policy.
 - `STD9006` when secret data would appear unredacted in diagnostics or artifacts.
 - `STD9007` when workflow replay observes unrecorded network IO.
-- `STD9008` when AI network access bypasses tool authorization or `:ai/human-approval` policy.
+- `STD9008` when AI network access bypasses tool authorization or `:ai/human-review` policy.
 
 ## Conformance Criteria
 

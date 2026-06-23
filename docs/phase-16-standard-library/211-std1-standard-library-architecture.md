@@ -25,7 +25,7 @@ Unsafe internals may exist inside systems libraries, but the exported safe surfa
 - `:core` modules MUST avoid host services, ambient time, ambient randomness, filesystem, network, process, database, AI, and thread assumptions.
 - Systems modules MUST separate safe APIs from unsafe islands and emit audit artifacts for unsafe internals.
 - Hosted modules MAY delegate to JVM, JavaScript, Wasm, or other managed hosts only through declared provider records.
-- Distributed and AI modules MUST preserve replay, nondeterminism, `:ai/human-approval`, model, tool, memory, and policy evidence.
+- Distributed and AI modules MUST preserve replay, nondeterminism, `:ai/human-review`, model, tool, memory, and policy evidence.
 - Module documentation examples MUST compile under every profile they claim to support.
 - Standard-library packages MUST be reproducible artifacts under the package and provenance rules of Phase 12.
 - A standard-library change MUST be classified by the stability policy in STD20 before release.
@@ -39,7 +39,7 @@ Unsafe internals may exist inside systems libraries, but the exported safe surfa
 - `gravity.memory`: ownership helpers, regions, arenas, borrow scopes, linear resources, and explicit allocators.
 - `gravity.concurrent`: structured tasks, futures, channels, atomics, locks, schedulers, and replay-aware concurrency boundaries.
 - `gravity.io`, `gravity.net`, `gravity.db`, and `gravity.platform`: effectful host services behind capabilities.
-- `gravity.workflow` and `gravity.ai`: durable workflows, agents, prompts, tools, memory, approvals, evals, and policy-integrated execution.
+- `gravity.workflow` and `gravity.ai`: durable workflows, agents, prompts, tools, memory, human-review, evals, and policy-integrated execution.
 - `gravity.meta`: syntax objects, macro expansion, IR inspection, compiler plugin APIs, and pass construction.
 - `gravity.hardware`, `gravity.crypto`, and `gravity.ui`: specialized domain libraries with profile-specific adapters and evidence.
 
@@ -91,7 +91,7 @@ The documentation generator uses it to keep examples tied to compiled exports.
 - `:native` accepts explicit memory, FFI, threading, platform, filesystem, and network APIs under capabilities.
 - `:hosted` accepts host-backed implementations when host delegation records preserve Gravity diagnostics.
 - `:distributed` accepts workflow-safe libraries with replay and idempotency metadata.
-- `:ai` accepts model, tool, prompt, memory, `:ai/human-approval`, and eval APIs only under AI policy documents.
+- `:ai` accepts model, tool, prompt, memory, `:ai/human-review`, and eval APIs only under AI policy documents.
 - `:meta` accepts compiler-facing syntax and IR APIs with phase separation.
 - `:gpu` accepts numeric and data-parallel libraries that lower to accelerator memory spaces and kernels.
 - `:formal` accepts libraries with total semantics, proof artifacts, or explicit partiality.

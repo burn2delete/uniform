@@ -250,11 +250,11 @@ For example:
 (defn read-text
   [fs :- (Capability :fs/read) path :- Path]
   :- (Result String FsError)
-  (:effects #{:io/read})
+  (:effects #{:filesystem/read})
   (:capabilities #{:fs/read}))
 ```
 
-File IO, environment access, process execution, network access, clocks,
+Filesystem IO, environment access, process execution, network access, clocks,
 randomness, model calls, tool calls, and package registry queries are never
 available through ambient globals. The caller must pass a capability, operate in
 a context with a declared provider, or run in an explicitly hosted convenience

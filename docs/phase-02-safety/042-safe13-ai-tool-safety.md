@@ -10,11 +10,11 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 AI and agentic programs introduce nondeterminism, tool authority, prompt
 injection, data exfiltration, unsafe generated code, hallucinated edits, and
 replay gaps. Gravity treats model calls and tool calls as effectful,
-capability-gated operations with traceable inputs, outputs, policies, approvals,
+capability-gated operations with traceable inputs, outputs, policies, human-review decisions,
 and artifacts.
 
 This document defines the safety rules for model calls, prompts, tool
-invocations, agent memory, `:ai/human-approval`, generated code, replay, and AI-profile
+invocations, agent memory, `:ai/human-review`, generated code, replay, and AI-profile
 least privilege.
 
 ## Requirements
@@ -26,7 +26,7 @@ least privilege.
 - Prompt instructions from untrusted sources must not override system or policy
   authority.
 - Write tools, shell tools, network tools, secret access, deployment actions, and
-  unsafe code generation require explicit grants and approval policy.
+  unsafe code generation require explicit grants and human-review policy.
 - Generated code must pass normal macro, type, effect, capability, unsafe,
   package, and safety checks before execution.
 - Replay artifacts must record enough information to audit or reproduce
@@ -50,7 +50,7 @@ least privilege.
 - Tool call trace.
 - Prompt and message provenance records.
 - Tool schema validation records.
-- Approval records.
+- Human-review records.
 - Replay records.
 - Model output taint records.
 - Generated-code safety records.
@@ -90,7 +90,7 @@ Prompts are structured data with roles:
 - Secret context.
 
 The agent runtime must preserve role and source. Untrusted roles cannot modify
-tool grants, model policy, secret policy, approval policy, or system
+tool grants, model policy, secret policy, human-review policy, or system
 instructions. Prompt construction that concatenates untrusted text into privileged
 instruction positions is rejected unless an approved sanitizer or delimiter
 policy is present.
@@ -105,7 +105,7 @@ Tool declarations include:
 - Effects.
 - Capabilities.
 - Side-effect class: read-only, write, destructive, external, privileged.
-- Approval requirement.
+- Human-review requirement.
 - Replay behavior.
 - Timeout and retry behavior.
 - Error behavior.
@@ -114,19 +114,19 @@ The default safe AI policy grants only read-only tools. Write, shell, network,
 secret, deployment, package, memory mutation, and code execution tools require
 explicit grants.
 
-## Approval Gates
+## Human-Review Gates
 
-Human or policy approval is a first-class effect:
+Human-review or policy decision is a first-class effect:
 
 ```clojure
 (tool/invoke update-file args
-  {:requires-approval :human
+  {:requires-human-review :human
    :policy :source-edit})
 ```
 
-Approval records include requested operation, summarized diff or action,
-capabilities used, approver or policy id, timestamp, and resulting decision.
-Comments in prompts do not count as approval gates.
+Human-review records include requested operation, summarized diff or action,
+capabilities used, reviewer or policy id, timestamp, and resulting decision.
+Comments in prompts do not count as human-review gates.
 
 ## Taint and Sinks
 
@@ -135,7 +135,7 @@ Before they reach sinks, they require validation:
 
 - Tool arguments require schema validation and capability checks.
 - Code edits require compiler and safety checks.
-- Shell commands require policy approval and structured argument validation.
+- Shell commands require human-review policy and structured argument validation.
 - Network calls require URL validation and network grants.
 - Logs require secret redaction.
 - Prompts require role preservation and injection controls.
@@ -158,7 +158,7 @@ Generated code cannot execute in safe mode before validation.
 Replay policy determines how much must be captured:
 
 - `:exact` records model output and tool outputs for deterministic replay.
-- `:audit` records digests, schemas, decisions, approvals, and provider ids.
+- `:audit` records digests, schemas, decisions, human-review events, and provider ids.
 - `:none` is allowed only for interactive or non-safe contexts.
 
 Workflow and release builds require replay or audit records. Tool side effects
@@ -180,7 +180,7 @@ SAFE13 diagnostics use these identifiers:
 - `SAFE13-TOOL-SCHEMA` for unvalidated or mismatched tool arguments.
 - `SAFE13-PROMPT-INJECTION` for untrusted content controlling privileged
   instructions or tools.
-- `SAFE13-APPROVAL` for missing required approval.
+- `SAFE13-HUMAN-REVIEW` for missing required human-review.
 - `SAFE13-SECRET` for secret leakage into prompts, logs, tools, or model calls.
 - `SAFE13-GENERATED-CODE` for AI-generated code executed or accepted without
   compiler safety checks.
@@ -189,7 +189,7 @@ SAFE13 diagnostics use these identifiers:
 - `SAFE13-DESTRUCTIVE-TOOL` for destructive side effects without explicit grant.
 
 Diagnostics must include model id, tool id when applicable, prompt role, taint
-source, required capability, approval policy, replay policy, and source span or
+source, required capability, human-review policy, replay policy, and source span or
 agent artifact id.
 
 ## Rejected Designs
@@ -215,7 +215,7 @@ A conforming AI safety implementation must demonstrate:
   secret, and deployment tools.
 - Prompt-role preservation and prompt-injection rejection.
 - Tool schema validation before invocation.
-- Approval records for gated operations.
+- Human-review records for gated operations.
 - Secret redaction from prompts, logs, model calls, and artifacts.
 - Generated-code safety validation before execution.
 - Replay or audit records for model and tool interactions.

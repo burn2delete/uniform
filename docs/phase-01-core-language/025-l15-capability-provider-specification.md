@@ -58,7 +58,7 @@ Gravity separates three things:
 - A capability describes what authority is needed to perform that action.
 - A provider implements the authority under a declared contract.
 
-For example, reading a file has effect `:io/read`, requires capability
+For example, reading a file has effect `:filesystem/read`, requires capability
 `:fs/read`, and may be implemented by a POSIX provider, an in-memory test
 provider, a browser sandbox provider, a package-archive provider, or a hermetic
 build-input provider.
@@ -94,7 +94,7 @@ Providers are declared as data:
   {:kind :filesystem
    :implements #{:fs/read :fs/write :fs/stat}
    :profiles #{:hosted :native}
-   :runtime-effects #{:io/read :io/write}
+   :runtime-effects #{:filesystem/read :filesystem/write}
    :build-effects #{}
    :contracts [gravity.contracts/FileSystem]
    :path-policy :grant-scoped
@@ -166,7 +166,7 @@ Gravity prefers explicit capability values for APIs that need authority:
   [fs :- (Capability :fs/read)
    path :- Path]
   :- (Result Config ConfigError)
-  (:effects #{:io/read})
+  (:effects #{:filesystem/read})
   (:capabilities #{:fs/read})
   (parse-config (fs/read-text fs path)))
 ```
@@ -181,7 +181,7 @@ visible:
 ```clojure
 (ns app.main
   (:profile :hosted)
-  (:effects #{:io/read})
+  (:effects #{:filesystem/read})
   (:capabilities #{:fs/read}))
 ```
 

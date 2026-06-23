@@ -143,7 +143,7 @@ Replay records are required for effects such as:
 - workflow events,
 - model calls,
 - tool calls,
-- AI approval decisions (`:ai/human-approval`),
+- AI human-review decisions (`:ai/human-review`),
 - scheduler-sensitive operations.
 
 The checker emits replay obligations that downstream workflow, AI, runtime, and

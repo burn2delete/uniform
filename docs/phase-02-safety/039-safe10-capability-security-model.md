@@ -101,7 +101,7 @@ APIs should accept capability values when authority is part of their contract:
   [fs :- (Capability :fs/read)
    path :- Path]
   :- (Result Config FsError)
-  (:effects #{:io/read})
+  (:effects #{:filesystem/read})
   (:capabilities #{:fs/read})
   (parse-config (fs/read-text fs path)))
 ```
@@ -117,7 +117,7 @@ Ambient providers are allowed only when declared:
 ```clojure
 (ns app.main
   (:profile :hosted)
-  (:effects #{:io/read})
+  (:effects #{:filesystem/read})
   (:capabilities #{:fs/read}))
 ```
 

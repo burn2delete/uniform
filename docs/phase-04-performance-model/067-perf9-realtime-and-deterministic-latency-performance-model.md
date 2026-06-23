@@ -59,7 +59,7 @@ This document defines latency contracts and their validation.
  :blocking false
  :bounds {:iterations 128 :recursion false}
  :preemption {:interrupts :declared :locks :bounded}
- :forbidden-runtime #{:gc :dynamic-loading :reflection :network :model-call}
+ :forbidden-runtime #{:gc :dynamic-loading :reflection :network :ai/model-call}
  :evidence [:bounded-loop-proof :allocation-free-report :worst-case-path]
  :failure-mode :reject-build}
 ```
@@ -164,4 +164,3 @@ A conforming realtime implementation must demonstrate:
   deterministic paths.
 - Worst-case path or bounded empirical evidence.
 - Failure-mode enforcement.
-

@@ -61,7 +61,7 @@ Each fixture has a manifest:
  :profile :native
  :target :generic
  :source "fixtures/safe2/use-after-release.gravity"
- :expected {:outcome :reject
+ :expected {:verdict :reject
             :diagnostic :SAFE2-USE-AFTER-RELEASE
             :span "use-after-release.gravity:9:5"}
  :artifacts []}
@@ -71,12 +71,12 @@ Accepted fixtures may specify artifacts:
 
 ```clojure
 {:fixture/id :safe9/bounds-check-erased
- :expected {:outcome :accept
+ :expected {:verdict :accept
             :proof :SAFE15
             :erased-check :bounds}}
 ```
 
-The fixture `:expected :outcome` is the compiler-level verdict for the whole
+The fixture `:expected :verdict` is the compiler-level decision for the whole
 fixture, such as `:accept` or `:reject`. Artifact inspections still use the
 `SAFE1` operation outcome tags `:proven-safe`, `:runtime-checked`,
 `:rejected`, and `:unsafe-island`.
@@ -132,7 +132,7 @@ phase separation, taint propagation, facet macro output, and alternative macro
 engines.
 
 `SAFE13` fixtures cover model effects, tool capabilities, tool schemas, prompt
-injection, approval gates, secret leaks, generated code, replay, retention, and
+injection, human-review gates, secret leaks, generated code, replay, retention, and
 destructive tools.
 
 `SAFE14` fixtures cover package manifests, build effects, runtime capabilities,

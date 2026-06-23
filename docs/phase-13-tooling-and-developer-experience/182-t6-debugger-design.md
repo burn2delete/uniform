@@ -38,7 +38,7 @@ Each target declares which debug features it supports.
 - State inspection MUST respect redaction and capability policy.
 - State mutation MUST require explicit debug authority.
 - Workflow debugging MUST support event-log replay and node stepping.
-- AI debugging MUST link model calls, prompts, tools, memory, policy decisions, and approvals.
+- AI debugging MUST link model calls, prompts, tools, memory, policy decisions, and human-review decisions.
 - Native and kernel debugging MUST not hide unsafe memory operations.
 - Debug records MUST distinguish optimized-away values from unavailable values.
 - Debugger output MUST support structured reports.
@@ -101,5 +101,5 @@ gravity debug --replay workflow-trace.jsonl --node classify-ticket
 - State mutation is denied without explicit authority.
 - Redacted values are hidden in debug output.
 - Workflow replay debugging does not repeat side effects.
-- AI trace debugging links prompt, model, tool, memory, policy, and approval records.
+- AI trace debugging links prompt, model, tool, memory, policy, and human-review records.
 - Partial target support is reported explicitly.

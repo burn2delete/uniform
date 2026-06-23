@@ -21,7 +21,7 @@ It requires identity, provenance, reproducibility, capabilities, safety metadata
 - Packages claiming conformance MUST include conformance reports tied to compiler, target, profile, and standard-library versions.
 - Packages exposing unsafe code MUST include GOV9 unsafe metadata.
 - Packages exposing effects or capabilities MUST make authority visible in manifests.
-- Packages exposing AI tools or agents MUST include Phase 11 policy, eval, `:ai/human-approval`, and prompt-injection evidence.
+- Packages exposing AI tools or agents MUST include Phase 11 policy, eval, `:ai/human-review`, and prompt-injection evidence.
 - Registry yanks MUST be recorded with reason, replacement guidance, and dependency-resolution behavior.
 - Security advisories MUST include affected versions, severity, impact, patched versions, mitigations, and provenance links.
 - Namespace transfer, abandoned package takeover, and reserved names MUST be governed.

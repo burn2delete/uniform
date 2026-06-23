@@ -57,7 +57,7 @@ The claim is invalid if any part is implicit.
 | Security/crypto | `:core`, `:native`, `:formal` | library, proof, test vectors | constant-time primitive with algorithm policy |
 | Smart contracts | `:formal`, `:distributed` | contract artifact, proof, ABI | state transition with bounded effects |
 | Compiler/tooling | `:meta`, `:hosted`, `:native` | pass library, tool binary | macro/pass that preserves syntax provenance |
-| AI agents | `:ai`, `:distributed`, `:hosted` | agent manifest, prompt, eval report | model/tool workflow with structured output and approval |
+| AI agents | `:ai`, `:distributed`, `:hosted` | agent manifest, prompt, eval report | model/tool workflow with structured output and human-review |
 | Formal verification | `:formal` | proof certificate, model | total function or bounded partiality proof |
 | Scripting/automation | `:hosted` | script artifact, policy manifest | shell-like automation with explicit process/file effects |
 | Visual workflows | `:hosted`, `:distributed` | workflow graph, UI schema | visual workflow compiled to same graph as source workflow |

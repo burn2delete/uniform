@@ -80,7 +80,7 @@ Runtime events include:
 - allocation, deallocation, region, and resource events,
 - task, scheduler, actor, channel, and synchronization events,
 - workflow, event-log, replay, retry, and compensation events,
-- model, prompt, tool, memory, `:ai/human-approval`, and budget events,
+- model, prompt, tool, memory, `:ai/human-review`, and budget events,
 - FFI binding, callback, and foreign error events,
 - capability grant, denial, delegation, revocation, and policy events,
 - performance counters and sampling events.

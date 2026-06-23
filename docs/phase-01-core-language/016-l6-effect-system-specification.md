@@ -71,7 +71,7 @@ Core effect families include:
 - `:ai/embedding`,
 - `:ai/memory-read`,
 - `:ai/memory-write`,
-- `:ai/human-approval`,
+- `:ai/human-review`,
 - `:unsafe`.
 
 Later documents may add effects through the extension/governance process, but new effects must define profile legality, capability requirements, ordering behavior, diagnostics, and artifact representation.
@@ -147,7 +147,7 @@ Granted build effects are recorded in build artifacts.
 
 ## Replay and Nondeterminism
 
-Nondeterministic effects include time, random, network, filesystem where contents are external, database reads, model calls, tool calls, `:ai/human-approval`, scheduler decisions, and workflow events.
+Nondeterministic effects include time, random, network, filesystem where contents are external, database reads, model calls, tool calls, `:ai/human-review`, scheduler decisions, and workflow events.
 
 Distributed and AI profiles must record replay-relevant effects. A workflow cannot silently re-read current time during replay. An agent cannot silently re-call a model when replay requires the original output.
 

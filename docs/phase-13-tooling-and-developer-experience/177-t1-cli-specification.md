@@ -61,7 +61,7 @@ locations.
 - `3` means dependency or registry resolution failed.
 - `4` means build graph or artifact verification failed.
 - `5` means runtime execution failed.
-- `6` means required authority or approval is missing.
+- `6` means required authority or human-review is missing.
 
 Commands may add subcodes in structured output, but shell exit codes remain
 stable.

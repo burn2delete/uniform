@@ -140,7 +140,7 @@ validate artifact shape, verifier output, source maps, metadata, and expected
 diagnostics.
 
 Replay tests record clocks, randomness, network, database, model, tool, and
-`:ai/human-approval` events. Unrecorded nondeterminism invalidates the fixture
+`:ai/human-review` events. Unrecorded nondeterminism invalidates the fixture
 rather than becoming flaky conformance evidence.
 
 ## Metadata and Artifact Validation

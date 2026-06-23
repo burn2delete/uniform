@@ -34,7 +34,7 @@ providers, dependencies, safety decisions, and diagnostics.
   evidence required by policy.
 - Missing, stale, or contradictory evidence rejects artifact emission.
 - Generated artifacts must identify the generator, input digests, pass pipeline,
-  backend version, and any manual or unsafe approvals.
+  backend version, and any manual review decisions or unsafe audit records.
 - Artifacts must be content-addressable before signing, packaging, deployment,
   or governance workflows consume them.
 

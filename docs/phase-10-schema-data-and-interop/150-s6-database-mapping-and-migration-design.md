@@ -22,7 +22,7 @@ capability, deployment, and replay implications.
 - Migration plans must declare from/to schema ids, compatibility policy,
   transaction mode, data-loss policy, backfill strategy, rollback or
   forward-only behavior, deployment ordering, and required capabilities.
-- Destructive migrations require explicit data-loss approval and artifact
+- Destructive migrations require an explicit data-loss policy decision and artifact
   evidence.
 - Runtime migration execution requires database write/admin capabilities.
 - Migrations must account for GraphQL/OpenAPI/client/AI-output compatibility
@@ -75,7 +75,7 @@ Database mapping diagnostics use `S6` identifiers:
 - `S6-MAPPING` for unsupported or lossy schema-to-database mapping.
 - `S6-DIALECT` for unsupported database features or type behavior.
 - `S6-MIGRATION` for migration plans without compatibility policy.
-- `S6-DATA-LOSS` for destructive changes without approval and evidence.
+- `S6-DATA-LOSS` for destructive changes without data-loss policy decision and evidence.
 - `S6-ROLLBACK` for missing rollback or forward-only policy.
 - `S6-CAPABILITY` for runtime migration without write/admin grant.
 - `S6-ADAPTER` for row adapters that weaken source schemas.

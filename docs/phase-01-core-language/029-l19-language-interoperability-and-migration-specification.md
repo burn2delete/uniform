@@ -250,7 +250,7 @@ artifact that can be measured and replaced incrementally.
 
 Migration shims let existing systems move in slices:
 
-- A C header can generate unsafe extern declarations and safe wrapper stubs.
+- A C header can generate unsafe extern declarations and initial safe wrapper declarations.
 - A Java package can expose selected classes through hosted bridge declarations.
 - A TypeScript type file can generate schemas and Gravity codecs.
 - A Python model pipeline can become a provider-backed tool boundary.

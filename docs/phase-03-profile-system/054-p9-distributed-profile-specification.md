@@ -107,7 +107,7 @@ retry policy, timeout, compensation, and replay behavior.
 Replay-sensitive contexts cannot directly read clocks, randomness, network
 responses, database state, model output, or external tool results. They must use
 step APIs that record values or stable decisions. Replay artifacts record input,
-output, effect, retry, error, and approval state.
+output, effect, retry, error, and human-review state.
 
 ## Messages and State
 
@@ -184,4 +184,3 @@ A conforming `:distributed` implementation must demonstrate:
 - Service capability enforcement.
 - Event-log schema and replay log artifacts.
 - Cross-profile service boundary tests.
-

@@ -114,4 +114,4 @@ This policy entry says that changing `request` requires compatibility review acr
 - Stable-breaking changes require governance records and migration artifacts.
 - Profile availability changes are visible in release artifacts.
 - Conformance suites can run old and new fixtures to detect silent drift.
-- Package tooling can reject dependencies on internal or unapproved experimental exports.
+- Package tooling can reject dependencies on internal experimental exports or experimental exports lacking required opt-in.

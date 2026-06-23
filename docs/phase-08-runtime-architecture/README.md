@@ -26,5 +26,5 @@ The phase is successful when runtime services are explicit enough that hardware,
 ## Shared Evidence
 
 - Runtime manifests list linked, generated, delegated, and forbidden services.
-- Capability checks remain active at runtime for filesystem, network, database, secrets, process, shell, FFI, raw memory, model, tool, memory, and `:ai/human-approval` effects.
+- Capability checks remain active at runtime for filesystem, network, database, secrets, process, shell, FFI, raw memory, model, tool, memory, and `:ai/human-review` effects.
 - Replay-sensitive runtimes record nondeterminism rather than re-executing it silently.

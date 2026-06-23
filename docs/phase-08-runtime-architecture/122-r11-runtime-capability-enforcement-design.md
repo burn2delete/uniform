@@ -23,7 +23,7 @@ redaction decisions.
 - Capability checks must be deny-by-default when no matching grant exists.
 - Runtime enforcement must cover filesystem, network, database, environment,
   process, shell, secrets, FFI, raw memory, device access, model calls, tool
-  calls, memory writes, `:ai/human-approval`, deployment, package mutation, and
+  calls, memory writes, `:ai/human-review`, deployment, package mutation, and
   observability sinks.
 - Delegated handles must be scoped, typed, revocable when supported, and tied to
   provider policy.
@@ -63,7 +63,7 @@ redaction decisions.
  :inputs #{:compiled-effects :package-policy :deployment-policy
            :principal :artifact-manifest}
  :handles #{:filesystem :network :database :secrets :process :shell
-            :ffi :raw-memory :model :tool :approval}
+            :ffi :raw-memory :model :tool :human-review}
  :decisions #{:grant :deny :delegate :revoke}
  :records #{:capability-table :decision-log :denial-diagnostic}
  :rejects #{:ambient-authority :effect-outside-grant
@@ -96,7 +96,7 @@ Denials are deterministic when policy inputs are deterministic.
 
 Capability handles are typed values that narrow authority. They may represent a
 file root, network host, database connection, secret scope, process provider,
-tool contract, model provider, memory provider, approval token, or observability
+tool contract, model provider, memory provider, human-review token, or observability
 sink. Delegation records name the grantor, recipient, allowed effects, lifetime,
 revocation behavior, and audit requirements.
 
@@ -108,7 +108,7 @@ Runtime enforcement checks both caller and callee:
 
 - a caller must have authority to invoke a tool or plugin,
 - the tool or plugin may perform only effects in its own contract,
-- AI agents must satisfy model/tool/memory/approval policy,
+- AI agents must satisfy model/tool/memory/human-review policy,
 - workflow steps must satisfy replay, idempotency, and capability policy,
 - FFI adapters must satisfy foreign effect policy.
 
@@ -151,7 +151,7 @@ A conforming runtime capability system must demonstrate:
 - deny-by-default behavior,
 - grant, deny, delegate, and revoke records,
 - enforcement across filesystem, network, database, secrets, process, shell,
-  FFI, raw memory, model, tool, memory, `:ai/human-approval`, and observability
+  FFI, raw memory, model, tool, memory, `:ai/human-review`, and observability
   actions,
 - caller/tool/plugin dual-contract checks,
 - secret redaction and audit records,

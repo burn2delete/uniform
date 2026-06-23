@@ -9,13 +9,13 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 The workflow graph backend emits durable execution graphs, step schemas,
 event-log contracts, replay policies, idempotency records, retry/timeout tables,
-compensation handlers, approval gates, tool/model capability manifests, and
+compensation handlers, human-review gates, tool/model capability manifests, and
 audit metadata for distributed and AI workflows.
 
 The backend turns effectful control flow into artifacts that a durable runtime
 can execute, pause, resume, replay, inspect, migrate, and audit. It does not
 lower workflows by hiding clocks, randomness, network calls, database calls,
-model calls, tool calls, or `:ai/human-approval` gates inside ordinary function
+model calls, tool calls, or `:ai/human-review` gates inside ordinary function
 calls.
 
 ## Requirements
@@ -29,12 +29,12 @@ calls.
 - Side-effecting steps must declare idempotency, retry, timeout, cancellation,
   failure mapping, and compensation behavior when required.
 - External services, databases, tools, models, memory, secrets, and
-  `:ai/human-approval` gates must have effects, capabilities, policy records,
+  `:ai/human-review` gates must have effects, capabilities, policy records,
   and provider metadata.
 - Replay sections must not repeat side effects unless guarded by event-log and
   idempotency records.
 - Generated workflow artifacts must preserve source spans, generated origins,
-  policy decisions, approval records, and audit metadata.
+  policy decisions, human-review records, and audit metadata.
 - Model/provider substitution must follow policy and record provider identity,
   prompt/message digests, tool calls, and evaluation evidence when required.
 
@@ -49,7 +49,7 @@ calls.
   generated-code safety, and AI/tool safety.
 - Phase 10 schema documents define message, state, and boundary schemas.
 - Phase 11 AI/workflow documents define agents, prompts, tools, memory, policy,
-  approval, evaluation, and replay details.
+  human-review, evaluation, and replay details.
 
 ## Outputs and Artifacts
 
@@ -62,7 +62,7 @@ calls.
 - Retry, timeout, cancellation, and compensation table.
 - External capability manifest.
 - Tool/model/provider manifest.
-- Approval and policy graph.
+- Human-review and policy graph.
 - Audit and provenance record.
 - Workflow graph diagnostics.
 
@@ -76,9 +76,9 @@ calls.
  :emits #{:workflow-graph :event-log-schema :replay-fixtures
           :policy-graph}
  :requires #{:step-schemas :idempotency :retry-policy
-             :capability-manifest :approval-policy}
+             :capability-manifest :human-review-policy}
  :rejects #{:unrecorded-nondeterminism :ambient-tool-access
-            :schema-less-step :write-without-approval-policy}}
+            :schema-less-step :write-without-human-review-policy}}
 ```
 
 The manifest is consumed by runtime schedulers, replay tools, audit tools,
@@ -96,14 +96,14 @@ Workflow graph nodes include:
 - model call,
 - tool call,
 - retrieval or memory operation,
-- approval gate (`:ai/human-approval`),
+- human-review gate (`:ai/human-review`),
 - compensation handler,
 - fork/join or actor/message edge,
 - replay barrier,
 - policy decision.
 
 Edges record data dependencies, effect ordering, retry paths, cancellation,
-compensation, approval, and failure mapping. Graph cycles must have bounded or
+compensation, human-review, and failure mapping. Graph cycles must have bounded or
 policy-defined behavior.
 
 ## Steps, Schemas, and State
@@ -137,7 +137,7 @@ Replay records include:
 - service responses,
 - database results when replay-relevant,
 - model and tool inputs/outputs,
-- approvals,
+- human-review decisions,
 - policy decisions,
 - errors and retries,
 - generated-code digests.
@@ -146,7 +146,7 @@ During replay, side effects are not reissued unless the graph explicitly marks a
 step as replay-safe and idempotent. Model and tool calls are nondeterministic
 unless policy pins provider, model, prompt, tool version, and replay behavior.
 
-## Capabilities, Policy, and Approval
+## Capabilities, Policy, and Human-Review
 
 The capability manifest records:
 
@@ -158,9 +158,9 @@ The capability manifest records:
 - secret access,
 - write/destructive side-effect class,
 - budget and rate policy,
-- required `:ai/human-approval`.
+- required `:ai/human-review`.
 
-Policy and approval graphs state which steps require review, which outputs are
+Policy and human-review graphs state which steps require review, which outputs are
 trusted after validation, and which values remain tainted. Prompt text and tool
 results cannot create new authority.
 
@@ -174,8 +174,8 @@ Workflow graph backend diagnostics use `B10` identifiers:
 - `B10-RETRY` for missing retry, timeout, cancellation, or failure mapping.
 - `B10-COMPENSATION` for missing compensation on effects that require it.
 - `B10-CAPABILITY` for service, database, model, tool, memory, secret, or
-  approval authority gaps.
-- `B10-POLICY` for policy, budget, provider, or approval violations.
+  human-review authority gaps.
+- `B10-POLICY` for policy, budget, provider, or human-review violations.
 - `B10-TAINT` for unvalidated model, tool, message, or external output reaching
   a trusted sink.
 - `B10-GRAPH` for invalid graph cycles, edges, or unreachable compensation.
@@ -208,7 +208,7 @@ A conforming workflow graph backend must demonstrate:
 - replay rejection for unrecorded nondeterminism,
 - idempotency, retry, timeout, cancellation, and compensation fixtures,
 - service, database, model, tool, memory, secret capability checks, and
-  `:ai/human-approval` checks,
+  `:ai/human-review` checks,
 - taint validation for model/tool/external outputs,
 - event-log schema and replay fixture generation,
 - source/provenance/policy/audit metadata preservation,

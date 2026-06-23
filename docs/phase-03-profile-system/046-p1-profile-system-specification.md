@@ -87,7 +87,7 @@ A profile contract is represented as data:
 ```clojure
 {:profile :native
  :allowed-forms #{:fn :let :match :try :unsafe}
- :allowed-effects #{:memory/allocate :io/read :ffi/call}
+ :allowed-effects #{:memory/allocate :filesystem/read :ffi/call}
  :checked-effects #{:ffi/call :memory/raw}
  :forbidden-effects #{:reflection/use :ai/model-call}
  :capabilities #{:fs/read :ffi/c :memory/arena}

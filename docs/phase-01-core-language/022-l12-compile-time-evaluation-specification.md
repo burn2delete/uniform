@@ -332,7 +332,7 @@ dimension.
 
 `:ai` may use model calls for code generation, schema adaptation, test synthesis,
 or evaluation only when model identity, prompt class, input digest, output digest,
-cost limit, retention policy, and `:ai/human-approval` policy are recorded.
+cost limit, retention policy, and `:ai/human-review` policy are recorded.
 
 `:meta` may inspect and transform compiler IR, but it must not bypass profile,
 type, effect, safety, or artifact validation.

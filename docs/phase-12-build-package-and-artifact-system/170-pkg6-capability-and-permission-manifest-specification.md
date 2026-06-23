@@ -28,7 +28,7 @@ The manifest records:
 - tool and agent capability needs;
 - unsafe or FFI capability use;
 - deployment grant requirements;
-- `:ai/human-approval` requirements;
+- `:ai/human-review` requirements;
 - runtime handle types;
 - audit event classes.
 
@@ -92,7 +92,7 @@ The compiler and package tool emit:
    :requests [:network/http :database/read :ai/model-call]
    :denies [:shell/exec :secrets/read :filesystem/write]
    :deployment-grants [:network/http :database/read]
-   :approval-required [:ai/model-call]
+   :human-review-required [:ai/model-call]
    :runtime-handles {:database/read DatabaseReadCap
                      :network/http HttpClientCap}})
 ```

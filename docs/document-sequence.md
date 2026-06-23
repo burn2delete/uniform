@@ -166,7 +166,7 @@ This inventory is transcribed from the final sequence in `Gravity Lisp Design.pd
 | 160 | `A7` | 11 - AI and Agentic Programming | [Memory and Retrieval Specification](phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md) |
 | 161 | `A8` | 11 - AI and Agentic Programming | [AI Policy and Safety Model](phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md) |
 | 162 | `A9` | 11 - AI and Agentic Programming | [AI Evaluation Framework Design](phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md) |
-| 163 | `A10` | 11 - AI and Agentic Programming | [Human-in-the-Loop and Approval Workflow Specification](phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-approval-workflow-specification.md) |
+| 163 | `A10` | 11 - AI and Agentic Programming | [Human-in-the-Loop and Human-Review Workflow Specification](phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md) |
 | 164 | `A11` | 11 - AI and Agentic Programming | [Prompt Injection and Tool Misuse Defense Specification](phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md) |
 | 165 | `PKG1` | 12 - Build, Package and Artifact System | [Project File Specification](phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md) |
 | 166 | `PKG2` | 12 - Build, Package and Artifact System | [Build System Architecture](phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md) |

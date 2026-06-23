@@ -13,14 +13,14 @@ editors, ETL canvases, spreadsheet workflows, visual AI chains, or proprietary
 workflow DSLs.
 
 The replacement scope is visual graph nodes, typed edges, schema-bound forms,
-approval nodes, tool/model nodes, generated Gravity source or MIR, workflow
+human-review nodes, tool/model nodes, generated Gravity source or MIR, workflow
 graphs, replay traces, and visual-to-source diagnostics.
 
 ## Requirements
 
 - Visual nodes and edges must have typed input/output schemas, effects,
   capabilities, policy, replay behavior, and generated source/provenance links.
-- Graph execution paths must expose all side effects, approvals, retries,
+- Graph execution paths must expose all side effects, human-review decisions, retries,
   timeouts, compensation, and nondeterminism.
 - Generated code must pass ordinary Gravity compiler checks.
 - Visual editor metadata must round-trip diagnostics to graph nodes and edges.
@@ -31,7 +31,7 @@ graphs, replay traces, and visual-to-source diagnostics.
 ## Dependencies
 
 - `B10`, `R7`, `R8`, and Phase 11 AI/workflow docs define workflow, replay, AI,
-  tool, policy, and approval behavior.
+  tool, policy, and human-review behavior.
 - Phase 10 schema docs define node/edge schemas and migrations.
 - `SAFE10`, `SAFE11`, and `SAFE12` define capabilities, taint, and generated code
   safety.
@@ -44,7 +44,7 @@ graphs, replay traces, and visual-to-source diagnostics.
 - Generated Gravity source or MIR map.
 - Node and edge schema bundle.
 - Workflow graph artifact.
-- Policy and approval graph.
+- Policy and human-review graph.
 - Replay trace.
 - Visual layout/provenance metadata.
 - Graph migration record.
@@ -57,8 +57,8 @@ graphs, replay traces, and visual-to-source diagnostics.
  :profiles #{:distributed :ai :hosted}
  :backends #{:workflow-graph :javascript-typescript}
  :artifacts #{:visual-graph :schema-bindings :generated-source-map
-              :approval-policy :replay-trace}
- :examples #{:support-flow :etl-pipeline :approval-flow :ai-tool-chain}
+              :human-review-policy :replay-trace}
+ :examples #{:support-flow :etl-pipeline :human-review-flow :ai-tool-chain}
  :rejects #{:untyped-edge :hidden-effect :visual-authority
             :diagnostic-without-node-map}}
 ```
@@ -68,7 +68,7 @@ graphs, replay traces, and visual-to-source diagnostics.
 Gravity should replace:
 
 - visual workflow graphs,
-- approval workflows,
+- human-review workflows,
 - ETL/dataflow canvases,
 - support and operations flows,
 - AI tool chains,
@@ -79,12 +79,12 @@ Visual editors remain tooling frontends over Gravity artifacts.
 
 ## Minimum End-to-End Slice
 
-The first complete slice is a support approval flow:
+The first complete slice is a support human-review flow:
 
-- Visual editor emits nodes for classify, policy check, approval, and reply.
+- Visual editor emits nodes for classify, policy check, human-review, and reply.
 - Each node has schemas, effects, capability policy, and replay behavior.
 - Compiler emits Gravity source or workflow graph with node provenance.
-- Runtime records approvals and tool/model outputs.
+- Runtime records human-review decisions and tool/model outputs.
 - Negative fixture rejects an untyped edge and maps diagnostic to the visual
   node.
 
@@ -96,7 +96,7 @@ Visual workflow diagnostics use `DOM21` identifiers:
 - `DOM21-EDGE` for untyped or incompatible graph edges.
 - `DOM21-EFFECT` for hidden effects in visual nodes.
 - `DOM21-CAPABILITY` for tool/model/service nodes without grants.
-- `DOM21-APPROVAL` for missing approval policy.
+- `DOM21-HUMAN-REVIEW` for missing human-review policy.
 - `DOM21-REPLAY` for unrecorded nondeterminism.
 - `DOM21-GENERATED` for generated code bypassing compiler checks.
 - `DOM21-MAPPING` for diagnostics that cannot map back to visual nodes or
@@ -124,7 +124,7 @@ A conforming visual workflow slice must demonstrate:
 
 - visual graph, generated source/MIR, and workflow graph artifacts,
 - typed node and edge schemas,
-- approval and policy nodes,
+- human-review and policy nodes,
 - model/tool capability checks,
 - replay traces,
 - graph migration records,

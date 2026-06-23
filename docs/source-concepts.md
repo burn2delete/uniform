@@ -1,6 +1,6 @@
 # Gravity Source Concepts
 
-This concept map records the design understanding used to write the document set. It is based on the full 130-page `Gravity Lisp Design.pdf`, including the first-pass language/platform design, the elementary-function extension, the safety extension, and the final 240-document sequence.
+This concept map records the design understanding used to write the document set. It is based on the full 130-page `Gravity Lisp Design.pdf`, including the initial language/platform design, the elementary-function extension, the safety extension, and the final 240-document sequence.
 
 ## Core Thesis
 
@@ -94,7 +94,7 @@ Gravity should support certified approximations, rational interval arithmetic, b
 
 The safety thesis is: safe Gravity has no undefined behavior. A dangerous operation must be classified as `:proven-safe`, protected by `:runtime-checked`, rejected as `:rejected`, or isolated as `:unsafe-island`.
 
-Safety is profile-aware. Hosted code may lean on GC and host checks. Native code may use ownership, regions, linear resources, and checked raw-memory wrappers. Kernel and firmware code must avoid dynamic and unbounded assumptions. Distributed and AI code must track nondeterminism, replay, effects, capabilities, and approval policy.
+Safety is profile-aware. Hosted code may lean on GC and host checks. Native code may use ownership, regions, linear resources, and checked raw-memory wrappers. Kernel and firmware code must avoid dynamic and unbounded assumptions. Distributed and AI code must track nondeterminism, replay, effects, capabilities, and human-review policy.
 
 Key safety mechanisms:
 

@@ -85,7 +85,8 @@ Hosted interop uses the same shape:
    :effects #{:network/http}
    :capabilities #{:http/client}
    :errors {:reject JsPromiseRejected}
-   :safety :host-boundary
+   :safety :unsafe
+   :boundary :host
    :profiles #{:hosted}})
 ```
 
@@ -218,7 +219,7 @@ files must emit:
 - Generator id and version.
 - Foreign declaration records.
 - Unsafe imports.
-- Safe wrapper stubs or generated wrappers.
+- Initial safe wrapper declarations or generated wrappers.
 - Type mapping records.
 - Error mapping records.
 - Conformance tests.

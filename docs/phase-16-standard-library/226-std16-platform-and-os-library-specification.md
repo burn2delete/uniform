@@ -77,7 +77,7 @@ The command is not assembled through unchecked shell text.
 - `:native` receives environment, clocks, randomness, processes, signals, and terminal APIs under capabilities.
 - `:hosted` may delegate to host platform APIs with provider records.
 - `:distributed` receives recorded time/randomness and activity-isolated process/environment access.
-- `:ai` may use platform operations only through typed tools and `:ai/human-approval` policy.
+- `:ai` may use platform operations only through typed tools and `:ai/human-review` policy.
 - `:meta` may inspect target and build artifacts during compilation.
 - `:formal` requires modeled platform facts or explicit assumptions.
 

@@ -8,11 +8,11 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 ## Purpose
 
 `gravity.ai` is the standard library facade over the AI semantics defined in Phase 11.
-It exposes model providers, prompts, structured outputs, tools, agents, workflows, memory, retrieval, policies, evals, approvals, and audit records as typed library APIs.
+It exposes model providers, prompts, structured outputs, tools, agents, workflows, memory, retrieval, policies, evals, human-review, and audit records as typed library APIs.
 It must not allow ordinary hosted code to bypass the profile, effect, capability, policy, and artifact rules for AI execution.
 
 AI behavior is explicitly nondeterministic and externally mediated.
-Model calls, tool calls, retrieval, generated code, `:ai/human-approval`, memory writes, and eval scoring all become effects and artifacts.
+Model calls, tool calls, retrieval, generated code, `:ai/human-review`, memory writes, and eval scoring all become effects and artifacts.
 The library surface is safe only when those effects are declared and the relevant policy permits them.
 
 ## Requirements
@@ -20,7 +20,7 @@ The library surface is safe only when those effects are declared and the relevan
 - AI exports MUST be legal only in `:ai`, workflow-integrated `:distributed`, or explicitly enabled hosted development profiles.
 - Model calls MUST declare provider identity, model identity, input schema, output schema, budget, and fallback policy.
 - Prompt APIs MUST preserve authority partitions, taint, structured output schema, and refusal behavior.
-- Tool APIs MUST require capability manifests, input/output schemas, idempotency policy, and `:ai/human-approval` policy where needed.
+- Tool APIs MUST require capability manifests, input/output schemas, idempotency policy, and `:ai/human-review` policy where needed.
 - Agent definitions MUST bind model, prompt, tool, memory, policy, budget, and eval contracts.
 - Memory and retrieval APIs MUST declare store, embedding provider, partition, retention, taint, and replay policy.
 - AI workflow APIs MUST reuse STD12 workflow artifacts.
@@ -35,13 +35,13 @@ The library surface is safe only when those effects are declared and the relevan
 - Tools: `deftool`, `tool`, `tool-schema`, `tool-capability`, `tool-call`, and `tool-result`.
 - Agents: `defagent`, `agent`, `run-agent`, `agent-state`, `agent-event`, and `agent-budget`.
 - Memory: `defmemory`, `retrieve`, `remember`, `embed`, `partition`, and `memory-policy`.
-- Policy: `defpolicy`, `policy-check`, `approval-required?`, `redact`, and `taint-source`.
+- Policy: `defpolicy`, `policy-check`, `human-review-required?`, `redact`, and `taint-source`.
 - Evals: `defeval`, `run-eval`, `metric`, `threshold`, `probe`, and `eval-report`.
-- Workflow integration: `agent-workflow`, `approval-step`, `record-model-call`, and `record-tool-call`.
+- Workflow integration: `agent-workflow`, `human-review-step`, `record-model-call`, and `record-tool-call`.
 
 ## Dependencies
 
-- `A1` through `A11` for AI semantic model, providers, prompts, tools, agents, workflows, memory, policy, evals, approvals, and prompt-injection defense.
+- `A1` through `A11` for AI semantic model, providers, prompts, tools, agents, workflows, memory, policy, evals, human-review, and prompt-injection defense.
 - `L5`, `L6`, `L12`, `L14`, and `L15` for effects, capabilities, macros, compile-time checking, and macro safety.
 - `SAFE10`, `SAFE11`, `SAFE13`, and `SAFE15` for capability security, taint, AI tool safety, and proof-carrying libraries.
 - `P9` and `P10` for distributed and AI profile legality.
@@ -66,7 +66,7 @@ The library surface is safe only when those effects are declared and the relevan
 ```
 
 The agent declaration emits model, prompt, tool, memory, policy, and eval artifacts.
-Tool calls require capabilities and may require `:ai/human-approval` before execution.
+Tool calls require capabilities and may require `:ai/human-review` before execution.
 
 ## Profile Availability
 
@@ -82,7 +82,7 @@ Tool calls require capabilities and may require `:ai/human-approval` before exec
 
 - AI module manifest with effects, capabilities, provider identities, model identities, and profile matrix.
 - Prompt artifacts with authority partitions, input/output schemas, taint rules, and refusal policy.
-- Tool manifests with schemas, capabilities, idempotency, `:ai/human-approval`, and replay metadata.
+- Tool manifests with schemas, capabilities, idempotency, `:ai/human-review`, and replay metadata.
 - Agent manifests with model, prompt, memory, tools, policy, budget, eval, and workflow edges.
 - Memory and retrieval artifacts with store, partition, embedding provider, retention, and taint policy.
 - Eval reports with datasets, metrics, thresholds, probes, and release gates.
@@ -92,7 +92,7 @@ Tool calls require capabilities and may require `:ai/human-approval` before exec
 
 - `STD13001` when a model call lacks provider, model, schema, budget, or fallback metadata.
 - `STD13002` when a prompt mixes authority levels or trusts tainted content.
-- `STD13003` when a tool call lacks capability, schema, idempotency, or `:ai/human-approval` evidence.
+- `STD13003` when a tool call lacks capability, schema, idempotency, or `:ai/human-review` evidence.
 - `STD13004` when an agent omits policy, budget, eval, memory, or tool contracts required by its profile.
 - `STD13005` when retrieval crosses partition or retention policy.
 - `STD13006` when generated code bypasses compiler, safety, profile, or package checks.
@@ -104,7 +104,7 @@ Tool calls require capabilities and may require `:ai/human-approval` before exec
 - AI examples compile only in profiles that permit AI effects.
 - Model fixtures record provider, model, schemas, budget, fallback, and nondeterminism.
 - Prompt fixtures preserve authority boundaries and taint propagation.
-- Tool fixtures enforce capabilities, `:ai/human-approval`, idempotency, and schema validation.
+- Tool fixtures enforce capabilities, `:ai/human-review`, idempotency, and schema validation.
 - Agent fixtures emit complete manifests and reject missing policy or eval gates.
 - Workflow fixtures record model and tool calls for replay.
 - Prompt-injection probes are part of standard conformance for exposed agents.

@@ -167,7 +167,7 @@ Unsafe code cannot leak invalid states into safe code. A safe wrapper must check
 
 `:distributed` safety records replay-relevant nondeterminism, external calls, idempotency, time, retries, persistence, and compensation.
 
-`:ai` safety separates data from instructions, validates structured outputs, taint-tracks untrusted content, capability-gates tools and memory, records model nondeterminism, and enforces `:ai/human-approval` boundaries.
+`:ai` safety separates data from instructions, validates structured outputs, taint-tracks untrusted content, capability-gates tools and memory, records model nondeterminism, and enforces `:ai/human-review` boundaries.
 
 `:meta` safety prevents macros and compiler passes from bypassing profile, type, effect, capability, and safety checks.
 

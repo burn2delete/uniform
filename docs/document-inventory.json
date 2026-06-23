@@ -1462,8 +1462,8 @@
     "phase": 11,
     "phaseName": "AI and Agentic Programming",
     "id": "A10",
-    "title": "Human-in-the-Loop and Approval Workflow Specification",
-    "path": "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-approval-workflow-specification.md",
+    "title": "Human-in-the-Loop and Human-Review Workflow Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md",
     "category": "ai"
   },
   {

@@ -20,7 +20,7 @@ dry-run plans, audit logs, and hermetic build actions.
 - Scripts must declare arguments, environment inputs, filesystem roots, process
   execution, shell commands, network effects, secrets, and deployment authority.
 - Shell/process execution requires command schemas, quoting/escaping policy,
-  taint validation, timeout, exit-code mapping, and approval when required.
+  taint validation, timeout, exit-code mapping, and human-review when required.
 - String-built commands using tainted input are rejected.
 - Build automation must declare hermeticity or record non-hermetic inputs.
 - File operations must be scoped to granted roots and path schemas.
@@ -44,7 +44,7 @@ dry-run plans, audit logs, and hermetic build actions.
 - Dry-run plan.
 - Task/audit log.
 - Hermeticity record.
-- Shell approval record when required.
+- Shell human-review record when required.
 - Scripting diagnostics.
 
 ## Domain Manifest
@@ -57,7 +57,7 @@ dry-run plans, audit logs, and hermetic build actions.
               :capability-policy :task-log}
  :examples #{:file-transform :deploy-script :repo-maintenance :data-import}
  :rejects #{:shell-injection :ambient-filesystem :unhermetic-build-action
-            :unapproved-destructive-command}}
+            :destructive-command-without-human-review}}
 ```
 
 ## Replacement Scope
@@ -94,13 +94,13 @@ Scripting diagnostics use `DOM20` identifiers:
 - `DOM20-FILESYSTEM` for file access outside granted roots.
 - `DOM20-SHELL` for shell/process execution without command schema or grant.
 - `DOM20-TAINT` for tainted input in commands, paths, or trusted sinks.
-- `DOM20-DESTRUCTIVE` for delete/deploy/write actions without approval policy.
+- `DOM20-DESTRUCTIVE` for delete/deploy/write actions without human-review policy.
 - `DOM20-HERMETICITY` for unrecorded env/network/filesystem build inputs.
 - `DOM20-SECRET` for unsafe secret use or logging.
 - `DOM20-AUDIT` for missing dry-run or task log evidence.
 
 Diagnostics must include script id, source span, argument/path/command id,
-effect, capability, taint category, approval requirement, and remediation.
+effect, capability, taint category, human-review requirement, and remediation.
 
 ## Rejected Designs
 
@@ -112,7 +112,7 @@ Gravity rejects filesystem access outside declared roots.
 
 Gravity rejects unhermetic build automation without records.
 
-Gravity rejects destructive automation without approval policy when required.
+Gravity rejects destructive automation without human-review policy when required.
 
 ## Conformance Criteria
 
@@ -124,4 +124,4 @@ A conforming scripting slice must demonstrate:
 - taint rejection for shell injection,
 - dry-run and audit logs,
 - hermeticity records,
-- approval fixtures for destructive actions.
+- human-review fixtures for destructive actions.

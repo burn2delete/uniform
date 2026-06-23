@@ -11,7 +11,7 @@ This specification defines the source-level AI programming model for Gravity.
 AI is treated as a typed, effectful programming domain inside the language, not
 as an untyped SDK convention. A Gravity AI program is made from models,
 prompts, tools, agents, memory stores, workflows, policies, evaluations, and
-approval points. Each construct is represented as data, checked by the
+human-review points. Each construct is represented as data, checked by the
 compiler, emitted as an artifact, and constrained by profiles and capabilities.
 
 The model exists to make agentic programs auditable and replayable while
@@ -27,9 +27,9 @@ type, effect, safety, capability, and artifact checks as handwritten behavior.
 - `defagent` composes models, prompts, tools, memory, policy, and budgets.
 - `defworkflow` compiles agentic control flow into a durable workflow graph.
 - `defmemory` declares typed retrieval, embedding, retention, and redaction.
-- `defpolicy` declares allowed effects, denied effects, approval gates, and data rules.
+- `defpolicy` declares allowed effects, denied effects, human-review gates, and data rules.
 - `defeval` declares datasets, probes, thresholds, and release gates.
-- `defapproval` declares `:ai/human-approval` actions and replay behavior.
+- `defhumanreview` declares `:ai/human-review` actions and replay behavior.
 
 These units are syntax objects during macro expansion and typed declarations
 after analysis. The compiler records source spans, macro origins, declared
@@ -52,7 +52,7 @@ Gravity classifies AI effects as:
 - `:ai/prompt-render` for assembling model input.
 - `:ai/output-validate` for schema validation, repair, and refusal handling.
 - `:ai/eval-run` for evaluation over datasets or traces.
-- `:ai/human-approval` for human decision points.
+- `:ai/human-review` for human decision points.
 
 Every AI effect has a declared replay mode: `:live`, `:record`, `:replay`,
 `:cache-ok`, or `:forbidden-in-replay`. Distributed and workflow contexts must
@@ -69,7 +69,7 @@ make this replay mode explicit before compilation succeeds.
 - A workflow containing AI effects MUST emit replay records for nondeterministic steps.
 - Production deployment of an agent MUST name required evaluation evidence.
 - AI memory writes MUST declare retention, redaction, tenant partitioning, and source provenance.
-- Approval-required actions MUST not execute from model text alone.
+- Human-review-required actions MUST not execute from model text alone.
 
 ## Rejected Behavior
 
@@ -79,7 +79,7 @@ make this replay mode explicit before compilation succeeds.
 - Hidden tool effects inside provider adapters are rejected.
 - Prompt templates that place untrusted data in system or developer authority are rejected.
 - Generated source that bypasses normal compiler checks is rejected.
-- Agent deployments with write, shell, secrets, payment, or production mutation authority and no approval policy are rejected.
+- Agent deployments with write, shell, secrets, payment, or production mutation authority and no human-review policy are rejected.
 
 ## Semantic Dependencies
 
@@ -97,7 +97,7 @@ The compiler emits an AI program manifest containing:
 - source hashes and syntax origins for each AI declaration;
 - model provider identities, model ids, version pins, and fallback rules;
 - prompt hashes, rendered-input schemas, and authority partitions;
-- tool manifests, effect sets, approval requirements, and idempotency rules;
+- tool manifests, effect sets, human-review requirements, and idempotency rules;
 - agent manifests with toolsets, memory bindings, policy bindings, and budgets;
 - workflow graphs with replay boundaries and event-log schemas;
 - memory manifests with embedding provenance and retention policy;
@@ -105,7 +105,7 @@ The compiler emits an AI program manifest containing:
 - diagnostic rules and conformance fixture names.
 
 Runtime execution emits ledgers for model calls, tool calls, memory access,
-approvals, refusals, repairs, denials, and replay substitutions. Ledgers use
+human-review decisions, refusals, repairs, denials, and replay substitutions. Ledgers use
 canonical hashes where raw content cannot be stored.
 
 ## Example
@@ -128,7 +128,7 @@ canonical hashes where raw content cannot be stored.
                  {:task :classify-ticket
                   :input ticket
                   :output TicketClassification})]
-    (workflow/approval :update-priority result)
+    (workflow/human-review :update-priority result)
     (tool/call ticket/update-priority result)))
 ```
 
@@ -141,7 +141,7 @@ grant the required effects and artifacts.
 - `AI001` reports an AI effect outside a legal profile.
 - `AI002` reports a model call without model/provider identity.
 - `AI003` reports missing input or output schema.
-- `AI004` reports a tool call lacking capability or approval.
+- `AI004` reports a tool call lacking capability or human-review.
 - `AI005` reports untrusted data promoted to instruction authority.
 - `AI006` reports generated code used before compiler validation.
 - `AI007` reports a replay-sensitive workflow with live nondeterminism.
@@ -158,5 +158,5 @@ be added or changed.
 - A replay fixture proves recorded model and tool results are reused during replay.
 - A generated-code fixture proves AI output is checked by the normal compiler pipeline.
 - A capability fixture proves tools cannot be called outside the declared toolset.
-- An observability fixture proves model calls, tool calls, denials, and approvals appear in runtime ledgers.
+- An observability fixture proves model calls, tool calls, denials, and human-review decisions appear in runtime ledgers.
 - The accepted implementation exposes all AI effects in type/effect output and emitted manifests.

@@ -75,7 +75,7 @@ The database capability supplies authority.
 - `:native` receives embedded and network-backed providers under explicit capabilities.
 - `:hosted` may delegate to host database drivers with provider records.
 - `:distributed` receives database calls through workflow-safe activity boundaries.
-- `:ai` may construct query candidates, but execution requires typed tools, policy checks, and `:ai/human-approval` when configured.
+- `:ai` may construct query candidates, but execution requires typed tools, policy checks, and `:ai/human-review` when configured.
 - `:meta` may inspect schemas and generate query code during compilation.
 - `:formal` receives verified query fragments only when provider semantics are modeled or constrained.
 
@@ -97,7 +97,7 @@ The database capability supplies authority.
 - `STD11004` when a transaction omits isolation or rollback policy.
 - `STD11005` when a migration lacks from/to versions or safety evidence.
 - `STD11006` when workflow replay observes unrecorded database IO.
-- `STD11007` when AI-generated query execution bypasses policy or `:ai/human-approval`.
+- `STD11007` when AI-generated query execution bypasses policy or `:ai/human-review`.
 - `STD11008` when provider behavior lacks version, dialect, or error mapping artifacts.
 
 ## Conformance Criteria

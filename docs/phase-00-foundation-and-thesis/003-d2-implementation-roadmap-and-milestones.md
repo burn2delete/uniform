@@ -48,10 +48,10 @@ This is the Milestone 0 documentation lock set. The longer critical chain under 
 
 Exit gates:
 
-- each required document contains actual specification content, not process-only directions,
+- each required document contains concrete specification content with implementable rules,
 - the canonical dependency chain is represented in the document inventory,
 - the validator passes,
-- the stale-scaffolding scan shows no generic instructional sections in the Milestone 0 documentation lock set,
+- the documentation-quality scan confirms concrete specification sections in the Milestone 0 documentation lock set,
 - each required document names accepted behavior, rejected behavior, artifacts, diagnostics, and conformance evidence.
 
 ## Milestone 1 - Reader, Syntax, and Hosted Hello
@@ -115,7 +115,7 @@ Exit gates:
 - type errors and effect errors have stable diagnostic IDs,
 - typed core artifacts are serializable and readable by the next milestone.
 
-## Milestone 3 - Profiles and Safe Subset
+## Milestone 3 - Profiles and Safe-Code Contract
 
 Milestone 3 proves that profiles are compile-time contracts.
 
@@ -229,12 +229,12 @@ Scope:
 - model-call and tool-call effects,
 - memory read/write effects,
 - replay event log,
-- `:ai/human-approval` boundary,
+- `:ai/human-review` boundary,
 - prompt-injection taint checks.
 
 Required positive fixture:
 
-- support triage workflow with one model call, one schema-validated tool, one approval step, and one durable replay record.
+- support triage workflow with one model call, one schema-validated tool, one human-review step, and one durable replay record.
 
 Required negative fixtures:
 

@@ -98,7 +98,7 @@ Managed runtime integration maps Gravity artifacts onto JVM, JavaScript, Wasm, o
 
 Distributed runtime records event logs, deterministic replay data, retries, compensation, idempotency keys, durable timers, external-call results, and schema versions.
 
-AI runtime records model provider, prompt artifacts, structured-output schemas, tool capabilities, memory reads/writes, budget policy, approval policy, evaluation records, and prompt-injection defense evidence.
+AI runtime records model provider, prompt artifacts, structured-output schemas, tool capabilities, memory reads/writes, budget policy, human-review policy, evaluation records, and prompt-injection defense evidence.
 
 REPL runtime supports incremental loading, inspection, and hot evaluation, but its convenience does not define compiled semantics for constrained profiles.
 
@@ -118,7 +118,7 @@ Gravity uses domain IRs and adjacent proof/search representations to specialize 
 - EML is an adjacent proof, normalization, synthesis, and search representation attached to math artifacts; it is not the ordinary runtime representation, not a domain IR in the same sense as EFIR, and not an equality oracle by itself.
 - Schema IR represents data contracts that generate validators, type declarations, GraphQL, OpenAPI, database migrations, ABI layouts, config loaders, and AI output schemas.
 - Workflow IR represents durable execution, steps, retries, compensation, replay boundaries, and event schemas.
-- AI IR represents prompts, models, tools, memory, policies, structured outputs, approvals, and evaluations.
+- AI IR represents prompts, models, tools, memory, policies, structured outputs, human-review decisions, and evaluations.
 - HDL/state-machine IR represents clocks, registers, resets, MMIO, interrupts, and timing facts.
 - Query IR represents relational algebra, parameters, migrations, row schemas, transaction modes, and database capabilities.
 - GPU IR represents kernels, memory spaces, barriers, workgroup shape, vectorization, and target feature assumptions.

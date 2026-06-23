@@ -38,7 +38,7 @@ The defense model covers:
 
 - Prompt rendering MUST preserve authority partitions.
 - Untrusted content MUST be labeled as data in prompt artifacts.
-- Tool calls MUST be authorized by manifest, capability, policy, and approval, not by model text.
+- Tool calls MUST be authorized by manifest, capability, policy, and human-review, not by model text.
 - Retrieved memory MUST be treated as untrusted unless a policy proves otherwise.
 - Tool output MUST carry taint labels back into the model context.
 - Secrets MUST be unavailable to prompts and tools unless explicitly granted by policy.
@@ -74,7 +74,7 @@ or change policy.
 - `A7` defines memory retrieval taint.
 - `A8` defines policy enforcement.
 - `A9` defines injection defense eval probes.
-- `A10` defines approval for privileged actions.
+- `A10` defines human-review for privileged actions.
 - `R11` defines runtime capability enforcement.
 
 ## Outputs and Artifacts

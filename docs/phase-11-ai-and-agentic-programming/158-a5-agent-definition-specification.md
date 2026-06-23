@@ -11,7 +11,7 @@ This specification defines a Gravity agent as a typed composition of model,
 prompt, toolset, memory, policy, budget, evaluation evidence, and workflow
 role. An agent is a program artifact, not a personified runtime object. It has
 no ambient authority; it receives scoped capabilities at runtime and remains
-subject to type, effect, schema, policy, approval, and replay checks.
+subject to type, effect, schema, policy, human-review, and replay checks.
 
 The definition makes agent deployment reviewable. A reviewer can inspect one
 agent manifest and see which model it may call, which prompts it may render,
@@ -28,7 +28,7 @@ An agent declaration contains:
 - toolset and maximum tool-call budget;
 - memory bindings and access mode;
 - required policies;
-- required approvals for privileged actions;
+- required human-review for privileged actions;
 - input and output schemas for `agent/ask`, `agent/plan`, and `agent/act`;
 - effect set and capability requirements;
 - evaluation requirements;
@@ -48,13 +48,13 @@ runtime and build/package system.
 - An agent with generated-code output MUST require compiler validation before use.
 - An agent deployed to production MUST reference passing eval reports for its release class.
 - Agent budgets MUST cover model calls, tool calls, wall time, token/cost limits, and retry bounds.
-- Agent identity MUST be recorded in every model, tool, memory, approval, and workflow ledger entry.
+- Agent identity MUST be recorded in every model, tool, memory, human-review, and workflow ledger entry.
 
 ## Authority Model
 
 Authority flows from deployment to runtime handle to tool invocation. The agent
 manifest limits what the agent may ask for. The policy decides whether a
-specific action is permitted. The approval system decides whether privileged
+specific action is permitted. The human-review system decides whether privileged
 actions have human authorization. The model itself never becomes an authority
 source.
 
@@ -76,14 +76,14 @@ The following values are not authority proofs:
 - `A7` defines memory access.
 - `A8` defines policies.
 - `A9` defines evaluation gates.
-- `A10` defines approval.
+- `A10` defines human-review.
 
 ## Outputs and Artifacts
 
 The compiler emits:
 
 - agent manifest;
-- dependency graph over model, prompt, tool, memory, policy, approval, and eval artifacts;
+- dependency graph over model, prompt, tool, memory, policy, human-review, and eval artifacts;
 - effect and capability summary;
 - tool visibility map;
 - budget policy;
@@ -96,7 +96,7 @@ The runtime emits:
 - model-call records linked to agent id;
 - tool-call records linked to agent id and tool id;
 - memory access records;
-- policy denials and approvals;
+- policy denials and human-review decisions;
 - budget usage;
 - final output validation report.
 
@@ -118,7 +118,7 @@ The runtime emits:
 
 The agent may propose comments because `repo/propose-comment` is in the
 toolset. It may not submit comments unless a separate write tool, policy, and
-approval are declared.
+human-review is declared.
 
 ## Rejection Rules
 
@@ -126,7 +126,7 @@ approval are declared.
 - Reject an agent with undeclared model, prompt, tool, memory, policy, or eval dependency.
 - Reject production deployment without required eval evidence.
 - Reject agent output used as structured data without validation.
-- Reject write-capable tools without approval policy.
+- Reject write-capable tools without human-review policy.
 - Reject memory write access when the agent manifest grants read-only memory.
 - Reject tool plans that mention tools outside the manifest.
 - Reject unbounded budgets.
@@ -153,4 +153,4 @@ policy decision, and relevant artifact hash.
 - A read-only memory fixture denies memory writes.
 - A generated-code fixture requires compiler validation before execution.
 - A budget fixture terminates the agent when limits are exceeded.
-- Runtime ledgers can reconstruct all model, tool, memory, approval, and output-validation events for one agent invocation.
+- Runtime ledgers can reconstruct all model, tool, memory, human-review, and output-validation events for one agent invocation.

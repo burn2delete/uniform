@@ -23,7 +23,7 @@ compilation mode is rejected.
   target, and invalidation conditions.
 - If an optimization invalidates a proof, it must regenerate the proof, keep the
   check, or reject no-checks compilation.
-- Capability, effect, unsafe-audit, replay, and `:ai/human-approval` checks
+- Capability, effect, unsafe-audit, replay, and `:ai/human-review` checks
   cannot be removed merely for speed.
 - Check elision must preserve diagnostics and generated-origin mapping.
 
@@ -82,7 +82,7 @@ Every erased check has a record.
 | Capability/effect | Compile-time validation proves exact grant and deployment policy | capability validation artifact | yes |
 | Unsafe audit | Review policy satisfied before build or deployment | unsafe audit artifact | yes |
 | Workflow replay | Step recorded, deterministic, or replay-safe | replay contract artifact | yes |
-| AI approval | Approval impossible, already satisfied, or represented by workflow state | policy proof or workflow gate | yes |
+| AI human-review | Human-review impossible, already satisfied, or represented by workflow state | policy proof or workflow gate | yes |
 
 Policy checks marked yes are not removed for performance alone. They can be
 discharged only by equivalent policy artifacts.
@@ -138,7 +138,7 @@ Gravity rejects check elision by assertion.
 
 Gravity rejects proof records that do not dominate the operation.
 
-Gravity rejects erasing deployment policy, unsafe audit, replay, or approval
+Gravity rejects erasing deployment policy, unsafe audit, replay, or human-review
 checks for speed.
 
 Gravity rejects backend lowering that silently invalidates erased checks.

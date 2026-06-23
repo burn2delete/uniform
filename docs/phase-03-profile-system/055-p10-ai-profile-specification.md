@@ -8,17 +8,17 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 ## Purpose
 
 The `:ai` profile targets agents, prompts, tools, model calls, embeddings,
-retrieval, memory, policy, `:ai/human-approval`, evaluation, generated code, and
+retrieval, memory, policy, `:ai/human-review`, evaluation, generated code, and
 agentic workflows. It makes AI authority and nondeterminism explicit through
-effects, capabilities, schemas, taint, replay logs, and approval artifacts.
+effects, capabilities, schemas, taint, replay logs, and human-review artifacts.
 
 The profile is not a permission to let prompts define security policy. It is a
 compile-time and runtime contract for controlling model and tool behavior.
 
 ## Requirements
 
-- Model calls, tool calls, embeddings, memory reads/writes, retrieval, and human
-  approval must be explicit effects.
+- Model calls, tool calls, embeddings, memory reads/writes, retrieval, and
+  `:ai/human-review` must be explicit effects.
 - Tool access must be constrained by capabilities, schemas, side-effect class,
   budget, taint rules, policy, and deployment grants.
 - Prompt roles and provenance must be preserved.
@@ -49,7 +49,7 @@ compile-time and runtime contract for controlling model and tool behavior.
 - Tool capability manifest.
 - Tool schema bundle.
 - Memory policy record.
-- Policy and approval graph.
+- Policy and human-review graph.
 - Replay log schema.
 - Generated-code safety record.
 - AI conformance results.
@@ -65,7 +65,7 @@ compile-time and runtime contract for controlling model and tool behavior.
 - Retrieval calls.
 - Tool calls.
 - Agent memory reads and writes.
-- Human approval gates.
+- Human-review gates.
 - Durable workflow integration.
 - Prompt and tool schema generation.
 - Evaluation and guardrail hooks.
@@ -82,7 +82,7 @@ All of these remain effectful and capability-gated.
 - Secret access without explicit secret grant and redaction policy.
 - Generated code execution before compiler checks.
 - Shell, filesystem write, network write, deployment, package mutation, and
-  destructive tools without explicit approval policy.
+  destructive tools without explicit human-review policy.
 - Raw memory and FFI in agent logic.
 - Replay-required workflows without replay or audit records.
 
@@ -98,7 +98,7 @@ An agent declaration records model, tools, memory, policy, and replay:
   {:model :support-main
    :tools [search-docs create-ticket]
    :memory {:kind :bounded :retention :30-days}
-   :policy :ai/human-approval-for-refunds
+   :policy :ai/human-review-for-refunds
    :replay :audit})
 ```
 
@@ -114,13 +114,13 @@ Tool declarations include:
 - Side-effect class.
 - Effects.
 - Capabilities.
-- Approval requirement.
+- Human-review requirement.
 - Timeout and retry behavior.
 - Replay behavior.
 - Secret policy.
 
 Read-only tools are the default safe grant. Write, destructive, shell, network,
-secret, deployment, and package tools require explicit grants and approval
+secret, deployment, and package tools require explicit grants and human-review
 policy.
 
 ## Prompt and Memory Policy
@@ -147,7 +147,7 @@ Replay records include:
 - Model id and provider.
 - Prompt/message digests.
 - Tool inputs and outputs.
-- Approvals.
+- Human-review decisions.
 - Policy decisions.
 - Nondeterminism controls.
 - Errors and retries.
@@ -161,7 +161,7 @@ safety checks.
 AI profile diagnostics use `P10` identifiers:
 
 - `P10-MODEL` for model calls without declared effect, provider, or policy.
-- `P10-TOOL` for tool calls without schema, capability, or approval.
+- `P10-TOOL` for tool calls without schema, capability, or human-review.
 - `P10-PROMPT` for prompt-role or prompt-injection policy violations.
 - `P10-MEMORY` for invalid memory retention, trust, or secret policy.
 - `P10-SECRET` for secret leakage risk.
@@ -172,7 +172,7 @@ AI profile diagnostics use `P10` identifiers:
 - `P10-RAW` for raw memory or FFI attempts in agent logic.
 
 Diagnostics must include agent id, model id, tool id, prompt role, source span or
-agent artifact id, capability, policy, approval requirement, and replay mode.
+agent artifact id, capability, policy, human-review requirement, and replay mode.
 
 ## Rejected Designs
 
@@ -196,8 +196,8 @@ A conforming `:ai` implementation must demonstrate:
 - Model call effect and provider checks.
 - Tool schema and capability enforcement.
 - Prompt-role preservation and injection rejection.
-- Approval gates for write, destructive, shell, deployment, package, and secret
-  operations.
+- Human-review gates for write, destructive, shell, deployment, package, and
+  secret operations.
 - Generated-code compiler validation before execution.
 - Replay and audit records for model and tool interactions.
 - Secret redaction and memory retention tests.

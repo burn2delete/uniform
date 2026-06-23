@@ -13,7 +13,7 @@ or shader/compute DSLs.
 
 The replacement scope is entity/component logic, deterministic simulation
 steps, physics kernels, scripting/plugin boundaries, asset schemas, input
-systems, render/compute stubs, replay traces, and performance budgets across
+systems, render/compute bindings, replay traces, and performance budgets across
 native, web, mobile, and GPU targets.
 
 ## Requirements

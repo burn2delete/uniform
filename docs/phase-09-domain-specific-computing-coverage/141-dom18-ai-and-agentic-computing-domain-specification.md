@@ -12,20 +12,20 @@ normally built with Python frameworks, TypeScript agent SDKs, workflow tools,
 prompt registries, notebook code, or ad hoc service orchestration.
 
 The replacement scope is `defmodel`, `defprompt`, `deftool`, `defagent`,
-`defmemory`, `defpolicy`, structured outputs, retrieval, tool use, approval
+`defmemory`, `defpolicy`, structured outputs, retrieval, tool use, human-review
 flows, evals, replay logs, and durable agent workflows under the `:ai` profile.
 
 ## Requirements
 
-- Model calls, tool calls, embeddings, retrieval, memory reads/writes, approvals,
+- Model calls, tool calls, embeddings, retrieval, memory reads/writes, human-review decisions,
   generated code, and evals require explicit effects, capabilities, schemas, and
   policies.
 - Prompt roles and provenance must be preserved.
 - Model, tool, retrieval, and memory outputs are tainted until validated.
 - Tool calls require input/output schemas, side-effect class, timeout, retry,
-  approval, secret policy, and replay behavior.
+  human-review, secret policy, and replay behavior.
 - Write, destructive, shell, filesystem, network, deployment, package, and
-  secret-bearing actions require explicit approval where policy requires it.
+  secret-bearing actions require explicit human-review where policy requires it.
 - Replay-required agents must record nondeterminism.
 - Generated code must pass compiler checks before execution.
 
@@ -44,7 +44,7 @@ flows, evals, replay logs, and durable agent workflows under the `:ai` profile.
 - Model and prompt provenance records.
 - Tool policy and schema bundle.
 - Memory policy record.
-- Approval graph.
+- Human-review policy graph.
 - Eval report.
 - Replay log.
 - AI/agentic diagnostics.
@@ -58,8 +58,8 @@ flows, evals, replay logs, and durable agent workflows under the `:ai` profile.
  :artifacts #{:agent-manifest :tool-policy :prompt-hashes
               :eval-report :replay-log}
  :examples #{:support-agent :data-extractor :code-reviewer
-             :approval-workflow}
- :rejects #{:unapproved-tool :schema-less-output
+             :human-review-workflow}
+ :rejects #{:tool-without-human-review :schema-less-output
             :prompt-policy-escalation :unvalidated-generated-code}}
 ```
 
@@ -71,7 +71,7 @@ Gravity should replace:
 - prompt and tool registries,
 - structured output validators,
 - retrieval/memory pipelines,
-- approval and policy graphs,
+- human-review policy graphs,
 - eval suites,
 - replayable agent workflows.
 
@@ -82,12 +82,12 @@ External model providers remain capability-gated runtime providers.
 The first complete slice is a support triage agent:
 
 - Gravity source declares model, prompt, retrieval memory, tools, output schema,
-  and refund approval policy.
+  and refund human-review policy.
 - AI checks validate prompt provenance, tool capabilities, output schema, budget,
   and replay mode.
-- Workflow backend emits durable graph with approval node.
+- Workflow backend emits durable graph with human-review node.
 - Eval report covers classification and denial cases.
-- Negative fixture rejects an unapproved write tool.
+- Negative fixture rejects a write tool without required human-review policy.
 
 ## Diagnostics
 
@@ -95,7 +95,7 @@ AI/agentic diagnostics use `DOM18` identifiers:
 
 - `DOM18-MODEL` for model calls without provider, effect, capability, or budget.
 - `DOM18-PROMPT` for prompt-role or prompt-injection policy violations.
-- `DOM18-TOOL` for tool calls without schema, capability, approval, or policy.
+- `DOM18-TOOL` for tool calls without schema, capability, human-review, or policy.
 - `DOM18-SCHEMA` for structured outputs without validation.
 - `DOM18-TAINT` for unvalidated model/tool/retrieval outputs reaching trusted
   sinks.
@@ -126,8 +126,8 @@ A conforming AI/agentic slice must demonstrate:
 - agent, prompt, model, tool, memory, and policy manifests,
 - tool schema and capability enforcement,
 - structured output validation,
-- approval gates for write/destructive tools,
+- human-review gates for write/destructive tools,
 - replay and eval reports,
 - secret and taint handling,
-- rejection of unapproved tools, policy escalation, schema-less outputs, and
-  unvalidated generated code.
+- rejection of tools without required human-review policy, policy escalation,
+  schema-less outputs, and unvalidated generated code.

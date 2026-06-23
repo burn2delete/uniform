@@ -9,7 +9,7 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 The AI runtime executes model calls, prompt assembly, structured output
 validation, tool calls, retrieval, embeddings, memory reads and writes, policy
-checks, approval gates, budget controls, replay barriers, and evaluation hooks
+checks, human-review gates, budget controls, replay barriers, and evaluation hooks
 for the `:ai` profile.
 
 The runtime treats model and tool behavior as effectful, capability-gated,
@@ -20,18 +20,18 @@ tool results, and model output cannot create authority.
 
 - The runtime manifest must declare agent id, model providers, prompt templates,
   tool contracts, memory providers, output schemas, policy graph, budget, replay
-  mode, and approval requirements.
+  mode, and human-review requirements.
 - Model calls require `:ai/model-call` effect, provider capability, model
   identity, prompt provenance, output schema or validation policy, budget, and
   replay/audit record.
 - Tool calls require schema, effects, capabilities, side-effect class, timeout,
-  retry behavior, approval policy, taint policy, and secret policy.
+  retry behavior, human-review policy, taint policy, and secret policy.
 - Model output, retrieved documents, tool output, and memory values are tainted
   until validated for a specific sink.
 - Secrets must not enter prompts, model calls, tool calls, logs, memory, or
   traces unless policy explicitly grants and redacts them.
 - Write, destructive, shell, filesystem, network, deployment, package mutation,
-  and secret-bearing tools require explicit approval policy.
+  and secret-bearing tools require explicit human-review policy.
 - Replay-required workflow segments must use recorded model/tool outputs rather
   than issuing live calls.
 - Generated Gravity code must pass compiler checks before execution.
@@ -42,7 +42,7 @@ tool results, and model output cannot create authority.
 - `B10` defines workflow graph artifacts for durable agents.
 - `SAFE10`, `SAFE11`, `SAFE12`, and `SAFE13` define capabilities, taint,
   generated-code safety, and AI/tool safety.
-- Phase 11 defines agents, prompts, tools, memory, policy, approval, replay, and
+- Phase 11 defines agents, prompts, tools, memory, policy, human-review, replay, and
   evaluation artifacts.
 - `R1`, `R7`, `R11`, and `R12` define shared runtime, distributed, capability,
   and observability integration.
@@ -56,7 +56,7 @@ tool results, and model output cannot create authority.
 - Tool invocation log.
 - Structured output validation report.
 - Memory access and retention record.
-- Policy and approval decision record.
+- Policy and human-review decision record.
 - Budget trace.
 - Replay barrier record.
 - AI runtime diagnostics.
@@ -67,11 +67,13 @@ tool results, and model output cannot create authority.
 {:artifact :gravity/ai-runtime
  :family :ai
  :agent :support-agent
- :services #{:model-call :tool-call :memory :policy :approval :budget}
+ :services #{:ai/model-call :ai/tool-call :ai/memory :ai/policy
+             :ai/human-review :ai/budget}
  :requires #{:tool-capabilities :output-schemas :prompt-hashes
              :replay-policy :secret-policy}
- :records #{:model-call-ledger :tool-log :approval-record :budget-trace}
- :rejects #{:model-call-without-capability :tool-effect-exceeds-grant
+ :records #{:ai/model-call-ledger :ai/tool-log :ai/human-review-record
+            :ai/budget-trace}
+ :rejects #{:ai/model-call-without-capability :tool-effect-exceeds-grant
             :live-call-in-replay-segment}}
 ```
 
@@ -98,16 +100,16 @@ Model call records include:
 Provider substitution is denied unless policy allows it and records the
 substitution.
 
-## Tool Calls and Approval
+## Tool Calls and Human-Review
 
 Tool invocation records include tool id, input/output schemas, effects,
-capabilities, side-effect class, approval requirement, timeout, retry, provider,
-secret policy, taint policy, and result validation. Approval records include
-approver identity class, decision, scope, time source, and audited rationale
+capabilities, side-effect class, human-review requirement, timeout, retry, provider,
+secret policy, taint policy, and result validation. Human-review records include
+reviewer identity class, decision, scope, time source, and audited rationale
 schema.
 
 The runtime denies a tool invocation when the requested effect exceeds the
-agent, package, deployment, or approval grant.
+agent, package, deployment, or human-review grant.
 
 ## Memory, Retrieval, and Taint
 
@@ -121,11 +123,11 @@ capability checks.
 ## Replay and Budgets
 
 Replay records include model output, tool input/output, retrieval results,
-memory reads/writes, approvals, policy decisions, errors, retries, and budget
+memory reads/writes, human-review decisions, policy decisions, errors, retries, and budget
 events. In replay mode, the runtime returns recorded outputs or rejects the
 execution if the record is missing.
 
-Budgets track model calls, tokens, tool calls, time, cost, retries, and approval
+Budgets track model calls, tokens, tool calls, time, cost, retries, and human-review
 limits.
 
 ## Diagnostics
@@ -135,13 +137,13 @@ AI runtime diagnostics use `R8` identifiers:
 - `R8-MODEL` for model calls without provider, effect, capability, output
   schema, budget, or replay policy.
 - `R8-PROMPT` for prompt provenance or role-policy violations.
-- `R8-TOOL` for tool calls without schema, capability, approval, timeout, or
+- `R8-TOOL` for tool calls without schema, capability, human-review, timeout, or
   retry policy.
 - `R8-TAINT` for unvalidated model, tool, retrieval, or memory output reaching a
   trusted sink.
 - `R8-SECRET` for secret exposure risk.
 - `R8-MEMORY` for invalid memory retention, trust, privacy, or deletion policy.
-- `R8-APPROVAL` for missing or insufficient `:ai/human-approval`.
+- `R8-HUMAN-REVIEW` for missing or insufficient `:ai/human-review`.
 - `R8-REPLAY` for live nondeterministic calls in replay-required segments.
 - `R8-BUDGET` for cost, token, time, retry, or call budget violations.
 - `R8-GENERATED` for generated code execution before compiler validation.
@@ -149,7 +151,7 @@ AI runtime diagnostics use `R8` identifiers:
 
 Diagnostics must include agent id, model id, tool id when relevant, prompt role,
 source span or artifact edge, effect, capability, policy, taint category,
-approval requirement, replay mode, and remediation.
+human-review requirement, replay mode, and remediation.
 
 ## Rejected Designs
 
@@ -168,7 +170,7 @@ Gravity rejects live model/tool calls during deterministic replay.
 A conforming AI runtime must demonstrate:
 
 - model call ledgers with prompt provenance and output validation,
-- tool invocation logs with schema, capability, approval, and taint records,
+- tool invocation logs with schema, capability, human-review, and taint records,
 - memory/retrieval policy enforcement,
 - secret redaction and denial fixtures,
 - replay records for model/tool nondeterminism,

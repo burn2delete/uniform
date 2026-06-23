@@ -39,7 +39,7 @@ Benchmarks include:
 - Regression thresholds MUST be explicit.
 - Results MUST include variance or repeat policy.
 - Target-specific counters MUST declare device and counter source.
-- AI benchmarks MUST separate model, tool, memory, approval, and replay costs.
+- AI benchmarks MUST separate model, tool, memory, human-review, and replay costs.
 - Performance reports MUST be artifacts.
 - Performance gates MUST not mask correctness failures.
 
@@ -98,6 +98,6 @@ Performance tests emit:
 - Regression thresholds produce deterministic pass/fail decisions.
 - Correctness and safety gates run before performance pass is accepted.
 - Check-elision performance gains link to proof or analysis evidence.
-- AI workflow reports separate provider, tool, memory, approval, and replay costs.
+- AI workflow reports separate provider, tool, memory, human-review, and replay costs.
 - Target counters are validated against target support.
 - Historical comparisons can be reproduced from stored artifacts.

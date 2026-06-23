@@ -15,7 +15,7 @@ Concurrency is profile-specific.
 Hosted and native programs may use runtime schedulers and OS threads.
 Firmware and kernel code may use interrupts, atomics, or bounded executors.
 Distributed workflows must not treat scheduler order as replay-stable unless the order is recorded.
-AI agents must make tool/model concurrency visible to `:ai/human-approval`, budget, and eval policy.
+AI agents must make tool/model concurrency visible to `:ai/human-review`, budget, and eval policy.
 
 ## Requirements
 
@@ -74,7 +74,7 @@ If `left` or `right` captures mutable state without synchronization, the safety 
 - `:native` receives full task, channel, lock, atomic, actor, and scheduler APIs.
 - `:hosted` may delegate to host async or thread runtimes with delegation records.
 - `:distributed` receives replay-aware scheduling and workflow-safe concurrency, not arbitrary host threads.
-- `:ai` receives concurrent model/tool orchestration only under policy, budget, and `:ai/human-approval` controls.
+- `:ai` receives concurrent model/tool orchestration only under policy, budget, and `:ai/human-review` controls.
 - `:formal` requires proof or model-checking hooks for concurrency examples and primitives.
 
 ## Outputs and Artifacts
@@ -94,7 +94,7 @@ If `left` or `right` captures mutable state without synchronization, the safety 
 - `STD7003` when blocking occurs in a profile or context that forbids it.
 - `STD7004` when an atomic memory order is unsupported or underspecified.
 - `STD7005` when distributed execution observes unrecorded scheduler nondeterminism.
-- `STD7006` when AI concurrent execution bypasses budget, policy, or `:ai/human-approval` records.
+- `STD7006` when AI concurrent execution bypasses budget, policy, or `:ai/human-review` records.
 - `STD7007` when host scheduler delegation lacks a provider artifact.
 - `STD7008` when unsafe concurrency internals lack an audit record.
 
@@ -105,6 +105,6 @@ If `left` or `right` captures mutable state without synchronization, the safety 
 - Blocking and scheduling fixtures respect profile-specific legality.
 - Distributed replay fixtures produce deterministic replay under recorded choices.
 - Atomic fixtures include memory-order and target-support evidence.
-- AI orchestration fixtures preserve `:ai/human-approval`, budget, and eval ordering.
+- AI orchestration fixtures preserve `:ai/human-review`, budget, and eval ordering.
 - Host delegation records reproduce Gravity diagnostics rather than raw host errors.
 - Documentation examples compile under declared profiles and fail under rejected profiles.

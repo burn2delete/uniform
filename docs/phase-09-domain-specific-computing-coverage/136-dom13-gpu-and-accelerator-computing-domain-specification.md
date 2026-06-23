@@ -11,7 +11,7 @@ This domain proves that Gravity can cover GPU and accelerator slices normally
 written in CUDA, HIP, OpenCL, Metal, WGSL, GLSL, SPIR-V tooling, Tensor
 DSLs, vendor kernels, or hand-written SIMD/SIMT code.
 
-The replacement scope is kernels, host stubs, device memory, transfers,
+The replacement scope is kernels, host adapters, device memory, transfers,
 synchronization, launch descriptors, reductions, image filters, tensor
 operations, approximate math, and accelerator conformance tests under the
 `:gpu` profile.
@@ -43,7 +43,7 @@ operations, approximate math, and accelerator conformance tests under the
 
 - GPU domain manifest.
 - Kernel artifact.
-- Host stub.
+- Host adapter.
 - Launch descriptor.
 - Device memory manifest.
 - Transfer graph.
@@ -58,7 +58,7 @@ operations, approximate math, and accelerator conformance tests under the
 {:domain :gpu-accelerator
  :profiles #{:gpu :native}
  :backends #{:gpu :mlir :llvm}
- :artifacts #{:kernel-binary :host-stub :launch-descriptor
+ :artifacts #{:kernel-binary :host-adapter :launch-descriptor
               :device-memory-manifest :numeric-certificate}
  :examples #{:reduction :image-filter :tensor-map :particle-update}
  :rejects #{:host-effect-in-kernel :implicit-transfer
@@ -73,7 +73,7 @@ Gravity should replace:
 - reductions and scans,
 - image and signal filters,
 - tensor maps and elementwise operations,
-- host stubs and launch descriptors,
+- host adapters and launch descriptors,
 - transfer and synchronization planning,
 - accelerator math approximations.
 
@@ -86,7 +86,7 @@ The first complete slice is a reduction kernel:
 - Gravity source declares device buffer, reduction operator, numeric mode, and
   deterministic or relaxed policy.
 - GPU checks validate memory, aliasing, synchronization, and launch geometry.
-- Backend emits kernel, host stub, launch descriptor, and transfer manifest.
+- Backend emits kernel, host adapter, launch descriptor, and transfer manifest.
 - Conformance compares CPU/MIR reference and device output.
 - Negative fixture rejects host IO inside the kernel.
 

@@ -8,7 +8,7 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 ## Purpose
 
 GraphQL generation projects Gravity schemas, resolvers, effects, capabilities,
-errors, pagination, and compatibility policy into GraphQL SDL, resolver stubs,
+errors, pagination, and compatibility policy into GraphQL SDL, resolver adapters,
 typed clients, validation rules, auth metadata, and schema diff reports.
 
 Gravity schemas remain authoritative. GraphQL output is a generated boundary
@@ -39,7 +39,7 @@ artifact, not the source of truth.
 
 - GraphQL generation manifest.
 - GraphQL SDL.
-- Resolver stub bundle.
+- Resolver adapter bundle.
 - Typed client artifact.
 - Query validation artifact.
 - Auth/capability metadata.
@@ -54,7 +54,7 @@ artifact, not the source of truth.
  :source-schemas #{User Ticket}
  :operations {:user {:effects #{:database/read}
                      :capabilities #{:database/read}}}
- :artifacts #{:sdl :resolver-stubs :typed-client :schema-diff}
+ :artifacts #{:sdl :resolver-adapters :typed-client :schema-diff}
  :nullability :gravity-option-result}
 ```
 

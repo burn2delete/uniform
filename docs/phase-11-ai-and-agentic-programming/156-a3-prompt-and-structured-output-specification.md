@@ -64,7 +64,7 @@ then performs:
 - conversion to typed core value only after validation succeeds.
 
 If validation fails, the model output cannot drive tools, workflow branches, or
-generated source. A workflow may branch to repair, retry, ask for approval, or
+generated source. A workflow may branch to repair, retry, request human-review, or
 fail deterministically.
 
 ## Semantic Dependencies
@@ -112,7 +112,7 @@ The runtime emits:
                :retrieved-context :untrusted-data}
    :tools [ticket/read]
    :repair {:max-attempts 1}
-   :on-refusal :manual-review}
+   :on-refusal :human-review}
   (system "You classify support tickets using the output schema.")
   (user-data :ticket.body)
   (retrieved-data :retrieved-context))

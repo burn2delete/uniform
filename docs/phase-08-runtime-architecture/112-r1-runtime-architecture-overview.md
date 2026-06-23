@@ -40,7 +40,7 @@ capability enforcement points, diagnostics, and conformance evidence.
 - `SAFE1` through `SAFE16` define safety, capabilities, taint, unsafe, and proof
   records.
 - Phase 10 schema documents define boundary schemas.
-- Phase 11 AI/workflow documents define model, tool, replay, and approval
+- Phase 11 AI/workflow documents define model, tool, replay, and human-review
   runtime obligations.
 
 ## Outputs and Artifacts
@@ -68,7 +68,7 @@ capability enforcement points, diagnostics, and conformance evidence.
             :generated #{:bounds-checks :resource-cleanup}
             :delegated #{:allocator/provider}
             :external #{:filesystem/provider}
-            :forbidden #{:gc :dynamic-eval :model-call}}
+            :forbidden #{:gc :dynamic-eval :ai/model-call}}
  :capability-checks true
  :diagnostics :gravity/runtime-diagnostics}
 ```
@@ -86,7 +86,7 @@ Gravity runtime families are:
 - memory runtime for selected allocation and resource providers,
 - concurrency runtime for schedulers, tasks, atomics, channels, and actors,
 - distributed runtime for durable workflows, services, event logs, and replay,
-- AI runtime for models, tools, memory, policy, and approval,
+- AI runtime for models, tools, memory, policy, and human-review,
 - REPL runtime for interactive compilation and evaluation,
 - FFI runtime for foreign boundaries,
 - capability runtime for runtime authority checks,
@@ -108,14 +108,14 @@ Runtime services are classified as:
 
 The service table records allocator, panic, checks, atomics, scheduler, GC,
 dynamic variables, reflection, FFI, filesystem, network, database, shell,
-secrets, event log, model, tool, memory, approval, and observability services.
+secrets, event log, model, tool, memory, human-review, and observability services.
 
 ## Capability Enforcement
 
 Runtime capability checks enforce the authority already accepted by the compiler.
 They do not grant new authority. Runtime checks apply to filesystem, network,
 database, process, shell, environment, secrets, FFI, raw memory, device access,
-model calls, tool calls, memory writes, `:ai/human-approval`, and deployment
+model calls, tool calls, memory writes, `:ai/human-review`, and deployment
 effects.
 
 When a capability is statically proven unnecessary, the runtime table records

@@ -37,7 +37,8 @@ Every extension has:
  :output-contract :allocated-regions
  :effects [:memory/allocate :memory/free]
  :capabilities [:allocator/custom-arena]
- :safety :audited-safe-wrapper
+ :safety :audited-unsafe
+ :api-boundary :safe-wrapper
  :artifacts [:provider-manifest :unsafe-audit :region-proof]
  :fixtures [:positive-region-use :escape-rejected]
  :diagnostics [:region-escape :allocator-capability-missing]

@@ -49,9 +49,9 @@ Gravity profiles are not flavors of syntax and not runtime presets. They are sem
 
 `:hosted` may delegate to JVM, JavaScript, Wasm, or similar hosts, but host behavior is not allowed to become the language semantics for lower profiles. Hosted reflection, dynamic loading, garbage collection, and host IO remain profile-specific services.
 
-`:distributed` records replay-sensitive nondeterminism, time, retries, persistence, idempotency, external calls, approval events, and workflow events.
+`:distributed` records replay-sensitive nondeterminism, time, retries, persistence, idempotency, external calls, human-review events, and workflow events.
 
-`:ai` treats model calls, tool calls, vector memory, prompt construction, structured outputs, policy checks, evaluation, and `:ai/human-approval` as typed effects and artifacts.
+`:ai` treats model calls, tool calls, vector memory, prompt construction, structured outputs, policy checks, evaluation, and `:ai/human-review` as typed effects and artifacts.
 
 `:meta` allows compiler and macro work over syntax and IR values, but generated code must pass the same profile, type, effect, capability, memory, and safety checks as handwritten code.
 
@@ -85,7 +85,7 @@ Gravity deliberately has multiple runtimes.
 - Minimal native runtime provides only declared startup, panic, allocation, atomics, debug, and FFI support.
 - Managed runtime integrations delegate to JVM, JavaScript, Wasm, or similar hosts while preserving Gravity diagnostics and artifacts.
 - Distributed runtime records events, replay data, time, retries, external calls, persistence, and compensation.
-- AI runtime enforces model, tool, memory, structured-output, approval, policy, and evaluation contracts.
+- AI runtime enforces model, tool, memory, structured-output, human-review, policy, and evaluation contracts.
 - Interactive runtime supports REPL and incremental development without weakening compiled-profile guarantees.
 
 Runtime services are selected by profile and target. A runtime may implement a capability; it may not silently grant one.
@@ -161,7 +161,7 @@ Examples:
 - Every emitted artifact records profile, target, source identity, compiler identity, effect set, capability set, safety status, and provenance links.
 - Every unsafe island has an audit record and a safe boundary test.
 - Every optimizer pass either preserves proof evidence, regenerates proof evidence, retains a runtime check, or rejects the transformation.
-- Every AI or workflow artifact records nondeterminism, external calls, tool authority, replay data, and approval policy.
+- Every AI or workflow artifact records nondeterminism, external calls, tool authority, replay data, and human-review policy.
 - Every bootstrap stage records compiler identity, source hash, artifact hash, and equivalence evidence.
 
 ## Change Control

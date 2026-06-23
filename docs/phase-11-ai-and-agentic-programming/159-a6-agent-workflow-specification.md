@@ -9,7 +9,7 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 This specification defines how Gravity compiles agentic programs into durable
 workflow graphs. Agent workflows combine deterministic code, model calls, tool
-calls, memory access, approvals, retries, compensation, and final outputs.
+calls, memory access, human-review decisions, retries, compensation, and final outputs.
 Because these workflows contain nondeterminism, replay boundaries are part of
 the semantics rather than an implementation detail.
 
@@ -26,7 +26,7 @@ A compiled workflow graph contains:
 - model-call nodes;
 - tool-call nodes;
 - memory-read and memory-write nodes;
-- approval nodes;
+- human-review nodes;
 - branch nodes with schema-validated conditions;
 - retry nodes and compensation nodes;
 - timeout and cancellation nodes;
@@ -42,7 +42,7 @@ idempotency classification, replay mode, and diagnostic code prefixes.
 - Model, tool, memory, random, clock, and external IO effects MUST be recorded or explicitly forbidden during replay.
 - Workflow state MUST have a schema and compatibility policy.
 - Side-effecting tool calls MUST declare idempotency keys or compensation.
-- Approval nodes MUST bind the approved action payload hash.
+- Human-review nodes MUST bind the reviewed action payload hash.
 - Workflow graph changes MUST be checked against existing event-log compatibility when old runs may replay.
 - Agent outputs used for branching MUST be schema-validated before branch selection.
 - Retries MUST preserve budget accounting.
@@ -53,10 +53,10 @@ idempotency classification, replay mode, and diagnostic code prefixes.
 
 Replay mode controls nondeterministic operations:
 
-- `:recorded-effects` records model, tool, memory, approval, clock, and random outputs on first execution.
+- `:recorded-effects` records model, tool, memory, human-review, clock, and random outputs on first execution.
 - `:deterministic-only` rejects all nondeterministic effects.
 - `:live-ok` allows fresh calls only for nodes declared safe to refresh.
-- `:approval-recorded` reuses approval decisions only when payload hashes match.
+- `:human-review-recorded` reuses human-review decisions only when payload hashes match.
 - `:migration-required` blocks replay until a state migration is supplied.
 
 During replay, the runtime must not repeat side effects unless a node declares
@@ -71,7 +71,7 @@ the effect replay-safe and policy permits it.
 - `R7` defines distributed runtime replay.
 - `R8` defines AI runtime records.
 - `S9` defines artifact schema.
-- `A4`, `A5`, `A7`, and `A10` define tools, agents, memory, and approval.
+- `A4`, `A5`, `A7`, and `A10` define tools, agents, memory, and human-review.
 
 ## Outputs and Artifacts
 
@@ -82,7 +82,7 @@ The compiler emits:
 - replay policy;
 - node-level effect and capability table;
 - retry and compensation table;
-- approval payload schemas;
+- human-review payload schemas;
 - migration compatibility table;
 - conformance replay fixtures.
 
@@ -92,7 +92,7 @@ The runtime emits:
 - replay transcript;
 - side-effect ledger;
 - budget ledger;
-- approval decision records;
+- human-review decision records;
 - compensation records;
 - state migration records.
 
@@ -106,13 +106,13 @@ The runtime emits:
         findings (workflow/recorded :model-review
                    (agent/ask code-reviewer
                      {:input diff :output ReviewFindings}))
-        approval (workflow/approval :submit-review findings)]
-    (when approval
+        human-review (workflow/human-review :submit-review findings)]
+    (when human-review
       (tool/call repo/submit-review findings))))
 ```
 
 The `repo/submit-review` call is not repeated during replay unless the event
-log proves the same approved payload has already been applied.
+log proves the same reviewed payload has already been applied.
 
 ## Rejection Rules
 
@@ -122,7 +122,7 @@ log proves the same approved payload has already been applied.
 - Reject unvalidated agent output used for branching.
 - Reject workflow state with no schema.
 - Reject non-idempotent side effects with no compensation.
-- Reject approval reuse when payload hash changes.
+- Reject human-review reuse when payload hash changes.
 - Reject graph evolution that cannot migrate existing event logs.
 
 ## Diagnostics
@@ -132,7 +132,7 @@ log proves the same approved payload has already been applied.
 - `A6003` reports unsafe replay side effect.
 - `A6004` reports missing state schema.
 - `A6005` reports missing idempotency or compensation.
-- `A6006` reports approval payload mismatch.
+- `A6006` reports human-review payload mismatch.
 - `A6007` reports state migration incompatibility.
 - `A6008` reports budget overflow across retries.
 
@@ -142,9 +142,9 @@ available, replay mode, effect set, and missing artifact.
 ## Conformance Criteria
 
 - A legal AI workflow emits graph, event-log schema, and replay fixtures.
-- A recorded replay fixture reuses model, tool, memory, and approval records.
+- A recorded replay fixture reuses model, tool, memory, and human-review records.
 - A deterministic replay fixture rejects live provider calls.
 - A non-idempotent side-effect fixture is rejected without compensation.
 - A workflow evolution fixture detects incompatible state changes.
-- An approval fixture proves changed payloads require new approval.
+- A human-review fixture proves changed payloads require new review.
 - Runtime evidence can reconstruct each workflow node transition and policy decision.

@@ -100,7 +100,7 @@ Workflow and AI verification:
 
 - replay-sensitive nondeterminism is recorded,
 - model calls record provider, model, prompt artifact, schema, policy, and output validation,
-- tool calls record capability grant, arguments, result schema, and approval state,
+- tool calls record capability grant, arguments, result schema, and human-review state,
 - evaluation artifacts record prompts, fixtures, model identity, scoring, and regressions.
 
 Package and supply-chain verification:

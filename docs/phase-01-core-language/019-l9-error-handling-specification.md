@@ -115,7 +115,7 @@ Hosted errors must normalize host exceptions and nulls before they enter non-nul
 
 Workflow errors are durable. A step failure records step ID, input schema, output/error schema, retry policy, compensation policy, time, external call results, and replay ID.
 
-AI errors include model provider failure, tool failure, schema validation failure, policy denial, prompt-injection defense trigger, budget exhaustion, and `:ai/human-approval` denial. They produce artifacts rather than disappearing into exception text.
+AI errors include model provider failure, tool failure, schema validation failure, policy denial, prompt-injection defense trigger, budget exhaustion, and `:ai/human-review` denial. They produce artifacts rather than disappearing into exception text.
 
 ## Requirements
 

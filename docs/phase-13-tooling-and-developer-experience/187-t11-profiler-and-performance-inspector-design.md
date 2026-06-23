@@ -39,7 +39,7 @@ Targets declare which measurements are valid.
 - Comparisons MUST use declared thresholds and benchmark policy.
 - Safety check elision views MUST show proof or analysis evidence.
 - Runtime overhead from profiling MUST be measured or declared unknown.
-- AI and distributed performance reports MUST separate model/tool latency, retry, replay, and approval time.
+- AI and distributed performance reports MUST separate model/tool latency, retry, replay, and human-review time.
 - Hardware, firmware, and GPU reports MUST record target device identity.
 - Performance artifacts MUST be structured and reproducible enough for trend tracking.
 - Profiling MUST not require granting unrelated runtime authority.
@@ -97,6 +97,6 @@ gravity profile inspect build/app --show-layout --show-check-elision
 - Comparison detects threshold regressions.
 - Reports link measurements to source, MIR, or artifact positions where available.
 - Check elision output cites proof or analysis evidence.
-- AI workflow reports separate provider, tool, replay, and approval costs.
+- AI workflow reports separate provider, tool, replay, and human-review costs.
 - Unsupported counters are rejected for targets that cannot provide them.
 - Profiling does not grant authority outside declared runtime needs.

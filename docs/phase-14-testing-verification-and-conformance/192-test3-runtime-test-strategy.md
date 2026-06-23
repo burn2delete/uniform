@@ -38,7 +38,7 @@ Tested families include:
 - Memory runtime tests MUST cover allocation, deallocation, arena, region, and unsafe wrappers where supported.
 - Concurrency tests MUST cover scheduling, synchronization, actors, and race prevention claims.
 - Distributed tests MUST cover replay, retries, idempotency, compensation, and event logs.
-- AI tests MUST cover model, tool, memory, policy, approval, and replay ledgers.
+- AI tests MUST cover model, tool, memory, policy, human-review, and replay ledgers.
 - FFI tests MUST cover ABI, ownership, errors, callbacks, and resource cleanup.
 - Observability tests MUST verify redaction and event schemas.
 - Runtime tests MUST not rely on ambient host services.
@@ -98,7 +98,7 @@ Runtime tests emit:
 - Each runtime family has positive and negative fixtures.
 - Missing capabilities deny runtime operations.
 - Distributed replay does not repeat side effects.
-- AI runtime ledgers reconstruct model, prompt, tool, memory, policy, and approval events.
+- AI runtime ledgers reconstruct model, prompt, tool, memory, policy, and human-review events.
 - FFI tests validate ABI and cleanup behavior.
 - Observability events match schema and redaction policy.
 - Runtime reports link to artifact, profile, target, and runtime version.

@@ -154,7 +154,7 @@ artifact provenance.
 CDC records include source and destination domains, signal shape, synchronizer
 strategy, latency, metastability assumptions, reset interaction, and proof or
 waiver. Unmediated CDC is rejected. Waivers are hardware audit records, not
-ordinary unsafe blocks.
+generic unsafe-code regions.
 
 ## Diagnostics
 

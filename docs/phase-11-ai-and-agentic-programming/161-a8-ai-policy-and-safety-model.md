@@ -9,7 +9,7 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 This specification defines the policy layer for Gravity AI programs. AI policy
 is an enforceable program artifact that governs model use, tool use, memory
-access, data handling, approvals, budgets, provider fallback, generated code,
+access, data handling, human-review, budgets, provider fallback, generated code,
 and deployment promotion. Policy is checked by the compiler where possible and
 by the runtime for dynamic facts.
 
@@ -27,7 +27,7 @@ AI policy may constrain:
 - memory read/write modes;
 - data classes such as secret, private, regulated, public, and no-store;
 - taint transitions and validation requirements;
-- `:ai/human-approval` gates;
+- `:ai/human-review` gates;
 - budgets and rate limits;
 - provider retention and training settings;
 - generated-code validation;
@@ -42,9 +42,9 @@ silently broaden it unless the governance rules allow that override.
 ## Requirements
 
 - Every production AI agent MUST bind an explicit policy.
-- Policy decisions MUST be recorded for model, tool, memory, approval, and generated-code actions.
+- Policy decisions MUST be recorded for model, tool, memory, human-review, and generated-code actions.
 - Deny rules MUST take precedence over allow rules at the same or narrower scope.
-- Approval rules MUST name action schema, approver role, expiry, and payload hash.
+- Human-review rules MUST name action schema, reviewer role, expiry, and payload hash.
 - Policy MUST treat AI output as untrusted until schema validation and taint rules permit use.
 - Policy MUST prevent untrusted content from gaining instruction authority.
 - Policy MUST block provider fallback when the substitute lacks required safety, retention, schema, budget, or eval evidence.
@@ -60,15 +60,15 @@ A policy decision receives:
 - source span or workflow node id;
 - requested effect;
 - requested capability;
-- tool, model, memory, or approval artifact id;
+- tool, model, memory, or human-review artifact id;
 - data classes and taint labels;
 - runtime environment;
 - budget state;
-- approval state;
+- human-review state;
 - evaluation gate status;
 - replay mode.
 
-The decision output is `:allow`, `:deny`, `:require-approval`,
+The decision output is `:allow`, `:deny`, `:require-human-review`,
 `:require-validation`, `:require-eval`, or `:narrow-and-continue`.
 
 ## Semantic Dependencies
@@ -79,7 +79,7 @@ The decision output is `:allow`, `:deny`, `:require-approval`,
 - `R11` defines runtime enforcement.
 - `A2` through `A7` define provider, prompt, tool, agent, workflow, and memory facts.
 - `A9` defines eval gates.
-- `A10` defines approval records.
+- `A10` defines human-review records.
 - `A11` defines prompt injection and tool misuse defenses.
 - `GOV4` and `GOV7` guide security review and experimental authority.
 
@@ -90,7 +90,7 @@ The compiler emits:
 - policy manifest;
 - allow and deny effect table;
 - data-class and taint rules;
-- approval rules;
+- human-review rules;
 - budget rules;
 - provider fallback rules;
 - generated-code rules;
@@ -101,7 +101,7 @@ The runtime emits:
 
 - policy decision ledger;
 - denial reports;
-- approval escalation records;
+- human-review escalation records;
 - emergency override records;
 - budget denial records;
 - policy regression evidence;
@@ -113,7 +113,7 @@ The runtime emits:
 (defpolicy code-review-policy
   {:allow #{:repo/read :repo/search :ai/model-call :ai/memory-read}
    :deny #{:secrets/read :shell/exec :package/publish}
-   :requires-approval #{:repo/write}
+   :requires-human-review #{:repo/write}
    :generated-code {:must-compile true
                     :must-pass-tests true}
    :taint {:ai-output :untrusted-until-schema-validated
@@ -129,14 +129,14 @@ The runtime emits:
 - Reject use of AI output as trusted data without validation.
 - Reject provider fallback lacking required eval evidence.
 - Reject generated code that bypasses compiler safety checks.
-- Reject approval bypass without emergency policy and audit record.
+- Reject human-review bypass without emergency policy and audit record.
 - Reject logging of protected data when policy says no-store or redacted-only.
 
 ## Diagnostics
 
 - `A8001` reports missing policy.
 - `A8002` reports deterministic denial.
-- `A8003` reports approval required.
+- `A8003` reports human-review required.
 - `A8004` reports taint validation required.
 - `A8005` reports fallback denied.
 - `A8006` reports generated-code validation missing.
@@ -144,13 +144,13 @@ The runtime emits:
 - `A8008` reports protected-data logging violation.
 
 Diagnostics include policy id, decision inputs, rule id, agent id, workflow
-node, data class, approval state, and remediation.
+node, data class, human-review state, and remediation.
 
 ## Conformance Criteria
 
 - A policy manifest can be evaluated deterministically for each AI action class.
 - A deny rule overrides an allow rule at the same scope.
-- A write-tool fixture returns `:require-approval`.
+- A write-tool fixture returns `:require-human-review`.
 - A provider fallback fixture returns `:require-eval` or `:deny` when evidence is absent.
 - A generated-code fixture requires compiler validation and tests before use.
 - A tainted-output fixture cannot drive a tool until schema validation succeeds.

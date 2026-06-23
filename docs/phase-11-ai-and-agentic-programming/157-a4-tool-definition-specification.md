@@ -11,11 +11,11 @@ This specification defines AI-callable tools as typed capability boundaries.
 Tools are ordinary Gravity declarations with stricter publication rules because
 their callers may include nondeterministic model outputs. A tool declaration
 states its schemas, effects, capabilities, idempotency, timeout, retry policy,
-taint handling, approval requirements, replay mode, and audit records.
+taint handling, human-review requirements, replay mode, and audit records.
 
 The key rule is that models never gain authority by asking. A tool call is
 executed only when the tool declaration, agent manifest, runtime capability,
-policy, and optional approval all agree.
+policy, and optional human-review all agree.
 
 ## Tool Declaration
 
@@ -28,7 +28,7 @@ A tool declaration contains:
 - idempotency and retry classification;
 - timeout, rate limit, and budget rules;
 - taint requirements for input and output fields;
-- approval requirement;
+- human-review requirement;
 - replay behavior;
 - redaction and logging policy;
 - conformance fixtures.
@@ -44,7 +44,7 @@ tool name.
 - Tool implementations MUST receive capability handles instead of ambient host authority.
 - Tool calls from agents MUST be checked against agent toolset and deployment grants.
 - Tool output MUST be validated before it returns to an agent or workflow.
-- Write, shell, secrets, production mutation, payment, package publish, and unsafe-code tools MUST declare approval policy.
+- Write, shell, secrets, production mutation, payment, package publish, and unsafe-code tools MUST declare human-review policy.
 - Non-idempotent tools MUST declare retry behavior and replay behavior.
 - Tool adapters wrapping foreign services MUST normalize errors into typed results.
 - Tool logs MUST redact fields marked secret, private, or no-store.
@@ -57,7 +57,7 @@ The capability checker verifies four layers:
 - the tool declaration requires a capability;
 - the package or deployment grants that capability to the agent;
 - the runtime passes a scoped handle for the specific invocation;
-- policy permits the data class, effect, and approval state.
+- policy permits the data class, effect, and human-review state.
 
 Failure at any layer blocks the call. The model's reasoning text is not a
 capability proof.
@@ -72,7 +72,7 @@ capability proof.
 - `S1` defines tool schemas.
 - `A5` defines agent toolsets.
 - `A8` defines policy.
-- `A10` defines approval workflows.
+- `A10` defines human-review workflows.
 
 ## Outputs and Artifacts
 
@@ -83,7 +83,7 @@ The compiler emits:
 - declared effect set;
 - capability requirements;
 - idempotency and replay metadata;
-- approval requirement;
+- human-review requirement;
 - visible model-facing tool description;
 - implementation binding;
 - fixture list for conformance.
@@ -94,7 +94,7 @@ The runtime emits:
 - input and output validation reports;
 - capability decision record;
 - policy decision record;
-- approval record link;
+- human-review record link;
 - retry and timeout record;
 - redaction report.
 
@@ -107,21 +107,21 @@ The runtime emits:
    :effects #{:database/write}
    :capabilities #{:ticket/write}
    :idempotency {:key [:ticket-id :new-priority]}
-   :approval :required-for-high-priority
+   :human-review :required-for-high-priority
    :replay :recorded-result}
   [cap update]
   (ticket-store/update-priority cap update))
 ```
 
 The implementation receives `cap`; it does not open the database through global
-authority. The approval policy decides whether this specific update may execute.
+authority. The human-review policy decides whether this specific update may execute.
 
 ## Rejection Rules
 
 - Reject a tool with no input or output schema.
 - Reject hidden effects discovered during analysis or adapter declaration.
 - Reject calls to tools outside the agent toolset.
-- Reject write tools with no approval or idempotency policy.
+- Reject write tools with no human-review or idempotency policy.
 - Reject non-idempotent retries without an explicit compensation path.
 - Reject output returned to a model before schema validation.
 - Reject logs that would store secret input or output fields.
@@ -133,19 +133,19 @@ authority. The approval policy decides whether this specific update may execute.
 - `A4002` reports undeclared effect.
 - `A4003` reports missing capability handle.
 - `A4004` reports toolset denial.
-- `A4005` reports missing approval policy.
+- `A4005` reports missing human-review policy.
 - `A4006` reports unsafe retry of a non-idempotent tool.
 - `A4007` reports output validation failure.
 - `A4008` reports redaction policy violation.
 
 Diagnostics include tool id, version, call site, effect set, missing capability,
-policy rule, approval state, and replay mode.
+policy rule, human-review state, and replay mode.
 
 ## Conformance Criteria
 
 - A legal read-only tool compiles and runs with a scoped read capability.
 - A hidden-effect fixture is rejected.
-- A write-tool fixture requires approval before execution.
+- A write-tool fixture requires human-review before execution.
 - A non-idempotent retry fixture is rejected unless compensation is declared.
 - A toolset fixture proves agents cannot call tools not listed in their manifest.
 - A tainted-output fixture proves validation and taint labels are preserved.

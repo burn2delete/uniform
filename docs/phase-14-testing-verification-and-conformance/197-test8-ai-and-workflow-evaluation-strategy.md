@@ -9,7 +9,7 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 This strategy defines evaluation for AI agents and durable workflows. AI and
 workflow behavior includes nondeterminism, model providers, prompts, tools,
-memory, policy, `:ai/human-approval`, retries, compensation, and replay. Evaluation
+memory, policy, `:ai/human-review`, retries, compensation, and replay. Evaluation
 therefore combines ordinary tests, recorded traces, safety probes, schema
 validation, budget checks, and release gates.
 
@@ -27,7 +27,7 @@ The suite covers:
 - workflow graphs;
 - memory retrieval;
 - AI policy;
-- approval workflows;
+- human-review workflows;
 - prompt injection defense;
 - workflow replay;
 - evaluation metrics and thresholds.
@@ -38,7 +38,7 @@ The suite covers:
 - Structured outputs MUST be schema validated.
 - Safety probes MUST include prompt injection, unauthorized tool, secret exposure, and policy override attempts.
 - Workflow evals MUST include first-run and replay traces.
-- Approval evals MUST include grant, deny, expiry, revocation, and payload-change cases.
+- Human-review evals MUST include grant, deny, expiry, revocation, and payload-change cases.
 - Metrics MUST have thresholds and release decisions.
 - Live-provider evals MUST declare credentials, budget, and retention policy.
 - Eval reports MUST be artifacts linked to release gates.
@@ -61,7 +61,7 @@ AI/workflow evals emit:
 - scored output records;
 - replay traces;
 - tool and memory ledgers;
-- approval records;
+- human-review records;
 - safety probe report;
 - budget report;
 - release gate decision.
@@ -74,8 +74,8 @@ AI/workflow evals emit:
    :dataset SupportTickets/v3
    :metrics {:schema-validity 1.0
              :routing-accuracy 0.92}
-   :probes [:prompt-injection :unauthorized-tool :approval-expired]
-   :replay [:happy-path :tool-denied :approval-denied]})
+   :probes [:prompt-injection :unauthorized-tool :human-review-expired]
+   :replay [:happy-path :tool-denied :human-review-denied]})
 ```
 
 ## Rejection Rules
@@ -86,7 +86,7 @@ AI/workflow evals emit:
 - Reject AI outputs consumed without schema validation.
 - Reject agents missing injection and tool-misuse probes.
 - Reject eval reports whose subject artifact hash differs from the release candidate.
-- Reject approval evals missing denial or expiry cases.
+- Reject human-review evals missing denial or expiry cases.
 
 ## Diagnostics
 
@@ -96,14 +96,14 @@ AI/workflow evals emit:
 - `TEST8004` reports structured-output validation failure.
 - `TEST8005` reports missing safety probe.
 - `TEST8006` reports stale eval subject.
-- `TEST8007` reports approval-path coverage gap.
+- `TEST8007` reports human-review path coverage gap.
 
 ## Conformance Criteria
 
 - Agent and workflow evals include subject, dataset, model, prompt, tool, memory, policy, and runtime identity.
 - Replay fixtures prove nondeterministic effects are recorded.
 - Prompt injection and unauthorized tool probes are denied.
-- Approval fixtures cover grant, deny, expiry, revocation, and payload change.
+- Human-review fixtures cover grant, deny, expiry, revocation, and payload change.
 - Eval metrics produce deterministic release decisions.
 - Live evals enforce budget and retention policy.
 - Release gates fail closed when eval evidence is missing or stale.
