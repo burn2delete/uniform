@@ -1,0 +1,2162 @@
+[
+  {
+    "sequence": 1,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D0",
+    "title": "Gravity Vision & Design Thesis",
+    "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 2,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D1",
+    "title": "System Architecture Overview",
+    "path": "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 3,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D2",
+    "title": "Implementation Roadmap & Milestones",
+    "path": "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 4,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D3",
+    "title": "Terminology & Concept Model",
+    "path": "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 5,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D4",
+    "title": "Universal Computing Coverage Charter",
+    "path": "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 6,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D5",
+    "title": "Language Replacement Strategy",
+    "path": "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 7,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D6",
+    "title": "Performance Philosophy & Charter",
+    "path": "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 8,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D7",
+    "title": "Extensibility Philosophy",
+    "path": "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 9,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D8",
+    "title": "Safety Philosophy & Charter",
+    "path": "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 10,
+    "phase": 0,
+    "phaseName": "Foundation and Thesis",
+    "id": "D9",
+    "title": "Verifiability & Mathematical Correctness Charter",
+    "path": "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    "category": "foundation"
+  },
+  {
+    "sequence": 11,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L1",
+    "title": "Surface Syntax Specification",
+    "path": "docs/phase-01-core-language/011-l1-surface-syntax-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 12,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L2",
+    "title": "Core Language Semantics",
+    "path": "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+    "category": "language"
+  },
+  {
+    "sequence": 13,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L3",
+    "title": "Namespace & Module System Specification",
+    "path": "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 14,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L4",
+    "title": "Macro System Specification",
+    "path": "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 15,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L5",
+    "title": "Type System Specification",
+    "path": "docs/phase-01-core-language/015-l5-type-system-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 16,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L6",
+    "title": "Effect System Specification",
+    "path": "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 17,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L7",
+    "title": "Pattern Matching Specification",
+    "path": "docs/phase-01-core-language/017-l7-pattern-matching-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 18,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L8",
+    "title": "Protocols, Interfaces & Dispatch Specification",
+    "path": "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 19,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L9",
+    "title": "Error Handling Specification",
+    "path": "docs/phase-01-core-language/019-l9-error-handling-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 20,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L10",
+    "title": "Memory Model Specification",
+    "path": "docs/phase-01-core-language/020-l10-memory-model-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 21,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L11",
+    "title": "Concurrency Model Specification",
+    "path": "docs/phase-01-core-language/021-l11-concurrency-model-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 22,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L12",
+    "title": "Compile-Time Evaluation Specification",
+    "path": "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 23,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L13",
+    "title": "Standard Library Design Principles",
+    "path": "docs/phase-01-core-language/023-l13-standard-library-design-principles.md",
+    "category": "language"
+  },
+  {
+    "sequence": 24,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L14",
+    "title": "Language Facet System Specification",
+    "path": "docs/phase-01-core-language/024-l14-language-facet-system-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 25,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L15",
+    "title": "Capability Provider Specification",
+    "path": "docs/phase-01-core-language/025-l15-capability-provider-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 26,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L16",
+    "title": "Alternative Macro System Contract",
+    "path": "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md",
+    "category": "language"
+  },
+  {
+    "sequence": 27,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L17",
+    "title": "Alternative Type System Contract",
+    "path": "docs/phase-01-core-language/027-l17-alternative-type-system-contract.md",
+    "category": "language"
+  },
+  {
+    "sequence": 28,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L18",
+    "title": "Alternative Memory Model Contract",
+    "path": "docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md",
+    "category": "language"
+  },
+  {
+    "sequence": 29,
+    "phase": 1,
+    "phaseName": "Core Language",
+    "id": "L19",
+    "title": "Language Interoperability & Migration Specification",
+    "path": "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md",
+    "category": "language"
+  },
+  {
+    "sequence": 30,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE1",
+    "title": "Safe Gravity Semantics",
+    "path": "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 31,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE2",
+    "title": "Memory Safety Model",
+    "path": "docs/phase-02-safety/031-safe2-memory-safety-model.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 32,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE3",
+    "title": "Ownership, Borrowing & Lifetimes",
+    "path": "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 33,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE4",
+    "title": "Region and Arena Safety",
+    "path": "docs/phase-02-safety/033-safe4-region-and-arena-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 34,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE5",
+    "title": "Linear Resource Safety",
+    "path": "docs/phase-02-safety/034-safe5-linear-resource-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 35,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE6",
+    "title": "Unsafe Code and Audit Model",
+    "path": "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 36,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE7",
+    "title": "FFI Safety",
+    "path": "docs/phase-02-safety/036-safe7-ffi-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 37,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE8",
+    "title": "Concurrency and Data-Race Safety",
+    "path": "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 38,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE9",
+    "title": "Numeric Safety",
+    "path": "docs/phase-02-safety/038-safe9-numeric-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 39,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE10",
+    "title": "Capability Security Model",
+    "path": "docs/phase-02-safety/039-safe10-capability-security-model.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 40,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE11",
+    "title": "Taint Tracking and Input Safety",
+    "path": "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 41,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE12",
+    "title": "Macro Safety",
+    "path": "docs/phase-02-safety/041-safe12-macro-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 42,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE13",
+    "title": "AI Tool Safety",
+    "path": "docs/phase-02-safety/042-safe13-ai-tool-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 43,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE14",
+    "title": "Supply-Chain Safety",
+    "path": "docs/phase-02-safety/043-safe14-supply-chain-safety.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 44,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE15",
+    "title": "Safety Proof and Certificate Model",
+    "path": "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 45,
+    "phase": 2,
+    "phaseName": "Safety",
+    "id": "SAFE16",
+    "title": "Safety Conformance Test Plan",
+    "path": "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+    "category": "safety"
+  },
+  {
+    "sequence": 46,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P1",
+    "title": "Profile System Specification",
+    "path": "docs/phase-03-profile-system/046-p1-profile-system-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 47,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P2",
+    "title": ":core Profile Specification",
+    "path": "docs/phase-03-profile-system/047-p2-core-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 48,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P3",
+    "title": ":meta Profile Specification",
+    "path": "docs/phase-03-profile-system/048-p3-meta-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 49,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P4",
+    "title": ":hosted Profile Specification",
+    "path": "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 50,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P5",
+    "title": ":native Profile Specification",
+    "path": "docs/phase-03-profile-system/050-p5-native-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 51,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P6",
+    "title": ":firmware Profile Specification",
+    "path": "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 52,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P7",
+    "title": ":kernel Profile Specification",
+    "path": "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 53,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P8",
+    "title": ":hardware Profile Specification",
+    "path": "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 54,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P9",
+    "title": ":distributed Profile Specification",
+    "path": "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 55,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P10",
+    "title": ":ai Profile Specification",
+    "path": "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 56,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P11",
+    "title": ":gpu / Accelerator Profile Specification",
+    "path": "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 57,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P12",
+    "title": ":formal Verification Profile Specification",
+    "path": "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 58,
+    "phase": 3,
+    "phaseName": "Profile System",
+    "id": "P13",
+    "title": "Profile Compatibility Matrix",
+    "path": "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md",
+    "category": "profile"
+  },
+  {
+    "sequence": 59,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF1",
+    "title": "Performance Model Specification",
+    "path": "docs/phase-04-performance-model/059-perf1-performance-model-specification.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 60,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF2",
+    "title": "Zero-Cost Abstractions Specification",
+    "path": "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 61,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF3",
+    "title": "Specialization & Partial Evaluation Design",
+    "path": "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 62,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF4",
+    "title": "Memory Layout Optimization Design",
+    "path": "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 63,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF5",
+    "title": "Benchmark Suite & Performance Governance",
+    "path": "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 64,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF6",
+    "title": "Profile-Guided Optimization Design",
+    "path": "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 65,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF7",
+    "title": "Autotuning & Multiversioning Design",
+    "path": "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 66,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF8",
+    "title": "SIMD, Vectorization & Cache Optimization Strategy",
+    "path": "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 67,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF9",
+    "title": "Realtime and Deterministic-Latency Performance Model",
+    "path": "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 68,
+    "phase": 4,
+    "phaseName": "Performance Model",
+    "id": "PERF10",
+    "title": "Performance/Safety Check Elision Rules",
+    "path": "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+    "category": "performance"
+  },
+  {
+    "sequence": 69,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH1",
+    "title": "Numeric Tower Specification",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md",
+    "category": "math"
+  },
+  {
+    "sequence": 70,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH2",
+    "title": "Elementary Function System Specification",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md",
+    "category": "math"
+  },
+  {
+    "sequence": 71,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH3",
+    "title": "Elementary Function IR - EFIR Specification",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+    "category": "math"
+  },
+  {
+    "sequence": 72,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH4",
+    "title": "EML Normalization & Search Design",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md",
+    "category": "math"
+  },
+  {
+    "sequence": 73,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH5",
+    "title": "Certified Approximation Specification",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md",
+    "category": "math"
+  },
+  {
+    "sequence": 74,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH6",
+    "title": "Interval Arithmetic & Real Proof Engine",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md",
+    "category": "math"
+  },
+  {
+    "sequence": 75,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH7",
+    "title": "Numeric Modes & Precision Contracts",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md",
+    "category": "math"
+  },
+  {
+    "sequence": 76,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH8",
+    "title": "Floating-Point Semantics Specification",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md",
+    "category": "math"
+  },
+  {
+    "sequence": 77,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH9",
+    "title": "Symbolic Math and Rewrite System Specification",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md",
+    "category": "math"
+  },
+  {
+    "sequence": 78,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH10",
+    "title": "Elementary Function Optimization Strategy",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md",
+    "category": "math"
+  },
+  {
+    "sequence": 79,
+    "phase": 5,
+    "phaseName": "Mathematical and Elementary Function System",
+    "id": "MATH11",
+    "title": "Math Verification and Conformance Test Plan",
+    "path": "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md",
+    "category": "math"
+  },
+  {
+    "sequence": 80,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C1",
+    "title": "Compiler Architecture Overview",
+    "path": "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 81,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C2",
+    "title": "Reader Implementation Design",
+    "path": "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 82,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C3",
+    "title": "Syntax Object Model",
+    "path": "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 83,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C4",
+    "title": "Macro Expansion Engine Design",
+    "path": "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 84,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C5",
+    "title": "Name Resolution & Namespace Analyzer Design",
+    "path": "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 85,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C6",
+    "title": "AST and Core Lowering Design",
+    "path": "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 86,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C7",
+    "title": "Type Checker Design",
+    "path": "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 87,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C8",
+    "title": "Effect Checker Design",
+    "path": "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 88,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C9",
+    "title": "Ownership, Lifetime and Region Checker Design",
+    "path": "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 89,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C10",
+    "title": "Safety Analysis Pipeline Design",
+    "path": "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 90,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C11",
+    "title": "Gravity MIR Specification",
+    "path": "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 91,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C12",
+    "title": "Domain IR Architecture",
+    "path": "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 92,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C13",
+    "title": "MIR Optimization Passes Design",
+    "path": "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 93,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C14",
+    "title": "Target Lowering Architecture",
+    "path": "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 94,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C15",
+    "title": "Compiler Diagnostics Specification",
+    "path": "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 95,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C16",
+    "title": "Incremental Compilation Design",
+    "path": "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 96,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C17",
+    "title": "Compiler Plugin and Pass API Specification",
+    "path": "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 97,
+    "phase": 6,
+    "phaseName": "Compiler Architecture",
+    "id": "C18",
+    "title": "Compiler Verification and Pass-Correctness Strategy",
+    "path": "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    "category": "compiler"
+  },
+  {
+    "sequence": 98,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B1",
+    "title": "Backend Interface Specification",
+    "path": "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 99,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B2",
+    "title": "C Backend Design",
+    "path": "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 100,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B3",
+    "title": "LLVM Backend Design",
+    "path": "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 101,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B4",
+    "title": "Wasm Backend Design",
+    "path": "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 102,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B5",
+    "title": "JVM Backend Design",
+    "path": "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 103,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B6",
+    "title": "JavaScript / TypeScript Backend Design",
+    "path": "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 104,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B7",
+    "title": "MLIR Backend Design",
+    "path": "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 105,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B8",
+    "title": "GPU Backend Design",
+    "path": "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 106,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B9",
+    "title": "HDL Backend Design",
+    "path": "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 107,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B10",
+    "title": "Workflow Graph Backend Design",
+    "path": "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 108,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B11",
+    "title": "Query / Relational Backend Design",
+    "path": "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 109,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B12",
+    "title": "Mobile Backend Design",
+    "path": "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 110,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B13",
+    "title": "Artifact Emission Specification",
+    "path": "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 111,
+    "phase": 7,
+    "phaseName": "Backend Architecture",
+    "id": "B14",
+    "title": "Backend Conformance Test Plan",
+    "path": "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md",
+    "category": "backend"
+  },
+  {
+    "sequence": 112,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R1",
+    "title": "Runtime Architecture Overview",
+    "path": "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 113,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R2",
+    "title": "No-Runtime Execution Model",
+    "path": "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 114,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R3",
+    "title": "Minimal Native Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 115,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R4",
+    "title": "Managed Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 116,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R5",
+    "title": "Memory Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 117,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R6",
+    "title": "Concurrency Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 118,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R7",
+    "title": "Distributed Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 119,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R8",
+    "title": "AI Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 120,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R9",
+    "title": "REPL and Interactive Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 121,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R10",
+    "title": "FFI Runtime Design",
+    "path": "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 122,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R11",
+    "title": "Runtime Capability Enforcement Design",
+    "path": "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 123,
+    "phase": 8,
+    "phaseName": "Runtime Architecture",
+    "id": "R12",
+    "title": "Runtime Observability and Diagnostics Design",
+    "path": "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md",
+    "category": "runtime"
+  },
+  {
+    "sequence": 124,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM1",
+    "title": "Hardware Computing Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 125,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM2",
+    "title": "Firmware and Embedded Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 126,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM3",
+    "title": "Operating System and Kernel Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 127,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM4",
+    "title": "Drivers and Device Interaction Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 128,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM5",
+    "title": "High-Performance Native Computing Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 129,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM6",
+    "title": "Web Frontend and UI Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 130,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM7",
+    "title": "Mobile Application Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 131,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM8",
+    "title": "Backend Services Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 132,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM9",
+    "title": "Distributed Systems Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 133,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM10",
+    "title": "Database and Storage Engine Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 134,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM11",
+    "title": "Data, Query and Analytics Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 135,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM12",
+    "title": "Scientific and Numeric Computing Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 136,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM13",
+    "title": "GPU and Accelerator Computing Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 137,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM14",
+    "title": "Game Engine and Simulation Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 138,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM15",
+    "title": "Security and Cryptography Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 139,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM16",
+    "title": "Blockchain and Smart Contract Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 140,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM17",
+    "title": "Compiler and Language Tooling Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 141,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM18",
+    "title": "AI and Agentic Computing Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 142,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM19",
+    "title": "Formal Verification Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 143,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM20",
+    "title": "Scripting, Shell and Automation Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 144,
+    "phase": 9,
+    "phaseName": "Domain-Specific Computing Coverage",
+    "id": "DOM21",
+    "title": "Low-Code, Visual Programming and Workflow Domain Specification",
+    "path": "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md",
+    "category": "domain"
+  },
+  {
+    "sequence": 145,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S1",
+    "title": "Schema System Specification",
+    "path": "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 146,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S2",
+    "title": "Serialization Specification",
+    "path": "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 147,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S3",
+    "title": "Canonical Data Format Specification",
+    "path": "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 148,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S4",
+    "title": "GraphQL Generation Design",
+    "path": "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 149,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S5",
+    "title": "OpenAPI Generation Design",
+    "path": "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 150,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S6",
+    "title": "Database Mapping and Migration Design",
+    "path": "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 151,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S7",
+    "title": "Binary Encoding and ABI Schema Specification",
+    "path": "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 152,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S8",
+    "title": "Typed Configuration and Environment Specification",
+    "path": "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 153,
+    "phase": 10,
+    "phaseName": "Schema, Data and Interop",
+    "id": "S9",
+    "title": "Artifact Schema Specification",
+    "path": "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md",
+    "category": "schema"
+  },
+  {
+    "sequence": 154,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A1",
+    "title": "AI Programming Model Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 155,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A2",
+    "title": "Model Provider Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 156,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A3",
+    "title": "Prompt and Structured Output Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 157,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A4",
+    "title": "Tool Definition Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 158,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A5",
+    "title": "Agent Definition Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 159,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A6",
+    "title": "Agent Workflow Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 160,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A7",
+    "title": "Memory and Retrieval Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 161,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A8",
+    "title": "AI Policy and Safety Model",
+    "path": "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 162,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A9",
+    "title": "AI Evaluation Framework Design",
+    "path": "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 163,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A10",
+    "title": "Human-in-the-Loop and Approval Workflow Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-approval-workflow-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 164,
+    "phase": 11,
+    "phaseName": "AI and Agentic Programming",
+    "id": "A11",
+    "title": "Prompt Injection and Tool Misuse Defense Specification",
+    "path": "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md",
+    "category": "ai"
+  },
+  {
+    "sequence": 165,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG1",
+    "title": "Project File Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 166,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG2",
+    "title": "Build System Architecture",
+    "path": "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md",
+    "category": "package"
+  },
+  {
+    "sequence": 167,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG3",
+    "title": "Artifact Model Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 168,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG4",
+    "title": "Package Manager Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 169,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG5",
+    "title": "Dependency Resolution Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 170,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG6",
+    "title": "Capability and Permission Manifest Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 171,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG7",
+    "title": "Reproducible Build Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 172,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG8",
+    "title": "Package Safety and Audit Metadata Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 173,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG9",
+    "title": "Private Registry and Latent Package Space Design",
+    "path": "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
+    "category": "package"
+  },
+  {
+    "sequence": 174,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG10",
+    "title": "Supply-Chain Security and Provenance Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 175,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG11",
+    "title": "Cross-Compilation and Target Matrix Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 176,
+    "phase": 12,
+    "phaseName": "Build, Package and Artifact System",
+    "id": "PKG12",
+    "title": "Artifact Signing, Verification and SBOM Specification",
+    "path": "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+    "category": "package"
+  },
+  {
+    "sequence": 177,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T1",
+    "title": "CLI Specification",
+    "path": "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 178,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T2",
+    "title": "REPL UX Specification",
+    "path": "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 179,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T3",
+    "title": "Formatter Specification",
+    "path": "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 180,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T4",
+    "title": "Linter Specification",
+    "path": "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 181,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T5",
+    "title": "Language Server Protocol Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 182,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T6",
+    "title": "Debugger Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 183,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T7",
+    "title": "Documentation Generator Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 184,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T8",
+    "title": "Dev Server Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 185,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T9",
+    "title": "Package Registry UX Specification",
+    "path": "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 186,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T10",
+    "title": "Compiler Explorer and IR Inspector Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 187,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T11",
+    "title": "Profiler and Performance Inspector Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 188,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T12",
+    "title": "Safety Audit Explorer Design",
+    "path": "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 189,
+    "phase": 13,
+    "phaseName": "Tooling and Developer Experience",
+    "id": "T13",
+    "title": "AI-Assisted Development Tooling Specification",
+    "path": "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md",
+    "category": "tooling"
+  },
+  {
+    "sequence": 190,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST1",
+    "title": "Language Conformance Test Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 191,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST2",
+    "title": "Compiler Test Strategy",
+    "path": "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 192,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST3",
+    "title": "Runtime Test Strategy",
+    "path": "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 193,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST4",
+    "title": "Profile Compliance Test Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 194,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST5",
+    "title": "Safety Conformance Test Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 195,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST6",
+    "title": "Backend Conformance Test Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 196,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST7",
+    "title": "Standard Library Test Strategy",
+    "path": "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 197,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST8",
+    "title": "AI and Workflow Evaluation Strategy",
+    "path": "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 198,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST9",
+    "title": "Fuzzing and Property Testing Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 199,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST10",
+    "title": "Differential Testing Strategy",
+    "path": "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 200,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST11",
+    "title": "Formal Semantics and Verification Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 201,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST12",
+    "title": "Performance Regression Test Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 202,
+    "phase": 14,
+    "phaseName": "Testing, Verification and Conformance",
+    "id": "TEST13",
+    "title": "Self-Hosting Validation Plan",
+    "path": "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md",
+    "category": "testing"
+  },
+  {
+    "sequence": 203,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT1",
+    "title": "Bootstrap Strategy",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 204,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT2",
+    "title": "Seed Compiler Design",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 205,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT3",
+    "title": "Self-Hosted Compiler Plan",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 206,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT4",
+    "title": "Compiler-in-Gravity Coding Standard",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 207,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT5",
+    "title": "Stage Compatibility Matrix",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 208,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT6",
+    "title": "Trusting Trust and Reproducible Bootstrap Plan",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 209,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT7",
+    "title": "Self-Hosting Validation and Equivalence Plan",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 210,
+    "phase": 15,
+    "phaseName": "Bootstrap and Self-Hosting",
+    "id": "BOOT8",
+    "title": "Bootstrap Artifact Provenance Specification",
+    "path": "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+    "category": "bootstrap"
+  },
+  {
+    "sequence": 211,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD1",
+    "title": "Standard Library Architecture",
+    "path": "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 212,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD2",
+    "title": "Core Library Specification",
+    "path": "docs/phase-16-standard-library/212-std2-core-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 213,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD3",
+    "title": "Collections Library Specification",
+    "path": "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 214,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD4",
+    "title": "String and Text Library Specification",
+    "path": "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 215,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD5",
+    "title": "Numeric and Math Library Specification",
+    "path": "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 216,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD6",
+    "title": "Memory and Resource Library Specification",
+    "path": "docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 217,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD7",
+    "title": "Concurrency Library Specification",
+    "path": "docs/phase-16-standard-library/217-std7-concurrency-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 218,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD8",
+    "title": "IO and Filesystem Library Specification",
+    "path": "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 219,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD9",
+    "title": "Network and HTTP Library Specification",
+    "path": "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 220,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD10",
+    "title": "Serialization and Schema Library Specification",
+    "path": "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 221,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD11",
+    "title": "Database and Query Library Specification",
+    "path": "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 222,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD12",
+    "title": "Workflow Library Specification",
+    "path": "docs/phase-16-standard-library/222-std12-workflow-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 223,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD13",
+    "title": "AI and Agent Library Specification",
+    "path": "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 224,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD14",
+    "title": "Testing Library Specification",
+    "path": "docs/phase-16-standard-library/224-std14-testing-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 225,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD15",
+    "title": "Compiler Meta-Programming Library Specification",
+    "path": "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 226,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD16",
+    "title": "Platform and OS Library Specification",
+    "path": "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 227,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD17",
+    "title": "Hardware and Firmware Library Specification",
+    "path": "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 228,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD18",
+    "title": "Cryptography Library Specification",
+    "path": "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 229,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD19",
+    "title": "UI and Application Library Specification",
+    "path": "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 230,
+    "phase": 16,
+    "phaseName": "Standard Library",
+    "id": "STD20",
+    "title": "Standard Library Stability Policy",
+    "path": "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md",
+    "category": "standard-library"
+  },
+  {
+    "sequence": 231,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV1",
+    "title": "Language Evolution Process",
+    "path": "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 232,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV2",
+    "title": "Compatibility Policy",
+    "path": "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 233,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV3",
+    "title": "Standard Library Governance",
+    "path": "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 234,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV4",
+    "title": "Security Review Process",
+    "path": "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 235,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV5",
+    "title": "Target Support Policy",
+    "path": "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 236,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV6",
+    "title": "RFC Process",
+    "path": "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 237,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV7",
+    "title": "Experimental Feature Policy",
+    "path": "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 238,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV8",
+    "title": "Deprecation and Stabilization Policy",
+    "path": "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 239,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV9",
+    "title": "Unsafe Code Governance Policy",
+    "path": "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md",
+    "category": "governance"
+  },
+  {
+    "sequence": 240,
+    "phase": 17,
+    "phaseName": "Governance and Evolution",
+    "id": "GOV10",
+    "title": "Ecosystem Package Governance Policy",
+    "path": "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md",
+    "category": "governance"
+  }
+]

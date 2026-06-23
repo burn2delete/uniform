@@ -1,0 +1,3075 @@
+
+
+===== PAGE 1 =====
+This is a copy of a shared ChatGPT conversation
+Report conversation
+We want to come up with a design for a lisp-based
+language inspired by Clojure.
+The purpose of this language is to be a language that can
+compile to any part of the stack.
+Effectively creating a single language for all layers of
+software programming from raw hardware to drivers,
+operating systems and modern AI.
+It should be mostly if not entirely implemented in itself,
+I’ll frame this as a language/platform design rather than just syntax: core semantics,
+compiler architecture, runtime stratification, self-hosting path, and how it spans hardware
+through AI systems.
+A key design constraint: this cannot be “one runtime everywhere.” It needs to be one
+homoiconic language with multiple compilation profiles, so the kernel subset can target
+bare metal while richer profiles target apps, distributed systems, and AI workflows.
+Thought for 35s
+Below is a first-pass language/platform design. I’ll use Gravity as the placeholder name
+since this aligns with your prior Clojure/GraalVM/agent-runtime direction.
+Gravity: a Lisp for the Whole Stack
+1. Core thesis
+Gravity should not try to be “one runtime everywhere.” That fails because bare-metal
+firmware, kernels, browsers, cloud services, distributed workflows, and AI agents have
+incompatible runtime assumptions.
+The correct design is:
+One homoiconic language, one semantic model, many compilation profiles.
+
+
+===== PAGE 2 =====
+Gravity is a Lisp/Clojure-inspired language whose source code is data, whose compiler is
+programmable from inside the language, and whose semantics are stratified so the same
+language can target:
+hardware descriptions
+firmware
+drivers
+kernels
+operating-system services
+native applications
+web applications
+distributed systems
+data pipelines
+AI agents and workflows
+the Gravity compiler/runtime itself
+The language should be mostly self-hosted: reader, macroexpander, type/effect checker,
+optimizer, package system, build system, and standard library written in Gravity. Only a tiny
+bootstrap substrate should remain in another language.
+2. Design principles
+Homoiconic first
+Gravity code is structured data.
+clojure
+(defn add [a b]
+(+ a b))
+The compiler sees this as syntax data, not opaque text. Macros, analyzers, optimizers, and
+code generators operate on explicit syntax values.
+Clojure-inspired, but not Clojure-compatible
+Gravity should borrow from Clojure:
+persistent data structures
+immutable-by-default values
+namespaces
+protocols
+multimethod-like dispatch
+metadata
+
+
+===== PAGE 3 =====
+REPL-driven development
+macro system
+EDN-like data syntax
+JVM/GraalVM as an early hosted target
+But it should diverge where necessary:
+static compilation profiles
+no-GC systems subset
+effect typing
+ownership/regions for low-level code
+target-aware compilation
+first-class compiler IR
+first-class agents/workflows
+deterministic build artifacts
+cross-stack package model
+One language, many profiles
+Every Gravity namespace declares a profile.
+clojure
+(ns kernel.interrupts
+(:profile :kernel)
+(:target :llvm))
+The profile determines which features are legal.
+A kernel module cannot use dynamic eval, GC, unbounded allocation, reflection, network
+IO, or nondeterministic AI calls.
+An AI workflow module can use agents, tools, prompts, vector memory, durable retries, and
+model calls.
+Same language. Different compile-time contracts.
+3. Language profiles
+Gravity should be organized as a tower of increasingly capable profiles.
+Profile Purpose Runtime assumptions
+:core Pure portable language No host runtime required
+kernel
+
+
+===== PAGE 4 =====
+Profile Purpose Runtime assumptions
+:hardware HDL/state-machine No heap, no runtime, cycle-aware
+generation
+:firmware MCUs, embedded devices No GC, explicit memory
+:kernel OS kernels, drivers No GC, no dynamic eval, explicit
+capabilities
+:native Native apps/services Optional GC, threads, FFI
+:hosted JVM/JS/Wasm/etc. Managed runtime allowed
+:distributed Durable workflows/services Persistence, replay, retries
+:ai Agents, tools, prompts, Nondeterminism tracked as effects
+model calls
+:meta Compiler, macros, codegen Full syntax/IR manipulation
+The language becomes universal because each layer is a constrained projection of the
+same semantic core.
+4. Core syntax
+Gravity should look familiar to Clojure users.
+clojure
+(defn factorial [n]
+(loop [i n
+acc 1]
+(if (zero? i)
+acc
+(recur (dec i) (* acc i)))))
+Data literals:
+clojure
+42
+3.14
+"hello"
+:symbolic/key
+
+
+===== PAGE 5 =====
+'user/name
+[1 2 3]
+{:name "Gravity" :profile :core}
+#{:a :b :c}
+'(def x 1)
+Namespace declaration:
+clojure
+(ns app.main
+(:profile :hosted)
+(:requires [gravity.io :as io]
+[gravity.json :as json]))
+Typed function:
+clojure
+(defn add
+{:type (Fn [I64 I64] I64)}
+[a b]
+(+ a b))
+Or with inline annotation syntax:
+clojure
+(defn add [a :- I64
+b :- I64]
+:- I64
+(+ a b))
+Profile-specific declarations:
+clojure
+(ns drivers.uart
+(:profile :kernel)
+(:target :llvm)
+(:effects #{:memory/mmio :interrupts}))
+5. Semantic core
+Gravity should reduce to a small typed core language.
+Minimal special forms:
+
+
+===== PAGE 6 =====
+clojure
+quote
+if
+do
+let
+fn
+loop
+recur
+def
+var
+set!
+try
+throw
+match
+Everything else desugars through macros or compiler passes.
+For example:
+clojure
+(when condition
+body)
+expands to:
+clojure
+(if condition
+(do body)
+nil)
+The language should avoid making too many constructs primitive. The smaller the core,
+the easier it is to target every layer of the stack.
+6. Type system
+Gravity should be gradually typed, but profiles decide how much static information is
+required.
+Hosted code can be dynamic
+clojure
+(defn greet [user]
+
+
+===== PAGE 7 =====
+(str "Hello " (:name user)))
+Systems code must be explicit
+clojure
+(defn read-u32 [addr :- Ptr[U32]]
+:- U32
+(ptr/load addr))
+Kernel code must expose effects
+clojure
+(defn read-register
+{:effects #{:memory/mmio}}
+[reg :- MMIO[U32]]
+:- U32
+(mmio/read reg))
+The type system should include:
+primitive integers: U8 , I32 , U64 , etc.
+floats: F32 , F64
+booleans
+symbols
+keywords
+strings
+vectors
+maps
+sets
+tuples
+structs
+records
+enums
+tagged unions
+protocols/interfaces
+function types
+effect types
+region/ownership types
+linear resources
+compile-time values
+const generics for low-level layout
+
+
+===== PAGE 8 =====
+Example:
+clojure
+(defstruct Vec3
+[x :- F32
+y :- F32
+z :- F32])
+Tagged union:
+clojure
+(defunion Result [ok err]
+(Ok ok)
+(Err err))
+Pattern matching:
+clojure
+(match result
+(Ok value) value
+(Err e) (handle-error e))
+7. Effect system
+The effect system is what makes “whole stack” compilation feasible.
+A function does not just have a type. It has a type plus effects.
+clojure
+(defn fetch-user
+{:effects #{:network/http :clock :throw}}
+[id :- UserId]
+:- User
+...)
+Possible effects:
+clojure
+:pure
+:alloc
+:io/read
+
+
+===== PAGE 9 =====
+:io/write
+:network/http
+:filesystem/read
+:filesystem/write
+:clock
+:random
+:thread/spawn
+:memory/raw
+:memory/mmio
+:interrupts
+:unsafe
+:ffi
+:ai/model-call
+:ai/tool-call
+:workflow/durable
+:workflow/replay
+The compiler rejects illegal effects for a profile.
+Example: this is invalid in :kernel .
+clojure
+(defn bad-driver-code []
+(http/get "https://example.com"))
+Because :network/http is not allowed in kernel mode.
+For AI workflows, nondeterminism is explicit:
+clojure
+(defn classify-ticket
+{:effects #{:ai/model-call :workflow/durable}}
+[ticket]
+(agent/ask support-agent
+{:task "Classify this ticket"
+:input ticket}))
+That lets the runtime know this step must be recorded, replay-protected, cached, audited,
+or human-reviewed.
+8. Memory model
+Gravity needs multiple memory regimes.
+Managed memory
+
+
+===== PAGE 10 =====
+Used in hosted/cloud/app code.
+clojure
+(def users [{:id 1 :name "Ada"}
+{:id 2 :name "Rich"}])
+Backed by persistent data structures and GC.
+Region memory
+Useful for high-performance native code.
+clojure
+(with-region [r]
+(let [buf (region/alloc r Byte 4096)]
+(process-buffer buf)))
+Region memory is freed at the end of the lexical scope.
+Linear resources
+Useful for files, sockets, locks, buffers, GPU handles, device memory.
+clojure
+(with-open [file (fs/open "/tmp/data.bin")]
+(fs/read-all file))
+The compiler ensures the resource is consumed exactly once.
+Raw memory
+Only available in unsafe/system profiles.
+clojure
+(unsafe
+(ptr/store! address value))
+Unsafe code is not banned, but it is syntactically and semantically isolated.
+9. Compiler architecture
+Gravity should have a compiler pipeline like this:
+
+
+===== PAGE 11 =====
+Mermaid
+Source Forms
+Reader
+Syntax Objects
+Macro Expansion
+Core Gravity AST
+Type + Effect Analysis
+Profile Validation
+Gravity MIR
+Optimization
+Target Lowering
+LLVM C Wasm JVM Bytecode JavaScript MLIR SPIR-V/CUDA HDL Workflow Graph IR
+The crucial design choice is the Gravity MIR.
+Gravity MIR should be target-independent, typed, effect-annotated, and simple enough to
+optimize.
+It should represent:
+function calls
+closures
+structs
+enums
+pattern matching
+loops
+allocation
+regions
+effects
+continuations/workflow suspension points
+foreign calls
+hardware/state-machine lowering
+
+
+===== PAGE 12 =====
+agent/model/tool operations
+The compiler itself should be written as a set of Gravity libraries that transform syntax/IR
+data.
+clojure
+(defpass inline-small-functions
+{:from :gravity/mir
+:to :gravity/mir}
+[module]
+...)
+Compiler passes are normal Gravity programs.
+10. Target strategy
+LLVM backend
+Primary backend for:
+operating systems
+drivers
+native CLIs
+servers
+embedded targets
+high-performance compute
+clojure
+(ns kernel.memory
+(:profile :kernel)
+(:target :llvm))
+C backend
+Useful as a portability fallback and bootstrap target.
+clojure
+(ns firmware.sensor
+(:profile :firmware)
+(:target :c))
+Wasm backend
+
+
+===== PAGE 13 =====
+Useful for:
+browser
+plugins
+sandboxed tools
+edge runtimes
+embedded extension systems
+clojure
+(ns plugin.image-filter
+(:profile :wasm)
+(:target :wasm))
+JVM backend
+Useful for the early implementation path, Clojure interop, GraalVM native-image, enterprise
+services, and compiler bootstrapping.
+clojure
+(ns compiler.main
+(:profile :hosted)
+(:target :jvm))
+JavaScript/TypeScript backend
+Useful for UI, React/Next.js, browser tooling, and developer-facing SDKs.
+clojure
+(ns app.client
+(:profile :hosted)
+(:target :js))
+HDL backend
+This is not “run Lisp on hardware.” It means a constrained Gravity subset can compile into
+hardware descriptions.
+clojure
+(ns hardware.counter
+(:profile :hardware)
+(:target :verilog))
+(defcircuit counter
+[clk :- Clock
+
+
+===== PAGE 14 =====
+rst :- Bit]
+[out :- U32]
+...)
+The hardware profile should compile pure state machines into Verilog/SystemVerilog-like
+output.
+Workflow backend
+AI/distributed workflows compile to durable execution graphs.
+clojure
+(ns workflows.support
+(:profile :ai)
+(:target :workflow-graph))
+The output is not machine code. It is a resumable graph containing steps, effects, retries,
+compensation handlers, model calls, tool calls, and audit metadata.
+11. AI as a first-class layer
+Gravity should treat AI as a first-class programming target, not an SDK bolted onto the side.
+Core AI abstractions:
+clojure
+defmodel
+defprompt
+deftool
+deftoolset
+defagent
+defworkflow
+defmemory
+defpolicy
+Example:
+clojure
+(defmodel gpt-main
+{:provider :openai
+:model "gpt-5.5-thinking"})
+(deftool search-docs
+{:input SearchQuery
+
+
+===== PAGE 15 =====
+:output SearchResults
+:effects #{:network/http}}
+[query]
+...)
+(defagent support-agent
+{:model gpt-main
+:tools [search-docs]
+:memory :support-memory
+:policy :human-review-for-refunds})
+(defworkflow triage-ticket
+[ticket]
+(let [classification (agent/ask support-agent
+{:task "Classify this ticket"
+:input ticket})]
+(match classification
+{:priority :high} (escalate ticket)
+{:priority :low} (auto-reply ticket))))
+AI calls should be modeled as nondeterministic effects.
+clojure
+:ai/model-call
+:ai/tool-call
+:ai/embedding
+:ai/memory-read
+:ai/memory-write
+:ai/human-review
+That matters because AI workflows need:
+traceability
+replay safety
+budget control
+permission boundaries
+human approval
+deterministic re-execution where possible
+model/provider substitution
+structured outputs
+failure handling
+This aligns well with your prior ADL/Gravity split: Gravity can be the implementation
+language, while ADL-like constructs can exist as a declarative sublanguage inside it.
+12. Build system
+
+
+===== PAGE 16 =====
+The build system should also be Gravity.
+clojure
+(project
+{:name com.degree9/gravity-demo
+:version "0.1.0"
+:targets
+{:server {:profile :native
+:backend :llvm
+:main app.server/main}
+:client {:profile :hosted
+:backend :js
+:main app.client/main}
+:agent {:profile :ai
+:backend :workflow-graph
+:main app.agent/main}
+:driver {:profile :kernel
+:backend :llvm
+:main drivers.uart/init}}})
+A single project can produce multiple artifacts:
+Bash
+gravity build :server
+gravity build :client
+gravity build :agent
+gravity build :driver
+The package manager should support:
+source packages
+binary artifacts
+target-specific builds
+cross-compilation
+content-addressed dependencies
+reproducible lockfiles
+profile constraints
+capability declarations
+supply-chain analysis
+vendored/forked upstream packages
+This ties naturally into your “private latent package space” idea.
+
+
+===== PAGE 17 =====
+13. Module and capability model
+Gravity packages should declare capabilities.
+clojure
+(package
+{:name degree9/weather-agent
+:capabilities #{:network/http
+:ai/model-call
+:filesystem/read}})
+A module can only use capabilities explicitly granted by its package, profile, and
+deployment environment.
+clojure
+(ns app.billing
+(:profile :native)
+(:requires [gravity.http :as http])
+(:effects #{:network/http :clock}))
+At deployment time:
+clojure
+(deployment
+{:module app.billing
+:allow #{:network/http :clock}
+:deny #{:filesystem/write :ai/model-call}})
+This gives the language a unified security model from drivers to AI tools.
+14. Runtime architecture
+Gravity should have several runtimes, not one.
+No runtime
+For hardware, firmware, and some kernel targets.
+The compiler emits raw code or HDL.
+Minimal runtime
+For native/system code:
+
+
+===== PAGE 18 =====
+startup
+panic handling
+optional allocator
+atomics
+stack traces in debug mode
+FFI boundary
+optional scheduler
+Managed runtime
+For hosted apps:
+persistent collections
+GC or host GC
+dynamic vars
+reflection where allowed
+REPL server
+hot reload
+dynamic loading
+Distributed runtime
+For services and workflows:
+durable execution
+message passing
+retries
+compensation
+scheduling
+trace/replay
+event logs
+AI runtime
+For agents:
+model adapters
+tool execution
+memory
+prompt compilation
+structured output validation
+policy enforcement
+audit logs
+human-in-the-loop checkpoints
+The language remains one thing. The runtime is selected by profile and target.
+
+
+===== PAGE 19 =====
+15. Self-hosting strategy
+Gravity should bootstrap in stages.
+Stage 0: Seed compiler
+Write a tiny compiler in Clojure, Rust, or C.
+Responsibilities:
+read Gravity forms
+expand minimal macros
+compile core subset
+emit C, JVM bytecode, or LLVM IR
+This stage should be intentionally disposable.
+Stage 1: Gravity reader and macroexpander
+Rewrite the reader, syntax model, and macroexpander in Gravity.
+clojure
+(ns gravity.reader
+(:profile :core))
+Stage 2: Gravity analyzer
+Write the AST analyzer, resolver, namespace system, and type/effect checker in Gravity.
+clojure
+(ns gravity.analyzer
+(:profile :meta))
+Stage 3: Gravity MIR
+Define Gravity MIR as ordinary Gravity data.
+clojure
+{:op :call
+:fn 'gravity.core/+
+:args [{:op :local :name 'a}
+{:op :local :name 'b}]
+:type 'I64
+:effects #{}}
+
+
+===== PAGE 20 =====
+Stage 4: Backends in Gravity
+Implement emitters in Gravity:
+clojure
+(ns gravity.backend.llvm)
+(ns gravity.backend.c)
+(ns gravity.backend.wasm)
+(ns gravity.backend.jvm)
+(ns gravity.backend.js)
+(ns gravity.backend.workflow)
+Stage 5: Self-compilation
+Gravity compiles its own compiler.
+Bash
+gravity build gravity.compiler
+Stage 6: Replace seed
+Once the self-hosted compiler is reliable, the seed compiler becomes only a bootstrap
+artifact.
+Long term:
+tiny bootstrap → core compiler → full compiler → optimizing compiler → verified/min
+16. Standard library structure
+The standard library should be split by profile.
+gravity.core
+gravity.syntax
+gravity.meta
+gravity.collections
+gravity.types
+gravity.effects
+gravity.memory
+gravity.region
+gravity.unsafe
+gravity.ffi
+gravity.concurrent
+gravity.async
+
+
+===== PAGE 21 =====
+gravity.io
+gravity.net
+gravity.http
+gravity.json
+gravity.graphql
+gravity.sql
+gravity.workflow
+gravity.agent
+gravity.model
+gravity.prompt
+gravity.tool
+gravity.kernel
+gravity.hardware
+gravity.gpu
+gravity.test
+gravity.spec
+gravity.build
+gravity.package
+Every namespace declares which profiles it supports.
+Example:
+clojure
+(ns gravity.collections.vector
+(:profiles #{:hosted :native})
+...)
+A persistent vector may be unavailable in :kernel , while a fixed-size stack vector may be
+available.
+clojure
+(ns gravity.collections.stack-vector
+(:profiles #{:firmware :kernel :native})
+...)
+17. Interop model
+Gravity needs explicit foreign boundaries.
+C interop
+clojure
+
+
+===== PAGE 22 =====
+(extern printf
+{:link "printf"
+:type (Fn [CString] I32)
+:effects #{:io/write}})
+JVM interop
+clojure
+(import java.time.Instant)
+(defn now []
+(Instant/now))
+JavaScript interop
+clojure
+(js/import React "react")
+(defn Button [props]
+#jsx [:button props (:label props)])
+Python/AI interop
+Gravity should avoid depending on Python as the core runtime, but it should interoperate
+with Python ML ecosystems where useful.
+clojure
+(py/import torch)
+(defn load-model [path]
+(torch/load path))
+Interop must be effect-checked. Calling Python is not pure. Calling C may be unsafe.
+Calling a model is nondeterministic.
+18. Concurrency model
+Gravity should expose multiple concurrency models under one abstraction.
+Low-level atomics
+For systems programming:
+
+
+===== PAGE 23 =====
+clojure
+(atomic/compare-and-swap! ptr old new)
+Structured concurrency
+For native/hosted apps:
+clojure
+(task/scope
+(let [a (task/spawn (fetch-a))
+b (task/spawn (fetch-b))]
+[(task/await a) (task/await b)]))
+Actors
+For distributed services:
+clojure
+(defactor Cart
+(state [items []])
+(on :add-item [item]
+(update state :items conj item)))
+Durable workflows
+For long-running processes:
+clojure
+(defworkflow checkout [cart]
+(let [payment (workflow/step :charge-card
+(charge-card cart))]
+(workflow/step :ship-order
+(ship-order payment))))
+Agents
+For AI-driven control flow:
+clojure
+(defworkflow resolve-issue [issue]
+(let [plan (agent/plan support-agent issue)]
+(workflow/execute plan)))
+
+
+===== PAGE 24 =====
+19. Example: same language across layers
+Hardware
+clojure
+(ns chip.counter
+(:profile :hardware)
+(:target :verilog))
+(defcircuit counter
+[clk :- Clock
+rst :- Bit]
+[out :- U32]
+(reg count :- U32 0)
+(on-rising clk
+(if rst
+(set! count 0)
+(set! count (+ count 1))))
+(assign out count))
+Driver
+clojure
+(ns drivers.uart
+(:profile :kernel)
+(:target :llvm)
+(:effects #{:memory/mmio :interrupts}))
+(defstruct Uart
+[base :- Ptr[U8]])
+(defn write-byte! [uart :- Uart
+b :- U8]
+:- Unit
+(mmio/write8! (+ (:base uart) 0x00) b))
+Server
+clojure
+(ns app.server
+(:profile :native)
+(:target :llvm))
+
+
+===== PAGE 25 =====
+(defroute GET "/health" []
+{:status 200
+:body {:ok true}})
+Web UI
+clojure
+(ns app.client
+(:profile :hosted)
+(:target :js))
+(defcomponent Counter []
+(let [[count set-count] (ui/state 0)]
+#jsx [:button {:onClick #(set-count inc)}
+(str "Count: " count)]))
+Agent workflow
+clojure
+(ns app.agent
+(:profile :ai)
+(:target :workflow-graph))
+(defagent code-reviewer
+{:model gpt-main
+:tools [read-file search-code comment-on-pr]
+:policy :require-human-approval-before-write})
+(defworkflow review-pr [pull-request]
+(let [findings (agent/ask code-reviewer
+{:task "Review this pull request"
+:input pull-request})]
+(submit-review findings)))
+20. Macro system
+Gravity macros should receive syntax objects, not raw lists.
+clojure
+(defmacro when [condition & body]
+`(if ~condition
+
+
+===== PAGE 26 =====
+(do ~@body)
+nil))
+Syntax objects should preserve:
+source location
+namespace
+metadata
+hygiene context
+inferred profile
+compile phase
+For low-level compiler work:
+clojure
+(defmacro defregister [name addr type]
+`(def ~name
+{:address ~addr
+:type ~type
+:volatile true}))
+Macros must be profile-aware. A macro used in :kernel cannot expand to hosted-only
+features.
+21. Compile-time execution
+Gravity should support compile-time computation.
+clojure
+(defconst page-size
+(compile-time
+(* 4 1024)))
+Compile-time functions must be pure or have explicitly permitted build effects.
+clojure
+(defconst schema
+(build/read-edn "schema.edn"))
+Effects:
+clojure
+
+
+===== PAGE 27 =====
+:build/read-file
+:build/env
+:build/network
+:build/exec
+By default, builds should be hermetic. Network and shell execution should require explicit
+permission.
+22. Data and schema system
+Gravity should have a built-in schema/spec system.
+clojure
+(defschema User
+{:id UUID
+:name String
+:role #{:admin :member :guest}})
+Schemas should compile to:
+runtime validators
+static types
+JSON Schema
+GraphQL SDL
+OpenAPI schemas
+database migrations
+binary encoders
+AI structured output contracts
+Example:
+clojure
+(defschema TicketClassification
+{:priority #{:low :medium :high}
+:category String
+:confidence F64})
+Used with an agent:
+clojure
+(agent/ask support-agent
+{:task "Classify ticket"
+
+
+===== PAGE 28 =====
+:input ticket
+:output TicketClassification})
+This gives AI calls typed contracts.
+23. The “everything is an artifact” model
+Gravity should compile source into typed artifacts.
+Artifacts include:
+clojure
+:binary
+:library
+:kernel-module
+:firmware-image
+:wasm-module
+:js-bundle
+:jvm-jar
+:container-image
+:workflow-graph
+:agent-manifest
+:graphql-schema
+:openapi-spec
+:database-migration
+:hdl-module
+:docs
+:test-plan
+A build is a graph of artifacts.
+clojure
+(artifact :server-binary
+{:from app.server/main
+:target :llvm
+:profile :native})
+(artifact :api-schema
+{:from app.api/schema
+:target :openapi})
+(artifact :support-agent
+{:from app.agent/support-agent
+:target :agent-manifest})
+This is how Gravity becomes a “whole-stack” language rather than just a compiler.
+
+
+===== PAGE 29 =====
+24. Error model
+Gravity should avoid exceptions in systems profiles.
+Use Result .
+clojure
+(defn parse-int [s :- String]
+:- (Result I64 ParseError)
+...)
+Hosted code may use exceptions, but effects must declare them.
+clojure
+(defn read-config
+{:effects #{:filesystem/read :throw}}
+[]
+...)
+Kernel/firmware code should prefer explicit errors.
+clojure
+(match (uart/init device)
+(Ok uart) (start uart)
+(Err error) (panic error))
+25. Testing model
+Gravity should support tests across every layer.
+clojure
+(deftest addition-test
+(is (= 4 (+ 2 2))))
+Property tests:
+clojure
+(defproperty reverse-twice
+[xs :- Vec[I64]]
+
+
+===== PAGE 30 =====
+(= xs (reverse (reverse xs))))
+Simulation tests for hardware:
+clojure
+(defsimtest counter-test
+(let [sim (simulate counter)]
+(tick sim)
+(is (= 1 (out sim)))))
+Replay tests for workflows:
+clojure
+(defreplaytest support-flow-test
+{:trace "fixtures/support-ticket.trace"}
+(is (= :resolved (:status result))))
+Agent evals:
+clojure
+(defeval support-classifier-eval
+{:dataset "datasets/tickets.edn"
+:metric :accuracy
+:threshold 0.92})
+26. Recommended MVP
+Do not start by building every backend. Start with a narrow vertical slice that proves the
+architecture.
+MVP 1: Hosted self-hosting foundation
+Build:
+reader
+syntax objects
+macroexpander
+analyzer
+small type/effect checker
+interpreter
+JVM or Clojure-hosted backend
+standard library subset
+
+
+===== PAGE 31 =====
+Goal:
+clojure
+(defn main []
+(println "Hello Gravity"))
+MVP 2: Gravity MIR
+Add:
+typed IR
+effects
+simple optimizer
+C backend or LLVM backend
+Goal:
+Bash
+gravity build hello --target native
+MVP 3: Profiles
+Add:
+:core
+:hosted
+:native
+:kernel-lite
+Goal: compiler rejects illegal profile effects.
+MVP 4: Workflow/AI profile
+Add:
+defagent
+deftool
+defworkflow
+model-call effect
+replay log
+workflow graph backend
+Goal: compile an agent workflow to a durable graph.
+MVP 5: Self-host compiler pieces
+Rewrite in Gravity:
+
+
+===== PAGE 32 =====
+reader
+macroexpander
+analyzer
+MIR passes
+build system
+Goal:
+Bash
+gravity build gravity.compiler
+27. The important philosophical split
+Gravity should have three layers:
+1. Gravity the language
+The Lisp syntax, core semantics, type/effect system, macros, protocols, namespaces.
+2. Gravity the compiler platform
+The self-hosted compiler, IRs, passes, backends, package/build system.
+3. Gravity the execution ecosystem
+Runtimes for native, hosted, distributed, AI, hardware, and OS-level targets.
+Trying to make these one thing will make the design incoherent.
+Keeping them separate lets Gravity be universal without becoming vague.
+28. Final design statement
+Gravity is a self-hosting, profile-oriented Lisp inspired by Clojure, designed to express
+every layer of software as data: hardware circuits, kernel modules, native binaries, hosted
+applications, distributed workflows, and AI agents.
+Its core bet is:
+Software systems should be authored in one homoiconic language, compiled through
+explicit semantic profiles, and lowered into the appropriate runtime or artifact for each
+layer of the stack.
+
+
+===== PAGE 33 =====
+The minimal viable version should not attempt to replace C, Clojure, Rust, JavaScript,
+Python, Verilog, Kubernetes, and AI workflow engines all at once.
+It should first prove that one Lisp can express:
+1. normal application code,
+2. low-level native code,
+3. compiler code,
+4. and AI workflow code,
+through one syntax, one IR model, one package/build system, and one effect-aware
+compiler.
+
+
+===== PAGE 34 =====
+
+
+
+===== PAGE 35 =====
+
+
+
+===== PAGE 36 =====
+
+
+
+===== PAGE 37 =====
+
+
+
+===== PAGE 38 =====
+
+
+
+===== PAGE 39 =====
+
+
+
+===== PAGE 40 =====
+
+
+
+===== PAGE 41 =====
+
+
+
+===== PAGE 42 =====
+
+
+
+===== PAGE 43 =====
+
+
+
+===== PAGE 44 =====
+
+
+
+===== PAGE 45 =====
+
+
+
+===== PAGE 46 =====
+
+
+
+===== PAGE 47 =====
+
+
+
+===== PAGE 48 =====
+
+
+
+===== PAGE 49 =====
+
+
+
+===== PAGE 50 =====
+
+
+
+===== PAGE 51 =====
+
+
+
+===== PAGE 52 =====
+
+
+
+===== PAGE 53 =====
+
+
+
+===== PAGE 54 =====
+
+
+
+===== PAGE 55 =====
+
+
+
+===== PAGE 56 =====
+
+
+
+===== PAGE 57 =====
+
+
+
+===== PAGE 58 =====
+
+
+
+===== PAGE 59 =====
+
+
+
+===== PAGE 60 =====
+
+
+
+===== PAGE 61 =====
+
+
+
+===== PAGE 62 =====
+
+
+
+===== PAGE 63 =====
+
+
+
+===== PAGE 64 =====
+
+
+
+===== PAGE 65 =====
+
+
+
+===== PAGE 66 =====
+
+
+
+===== PAGE 67 =====
+
+
+
+===== PAGE 68 =====
+
+
+
+===== PAGE 69 =====
+
+
+
+===== PAGE 70 =====
+
+
+
+===== PAGE 71 =====
+
+
+
+===== PAGE 72 =====
+
+
+
+===== PAGE 73 =====
+I’ll first pin down what “Elementary Function Breakthrough” refers to, then map the relevant
+ideas into Gravity’s compiler, numeric tower, proof system, and standard library design.
+The core opportunity is not “evaluate every sin by expanding it into a huge EML tree.”
+That would usually be slower. The win is to use EML as a canonical verification and
+synthesis layer, then lower back into specialized kernels for runtime.
+
+
+===== PAGE 74 =====
+Thought for 33s
+The right way to incorporate it is to add an Elementary Function IR to Gravity.
+The breakthrough I think you mean is Andrzej Odrzywołek’s 2026 arXiv preprint, “All
+elementary functions from a single operator.” It introduces the EML operator:
+clojure
+eml(x, y) = exp(x) - log(y)
+and shows that, together with the constant 1 , it can reconstruct the standard scientific-
+calculator repertoire of elementary functions. The paper’s own reproducible Mathematica
+snippet defines EML[x_, y_] := Exp[x] - Log[y] and verifies the base set from {1}
+and {EML} . arXiv
+The key design move for Gravity is:
+Do not make EML the only runtime primitive. Make it the canonical proof,
+synthesis, normalization, and optimization substrate for elementary functions.
+Naively lowering every sin , cos , sqrt , pow , or log into EML trees would often be
+slower because EML expansions can be deep and may require complex arithmetic
+internally. The paper explicitly notes that EML computation uses complex intermediates for
+real math, with principal branches involved. arXiv
+So Gravity should use EML as a middle representation, not as the only execution
+strategy.
+1. Add an Elementary Function IR
+Gravity already has the idea of multiple IRs:
+Source Forms
+→ Core AST
+→ Typed/Effected Core
+→ Gravity MIR
+→ Domain IRs
+→ Backend IRs
+We should add:
+Elementary Function IR / EFIR
+
+
+===== PAGE 75 =====
+EFIR represents expressions built from elementary functions in a normalized, analyzable
+form.
+clojure
+(ns gravity.math.efir)
+(defunion EFNode
+(Const Complex)
+(Var Symbol)
+(EML EFNode EFNode))
+User code remains normal:
+clojure
+(defn wave [x]
+(* (sin x) (exp (- x))))
+The compiler can lower it into an elementary-function graph:
+clojure
+{:ir :gravity/efir
+:expr (mul (sin x) (exp (neg x)))}
+Then optionally normalize to EML form:
+clojure
+{:ir :gravity/efir/eml
+:expr (eml-tree ...)}
+This allows Gravity to reason about the expression using a single uniform node type.
+The paper argues that every EML expression is a binary tree of identical nodes, giving a
+very simple grammar and turning elementary formulas into uniform circuits. arXiv
+2. Use EML for verification, not necessarily evaluation
+Gravity should have two separate concepts:
+Layer Purpose
+Semantic representation Prove what the function means.
+
+
+===== PAGE 76 =====
+Layer Purpose
+Execution representation Generate the fastest implementation.
+For example:
+clojure
+(defn sigmoid [x]
+(/ 1 (+ 1 (exp (- x)))))
+Gravity could internally attach:
+clojure
+{:semantic-form :efir/eml
+:runtime-form :target/simd-polynomial}
+Meaning:
+The EML form is used for equivalence checking, symbolic rewriting, proof certificates,
+and transformation validation.
+The runtime form may be a polynomial approximation, rational approximation, vector
+intrinsic, GPU kernel, lookup table, hardware primitive, or platform libm call.
+This gives us both verifiability and speed.
+3. Add certified elementary approximations
+The major performance problem with elementary functions is that calls like sin , exp , and
+log are expensive compared with plain arithmetic, and users often do not need full
+precision. Prior work on sound approximation shows there is a rich performance/accuracy
+tradeoff for elementary functions, and that automated tools can approximate programs
+while guaranteeing user-provided error bounds. arXiv
+Gravity should make this a first-class language feature:
+clojure
+(defn fast-wave
+{:approximation {:error <= 1e-6
+:domain [-3.14 3.14]
+:mode :fastest-certified}}
+[x :- F64]
+(+ (sin x) (* 0.5 (cos (* 2 x)))))
+
+
+===== PAGE 77 =====
+The compiler would:
+1. Convert the expression into EFIR.
+2. Infer the input domain.
+3. Generate candidate approximations.
+4. Certify the error bound.
+5. Emit the fastest implementation accepted by the certificate checker.
+This aligns with systems like Dandelion, which checks whether a polynomial
+approximation remains below a given error bound over an input constraint. Dandelion’s
+certificate checker is fully verified in HOL4, and the paper notes that customized
+polynomial approximations can outperform general library functions for limited domains
+and precisions. arXiv
+Gravity can adopt the same strategy, but integrate it directly into the compiler.
+4. Create , , and
+:math/exact :math/correctly-rounded
+modes
+:math/approx
+Gravity should not have one math mode. It should expose explicit numeric contracts.
+clojure
+(ns physics.sim
+(:profile :native)
+(:math {:mode :certified-approx
+:max-error 1e-6
+:rounding :nearest
+:domain-inference true}))
+Recommended modes:
+Mode Meaning
+:symbolic Preserve exact symbolic expression.
+:exact-real Use real-number semantics for proof.
+:interval Compute upper/lower bounds.
+:correctly-rounded Match IEEE-style rounded results where possible.
+:faithful Within 1 ulp or declared tolerance.
+:certified-approx Use compiler-generated approximation with certificate.
+
+
+===== PAGE 78 =====
+Mode Meaning
+:fast-approx Prioritize speed; still track declared error if possible.
+:hardware-native Use target hardware instructions.
+:libm Use platform math library.
+:eml-normalized Normalize through EML for proof/search only.
+Example:
+clojure
+(defn audio-oscillator
+{:math {:mode :certified-approx
+:domain [0.0 (* 2 pi)]
+:max-error 1e-5}}
+[phase]
+(sin phase))
+The compiler can produce:
+clojure
+(defn audio-oscillator.generated [phase]
+;; generated polynomial/rational approximation
+...)
+plus a certificate:
+clojure
+{:target '(sin phase)
+:domain [0.0 6.283185307179586]
+:approximation :polynomial
+:degree 5
+:max-error <= 1e-5
+:certificate "..."
+}
+5. Use rational interval arithmetic for proofs
+To make this credible, Gravity needs an interval-proof engine.
+
+
+===== PAGE 79 =====
+Older work on verified real-number calculations shows how elementary-function bounds
+can be established inside theorem provers using rational interval arithmetic, interval
+splitting, and Taylor expansions. arXiv
+Gravity should build a native proof pipeline:
+EFIR expression
+→ domain constraints
+→ interval splitting
+→ Taylor / minimax / rational bounds
+→ floating-point roundoff analysis
+→ certificate
+→ verified generated code
+Example:
+clojure
+(prove
+{:forall [x :- F64]
+:where (<= -1.0 x 1.0)
+:claim (<= (abs (- (fast-sin x) (sin x))) 1e-7)})
+This would be a native Gravity proof artifact, not just a test.
+6. Use EML as a universal symbolic search space
+The paper argues that EML creates a complete, regular search space for symbolic
+regression because formulas become uniform binary trees, and parameterized EML trees
+can be optimized using gradient methods. arXiv
+Gravity can use this in three compiler features.
+6.1 Expression discovery
+clojure
+(discover-expression
+{:samples training-data
+:basis :elementary/eml
+:max-depth 6
+:objective :min-error})
+This can synthesize candidate closed forms from data.
+6.2 Superoptimization
+
+
+===== PAGE 80 =====
+Gravity can search for faster equivalent forms.
+clojure
+(optimize-expression
+{:expr '(+ (sin x) (sin x))
+:basis :efir/eml
+:objective :latency})
+Result:
+clojure
+(* 2 (sin x))
+Or, for a restricted domain:
+clojure
+(polynomial-approx sin [-pi pi] {:error 1e-6})
+6.3 Rewrite-rule discovery
+Gravity can generate candidate identities and then prove them.
+clojure
+(defrewrite tan-via-sin-cos
+{:prove true}
+(tan x)
+(/ (sin x) (cos x)))
+EML provides the uniform tree form for search; the proof engine decides whether the
+identity is valid over the declared domain.
+7. Add an Elementary Function Capability Provider
+This fits perfectly with the “replaceable built-ins” direction.
+clojure
+(defcapability gravity.math.elementary/default
+{:kind :elementary-function-system
+:implements gravity.contracts/ElementaryFunctions
+:semantic-ir :efir
+:normal-forms #{:standard :eml}
+
+
+===== PAGE 81 =====
+:proof-engine gravity.math.proof/interval
+:approx-engine gravity.math.approx/remez
+:backends #{:llvm :c :wasm :jvm :js :gpu}})
+Alternative providers could exist:
+clojure
+gravity.math.elementary/libm
+gravity.math.elementary/crlibm
+gravity.math.elementary/mpfr
+gravity.math.elementary/eml
+gravity.math.elementary/gpu-fast
+gravity.math.elementary/formal
+gravity.math.elementary/game-fast
+gravity.math.elementary/realtime
+A namespace could select one:
+clojure
+(ns finance.pricing
+(:profile :native)
+(:math-provider gravity.math.elementary/certified)
+(:math {:mode :correctly-rounded}))
+Or:
+clojure
+(ns game.particles
+(:profile :native)
+(:math-provider gravity.math.elementary/game-fast)
+(:math {:mode :fast-approx
+:max-error 1e-4}))
+This gives users domain-appropriate tradeoffs without fragmenting the language.
+8. Performance improvements
+The performance wins come from specialization, not from EML alone.
+8.1 Domain-specialized approximation
+Given:
+
+
+===== PAGE 82 =====
+clojure
+(defn f [x]
+(+ (sin x) (log (+ 1 x))))
+If the compiler knows:
+clojure
+x ∈ [0, 0.1]
+then it can generate a small polynomial or rational approximation for the whole fused
+expression, instead of calling sin and log separately.
+clojure
+(f x)
+;; becomes
+(+ c0 (* c1 x) (* c2 x x) (* c3 x x x))
+That can be dramatically faster because it eliminates multiple elementary-function calls.
+8.2 Fused elementary expressions
+Instead of optimizing functions independently:
+clojure
+(+ (sin x) (cos x) (exp (- x)))
+Gravity can treat the entire expression as one EFIR graph and approximate the whole thing
+under a known domain.
+This is better than:
+call sin
+call cos
+call exp
+add results
+The compiler can produce one fused approximation with one error certificate.
+8.3 GPU and SIMD lowering
+EFIR can lower to:
+scalar libm
+vectorized SVML-style calls
+
+
+===== PAGE 83 =====
+polynomial SIMD kernels
+GPU kernels
+lookup-table kernels
+hardware-specific approximations
+Example:
+clojure
+(defn activation [x]
+(tanh x))
+For CPU:
+approximate tanh with vector polynomial
+For GPU:
+lower to native GPU tanh or generated approximation
+For AI accelerator:
+lower to fused activation kernel
+8.4 Compile-time autotuning
+clojure
+(defn pricing-kernel
+{:autotune {:objective :throughput
+:constraints {:max-error 1e-8}}}
+[x]
+...)
+Gravity can generate several implementations:
+libm calls
+polynomial degree 5
+polynomial degree 7
+rational approximation
+table lookup + correction
+vectorized implementation
+FMA-heavy implementation
+Then benchmark and select the fastest one that satisfies the certificate.
+
+
+===== PAGE 84 =====
+9. Verifiability improvements
+EML helps most with reducing the trusted semantic basis.
+Instead of proving semantics for every elementary function independently:
+sin, cos, tan, asin, acos, atan, sinh, cosh, exp, log, sqrt, pow, ...
+Gravity can define a small core:
+constant 1
+variables
+complex numbers
+EML
+domain/branch rules
+Then derive the rest.
+Conceptually:
+clojure
+(defelementary exp
+{:definition (eml x 1)
+:prove true})
+(defelementary log
+{:definition ... ; EML expression
+:prove true})
+(defelementary sin
+{:definition ... ; EML expression using complex semantics
+:prove true})
+Each function has:
+clojure
+{:name sin
+:semantic-definition :efir/eml
+:domain Real
+:codomain Real
+:branch-policy :principal
+:approx-implementations [...]
+:proof-certificates [...]}
+This gives Gravity a powerful property:
+
+
+===== PAGE 85 =====
+Every optimized elementary function implementation can be checked against a small
+semantic normal form.
+That is very valuable for a language that wants to cover scientific computing, finance,
+physics, simulation, graphics, embedded control, and AI.
+10. Important caution: EML is not a canonical form by
+itself
+We should not overclaim.
+EML gives a uniform generative basis, but not necessarily a unique canonical
+representation. Many different EML trees can represent the same function. The source
+paper itself describes exhaustive search and independent verification as separate steps.
+arXiv
+So Gravity should not say:
+Two expressions are equal iff their EML trees are identical.
+That would be false.
+Instead:
+EML gives a common search/proof substrate.
+Equivalence still requires symbolic proof, interval proof, SMT/prover support, or d
+This distinction matters.
+11. Proposed Gravity syntax
+Declare elementary semantics
+clojure
+(defelementary sigmoid
+{:domain Real
+:codomain Real
+:semantic-form
+(/ 1 (+ 1 (exp (- x))))
+:normalizations #{:efir :eml}
+
+
+===== PAGE 86 =====
+:implementations
+[{:mode :libm}
+{:mode :certified-approx
+:domain [-8 8]
+:max-error 1e-6}
+{:mode :gpu-native}]}
+[x])
+Request certified optimization
+clojure
+(defn normalize-signal
+{:math {:mode :certified-approx
+:max-error 1e-7
+:normalize-through :eml}}
+[x]
+(/ (- (exp x) 1)
+(+ (exp x) 1)))
+The compiler may discover:
+clojure
+(tanh (/ x 2))
+Then choose the fastest certified target implementation.
+Inspect elementary lowering
+clojure
+(compiler/inspect
+{:pass :elementary/normalize}
+'(+ (sin x) (cos x)))
+Could return:
+clojure
+{:standard '(+ (sin x) (cos x))
+:efir ...
+:eml ...
+:proof-obligations [...]
+:candidate-impls [...]}
+
+
+===== PAGE 87 =====
+12. Add new compiler passes
+Gravity should add these passes:
+elementary-detect
+elementary-normalize
+elementary-domain-infer
+elementary-eml-lower
+elementary-identity-search
+elementary-approx-synthesize
+elementary-roundoff-analyze
+elementary-certificate-check
+elementary-implementation-select
+elementary-backend-lower
+Pipeline:
+Typed Core
+→ Detect elementary subgraphs
+→ Build EFIR
+→ Infer domains and precision contracts
+→ Normalize to EML when useful
+→ Search/simplify/fuse
+→ Generate approximations
+→ Prove/certify error bounds
+→ Select implementation
+→ Lower to LLVM/Wasm/GPU/etc.
+13. Add new documents to the Gravity doc set
+I would add these documents:
+ID Document Purpose
+MATH1 Elementary Function System Defines elementary functions, EFIR,
+Specification EML normalization, domains, branch
+policies.
+MATH2 EML Normal Form & Search Defines how Gravity lowers to EML
+Design trees and uses them for proof/search.
+MATH3 Certified Approximation Defines polynomial/rational
+Specification approximations, certificates, error
+bounds, and proof obligations.
+
+
+===== PAGE 88 =====
+ID Document Purpose
+MATH4 Interval Arithmetic & Real Proof Defines rational intervals, splitting,
+Engine Taylor bounds, and theorem-prover
+integration.
+MATH5 Numeric Modes & Precision Defines :exact , :correctly-
+Contracts rounded , :certified-approx , :fast-
+approx , etc.
+PERF8 Elementary Function Defines fusion, approximation,
+Optimization Strategy autotuning, SIMD/GPU lowering, and
+benchmarks.
+VERIFY1 Elementary Function Verification Defines proof certificates, equivalence
+Plan checking, branch/domain handling,
+and conformance tests.
+Dependency order:
+L5 Type System
+→ L6 Effect System
+→ L10 Memory Model
+→ PERF1 Performance Model
+→ MATH1 Elementary Function System
+→ MATH2 EML Normalization
+→ MATH3 Certified Approximation
+→ MATH4 Interval Proof Engine
+→ PERF8 Elementary Optimization
+→ VERIFY1 Verification Plan
+14. The best architecture summary
+Gravity should incorporate the Elementary Function Breakthrough as follows:
+User writes normal math:
+sin, cos, exp, log, sqrt, pow, tanh, sigmoid, etc.
+Compiler detects elementary subexpressions.
+Gravity lowers them to EFIR.
+EFIR can optionally normalize to EML trees.
+EML trees provide a uniform proof/search/synthesis substrate.
+
+
+===== PAGE 89 =====
+The compiler generates candidate optimized implementations.
+A proof/certificate checker verifies error bounds and equivalence over declared dom
+Sources
+The backend emits the fastest certified implementation for the target.
+Branched from Branch · Branch · Gravity Lisp Design
+So the final design principle should be:
+Gravity treats elementary functions as both mathematical objects and compiler-
+optimizable artifacts. EMLG rgeiavte, sth Ge rlaavsti ttyh ian gu nwiev enreseadl etole imnceonrptaorrya-tfeu innctoti oonur s ubstrate
+for verification and synthlaensgisu, awghei ldee tsairggne its- sspaefectiyf.i cM caenryt ipfireodg raapmpsr oaxnidm laatniogunasg geisv e
+Gravity maximum runtimaer pe eurnfosarmfea dnucee t.o memory management. Some languages
+like Rust are supposed to be memory safe.
+This is exactly aligned with the broader goal: one homoiconic language that can replace
+many specialized languages wWiteh owuatn gt itvoin bge u apb mlea toth eenmsautricea tlh raigt ooru or rla lonwgu-laegvee lavoids all
+performance. such bugs and vulnerabilities.
+I’ll treat safety as a first-class semantic goal, not as a runtime feature. The design should
+make major vulnerability classes impossible in safe Gravity, and force every escape hatch
+into explicit, auditable unsafe islands.
+Thought for 12s
+Yes. Safety should become a top-level design pillar alongside universality, performance,
+homoiconicity, extensibility, and self-hosting.
+But we should state the goal precisely:
+Gravity cannot guarantee that no program will ever be logically wrong, insecure, or
+exploitable.
+Gravity can guarantee that large classes of vulnerabilities are impossible in safe
+Gravity code: memory unsafety, data races, uninitialized reads, use-after-free, double-
+free, iterator invalidation, unchecked null access, resource leaks, effect/capability
+violations, and unsafe FFI misuse.
+The stronger design principle should be:
+Safe Gravity code has no undefined behavior. All unsafe behavior must be
+isolated, typed, capability-gated, effect-tracked, auditable, and mechanically
+checkable.
+
+
+===== PAGE 90 =====
+1. Add safety as a language pillar
+Gravity’s core pillars become:
+1. Universal homoiconicity
+2. Whole-stack compilation
+3. Maximum performance
+4. Replaceable language capabilities
+5. Mathematical verifiability
+6. Safety by construction
+Safety should not be optional. It should be the default.
+Unsafe code can exist, especially for kernels, drivers, hardware, FFI, allocators, compilers,
+and runtimes. But unsafe code should be treated as a controlled boundary.
+clojure
+(unsafe
+{:reason "MMIO register write for UART driver"
+:requires #{:memory/mmio}
+:review "drivers/uarts/safety.md"}
+(ptr/store! uart-register value))
+Unsafe code is allowed, but never invisible.
+2. Define “safe Gravity”
+Gravity should have an explicit safety contract.
+Safe Gravity guarantees
+In safe code:
+Vulnerability class Safe Gravity rule
+Use-after-free Impossible through ownership, regions, GC, or linear
+resource tracking.
+Double-free Impossible through linear ownership.
+Dangling pointer References cannot outlive their owner/region.
+Buffer overflow Bounds checked or statically proven safe.
+Out-of-bounds indexing Checked or proof-elided.
+
+
+===== PAGE 91 =====
+Vulnerability class Safe Gravity rule
+Null dereference No implicit nullable values.
+Uninitialized memory read Initialization tracked by the type system.
+Data races Shared mutable state requires synchronization proof.
+Iterator invalidation Mutation/iteration aliasing is statically controlled.
+Resource leak Linear resources must be consumed, closed, or
+transferred.
+Type confusion Dynamic casts are checked; unsafe casts require
+unsafe blocks.
+Integer overflow Checked by default or explicitly wrapped/saturating.
+FFI unsafety Foreign calls require declared contracts.
+Capability violation Effects/capabilities must be declared and granted.
+AI/tool privilege escalation Tool/model calls require explicit effects and policies.
+The core slogan:
+If it compiles as safe Gravity, memory safety and data-race safety are guaranteed.
+3. Safety must be profile-aware
+Different computing domains need different safety mechanisms.
+Profile Safety strategy
+:hosted GC, immutable data, checked casts, host interop constraints
+:native Ownership, regions, linear resources, optional GC
+:firmware Static allocation, bounded stack, no hidden allocation
+:kernel Ownership, raw memory only in unsafe blocks, capability-gated
+MMIO
+:hardware State-machine validation, clock-domain safety, bounded logic
+
+
+===== PAGE 92 =====
+Profile Safety strategy
+:distributed Durable effects, idempotency, replay safety, message schemas
+:ai Tool permissions, audit trails, policy checks, nondeterminism
+tracking
+:meta Compiler correctness, pass contracts, trusted-phase
+boundaries
+Example:
+clojure
+(ns kernel.uart
+(:profile :kernel)
+(:safety :strict)
+(:effects #{:memory/mmio :interrupts}))
+In :kernel , this would be illegal:
+clojure
+(defn bad []
+(new-dynamic-vector))
+because hidden heap allocation is not allowed.
+In :hosted , this is fine:
+clojure
+(def users [])
+because hosted code may use GC-backed persistent collections.
+Same language. Different safety contract.
+4. No undefined behavior in safe code
+This is essential.
+C and C++ permit undefined behavior. Rust avoids many memory-safety problems in safe
+Rust but still has unsafe for low-level work. Gravity should take the stronger position:
+
+
+===== PAGE 93 =====
+Safe Gravity has no undefined behavior.
+Every operation must be one of:
+1. Statically proven safe
+2. Runtime checked
+3. Rejected
+4. Moved into unsafe
+Example:
+clojure
+(vector/get xs i)
+In safe code, this must either:
+prove i is in bounds,
+insert a bounds check,
+return Option[T] ,
+or fail compilation under a no-checks profile.
+Gravity should not silently allow undefined behavior.
+5. Memory safety model
+Gravity needs multiple memory strategies, but all safe strategies must satisfy one shared
+contract.
+Memory safety contract
+A safe memory provider must guarantee:
+clojure
+(defcontract MemorySafety
+{:no-use-after-free true
+:no-double-free true
+:no-dangling-reference true
+:no-uninitialized-read true
+:no-out-of-bounds-access true
+:no-data-race true})
+Then different memory systems can implement that contract.
+GC-backed memory
+
+
+===== PAGE 94 =====
+Useful for hosted and dynamic code.
+clojure
+(ns app.web
+(:profile :hosted)
+(:memory gravity.memory/gc))
+Safety mechanism:
+object lifetime managed by GC
+no manual free
+checked references
+no raw pointers
+Ownership-backed memory
+Useful for native and systems code.
+clojure
+(ns engine.physics
+(:profile :native)
+(:memory gravity.memory/ownership))
+Safety mechanism:
+move semantics
+borrowing
+lifetime checking
+no aliasing mutable references
+Example:
+clojure
+(defn consume-buffer [buf :- Owned[Buffer]]
+...)
+After this call, buf is no longer usable by the caller.
+Region-backed memory
+Useful for compilers, parsers, games, high-performance servers.
+clojure
+(with-region [r]
+(let [ast (parse-in r source)]
+
+
+===== PAGE 95 =====
+(analyze ast)))
+Safety rule:
+clojure
+;; illegal
+(def leaked
+(with-region [r]
+(region/alloc r Byte 1024)))
+The compiler rejects this because the allocated object escapes the region.
+Linear resources
+Useful for files, sockets, GPU buffers, locks, transactions, handles.
+clojure
+(with-open [file (fs/open "data.edn")]
+(fs/read-all file))
+Or explicit linear typing:
+clojure
+(defn close-file [f :- Linear[File]]
+:- Consumed[File]
+...)
+A linear value must be:
+consumed exactly once,
+transferred exactly once,
+or explicitly forgotten only through unsafe/privileged code.
+Raw memory
+Only in unsafe code.
+clojure
+(unsafe
+(ptr/load! address))
+Raw memory should never leak into safe APIs unless wrapped by a proven-safe
+abstraction.
+
+
+===== PAGE 96 =====
+6. Borrowing and aliasing
+Gravity should borrow from Rust conceptually, but adapt it to Lisp/homoiconic
+programming.
+Safe code should enforce:
+many immutable aliases
+or
+one mutable alias
+but not both at the same time
+Example:
+clojure
+(let [a (borrow xs)
+b (borrow xs)]
+;; many immutable borrows allowed
+...)
+Mutable borrow:
+clojure
+(let [m (borrow-mut xs)]
+(vector/push! m 1))
+Illegal:
+clojure
+(let [a (borrow xs)
+m (borrow-mut xs)]
+...)
+because immutable and mutable access overlap.
+For a Lisp, this must work with persistent data structures too.
+Persistent immutable structures remain easy and safe:
+clojure
+(def xs [1 2 3])
+(def ys (conj xs 4))
+No aliasing problem exists because the structure is immutable.
+
+
+===== PAGE 97 =====
+Mutable structures require ownership/borrow checking.
+7. Default immutability
+Gravity should default to immutable values.
+clojure
+(def user {:id 1 :name "Ada"})
+Mutation should be explicit:
+clojure
+(defcell counter 0)
+(cell/swap! counter inc)
+Or profile-specific:
+clojure
+(defmutable Particle
+[x :- F32
+y :- F32
+vx :- F32
+vy :- F32])
+The rule:
+Mutation is allowed, but never ambient.
+This preserves Clojure’s safety ergonomics while still allowing Rust/Zig/C-level
+performance when needed.
+8. Initialization safety
+Uninitialized memory is a major source of vulnerabilities.
+Gravity should distinguish:
+clojure
+Uninit[T]
+Init[T]
+
+
+===== PAGE 98 =====
+MaybeUninit[T]
+Example:
+clojure
+(let [buf (alloc-uninit Byte 4096)]
+...)
+You cannot read from buf until the compiler knows it has been initialized.
+clojure
+(let [buf (alloc-uninit Byte 4096)
+buf2 (initialize-all buf 0)]
+(read-byte buf2 0))
+Unsafe escape hatch:
+clojure
+(unsafe
+(assume-initialized buf))
+This must carry proof/reason metadata in strict safety modes.
+9. Bounds safety
+Gravity should support multiple bounds strategies.
+clojure
+(vector/get xs i)
+Possible modes:
+Mode Behavior
+:checked Runtime bounds check
+:option Returns Option[T]
+:prove Compiler must prove in-bounds
+:unsafe No check, unsafe only
+
+
+===== PAGE 99 =====
+Mode Behavior
+:elide-when-proven Default optimized behavior
+Example:
+clojure
+(defn sum [xs :- Vec[F64]]
+(loop [i 0
+acc 0.0]
+(if (< i (count xs))
+(recur (inc i) (+ acc (vector/get xs i)))
+acc)))
+The compiler can prove the access is in bounds and remove the check.
+Safe source. Fast binary.
+10. Numeric safety
+Many vulnerabilities are not memory bugs directly. Integer overflow, truncation, and invalid
+casts can become security bugs.
+Gravity should avoid C-style silent numeric hazards.
+Default arithmetic
+In safe mode:
+clojure
+(+ a b)
+should be checked for overflow for fixed-width integers unless the compiler proves it safe.
+Explicit alternatives:
+clojure
+(wrapping/+ a b)
+(saturating/+ a b)
+(checked/+ a b)
+(unchecked/+ a b) ;; unsafe or performance-profile restricted
+Casts should be explicit:
+
+
+===== PAGE 100 =====
+clojure
+(cast/u8 x) ;; checked
+(cast/u8-truncate x) ;; explicit truncation
+No implicit narrowing.
+11. Data-race safety
+Gravity should guarantee data-race freedom in safe concurrent code.
+Safe shared mutation requires one of:
+atomics
+locks
+STM
+actors
+channels
+ownership transfer
+immutable persistent data
+Example actor:
+clojure
+(defactor Counter
+(state [n 0])
+(on :inc []
+(update state :n inc)))
+Example ownership transfer:
+clojure
+(task/spawn
+(move buffer)
+(process buffer))
+After moving buffer into the task, the parent cannot use it.
+This avoids shared mutable aliasing across threads.
+
+
+===== PAGE 101 =====
+12. Capability safety
+Memory safety is not enough. A safe language can still delete files, exfiltrate data, or let an
+AI agent call tools it should not call.
+Gravity already has effects/capabilities. Safety should integrate directly with that.
+clojure
+(defn delete-user-data
+{:effects #{:filesystem/write}}
+[path]
+(fs/delete path))
+A deployment must grant the capability:
+clojure
+(deployment
+{:allow #{:filesystem/read}
+:deny #{:filesystem/write}})
+Then delete-user-data cannot run there.
+This matters for:
+file access
+network access
+environment variables
+secrets
+shell execution
+database writes
+model calls
+tool calls
+FFI
+raw memory
+unsafe compiler plugins
+13. FFI safety
+Foreign function interfaces are one of the largest safety holes in safe languages.
+Gravity should treat FFI as unsafe by default.
+
+
+===== PAGE 102 =====
+clojure
+(extern strlen
+{:link "strlen"
+:type (Fn [CString] USize)
+:effects #{:ffi}
+:safety :unsafe})
+To make FFI safe, a wrapper must declare and prove or validate contracts.
+clojure
+(defn safe-strlen
+{:safe-wrapper-for strlen
+:requires [(cstring/null-terminated? s)]
+:ensures [(<= result (cstring/max-length s))]}
+[s :- CString]
+:- USize
+(unsafe
+(strlen s)))
+Safe code imports the wrapper, not the raw function.
+14. Unsafe islands
+Unsafe should be syntactically obvious, semantically tracked, and reviewable.
+clojure
+(unsafe
+{:reason "Volatile read from hardware register"
+:effects #{:memory/mmio}
+:invariants [(aligned? addr 4)
+(valid-mmio-region? addr)]}
+(mmio/read32 addr))
+Unsafe blocks should produce compiler artifacts:
+clojure
+{:unsafe-block/id "drivers.uart/read-status:42"
+:reason "Volatile read from hardware register"
+:effects #{:memory/mmio}
+:invariants [...]
+:review-status :required}
+Then the build can enforce:
+
+
+===== PAGE 103 =====
+clojure
+(:safety {:unsafe-policy :deny})
+or:
+clojure
+(:safety {:unsafe-policy :allow-reviewed-only})
+This is essential for enterprise, kernel, medical, aerospace, finance, and security-critical
+use.
+15. Safety levels
+Gravity should define named safety modes.
+Safety mode Meaning
+:safe No unsafe code, full checks/proofs required
+:safe-optimized Checks may be elided only when proven safe
+:audited-unsafe Unsafe allowed only with metadata and review
+:systems Unsafe allowed within restricted capabilities
+:trusted-runtime Runtime/compiler internals can use unsafe
+:experimental Relaxed checks for research
+:unsafe No guarantees; useful only for low-level escape hatches
+Example:
+clojure
+(ns payments.core
+(:profile :native)
+(:safety :safe-optimized))
+Example kernel code:
+clojure
+
+
+===== PAGE 104 =====
+(ns kernel.memory
+(:profile :kernel)
+(:safety :audited-unsafe))
+Example compiler internals:
+clojure
+(ns gravity.compiler.lowering
+(:profile :meta)
+(:safety :trusted-runtime))
+16. Safe abstractions over unsafe implementations
+Gravity must allow high-performance internals while exposing safe APIs.
+Example: a vector implementation may use raw memory internally.
+clojure
+(ns gravity.collections.vector
+(:safety :audited-unsafe))
+But expose safe operations:
+clojure
+(vector/get xs i) ;; checked/proven
+(vector/push xs value) ;; immutable/persistent or owned mutable
+(vector/count xs)
+This pattern is essential.
+Most high-performance safe languages work because the standard library contains
+carefully audited unsafe internals behind safe APIs.
+Gravity should formalize this.
+17. Proof-carrying libraries
+Gravity should support libraries that ship safety certificates.
+Package manifest:
+
+
+===== PAGE 105 =====
+clojure
+(package
+{:name gravity.collections
+:safety {:unsafe-blocks 12
+:proofs ["vector-bounds.gproof"
+"arena-lifetime.gproof"]
+:audits ["2026-collections-audit.md"]}})
+The compiler/package manager can enforce:
+clojure
+(dependencies
+{:allow-unsafe? false
+:allow-audited-unsafe? true
+:require-proofs? true})
+For critical systems, this is a major differentiator.
+18. Safety and replaceable built-ins
+Earlier, we said that macro systems, type systems, memory systems, and runtimes should
+be replaceable.
+Safety adds a constraint:
+Replaceable subsystems are allowed only if they implement declared safety contracts
+for the profile they claim to support.
+Example:
+clojure
+(defcapability custom.memory/arena
+{:kind :memory-system
+:implements [gravity.contracts/MemorySafety
+gravity.contracts/RegionSafety]
+:profiles #{:native :firmware}
+:proofs ["arena-safety.gproof"]})
+An alternative macro system must also be safe.
+clojure
+
+
+===== PAGE 106 =====
+(defcapability custom.macros/rewrite
+{:kind :macro-system
+:implements gravity.contracts/MacroSafety
+:guarantees #{:hygiene-preserving
+:phase-safe
+:profile-preserving}})
+The language can be extensible without becoming unsafe.
+19. Macro safety
+Macros can also introduce vulnerabilities.
+Gravity macros should be required to preserve:
+hygiene or explicitly declare unhygienic behavior
+profile legality
+effect legality
+source location
+safety metadata
+phase separation
+Example unsafe macro:
+clojure
+(defmacro unchecked-get [xs i]
+`(unsafe
+(vector/get-unchecked ~xs ~i)))
+This macro cannot be used in :safe code unless it exposes the unsafe effect.
+Macros should not be able to smuggle unsafe behavior into safe code.
+20. AI safety and tool safety
+Because Gravity includes AI/agentic programming, safety must include agent behavior.
+AI-related unsafe classes:
+Risk Gravity safety mechanism
+Tool misuse Tool calls require explicit capabilities
+
+
+===== PAGE 107 =====
+Risk Gravity safety mechanism
+Data exfiltration Secrets/data effects tracked
+Prompt injection Tool policies and taint tracking
+Unauthorized writes Human approval or write capability
+Nondeterminism Model calls tracked as effects
+Replay inconsistency Durable workflow recording
+Hallucinated code changes Generated patches require validation
+Unsafe generated code Generated code must pass safety checker
+Example:
+clojure
+(defagent code-agent
+{:tools [read-file propose-patch]
+:deny #{shell/exec secrets/read}
+:requires-human-approval #{filesystem/write}})
+AI code generation should not bypass the compiler’s safety rules.
+Generated Gravity code must compile under the same safety/profile constraints.
+21. Security-oriented effects
+Gravity should extend the effect system with security effects:
+clojure
+:memory/raw
+:memory/mmio
+:ffi
+:unsafe
+:filesystem/read
+:filesystem/write
+:network/client
+:network/server
+:secrets/read
+:env/read
+:process/spawn
+
+
+===== PAGE 108 =====
+:shell/exec
+:database/read
+:database/write
+:crypto/random
+:clock
+:ai/model-call
+:ai/tool-call
+:reflection
+:dynamic/eval
+:compiler/plugin
+This lets the compiler and deployment system answer:
+Can this code read secrets?
+Can this code write files?
+Can this code call the network?
+Can this code execute shell commands?
+Can this macro perform IO at compile time?
+Can this agent mutate production systems?
+That is safety beyond memory safety.
+22. Taint tracking
+For security-critical applications, Gravity should support optional taint tracking.
+Example:
+clojure
+(defn handle-request [input :- Tainted[String]]
+...)
+Tainted data cannot flow into dangerous sinks without validation.
+clojure
+(sql/query db
+(str "SELECT * FROM users WHERE name = " input))
+Rejected.
+Instead:
+clojure
+
+
+===== PAGE 109 =====
+(sql/query db
+(sql/param "SELECT * FROM users WHERE name = ?" input))
+Useful taint categories:
+clojure
+:Tainted/UserInput
+:Tainted/Network
+:Tainted/File
+:Tainted/AIOutput
+:Tainted/Secret
+:Tainted/UntrustedPackage
+This helps prevent:
+SQL injection
+command injection
+path traversal
+prompt injection
+XSS
+unsafe deserialization
+secret leakage
+23. Supply-chain safety
+Since Gravity has a package system, safety also applies to dependencies.
+Packages should declare:
+clojure
+(package
+{:name acme/image-parser
+:capabilities #{:filesystem/read}
+:unsafe-blocks 3
+:native-dependencies ["libpng"]
+:build-effects #{:build/read-file}
+:denied-effects #{:network/client :shell/exec}})
+The package manager should support policies:
+clojure
+(policy
+{:deny-build-network true
+:deny-postinstall-scripts true
+
+
+===== PAGE 110 =====
+:require-lockfile true
+:require-reproducible-build true
+:require-safety-metadata true
+:deny-unknown-unsafe true})
+This directly supports the private latent package space idea.
+Gravity packages should be safer than NPM-style arbitrary install scripts by default.
+24. Safety and performance should not be enemies
+Gravity should avoid the false choice between safety and performance.
+Compiler strategy:
+Start safe.
+Prove checks unnecessary.
+Erase proven checks.
+Keep only necessary checks.
+Example:
+clojure
+(loop [i 0]
+(when (< i n)
+(use (vector/get xs i))
+(recur (inc i))))
+If the compiler proves:
+clojure
+(<= n (count xs))
+then bounds checks can be removed.
+Safety remains semantic. Runtime overhead disappears where proven unnecessary.
+This should be a core optimization principle:
+Safety checks are specifications first and runtime operations only when proof is
+unavailable.
+
+
+===== PAGE 111 =====
+25. Safety-oriented compiler pipeline
+Add safety analysis as a first-class compiler stage.
+Source Forms
+↓
+Macro Expansion
+↓
+Core AST
+↓
+Type Checking
+↓
+Effect Checking
+↓
+Ownership / Lifetime Checking
+↓
+Initialization Checking
+↓
+Region Escape Checking
+↓
+Bounds Analysis
+↓
+Taint Analysis
+↓
+Capability Validation
+↓
+Unsafe Audit Extraction
+↓
+MIR
+↓
+Optimization
+↓
+Safety-Preserving Lowering
+↓
+Backend
+Important rule:
+Optimizations must preserve safety proofs.
+If an optimization invalidates a bound, lifetime, or aliasing proof, it must either regenerate
+the proof or keep the runtime check.
+26. Safety documents to add
+Add a dedicated safety section to the documentation tree.
+
+
+===== PAGE 112 =====
+850-safety/
+SAFE1-safety-charter.md
+SAFE2-safe-gravity-semantics.md
+SAFE3-memory-safety-model.md
+SAFE4-ownership-borrowing-lifetimes.md
+SAFE5-region-and-arena-safety.md
+SAFE6-linear-resource-safety.md
+SAFE7-unsafe-code-and-audit-model.md
+SAFE8-ffi-safety.md
+SAFE9-concurrency-and-data-race-safety.md
+SAFE10-numeric-safety.md
+SAFE11-capability-security-model.md
+SAFE12-taint-tracking-and-input-safety.md
+SAFE13-macro-safety.md
+SAFE14-ai-tool-safety.md
+SAFE15-supply-chain-safety.md
+SAFE16-safety-proof-and-certificate-model.md
+SAFE17-safety-conformance-test-plan.md
+Dependencies:
+L2 Core Semantics
+→ L5 Type System
+→ L6 Effect System
+→ L10 Memory Model
+→ L11 Concurrency Model
+→ P1 Profile System
+→ SAFE1 Safety Charter
+→ SAFE2 Safe Gravity Semantics
+→ SAFE3 Memory Safety Model
+→ SAFE4 Ownership/Borrowing/Lifetimes
+→ SAFE7 Unsafe Code Model
+→ SAFE17 Safety Conformance Tests
+The most important safety docs are:
+1. SAFE1 Safety Charter
+2. SAFE2 Safe Gravity Semantics
+3. SAFE3 Memory Safety Model
+4. SAFE4 Ownership, Borrowing & Lifetimes
+5. SAFE7 Unsafe Code & Audit Model
+6. SAFE9 Concurrency & Data-Race Safety
+7. SAFE11 Capability Security Model
+27. Updated language design statement
+
+
+===== PAGE 113 =====
+The Gravity thesis should be updated to:
+Gravity is a self-hosting homoiconic computing substrate designed to replace
+specialized programming languages across all fields of computing while
+preserving maximum performance, mathematical verifiability, extensibility, and
+safety. Safe Gravity code has no undefined behavior: memory, resources,
+concurrency, capabilities, effects, FFI, macros, and AI tool calls are checked by
+the compiler, runtime contracts, or proof artifacts. Unsafe behavior is allowed
+only inside explicit, auditable, capability-gated unsafe islands.
+That is the right positioning.
+28. The core safety rule
+The most important rule for the whole language is this:
+Nothing unsafe may be implicit.
+That means:
+no implicit raw pointer access
+no implicit null
+no implicit unchecked cast
+no implicit integer truncation
+no implicit allocation in no-allocation profiles
+no implicit IO in pure/build-safe code
+no implicit thread sharing
+no implicit FFI trust
+no implicit macro privilege
+no implicit AI tool permission
+no implicit package install execution
+If a program does something dangerous, the source code, type, effect, capability manifest,
+or unsafe audit must say so.
+29. Final recommended safety architecture
+Gravity should use a layered safety system:
+Immutable-by-default language
+↓
+Strong static types
+↓
+
+
+===== PAGE 114 =====
+No implicit null
+↓
+Checked initialization
+↓
+Ownership / borrowing / lifeGtiivmee sme a final list of all documents we need to write and
+↓ their sequence.
+Regions / arenas with escape checking
+↓
+Linear resource tracking
+Th o u↓ght for 4s
+Effect and capability checking
+Be l o↓w is the final ordered document sequence I would use for Gravity. This sequence
+Data-race-free concurrency
+assumes the project goal is:
+↓
+BoAu nsdesl f-ahnod sntiunmge,r ihco msaofiectoynic, Clojure-inspired language designed to replace specialized
+↓
+programming languages across all fields of computing while preserving maximum
+Taint tracking for untrusted data
+performance, safety, verifiability, extensibility, and whole-stack compilation.
+↓
+Explicit unsafe islands
+Final Gravity Document Sequence
+↓
+Proof/certificate artifacts for critical code
+Phase 0 — Foundation and Thesis
+This gives Gravity a credible claim:
+These documents define what Gravity is and prevent the project from becoming
+Gravity can be as safe as managed languages, as explicit as Rust/Zig, as
+incoherent.
+performant as C/C++/Fortran/CUDA, and more auditable than today’s mainstream
+Seq ID Document
+dynamic ecosystems.
+1 D0 Gravity Vision & Design Thesis
+2 D1 System Architecture Overview
+3 D2 Implementation Roadmap & Milestones
+4 D3 Terminology & Concept Model
+5 D4 Universal Computing Coverage Charter
+6 D5 Language Replacement Strategy
+7 D6 Performance Philosophy & Charter
+8 D7 Extensibility Philosophy
+9 D8 Safety Philosophy & Charter
+10 D9 Verifiability & Mathematical Correctness
+Charter
+
+
+===== PAGE 115 =====
+Phase 1 — Core Language
+These define the semantic foundation of the language.
+Seq ID Document
+11 L1 Surface Syntax Specification
+12 L2 Core Language Semantics
+13 L3 Namespace & Module System Specification
+14 L4 Macro System Specification
+15 L5 Type System Specification
+16 L6 Effect System Specification
+17 L7 Pattern Matching Specification
+18 L8 Protocols, Interfaces & Dispatch
+Specification
+19 L9 Error Handling Specification
+20 L10 Memory Model Specification
+21 L11 Concurrency Model Specification
+22 L12 Compile-Time Evaluation Specification
+23 L13 Standard Library Design Principles
+24 L14 Language Facet System Specification
+25 L15 Capability Provider Specification
+26 L16 Alternative Macro System Contract
+27 L17 Alternative Type System Contract
+28 L18 Alternative Memory Model Contract
+29 L19 Language Interoperability & Migration
+Specification
+
+
+===== PAGE 116 =====
+Phase 2 — Safety
+Safety should be defined before compiler implementation hardens, because it affects
+types, effects, memory, macros, FFI, packages, and AI tooling.
+Seq ID Document
+30 SAFE1 Safe Gravity Semantics
+31 SAFE2 Memory Safety Model
+32 SAFE3 Ownership, Borrowing & Lifetimes
+33 SAFE4 Region and Arena Safety
+34 SAFE5 Linear Resource Safety
+35 SAFE6 Unsafe Code and Audit Model
+36 SAFE7 FFI Safety
+37 SAFE8 Concurrency and Data-Race Safety
+38 SAFE9 Numeric Safety
+39 SAFE10 Capability Security Model
+40 SAFE11 Taint Tracking and Input Safety
+41 SAFE12 Macro Safety
+42 SAFE13 AI Tool Safety
+43 SAFE14 Supply-Chain Safety
+44 SAFE15 Safety Proof and Certificate Model
+45 SAFE16 Safety Conformance Test Plan
+Phase 3 — Profile System
+Profiles define which parts of Gravity are legal in each computing domain.
+
+
+===== PAGE 117 =====
+Seq ID Document
+46 P1 Profile System Specification
+47 P2 :core Profile Specification
+48 P3 :meta Profile Specification
+49 P4 :hosted Profile Specification
+50 P5 :native Profile Specification
+51 P6 :firmware Profile Specification
+52 P7 :kernel Profile Specification
+53 P8 :hardware Profile Specification
+54 P9 :distributed Profile Specification
+55 P10 :ai Profile Specification
+56 P11 :gpu / Accelerator Profile Specification
+57 P12 :formal Verification Profile Specification
+58 P13 Profile Compatibility Matrix
+Phase 4 — Performance Model
+These documents define how Gravity achieves “maximum performance possible” without
+making unsafe behavior implicit.
+Seq ID Document
+59 PERF1 Performance Model Specification
+60 PERF2 Zero-Cost Abstractions Specification
+61 PERF3 Specialization & Partial Evaluation Design
+62 PERF4 Memory Layout Optimization Design
+63 PERF5 Benchmark Suite & Performance Governance
+
+
+===== PAGE 118 =====
+Seq ID Document
+64 PERF6 Profile-Guided Optimization Design
+65 PERF7 Autotuning & Multiversioning Design
+66 PERF8 SIMD, Vectorization & Cache Optimization
+Strategy
+67 PERF9 Realtime and Deterministic-Latency
+Performance Model
+68 PERF10 Performance/Safety Check Elision Rules
+Phase 5 — Mathematical and Elementary Function System
+This incorporates the Elementary Function Breakthrough, certified approximation, proof
+artifacts, and high-performance math.
+Seq ID Document
+69 MATH1 Numeric Tower Specification
+70 MATH2 Elementary Function System Specification
+71 MATH3 Elementary Function IR — EFIR Specification
+72 MATH4 EML Normalization & Search Design
+73 MATH5 Certified Approximation Specification
+74 MATH6 Interval Arithmetic & Real Proof Engine
+75 MATH7 Numeric Modes & Precision Contracts
+76 MATH8 Floating-Point Semantics Specification
+77 MATH9 Symbolic Math and Rewrite System
+Specification
+78 MATH10 Elementary Function Optimization Strategy
+79 MATH11 Math Verification and Conformance Test Plan
+
+
+===== PAGE 119 =====
+Phase 6 — Compiler Architecture
+This is the main implementation spine.
+Seq ID Document
+80 C1 Compiler Architecture Overview
+81 C2 Reader Implementation Design
+82 C3 Syntax Object Model
+83 C4 Macro Expansion Engine Design
+84 C5 Name Resolution & Namespace Analyzer
+Design
+85 C6 AST and Core Lowering Design
+86 C7 Type Checker Design
+87 C8 Effect Checker Design
+88 C9 Ownership, Lifetime and Region Checker
+Design
+89 C10 Safety Analysis Pipeline Design
+90 C11 Gravity MIR Specification
+91 C12 Domain IR Architecture
+92 C13 MIR Optimization Passes Design
+93 C14 Target Lowering Architecture
+94 C15 Compiler Diagnostics Specification
+95 C16 Incremental Compilation Design
+96 C17 Compiler Plugin and Pass API Specification
+97 C18 Compiler Verification and Pass-Correctness
+Strategy
+
+
+===== PAGE 120 =====
+Phase 7 — Backend Architecture
+These define concrete outputs.
+Seq ID Document
+98 B1 Backend Interface Specification
+99 B2 C Backend Design
+100 B3 LLVM Backend Design
+101 B4 Wasm Backend Design
+102 B5 JVM Backend Design
+103 B6 JavaScript / TypeScript Backend
+Design
+104 B7 MLIR Backend Design
+105 B8 GPU Backend Design
+106 B9 HDL Backend Design
+107 B10 Workflow Graph Backend Design
+108 B11 Query / Relational Backend Design
+109 B12 Mobile Backend Design
+110 B13 Artifact Emission Specification
+111 B14 Backend Conformance Test Plan
+Phase 8 — Runtime Architecture
+Gravity needs multiple runtimes, not one universal runtime.
+Seq ID Document
+112 R1 Runtime Architecture Overview
+113 R2 No-Runtime Execution Model
+
+
+===== PAGE 121 =====
+Seq ID Document
+114 R3 Minimal Native Runtime Design
+115 R4 Managed Runtime Design
+116 R5 Memory Runtime Design
+117 R6 Concurrency Runtime Design
+118 R7 Distributed Runtime Design
+119 R8 AI Runtime Design
+120 R9 REPL and Interactive Runtime Design
+121 R10 FFI Runtime Design
+122 R11 Runtime Capability Enforcement Design
+123 R12 Runtime Observability and Diagnostics
+Design
+Phase 9 — Domain-Specific Computing Coverage
+These validate that Gravity can replace languages across all fields of computing.
+Seq ID Document
+124 DOM1 Hardware Computing Domain Specification
+125 DOM2 Firmware and Embedded Domain
+Specification
+126 DOM3 Operating System and Kernel Domain
+Specification
+127 DOM4 Drivers and Device Interaction Domain
+Specification
+128 DOM5 High-Performance Native Computing Domain
+Specification
+129 DOM6 Web Frontend and UI Domain Specification
+
+
+===== PAGE 122 =====
+Seq ID Document
+130 DOM7 Mobile Application Domain Specification
+131 DOM8 Backend Services Domain Specification
+132 DOM9 Distributed Systems Domain Specification
+133 DOM10 Database and Storage Engine Domain
+Specification
+134 DOM11 Data, Query and Analytics Domain
+Specification
+135 DOM12 Scientific and Numeric Computing Domain
+Specification
+136 DOM13 GPU and Accelerator Computing Domain
+Specification
+137 DOM14 Game Engine and Simulation Domain
+Specification
+138 DOM15 Security and Cryptography Domain
+Specification
+139 DOM16 Blockchain and Smart Contract Domain
+Specification
+140 DOM17 Compiler and Language Tooling Domain
+Specification
+141 DOM18 AI and Agentic Computing Domain
+Specification
+142 DOM19 Formal Verification Domain Specification
+143 DOM20 Scripting, Shell and Automation Domain
+Specification
+144 DOM21 Low-Code, Visual Programming and
+Workflow Domain Specification
+
+
+===== PAGE 123 =====
+Phase 10 — Schema, Data and Interop
+These let Gravity produce APIs, schemas, migrations, typed AI outputs, and cross-
+language bindings.
+Seq ID Document
+145 S1 Schema System Specification
+146 S2 Serialization Specification
+147 S3 Canonical Data Format Specification
+148 S4 GraphQL Generation Design
+149 S5 OpenAPI Generation Design
+150 S6 Database Mapping and Migration Design
+151 S7 Binary Encoding and ABI Schema
+Specification
+152 S8 Typed Configuration and Environment
+Specification
+153 S9 Artifact Schema Specification
+Phase 11 — AI and Agentic Programming
+These depend on effects, capabilities, schemas, safety, workflows, and runtime design.
+Seq ID Document
+154 A1 AI Programming Model Specification
+155 A2 Model Provider Specification
+156 A3 Prompt and Structured Output Specification
+157 A4 Tool Definition Specification
+158 A5 Agent Definition Specification
+159 A6 Agent Workflow Specification
+
+
+===== PAGE 124 =====
+Seq ID Document
+160 A7 Memory and Retrieval Specification
+161 A8 AI Policy and Safety Model
+162 A9 AI Evaluation Framework Design
+163 A10 Human-in-the-Loop and Approval Workflow
+Specification
+164 A11 Prompt Injection and Tool Misuse Defense
+Specification
+Phase 12 — Build, Package and Artifact System
+These documents make Gravity usable as a real ecosystem.
+Seq ID Document
+165 PKG1 Project File Specification
+166 PKG2 Build System Architecture
+167 PKG3 Artifact Model Specification
+168 PKG4 Package Manager Specification
+169 PKG5 Dependency Resolution Specification
+170 PKG6 Capability and Permission Manifest
+Specification
+171 PKG7 Reproducible Build Specification
+172 PKG8 Package Safety and Audit Metadata
+Specification
+173 PKG9 Private Registry and Latent Package Space
+Design
+174 PKG10 Supply-Chain Security and Provenance
+Specification
+
+
+===== PAGE 125 =====
+Seq ID Document
+175 PKG11 Cross-Compilation and Target Matrix
+Specification
+176 PKG12 Artifact Signing, Verification and SBOM
+Specification
+Phase 13 — Tooling and Developer Experience
+These make the language adoptable.
+Seq ID Document
+177 T1 CLI Specification
+178 T2 REPL UX Specification
+179 T3 Formatter Specification
+180 T4 Linter Specification
+181 T5 Language Server Protocol Design
+182 T6 Debugger Design
+183 T7 Documentation Generator Design
+184 T8 Dev Server Design
+185 T9 Package Registry UX Specification
+186 T10 Compiler Explorer and IR Inspector Design
+187 T11 Profiler and Performance Inspector Design
+188 T12 Safety Audit Explorer Design
+189 T13 AI-Assisted Development Tooling
+Specification
+Phase 14 — Testing, Verification and Conformance
+
+
+===== PAGE 126 =====
+These ensure the language is not just designed but mechanically testable.
+Seq ID Document
+190 TEST1 Language Conformance Test Plan
+191 TEST2 Compiler Test Strategy
+192 TEST3 Runtime Test Strategy
+193 TEST4 Profile Compliance Test Plan
+194 TEST5 Safety Conformance Test Plan
+195 TEST6 Backend Conformance Test Plan
+196 TEST7 Standard Library Test Strategy
+197 TEST8 AI and Workflow Evaluation Strategy
+198 TEST9 Fuzzing and Property Testing Plan
+199 TEST10 Differential Testing Strategy
+200 TEST11 Formal Semantics and Verification
+Plan
+201 TEST12 Performance Regression Test Plan
+202 TEST13 Self-Hosting Validation Plan
+Phase 15 — Bootstrap and Self-Hosting
+These are essential because Gravity should be mostly implemented in itself.
+Seq ID Document
+203 BOOT1 Bootstrap Strategy
+204 BOOT2 Seed Compiler Design
+205 BOOT3 Self-Hosted Compiler Plan
+206 BOOT4 Compiler-in-Gravity Coding Standard
+
+
+===== PAGE 127 =====
+Seq ID Document
+207 BOOT5 Stage Compatibility Matrix
+208 BOOT6 Trusting Trust and Reproducible Bootstrap
+Plan
+209 BOOT7 Self-Hosting Validation and Equivalence Plan
+210 BOOT8 Bootstrap Artifact Provenance Specification
+Phase 16 — Standard Library
+These can be written once the language/profile/safety model is stable.
+Seq ID Document
+211 STD1 Standard Library Architecture
+212 STD2 Core Library Specification
+213 STD3 Collections Library Specification
+214 STD4 String and Text Library Specification
+215 STD5 Numeric and Math Library Specification
+216 STD6 Memory and Resource Library Specification
+217 STD7 Concurrency Library Specification
+218 STD8 IO and Filesystem Library Specification
+219 STD9 Network and HTTP Library Specification
+220 STD10 Serialization and Schema Library
+Specification
+221 STD11 Database and Query Library Specification
+222 STD12 Workflow Library Specification
+223 STD13 AI and Agent Library Specification
+
+
+===== PAGE 128 =====
+Seq ID Document
+224 STD14 Testing Library Specification
+225 STD15 Compiler Meta-Programming Library
+Specification
+226 STD16 Platform and OS Library Specification
+227 STD17 Hardware and Firmware Library Specification
+228 STD18 Cryptography Library Specification
+229 STD19 UI and Application Library Specification
+230 STD20 Standard Library Stability Policy
+Phase 17 — Governance and Evolution
+These matter once external contributors or production users exist.
+Seq ID Document
+231 GOV1 Language Evolution Process
+232 GOV2 Compatibility Policy
+233 GOV3 Standard Library Governance
+234 GOV4 Security Review Process
+235 GOV5 Target Support Policy
+236 GOV6 RFC Process
+237 GOV7 Experimental Feature Policy
+238 GOV8 Deprecation and Stabilization Policy
+239 GOV9 Unsafe Code Governance Policy
+240 GOV10 Ecosystem Package Governance
+Policy
+
+
+===== PAGE 129 =====
+The Critical First 30 Documents
+The full list is 240 documents, but the first serious implementation should not wait for all of
+them.
+The first 30 to write are:
+1. D0 Gravity Vision & Design Thesis
+2. D1 System Architecture Overview
+3. D2 Implementation Roadmap & Milestones
+4. D3 Terminology & Concept Model
+5. D4 Universal Computing Coverage Charter
+6. D5 Language Replacement Strategy
+7. D6 Performance Philosophy & Charter
+8. D7 Extensibility Philosophy
+9. D8 Safety Philosophy & Charter
+10. D9 Verifiability & Mathematical Correctness Charter
+11. L1 Surface Syntax Specification
+12. L2 Core Language Semantics
+13. L3 Namespace & Module System Specification
+14. L4 Macro System Specification
+15. L5 Type System Specification
+16. L6 Effect System Specification
+17. L10 Memory Model Specification
+18. L11 Concurrency Model Specification
+19. L15 Capability Provider Specification
+20. SAFE1 Safe Gravity Semantics
+21. SAFE2 Memory Safety Model
+22. SAFE3 Ownership, Borrowing & Lifetimes
+23. SAFE6 Unsafe Code and Audit Model
+24. P1 Profile System Specification
+25. P2 :core Profile Specification
+26. P3 :meta Profile Specification
+27. P4 :hosted Profile Specification
+28. P5 :native Profile Specification
+29. PERF1 Performance Model Specification
+30. C1 Compiler Architecture Overview
+
+
+===== PAGE 130 =====
+After those 30, implementation can begin in parallel with the remaining specs.
+The Core Dependency Chain
+The most important sequence is:
+Vision
+→ Architecture
+→ Terminology
+→ Syntax
+→ Core Semantics
+→ Namespaces
+→ Macros
+→ Types
+→ Effects
+→ Memory Model
+→ Safety Semantics
+→ Capability Providers
+→ Profiles
+→ Performance Model
+→ Compiler Architecture
+→ MIR
+→ Backends
+→ Runtime
+→ Build System
+→ Tooling
+→ Self-Hosting
+That chain should not be violated. The rest of the documents can be written in parallel
+once their dependencies exist.
