@@ -42,7 +42,8 @@ cycle-aware hardware semantics.
 - `L5`, `L6`, and `SAFE9` define fixed-width types, effects, and numeric modes.
 - `SAFE8` defines synchronization semantics adapted to clock domains.
 - `SAFE10` defines port and external interface capabilities.
-- `SAFE16` defines proof evidence and conformance records for safety claims.
+- `SAFE15` defines proof evidence for safety claims.
+- `SAFE16` defines conformance records for safety claims.
 - Hardware backend documents define HDL, netlist, timing, and verification
   lowering.
 

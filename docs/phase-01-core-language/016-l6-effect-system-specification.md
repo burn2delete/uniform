@@ -63,9 +63,16 @@ Core effect families include:
 - `:compiler/write-ir`,
 - `:compiler/plugin`,
 - `:build/read-file`,
+- `:build/write-artifact`,
 - `:build/env`,
 - `:build/network`,
 - `:build/exec`,
+- `:build/time`,
+- `:build/random`,
+- `:build/model-call`,
+- `:build/tool-call`,
+- `:build/target-probe`,
+- `:build/package-index`,
 - `:secrets/read`,
 - `:shell/exec`,
 - `:workflow/event`,
@@ -75,6 +82,9 @@ Core effect families include:
 - `:ai/embedding`,
 - `:ai/memory-read`,
 - `:ai/memory-write`,
+- `:ai/prompt-render`,
+- `:ai/output-validate`,
+- `:ai/eval-run`,
 - `:ai/human-review`,
 - `:unsafe`.
 
@@ -150,8 +160,8 @@ Required handler classes include:
 - async handlers for `:async/suspend`, `:async/await`, scheduler wakeups, cancellation, and timeout interpretation;
 - generator handlers for `:generator/yield`, typed send values, completion values, and close behavior;
 - resumable error handlers for `:error/resume`, typed error payloads, typed resume values, abort paths, and cleanup paths;
-- workflow replay handlers for `:workflow/event`, `:workflow/replay`, time, random, activity, model-call, tool-call, approval, retry, and compensation records;
-- tool-call interpreters for `:ai/tool-call` with schema validation, tool identity, approval policy, budget policy, and result typing;
+- workflow replay handlers for `:workflow/event`, `:workflow/replay`, time, random, activity, model-call, tool-call, human-review, retry, and compensation records;
+- tool-call interpreters for `:ai/tool-call` with schema validation, tool identity, human-review policy, budget policy, and result typing;
 - test interpreters that replace declared effects with fixtures, fakes, mocks, golden records, or deterministic replay data during test and conformance execution.
 
 Test interpreters are not an ambient profile that makes effects legal. They run under the active target profile plus explicit test harness grants. A test fake may satisfy a handled effect only if the replaced label, fake capability, fixture identity, and expected diagnostic behavior are recorded.
@@ -183,7 +193,7 @@ Continuation safety checks must reject:
 - replaying a continuation in a way that repeats an external side effect;
 - serializing a continuation into an artifact without an approved profile representation.
 
-Replay-sensitive handlers must distinguish record mode from replay mode. In record mode, a handler may perform an allowed live effect and append a typed replay record. In replay mode, the handler must read the existing record and must not re-execute time, random, network, database, model-call, tool-call, human-approval, workflow-event, or scheduler effects unless the profile explicitly defines a deterministic replay operation.
+Replay-sensitive handlers must distinguish record mode from replay mode. In record mode, a handler may perform an allowed live effect and append a typed replay record. In replay mode, the handler must read the existing record and must not re-execute time, random, network, database, model-call, tool-call, `:ai/human-review`, workflow-event, or scheduler effects unless the profile explicitly defines a deterministic replay operation.
 
 Workflow replay handlers must use stable event ids and typed payloads. Missing, mismatched, reordered, or extra replay records are L6 errors, not host runtime warnings.
 
@@ -329,7 +339,7 @@ L6 rejects:
 - Async and generator fixtures prove typed yield, suspend, await, resume, cancel, close, and completion behavior.
 - Resumable-error fixtures prove typed resume values, abort paths, cleanup ordering, and rejected unsafe resumes.
 - Workflow replay fixtures prove record-mode writes, replay-mode reads, stable event ids, and rejection of missing or mismatched records.
-- Tool-call interpreter fixtures prove schema validation, capability checks, approval policy, budget policy, typed results, and no ambient tool authority.
+- Tool-call interpreter fixtures prove schema validation, capability checks, human-review policy, budget policy, typed results, and no ambient tool authority.
 - Test interpreter fixtures prove fakes and mocks are profile-gated, artifact-recorded, capability-checked, and unable to hide unexpected live effects.
 
 ## Change Control

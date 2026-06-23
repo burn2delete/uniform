@@ -51,7 +51,7 @@ analysis, optimization, code generation preparation, or caching.
 
 - `C1` through `C18` define compiler obligations.
 - `L1` through `L15` define source facts.
-- `SAFE1` through `SAFE15` define safety facts.
+- `SAFE1` through `SAFE16` define safety facts and conformance records.
 - `B1` and `B13` define backend interface and artifact emission.
 - `T10` defines IR inspection outputs.
 

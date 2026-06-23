@@ -22,8 +22,8 @@ capability, deployment, and replay implications.
 - Migration plans must declare from/to schema ids, compatibility policy,
   transaction mode, data-loss policy, backfill strategy, rollback or
   forward-only behavior, deployment ordering, and required capabilities.
-- Destructive migrations require an explicit data-loss policy decision and artifact
-  evidence.
+- Destructive migrations require an explicit data-loss policy decision, any
+  policy-required review record, and artifact evidence.
 - Runtime migration execution requires database write/admin capabilities.
 - Migrations must account for GraphQL/OpenAPI/client/AI-output compatibility
   when those artifacts derive from the same schemas.
@@ -44,6 +44,7 @@ capability, deployment, and replay implications.
 - SQL or provider migration artifact.
 - Rollback or forward-only plan.
 - Data-loss report.
+- Required review record.
 - Typed row adapter.
 - Query plan metadata.
 - Fixture database or plan-validation report.
@@ -75,7 +76,8 @@ Database mapping diagnostics use `S6` identifiers:
 - `S6-MAPPING` for unsupported or lossy schema-to-database mapping.
 - `S6-DIALECT` for unsupported database features or type behavior.
 - `S6-MIGRATION` for migration plans without compatibility policy.
-- `S6-DATA-LOSS` for destructive changes without data-loss policy decision and evidence.
+- `S6-DATA-LOSS` for destructive changes without data-loss policy decision,
+  required review record, or evidence.
 - `S6-ROLLBACK` for missing rollback or forward-only policy.
 - `S6-CAPABILITY` for runtime migration without write/admin grant.
 - `S6-ADAPTER` for row adapters that weaken source schemas.
@@ -90,7 +92,8 @@ id, effect, capability, data-loss state, and remediation.
 Gravity rejects migration generation as string concatenation without schema
 diffs.
 
-Gravity rejects destructive migration without explicit policy.
+Gravity rejects destructive migration without explicit policy and any required
+review record.
 
 Gravity rejects database rows trusted without typed adapters.
 
@@ -106,6 +109,7 @@ A conforming database mapping system must demonstrate:
 - schema-to-table and row-adapter generation,
 - additive, breaking, and destructive migration fixtures,
 - data-loss reports,
+- policy-required review records for destructive migrations,
 - rollback or forward-only plans,
 - dialect-specific type behavior tests,
 - runtime capability checks,

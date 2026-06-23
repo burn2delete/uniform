@@ -18,7 +18,7 @@ Defines model, tool, agent, memory, policy, evaluation, and human-review contrac
 
 ## Phase Contract
 
-AI is a first-class Gravity target, not an SDK side path. Model calls, tool calls, memory reads/writes, embeddings, `:ai/human-review`, and generated code are effects with schemas, capabilities, policies, replay records, and evaluation evidence.
+AI is a first-class Gravity target, not an SDK side path. Model calls, prompt rendering, tool calls, memory reads/writes, embeddings, output validation, eval runs, `:ai/human-review`, and generated code are effects with schemas, capabilities, policies, replay records, and evaluation evidence.
 
 The phase is successful when agents and workflows can be compiled, audited, replayed, evaluated, and capability-limited like any other Gravity artifact.
 

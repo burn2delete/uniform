@@ -6,7 +6,7 @@ Defines the rules that make safe Gravity code memory-safe, race-safe, auditable,
 
 The PDF makes safety part of the language semantics, not an optional lint layer. Phase 2 therefore depends on this chain:
 
-`L2 Core Semantics -> L5 Type System -> L6 Effect System -> L10 Memory -> L11 Concurrency -> L15 Capability Providers -> SAFE1 Safe Semantics -> SAFE2 Memory Safety -> SAFE3 Ownership/Borrowing -> SAFE4 Regions -> SAFE6 Unsafe Audit -> SAFE16 Conformance`
+`L2 Core Semantics -> L5 Type System -> L6 Effect System -> L10 Memory -> L11 Concurrency -> L15 Capability Providers -> SAFE1 Safe Semantics -> SAFE2 Memory Safety -> SAFE3 Ownership/Borrowing -> SAFE4 Regions -> SAFE5 Linear Resources -> SAFE6 Unsafe Audit -> SAFE16 Conformance`
 
 Every safe operation must fall into exactly one outcome path: `:proven-safe`, `:runtime-checked`, `:rejected`, or `:unsafe-island`. No backend, macro, AI tool, package, or optimization may introduce a fifth path.
 

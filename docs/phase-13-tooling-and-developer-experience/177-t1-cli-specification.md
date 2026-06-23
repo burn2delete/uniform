@@ -31,6 +31,7 @@ The CLI includes:
 - `gravity package`;
 - `gravity registry`;
 - `gravity audit`;
+- `gravity verify`;
 - `gravity inspect-ir`;
 - `gravity profile`;
 - `gravity ai`;

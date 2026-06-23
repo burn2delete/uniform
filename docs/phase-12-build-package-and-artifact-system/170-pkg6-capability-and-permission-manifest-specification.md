@@ -8,10 +8,10 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 ## Purpose
 
 This specification defines package-level capability and permission manifests.
-The manifest describes what capabilities a package declares, what it denies,
-what it delegates to deployment, which dependencies request authority, and what
-runtime handles are required. It is evidence for package review, build policy,
-runtime enforcement, and supply-chain audit.
+The manifest describes what effects and capabilities a package declares, what
+it denies, what it delegates to deployment, which dependencies request
+authority, and what runtime handles are required. It is evidence for package
+review, build policy, runtime enforcement, and supply-chain audit.
 
 Capabilities are requested by packages, granted by deployments or explicit
 policy, and enforced at runtime. Dependency resolution never grants them.
@@ -22,9 +22,9 @@ The manifest records:
 
 - package id and version;
 - declared effects and capabilities;
-- denied capabilities;
+- denied effects and capabilities;
 - per-profile and per-target capability needs;
-- dependency capability summaries;
+- dependency effect and capability summaries;
 - tool and agent capability needs;
 - unsafe or FFI capability use;
 - deployment grant requirements;
@@ -40,9 +40,10 @@ compared against package and deployment policy.
 - Every package artifact MUST include a capability summary.
 - Capability summaries MUST be derived from effect analysis and explicit declarations.
 - Dependencies MUST NOT grant capabilities to dependents.
-- Capability expansion across package updates MUST be reported.
+- Effect or capability expansion across package updates MUST be reported.
 - Runtime effects MUST be backed by scoped capability handles.
-- Denied capabilities MUST fail closed even if a dependency requests them.
+- Denied effects or capabilities MUST fail closed even if a dependency requests
+  them.
 - AI tools, FFI, shell, secrets, filesystem writes, network access, database writes, and production mutation MUST be visible in the manifest.
 - Deployment grants MUST be separate from package requests.
 - Permission manifests MUST be included in provenance and SBOM data.
@@ -53,10 +54,10 @@ compared against package and deployment policy.
 The flow is:
 
 1. Source analysis finds effects.
-2. Project file requests capabilities.
-3. Package manifest summarizes requested and denied capabilities.
+2. Project file requests effects and capabilities.
+3. Package manifest summarizes requested and denied effects and capabilities.
 4. Dependency resolver compares dependency requests with policy.
-5. Deployment grants scoped handles.
+5. Deployment grants scoped handles for approved capabilities.
 6. Runtime records handle use.
 
 Any missing edge rejects the action or build.
@@ -78,8 +79,8 @@ The compiler and package tool emit:
 
 - capability manifest;
 - effect-to-capability derivation report;
-- denied-capability table;
-- dependency capability diff;
+- denied-effect and denied-capability tables;
+- dependency effect and capability diff;
 - deployment grant requirements;
 - runtime audit event schema;
 - SBOM capability fields.
@@ -89,20 +90,22 @@ The compiler and package tool emit:
 ```clojure
 (capability-manifest
   {:package acme/support-agent
-   :requests [:network/http :database/read :ai/model-call]
-   :denies [:shell/exec :secrets/read :filesystem/write]
-   :deployment-grants [:network/http :database/read]
+   :effects {:requests [:network/http :database/read :ai/model-call]
+             :denies [:shell/exec :secrets/read :filesystem/write]}
+   :capabilities {:requests [:http/client :db/query :model/call]
+                  :denies [:shell/exec :secret/read :fs/write]
+                  :deployment-grants [:http/client :db/query]}
    :human-review-required [:ai/model-call]
-   :runtime-handles {:database/read DatabaseReadCap
-                     :network/http HttpClientCap}})
+   :runtime-handles {:db/query DatabaseReadCap
+                     :http/client HttpClientCap}})
 ```
 
 ## Rejection Rules
 
 - Reject artifacts missing capability summary.
 - Reject runtime effects with no capability derivation.
-- Reject dependency updates that expand capabilities without policy approval.
-- Reject denied capabilities even when requested transitively.
+- Reject dependency updates that expand effects or capabilities without policy review.
+- Reject denied effects or capabilities even when requested transitively.
 - Reject ambient authority not represented by a runtime handle.
 - Reject deployment manifests that grant capabilities not requested by the package.
 - Reject SBOM output missing capability fields.
@@ -112,8 +115,8 @@ The compiler and package tool emit:
 
 - `PKG6001` reports missing capability summary.
 - `PKG6002` reports effect without capability derivation.
-- `PKG6003` reports capability expansion.
-- `PKG6004` reports denied capability request.
+- `PKG6003` reports effect or capability expansion.
+- `PKG6004` reports denied effect or capability request.
 - `PKG6005` reports ambient authority.
 - `PKG6006` reports invalid deployment grant.
 - `PKG6007` reports SBOM capability omission.
@@ -125,8 +128,8 @@ target, grant source, and policy rule.
 ## Conformance Criteria
 
 - Source effects produce a deterministic capability manifest.
-- Dependency capability expansion is visible in update diffs.
-- Denied capabilities reject builds even when requested transitively.
+- Dependency effect or capability expansion is visible in update diffs.
+- Denied effects or capabilities reject builds even when requested transitively.
 - Runtime handle use is logged for participating runtimes.
 - Deployment cannot grant capabilities absent from the package request set.
 - SBOM records package capabilities.

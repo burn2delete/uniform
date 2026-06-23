@@ -72,7 +72,7 @@ The dev server emits:
 
 ```bash
 gravity dev --project gravity.edn --profile hosted --target jvm-21 --watch
-gravity dev --grant http/client --deny secrets/read --emit diagnostics-json
+gravity dev --grant http/client --deny secret/read --emit diagnostics-json
 gravity dev --profile ai --record-replay dev-replay.jsonl
 ```
 

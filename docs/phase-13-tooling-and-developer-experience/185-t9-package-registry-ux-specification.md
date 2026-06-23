@@ -73,7 +73,7 @@ Registry UX emits:
 ```bash
 gravity registry inspect gravity/http --show-capabilities --show-sbom --format json
 gravity registry diff gravity/http 2.0.0 2.1.0 --show-policy-impact
-gravity registry search --profile hosted --target wasm32-wasi --deny-capability process/exec
+gravity registry search --profile hosted --target wasm32-wasi --deny-capability shell/exec
 ```
 
 ## Rejection Rules

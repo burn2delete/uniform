@@ -27,7 +27,7 @@ A project file contains:
 - profiles and target matrix references;
 - entrypoints by artifact kind;
 - dependencies and registry scopes;
-- capability requests and explicit denials;
+- effect declarations, capability requests, and explicit denials;
 - build, test, doc, and package tasks;
 - safety and unsafe-code policy;
 - artifact list and signing policy;
@@ -39,12 +39,14 @@ project code.
 ## Requirements
 
 - The project file MUST be readable without macro expansion or arbitrary code execution.
-- Package name, version, edition, source roots, profiles, targets, dependencies, capabilities, artifacts, and policy MUST be explicit.
+- Package name, version, edition, source roots, profiles, targets,
+  dependencies, effects, capabilities, artifacts, and policy MUST be explicit.
 - Profiles MUST be validated against Phase 3 profile definitions.
 - Targets MUST be valid for the declared profiles.
 - Entry points MUST resolve to source vars or artifact declarations.
 - Dependencies MUST resolve through declared registries or local paths.
-- Capability requests MUST name effects or runtime services and MUST NOT grant themselves.
+- Effect requests MUST name effect labels; capability requests MUST name runtime
+  capability families or services; neither grants itself.
 - Unsafe-code policy MUST state deny, allow-with-audit, or internal-only.
 - Release builds MUST require a lockfile.
 - Project metadata MUST be included in artifact manifests.
@@ -67,7 +69,7 @@ The package tool emits:
 - project-file canonical hash;
 - dependency root set;
 - declared profile and target set;
-- capability request table;
+- effect and capability request tables;
 - unsafe policy summary;
 - task graph seeds;
 - artifact emission plan;
@@ -90,8 +92,10 @@ that depends on project configuration.
                  :workflow support.workflow/triage}
    :dependencies {gravity/core "1.0.0"
                   gravity/ai "1.2.0"}
-   :capabilities {:request [:network/http :database/read :ai/model-call]
-                  :deny [:shell/exec :secrets/read]}
+   :effects {:request [:network/http :database/read :ai/model-call]
+             :deny [:shell/exec :secrets/read]}
+   :capabilities {:request [:http/client :db/query :model/call]
+                  :deny [:shell/exec :secret/read]}
    :artifacts [:library :agent-manifest :workflow-graph :docs]
    :policy {:unsafe :deny
             :release {:lockfile true :sign true :sbom true}}})
@@ -104,7 +108,7 @@ that depends on project configuration.
 - Reject entrypoints that cannot resolve after namespace analysis.
 - Reject release builds without a complete lockfile.
 - Reject dependencies outside declared registries or local path grants.
-- Reject capability expansion introduced only by dependencies.
+- Reject effect or capability expansion introduced only by dependencies.
 - Reject generated-source roots that are not marked generated and traceable.
 - Reject unsafe policy omission in packages containing unsafe forms.
 
@@ -114,7 +118,7 @@ that depends on project configuration.
 - `PKG1002` reports unknown profile or target.
 - `PKG1003` reports unresolved entrypoint.
 - `PKG1004` reports dependency source outside registry policy.
-- `PKG1005` reports undeclared capability request.
+- `PKG1005` reports undeclared effect or capability request.
 - `PKG1006` reports missing release lockfile.
 - `PKG1007` reports unsafe policy mismatch.
 - `PKG1008` reports artifact plan missing a required kind.

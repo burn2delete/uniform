@@ -63,14 +63,16 @@ Core capability families include:
 - Filesystem: `:fs/read`, `:fs/write`, `:fs/stat`, `:fs/watch`.
 - Environment and secrets: `:env/read`, `:secret/read`.
 - Network: `:net/client`, `:net/server`, `:http/client`, `:http/server`.
-- Process: `:process/exec`, `:process/spawn`.
+- Process and shell: `:process/spawn`, `:shell/exec`.
 - Database and query: `:db/query`, `:db/migrate`, `:query/remote`.
 - Model and AI: `:model/call`, `:embedding/call`, `:tool/invoke`.
 - Memory and unsafe: `:memory/raw`, `:memory/arena`, `:ffi/c`.
 - Hardware: `:hardware/mmio`, `:interrupt/register`,
   `:hardware/device-control`.
 - Compiler and build: `:compiler/ir-transform`, `:build/read-file`,
-  `:build/write-artifact`, `:build/network`.
+  `:build/write-artifact`, `:build/env`, `:build/network`, `:build/exec`,
+  `:build/time`, `:build/random`, `:build/model-call`, `:build/tool-call`,
+  `:build/target-probe`, `:build/package-index`.
 - Deployment: `:deploy/publish`, `:config/write`, `:credential/mint`.
 
 Packages may define narrower capabilities, but they must map to provider
