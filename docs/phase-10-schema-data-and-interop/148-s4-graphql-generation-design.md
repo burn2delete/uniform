@@ -53,7 +53,7 @@ artifact, not the source of truth.
 {:artifact :gravity/graphql-generation
  :source-schemas #{User Ticket}
  :operations {:user {:effects #{:database/read}
-                     :capabilities #{:database/read}}}
+                     :capabilities #{:db/query}}}
  :artifacts #{:sdl :resolver-adapters :typed-client :schema-diff}
  :nullability :gravity-option-result}
 ```

@@ -36,7 +36,8 @@ selection artifacts.
 - `MATH4` defines EML normalization.
 - `MATH5` defines certified approximation.
 - `MATH7` and `MATH8` define numeric and floating modes.
-- `L15` defines replaceable math providers.
+- `L15` defines the common provider machinery used by replaceable math
+  providers.
 - `SAFE9` and `SAFE15` define numeric safety and certificates.
 
 ## Outputs and Artifacts
@@ -168,4 +169,3 @@ A conforming elementary-function system must demonstrate:
 - Numeric mode and precision contract tests.
 - Certificate enforcement for approximate providers.
 - Runtime implementation maps tied to EFIR artifacts.
-

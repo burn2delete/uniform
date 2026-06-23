@@ -72,7 +72,7 @@ Required positive fixture:
 (ns hello.main
   (:profile :hosted)
   (:effects #{:io/write})
-  (:capabilities #{:io/write}))
+  (:capabilities #{:io/stdout}))
 
 (defn main []
   (println "Hello Gravity"))

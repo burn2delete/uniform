@@ -21,7 +21,7 @@ A Gravity source file contains zero or more top-level forms. A normal compilatio
   (:target :jvm)
   (:requires [gravity.net.http :as http])
   (:effects #{:network/http :io/write})
-  (:capabilities #{:network/http :io/write})
+  (:capabilities #{:http/client :io/stdout})
   (:safety :safe))
 ```
 
@@ -153,7 +153,7 @@ Function, namespace, and binding forms may carry effect declarations:
 ```clojure
 (defn fetch
   {:effects #{:network/http}
-   :capabilities #{:network/http}}
+   :capabilities #{:http/client}}
   [url :- Url]
   :- HttpResponse
   ...)

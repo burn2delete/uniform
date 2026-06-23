@@ -79,7 +79,7 @@ Every artifact has an artifact record:
  :profile :native
  :target :llvm-x86_64-linux
  :effects [:filesystem/read :network/http]
- :capabilities [:filesystem/read :network/http]
+ :capabilities [:fs/read :http/client]
  :safety {:mode :safe :unsafe-islands []}
  :provenance [:source-lowering :mir-optimization :target-lowering]}
 ```

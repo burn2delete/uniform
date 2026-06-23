@@ -83,7 +83,7 @@ Dispatch mode is selected by profile, target, type facts, optimization, and decl
  :receiver FileHandle
  :dispatch :direct
  :effects [:resource/close]
- :capabilities [:filesystem/write]
+ :capabilities [:fs/write]
  :profile :native}
 ```
 

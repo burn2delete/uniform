@@ -59,6 +59,7 @@ capability, deployment, and replay implications.
  :dialect :postgresql
  :policy :additive
  :effects #{:database/write}
+ :capabilities #{:db/migrate}
  :artifacts #{:sql-migration :rollback-plan :data-loss-report}}
 ```
 

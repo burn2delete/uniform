@@ -24,7 +24,7 @@ Every normal source file belongs to exactly one namespace declared with `ns`.
   (:imports [c.libc :as libc])
   (:exports [main start stop])
   (:effects #{:network/listen :io/write})
-  (:capabilities #{:network/listen :io/write})
+  (:capabilities #{:network/listener :io/stdout})
   (:safety :safe-optimized))
 ```
 
@@ -134,7 +134,7 @@ Each namespace emits a module artifact before target lowering:
  :exports [main start stop]
  :requires [{:module gravity.net.http :profile :native :effects [:network/http]}]
  :effects [:network/listen :io/write]
- :capabilities [:network/listen :io/write]
+ :capabilities [:network/listener :io/stdout]
  :safety :safe-optimized
  :source-hash "sha256:..."
  :definitions definitions-hash}

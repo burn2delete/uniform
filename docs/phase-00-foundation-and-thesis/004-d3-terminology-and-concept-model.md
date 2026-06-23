@@ -63,6 +63,7 @@ The graph is directed. A backend may not reinterpret source syntax. A runtime ma
 | EFIR | Elementary Function IR, the semantic carrier for analyzable math expressions. |
 | EML | Elementary math language used for normalization, proof, synthesis, and search, not as the universal runtime representation. |
 | Replay record | Durable record of nondeterministic workflow or AI decisions needed for replay and audit. |
+| Human-review effect | Canonical `:ai/human-review` effect for human decision points in AI, workflow, tooling, shell, package, deployment, and other privileged actions. Approval, denial, repair request, escalation, timeout, and revocation are possible human-review outcomes, not independent capability grants. |
 | Proof certificate | Machine-checkable evidence for safety, approximation, rewrite, optimization, pass correctness, or artifact provenance. |
 | Seed compiler | Initial implementation used to bootstrap Gravity before components become self-hosted. |
 | Self-hosted component | Compiler, build, package, standard-library, or tool component implemented in Gravity and validated through bootstrap equivalence. |
@@ -87,6 +88,8 @@ Hosted is not default. Hosted features such as reflection, dynamic loading, host
 
 Unsafe is not untracked. Unsafe code is explicitly tracked and audited; untracked unsoundness is rejected.
 
+Human review is not ambient approval. Earlier approval-oriented wording maps to the repository contract term `:ai/human-review` and the A10 human-review document. A human-review record may approve, deny, escalate, expire, or revoke a request; only a matching capability grant and policy decision can authorize the effect.
+
 ## Concept Records
 
 Compiler and tools should use concept records when exchanging metadata:
@@ -97,7 +100,7 @@ Compiler and tools should use concept records when exchanging metadata:
  :profile :hosted
  :target :jvm
  :declared-effects [:io/write :network/http]
- :required-capabilities [:io/write :network/http]
+ :required-capabilities [:io/stdout :http/client]
  :safety :safe
  :source-span "src/main.gravity:1:1"}
 ```
@@ -110,7 +113,7 @@ Compiler and tools should use concept records when exchanging metadata:
  :source-hash "sha256:..."
  :compiler "gravity-0.4"
  :effects [:workflow/event :time/read :network/http]
- :capabilities [:network/http]
+ :capabilities [:http/client]
  :provenance [:macro-expansion :typed-core :workflow-ir :artifact-emission]}
 ```
 

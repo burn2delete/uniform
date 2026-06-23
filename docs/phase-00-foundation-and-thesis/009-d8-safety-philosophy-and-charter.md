@@ -19,7 +19,7 @@ For every operation that may fail a safety property, the compiler must choose ex
 [:proven-safe :runtime-checked :rejected :unsafe-island]
 ```
 
-No fifth outcome exists. In particular, Gravity rejects "accepted because the target language has undefined behavior," "accepted because the host runtime probably checks it," and "accepted because this is performance-sensitive."
+No fifth outcome exists. Target-language undefined behavior, hopeful host-runtime checks, and performance pressure never justify accepting an operation outside one of those four outcomes.
 
 ## Safety Scope
 

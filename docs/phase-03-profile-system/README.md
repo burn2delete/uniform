@@ -6,7 +6,7 @@ Phase 3 defines profiles as compile-time contracts. A profile decides which Grav
 
 - Every namespace declares exactly one active profile with `(:profile ...)`; libraries that are intentionally reusable declare `(:profiles #{...})` plus per-profile exclusions.
 - A profile is checked before target lowering. Backends may refine a profile, but they cannot legalize a feature the profile rejected.
-- Effects must be a subset of the active profile, the package capability manifest, and the deployment grant. The narrowest of those three sets wins.
+- Effects must fit the active profile and package/deployment effect policy; capabilities must fit the package capability manifest and deployment grant. The narrowest applicable policy wins.
 - Cross-profile imports are allowed only through a profile-safe facade or an artifact boundary with typed schemas, explicit effects, and capability evidence.
 - Macros execute in meta context but expand into the caller profile. Expansion is rejected if it introduces illegal effects, hidden allocation, host reflection, unsafe code, or profile-incompatible runtime dependencies.
 - No profile may rely on implicit undefined behavior. A dangerous operation has a `:proven-safe`, `:runtime-checked`, `:rejected`, or `:unsafe-island` outcome.

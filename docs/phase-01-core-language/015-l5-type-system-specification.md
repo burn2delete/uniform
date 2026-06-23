@@ -86,7 +86,7 @@ Function types include parameter types, return type, latent effect set, capabili
 ```clojure
 (Fn [Request] Response
     :effects #{:network/http}
-    :capabilities #{:network/http})
+    :capabilities #{:http/client})
 ```
 
 Type inference is local and evidence-producing. It must not invent hidden dynamic behavior in constrained profiles. Where inference cannot prove required facts, the compiler requests annotations or rejects the program.

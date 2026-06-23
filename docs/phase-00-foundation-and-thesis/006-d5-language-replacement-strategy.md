@@ -53,7 +53,7 @@ Each replacement effort uses a record:
  :supported-slice [:args :stdout :filesystem-read :owned-buffers]
  :interop-boundaries [:libc-stdio]
  :effects [:io/write :filesystem/read :ffi/call]
- :capabilities [:io/write :filesystem/read :ffi/call]
+ :capabilities [:io/stdout :fs/read :ffi/c]
  :accepted-fixtures ["cli-copy.gravity" "owned-buffer.gravity"]
  :rejected-fixtures ["unchecked-ptr.gravity" "undeclared-file-read.gravity"]
  :artifacts [:binary :c-header :abi-manifest :safety-report]

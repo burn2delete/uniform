@@ -18,6 +18,7 @@ No downstream document may weaken these commitments:
 - Safe Gravity has no undefined behavior; unsafe behavior is explicit, typed, capability-gated, effect-tracked, auditable, and mechanically checkable.
 - Builds are hermetic by default. Build-time file, environment, network, and shell access are explicit effects.
 - Schemas, workflows, agents, proofs, diagnostics, and benchmark evidence are artifacts in the same graph as binaries and libraries.
+- The canonical AI review effect is `:ai/human-review`; approval is one possible human-review decision, not a separate ambient authorization path.
 
 ## Documents
 
