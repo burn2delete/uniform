@@ -113,7 +113,7 @@ The runtime emits:
 (defpolicy code-review-policy
   {:allow #{:repo/read :repo/search :ai/model-call :ai/memory-read}
    :deny #{:secrets/read :shell/exec :package/publish}
-   :requires-human-review #{:repo/write}
+   :human-review {:required-for #{:repo/write}}
    :generated-code {:must-compile true
                     :must-pass-tests true}
    :taint {:ai-output :untrusted-until-schema-validated

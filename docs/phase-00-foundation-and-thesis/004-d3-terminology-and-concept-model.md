@@ -88,7 +88,7 @@ Hosted is not default. Hosted features such as reflection, dynamic loading, host
 
 Unsafe is not untracked. Unsafe code is explicitly tracked and audited; untracked unsoundness is rejected.
 
-Human review is not ambient approval. Earlier approval-oriented wording maps to the repository contract term `:ai/human-review` and the A10 human-review document. A human-review record may approve, deny, escalate, expire, or revoke a request; only a matching capability grant and policy decision can authorize the effect.
+Human review is not authority. Earlier gate-oriented wording maps to the repository contract term `:ai/human-review` and the A10 human-review document. A human-review record may grant, deny, escalate, expire, or revoke a request; only a matching capability grant and policy decision can authorize the effect.
 
 ## Concept Records
 

@@ -95,7 +95,7 @@ The compiler and package tool emit:
    :capabilities {:requests [:http/client :db/query :model/call]
                   :denies [:shell/exec :secret/read :fs/write]
                   :deployment-grants [:http/client :db/query]}
-   :human-review-required [:ai/model-call]
+   :human-review {:required-for [:ai/model-call]}
    :runtime-handles {:db/query DatabaseReadCap
                      :http/client HttpClientCap}})
 ```

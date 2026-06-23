@@ -39,6 +39,7 @@ Required documents:
 - `D0` through `D9`,
 - `L1` through `L6`,
 - `L10`,
+- `L11`,
 - `L15`,
 - `SAFE1`, `SAFE2`, `SAFE3`, `SAFE6`, `SAFE8`, `SAFE10`,
 - `P1` through `P5`,

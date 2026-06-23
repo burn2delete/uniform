@@ -73,7 +73,7 @@ Values may carry multiple categories. A value may be both user input and secret
 derived. Clearing one category does not clear the others unless the validator
 declares that relation.
 
-## Sources
+## Taint Sources
 
 Source APIs mark taint:
 

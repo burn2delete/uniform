@@ -120,7 +120,9 @@ Human-review or policy decision is a first-class effect:
 
 ```clojure
 (tool/invoke update-file args
-  {:requires-human-review :human
+  {:effects #{:ai/human-review}
+   :human-review {:mode :required
+                  :reviewer :human}
    :policy :source-edit})
 ```
 
