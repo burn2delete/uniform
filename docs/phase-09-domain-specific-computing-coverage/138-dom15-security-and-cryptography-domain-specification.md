@@ -13,8 +13,9 @@ APIs.
 
 The replacement scope is secret types, capability-gated randomness, key
 management adapters, password hashing, signatures, encryption wrappers,
-protocol parsers, taint-safe sinks, constant-time annotations, vetted provider
-bindings, and audit/test-vector artifacts.
+encrypted value types, private-computation adapters, protocol parsers,
+taint-safe sinks, constant-time annotations, vetted provider bindings, and
+audit/test-vector artifacts.
 
 ## Requirements
 
@@ -24,6 +25,24 @@ bindings, and audit/test-vector artifacts.
   filesystem, HSM/KMS, model, tool, and logging effects require capabilities.
 - Crypto providers must be declared with algorithm, version, parameters, side
   channel policy, FFI boundary, and test vector evidence.
+- FHE, MPC, threshold, secure-enclave, and private-computation providers must be
+  declared with scheme/protocol, participants, key custody, parameter set,
+  leakage model, capability surface, and audit evidence.
+- Encrypted values must distinguish plaintext, ciphertext, secret shares,
+  commitments, blinded values, and revealed/public outputs in the type system.
+- FHE scheme parameters must include security level, polynomial/ring settings,
+  modulus chain, scale/precision policy, batching policy, bootstrapping policy,
+  supported operations, maximum multiplicative depth, and noise budget rules.
+- MPC scheme parameters must include field/ring, party set, threshold, adversary
+  model, preprocessing/triple source, transcript policy, and reveal rules.
+- Plaintext/ciphertext boundary crossings require explicit encrypt, decrypt,
+  reveal, re-randomize, share, reconstruct, or attest operations with
+  capabilities and audit records.
+- Compiler/runtime checks must reject private-computation programs that exceed
+  declared noise budget, depth, precision, participant, transcript, or provider
+  constraints.
+- Diagnostics must report privacy leakage through outputs, metadata, shape,
+  access patterns, timing, transcripts, prompts, logs, or provider boundaries.
 - Constant-time or side-channel-sensitive code must declare timing policy and
   emit analysis/audit evidence.
 - Custom cryptographic primitives require explicit experimental/review status,
@@ -46,8 +65,12 @@ bindings, and audit/test-vector artifacts.
 - Secret and taint policy report.
 - Randomness capability manifest.
 - Crypto provider manifest.
+- Private-computation provider manifest.
+- Encrypted value and plaintext/ciphertext boundary report.
+- Scheme parameter, noise/depth, and leakage diagnostics.
 - Constant-time analysis report.
 - Test vector and fuzz fixtures.
+- Private-computation test vectors, transcript fixtures, and audit evidence.
 - FFI safe-wrapper audit.
 - Redaction conformance report.
 - Security/crypto diagnostics.
@@ -59,10 +82,13 @@ bindings, and audit/test-vector artifacts.
  :profiles #{:core :native :hosted :formal}
  :backends #{:llvm :c :wasm}
  :artifacts #{:constant-time-report :test-vectors :fuzz-fixtures
-              :taint-policy :provider-audit}
- :examples #{:password-hash :signature :encrypted-storage :protocol-parser}
+              :taint-policy :provider-audit :private-compute-report
+              :leakage-diagnostics}
+ :examples #{:password-hash :signature :encrypted-storage :protocol-parser
+             :fhe-evaluation :mpc-aggregation}
  :rejects #{:secret-log :insecure-random :unreviewed-custom-crypto
-            :timing-branch-on-secret}}
+            :timing-branch-on-secret :implicit-decrypt
+            :noise-budget-exceeded :unaudited-reveal}}
 ```
 
 ## Replacement Scope
@@ -72,12 +98,67 @@ Gravity should replace:
 - secret-safe application crypto wrappers,
 - password hashing and token signing APIs,
 - encrypted storage adapters,
+- encrypted value APIs for FHE, MPC, threshold, and private-computation
+  workflows,
 - secure random provider calls,
 - protocol parsers,
 - constant-time low-level routines when evidence is available,
 - redaction and taint policies.
 
-Vetted external crypto libraries and HSM/KMS systems remain providers.
+Vetted external crypto libraries, HSM/KMS systems, FHE runtimes, MPC networks,
+threshold signing services, and secure-enclave systems remain providers.
+
+## Private Computation Model
+
+Gravity must model private computation as typed computation over protected
+values, not as opaque calls hidden behind a stringly provider API.
+
+Encrypted value types must carry:
+
+- protection kind: plaintext, ciphertext, secret share, commitment, blinded
+  value, attested enclave value, or public/revealed value,
+- scheme or protocol id,
+- parameter set and security level,
+- key id, owner, custody location, rotation policy, and threshold policy,
+- allowed operation set and provider capability,
+- noise budget, multiplicative depth, precision, scale, or transcript budget
+  where the scheme needs them,
+- leakage label for value, metadata, shape, timing, access pattern, transcript,
+  prompt, and output leakage.
+
+Boundary rules are explicit:
+
+- encryption moves plaintext into ciphertext or shares only through a declared
+  provider capability and key custody policy,
+- decryption, reveal, reconstruct, compare, branch, serialize, prompt, log, or
+  export operations require a boundary operation with audit evidence,
+- ciphertext/plaintext mixing is rejected unless the scheme explicitly supports
+  it and the result type records the new leakage and noise/depth state,
+- provider calls must return updated budget/depth/precision metadata or prove
+  that the operation is budget-neutral,
+- public outputs must carry a reveal reason, participant set, and leakage
+  summary.
+
+Provider manifests for FHE and MPC must name the implementation, version,
+scheme/protocol, parameter set, supported operation subset, unsupported
+operations, key custody mode, participant roles, network/transcript effects,
+side-channel policy, test vectors, and independent review/audit status.
+
+## Private Computation Slice
+
+The first private-computation slice is encrypted aggregation:
+
+- Gravity source declares encrypted input type, FHE or MPC provider capability,
+  scheme parameters, key custody, participant set, and leakage policy.
+- Type checking proves only approved arithmetic is applied to ciphertexts or
+  shares.
+- Compiler/runtime evidence proves noise budget, depth, precision, transcript,
+  and reveal constraints remain inside declared limits.
+- Provider wrapper emits parameter manifest, boundary manifest, test vectors,
+  transcript fixtures where applicable, and audit evidence.
+- Negative fixtures reject implicit decrypt, secret-dependent branching on
+  protected values, logging ciphertext metadata beyond policy, provider use
+  without custody evidence, and operations that exceed noise/depth limits.
 
 ## Minimum End-to-End Slice
 
@@ -98,6 +179,18 @@ Security/crypto diagnostics use `DOM15` identifiers:
   artifacts.
 - `DOM15-RANDOM` for crypto/random use without approved randomness capability.
 - `DOM15-PROVIDER` for undeclared or unsupported crypto provider behavior.
+- `DOM15-PRIVATE-COMPUTE` for encrypted value, FHE, MPC, threshold, or enclave
+  computation that lacks a declared scheme/protocol, participant set, parameter
+  set, capability, or provider evidence.
+- `DOM15-BOUNDARY` for implicit plaintext/ciphertext crossings, unauthorized
+  decrypt/reveal/reconstruct/export operations, or missing boundary audit
+  records.
+- `DOM15-NOISE` for FHE or approximate-encryption operations that exceed
+  declared noise, depth, scale, precision, or bootstrapping constraints.
+- `DOM15-LEAKAGE` for unapproved leakage through outputs, metadata, shape,
+  access patterns, timing, transcripts, prompts, logs, or provider boundaries.
+- `DOM15-CUSTODY` for missing or inconsistent key owner, key custody, threshold,
+  rotation, participant, or attestation evidence.
 - `DOM15-CONSTANT-TIME` for secret-dependent timing branches or memory access
   where policy forbids them.
 - `DOM15-CUSTOM` for custom primitives without review/test vectors.
@@ -107,7 +200,9 @@ Security/crypto diagnostics use `DOM15` identifiers:
 - `DOM15-CONFORMANCE` for missing test vectors, fuzzing, or audit evidence.
 
 Diagnostics must include source span, secret id or provider id, algorithm,
-effect, capability, taint category, missing evidence, and remediation.
+scheme/protocol, parameter set, key custody, effect, capability, taint category,
+leakage category, budget/depth state, participant set, missing evidence, and
+remediation.
 
 ## Rejected Designs
 
@@ -121,6 +216,16 @@ Gravity rejects constant-time claims without analysis or audit evidence.
 
 Gravity rejects provider bindings without test vectors and boundary metadata.
 
+Gravity rejects private-computation providers without scheme parameters, key
+custody, participant/leakage policy, test vectors, and audit evidence.
+
+Gravity rejects implicit decryption, reveal, reconstruction, export, prompt, or
+logging at plaintext/ciphertext boundaries.
+
+Gravity rejects FHE/MPC programs whose declared parameter set cannot support the
+requested operation depth, precision, participant model, transcript policy, or
+leakage budget.
+
 ## Conformance Criteria
 
 A conforming security/crypto slice must demonstrate:
@@ -129,7 +234,19 @@ A conforming security/crypto slice must demonstrate:
 - secret redaction and taint-flow tests,
 - randomness capability enforcement,
 - provider manifests and test vectors,
+- encrypted value type checking,
+- FHE/MPC/provider capability enforcement,
+- scheme parameter manifests covering noise budget, depth, precision, key
+  custody, participant set, and leakage policy,
+- plaintext/ciphertext boundary tests for encrypt, decrypt, reveal,
+  reconstruct, export, prompt, log, and serialization paths,
+- privacy leakage diagnostics for output, metadata, shape, access pattern,
+  timing, transcript, prompt, log, and provider-boundary leakage,
+- provider test vectors, MPC transcript fixtures where applicable, and
+  independent audit/review evidence,
 - constant-time/audit reports where required,
 - fuzz fixtures for parsers,
 - rejection of secret logs, insecure randomness, unreviewed custom crypto, and
-  unsafe provider wrappers.
+  unsafe provider wrappers,
+- rejection of implicit decrypt/reveal, missing key custody evidence,
+  unaudited private-computation providers, and noise/depth budget violations.

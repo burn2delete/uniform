@@ -31,6 +31,9 @@ proof status, and invalidation rules match the expression being transformed.
   arguments to avoid unbounded simplification.
 - Equality of symbolic trees, EFIR graphs, or EML trees is not semantic equality
   without a proof artifact.
+- Equality saturation and e-graph extraction are compiler primitives only when
+  their analyses, guards, costs, fuel, explanations, and proof replay artifacts
+  are explicit.
 
 ## Dependencies
 
@@ -51,6 +54,10 @@ proof status, and invalidation rules match the expression being transformed.
 - Counterexample fixture.
 - Candidate identity ledger.
 - Termination or fuel report.
+- E-graph saturation report.
+- E-class analysis summary.
+- Extraction cost model artifact.
+- Equality explanation trace.
 - Diagnostics for rejected rewrites.
 
 ## Rewrite Rule Form
@@ -149,6 +156,76 @@ Rule ordering is deterministic. If heuristic cost search is used, the emitted
 trace must include the cost model, candidate ordering, fuel, selected candidate,
 and rejected candidates that were relevant to the choice.
 
+## E-Graph Equality Saturation
+
+Equality saturation is a first-class rewrite strategy, not an incidental
+optimizer detail. An e-graph may group equivalent expressions only under the
+domain, branch policy, numeric mode, floating manifest, provider effect, and
+side-condition guards that justified each equality edge.
+
+An e-class analysis records facts that are valid for every member selected under
+the current guard set. Required analyses include:
+
+- domain and codomain facts,
+- branch-policy facts,
+- numeric mode and floating manifest facts,
+- exceptional-value behavior,
+- interval or monotonic facts when used by a rule,
+- provider effect and runtime-check preservation,
+- proof status of equality edges,
+- source and generated-origin coverage.
+
+Merging e-classes joins analysis facts conservatively. If facts conflict, the
+merge is rejected, guarded to the intersection where it is proved, or recorded
+as a candidate edge that cannot be extracted as an accepted rewrite.
+
+Saturation must be bounded. An e-graph run declares deterministic limits for
+iterations, node count, e-class count, rule firings, per-rule fuel, and proof
+requests. Exhaustion emits a saturation report and explanation trace. It does
+not make the current best expression semantically valid unless extraction can be
+proved from accepted edges.
+
+Extraction uses an explicit, versioned cost model. The model may score operator
+count, expected runtime, numeric stability, allocation, provider calls, runtime
+checks, source stability, proof availability, and generated-code size. It must
+define deterministic tie breaks and must not hide a semantic requirement inside
+an implementation heuristic.
+
+```clojure
+{:artifact :gravity/egraph-extraction
+ :run-id saturation-hash
+ :root-eclass :e17
+ :selected expr-b
+ :cost-model {:id :math9-default-cost
+              :version 3
+              :weights {:operator-count 1
+                        :runtime-check 4
+                        :unproved-edge :forbidden}
+              :tie-break [:proof-depth :source-order :node-id]}
+ :bounds {:iterations 40
+          :nodes 10000
+          :per-rule-fuel 128}
+ :guards {:domain {x {:real :all}}
+          :branch-policy {:tan :principal}}
+ :proof-replay [trace-id-1 trace-id-2]
+ :explanation explanation-hash
+ :status :proved}
+```
+
+Proof replay for extraction reconstructs the selected expression from the input
+root through rule applications, e-class merges, and side-condition results. It
+must be possible without rerunning saturation, rescheduling rules, or trusting
+the extractor. Explanation traces include the selected path, e-class ids,
+analysis facts used by extraction, rejected candidate representatives that
+affected the cost decision, exhausted fuel, and all guards attached to equality
+edges.
+
+Unproved edges may exist in an e-graph for discovery and diagnostics. They may
+not be used to extract accepted code, simplify a proof obligation, discharge a
+side condition, or claim semantic equality. If extraction would require an
+unproved edge, the result is a candidate trace entry with a diagnostic, not an
+accepted rewrite.
+
 ## Trace Entry
 
 ```clojure
@@ -212,7 +289,10 @@ Symbolic rewrite diagnostics use `MATH9` identifiers:
 - `MATH9-TRACE` for unreplayable rewrite traces.
 - `MATH9-TERMINATION` for unbounded rewrite strategy.
 - `MATH9-COUNTEREXAMPLE` for identities disproved by fixtures or proof tools.
-- `MATH9-EQUALITY` for tree identity used as semantic equality.
+- `MATH9-EGRAPH` for invalid e-class analysis, guard, fuel, cost, or
+  explanation artifacts.
+- `MATH9-EQUALITY` for tree identity, e-class membership, or unproved extraction
+  used as semantic equality.
 
 Diagnostics must include rule id, rule version, expression id, EFIR graph id,
 mode, domain, branch policy, source span, proof status, and remediation.
@@ -224,6 +304,11 @@ Gravity rejects global algebraic identities without domain and branch guards.
 Gravity rejects EML, EFIR, or symbolic tree identity as equality evidence.
 
 Gravity rejects rewrite systems with unbounded nondeterministic application.
+
+Gravity rejects e-graph extraction that depends on unproved equality edges.
+
+Gravity rejects cost models that choose a representative without replayable
+guarded proof.
 
 Gravity rejects rewrites that erase floating manifests or exceptional behavior.
 
@@ -241,4 +326,9 @@ A conforming symbolic rewrite implementation must demonstrate:
 - branch-sensitive rewrite rejection,
 - deterministic trace replay,
 - fuel or termination behavior,
+- bounded equality-saturation run with e-class analysis summary,
+- extraction cost model with deterministic tie breaks,
+- e-graph explanation trace and proof replay without rerunning saturation,
+- rejection of extraction that requires an unproved equality edge,
+- domain-guarded e-class merge and conflicting-analysis rejection,
 - diagnostics for unproved, unbounded, and tree-equality cases.

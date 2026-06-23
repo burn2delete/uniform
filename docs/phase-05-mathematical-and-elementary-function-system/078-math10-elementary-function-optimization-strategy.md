@@ -29,6 +29,15 @@ the candidates that have already passed semantic legality.
 - Provider selection must consider profile, target, target features, vector
   width, memory layout, cache behavior, effects, allocation, branch policy,
   numeric mode, certificates, and benchmark evidence.
+- Correctly rounded candidates must declare input representation, output
+  representation, rounding mode, tie policy, branch policy, and exceptional
+  value behavior.
+- Correctly rounded generation must construct accepted-result intervals from
+  exact EFIR values rounded to the declared representation and rounding mode.
+- Polynomial, rational, table, and fused kernels that claim correct rounding
+  must prove that coefficient representation, evaluation order, range
+  reduction, reconstruction, and backend lowering keep every result inside the
+  accepted-result interval.
 - SIMD and GPU lowerings must reference lane, target, and numeric certificates.
 - Autotuning may choose among legal variants but must emit a reproducible
   selection record and deterministic fallback policy.
@@ -54,6 +63,10 @@ the candidates that have already passed semantic legality.
 - Candidate implementation set.
 - EML and rewrite candidate references.
 - Provider eligibility report.
+- Correct-rounding target manifest.
+- Correctly rounded interval-generation ledger.
+- Synthesis constraint transcript.
+- Provider comparison matrix.
 - Certificate and proof references.
 - Autotune or benchmark evidence.
 - Selected lowering decision record.
@@ -69,10 +82,10 @@ The optimizer runs this sequence:
 3. `infer-context`: infer domains, codomains, branch policies, numeric modes,
    precision contracts, floating manifests, and profile constraints.
 4. `normalize-or-search`: optionally run EML and symbolic rewrite search.
-5. `generate-candidates`: produce provider, fused, approximate, SIMD, GPU, or
-   generated-code candidates.
-6. `prove-or-certify`: validate equality, bounded error, branch behavior,
-   roundoff, and target assumptions.
+5. `generate-candidates`: produce provider, fused, correctly rounded,
+   approximate, SIMD, GPU, or generated-code candidates.
+6. `prove-or-certify`: validate equality, bounded error, accepted-result
+   intervals, branch behavior, roundoff, and target assumptions.
 7. `rank`: rank only legal candidates by objective.
 8. `select`: emit selected-lowering record and fallback.
 9. `lower`: lower through MIR, domain IR, or backend IR while preserving
@@ -94,6 +107,7 @@ Candidate implementation families include:
 - polynomial approximation,
 - rational approximation,
 - table or table-plus-polynomial approximation,
+- correctly rounded generated polynomial, rational, table, or fused kernel,
 - piecewise approximation,
 - SIMD vector kernel,
 - GPU or accelerator kernel,
@@ -102,6 +116,77 @@ Candidate implementation families include:
 
 Each candidate records which EFIR graph it implements and which proof artifacts
 would be required for acceptance.
+
+## Correctly Rounded Generation
+
+Gravity supports RLibm-style generation where an approximation kernel is
+synthesized to return the exact EFIR result rounded to a declared representation
+and rounding mode. Such kernels are approximation strategies, but their
+observable contract is `:correctly-rounded` rather than an absolute-error-only
+`:certified-approx` contract.
+
+A correct-rounding target records the representation and rounding obligations:
+
+```clojure
+{:artifact :gravity/correct-rounding-target
+ :target-id target-hash
+ :efir graph-hash
+ :function :exp
+ :input-representation {:type :F32
+                        :domain :all-finite}
+ :output-representation {:type :F32}
+ :rounding-modes [:nearest-even]
+ :tie-policy :nearest-even
+ :branch-policy {:complex-intermediates :forbidden}
+ :exceptional-values {:nan :propagate
+                      :inf :domain-error
+                      :signed-zero :preserve}
+ :target-assumptions {:evaluation-format :F64
+                      :contract-fma false
+                      :denormals :preserved}}
+```
+
+For each representable input or proof cell, interval generation computes the
+exact EFIR result, rounds it according to the target record, and derives the
+open or closed interval of real approximation values that would round to the
+same output. The ledger records tie cases, subnormal boundaries, signed-zero
+rules, exceptional paths, and any cell splitting used to avoid unresolved
+rounding boundaries.
+
+When a kernel supports multiple output representations or rounding modes, the
+candidate must either prove the intersection of all accepted-result intervals
+or emit separate kernels with separate certificates. A provider that is
+correctly rounded only for `:nearest-even` is not eligible for
+`:toward-positive`, `:toward-negative`, or `:toward-zero` contracts.
+
+Polynomial, rational, table, and fused synthesis constraints must name:
+
+- basis, degree, partition, and range-reduction form,
+- coefficient representation and coefficient rounding,
+- evaluation order, FMA policy, reassociation policy, and intermediate format,
+- reconstruction steps and table lookup or interpolation rules,
+- backend lowering assumptions that can change rounding behavior.
+
+The solver may be heuristic, but the accepted artifact must be checkable. If
+the constraint system is infeasible, the optimizer rejects the candidate or
+chooses a legal fallback; it must not weaken `:correctly-rounded` into
+`:faithful`, `:libm`, or `:certified-approx` without a `MATH7` downgrade record.
+
+Correctly rounded certificates must include the target manifest,
+interval-generation ledger, synthesis constraint transcript, coefficient and
+table digests, evaluation-roundoff proof, exceptional-path proof, checker
+identity, and invalidation conditions. The independent checker verifies that
+the generated implementation stays inside every accepted-result interval under
+the declared target assumptions.
+
+Provider comparisons are semantic artifacts, not only benchmark tables. The
+optimizer compares generated correctly rounded kernels, libm providers,
+hardware instructions, vendor intrinsics, and RLibm-style providers by
+representation coverage, rounding-mode coverage, domain coverage, branch
+policy, exceptional-value behavior, target and version assumptions,
+certificate status, fallback behavior, and cost. A faster provider can outrank
+a generated kernel only after this comparison proves that it satisfies the same
+or a stronger contract.
 
 ## Decision Record
 
@@ -205,16 +290,24 @@ Elementary optimization diagnostics use `MATH10` identifiers:
 - `MATH10-CANDIDATE` for malformed candidate records.
 - `MATH10-PROOF` for candidates selected without required proof.
 - `MATH10-CERTIFICATE` for missing or mismatched approximation certificates.
+- `MATH10-ROUNDING-TARGET` for incomplete representation or rounding targets.
+- `MATH10-ROUNDING-INTERVAL` for missing or unresolved accepted-result
+  intervals.
+- `MATH10-SYNTHESIS` for unchecked or infeasible correctly rounded synthesis
+  constraints.
 - `MATH10-FUSION` for whole-expression proof gaps.
 - `MATH10-PROVIDER` for provider eligibility failures.
+- `MATH10-PROVIDER-COMPARE` for provider rankings that ignore semantic
+  comparison fields.
 - `MATH10-SIMD` for lane or target certificate gaps.
 - `MATH10-GPU` for device lowering gaps.
 - `MATH10-AUTOTUNE` for unreproducible selection.
 - `MATH10-FALLBACK` for missing legal fallback when required.
 
 Diagnostics must include EFIR graph id, candidate id, selected provider, source
-span, profile, target fingerprint, numeric mode, precision contract, missing
-proof or certificate, and fallback status.
+span, profile, target fingerprint, numeric mode, precision contract, rounding
+target, interval-generation ledger, synthesis transcript, missing proof or
+certificate, provider comparison result, and fallback status.
 
 ## Rejected Designs
 
@@ -230,6 +323,15 @@ Gravity rejects autotuning that cannot replay its candidate set and selection.
 
 Gravity rejects SIMD or GPU fast math without explicit numeric contracts.
 
+Gravity rejects correctly rounded generation that omits representation,
+rounding mode, or tie-policy targets.
+
+Gravity rejects treating ulp-bounded or average-error approximations as
+correctly rounded without accepted-result interval proof.
+
+Gravity rejects provider comparisons that ignore representation, rounding mode,
+branch policy, or exceptional-value behavior.
+
 ## Conformance Criteria
 
 A conforming elementary optimizer must demonstrate:
@@ -239,7 +341,14 @@ A conforming elementary optimizer must demonstrate:
 - EML and symbolic candidate generation without equality claims,
 - accepted fused approximation with whole-expression certificate,
 - rejected fused approximation with only per-call certificates,
+- accepted correctly rounded generated kernel with target manifest,
+  interval-generation ledger, synthesis transcript, and checker certificate,
+- rejected correctly rounded candidate with unresolved rounding intervals or
+  unsupported rounding mode,
+- semantic comparison between generated, libm, hardware, and RLibm-style
+  providers,
 - SIMD and GPU lowering with target guards,
 - autotune selection replay,
 - fallback dispatch behavior,
-- diagnostics for missing proof, illegal provider, and unreproducible ranking.
+- diagnostics for missing proof, illegal provider, unresolved rounding
+  interval, unchecked synthesis constraints, and unreproducible ranking.

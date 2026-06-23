@@ -7,15 +7,15 @@ Source basis: PDF pages 1-33 define the language/platform thesis, pages 73-89 de
 
 ## Purpose
 
-This specification defines signing, verification, and software bills of
-materials for Gravity artifacts. Signing binds artifact content, manifest
-schema, provenance, SBOM, safety metadata, and policy decisions into a
-verifiable release record. Verification checks that a consumed artifact is
-exactly what policy permits.
+This specification defines signing, verification, software bills of materials,
+and provenance attestations for Gravity artifacts. Signing binds artifact
+content, manifest schema, provenance, attestation evidence, SBOM, safety
+metadata, and policy decisions into a verifiable release record. Verification
+checks that a consumed artifact is exactly what policy permits.
 
-SBOMs are first-class artifacts because Gravity packages can target binaries,
-schemas, workflows, agents, HDL modules, generated code, and proofs; all of
-those need dependency and authority visibility.
+SBOMs and attestations are first-class artifacts because Gravity packages can
+target binaries, schemas, workflows, agents, HDL modules, generated code, and
+proofs; all of those need dependency, authority, and builder visibility.
 
 ## Signature Payload
 
@@ -27,9 +27,12 @@ A signature covers canonical data containing:
 - package id and version;
 - profile and target;
 - provenance hash;
+- provenance attestation hash;
 - SBOM hash;
 - safety metadata hash;
 - build recipe hash when reproducibility is claimed;
+- attestation policy level and verification track;
+- transparency log or timestamp evidence hash;
 - signer identity and signing policy id.
 
 Signing noncanonical data is invalid.
@@ -53,16 +56,62 @@ An SBOM records:
 SBOM schemas may map to external formats, but Gravity's internal schema remains
 the source of truth.
 
+## Provenance Attestations
+
+A provenance attestation records SLSA/in-toto-style evidence for the exact
+artifact subject. It is separate from the SBOM: the SBOM names what is in the
+artifact graph, while the attestation says who built it, where it was built,
+from which declared inputs, and under which isolation and policy claims.
+
+An attestation records:
+
+- attestation id and schema version;
+- artifact subject hash and manifest hash;
+- builder identity, signing identity, and key or workload identity;
+- build platform, runner image, and isolation boundary;
+- source material, including repository, revision, archive hash, generated-input hashes, and patch ids;
+- lockfile, dependency graph, compiler, toolchain, and build recipe hashes;
+- isolated, hermetic, reproducible, or non-hermetic claims with declared exceptions;
+- build start/end timestamps and freshness window;
+- transparency log inclusion proof or trusted timestamp evidence when required;
+- policy level, verification track, and consumer gate id;
+- revocation, advisory, and expiration links.
+
+Attestation schemas may map to external SLSA or in-toto predicates, but
+Gravity's internal canonical schema remains the source of truth for signing and
+verification.
+
+## Attestation Policy Levels
+
+Attestation policy levels are:
+
+- `:baseline` requires a signed attestation bound to artifact and source hashes;
+- `:tracked` also requires verified builder identity, build platform, lockfile, and recipe hashes;
+- `:isolated` also requires an isolated builder boundary and declared network, filesystem, and secret inputs;
+- `:hermetic` also requires all build-time inputs to be declared and all undeclared external access to be denied;
+- `:reproducible` also requires `PKG7` rebuild evidence for the same recipe and source material;
+- `:certified` also requires governance-approved builders, transparency log or timestamp evidence, and conformance evidence.
+
+Verification tracks are selected by package, profile, target, registry, or
+consumer policy. A consumer may require a higher attestation level than the
+publisher used, but it may not silently downgrade a required gate.
+
 ## Requirements
 
 - Release artifacts requiring signing MUST be signed over canonical manifest data.
-- Verification MUST check schema, content hash, signature, provenance, SBOM, safety metadata, revocation, and policy.
+- Verification MUST check schema, content hash, signature, provenance, attestation, SBOM, safety metadata, revocation, and policy.
 - SBOMs MUST include transitive dependencies.
 - Capability and unsafe summaries MUST appear in SBOM records.
 - Generated source and binary blobs MUST be visible in SBOM records.
+- Required provenance attestations MUST bind to the exact artifact subject hash and manifest hash.
+- Attestations MUST identify builder identity, build platform, source material, dependency lock, compiler or toolchain, and build recipe.
+- Isolated, hermetic, reproducible, or non-hermetic claims MUST be explicit and evidence-backed.
+- Transparency log inclusion proof or trusted timestamp evidence MUST be checked when policy requires ordering, freshness, or public auditability.
+- Consumer verification gates MUST evaluate attestation policy level and verification track before accepting an artifact.
 - Signature keys MUST have policy-defined scope and validity.
 - Revoked signatures or signing keys MUST invalidate release verification unless historical rebuild policy permits them.
 - Artifact consumers MUST verify before use when package policy requires verification.
+- Missing, stale, revoked, mismatched, unsigned, or policy-incompatible attestations MUST fail closed when consumer policy requires them.
 - Verification reports MUST be artifacts.
 - Signing and verification failures MUST be diagnosable without exposing secrets.
 
@@ -74,6 +123,7 @@ the source of truth.
 - `PKG7` defines reproducible build claims.
 - `PKG8` defines safety metadata.
 - `PKG10` defines provenance.
+- `L12` defines hermetic build input rules.
 - `GOV4` and `GOV10` define security and ecosystem review expectations.
 
 ## Outputs and Artifacts
@@ -84,14 +134,20 @@ Signing emits:
 - signed payload hash;
 - signer identity reference;
 - signing policy id;
+- provenance attestation artifact;
+- attestation payload hash;
+- transparency log or timestamp evidence;
+- attestation policy level and verification track;
 - key validity proof;
 - release verification input bundle.
 
 Verification emits:
 
 - verification report;
+- attestation verification report;
 - SBOM validation report;
 - revocation check report;
+- freshness and timestamp decision;
 - policy decision;
 - consumer acceptance or denial record.
 
@@ -101,8 +157,9 @@ Verification emits:
 (sign-artifact
   {:artifact acme/support-agent:0.3.0
    :key :release-2026-q2
-   :payload [:artifact-manifest :content :provenance :sbom :safety]
-   :verification [:schema :signature :hash :provenance :revocation :policy]})
+   :payload [:artifact-manifest :content :provenance :attestation :sbom :safety]
+   :attestation-level :hermetic
+   :verification [:schema :signature :hash :provenance :attestation :timestamp :revocation :policy]})
 ```
 
 ## Rejection Rules
@@ -112,6 +169,11 @@ Verification emits:
 - Reject content hash mismatch.
 - Reject SBOMs missing transitive dependencies.
 - Reject SBOMs missing capabilities, unsafe summaries, generated source, or binary blobs when present.
+- Reject required attestations that are missing, unsigned, stale, revoked, or not bound to the artifact subject hash.
+- Reject attestations that omit builder identity, build platform, source material, dependency lock, or build recipe.
+- Reject isolated, hermetic, or reproducible claims without matching evidence.
+- Reject required transparency log or timestamp evidence that is missing, unverifiable, or outside the freshness window.
+- Reject consumer verification that downgrades the required attestation policy level or track.
 - Reject revoked keys, signatures, packages, or provenance inputs.
 - Reject consumers using artifacts before required verification.
 - Reject verification reports that omit failed checks.
@@ -126,9 +188,19 @@ Verification emits:
 - `PKG12006` reports revoked signing material.
 - `PKG12007` reports unverified consumer use.
 - `PKG12008` reports incomplete verification report.
+- `PKG12009` reports missing required provenance attestation.
+- `PKG12010` reports attestation/artifact mismatch.
+- `PKG12011` reports unknown or untrusted builder identity.
+- `PKG12012` reports incomplete attestation source material.
+- `PKG12013` reports unsupported or unproved isolation, hermetic, or reproducible claim.
+- `PKG12014` reports missing or unverifiable transparency log or timestamp evidence.
+- `PKG12015` reports stale attestation.
+- `PKG12016` reports attestation policy level or track failure.
 
 Diagnostics include artifact id, signature id, signer id, SBOM id, dependency
-id, failed check, and policy rule.
+id, attestation id, builder id, build platform id, source material hash,
+timestamp evidence id, failed check, policy level, verification track, and
+policy rule.
 
 ## Conformance Criteria
 
@@ -137,5 +209,10 @@ id, failed check, and policy rule.
 - An SBOM missing a transitive dependency is rejected.
 - Capability and unsafe summaries appear in SBOM output.
 - Generated source and binary blobs are represented when present.
+- A signed attestation bound to the artifact subject hash is verified when policy requires it.
+- Missing, stale, revoked, or mismatched attestations fail consumer verification gates.
+- Builder identity, build platform, and source material omissions produce specific diagnostics.
+- Isolated, hermetic, and reproducible claims are rejected unless the required evidence is present.
+- Transparency log inclusion or timestamp evidence is checked for policy levels that require it.
 - Revoked signing keys invalidate verification under release policy.
 - Consumers fail closed when verification is required but absent.
