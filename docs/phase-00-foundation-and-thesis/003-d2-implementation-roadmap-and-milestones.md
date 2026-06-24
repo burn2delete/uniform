@@ -34,18 +34,29 @@ Milestones must reduce uncertainty in this order:
 
 Milestone 0 prepares the implementation contract.
 
-Required documents:
+The PDF's critical pre-implementation set is mandatory for this milestone:
 
 - `D0` through `D9`,
 - `L1` through `L6`,
 - `L10`,
 - `L11`,
 - `L15`,
-- `SAFE1`, `SAFE2`, `SAFE3`, `SAFE6`, `SAFE8`, `SAFE10`,
+- `SAFE1`, `SAFE2`, `SAFE3`, `SAFE6`,
 - `P1` through `P5`,
-- `C1`, `C2`, `C3`, `C4`, `C5`, `C6`, `C7`, `C8`, `C11`.
+- `PERF1`,
+- `C1`.
 
-This is the Milestone 0 documentation lock set. The longer critical chain under `Dependencies` remains the sequencing rule for later milestones; it is not silently included in this milestone.
+Milestone 0 also locks the first implementation-facing compiler and safety gates
+needed to start Milestones 1 through 4 without inventing contracts midstream:
+
+- `SAFE8` and `SAFE10` for data-race and capability-safety checks,
+- `C2`, `C3`, `C4`, `C5`, `C6`, `C7`, `C8`, and `C11` for reader,
+  syntax, macro expansion, resolution, lowering, type/effect checking, and MIR
+  artifacts.
+
+This is the Milestone 0 documentation lock set. The longer critical chain under
+`Dependencies` remains the sequencing rule for later milestones; it is not
+silently included in this milestone.
 
 Exit gates:
 
