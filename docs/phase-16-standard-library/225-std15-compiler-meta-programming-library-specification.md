@@ -40,7 +40,7 @@ It provides typed APIs over that pipeline for macros, tools, libraries, and even
 
 ## Dependencies
 
-- `D1`, `D3`, `D4`, `D6`, `D8`, and `D9` for syntax, macros, compiler pipeline, artifacts, diagnostics, and provenance.
+- `D1`, `D3`, and `D4` for architecture, terminology, code-as-data, compiler pipeline, and universal coverage; `D6`, `D8`, and `D9` for performance constraints, safety boundaries, and proof/provenance evidence.
 - `L12`, `L14`, and `L15` for macros, compile-time evaluation, and macro safety.
 - `C1` through `C18` for compiler architecture, reader, analyzer, MIR, optimization, lowering, artifacts, and diagnostics.
 - `SAFE12`, `SAFE6`, `SAFE10`, and `SAFE15` for macro safety, unsafe islands, capability security, and proof evidence for generated and optimized code.

@@ -50,7 +50,7 @@ Stable surfaces can change only through compatibility rules, migration artifacts
 
 ## Dependencies
 
-- `D6`, `D8`, and `D9` for artifacts, diagnostics, and provenance.
+- `D6`, `D8`, and `D9` for performance contracts, safety guarantees, and verifiability evidence obligations.
 - `SAFE1`, `SAFE6`, `SAFE10`, `SAFE14`, and `SAFE15` for safety, unsafe review, capability security, supply-chain safety, and proof evidence.
 - `P1` through `P13` for profile availability and profile compatibility.
 - `PKG1`, `PKG3`, `PKG7`, `PKG10`, and `PKG12` for manifests, artifact identity, reproducibility, provenance, signing, and SBOMs.

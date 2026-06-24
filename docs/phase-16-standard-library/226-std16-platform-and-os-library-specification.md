@@ -41,7 +41,7 @@ Any code that depends on one of those facts must declare it so builds remain rep
 
 ## Dependencies
 
-- `D6`, `D8`, and `D9` for artifacts, diagnostics, and provenance.
+- `D6`, `D8`, and `D9` for performance constraints, safety boundaries, and verifiability evidence.
 - `L5`, `L6`, and `L11` for effects, capabilities, and resources.
 - `SAFE1`, `SAFE5`, `SAFE6`, `SAFE7`, `SAFE10`, and `SAFE15` for resources, unsafe boundaries, FFI, capability security, and proof-carrying adapters.
 - `P6`, `P7`, `P5`, `P4`, `P9`, and `P10` for firmware, kernel, native, hosted, distributed, and AI constraints.

@@ -41,7 +41,7 @@ Text APIs must expose whether they allocate, borrow, slice, normalize, validate,
 
 ## Dependencies
 
-- `D1` and `D8` for string literals, diagnostics, and source spans.
+- `D1` and `D3` for string literals, source spans, diagnostics, and terminology.
 - `L2`, `L5`, `L6`, and `L10` for text types, effects, capabilities, and collection interaction.
 - `SAFE1`, `SAFE4`, `SAFE9`, `SAFE11`, and `SAFE15` for checked boundaries, numeric parsing, taint, injection-sensitive strings, and proof-backed checks.
 - `P1` through `P13` for profile-specific allocation and host delegation.

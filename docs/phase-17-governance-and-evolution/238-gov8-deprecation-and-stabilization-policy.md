@@ -43,7 +43,7 @@ It requires diagnostics, replacement guidance, schedule, and compatibility evide
 
 - `GOV1`, `GOV2`, `GOV4`, and `GOV7` for evolution, compatibility, security, and experiments.
 - `STD20` for standard-library stability.
-- `D6`, `D8`, and `D9` for artifacts, diagnostics, and provenance.
+- `D6`, `D8`, and `D9` for performance contracts, safety guarantees, and verifiability evidence.
 - `SAFE1` through `SAFE16` for safety-sensitive stabilization.
 - `P1` through `P13` for profile availability.
 - `TEST1` through `TEST13` for conformance history.

@@ -43,7 +43,7 @@ Those distinctions must be explicit.
 
 ## Dependencies
 
-- `D6`, `D8`, and `D9` for artifact, diagnostic, and provenance stability.
+- `D6`, `D8`, and `D9` for performance, safety, and evidence-related stability obligations.
 - `L1` through `L15` for source and semantic behavior.
 - `SAFE1` through `SAFE16` for safety compatibility.
 - `P1` through `P13` for profile compatibility.

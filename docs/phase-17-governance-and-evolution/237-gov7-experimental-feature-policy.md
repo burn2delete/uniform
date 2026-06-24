@@ -45,7 +45,7 @@ Artifacts must record that opt-in so packages, builds, conformance reports, and 
 - `GOV2` for compatibility boundaries between experiments and stable contracts.
 - `GOV4`, `GOV9`, and `GOV10` for security, unsafe, and ecosystem-sensitive experiments.
 - `GOV8` for stabilization or deprecation.
-- `D6`, `D8`, and `D9` for artifact, diagnostic, and provenance evidence.
+- `D6`, `D8`, and `D9` for performance constraints, safety boundaries, and verifiability evidence in experiment artifacts.
 - `P1` through `P13` for profile-specific availability.
 - `TEST1` through `TEST13` for experiment fixtures.
 

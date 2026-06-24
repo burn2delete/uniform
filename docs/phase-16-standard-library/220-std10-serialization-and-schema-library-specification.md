@@ -39,7 +39,7 @@ Encoding must state whether the output is canonical, deterministic, stable, loss
 
 ## Dependencies
 
-- `D1`, `D6`, `D8`, and `D9` for data syntax, artifacts, diagnostics, and provenance.
+- `D1`, `D3`, `D8`, and `D9` for data syntax, artifact terminology, safety boundaries, and verifiability evidence.
 - `L2`, `L5`, `L6`, `L10`, and `L12` for types, effects, capabilities, values, and macros.
 - `SAFE1`, `SAFE12`, `SAFE11`, `SAFE14`, `SAFE10`, and `SAFE15` for safe semantics, macro safety, taint, supply-chain metadata, capability security, and proof-carrying libraries.
 - `P1` through `P13` for profile-specific schema and serialization availability.

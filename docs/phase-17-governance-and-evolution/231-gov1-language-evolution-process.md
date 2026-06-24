@@ -44,7 +44,7 @@ It is complete only when affected specifications, tests, diagnostics, package me
 
 ## Dependencies
 
-- `D0`, `D1`, `D3`, `D6`, `D8`, and `D9` for thesis, syntax, macros, artifacts, diagnostics, and provenance.
+- `D0`, `D1`, and `D3` for thesis, architecture, terminology, syntax, and code-as-data; `D6`, `D8`, and `D9` for performance constraints, safety guarantees, and verifiability evidence.
 - `SAFE1` through `SAFE16` for safe-code guarantees and safety review surfaces.
 - `P1` through `P13` for profile impacts.
 - `C1` through `C18` for compiler and artifact impacts.

@@ -48,7 +48,7 @@ Accepted RFCs become traceable inputs to implementation, conformance, release, a
 - `GOV2` for compatibility review.
 - `GOV4` for security review.
 - `GOV7`, `GOV8`, `GOV9`, and `GOV10` for experiments, stabilization/deprecation, unsafe code, and ecosystem packages.
-- `D0`, `D6`, `D8`, and `D9` for thesis, artifacts, diagnostics, and provenance.
+- `D0`, `D6`, `D8`, and `D9` for thesis, performance constraints, safety guarantees, and verifiability evidence.
 - `TEST1` through `TEST13` for required evidence.
 - All affected phase documents named by the RFC.
 

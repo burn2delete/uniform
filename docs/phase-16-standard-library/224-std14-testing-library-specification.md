@@ -42,7 +42,7 @@ Conformance tests must be able to run against seed compilers, self-hosted compil
 ## Dependencies
 
 - `TEST1` through `TEST13` for testing strategy, suite categories, fuzzing, differential testing, formal validation, performance regression, and self-hosting.
-- `D8` and `D9` for diagnostics and provenance.
+- `D8` and `D9` for safety outcomes, proof obligations, replay records, audit records, and conformance evidence.
 - `L5`, `L6`, and `L14` for effects, capabilities, and compile-time validation.
 - `SAFE10`, `SAFE11`, and `SAFE15` for capability security, taint, and proof-carrying libraries.
 - `P1` through `P13` for profile-specific test matrices.

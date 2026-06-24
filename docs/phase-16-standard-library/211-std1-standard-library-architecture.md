@@ -47,7 +47,7 @@ Unsafe internals may exist inside systems libraries, but the exported safe surfa
 
 - `D0` for the language thesis and profile-aware intent.
 - `D1` and `D3` for syntax, namespaces, metadata, and code-as-data.
-- `D6`, `D8`, and `D9` for artifacts, diagnostics, and provenance.
+- `D6`, `D8`, and `D9` for performance constraints, safety boundaries, and verifiability evidence.
 - `L2`, `L5`, `L6`, and `L15` for types, effects, capabilities, and macro safety.
 - `SAFE1`, `SAFE2`, `SAFE5`, `SAFE6`, and `SAFE10` for no-undefined-behavior, memory, resources, unsafe isolation, and capability security.
 - `P1` through `P13` for profile validation and target legality.
