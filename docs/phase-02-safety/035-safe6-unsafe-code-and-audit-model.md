@@ -34,7 +34,8 @@ internals and safe public APIs.
 
 - `L4`, `L12`, and `L16` define macro and generated-code provenance.
 - `L5` defines unsafe types and proof facts.
-- `L6` defines unsafe effects and privileged effects.
+- `L6` defines the concrete effects used by unsafe operations and other
+  authority-bearing operations.
 - `L10` and `SAFE2` define raw memory hazards.
 - `L15` defines capability providers used by unsafe code.
 - `L19` defines foreign boundaries.

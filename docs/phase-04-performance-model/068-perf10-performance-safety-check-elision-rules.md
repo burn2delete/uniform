@@ -82,7 +82,7 @@ Every erased check has a record.
 | Capability/effect | Compile-time validation proves exact grant and deployment policy | capability validation artifact | yes |
 | Unsafe audit | Review policy satisfied before build or deployment | unsafe audit artifact | yes |
 | Workflow replay | Step recorded, deterministic, or replay-safe | replay contract artifact | yes |
-| AI human-review | Human-review impossible, already satisfied, or represented by workflow state | policy proof or workflow gate | yes |
+| AI human-review | Policy proves no human-review gate applies at the site, the gate is already satisfied, or the gate is represented by workflow state | policy proof or workflow gate | yes |
 
 Policy checks marked yes are not removed for performance alone. They can be
 discharged only by equivalent policy artifacts.

@@ -85,8 +85,13 @@ Core effect families include:
 - `:ai/prompt-render`,
 - `:ai/output-validate`,
 - `:ai/eval-run`,
-- `:ai/human-review`,
-- `:unsafe`.
+- `:ai/human-review`.
+
+Unsafe behavior is not represented by a generic `:unsafe` effect label. Unsafe
+islands, unsafe wrappers, and unsafe providers must expose the concrete effects
+they perform, such as `:memory/raw`, `:memory/mmio`, `:ffi/call`,
+`:interrupt/register`, or `:compiler/write-ir`, and must separately carry the
+safety outcome or safety mode required by `D8`, `SAFE1`, and `SAFE6`.
 
 Later documents may add effects through the extension/governance process, but new effects must define profile legality, capability requirements, ordering behavior, diagnostics, and artifact representation.
 
@@ -221,7 +226,7 @@ Effect sets are not compared directly with capability sets. The narrowest set wi
 
 Effects describe what code does. Capabilities grant authority to do it.
 
-Some effects require no external authority, such as pure arithmetic. Most external, host, unsafe, build, AI, workflow, memory, and platform effects require capabilities.
+Some effects require no external authority, such as pure arithmetic. Most external, host, build, AI, workflow, memory, platform, and unsafe-island concrete effects require capabilities.
 
 Examples:
 
@@ -328,7 +333,9 @@ L6 rejects:
 
 ## Conformance Criteria
 
-- Fixtures cover pure, IO, filesystem, network, database, memory, raw memory, FFI, build, workflow, AI, and unsafe effects.
+- Fixtures cover pure, IO, filesystem, network, database, memory allocation,
+  raw memory, MMIO, FFI, build, workflow, AI, and unsafe-island concrete
+  effects.
 - Function fixtures preserve latent effects through calls.
 - Namespace fixtures reject inferred effects outside declarations.
 - Profile fixtures reject effects forbidden by constrained profiles.

@@ -58,7 +58,7 @@ This document defines latency contracts and their validation.
  :allocation :none
  :blocking false
  :bounds {:iterations 128 :recursion false}
- :preemption {:interrupts :declared :locks :bounded}
+ :preemption {:interrupt-policy :declared :locks :bounded}
  :forbidden-runtime #{:gc :dynamic-loading :reflection :network :ai/model-call}
  :evidence [:bounded-loop-proof :allocation-free-report :worst-case-path]
  :failure-mode :reject-build}

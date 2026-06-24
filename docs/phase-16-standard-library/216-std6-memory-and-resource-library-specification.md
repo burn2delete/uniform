@@ -30,13 +30,13 @@ Unsafe allocator and pointer internals may exist, but safe wrappers must enforce
 
 ## Module Surface
 
-- Allocation: `allocator`, `alloc`, `try-alloc`, `free`, `resize`, `with-allocator`, and `allocation-policy`.
+- Allocation: `allocator`, `alloc`, `try-alloc`, `resize`, `with-allocator`, and `allocation-policy`.
 - Regions and arenas: `region`, `with-region`, `arena`, `arena-alloc`, `reset-arena`, and `region-token`.
 - Borrows: `borrow`, `borrow-mut`, `with-borrow`, `split-borrow`, `borrowed?`, and `borrow-scope`.
 - Ownership: `move`, `copy`, `clone`, `owned?`, `shared`, `unique`, and `pin`.
 - Linear resources: `resource`, `close`, `transfer`, `defer`, `using`, `resource-scope`, and `must-close`.
 - Memory views: `slice`, `span`, `read`, `write`, `copy`, `fill`, and checked pointer-sized views.
-- Unsafe gateway: `unsafe-memory`, `unsafe-pointer`, and `unsafe-allocator` only in unsafe contexts.
+- Unsafe gateway: `unsafe-memory`, `unsafe-pointer`, `unsafe-allocator`, and `unsafe-free` only in unsafe contexts.
 
 ## Dependencies
 
