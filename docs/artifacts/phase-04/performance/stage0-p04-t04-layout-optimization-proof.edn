@@ -1,0 +1,54 @@
+{:proof-id :stage0-p04-t04-layout-optimization-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-T04
+ :document "PERF4"
+ :status :passed
+ :capability :memory-layout-optimization-report
+ :command "clojure -M:gravity layout bootstrap/clojure/fixtures/accepted/layout-optimization.gravity"
+ :artifact-kind :gravity/stage0-layout-optimization-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/layout-optimization.gravity"
+ :accepted-results
+ {:suite-id :perf4/layout-optimization
+  :layout-transformations #{:aos-to-soa}
+  :layout-manifest-status :complete
+  :abi-boundary-status :complete
+  :address-identity-status :complete
+  :alias-ownership-status :complete
+  :alignment-packing-status :complete
+  :cache-shape-status :complete
+  :device-transfer-status :complete
+  :proof-backed-erasure-status :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["PERF4-LAYOUT" "PERF4-ABI" "PERF4-ADDRESS" "PERF4-ALIAS"
+  "PERF4-ALIGN" "PERF4-PACKED" "PERF4-CACHE" "PERF4-DEVICE"
+  "PERF4-PROOF"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/layout-missing.gravity" "PERF4-LAYOUT"
+  "bootstrap/clojure/fixtures/rejected/layout-abi-boundary.gravity" "PERF4-ABI"
+  "bootstrap/clojure/fixtures/rejected/layout-address-identity.gravity" "PERF4-ADDRESS"
+  "bootstrap/clojure/fixtures/rejected/layout-alias-missing.gravity" "PERF4-ALIAS"
+  "bootstrap/clojure/fixtures/rejected/layout-align-unsupported.gravity" "PERF4-ALIGN"
+  "bootstrap/clojure/fixtures/rejected/layout-packed-unsafe.gravity" "PERF4-PACKED"
+  "bootstrap/clojure/fixtures/rejected/layout-cache-missing.gravity" "PERF4-CACHE"
+  "bootstrap/clojure/fixtures/rejected/layout-device-mismatch.gravity" "PERF4-DEVICE"
+  "bootstrap/clojure/fixtures/rejected/layout-proof-missing.gravity" "PERF4-PROOF"}
+ :capability-based-proof
+ {:profile-legality-preserved? true
+  :target-request-preserved? true
+  :alias-and-ownership-proven? true
+  :address-identity-safe? true
+  :alignment-supported? true
+  :cache-evidence-recorded? true
+  :device-transfer-compatible? true
+  :layout-proof-preserved? true
+  :status :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 38 tests containing 1938 assertions. 0 failures, 0 errors. PERF4 layout optimization artifacts, and 506 rejected fixtures"}
+  {:command "clojure -M -e '(require ... layout summary)'"
+   :output "{:kind :gravity/stage0-layout-optimization-artifact, :pass :layout-optimization-validation, :status :complete, :transforms #{:aos-to-soa}, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This proves PERF4 and P04-T04 at the Clojure stage0 performance artifact boundary."
+  "It does not complete PERF8 SIMD/vectorization, benchmark governance, PGO, autotuning, realtime latency, check elision, backend execution, runtime services, release performance, or self-hosting."]}

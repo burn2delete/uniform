@@ -1,0 +1,14 @@
+{
+  "acceptedFixtures": [],
+  "artifacts": [
+    "docs/artifacts/example-proof.edn"
+  ],
+  "claimedFullLanguageComplete": true,
+  "gravityAuthoredImplementation": [],
+  "proofCommands": [],
+  "publicGravityAcceptedProof": [],
+  "publicGravityRejectedProof": [],
+  "rejectedFixtures": [],
+  "scaffoldOnlyCoverage": true,
+  "stableDiagnostics": []
+}

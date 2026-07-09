@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PACKAGED_JAR="${ROOT_DIR}/target/phase-18/jvm-cli/gravity-jvm-cli.jar"
+FINAL_RELEASE="${ROOT_DIR}/target/phase-18/release/gravity"
+FINAL_SEED_PROOF="${ROOT_DIR}/docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn"
+
+runtime_classpath() {
+  cd "${ROOT_DIR}"
+  clojure -Spath | awk -v RS=':' -v ORS=':' \
+    '$0 != "bootstrap/clojure/src" && $0 != "./bootstrap/clojure/src" && $0 != "" {print}' |
+    sed 's/:$//'
+}
+
+final_seed_retired() {
+  [[ -f "${FINAL_SEED_PROOF}" ]] || return 1
+  grep -q ':status :complete' "${FINAL_SEED_PROOF}" || return 1
+  grep -q ':full-language-compiler-self-hosted? true' "${FINAL_SEED_PROOF}" || return 1
+  grep -q ':clojure-seed-retired? true' "${FINAL_SEED_PROOF}" || return 1
+  grep -q ':clojure-seed-boundary? false' "${FINAL_SEED_PROOF}" || return 1
+}
+
+if [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && "${GRAVITY_PACKAGED_CLI_ONLY:-0}" != "1" && -x "${FINAL_RELEASE}" ]] && final_seed_retired; then
+  exec "${FINAL_RELEASE}" "$@"
+fi
+
+if [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]; then
+  RUNTIME_CP="$(runtime_classpath)"
+  exec java -cp "${PACKAGED_JAR}:${RUNTIME_CP}" gravity.cli.Main "$@"
+fi
+
+usage() {
+  cat <<'EOF'
+gravity bootstrap-hosted command
+
+Usage:
+  gravity --version
+  gravity help
+  gravity check <file.qst|file.gravity>
+  gravity run <file.qst|file.gravity>
+  gravity compile <file.qst|file.gravity>
+  gravity compile <file.qst|file.gravity> -o <executable>
+  gravity test
+  gravity self-host verify
+  gravity <artifact-command> <file.qst|file.gravity>
+
+Metadata:
+  :bootstrap-hosted? true
+  :seedless-release? false
+  :delegates-to "clojure -M:gravity"
+
+Use gravity-bootstrap for explicit Clojure seed audit and recovery.
+EOF
+}
+
+version() {
+  cat <<'EOF'
+{:command "gravity"
+ :phase "P18-T01"
+ :bootstrap-hosted? true
+ :seedless-release? false
+ :delegates-to "clojure -M:gravity"
+ :replaced-by "Phase 18 self-hosted release artifact"}
+EOF
+}
+
+seedless_overclaim() {
+  cat >&2 <<'EOF'
+{:id "P18T01001"
+ :message "thin CLI wrapper is bootstrap-hosted and cannot be claimed as the seedless release artifact"
+ :bootstrap-stage :phase18-thin-wrapper
+ :bootstrap-hosted? true
+ :seedless-release? false
+ :remediation "Complete P18-T03 and P18-T05 before claiming the public gravity command is seedless."}
+EOF
+  exit 1
+}
+
+case "${1:-}" in
+  ""|"help"|"-h"|"--help")
+    usage
+    ;;
+  "--version"|"version")
+    version
+    ;;
+  "--assert-seedless-release"|"assert-seedless-release")
+    seedless_overclaim
+    ;;
+  *)
+    cd "${ROOT_DIR}"
+    exec clojure -M:gravity "$@"
+    ;;
+esac

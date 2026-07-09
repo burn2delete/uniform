@@ -1,0 +1,214 @@
+{
+  "kind": "phase11-ai-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P11-D154",
+      "document": "A1",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "ai_program_manifest",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a1-tool-authority.json",
+        "diagnostic": "AI004"
+      },
+      "coverage_claims": [
+        "AI programming units, effects, capabilities, schemas, replay modes, generated-code pipeline, and runtime ledgers"
+      ]
+    },
+    {
+      "task_id": "P11-D155",
+      "document": "A2",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "model_manifest",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a2-provider-capability.json",
+        "diagnostic": "A2001"
+      },
+      "coverage_claims": [
+        "provider id, model identity, capability, credential policy, structured output, replay, retention, budget, and failure classes"
+      ]
+    },
+    {
+      "task_id": "P11-D156",
+      "document": "A3",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "prompt_artifact",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a3-authority.json",
+        "diagnostic": "A3003"
+      },
+      "coverage_claims": [
+        "prompt schemas, authority partitions, taint map, visible tools, provider constraints, repair, refusal, prompt hash, and compatibility"
+      ]
+    },
+    {
+      "task_id": "P11-D157",
+      "document": "A4",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "tool_schema",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a4-human-review.json",
+        "diagnostic": "A4005"
+      },
+      "coverage_claims": [
+        "tool schemas, effects, capabilities, side-effect class, idempotency, retry, timeout, replay, redaction, and human-review policy"
+      ]
+    },
+    {
+      "task_id": "P11-D158",
+      "document": "A5",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "agent_manifest",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a5-eval-gate.json",
+        "diagnostic": "A5005"
+      },
+      "coverage_claims": [
+        "agent dependencies, toolset, memory bindings, policies, human-review, schemas, effects, capabilities, eval gates, budgets, deployment class, and ledgers"
+      ]
+    },
+    {
+      "task_id": "P11-D159",
+      "document": "A6",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "workflow_graph",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a6-replay-mode.json",
+        "diagnostic": "A6001"
+      },
+      "coverage_claims": [
+        "workflow replay mode, nodes, state and event schemas, effect/capability table, retry, compensation, human-review payload schemas, migration compatibility, and budget accounting"
+      ]
+    },
+    {
+      "task_id": "P11-D160",
+      "document": "A7",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "memory_policy",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a7-cross-tenant.json",
+        "diagnostic": "A7004"
+      },
+      "coverage_claims": [
+        "memory schemas, embedding identity, dimensions, read/write capabilities, partitioning, retention, deletion, redaction, prompt policy, replay policy, and retrieval trace"
+      ]
+    },
+    {
+      "task_id": "P11-D161",
+      "document": "A8",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "policy_manifest",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a8-taint-policy.json",
+        "diagnostic": "A8004"
+      },
+      "coverage_claims": [
+        "policy allow/deny effects, data class rules, taint rules, human-review rules, budgets, fallback, generated-code rules, deployment promotion, and decision ledgers"
+      ]
+    },
+    {
+      "task_id": "P11-D162",
+      "document": "A9",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "evaluation_report",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a9-eval-gate.json",
+        "diagnostic": "A9001"
+      },
+      "coverage_claims": [
+        "evaluation subject, dataset, metrics, thresholds, provider identities, environment, safety probes, budget, variance, and release gate"
+      ]
+    },
+    {
+      "task_id": "P11-D163",
+      "document": "A10",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "human_review_manifest",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a10-payload.json",
+        "diagnostic": "A10005"
+      },
+      "coverage_claims": [
+        "human-review action schema, role, evidence schema, payload hash rule, expiry, denial, timeout, replay, audit, and redaction policy"
+      ]
+    },
+    {
+      "task_id": "P11-D164",
+      "document": "A11",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+        "required_artifact_fields": [
+          "injection_defense",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a11-tool-escalation.json",
+        "diagnostic": "A11002"
+      },
+      "coverage_claims": [
+        "authority levels, prompt partitions, taint rules, tool authorization table, policy denial fixtures, defense probes, generated-code validation, runtime monitors, and incident bundle schema"
+      ]
+    }
+  ]
+}

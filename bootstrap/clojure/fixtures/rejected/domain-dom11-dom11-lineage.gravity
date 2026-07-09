@@ -1,0 +1,6 @@
+; Rejected P09 DOM11 fixture.
+(ns domain.dom11-lineage (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom11-lineage}}}))
+(defn main [] :- I64 1)

@@ -1,0 +1,2 @@
+(ns safety.conformance.reject (:profile :hosted) (:target :jvm) (:exports [failure]) (:safety :safe))
+(def failure (safe12/hygiene :bad))

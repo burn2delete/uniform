@@ -1,0 +1,5 @@
+(ns l9.bad.ffi
+  (:profile :native))
+
+(def bad
+  (ffi/call "native_fn"))

@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "testing_library": {"undeclared_test_effect": true}}

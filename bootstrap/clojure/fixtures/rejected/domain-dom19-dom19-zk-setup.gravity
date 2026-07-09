@@ -1,0 +1,6 @@
+; Rejected P09 DOM19 fixture.
+(ns domain.dom19-zk-setup (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom19-zk-setup}}}))
+(defn main [] :- I64 1)

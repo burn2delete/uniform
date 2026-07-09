@@ -1,0 +1,17 @@
+(ns bad.macro.provenance
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defmacro no-origin
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax
+   :omit-generated-origin true}
+  []
+  (syntax-quote nil))
+
+(def generated (no-origin))

@@ -1,0 +1,18 @@
+worker: c16-source
+owned-source: bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity
+module: gravity.compiler.c16-incremental-compilation-design
+component: :incremental-compilation
+verifier: verify-c16-incremental-compilation
+
+source-hash:
+85c81af4feddf64783cea3da795d0a4652b8e0376a41df397b614ab744056d30  bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity
+
+ascii-check:
+command: wc -l bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity && LC_ALL=C grep -n '[^ -~\t]' bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity || true
+result: 548 lines; no non-ASCII matches emitted
+
+stage1-source-check:
+command: clojure -M:gravity stage1-bootstrap-source bootstrap/gravity/src
+exit: 0
+summary: stage :stage1-bootstrap-source; source-root "bootstrap/gravity/src"; module-count 19; component-count 17; accepted-fixtures 1; rejected-fixtures 6; top-level diagnostics []; status :complete
+note: this is a source-model bridge check only. It does not claim production incremental compilation or roadmap completion.

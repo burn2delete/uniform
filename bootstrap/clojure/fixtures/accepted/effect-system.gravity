@@ -1,0 +1,207 @@
+(ns effect.system
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [pure-effect io-write allocated-buffer freed-buffer raw-read
+             mmio-read interrupt-hook file-read file-write http-response
+             listener rows write-result current-time random-bytes suspended
+             awaited yielded resumed ffi-value reflected ir-read ir-written
+             plugin-result build-file build-artifact build-env build-network
+             build-process build-time build-random build-model build-tool
+             build-target build-package secret process workflow-event
+             replay-record model-output tool-output embedding memory-entry
+             memory-written prompt validated eval-report human-decision
+             handled-http latent-http resource-cycle dynamic-value])
+  (:effects #{:io/write :memory/allocate :memory/free :memory/raw :memory/mmio
+              :interrupt/register :resource/open :resource/close
+              :filesystem/read :filesystem/write :network/http
+              :network/listen :database/read :database/write :time/read
+              :random/read :async/suspend :async/await :generator/yield
+              :error/resume :ffi/call :reflection/use :compiler/read-ir
+              :compiler/write-ir :compiler/plugin :build/read-file
+              :build/write-artifact :build/env :build/network :build/exec
+              :build/time :build/random :build/model-call :build/tool-call
+              :build/target-probe :build/package-index :secrets/read
+              :shell/exec :workflow/event :workflow/replay :ai/model-call
+              :ai/tool-call :ai/embedding :ai/memory-read :ai/memory-write
+              :ai/prompt-render :ai/output-validate :ai/eval-run
+              :ai/human-review :dynamic/eval})
+  (:capabilities #{:io/stdout :memory/allocator :memory/raw :hardware/mmio
+                   :hardware/interrupt :resource/file :filesystem/read
+                   :filesystem/write :network/client :network/listener
+                   :database/read :database/write :time/read :random/read
+                   :scheduler/task :ffi/call :reflection/use :compiler/ir
+                   :compiler/plugin :secrets/read :shell/exec
+                   :workflow/event :workflow/replay :ai/model :ai/tool
+                   :ai/memory :ai/eval :ai/human-review :test/fixture})
+  (:safety :audited-unsafe)
+  (:metadata {:build-grants #{:build/read-file :build/write-artifact
+                              :build/env :build/network :build/exec
+                              :build/time :build/random :build/model-call
+                              :build/tool-call :build/target-probe
+                              :build/package-index}
+              :replay-records #{:filesystem/read :network/http
+                                :database/read :time/read :random/read
+                                :workflow/event :workflow/replay
+                                :ai/model-call :ai/tool-call :ai/embedding
+                                :ai/human-review}
+              :handler-grants #{:test/fixture}}))
+
+(def pure-effect
+  (effect/pure))
+
+(def io-write
+  (println "effect fixture"))
+
+(def allocated-buffer
+  (buffer/new 16))
+
+(def freed-buffer
+  (memory/free allocated-buffer))
+
+(def raw-read
+  (unsafe/raw-read "0x1000"))
+
+(def mmio-read
+  (unsafe/mmio-read "0xff00"))
+
+(def interrupt-hook
+  (interrupt/register :timer))
+
+(def file-read
+  (fs/read "input.gravity"))
+
+(def file-write
+  (fs/write "output.gravity" "ok"))
+
+(def http-response
+  (http/get "https://example.test/live"))
+
+(def listener
+  (network/listen 8080))
+
+(def rows
+  (db/read "select 1"))
+
+(def write-result
+  (db/write "insert"))
+
+(def current-time
+  (time/now))
+
+(def random-bytes
+  (random/read 16))
+
+(def suspended
+  (async/suspend "pause"))
+
+(def awaited
+  (async/await suspended))
+
+(def yielded
+  (generator/yield "value"))
+
+(def resumed
+  (error/resume :resume-value))
+
+(def ffi-value
+  (ffi/call :clock-gettime))
+
+(def reflected
+  (reflection/use :host-class))
+
+(def ir-read
+  (compiler/read-ir "module"))
+
+(def ir-written
+  (compiler/write-ir ir-read))
+
+(def plugin-result
+  (compiler/plugin :stage0))
+
+(def build-file
+  (build/read-file "schema.gravity"))
+
+(def build-artifact
+  (build/write-artifact "schema.edn" build-file))
+
+(def build-env
+  (build/env "GRAVITY_PROFILE"))
+
+(def build-network
+  (build/network "https://registry.example.test"))
+
+(def build-process
+  (build/exec "gravity-codegen"))
+
+(def build-time
+  (build/time))
+
+(def build-random
+  (build/random))
+
+(def build-model
+  (build/model-call "summarize contract"))
+
+(def build-tool
+  (build/tool-call :schema-compiler))
+
+(def build-target
+  (build/target-probe :jvm))
+
+(def build-package
+  (build/package-index "gravity/core"))
+
+(def secret
+  (secrets/read :api-key))
+
+(def process
+  (shell/exec "gravity-helper"))
+
+(def workflow-event
+  (workflow/event :started))
+
+(def replay-record
+  (workflow/replay :started))
+
+(def model-output
+  (ai/model-call "model request"))
+
+(def tool-output
+  (ai/tool-call :search))
+
+(def embedding
+  (ai/embedding "document"))
+
+(def memory-entry
+  (ai/memory-read :session))
+
+(def memory-written
+  (ai/memory-write :session "value"))
+
+(def prompt
+  (ai/prompt-render "template"))
+
+(def validated
+  (ai/output-validate model-output))
+
+(def eval-report
+  (ai/eval-run :suite))
+
+(def human-decision
+  (ai/human-review model-output))
+
+(def handled-http
+  (effect/handle :network/http :test/http-fixture
+    (http/get "https://example.test/handled")))
+
+(defn latent-http []
+  (http/get "https://example.test/latent"))
+
+(def resource-cycle
+  (let [file (resource/open "tmp/effect.txt")]
+    (do
+      (resource/close file)
+      true)))
+
+(def dynamic-value
+  (dynamic/value "effect metadata"))

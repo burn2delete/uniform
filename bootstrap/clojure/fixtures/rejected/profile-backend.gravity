@@ -1,0 +1,8 @@
+(ns profile.bad-backend
+  (:profile :hosted)
+  (:target :wasm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

@@ -1,0 +1,37 @@
+{:artifact :gravity/stage0-r11-runtime-capability-document-proof
+ :task "P08-D122"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r11-document bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :artifact-kind :gravity/stage0-r11-runtime-capability-document-artifact
+ :artifact-id "sha256:5ef21af361a329d392eb45fe7c8d08084f21f151ee945d197f72fae1c41ffbf9"
+ :input-artifact "sha256:8b14783b42260dc2becf865b32107a6f7adc943f4d8857de77aa0a8ed258ecb9"
+ :input-artifact-kind :gravity/stage0-ai-repl-ffi-capability-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r11-*.gravity"]
+ :required-diagnostic-ids
+ ["R11-GRANT" "R11-AMBIENT" "R11-PRINCIPAL" "R11-DELEGATE"
+  "R11-REVOKE" "R11-TOOL" "R11-SECRET" "R11-OBSERVABILITY"
+  "R11-AUDIT" "R11-MANIFEST"]
+ :capability-based-proof
+ {:runtime-capability-input-verified? true
+  :manifest-deny-default-covered? true
+  :grant-deny-delegate-revoke-covered? true
+  :principal-identity-covered? true
+  :ambient-authority-rejected? true
+  :delegated-handle-scoped? true
+  :revocation-safe? true
+  :tool-plugin-contract-covered? true
+  :secret-redaction-covered? true
+  :observability-authority-covered? true
+  :audit-decision-log-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 10
+  :test-command "clojure -M:test"
+  :test-result "107 tests, 6699 assertions, 0 failures, 0 errors, 1416 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R11 runtime capability enforcement document through the P08-T05 AI/REPL/FFI/capability runtime artifact. It does not claim production deployment policy integration, external provider enforcement, live secret stores, production tool/plugin registries, release readiness, or complete Phase 08 document coverage."}

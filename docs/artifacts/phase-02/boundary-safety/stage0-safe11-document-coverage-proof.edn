@@ -1,0 +1,31 @@
+{:task-id :P02-D040
+ :document "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+ :artifact-kind :gravity/stage0-boundary-safety-artifact
+ :document-coverage {:taint-source-records 1
+                     :taint-flow-records 1
+                     :validator-contracts 1
+                     :residual-constraint-records 1
+                     :sink-authorization-records 1
+                     :parameterization-records 1
+                     :deserialization-records 1
+                     :secret-redaction-records 1
+                     :prompt-tool-policy-records 1
+                     :generated-taint-propagation 1
+                     :unsafe-taint-clear-audits 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE11-TAINTED-SINK"
+                        "SAFE11-VALIDATOR"
+                        "SAFE11-RESIDUAL"
+                        "SAFE11-PARAMETERIZATION"
+                        "SAFE11-DESERIALIZATION"
+                        "SAFE11-SECRET-LEAK"
+                        "SAFE11-PROMPT-INJECTION"
+                        "SAFE11-GENERATED"
+                        "SAFE11-FOREIGN"
+                        "SAFE11-UNSAFE-CLEAR"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE11 accepted records and 10 rejected diagnostics passed"}]}

@@ -1,0 +1,11 @@
+; Rejected P12 PKG1 fixture.
+(ns package.pkg1-release-lockfile
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:build/package-index})
+  (:capabilities #{:package/resolve})
+  (:safety :safe)
+  (:metadata {:package {:artifacts {:fail :pkg1006}}}))
+
+(defn main [] :- I64 1)

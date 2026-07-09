@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-macro.json",
+  "set": {
+    "/provider/kind": ":macro-debugger"
+  }
+}

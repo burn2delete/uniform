@@ -1,0 +1,16 @@
+(ns math.eml-candidate
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:eml
+     {:candidates
+      [{:candidate-id :candidate/unproved
+        :eml-artifact-id :eml/sigmoid-normalized
+        :state :proof-requested
+        :ranking 1
+        :proof-obligations [:equivalence]
+        :can-influence-lowering? true}]}}}))

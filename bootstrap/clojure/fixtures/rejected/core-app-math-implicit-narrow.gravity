@@ -1,0 +1,18 @@
+(ns core.app.math-implicit-narrow
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:conversion-rules
+                      [{:rule-id :stage0/implicit-narrow
+                        :profile :hosted
+                        :target :jvm
+                        :source-family :fixed-integer
+                        :target-family :fixed-integer
+                        :conversion-mode :implicit
+                        :implicit? true}]}}}))
+
+(defn main []
+  (println "implicit narrowing should not compile"))

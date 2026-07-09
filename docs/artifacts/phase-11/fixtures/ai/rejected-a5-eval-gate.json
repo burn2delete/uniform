@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "set": {
+    "/agent_manifest/missing_eval_gate": true
+  }
+}

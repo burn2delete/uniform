@@ -1,0 +1,9 @@
+(ns compiler.c8.replay
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c8-effect-check {:fail :replay}}}))
+
+(def value 1)

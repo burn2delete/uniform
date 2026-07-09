@@ -1,0 +1,572 @@
+; Stage1 Gravity-owned C11 Gravity MIR specification contract.
+(ns gravity.compiler.c11-mir-specification
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c11-mir-contract
+             c11-mir-module-contract
+             c11-mir-function-contract
+             c11-mir-block-contract
+             c11-mir-terminator-contract
+             c11-mir-instruction-contract
+             c11-mir-value-contract
+             c11-mir-source-map-contract
+             c11-mir-verifier-contract
+             c11-mir-diagnostic-catalog
+             build-c11-mir-module
+             build-c11-mir-function
+             build-c11-mir-block
+             build-c11-mir-terminator
+             build-c11-mir-instruction
+             build-c11-mir-value
+             build-c11-mir-source-map
+             verify-c11-mir-module])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :mir-specification
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C11" "C6" "C7" "C8" "C9" "C10"
+                           "C12" "C13" "C14" "C15" "C18"
+                           "D1" "D3" "D6" "D8" "D9"
+                           "P1" "PERF10" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2" "TEST13"]
+               :implements [:mir-module-contract
+                             :mir-function-contract
+                             :mir-block-contract
+                             :mir-terminator-contract
+                             :mir-instruction-contract
+                             :mir-value-contract
+                             :mir-source-map-contract
+                             :mir-control-flow-graph
+                             :mir-data-flow-graph
+                             :mir-dominance-use-def-rules
+                             :mir-type-effect-safety-fact-tables
+                             :mir-domain-anchor-table
+                             :mir-verifier-entrypoint
+                             :mir-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :checked-core-identity
+                            :core-node-identity
+                            :type-facts :effect-facts
+                            :capability-facts :ownership-facts
+                            :safe1-outcomes
+                            :runtime-check-records
+                            :proof-obligations
+                            :profile-target-metadata
+                            :source-origin-map
+                            :generated-origin-chains
+                            :control-flow-edges
+                            :data-flow-edges
+                            :dominance-facts
+                            :domain-anchor-links
+                            :target-independence}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c11-mir-specification-contract-subset
+                                    :clojure-c11-mir-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-mir-module.gravity"
+                              "compiler-mir-block.gravity"
+                              "compiler-mir-dominance.gravity"
+                              "compiler-mir-type.gravity"
+                              "compiler-mir-effect.gravity"
+                              "compiler-mir-safety.gravity"
+                              "compiler-mir-origin.gravity"
+                              "compiler-mir-domain.gravity"
+                              "compiler-mir-target-leak.gravity"
+                              "compiler-mir-verify.gravity"]}}}))
+
+(def c11-mir-contract
+  {:artifact :gravity/c11-mir-contract
+   :purpose :target-independent-typed-effected-profile-valid-ir
+   :required-artifacts [:mir-module
+                        :control-flow-graph
+                        :data-flow-graph
+                        :type-table
+                        :effect-table
+                        :ownership-table
+                        :capability-proof-table
+                        :safety-outcome-table
+                        :runtime-check-table
+                        :proof-certificate-table
+                        :source-origin-map
+                        :domain-anchor-table
+                        :mir-verifier-report
+                        :mir-diagnostic-stream]
+   :required-input-facts [:checked-core-hash
+                          :type-facts
+                          :effect-facts
+                          :capability-facts
+                          :ownership-facts
+                          :safety-outcomes
+                          :profile-validation-facts
+                          :source-provenance]
+   :must-preserve [:source-spans
+                   :generated-origin-chains
+                   :type-facts
+                   :effect-facts
+                   :ownership-facts
+                   :capability-facts
+                   :safe1-outcomes
+                   :runtime-check-records
+                   :proof-obligations
+                   :artifact-provenance]
+   :forbidden [:backend-ir-semantics
+               :target-specific-opcode-in-generic-mir
+               :operation-without-type-or-effect-facts
+               :safety-sensitive-operation-without-outcome
+               :domain-artifact-without-mir-anchor
+               :source-map-ending-at-macro-expansion]})
+
+(def c11-mir-module-contract
+  {:artifact :gravity/c11-mir-module-contract
+   :required-fields [:artifact :module-id :source-core
+                     :profile :target-request
+                     :functions :globals
+                     :type-table :effect-table
+                     :ownership-table :capability-proof-table
+                     :safety-table :runtime-check-table
+                     :proof-certificate-table
+                     :source-map :domain-anchors
+                     :diagnostics :provenance]
+   :identity-fields [:module-id :source-core :profile
+                     :target-request :compiler-identity
+                     :source-graph-hash]
+   :module-rules [:module-id-content-addresses-source-core
+                  :source-core-is-checked-core
+                  :profile-validation-precedes-mir
+                  :target-request-may-constrain-legality
+                  :generic-mir-semantics-remain-target-independent
+                  :provenance-links-source-compiler-and-pass-history]
+   :consumers [:mir-verifier
+               :domain-ir-lowering
+               :mir-optimizer
+               :target-lowering
+               :diagnostic-rendering
+               :bootstrap-source-inventory]
+   :forbidden [:missing-checked-core-reference
+               :missing-profile
+               :missing-target-request
+               :target-lowering-metadata-as-mir-semantics
+               :unproven-source-identity
+               :unstructured-diagnostic-list]})
+
+(def c11-mir-function-contract
+  {:artifact :gravity/c11-mir-function-contract
+   :required-fields [:fn-id :name :params :returns
+                     :latent-effects :blocks :entry
+                     :source :facts :provenance]
+   :function-facts [:type-summary
+                    :effect-summary
+                    :capability-summary
+                    :ownership-summary
+                    :safety-summary
+                    :profile-constraints
+                    :target-request]
+   :rules [:entry-block-exists
+           :every-block-reachable-or-diagnosed
+           :latent-effects-match-c8-facts
+           :return-type-matches-c7-facts
+           :ownership-summary-links-c9-facts
+           :safety-summary-links-c10-outcomes
+           :source-origin-reaches-typed-core]
+   :forbidden [:function-without-entry
+               :function-without-source-origin
+               :latent-effect-drop
+               :capability-proof-drop
+               :unsafe-summary-hidden-from-artifacts]})
+
+(def c11-mir-block-contract
+  {:artifact :gravity/c11-mir-block-contract
+   :required-fields [:block-id :arguments :instructions
+                     :terminator :predecessors :successors
+                     :dominators :data-flow :source]
+   :block-rules [:one-terminator-per-block
+                 :terminator-controls-successors
+                 :predecessor-successor-edges-agree
+                 :block-arguments-model-control-flow-joins
+                 :definitions-dominate-uses
+                 :data-flow-edges-publicly-exposed
+                 :source-or-generated-origin-present]
+   :control-flow-facts [:predecessors :successors
+                        :dominators :post-dominators
+                        :loop-headers :exception-edges
+                        :suspend-edges]
+   :data-flow-facts [:definitions :uses :phi-arguments
+                     :live-ins :live-outs
+                     :ownership-transfers
+                     :resource-terminals]
+   :forbidden [:unterminated-block
+               :implicit-fallthrough
+               :hidden-control-flow-join
+               :use-before-definition
+               :block-without-origin]})
+
+(def c11-mir-terminator-contract
+  {:artifact :gravity/c11-mir-terminator-contract
+   :terminators [:branch
+                 :conditional-branch
+                 :switch
+                 :match-decision
+                 :return
+                 :throw
+                 :panic
+                 :unreachable-with-proof
+                 :suspend
+                 :yield
+                 :tail-call]
+   :required-fields [:terminator-id :kind :operands
+                     :successors :effects :source
+                     :profile :facts :verifier-status]
+   :rules [:branch-targets-exist
+           :conditional-branch-condition-is-boolean
+           :switch-and-match-cover-decision-space
+           :return-type-matches-function
+           :throw-and-panic-record-error-effects
+           :unreachable-requires-proof
+           :suspend-and-yield-require-profile-support
+           :tail-call-requires-legality-proof]
+   :forbidden [:terminator-with-target-specific-semantics
+               :unreachable-without-proof
+               :effectful-terminator-without-ordering
+               :successor-edge-not-in-cfg]})
+
+(def c11-mir-instruction-contract
+  {:artifact :gravity/c11-mir-instruction-contract
+   :required-fields [:op-id :opcode :operands :result
+                     :type :effects :ordering
+                     :source :profile :facts
+                     :domain-anchor :verifier-status]
+   :operation-families [:constant
+                        :local
+                        :call
+                        :tail-call
+                        :closure
+                        :dispatch
+                        :record
+                        :struct
+                        :tuple
+                        :enum
+                        :tagged-union
+                        :field-index-slice-buffer
+                        :arithmetic
+                        :numeric-conversion
+                        :allocation
+                        :load
+                        :store
+                        :move
+                        :drop
+                        :region
+                        :arena
+                        :linear-resource
+                        :control-flow
+                        :loop
+                        :match
+                        :error
+                        :ffi
+                        :atomic
+                        :concurrency
+                        :workflow
+                        :ai-model-tool-memory-policy
+                        :domain-anchor
+                        :runtime-check
+                        :proof-reference]
+   :fact-fields [:type-fact-id
+                 :effect-fact-id
+                 :capability-proof-id
+                 :ownership-fact-id
+                 :safety-outcome-id
+                 :runtime-check-id
+                 :proof-certificate-ids]
+   :rules [:result-type-matches-operation-schema
+           :effectful-operation-has-ordering
+           :safety-sensitive-operation-has-safety-outcome
+           :runtime-checks-guard-intended-operation
+           :domain-operation-has-domain-anchor
+           :operation-source-origin-reaches-core-node
+           :profile-constraints-attached]
+   :forbidden [:instruction-without-type
+               :effect-without-ordering
+               :safety-operation-without-outcome
+               :runtime-check-deleted-by-generic-dce
+               :target-specific-opcode
+               :domain-ir-opaque-to-mir]})
+
+(def c11-mir-value-contract
+  {:artifact :gravity/c11-mir-value-contract
+   :required-fields [:value-id :kind :type
+                     :defined-by :uses :source
+                     :ownership :effects :safety]
+   :value-kinds [:parameter
+                 :block-argument
+                 :instruction-result
+                 :constant
+                 :global
+                 :closure-capture
+                 :resource-handle
+                 :region-token
+                 :runtime-check-token
+                 :proof-token]
+   :use-def-rules [:definition-dominates-every-use
+                   :block-argument-use-has-predecessor-edge
+                   :move-invalidates-source-value
+                   :linear-resource-has-one-terminal-use
+                   :runtime-check-token-dominates-guarded-operation
+                   :proof-token-dominates-elided-check]
+   :forbidden [:value-without-type
+               :value-use-without-definition
+               :moved-value-reused
+               :linear-resource-leak
+               :proof-token-without-certificate]})
+
+(def c11-mir-source-map-contract
+  {:artifact :gravity/c11-mir-source-map-contract
+   :required-fields [:source-map-id :mir-artifact
+                     :core-node :syntax-id
+                     :source-span :origin-chain
+                     :generated-origin :producer
+                     :profile :target-request
+                     :provenance]
+   :origin-kinds [:source-form
+                  :macro-generated
+                  :compiler-generated
+                  :domain-generated
+                  :runtime-check-generated
+                  :proof-generated]
+   :rules [:every-operation-has-source-or-generated-origin
+           :generated-origin-names-producer
+           :macro-generated-origin-links-call-site
+           :domain-generated-origin-links-anchor
+           :runtime-check-origin-links-guarded-operation
+           :proof-generated-origin-links-certificate]
+   :forbidden [:origin-chain-truncated-at-macro-expansion
+               :generated-operation-without-producer
+               :source-span-lost-before-diagnostic
+               :redacted-origin-without-policy-marker]})
+
+(def c11-mir-verifier-contract
+  {:artifact :gravity/c11-mir-verifier-contract
+   :required-inputs [:mir-module
+                     :module-contract
+                     :function-contract
+                     :block-contract
+                     :instruction-contract
+                     :value-contract
+                     :source-map-contract]
+   :checks [:module-identity-complete
+            :every-block-terminates
+            :control-flow-edges-valid
+            :definitions-dominate-uses
+            :data-flow-edges-exposed
+            :types-match-operation-schemas
+            :effect-ordering-constraints-present
+            :safety-sensitive-operations-reference-outcomes
+            :runtime-checks-dominate-guarded-operations
+            :source-and-generated-origins-valid
+            :profile-constraints-attached
+            :ownership-resource-operations-match-c9-facts
+            :domain-anchors-valid
+            :target-specific-opcodes-rejected
+            :diagnostics-carry-c15-shape]
+   :failure-effect [:blocks-optimization
+                    :blocks-target-lowering
+                    :emits-c11-diagnostic]
+   :forbidden [:optimizer-over-unverified-mir
+               :target-lowering-over-unverified-mir
+               :verifier-diagnostic-without-source
+               :verification-dependent-on-backend-state]})
+
+(def c11-mir-diagnostic-catalog
+  {:diagnostics ["C11-MODULE"
+                 "C11-BLOCK"
+                 "C11-DOMINANCE"
+                 "C11-TYPE"
+                 "C11-EFFECT"
+                 "C11-SAFETY"
+                 "C11-ORIGIN"
+                 "C11-DOMAIN"
+                 "C11-TARGET-LEAK"
+                 "C11-VERIFY"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :stage :mir-module
+                              :function :block
+                              :operation-id :value-id
+                              :source-span
+                              :origin-chain
+                              :profile :target-request
+                              :missing-fact
+                              :provenance
+                              :remediation]
+   :stops [:domain-ir-lowering
+           :mir-optimization
+           :target-lowering
+           :artifact-emission
+           :bootstrap-source-inventory]
+   :must-not-depend-on [:localized-rendering-text
+                        :backend-legality
+                        :target-lowering-state
+                        :runtime-only-safety-state
+                        :opaque-domain-ir]})
+
+(defn build-c11-mir-module
+  [module-id source-core profile target-request functions globals tables provenance]
+  (quote {:artifact :gravity/mir-module
+          :module-id module-id
+          :source-core source-core
+          :profile profile
+          :target-request target-request
+          :functions functions
+          :globals globals
+          :type-table (:type-table tables)
+          :effect-table (:effect-table tables)
+          :ownership-table (:ownership-table tables)
+          :capability-proof-table (:capability-proof-table tables)
+          :safety-table (:safety-table tables)
+          :runtime-check-table (:runtime-check-table tables)
+          :proof-certificate-table (:proof-certificate-table tables)
+          :source-map (:source-map tables)
+          :domain-anchors (:domain-anchors tables)
+          :diagnostics []
+          :provenance provenance
+          :contract c11-mir-module-contract}))
+
+(defn build-c11-mir-function
+  [fn-id name params returns latent-effects blocks entry source facts provenance]
+  (quote {:artifact :gravity/mir-function
+          :fn-id fn-id
+          :name name
+          :params params
+          :returns returns
+          :latent-effects latent-effects
+          :blocks blocks
+          :entry entry
+          :source source
+          :facts facts
+          :provenance provenance
+          :contract c11-mir-function-contract}))
+
+(defn build-c11-mir-block
+  [block-id arguments instructions terminator predecessors successors dominators data-flow source]
+  (quote {:artifact :gravity/mir-block
+          :block-id block-id
+          :arguments arguments
+          :instructions instructions
+          :terminator terminator
+          :predecessors predecessors
+          :successors successors
+          :dominators dominators
+          :data-flow data-flow
+          :source source
+          :contract c11-mir-block-contract}))
+
+(defn build-c11-mir-terminator
+  [terminator-id kind operands successors effects source profile facts]
+  (quote {:artifact :gravity/mir-terminator
+          :terminator-id terminator-id
+          :kind kind
+          :operands operands
+          :successors successors
+          :effects effects
+          :source source
+          :profile profile
+          :facts facts
+          :verifier-status :pending
+          :contract c11-mir-terminator-contract}))
+
+(defn build-c11-mir-instruction
+  [op-id opcode operands result type effects ordering source profile facts domain-anchor]
+  (quote {:artifact :gravity/mir-instruction
+          :op-id op-id
+          :opcode opcode
+          :operands operands
+          :result result
+          :type type
+          :effects effects
+          :ordering ordering
+          :source source
+          :profile profile
+          :facts facts
+          :domain-anchor domain-anchor
+          :verifier-status :pending
+          :contract c11-mir-instruction-contract}))
+
+(defn build-c11-mir-value
+  [value-id kind type defined-by uses source ownership effects safety]
+  (quote {:artifact :gravity/mir-value
+          :value-id value-id
+          :kind kind
+          :type type
+          :defined-by defined-by
+          :uses uses
+          :source source
+          :ownership ownership
+          :effects effects
+          :safety safety
+          :contract c11-mir-value-contract}))
+
+(defn build-c11-mir-source-map
+  [source-map-id mir-artifact core-node syntax-id source-span origin-chain generated-origin producer profile target-request provenance]
+  (quote {:artifact :gravity/mir-source-map
+          :source-map-id source-map-id
+          :mir-artifact mir-artifact
+          :core-node core-node
+          :syntax-id syntax-id
+          :source-span source-span
+          :origin-chain origin-chain
+          :generated-origin generated-origin
+          :producer producer
+          :profile profile
+          :target-request target-request
+          :provenance provenance
+          :contract c11-mir-source-map-contract}))
+
+(defn verify-c11-mir-module [mir-module]
+  (quote {:status :stage1-source-owned
+          :mir-module mir-module
+          :checks [:module-identity-complete
+                   :checked-core-reference-present
+                   :profile-and-target-request-attached
+                   :every-function-has-entry-block
+                   :every-block-terminates
+                   :control-flow-edges-valid
+                   :definitions-dominate-uses
+                   :data-flow-edges-exposed
+                   :types-match-operation-schemas
+                   :effect-ordering-constraints-present
+                   :safety-sensitive-operations-have-outcomes
+                   :runtime-checks-dominate-guarded-operations
+                   :source-and-generated-origins-valid
+                   :ownership-resource-operations-match-c9-facts
+                   :domain-anchors-valid
+                   :target-specific-opcodes-rejected
+                   :diagnostics-follow-c15-shape]
+          :diagnostics c11-mir-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :checked-core-identity
+                      :core-node-identity
+                      :type-facts :effect-facts
+                      :capability-facts :ownership-facts
+                      :safe1-outcomes
+                      :runtime-check-records
+                      :proof-obligations
+                      :profile-target-metadata
+                      :source-origin-map
+                      :generated-origin-chains
+                      :control-flow-edges
+                      :data-flow-edges
+                      :dominance-facts
+                      :domain-anchor-links
+                      :target-independence
+                      :artifact-provenance]}))

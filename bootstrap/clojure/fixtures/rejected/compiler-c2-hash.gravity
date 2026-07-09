@@ -1,0 +1,11 @@
+(ns compiler.c2-hash
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c2-reader {:fail :hash}}}))
+
+(defn main []
+  true)

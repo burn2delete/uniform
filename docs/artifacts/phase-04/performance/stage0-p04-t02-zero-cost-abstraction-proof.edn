@@ -1,0 +1,66 @@
+{:proof-id :stage0-p04-t02-zero-cost-abstraction-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-T02
+ :document "PERF2"
+ :status :passed
+ :capability :zero-cost-abstraction-erasure-report
+ :command "clojure -M:gravity zero-cost bootstrap/clojure/fixtures/accepted/zero-cost-abstractions.gravity"
+ :artifact-kind :gravity/stage0-zero-cost-abstraction-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/zero-cost-abstractions.gravity"
+ :accepted-results
+ {:suite-id :perf2/zero-cost-abstractions
+  :claim-count 5
+  :abstraction-families
+  #{:protocol-dispatch
+    :generic-function
+    :iterator-pipeline
+    :newtype-wrapper
+    :collection-view}
+  :before-after-ir-status :complete
+  :residual-cost-reporting-status :complete
+  :allocation-boxing-audit-status :complete
+  :dispatch-specialization-status :complete
+  :runtime-check-proof-status :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["PERF2-CLAIM" "PERF2-RESIDUAL" "PERF2-ALLOCATION" "PERF2-BOXING"
+  "PERF2-DISPATCH" "PERF2-REFLECTION" "PERF2-CHECK" "PERF2-PROFILE"
+  "PERF2-EVIDENCE"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/zero-cost-claim-missing.gravity"
+  "PERF2-CLAIM"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-residual.gravity"
+  "PERF2-RESIDUAL"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-allocation.gravity"
+  "PERF2-ALLOCATION"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-boxing.gravity"
+  "PERF2-BOXING"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-dispatch.gravity"
+  "PERF2-DISPATCH"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-reflection.gravity"
+  "PERF2-REFLECTION"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-runtime-check.gravity"
+  "PERF2-CHECK"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-profile-illegal.gravity"
+  "PERF2-PROFILE"
+  "bootstrap/clojure/fixtures/rejected/zero-cost-evidence-missing.gravity"
+  "PERF2-EVIDENCE"}
+ :capability-based-proof
+ {:profile-legality-preserved? true
+  :target-request-preserved? true
+  :effect-authority-preserved? true
+  :capability-authority-preserved? true
+  :safety-evidence-preserved? true
+  :before-after-ir-recorded? true
+  :residual-costs-empty? true
+  :status :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 36 tests containing 1878 assertions. 0 failures, 0 errors. PERF2 zero-cost abstraction artifacts, and 488 rejected fixtures"}
+  {:command "clojure -M -e '(require ... zero-cost summary)'"
+   :output "{:kind :gravity/stage0-zero-cost-abstraction-artifact, :pass :zero-cost-abstraction-validation, :status :complete, :claims 5, :families #{:collection-view :protocol-dispatch :iterator-pipeline :newtype-wrapper :generic-function}, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This proves PERF2 and P04-T02 at the Clojure stage0 performance artifact boundary."
+  "Specialization and partial evaluation are completed separately by stage0-p04-t03-specialization-proof.edn."
+  "This proof does not complete memory layout, vectorization, benchmark governance, PGO, autotuning, realtime latency, check elision, backend execution, runtime services, release performance, or self-hosting."]}

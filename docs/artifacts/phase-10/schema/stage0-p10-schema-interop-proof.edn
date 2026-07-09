@@ -1,0 +1,77 @@
+{:capability-based-proof
+ {:accepted-fixtures-covered? true,
+  :validator-boundaries-covered? true,
+  :source-schema-authority-covered? true,
+  :document-coverage-complete? true,
+  :abi-and-config-covered? true,
+  :rejected-fixtures-covered? true,
+  :artifact-and-ai-schema-covered? true,
+  :status :complete,
+  :diagnostics-covered? true,
+  :conformance-evidence-covered? true,
+  :api-projections-covered? true,
+  :database-migration-covered? true,
+  :serialization-and-canonical-covered? true},
+ :schema-interop-results
+ {:document-contracts 9,
+  :generated-artifact-families 10,
+  :accepted-fixtures 9,
+  :rejected-fixtures 9,
+  :conformance-records 9,
+  :diagnostic-count 79,
+  :status :complete},
+ :artifact-id
+ "sha256:f2bbb007a2a78f14ff166b03ba84b39e87cd2c3db5979f6bb62a33765e2f1132",
+ :schema-artifact-families
+ [:source-schema-ir
+  :validator-artifact
+  :serialization-fixture
+  :canonical-format
+  :graphql-generation
+  :openapi-generation
+  :database-mapping
+  :binary-abi-schema
+  :typed-config
+  :artifact-schema-registry
+  :ai-structured-output-contract],
+ :command
+ "clojure -M:gravity schema-interop bootstrap/clojure/fixtures/accepted/schema-interop.gravity",
+ :document-set ["S1" "S2" "S3" "S4" "S5" "S6" "S7" "S8" "S9"],
+ :phase "10",
+ :test-command "clojure -M:test",
+ :test-result
+ {:tests 110,
+  :assertions 7009,
+  :failures 0,
+  :errors 0,
+  :banner-rejected-fixtures 1456},
+ :source "bootstrap/clojure/fixtures/accepted/schema-interop.gravity",
+ :tasks
+ {"P10-D150" :complete,
+  "P10-D147" :complete,
+  "P10-T06" :complete,
+  "P10-D145" :complete,
+  "P10-D148" :complete,
+  "P10-T04" :complete,
+  "P10-T01" :complete,
+  "P10-T03" :complete,
+  "P10-D153" :complete,
+  "P10-T05" :complete,
+  "P10-D146" :complete,
+  "P10-D151" :complete,
+  "P10-D152" :complete,
+  "P10-D149" :complete,
+  "P10-T02" :complete},
+ :status :complete,
+ :kind :gravity/stage0-phase10-schema-interop-proof,
+ :rejected-fixture-diagnostics
+ ["S1-PROJECTION"
+  "S2-TAINT"
+  "S3-HASH"
+  "S4-RESOLVER"
+  "S5-SCHEMA"
+  "S6-DATA-LOSS"
+  "S7-POINTER"
+  "S8-SECRET"
+  "S9-EVIDENCE"],
+ :artifact-kind :gravity/stage0-schema-interop-artifact}

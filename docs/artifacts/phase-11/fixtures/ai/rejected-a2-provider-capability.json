@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "delete": [
+    "/model_manifest/provider_capability"
+  ]
+}

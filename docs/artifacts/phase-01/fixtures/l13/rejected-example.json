@@ -1,0 +1,54 @@
+{
+  "call_checks": [],
+  "compatibility_records": [],
+  "kind": "standard-library-contract-set",
+  "namespaces": [
+    {
+      "allocation": {
+        ":core": ":none",
+        ":native": ":none"
+      },
+      "apis": [
+        {
+          "allocation": {
+            ":core": ":none",
+            ":native": ":none"
+          },
+          "blocking": false,
+          "capabilities": [],
+          "classification": ":pure",
+          "effects": [],
+          "failure_modes": [],
+          "nondeterminism": ":none",
+          "panic": false,
+          "stability": ":stable",
+          "symbol": "id",
+          "type": "A -> A"
+        }
+      ],
+      "capabilities": [],
+      "effects": [],
+      "examples": [
+        {
+          "compiles": true,
+          "profile": ":core",
+          "source": "(core/id 1)"
+        },
+        {
+          "compiles": false,
+          "profile": ":native",
+          "source": "(core/id hosted-only-value)"
+        }
+      ],
+      "layer": 0,
+      "name": "gravity.core",
+      "profiles": [
+        ":core",
+        ":native"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    }
+  ],
+  "unsafe_audits": []
+}

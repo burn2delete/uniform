@@ -1,0 +1,5 @@
+(ns l5.bad.cast
+  (:profile :hosted))
+
+(def bad
+  (unchecked/cast :Integer "not checked"))

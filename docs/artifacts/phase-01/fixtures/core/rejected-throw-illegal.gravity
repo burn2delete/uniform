@@ -1,0 +1,5 @@
+(ns core.bad.throw
+  (:profile :kernel))
+
+(def bad
+  (throw :boom))

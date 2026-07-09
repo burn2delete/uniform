@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-providers.json",
+  "set": {
+    "/selection_requests/0/scope/path": "secrets/token.json"
+  }
+}

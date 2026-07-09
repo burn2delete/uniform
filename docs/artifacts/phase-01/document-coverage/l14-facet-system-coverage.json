@@ -1,0 +1,65 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "facet-system-artifact",
+      "coverage": [
+        "facet manifests",
+        "namespace-scoped activation",
+        "generated Gravity validation",
+        "domain IR records",
+        "facet composition",
+        "privacy-boundary preservation",
+        "compatibility records"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/accepted-facet-system.json"
+    }
+  ],
+  "document": "L14",
+  "kind": "l14-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L14-FACET-NOT-ACTIVE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-facet-not-active.json"
+    },
+    {
+      "diagnostic": "L14-FACET-AMBIGUOUS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-facet-ambiguous.json"
+    },
+    {
+      "diagnostic": "L14-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-profile.json"
+    },
+    {
+      "diagnostic": "L14-BUILD-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-build-effect.json"
+    },
+    {
+      "diagnostic": "L14-CAPABILITY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-capability.json"
+    },
+    {
+      "diagnostic": "L14-LOWERING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-lowering.json"
+    },
+    {
+      "diagnostic": "L14-DOMAIN-CHECK",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-domain-check.json"
+    },
+    {
+      "diagnostic": "L14-GENERATED-CODE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-generated-code.json"
+    },
+    {
+      "diagnostic": "L14-IR-SCHEMA",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-ir-schema.json"
+    },
+    {
+      "diagnostic": "L14-COMPOSITION",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-composition.json"
+    },
+    {
+      "diagnostic": "L14-PRIVACY-BOUNDARY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l14/rejected-privacy-boundary.json"
+    }
+  ]
+}

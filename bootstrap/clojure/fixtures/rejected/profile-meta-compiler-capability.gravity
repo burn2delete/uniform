@@ -1,0 +1,8 @@
+(ns profile.bad.meta-compiler-capability
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p3/compiler-capability))

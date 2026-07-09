@@ -1,0 +1,8 @@
+(ns invalid.host-semantics
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main []
+  (host-exception))

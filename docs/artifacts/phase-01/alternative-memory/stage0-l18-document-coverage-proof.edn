@@ -1,0 +1,79 @@
+{:task-id :P01-D028
+ :document "docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/alternative-memory.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-altmem-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/alternative-memory.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'alternative.memory
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:aliasing-facts
+                                       :allocation-strategy
+                                       :artifact-serialization
+                                       :conformance-report
+                                       :deterministic-selection
+                                       :device-map
+                                       :ffi-allocator
+                                       :hidden-allocation-policy
+                                       :layout-metadata
+                                       :lifetime-facts
+                                       :mmio-map
+                                       :ownership-region-escape
+                                       :provider
+                                       :release-evidence
+                                       :runtime-check
+                                       :safe-code-outcomes
+                                       :safety-classification
+                                       :unsafe-boundary-audit]
+                    :provider-declarations 1
+                    :allocation-strategies 1
+                    :lifetime-facts 1
+                    :unsafe-boundary-audits 1
+                    :layout-metadata-records 1
+                    :runtime-check-records 1
+                    :release-evidence-records 1
+                    :device-map-records 1
+                    :ffi-allocator-records 1
+                    :conformance-reports 1
+                    :safety-classifications 1
+                    :capability-basis :selected-memory-provider-preserves-safe-code-outcomes-and-serializes-memory-facts}
+ :rejected-diagnostics [{:fixture "typed-altmem-provider.gravity"
+                         :diagnostic "L18-PROVIDER"}
+                        {:fixture "typed-altmem-hidden-alloc.gravity"
+                         :diagnostic "L18-HIDDEN-ALLOC"}
+                        {:fixture "typed-altmem-lifetime.gravity"
+                         :diagnostic "L18-LIFETIME"}
+                        {:fixture "typed-altmem-escape.gravity"
+                         :diagnostic "L18-ESCAPE"}
+                        {:fixture "typed-altmem-alias.gravity"
+                         :diagnostic "L18-ALIAS"}
+                        {:fixture "typed-altmem-uninit.gravity"
+                         :diagnostic "L18-UNINIT"}
+                        {:fixture "typed-altmem-double-release.gravity"
+                         :diagnostic "L18-DOUBLE-RELEASE"}
+                        {:fixture "typed-altmem-leak.gravity"
+                         :diagnostic "L18-LEAK"}
+                        {:fixture "typed-altmem-bounds.gravity"
+                         :diagnostic "L18-BOUNDS"}
+                        {:fixture "typed-altmem-device-sync.gravity"
+                         :diagnostic "L18-DEVICE-SYNC"}
+                        {:fixture "typed-altmem-mmio.gravity"
+                         :diagnostic "L18-MMIO"}
+                        {:fixture "typed-altmem-ffi-allocator.gravity"
+                         :diagnostic "L18-FFI-ALLOCATOR"}
+                        {:fixture "typed-altmem-unsafe-audit.gravity"
+                         :diagnostic "L18-UNSAFE-AUDIT"}]
+ :validation [{:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/alternative-memory.gravity"
+               :result "emitted :gravity/stage0-typed-core-artifact with complete L18 alternative memory conformance"}
+              {:command "clojure -M:test"
+               :result "21 tests, 904 assertions, 165 rejected fixtures"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 13 L18 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records the alternative memory-provider contract and memory-fact boundary evidence but does not implement a second production allocator or borrow checker."
+                  "Full runtime memory managers, device backend integration, foreign heap adapters, safety proof checking, and production conformance suites remain downstream work."
+                  "Self-hosted alternative memory checking remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

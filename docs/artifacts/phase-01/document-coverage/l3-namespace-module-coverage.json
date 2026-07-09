@@ -1,0 +1,31 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "module-artifact",
+      "coverage": [
+        "module artifact",
+        "alias table",
+        "dependency graph",
+        "public API manifest",
+        "content hashes"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity"
+    }
+  ],
+  "document": "L3",
+  "kind": "l3-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L3-EFFECT-WIDEN",
+      "fixture": "docs/artifacts/phase-01/fixtures/l3/rejected-effect-widen.gravity"
+    },
+    {
+      "diagnostic": "L3-PRIVATE-IMPORT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l3/rejected-private-import.gravity"
+    },
+    {
+      "diagnostic": "L3-AMBIGUOUS-NAME",
+      "fixture": "docs/artifacts/phase-01/fixtures/l3/rejected-ambiguous-name.gravity"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-math-system.json",
+  "set": {
+    "/numeric_tower/conversion_rules/1/mode": ":implicit"
+  }
+}

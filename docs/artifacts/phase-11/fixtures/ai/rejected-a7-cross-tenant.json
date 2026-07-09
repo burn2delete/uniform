@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "set": {
+    "/memory_policy/cross_tenant_retrieval": true
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/3/checks/hidden_allocation": true
+  }
+}

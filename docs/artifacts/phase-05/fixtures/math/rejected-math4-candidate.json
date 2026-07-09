@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-math-system.json",
+  "set": {
+    "/eml_traces/0/candidates/0/state": ":generated",
+    "/eml_traces/0/candidates/0/used_for_lowering": true
+  }
+}

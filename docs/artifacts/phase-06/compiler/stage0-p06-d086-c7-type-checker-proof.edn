@@ -1,0 +1,78 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D086
+ :date "2026-06-25"
+ :status :complete
+ :capability :c7-type-checker-document-coverage
+ :command "clojure -M:gravity compiler-c7-type-check bootstrap/clojure/fixtures/accepted/compiler-c7-type-checker.gravity"
+ :artifact-kind :gravity/stage0-c7-type-checker-artifact
+ :artifact-hash "sha256:02a8d8e1f9cb1ec17d39cb3a3cd6183facb6002588d2376025099378239f6b94"
+ :summary {:type-facts 76
+           :constraints 76
+           :functions 2
+           :dynamic-boundaries 1
+           :casts 1
+           :generic-instantiations 1
+           :protocol-dispatch-records 1
+           :schema-links 1
+           :layout-facts 76
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+                       "docs/phase-01-core-language/015-l5-type-system-specification.md"
+                       "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
+                       "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md"
+                       "docs/phase-01-core-language/019-l9-error-handling-specification.md"
+                       "docs/phase-01-core-language/020-l10-memory-model-specification.md"
+                       "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
+                       "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+                       "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c7-type-checker.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c7-type-mismatch.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-annotation.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-dynamic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-cast.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-nullability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-generic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-protocol.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-layout.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c7-verify.gravity"]
+ :diagnostic-ids ["C7-TYPE-MISMATCH"
+                  "C7-ANNOTATION"
+                  "C7-DYNAMIC"
+                  "C7-CAST"
+                  "C7-NULLABILITY"
+                  "C7-GENERIC"
+                  "C7-PROTOCOL"
+                  "C7-LAYOUT"
+                  "C7-SCHEMA"
+                  "C7-VERIFY"]
+ :capability-based-proof {:every-core-node-has-type-or-diagnostic? true
+                          :constraints-solved? true
+                          :function-types-include-latent-effects? true
+                          :dynamic-boundaries-profile-gated? true
+                          :casts-classified? true
+                          :generic-and-protocol-evidence? true
+                          :schema-identity-preserved? true
+                          :layout-facts-recorded? true
+                          :diagnostics-covered? true
+                          :verifier-passed? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 59 tests containing 3122 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 838}
+              {:command "clojure -M:gravity compiler-c7-type-check bootstrap/clojure/fixtures/accepted/compiler-c7-type-checker.gravity"
+               :result :accepted
+               :artifact-hash "sha256:02a8d8e1f9cb1ec17d39cb3a3cd6183facb6002588d2376025099378239f6b94"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 13 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D086 for the Clojure stage0 C7 type checker document boundary only."
+                 "It does not claim production type inference for the full future language, complete effect checking, ownership checking, safety classification, MIR construction, backend lowering, release readiness, or self-hosting."]}

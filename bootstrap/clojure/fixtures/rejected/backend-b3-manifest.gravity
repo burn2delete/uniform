@@ -1,0 +1,4 @@
+(ns backend.b3-manifest
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:backend {:native-lowering {:fail :b3-manifest}}}))

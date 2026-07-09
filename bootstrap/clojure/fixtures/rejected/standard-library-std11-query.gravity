@@ -1,0 +1,11 @@
+; Rejected P16 STD11 fixture.
+(ns standard-library.std11-query
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:database/query})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std11002}}}))
+
+(defn main [] :- I64 1)

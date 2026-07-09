@@ -1,0 +1,73 @@
+{:proof-id :stage0-p04-t05-performance-governance-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-T05
+ :documents ["PERF5" "PERF6" "PERF7"]
+ :status :passed
+ :capability :performance-governance-report
+ :command "clojure -M:gravity performance-governance bootstrap/clojure/fixtures/accepted/performance-governance.gravity"
+ :artifact-kind :gravity/stage0-performance-governance-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/performance-governance.gravity"
+ :accepted-results
+ {:benchmark-count 1
+  :pgo-record-count 1
+  :autotuning-record-count 1
+  :benchmark-governance-status :complete
+  :pgo-governance-status :complete
+  :autotuning-governance-status :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["PERF5-MANIFEST" "PERF5-FINGERPRINT" "PERF5-SAFETY-GATE"
+  "PERF5-CORRECTNESS-GATE" "PERF5-REGRESSION" "PERF5-NOISE"
+  "PERF5-BASELINE" "PERF5-DRIFT"
+  "PERF6-DATA-MISSING" "PERF6-STALE" "PERF6-IDENTITY"
+  "PERF6-PRIVACY" "PERF6-DECISION" "PERF6-SAFETY"
+  "PERF6-REPRO" "PERF6-WORKLOAD"
+  "PERF7-CANDIDATE-SPACE" "PERF7-CANDIDATE-REJECTED"
+  "PERF7-GUARD" "PERF7-SELECTION" "PERF7-CERTIFICATE"
+  "PERF7-DISPATCH" "PERF7-REPRO" "PERF7-FALLBACK"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/governance-benchmark-manifest.gravity" "PERF5-MANIFEST"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-fingerprint.gravity" "PERF5-FINGERPRINT"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-safety-gate.gravity" "PERF5-SAFETY-GATE"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-correctness-gate.gravity" "PERF5-CORRECTNESS-GATE"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-regression.gravity" "PERF5-REGRESSION"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-noise.gravity" "PERF5-NOISE"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-baseline.gravity" "PERF5-BASELINE"
+  "bootstrap/clojure/fixtures/rejected/governance-benchmark-drift.gravity" "PERF5-DRIFT"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-data-missing.gravity" "PERF6-DATA-MISSING"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-stale.gravity" "PERF6-STALE"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-identity.gravity" "PERF6-IDENTITY"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-privacy.gravity" "PERF6-PRIVACY"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-decision.gravity" "PERF6-DECISION"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-safety.gravity" "PERF6-SAFETY"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-repro.gravity" "PERF6-REPRO"
+  "bootstrap/clojure/fixtures/rejected/governance-pgo-workload.gravity" "PERF6-WORKLOAD"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-candidate-space.gravity" "PERF7-CANDIDATE-SPACE"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-candidate-rejected.gravity" "PERF7-CANDIDATE-REJECTED"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-guard.gravity" "PERF7-GUARD"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-selection.gravity" "PERF7-SELECTION"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-certificate.gravity" "PERF7-CERTIFICATE"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-dispatch.gravity" "PERF7-DISPATCH"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-repro.gravity" "PERF7-REPRO"
+  "bootstrap/clojure/fixtures/rejected/governance-autotune-fallback.gravity" "PERF7-FALLBACK"}
+ :capability-based-proof
+ {:profile-legality-preserved? true
+  :target-request-preserved? true
+  :benchmark-safety-gates-passed? true
+  :benchmark-correctness-gates-passed? true
+  :pgo-identity-recorded? true
+  :pgo-privacy-preserved? true
+  :pgo-decisions-preserve-capabilities? true
+  :autotuning-invalid-candidates-excluded? true
+  :variant-guards-recorded? true
+  :fallback-recorded? true
+  :status :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 39 tests containing 1989 assertions. 0 failures, 0 errors. PERF5-PERF7 performance governance artifacts, and 530 rejected fixtures"}
+  {:command "clojure -M -e '(require ... performance-governance summary)'"
+   :output "{:pgo 1, :diagnostics 24, :benchmarks 1, :autotuning 1, :proof :complete, :output :performance-governance-report, :status :complete, :kind :gravity/stage0-performance-governance-artifact, :pass :performance-governance-validation}"}]
+ :limits
+ ["This proves P04-T05 at the Clojure stage0 performance governance artifact boundary."
+  "It does not complete PERF8 SIMD/vectorization, PERF9 realtime latency, PERF10 check elision, backend execution, runtime services, release performance, or self-hosting."]}

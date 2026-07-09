@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: replay-sensitive concurrent effect is not recorded.
+(ns runtime.r6-replay
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:network/http :time/schedule})
+  (:capabilities #{:http/client})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-replay}}}))
+
+(defn main [] :- I64 1)

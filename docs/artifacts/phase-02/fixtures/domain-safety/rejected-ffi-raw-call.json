@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-safety.json",
+  "set": {
+    "/operations/0/ffi/raw_call_in_safe": true
+  }
+}

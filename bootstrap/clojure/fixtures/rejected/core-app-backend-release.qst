@@ -1,0 +1,19 @@
+(ns core.app.backend-release
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:backend {:compiled-gate
+                        {:artifacts
+                         [{:artifact-id :artifact/core-app
+                           :artifact-kind :stage0-instruction-plan
+                           :backend :gravity.backend/stage0-jvm-instruction-runner
+                           :release-grade? true
+                           :provenance {:source :core-app
+                                        :compiler :clojure-bootstrap
+                                        :passes [:stage0-compiled-core-plan]
+                                        :dependencies []}}]}}}))
+
+(defn main []
+  (println "bad backend release"))

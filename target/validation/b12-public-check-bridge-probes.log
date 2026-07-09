@@ -1,0 +1,11 @@
+backend-b12-background gravity=1 qst=1
+backend-b12-error gravity=1 qst=1
+backend-b12-lifecycle gravity=1 qst=1
+backend-b12-manifest gravity=1 qst=1
+backend-b12-null gravity=1 qst=1
+backend-b12-permission gravity=1 qst=1
+backend-b12-resource gravity=1 qst=1
+backend-b12-storage gravity=1 qst=1
+backend-b12-target gravity=1 qst=1
+backend-b12-thread gravity=1 qst=1
+B12 public check bridge probes passed: accepted .gravity/.qst parity and 10 rejected diagnostic parity pairs.

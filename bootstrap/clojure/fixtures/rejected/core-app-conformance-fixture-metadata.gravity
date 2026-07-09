@@ -1,0 +1,13 @@
+(ns core.app.conformance-fixture-metadata
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:fixture-manifests
+                             [{:artifact-id "fixture-manifest:bad"
+                               :fixture-metadata-fields []}]}}}))
+
+(defn main []
+  (println "bad conformance fixture metadata"))

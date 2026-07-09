@@ -1,0 +1,813 @@
+{
+  "kind": "math-system-input",
+  "package": "gravity.math.phase05",
+  "module": "math/elementary",
+  "numeric_tower": {
+    "families": [
+      ":fixed-int",
+      ":big-int",
+      ":ratio",
+      ":real",
+      ":floating",
+      ":complex",
+      ":interval",
+      ":symbolic",
+      ":quantity"
+    ],
+    "conversion_rules": [
+      {
+        "id": "conv/i32-to-i64",
+        "from": "I32",
+        "to": "I64",
+        "mode": ":widening-exact",
+        "lossy": false,
+        "rounding_required": false
+      },
+      {
+        "id": "conv/i64-to-i32",
+        "from": "I64",
+        "to": "I32",
+        "mode": ":checked-narrowing",
+        "lossy": true,
+        "precision_loss": false,
+        "precision_record": "record/checked-range-i32",
+        "rounding_required": false
+      },
+      {
+        "id": "conv/f64-to-i32",
+        "from": "F64",
+        "to": "I32",
+        "mode": ":explicitly-rounded",
+        "lossy": true,
+        "precision_loss": true,
+        "precision_record": "record/f64-i32-rounding",
+        "rounding_required": true,
+        "rounding": ":toward-zero"
+      }
+    ],
+    "profile_support": [
+      {
+        "profile": ":core",
+        "families": [
+          ":fixed-int",
+          ":symbolic"
+        ],
+        "modes": [
+          ":checked",
+          ":symbolic"
+        ]
+      },
+      {
+        "profile": ":native",
+        "families": [
+          ":fixed-int",
+          ":floating",
+          ":interval",
+          ":symbolic"
+        ],
+        "modes": [
+          ":checked",
+          ":certified-approx",
+          ":correctly-rounded"
+        ]
+      },
+      {
+        "profile": ":formal",
+        "families": [
+          ":real",
+          ":interval",
+          ":symbolic"
+        ],
+        "modes": [
+          ":exact-real",
+          ":interval",
+          ":symbolic"
+        ]
+      }
+    ],
+    "symbolic_equalities": [
+      {
+        "id": "eq/sin-zero",
+        "claim": ":equal",
+        "left": "(sin 0)",
+        "right": "0",
+        "proof": "proof/sin-zero"
+      }
+    ]
+  },
+  "elementary_registry": {
+    "declarations": [
+      {
+        "function": "sigmoid",
+        "domain": {
+          "x": {
+            "real": [
+              -8,
+              8
+            ]
+          }
+        },
+        "codomain": {
+          "real": [
+            0,
+            1
+          ]
+        },
+        "semantic_form": "(/ 1 (+ 1 (exp (- x))))",
+        "branch_policy": {
+          "complex_intermediates": ":forbidden",
+          "log": ":principal"
+        },
+        "exceptional_values": {
+          "nan": ":propagate",
+          "inf": ":domain-error"
+        },
+        "numeric_modes": [
+          ":certified-approx",
+          ":exact-real"
+        ],
+        "providers": [
+          "gravity.poly",
+          "gravity.libm"
+        ]
+      }
+    ],
+    "provider_eligibility_reports": [
+      {
+        "provider": "gravity.poly",
+        "function": "sigmoid",
+        "profile": ":native",
+        "target": "llvm-x86_64-linux",
+        "status": ":eligible",
+        "certificate": "cert/sigmoid-poly"
+      },
+      {
+        "provider": "gravity.fast",
+        "function": "sigmoid",
+        "profile": ":native",
+        "target": "llvm-x86_64-linux",
+        "status": ":rejected",
+        "reason": "missing certificate"
+      }
+    ],
+    "selection_decisions": [
+      {
+        "id": "select/sigmoid-poly",
+        "function": "sigmoid",
+        "efir_graph": "efir/sigmoid",
+        "selected_provider": "gravity.poly",
+        "selected_status": ":eligible",
+        "requires_certificate": true,
+        "certificate": "cert/sigmoid-poly",
+        "profile": ":native",
+        "target": "llvm-x86_64-linux"
+      }
+    ]
+  },
+  "efir_graphs": [
+    {
+      "graph_id": "efir/sigmoid",
+      "source_anchors": [
+        {
+          "span": "fixtures/math/sigmoid.gravity:3:12",
+          "origin": ":source"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "n1",
+          "op": ":var",
+          "domain": {
+            "real": [
+              -8,
+              8
+            ]
+          },
+          "codomain": {
+            "real": [
+              -8,
+              8
+            ]
+          }
+        },
+        {
+          "id": "n2",
+          "op": ":exp",
+          "args": [
+            "n1"
+          ],
+          "domain": {
+            "real": [
+              -8,
+              8
+            ]
+          },
+          "codomain": {
+            "real": [
+              0,
+              2981
+            ]
+          }
+        }
+      ],
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "codomain": {
+        "real": [
+          0,
+          1
+        ]
+      },
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "type": ":F64",
+        "absolute_error_max": 1e-12
+      },
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "log": ":principal"
+      },
+      "proof_obligations": [
+        ":domain-coverage",
+        ":roundoff",
+        ":branch-consistency"
+      ],
+      "semantic_anchor": {
+        "typed_core": [
+          "core/sigmoid"
+        ],
+        "mir_ops": [
+          "mir/sigmoid"
+        ]
+      },
+      "runtime_selection": {
+        "efir_anchor": "efir/sigmoid",
+        "provider": "gravity.poly"
+      },
+      "source_span": {
+        "source": "fixtures/math/sigmoid.gravity",
+        "line": 3,
+        "column": 12
+      }
+    }
+  ],
+  "eml_traces": [
+    {
+      "artifact_id": "eml/sigmoid-normalized",
+      "basis": ":exp-minus-log",
+      "source_efir": "efir/sigmoid",
+      "node_map": [
+        {
+          "efir": "n2",
+          "eml": "e2",
+          "span": "fixtures/math/sigmoid.gravity:3:12"
+        }
+      ],
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "log": ":principal"
+      },
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "type": ":F64",
+        "absolute_error_max": 1e-12
+      },
+      "normalization_trace": [
+        {
+          "step": 1,
+          "rule": ":basis-introduce-exp",
+          "premises": [
+            ":domain-real"
+          ],
+          "introduced_assumptions": [],
+          "invalidated": []
+        }
+      ],
+      "trace_replayable": true,
+      "search_manifest": {
+        "grammar": {
+          "basis": ":exp-minus-log",
+          "max_depth": 6
+        },
+        "fuel": {
+          "candidate_limit": 20000,
+          "time_ms": 500
+        },
+        "deterministic": true
+      },
+      "candidates": [
+        {
+          "candidate_id": "candidate/sigmoid-poly",
+          "state": ":bounded",
+          "used_for_lowering": true,
+          "proof": "cert/sigmoid-poly",
+          "branch_policy": {
+            "complex_intermediates": ":forbidden"
+          }
+        }
+      ],
+      "source_span": {
+        "source": "fixtures/math/sigmoid.gravity",
+        "line": 3,
+        "column": 12
+      }
+    }
+  ],
+  "approximation_certificates": [
+    {
+      "certificate_id": "cert/sigmoid-poly",
+      "target_efir": "efir/sigmoid",
+      "function": "sigmoid",
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "codomain": {
+        "real": [
+          0,
+          1
+        ]
+      },
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "type": ":F64",
+        "absolute_error_max": 1e-12,
+        "relative_error_max": 2e-12
+      },
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "exceptional_values": {
+          "nan": ":propagate",
+          "inf": ":domain-error"
+        }
+      },
+      "implementation": {
+        "kind": ":piecewise-polynomial",
+        "pieces": 8,
+        "degree": 9,
+        "evaluation": ":estrin"
+      },
+      "error_proof": {
+        "approximation": 4.2e-13,
+        "roundoff": 3.1e-13,
+        "reconstruction": 1.7e-13,
+        "combined": 9.0e-13,
+        "method": ":interval"
+      },
+      "target_assumptions": {
+        "arch": ":x86-64",
+        "features": [
+          ":avx2",
+          ":fma"
+        ],
+        "rounding": ":nearest-even",
+        "denormals": ":preserved",
+        "satisfied": true
+      },
+      "checker": {
+        "name": ":gravity-interval-checker",
+        "version": "1",
+        "independent": true,
+        "replayable": true,
+        "transcript_hash": "sha256:transcript"
+      },
+      "source_span": {
+        "source": "fixtures/math/sigmoid.gravity",
+        "line": 3,
+        "column": 12
+      }
+    }
+  ],
+  "interval_proofs": [
+    {
+      "claim_id": "proof/sigmoid-error",
+      "source": {
+        "efir": "efir/sigmoid",
+        "eml_candidate": "candidate/sigmoid-poly",
+        "span": "fixtures/math/sigmoid.gravity:3:12"
+      },
+      "claim": {
+        "kind": ":bounded-error",
+        "bound": "1/1000000000000"
+      },
+      "domain": {
+        "x": {
+          "real": [
+            "-8",
+            "8"
+          ]
+        }
+      },
+      "domain_exact": true,
+      "branch_policy": {
+        "complex_intermediates": ":forbidden"
+      },
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "type": ":F64",
+        "absolute_error_max": 1e-12
+      },
+      "outward_rounding_proved": true,
+      "partition": {
+        "id": "partition/sigmoid",
+        "replayable": true,
+        "cells": [
+          {
+            "id": "c0",
+            "domain": {
+              "x": {
+                "real": [
+                  "-8",
+                  "0"
+                ]
+              }
+            },
+            "status": ":proved"
+          },
+          {
+            "id": "c1",
+            "domain": {
+              "x": {
+                "real": [
+                  "0",
+                  "8"
+                ]
+              }
+            },
+            "status": ":proved"
+          }
+        ],
+        "unresolved": []
+      },
+      "bound_ledger": {
+        "approximation": "42/100000000000000",
+        "roundoff": "31/100000000000000",
+        "reconstruction": "17/100000000000000"
+      },
+      "checker_transcript": "transcript/sigmoid-interval",
+      "safe15_reference": "safe15/cert/sigmoid-error"
+    }
+  ],
+  "numeric_modes": {
+    "mode_environment": [
+      {
+        "scope": "function/sigmoid",
+        "mode": ":certified-approx",
+        "numeric_mode": ":certified-approx",
+        "profile": ":native",
+        "target": "llvm-x86_64-linux",
+        "precision": {
+          "type": ":F64",
+          "absolute_error_max": 1e-12
+        },
+        "rounding": ":nearest-even",
+        "target_default": false,
+        "downgrade": false
+      }
+    ],
+    "precision_contracts": [
+      {
+        "id": "precision/sigmoid-f64",
+        "mode": ":certified-approx",
+        "domain": {
+          "x": {
+            "real": [
+              -8,
+              8
+            ]
+          }
+        },
+        "absolute_error_max": 1e-12,
+        "certificate_required": true
+      }
+    ],
+    "inheritance_trace": [
+      {
+        "source": "namespace math.core",
+        "resolved": ":certified-approx",
+        "local_override": ":none"
+      }
+    ],
+    "provider_mode_eligibility": [
+      {
+        "provider": "gravity.poly",
+        "mode": ":certified-approx",
+        "status": ":eligible"
+      }
+    ]
+  },
+  "floating_manifests": [
+    {
+      "manifest_id": "float/sigmoid-f64",
+      "operation": "sigmoid",
+      "format": ":binary64",
+      "rounding": ":nearest-ties-to-even",
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "absolute_error_max": 1e-12
+      },
+      "exceptions": {
+        "invalid": ":quiet-nan",
+        "divide_by_zero": ":infinity",
+        "overflow": ":infinity",
+        "underflow": ":subnormal-or-zero-by-policy",
+        "inexact": ":status-flag"
+      },
+      "nan": {
+        "quiet": ":propagate",
+        "signaling": ":quiet-and-flag"
+      },
+      "infinity": ":ieee754",
+      "signed_zero": ":preserve",
+      "denormals": ":preserve",
+      "status_flags": ":observable-through-declared-api",
+      "fma": ":forbidden-unless-certified",
+      "reassociation": ":forbidden",
+      "determinism": ":profile-target-stable",
+      "strict": true,
+      "fma_transform": false,
+      "reassociation_transform": false,
+      "backend_lowering": {
+        "target": "llvm-x86_64-linux",
+        "satisfies_manifest": true,
+        "proof": "cert/sigmoid-poly"
+      }
+    }
+  ],
+  "rewrite_system": {
+    "rules": [
+      {
+        "rule_id": "rewrite/tan-via-sin-cos",
+        "pattern": "(tan x)",
+        "replacement": "(/ (sin x) (cos x))",
+        "domain": {
+          "x": {
+            "real": ":all"
+          }
+        },
+        "branch_policy": {
+          "tan": ":principal",
+          "sin": ":real",
+          "cos": ":real"
+        },
+        "numeric_modes": [
+          ":symbolic",
+          ":exact-real",
+          ":interval"
+        ],
+        "proof_status": ":proved",
+        "proof_ref": "proof/tan-via-sin-cos",
+        "used_for_code": true,
+        "tree_identity_equality": false,
+        "source": {
+          "package": "gravity.math",
+          "span": "stdlib/math/rewrite.gravity:9:1"
+        }
+      }
+    ],
+    "traces": [
+      {
+        "trace_id": "trace/tan-via-sin-cos",
+        "step": 1,
+        "rule": "rewrite/tan-via-sin-cos",
+        "state": ":proved",
+        "preserved": [
+          ":domain",
+          ":branch-policy",
+          ":floating-manifest"
+        ]
+      }
+    ],
+    "termination": {
+      "bounded": true,
+      "fuel": 128
+    },
+    "egraph": {
+      "run_id": "egraph/sigmoid",
+      "proof_replay": "proof/egraph-sigmoid",
+      "uses_unproved_edge": false,
+      "cost_model": "math9-default-cost"
+    }
+  },
+  "optimization_decisions": [
+    {
+      "decision_id": "opt/sigmoid-poly",
+      "efir": "efir/sigmoid",
+      "source_spans": [
+        "fixtures/math/sigmoid.gravity:3:12"
+      ],
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "absolute_error_max": 1e-12
+      },
+      "candidates": [
+        {
+          "id": "libm/sigmoid",
+          "status": ":legal",
+          "requires_proof": false,
+          "cost": {
+            "latency_ns": 37
+          }
+        },
+        {
+          "id": "poly/sigmoid-degree9",
+          "status": ":legal",
+          "requires_proof": true,
+          "proof": "cert/sigmoid-poly",
+          "cost": {
+            "latency_ns": 6
+          }
+        },
+        {
+          "id": "hardware-native/sigmoid",
+          "status": ":rejected",
+          "reason": "missing error bound"
+        }
+      ],
+      "selected": "poly/sigmoid-degree9",
+      "proofs": [
+        "cert/sigmoid-poly",
+        "proof/sigmoid-error"
+      ],
+      "correct_rounding_target": {
+        "target_id": "round/sigmoid-f64-nearest-even",
+        "rounding_modes": [
+          ":nearest-even"
+        ],
+        "tie_policy": ":nearest-even"
+      },
+      "rounding_interval_ledger": "ledger/sigmoid-rounding-interval",
+      "autotune": {
+        "replayable": true,
+        "selection_record": "tune/sigmoid-poly"
+      },
+      "fallback": "libm/sigmoid",
+      "backend_lowering": {
+        "map": "lowering/sigmoid-llvm",
+        "preserves_efir": true
+      }
+    }
+  ],
+  "conformance_suite": {
+    "suite_id": "suite/math-phase05",
+    "documents": [
+      "MATH1",
+      "MATH2",
+      "MATH3",
+      "MATH4",
+      "MATH5",
+      "MATH6",
+      "MATH7",
+      "MATH8",
+      "MATH9",
+      "MATH10"
+    ],
+    "profiles": [
+      ":core",
+      ":hosted",
+      ":native",
+      ":gpu",
+      ":formal",
+      ":firmware"
+    ],
+    "targets": [
+      ":portable",
+      ":x86_64-linux",
+      ":wasm32",
+      ":gpu-sm80"
+    ],
+    "oracles": [
+      ":exact-rational",
+      ":interval-checker",
+      ":symbolic-checker",
+      ":provider-conformance"
+    ],
+    "fixtures": [
+      {
+        "fixture_id": "sin-certified-f64-basic",
+        "source": "(sin x)",
+        "profile": ":native",
+        "target": ":x86_64-linux",
+        "mode": ":certified-approx",
+        "domain": {
+          "x": {
+            "real": [
+              -1,
+              1
+            ]
+          }
+        },
+        "expected_artifacts": [
+          ":efir",
+          ":approximation-certificate",
+          ":floating-manifest",
+          ":lowering-record"
+        ],
+        "expected": {
+          "compile": ":accepted",
+          "diagnostic": null
+        },
+        "actual": {
+          "compile": ":accepted",
+          "diagnostic": null
+        }
+      },
+      {
+        "fixture_id": "implicit-narrow-rejected",
+        "source": "(as I32 big-i64)",
+        "profile": ":native",
+        "target": ":x86_64-linux",
+        "mode": ":checked",
+        "domain": {
+          "big-i64": {
+            "int": [
+              -9223372036854775808,
+              9223372036854775807
+            ]
+          }
+        },
+        "expected_artifacts": [
+          ":diagnostic"
+        ],
+        "expected": {
+          "compile": ":rejected",
+          "diagnostic": "MATH1-NARROW"
+        },
+        "actual": {
+          "compile": ":rejected",
+          "diagnostic": "MATH1-NARROW"
+        }
+      }
+    ],
+    "result_matrix": [
+      {
+        "profile": ":native",
+        "target": ":x86_64-linux",
+        "status": ":passed"
+      }
+    ],
+    "invalidation_tests": [
+      ":source-change",
+      ":domain-change",
+      ":numeric-mode-change",
+      ":target-feature-change",
+      ":provider-version-change"
+    ]
+  },
+  "domain_ir_registration": {
+    "domain": ":efir",
+    "owner_doc": "MATH3",
+    "schema": "schema/efir",
+    "semantic_anchor": [
+      ":typed-core-node",
+      ":mir-op"
+    ],
+    "entry_passes": [
+      ":elementary-detect",
+      ":efir-build"
+    ],
+    "exit_passes": [
+      ":efir-to-mir",
+      ":efir-to-target-provider"
+    ],
+    "verifier": "gravity.math/verify-efir",
+    "supported_profiles": [
+      ":core",
+      ":native",
+      ":gpu",
+      ":formal"
+    ],
+    "target_lowerings": [
+      ":llvm",
+      ":wasm",
+      ":gpu"
+    ],
+    "proof_obligations": [
+      ":domain",
+      ":branch-policy",
+      ":numeric-mode",
+      ":roundoff"
+    ],
+    "fallback": ":mir-provider-call"
+  }
+}

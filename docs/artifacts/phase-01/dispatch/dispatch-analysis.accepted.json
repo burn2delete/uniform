@@ -1,0 +1,163 @@
+{
+  "diagnostics": [],
+  "dispatch_mode_records": [
+    {
+      "call": "close",
+      "capabilities": [
+        ":fs/write"
+      ],
+      "dispatch_mode": ":direct",
+      "effects": [
+        ":resource/close"
+      ],
+      "implementation": "FileHandle/close",
+      "protocol": "Closeable",
+      "span": {
+        "end_byte": 210,
+        "end_column": 32,
+        "end_line": 9,
+        "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+        "start_byte": 121,
+        "start_column": 3,
+        "start_line": 7
+      }
+    },
+    {
+      "call": "close",
+      "capabilities": [
+        ":fs/write"
+      ],
+      "dispatch_mode": ":direct",
+      "effects": [
+        ":resource/close"
+      ],
+      "implementation": "FileHandle/close",
+      "protocol": "Closeable",
+      "span": {
+        "end_byte": 286,
+        "end_column": 25,
+        "end_line": 13,
+        "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+        "start_byte": 244,
+        "start_column": 3,
+        "start_line": 12
+      }
+    },
+    {
+      "call": "close",
+      "capabilities": [
+        ":fs/write"
+      ],
+      "dispatch_mode": ":direct",
+      "effects": [
+        ":resource/close"
+      ],
+      "implementation": "FileHandle/close",
+      "protocol": "Closeable",
+      "span": {
+        "end_byte": 324,
+        "end_column": 22,
+        "end_line": 16,
+        "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+        "start_byte": 305,
+        "start_column": 3,
+        "start_line": 16
+      }
+    }
+  ],
+  "host_interop_dispatch_records": [],
+  "implementation_table": [
+    {
+      "capabilities": [
+        ":fs/write"
+      ],
+      "dispatch_mode": ":direct",
+      "effects": [
+        ":resource/close"
+      ],
+      "method": "close",
+      "protocol": "Closeable",
+      "span": {
+        "end_byte": 286,
+        "end_column": 25,
+        "end_line": 13,
+        "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+        "start_byte": 244,
+        "start_column": 3,
+        "start_line": 12
+      },
+      "type": "FileHandle"
+    }
+  ],
+  "interface_lowering_artifacts": [
+    {
+      "lowering": ":direct",
+      "method": "close",
+      "protocol": "Closeable",
+      "type": "FileHandle"
+    }
+  ],
+  "kind": "dispatch-analysis-artifact",
+  "method_signature_records": [
+    {
+      "arity": 1,
+      "capabilities": [
+        ":fs/write"
+      ],
+      "effects": [
+        ":resource/close"
+      ],
+      "method": "close",
+      "protocol": "Closeable",
+      "span": {
+        "end_byte": 210,
+        "end_column": 32,
+        "end_line": 9,
+        "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+        "start_byte": 121,
+        "start_column": 3,
+        "start_line": 7
+      }
+    }
+  ],
+  "module": "l8.dispatch",
+  "multimethod_dispatch_tables": [],
+  "profile": ":native",
+  "protocol_table": [
+    {
+      "methods": [
+        {
+          "arity": 1,
+          "capabilities": [
+            ":fs/write"
+          ],
+          "effects": [
+            ":resource/close"
+          ],
+          "method": "close",
+          "protocol": "Closeable",
+          "span": {
+            "end_byte": 210,
+            "end_column": 32,
+            "end_line": 9,
+            "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+            "start_byte": 121,
+            "start_column": 3,
+            "start_line": 7
+          }
+        }
+      ],
+      "protocol": "Closeable",
+      "span": {
+        "end_byte": 211,
+        "end_column": 33,
+        "end_line": 9,
+        "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity",
+        "start_byte": 96,
+        "start_column": 1,
+        "start_line": 6
+      }
+    }
+  ],
+  "source": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity"
+}

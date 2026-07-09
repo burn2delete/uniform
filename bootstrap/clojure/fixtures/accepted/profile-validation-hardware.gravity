@@ -1,0 +1,49 @@
+(ns profile.validation.hardware
+  (:profile :hardware)
+  (:target :jvm)
+  (:exports [module])
+  (:effects #{:memory/mmio :interrupt/register})
+  (:capabilities #{:hardware/mmio :hardware/interrupt})
+  (:safety :safe)
+  (:metadata {:memory {:hidden-allocation false
+                       :layout :fixed-width}
+              :runtime {:required false
+                        :providers #{:clock :device-map}}
+              :package-allowed-effects #{:memory/mmio :interrupt/register}
+              :provider-effect-grants #{:memory/mmio :interrupt/register}
+              :deployment-allowed-effects #{:memory/mmio :interrupt/register}
+              :package-capabilities #{:hardware/mmio :hardware/interrupt}
+              :provider-capability-grants #{:hardware/mmio :hardware/interrupt}
+              :deployment-capabilities #{:hardware/mmio :hardware/interrupt}
+              :profile-validation
+              {:hardware-ir {:module :sample-counter
+                             :typed true}
+               :hdl-module {:name :sample_counter
+                            :source-map :complete}
+               :hardware-target-manifest {:target :capability-fpga
+                                          :capability-word-width 128
+                                          :tag-storage :sideband}
+               :fixed-width-layout-manifest {:signals {:count {:width 16
+                                                               :signed false}}}
+               :capability-pointer-layout-manifest {:bounds :compressed
+                                                    :permissions #{:load :store}
+                                                    :provenance :tagged}
+               :capability-tag-preservation-report {:registers :preserve
+                                                    :fifos :preserve
+                                                    :ports :preserve}
+               :clock-domain-report {:domains #{:clk}
+                                     :cdc :synchronized}
+               :reset-domain-report {:reset :sync-active-low
+                                     :registers [:count]}
+               :state-machine-graph {:states [:idle :sample]
+                                     :initial :idle}
+               :port-bus-manifest {:ports {:adc-data {:direction :in
+                                                       :width 16
+                                                       :protocol :ready-valid}}}
+               :timing-constraint-report {:clock-mhz 100
+                                          :status :met}
+               :compartment-temporal-safety-report {:compartments [:sensor]
+                                                    :revocation :epoch}}}))
+
+(def module
+  {:module :sample-counter})

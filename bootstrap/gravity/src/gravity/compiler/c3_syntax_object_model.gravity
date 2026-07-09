@@ -1,0 +1,132 @@
+; Stage1 Gravity-owned C3 syntax object model contract.
+(ns gravity.compiler.c3-syntax-object-model
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c3-form-kind-contract
+             c3-syntax-object-contract
+             c3-syntax-diagnostic-catalog
+             build-c3-syntax-object
+             verify-c3-syntax-object])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :syntax-object-model
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C3" "C2" "C4" "C5" "C15"
+                           "BOOT1" "BOOT2" "BOOT3" "BOOT4"
+                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"]
+               :implements [:syntax-object-schema
+                             :stable-syntax-id-contract
+                             :origin-chain-graph
+                             :hygiene-context-map
+                             :metadata-ledger
+                             :fact-invalidation-ledger
+                             :syntax-serialization-contract
+                             :syntax-verification-diagnostics]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :hygiene-context
+                            :metadata-ledger :fact-invalidation}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-syntax-object-schema-subset
+                                    :clojure-syntax-object-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                             :accepted-source-extensions [".gravity"]
+                             :rejected-fixtures
+                             ["compiler-c3-capture.gravity"
+                              "compiler-c3-fact-stale.gravity"
+                              "compiler-c3-hygiene.gravity"
+                              "compiler-c3-id.gravity"
+                              "compiler-c3-metadata.gravity"
+                              "compiler-c3-origin.gravity"
+                              "compiler-c3-serialize.gravity"
+                              "compiler-c3-shape.gravity"
+                              "compiler-c3-span.gravity"]}}}))
+
+(def c3-form-kind-contract
+  {:required-form-kinds [:list :vector :map :set :symbol :keyword
+                         :string :character :numeric-literal :boolean
+                         :nil :tagged-literal :metadata-wrapper
+                         :abbreviation-expansion :generated-form]
+   :stores [:raw-spelling :decoded-value :diagnostic-shape
+            :semantic-form-kind]
+   :forbidden [:raw-list-macro-api :mutable-syntax-object
+               :hidden-hygiene-state]})
+
+(def c3-syntax-object-contract
+  {:artifact :gravity/syntax-object-contract
+   :required-fields [:syntax-id :form :span :source :namespace
+                     :phase :profile :metadata :hygiene :origin
+                     :facts :version]
+   :identity-fields [:form :origin :phase :profile :namespace
+                     :hygiene :metadata]
+   :origin-entry-fields [:kind :span :producer :producer-version
+                         :input-syntax-ids :generation-reason
+                         :build-effects]
+   :hygiene-fields [:marks :lexical-scopes :renames
+                    :introduced-identifiers :captures
+                    :macro-definition-namespace
+                    :macro-call-site-namespace]
+   :fact-fields [:producer-stage :fact-kind :value
+                 :version :invalidated-by]
+   :serialization-requirements [:stable-round-trip
+                                :incremental-build-identity
+                                :self-hosting-comparison]
+   :preserves [:source-spans :syntax-identity :origin-chains
+               :source-maps :hygiene-context :metadata-ledger
+               :fact-invalidation :artifact-provenance]})
+
+(def c3-syntax-diagnostic-catalog
+  {:diagnostics ["C3-SHAPE" "C3-ID" "C3-SPAN" "C3-ORIGIN"
+                 "C3-HYGIENE" "C3-CAPTURE" "C3-METADATA"
+                 "C3-FACT-STALE" "C3-SERIALIZE"]
+   :stable-diagnostic-record-fields [:diagnostic-id :severity
+                                     :syntax-id :form-kind :phase
+                                     :producer :source-span
+                                     :origin-chain
+                                     :hygiene-context-summary
+                                     :remediation]
+   :stops [:macro-expansion :name-resolution :analysis]})
+
+(defn build-c3-syntax-object
+  [syntax-id form span origin namespace-context profile metadata hygiene facts]
+  (quote {:artifact :gravity/syntax-object
+          :syntax-id syntax-id
+          :form form
+          :span span
+          :origin origin
+          :namespace namespace-context
+          :phase :read
+          :profile profile
+          :metadata metadata
+          :hygiene hygiene
+          :facts facts
+          :version 1
+          :contract c3-syntax-object-contract}))
+
+(defn verify-c3-syntax-object [syntax-object]
+  (quote {:status :stage1-source-owned
+          :syntax-object syntax-object
+          :checks [:required-fields-present
+                   :stable-syntax-id
+                   :source-span-resolves
+                   :generated-origin-producer
+                   :hygiene-marks-scoped
+                   :metadata-shape
+                   :namespace-context-structural
+                   :phase-transition-allowed
+                   :serialization-round-trip]
+          :diagnostics c3-syntax-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :origin-chains :hygiene-context
+                      :metadata-ledger :fact-invalidation
+                      :artifact-provenance]}))

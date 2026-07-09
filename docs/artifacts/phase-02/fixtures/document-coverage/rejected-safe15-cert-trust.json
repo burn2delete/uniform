@@ -1,0 +1,84 @@
+{
+  "kind": "safe15-certificate-safety-input",
+  "source_span": {
+    "source": "fixtures/safe15/untrusted-certificate.gravity",
+    "line": 7,
+    "column": 5
+  },
+  "accepted_profiles": [
+    ":native"
+  ],
+  "accepted_targets": [
+    ":llvm"
+  ],
+  "proof_records": [
+    {
+      "id": "proof-foreign-bounds",
+      "claim": "bounds-safe",
+      "source_span": {
+        "source": "fixtures/safe15/untrusted-certificate.gravity",
+        "line": 7,
+        "column": 5
+      },
+      "artifact_node": "mir/node-92",
+      "profile": ":native",
+      "target": ":llvm",
+      "assumptions": [
+        "foreign-range-claim"
+      ],
+      "method": "provider-attestation",
+      "provider": "unknown.range.provider",
+      "inputs": [
+        "foreign-proof"
+      ],
+      "invalidated_by": [
+        "dependency-change"
+      ],
+      "result": ":proven-safe"
+    }
+  ],
+  "certificates": [
+    {
+      "id": "cert-foreign-bounds",
+      "package_id": "untrusted.math",
+      "compiler_id": "unknown-compiler",
+      "provider_id": "unknown.range.provider",
+      "claim": "bounds-safe",
+      "source_span": {
+        "source": "fixtures/safe15/untrusted-certificate.gravity",
+        "line": 7,
+        "column": 5
+      },
+      "artifact_node": "mir/node-92",
+      "profile": ":native",
+      "target": ":llvm",
+      "assumptions": [
+        "foreign-range-claim"
+      ],
+      "method": "provider-attestation",
+      "inputs": [
+        "foreign-proof"
+      ],
+      "invalidated_by": [
+        "dependency-change"
+      ],
+      "trust_root": "",
+      "signature": "",
+      "verification_status": ":rejected"
+    }
+  ],
+  "check_erasure_records": [
+    {
+      "operation_id": "foreign-bounds-read",
+      "erased_check": "bounds",
+      "proof_id": "proof-foreign-bounds",
+      "certificate_id": "cert-foreign-bounds",
+      "backend_preservation": ":preserved"
+    }
+  ],
+  "certificate_trust_records": [],
+  "invalidation_records": [],
+  "imported_certificate_verification_records": [],
+  "proof_provider_records": [],
+  "audit_views_for_unsafe_wrappers": []
+}

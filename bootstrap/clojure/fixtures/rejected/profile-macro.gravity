@@ -1,0 +1,16 @@
+(ns profile.bad-macro
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defmacro reflect
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  []
+  (syntax-quote (host-reflect java.lang.String)))
+
+(def generated (reflect))

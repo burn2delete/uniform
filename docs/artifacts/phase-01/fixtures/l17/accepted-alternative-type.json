@@ -1,0 +1,220 @@
+{
+  "diagnostic_mapping": {
+    "generated_origin_chain": [
+      {
+        "macro_symbol": "derive-user",
+        "phase": "macro-expansion",
+        "source": "app/user.gravity:6"
+      }
+    ],
+    "proof_id": "proof:refinement-user-id",
+    "source_span": "app/user.gravity:12",
+    "type_expression": "(Fn [Request] (Result Response HttpError))",
+    "type_fact_id": "typefact:handler"
+  },
+  "domain_facts": [
+    {
+      "crosses_boundary": true,
+      "generated_origin_chain": [
+        {
+          "facet_id": ":gravity.facet.schema",
+          "source": "schema User"
+        }
+      ],
+      "proof_id": "proof:schema-user",
+      "type_expression": "Schema[User]"
+    }
+  ],
+  "fact_export_schema": {
+    "format": "json",
+    "schema": ":gravity.types/facts-v1",
+    "stable": true
+  },
+  "fact_exports": {
+    "ownership": {
+      "complete": true,
+      "facts": [
+        "borrow",
+        "move",
+        "region",
+        "linear",
+        "initialization"
+      ],
+      "proof_id": "proof:ownership-region"
+    }
+  },
+  "gradual_boundaries": [
+    {
+      "blame": "accept-json",
+      "expected_type": "User",
+      "failure_type": "DecodeError",
+      "generated_origin_chain": [],
+      "profile_legal": true,
+      "proof_id": "proof:checked-cast-user",
+      "recorded": true,
+      "runtime_check": "checked-cast",
+      "source_span": "app/user.gravity:18"
+    }
+  ],
+  "kind": "alternative-type-system-manifest",
+  "namespace": {
+    "name": "app.service",
+    "profile": ":native",
+    "target": "linux-x86_64"
+  },
+  "proof_refinement_artifacts": [
+    {
+      "id": "proof:refinement-user-id",
+      "kind": ":refinement",
+      "valid_for": [
+        ":native"
+      ]
+    },
+    {
+      "id": "proof:erased-bounds-check",
+      "kind": ":optimization",
+      "valid_for": [
+        ":native"
+      ]
+    }
+  ],
+  "provider": {
+    "build_effects": [
+      ":compiler/read-ir",
+      ":compiler/write-ir"
+    ],
+    "capabilities": [
+      ":compiler/ir-transform"
+    ],
+    "conformance": ":gravity.conformance/types-l5",
+    "contracts": [
+      "gravity.contracts/TypedCore",
+      "gravity.contracts/ProfileSoundness"
+    ],
+    "fact_schema": ":gravity.types/facts-v1",
+    "features": [
+      "refinements",
+      "ownership",
+      "regions",
+      "linear",
+      "gradual",
+      "schema"
+    ],
+    "id": "research.types/refinement",
+    "implements": [
+      ":type/check",
+      ":type/infer",
+      ":type/refine"
+    ],
+    "kind": ":type-system",
+    "known_restrictions": [],
+    "profiles": [
+      ":hosted",
+      ":native",
+      ":kernel"
+    ],
+    "proof_schema": ":gravity.proof/refinement-v1",
+    "soundness_claim": ":strict-extension",
+    "version": "0.4.0"
+  },
+  "reference_compatibility_report": {
+    "l5_corpus": ":passed",
+    "result": ":compatible"
+  },
+  "soundness_evidence": {
+    ":native": {
+      "artifact": "docs/artifacts/phase-01/alternative-types/native-soundness.json",
+      "kind": ":audit-and-conformance"
+    }
+  },
+  "typed_core": {
+    "allocation_resource_facts": [
+      {
+        "allocation": ":region",
+        "resource": "RequestBuffer"
+      }
+    ],
+    "binding_types": [
+      {
+        "binding": "handler",
+        "type": "Handler"
+      }
+    ],
+    "capability_requirements": [
+      ":http/client"
+    ],
+    "cast_runtime_check_records": [
+      {
+        "check": "checked-cast",
+        "expected_type": "User",
+        "failure": "DecodeError"
+      }
+    ],
+    "expression_types": [
+      {
+        "expression": "send",
+        "type": "Result[Response,HttpError]"
+      }
+    ],
+    "function_types": [
+      {
+        "capabilities": [
+          ":http/client"
+        ],
+        "effects": [
+          ":network/http"
+        ],
+        "generated_origin_chain": [
+          {
+            "macro_symbol": "derive-user",
+            "source": "app/user.gravity:6"
+          }
+        ],
+        "required_capabilities": [
+          ":http/client"
+        ],
+        "required_effects": [
+          ":network/http"
+        ],
+        "type_expression": "(Fn [Request] (Result Response HttpError))"
+      }
+    ],
+    "lowering_status": ":accepted",
+    "ownership_lifetime_facts": [
+      {
+        "fact": "borrow-does-not-escape",
+        "proof_id": "proof:ownership-region"
+      }
+    ],
+    "panic_error_behavior": [
+      {
+        "failure": "Result",
+        "panic": false
+      }
+    ],
+    "profile_assumptions": [
+      ":native"
+    ],
+    "proof_references": [
+      "proof:refinement-user-id",
+      "proof:erased-bounds-check"
+    ],
+    "source_span_mapping": {
+      "handler": "app/user.gravity:12"
+    }
+  },
+  "typed_core_lowering_rules": [
+    {
+      "from": "Refined[T,P]",
+      "to": "TypedCore[T] plus proof reference"
+    }
+  ],
+  "unsafe_casts": [
+    {
+      "generated_origin_chain": [],
+      "proof_id": null,
+      "safe_evidence": false,
+      "type_expression": "UncheckedCast Dynamic User"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+(ns typed.handler.coverage
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:network/http})
+  (:capabilities #{:test/fixture})
+  (:safety :safe)
+  (:metadata {:handler-grants #{:test/fixture}}))
+
+(def bad
+  (effect/handle :network/http :test/http-fixture
+    (effect/pure)))

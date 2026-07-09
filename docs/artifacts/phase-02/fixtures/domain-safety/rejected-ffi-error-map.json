@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-safety.json",
+  "set": {
+    "/operations/0/ffi/error_translation/complete": false
+  }
+}

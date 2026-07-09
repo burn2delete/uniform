@@ -1,0 +1,34 @@
+{:artifact :gravity/stage0-r4-managed-runtime-document-proof
+ :task "P08-D115"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r4-document bootstrap/clojure/fixtures/accepted/runtime-managed-host.gravity"
+ :artifact-kind :gravity/stage0-r4-managed-runtime-document-artifact
+ :artifact-id "sha256:0d3aac91203ae5e0fdc9904459ee651670dbe10d81c5d452ae40cdae5c72ad3e"
+ :input-artifact "sha256:77e43188411edfac7a56f48d81a8e7ccbdf12f855fa814638a1d02cf51729bd6"
+ :input-artifact-kind :gravity/stage0-managed-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-managed-host.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r4-*.gravity"]
+ :required-diagnostic-ids
+ ["R4-HOST" "R4-NULL" "R4-EXCEPTION" "R4-REFLECTION"
+  "R4-COLLECTION" "R4-RESOURCE" "R4-SOURCEMAP" "R4-PROFILE"
+  "R4-MANIFEST"]
+ :capability-based-proof
+ {:managed-runtime-input-verified? true
+  :host-targets-covered? true
+  :null-exception-translation-covered? true
+  :reflection-policy-covered? true
+  :collection-semantics-covered? true
+  :linear-cleanup-covered? true
+  :source-map-covered? true
+  :profile-boundary-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 9
+  :test-command "clojure -M:test"
+  :test-result "100 tests, 6199 assertions, 0 failures, 0 errors, 1346 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R4 managed runtime document through the managed host runtime manifest. It does not claim production JVM, JavaScript, Wasm, mobile, or Clojure runtime execution, live REPL or hot-reload execution, or complete Phase 08 document coverage."}

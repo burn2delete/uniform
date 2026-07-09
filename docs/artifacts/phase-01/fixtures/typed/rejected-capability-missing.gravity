@@ -1,0 +1,6 @@
+(ns typed.bad.capability
+  (:profile :hosted)
+  (:effects :io/write))
+
+(def bad
+  (println "missing capability"))

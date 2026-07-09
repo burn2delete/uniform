@@ -1,0 +1,288 @@
+{
+  "kind": "phase07-backend-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P07-D098",
+      "document": "B1",
+      "governing_doc": "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "backend_interface",
+          "target_lowering_manifest"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b1-input.json",
+        "diagnostic": "B1-INPUT"
+      },
+      "coverage_claims": [
+        "verified MIR or domain IR input gate",
+        "required backend input manifests",
+        "unverified input rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D099",
+      "document": "B2",
+      "governing_doc": "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests",
+          "abi_layout_report"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b2-ub.json",
+        "diagnostic": "B2-UB"
+      },
+      "coverage_claims": [
+        "declared C dialect",
+        "pinned ABI and pointer provenance",
+        "C undefined behavior rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D100",
+      "document": "B3",
+      "governing_doc": "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b3-metadata.json",
+        "diagnostic": "B3-METADATA"
+      },
+      "coverage_claims": [
+        "LLVM target and data-layout record",
+        "proof-gated LLVM metadata",
+        "proofless metadata rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D101",
+      "document": "B4",
+      "governing_doc": "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b4-import.json",
+        "diagnostic": "B4-IMPORT"
+      },
+      "coverage_claims": [
+        "Wasm component contract and canonical ABI",
+        "import capability and replay metadata",
+        "ambient host import rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D102",
+      "document": "B5",
+      "governing_doc": "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b5-null.json",
+        "diagnostic": "B5-NULL"
+      },
+      "coverage_claims": [
+        "JVM target and classfile record",
+        "nullability and exception maps",
+        "unchecked Java null rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D103",
+      "document": "B6",
+      "governing_doc": "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b6-global.json",
+        "diagnostic": "B6-GLOBAL"
+      },
+      "coverage_claims": [
+        "JS/TS target and declaration records",
+        "host global capability manifest",
+        "ambient global access rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D104",
+      "document": "B7",
+      "governing_doc": "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b7-metadata.json",
+        "diagnostic": "B7-METADATA"
+      },
+      "coverage_claims": [
+        "MLIR dialect registry",
+        "verifier and metadata preservation records",
+        "metadata loss rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D105",
+      "document": "B8",
+      "governing_doc": "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b8-host-effect.json",
+        "diagnostic": "B8-HOST-EFFECT"
+      },
+      "coverage_claims": [
+        "GPU host/device boundary",
+        "transfer and synchronization graphs",
+        "host effect in kernel rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D106",
+      "document": "B9",
+      "governing_doc": "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b9-width.json",
+        "diagnostic": "B9-WIDTH"
+      },
+      "coverage_claims": [
+        "HDL fixed-width layout",
+        "clock, reset, timing, and interface records",
+        "missing width rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D107",
+      "document": "B10",
+      "governing_doc": "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b10-replay.json",
+        "diagnostic": "B10-REPLAY"
+      },
+      "coverage_claims": [
+        "workflow schemas and replay policy",
+        "idempotency, retry, compensation, and capability records",
+        "unrecorded nondeterminism rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D108",
+      "document": "B11",
+      "governing_doc": "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b11-taint.json",
+        "diagnostic": "B11-TAINT"
+      },
+      "coverage_claims": [
+        "query dialect and schema mapping",
+        "prepared bindings and typed result adapter",
+        "tainted dynamic SQL rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D109",
+      "document": "B12",
+      "governing_doc": "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "concrete_backend_manifests"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b12-permission.json",
+        "diagnostic": "B12-PERMISSION"
+      },
+      "coverage_claims": [
+        "mobile platform target and bundle metadata",
+        "permission, lifecycle, threading, and storage records",
+        "permissionless platform API rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D110",
+      "document": "B13",
+      "governing_doc": "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "backend_artifact_records",
+          "artifact_emission"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b13-evidence.json",
+        "diagnostic": "B13-EVIDENCE"
+      },
+      "coverage_claims": [
+        "common backend artifact records",
+        "artifact graph, hashes, provenance, and evidence",
+        "missing artifact evidence rejection"
+      ]
+    },
+    {
+      "task_id": "P07-D111",
+      "document": "B14",
+      "governing_doc": "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+        "required_artifact_fields": [
+          "backend_conformance_report"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b14-coverage.json",
+        "diagnostic": "B14-COVERAGE"
+      },
+      "coverage_claims": [
+        "backend conformance target matrix",
+        "negative diagnostic and metadata preservation records",
+        "missing backend coverage rejection"
+      ]
+    }
+  ]
+}

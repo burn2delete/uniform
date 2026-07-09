@@ -1,0 +1,15 @@
+(ns math.numeric-profile
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:conversion-rules
+                      [{:rule-id :native-bigint
+                        :profile :native
+                        :target :llvm-x86-64-linux
+                        :source-family :bigint
+                        :target-family :fixed-integer
+                        :conversion-mode :checked-narrowing
+                        :proof :proof/bigint-range}]}}}))

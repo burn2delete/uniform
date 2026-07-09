@@ -1,0 +1,37 @@
+(ns profile.validation.formal
+  (:profile :formal)
+  (:target :jvm)
+  (:exports [theorem])
+  (:effects #{:pure})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:memory {:hidden-allocation false
+                       :model :symbolic}
+              :runtime {:required false
+                        :providers #{:solver :certificate-checker}}
+              :package-allowed-effects #{:pure}
+              :provider-effect-grants #{:pure}
+              :deployment-allowed-effects #{:pure}
+              :package-capabilities #{}
+              :provider-capability-grants #{}
+              :deployment-capabilities #{}
+              :profile-validation
+              {:symbolic-ir {:entry :abs-bound
+                             :lowering :complete}
+               :proof-object {:proof-id :abs-bound-proof
+                              :method :interval}
+               :assumption-manifest {:assumptions [{:id :real-domain
+                                                     :range [-1 1]}]}
+               :trusted-kernel-record {:kernel :gravity.proof/kernel-v1
+                                       :trusted true}
+               :checked-theorem-summary {:theorem :abs-bound
+                                         :conclusion :checked}
+               :certificate-hash-chain {:root "sha256:formal-root"
+                                        :leaves ["sha256:proof"]}
+               :math-mode-rounding-record {:mode :interval
+                                           :rounding :outward}
+               :imported-proof-verification-record {:imports []
+                                                    :status :verified}}}))
+
+(def theorem
+  {:claim :abs-bound})

@@ -1,0 +1,19 @@
+{
+  "artifact_id": "phase-00-foundation-document-coverage-rejected-fixture",
+  "kind": "foundation-document-coverage-fixture",
+  "task": "P00-D001-D010",
+  "documents": [
+    {
+      "id": "D0",
+      "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+      "implementation_surface": "Invalid fixture implementation surface for D0 coverage.",
+      "accepted_behavior": ["Profiles are compile-time contracts."],
+      "rejected_behavior": ["Unsafe behavior invisible to the artifact graph."],
+      "required_artifacts": [],
+      "diagnostics": ["D0-ARTIFACT-MISSING"],
+      "dependencies": ["root-contract"],
+      "conformance_criteria": ["Every emitted artifact records provenance."],
+      "evidence_refs": ["docs/artifacts/phase-00/foundation-document-coverage.json"]
+    }
+  ]
+}

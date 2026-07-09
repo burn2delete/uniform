@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/escape_facts/0/escapes": true
+  }
+}

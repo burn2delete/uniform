@@ -1,0 +1,9 @@
+(ns compiler.c3.hygiene
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c3-syntax {:fail :hygiene}}}))
+
+(def value 1)

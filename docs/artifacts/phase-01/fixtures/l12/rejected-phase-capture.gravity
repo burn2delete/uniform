@@ -1,0 +1,8 @@
+(ns bad.capture
+  (:profile :hosted)
+  (:target :native))
+
+(def request (runtime/value "request"))
+
+(defconst captured
+  (compile-time request))

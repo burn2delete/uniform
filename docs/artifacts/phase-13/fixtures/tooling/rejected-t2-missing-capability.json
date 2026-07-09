@@ -1,0 +1,10 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "repl_session": {
+      "capability": ":fs/read",
+      "missing_capability": true
+    }
+  }
+}

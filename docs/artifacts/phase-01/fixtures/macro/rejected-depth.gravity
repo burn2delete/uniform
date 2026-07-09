@@ -1,0 +1,8 @@
+(ns macro.bad-depth
+  (:profile :hosted)
+  (:target :jvm)
+  (:safety :safe))
+
+(def value
+  (recur-macro true))
+

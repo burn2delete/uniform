@@ -1,0 +1,71 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D087
+ :date "2026-06-25"
+ :status :complete
+ :capability :c8-effect-checker-document-coverage
+ :command "clojure -M:gravity compiler-c8-effect-check bootstrap/clojure/fixtures/accepted/compiler-c8-effect-checker.gravity"
+ :artifact-kind :gravity/stage0-c8-effect-checker-artifact
+ :artifact-hash "sha256:7b85db9e074425bc276dc6b7e8e6cd6147902c3c1a2b368dd20710ae13022755"
+ :summary {:effect-nodes 76
+           :inferred-effects 4
+           :function-effect-summaries 2
+           :legality-records 4
+           :capability-proofs 4
+           :build-effects 1
+           :replay-records 1
+           :ordering-constraints 10
+           :residual-effects 3
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+                       "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                       "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+                       "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c8-effect-checker.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c8-undeclared.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-build.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-replay.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-order.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-unknown.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c8-verify.gravity"]
+ :diagnostic-ids ["C8-UNDECLARED"
+                  "C8-PROFILE"
+                  "C8-CAPABILITY"
+                  "C8-BUILD"
+                  "C8-REPLAY"
+                  "C8-ORDER"
+                  "C8-RUNTIME"
+                  "C8-UNKNOWN"
+                  "C8-VERIFY"]
+ :capability-based-proof {:effect-graph-complete? true
+                          :declared-effect-allowance-checked? true
+                          :legality-intersection-recorded? true
+                          :capability-proofs-accepted? true
+                          :build-effects-separated-and-authorized? true
+                          :replay-obligations-recorded? true
+                          :ordering-constraints-recorded? true
+                          :residual-effects-recorded? true
+                          :diagnostics-covered? true
+                          :verifier-passed? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 60 tests containing 3175 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 847}
+              {:command "clojure -M:gravity compiler-c8-effect-check bootstrap/clojure/fixtures/accepted/compiler-c8-effect-checker.gravity"
+               :result :accepted
+               :artifact-hash "sha256:7b85db9e074425bc276dc6b7e8e6cd6147902c3c1a2b368dd20710ae13022755"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 14 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D087 for the Clojure stage0 C8 effect checker document boundary only."
+                 "It does not claim production effect inference for the full future language, ownership checking, safety classification, MIR construction, backend lowering, release readiness, or self-hosting."]}

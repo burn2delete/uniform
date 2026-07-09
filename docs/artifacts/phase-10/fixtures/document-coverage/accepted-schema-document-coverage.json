@@ -1,0 +1,185 @@
+{
+  "kind": "phase10-schema-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P10-D145",
+      "document": "S1",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "source_schema_ir",
+          "validator_artifact",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s1-projection.json",
+        "diagnostic": "S1-PROJECTION"
+      },
+      "coverage_claims": [
+        "source schema identity, version, hash, boundaries, compatibility, derivation targets, validators, taint, effects, and projection constraints"
+      ]
+    },
+    {
+      "task_id": "P10-D146",
+      "document": "S2",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "serialization_fixture",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s2-taint.json",
+        "diagnostic": "S2-TAINT"
+      },
+      "coverage_claims": [
+        "serializer manifest, trust boundary, schema hash, taint retention, compatibility report, and round-trip vectors"
+      ]
+    },
+    {
+      "task_id": "P10-D147",
+      "document": "S3",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "canonical_format",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s3-hash.json",
+        "diagnostic": "S3-HASH"
+      },
+      "coverage_claims": [
+        "canonical version, schema hash, deterministic ordering, numeric/string/metadata policy, reference vectors, hash input, and signing input"
+      ]
+    },
+    {
+      "task_id": "P10-D148",
+      "document": "S4",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "graphql_generation",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s4-resolver.json",
+        "diagnostic": "S4-RESOLVER"
+      },
+      "coverage_claims": [
+        "GraphQL SDL, resolver adapters, typed client, query validation, auth/capability metadata, schema diff, and source maps"
+      ]
+    },
+    {
+      "task_id": "P10-D149",
+      "document": "S5",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "openapi_generation",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s5-schema.json",
+        "diagnostic": "S5-SCHEMA"
+      },
+      "coverage_claims": [
+        "OpenAPI route metadata, request/response validators, error model, taint boundary, capability metadata, typed client, contract tests, and source maps"
+      ]
+    },
+    {
+      "task_id": "P10-D150",
+      "document": "S6",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "database_mapping",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s6-data-loss.json",
+        "diagnostic": "S6-DATA-LOSS"
+      },
+      "coverage_claims": [
+        "database mapping, migration policy, data-loss report, rollback/forward policy, review record, capabilities, row adapter, and fixture validation"
+      ]
+    },
+    {
+      "task_id": "P10-D151",
+      "document": "S7",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "binary_abi_schema",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s7-pointer.json",
+        "diagnostic": "S7-POINTER"
+      },
+      "coverage_claims": [
+        "binary field order, widths, endian, alignment, padding, discriminants, pointer policy, ownership/lifetime, target ABI, reference vectors, and FFI binding input"
+      ]
+    },
+    {
+      "task_id": "P10-D152",
+      "document": "S8",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "typed_config",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s8-secret.json",
+        "diagnostic": "S8-SECRET"
+      },
+      "coverage_claims": [
+        "typed config schema, sources, precedence, defaults, required and secret fields, effects, capabilities, redaction, build reproducibility, and reload policy"
+      ]
+    },
+    {
+      "task_id": "P10-D153",
+      "document": "S9",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+        "required_artifact_fields": [
+          "artifact_schema_registry",
+          "source_schema_ir",
+          "document_contracts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s9-evidence.json",
+        "diagnostic": "S9-EVIDENCE"
+      },
+      "coverage_claims": [
+        "artifact kinds, schema versions, required fields, content hash, provenance, evidence, release gate, canonical encoding, and compatibility report"
+      ]
+    }
+  ]
+}

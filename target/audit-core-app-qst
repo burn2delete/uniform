@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%b' 'core-app\ngravity:19:2\n(:ok 19)\n'

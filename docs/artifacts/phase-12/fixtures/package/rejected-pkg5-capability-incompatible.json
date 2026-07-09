@@ -1,0 +1,11 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "resolution_report": {
+      "capability": ":secret/read",
+      "capability_incompatible": true,
+      "dependency_id": "gravity/secret"
+    }
+  }
+}

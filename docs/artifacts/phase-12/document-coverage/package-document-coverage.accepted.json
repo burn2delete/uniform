@@ -1,0 +1,282 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:4125da78503ee3cb60dca60d2c0b3102dd13613e216b6e7b4c5bf7384bbccac4",
+      "artifact_id": "manifest:acme/support-agent:0.3.0",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "normalized project manifest includes package identity, profiles, targets, effects, capabilities, unsafe policy, release policy, generated roots, and canonical hash",
+        "release builds require a complete lockfile and offline project parsing"
+      ],
+      "document": "PKG1",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      "package_id": "acme/support-agent",
+      "task_id": "P12-D165"
+    },
+    {
+      "artifact_hash": "sha256:175b6acec8912cabebc0dc505654ce336b3ddb55b3986e0021b74eb602e4f51e",
+      "artifact_id": "build-graph:acme/support-agent:0.3.0",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "typed build graph records graph inputs, node inputs and outputs, effects, cache keys, tool identity, generated-source provenance, and release evidence",
+        "undeclared build effects fail before artifact emission"
+      ],
+      "document": "PKG2",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md",
+      "package_id": null,
+      "task_id": "P12-D166"
+    },
+    {
+      "artifact_hash": "sha256:ef118704af054e03d4d0ce4b5a40ab726c7dbcfe37270524468a63cba9c05810",
+      "artifact_id": "artifact:library-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "artifact manifest records schema version, source graph, project hash, lockfile hash, compiler, profile, target, content hash, dependencies, capability summary, safety evidence, and canonical provenance",
+        "safety or proof claims without evidence links are rejected"
+      ],
+      "document": "PKG3",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md",
+      "package_id": "acme/support-agent",
+      "task_id": "P12-D167"
+    },
+    {
+      "artifact_hash": "sha256:d5b9477f5423f4de1022872e1c323df5ebaecfdc83defa2811d3f2864ae2927d",
+      "artifact_id": "package-operation:add-gravity-http",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "package operation record captures effects, lockfile diff, verification report, capability diff, safety diff, provenance diff, and machine-readable output",
+        "download verification failure blocks package operations"
+      ],
+      "document": "PKG4",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md",
+      "package_id": "gravity/http",
+      "task_id": "P12-D168"
+    },
+    {
+      "artifact_hash": "sha256:9000e3f6890813a6d158d0098633193dcecfe933468c21fac4ad5d1768dbbfd2",
+      "artifact_id": "resolution:acme/support-agent:0.3.0",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "resolution report records canonical solver inputs, deterministic selected graph, complete lockfile, target variants, capability diff, provenance summary, and offline proof",
+        "capability-incompatible dependencies are rejected before build execution"
+      ],
+      "document": "PKG5",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+      "package_id": null,
+      "task_id": "P12-D169"
+    },
+    {
+      "artifact_hash": "sha256:98b5482d928b987cdf70f0cba6ad40051d013f2ebf950c94332f5037ff691d40",
+      "artifact_id": "capability-manifest:support-agent-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "capability manifest separates declared effects, requested capabilities, denied authority, dependency summaries, deployment grants, runtime handles, audit schema, and SBOM fields",
+        "denied transitive authority fails closed"
+      ],
+      "document": "PKG6",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      "package_id": "acme/support-agent",
+      "task_id": "P12-D170"
+    },
+    {
+      "artifact_hash": "sha256:157018636b4b9763586ea6e548d2ad00dcd3d55f925d426ec2f95bd48bb7beaa",
+      "artifact_id": "recipe:support-agent-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "reproducible build recipe records source, project, lockfile, compiler, environment, target matrix, graph hash, allowed external inputs, expected artifacts, output hashes, and verification report",
+        "uncontrolled network input rejects reproducible build claims"
+      ],
+      "document": "PKG7",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      "package_id": "acme/support-agent",
+      "task_id": "P12-D171"
+    },
+    {
+      "artifact_hash": "sha256:a1393f67f3bfcbf8b5a60b534b92cba9a52d863765994d67b885d3c0b210e1f2",
+      "artifact_id": "package-safety:support-agent-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "package safety record includes unsafe islands, safe wrappers, FFI boundaries, privileged effects, capabilities, taint sinks, proof claims, tests, review state, vulnerability state, and schema validation",
+        "unsafe forms without audit metadata are rejected"
+      ],
+      "document": "PKG8",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md",
+      "package_id": "acme/support-agent",
+      "task_id": "P12-D172"
+    },
+    {
+      "artifact_hash": "sha256:da32cb017039531c7e8d762c6ff9fafb77e3b2b60d671040f509d4adf57c0922",
+      "artifact_id": "registry:gravity-public:support-agent",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "registry record tracks access policy, index signatures, latent states, publish review, yank or revocation history, mirror attestation, and registry source lock entries",
+        "private registry reads require grants before metadata is exposed"
+      ],
+      "document": "PKG9",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
+      "package_id": null,
+      "task_id": "P12-D173"
+    },
+    {
+      "artifact_hash": "sha256:2024b7c43bbdfb08b6c712e3435d7dbba926f1fdf2adcde1aae5a86f2ab174d0",
+      "artifact_id": "artifact:library-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "provenance record links artifact content to source graph, project hash, lockfile, compiler, builder, recipe, dependency graph, generated source ledger, SBOM, signatures, revocation status, and schema version",
+        "release artifacts without provenance fail closed"
+      ],
+      "document": "PKG10",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md",
+      "package_id": null,
+      "task_id": "P12-D174"
+    },
+    {
+      "artifact_hash": "sha256:250b8b6e422e7b7dfc7edaec6fe24048b83dbf1f687c5d510a3e38df70afae59",
+      "artifact_id": "target-matrix:support-agent-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "target matrix expands concrete profile, backend, target, runtime, support level, artifact kind, per-target dependency, capability, artifact, and conformance evidence",
+        "implicit host target assumptions are rejected for release builds"
+      ],
+      "document": "PKG11",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md",
+      "package_id": "acme/support-agent",
+      "task_id": "P12-D175"
+    },
+    {
+      "artifact_hash": "sha256:b05467eb3d36f1e25c732c4f189438934788c773160427046b1030803bce8146",
+      "artifact_id": "artifact:library-001",
+      "artifact_kind": "package-artifacts-artifact",
+      "coverage": [
+        "release verification records canonical signature payload, SBOM dependencies, capability and unsafe summaries, provenance attestation, keyless identity, transparency log evidence, root metadata, verification checks, and policy decision",
+        "noncanonical signature payloads are rejected before release acceptance"
+      ],
+      "document": "PKG12",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+      "package_id": null,
+      "task_id": "P12-D176"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 12,
+    "documents": 12,
+    "rejected_diagnostics": 12,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "PKG1",
+    "PKG2",
+    "PKG3",
+    "PKG4",
+    "PKG5",
+    "PKG6",
+    "PKG7",
+    "PKG8",
+    "PKG9",
+    "PKG10",
+    "PKG11",
+    "PKG12"
+  ],
+  "input_hash": "sha256:727999e34084ff3b425d8e4f148688ae0ed844ed6c9da6e368817b3f3e503e6e",
+  "kind": "phase12-package-document-coverage-artifact",
+  "phase": "12",
+  "rejected": [
+    {
+      "diagnostic": "PKG1006",
+      "document": "PKG1",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg1-release-lockfile.json",
+      "missing_fact": "release-lockfile",
+      "task_id": "P12-D165"
+    },
+    {
+      "diagnostic": "PKG2001",
+      "document": "PKG2",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg2-undeclared-effect.json",
+      "missing_fact": "declared-build-effect",
+      "task_id": "P12-D166"
+    },
+    {
+      "diagnostic": "PKG3005",
+      "document": "PKG3",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg3-evidence-link.json",
+      "missing_fact": "evidence-link",
+      "task_id": "P12-D167"
+    },
+    {
+      "diagnostic": "PKG4001",
+      "document": "PKG4",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg4-download-verification.json",
+      "missing_fact": "download-verification",
+      "task_id": "P12-D168"
+    },
+    {
+      "diagnostic": "PKG5002",
+      "document": "PKG5",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg5-capability-incompatible.json",
+      "missing_fact": "capability-compatibility",
+      "task_id": "P12-D169"
+    },
+    {
+      "diagnostic": "PKG6004",
+      "document": "PKG6",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg6-denied-authority.json",
+      "missing_fact": "denied-authority",
+      "task_id": "P12-D170"
+    },
+    {
+      "diagnostic": "PKG7003",
+      "document": "PKG7",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg7-uncontrolled-network.json",
+      "missing_fact": "controlled-network-input",
+      "task_id": "P12-D171"
+    },
+    {
+      "diagnostic": "PKG8001",
+      "document": "PKG8",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg8-unsafe-audit.json",
+      "missing_fact": "unsafe-audit-metadata",
+      "task_id": "P12-D172"
+    },
+    {
+      "diagnostic": "PKG9001",
+      "document": "PKG9",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg9-private-registry.json",
+      "missing_fact": "registry-read-grant",
+      "task_id": "P12-D173"
+    },
+    {
+      "diagnostic": "PKG10001",
+      "document": "PKG10",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg10-provenance.json",
+      "missing_fact": "provenance-record",
+      "task_id": "P12-D174"
+    },
+    {
+      "diagnostic": "PKG11002",
+      "document": "PKG11",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg11-implicit-host-target.json",
+      "missing_fact": "explicit-target",
+      "task_id": "P12-D175"
+    },
+    {
+      "diagnostic": "PKG12002",
+      "document": "PKG12",
+      "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg12-noncanonical-signature.json",
+      "missing_fact": "canonical-signature-payload",
+      "task_id": "P12-D176"
+    }
+  ]
+}

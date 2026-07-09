@@ -1,0 +1,8 @@
+(ns core.bad.eval-order
+  (:profile :hosted)
+  (:effects :io/write))
+
+(def bad
+  (unstable-reorder!
+    (println "first")
+    (println "second")))

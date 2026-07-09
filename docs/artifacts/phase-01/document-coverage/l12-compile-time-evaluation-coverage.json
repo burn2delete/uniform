@@ -1,0 +1,60 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "compile-time-evaluation-record",
+      "coverage": [
+        "pure compile-time constants",
+        "authorized build effects with grants",
+        "hermetic file and environment inputs",
+        "generated-form provenance",
+        "secret redaction",
+        "cache key and reuse decision"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity"
+    }
+  ],
+  "document": "L12",
+  "kind": "l12-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L12-PURE-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-pure-effect.gravity"
+    },
+    {
+      "diagnostic": "L12-BUILD-GRANT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-build-grant.gravity"
+    },
+    {
+      "diagnostic": "L12-HERMETIC-INPUT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-hermetic-input.gravity"
+    },
+    {
+      "diagnostic": "L12-NONDETERMINISM",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-nondeterminism.gravity"
+    },
+    {
+      "diagnostic": "L12-CONST-REPRESENTATION",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-const-representation.gravity"
+    },
+    {
+      "diagnostic": "L12-GENERATED-ILLEGAL",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-generated-illegal.gravity"
+    },
+    {
+      "diagnostic": "L12-PHASE-CAPTURE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-phase-capture.gravity"
+    },
+    {
+      "diagnostic": "L12-CACHE-UNSAFE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-cache-unsafe.gravity"
+    },
+    {
+      "diagnostic": "L12-SECRET-LEAK",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-secret-leak.gravity"
+    },
+    {
+      "diagnostic": "L12-FUEL",
+      "fixture": "docs/artifacts/phase-01/fixtures/l12/rejected-fuel.gravity"
+    }
+  ]
+}

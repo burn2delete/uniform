@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "delete": [
+    "/optimization_pipeline/decision_log/0/proofs_used"
+  ]
+}

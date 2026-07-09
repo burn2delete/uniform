@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: ambient reflection, dynamic loading, or eval.
+(ns runtime.r4-reflection
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/reflect})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-reflection}}}))
+
+(defn main [] :- I64
+  1)

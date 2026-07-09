@@ -1,0 +1,61 @@
+{:proof-id :stage0-p04-t03-specialization-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-T03
+ :document "PERF3"
+ :status :passed
+ :capability :specialization-partial-evaluation-report
+ :command "clojure -M:gravity specialization bootstrap/clojure/fixtures/accepted/specialization-partial-eval.gravity"
+ :artifact-kind :gravity/stage0-specialization-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/specialization-partial-eval.gravity"
+ :accepted-results
+ {:suite-id :perf3/specialization-partial-eval
+  :specialization-modes #{:type :const :shape :profile :target}
+  :guard-predicate-status :complete
+  :partial-evaluation-status :complete
+  :source-map-status :complete
+  :cache-invalidation-status :complete
+  :variant-selection-status :complete
+  :proof-backed-erasure-status :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["PERF3-KEY" "PERF3-GUARD" "PERF3-EFFECT" "PERF3-HERMETIC"
+  "PERF3-SOURCE-MAP" "PERF3-CACHE" "PERF3-PROFILE" "PERF3-PROOF"
+  "PERF3-VARIANT"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/specialization-key-missing.gravity"
+  "PERF3-KEY"
+  "bootstrap/clojure/fixtures/rejected/specialization-guard-missing.gravity"
+  "PERF3-GUARD"
+  "bootstrap/clojure/fixtures/rejected/specialization-effect-ungranted.gravity"
+  "PERF3-EFFECT"
+  "bootstrap/clojure/fixtures/rejected/specialization-hermetic.gravity"
+  "PERF3-HERMETIC"
+  "bootstrap/clojure/fixtures/rejected/specialization-source-map.gravity"
+  "PERF3-SOURCE-MAP"
+  "bootstrap/clojure/fixtures/rejected/specialization-cache.gravity"
+  "PERF3-CACHE"
+  "bootstrap/clojure/fixtures/rejected/specialization-profile-illegal.gravity"
+  "PERF3-PROFILE"
+  "bootstrap/clojure/fixtures/rejected/specialization-proof-missing.gravity"
+  "PERF3-PROOF"
+  "bootstrap/clojure/fixtures/rejected/specialization-variant-ambiguous.gravity"
+  "PERF3-VARIANT"}
+ :capability-based-proof
+ {:profile-legality-preserved? true
+  :target-request-preserved? true
+  :effect-authority-preserved? true
+  :capability-authority-preserved? true
+  :build-effects-granted? true
+  :cache-invalidation-recorded? true
+  :specialized-proof-preserved? true
+  :variant-selection-safe? true
+  :status :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 37 tests containing 1908 assertions. 0 failures, 0 errors. PERF3 specialization artifacts, and 497 rejected fixtures"}
+  {:command "clojure -M -e '(require ... specialization summary)'"
+   :output "{:kind :gravity/stage0-specialization-artifact, :pass :specialization-validation, :status :complete, :modes #{:type :const :shape :target :profile}, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This proves PERF3 and P04-T03 at the Clojure stage0 performance artifact boundary."
+  "It does not complete memory layout, vectorization, benchmark governance, PGO, autotuning, realtime latency, check elision, backend execution, runtime services, release performance, or self-hosting."]}

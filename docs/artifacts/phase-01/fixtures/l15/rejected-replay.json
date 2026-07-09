@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-providers.json",
+  "set": {
+    "/providers/0/replayable": false
+  }
+}

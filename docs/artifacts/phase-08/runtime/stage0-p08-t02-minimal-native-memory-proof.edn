@@ -1,0 +1,77 @@
+{:artifact :gravity/stage0-minimal-native-memory-runtime-proof
+ :task "P08-T02"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-minimal-native bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+ :artifact-kind :gravity/stage0-minimal-native-memory-runtime-artifact
+ :artifact-id "sha256:f903f759d277bd89cb6ce6475638fc1a3be74ef6c882bb041232a87127c891e3"
+ :input-artifact "sha256:7242d64adcdea1a655fe0f56a318d1d48f35ec49dd2813e48a31a7b7802c5cc8"
+ :input-artifact-kind :gravity/stage0-runtime-selection-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+ :rejected-fixtures
+ ["bootstrap/clojure/fixtures/rejected/runtime-r3-service.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-allocator.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-panic.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-atomics.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-ffi.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-capability.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-debug.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-managed.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r3-manifest.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-provider.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-alloc.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-lifetime.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-linear.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-raw.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-device.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-bounds.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-proof.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-debug.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r5-manifest.gravity"]
+ :required-diagnostic-ids
+ ["R3-SERVICE"
+  "R3-ALLOCATOR"
+  "R3-PANIC"
+  "R3-ATOMICS"
+  "R3-FFI"
+  "R3-CAPABILITY"
+  "R3-DEBUG"
+  "R3-MANAGED"
+  "R3-MANIFEST"
+  "R5-PROVIDER"
+  "R5-ALLOC"
+  "R5-LIFETIME"
+  "R5-LINEAR"
+  "R5-RAW"
+  "R5-DEVICE"
+  "R5-BOUNDS"
+  "R5-PROOF"
+  "R5-DEBUG"
+  "R5-MANIFEST"]
+ :capability-based-proof
+ {:runtime-selection-input-verified? true
+  :minimal-native-services-declared? true
+  :allocator-provider-policy-complete? true
+  :panic-failure-policy-explicit? true
+  :atomics-safe8-preserved? true
+  :ffi-safe7-metadata-preserved? true
+  :debug-release-separated? true
+  :hidden-managed-services-rejected? true
+  :memory-providers-declared? true
+  :memory_runtime_preserves_compiler_checks? true
+  :linear-resource-ledger-complete? true
+  :raw-memory-audited-only? true
+  :device-memory-recorded? true
+  :proof-elision-agrees-with-safe15? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:native-runtime-status :complete
+  :memory-runtime-status :complete
+  :memory-provider-family-count 11
+  :diagnostic-count 19
+  :test-command "clojure -M:test"
+  :test-result "92 tests, 5556 assertions, 0 failures, 0 errors, 1233 rejected fixtures"}
+ :residual-risk
+ "This proves the Clojure stage0 minimal-native and memory runtime manifest boundary. It does not claim production native runtime libraries, external native object linking, live allocator implementation, device memory execution, release readiness, or complete Phase 08 coverage."}

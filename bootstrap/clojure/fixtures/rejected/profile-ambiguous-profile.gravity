@@ -1,0 +1,9 @@
+(ns profile.ambiguous-profile
+  (:profile :hosted)
+  (:profile :core)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

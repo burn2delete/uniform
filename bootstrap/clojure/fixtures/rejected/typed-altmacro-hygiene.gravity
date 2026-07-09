@@ -1,0 +1,9 @@
+(ns altmacro.hygiene
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmacro/hygiene :hidden-capture))

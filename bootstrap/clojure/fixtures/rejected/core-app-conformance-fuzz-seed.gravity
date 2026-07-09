@@ -1,0 +1,12 @@
+(ns core.app.conformance-fuzz-seed
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:fuzz-property-suites
+                             [{:artifact-id "fuzz-suite:bad"}]}}}))
+
+(defn main []
+  (println "bad conformance fuzz seed"))

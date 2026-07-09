@@ -1,0 +1,11 @@
+(ns typed.pattern.nonexhaustive
+  (:profile :formal)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (match (union/ok :Result 42)
+    (Ok value) value))

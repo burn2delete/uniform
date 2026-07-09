@@ -1,0 +1,5 @@
+(ns core.bad.recur
+  (:profile :hosted))
+
+(def bad
+  (recur 1))

@@ -1,0 +1,26 @@
+(ns performance.bad.numeric-mode
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/numeric-mode
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:element-type :f32}
+                :layout {:buffer :contiguous}
+                :safety-mode :safe-optimized
+                :benchmark {:harness :bench/numeric-mode
+                            :environment-fingerprint {:cpu :x86-64}}
+                :semantic-proof #{:types-preserved}
+                :safety-proof #{:bounds-preserved}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :numeric-mode-change {:source-mode :checked
+                                     :optimized-mode :fast-math}}}))
+
+(def bad true)

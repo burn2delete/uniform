@@ -1,0 +1,6 @@
+; Rejected P09 DOM5 fixture.
+(ns domain.dom5-optimization (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom5-optimization}}}))
+(defn main [] :- I64 1)

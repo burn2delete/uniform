@@ -1,0 +1,4 @@
+(ns backend.b4-manifest
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:hosted-lowering {:fail :b4-manifest}}}))

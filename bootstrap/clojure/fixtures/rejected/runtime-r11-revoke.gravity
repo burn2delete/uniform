@@ -1,0 +1,6 @@
+; Rejected P08 R11 fixture.
+(ns runtime.r11-revoke (:profile :ai) (:target :jvm) (:exports [main])
+  (:effects #{:ai/model-call}) (:capabilities #{:model/call}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r11-revoke}}}))
+(defn main [] :- I64 1)

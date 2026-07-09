@@ -1,0 +1,14 @@
+(ns math.numeric-conversion
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:conversion-rules
+                      [{:rule-id :bad-conversion
+                        :profile :native
+                        :target :llvm-x86-64-linux
+                        :source-family :fixed-integer
+                        :target-family :fixed-integer
+                        :conversion-mode :target-default}]}}}))

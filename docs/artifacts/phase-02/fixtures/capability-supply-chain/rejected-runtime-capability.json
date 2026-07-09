@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-capability-supply-chain.json",
+  "set": {
+    "/package_checks/0/runtime_capabilities_approved": false
+  }
+}

@@ -1,0 +1,8 @@
+(ns core.app.profile-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(defn main []
+  (println "missing effect"))

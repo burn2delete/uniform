@@ -1,0 +1,9 @@
+(ns compiler.c4.trace
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c4-macro {:fail :trace}}}))
+
+(def value 1)

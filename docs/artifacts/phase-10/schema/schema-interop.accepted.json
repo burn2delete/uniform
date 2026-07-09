@@ -1,0 +1,696 @@
+{
+  "artifact_schema_registry": {
+    "artifact_kinds": [
+      ":schema",
+      ":workflow-graph",
+      ":agent-manifest",
+      ":proof-certificate",
+      ":test-report",
+      ":benchmark-report",
+      ":sbom",
+      ":provenance"
+    ],
+    "canonical_encoding": "S3 canonical format for hash and signature contexts",
+    "compatibility_report": "schema version changes require migration policy",
+    "content_hash_schema": "canonical bytes or declared target format",
+    "document": "S9",
+    "evidence_schema": "types, effects, capabilities, safety, proofs, tests, diagnostics, and conformance",
+    "provenance_schema": "source graph, dependency lock, compiler, and pass chain",
+    "release_gate_schema": "release artifacts require provenance, SBOM, signature, and evidence links",
+    "required_fields": [
+      "kind",
+      "schema-version",
+      "source-graph",
+      "compiler-version",
+      "profile",
+      "target",
+      "backend",
+      "runtime",
+      "effects",
+      "capabilities",
+      "content-hash",
+      "provenance",
+      "conformance"
+    ],
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "schema_versions": {
+      "TicketClassification": 2
+    }
+  },
+  "binary_abi_schema": {
+    "alignment": 8,
+    "document": "S7",
+    "endian": ":little",
+    "ffi_binding_input": "TicketClassificationAbi/v2 references schema hash",
+    "field_order": [
+      "priority",
+      "category_offset",
+      "category_length",
+      "confidence"
+    ],
+    "ownership_lifetime_map": "category bytes are borrowed for decode duration and owned after validation",
+    "padding": "zeroed explicit padding",
+    "pointer_policy": "no raw pointers in stable record; offsets are bounded",
+    "reference_vectors": [
+      "ticket-classification-abi-x86_64-v2",
+      "ticket-classification-abi-wasm32-v2"
+    ],
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "target_abi": "x86_64-unknown-linux-gnu",
+    "variant_discriminants": {
+      "high": 2,
+      "low": 0,
+      "medium": 1
+    },
+    "widths": {
+      "category_length": "U32",
+      "category_offset": "U32",
+      "confidence": "F64",
+      "priority": "U8"
+    }
+  },
+  "canonical_format": {
+    "document": "S3",
+    "format_version": 1,
+    "hash_input_record": "canonical bytes include schema hash and version",
+    "map_order": ":lexicographic-encoded-key",
+    "metadata_policy": ":schema-declared-only",
+    "numeric_policy": ":declared-or-reject",
+    "reference_vectors": [
+      "ticket-classification-canonical-v2",
+      "ticket-classification-replay-v2"
+    ],
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_hash_included": true,
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "set_order": ":lexicographic-encoded-value",
+    "signing_input_record": "signatures cover canonical manifest bytes",
+    "string_normalization": ":utf8-nfc"
+  },
+  "coverage_summary": {
+    "documents": 9,
+    "generated_artifacts": 8,
+    "schema_id": "TicketClassification",
+    "status": ":passed"
+  },
+  "database_mapping": {
+    "capabilities": [
+      ":db/migrate",
+      ":db/query"
+    ],
+    "column_types": {
+      "category": "text not null",
+      "confidence": "double precision check 0.0 <= value <= 1.0",
+      "priority": "ticket_priority_enum"
+    },
+    "constraints": [
+      "confidence_range",
+      "priority_known"
+    ],
+    "data_loss_report": {
+      "destructive": false,
+      "policy": ":no-data-loss"
+    },
+    "dialect": ":postgresql",
+    "document": "S6",
+    "fixture_validation": "migration plan validation fixture passed",
+    "indexes": [
+      "ticket_classifications_priority_idx"
+    ],
+    "migration_plan": {
+      "deployment_ordering": "migrate before API compatibility bump",
+      "from": "TicketClassification/v1",
+      "to": "TicketClassification/v2",
+      "transaction_mode": ":single-transaction"
+    },
+    "required_review_record": "no destructive review required",
+    "rollback_or_forward_policy": ":rollback-supported",
+    "row_adapter": "TicketClassificationRowAdapter/v2",
+    "schema_diff_report": "additive category metadata migration",
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "table_mapping": "ticket_classifications"
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "S1": {
+      "compatibility_mode": ":additive",
+      "derivation_targets": [
+        ":validator",
+        ":serialization",
+        ":canonical",
+        ":graphql",
+        ":openapi",
+        ":database",
+        ":binary-abi",
+        ":config",
+        ":artifact-schema",
+        ":ai-output"
+      ],
+      "document": "S1",
+      "effect_capability_summary": {
+        "capabilities": [
+          ":schema/validate",
+          ":db/query",
+          ":db/migrate",
+          ":config/read"
+        ],
+        "effects": [
+          ":ai/output-validate",
+          ":database/read",
+          ":database/write",
+          ":io/read"
+        ]
+      },
+      "hash": "sha256:ticket-classification-v2",
+      "migration_requirements": {
+        "api": "no breaking operation change",
+        "database": "backfill category from existing priority labels",
+        "policy": ":additive"
+      },
+      "schema_id": "TicketClassification",
+      "semantic_diff": {
+        "changes": [
+          "add optional category taxonomy metadata without weakening existing fields"
+        ],
+        "from": "TicketClassification/v1",
+        "to": "TicketClassification/v2"
+      },
+      "source_span": {
+        "source": "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md"
+      },
+      "taint_policy": {
+        "cleared_by": "TicketClassification.validator/v2",
+        "decoded": "Tainted/Deserialized",
+        "model_output": "Tainted/AIOutput"
+      },
+      "type_projection": {
+        "fields": {
+          "category": {
+            "required": true,
+            "type": "String"
+          },
+          "confidence": {
+            "refinement": "0.0 <= confidence <= 1.0",
+            "required": true,
+            "type": "F64"
+          },
+          "priority": {
+            "required": true,
+            "type": "enum",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        },
+        "record": "TicketClassification"
+      },
+      "validation_boundaries": [
+        ":api-input",
+        ":database-row",
+        ":model-output",
+        ":artifact-manifest",
+        ":config"
+      ],
+      "version": 2
+    },
+    "S2": {
+      "canonicalization_mode": ":noncanonical-json-with-canonical-option",
+      "compatibility_report": "additive-v1-to-v2-compatible",
+      "document": "S2",
+      "field_policy": ":required-fields-reject-missing",
+      "format": ":json",
+      "numeric_policy": ":exact-or-diagnostic",
+      "round_trip_vectors": [
+        "ticket-classification-json-v2"
+      ],
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "string_policy": ":utf8-normalized",
+      "taint_boundary_record": "decoded values remain Tainted/Deserialized until validator success",
+      "trust_boundary": ":external-decoder",
+      "unknown_field_policy": ":reject",
+      "variant_policy": ":closed-enum"
+    },
+    "S3": {
+      "document": "S3",
+      "format_version": 1,
+      "hash_input_record": "canonical bytes include schema hash and version",
+      "map_order": ":lexicographic-encoded-key",
+      "metadata_policy": ":schema-declared-only",
+      "numeric_policy": ":declared-or-reject",
+      "reference_vectors": [
+        "ticket-classification-canonical-v2",
+        "ticket-classification-replay-v2"
+      ],
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_hash_included": true,
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "set_order": ":lexicographic-encoded-value",
+      "signing_input_record": "signatures cover canonical manifest bytes",
+      "string_normalization": ":utf8-nfc"
+    },
+    "S4": {
+      "auth_capability_metadata": {
+        "capabilities": [
+          ":db/query"
+        ],
+        "effects": [
+          ":database/read"
+        ]
+      },
+      "document": "S4",
+      "query_validation": "operation hashes tied to schema hash",
+      "resolver_adapters": [
+        "ticketClassificationResolver"
+      ],
+      "schema_diff_report": "no GraphQL breaking change",
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "sdl": "type TicketClassification { priority: TicketPriority! category: String! confidence: Float! }",
+      "source_map": "generated SDL fields map to TicketClassification/v2",
+      "typed_client": "TicketClassificationGraphQLClient/v2"
+    },
+    "S5": {
+      "auth_capability_metadata": {
+        "capabilities": [
+          ":http/server",
+          ":schema/validate"
+        ],
+        "effects": [
+          ":network/http",
+          ":ai/output-validate"
+        ]
+      },
+      "contract_tests": [
+        "classify-ticket-request-response"
+      ],
+      "document": "S5",
+      "error_model": "ErrorEnvelope/v1",
+      "method": "POST",
+      "path": "/tickets/classify",
+      "request_validator": "TicketClassificationRequest.validator/v2",
+      "response_validator": "TicketClassification.validator/v2",
+      "route_id": "classify-ticket",
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "source_map": "OpenAPI operation maps to Gravity route source",
+      "taint_boundary": "HTTP input stays Tainted/UserInput until request validator success",
+      "typed_client": "TicketClassificationOpenAPIClient/v2"
+    },
+    "S6": {
+      "capabilities": [
+        ":db/migrate",
+        ":db/query"
+      ],
+      "column_types": {
+        "category": "text not null",
+        "confidence": "double precision check 0.0 <= value <= 1.0",
+        "priority": "ticket_priority_enum"
+      },
+      "constraints": [
+        "confidence_range",
+        "priority_known"
+      ],
+      "data_loss_report": {
+        "destructive": false,
+        "policy": ":no-data-loss"
+      },
+      "dialect": ":postgresql",
+      "document": "S6",
+      "fixture_validation": "migration plan validation fixture passed",
+      "indexes": [
+        "ticket_classifications_priority_idx"
+      ],
+      "migration_plan": {
+        "deployment_ordering": "migrate before API compatibility bump",
+        "from": "TicketClassification/v1",
+        "to": "TicketClassification/v2",
+        "transaction_mode": ":single-transaction"
+      },
+      "required_review_record": "no destructive review required",
+      "rollback_or_forward_policy": ":rollback-supported",
+      "row_adapter": "TicketClassificationRowAdapter/v2",
+      "schema_diff_report": "additive category metadata migration",
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "table_mapping": "ticket_classifications"
+    },
+    "S7": {
+      "alignment": 8,
+      "document": "S7",
+      "endian": ":little",
+      "ffi_binding_input": "TicketClassificationAbi/v2 references schema hash",
+      "field_order": [
+        "priority",
+        "category_offset",
+        "category_length",
+        "confidence"
+      ],
+      "ownership_lifetime_map": "category bytes are borrowed for decode duration and owned after validation",
+      "padding": "zeroed explicit padding",
+      "pointer_policy": "no raw pointers in stable record; offsets are bounded",
+      "reference_vectors": [
+        "ticket-classification-abi-x86_64-v2",
+        "ticket-classification-abi-wasm32-v2"
+      ],
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "target_abi": "x86_64-unknown-linux-gnu",
+      "variant_discriminants": {
+        "high": 2,
+        "low": 0,
+        "medium": 1
+      },
+      "widths": {
+        "category_length": "U32",
+        "category_offset": "U32",
+        "confidence": "F64",
+        "priority": "U8"
+      }
+    },
+    "S8": {
+      "build_reproducibility_record": "env and file reads captured in build inputs",
+      "capabilities": [
+        ":env/read",
+        ":fs/read",
+        ":secret/read"
+      ],
+      "defaults": {
+        "priority": "medium"
+      },
+      "document": "S8",
+      "effects": [
+        ":build/env",
+        ":filesystem/read",
+        ":secrets/read"
+      ],
+      "precedence": [
+        ":secrets",
+        ":env",
+        ":file",
+        ":defaults"
+      ],
+      "redaction_policy": "secret fields emit redacted markers only",
+      "required_fields": [
+        "category",
+        "confidence"
+      ],
+      "runtime_reload_policy": "reload additive only with observability event",
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "secret_fields": [
+        "provider_api_key"
+      ],
+      "sources": [
+        ":env",
+        ":file",
+        ":secrets"
+      ],
+      "validation_rules": [
+        "TicketClassification.validator/v2",
+        "provider_api_key redacted marker only"
+      ]
+    },
+    "S9": {
+      "artifact_kinds": [
+        ":schema",
+        ":workflow-graph",
+        ":agent-manifest",
+        ":proof-certificate",
+        ":test-report",
+        ":benchmark-report",
+        ":sbom",
+        ":provenance"
+      ],
+      "canonical_encoding": "S3 canonical format for hash and signature contexts",
+      "compatibility_report": "schema version changes require migration policy",
+      "content_hash_schema": "canonical bytes or declared target format",
+      "document": "S9",
+      "evidence_schema": "types, effects, capabilities, safety, proofs, tests, diagnostics, and conformance",
+      "provenance_schema": "source graph, dependency lock, compiler, and pass chain",
+      "release_gate_schema": "release artifacts require provenance, SBOM, signature, and evidence links",
+      "required_fields": [
+        "kind",
+        "schema-version",
+        "source-graph",
+        "compiler-version",
+        "profile",
+        "target",
+        "backend",
+        "runtime",
+        "effects",
+        "capabilities",
+        "content-hash",
+        "provenance",
+        "conformance"
+      ],
+      "schema_hash": "sha256:ticket-classification-v2",
+      "schema_id": "TicketClassification",
+      "schema_version": 2,
+      "schema_versions": {
+        "TicketClassification": 2
+      }
+    }
+  },
+  "graphql_generation": {
+    "auth_capability_metadata": {
+      "capabilities": [
+        ":db/query"
+      ],
+      "effects": [
+        ":database/read"
+      ]
+    },
+    "document": "S4",
+    "query_validation": "operation hashes tied to schema hash",
+    "resolver_adapters": [
+      "ticketClassificationResolver"
+    ],
+    "schema_diff_report": "no GraphQL breaking change",
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "sdl": "type TicketClassification { priority: TicketPriority! category: String! confidence: Float! }",
+    "source_map": "generated SDL fields map to TicketClassification/v2",
+    "typed_client": "TicketClassificationGraphQLClient/v2"
+  },
+  "input_hash": "sha256:820d68d1eaeec05e6b23c653e275fc7358c623c69dadc1e31bab2a8186f9777b",
+  "kind": "schema-interop-artifact",
+  "module": "schema-interop-smoke",
+  "openapi_generation": {
+    "auth_capability_metadata": {
+      "capabilities": [
+        ":http/server",
+        ":schema/validate"
+      ],
+      "effects": [
+        ":network/http",
+        ":ai/output-validate"
+      ]
+    },
+    "contract_tests": [
+      "classify-ticket-request-response"
+    ],
+    "document": "S5",
+    "error_model": "ErrorEnvelope/v1",
+    "method": "POST",
+    "path": "/tickets/classify",
+    "request_validator": "TicketClassificationRequest.validator/v2",
+    "response_validator": "TicketClassification.validator/v2",
+    "route_id": "classify-ticket",
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "source_map": "OpenAPI operation maps to Gravity route source",
+    "taint_boundary": "HTTP input stays Tainted/UserInput until request validator success",
+    "typed_client": "TicketClassificationOpenAPIClient/v2"
+  },
+  "package": "gravity.phase10.schema",
+  "phase": "10",
+  "serialization_fixture": {
+    "canonicalization_mode": ":noncanonical-json-with-canonical-option",
+    "compatibility_report": "additive-v1-to-v2-compatible",
+    "document": "S2",
+    "field_policy": ":required-fields-reject-missing",
+    "format": ":json",
+    "numeric_policy": ":exact-or-diagnostic",
+    "round_trip_vectors": [
+      "ticket-classification-json-v2"
+    ],
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "string_policy": ":utf8-normalized",
+    "taint_boundary_record": "decoded values remain Tainted/Deserialized until validator success",
+    "trust_boundary": ":external-decoder",
+    "unknown_field_policy": ":reject",
+    "variant_policy": ":closed-enum"
+  },
+  "source_schema_ir": {
+    "compatibility_mode": ":additive",
+    "derivation_targets": [
+      ":validator",
+      ":serialization",
+      ":canonical",
+      ":graphql",
+      ":openapi",
+      ":database",
+      ":binary-abi",
+      ":config",
+      ":artifact-schema",
+      ":ai-output"
+    ],
+    "document": "S1",
+    "effect_capability_summary": {
+      "capabilities": [
+        ":schema/validate",
+        ":db/query",
+        ":db/migrate",
+        ":config/read"
+      ],
+      "effects": [
+        ":ai/output-validate",
+        ":database/read",
+        ":database/write",
+        ":io/read"
+      ]
+    },
+    "hash": "sha256:ticket-classification-v2",
+    "migration_requirements": {
+      "api": "no breaking operation change",
+      "database": "backfill category from existing priority labels",
+      "policy": ":additive"
+    },
+    "schema_id": "TicketClassification",
+    "semantic_diff": {
+      "changes": [
+        "add optional category taxonomy metadata without weakening existing fields"
+      ],
+      "from": "TicketClassification/v1",
+      "to": "TicketClassification/v2"
+    },
+    "source_span": {
+      "source": "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md"
+    },
+    "taint_policy": {
+      "cleared_by": "TicketClassification.validator/v2",
+      "decoded": "Tainted/Deserialized",
+      "model_output": "Tainted/AIOutput"
+    },
+    "type_projection": {
+      "fields": {
+        "category": {
+          "required": true,
+          "type": "String"
+        },
+        "confidence": {
+          "refinement": "0.0 <= confidence <= 1.0",
+          "required": true,
+          "type": "F64"
+        },
+        "priority": {
+          "required": true,
+          "type": "enum",
+          "values": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      "record": "TicketClassification"
+    },
+    "validation_boundaries": [
+      ":api-input",
+      ":database-row",
+      ":model-output",
+      ":artifact-manifest",
+      ":config"
+    ],
+    "version": 2
+  },
+  "typed_config": {
+    "build_reproducibility_record": "env and file reads captured in build inputs",
+    "capabilities": [
+      ":env/read",
+      ":fs/read",
+      ":secret/read"
+    ],
+    "defaults": {
+      "priority": "medium"
+    },
+    "document": "S8",
+    "effects": [
+      ":build/env",
+      ":filesystem/read",
+      ":secrets/read"
+    ],
+    "precedence": [
+      ":secrets",
+      ":env",
+      ":file",
+      ":defaults"
+    ],
+    "redaction_policy": "secret fields emit redacted markers only",
+    "required_fields": [
+      "category",
+      "confidence"
+    ],
+    "runtime_reload_policy": "reload additive only with observability event",
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "secret_fields": [
+      "provider_api_key"
+    ],
+    "sources": [
+      ":env",
+      ":file",
+      ":secrets"
+    ],
+    "validation_rules": [
+      "TicketClassification.validator/v2",
+      "provider_api_key redacted marker only"
+    ]
+  },
+  "validator_artifact": {
+    "boundary_reports": [
+      "api-input",
+      "database-row",
+      "model-output",
+      "config",
+      "artifact-manifest"
+    ],
+    "clears_taint": [
+      "Tainted/Deserialized",
+      "Tainted/AIOutput",
+      "Tainted/UserInput"
+    ],
+    "document": "S1",
+    "failure_type": "TicketClassificationValidationError",
+    "retains_residuals": [
+      "confidence-range",
+      "priority-enum"
+    ],
+    "schema_hash": "sha256:ticket-classification-v2",
+    "schema_id": "TicketClassification",
+    "schema_version": 2,
+    "validator_id": "TicketClassification.validator/v2"
+  }
+}

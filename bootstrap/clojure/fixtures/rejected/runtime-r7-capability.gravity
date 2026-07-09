@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: distributed effect lacks authority.
+(ns runtime.r7-capability
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:database/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-capability}}}))
+
+(defn main [] :- I64 1)

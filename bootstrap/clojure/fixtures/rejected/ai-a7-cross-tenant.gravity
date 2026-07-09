@@ -1,0 +1,12 @@
+; Rejected P11 A7 fixture.
+(ns ai.a7-cross-tenant
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/memory-read})
+  (:capabilities #{:memory/read})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a7004}}}))
+
+(defn main [] :- I64 1)

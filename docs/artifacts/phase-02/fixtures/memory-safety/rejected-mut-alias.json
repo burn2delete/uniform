@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/2/ownership/mutable_borrow": "borrow-mut-1"
+  }
+}

@@ -1,0 +1,7 @@
+(ns math.efir-declaration
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:efir {:elementary-declarations [{}]}}}))

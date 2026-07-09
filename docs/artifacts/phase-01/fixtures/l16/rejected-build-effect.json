@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/provider/grants/0"
+  ],
+  "extends": "accepted-alternative-macro.json"
+}

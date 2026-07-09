@@ -1,0 +1,9 @@
+(ns typed.bad.dynamic
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{:dynamic/eval})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (dynamic/value "runtime"))

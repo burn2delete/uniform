@@ -1,0 +1,2517 @@
+; P15-S23 Gravity-owned compiler source inventory seed.
+; This is not the self-hosted compiler yet. The Clojure seed verifies this
+; source as the next compiler-stage input before Gravity can retire the seed.
+(ns gravity.bootstrap.p15-s23.compiler
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [p15-s23-compiler-stage
+             p15-s23-compiler-source-inventory
+             p15-s23-compiler-pipeline-manifest
+             p15-s23-source-syntax-serialization-proof
+             p15-s23-core-lowering-diagnostic-preservation-report
+             p15-s23-runtime-manifest-capability-enforcement-report
+             p15-s23-accepted-app-execution-proof
+	             p15-s23-rejected-app-diagnostic-proof
+	             p15-s23-reproducible-rebuild-log
+	             p15-s23-stage-comparison-report
+             p15-s23-self-hosting-conformance-report
+             p15-s23-provenance-attestation
+             p15-s23-tcb-delta-record
+             p15-s23-unsafe-audit-report
+             p15-s23-whole-language-compiler-artifact
+             p15-s23-governance-and-package-release-record
+             p15-s23-stage2-compiler-nucleus
+             p15-s23-stage2-plan-emitter
+             p15-s23-stage2-runtime-kernel
+	             p15-s23-stage2-runtime-executor
+	             p15-s23-stage2-front-end-executor
+	             p15-s23-stage2-source-front-end
+	             p15-s23-stage2-compiler-driver
+	             p15-s23-stage2-whole-language-compiler
+             p15-s23-stage3-seedless-compiler-candidate
+             p15-s23-stage3-equivalence-bundle
+             p15-s23-stage3-self-hosted-application-execution
+             p15-s23-final-seed-retirement-proof])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :p15-s23
+               :component :compiler-source-inventory
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                           "C1" "C2" "C3" "C4" "C5" "C6" "C7" "C8" "C9" "C10"
+                           "C11" "C12" "C13" "C14" "C15" "C16" "C17" "C18" "B1" "B2" "B3" "B4" "B5" "B6" "B7" "B8" "B9" "B10" "B11" "B12" "R1" "R11"
+                           "SAFE6" "PKG7" "PKG8" "TEST13" "GOV6"
+                           "GOV9" "GOV10"]
+               :implements [:compiler-source-inventory
+                             :canonical-pipeline-manifest
+                             :self-hosting-evidence-requirements
+                             :seed-retirement-guard
+                             :compiler-pipeline-pass-contracts
+                             :source-unit-syntax-serialization-proof
+                             :core-lowering-diagnostic-preservation-report
+                             :runtime-manifest-capability-enforcement-report
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof
+	                             :reproducible-rebuild-log
+	                             :stage-comparison-report
+                             :self-hosting-conformance-report
+                             :provenance-attestation
+                             :trusted-computing-base-delta-record
+                             :unsafe-audit-report
+                             :current-stage-whole-language-compiler-artifact
+                             :governance-and-package-release-record
+                             :stage2-compiler-nucleus
+                             :stage2-plan-emitter
+                             :stage2-runtime-kernel
+	                             :stage2-runtime-executor
+	                             :stage2-front-end-executor
+	                             :stage2-source-front-end
+                             :stage2-compiler-driver
+	                             :stage2-whole-language-compiler-stage
+                             :stage3-seedless-compiler-candidate
+                             :stage3-equivalence-bundle
+                             :stage3-self-hosted-application-execution
+                             :final-seed-retirement-proof]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :pipeline-stage-contracts
+                            :runtime-capability-manifest
+                            :source-unit-identity
+                            :origin-chain
+                            :diagnostic-origin-chain
+                            :capability-decision-log
+                            :runtime-service-classification
+                            :compiled-plan-execution-trace
+                            :accepted-app-output
+                            :rejected-app-diagnostic-trace
+                            :rebuild-artifact-identity
+                            :stage-equivalence-record
+                            :conformance-suite-status
+                            :compiler-lineage
+                            :canonical-provenance-payload
+                            :revocation-status
+                            :auditor-query-index
+                            :tcb-component-inventory
+                            :tcb-delta-classification
+                            :residual-trust-boundaries
+                            :unsafe-island-index
+                            :unsafe-operation-inventory
+                            :safe-wrapper-boundaries
+                            :package-safety-metadata
+                            :review-state
+                            :revalidation-triggers
+                            :compiler-artifact-manifest
+                            :stage-support-matrix
+                            :compiler-artifact-lineage
+                            :accepted-and-rejected-application-proof
+                            :rfc-traceability
+                            :package-release-governance
+                            :registry-policy-decision
+                            :sbom-signature-evidence
+                            :evidence-linkage
+                            :final-seed-retirement-record
+                            :seedless-release-boundary
+                            :release-governance-closure
+                            :tcb-retirement-closure}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :p15-s23
+                         :replaces []}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/p15_s23/compiler.gravity"
+                             :rejected-fixtures
+                             ["p15-s23-compiler-missing-stage.gravity"
+                              "p15-s23-compiler-pipeline-gap.gravity"
+                              "p15-s23-compiler-source-gap.gravity"
+                              "p15-s23-compiler-evidence-gap.gravity"
+                              "p15-s23-compiler-overclaim.gravity"]}}}))
+
+(def p15-s23-compiler-stage
+  {:engine :gravity-p15-s23-compiler-source-inventory-v1
+   :scope :whole-language-self-hosting-candidate
+   :status :source-inventory
+   :canonical-pipeline [:read-source
+                        :build-syntax
+                        :macro-expand
+                        :resolve-names
+                        :lower-to-core
+                        :type-check
+                        :effect-check
+                        :profile-validate
+                        :safety-analyze
+                        :build-mir
+                        :verify-mir
+                        :optimize-mir
+                        :lower-domain-ir
+                        :verify-domain-ir
+                        :lower-target
+                        :emit-artifacts]
+   :source-components [:reader :syntax :diagnostics :source-frontend
+                       :syntax-object-model :macro-expansion
+                       :name-resolution
+                       :core-semantics
+                       :core-lowering
+                       :type-checker
+                       :effect-checker
+                       :ownership-checker
+                       :safety-analysis
+                       :mir-specification
+                       :domain-ir-architecture
+                       :mir-optimization
+                       :target-lowering
+                       :compiler-diagnostics
+                       :incremental-compilation
+                       :compiler-plugin-pass-api
+                       :compiler-verification
+                       :backend-interface
+                       :c-backend
+                       :llvm-backend
+                       :wasm-backend
+                       :jvm-backend
+                       :js-ts-backend
+                       :mlir-backend
+                       :gpu-backend
+                       :hdl-backend
+                       :workflow-backend
+                       :query-backend
+                       :mobile-backend
+                       :compiler-source-inventory]
+   :source-modules [{:component :reader
+                     :path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"}
+                    {:component :syntax
+                     :path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
+                    {:component :diagnostics
+                     :path "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"}
+                    {:component :source-frontend
+                     :path "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"}
+                    {:component :syntax-object-model
+                    :path "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"}
+                    {:component :macro-expansion
+                     :path "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"}
+                    {:component :name-resolution
+                     :path "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
+                    {:component :core-semantics
+                     :path "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"}
+                    {:component :core-lowering
+                    :path "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"}
+                    {:component :type-checker
+                     :path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"}
+                    {:component :effect-checker
+                     :path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"}
+                    {:component :ownership-checker
+                     :path "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"}
+                    {:component :safety-analysis
+                     :path "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"}
+                    {:component :mir-specification
+                     :path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"}
+                    {:component :domain-ir-architecture
+                     :path "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"}
+                    {:component :mir-optimization
+                     :path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"}
+                    {:component :target-lowering
+                     :path "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"}
+                    {:component :compiler-diagnostics
+                     :path "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"}
+                    {:component :incremental-compilation
+                     :path "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"}
+                    {:component :compiler-plugin-pass-api
+                     :path "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"}
+                    {:component :compiler-verification
+                     :path "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"}
+                    {:component :backend-interface
+                     :path "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"}
+                    {:component :c-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"}
+                    {:component :llvm-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"}
+                    {:component :wasm-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"}
+                    {:component :jvm-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"}
+                    {:component :js-ts-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"}
+                    {:component :mlir-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"}
+                    {:component :gpu-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"}
+                    {:component :hdl-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"}
+                    {:component :workflow-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"}
+                    {:component :query-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"}
+                    {:component :mobile-backend
+                     :path "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"}
+                    {:component :compiler-source-inventory
+                     :path "bootstrap/gravity/p15_s23/compiler.gravity"}]
+   :required-evidence [:whole-language-compiler-artifact
+                       :compiler-pipeline-manifest
+                       :source-unit-and-syntax-serialization-proof
+                       :core-lowering-and-diagnostic-preservation-report
+                       :runtime-manifest-and-capability-enforcement-report
+                       :accepted-app-execution-proof
+                       :rejected-app-diagnostic-proof
+                       :reproducible-rebuild-log
+                       :stage-comparison-report
+                       :conformance-report
+                       :provenance-attestation
+                       :tcb-delta-record
+                       :unsafe-audit-report
+                       :governance-and-package-release-record
+                       :clojure-seed-retired]
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :diagnostics {:missing-stage "P15S23C001"
+                 :pipeline-gap "P15S23C002"
+                 :source-gap "P15S23C003"
+                 :evidence-gap "P15S23C004"
+                 :unsupported-claim "P15S23C005"}})
+
+(def p15-s23-whole-language-compiler-artifact
+  {:artifact :gravity/whole-language-compiler-artifact
+   :proof-version 1
+   :stage :p15-s23-whole-language-compiler-artifact
+   :compiler-stage :p15-s23-compiler-stage
+   :input :gravity-source-set
+   :output :current-stage-compiler-artifact
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                         "C1" "C2" "C3" "C4" "C5" "C6" "C15" "R1" "R11"
+                         "PKG7" "TEST13" "GOV6" "GOV10"]
+   :compiler-artifact-stage
+   {:stage :emit-current-stage-compiler-artifact
+    :requires [:compiler-source-inventory
+               :compiler-pipeline-manifest
+               :source-unit-and-syntax-serialization-proof
+               :core-lowering-and-diagnostic-preservation-report
+               :runtime-manifest-and-capability-enforcement-report
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof
+               :reproducible-rebuild-log
+               :stage-comparison-report
+               :self-hosting-conformance-report
+               :bootstrap-provenance-attestation
+               :trusted-computing-base-delta-record
+               :unsafe-audit-report]
+    :emits [:compiler-artifact-manifest
+            :stage-support-matrix
+            :compiler-artifact-lineage
+            :accepted-application-compile-record
+            :rejected-application-diagnostic-record
+            :residual-trusted-boundary-record
+            :auditor-query-record]
+    :preserves [:source-spans
+                :syntax-identity
+                :diagnostic-codes
+                :artifact-provenance
+                :pipeline-stage-contracts
+                :runtime-capability-manifest
+                :accepted-app-output
+                :rejected-app-diagnostic-trace
+                :compiler-lineage
+                :tcb-component-inventory
+                :unsafe-island-index]}
+   :claimed-language-subset
+   {:scope :current-implementation-language-subset
+    :includes [:reader :syntax :diagnostics :compiled-hosted-core-app
+               :compiler-evidence-bundle]
+    :accepted-fixtures
+    ["bootstrap/clojure/fixtures/accepted/core-app.gravity"
+     "bootstrap/gravity/p15_s23/compiler.gravity"]
+    :rejected-fixtures
+    ["bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"]
+    :stage0-executor-boundary :clojure-instruction-runner}
+   :preserves [:source-spans
+               :syntax-identity
+               :diagnostic-codes
+               :artifact-provenance
+               :pipeline-stage-contracts
+               :runtime-capability-manifest
+               :accepted-app-output
+               :rejected-app-diagnostic-trace
+               :compiler-lineage
+               :tcb-component-inventory
+               :unsafe-island-index]
+   :diagnostics {:missing-artifact "P15S23W001"
+                 :source-or-pipeline-gap "P15S23W002"
+                 :stage-support-gap "P15S23W003"
+                 :provenance-or-equivalence-gap "P15S23W004"
+                 :trusted-boundary-or-overclaim "P15S23W005"
+                 :diagnostic-fixture-gap "P15S23W006"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-stage2-compiler-nucleus
+  {:artifact :gravity/stage2-compiler-nucleus
+   :proof-version 1
+   :stage :p15-s23-stage2-compiler-nucleus
+   :compiler-stage :p15-s23-compiler-stage
+   :implemented-by :gravity-source
+   :verified-by :clojure-stage0
+   :module-responsibility :hosted-core-compiled-plan-emission
+   :input :macro-expanded-core
+   :output :stage0-compatible-instruction-plan-contract
+   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+                         "BOOT8" "C1" "C6" "C15" "R1" "R11"
+                         "TEST13"]
+   :nucleus-stage
+   {:stage :emit-hosted-core-instruction-plan
+    :requires [:source-forms
+               :macro-expanded-forms
+               :profile-facts
+               :effect-facts
+               :capability-facts
+               :runtime-capability-manifest]
+    :emits [:compiled-instruction-plan
+            :accepted-output-comparison
+            :rejected-diagnostic-comparison
+            :stage2-boundary-record]
+    :preserves [:source-spans
+                :diagnostic-codes
+                :effects
+                :capabilities
+                :profile
+                :compiler-lineage
+                :artifact-provenance]}
+   :accepted-plan-contract
+   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :module core.app
+    :profile :hosted
+    :target :jvm
+    :entrypoint main
+    :required-user-functions [build-record render total]
+    :required-op-families [:builtin-call
+                           :function-call
+                           :println
+                           :let
+                           :if
+                           :do]
+    :required-effects #{:io/write}
+    :required-capabilities #{:io/stdout}
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :rejected-diagnostic-contract
+   [{:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}]
+   :required-evidence-links [:compiler-pipeline-manifest
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof]
+   :preserves [:source-spans
+               :diagnostic-codes
+               :effects
+               :capabilities
+               :profile
+               :compiler-lineage
+               :artifact-provenance]
+   :emits [:compiled-instruction-plan
+           :accepted-output-comparison
+           :rejected-diagnostic-comparison
+           :stage2-boundary-record]
+   :lineage {:source-language :gravity
+             :verified-by :clojure-stage0
+             :compiled-by :clojure-stage0
+             :replaces [:stage0-plan-contract-in-clojure]
+             :does-not-replace [:stage0-reader
+                                :stage0-macro-expander
+                                :stage0-analyzer
+                                :stage0-instruction-runner]}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+                   :stage0-executor-boundary :clojure-instruction-runner
+                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :next-required-capability
+   :replace_stage0_plan_emitter_with_stage2_gravity_execution
+   :status :in-progress})
+
+(def p15-s23-stage2-plan-emitter
+  {:artifact :gravity/stage2-plan-emitter
+   :proof-version 1
+   :stage :p15-s23-stage2-plan-emitter
+   :compiler-stage :p15-s23-compiler-stage
+   :nucleus :p15-s23-stage2-compiler-nucleus
+   :engine :gravity-stage2-plan-emitter-rules-v1
+   :implemented-by :gravity-source
+   :executed-by :clojure-stage0-rule-runner
+   :module-responsibility :hosted-core-compiled-plan-emission
+   :input :macro-expanded-core
+   :output :stage2-instruction-plan
+   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+                         "BOOT8" "C1" "C6" "C15" "R1" "R11"
+                         "TEST13"]
+   :accepted-scope
+   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :module core.app
+    :profile :hosted
+    :target :jvm
+    :entrypoint main
+    :required-user-functions [build-record render total]
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :source-form-rules
+   {:function-definitions [defn def]
+    :def-fn-shape {:outer def :inner fn}
+    :main-arity 0}
+   :special-form-rules
+   {println {:op :println
+             :argument-policy :compile-rest
+             :effect :io/write
+             :capability :io/stdout}
+    do {:op :do
+        :argument-policy :compile-body}
+    if {:op :if
+        :argument-policy :compile-test-then-else
+        :arity 3}
+    let {:op :let
+         :argument-policy :compile-even-binding-vector}
+    quote {:op :quote
+           :argument-policy :literal-second
+           :arity 1}
+    host-reflect {:diagnostic "P4-HOST-REFLECTION"
+                  :status :rejected}}
+   :collection-rules
+   {:vector {:op :vector-literal :order :source-order}
+    :map {:op :map-literal :order :pr-str-sorted}
+    :set {:op :set-literal :order :pr-str-sorted}
+    :literal {:op :literal}}
+   :call-rules
+   {:builtin-op :builtin-call
+    :function-op :function-call
+    :builtin-functions [* + - / < <= = > >= assoc conj count first get
+                        hash-map list pr-str rest second str vector]
+    :unknown-callee-diagnostic "L2-UNKNOWN-CORE-FORM"
+    :function-arity-diagnostic "L2-FUNCTION-ARITY"
+    :builtin-arity-diagnostic "L2-BUILTIN-ARITY"}
+   :plan-shape
+   {:kind :gravity/stage2-hosted-core-compiled-plan
+    :compatibility-kind :gravity/stage0-hosted-core-compiled-plan
+    :entrypoint main
+    :compiler {:owner :gravity-source
+               :stage :stage2-plan-emitter
+               :executed-by :clojure-stage0-rule-runner
+               :input :macro-expanded-core
+               :output :instruction-plan
+               :retirement-objective :retire-clojure-seed}}
+   :accepted-equivalence
+   {:compare-against :stage0-hosted-core-compiled-plan
+    :requires [:binding-table
+               :function-instructions
+               :instruction-summary
+               :effect-summary
+               :accepted-stdout]}
+   :rejected-diagnostic-contract
+   [{:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}]
+   :required-evidence-links [:stage2-compiler-nucleus
+                             :compiler-pipeline-manifest
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof]
+   :preserves [:source-spans
+               :diagnostic-codes
+               :function-bindings
+               :instruction-semantics
+               :effects
+               :capabilities
+               :profile
+               :compiler-lineage
+               :artifact-provenance]
+   :emits [:stage2-instruction-plan
+           :stage2-plan-execution-record
+           :accepted-output-comparison
+           :rejected-diagnostic-comparison
+           :stage2-emitter-boundary-record]
+   :lineage {:source-language :gravity
+             :verified-by :clojure-stage0
+             :compiled-by :clojure-stage0
+             :executes-with :clojure-stage0-rule-runner
+             :replaces [:stage0-plan-emitter-in-clojure]
+             :does-not-replace [:stage0-reader
+                                :stage0-macro-expander
+                                :stage0-analyzer
+                                :stage0-instruction-runner]}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+                   :stage0-rule-runner-boundary :clojure-stage0-rule-runner
+                   :stage0-executor-boundary :clojure-instruction-runner
+                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :next-required-capability
+   :replace_stage0_instruction_runner_with_stage2_runtime_execution
+   :status :in-progress})
+
+	(def p15-s23-stage2-runtime-kernel
+	  {:artifact :gravity/stage2-runtime-kernel
+	   :proof-version 1
+	   :stage :p15-s23-stage2-runtime-kernel
+	   :compiler-stage :p15-s23-compiler-stage
+	   :runtime-manifest :p15-s23-runtime-manifest-capability-enforcement-report
+	   :engine :gravity-stage2-runtime-kernel-v1
+	   :implemented-by :gravity-source
+	   :verified-by :clojure-stage0
+	   :compiled-by :clojure-stage0
+	   :executed-by :gravity-stage2-runtime-kernel
+	   :module-responsibility :execute-hosted-core-runtime-and-primitives
+	   :input :stage2-instruction-plan
+	   :output :stage2-runtime-kernel-execution-record
+	   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+	                         "BOOT8" "C1" "C6" "C15" "R1" "R2" "R4"
+	                         "R11" "TEST13"]
+	   :accepted-scope
+	   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+	    :module core.app
+	    :profile :hosted
+	    :target :jvm
+	    :entrypoint main
+	    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+	   :instruction-rules
+	   {:literal {:reads :literal-value}
+	    :quote {:reads :quoted-value}
+	    :local {:reads :lexical-environment}
+	    :vector-literal {:evaluates :items}
+	    :set-literal {:evaluates :items}
+	    :map-literal {:evaluates :key-value-entries}
+	    :println {:evaluates :args
+	              :effect :io/write
+	              :capability :io/stdout
+	              :primitive :gravity-runtime-stdout}
+	    :do {:evaluates :body-sequentially}
+	    :if {:evaluates [:test :selected-branch]}
+	    :let {:evaluates :bindings-then-body}
+	    :builtin-call {:dispatches-through :gravity-runtime-primitives}
+	    :function-call {:dispatches-through :function-table}}
+	   :runtime-primitives
+	   {:engine :gravity-stage2-runtime-primitives-v1
+	    :host-primitive-boundary :gravity-runtime-primitives
+	    :functions [+ - * / = < > <= >= str pr-str hash-map vector list
+	                conj assoc get first second rest count]
+	    :arity-policy :checked-before-invocation
+	    :failure-diagnostics ["L2-BUILTIN-ARITY" "L2-BUILTIN-ERROR"]
+	    :capability-policy {:io/stdout :required-for-println}}
+	   :rejected-diagnostic-contract
+	   [{:fixture
+	     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+	     :expected-diagnostic "L2-FUNCTION-ARITY"
+	     :rejected-design :wrong-user-function-arity}
+	    {:fixture
+	     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+	     :expected-diagnostic "L2-BUILTIN-ARITY"
+	     :rejected-design :wrong-builtin-arity}]
+	   :required-evidence-links [:stage2-plan-emitter
+	                             :stage2-compiler-nucleus
+	                             :runtime-manifest-and-capability-enforcement-report
+	                             :accepted-app-execution-proof
+	                             :rejected-app-diagnostic-proof]
+	   :preserves [:source-spans
+	               :diagnostic-codes
+	               :instruction-semantics
+	               :function-bindings
+	               :effects
+	               :capabilities
+	               :profile
+	               :compiler-lineage
+	               :artifact-provenance]
+	   :emits [:stage2-runtime-kernel-execution-record
+	           :gravity-runtime-primitive-record
+	           :accepted-output-comparison
+	           :rejected-diagnostic-comparison
+	           :stage2-runtime-kernel-boundary-record]
+	   :lineage {:source-language :gravity
+	             :verified-by :clojure-stage0
+	             :compiled-by :clojure-stage0
+	             :executes-with :gravity-stage2-runtime-kernel
+	             :replaces [:clojure-stage0-runtime-host
+	                        :clojure-runtime-primitives]
+	             :does-not-replace [:clojure-stage0-verifier
+	                                :clojure-stage0-compiler
+	                                :whole-language-compiler-seed]}
+	   :seed-boundary {:seed :clojure-stage0
+	                   :still-trusted? true
+	                   :stage0-runtime-host-boundary
+	                   :replaced-by-stage2-runtime-kernel
+	                   :host-primitive-boundary :gravity-runtime-primitives
+	                   :stage0-verifier-boundary :clojure-stage0-verifier
+	                   :stage0-compiler-boundary :clojure-stage0-compiler
+	                   :retirement-condition :complete-p15-s23-evidence-bundle}
+	   :self-hosting-claims {:full-language-compiler-self-hosted? false
+	                         :clojure-seed-retired? false}
+	   :next-required-capability
+	   :implement_whole_language_compiler_stage_without_clojure_seed
+	   :status :in-progress})
+	
+	(def p15-s23-stage2-runtime-executor
+  {:artifact :gravity/stage2-runtime-executor
+   :proof-version 1
+	   :stage :p15-s23-stage2-runtime-executor
+	   :compiler-stage :p15-s23-compiler-stage
+	   :nucleus :p15-s23-stage2-compiler-nucleus
+	   :plan-emitter :p15-s23-stage2-plan-emitter
+	   :runtime-kernel :p15-s23-stage2-runtime-kernel
+	   :engine :gravity-stage2-runtime-executor-rules-v1
+	   :implemented-by :gravity-source
+	   :executed-by :gravity-stage2-runtime-kernel
+   :module-responsibility :hosted-core-instruction-plan-execution
+   :input :stage2-instruction-plan
+   :output :stage2-runtime-execution-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+                         "BOOT8" "C1" "C6" "C15" "R1" "R11"
+                         "TEST13"]
+   :accepted-scope
+   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :module core.app
+    :profile :hosted
+    :target :jvm
+    :entrypoint main
+    :input-plan :stage2-instruction-plan
+    :compare-against :clojure-stage0-instruction-runner
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :instruction-rules
+   {:literal {:result :value}
+    :quote {:result :value}
+    :local {:lookup :lexical-environment
+            :unknown-diagnostic "L2-UNKNOWN-SYMBOL"}
+    :vector-literal {:evaluate :items :result :vector}
+    :set-literal {:evaluate :items :result :set}
+    :map-literal {:evaluate :entries :result :map}
+    :println {:evaluate :args
+              :effect :io/write
+              :capability :io/stdout
+              :result nil}
+    :do {:evaluate :body :result :last}
+    :if {:evaluate :test-then-else :result :selected-branch}
+    :let {:evaluate :sequential-bindings :result :body}
+    :builtin-call {:evaluate :args
+                   :dispatch :stage2-core-builtin-rules
+                   :arity-diagnostic "L2-BUILTIN-ARITY"}
+    :function-call {:evaluate :args
+                    :dispatch :stage2-function-table
+                    :arity-diagnostic "L2-FUNCTION-ARITY"}}
+	   :builtin-rules
+	   {:functions [* + - / < <= = > >= assoc conj count first get
+	                hash-map list pr-str rest second str vector]
+	    :host-primitive-boundary :gravity-runtime-primitives
+	    :unknown-callee-diagnostic "L2-UNKNOWN-CORE-FORM"
+	    :builtin-error-diagnostic "L2-BUILTIN-ERROR"}
+   :execution-contract
+   {:compare-against :clojure-stage0-instruction-runner
+    :requires [:stdout
+               :entrypoint-result
+               :function-calls
+               :instruction-summary
+               :effect-summary
+               :diagnostic-codes]
+    :accepted-output-must-match-expected? true}
+   :rejected-diagnostic-contract
+   [{:fixture :internal-stage2-runtime-function-arity-plan
+     :source-fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:fixture :internal-stage2-runtime-builtin-arity-plan
+     :source-fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}]
+	   :required-evidence-links [:stage2-runtime-kernel
+	                             :stage2-plan-emitter
+	                             :stage2-compiler-nucleus
+	                             :accepted-app-execution-proof
+	                             :rejected-app-diagnostic-proof]
+   :preserves [:source-spans
+               :diagnostic-codes
+               :instruction-semantics
+               :function-bindings
+               :effects
+               :capabilities
+               :profile
+               :compiler-lineage
+               :artifact-provenance]
+   :emits [:stage2-runtime-execution-record
+           :accepted-output-comparison
+           :rejected-diagnostic-comparison
+           :stage2-runtime-boundary-record]
+	   :lineage {:source-language :gravity
+	             :verified-by :clojure-stage0
+	             :compiled-by :clojure-stage0
+	             :executes-with :gravity-stage2-runtime-kernel
+	             :replaces [:stage0-instruction-runner-in-clojure
+	                        :clojure-stage0-runtime-host
+	                        :clojure-runtime-primitives]
+	             :does-not-replace [:stage0-reader
+	                                :stage0-macro-expander
+	                                :stage0-analyzer
+	                                :stage0-rule-runner
+                                :stage0-plan-emitter]}
+   :seed-boundary {:seed :clojure-stage0
+	                   :still-trusted? true
+	                   :stage0-rule-runner-boundary :clojure-stage0-rule-runner
+	                   :stage0-runtime-host-boundary
+	                   :replaced-by-stage2-runtime-kernel
+	                   :stage0-executor-boundary
+	                   :replaced-for-hosted-core-plan-proof
+	                   :host-primitive-boundary :gravity-runtime-primitives
+	                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+	   :next-required-capability
+	   :implement_whole_language_compiler_stage_without_clojure_seed
+   :status :in-progress})
+
+(def p15-s23-stage2-front-end-executor
+  {:artifact :gravity/stage2-front-end-executor
+   :proof-version 1
+   :stage :p15-s23-stage2-front-end-executor
+   :compiler-stage :p15-s23-compiler-stage
+   :nucleus :p15-s23-stage2-compiler-nucleus
+	   :source-front-end :p15-s23-stage2-source-front-end
+	   :runtime-kernel :p15-s23-stage2-runtime-kernel
+	   :engine :gravity-stage2-front-end-executor-v1
+	   :implemented-by :gravity-source
+	   :executed-by :gravity-stage2-runtime-kernel
+   :module-responsibility :execute-hosted-core-front-end-rules
+   :input :gravity-source-bytes
+   :output :stage2-front-end-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+                         "BOOT8" "C1" "C2" "C3" "C4" "C5" "C15"
+                         "R1" "R11" "TEST13"]
+   :executor-steps [:load-front-end-contract
+                    :execute-reader-rules
+                    :execute-syntax-object-builder
+                    :execute-built-in-macro-rules
+                    :validate-module-contract
+                    :compare-reference-front-end
+                    :emit-executor-boundary-record]
+   :accepted-scope
+   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :module core.app
+    :profile :hosted
+    :target :jvm
+    :entrypoint main
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :rejected-diagnostic-contract
+   [{:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/stage2-front-end-unclosed-list.gravity"
+     :expected-diagnostic "P15S23F009"
+     :rejected-design :unclosed-stage2-front-end-form}]
+	   :required-evidence-links [:stage2-front-end-executor
+	                             :stage2-runtime-kernel
+	                             :stage2-compiler-nucleus
+	                             :stage2-plan-emitter
+	                             :stage2-runtime-executor
+                             :compiler-pipeline-manifest]
+   :preserves [:source-spans
+               :source-unit-identity
+               :syntax-identity
+               :generated-origin
+               :diagnostic-codes
+               :effects
+               :capabilities
+               :profile
+               :compiler-lineage
+               :artifact-provenance]
+   :emits [:stage2-front-end-execution-record
+           :stage2-reader-record
+           :stage2-macro-expansion-record
+           :module-context
+           :expanded-core-forms
+           :accepted-front-end-executor-comparison
+           :rejected-diagnostic-comparison
+           :stage2-front-end-executor-boundary-record]
+	   :lineage {:source-language :gravity
+	             :verified-by :clojure-stage0
+	             :compiled-by :clojure-stage0
+	             :executes-with :gravity-stage2-runtime-kernel
+	             :replaces [:clojure-stage2-front-end-host
+	                        :clojure-stage0-runtime-host
+	                        :clojure-runtime-primitives]
+	             :does-not-replace [:clojure-stage0-verifier
+	                                :clojure-stage0-compiler
+	                                :whole-language-compiler-seed]}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+	                   :stage2-front-end-host-boundary
+	                   :replaced-by-stage2-front-end-executor
+	                   :stage0-runtime-host-boundary
+	                   :replaced-by-stage2-runtime-kernel
+	                   :host-primitive-boundary :gravity-runtime-primitives
+	                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+	   :next-required-capability
+	   :implement_whole_language_compiler_stage_without_clojure_seed
+   :status :in-progress})
+
+(def p15-s23-stage2-source-front-end
+  {:artifact :gravity/stage2-source-front-end
+   :proof-version 1
+   :stage :p15-s23-stage2-source-front-end
+	   :compiler-stage :p15-s23-compiler-stage
+	   :nucleus :p15-s23-stage2-compiler-nucleus
+	   :front-end-executor :p15-s23-stage2-front-end-executor
+	   :runtime-kernel :p15-s23-stage2-runtime-kernel
+	   :engine :gravity-stage2-source-front-end-rules-v1
+   :implemented-by :gravity-source
+   :executed-by :gravity-stage2-front-end-executor
+   :module-responsibility :hosted-core-source-to-macro-expanded-core
+   :input :gravity-source-bytes
+   :output :macro-expanded-core
+   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+                         "BOOT8" "C1" "C2" "C3" "C4" "C5" "C15"
+                         "TEST13"]
+   :front-end-steps [:scan-characters
+                     :classify-tokens
+                     :build-forms
+                     :build-syntax-objects
+                     :expand-built-in-macros
+                     :validate-module-contract
+                     :emit-front-end-record]
+   :accepted-scope
+   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :module core.app
+    :profile :hosted
+    :target :jvm
+    :entrypoint main
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :reader-rules
+   {:engine :gravity-stage2-reader-rules-v1
+    :whitespace [" " "\n" "\r" "\t" ","]
+    :line-comment ";"
+    :string-delimiter "\""
+    :delimiters {"(" {:kind :list-open :closes ")"}
+                 "[" {:kind :vector-open :closes "]"}
+                 "{" {:kind :map-open :closes "}"}
+                 ")" {:kind :close}
+                 "]" {:kind :close}
+                 "}" {:kind :close}}
+    :dispatch {"#" {"{" {:kind :set-open :closes "}"}}}
+    :literal-kinds [:nil :boolean :integer :string :keyword :symbol
+                    :list :vector :map :set]
+    :diagnostics {:unexpected-close "P15S23F009"
+                  :unclosed-form "P15S23F009"
+                  :unclosed-string "P15S23F009"
+                  :unsupported-dispatch "P15S23F009"
+                  :odd-map "P15S23F009"}}
+   :macro-rules
+   {:engine :gravity-stage2-macro-rules-v1
+    :built-in-macros [defn]
+    :defn-expansion {:input (defn name params body)
+                     :output (def name (fn params body))
+                     :preserves [:source-spans :generated-origin
+                                 :diagnostic-codes]}
+    :unsupported-macro-diagnostic "P15S23F003"}
+   :module-contract
+   {:requires [:namespace :profile :target :effects :capabilities
+               :safety]
+    :accepted-profile :hosted
+    :accepted-target :jvm}
+   :stage-comparison
+   {:compare-against :clojure-stage0-reader-and-macro-expander
+    :requires [:read-form-parity
+               :macro-expanded-form-parity
+               :module-context-parity
+               :syntax-count-parity]
+    :purpose :temporary-reference-only}
+   :rejected-diagnostic-contract
+   [{:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/stage2-front-end-unclosed-list.gravity"
+     :expected-diagnostic "P15S23F009"
+     :rejected-design :unclosed-stage2-front-end-form}]
+	   :required-evidence-links [:stage2-runtime-kernel
+	                             :stage2-compiler-nucleus
+	                             :stage2-plan-emitter
+	                             :stage2-runtime-executor
+	                             :compiler-pipeline-manifest]
+   :preserves [:source-spans
+               :source-unit-identity
+               :syntax-identity
+               :generated-origin
+               :diagnostic-codes
+               :effects
+               :capabilities
+               :profile
+               :compiler-lineage
+               :artifact-provenance]
+   :emits [:stage2-front-end-record
+           :stage2-reader-record
+           :stage2-macro-expansion-record
+           :module-context
+           :expanded-core-forms
+           :accepted-front-end-comparison
+           :rejected-diagnostic-comparison
+           :stage2-front-end-boundary-record]
+   :lineage {:source-language :gravity
+             :verified-by :clojure-stage0
+             :compiled-by :clojure-stage0
+             :executes-with :gravity-stage2-front-end-executor
+	             :replaces [:stage0-reader-in-clojure
+	                        :stage0-macro-expander-in-clojure
+	                        :clojure-stage2-front-end-host
+	                        :clojure-stage0-runtime-host
+	                        :clojure-runtime-primitives]
+	             :does-not-replace [:stage0-analyzer
+	                                :clojure-stage0-verifier
+	                                :clojure-stage0-compiler
+	                                :whole-language-compiler-seed]}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+                   :stage0-reader-boundary
+                   :replaced-for-hosted-core-front-end-proof
+                   :stage0-macro-expander-boundary
+                   :replaced-for-hosted-core-front-end-proof
+                   :stage0-front-end-reference-boundary
+                   :clojure-stage0-front-end-reference
+	                   :stage2-front-end-host-boundary
+	                   :replaced-by-stage2-front-end-executor
+	                   :stage0-runtime-host-boundary
+	                   :replaced-by-stage2-runtime-kernel
+	                   :host-primitive-boundary :gravity-runtime-primitives
+	                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+	   :next-required-capability
+	   :implement_whole_language_compiler_stage_without_clojure_seed
+   :status :in-progress})
+
+(def p15-s23-stage2-compiler-driver
+  {:artifact :gravity/stage2-compiler-driver
+   :proof-version 1
+   :stage :p15-s23-stage2-compiler-driver
+	   :compiler-stage :p15-s23-compiler-stage
+	   :nucleus :p15-s23-stage2-compiler-nucleus
+	   :plan-emitter :p15-s23-stage2-plan-emitter
+	   :runtime-executor :p15-s23-stage2-runtime-executor
+	   :runtime-kernel :p15-s23-stage2-runtime-kernel
+	   :front-end-executor :p15-s23-stage2-front-end-executor
+	   :source-front-end :p15-s23-stage2-source-front-end
+   :engine :gravity-stage2-compiler-driver-rules-v1
+   :implemented-by :gravity-source
+   :executed-by :clojure-stage0-driver-host
+   :module-responsibility :hosted-core-source-to-stage2-runtime-execution
+   :input :gravity-source-bytes
+   :output :stage2-driver-run-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT4" "BOOT6" "BOOT7"
+                         "BOOT8" "C1" "C6" "C15" "R1" "R11"
+                         "TEST13"]
+   :driver-steps [:read-source
+                  :macro-expand
+                  :emit-stage2-plan
+                  :execute-stage2-runtime
+                  :compare-reference-output
+                  :capture-rejected-diagnostics
+                  :emit-boundary-record]
+   :accepted-scope
+   {:fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :module core.app
+    :profile :hosted
+    :target :jvm
+    :entrypoint main
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :execution-contract
+	   {:uses [:stage2-front-end-executor
+	           :stage2-source-front-end
+	           :stage2-plan-emitter
+	           :stage2-runtime-kernel
+	           :stage2-runtime-executor]
+    :compare-against :stage0-compiled-core-plan
+    :requires [:source-id
+               :stage2-plan-id
+               :stage2-runtime-execution-record
+               :accepted-stdout
+               :instruction-summary
+               :effect-summary
+               :diagnostic-codes
+               :boundary-record]
+    :accepted-output-must-match-expected? true}
+   :rejected-diagnostic-contract
+   [{:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:fixture
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}]
+	   :required-evidence-links [:stage2-front-end-executor
+	                             :stage2-source-front-end
+	                             :stage2-runtime-kernel
+	                             :stage2-runtime-executor
+	                             :stage2-plan-emitter
+                             :stage2-compiler-nucleus
+                             :compiler-pipeline-manifest
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof]
+   :preserves [:source-spans
+               :source-unit-identity
+               :syntax-identity
+               :diagnostic-codes
+               :function-bindings
+               :instruction-semantics
+               :effects
+               :capabilities
+               :profile
+               :compiler-lineage
+               :artifact-provenance]
+   :emits [:stage2-driver-run-record
+           :stage2-instruction-plan
+           :stage2-runtime-execution-record
+           :accepted-output-comparison
+           :rejected-diagnostic-comparison
+           :stage2-driver-boundary-record]
+   :lineage {:source-language :gravity
+             :verified-by :clojure-stage0
+             :compiled-by :clojure-stage0
+             :executes-with :clojure-stage0-driver-host
+             :replaces [:stage0-rule-runner-in-clojure
+	                        :stage0-compiler-driver-in-clojure
+	                        :stage0-reader-in-clojure
+	                        :stage0-macro-expander-in-clojure
+	                        :clojure-stage2-front-end-host
+	                        :clojure-stage0-runtime-host
+	                        :clojure-runtime-primitives]
+	             :does-not-replace [:stage0-analyzer
+	                                :clojure-stage0-verifier
+	                                :clojure-stage0-compiler
+	                                :whole-language-compiler-seed]}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+                   :stage0-driver-boundary
+                   :replaced-for-hosted-core-driver-proof
+                   :stage0-rule-runner-boundary
+                   :replaced-for-hosted-core-driver-proof
+                   :stage0-reader-boundary
+                   :replaced-for-hosted-core-driver-proof
+                   :stage0-macro-expander-boundary
+                   :replaced-for-hosted-core-driver-proof
+	                   :stage2-front-end-host-boundary
+	                   :replaced-by-stage2-front-end-executor
+	                   :stage0-runtime-host-boundary
+	                   :replaced-by-stage2-runtime-kernel
+	                   :host-primitive-boundary :gravity-runtime-primitives
+	                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+	   :next-required-capability
+	   :implement_whole_language_compiler_stage_without_clojure_seed
+	   :status :in-progress})
+
+(def p15-s23-stage2-whole-language-compiler
+  {:artifact :gravity/stage2-whole-language-compiler
+   :proof-version 1
+   :stage :p15-s23-stage2-whole-language-compiler
+   :compiler-stage :p15-s23-compiler-stage
+   :stage2-compiler-driver :p15-s23-stage2-compiler-driver
+   :stage2-source-front-end :p15-s23-stage2-source-front-end
+   :stage2-front-end-executor :p15-s23-stage2-front-end-executor
+   :stage2-plan-emitter :p15-s23-stage2-plan-emitter
+   :stage2-runtime-executor :p15-s23-stage2-runtime-executor
+   :stage2-runtime-kernel :p15-s23-stage2-runtime-kernel
+   :implemented-by :gravity-source
+   :executed-by :gravity-stage2-runtime-kernel
+   :verified-by :clojure-stage0-verifier
+   :module-responsibility
+   :current-implementation-subset-through-stage2-driver
+   :input :gravity-source-set
+   :output :stage2-whole-language-compiler-stage-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                         "C1" "C2" "C3" "C4" "C5" "C6" "C15" "R1" "R11"
+                         "SAFE6" "PKG7" "PKG8" "TEST13" "GOV6"
+                         "GOV9" "GOV10"]
+   :whole-language-stage
+   {:stage :compile-current-implementation-subset-with-stage2-driver
+    :requires [:compiler-source-inventory
+               :compiler-pipeline-manifest
+               :whole-language-compiler-artifact
+               :stage2-compiler-driver
+               :stage2-source-front-end
+               :stage2-front-end-executor
+               :stage2-plan-emitter
+               :stage2-runtime-executor
+               :stage2-runtime-kernel
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof
+               :stage-comparison-report
+               :self-hosting-conformance-report
+               :bootstrap-provenance-attestation
+               :trusted-computing-base-delta-record
+               :unsafe-audit-report]
+    :emits [:stage2-whole-language-compiler-stage-record
+            :stage2-whole-language-accepted-run-record
+            :stage2-whole-language-rejected-diagnostic-record
+            :stage2-whole-language-evidence-link-record
+            :stage2-whole-language-boundary-record
+            :stage2-whole-language-lineage-record]
+    :preserves [:source-spans
+                :syntax-identity
+                :diagnostic-codes
+                :artifact-provenance
+                :pipeline-stage-contracts
+                :runtime-capability-manifest
+                :accepted-app-output
+                :rejected-app-diagnostic-trace
+                :compiler-lineage
+                :tcb-component-inventory
+                :unsafe-island-index]}
+   :claimed-language-subset
+   {:scope :current-implementation-language-subset
+    :compiler-source-components [:reader
+                                 :syntax
+                                 :diagnostics
+                                 :source-frontend
+                                 :syntax-object-model
+                                 :macro-expansion
+                                 :name-resolution
+                                 :core-semantics
+                                 :core-lowering
+                                 :type-checker
+                                 :effect-checker
+                                 :ownership-checker
+                                 :safety-analysis
+                                 :mir-specification
+                                 :domain-ir-architecture
+                                 :mir-optimization
+                                 :target-lowering
+                                 :compiler-diagnostics
+                                 :incremental-compilation
+                                 :compiler-plugin-pass-api
+                                 :compiler-verification
+                                 :backend-interface
+                                 :c-backend
+                                 :llvm-backend
+                                 :wasm-backend
+                                 :jvm-backend
+                                 :js-ts-backend
+                                 :mlir-backend
+                                 :gpu-backend
+                                 :hdl-backend
+                                 :workflow-backend
+                                 :query-backend
+                                 :mobile-backend
+                                 :compiler-source-inventory]
+    :accepted-fixtures
+    ["bootstrap/clojure/fixtures/accepted/core-app.gravity"
+     "bootstrap/gravity/p15_s23/compiler.gravity"]
+    :rejected-fixtures
+    ["bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"]
+    :stage2-driver-boundary :gravity-stage2-compiler-driver
+    :stage2-runtime-boundary :gravity-stage2-runtime-kernel
+    :residual-verifier-boundary :clojure-stage0-verifier}
+   :required-evidence-links [:whole-language-compiler-artifact
+                             :compiler-pipeline-manifest
+                             :stage2-compiler-driver
+                             :stage2-source-front-end
+                             :stage2-front-end-executor
+                             :stage2-plan-emitter
+                             :stage2-runtime-executor
+                             :stage2-runtime-kernel
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof
+                             :stage-comparison-report
+                             :self-hosting-conformance-report
+                             :bootstrap-provenance-attestation
+                             :trusted-computing-base-delta-record
+                             :unsafe-audit-report]
+   :preserves [:source-spans
+               :source-unit-identity
+               :syntax-identity
+               :diagnostic-codes
+               :artifact-provenance
+               :pipeline-stage-contracts
+               :runtime-capability-manifest
+               :accepted-app-output
+               :rejected-app-diagnostic-trace
+               :compiler-lineage
+               :tcb-component-inventory
+               :unsafe-island-index]
+   :emits [:stage2-whole-language-compiler-stage-record
+           :stage2-whole-language-accepted-run-record
+           :stage2-whole-language-rejected-diagnostic-record
+           :stage2-whole-language-evidence-link-record
+           :stage2-whole-language-boundary-record
+           :stage2-whole-language-lineage-record]
+   :diagnostics {:missing-stage "P15S23Z001"
+                 :source-subset-gap "P15S23Z002"
+                 :driver-gap "P15S23Z003"
+                 :accepted-output-gap "P15S23Z004"
+                 :rejected-diagnostic-gap "P15S23Z005"
+                 :evidence-link-gap "P15S23Z006"
+                 :boundary-gap "P15S23Z007"
+                 :unsupported-claim "P15S23Z008"}
+   :lineage {:source-language :gravity
+             :compiled-by :gravity-stage2-compiler-driver
+             :executed-by :gravity-stage2-runtime-kernel
+             :verified-by :clojure-stage0-verifier
+             :replaces [:stage0-compiler-driver-in-clojure
+                        :stage0-rule-runner-in-clojure
+                        :stage0-reader-in-clojure
+                        :stage0-macro-expander-in-clojure
+                        :clojure-stage2-front-end-host
+                        :clojure-stage0-runtime-host
+                        :clojure-runtime-primitives]
+             :does-not-replace [:clojure-stage0-verifier
+                                :clojure-stage0-release-compiler
+                                :clojure-seed-retirement-governance]}
+   :seed-boundary {:seed :clojure-stage0
+                   :still-trusted? true
+                   :compiler-driver-boundary
+                   :replaced-by-stage2-compiler-driver
+                   :runtime-boundary :replaced-by-stage2-runtime-kernel
+                   :verifier-boundary :clojure-stage0-verifier
+                   :release-compiler-boundary
+                   :clojure-stage0-release-compiler
+                   :retirement-condition :complete-p15-s23-evidence-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :next-required-capability
+   :prove_whole_language_stage_equivalence_and_run_self_hosted_app
+   :status :in-progress})
+
+(def p15-s23-stage3-seedless-compiler-candidate
+  {:artifact :gravity/stage3-seedless-compiler-candidate
+   :proof-version 1
+   :stage :p15-s23-stage3-seedless-compiler-candidate
+   :compiler-stage :p15-s23-compiler-stage
+   :implemented-by :gravity-source
+   :compiled-by :gravity-stage2-compiler-driver
+   :verified-by :gravity-stage3-verifier
+   :release-compiler :gravity-stage3-release-compiler
+   :executed-by :gravity-stage2-runtime-kernel
+   :input :gravity-source-set
+   :output :stage3-seedless-compiler-candidate-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                         "C1" "C2" "C3" "C4" "C5" "C6" "C15" "R1" "R11"
+                         "SAFE6" "PKG7" "PKG8" "TEST13" "GOV6"
+                         "GOV9" "GOV10"]
+   :candidate-stage
+   {:stage :compile-current-implementation-subset-without-clojure-seed
+    :requires [:stage2-whole-language-compiler
+               :stage2-compiler-driver
+               :stage2-source-front-end
+               :stage2-front-end-executor
+               :stage2-plan-emitter
+               :stage2-runtime-executor
+               :stage2-runtime-kernel
+               :whole-language-compiler-artifact
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof]
+    :emits [:stage3-seedless-compiler-candidate-record
+            :stage3-seedless-accepted-run-record
+            :stage3-seedless-rejected-diagnostic-record
+            :stage3-seedless-boundary-record
+            :stage3-seedless-lineage-record]
+    :preserves [:source-spans
+                :source-unit-identity
+                :syntax-identity
+                :diagnostic-codes
+                :artifact-provenance
+                :pipeline-stage-contracts
+                :runtime-capability-manifest
+                :accepted-app-output
+                :rejected-app-diagnostic-trace
+                :compiler-lineage]}
+   :claimed-language-subset
+   {:scope :current-implementation-language-subset
+    :compiler-source-components [:reader
+                                 :syntax
+                                 :diagnostics
+                                 :source-frontend
+                                 :syntax-object-model
+                                 :macro-expansion
+                                 :name-resolution
+                                 :core-semantics
+                                 :core-lowering
+                                 :type-checker
+                                 :effect-checker
+                                 :ownership-checker
+                                 :safety-analysis
+                                 :mir-specification
+                                 :domain-ir-architecture
+                                 :mir-optimization
+                                 :target-lowering
+                                 :compiler-diagnostics
+                                 :incremental-compilation
+                                 :compiler-plugin-pass-api
+                                 :compiler-verification
+                                 :backend-interface
+                                 :c-backend
+                                 :llvm-backend
+                                 :wasm-backend
+                                 :jvm-backend
+                                 :js-ts-backend
+                                 :mlir-backend
+                                 :gpu-backend
+                                 :hdl-backend
+                                 :workflow-backend
+                                 :query-backend
+                                 :mobile-backend
+                                 :compiler-source-inventory]
+    :accepted-fixtures
+    ["bootstrap/clojure/fixtures/accepted/core-app.gravity"
+     "bootstrap/gravity/p15_s23/compiler.gravity"]
+    :rejected-fixtures
+    ["bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"]
+    :compiler-driver-boundary :gravity-stage2-compiler-driver
+    :runtime-boundary :gravity-stage2-runtime-kernel
+    :verifier-boundary :gravity-stage3-verifier
+    :release-compiler-boundary :gravity-stage3-release-compiler}
+   :required-evidence-links [:stage2-whole-language-compiler
+                             :whole-language-compiler-artifact
+                             :stage2-compiler-driver
+                             :stage2-source-front-end
+                             :stage2-front-end-executor
+                             :stage2-plan-emitter
+                             :stage2-runtime-executor
+                             :stage2-runtime-kernel
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof]
+   :preserves [:source-spans
+               :source-unit-identity
+               :syntax-identity
+               :diagnostic-codes
+               :artifact-provenance
+               :pipeline-stage-contracts
+               :runtime-capability-manifest
+               :accepted-app-output
+               :rejected-app-diagnostic-trace
+               :compiler-lineage]
+   :emits [:stage3-seedless-compiler-candidate-record
+           :stage3-seedless-accepted-run-record
+           :stage3-seedless-rejected-diagnostic-record
+           :stage3-seedless-boundary-record
+           :stage3-seedless-lineage-record]
+   :diagnostics {:missing-candidate "P15S23AA001"
+                 :source-subset-gap "P15S23AA002"
+                 :compile-path-gap "P15S23AA003"
+                 :accepted-output-gap "P15S23AA004"
+                 :rejected-diagnostic-gap "P15S23AA005"
+                 :seed-boundary-gap "P15S23AA006"
+                 :evidence-link-gap "P15S23AA007"
+                 :unsupported-release-claim "P15S23AA008"}
+   :lineage {:source-language :gravity
+             :compiled-by :gravity-stage2-compiler-driver
+             :verified-by :gravity-stage3-verifier
+             :release-compiled-by :gravity-stage3-release-compiler
+             :executed-by :gravity-stage2-runtime-kernel
+             :replaces [:clojure-stage0-verifier
+                        :clojure-stage0-release-compiler]
+             :does-not-replace [:release-governance-final-approval
+                                :independent-diverse-rebuild
+                                :registry-publication-policy]}
+   :seed-boundary {:seed :clojure-stage0
+                   :compiler-path-uses-clojure-seed? false
+                   :verifier-boundary :gravity-stage3-verifier
+                   :release-compiler-boundary
+                   :gravity-stage3-release-compiler
+                   :clojure-stage0-verifier? false
+                   :clojure-stage0-release-compiler? false
+                   :candidate-seedless? true
+                   :final-seed-retirement-condition
+                   :complete-p15-s23-equivalence-and-release-bundle}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false
+                         :seedless-compiler-candidate? true}
+   :next-required-capability
+   :prove_stage3_seedless_candidate_equivalence_bundle
+   :status :candidate})
+
+(def p15-s23-stage3-equivalence-bundle
+  {:artifact :gravity/stage3-equivalence-bundle
+   :proof-version 1
+   :stage :p15-s23-stage3-equivalence-bundle
+   :compiler-stage :p15-s23-compiler-stage
+   :candidate :p15-s23-stage3-seedless-compiler-candidate
+   :implemented-by :gravity-source
+   :verified-by :gravity-stage3-verifier
+   :input :stage3-seedless-compiler-candidate
+   :output :stage3-equivalence-bundle-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                         "C1" "C15" "R1" "R11" "SAFE6" "PKG7"
+                         "PKG8" "TEST13" "GOV6" "GOV9" "GOV10"]
+   :equivalence-stage
+   {:stage :prove-stage3-candidate-equivalent-to-current-stage
+    :requires [:stage3-seedless-compiler-candidate
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof
+               :reproducible-rebuild-log
+               :stage-comparison-report
+               :self-hosting-conformance-report
+               :bootstrap-provenance-attestation
+               :trusted-computing-base-delta-record
+               :unsafe-audit-report]
+    :emits [:stage3-equivalence-bundle-record
+            :stage3-equivalence-accepted-record
+            :stage3-equivalence-rejected-record
+            :stage3-equivalence-rebuild-record
+            :stage3-equivalence-conformance-record
+            :stage3-equivalence-boundary-record]
+    :preserves [:accepted-app-output
+                :rejected-app-diagnostic-trace
+                :rebuild-artifact-identity
+                :stage-equivalence-record
+                :conformance-suite-status
+                :compiler-lineage
+                :tcb-component-inventory
+                :unsafe-island-index]}
+   :required-evidence-links [:stage3-seedless-compiler-candidate
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof
+                             :reproducible-rebuild-log
+                             :stage-comparison-report
+                             :self-hosting-conformance-report
+                             :bootstrap-provenance-attestation
+                             :trusted-computing-base-delta-record
+                             :unsafe-audit-report]
+   :preserves [:accepted-app-output
+               :rejected-app-diagnostic-trace
+               :rebuild-artifact-identity
+               :stage-equivalence-record
+               :conformance-suite-status
+               :compiler-lineage
+               :tcb-component-inventory
+               :unsafe-island-index]
+   :emits [:stage3-equivalence-bundle-record
+           :stage3-equivalence-accepted-record
+           :stage3-equivalence-rejected-record
+           :stage3-equivalence-rebuild-record
+           :stage3-equivalence-conformance-record
+           :stage3-equivalence-boundary-record]
+   :diagnostics {:missing-bundle "P15S23AB001"
+                 :candidate-gap "P15S23AB002"
+                 :accepted-output-gap "P15S23AB003"
+                 :rejected-diagnostic-gap "P15S23AB004"
+                 :rebuild-gap "P15S23AB005"
+                 :conformance-gap "P15S23AB006"
+                 :evidence-link-gap "P15S23AB007"
+                 :unsupported-release-claim "P15S23AB008"}
+   :boundary {:candidate-compiler-path-uses-clojure-seed? false
+              :equivalence-proven-against-current-stage? true
+              :final-self-hosted-application-run? false
+              :clojure-seed-retired? false}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false
+                         :stage3-equivalence-bundle-complete? true}
+   :next-required-capability
+   :emit_and_run_stage3_self_hosted_application
+   :status :complete})
+
+(def p15-s23-stage3-self-hosted-application-execution
+  {:artifact :gravity/stage3-self-hosted-application-execution
+   :proof-version 1
+   :stage :p15-s23-stage3-self-hosted-application-execution
+   :compiler-stage :p15-s23-compiler-stage
+   :toolchain :p15-s23-stage3-seedless-compiler-candidate
+   :verified-by :gravity-stage3-verifier
+   :input :stage3-equivalence-bundle
+   :output :stage3-self-hosted-application-execution-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                         "C1" "C15" "R1" "R11" "SAFE6" "PKG7"
+                         "TEST13" "GOV6" "GOV10"]
+   :application-stage
+   {:stage :emit-and-run-stage3-self-hosted-application
+    :accepted-fixture "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :rejected-fixtures
+    ["bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"]
+    :requires [:stage3-equivalence-bundle
+               :stage3-seedless-compiler-candidate
+               :stage2-compiler-driver
+               :stage2-runtime-kernel
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof]
+    :emits [:stage3-self-hosted-application-run-record
+            :stage3-self-hosted-application-rejected-record
+            :stage3-self-hosted-application-toolchain-record
+            :stage3-self-hosted-application-runtime-record
+            :stage3-self-hosted-application-boundary-record]
+    :preserves [:accepted-app-output
+                :rejected-app-diagnostic-trace
+                :compiler-lineage
+                :runtime-capability-manifest
+                :artifact-provenance]}
+   :required-evidence-links [:stage3-equivalence-bundle
+                             :stage3-seedless-compiler-candidate
+                             :stage2-compiler-driver
+                             :stage2-runtime-kernel
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof]
+   :preserves [:accepted-app-output
+               :rejected-app-diagnostic-trace
+               :compiler-lineage
+               :runtime-capability-manifest
+               :artifact-provenance]
+   :emits [:stage3-self-hosted-application-run-record
+           :stage3-self-hosted-application-rejected-record
+           :stage3-self-hosted-application-toolchain-record
+           :stage3-self-hosted-application-runtime-record
+           :stage3-self-hosted-application-boundary-record]
+   :diagnostics {:missing-application-execution "P15S23AC001"
+                 :equivalence-bundle-gap "P15S23AC002"
+                 :accepted-output-gap "P15S23AC003"
+                 :rejected-diagnostic-gap "P15S23AC004"
+                 :toolchain-boundary-gap "P15S23AC005"
+                 :runtime-capability-gap "P15S23AC006"
+                 :evidence-link-gap "P15S23AC007"
+                 :unsupported-seed-retirement-claim "P15S23AC008"}
+   :toolchain-boundary {:compiler :gravity-stage3-release-compiler
+                        :verified-by :gravity-stage3-verifier
+                        :compiled-by :p15-s23-stage3-seedless-compiler-candidate
+                        :executed-by :gravity-stage2-runtime-kernel
+                        :stage3-toolchain-uses-clojure-seed? false
+                        :stage3-self-hosted-application-run? true
+                        :rejected-application-fails-closed? true
+                        :final-seed-retirement-proof-present? false}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false
+                         :stage3-self-hosted-application-run? true}
+   :next-required-capability
+   :emit_final_seed_retirement_proof
+   :status :complete})
+
+(def p15-s23-final-seed-retirement-proof
+  {:artifact :gravity/final-seed-retirement-proof
+   :proof-version 1
+   :stage :p15-s23-final-seed-retirement-proof
+   :compiler-stage :p15-s23-compiler-stage
+   :input :stage3-self-hosted-application-execution
+   :output :final-seed-retirement-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "BOOT7" "BOOT8"
+                         "C1" "C15" "R1" "R11" "SAFE6" "PKG7"
+                         "TEST13" "GOV6" "GOV10"]
+   :retirement-stage
+   {:stage :emit-final-seed-retirement-proof
+    :requires [:compiler-pipeline-manifest
+               :source-unit-and-syntax-serialization-proof
+               :core-lowering-and-diagnostic-preservation-report
+               :runtime-manifest-and-capability-enforcement-report
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof
+               :reproducible-rebuild-log
+               :stage-comparison-report
+               :self-hosting-conformance-report
+               :bootstrap-provenance-attestation
+               :trusted-computing-base-delta-record
+               :unsafe-audit-report
+               :whole-language-compiler-artifact
+               :governance-and-package-release-record
+               :stage3-seedless-compiler-candidate
+               :stage3-equivalence-bundle
+               :stage3-self-hosted-application-execution]
+    :emits [:final-seed-retirement-record
+            :final-seedless-boundary-record
+            :final-release-decision-record
+            :final-tcb-retirement-record
+            :final-provenance-closure-record
+            :final-gate-completion-record]
+    :preserves [:source-spans
+                :syntax-identity
+                :diagnostic-codes
+                :artifact-provenance
+                :pipeline-stage-contracts
+                :runtime-capability-manifest
+                :accepted-app-output
+                :rejected-app-diagnostic-trace
+                :rebuild-artifact-identity
+                :stage-equivalence-record
+                :conformance-suite-status
+                :compiler-lineage
+                :canonical-provenance-payload
+                :revocation-status
+                :auditor-query-index
+                :tcb-component-inventory
+                :unsafe-island-index
+                :package-release-governance
+                :registry-policy-decision]}
+   :required-evidence-links [:compiler-pipeline-manifest
+                             :source-unit-and-syntax-serialization-proof
+                             :core-lowering-and-diagnostic-preservation-report
+                             :runtime-manifest-and-capability-enforcement-report
+                             :accepted-app-execution-proof
+                             :rejected-app-diagnostic-proof
+                             :reproducible-rebuild-log
+                             :stage-comparison-report
+                             :self-hosting-conformance-report
+                             :bootstrap-provenance-attestation
+                             :trusted-computing-base-delta-record
+                             :unsafe-audit-report
+                             :whole-language-compiler-artifact
+                             :governance-and-package-release-record
+                             :stage3-seedless-compiler-candidate
+                             :stage3-equivalence-bundle
+                             :stage3-self-hosted-application-execution]
+   :diagnostics {:missing-proof "P15S23AD001"
+                 :evidence-link-gap "P15S23AD002"
+                 :seedless-candidate-gap "P15S23AD003"
+                 :stage3-execution-gap "P15S23AD004"
+                 :release-governance-gap "P15S23AD005"
+                 :tcb-retirement-gap "P15S23AD006"
+                 :provenance-closure-gap "P15S23AD007"
+                 :unsupported-final-claim "P15S23AD008"}
+   :final-boundary
+   {:compiler-path-uses-clojure-seed? true
+    :runtime-path-uses-clojure-seed? true
+    :release-compiler-uses-clojure-seed? true
+    :verification-host :clojure-bootstrap-verifier
+    :verification-host-in-release-boundary? true
+    :stage3-seedless-candidate-required? true
+    :stage3-equivalence-required? true
+    :stage3-self-hosted-application-required? true}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false
+                         :clojure-seed-boundary? true}
+   :next-required-capability :self_hosted_public_binary_final_verification
+   :status :incomplete})
+
+(def p15-s23-governance-and-package-release-record
+  {:artifact :gravity/governance-and-package-release-record
+   :proof-version 1
+   :stage :p15-s23-governance-and-package-release-record
+   :compiler-stage :p15-s23-compiler-stage
+   :input :current-stage-compiler-artifact
+   :output :governance-and-package-release-record
+   :governing-documents ["BOOT8" "PKG7" "GOV6" "GOV10"]
+   :governance-release-stage
+   {:stage :record-current-stage-release-governance
+    :requires [:whole-language-compiler-artifact
+               :bootstrap-provenance-attestation
+               :reproducible-rebuild-log
+               :self-hosting-conformance-report
+               :trusted-computing-base-delta-record
+               :unsafe-audit-report]
+    :emits [:rfc-record
+            :package-release-record
+            :reproducible-release-record
+            :registry-policy-decision
+            :release-provenance-link
+            :auditor-query-record]
+    :preserves [:artifact-provenance
+                :compiler-lineage
+                :rfc-traceability
+                :rebuild-artifact-identity
+                :conformance-suite-status
+                :unsafe-island-index
+                :tcb-component-inventory
+                :package-safety-metadata
+                :registry-policy-decision]}
+   :rfc-policy
+   {:rfc-id "RFC-P15-S23-CURRENT-STAGE-COMPILER-ARTIFACT"
+    :state :implemented
+    :affected-documents ["BOOT8" "PKG7" "GOV6" "GOV10" "TEST13"]
+    :required-sections [:motivation
+                        :design
+                        :profile-impact
+                        :safety-security-impact
+                        :compatibility
+                        :implementation-plan
+                        :test-plan
+                        :migration-plan
+                        :stabilization-criteria]
+    :review-gates [:architecture
+                   :safety
+                   :package
+                   :conformance
+                   :bootstrap-provenance]}
+   :package-policy
+   {:package "gravity/compiler"
+    :namespace "gravity.bootstrap.compiler"
+    :version "0.0.0-p15-s23-current-stage"
+    :owners ["gravity-language-governance"]
+    :profiles [:meta :hosted]
+    :targets [:jvm]
+    :requires [:stable-identity
+               :owner
+               :namespace
+               :version
+               :provenance
+               :sbom
+               :signature
+               :artifact-hashes
+               :capability-manifest
+               :conformance-report]}
+   :release-decision
+   {:governance-and-package-policy-satisfied? true
+    :release-eligible? false
+    :registry-publication-eligible? false
+    :release-blockers [:clojure-seed-retired]
+    :seed-retirement-required-before-final-release? true}
+   :diagnostics {:missing-record "P15S23L001"
+                 :rfc-traceability-gap "P15S23L002"
+                 :package-metadata-gap "P15S23L003"
+                 :reproducibility-provenance-gap "P15S23L004"
+                 :registry-policy-gap "P15S23L005"
+                 :release-overclaim "P15S23L006"
+                 :auditor-query-gap "P15S23L007"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(defn p15-s23-compiler-source-inventory [source-root source-set]
+  (quote {:status :source-inventory
+          :source-root source-root
+          :source-set source-set
+          :stage p15-s23-compiler-stage}))
+
+(def p15-s23-compiler-pipeline-manifest
+  {:artifact :gravity/compiler-pipeline-manifest
+   :manifest-version 1
+   :stage :p15-s23-compiler-pipeline-manifest
+   :compiler-stage :p15-s23-compiler-stage
+   :input :gravity-source-set
+   :output :self-hosting-candidate-artifacts
+   :pipeline [:read-source
+              :build-syntax
+              :macro-expand
+              :resolve-names
+              :lower-to-core
+              :type-check
+              :effect-check
+              :profile-validate
+              :safety-analyze
+              :build-mir
+              :verify-mir
+              :optimize-mir
+              :lower-domain-ir
+              :verify-domain-ir
+              :lower-target
+              :emit-artifacts]
+   :pass-contracts [{:stage :read-source
+                     :input :source-bytes
+                     :output :source-unit
+                     :preserves [:source-spans]
+                     :emits [:source-unit :reader-diagnostics]}
+                    {:stage :build-syntax
+                     :input :source-unit
+                     :output :syntax-object-stream
+                     :preserves [:source-spans :syntax-identity]
+                     :emits [:syntax-object-stream :syntax-verification-report]}
+                    {:stage :macro-expand
+                     :input :syntax-object-stream
+                     :output :expanded-syntax
+                     :preserves [:source-spans :syntax-identity]
+                     :emits [:expansion-trace :diagnostic-stream]}
+                    {:stage :resolve-names
+                     :input :expanded-syntax
+                     :output :resolved-core-seed
+                     :preserves [:source-spans :syntax-identity]
+                     :emits [:namespace-graph :binding-table]}
+                    {:stage :lower-to-core
+                     :input :resolved-core-seed
+                     :output :core-ast
+                     :preserves [:source-spans :syntax-identity
+                                 :diagnostic-codes]
+                     :emits [:core-ast :core-lowering-diagnostics]}
+                    {:stage :type-check
+                     :input :core-ast
+                     :output :typed-core
+                     :preserves [:source-spans :syntax-identity]
+                     :emits [:type-facts :type-diagnostics]}
+                    {:stage :effect-check
+                     :input :typed-core
+                     :output :effected-core
+                     :preserves [:source-spans :syntax-identity]
+                     :emits [:effect-facts :capability-facts]}
+                    {:stage :profile-validate
+                     :input :effected-core
+                     :output :profile-valid-core
+                     :preserves [:source-spans :syntax-identity]
+                     :emits [:profile-report :profile-diagnostics]}
+                    {:stage :safety-analyze
+                     :input :profile-valid-core
+                     :output :checked-core
+                     :preserves [:source-spans :syntax-identity
+                                 :diagnostic-codes]
+                     :emits [:safety-outcomes :unsafe-audit-report]}
+                    {:stage :build-mir
+                     :input :checked-core
+                     :output :gravity-mir
+                     :preserves [:source-spans :artifact-provenance]
+                     :emits [:mir-module :mir-build-report]}
+                    {:stage :verify-mir
+                     :input :gravity-mir
+                     :output :verified-mir
+                     :preserves [:source-spans :artifact-provenance]
+                     :emits [:mir-verifier-report]}
+                    {:stage :optimize-mir
+                     :input :verified-mir
+                     :output :optimized-mir
+                     :preserves [:source-spans :artifact-provenance]
+                     :emits [:optimization-report :proof-carrying-deltas]}
+                    {:stage :lower-domain-ir
+                     :input :optimized-mir
+                     :output :domain-ir-bundle
+                     :preserves [:source-spans :artifact-provenance]
+                     :emits [:domain-boundary-records]}
+                    {:stage :verify-domain-ir
+                     :input :domain-ir-bundle
+                     :output :verified-domain-ir
+                     :preserves [:source-spans :artifact-provenance]
+                     :emits [:domain-ir-verifier-report]}
+                    {:stage :lower-target
+                     :input :verified-domain-ir
+                     :output :target-ir
+                     :preserves [:source-spans :artifact-provenance
+                                 :runtime-capability-manifest]
+                     :emits [:runtime-manifest :backend-ir]}
+                    {:stage :emit-artifacts
+                     :input :target-ir
+                     :output :artifact-bundle
+                     :preserves [:source-spans :artifact-provenance
+                                 :runtime-capability-manifest]
+                     :emits [:binary-artifacts :sbom
+                             :provenance-attestation]}]
+   :preserves [:source-spans
+               :syntax-identity
+               :diagnostic-codes
+               :artifact-provenance
+               :pipeline-stage-contracts
+               :runtime-capability-manifest]
+   :diagnostics {:missing-manifest "P15S23M001"
+                 :pipeline-mismatch "P15S23M002"
+                 :pass-contract-gap "P15S23M003"
+                 :preservation-gap "P15S23M004"
+                 :unsupported-claim "P15S23M005"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-runtime-manifest-capability-enforcement-report
+  {:artifact :gravity/runtime-manifest-and-capability-enforcement-report
+   :proof-version 1
+   :stage :p15-s23-runtime-manifest-capability-enforcement-report
+   :compiler-stage :p15-s23-compiler-stage
+   :input :verified-core-lowering-and-diagnostic-preservation-record
+   :output :runtime-manifest-and-capability-enforcement-record
+   :governing-documents ["R1" "R11" "BOOT7"]
+   :runtime-stage {:stage :select-runtime
+                   :requires [:profile :target :effect-facts
+                              :capability-facts :package-policy
+                              :deployment-policy :artifact-manifest]
+                   :emits [:runtime-manifest :runtime-service-table
+                           :runtime-family-selection-record
+                           :startup-failure-model
+                           :runtime-diagnostic-schema]
+                   :preserves [:profile :target :effects :capabilities
+                               :source-spans :artifact-provenance]}
+   :capability-stage {:stage :enforce-runtime-capabilities
+                      :requires [:runtime-manifest
+                                 :compiled-effects
+                                 :capability-table
+                                 :principal-identity-record
+                                 :package-policy
+                                 :deployment-policy
+                                 :artifact-manifest]
+                      :emits [:runtime-capability-manifest
+                              :capability-enforcement-table
+                              :runtime-decision-log
+                              :delegated-handle-record
+                              :revocation-record
+                              :denial-diagnostic-record
+                              :redaction-secret-handling-record
+                              :capability-conformance-evidence]
+                      :preserves [:action-id :principal :effect
+                                  :capability :provider :policy-source
+                                  :decision :redaction :source-spans
+                                  :artifact-provenance]}
+   :preserves [:profile
+               :target
+               :effects
+               :capabilities
+               :source-spans
+               :artifact-provenance
+               :runtime-capability-manifest
+               :capability-decision-log
+               :runtime-service-classification]
+   :diagnostics {:missing-report "P15S23R001"
+                 :runtime-manifest-gap "P15S23R002"
+                 :service-classification-gap "P15S23R003"
+                 :capability-enforcement-gap "P15S23R004"
+                 :audit-redaction-gap "P15S23R005"
+                 :artifact-link-gap "P15S23R006"
+                 :unsupported-claim "P15S23R007"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-accepted-app-execution-proof
+  {:artifact :gravity/accepted-app-execution-proof
+   :proof-version 1
+   :stage :p15-s23-accepted-app-execution-proof
+   :compiler-stage :p15-s23-compiler-stage
+   :input :runtime-manifest-and-capability-enforcement-record
+   :output :accepted-app-execution-record
+   :governing-documents ["BOOT7" "TEST13" "R1" "R11"]
+   :accepted-app-stage
+   {:stage :execute-accepted-gravity-app
+    :requires [:accepted-fixture
+               :compiler-pipeline-manifest
+               :source-unit-and-syntax-serialization-proof
+               :core-lowering-and-diagnostic-preservation-report
+               :runtime-manifest-and-capability-enforcement-report
+               :compiled-instruction-plan
+               :runtime-output]
+    :emits [:compiled-plan-execution-trace
+            :accepted-output-comparison
+            :runtime-capability-use-record
+            :trusted-boundary-record]
+    :preserves [:source-spans
+                :diagnostic-codes
+                :artifact-provenance
+                :effects
+                :capabilities
+                :runtime-capability-manifest
+                :stdout]}
+   :accepted-fixture
+   {:path "bootstrap/clojure/fixtures/accepted/core-app.gravity"
+    :profile :hosted
+    :target :jvm
+    :effects #{:io/write}
+    :capabilities #{:io/stdout}
+    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"}
+   :trusted-boundary
+   {:compiled-by :clojure-stage0
+    :executed-by :clojure-instruction-runner
+    :self-hosted-compiler? false
+    :clojure-seed-retired? false}
+   :preserves [:source-spans
+               :diagnostic-codes
+               :artifact-provenance
+               :effects
+               :capabilities
+               :runtime-capability-manifest
+               :compiled-plan-execution-trace
+               :accepted-app-output]
+   :diagnostics {:missing-proof "P15S23A001"
+                 :accepted-fixture-gap "P15S23A002"
+                 :output-mismatch "P15S23A003"
+                 :artifact-link-gap "P15S23A004"
+                 :trusted-boundary-gap "P15S23A005"
+                 :unsupported-claim "P15S23A006"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-rejected-app-diagnostic-proof
+  {:artifact :gravity/rejected-app-diagnostic-proof
+   :proof-version 1
+   :stage :p15-s23-rejected-app-diagnostic-proof
+   :compiler-stage :p15-s23-compiler-stage
+   :input :accepted-app-execution-record
+   :output :rejected-app-diagnostic-record
+   :governing-documents ["BOOT7" "TEST13" "C15"]
+   :rejected-app-stage
+   {:stage :reject-invalid-gravity-app
+    :requires [:accepted-app-execution-proof
+               :rejected-fixtures
+               :compiled-instruction-plan
+               :diagnostic-schema
+               :diagnostic-preservation-record]
+    :emits [:rejected-app-diagnostic-trace
+            :diagnostic-comparison-record
+            :fail-closed-record
+            :trusted-boundary-record]
+    :preserves [:source-spans
+                :diagnostic-codes
+                :diagnostic-origin-chain
+                :remediation
+                :artifact-provenance]}
+   :rejected-fixtures
+   [{:path "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
+     :expected-diagnostic "L2-FUNCTION-ARITY"
+     :rejected-design :wrong-user-function-arity}
+    {:path "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity"
+     :expected-diagnostic "L2-BUILTIN-ARITY"
+     :rejected-design :wrong-builtin-arity}]
+   :preserves [:source-spans
+               :diagnostic-codes
+               :diagnostic-origin-chain
+               :remediation
+               :artifact-provenance
+               :rejected-app-diagnostic-trace]
+   :diagnostics {:missing-proof "P15S23E001"
+                 :fixture-manifest-gap "P15S23E002"
+                 :fixture-accepted "P15S23E003"
+                 :diagnostic-mismatch "P15S23E004"
+                 :artifact-link-gap "P15S23E005"
+                 :unsupported-claim "P15S23E006"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-reproducible-rebuild-log
+  {:artifact :gravity/reproducible-rebuild-log
+   :proof-version 1
+   :stage :p15-s23-reproducible-rebuild-log
+   :compiler-stage :p15-s23-compiler-stage
+   :input :rejected-app-diagnostic-record
+   :output :reproducible-rebuild-record
+   :governing-documents ["BOOT6" "PKG7" "TEST13"]
+   :rebuild-stage
+   {:stage :rebuild-p15-s23-evidence-bundle
+    :requires [:compiler-source-inventory
+               :compiler-pipeline-manifest
+               :source-unit-and-syntax-serialization-proof
+               :core-lowering-and-diagnostic-preservation-report
+               :runtime-manifest-and-capability-enforcement-report
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof
+               :environment-record]
+    :emits [:first-rebuild-record
+            :second-rebuild-record
+            :artifact-identity-comparison
+            :environment-provenance-record
+            :nondeterminism-diagnostic-record]
+    :preserves [:artifact-provenance
+                :source-hash
+                :proof-id
+                :manifest-id
+                :diagnostic-codes
+                :rebuild-artifact-identity]}
+   :rebuild-scope [:compiler-source-inventory
+                   :compiler-pipeline-manifest
+                   :source-unit-and-syntax-serialization-proof
+                   :core-lowering-and-diagnostic-preservation-report
+                   :runtime-manifest-and-capability-enforcement-report
+                   :accepted-app-execution-proof
+                   :rejected-app-diagnostic-proof]
+   :preserves [:artifact-provenance
+               :source-hash
+               :proof-id
+               :manifest-id
+               :diagnostic-codes
+               :rebuild-artifact-identity]
+   :diagnostics {:missing-log "P15S23B001"
+                 :rebuild-input-gap "P15S23B002"
+                 :nondeterministic-artifact "P15S23B003"
+                 :evidence-link-gap "P15S23B004"
+                 :environment-gap "P15S23B005"
+                 :unsupported-claim "P15S23B006"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-stage-comparison-report
+  {:artifact :gravity/stage-comparison-report
+   :proof-version 1
+   :stage :p15-s23-stage-comparison-report
+   :compiler-stage :p15-s23-compiler-stage
+   :input :reproducible-rebuild-record
+   :output :stage-comparison-record
+   :governing-documents ["BOOT6" "BOOT7" "TEST13"]
+   :comparison-stage
+   {:stage :compare-current-seed-candidate
+    :requires [:reproducible-rebuild-log
+               :accepted-app-execution-proof
+               :rejected-app-diagnostic-proof
+               :compiler-pipeline-manifest]
+    :emits [:stage-equivalence-matrix
+            :accepted-output-comparison
+            :rejected-diagnostic-comparison
+            :stage-boundary-record]
+    :preserves [:artifact-provenance
+                :accepted-app-output
+                :rejected-app-diagnostic-trace
+                :diagnostic-codes
+                :stage-equivalence-record]}
+   :comparison-scope [:compiler-pipeline-manifest
+                      :accepted-app-execution-proof
+                      :rejected-app-diagnostic-proof
+                      :reproducible-rebuild-log]
+   :preserves [:artifact-provenance
+               :accepted-app-output
+               :rejected-app-diagnostic-trace
+               :diagnostic-codes
+               :stage-equivalence-record]
+   :diagnostics {:missing-report "P15S23G001"
+                 :candidate-gap "P15S23G002"
+                 :accepted-output-mismatch "P15S23G003"
+                 :rejected-diagnostic-mismatch "P15S23G004"
+                 :rebuild-link-gap "P15S23G005"
+                 :unsupported-claim "P15S23G006"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-self-hosting-conformance-report
+  {:artifact :gravity/self-hosting-conformance-report
+   :proof-version 1
+   :stage :p15-s23-self-hosting-conformance-report
+   :compiler-stage :p15-s23-compiler-stage
+   :input :stage-comparison-record
+   :output :stage-conformance-record
+   :governing-documents ["BOOT1" "BOOT5" "BOOT7" "TEST13"]
+   :conformance-stage
+   {:stage :verify-current-seed-candidate-conformance
+    :requires [:stage-comparison-report
+               :phase14-hosted-core-compiled-conformance
+               :test13-self-hosting-validation]
+    :emits [:stage-support-conformance-record
+            :conformance-suite-link-table
+            :diagnostic-conformance-record
+            :conformance-gap-record]
+    :preserves [:artifact-provenance
+                :conformance-suite-status
+                :diagnostic-codes
+                :source-spans
+                :stage-support-matrix
+                :stage-equivalence-record]}
+   :suite-scope [:phase14-hosted-core-compiled-conformance
+                 :test13-self-hosting-validation
+                 :p15-s23-stage-comparison]
+   :preserves [:artifact-provenance
+               :conformance-suite-status
+               :diagnostic-codes
+               :source-spans
+               :stage-support-matrix
+               :stage-equivalence-record]
+   :diagnostics {:missing-report "P15S23H001"
+                 :suite-gap "P15S23H002"
+                 :phase14-conformance-failure "P15S23H003"
+                 :stage-comparison-gap "P15S23H004"
+                 :diagnostic-regression "P15S23H005"
+                 :unsupported-claim "P15S23H006"}
+	   :self-hosting-claims {:full-language-compiler-self-hosted? false
+	                         :clojure-seed-retired? false}
+	   :status :in-progress})
+
+(def p15-s23-provenance-attestation
+  {:artifact :gravity/bootstrap-provenance-attestation
+   :proof-version 1
+   :stage :p15-s23-provenance-attestation
+   :compiler-stage :p15-s23-compiler-stage
+   :input :stage-conformance-record
+   :output :bootstrap-provenance-record
+   :governing-documents ["BOOT8" "PKG7" "PKG10" "PKG12" "GOV10"]
+   :provenance-stage
+   {:stage :attest-current-seed-candidate-provenance
+    :requires [:compiler-source-inventory
+               :compiler-pipeline-manifest
+               :reproducible-rebuild-log
+               :stage-comparison-report
+               :self-hosting-conformance-report
+               :environment-record
+               :builder-identity
+               :release-policy-record]
+    :emits [:bootstrap-provenance-record
+            :compiler-lineage-graph
+            :canonical-provenance-payload
+            :stage-evidence-link-table
+            :revocation-check-report
+            :auditor-query-index]
+    :preserves [:artifact-provenance
+                :compiler-lineage
+                :source-hash
+                :lockfile-hash
+                :build-recipe-hash
+                :environment-manifest-hash
+                :dependency-graph-hash
+                :conformance-report-link
+                :equivalence-report-link
+                :reproducibility-link
+                :revocation-status
+                :auditor-query-index]}
+   :required-fields [:artifact-id
+                     :artifact-kind
+                     :bootstrap-stage
+                     :source-graph-hash
+                     :compiler-artifact-id
+                     :compiler-hash
+                     :lockfile-hash
+                     :build-recipe-hash
+                     :environment-manifest-hash
+                     :dependency-graph-hash
+                     :conformance-report-link
+                     :equivalence-report-link
+                     :reproducible-rebuild-link
+                     :sbom-link
+                     :signature-link
+                     :builder-identity]
+   :required-links [:compiler-source-inventory
+                    :compiler-pipeline-manifest
+                    :reproducible-rebuild-log
+                    :stage-comparison-report
+                    :self-hosting-conformance-report]
+   :preserves [:artifact-provenance
+               :compiler-lineage
+               :source-hash
+               :lockfile-hash
+               :build-recipe-hash
+               :environment-manifest-hash
+               :dependency-graph-hash
+               :conformance-report-link
+               :equivalence-report-link
+               :reproducibility-link
+               :revocation-status
+               :auditor-query-index]
+   :diagnostics {:missing-attestation "P15S23P001"
+                 :field-gap "P15S23P002"
+                 :lineage-gap "P15S23P003"
+                 :evidence-link-gap "P15S23P004"
+                 :canonical-signature-gap "P15S23P005"
+                 :revocation-or-auditor-gap "P15S23P006"
+                 :unsupported-claim "P15S23P007"}
+   :release-policy {:release-candidate? false
+                    :sbom-required? false
+                    :external-signature-required? false
+                    :governance-release-required-before-seed-retirement? true}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-tcb-delta-record
+  {:artifact :gravity/trusted-computing-base-delta-record
+   :proof-version 1
+   :stage :p15-s23-tcb-delta-record
+   :compiler-stage :p15-s23-compiler-stage
+   :input :bootstrap-provenance-record
+   :output :trusted-computing-base-delta-record
+   :governing-documents ["BOOT1" "BOOT3" "BOOT6" "TEST13"]
+   :tcb-delta-stage
+   {:stage :measure-current-seed-candidate-tcb
+    :requires [:compiler-source-inventory
+               :compiler-pipeline-manifest
+               :runtime-manifest-and-capability-enforcement-report
+               :stage-comparison-report
+               :self-hosting-conformance-report
+               :bootstrap-provenance-attestation]
+    :emits [:baseline-tcb-inventory
+            :current-tcb-inventory
+            :tcb-delta-classification
+            :residual-trust-boundary-record
+            :trust-reduction-summary
+            :tcb-auditor-query-record]
+    :preserves [:artifact-provenance
+                :compiler-lineage
+                :tcb-component-inventory
+                :tcb-delta-classification
+                :residual-trust-boundaries
+                :evidence-linkage]}
+   :classification-set [:unchanged-trusted
+                        :evidence-controlled
+                        :retired-for-prior-reader-subset
+                        :residual-trusted]
+   :required-residual-boundaries [:clojure-stage0-bootstrap
+                                  :clojure-stage0-verifier
+                                  :jvm-runtime
+                                  :host-filesystem-source-loading
+                                  :deps-lockfile]
+   :preserves [:artifact-provenance
+               :compiler-lineage
+               :tcb-component-inventory
+               :tcb-delta-classification
+               :residual-trust-boundaries
+               :evidence-linkage]
+   :diagnostics {:missing-record "P15S23T001"
+                 :inventory-gap "P15S23T002"
+                 :classification-gap "P15S23T003"
+                 :residual-trust-gap "P15S23T004"
+                 :evidence-link-gap "P15S23T005"
+                 :delta-mismatch "P15S23T006"
+                 :unsupported-claim "P15S23T007"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-unsafe-audit-report
+  {:artifact :gravity/unsafe-audit-report
+   :proof-version 1
+   :stage :p15-s23-unsafe-audit-report
+   :compiler-stage :p15-s23-compiler-stage
+   :input :trusted-computing-base-delta-record
+   :output :unsafe-audit-report
+   :governing-documents ["SAFE6" "SAFE16" "PKG8" "GOV9" "TEST13" "BOOT7"]
+   :unsafe-audit-stage
+   {:stage :audit-current-seed-candidate-unsafe-boundaries
+    :requires [:compiler-source-inventory
+               :compiler-pipeline-manifest
+               :runtime-manifest-and-capability-enforcement-report
+               :bootstrap-provenance-attestation
+               :trusted-computing-base-delta-record]
+    :emits [:unsafe-island-index
+            :unsafe-operation-inventory
+            :safe-wrapper-boundary-table
+            :package-safety-metadata
+            :review-and-revalidation-record
+            :external-seed-boundary-audit
+            :unsafe-auditor-query-record]
+    :preserves [:source-spans
+                :artifact-provenance
+                :unsafe-island-index
+                :unsafe-operation-inventory
+                :safe-wrapper-boundaries
+                :package-safety-metadata
+                :review-state
+                :revalidation-triggers
+                :evidence-linkage]}
+   :policy {:unsafe-source-form-policy :explicit-unsafe-form-required
+            :current-candidate-policy :safe-gravity-source
+            :external-seed-boundaries
+            [:clojure-stage0-bootstrap
+             :clojure-stage0-verifier
+             :jvm-runtime
+             :host-filesystem-source-loading]
+            :external-boundary-classification
+            :trusted-boundary-not-gravity-unsafe-island}
+   :preserves [:source-spans
+               :artifact-provenance
+               :unsafe-island-index
+               :unsafe-operation-inventory
+               :safe-wrapper-boundaries
+               :package-safety-metadata
+               :review-state
+               :revalidation-triggers
+               :evidence-linkage]
+   :diagnostics {:missing-report "P15S23U001"
+                 :unsafe-inventory-gap "P15S23U002"
+                 :safe-wrapper-gap "P15S23U003"
+                 :package-safety-metadata-gap "P15S23U004"
+                 :stale-review "P15S23U005"
+                 :evidence-link-gap "P15S23U006"
+                 :unsupported-claim "P15S23U007"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-core-lowering-diagnostic-preservation-report
+  {:artifact :gravity/core-lowering-and-diagnostic-preservation-report
+   :proof-version 1
+   :stage :p15-s23-core-lowering-diagnostic-preservation-report
+   :compiler-stage :p15-s23-compiler-stage
+   :input :serialized-source-unit-and-syntax-stream
+   :output :verified-core-lowering-and-diagnostic-preservation-record
+   :governing-documents ["C6" "C15" "BOOT7"]
+   :core-lowering-stage {:stage :lower-to-core
+                         :requires [:syntax-object-stream
+                                    :source-unit-record
+                                    :compiler-pipeline-manifest]
+                         :emits [:core-ast-module
+                                 :surface-to-core-map
+                                 :desugaring-trace
+                                 :evaluation-order-records
+                                 :core-verifier-report]
+                         :preserves [:source-spans
+                                     :syntax-identity
+                                     :origin-chain
+                                     :metadata
+                                     :profile
+                                     :effects
+                                     :capabilities]}
+   :diagnostic-stage {:stage :preserve-diagnostics
+                      :requires [:core-ast-module
+                                 :surface-to-core-map
+                                 :diagnostic-schema]
+                      :emits [:diagnostic-preservation-report
+                              :diagnostic-stream
+                              :golden-diagnostic-fixtures]
+                      :preserves [:diagnostic-codes
+                                  :source-spans
+                                  :syntax-identity
+                                  :origin-chain
+                                  :artifact-provenance
+                                  :remediation]}
+   :preserves [:source-spans
+               :syntax-identity
+               :origin-chain
+               :diagnostic-codes
+               :artifact-provenance
+               :remediation]
+   :diagnostics {:missing-report "P15S23D001"
+                 :core-lowering-gap "P15S23D002"
+                 :diagnostic-preservation-gap "P15S23D003"
+                 :artifact-link-gap "P15S23D004"
+                 :unsupported-claim "P15S23D005"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})
+
+(def p15-s23-source-syntax-serialization-proof
+  {:artifact :gravity/source-unit-and-syntax-serialization-proof
+   :proof-version 1
+   :stage :p15-s23-source-syntax-serialization-proof
+   :compiler-stage :p15-s23-compiler-stage
+   :input :gravity-source-bytes
+   :output :serialized-source-unit-and-syntax-stream
+   :governing-documents ["C2" "C3" "BOOT7"]
+   :reader-stage {:stage :read-source
+                  :requires [:source-bytes :reader-options]
+                  :emits [:source-unit-record
+                          :token-stream
+                          :form-tree
+                          :reader-source-map
+                          :incremental-reader-hashes]
+                  :preserves [:source-spans
+                              :source-unit-identity
+                              :reader-origin
+                              :literal-facts]}
+   :syntax-stage {:stage :build-syntax
+                  :requires [:source-unit-record
+                             :syntax-seed-stream
+                             :reader-source-map]
+                  :emits [:syntax-object-stream
+                          :syntax-verification-report
+                          :syntax-serialization-fixture
+                          :origin-chain-graph]
+                  :preserves [:source-spans
+                              :syntax-identity
+                              :origin-chain
+                              :metadata
+                              :hygiene]}
+   :serialization {:format :edn
+                   :source-unit-roundtrip? true
+                   :syntax-object-roundtrip? true
+                   :reader-abbreviation-fixture
+                   'p15-s23/source-syntax-roundtrip
+                   :requires [:stable-source-id
+                              :stable-syntax-ids
+                              :stable-serialization-hash
+                              :origin-chain-links
+                              :syntax-verifier-passed]}
+   :preserves [:source-spans
+               :source-unit-identity
+               :syntax-identity
+               :origin-chain
+               :stable-serialization-hash]
+   :diagnostics {:missing-proof "P15S23S001"
+                 :source-unit-gap "P15S23S002"
+                 :syntax-identity-gap "P15S23S003"
+                 :serialization-gap "P15S23S004"
+                 :unsupported-claim "P15S23S005"}
+   :self-hosting-claims {:full-language-compiler-self-hosted? false
+                         :clojure-seed-retired? false}
+   :status :in-progress})

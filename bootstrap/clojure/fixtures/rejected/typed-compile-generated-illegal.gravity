@@ -1,0 +1,9 @@
+(ns compile.generated-illegal
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (compile/generated-illegal :unsafe-form))

@@ -1,0 +1,406 @@
+{
+  "kind": "domain-safety-input",
+  "document": [
+    "SAFE7",
+    "SAFE8",
+    "SAFE9",
+    "SAFE11"
+  ],
+  "package": "gravity.safety.demo",
+  "module": "safety.domain",
+  "profile": ":native",
+  "target": ":llvm",
+  "operations": [
+    {
+      "id": "ffi-safe-strlen",
+      "domain": "ffi",
+      "source_span": {
+        "source": "interop/string.gravity",
+        "line": 24,
+        "column": 3
+      },
+      "active_profile": ":native",
+      "target": ":c-abi",
+      "effect_context": {
+        "effects": [
+          ":ffi/call"
+        ]
+      },
+      "capability_context": {
+        "declared": [
+          ":ffi/c"
+        ]
+      },
+      "ffi": {
+        "boundary_id": "extern/strlen",
+        "foreign_source": "string.h:strlen",
+        "provider_id": "gravity.ffi/c-provider",
+        "abi_or_protocol": ":c",
+        "type_mapping": {
+          "complete": true,
+          "unsafe": false,
+          "source_type": "CString",
+          "foreign_type": "const char*"
+        },
+        "ownership": {
+          "complete": true,
+          "arg0": ":borrowed",
+          "allocator_identity": "gravity.ffi/c"
+        },
+        "lifetime": {
+          "valid": true,
+          "arg0": ":call-duration"
+        },
+        "error_translation": {
+          "complete": true,
+          "strategy": ":result-or-panic-free"
+        },
+        "callback": {
+          "valid": true
+        },
+        "effects": [
+          ":ffi/call"
+        ],
+        "capabilities": [
+          ":ffi/c"
+        ],
+        "supported_profiles": [
+          ":native",
+          ":hosted"
+        ],
+        "wrapper": "safe-strlen",
+        "audit_record": "FFI-STRLEN",
+        "generated": true,
+        "generated_provenance": {
+          "generator": "gravity.bindgen/c-header",
+          "source_digest": "sha256:string-h-fixture"
+        }
+      },
+      "foreign_declaration_records": [
+        {
+          "boundary_id": "extern/strlen",
+          "foreign_source": "string.h:strlen",
+          "provider_id": "gravity.ffi/c-provider"
+        }
+      ],
+      "abi_protocol_records": [
+        {
+          "boundary_id": "extern/strlen",
+          "abi": ":c"
+        }
+      ],
+      "type_mapping_records": [
+        {
+          "source_type": "CString",
+          "foreign_type": "const char*",
+          "nullability": ":non-null"
+        }
+      ],
+      "ffi_ownership_lifetime_maps": [
+        {
+          "boundary_id": "extern/strlen",
+          "ownership": ":borrowed",
+          "lifetime": ":call-duration"
+        }
+      ],
+      "safe_wrapper_audit_records": [
+        {
+          "wrapper": "safe-strlen",
+          "unsafe_island": "FFI-STRLEN",
+          "evidence": [
+            ":wrapper-null-check",
+            ":terminator-scan-test"
+          ]
+        }
+      ],
+      "error_translation_maps": [
+        {
+          "foreign_failure": ":none",
+          "gravity_behavior": "(Result USize FfiError)"
+        }
+      ],
+      "callback_safety_records": [
+        {
+          "boundary_id": "extern/strlen",
+          "callbacks": []
+        }
+      ],
+      "generated_binding_provenance": [
+        {
+          "generator": "gravity.bindgen/c-header",
+          "source_digest": "sha256:string-h-fixture"
+        }
+      ],
+      "ffi_conformance_reports": [
+        {
+          "suite": "ffi-string",
+          "status": ":passed"
+        }
+      ]
+    },
+    {
+      "id": "concurrency-safe-transfer",
+      "domain": "concurrency",
+      "source_span": {
+        "source": "src/concurrency_demo.gravity",
+        "line": 18,
+        "column": 5
+      },
+      "active_profile": ":native",
+      "target": ":llvm",
+      "effect_context": {
+        "effects": [
+          ":thread/spawn",
+          ":sync/block"
+        ]
+      },
+      "capability_context": {
+        "declared": [
+          ":scheduler/task",
+          ":sync/mutex"
+        ]
+      },
+      "concurrency": {
+        "data_race": false,
+        "invalid_task_capture": false,
+        "use_after_move": false,
+        "unsafe_share": false,
+        "lock_guard_invalid": false,
+        "atomic_order_invalid": false,
+        "fence_missing": false,
+        "channel_invalid": false,
+        "actor_invalid": false,
+        "workflow_replay_missing": false,
+        "backend_preservation_invalid": false
+      },
+      "concurrency_graph": [
+        {
+          "task_id": "task/process-buffer",
+          "shared_location": "buffer-owner-1",
+          "synchronization": ":ownership-transfer"
+        }
+      ],
+      "task_capture_records": [
+        {
+          "task_id": "task/process-buffer",
+          "capture": "Owned[Buffer]",
+          "status": ":moved"
+        }
+      ],
+      "ownership_transfer_records": [
+        {
+          "from": "parent",
+          "to": "task/process-buffer",
+          "value": "buffer-owner-1"
+        }
+      ],
+      "shared_state_access_records": [
+        {
+          "location": "counter",
+          "type": "Atomic[U64]",
+          "access": ":atomic"
+        }
+      ],
+      "synchronization_proof_records": [
+        {
+          "proof": "mutex-guard-all-paths",
+          "result": ":accepted"
+        }
+      ],
+      "atomic_memory_order_records": [
+        {
+          "operation": "counter/inc",
+          "order": ":seq-cst",
+          "target_supported": true
+        }
+      ],
+      "blocking_cancellation_records": [
+        {
+          "operation": "mutex/lock",
+          "blocking": true,
+          "cancellation": ":deferred"
+        }
+      ],
+      "backend_memory_order_preservation_records": [
+        {
+          "target": ":llvm",
+          "status": ":preserved"
+        }
+      ]
+    },
+    {
+      "id": "numeric-checked-arithmetic",
+      "domain": "numeric",
+      "source_span": {
+        "source": "src/numeric_demo.gravity",
+        "line": 22,
+        "column": 9
+      },
+      "active_profile": ":native",
+      "target": ":llvm",
+      "effect_context": {
+        "effects": []
+      },
+      "capability_context": {
+        "declared": []
+      },
+      "numeric": {
+        "overflow_unhandled": false,
+        "div_zero_possible": false,
+        "shift_invalid": false,
+        "narrow_unchecked": false,
+        "float_mode_missing": false,
+        "float_input_unhandled": false,
+        "elementary_domain_invalid": false,
+        "approx_missing": false,
+        "relaxed_without_opt_in": false,
+        "optimization_without_proof": false,
+        "backend_invalid": false
+      },
+      "numeric_mode_records": [
+        {
+          "operation": "add-u32",
+          "mode": ":checked"
+        }
+      ],
+      "numeric_check_records": [
+        {
+          "operation": "div-u32",
+          "check": ":nonzero-divisor",
+          "failure_behavior": ":panic/div-zero"
+        }
+      ],
+      "range_interval_proof_records": [
+        {
+          "proof": "narrow-u16-range",
+          "result": ":accepted"
+        }
+      ],
+      "floating_point_mode_records": [
+        {
+          "operation": "sqrt-f64",
+          "rounding": ":nearest-even",
+          "nan": ":propagate"
+        }
+      ],
+      "elementary_function_approximation_records": [
+        {
+          "function": "sin",
+          "domain": "[-pi,pi]",
+          "accuracy": "2^-22"
+        }
+      ],
+      "relaxed_numeric_mode_approvals": [
+        {
+          "scope": "none",
+          "status": ":not-used"
+        }
+      ],
+      "numeric_optimization_proof_records": [
+        {
+          "optimization": "erase-overflow-check",
+          "proof": "range-proof-add-u32",
+          "result": ":accepted"
+        }
+      ],
+      "backend_numeric_lowering_records": [
+        {
+          "target": ":llvm",
+          "mode_preserved": true
+        }
+      ]
+    },
+    {
+      "id": "taint-validated-user-id",
+      "domain": "taint",
+      "source_span": {
+        "source": "src/taint_demo.gravity",
+        "line": 14,
+        "column": 7
+      },
+      "active_profile": ":hosted",
+      "target": ":wasm",
+      "effect_context": {
+        "effects": [
+          ":io/read",
+          ":database/read"
+        ]
+      },
+      "capability_context": {
+        "declared": [
+          ":http/request",
+          ":database/query"
+        ]
+      },
+      "taint": {
+        "tainted_sink": false,
+        "validator_invalid": false,
+        "residual_invalid": false,
+        "parameterization_missing": false,
+        "deserialization_unvalidated": false,
+        "secret_leak": false,
+        "prompt_injection": false,
+        "generated_drops_taint": false,
+        "foreign_erases_taint": false,
+        "unsafe_clear_without_audit": false
+      },
+      "taint_source_records": [
+        {
+          "source_kind": "request-param",
+          "category": "Tainted/UserInput",
+          "trust_boundary": "http-request"
+        }
+      ],
+      "taint_flow_records": [
+        {
+          "from": "request.id",
+          "to": "db.query.params.id",
+          "validator": "validate-user-id"
+        }
+      ],
+      "validator_sanitizer_contracts": [
+        {
+          "validator": "validate-user-id",
+          "clears": [
+            "Tainted/UserInput"
+          ],
+          "ensures": [
+            ":uuid-format"
+          ]
+        }
+      ],
+      "residual_constraint_records": [
+        {
+          "value": "UserId",
+          "residual": [
+            ":uuid-format"
+          ]
+        }
+      ],
+      "sink_authorization_records": [
+        {
+          "sink": "db.query.params.id",
+          "authorization": ":parameterized"
+        }
+      ],
+      "secret_redaction_records": [
+        {
+          "category": "Tainted/Secret",
+          "policy": ":redact-in-diagnostics"
+        }
+      ],
+      "generated_code_taint_propagation_records": [
+        {
+          "generator": "schema-decoder",
+          "preserves_taint": true
+        }
+      ],
+      "taint_conformance_reports": [
+        {
+          "suite": "taint-user-id",
+          "status": ":passed"
+        }
+      ]
+    }
+  ]
+}

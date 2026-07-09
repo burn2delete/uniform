@@ -1,0 +1,12 @@
+backend-b11-capability gravity=1 qst=1
+backend-b11-dialect gravity=1 qst=1
+backend-b11-manifest gravity=1 qst=1
+backend-b11-migration gravity=1 qst=1
+backend-b11-null gravity=1 qst=1
+backend-b11-parameter gravity=1 qst=1
+backend-b11-plan gravity=1 qst=1
+backend-b11-result gravity=1 qst=1
+backend-b11-schema gravity=1 qst=1
+backend-b11-taint gravity=1 qst=1
+backend-b11-transaction gravity=1 qst=1
+B11 public check bridge probes passed: accepted .gravity/.qst parity and 11 rejected diagnostic parity pairs.

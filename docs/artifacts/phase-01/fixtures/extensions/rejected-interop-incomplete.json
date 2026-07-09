@@ -1,0 +1,45 @@
+{
+  "active_profile": ":native",
+  "kind": "phase-01-extension-hooks",
+  "module": "extension.bad.interop-incomplete",
+  "normal_pipeline_artifacts": {
+    "core_ast": "docs/artifacts/phase-01/core/core-ast.accepted.json",
+    "macro_trace": "docs/artifacts/phase-01/macro/macro-expansion-trace.accepted.json",
+    "namespace": "docs/artifacts/phase-01/namespace/module.accepted-server.json",
+    "reader": "docs/artifacts/phase-01/reader/syntax-object-stream.accepted-hosted-hello.json",
+    "typed_core": "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json"
+  },
+  "providers": [
+    {
+      "allocation": {
+        "bounded": true,
+        "hidden": false
+      },
+      "id": "custom.memory/arena",
+      "kind": ":memory-system",
+      "profiles": [
+        ":native"
+      ],
+      "safe_outcomes": [
+        ":proven-safe",
+        ":runtime-checked",
+        ":rejected",
+        ":unsafe-island"
+      ],
+      "unsafe_wrappers": [],
+      "version": "0.2.0"
+    }
+  ],
+  "interop_boundaries": [
+    {
+      "boundary_kind": ":native-abi",
+      "foreign_source": "libc",
+      "id": "native/incomplete",
+      "language": ":c",
+      "profiles": [
+        ":native"
+      ],
+      "provider": "gravity.ffi/libc"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-safety.json",
+  "set": {
+    "/operations/3/taint/tainted_sink": true
+  }
+}

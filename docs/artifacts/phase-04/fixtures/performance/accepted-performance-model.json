@@ -1,0 +1,967 @@
+{
+  "kind": "performance-model-input",
+  "package": "gravity.performance.phase04",
+  "module": "perf/vector-sum",
+  "performance_claim": {
+    "claim_id": "bounds-elision/vector-sum/native-x86",
+    "profile": ":native",
+    "target": "llvm-x86_64-linux",
+    "runtime": ":minimal-native",
+    "backend": ":llvm",
+    "safety_mode": ":safe-optimized",
+    "input_domain": {
+      "n": {
+        "min": 0,
+        "max": 1048576
+      },
+      "element_type": ":i64"
+    },
+    "layout": {
+      "vector": ":contiguous",
+      "element": ":i64",
+      "alignment": 64
+    },
+    "effects": [],
+    "capabilities": [],
+    "target_features": [
+      ":avx2",
+      ":fma"
+    ],
+    "target_fingerprint": {
+      "hardware": "x86_64-test-host",
+      "features": [
+        ":avx2",
+        ":fma"
+      ],
+      "os": "darwin-test",
+      "compiler": "gravityc-phase04-contract",
+      "backend": "llvm-contract",
+      "runtime_provider": "minimal-native-1",
+      "memory_provider": "arena-1",
+      "numeric_provider": "strict-int-1",
+      "build_flags": [
+        "-O2",
+        "--safe-optimized"
+      ]
+    },
+    "benchmark": "bench/vector-sum-native",
+    "proof_obligations": [
+      "proof/range/vector-index",
+      "proof/int-range/sum",
+      "proof/profile/native"
+    ],
+    "semantic_proof": [
+      ":types-preserved",
+      ":effects-preserved",
+      ":profile-legal"
+    ],
+    "safety_proof": [
+      ":bounds-preserved",
+      ":ownership-preserved"
+    ],
+    "artifacts": [
+      "optimized-mir",
+      "proof-index",
+      "benchmark-report",
+      "target-feature-report"
+    ],
+    "source_span": {
+      "source": "fixtures/perf/vector_sum.gravity",
+      "line": 8,
+      "column": 12
+    }
+  },
+  "optimization_decisions": [
+    {
+      "pass_id": "mir.bounds-elision",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "preserved_facts": [
+        "types",
+        "effects",
+        "ownership",
+        "capabilities",
+        "initialization",
+        "taint",
+        "numeric",
+        "unsafe_audit",
+        "profile"
+      ],
+      "regenerated_facts": [
+        "bounds"
+      ],
+      "invalidated_facts": [],
+      "erased_checks": [
+        ":bounds"
+      ],
+      "proofs": [
+        "proof/range/vector-index"
+      ],
+      "artifacts": [
+        "optimized-mir",
+        "check-elision-certificate"
+      ],
+      "source_span": {
+        "source": "fixtures/perf/vector_sum.gravity",
+        "line": 8,
+        "column": 12
+      }
+    }
+  ],
+  "zero_cost_claims": [
+    {
+      "id": "zc/protocol-dispatch/direct-call",
+      "abstraction": ":protocol-dispatch",
+      "equivalent_form": ":direct-call",
+      "claimed_zero_cost": true,
+      "expected_erased_costs": [
+        ":dynamic-dispatch",
+        ":boxing"
+      ],
+      "erased_costs": [
+        ":dynamic-dispatch",
+        ":boxing"
+      ],
+      "residual_costs": [],
+      "hidden_costs": [],
+      "before_ir": "mir/protocol-before",
+      "after_ir": "mir/protocol-after",
+      "proofs": [
+        "proof/same-method-target",
+        "proof/effects-preserved"
+      ],
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "source_span": {
+        "source": "fixtures/perf/protocol.gravity",
+        "line": 11,
+        "column": 4
+      }
+    },
+    {
+      "id": "zc/iterator-pipeline",
+      "abstraction": ":iterator-pipeline",
+      "equivalent_form": ":counted-loop",
+      "claimed_zero_cost": true,
+      "expected_erased_costs": [
+        ":iterator-state-machine",
+        ":closure-allocation"
+      ],
+      "erased_costs": [
+        ":iterator-state-machine",
+        ":closure-allocation"
+      ],
+      "residual_costs": [],
+      "hidden_costs": [],
+      "before_ir": "mir/iterator-before",
+      "after_ir": "mir/iterator-after",
+      "proofs": [
+        "proof/pipeline-equivalence",
+        "proof/allocation-eliminated"
+      ],
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "source_span": {
+        "source": "fixtures/perf/pipeline.gravity",
+        "line": 5,
+        "column": 7
+      }
+    }
+  ],
+  "specializations": [
+    {
+      "id": "spec/fixed-map-f32-128-avx2",
+      "optimization": ":specialization",
+      "source": "fixed-map",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "variant_id": "variant/fixed-map-f32-128-avx2",
+      "behavior_facts": [
+        "T",
+        "N",
+        "target_features",
+        "profile",
+        "numeric_mode",
+        "layout",
+        "proof_facts"
+      ],
+      "key": {
+        "T": ":F32",
+        "N": 128,
+        "target_features": [
+          ":avx2"
+        ],
+        "profile": ":native",
+        "numeric_mode": ":strict-f32",
+        "layout": ":contiguous",
+        "proof_facts": [
+          "proof/range/vector-index"
+        ]
+      },
+      "guard": "(and (= N 128) (feature? :avx2))",
+      "effects": [],
+      "capabilities": [],
+      "partial_evaluation": {
+        "pure": true,
+        "build_effects": [],
+        "grants": [],
+        "hermetic": true,
+        "replay_record": "replay/none"
+      },
+      "source_map": "sourcemap/fixed-map-specialized",
+      "cache_key_inputs": [
+        "source",
+        "macro-expansion",
+        "T",
+        "N",
+        "profile",
+        "target",
+        "target_features",
+        "layout",
+        "numeric_mode",
+        "proof_facts",
+        "provider_versions"
+      ],
+      "invalidation_inputs": [
+        "source",
+        "macro-expansion",
+        "T",
+        "N",
+        "profile",
+        "target",
+        "target_features",
+        "layout",
+        "numeric_mode",
+        "proof_facts",
+        "provider_versions"
+      ],
+      "erased_checks": [
+        ":bounds"
+      ],
+      "proof_id": "proof/range/vector-index",
+      "artifacts": [
+        "specialized-mir",
+        "guard-table",
+        "source-map"
+      ],
+      "source_span": {
+        "source": "fixtures/perf/fixed_map.gravity",
+        "line": 3,
+        "column": 1
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "id": "layout/particle-soa",
+      "type": "Particle",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "layout": ":struct-of-arrays",
+      "transformation": ":aos-to-soa",
+      "fields": [
+        {
+          "name": ":x",
+          "type": ":F32",
+          "alignment": 4
+        },
+        {
+          "name": ":y",
+          "type": ":F32",
+          "alignment": 4
+        },
+        {
+          "name": ":vx",
+          "type": ":F32",
+          "alignment": 4
+        },
+        {
+          "name": ":vy",
+          "type": ":F32",
+          "alignment": 4
+        }
+      ],
+      "alignment": 64,
+      "abi": ":internal",
+      "proofs": [
+        ":no-observable-address-identity",
+        ":alias-proof",
+        ":ownership-proof"
+      ],
+      "changes_public_boundary": false,
+      "adapters": [],
+      "address_identity_observable": false,
+      "packed": false,
+      "access_safety_facts": [
+        "proof/aligned-access"
+      ],
+      "target_support": {
+        "alignment_supported": true,
+        "unaligned_safe": true
+      },
+      "cache_claim": {
+        "target_fingerprint": "target/x86_64-test-host",
+        "benchmark": "bench/particle-layout",
+        "working_set": "1m-particles"
+      },
+      "source_span": {
+        "source": "fixtures/perf/particle.gravity",
+        "line": 1,
+        "column": 1
+      }
+    }
+  ],
+  "benchmarks": [
+    {
+      "benchmark_id": "bench/vector-sum-native",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "workload": {
+        "dataset": "fixed-1m-i64",
+        "seed": "none"
+      },
+      "metric": ":ns-per-element",
+      "warmup": {
+        "iterations": 20
+      },
+      "samples": 50,
+      "statistics": [
+        ":median",
+        ":p95",
+        ":variance"
+      ],
+      "environment_fingerprint": {
+        "hardware": "x86_64-test-host",
+        "features": [
+          ":avx2",
+          ":fma"
+        ],
+        "os": "darwin-test",
+        "compiler": "gravityc-phase04-contract",
+        "backend": "llvm-contract",
+        "runtime_provider": "minimal-native-1",
+        "memory_provider": "arena-1",
+        "numeric_provider": "strict-int-1",
+        "build_flags": [
+          "-O2",
+          "--safe-optimized"
+        ],
+        "power_mode": "fixed"
+      },
+      "acceptance": {
+        "max_regression_percent": 3.0,
+        "max_variance": 0.15,
+        "correctness_required": true,
+        "safety_required": true
+      },
+      "gates": {
+        "correctness": true,
+        "safety": true
+      },
+      "sample_summary": {
+        "median": 1.8,
+        "p95": 2.1,
+        "variance": 0.02
+      },
+      "regression": {
+        "percent": 1.2,
+        "accepted": false,
+        "classification": ":no-regression"
+      },
+      "baseline": {
+        "id": "baseline/vector-sum-native",
+        "reviewed": true,
+        "review_owner": "performance-working-group",
+        "source_revision": "phase04-contract"
+      },
+      "source_span": {
+        "source": "fixtures/perf/vector_sum.gravity",
+        "line": 1,
+        "column": 1
+      }
+    }
+  ],
+  "pgo_records": [
+    {
+      "id": "pgo/checkout-prod-like",
+      "status": ":accepted",
+      "build_mode": ":release",
+      "identity": {
+        "id": "checkout-prod-like",
+        "source_hash": "sha256:source",
+        "typed_core_hash": "sha256:typed",
+        "mir_hash": "sha256:mir",
+        "compiler": "gravityc-phase04-contract",
+        "profile": ":native",
+        "target": "llvm-x86_64-linux",
+        "workload": "checkout",
+        "provider_versions": {
+          "allocator": "arena-1",
+          "runtime": "minimal-native-1"
+        }
+      },
+      "privacy": {
+        "mode": ":aggregated",
+        "redacted": true,
+        "raw_sensitive_values": false,
+        "retention": "fixture-only"
+      },
+      "hot_cold_map": "pgo/hot-cold-checkout",
+      "decisions": [
+        {
+          "pass_id": "mir.inline-hot-path",
+          "decision_log": "pgo/decision/inline-hot-path",
+          "preserved_facts": [
+            "types",
+            "effects",
+            "capabilities",
+            "profile",
+            "safety"
+          ],
+          "expected_benefit": ":branch-locality",
+          "reproducible": true
+        }
+      ],
+      "source_span": {
+        "source": "fixtures/perf/checkout.gravity",
+        "line": 4,
+        "column": 1
+      }
+    }
+  ],
+  "autotuning_records": [
+    {
+      "id": "tune/pricing-kernel",
+      "candidate_space": {
+        "id": "pricing-kernel",
+        "objective": ":throughput",
+        "variants": {
+          "math": [
+            ":libm",
+            ":poly5"
+          ],
+          "vector_width": [
+            ":scalar",
+            ":avx2"
+          ],
+          "layout": [
+            ":aos",
+            ":soa"
+          ]
+        },
+        "constraints": {
+          "max_error": "1e-8",
+          "profile": ":native",
+          "safety": ":preserved"
+        },
+        "benchmark": "bench/pricing-kernel"
+      },
+      "candidates": [
+        {
+          "variant_id": "pricing/libm/scalar/aos",
+          "evidence_status": ":accepted",
+          "benchmarked": true
+        },
+        {
+          "variant_id": "pricing/poly5/avx2/soa",
+          "evidence_status": ":accepted",
+          "benchmarked": true
+        },
+        {
+          "variant_id": "pricing/poly5/avx512/soa",
+          "evidence_status": ":rejected",
+          "benchmarked": false,
+          "diagnostic": "PERF7-CANDIDATE-REJECTED"
+        }
+      ],
+      "guard_table": {
+        "guards": [
+          {
+            "variant_id": "pricing/poly5/avx2/soa",
+            "predicate": "(feature? :avx2)"
+          }
+        ],
+        "overlap": false,
+        "fallback": "pricing/libm/scalar/aos"
+      },
+      "selected_variant": {
+        "variant_id": "pricing/poly5/avx2/soa",
+        "benchmark_comparison": "bench/pricing-kernel-comparison",
+        "reason": "lower median with preserved certificate",
+        "certificates": [
+          "cert/math/poly5-error",
+          "cert/safety/pricing",
+          "cert/profile/native"
+        ]
+      },
+      "required_certificates": [
+        "cert/math/poly5-error",
+        "cert/safety/pricing",
+        "cert/profile/native"
+      ],
+      "dispatch_overhead": {
+        "accounted": true,
+        "model": "guard-hoisted"
+      },
+      "reproducibility": {
+        "reproducible": true,
+        "seed": "none",
+        "inputs": [
+          "candidate-space",
+          "benchmark-data",
+          "target-fingerprint"
+        ]
+      },
+      "source_span": {
+        "source": "fixtures/perf/pricing.gravity",
+        "line": 12,
+        "column": 1
+      }
+    }
+  ],
+  "simd_records": [
+    {
+      "id": "simd/saxpy-avx2",
+      "optimization": ":simd-vectorization",
+      "loop": "saxpy",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "requires": [
+        ":lane-independence",
+        ":no-overlap",
+        ":bounds-safe",
+        ":aligned-or-safe-unaligned"
+      ],
+      "proofs": [
+        ":lane-independence",
+        ":alias-proof",
+        ":bounds-proof",
+        ":alignment-proof"
+      ],
+      "vector_width": 8,
+      "numeric_mode": ":strict-f32",
+      "reassociates": false,
+      "tail_handling": ":masked-vector",
+      "elementary_function": true,
+      "math_certificate": "cert/math/saxpy-fma-strict",
+      "reorders_volatile": false,
+      "intrinsics": [
+        {
+          "name": ":fma",
+          "feature": ":fma",
+          "fallback": ":scalar"
+        },
+        {
+          "name": ":loadu",
+          "feature": ":avx2",
+          "fallback": ":scalar-load"
+        }
+      ],
+      "cache_transform": {
+        "kind": ":tiling",
+        "evidence": "bench/saxpy-cache-tiling"
+      },
+      "source_span": {
+        "source": "fixtures/perf/saxpy.gravity",
+        "line": 9,
+        "column": 3
+      }
+    }
+  ],
+  "realtime_contracts": [
+    {
+      "contract_id": "latency/control-loop",
+      "profile": ":firmware",
+      "target": "cortex-m-contract",
+      "budget": {
+        "max_us": 50,
+        "jitter_us": 5
+      },
+      "allocation": ":none",
+      "blocking": false,
+      "bounds": {
+        "iterations": 128,
+        "recursion": false
+      },
+      "preemption": {
+        "interrupt_policy": ":declared",
+        "locks": ":bounded"
+      },
+      "locks": {
+        "bounded": true,
+        "max_hold_us": 2
+      },
+      "runtime_services": [],
+      "forbidden_runtime": [
+        ":gc",
+        ":dynamic-loading",
+        ":reflection",
+        ":network",
+        ":ai-model-call"
+      ],
+      "evidence": [
+        "proof/bounded-loop",
+        "report/allocation-free",
+        "report/worst-case-path"
+      ],
+      "worst_case_path": "report/control-loop-wcet",
+      "failure_mode": ":reject-build",
+      "source_span": {
+        "source": "fixtures/perf/control_loop.gravity",
+        "line": 2,
+        "column": 1
+      }
+    }
+  ],
+  "check_elisions": [
+    {
+      "id": "elide/bounds/slice-get",
+      "check_class": ":bounds",
+      "operation": ":slice-get",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/range/vector-index",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/bounds",
+      "source_map": "sourcemap/slice-get",
+      "source_span": {
+        "source": "fixtures/perf/vector_sum.gravity",
+        "line": 8,
+        "column": 12
+      }
+    },
+    {
+      "id": "elide/overflow/checked-add",
+      "check_class": ":integer-overflow",
+      "operation": ":checked-add",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/int-range/sum",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/overflow",
+      "source_map": "sourcemap/checked-add"
+    },
+    {
+      "id": "elide/div/nonzero",
+      "check_class": ":division-by-zero",
+      "operation": ":div",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/nonzero/divisor",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/division",
+      "source_map": "sourcemap/div"
+    },
+    {
+      "id": "elide/shift/range",
+      "check_class": ":shift-count",
+      "operation": ":shift-left",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/shift-range",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/shift",
+      "source_map": "sourcemap/shift"
+    },
+    {
+      "id": "elide/null/pattern",
+      "check_class": ":null-option",
+      "operation": ":option-get",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/non-null/match",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/null-option",
+      "source_map": "sourcemap/option-get"
+    },
+    {
+      "id": "elide/init/definite",
+      "check_class": ":initialization",
+      "operation": ":field-read",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/definite-init",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/initialization",
+      "source_map": "sourcemap/field-read"
+    },
+    {
+      "id": "elide/region/non-escape",
+      "check_class": ":region-lifetime",
+      "operation": ":region-load",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/region-non-escape",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/region",
+      "source_map": "sourcemap/region-load"
+    },
+    {
+      "id": "elide/borrow/exclusive",
+      "check_class": ":borrow-alias",
+      "operation": ":mutable-borrow",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/alias-exclusive",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/borrow",
+      "source_map": "sourcemap/borrow"
+    },
+    {
+      "id": "elide/linear/close",
+      "check_class": ":linear-resource",
+      "operation": ":resource-close",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/linear-flow",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/linear",
+      "source_map": "sourcemap/resource-close"
+    },
+    {
+      "id": "elide/race/free",
+      "check_class": ":data-race",
+      "operation": ":atomic-region",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/race-free",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/race",
+      "source_map": "sourcemap/atomic-region"
+    },
+    {
+      "id": "elide/taint/cleared",
+      "check_class": ":taint-sink",
+      "operation": ":sql-execute",
+      "profile": ":hosted",
+      "target": "hosted-contract",
+      "proof_id": "proof/taint-cleared",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": false,
+      "backend_preserved": true,
+      "certificate": "cert/check-elision/taint",
+      "source_map": "sourcemap/sql-execute"
+    },
+    {
+      "id": "discharge/capability/effect",
+      "check_class": ":capability-effect",
+      "operation": ":filesystem-read",
+      "profile": ":hosted",
+      "target": "hosted-contract",
+      "proof_id": "proof/capability-grant",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": true,
+      "policy_artifact": "artifact/capability-validation",
+      "backend_preserved": true,
+      "certificate": "cert/policy/capability-effect",
+      "source_map": "sourcemap/filesystem-read"
+    },
+    {
+      "id": "discharge/unsafe/audit",
+      "check_class": ":unsafe-audit",
+      "operation": ":unsafe-island-entry",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "proof_id": "proof/unsafe-audit-reviewed",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": true,
+      "policy_artifact": "artifact/unsafe-audit",
+      "backend_preserved": true,
+      "certificate": "cert/policy/unsafe-audit",
+      "source_map": "sourcemap/unsafe-entry"
+    },
+    {
+      "id": "discharge/workflow/replay",
+      "check_class": ":workflow-replay",
+      "operation": ":workflow-step",
+      "profile": ":distributed",
+      "target": "workflow-runtime-contract",
+      "proof_id": "proof/replay-safe-step",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": true,
+      "policy_artifact": "artifact/replay-contract",
+      "backend_preserved": true,
+      "certificate": "cert/policy/workflow-replay",
+      "source_map": "sourcemap/workflow-step"
+    },
+    {
+      "id": "discharge/ai/human-review",
+      "check_class": ":ai-human-review",
+      "operation": ":tool-call",
+      "profile": ":ai",
+      "target": "ai-runtime-contract",
+      "proof_id": "proof/human-review-state",
+      "proof_dominates_use": true,
+      "invalidated_by": [],
+      "residual_checks": [],
+      "policy_check": true,
+      "policy_artifact": "artifact/human-review-gate",
+      "backend_preserved": true,
+      "certificate": "cert/policy/ai-human-review",
+      "source_map": "sourcemap/tool-call"
+    }
+  ],
+  "target_feature_records": [
+    {
+      "id": "target/x86_64-test-host",
+      "target": "llvm-x86_64-linux",
+      "features": [
+        ":avx2",
+        ":fma"
+      ],
+      "fingerprint": {
+        "hardware": "x86_64-test-host",
+        "os": "darwin-test",
+        "compiler": "gravityc-phase04-contract"
+      },
+      "guards": [
+        "(feature? :avx2)",
+        "(feature? :fma)"
+      ]
+    }
+  ],
+  "variant_manifests": [
+    {
+      "variant_id": "variant/fixed-map-f32-128-avx2",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "guards": [
+        "(and (= N 128) (feature? :avx2))"
+      ],
+      "benchmark": "bench/vector-sum-native",
+      "source_map": "sourcemap/fixed-map-specialized"
+    }
+  ],
+  "proof_index": {
+    "proof/range/vector-index": {
+      "kind": ":range-proof",
+      "checker": "gravity.proof/range-check",
+      "result": ":accepted"
+    },
+    "proof/int-range/sum": {
+      "kind": ":integer-range-proof",
+      "checker": "gravity.proof/int-range-check",
+      "result": ":accepted"
+    }
+  },
+  "conformance_matrix": {
+    "zero_cost_families": [
+      ":protocol-dispatch",
+      ":generic-function",
+      ":iterator-pipeline",
+      ":record-wrapper",
+      ":runtime-check-erasure"
+    ],
+    "specialization_modes": [
+      ":type",
+      ":const",
+      ":shape",
+      ":profile",
+      ":target"
+    ],
+    "layout_transformations": [
+      ":field-reorder",
+      ":packing",
+      ":alignment",
+      ":aos-to-soa",
+      ":hot-cold-split"
+    ],
+    "benchmark_failure_cases": [
+      ":noise",
+      ":drift",
+      ":safety-gate-failure",
+      ":baseline-review"
+    ],
+    "pgo_statuses": [
+      ":accepted",
+      ":advisory",
+      ":stale",
+      ":rejected",
+      ":required-missing"
+    ],
+    "autotuning_cases": [
+      ":candidate-expansion",
+      ":candidate-rejection",
+      ":guard-overlap",
+      ":fallback"
+    ],
+    "simd_cases": [
+      ":lane-proof",
+      ":tail-handling",
+      ":strict-fp-reject",
+      ":volatile-reject",
+      ":intrinsic-guard"
+    ],
+    "realtime_cases": [
+      ":latency-budget",
+      ":loop-bound",
+      ":allocation-free",
+      ":blocking-reject"
+    ],
+    "check_classes": [
+      ":bounds",
+      ":integer-overflow",
+      ":division-by-zero",
+      ":shift-count",
+      ":null-option",
+      ":initialization",
+      ":region-lifetime",
+      ":borrow-alias",
+      ":linear-resource",
+      ":data-race",
+      ":taint-sink",
+      ":capability-effect",
+      ":unsafe-audit",
+      ":workflow-replay",
+      ":ai-human-review"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-coverage.json",
+  "delete": [
+    "/domains/DOM14/evidence/determinism"
+  ]
+}

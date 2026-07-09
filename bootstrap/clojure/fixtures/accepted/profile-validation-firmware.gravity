@@ -1,0 +1,51 @@
+(ns profile.validation.firmware
+  (:profile :firmware)
+  (:target :jvm)
+  (:exports [device-map])
+  (:effects #{:memory/mmio :interrupt/register})
+  (:capabilities #{:hardware/mmio :hardware/interrupt})
+  (:safety :safe)
+  (:metadata {:memory {:stack-bytes 2048
+                       :heap false
+                       :static-bytes 8192}
+              :runtime {:required false
+                        :providers #{:interrupts :device-map}}
+              :package-allowed-effects #{:memory/mmio :interrupt/register}
+              :provider-effect-grants #{:memory/mmio :interrupt/register}
+              :deployment-allowed-effects #{:memory/mmio :interrupt/register}
+              :package-capabilities #{:hardware/mmio :hardware/interrupt}
+              :provider-capability-grants #{:hardware/mmio :hardware/interrupt}
+              :deployment-capabilities #{:hardware/mmio :hardware/interrupt}
+              :profile-validation
+              {:stack-budget-record {:max-bytes 2048
+                                     :callgraph :complete}
+               :static-memory-budget {:max-bytes 8192
+                                      :sections [:data :bss :rodata]}
+               :bounded-allocation-report {:heap false
+                                           :regions [{:id :sample-buffer
+                                                      :capacity 64
+                                                      :reset :boot}]}
+               :interrupt-capability-table {:adc-ready {:priority 2
+                                                        :stack-bytes 128
+                                                        :capabilities #{:hardware/interrupt}
+                                                        :shared-state :atomic}}
+               :mmio-address-map {:adc0 {:base 1073811456
+                                          :registers {:data {:offset 4
+                                                             :width 16
+                                                             :access :read}}
+                                          :capabilities #{:hardware/mmio}}}
+               :vector-table-record {:target :cortex-m
+                                     :vectors [:reset :adc-ready]}
+               :linker-script-record {:script :firmware/linker
+                                      :memory-regions [:flash :sram]}
+               :latency-loop-bound-report {:loops {:sample-loop {:max-iterations 16}}
+                                           :interrupt-latency-us 20}
+               :firmware-image-manifest {:image :sensor-firmware
+                                         :linker-script :firmware/linker
+                                         :memory-map :adc0}
+               :unsafe-audit-records [{:operation :mmio/raw
+                                       :status :reviewed
+                                       :safe-api :device-map}]}}))
+
+(def device-map
+  {:adc0 :typed-mmio})

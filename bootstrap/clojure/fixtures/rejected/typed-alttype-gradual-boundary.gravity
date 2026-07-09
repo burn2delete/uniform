@@ -1,0 +1,9 @@
+(ns alttype.gradual-boundary
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (alttype/gradual-boundary-error :unrecorded))

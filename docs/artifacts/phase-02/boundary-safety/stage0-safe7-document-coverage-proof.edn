@@ -1,0 +1,29 @@
+{:task-id :P02-D036
+ :document "docs/phase-02-safety/036-safe7-ffi-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+ :artifact-kind :gravity/stage0-boundary-safety-artifact
+ :document-coverage {:foreign-declaration-records 1
+                     :abi-protocol-records 1
+                     :type-mapping-records 1
+                     :ownership-lifetime-maps 1
+                     :safe-wrapper-audits 1
+                     :error-translation-maps 1
+                     :callback-safety-records 1
+                     :host-bridge-records 1
+                     :generated-binding-provenance 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE7-DECLARATION"
+                        "SAFE7-RAW-CALL"
+                        "SAFE7-TYPE-MAP"
+                        "SAFE7-OWNERSHIP"
+                        "SAFE7-LIFETIME"
+                        "SAFE7-ERROR-MAP"
+                        "SAFE7-CALLBACK"
+                        "SAFE7-CAPABILITY"
+                        "SAFE7-HOST-PROFILE"
+                        "SAFE7-GENERATED"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE7 accepted records and 10 rejected diagnostics passed"}]}

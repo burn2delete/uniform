@@ -1,0 +1,23 @@
+accepted .gravity: gravity stage0 check passed: backend.specialized-lowering
+accepted .qst: gravity stage0 check passed: backend.specialized-lowering
+rejected .gravity backend-b8-atomic: B8-ATOMIC
+rejected .qst backend-b8-atomic: B8-ATOMIC
+rejected .gravity backend-b8-host-effect: B8-HOST-EFFECT
+rejected .qst backend-b8-host-effect: B8-HOST-EFFECT
+rejected .gravity backend-b8-kernel: B8-KERNEL
+rejected .qst backend-b8-kernel: B8-KERNEL
+rejected .gravity backend-b8-launch: B8-LAUNCH
+rejected .qst backend-b8-launch: B8-LAUNCH
+rejected .gravity backend-b8-manifest: B8-MANIFEST
+rejected .qst backend-b8-manifest: B8-MANIFEST
+rejected .gravity backend-b8-math: B8-MATH
+rejected .qst backend-b8-math: B8-MATH
+rejected .gravity backend-b8-memory: B8-MEMORY
+rejected .qst backend-b8-memory: B8-MEMORY
+rejected .gravity backend-b8-sync: B8-SYNC
+rejected .qst backend-b8-sync: B8-SYNC
+rejected .gravity backend-b8-target: B8-TARGET
+rejected .qst backend-b8-target: B8-TARGET
+rejected .gravity backend-b8-transfer: B8-TRANSFER
+rejected .qst backend-b8-transfer: B8-TRANSFER
+B8 public check bridge probes passed: accepted=2 rejected-pairs=10

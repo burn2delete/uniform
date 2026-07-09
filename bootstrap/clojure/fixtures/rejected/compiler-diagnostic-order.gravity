@@ -1,0 +1,44 @@
+(ns compiler.diagnostic-order
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:compiler
+    {:passes
+     {:diagnostic-fixtures
+      [{:rule "C15-ORDER"
+        :diagnostic-id "diag/order-z"
+        :severity :error
+        :stage :diagnostic-validate
+        :primary {:span "compiler/order.gravity:2:1"
+                  :artifact :diagnostic/order-z}
+        :related []
+        :origin-chain [{:kind :source
+                        :span "compiler/order.gravity:2:1"}]
+        :profile :meta
+        :target :jvm
+        :artifacts [:diagnostic/order-z]
+        :facts {:ordering :z}
+        :remediation [{:kind :sort-diagnostics}]
+        :redactions []
+        :secret-free? true
+        :ordering-key ["Z" 1]}
+       {:rule "C15-ORDER"
+        :diagnostic-id "diag/order-a"
+        :severity :error
+        :stage :diagnostic-validate
+        :primary {:span "compiler/order.gravity:1:1"
+                  :artifact :diagnostic/order-a}
+        :related []
+        :origin-chain [{:kind :source
+                        :span "compiler/order.gravity:1:1"}]
+        :profile :meta
+        :target :jvm
+        :artifacts [:diagnostic/order-a]
+        :facts {:ordering :a}
+        :remediation [{:kind :sort-diagnostics}]
+        :redactions []
+        :secret-free? true
+        :ordering-key ["A" 1]}]}}}))

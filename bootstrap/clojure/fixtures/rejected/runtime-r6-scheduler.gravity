@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: missing scheduler or thread provider.
+(ns runtime.r6-scheduler
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:thread/spawn})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-scheduler}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,2610 @@
+{
+  "gapCount": 215,
+  "gaps": [
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D0",
+      "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+      "sequence": 1
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D1",
+      "path": "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+      "sequence": 2
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D2",
+      "path": "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+      "sequence": 3
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D3",
+      "path": "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+      "sequence": 4
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D4",
+      "path": "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md",
+      "sequence": 5
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D5",
+      "path": "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md",
+      "sequence": 6
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D6",
+      "path": "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+      "sequence": 7
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D7",
+      "path": "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md",
+      "sequence": 8
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D8",
+      "path": "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+      "sequence": 9
+    },
+    {
+      "coverageClass": "no-executable-owner",
+      "gaps": [
+        "no-executable-owner",
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-artifact",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "D9",
+      "path": "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+      "sequence": 10
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L3",
+      "path": "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md",
+      "sequence": 13
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L4",
+      "path": "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+      "sequence": 14
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L5",
+      "path": "docs/phase-01-core-language/015-l5-type-system-specification.md",
+      "sequence": 15
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L6",
+      "path": "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+      "sequence": 16
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L7",
+      "path": "docs/phase-01-core-language/017-l7-pattern-matching-specification.md",
+      "sequence": 17
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L8",
+      "path": "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md",
+      "sequence": 18
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L9",
+      "path": "docs/phase-01-core-language/019-l9-error-handling-specification.md",
+      "sequence": 19
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L10",
+      "path": "docs/phase-01-core-language/020-l10-memory-model-specification.md",
+      "sequence": 20
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L11",
+      "path": "docs/phase-01-core-language/021-l11-concurrency-model-specification.md",
+      "sequence": 21
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L12",
+      "path": "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+      "sequence": 22
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L13",
+      "path": "docs/phase-01-core-language/023-l13-standard-library-design-principles.md",
+      "sequence": 23
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L14",
+      "path": "docs/phase-01-core-language/024-l14-language-facet-system-specification.md",
+      "sequence": 24
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L15",
+      "path": "docs/phase-01-core-language/025-l15-capability-provider-specification.md",
+      "sequence": 25
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L16",
+      "path": "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md",
+      "sequence": 26
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L17",
+      "path": "docs/phase-01-core-language/027-l17-alternative-type-system-contract.md",
+      "sequence": 27
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L18",
+      "path": "docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md",
+      "sequence": 28
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "L19",
+      "path": "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md",
+      "sequence": 29
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE1",
+      "path": "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+      "sequence": 30
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE2",
+      "path": "docs/phase-02-safety/031-safe2-memory-safety-model.md",
+      "sequence": 31
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE3",
+      "path": "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md",
+      "sequence": 32
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE4",
+      "path": "docs/phase-02-safety/033-safe4-region-and-arena-safety.md",
+      "sequence": 33
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE5",
+      "path": "docs/phase-02-safety/034-safe5-linear-resource-safety.md",
+      "sequence": 34
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE6",
+      "path": "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md",
+      "sequence": 35
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE7",
+      "path": "docs/phase-02-safety/036-safe7-ffi-safety.md",
+      "sequence": 36
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE8",
+      "path": "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md",
+      "sequence": 37
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE9",
+      "path": "docs/phase-02-safety/038-safe9-numeric-safety.md",
+      "sequence": 38
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE10",
+      "path": "docs/phase-02-safety/039-safe10-capability-security-model.md",
+      "sequence": 39
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE11",
+      "path": "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md",
+      "sequence": 40
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE12",
+      "path": "docs/phase-02-safety/041-safe12-macro-safety.md",
+      "sequence": 41
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE13",
+      "path": "docs/phase-02-safety/042-safe13-ai-tool-safety.md",
+      "sequence": 42
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE14",
+      "path": "docs/phase-02-safety/043-safe14-supply-chain-safety.md",
+      "sequence": 43
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE15",
+      "path": "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+      "sequence": 44
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "SAFE16",
+      "path": "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+      "sequence": 45
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P1",
+      "path": "docs/phase-03-profile-system/046-p1-profile-system-specification.md",
+      "sequence": 46
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P2",
+      "path": "docs/phase-03-profile-system/047-p2-core-profile-specification.md",
+      "sequence": 47
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P3",
+      "path": "docs/phase-03-profile-system/048-p3-meta-profile-specification.md",
+      "sequence": 48
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P4",
+      "path": "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md",
+      "sequence": 49
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P5",
+      "path": "docs/phase-03-profile-system/050-p5-native-profile-specification.md",
+      "sequence": 50
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P6",
+      "path": "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md",
+      "sequence": 51
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P7",
+      "path": "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md",
+      "sequence": 52
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P8",
+      "path": "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md",
+      "sequence": 53
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P9",
+      "path": "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md",
+      "sequence": 54
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P10",
+      "path": "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+      "sequence": 55
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P11",
+      "path": "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md",
+      "sequence": 56
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P12",
+      "path": "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md",
+      "sequence": 57
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "P13",
+      "path": "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md",
+      "sequence": 58
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF1",
+      "path": "docs/phase-04-performance-model/059-perf1-performance-model-specification.md",
+      "sequence": 59
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF2",
+      "path": "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md",
+      "sequence": 60
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF3",
+      "path": "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md",
+      "sequence": 61
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF4",
+      "path": "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md",
+      "sequence": 62
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF5",
+      "path": "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md",
+      "sequence": 63
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF6",
+      "path": "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md",
+      "sequence": 64
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF7",
+      "path": "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md",
+      "sequence": 65
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF8",
+      "path": "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md",
+      "sequence": 66
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PERF9",
+      "path": "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md",
+      "sequence": 67
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "PERF10",
+      "path": "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+      "sequence": 68
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH1",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md",
+      "sequence": 69
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH2",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md",
+      "sequence": 70
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH3",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+      "sequence": 71
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH4",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md",
+      "sequence": 72
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH5",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md",
+      "sequence": 73
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH6",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md",
+      "sequence": 74
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH7",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md",
+      "sequence": 75
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH8",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md",
+      "sequence": 76
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH9",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md",
+      "sequence": 77
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH10",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md",
+      "sequence": 78
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "MATH11",
+      "path": "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md",
+      "sequence": 79
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "C11",
+      "path": "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md",
+      "sequence": 90
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "C12",
+      "path": "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+      "sequence": 91
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-rejected-fixture",
+        "no-stable-diagnostic",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "C13",
+      "path": "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md",
+      "sequence": 92
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "B2",
+      "path": "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+      "sequence": 99
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "B3",
+      "path": "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md",
+      "sequence": 100
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "B4",
+      "path": "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md",
+      "sequence": 101
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "B5",
+      "path": "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md",
+      "sequence": 102
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "B6",
+      "path": "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+      "sequence": 103
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation"
+      ],
+      "id": "B13",
+      "path": "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md",
+      "sequence": 110
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation"
+      ],
+      "id": "B14",
+      "path": "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md",
+      "sequence": 111
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "R1",
+      "path": "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md",
+      "sequence": 112
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "R2",
+      "path": "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md",
+      "sequence": 113
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R3",
+      "path": "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md",
+      "sequence": 114
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation"
+      ],
+      "id": "R4",
+      "path": "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md",
+      "sequence": 115
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "R5",
+      "path": "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md",
+      "sequence": 116
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R6",
+      "path": "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+      "sequence": 117
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R7",
+      "path": "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+      "sequence": 118
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R8",
+      "path": "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+      "sequence": 119
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R9",
+      "path": "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md",
+      "sequence": 120
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R10",
+      "path": "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md",
+      "sequence": 121
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "R11",
+      "path": "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md",
+      "sequence": 122
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "R12",
+      "path": "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md",
+      "sequence": 123
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM1",
+      "path": "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md",
+      "sequence": 124
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM2",
+      "path": "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md",
+      "sequence": 125
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM3",
+      "path": "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md",
+      "sequence": 126
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM4",
+      "path": "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md",
+      "sequence": 127
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM5",
+      "path": "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md",
+      "sequence": 128
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM6",
+      "path": "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+      "sequence": 129
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM7",
+      "path": "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md",
+      "sequence": 130
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM8",
+      "path": "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md",
+      "sequence": 131
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM9",
+      "path": "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md",
+      "sequence": 132
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM10",
+      "path": "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md",
+      "sequence": 133
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM11",
+      "path": "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md",
+      "sequence": 134
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM12",
+      "path": "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md",
+      "sequence": 135
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM13",
+      "path": "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+      "sequence": 136
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM14",
+      "path": "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md",
+      "sequence": 137
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM15",
+      "path": "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md",
+      "sequence": 138
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM16",
+      "path": "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md",
+      "sequence": 139
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM18",
+      "path": "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md",
+      "sequence": 141
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM19",
+      "path": "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md",
+      "sequence": 142
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM20",
+      "path": "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md",
+      "sequence": 143
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "DOM21",
+      "path": "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md",
+      "sequence": 144
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S1",
+      "path": "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md",
+      "sequence": 145
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S2",
+      "path": "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md",
+      "sequence": 146
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S3",
+      "path": "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md",
+      "sequence": 147
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S4",
+      "path": "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md",
+      "sequence": 148
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S5",
+      "path": "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md",
+      "sequence": 149
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S6",
+      "path": "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md",
+      "sequence": 150
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S7",
+      "path": "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md",
+      "sequence": 151
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S8",
+      "path": "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md",
+      "sequence": 152
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "S9",
+      "path": "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md",
+      "sequence": 153
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A1",
+      "path": "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md",
+      "sequence": 154
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "A2",
+      "path": "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md",
+      "sequence": 155
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A3",
+      "path": "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md",
+      "sequence": 156
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A4",
+      "path": "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md",
+      "sequence": 157
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A5",
+      "path": "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md",
+      "sequence": 158
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A6",
+      "path": "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md",
+      "sequence": 159
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A7",
+      "path": "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md",
+      "sequence": 160
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A8",
+      "path": "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md",
+      "sequence": 161
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A9",
+      "path": "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md",
+      "sequence": 162
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A10",
+      "path": "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md",
+      "sequence": 163
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "A11",
+      "path": "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md",
+      "sequence": 164
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG1",
+      "path": "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      "sequence": 165
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG2",
+      "path": "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md",
+      "sequence": 166
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation"
+      ],
+      "id": "PKG3",
+      "path": "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md",
+      "sequence": 167
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG4",
+      "path": "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md",
+      "sequence": 168
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG5",
+      "path": "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+      "sequence": 169
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG6",
+      "path": "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      "sequence": 170
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG7",
+      "path": "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      "sequence": 171
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG8",
+      "path": "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md",
+      "sequence": 172
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG9",
+      "path": "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
+      "sequence": 173
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG10",
+      "path": "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md",
+      "sequence": 174
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "PKG11",
+      "path": "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md",
+      "sequence": 175
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "PKG12",
+      "path": "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+      "sequence": 176
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T1",
+      "path": "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md",
+      "sequence": 177
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T2",
+      "path": "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md",
+      "sequence": 178
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T3",
+      "path": "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md",
+      "sequence": 179
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T4",
+      "path": "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md",
+      "sequence": 180
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T5",
+      "path": "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md",
+      "sequence": 181
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T6",
+      "path": "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md",
+      "sequence": 182
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T7",
+      "path": "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md",
+      "sequence": 183
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T8",
+      "path": "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md",
+      "sequence": 184
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T9",
+      "path": "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md",
+      "sequence": 185
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T10",
+      "path": "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md",
+      "sequence": 186
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T11",
+      "path": "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md",
+      "sequence": 187
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T12",
+      "path": "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md",
+      "sequence": 188
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "T13",
+      "path": "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md",
+      "sequence": 189
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST1",
+      "path": "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md",
+      "sequence": 190
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST2",
+      "path": "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md",
+      "sequence": 191
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST3",
+      "path": "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md",
+      "sequence": 192
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST4",
+      "path": "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md",
+      "sequence": 193
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST5",
+      "path": "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md",
+      "sequence": 194
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation"
+      ],
+      "id": "TEST6",
+      "path": "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md",
+      "sequence": 195
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST7",
+      "path": "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md",
+      "sequence": 196
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST8",
+      "path": "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md",
+      "sequence": 197
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST9",
+      "path": "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md",
+      "sequence": 198
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST10",
+      "path": "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md",
+      "sequence": 199
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST11",
+      "path": "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md",
+      "sequence": 200
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST12",
+      "path": "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md",
+      "sequence": 201
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "TEST13",
+      "path": "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md",
+      "sequence": 202
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "BOOT1",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md",
+      "sequence": 203
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "BOOT2",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      "sequence": 204
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "BOOT3",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+      "sequence": 205
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "BOOT4",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+      "sequence": 206
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "BOOT5",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md",
+      "sequence": 207
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof"
+      ],
+      "id": "BOOT6",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
+      "sequence": 208
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "BOOT7",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
+      "sequence": 209
+    },
+    {
+      "coverageClass": "current-public-executable-surface",
+      "gaps": [
+        "no-gravity-authored-implementation"
+      ],
+      "id": "BOOT8",
+      "path": "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+      "sequence": 210
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD1",
+      "path": "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+      "sequence": 211
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD2",
+      "path": "docs/phase-16-standard-library/212-std2-core-library-specification.md",
+      "sequence": 212
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD3",
+      "path": "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
+      "sequence": 213
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD4",
+      "path": "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md",
+      "sequence": 214
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD5",
+      "path": "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md",
+      "sequence": 215
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD6",
+      "path": "docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md",
+      "sequence": 216
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD7",
+      "path": "docs/phase-16-standard-library/217-std7-concurrency-library-specification.md",
+      "sequence": 217
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD8",
+      "path": "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md",
+      "sequence": 218
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD9",
+      "path": "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md",
+      "sequence": 219
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD10",
+      "path": "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md",
+      "sequence": 220
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD11",
+      "path": "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md",
+      "sequence": 221
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD12",
+      "path": "docs/phase-16-standard-library/222-std12-workflow-library-specification.md",
+      "sequence": 222
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD13",
+      "path": "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md",
+      "sequence": 223
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD14",
+      "path": "docs/phase-16-standard-library/224-std14-testing-library-specification.md",
+      "sequence": 224
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD15",
+      "path": "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md",
+      "sequence": 225
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD16",
+      "path": "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md",
+      "sequence": 226
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD17",
+      "path": "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md",
+      "sequence": 227
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD18",
+      "path": "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md",
+      "sequence": 228
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD19",
+      "path": "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md",
+      "sequence": 229
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "STD20",
+      "path": "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md",
+      "sequence": 230
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV1",
+      "path": "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md",
+      "sequence": 231
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV2",
+      "path": "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md",
+      "sequence": 232
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV3",
+      "path": "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md",
+      "sequence": 233
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV4",
+      "path": "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md",
+      "sequence": 234
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV5",
+      "path": "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md",
+      "sequence": 235
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV6",
+      "path": "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md",
+      "sequence": 236
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV7",
+      "path": "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md",
+      "sequence": 237
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV8",
+      "path": "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md",
+      "sequence": 238
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV9",
+      "path": "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md",
+      "sequence": 239
+    },
+    {
+      "coverageClass": "clojure-seed-artifact-surface",
+      "gaps": [
+        "no-accepted-fixture",
+        "no-gravity-authored-implementation",
+        "no-public-gravity-accepted-proof",
+        "no-public-gravity-rejected-proof"
+      ],
+      "id": "GOV10",
+      "path": "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md",
+      "sequence": 240
+    }
+  ],
+  "generatedOn": "2026-07-08",
+  "inventoryCount": 240,
+  "kind": "gravity/full-language-coverage-gap-report",
+  "noExecutableOwnerCount": 7
+}

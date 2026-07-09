@@ -1,0 +1,48 @@
+{:phase "05"
+ :task "P05-D079"
+ :document "MATH11"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md"
+ :artifact-kind :gravity/stage0-math-conformance-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-conformance.gravity"
+ :covered-artifact-fields
+ [:math-conformance-suite-manifest
+  :reference-oracle-manifest
+  :fixture-corpus
+  :efir-verification-reports
+  :eml-trace-replay-reports
+  :certificate-replay-logs
+  :interval-proof-replay-logs
+  :rewrite-trace-replay-logs
+  :floating-conformance-report
+  :provider-and-backend-lowering-reports
+  :per-profile-target-result-matrix
+  :math-conformance-results]
+ :required-diagnostic-ids
+ ["MATH11-FIXTURE" "MATH11-ORACLE" "MATH11-ARTIFACT"
+  "MATH11-EFIR" "MATH11-EML" "MATH11-CERTIFICATE"
+  "MATH11-INTERVAL" "MATH11-FLOATING" "MATH11-REWRITE"
+  "MATH11-OPTIMIZATION" "MATH11-DIAGNOSTIC"]
+ :rejected-fixtures
+ [{:fixture "math-conf-fixture.gravity" :diagnostic "MATH11-FIXTURE"}
+  {:fixture "math-conf-oracle.gravity" :diagnostic "MATH11-ORACLE"}
+  {:fixture "math-conf-artifact.gravity" :diagnostic "MATH11-ARTIFACT"}
+  {:fixture "math-conf-efir.gravity" :diagnostic "MATH11-EFIR"}
+  {:fixture "math-conf-eml.gravity" :diagnostic "MATH11-EML"}
+  {:fixture "math-conf-certificate.gravity" :diagnostic "MATH11-CERTIFICATE"}
+  {:fixture "math-conf-interval.gravity" :diagnostic "MATH11-INTERVAL"}
+  {:fixture "math-conf-floating.gravity" :diagnostic "MATH11-FLOATING"}
+  {:fixture "math-conf-rewrite.gravity" :diagnostic "MATH11-REWRITE"}
+  {:fixture "math-conf-optimization.gravity" :diagnostic "MATH11-OPTIMIZATION"}
+  {:fixture "math-conf-diagnostic.gravity" :diagnostic "MATH11-DIAGNOSTIC"}]
+ :capability-based-proof
+ {:suite-manifest-covers-math1-through-math10? true
+  :fixtures-shaped-and-provenance-backed? true
+  :oracles-trusted-and-available? true
+  :expected-artifacts-present? true
+  :efir-eml-certificate-interval-rewrite-replay-complete? true
+  :floating-conformance-checked? true
+  :optimization-result-checked? true
+  :cross-profile-target-matrix-present? true
+  :negative-diagnostics-deterministic? true
+  :status :complete}
+ :status :complete}

@@ -1,0 +1,13 @@
+(ns core.app.domain-manifest
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:domain {:compiled-gate
+                       {:domain-slices
+                        [{:document-id "DOM17"
+                          :slice-id :core-app/domain}]}}}))
+
+(defn main []
+  (println "bad domain manifest"))

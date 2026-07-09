@@ -1,0 +1,11 @@
+; Rejected P13 T12 fixture.
+(ns tooling.t12-unsafe-island
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t12001}}}))
+
+(defn main [] :- I64 1)

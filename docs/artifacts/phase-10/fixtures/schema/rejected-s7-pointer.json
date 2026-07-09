@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "delete": [
+    "/binary_abi_schema/ownership_lifetime_map"
+  ]
+}

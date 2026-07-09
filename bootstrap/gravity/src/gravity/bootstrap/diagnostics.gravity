@@ -1,0 +1,42 @@
+; Stage1 Gravity-owned diagnostic skeleton.
+(ns gravity.bootstrap.diagnostics
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [diagnostic-record])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :diagnostics
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["BOOT1" "BOOT2" "BOOT3" "BOOT4"
+                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"
+                           "C2" "C3" "C15"]
+               :implements [:diagnostic-record :stable-diagnostic-code
+                             :remediation :source-span-reporting]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-diagnostic-subset]}
+               :conformance {:accepted-fixture "bootstrap/gravity/src"
+                             :rejected-fixtures
+                             ["stage1-bootstrap-missing-owner.gravity"
+                              "stage1-bootstrap-wrong-profile.gravity"
+                              "stage1-bootstrap-ambient-authority.gravity"
+                              "stage1-bootstrap-missing-lineage.gravity"
+                              "stage1-bootstrap-missing-preserved-fact.gravity"
+                              "stage1-bootstrap-incomplete-source-set.gravity"]}}}))
+
+(defn diagnostic-record [code span remediation]
+  (quote {:status :stage1-source-owned
+          :code code
+          :span span
+          :remediation remediation
+          :preserves [:diagnostic-codes :source-spans]}))

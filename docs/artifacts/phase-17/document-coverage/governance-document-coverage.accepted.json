@@ -1,0 +1,260 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:cb47761cac7bfde67a92eeb17672fb14c380faab911ff199412f73e0eea9294d",
+      "artifact_id": "phase17-gov1-language-evolution",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "change record",
+        "owner/scope",
+        "review gates",
+        "release traceability"
+      ],
+      "document": "GOV1",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md",
+      "record_id": "GOV1-CHANGE-accepted",
+      "task_id": "P17-D231"
+    },
+    {
+      "artifact_hash": "sha256:03d9e1233de246825413eaee8c3960f521ea2349612aa97c087dd951e571f247",
+      "artifact_id": "phase17-gov2-compatibility",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "baseline analysis",
+        "compatibility surfaces",
+        "migration records",
+        "package metadata"
+      ],
+      "document": "GOV2",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md",
+      "record_id": "COMPAT-accepted",
+      "task_id": "P17-D232"
+    },
+    {
+      "artifact_hash": "sha256:812df78d66573eba0b01e3aceef4b93f5d0f1a42cd31dcaf2c33869f46a2ef86",
+      "artifact_id": "phase17-gov3-standard-library",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "stdlib ownership",
+        "module manifests",
+        "safe-wrapper evidence",
+        "release review"
+      ],
+      "document": "GOV3",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md",
+      "record_id": "STD-GOV-accepted",
+      "task_id": "P17-D233"
+    },
+    {
+      "artifact_hash": "sha256:2b22c463d95fbdbc1fa9ca2e995dc48b29cbcf0e1c024780cd5d506fee2ac0d9",
+      "artifact_id": "phase17-gov4-security-review",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "security record",
+        "threat model",
+        "capability/taint/redaction evidence",
+        "residual risk"
+      ],
+      "document": "GOV4",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/234-gov4-security-review-process.md",
+      "record_id": "SEC-accepted",
+      "task_id": "P17-D234"
+    },
+    {
+      "artifact_hash": "sha256:78c838155f3269d050e5cedcaf7f5ac87bab29b04966a879c3f6e2fa99233ae1",
+      "artifact_id": "phase17-gov5-target-support",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "target tier",
+        "profile matrix",
+        "backend/runtime evidence",
+        "package artifacts"
+      ],
+      "document": "GOV5",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/235-gov5-target-support-policy.md",
+      "record_id": "TARGET-accepted",
+      "task_id": "P17-D235"
+    },
+    {
+      "artifact_hash": "sha256:4e4b2a5aa75997c6f68f51539819791b19edded1157779bd256360f6851cc098",
+      "artifact_id": "phase17-gov6-rfc",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "RFC owner/scope",
+        "required sections",
+        "decision history",
+        "implementation trace"
+      ],
+      "document": "GOV6",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md",
+      "record_id": "RFC-accepted",
+      "task_id": "P17-D236"
+    },
+    {
+      "artifact_hash": "sha256:3ca4bced14c8a6351afd969e8b5d3336e361a5ae8041026fda7515ebdd4a22ea",
+      "artifact_id": "phase17-gov7-experiment",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "experiment metadata",
+        "explicit opt-in",
+        "expiry",
+        "rollback",
+        "on/off fixtures"
+      ],
+      "document": "GOV7",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md",
+      "record_id": "EXP-accepted",
+      "task_id": "P17-D237"
+    },
+    {
+      "artifact_hash": "sha256:318f896b60b17f85800e6f7aa1c4c7be53f83481ee893f277aedfe0c15c364f6",
+      "artifact_id": "phase17-gov8-deprecation-stabilization",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "stabilization record",
+        "deprecation record",
+        "compatibility baseline",
+        "migration artifacts"
+      ],
+      "document": "GOV8",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md",
+      "record_id": "STABLE-DEP-accepted",
+      "task_id": "P17-D238"
+    },
+    {
+      "artifact_hash": "sha256:59abf9b1e16d513a3957f88a27dfd05c45406c0aaa466fd54496dd5875b825b0",
+      "artifact_id": "phase17-gov9-unsafe",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "unsafe island record",
+        "safe wrapper proof",
+        "negative fixtures",
+        "stale audit report"
+      ],
+      "document": "GOV9",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md",
+      "record_id": "UNSAFE-accepted",
+      "task_id": "P17-D239"
+    },
+    {
+      "artifact_hash": "sha256:ea672f0437606385dfdba6b7b0990478f3c1d576f6dc4f8ad6d3116f5508e78c",
+      "artifact_id": "phase17-gov10-package",
+      "artifact_kind": "governance-evolution-artifact",
+      "coverage": [
+        "package identity",
+        "signing/provenance/SBOM",
+        "capabilities",
+        "advisories",
+        "namespace governance"
+      ],
+      "document": "GOV10",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/accepted-governance-evolution.json",
+      "governing_doc": "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md",
+      "record_id": "PKG-GOV-accepted",
+      "task_id": "P17-D240"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 10,
+    "documents": 10,
+    "rejected_diagnostics": 10,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "GOV1",
+    "GOV2",
+    "GOV3",
+    "GOV4",
+    "GOV5",
+    "GOV6",
+    "GOV7",
+    "GOV8",
+    "GOV9",
+    "GOV10"
+  ],
+  "input_hash": "sha256:36ad48b72465dc4e7646a741fa4d88d2fc4886061b28238e2036abe164b5d61c",
+  "kind": "phase17-governance-document-coverage-artifact",
+  "phase": "17",
+  "rejected": [
+    {
+      "diagnostic": "GOV1001",
+      "document": "GOV1",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov1-owner.json",
+      "missing_fact": "change-owner-scope",
+      "task_id": "P17-D231"
+    },
+    {
+      "diagnostic": "GOV2001",
+      "document": "GOV2",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov2-baseline.json",
+      "missing_fact": "compatibility-baseline",
+      "task_id": "P17-D232"
+    },
+    {
+      "diagnostic": "GOV3001",
+      "document": "GOV3",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov3-stdlib-owner.json",
+      "missing_fact": "standard-library-owner",
+      "task_id": "P17-D233"
+    },
+    {
+      "diagnostic": "GOV4001",
+      "document": "GOV4",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov4-security-review.json",
+      "missing_fact": "security-review",
+      "task_id": "P17-D234"
+    },
+    {
+      "diagnostic": "GOV5001",
+      "document": "GOV5",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov5-target-tier.json",
+      "missing_fact": "target-tier-owner",
+      "task_id": "P17-D235"
+    },
+    {
+      "diagnostic": "GOV6001",
+      "document": "GOV6",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov6-rfc-owner.json",
+      "missing_fact": "rfc-owner-scope",
+      "task_id": "P17-D236"
+    },
+    {
+      "diagnostic": "GOV7001",
+      "document": "GOV7",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov7-experiment-metadata.json",
+      "missing_fact": "experiment-metadata",
+      "task_id": "P17-D237"
+    },
+    {
+      "diagnostic": "GOV8001",
+      "document": "GOV8",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov8-stabilization-evidence.json",
+      "missing_fact": "stabilization-evidence",
+      "task_id": "P17-D238"
+    },
+    {
+      "diagnostic": "GOV9001",
+      "document": "GOV9",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov9-unsafe-record.json",
+      "missing_fact": "unsafe-island-record",
+      "task_id": "P17-D239"
+    },
+    {
+      "diagnostic": "GOV10001",
+      "document": "GOV10",
+      "fixture": "docs/artifacts/phase-17/fixtures/governance/rejected-gov10-package-identity.json",
+      "missing_fact": "package-identity",
+      "task_id": "P17-D240"
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "runtime family selection",
+        "service classification table",
+        "hidden forbidden service rejection"
+      ],
+      "document": "R1",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md",
+      "task_id": "P08-D112"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "runtime none manifest",
+        "startup, memory, failure, and forbidden-service records",
+        "hidden runtime service rejection"
+      ],
+      "document": "R2",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md",
+      "task_id": "P08-D113"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "native linked services, panic, allocator, and atomics",
+        "debug versus release policy",
+        "runtime helper capability rejection"
+      ],
+      "document": "R3",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md",
+      "task_id": "P08-D114"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "managed host runtime adapters",
+        "null and exception translation",
+        "unchecked host null rejection"
+      ],
+      "document": "R4",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md",
+      "task_id": "P08-D115"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "memory provider manifests",
+        "runtime check map and debug trace schema",
+        "region escape rejection"
+      ],
+      "document": "R5",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/116-r5-memory-runtime-design.md",
+      "task_id": "P08-D116"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "scheduler and task tree",
+        "synchronization graph and actor/channel schemas",
+        "unsynchronized shared-state rejection"
+      ],
+      "document": "R6",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+      "task_id": "P08-D117"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "service topology and schemas",
+        "event-log, replay, idempotency, retry, and compensation records",
+        "unrecorded nondeterminism rejection"
+      ],
+      "document": "R7",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+      "task_id": "P08-D118"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "model call ledger and prompt provenance",
+        "tool, policy, human-review, budget, and replay records",
+        "tool policy gap rejection"
+      ],
+      "document": "R8",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+      "task_id": "P08-D119"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "session manifest and transcript",
+        "syntax, typed-core, MIR, capability, and hot-reload records",
+        "compiler-check bypass rejection"
+      ],
+      "document": "R9",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/120-r9-repl-and-interactive-runtime-design.md",
+      "task_id": "P08-D120"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "FFI binding, symbol, ABI, adapter, and wrapper records",
+        "foreign handle and callback policies",
+        "foreign pointer lifetime rejection"
+      ],
+      "document": "R10",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md",
+      "task_id": "P08-D121"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "capability table and decision log",
+        "delegation, revocation, and redaction records",
+        "ambient authority rejection"
+      ],
+      "document": "R11",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md",
+      "task_id": "P08-D122"
+    },
+    {
+      "artifact_hash": "sha256:586055664dc4b7a6e29861d43fc70e988621118d1abb9bc0d08b94165f7d4f21",
+      "artifact_kind": "runtime-architecture-artifact",
+      "coverage": [
+        "event schema registry",
+        "diagnostic bundle, sink capability, and redaction policy",
+        "observability secret leakage rejection"
+      ],
+      "document": "R12",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/accepted-runtime-architecture.json",
+      "governing_doc": "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md",
+      "task_id": "P08-D123"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 12,
+    "documents": 12,
+    "rejected_diagnostics": 12,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+  ],
+  "input_hash": "sha256:7e761c129ec1b5ff91b4b1700d93ce12836e00a3849dfa511605f808bccc4dc3",
+  "kind": "phase08-runtime-document-coverage-artifact",
+  "phase": "08",
+  "rejected": [
+    {
+      "diagnostic": "R1-FORBIDDEN",
+      "document": "R1",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r1-forbidden.json",
+      "missing_fact": "forbidden-service-report",
+      "task_id": "P08-D112"
+    },
+    {
+      "diagnostic": "R2-HIDDEN-SERVICE",
+      "document": "R2",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r2-hidden-service.json",
+      "missing_fact": "forbidden-service",
+      "task_id": "P08-D113"
+    },
+    {
+      "diagnostic": "R3-CAPABILITY",
+      "document": "R3",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r3-capability.json",
+      "missing_fact": "helper-capability",
+      "task_id": "P08-D114"
+    },
+    {
+      "diagnostic": "R4-NULL",
+      "document": "R4",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r4-null.json",
+      "missing_fact": "null-translation-map",
+      "task_id": "P08-D115"
+    },
+    {
+      "diagnostic": "R5-LIFETIME",
+      "document": "R5",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r5-lifetime.json",
+      "missing_fact": "region-lifetime",
+      "task_id": "P08-D116"
+    },
+    {
+      "diagnostic": "R6-RACE",
+      "document": "R6",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r6-race.json",
+      "missing_fact": "sync-or-transfer-proof",
+      "task_id": "P08-D117"
+    },
+    {
+      "diagnostic": "R7-REPLAY",
+      "document": "R7",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r7-replay.json",
+      "missing_fact": "event-log-replay",
+      "task_id": "P08-D118"
+    },
+    {
+      "diagnostic": "R8-TOOL",
+      "document": "R8",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r8-tool.json",
+      "missing_fact": "tool-policy",
+      "task_id": "P08-D119"
+    },
+    {
+      "diagnostic": "R9-CHECKS",
+      "document": "R9",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r9-checks.json",
+      "missing_fact": "normal-compiler-pipeline",
+      "task_id": "P08-D120"
+    },
+    {
+      "diagnostic": "R10-POINTER",
+      "document": "R10",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r10-pointer.json",
+      "missing_fact": "pointer-lifetime-ownership",
+      "task_id": "P08-D121"
+    },
+    {
+      "diagnostic": "R11-AMBIENT",
+      "document": "R11",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r11-ambient.json",
+      "missing_fact": "scoped-capability-handle",
+      "task_id": "P08-D122"
+    },
+    {
+      "diagnostic": "R12-SECRET",
+      "document": "R12",
+      "fixture": "docs/artifacts/phase-08/fixtures/runtime/rejected-r12-secret.json",
+      "missing_fact": "redaction-policy",
+      "task_id": "P08-D123"
+    }
+  ]
+}

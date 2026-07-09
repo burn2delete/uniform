@@ -1,0 +1,21 @@
+{:proof-id :stage0-p2-core-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D047
+ :document "P2"
+ :profile :core
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-set-core.gravity"
+ :artifact-kind :gravity/stage0-profile-set-artifact
+ :effective-effects #{}
+ :effective-capabilities #{}
+ :diagnostic-fixtures
+ {"P2-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-core-effect.gravity"
+  "P2-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-core-capability.gravity"
+  "P2-RUNTIME" "bootstrap/clojure/fixtures/rejected/profile-core-runtime.gravity"
+  "P2-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-core-memory.gravity"
+  "P2-UNSAFE" "bootstrap/clojure/fixtures/rejected/profile-core-unsafe.gravity"
+  "P2-NONDETERMINISM" "bootstrap/clojure/fixtures/rejected/profile-core-nondeterminism.gravity"
+  "P2-MACRO" "bootstrap/clojure/fixtures/rejected/profile-core-macro.gravity"
+  "P2-IMPORT" "bootstrap/clojure/fixtures/rejected/profile-core-import.gravity"
+  "P2-BACKEND" "bootstrap/clojure/fixtures/rejected/profile-core-backend.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

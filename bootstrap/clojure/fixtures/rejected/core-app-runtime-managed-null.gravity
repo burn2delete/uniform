@@ -1,0 +1,31 @@
+(ns core.app.runtime-managed-null
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:runtime {:compiled-gate
+                        {:managed-runtimes
+                         [{:family :managed
+                           :host-runtime :clojure-jvm
+                           :host-version "21"
+                           :module-system :clojure-ns
+                           :package-system :deps-edn
+                           :services [:stage0-instruction-runner]
+                           :interop :closed
+                           :collection-semantics :clojure-persistent
+                           :dynamic-state :none
+                           :exception-policy :diagnostic-ex-info
+                           :nullability-policy :checked
+                           :reflection-policy :not-used
+                           :interop-policy :typed-adapters-only
+                           :source-debug-map :preserved
+                           :capability-enforcement :deny-by-default
+                           :observability :local-diagnostic-bundle
+                           :null-flow
+                           [{:host-symbol "java.lang.String"
+                             :checked? false
+                             :wrapper :raw-host-value}]}]}}}))
+
+(defn main []
+  (println "bad runtime managed null"))

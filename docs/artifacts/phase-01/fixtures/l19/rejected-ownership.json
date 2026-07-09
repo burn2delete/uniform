@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-interop.json",
+  "set": {
+    "/boundaries/0/ownership/complete": false
+  }
+}

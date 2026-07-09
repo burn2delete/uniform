@@ -1,0 +1,16 @@
+(ns math.approx-error
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:approximation
+           {:certificate-overrides
+            [{:error-proof {:approximation 2.0e-5
+                            :coefficient 0.0
+                            :roundoff 1.0e-6
+                            :reconstruction 0.0
+                            :target-lowering 0.0
+                            :combined 2.1e-5
+                            :method :interval}}]}}}))

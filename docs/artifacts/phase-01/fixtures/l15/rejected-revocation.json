@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-providers.json",
+  "set": {
+    "/providers/1/revocation_supported": false,
+    "/selection_requests/1/revocation_required": true
+  }
+}

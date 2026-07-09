@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: managed GC used as linear resource cleanup.
+(ns runtime.r4-resource
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:resource/close})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-resource}}}))
+
+(defn main [] :- I64
+  1)

@@ -1,0 +1,10 @@
+(ns typed.dispatch.ambiguous
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (dispatch/ambiguous :Closeable :FileHandle :close))

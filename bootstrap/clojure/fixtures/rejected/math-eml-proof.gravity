@@ -1,0 +1,16 @@
+(ns math.eml-proof
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:eml
+     {:proof-requests
+      [{:proof-id :proof/bad
+        :candidate-id :candidate/sigmoid-eml
+        :kind :symbolic-replay
+        :artifact :proof/bad
+        :checker :gravity.stage0/eml-trace-checker
+        :status :rejected}]}}}))

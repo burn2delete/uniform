@@ -1,0 +1,93 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D102
+ :date "2026-06-29"
+ :status :complete
+ :capability :b5-jvm-backend-document-coverage
+ :command "clojure -M:gravity backend-b5-jvm-document bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+ :artifact-kind :gravity/stage0-b5-jvm-backend-document-artifact
+ :artifact-hash "sha256:cd31fb185a1936f408d0ef6f666265c8ee7554ba9c3a9fb27710407f4292ca76"
+ :summary {:diagnostics 11
+           :rejected-designs 5
+           :conformance-criteria 13
+           :java-source-hash "sha256:cdde9b2e2e9379bff5d84f141f4bb1bf227ca31117219a00ca49155120e0cdbc"
+           :module-hash "sha256:e9637572a955ba204d3722d80ac1deb17863fa7910c0ffc1725fdbc0fedec0c1"
+           :java-structural true
+           :javac-proof :passed
+           :jar-proof :passed
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b5-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-null.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-exception.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-reflection.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-classloading.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-interop.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-resource.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-thread.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-native-image.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-manifest.gravity"]
+ :diagnostics ["B5-TARGET"
+               "B5-NULL"
+               "B5-EXCEPTION"
+               "B5-REFLECTION"
+               "B5-CLASSLOADING"
+               "B5-INTEROP"
+               "B5-RESOURCE"
+               "B5-THREAD"
+               "B5-NATIVE-IMAGE"
+               "B5-PROFILE"
+               "B5-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :classfile-jvm-target-pinned? true
+                :class-module-model-covered? true
+                :value-representation-covered? true
+                :interop-descriptor-covered? true
+                :nullability-and-exception-covered? true
+                :reflection-dynamic-use-declared? true
+                :classloading-policy-covered? true
+                :resource-cleanup-deterministic? true
+                :thread-monitor-executor-atomic-covered? true
+                :native-image-config-consistent? true
+                :profile-boundary-rejection-covered? true
+                :source-debug-map-preserved? true
+                :java-source-structurally-valid? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :requires-external-javac-proof? true
+                :requires-external-jar-proof? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 81 tests containing 4616 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1105}
+              {:command "clojure -M:gravity backend-b5-jvm-document bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:cd31fb185a1936f408d0ef6f666265c8ee7554ba9c3a9fb27710407f4292ca76"}
+              {:command "javac --release 21 -d /tmp/gravity-p07-b5-classes /tmp/gravity-p07-b5-src/module-info.java /tmp/gravity-p07-b5-src/gravity/stage0/Hosted.java"
+               :result :passed
+               :java-source-hash "sha256:cdde9b2e2e9379bff5d84f141f4bb1bf227ca31117219a00ca49155120e0cdbc"
+               :module-hash "sha256:e9637572a955ba204d3722d80ac1deb17863fa7910c0ffc1725fdbc0fedec0c1"}
+              {:command "jar --create --file /tmp/gravity-p07-b5.jar -C /tmp/gravity-p07-b5-classes ."
+               :result :passed}
+              {:command "jar --list --file /tmp/gravity-p07-b5.jar"
+               :result ["META-INF/"
+                        "META-INF/MANIFEST.MF"
+                        "module-info.class"
+                        "gravity/"
+                        "gravity/stage0/"
+                        "gravity/stage0/Hosted$GravityPanic.class"
+                        "gravity/stage0/Hosted$Resource.class"
+                        "gravity/stage0/Hosted.class"]}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 11 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D102 for deterministic Clojure stage0 coverage of the B5 JVM backend design document contract."
+                 "The emitted Java and module descriptor compile with javac --release 21 and package into a JAR, but this does not claim production JVM backend optimization, native-image execution, server/runtime deployment, or full Phase 07 completion."]}

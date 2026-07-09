@@ -1,0 +1,652 @@
+; Stage1 Gravity-owned C18 compiler verification and pass-correctness contract.
+(ns gravity.compiler.c18-compiler-verification-pass-correctness
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c18-compiler-verification-contract
+             c18-pass-risk-contract
+             c18-pass-proof-obligation-contract
+             c18-translation-validation-contract
+             c18-replay-contract
+             c18-evidence-record-contract
+             c18-counterexample-contract
+             c18-trust-report-contract
+             c18-release-gate-contract
+             c18-plugin-verification-contract
+             c18-backend-conformance-contract
+             c18-diagnostic-catalog
+             build-c18-pass-risk
+             build-c18-proof-obligation
+             build-c18-translation-validation
+             build-c18-evidence-record
+             build-c18-counterexample
+             build-c18-trust-report
+             build-c18-release-gate
+             build-c18-plugin-report
+             build-c18-backend-conformance-report
+             verify-c18-compiler-verification])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :compiler-verification
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["C18" "C1" "C15" "C17"
+                                        "C13" "C14" "B14" "D1"
+                                        "D3" "D6" "D8" "D9"
+                                        "P3" "SAFE15" "PERF10"
+                                        "BOOT1" "BOOT3" "BOOT8"
+                                        "TEST2" "TEST10" "TEST11"
+                                        "TEST13"]
+               :documents ["C18" "C1" "C15" "C17" "C13" "C14"
+                           "B14" "D1" "D3" "D6" "D8" "D9"
+                           "P3" "SAFE15" "PERF10" "BOOT1"
+                           "BOOT3" "BOOT8" "TEST2" "TEST10"
+                           "TEST11" "TEST13"]
+               :implements [:compiler-verification-source-model
+                             :pass-risk-classification-contract
+                             :pass-proof-obligation-contract
+                             :translation-validation-contract
+                             :verification-replay-contract
+                             :pass-evidence-record-contract
+                             :counterexample-artifact-contract
+                             :compiler-trust-report-contract
+                             :release-gate-contract
+                             :plugin-verification-contract
+                             :backend-conformance-contract
+                             :stable-c18-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :compiler-pipeline-manifest
+                            :pass-contracts :pass-versions
+                            :pass-risk-classifications
+                            :type-facts :effect-facts
+                            :capability-facts :ownership-facts
+                            :profile-target-metadata
+                            :safety-outcomes :runtime-check-records
+                            :proof-obligations :proof-references
+                            :certificate-references
+                            :translation-validation-logs
+                            :differential-test-results
+                            :property-test-results
+                            :conformance-fixture-results
+                            :counterexample-artifacts
+                            :trust-report-entries
+                            :release-gate-decisions
+                            :bootstrap-provenance}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call
+                                    :registry :ffi :raw-memory]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c18-verification-contract-subset
+                                    :clojure-c18-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c18-risk.gravity"
+                              "compiler-c18-evidence.gravity"
+                              "compiler-c18-validation.gravity"
+                              "compiler-c18-proof.gravity"
+                              "compiler-c18-trust-report.gravity"
+                              "compiler-c18-release-gate.gravity"
+                              "compiler-c18-counterexample.gravity"
+                              "compiler-c18-plugin.gravity"
+                              "compiler-c18-backend.gravity"]}}}))
+
+(def c18-compiler-verification-contract
+  {:artifact :gravity/c18-compiler-verification-contract
+   :scope :source-model-bridge
+   :production-verifier-status :not-claimed
+   :required-inputs [:compiler-pipeline-manifest
+                     :pass-contract-registry
+                     :pass-risk-classifications
+                     :stage-artifact-records
+                     :mir-verifier-reports
+                     :domain-verifier-reports
+                     :diagnostic-streams
+                     :proof-certificate-table
+                     :translation-validation-logs
+                     :differential-test-results
+                     :property-test-results
+                     :backend-conformance-results
+                     :plugin-policy-results
+                     :bootstrap-provenance]
+   :required-outputs [:pass-proof-obligations
+                      :pass-evidence-records
+                      :translation-validation-records
+                      :verification-replay-records
+                      :counterexample-artifacts
+                      :compiler-trust-report
+                      :release-gate-report
+                      :verification-diagnostic-stream]
+   :rules [:verification-evidence-class-follows-risk
+           :high-and-critical-risk-passes-have-required-evidence
+           :mir-to-mir-transformations-emit-equivalence-evidence
+           :target-lowering-compares-source-core-mir-and-artifact-behavior
+           :diagnostics-preserve-source-and-generated-origin
+           :trust-report-identifies-profile-target-pass-and-artifact-dependence
+           :failed-verification-blocks-affected-release-artifacts
+           :bootstrap-stages-link-to-lineage-and-equivalence-evidence]
+   :forbidden [:production-verification-claim-from-source-model
+               :unverifiable-optimization-release-claim
+               :check-elision-without-proof-or-translation-validation
+               :target-lowering-conformance-only-in-prose
+               :plugin-pass-outside-trust-report
+               :hidden-experimental-pass-in-release-artifact
+               :ambient-authority-in-verifier]})
+
+(def c18-pass-risk-contract
+  {:artifact :gravity/c18-pass-risk-contract
+   :risk-levels [:low :medium :high :critical]
+   :required-fields [:pass-id :pass-version :stage
+                     :risk :reason :input-ir :output-ir
+                     :affected-profiles :affected-targets
+                     :changed-fact-families :minimum-evidence
+                     :stronger-evidence :release-gate
+                     :diagnostic-policy]
+   :risk-rules {:low [:metadata-only-or-reporting
+                      :verifier-checked]
+                :medium [:changes-ir-shape
+                         :semantics-preserved-by-verifier]
+                :high [:changes-optimization-checks-effects-ownership-target-metadata-or-safety]
+                :critical [:trusted-semantic-base
+                           :safety-gate
+                           :proof-checker
+                           :target-lowering-for-safety-critical-profile]}
+   :minimum-evidence-by-risk {:low [:verifier-report]
+                              :medium [:verifier-report
+                                       :golden-fixture]
+                              :high [:translation-validation
+                                     :property-or-differential-test]
+                              :critical [:mechanized-proof-or-checked-certificate
+                                         :translation-validation
+                                         :conformance-fixtures]}
+   :forbidden [:unclassified-pass
+               :risk-classification-without-reason
+               :high-risk-pass-with-optional-release-gate
+               :risk-derived-from-human-wording]})
+
+(def c18-pass-proof-obligation-contract
+  {:artifact :gravity/c18-pass-proof-obligation-contract
+   :required-fields [:obligation-id :pass-id :pass-version
+                     :stage :claim :input-artifact
+                     :output-artifact :changed-functions
+                     :properties :assumptions :checker
+                     :required-evidence :available-evidence
+                     :source-spans :origin-chain
+                     :profile :target :status]
+   :properties [:same-observable-result
+                :same-effects
+                :same-capabilities
+                :same-safety-outcomes
+                :same-profile-legality
+                :source-origin-preserved
+                :diagnostic-compatibility-preserved
+                :artifact-provenance-preserved]
+   :statuses [:pending :accepted :rejected :stale :blocked]
+   :rules [:obligation-created-before-risky-transform-release
+           :assumptions-are-structured
+           :checker-is-named
+           :stale-inputs-reject-obligation
+           :missing-evidence-emits-c18-evidence]
+   :forbidden [:proof-obligation-hidden-in-prose
+               :unchecked-certificate-as-evidence
+               :benchmark-as-correctness-proof
+               :eml-tree-identity-as-equivalence]})
+
+(def c18-translation-validation-contract
+  {:artifact :gravity/c18-translation-validation-contract
+   :required-fields [:validation-id :pass-id :input
+                     :output :changed-functions :properties
+                     :method :proofs :certificates
+                     :fixtures :counterexamples :result
+                     :diagnostics :source-map]
+   :methods [:symbolic-plus-fixtures
+             :solver-query
+             :certificate-replay
+             :differential-execution
+             :domain-verifier
+             :mir-verifier
+             :backend-conformance]
+   :results [:accepted :rejected :stale :inconclusive]
+   :failure-behavior [:reject-transformation
+                      :retain-prior-artifact
+                      :emit-counterexample-when-available
+                      :emit-c18-validation-diagnostic]
+   :rules [:changed-function-set-recorded
+           :observable-properties-listed
+           :proofs-and-certificates-linked
+           :counterexamples-become-regression-fixtures
+           :inconclusive-results-block-release-when-risk-requires-validation]
+   :forbidden [:validation-without-input-output-hashes
+               :validation-result-from-rendered-prose
+               :accepting-counterexample
+               :discarding-prior-artifact-after-failure]})
+
+(def c18-replay-contract
+  {:artifact :gravity/c18-verification-replay-contract
+   :required-fields [:replay-id :source-artifact
+                     :compiler-id :compiler-version
+                     :pass-order :pass-versions
+                     :risk-classifications
+                     :input-artifact-hashes
+                     :evidence-artifact-hashes
+                     :environment-manifest
+                     :dependency-lock
+                     :determinism-inputs
+                     :accepted-differences
+                     :result]
+   :replay-scopes [:pass-verification
+                   :translation-validation
+                   :proof-certificate-check
+                   :differential-test
+                   :property-test
+                   :backend-conformance
+                   :bootstrap-equivalence]
+   :rules [:same-recorded-inputs-reproduce-same-decision
+           :nondeterministic-choice-has-replay-record
+           :environment-drift-marks-result-stale
+           :bootstrap-lineage-is-linked]
+   :forbidden [:rerunning-nondeterministic-operation-as-replay
+               :unrecorded-random-or-time-dependence
+               :network-or-shell-dependence
+               :lineage-gap-in-bootstrap-replay]})
+
+(def c18-evidence-record-contract
+  {:artifact :gravity/c18-evidence-record-contract
+   :evidence-kinds [:verifier-report
+                    :golden-fixture
+                    :translation-validation
+                    :mechanized-proof
+                    :checked-certificate
+                    :differential-test
+                    :property-test
+                    :fuzzing-result
+                    :domain-verifier-report
+                    :backend-conformance
+                    :plugin-contract-verifier
+                    :bootstrap-equivalence
+                    :audit-record
+                    :residual-runtime-check]
+   :required-fields [:evidence-id :kind :claim
+                     :pass-id :stage :artifact
+                     :profile :target :inputs
+                     :assumptions :checker :result
+                     :diagnostics :provenance]
+   :trust-statuses [:accepted :rejected :stale
+                    :revoked :experimental :manual-review-required]
+   :rules [:evidence-kind-matches-risk
+           :checker-named-for-proof-or-certificate
+           :inputs-content-addressed
+           :provenance-links-source-compiler-and-pass
+           :stale-or-revoked-evidence-blocks-required-gates]
+   :forbidden [:prose-only-evidence
+               :manual-review-as-proof
+               :benchmark-as-correctness
+               :unchecked-certificate
+               :evidence-without-provenance]})
+
+(def c18-counterexample-contract
+  {:artifact :gravity/c18-counterexample-contract
+   :required-fields [:counterexample-id :source-fixture
+                     :input-artifact :output-artifact
+                     :violated-property :pass-id
+                     :pass-version :diagnostic-stream
+                     :minimized-reproducer
+                     :affected-profiles :affected-targets
+                     :regression-fixture :provenance]
+   :property-families [:observable-result
+                      :effect-preservation
+                      :capability-preservation
+                      :safety-outcome-preservation
+                      :type-preservation
+                      :profile-legality
+                      :diagnostic-origin
+                      :backend-conformance]
+   :rules [:counterexample-emitted-when-validation-can-minimize
+           :counterexample-blocks-affected-pass-release
+           :counterexample-becomes-regression-fixture
+           :source-and-generated-origin-preserved]
+   :forbidden [:counterexample-without-source-fixture
+               :counterexample-without-diagnostic
+               :discarded-counterexample-for-release
+               :hidden-affected-profile]})
+
+(def c18-trust-report-contract
+  {:artifact :gravity/c18-compiler-trust-report-contract
+   :required-fields [:compiler-id :compiler-version
+                     :source-root :pipeline-manifest
+                     :passes :profiles :targets
+                     :artifact-kinds :evidence-summary
+                     :known-gaps :experimental-passes
+                     :bootstrap-lineage :release-decision]
+   :pass-entry-fields [:pass-id :pass-version :stage
+                       :risk :evidence :required-evidence
+                       :gaps :diagnostics]
+   :profile-entry-fields [:profile :required-evidence
+                          :blocked-passes :experimental-passes
+                          :affected-targets]
+   :rules [:every-pass-has-risk-and-evidence-entry
+           :known-gaps-are-explicit
+           :experimental-passes-are-gated
+           :bootstrap-lineage-identifies-compiled-by
+           :trust-report-ships-with-release-builds-and-bootstrap-stages]
+   :forbidden [:pass-outside-trust-report
+               :unknown-risk-in-release
+               :hidden-experimental-pass
+               :lineage-gap
+               :release-decision-without-evidence-summary]})
+
+(def c18-release-gate-contract
+  {:artifact :gravity/c18-release-gate-contract
+   :required-fields [:gate-id :compiler-id :pipeline-manifest
+                     :profiles :targets :artifact-kinds
+                     :required-evidence :available-evidence
+                     :critical-failures :high-risk-gaps
+                     :stale-proofs :stale-certificates
+                     :backend-conformance :plugin-policy
+                     :diagnostic-goldens :self-hosting-comparison
+                     :decision :remediation]
+   :decisions [:accepted :blocked :experimental-only]
+   :required-gates [:artifact-verifier-pass
+                    :no-active-critical-verification-failures
+                    :high-risk-evidence-present
+                    :target-lowering-conformance-present
+                    :stale-proof-rejection
+                    :stale-certificate-rejection
+                    :diagnostic-golden-fixtures
+                    :self-hosting-comparison-when-compiler-is-release-input]
+   :rules [:missing-required-evidence-blocks-affected-release
+           :critical-failure-blocks-release
+           :experimental-pass-requires-explicit-feature-or-profile-gate
+           :release-gate-report-links-to-trust-report]
+   :forbidden [:release-with-hidden-experimental-pass
+               :release-with-stale-required-proof
+               :release-without-backend-conformance
+               :release-accepted-by-warning-only]})
+
+(def c18-plugin-verification-contract
+  {:artifact :gravity/c18-plugin-verification-contract
+   :required-fields [:plugin-id :package :pass-id
+                     :pass-version :contract
+                     :sandbox-policy :capabilities
+                     :risk :required-evidence
+                     :available-evidence :signature
+                     :trust-report-entry :diagnostics]
+   :checks [:plugin-pass-contract-complete
+            :plugin-authority-declared
+            :sandbox-policy-enforced
+            :required-evidence-meets-risk
+            :signed-proof-carrying-plugin-when-required
+            :plugin-listed-in-trust-report]
+   :rules [:plugin-evidence-below-policy-emits-c18-plugin
+           :unlisted-plugin-pass-blocks-release
+           :ambient-plugin-authority-rejected
+           :opaque-plugin-payload-rejected]
+   :forbidden [:plugin-outside-trust-report
+               :plugin-with-ambient-authority
+               :plugin-without-contract
+               :plugin-evidence-hidden-in-package-prose]})
+
+(def c18-backend-conformance-contract
+  {:artifact :gravity/c18-backend-conformance-contract
+   :required-fields [:backend :target :profile
+                     :lowering-pass :source-intent
+                     :core-intent :mir-intent
+                     :emitted-artifacts :conformance-suite
+                     :differential-results :unsupported-features
+                     :diagnostics :result]
+   :checks [:backend-consumes-only-checked-ir
+            :source-core-mir-intent-compared-to-artifact-behavior
+            :unsupported-feature-diagnosed
+            :type-effect-profile-safety-metadata-preserved
+            :artifact-provenance-complete
+            :conformance-suite-linked-to-release-gate]
+   :results [:accepted :rejected :experimental :stale]
+   :rules [:target-lowering-conformance-required-for-release
+           :backend-gap-emits-c18-backend
+           :experimental-backend-gated-by-profile-or-feature
+           :conformance-results-linked-to-trust-report]
+   :forbidden [:backend-from-raw-source
+               :conformance-only-in-prose
+               :artifact-behavior-uncompared
+               :profile-metadata-dropped]})
+
+(def c18-diagnostic-catalog
+  {:diagnostics ["C18-RISK"
+                 "C18-EVIDENCE"
+                 "C18-VALIDATION"
+                 "C18-PROOF"
+                 "C18-TRUST-REPORT"
+                 "C18-RELEASE-GATE"
+                 "C18-COUNTEREXAMPLE"
+                 "C18-PLUGIN"
+                 "C18-BACKEND"]
+   :required-fields [:pass-id :pass-version :risk
+                     :required-evidence :available-evidence
+                     :affected-profiles :affected-targets
+                     :source-or-artifact-id :stage
+                     :profile :target :remediation]
+   :rule-to-message-key {:C18-RISK :compiler-verification.risk-gap
+                         :C18-EVIDENCE :compiler-verification.evidence-gap
+                         :C18-VALIDATION :compiler-verification.validation-failure
+                         :C18-PROOF :compiler-verification.proof-rejected
+                         :C18-TRUST-REPORT :compiler-verification.trust-report-gap
+                         :C18-RELEASE-GATE :compiler-verification.release-blocked
+                         :C18-COUNTEREXAMPLE :compiler-verification.counterexample
+                         :C18-PLUGIN :compiler-verification.plugin-policy
+                         :C18-BACKEND :compiler-verification.backend-conformance}
+   :stable-id-rule :c18-rule-plus-pass-artifact-and-semantic-facts
+   :must-not-depend-on [:localized-rendering-text
+                        :backend-wording
+                        :host-exception-text
+                        :manual-review-prose]})
+
+(defn build-c18-pass-risk
+  [pass-id pass-version stage risk reason affected-profiles affected-targets minimum-evidence release-gate]
+  (quote {:artifact :gravity/pass-risk
+          :pass pass-id
+          :pass-version pass-version
+          :stage stage
+          :risk risk
+          :reason reason
+          :affected-profiles affected-profiles
+          :affected-targets affected-targets
+          :minimum-evidence minimum-evidence
+          :release-gate release-gate
+          :contract c18-pass-risk-contract}))
+
+(defn build-c18-proof-obligation
+  [obligation-id pass-id pass-version claim input-artifact output-artifact properties assumptions checker required-evidence profile target]
+  (quote {:artifact :gravity/pass-proof-obligation
+          :obligation-id obligation-id
+          :pass-id pass-id
+          :pass-version pass-version
+          :claim claim
+          :input-artifact input-artifact
+          :output-artifact output-artifact
+          :properties properties
+          :assumptions assumptions
+          :checker checker
+          :required-evidence required-evidence
+          :profile profile
+          :target target
+          :status :pending
+          :contract c18-pass-proof-obligation-contract}))
+
+(defn build-c18-translation-validation
+  [validation-id pass-id input output changed-functions properties method proofs certificates fixtures counterexamples result diagnostics source-map]
+  (quote {:artifact :gravity/translation-validation
+          :validation-id validation-id
+          :pass pass-id
+          :input input
+          :output output
+          :changed-functions changed-functions
+          :properties properties
+          :method method
+          :proofs proofs
+          :certificates certificates
+          :fixtures fixtures
+          :counterexamples counterexamples
+          :result result
+          :diagnostics diagnostics
+          :source-map source-map
+          :contract c18-translation-validation-contract}))
+
+(defn build-c18-evidence-record
+  [evidence-id kind claim pass-id stage artifact profile target inputs assumptions checker result diagnostics provenance]
+  (quote {:artifact :gravity/pass-evidence
+          :evidence-id evidence-id
+          :kind kind
+          :claim claim
+          :pass-id pass-id
+          :stage stage
+          :verified-artifact artifact
+          :profile profile
+          :target target
+          :inputs inputs
+          :assumptions assumptions
+          :checker checker
+          :result result
+          :diagnostics diagnostics
+          :provenance provenance
+          :contract c18-evidence-record-contract}))
+
+(defn build-c18-counterexample
+  [counterexample-id source-fixture input-artifact output-artifact violated-property pass-id pass-version diagnostic-stream minimized-reproducer affected-profiles affected-targets]
+  (quote {:artifact :gravity/compiler-counterexample
+          :counterexample-id counterexample-id
+          :source-fixture source-fixture
+          :input-artifact input-artifact
+          :output-artifact output-artifact
+          :violated-property violated-property
+          :pass-id pass-id
+          :pass-version pass-version
+          :diagnostic-stream diagnostic-stream
+          :minimized-reproducer minimized-reproducer
+          :affected-profiles affected-profiles
+          :affected-targets affected-targets
+          :regression-fixture :required
+          :contract c18-counterexample-contract}))
+
+(defn build-c18-trust-report
+  [compiler-id compiler-version source-root pipeline-manifest passes profiles targets evidence-summary known-gaps experimental-passes bootstrap-lineage release-decision]
+  (quote {:artifact :gravity/compiler-trust-report
+          :compiler-id compiler-id
+          :compiler-version compiler-version
+          :source-root source-root
+          :pipeline-manifest pipeline-manifest
+          :passes passes
+          :profiles profiles
+          :targets targets
+          :evidence-summary evidence-summary
+          :known-gaps known-gaps
+          :experimental-passes experimental-passes
+          :bootstrap-lineage bootstrap-lineage
+          :release-decision release-decision
+          :contract c18-trust-report-contract}))
+
+(defn build-c18-release-gate
+  [gate-id compiler-id pipeline-manifest profiles targets artifact-kinds required-evidence available-evidence critical-failures high-risk-gaps decision remediation]
+  (quote {:artifact :gravity/compiler-release-gate
+          :gate-id gate-id
+          :compiler-id compiler-id
+          :pipeline-manifest pipeline-manifest
+          :profiles profiles
+          :targets targets
+          :artifact-kinds artifact-kinds
+          :required-evidence required-evidence
+          :available-evidence available-evidence
+          :critical-failures critical-failures
+          :high-risk-gaps high-risk-gaps
+          :decision decision
+          :remediation remediation
+          :contract c18-release-gate-contract}))
+
+(defn build-c18-plugin-report
+  [plugin-id package pass-id pass-version contract sandbox-policy capabilities risk required-evidence available-evidence signature diagnostics]
+  (quote {:artifact :gravity/plugin-verification-report
+          :plugin-id plugin-id
+          :package package
+          :pass-id pass-id
+          :pass-version pass-version
+          :pass-contract contract
+          :sandbox-policy sandbox-policy
+          :capabilities capabilities
+          :risk risk
+          :required-evidence required-evidence
+          :available-evidence available-evidence
+          :signature signature
+          :diagnostics diagnostics
+          :contract c18-plugin-verification-contract}))
+
+(defn build-c18-backend-conformance-report
+  [backend target profile lowering-pass source-intent core-intent mir-intent emitted-artifacts conformance-suite differential-results unsupported-features diagnostics result]
+  (quote {:artifact :gravity/backend-conformance-report
+          :backend backend
+          :target target
+          :profile profile
+          :lowering-pass lowering-pass
+          :source-intent source-intent
+          :core-intent core-intent
+          :mir-intent mir-intent
+          :emitted-artifacts emitted-artifacts
+          :conformance-suite conformance-suite
+          :differential-results differential-results
+          :unsupported-features unsupported-features
+          :diagnostics diagnostics
+          :result result
+          :contract c18-backend-conformance-contract}))
+
+(defn verify-c18-compiler-verification [verification-record]
+  (quote {:status :stage1-source-owned
+          :scope :source-model-bridge
+          :production-verifier-status :not-claimed
+          :verification-record verification-record
+          :checks [:pass-risk-classification-present
+                   :pass-proof-obligations-structured
+                   :evidence-kind-matches-risk
+                   :translation-validation-records-linked
+                   :verification-replay-records-content-addressed
+                   :stale-proofs-and-certificates-rejected
+                   :counterexamples-captured-as-regression-fixtures
+                   :trust-report-covers-passes-profiles-targets-and-artifacts
+                   :release-gate-fails-closed-for-missing-required-evidence
+                   :plugin-passes-listed-in-trust-report
+                   :backend-conformance-linked-to-target-lowering
+                   :diagnostics-use-stable-c18-catalog
+                   :source-spans-and-origin-chains-preserved
+                   :no-ambient-authority-declared
+                   :bootstrap-lineage-and-provenance-linked]
+          :diagnostics c18-diagnostic-catalog
+          :release-behavior :fail-closed
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :origin-chains :generated-origin
+                      :compiler-pipeline-manifest
+                      :pass-contracts :pass-versions
+                      :pass-risk-classifications
+                      :type-facts :effect-facts
+                      :capability-facts :ownership-facts
+                      :profile-target-metadata
+                      :safety-outcomes :runtime-check-records
+                      :proof-obligations :proof-references
+                      :certificate-references
+                      :translation-validation-logs
+                      :counterexample-artifacts
+                      :trust-report-entries
+                      :release-gate-decisions
+                      :bootstrap-provenance]}))

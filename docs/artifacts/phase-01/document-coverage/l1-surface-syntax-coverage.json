@@ -1,0 +1,34 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "syntax-object-stream",
+      "coverage": [
+        "reader extension registry",
+        "tagged syntax object",
+        "payload span preservation"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l1/accepted-reader-extension.gravity"
+    },
+    {
+      "artifact_kind": "syntax-object-stream",
+      "coverage": [
+        "syntax-valid semantic rejection forwarded to later phases"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l1/accepted-later-semantic-rejection.gravity"
+    }
+  ],
+  "document": "L1",
+  "kind": "l1-document-coverage",
+  "rejected": [
+    {
+      "coverage": "ungranted reader extension build effect",
+      "diagnostic": "L1-READER-EXTENSION",
+      "fixture": "docs/artifacts/phase-01/fixtures/l1/rejected-reader-extension-build-effect.gravity"
+    },
+    {
+      "coverage": "source encoding policy",
+      "diagnostic": "L1-SOURCE-ENCODING",
+      "fixture": "invalid utf-8 byte sequence"
+    }
+  ]
+}

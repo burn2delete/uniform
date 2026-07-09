@@ -1,0 +1,1521 @@
+; Stage1 Gravity-owned reader skeleton. The Clojure seed verifies this source
+; before it can be made executable by a later self-hosting stage.
+(ns gravity.bootstrap.reader
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [read-source-form-records stage1-read-source
+             stage1-read-source-pipeline
+             stage1-read-source-character-pipeline
+             stage1-read-source-token-classifier-pipeline
+             stage1-read-source-token-realizer-pipeline
+             stage1-read-source-token-automaton-pipeline
+             stage1-read-source-form-builder-pipeline
+             stage1-read-source-executor-pipeline
+             stage1-read-source-runtime-pipeline
+             stage1-read-source-compiled-pipeline
+             stage1-read-source-binary-pipeline
+             stage1-read-source-self-hosted-runtime
+             stage1-read-source-core-bootstrap
+             stage1-read-source-compiler-driver
+             stage1-read-source-runtime-entrypoint
+             stage1-read-source-runtime-image
+             stage1-read-source-verified-boot-chain
+             stage1-read-source-diverse-bootstrap-verification
+             stage1-read-source-release-attestation-seed-retirement
+             stage1-read-source-formal-release-governance-seed-retirement])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :reader
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["BOOT1" "BOOT2" "BOOT3" "BOOT4"
+                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"
+                           "C2" "C3" "C15"]
+               :implements [:reader :source-locations :abbreviations
+                             :reader-diagnostics :reader-entrypoint
+                             :reader-pipeline :reader-character-pipeline
+                             :reader-token-classifier
+                             :reader-token-realizer
+                             :reader-token-automaton
+                             :reader-form-builder
+                             :reader-token-automaton-executor
+                             :reader-form-builder-executor
+                             :reader-source-runtime
+                             :reader-evaluator-runtime
+                             :reader-compiled-program
+                             :reader-emitted-binary
+                             :reader-self-hosted-runtime
+                             :reader-core-bootstrap-builtins
+                             :reader-compiler-driver
+                             :reader-runtime-entrypoint
+                             :reader-runtime-image
+                             :reader-verified-boot-chain
+                             :reader-diverse-bootstrap-verification
+                             :reader-release-attestation-seed-retirement
+                             :reader-formal-release-governance-seed-retirement]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-reader-subset]}
+               :conformance {:accepted-fixture "bootstrap/gravity/src"
+                             :rejected-fixtures
+                             ["stage1-bootstrap-missing-owner.gravity"
+                              "stage1-bootstrap-wrong-profile.gravity"
+                              "stage1-bootstrap-ambient-authority.gravity"
+                              "stage1-bootstrap-missing-lineage.gravity"
+                              "stage1-bootstrap-missing-preserved-fact.gravity"
+                              "stage1-bootstrap-incomplete-source-set.gravity"]}}}))
+
+(defn read-source-form-records [source-bytes]
+  (quote {:status :stage1-source-owned
+          :input source-bytes
+          :emits [:forms :source-spans :reader-diagnostics]}))
+
+(def stage1-reader-table
+  {:engine :gravity-reader-table-v1
+   :line-comment ";"
+   :string-delimiter "\""
+   :whitespace [" " "\n" "\r" "\t" ","]
+   :delimiters {"(" {:kind :list-open :closes ")"}
+                "[" {:kind :vector-open :closes "]"}
+                "{" {:kind :map-open :closes "}"}
+                ")" {:kind :close}
+                "]" {:kind :close}
+                "}" {:kind :close}}
+   :dispatch {"#" {"{" {:kind :set-open :closes "}"}}}
+   :literal-kinds [:nil :boolean :integer :string :keyword :symbol
+                   :list :vector :map :set]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :odd-map "STAGE1READER005"
+                 :missing-table "STAGE1READER006"}
+   :accepted-fixture "bootstrap/clojure/fixtures/accepted/stage1-reader-execution.gravity"
+   :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/stage1-reader-unexpected-close.gravity"
+                       "STAGE1READER001"
+                       "bootstrap/clojure/fixtures/rejected/stage1-reader-unclosed-list.gravity"
+                       "STAGE1READER002"
+                       "bootstrap/clojure/fixtures/rejected/stage1-reader-unclosed-string.gravity"
+                       "STAGE1READER003"
+                       "bootstrap/clojure/fixtures/rejected/stage1-reader-unsupported-dispatch.gravity"
+                       "STAGE1READER004"
+                       "bootstrap/clojure/fixtures/rejected/stage1-reader-odd-map.gravity"
+                       "STAGE1READER005"}})
+
+(def stage1-reader-token-classifier
+  {:engine :gravity-reader-token-classifier-v1
+   :derived-from :stage1-reader-table
+   :whitespace [" " "\n" "\r" "\t" ","]
+   :line-comment ";"
+   :string-delimiter "\""
+   :delimiters {"(" {:kind :list-open :closes ")"}
+                "[" {:kind :vector-open :closes "]"}
+                "{" {:kind :map-open :closes "}"}
+                ")" {:kind :close}
+                "]" {:kind :close}
+                "}" {:kind :close}}
+   :dispatch {"#" {"{" {:kind :set-open :closes "}"}}}
+   :literal-kinds [:nil :boolean :integer :string :keyword :symbol
+                   :list :vector :map :set]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :odd-map "STAGE1READER005"
+                 :invalid-classifier "STAGE1CLASS004"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-token-classification
+                :retirement-objective :replace-host-tokenizer}})
+
+(def stage1-reader-token-realizer
+  {:engine :gravity-reader-token-realizer-v1
+   :derived-from :stage1-reader-token-classifier
+   :classifier-engine :gravity-reader-token-classifier-v1
+   :table-derived-from :stage1-reader-table
+   :emits :gravity/stage1-reader-token-stream
+   :token-record-fields [:index :kind :lexeme :span]
+   :preserves [:source-spans :raw-spelling :literal-kind :reader-table-id]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :odd-map "STAGE1READER005"
+                 :invalid-realizer "STAGE1REAL004"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-token-realization
+                :retirement-objective :replace-host-token-realizer}})
+
+(def stage1-reader-token-automaton
+  {:engine :gravity-reader-token-automaton-v1
+   :derived-from :stage1-reader-token-realizer
+   :classifier-engine :gravity-reader-token-classifier-v1
+   :realizer-engine :gravity-reader-token-realizer-v1
+   :input :gravity/stage1-reader-character-stream
+   :emits :gravity/stage1-reader-token-stream
+   :states [:scan :line-comment :string :atom :dispatch :done]
+   :operations [:skip-whitespace :skip-line-comment :read-string-token
+                :read-dispatch-token :read-delimiter-token :read-atom-token]
+   :token-record-fields [:index :kind :lexeme :span]
+   :preserves [:source-spans :raw-spelling :literal-kind
+               :reader-table-id :character-index]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :odd-map "STAGE1READER005"
+                 :invalid-automaton "STAGE1AUTO004"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-token-automaton
+                :retirement-objective :replace-host-token-realizer-executor}})
+
+(def stage1-reader-form-builder
+  {:engine :gravity-reader-form-builder-v1
+   :derived-from :stage1-reader-token-automaton
+   :token-automaton-engine :gravity-reader-token-automaton-v1
+   :table-derived-from :stage1-reader-table
+   :input :gravity/stage1-reader-token-stream
+   :emits :gravity/stage1-reader-form-records
+   :collection-kinds [:list :vector :map :set]
+   :operations [:build-list-form :build-vector-form :build-map-form
+                :build-set-form :build-atom-form :build-string-form
+                :validate-delimiters :validate-map-arity]
+   :form-record-fields [:form :kind :span]
+   :preserves [:source-spans :form-index :literal-kind :token-origin]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :odd-map "STAGE1READER005"
+                 :invalid-form-builder "STAGE1FORM004"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-form-building
+                :retirement-objective :replace-host-form-builder}})
+
+(def stage1-reader-token-automaton-executor
+  {:engine :gravity-reader-token-automaton-executor-v1
+   :executes :gravity-reader-token-automaton-v1
+   :derived-from :stage1-reader-token-automaton
+   :input :gravity/stage1-reader-character-stream
+   :emits :gravity/stage1-reader-token-stream
+   :operations [:skip-whitespace :skip-line-comment :read-string-token
+                :read-dispatch-token :read-delimiter-token :read-atom-token]
+   :preserves [:source-spans :raw-spelling :literal-kind
+               :reader-table-id :character-index]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :invalid-executor "STAGE1EXEC004"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-token-automaton-execution
+                :retirement-objective :replace-host-token-automaton-executor}})
+
+(def stage1-reader-form-builder-executor
+  {:engine :gravity-reader-form-builder-executor-v1
+   :executes :gravity-reader-form-builder-v1
+   :derived-from :stage1-reader-form-builder
+   :input :gravity/stage1-reader-token-stream
+   :emits :gravity/stage1-reader-form-records
+   :operations [:build-list-form :build-vector-form :build-map-form
+                :build-set-form :build-atom-form :build-string-form
+                :validate-delimiters :validate-map-arity]
+   :preserves [:source-spans :form-index :literal-kind :token-origin]
+   :diagnostics {:unexpected-close "STAGE1READER001"
+                 :unclosed-form "STAGE1READER002"
+                 :unclosed-string "STAGE1READER003"
+                 :unsupported-dispatch "STAGE1READER004"
+                 :odd-map "STAGE1READER005"
+                 :invalid-executor "STAGE1EXEC004"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-form-builder-execution
+                :retirement-objective :replace-host-form-builder-executor}})
+
+(def stage1-reader-source-runtime
+  {:engine :gravity-reader-source-runtime-v1
+   :family :bootstrap-reader
+   :input :gravity/source-text
+   :emits :gravity/stage1-reader-character-stream
+   :services {:generated [:source-character-stream :source-span-index
+                          :source-id]
+              :delegated []
+              :forbidden [:filesystem :network :shell :environment
+                          :dynamic-eval]}
+   :operations [:decode-source-text :index-source-characters
+                :attach-source-spans :compute-source-id]
+   :effects #{}
+   :capabilities #{}
+   :preserves [:source-spans :source-id :character-index
+               :artifact-provenance]
+   :diagnostics {:invalid-runtime "STAGE1RUN004"
+                 :source-divergence "STAGE1RUN005"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-source-character-runtime
+                :retirement-objective :replace-host-character-stream}})
+
+(def stage1-reader-evaluator-runtime
+  {:engine :gravity-reader-evaluator-runtime-v1
+   :family :bootstrap-reader
+   :executes :stage1-read-source-runtime-pipeline
+   :evaluates [:let :function-call :def :defn :quote]
+   :runtime-services [:stage1-reader-source-runtime
+                      :stage1-reader-token-automaton-executor
+                      :stage1-reader-form-builder-executor]
+   :remaining-trusted-implementation :clojure-stage0
+   :effects #{}
+   :capabilities #{}
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity]
+   :diagnostics {:missing-entrypoint "STAGE1RUN001"
+                 :unsupported-form "STAGE1RUN002"
+                 :unsupported-host-primitive "STAGE1RUN003"
+                 :invalid-runtime "STAGE1RUN004"
+                 :stage0-divergence "STAGE1RUN005"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-runtime-evaluation
+                :retirement-objective :replace-clojure-seed-evaluator}})
+
+(def stage1-reader-compiled-program
+  {:engine :gravity-reader-compiled-program-v1
+   :entrypoint :stage1-read-source-compiled-pipeline
+   :compiled-from :stage1-read-source-runtime-pipeline
+   :input [:source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :instructions [{:label :characters
+                   :op :stage1-create-character-stream
+                   :runtime :stage1-reader-source-runtime
+                   :source-path :source-path
+                   :source-text :source-text}
+                  {:label :tokens
+                   :op :stage1-execute-token-automaton
+                   :classifier :stage1-reader-token-classifier
+                   :realizer :stage1-reader-token-realizer
+                   :automaton :stage1-reader-token-automaton
+                   :executor :stage1-reader-token-automaton-executor
+                   :character-stream :characters}
+                  {:label :forms
+                   :op :stage1-execute-form-builder
+                   :classifier :stage1-reader-token-classifier
+                   :realizer :stage1-reader-token-realizer
+                   :automaton :stage1-reader-token-automaton
+                   :form-builder :stage1-reader-form-builder
+                   :executor :stage1-reader-form-builder-executor
+                   :token-stream :tokens}]
+   :uses-runtimes [:stage1-reader-source-runtime]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity]
+   :diagnostics {:missing-entrypoint "STAGE1COMP001"
+                 :unsupported-form "STAGE1COMP002"
+                 :unsupported-host-primitive "STAGE1COMP003"
+                 :invalid-program "STAGE1COMP004"
+                 :stage0-divergence "STAGE1COMP005"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-compiled-program
+                :retirement-objective :replace-clojure-runtime-interpreter}})
+
+(def stage1-reader-emitted-binary
+  {:engine :gravity-reader-binary-v1
+   :entrypoint :stage1-read-source-binary-pipeline
+   :emitted-from :stage1-reader-compiled-program
+   :compiled-entrypoint :stage1-read-source-compiled-pipeline
+   :input [:source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :direct-stages [{:label :characters
+                    :op :stage1-binary-create-character-stream
+                    :runtime :stage1-reader-source-runtime}
+                   {:label :tokens
+                    :op :stage1-binary-execute-token-automaton
+                    :classifier :stage1-reader-token-classifier
+                    :realizer :stage1-reader-token-realizer
+                    :automaton :stage1-reader-token-automaton
+                    :executor :stage1-reader-token-automaton-executor
+                    :input :characters}
+                   {:label :forms
+                    :op :stage1-binary-execute-form-builder
+                    :classifier :stage1-reader-token-classifier
+                    :realizer :stage1-reader-token-realizer
+                    :automaton :stage1-reader-token-automaton
+                    :form-builder :stage1-reader-form-builder
+                    :executor :stage1-reader-form-builder-executor
+                    :input :tokens}]
+   :uses-runtimes [:stage1-reader-source-runtime]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity]
+   :diagnostics {:missing-entrypoint "STAGE1BIN001"
+                 :unsupported-form "STAGE1BIN002"
+                 :unsupported-host-primitive "STAGE1BIN003"
+                 :invalid-binary "STAGE1BIN004"
+                 :stage0-divergence "STAGE1BIN005"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-emitted-binary
+                :retirement-objective :replace-clojure-instruction-executor}})
+
+(def stage1-reader-self-hosted-runtime
+  {:engine :gravity-reader-self-hosted-runtime-v1
+   :entrypoint :stage1-read-source-self-hosted-runtime
+   :replaces [:clojure-binary-runner :clojure-character-stream-implementation]
+   :input [:source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :source-runtime :stage1-reader-source-runtime
+   :direct-stages [{:label :characters
+                    :op :stage1-self-hosted-create-character-stream
+                    :runtime :stage1-reader-source-runtime}
+                   {:label :tokens
+                    :op :stage1-self-hosted-execute-token-automaton
+                    :classifier :stage1-reader-token-classifier
+                    :realizer :stage1-reader-token-realizer
+                    :automaton :stage1-reader-token-automaton
+                    :executor :stage1-reader-token-automaton-executor
+                    :input :characters}
+                   {:label :forms
+                    :op :stage1-self-hosted-execute-form-builder
+                    :classifier :stage1-reader-token-classifier
+                    :realizer :stage1-reader-token-realizer
+                    :automaton :stage1-reader-token-automaton
+                    :form-builder :stage1-reader-form-builder
+                    :executor :stage1-reader-form-builder-executor
+                    :input :tokens}]
+   :uses-runtimes [:stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity]
+   :diagnostics {:missing-entrypoint "STAGE1SELF001"
+                 :unsupported-form "STAGE1SELF002"
+                 :unsupported-host-primitive "STAGE1SELF003"
+                 :invalid-runtime "STAGE1SELF004"
+                 :stage0-divergence "STAGE1SELF005"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-self-hosted-runtime
+                :retirement-objective
+                :replace-clojure-binary-runner-and-character-stream}})
+
+(def stage1-reader-core-bootstrap-builtins
+  {:engine :gravity-core-bootstrap-builtins-v1
+   :profile :meta
+   :owner :gravity-source
+   :replaces [:clojure-seed-builtins]
+   :host-fallbacks []
+   :effects #{}
+   :capabilities #{}
+   :operations [{:op :source-character-stream
+                 :implemented-by :gravity-source
+                 :input [:source-path :source-text :source-runtime]
+                 :output :gravity/stage1-reader-character-stream}
+                {:op :token-classifier
+                 :implemented-by :gravity-source
+                 :input [:character :reader-table]
+                 :output :gravity/stage1-reader-token-classification}
+                {:op :token-realizer
+                 :implemented-by :gravity-source
+                 :input [:token-classification :source-span]
+                 :output :gravity/stage1-reader-token}
+                {:op :token-automaton-executor
+                 :implemented-by :gravity-source
+                 :input [:characters :token-classifier :token-realizer]
+                 :output :gravity/stage1-reader-token-stream}
+                {:op :form-builder-executor
+                 :implemented-by :gravity-source
+                 :input [:tokens :form-builder]
+                 :output :gravity/stage1-reader-form-records}
+                {:op :stage0-form-parity
+                 :implemented-by :gravity-source
+                 :input [:stage1-reader-form-records :stage0-reader-forms]
+                 :output :gravity/stage1-reader-parity-result}
+                {:op :diagnostic-stream
+                 :implemented-by :gravity-source
+                 :input [:diagnostic-code :source-span]
+                 :output :gravity/diagnostic}
+                {:op :artifact-provenance
+                 :implemented-by :gravity-source
+                 :input [:stage :source-id :runtime-id]
+                 :output :gravity/artifact-provenance}]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity]
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-core-bootstrap-builtin-replacement
+                :retirement-objective
+                :replace-clojure-seed-builtins-with-gravity-core-bootstrap}})
+
+(def stage1-reader-core-bootstrap-runtime
+  {:engine :gravity-reader-core-bootstrap-runtime-v1
+   :entrypoint :stage1-read-source-core-bootstrap
+   :replaces [:clojure-seed-builtins]
+   :base-runtime :stage1-reader-self-hosted-runtime
+   :core-bootstrap-builtins :stage1-reader-core-bootstrap-builtins
+   :input [:source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :direct-stages [{:label :characters
+                    :op :stage1-core-bootstrap-create-character-stream
+                    :runtime :stage1-reader-source-runtime
+                    :builtin :source-character-stream}
+                   {:label :tokens
+                    :op :stage1-core-bootstrap-execute-token-automaton
+                    :classifier :stage1-reader-token-classifier
+                    :realizer :stage1-reader-token-realizer
+                    :automaton :stage1-reader-token-automaton
+                    :executor :stage1-reader-token-automaton-executor
+                    :builtins [:token-classifier :token-realizer
+                               :token-automaton-executor]
+                    :input :characters}
+                   {:label :forms
+                    :op :stage1-core-bootstrap-execute-form-builder
+                    :classifier :stage1-reader-token-classifier
+                    :realizer :stage1-reader-token-realizer
+                    :automaton :stage1-reader-token-automaton
+                    :form-builder :stage1-reader-form-builder
+                    :executor :stage1-reader-form-builder-executor
+                    :builtins [:form-builder-executor]
+                    :input :tokens}
+                   {:label :parity
+                    :op :stage1-core-bootstrap-compare-stage0
+                    :builtins [:stage0-form-parity :diagnostic-stream
+                               :artifact-provenance]
+                    :input :forms}]
+   :uses-runtimes [:stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity]
+   :diagnostics {:missing-entrypoint "STAGE1CORE001"
+                 :unsupported-builtin-operation "STAGE1CORE002"
+                 :missing-builtin-record "STAGE1CORE003"
+                 :builtin-runtime-divergence "STAGE1CORE004"
+                 :illegal-host-fallback "STAGE1CORE005"
+                 :invalid-core-bootstrap-runtime "STAGE1CORE006"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-core-bootstrap-runtime
+                :retirement-objective
+                :replace-clojure-seed-builtins-with-gravity-core-bootstrap}})
+
+(def stage1-reader-compiler-driver
+  {:engine :gravity-reader-compiler-driver-v1
+   :entrypoint :stage1-read-source-compiler-driver
+   :replaces [:clojure-seed-orchestration]
+   :base-runtime :stage1-reader-core-bootstrap-runtime
+   :core-bootstrap-builtins :stage1-reader-core-bootstrap-builtins
+   :input [:source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact :gravity/stage1-reader-compiler-driver-artifact
+   :diagnostic-stream :gravity/stage1-reader-compiler-driver-diagnostic-stream
+   :proof-kind :gravity/stage1-reader-compiler-driver-proof
+   :host-boundaries [:host-command-invocation :host-file-read]
+   :seed-orchestration-fallbacks []
+   :driver-operations [:load-reader-source
+                       :resolve-stage1-entrypoint
+                       :route-source-text
+                       :execute-core-bootstrap-runtime
+                       :emit-diagnostic-stream
+                       :emit-proof-artifact
+                       :compare-stage0
+                       :record-provenance]
+   :direct-stages [{:label :source-routing
+                    :op :stage1-driver-load-reader-source
+                    :input [:source-path :source-text]
+                    :output :stage1-reader-source-input}
+                   {:label :entrypoint-resolution
+                    :op :stage1-driver-resolve-entrypoint
+                    :entrypoint :stage1-read-source-compiler-driver
+                    :output :stage1-reader-driver-entrypoint}
+                   {:label :runtime-execution
+                    :op :stage1-driver-execute-core-bootstrap-runtime
+                    :runtime :stage1-reader-core-bootstrap-runtime
+                    :builtins :stage1-reader-core-bootstrap-builtins}
+                   {:label :diagnostics
+                    :op :stage1-driver-emit-diagnostic-stream
+                    :diagnostic-stream
+                    :gravity/stage1-reader-compiler-driver-diagnostic-stream}
+                   {:label :proof
+                    :op :stage1-driver-emit-proof-artifact
+                    :artifact :gravity/stage1-reader-compiler-driver-artifact}
+                   {:label :provenance
+                    :op :stage1-driver-record-provenance
+                    :proof-kind :gravity/stage1-reader-compiler-driver-proof}]
+   :uses-runtimes [:stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :core-bootstrap-builtin-coverage]
+   :diagnostics {:missing-entrypoint "STAGE1DRV001"
+                 :unsupported-driver-operation "STAGE1DRV002"
+                 :missing-driver-record "STAGE1DRV003"
+                 :artifact-routing-divergence "STAGE1DRV004"
+                 :diagnostic-stream-divergence "STAGE1DRV005"
+                 :illegal-seed-orchestration-fallback "STAGE1DRV006"
+                 :invalid-compiler-driver "STAGE1DRV007"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-compiler-driver-orchestration-replacement
+                :retirement-objective
+                :replace-clojure-seed-orchestration-with-gravity-compiler-driver}})
+
+(def stage1-reader-runtime-entrypoint
+  {:engine :gravity-reader-runtime-entrypoint-v1
+   :entrypoint :stage1-read-source-runtime-entrypoint
+   :replaces [:clojure-driver-runner
+              :host-command-invocation
+              :host-file-read]
+   :compiler-driver :stage1-reader-compiler-driver
+   :input [:source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact :gravity/stage1-reader-runtime-entrypoint-artifact
+   :diagnostic-stream
+   :gravity/stage1-reader-runtime-entrypoint-diagnostic-stream
+   :proof-kind :gravity/stage1-reader-runtime-entrypoint-proof
+   :os-boundaries [:os-process-launch :os-filesystem-read :stdout-stream]
+   :runner-fallbacks []
+   :entrypoint-operations [:decode-command
+                           :open-source-file
+                           :deliver-source-bytes
+                           :execute-compiler-driver
+                           :route-artifact-output
+                           :map-process-exit
+                           :record-os-boundary]
+   :direct-stages [{:label :command
+                    :op :stage1-runtime-entrypoint-decode-command
+                    :input [:argv]
+                    :output :stage1-runtime-command}
+                   {:label :source-open
+                    :op :stage1-runtime-entrypoint-open-source
+                    :input [:source-path]
+                    :output :stage1-source-bytes}
+                   {:label :source-delivery
+                    :op :stage1-runtime-entrypoint-deliver-source
+                    :input [:source-path :source-text]
+                    :output :stage1-reader-source-input}
+                   {:label :driver-execution
+                    :op :stage1-runtime-entrypoint-execute-driver
+                    :driver :stage1-reader-compiler-driver}
+                   {:label :artifact-output
+                    :op :stage1-runtime-entrypoint-route-artifact
+                    :artifact
+                    :gravity/stage1-reader-runtime-entrypoint-artifact}
+                   {:label :exit
+                    :op :stage1-runtime-entrypoint-map-exit
+                    :success :exit-zero
+                    :failure :exit-diagnostic}]
+   :uses-runtimes [:stage1-reader-runtime-entrypoint
+                   :stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :compiler-driver-routing
+               :core-bootstrap-builtin-coverage]
+   :diagnostics {:missing-entrypoint "STAGE1RTE001"
+                 :unsupported-runtime-operation "STAGE1RTE002"
+                 :missing-runtime-entrypoint-record "STAGE1RTE003"
+                 :source-routing-divergence "STAGE1RTE004"
+                 :artifact-output-divergence "STAGE1RTE005"
+                 :process-exit-divergence "STAGE1RTE006"
+                 :illegal-runner-fallback "STAGE1RTE007"
+                 :invalid-runtime-entrypoint "STAGE1RTE008"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-runtime-entrypoint-host-runner-replacement
+                :retirement-objective
+                :replace-clojure-driver-runner-and-host-io-with-gravity-runtime-entrypoint}})
+
+(def stage1-reader-runtime-image
+  {:engine :gravity-reader-runtime-image-v1
+   :entrypoint :stage1-read-source-runtime-image
+   :replaces [:os-process-launch
+              :os-filesystem-read
+              :stdout-stream]
+   :runtime-entrypoint :stage1-reader-runtime-entrypoint
+   :input [:runtime-image :source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact :gravity/stage1-reader-runtime-image-artifact
+   :diagnostic-stream
+   :gravity/stage1-reader-runtime-image-diagnostic-stream
+   :proof-kind :gravity/stage1-reader-runtime-image-proof
+   :os-boundaries []
+   :machine-boundaries [:machine-instruction-dispatch
+                        :kernel-process-scheduler
+                        :artifact-loader]
+   :image-fallbacks []
+   :runtime-image-operations [:load-runtime-image
+                              :install-runtime-entrypoint
+                              :mount-source-bytes
+                              :execute-runtime-entrypoint
+                              :route-stdout-stream
+                              :emit-runtime-artifact
+                              :record-machine-boundary]
+   :direct-stages [{:label :runtime-image-load
+                    :op :stage1-runtime-image-load
+                    :input [:runtime-image]
+                    :output :stage1-runtime-image-record}
+                   {:label :entrypoint-install
+                    :op :stage1-runtime-image-install-entrypoint
+                    :runtime-entrypoint :stage1-reader-runtime-entrypoint}
+                   {:label :source-mount
+                    :op :stage1-runtime-image-mount-source
+                    :input [:source-path :source-text]
+                    :output :stage1-runtime-source-mount}
+                   {:label :entrypoint-execution
+                    :op :stage1-runtime-image-execute-entrypoint
+                    :entrypoint :stage1-read-source-runtime-entrypoint}
+                   {:label :stdout-routing
+                    :op :stage1-runtime-image-route-stdout
+                    :output :stage1-runtime-stdout-stream}
+                   {:label :artifact-emission
+                    :op :stage1-runtime-image-emit-artifact
+                    :artifact :gravity/stage1-reader-runtime-image-artifact}
+                   {:label :machine-boundary
+                    :op :stage1-runtime-image-record-machine-boundary
+                    :boundaries [:machine-instruction-dispatch
+                                 :kernel-process-scheduler
+                                 :artifact-loader]}]
+   :uses-runtimes [:stage1-reader-runtime-image
+                   :stage1-reader-runtime-entrypoint
+                   :stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :runtime-entrypoint-routing
+               :compiler-driver-routing :core-bootstrap-builtin-coverage]
+   :diagnostics {:missing-entrypoint "STAGE1IMG001"
+                 :unsupported-runtime-image-operation "STAGE1IMG002"
+                 :missing-runtime-image-record "STAGE1IMG003"
+                 :filesystem-authority-divergence "STAGE1IMG004"
+                 :stdout-routing-divergence "STAGE1IMG005"
+                 :runtime-image-provenance-gap "STAGE1IMG006"
+                 :illegal-os-boundary-fallback "STAGE1IMG007"
+                 :invalid-runtime-image "STAGE1IMG008"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-runtime-image-os-boundary-replacement
+                :retirement-objective
+                :replace-os-process-filesystem-and-stdout-boundaries-with-bootstrapped-runtime-image}})
+
+(def stage1-reader-verified-boot-chain
+  {:engine :gravity-reader-verified-boot-chain-v1
+   :entrypoint :stage1-read-source-verified-boot-chain
+   :replaces [:machine-instruction-dispatch
+              :kernel-process-scheduler
+              :artifact-loader]
+   :runtime-image :stage1-reader-runtime-image
+   :input [:verified-boot-chain :runtime-image :source-path :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact :gravity/stage1-reader-verified-boot-chain-artifact
+   :diagnostic-stream
+   :gravity/stage1-reader-verified-boot-chain-diagnostic-stream
+   :proof-kind :gravity/stage1-reader-verified-boot-chain-proof
+   :machine-boundaries []
+   :trust-anchor-boundaries [:hardware-reset-vector
+                             :firmware-root-of-trust
+                             :external-auditor-key]
+   :boot-chain-fallbacks []
+   :boot-chain-operations [:verify-boot-chain
+                           :load-runtime-image
+                           :activate-runtime-image
+                           :dispatch-machine-instructions
+                           :schedule-kernel-process
+                           :load-artifact
+                           :record-trust-anchor]
+   :direct-stages [{:label :boot-chain-verification
+                    :op :stage1-boot-chain-verify
+                    :input [:verified-boot-chain]
+                    :output :stage1-boot-chain-record}
+                   {:label :runtime-image-load
+                    :op :stage1-boot-chain-load-runtime-image
+                    :runtime-image :stage1-reader-runtime-image}
+                   {:label :runtime-image-activation
+                    :op :stage1-boot-chain-activate-runtime-image
+                    :output :stage1-runtime-image-activation}
+                   {:label :machine-dispatch
+                    :op :stage1-boot-chain-dispatch-machine-instructions
+                    :replaces :machine-instruction-dispatch}
+                   {:label :kernel-scheduler
+                    :op :stage1-boot-chain-schedule-kernel-process
+                    :replaces :kernel-process-scheduler}
+                   {:label :artifact-loader
+                    :op :stage1-boot-chain-load-artifact
+                    :replaces :artifact-loader}
+                   {:label :trust-anchor
+                    :op :stage1-boot-chain-record-trust-anchor
+                    :boundaries [:hardware-reset-vector
+                                 :firmware-root-of-trust
+                                 :external-auditor-key]}]
+   :uses-runtimes [:stage1-reader-verified-boot-chain
+                   :stage1-reader-runtime-image
+                   :stage1-reader-runtime-entrypoint
+                   :stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :runtime-image-routing
+               :runtime-entrypoint-routing :compiler-driver-routing
+               :core-bootstrap-builtin-coverage]
+   :diagnostics {:missing-entrypoint "STAGE1BOOT001"
+                 :unsupported-boot-operation "STAGE1BOOT002"
+                 :missing-boot-chain-record "STAGE1BOOT003"
+                 :artifact-loader-divergence "STAGE1BOOT004"
+                 :scheduler-authority-divergence "STAGE1BOOT005"
+                 :unreproducible-boot-provenance "STAGE1BOOT006"
+                 :illegal-machine-kernel-fallback "STAGE1BOOT007"
+                 :invalid-verified-boot-chain "STAGE1BOOT008"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-verified-boot-chain-machine-boundary-replacement
+                :retirement-objective
+                :replace-machine-kernel-and-artifact-loader-boundaries-with-verified-boot-chain}})
+
+(def stage1-reader-diverse-bootstrap-verification
+  {:engine :gravity-reader-diverse-bootstrap-verification-v1
+   :entrypoint :stage1-read-source-diverse-bootstrap-verification
+   :replaces [:hardware-reset-vector
+              :firmware-root-of-trust
+              :external-auditor-key]
+   :verified-boot-chain :stage1-reader-verified-boot-chain
+   :input [:diverse-bootstrap-verification
+           :verified-boot-chain
+           :source-path
+           :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact :gravity/stage1-reader-diverse-bootstrap-verification-artifact
+   :diagnostic-stream
+   :gravity/stage1-reader-diverse-bootstrap-verification-diagnostic-stream
+   :proof-kind :gravity/stage1-reader-diverse-bootstrap-verification-proof
+   :trust-anchor-boundaries []
+   :replaced-trust-anchor-boundaries [:hardware-reset-vector
+                                      :firmware-root-of-trust
+                                      :external-auditor-key]
+   :residual-trust-boundaries [:physical-device-manufacturing
+                               :supply-chain-custody
+                               :independent-diversity-review]
+   :diverse-verification-fallbacks []
+   :diverse-verification-operations [:seed-built-rebuild
+                                     :self-built-rebuild
+                                     :clean-environment-rebuild
+                                     :diverse-toolchain-rebuild
+                                     :compare-bootstrap-traces
+                                     :verify-provenance
+                                     :record-independent-audit]
+   :independent-toolchains [{:toolchain :stage1-reader-self-hosted-runtime
+                             :identity :gravity-authored-reader-runtime
+                             :stage :stage1
+                             :role :self-built-rebuild}
+                            {:toolchain :stage1-reader-core-bootstrap-runtime
+                             :identity :gravity-authored-core-bootstrap-runtime
+                             :stage :stage1
+                             :role :clean-environment-rebuild}
+                            {:toolchain :stage1-reader-verified-boot-chain
+                             :identity :gravity-authored-boot-chain-verifier
+                             :stage :stage1
+                             :role :diverse-toolchain-rebuild}]
+   :bootstrap-trace-comparisons [{:mode :manifest-equivalence
+                                  :source :stage1-reader-runtime-image
+                                  :candidate :stage1-reader-verified-boot-chain
+                                  :status :accepted}
+                                 {:mode :diagnostic-equivalence
+                                  :source :stage1-reader-verified-boot-chain
+                                  :candidate :stage1-reader-diverse-bootstrap-verification
+                                  :status :accepted}
+                                 {:mode :stage0-form-parity
+                                  :source :stage0-reader
+                                  :candidate :stage1-reader-diverse-bootstrap-verification
+                                  :status :accepted}]
+   :reproducible-build-evidence {:locked-dependencies true
+                                 :fixed-time true
+                                 :locale "C"
+                                 :filesystem-order :canonical
+                                 :network :disabled
+                                 :randomness :not-used}
+   :independent-audit-record {:reviewer :bootstrap-auditor
+                              :review-kind :independent-diversity-review
+                              :status :recorded}
+   :direct-stages [{:label :seed-built-rebuild
+                    :op :stage1-diverse-bootstrap-seed-built-rebuild
+                    :input [:stage1-reader-verified-boot-chain]
+                    :output :stage1-seed-built-bootstrap-trace}
+                   {:label :self-built-rebuild
+                    :op :stage1-diverse-bootstrap-self-built-rebuild
+                    :input [:stage1-reader-self-hosted-runtime]
+                    :output :stage1-self-built-bootstrap-trace}
+                   {:label :clean-environment-rebuild
+                    :op :stage1-diverse-bootstrap-clean-environment-rebuild
+                    :controls [:locked-dependencies :fixed-time
+                               :canonical-filesystem-order :no-network]}
+                   {:label :diverse-toolchain-rebuild
+                    :op :stage1-diverse-bootstrap-diverse-toolchain-rebuild
+                    :toolchains [:stage1-reader-core-bootstrap-runtime
+                                 :stage1-reader-verified-boot-chain]}
+                   {:label :trace-comparison
+                    :op :stage1-diverse-bootstrap-compare-traces
+                    :comparisons [:manifest-equivalence
+                                  :diagnostic-equivalence
+                                  :stage0-form-parity]}
+                   {:label :provenance-verification
+                    :op :stage1-diverse-bootstrap-verify-provenance
+                    :evidence [:compiler-lineage :environment-manifest
+                               :reproducible-build-evidence]}
+                   {:label :independent-audit
+                    :op :stage1-diverse-bootstrap-record-independent-audit
+                    :boundaries [:physical-device-manufacturing
+                                 :supply-chain-custody
+                                 :independent-diversity-review]}]
+   :uses-runtimes [:stage1-reader-diverse-bootstrap-verification
+                   :stage1-reader-verified-boot-chain
+                   :stage1-reader-runtime-image
+                   :stage1-reader-runtime-entrypoint
+                   :stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :verified-boot-chain-routing
+               :runtime-image-routing :runtime-entrypoint-routing
+               :compiler-driver-routing :core-bootstrap-builtin-coverage]
+   :diagnostics {:missing-entrypoint "STAGE1DIV001"
+                 :unsupported-verification-operation "STAGE1DIV002"
+                 :missing-diverse-verification-record "STAGE1DIV003"
+                 :single-implementation-self-certification "STAGE1DIV004"
+                 :bootstrap-trace-divergence "STAGE1DIV005"
+                 :unreproducible-diverse-build-provenance "STAGE1DIV006"
+                 :missing-independent-audit-metadata "STAGE1DIV007"
+                 :illegal-trust-anchor-fallback "STAGE1DIV008"
+                 :invalid-diverse-bootstrap-verification "STAGE1DIV009"}
+   :provenance {:owner :gravity-source
+                :stage :stage1
+                :purpose :reader-diverse-bootstrap-trust-anchor-replacement
+                :retirement-objective
+                :replace-hardware-firmware-and-external-trust-anchors-with-diverse-self-hosted-bootstrap-verification}})
+
+(def stage1-reader-release-attestation-seed-retirement
+  {:engine :gravity-reader-release-attestation-seed-retirement-v1
+   :entrypoint :stage1-read-source-release-attestation-seed-retirement
+   :replaces [:physical-device-manufacturing
+              :supply-chain-custody
+              :independent-diversity-review]
+   :diverse-bootstrap-verification
+   :stage1-reader-diverse-bootstrap-verification
+   :verified-boot-chain :stage1-reader-verified-boot-chain
+   :input [:release-attestation
+           :seed-retirement
+           :diverse-bootstrap-verification
+           :verified-boot-chain
+           :source-path
+           :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact
+   :gravity/stage1-reader-release-attestation-seed-retirement-artifact
+   :diagnostic-stream
+   :gravity/stage1-reader-release-attestation-seed-retirement-diagnostic-stream
+   :proof-kind
+   :gravity/stage1-reader-release-attestation-seed-retirement-proof
+   :physical-release-boundaries []
+   :replaced-physical-release-boundaries
+   [:physical-device-manufacturing
+    :supply-chain-custody
+    :independent-diversity-review]
+   :residual-trust-boundaries []
+   :residual-release-governance-boundaries
+   [:human-release-governance
+    :legal-custody-record-retention
+    :deployment-environment-custody]
+   :release-attestation-fallbacks []
+   :release-attestation-operations
+   [:verify-release-attestation
+    :verify-seed-retirement-evidence
+    :verify-supply-chain-manifest
+    :verify-release-custody-reproducibility
+    :verify-governance-approval
+    :verify-revocation-status
+    :record-release-provenance]
+   :release-attestation-record
+   {:record-id :stage1-reader-release-attestation
+    :package :gravity/bootstrap-reader
+    :version "stage1-p15-s21"
+    :compiler :stage1-reader-diverse-bootstrap-verification
+    :source :stage1-reader-source
+    :provenance :verified
+    :sbom :verified
+    :signatures :verified
+    :artifact-hashes :verified
+    :capability-manifest :verified
+    :conformance-report :verified
+    :status :accepted}
+   :seed-retirement-evidence
+   {:record-id :stage1-reader-seed-retirement
+    :retired-assumptions [:physical-device-manufacturing
+                          :supply-chain-custody
+                          :independent-diversity-review]
+    :stage1-reader-seed-assumptions-retired? true
+    :full-compiler-seed-retired? false
+    :remaining-boundaries [:human-release-governance
+                           :legal-custody-record-retention
+                           :deployment-environment-custody]
+    :status :recorded}
+   :supply-chain-manifest
+   {:manifest-id :stage1-reader-release-supply-chain
+    :source-archive :verified
+    :lockfile :verified
+    :builder-identity :verified
+    :custody-events :verified
+    :sbom :verified
+    :signatures :verified
+    :status :verifiable}
+   :release-custody-record
+   {:record-id :stage1-reader-release-custody
+    :reproducible true
+    :locked-dependencies true
+    :fixed-time true
+    :locale "C"
+    :filesystem-order :canonical
+    :network :disabled
+    :randomness :not-used
+    :status :accepted}
+   :governance-approval-record
+   {:record-id :stage1-reader-release-governance
+    :rfc-state :accepted
+    :rfc-policy :GOV6
+    :package-policy :GOV10
+    :review-gates [:compatibility :security :profile
+                   :conformance :package-governance]
+    :status :approved}
+   :revocation-check-report
+   {:record-id :stage1-reader-release-revocation
+    :revoked-builders []
+    :revoked-dependencies []
+    :revoked-signatures []
+    :status :clear}
+   :release-provenance-record
+   {:record-id :stage1-reader-release-provenance
+    :lineage [:stage1-reader-release-attestation-seed-retirement
+              :stage1-reader-diverse-bootstrap-verification
+              :stage1-reader-verified-boot-chain
+              :stage1-reader-runtime-image
+              :stage1-reader-runtime-entrypoint
+              :stage1-reader-compiler-driver
+              :stage1-reader-core-bootstrap-runtime
+              :stage1-reader-self-hosted-runtime
+              :stage1-reader-source-runtime]
+    :canonicalized true
+    :auditor-traversable true
+    :status :complete}
+   :direct-stages
+   [{:label :release-attestation
+     :op :stage1-release-attestation-verify
+     :evidence [:provenance :sbom :signatures :artifact-hashes
+                :capability-manifest :conformance-report]}
+    {:label :seed-retirement
+     :op :stage1-release-attestation-seed-retirement-evidence
+     :retires [:physical-device-manufacturing
+               :supply-chain-custody
+               :independent-diversity-review]}
+    {:label :supply-chain-manifest
+     :op :stage1-release-attestation-supply-chain-manifest
+     :evidence [:source-archive :lockfile :builder-identity
+                :custody-events :sbom :signatures]}
+    {:label :release-custody-reproducibility
+     :op :stage1-release-attestation-release-custody-reproducibility
+     :controls [:locked-dependencies :fixed-time
+                :canonical-filesystem-order :no-network]}
+    {:label :governance-approval
+     :op :stage1-release-attestation-governance-approval
+     :policies [:GOV6 :GOV10]}
+    {:label :revocation-status
+     :op :stage1-release-attestation-revocation-status
+     :checks [:builders :dependencies :signatures]}
+    {:label :release-provenance
+     :op :stage1-release-attestation-record-provenance
+     :lineage [:stage1-reader-release-attestation-seed-retirement
+               :stage1-reader-diverse-bootstrap-verification
+               :stage1-reader-verified-boot-chain]}]
+   :uses-runtimes [:stage1-reader-release-attestation-seed-retirement
+                   :stage1-reader-diverse-bootstrap-verification
+                   :stage1-reader-verified-boot-chain
+                   :stage1-reader-runtime-image
+                   :stage1-reader-runtime-entrypoint
+                   :stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :diverse-bootstrap-verification-routing
+               :verified-boot-chain-routing :runtime-image-routing
+               :runtime-entrypoint-routing :compiler-driver-routing
+               :core-bootstrap-builtin-coverage]
+   :diagnostics
+   {:missing-entrypoint "STAGE1REL001"
+    :unsupported-release-attestation-operation "STAGE1REL002"
+    :missing-release-attestation-record "STAGE1REL003"
+    :missing-seed-retirement-evidence "STAGE1REL004"
+    :nonreproducible-release-custody "STAGE1REL005"
+    :unverifiable-supply-chain-manifest "STAGE1REL006"
+    :missing-governance-approval "STAGE1REL007"
+    :illegal-physical-release-fallback "STAGE1REL008"
+    :revoked-release-input "STAGE1REL009"
+    :invalid-release-attestation-seed-retirement "STAGE1REL010"}
+   :provenance
+   {:owner :gravity-source
+    :stage :stage1
+    :purpose
+    :reader-release-attestation-seed-retirement-assumption-replacement
+    :retirement-objective
+    :replace-physical-supply-chain-and-independent-diversity-assumptions-with-release-attestation-and-seed-retirement}})
+
+(def stage1-reader-formal-release-governance-seed-retirement
+  {:engine :gravity-reader-formal-release-governance-v1
+   :entrypoint :stage1-read-source-formal-release-governance-seed-retirement
+   :replaces [:human-release-governance
+              :legal-custody-record-retention
+              :deployment-environment-custody]
+   :release-attestation-seed-retirement
+   :stage1-reader-release-attestation-seed-retirement
+   :diverse-bootstrap-verification
+   :stage1-reader-diverse-bootstrap-verification
+   :verified-boot-chain :stage1-reader-verified-boot-chain
+   :input [:formal-release-governance
+           :deployment-custody
+           :self-hosting-evidence
+           :release-attestation
+           :source-path
+           :source-text]
+   :output :gravity/stage1-reader-form-records
+   :artifact
+   :gravity/stage1-reader-formal-release-governance-seed-retirement-artifact
+   :diagnostic-stream
+   :gravity/stage1-reader-formal-release-governance-seed-retirement-diagnostic-stream
+   :proof-kind
+   :gravity/stage1-reader-formal-release-governance-seed-retirement-proof
+   :residual-release-governance-boundaries []
+   :formal-release-governance-fallbacks []
+   :formal-governance-operations
+   [:verify-formal-release-governance
+    :verify-deployment-custody
+    :verify-self-hosting-evidence
+    :verify-reproducible-rebuild
+    :verify-stage-comparison
+    :record-tcb-delta
+    :record-unsafe-audit
+    :record-formal-release-provenance]
+   :formal-release-governance-record
+   {:record-id :stage1-reader-formal-release-governance
+    :policy-engine :gravity-release-policy-v1
+    :governance-source :versioned-rfc-ledger
+    :approval-model :machine-checkable-governance
+    :required-policies [:GOV6 :GOV10 :BOOT6 :BOOT7 :BOOT8 :TEST13]
+    :human-release-governance-replaced? true
+    :legal-custody-record-retention-replaced? true
+    :deployment-environment-custody-replaced? true
+    :status :verified}
+   :deployment-custody-record
+   {:record-id :stage1-reader-deployment-custody
+    :custody-model :content-addressed-release-graph
+    :environment :reproducible-bootstrap-lab
+    :builder-selection :policy-verified
+    :artifact-admission :hash-and-policy-gated
+    :network :disabled
+    :mutable-state :forbidden
+    :status :verifiable}
+   :self-hosting-evidence
+   {:record-id :stage1-reader-self-hosting-evidence
+    :scope :stage1-reader-claimed-subset
+    :staged-compiler-artifact :verified
+    :reproducible-rebuild-log :verified
+    :conformance-report :verified
+    :stage-comparison-report :verified
+    :provenance-attestation :verified
+    :tcb-delta :verified
+    :unsafe-audit-report :not-applicable
+    :claimed-subset-self-hosted? true
+    :full-language-compiler-self-hosted? false
+    :clojure-seed-retired? false
+    :status :verified}
+   :seed-retirement-evidence
+   {:record-id :stage1-reader-formal-governance-seed-retirement
+    :retired-assumptions [:human-release-governance
+                          :legal-custody-record-retention
+                          :deployment-environment-custody]
+    :claimed-subset-seed-retired? true
+    :full-compiler-seed-retired? false
+    :clojure-seed-retired? false
+    :remaining-boundaries [:full-language-compiler-self-hosting]
+    :status :recorded}
+   :tcb-delta-record
+   {:record-id :stage1-reader-formal-governance-tcb-delta
+    :removed [:human-release-governance
+              :legal-custody-record-retention
+              :deployment-environment-custody]
+    :remaining [:full-language-compiler-self-hosting]
+    :new-unsafe-islands []
+    :status :complete}
+   :unsafe-audit-report
+   {:record-id :stage1-reader-formal-governance-unsafe-audit
+    :unsafe-islands []
+    :unsafe-required? false
+    :status :not-applicable}
+   :formal-release-provenance-record
+   {:record-id :stage1-reader-formal-release-provenance
+    :lineage [:stage1-reader-formal-release-governance-seed-retirement
+              :stage1-reader-release-attestation-seed-retirement
+              :stage1-reader-diverse-bootstrap-verification
+              :stage1-reader-verified-boot-chain
+              :stage1-reader-runtime-image
+              :stage1-reader-runtime-entrypoint
+              :stage1-reader-compiler-driver
+              :stage1-reader-core-bootstrap-runtime
+              :stage1-reader-self-hosted-runtime
+              :stage1-reader-source-runtime]
+    :canonicalized true
+    :auditor-traversable true
+    :status :complete}
+   :direct-stages
+   [{:label :formal-release-governance
+     :op :stage1-formal-governance-verify
+     :evidence [:policy-engine :governance-source
+                :approval-model :required-policies]}
+    {:label :deployment-custody
+     :op :stage1-formal-governance-deployment-custody
+     :evidence [:content-addressed-release-graph
+                :policy-verified-builder
+                :hash-and-policy-gated-artifact-admission]}
+    {:label :self-hosting-evidence
+     :op :stage1-formal-governance-self-hosting-evidence
+     :evidence [:staged-compiler-artifact
+                :conformance-report
+                :provenance-attestation]}
+    {:label :reproducible-rebuild
+     :op :stage1-formal-governance-reproducible-rebuild
+     :evidence [:reproducible-rebuild-log :stage-comparison-report]}
+    {:label :stage-comparison
+     :op :stage1-formal-governance-stage-comparison
+     :evidence [:stage0-form-parity :trace-comparison]}
+    {:label :tcb-delta
+     :op :stage1-formal-governance-tcb-delta
+     :removed [:human-release-governance
+               :legal-custody-record-retention
+               :deployment-environment-custody]}
+    {:label :unsafe-audit
+     :op :stage1-formal-governance-unsafe-audit
+     :unsafe-islands []}
+    {:label :formal-release-provenance
+     :op :stage1-formal-governance-record-provenance
+     :lineage [:stage1-reader-formal-release-governance-seed-retirement
+               :stage1-reader-release-attestation-seed-retirement
+               :stage1-reader-diverse-bootstrap-verification]}]
+   :uses-runtimes [:stage1-reader-formal-release-governance-seed-retirement
+                   :stage1-reader-release-attestation-seed-retirement
+                   :stage1-reader-diverse-bootstrap-verification
+                   :stage1-reader-verified-boot-chain
+                   :stage1-reader-runtime-image
+                   :stage1-reader-runtime-entrypoint
+                   :stage1-reader-compiler-driver
+                   :stage1-reader-core-bootstrap-runtime
+                   :stage1-reader-self-hosted-runtime
+                   :stage1-reader-source-runtime]
+   :uses-builtins [:stage1-reader-core-bootstrap-builtins]
+   :uses-executors [:stage1-reader-token-automaton-executor
+                    :stage1-reader-form-builder-executor]
+   :preserves [:source-spans :diagnostic-codes :artifact-provenance
+               :stage0-form-parity :release-attestation-routing
+               :diverse-bootstrap-verification-routing
+               :verified-boot-chain-routing :runtime-image-routing
+               :runtime-entrypoint-routing :compiler-driver-routing
+               :core-bootstrap-builtin-coverage]
+   :diagnostics
+   {:missing-entrypoint "STAGE1GOV001"
+    :unsupported-formal-governance-operation "STAGE1GOV002"
+    :missing-formal-release-governance "STAGE1GOV003"
+    :unverifiable-deployment-custody "STAGE1GOV004"
+    :missing-self-hosting-evidence "STAGE1GOV005"
+    :unreproducible-full-compiler-rebuild "STAGE1GOV006"
+    :missing-stage-compiler-equivalence "STAGE1GOV007"
+    :missing-tcb-delta "STAGE1GOV008"
+    :illegal-governance-or-deployment-fallback "STAGE1GOV009"
+    :invalid-formal-release-governance "STAGE1GOV010"}
+   :provenance
+   {:owner :gravity-source
+    :stage :stage1
+    :purpose :reader-formal-release-governance-assumption-replacement
+    :retirement-objective
+    :replace-human-release-governance-and-deployment-custody-with-formal-release-governance-while-keeping-full-compiler-self-hosting-explicit}})
+
+(defn stage1-read-source [source-path source-text]
+  (reader/read-with-table source-path source-text stage1-reader-table))
+
+(defn stage1-read-source-pipeline [source-path source-text]
+  (let [token-stream (reader/scan-tokens source-path
+                                         source-text
+                                         stage1-reader-table)]
+    (reader/forms-from-tokens source-path
+                              source-text
+                              stage1-reader-table
+                              token-stream)))
+
+(defn stage1-read-source-character-pipeline [source-path source-text]
+  (let [character-stream (reader/source-characters source-path source-text)
+        token-stream (reader/tokens-from-characters source-path
+                                                   source-text
+                                                   stage1-reader-table
+                                                   character-stream)]
+    (reader/forms-from-tokens source-path
+                              source-text
+                              stage1-reader-table
+                              token-stream)))
+
+(defn stage1-read-source-token-classifier-pipeline [source-path source-text]
+  (let [character-stream (reader/source-characters source-path source-text)
+        token-stream (reader/tokens-from-classifier source-path
+                                                   source-text
+                                                   stage1-reader-token-classifier
+                                                   character-stream)]
+    (reader/forms-from-tokens source-path
+                              source-text
+                              stage1-reader-table
+                              token-stream)))
+
+(defn stage1-read-source-token-realizer-pipeline [source-path source-text]
+  (let [character-stream (reader/source-characters source-path source-text)
+        token-stream (reader/realize-tokens source-path
+                                           source-text
+                                           stage1-reader-token-classifier
+                                           stage1-reader-token-realizer
+                                           character-stream)]
+    (reader/forms-from-tokens source-path
+                              source-text
+                              stage1-reader-table
+                              token-stream)))
+
+(defn stage1-read-source-token-automaton-pipeline [source-path source-text]
+  (let [character-stream (reader/source-characters source-path source-text)
+        token-stream (reader/run-token-automaton source-path
+                                                source-text
+                                                stage1-reader-token-classifier
+                                                stage1-reader-token-realizer
+                                                stage1-reader-token-automaton
+                                                character-stream)]
+    (reader/forms-from-tokens source-path
+                              source-text
+                              stage1-reader-table
+                              token-stream)))
+
+(defn stage1-read-source-form-builder-pipeline [source-path source-text]
+  (let [character-stream (reader/source-characters source-path source-text)
+        token-stream (reader/run-token-automaton source-path
+                                                source-text
+                                                stage1-reader-token-classifier
+                                                stage1-reader-token-realizer
+                                                stage1-reader-token-automaton
+                                                character-stream)]
+    (reader/build-forms source-path
+                        source-text
+                        stage1-reader-token-classifier
+                        stage1-reader-token-realizer
+                        stage1-reader-token-automaton
+                        stage1-reader-form-builder
+                        token-stream)))
+
+(defn stage1-execute-token-automaton [source-path
+                                      source-text
+                                      token-classifier
+                                      token-realizer
+                                      token-automaton
+                                      token-automaton-executor
+                                      character-stream]
+  (quote {:gravity-executor :token-automaton
+          :source source-path
+          :text source-text
+          :classifier token-classifier
+          :realizer token-realizer
+          :automaton token-automaton
+          :executor token-automaton-executor
+          :characters character-stream}))
+
+(defn stage1-execute-form-builder [source-path
+                                   source-text
+                                   token-classifier
+                                   token-realizer
+                                   token-automaton
+                                   form-builder
+                                   form-builder-executor
+                                   token-stream]
+  (quote {:gravity-executor :form-builder
+          :source source-path
+          :text source-text
+          :classifier token-classifier
+          :realizer token-realizer
+          :automaton token-automaton
+          :form-builder form-builder
+          :executor form-builder-executor
+          :tokens token-stream}))
+
+(defn stage1-create-character-stream [source-path
+                                      source-text
+                                      source-runtime]
+  (quote {:gravity-runtime :source-characters
+          :source source-path
+          :text source-text
+          :runtime source-runtime}))
+
+(defn stage1-read-source-executor-pipeline [source-path source-text]
+  (let [character-stream (reader/source-characters source-path source-text)
+        token-stream (stage1-execute-token-automaton
+                      source-path
+                      source-text
+                      stage1-reader-token-classifier
+                      stage1-reader-token-realizer
+                      stage1-reader-token-automaton
+                      stage1-reader-token-automaton-executor
+                      character-stream)]
+    (stage1-execute-form-builder
+     source-path
+     source-text
+     stage1-reader-token-classifier
+     stage1-reader-token-realizer
+     stage1-reader-token-automaton
+     stage1-reader-form-builder
+     stage1-reader-form-builder-executor
+     token-stream)))
+
+(defn stage1-read-source-runtime-pipeline [source-path source-text]
+  (let [character-stream (stage1-create-character-stream
+                          source-path
+                          source-text
+                          stage1-reader-source-runtime)
+        token-stream (stage1-execute-token-automaton
+                      source-path
+                      source-text
+                      stage1-reader-token-classifier
+                      stage1-reader-token-realizer
+                      stage1-reader-token-automaton
+                      stage1-reader-token-automaton-executor
+                      character-stream)]
+    (stage1-execute-form-builder
+     source-path
+     source-text
+     stage1-reader-token-classifier
+     stage1-reader-token-realizer
+     stage1-reader-token-automaton
+     stage1-reader-form-builder
+     stage1-reader-form-builder-executor
+     token-stream)))
+
+(defn stage1-read-source-compiled-pipeline [source-path source-text]
+  (reader/execute-compiled-program
+   source-path
+   source-text
+   stage1-reader-compiled-program))
+
+(defn stage1-read-source-binary-pipeline [source-path source-text]
+  (reader/execute-binary
+   source-path
+   source-text
+   stage1-reader-emitted-binary))
+
+(defn stage1-read-source-self-hosted-runtime [source-path source-text]
+  (reader/execute-self-hosted-runtime
+   source-path
+   source-text
+   stage1-reader-self-hosted-runtime))
+
+(defn stage1-read-source-core-bootstrap [source-path source-text]
+  (reader/execute-core-bootstrap-runtime
+   source-path
+   source-text
+   stage1-reader-core-bootstrap-runtime
+   stage1-reader-core-bootstrap-builtins))
+
+(defn stage1-read-source-compiler-driver [source-path source-text]
+  (reader/execute-compiler-driver
+   source-path
+   source-text
+   stage1-reader-compiler-driver
+   stage1-reader-core-bootstrap-runtime
+   stage1-reader-core-bootstrap-builtins))
+
+(defn stage1-read-source-runtime-entrypoint [source-path source-text]
+  (reader/execute-runtime-entrypoint
+   source-path
+   source-text
+   stage1-reader-runtime-entrypoint
+   stage1-reader-compiler-driver))
+
+(defn stage1-read-source-runtime-image [source-path source-text]
+  (reader/execute-runtime-image
+   source-path
+   source-text
+   stage1-reader-runtime-image
+   stage1-reader-runtime-entrypoint))
+
+(defn stage1-read-source-verified-boot-chain [source-path source-text]
+  (reader/execute-verified-boot-chain
+   source-path
+   source-text
+   stage1-reader-verified-boot-chain
+   stage1-reader-runtime-image))
+
+(defn stage1-read-source-diverse-bootstrap-verification [source-path source-text]
+  (reader/execute-diverse-bootstrap-verification
+   source-path
+   source-text
+   stage1-reader-diverse-bootstrap-verification
+   stage1-reader-verified-boot-chain))
+
+(defn stage1-read-source-release-attestation-seed-retirement
+  [source-path source-text]
+  (reader/execute-release-attestation-seed-retirement
+   source-path
+   source-text
+   stage1-reader-release-attestation-seed-retirement
+   stage1-reader-diverse-bootstrap-verification
+   stage1-reader-verified-boot-chain))
+
+(defn stage1-read-source-formal-release-governance-seed-retirement
+  [source-path source-text]
+  (reader/execute-formal-release-governance-seed-retirement
+   source-path
+   source-text
+   stage1-reader-formal-release-governance-seed-retirement
+   stage1-reader-release-attestation-seed-retirement))

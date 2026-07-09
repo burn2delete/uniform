@@ -1,0 +1,12 @@
+(ns compile.build-grant
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:build/read-file})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:declared-inputs #{"schemas/user.schema.edn"}
+              :hermetic true
+              :cache-policy :strict}))
+
+(def invalid
+  (compile/read-schema "schemas/user.schema.edn"))

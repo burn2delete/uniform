@@ -1,0 +1,26 @@
+{:proof-id :stage0-p12-formal-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D057
+ :document "P12"
+ :profile :formal
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-validation-formal.gravity"
+ :artifact-kind :gravity/stage0-constrained-profile-validation-artifact
+ :effective-effects #{:pure}
+ :effective-capabilities #{}
+ :required-artifacts
+ [:symbolic-ir :proof-object :assumption-manifest :trusted-kernel-record
+  :checked-theorem-summary :certificate-hash-chain :math-mode-rounding-record
+  :imported-proof-verification-record]
+ :diagnostic-fixtures
+ {"P12-NONDETERMINISM" "bootstrap/clojure/fixtures/rejected/profile-formal-nondeterminism.gravity"
+  "P12-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-formal-effect.gravity"
+  "P12-MATH-MODE" "bootstrap/clojure/fixtures/rejected/profile-formal-math-mode.gravity"
+  "P12-ASSUMPTION" "bootstrap/clojure/fixtures/rejected/profile-formal-assumption.gravity"
+  "P12-PROOF" "bootstrap/clojure/fixtures/rejected/profile-formal-proof.gravity"
+  "P12-CERTIFICATE" "bootstrap/clojure/fixtures/rejected/profile-formal-certificate.gravity"
+  "P12-TRUST" "bootstrap/clojure/fixtures/rejected/profile-formal-trust.gravity"
+  "P12-UNSAFE" "bootstrap/clojure/fixtures/rejected/profile-formal-unsafe.gravity"
+  "P12-SYMBOLIC-LOWERING" "bootstrap/clojure/fixtures/rejected/profile-formal-symbolic-lowering.gravity"
+  "P12-BACKEND" "bootstrap/clojure/fixtures/rejected/profile-formal-backend.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

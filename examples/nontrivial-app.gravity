@@ -1,0 +1,30 @@
+(ns nontrivial.app
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main score build-record render])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(defn score [base scale bonus]
+  (+ (+ base (* scale 3)) bonus))
+
+(defn build-record [name value]
+  (assoc (hash-map :name name)
+         :score value
+         :trail (conj (vector "compile") "stage3")))
+
+(defn render [record]
+  (if (> (get record :score) 20)
+    (str (get record :name)
+         ":ready:"
+         (count (get record :trail)))
+    "blocked"))
+
+(defn main []
+  (let [value (score 4 6 2)
+        record (build-record "gravity" value)]
+    (do
+      (println "nontrivial-app")
+      (println (render record))
+      (println (pr-str (list :release value))))))

@@ -1,0 +1,32 @@
+{:proof-id :stage0-p9-distributed-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D054
+ :document "P9"
+ :profile :distributed
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-distributed-ai-distributed.gravity"
+ :artifact-kind :gravity/stage0-distributed-ai-profile-artifact
+ :effective-effects #{:workflow/event :workflow/replay :network/http
+                      :database/read :database/write :time/read}
+ :effective-capabilities #{:workflow/event :workflow/replay
+                           :network/client :database/read
+                           :database/write :time/read}
+ :required-artifacts
+ [:workflow-graph :message-schema-bundle :event-log-schema
+  :retry-timeout-compensation-table
+  :external-service-capability-manifest
+  :replay-policy-log-schema :persistence-boundary-records
+  :distributed-conformance-results]
+ :boundary-kind :service-boundary
+ :diagnostic-fixtures
+ {"P9-REPLAY" "bootstrap/clojure/fixtures/rejected/profile-distributed-replay.gravity"
+  "P9-SCHEMA" "bootstrap/clojure/fixtures/rejected/profile-distributed-schema.gravity"
+  "P9-MIGRATION" "bootstrap/clojure/fixtures/rejected/profile-distributed-migration.gravity"
+  "P9-RETRY" "bootstrap/clojure/fixtures/rejected/profile-distributed-retry.gravity"
+  "P9-COMPENSATION" "bootstrap/clojure/fixtures/rejected/profile-distributed-compensation.gravity"
+  "P9-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-distributed-capability.gravity"
+  "P9-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-distributed-effect.gravity"
+  "P9-RAW" "bootstrap/clojure/fixtures/rejected/profile-distributed-raw.gravity"
+  "P9-SERVICE-ERROR" "bootstrap/clojure/fixtures/rejected/profile-distributed-service-error.gravity"
+  "P9-EVENT-LOG" "bootstrap/clojure/fixtures/rejected/profile-distributed-event-log.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

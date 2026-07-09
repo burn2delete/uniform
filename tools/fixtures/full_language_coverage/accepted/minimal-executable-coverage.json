@@ -1,0 +1,28 @@
+{
+  "acceptedFixtures": [
+    "fixtures/accepted/example.gravity"
+  ],
+  "artifacts": [
+    "artifacts/example.edn"
+  ],
+  "claimedFullLanguageComplete": true,
+  "gravityAuthoredImplementation": [
+    "bootstrap/gravity/src/example.gravity"
+  ],
+  "proofCommands": [
+    "gravity check fixtures/accepted/example.gravity"
+  ],
+  "publicGravityAcceptedProof": [
+    "fixtures/accepted/example.gravity"
+  ],
+  "publicGravityRejectedProof": [
+    "fixtures/rejected/example.gravity"
+  ],
+  "rejectedFixtures": [
+    "fixtures/rejected/example.gravity"
+  ],
+  "scaffoldOnlyCoverage": false,
+  "stableDiagnostics": [
+    "EXAMPLE001"
+  ]
+}

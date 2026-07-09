@@ -1,0 +1,9 @@
+(ns typed.bad.raw
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{:memory/raw})
+  (:capabilities #{:memory/raw})
+  (:safety :safe))
+
+(def bad
+  (raw/deref ptr))

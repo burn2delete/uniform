@@ -1,0 +1,5 @@
+(ns l11.bad.gpu
+  (:profile :gpu))
+
+(def bad
+  (gpu/shared-read tile index))

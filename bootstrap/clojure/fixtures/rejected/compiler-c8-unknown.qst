@@ -1,0 +1,9 @@
+(ns compiler.c8.unknown
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c8-effect-check {:fail :unknown}}}))
+
+(def value 1)

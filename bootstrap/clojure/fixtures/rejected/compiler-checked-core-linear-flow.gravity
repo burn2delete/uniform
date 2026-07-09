@@ -1,0 +1,11 @@
+(ns compiler.checked-core.linear-flow
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:checked-core {:fail :linear-flow}}}))
+
+(defn ready []
+  true)

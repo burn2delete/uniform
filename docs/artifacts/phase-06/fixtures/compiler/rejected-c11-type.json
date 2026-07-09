@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "delete": [
+    "/mir_module/types"
+  ]
+}

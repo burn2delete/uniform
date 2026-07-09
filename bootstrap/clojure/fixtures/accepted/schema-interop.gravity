@@ -1,0 +1,17 @@
+; P10 fixture covers schema, data, and interop artifacts across S1-S9.
+(ns schema.interop
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive :schema/validate :database/read
+              :database/write :build/env :secrets/read})
+  (:capabilities #{:schema/validate :db/query :db/migrate
+                   :env/read :secret/read})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {}}}))
+
+(def schema-phase-id 10)
+
+(defn main [] :- I64
+  schema-phase-id)

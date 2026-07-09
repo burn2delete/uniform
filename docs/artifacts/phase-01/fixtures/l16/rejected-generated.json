@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-macro.json",
+  "set": {
+    "/generated_validation/typed_core": false
+  }
+}

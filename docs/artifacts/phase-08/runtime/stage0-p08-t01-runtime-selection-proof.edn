@@ -1,0 +1,69 @@
+{:artifact :gravity/stage0-runtime-selection-proof
+ :task "P08-T01"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-selection bootstrap/clojure/fixtures/accepted/runtime-selection-no-runtime.gravity"
+ :artifact-kind :gravity/stage0-runtime-selection-artifact
+ :artifact-id "sha256:7242d64adcdea1a655fe0f56a318d1d48f35ec49dd2813e48a31a7b7802c5cc8"
+ :input-artifact "sha256:fb13e5e7323c6a7ba0ddaa92862b950d4a9c89002207d7094a41fb6298e6f79b"
+ :input-artifact-kind :gravity/stage0-artifact-emission-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-selection-no-runtime.gravity"
+ :rejected-fixtures
+ ["bootstrap/clojure/fixtures/rejected/runtime-r1-selection.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-service.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-forbidden.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-capability.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-host.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-replay.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-startup.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-failure.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r1-manifest.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-hidden-service.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-startup.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-memory.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-dispatch.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-failure.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-capability.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-proof.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r2-manifest.gravity"]
+ :required-diagnostic-ids
+ ["R1-SELECTION"
+  "R1-SERVICE"
+  "R1-FORBIDDEN"
+  "R1-CAPABILITY"
+  "R1-HOST"
+  "R1-REPLAY"
+  "R1-STARTUP"
+  "R1-FAILURE"
+  "R1-MANIFEST"
+  "R2-HIDDEN-SERVICE"
+  "R2-STARTUP"
+  "R2-MEMORY"
+  "R2-DISPATCH"
+  "R2-FAILURE"
+  "R2-CAPABILITY"
+  "R2-PROOF"
+  "R2-MANIFEST"]
+ :capability-based-proof
+ {:artifact-emission-input-verified? true
+  :runtime-selection-explicit? true
+  :service-classification-complete? true
+  :no-runtime-absence-proven? true
+  :forbidden-services-rejected? true
+  :startup-memory-failure-explicit? true
+  :capability-policy-closed? true
+  :no-runtime-proof-record-complete? true
+  :backend-package-consumption-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:runtime-families
+  [:no-runtime :minimal-native :managed :distributed :ai :repl]
+  :no-runtime-target {:backend :c :platform :bare-metal}
+  :forbidden-service-count 12
+  :diagnostic-count 17
+  :test-command "clojure -M:test"
+  :test-result "92 tests, 5556 assertions, 0 failures, 0 errors, 1233 rejected fixtures"}
+ :residual-risk
+ "This proves the Clojure stage0 runtime-selection and no-runtime manifest boundary. It does not claim production runtime libraries, generated startup object files, external bare-metal execution, release readiness, or complete Phase 08 coverage."}

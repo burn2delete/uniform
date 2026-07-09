@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: missing service topology.
+(ns runtime.r7-topology
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-topology}}}))
+
+(defn main [] :- I64 1)

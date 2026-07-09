@@ -1,0 +1,57 @@
+{:proof-id :stage0-perf8-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D066
+ :document "PERF8"
+ :governing-document "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md"
+ :status :passed
+ :implementation-surface
+ {:command "realtime-governance"
+  :entrypoint :gravity.bootstrap/realtime-governance-file-artifact
+  :artifact-kind :gravity/stage0-realtime-governance-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/realtime-governance.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/realtime-vector-lane.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-alias.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-bounds.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-align.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-tail.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-numeric.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-math.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-volatile.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-intrinsic.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-vector-cache.gravity"]}
+ :accepted-behavior
+ ["vector legality records require lane, alias, bounds, alignment, tail, numeric, intrinsic, math, volatile, and cache evidence"
+  "target intrinsic use records feature guards and fallbacks"
+  "cache transformations preserve effect order and synchronization and attach benchmark evidence"]
+ :rejected-behavior
+ ["missing lane-independence proof"
+  "illegal aliasing"
+  "missing bounds proof"
+  "unsupported alignment"
+  "invalid tail handling"
+  "strict numeric-mode violation"
+  "missing math certificate"
+  "volatile, MMIO, atomic, or synchronized reordering"
+  "missing intrinsic guard or fallback"
+  "cache transformation without evidence"]
+ :required-artifacts
+ [:vector-legality-proof :lane-independence-report :alias-bounds-proof
+  :alignment-report :lane-plan :intrinsic-map :cache-transformation-log
+  :tiling-prefetch-plan :math-certificate-references]
+ :diagnostics
+ ["PERF8-LANE" "PERF8-ALIAS" "PERF8-BOUNDS" "PERF8-ALIGN"
+  "PERF8-TAIL" "PERF8-NUMERIC" "PERF8-MATH" "PERF8-VOLATILE"
+  "PERF8-INTRINSIC" "PERF8-CACHE"]
+ :conformance
+ {:vector-legality :complete
+  :lane-alias-bounds-alignment :complete
+  :tail-and-numeric-policy :complete
+  :intrinsic-guards-and-fallbacks :complete
+  :cache-evidence :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 40 tests containing 2053 assertions. 0 failures, 0 errors."}]
+ :limits
+ ["This completes PERF8 document coverage only for the Clojure stage0 artifact boundary."]}

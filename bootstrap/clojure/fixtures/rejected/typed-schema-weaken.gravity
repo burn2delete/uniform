@@ -1,0 +1,9 @@
+(ns typed.bad.schema
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (schema/weaken :User {:email nil}))

@@ -1,0 +1,4 @@
+(ns backend.b2-pointer
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:backend {:native-lowering {:fail :b2-pointer}}}))

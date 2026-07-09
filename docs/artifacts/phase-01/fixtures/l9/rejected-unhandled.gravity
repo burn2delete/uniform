@@ -1,0 +1,6 @@
+(ns l9.bad.unhandled
+  (:profile :hosted)
+  (:effects :error/throw))
+
+(def bad
+  (throw :boom))

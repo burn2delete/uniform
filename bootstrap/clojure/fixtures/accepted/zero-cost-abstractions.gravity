@@ -1,0 +1,295 @@
+(ns performance.zero-cost
+  (:profile :native)
+  (:target :jvm)
+  (:exports [zero-cost-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/zero-cost-suite-native
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2 :fma}
+                :input-shape {:element-type :f32
+                              :layout :contiguous
+                              :length-range [16 1048576]}
+                :layout {:buffer :contiguous
+                         :element :f32
+                         :alignment 32}
+                :safety-mode :safe-optimized
+                :objective {:metric :residual-cost-count
+                            :direction :must-be-zero}
+                :semantic-proof #{:types-preserved
+                                  :effects-preserved
+                                  :profile-legal}
+                :safety-proof #{:bounds-preserved
+                                :ownership-preserved}
+                :benchmark {:harness :bench/zero-cost-suite
+                            :samples 40
+                            :baseline :handwritten-direct
+                            :environment-fingerprint
+                            {:cpu :x86-64
+                             :os :linux
+                             :compiler :gravity-stage0-clojure
+                             :backend :llvm
+                             :runtime :minimal-native
+                             :features #{:avx2 :fma}}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :optimization-decisions
+               [{:pass :stage0/performance-claim
+                 :decision :accept
+                 :preserves #{:types :effects :profile :safety}}]
+               :generated-variants
+               [{:variant-id :zero-cost-suite-native
+                 :guard-predicate {:requires-target-features #{:avx2 :fma}
+                                   :min-length 16}
+                 :status :accepted}]
+               :zero-cost
+               {:suite-id :perf2/zero-cost-abstractions
+                :claims
+                [{:claim-id :zc/protocol-dispatch-direct
+                  :optimization :abstraction-erasure
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :abstraction :protocol-dispatch
+                  :equivalent-form :direct-call
+                  :source-operation :metric/sum
+                  :expected-erased-costs #{:dynamic-dispatch :boxing}
+                  :erased-costs #{:dynamic-dispatch :boxing}
+                  :residual-costs #{}
+                  :semantic-proof #{:same-method-target
+                                    :effects-preserved
+                                    :fallback-unreachable}
+                  :safety-proof #{:bounds-preserved}
+                  :proof-ids [:safe15/protocol-dispatch-direct]
+                  :artifacts #{:before-mir
+                               :after-mir
+                               :dispatch-report
+                               :allocation-audit
+                               :boxing-audit
+                               :runtime-check-report}
+                  :before-ir {:artifact-id :mir/before-protocol-dispatch
+                              :operations [{:op :dispatch
+                                            :costs #{:dynamic-dispatch
+                                                     :boxing}}]}
+                  :after-ir {:artifact-id :mir/after-protocol-dispatch
+                             :operations [{:op :call
+                                           :costs #{}}]}
+                  :allocation-audit {:hidden-allocations #{}
+                                     :status :complete}
+                  :boxing-audit {:hidden-boxing #{}
+                                 :status :complete}
+                  :dispatch-specialization-report
+                  {:dispatch :direct
+                   :method :metric/sum
+                   :residual-dispatch #{}
+                   :status :complete}
+                  :runtime-check-report {:erased-checks #{}
+                                         :retained-checks #{}
+                                         :unaccounted-checks #{}
+                                         :proof-ids #{}
+                                         :status :complete}
+                  :effect-proof {:source-effects #{}
+                                 :optimized-effects #{}}
+                  :capability-proof {:source-capabilities #{}
+                                     :optimized-capabilities #{}}
+                  :status :zero-cost}
+                 {:claim-id :zc/generic-specialization-unboxed
+                  :optimization :abstraction-erasure
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :abstraction :generic-function
+                  :equivalent-form :monomorphized-direct-call
+                  :source-operation :generic/add-f32
+                  :expected-erased-costs #{:dynamic-dispatch
+                                           :boxing
+                                           :representation-conversion}
+                  :erased-costs #{:dynamic-dispatch
+                                  :boxing
+                                  :representation-conversion}
+                  :residual-costs #{}
+                  :semantic-proof #{:same-specialization
+                                    :type-arguments-preserved
+                                    :effects-preserved}
+                  :safety-proof #{:numeric-mode-preserved}
+                  :proof-ids [:safe15/generic-specialization-unboxed]
+                  :artifacts #{:before-mir
+                               :after-mir
+                               :dispatch-report
+                               :allocation-audit
+                               :boxing-audit
+                               :runtime-check-report}
+                  :before-ir {:artifact-id :mir/before-generic-specialization
+                              :operations [{:op :generic-call
+                                            :costs #{:dynamic-dispatch
+                                                     :boxing}}]}
+                  :after-ir {:artifact-id :mir/after-generic-specialization
+                             :operations [{:op :call-f32
+                                           :costs #{}}]}
+                  :allocation-audit {:hidden-allocations #{}
+                                     :status :complete}
+                  :boxing-audit {:hidden-boxing #{}
+                                 :status :complete}
+                  :dispatch-specialization-report
+                  {:dispatch :monomorphized
+                   :residual-dispatch #{}
+                   :status :complete}
+                  :runtime-check-report {:erased-checks #{}
+                                         :retained-checks #{}
+                                         :unaccounted-checks #{}
+                                         :proof-ids #{}
+                                         :status :complete}
+                  :effect-proof {:source-effects #{}
+                                 :optimized-effects #{}}
+                  :capability-proof {:source-capabilities #{}
+                                     :optimized-capabilities #{}}
+                  :status :zero-cost}
+                 {:claim-id :zc/iterator-pipeline-fused
+                  :optimization :abstraction-erasure
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :abstraction :iterator-pipeline
+                  :equivalent-form :counted-loop
+                  :source-operation :seq/map-filter-sum
+                  :expected-erased-costs #{:allocation
+                                           :closure-allocation
+                                           :iterator-state-machine}
+                  :erased-costs #{:allocation
+                                  :closure-allocation
+                                  :iterator-state-machine}
+                  :residual-costs #{}
+                  :semantic-proof #{:same-loop-domain
+                                    :predicate-preserved
+                                    :effects-preserved}
+                  :safety-proof #{:bounds-preserved}
+                  :proof-ids [:safe15/iterator-pipeline-fused]
+                  :artifacts #{:before-mir
+                               :after-mir
+                               :dispatch-report
+                               :allocation-audit
+                               :boxing-audit
+                               :runtime-check-report}
+                  :before-ir {:artifact-id :mir/before-iterator-pipeline
+                              :operations [{:op :iterator-next
+                                            :costs #{:allocation
+                                                     :closure-allocation
+                                                     :iterator-state-machine}}]}
+                  :after-ir {:artifact-id :mir/after-iterator-pipeline
+                             :operations [{:op :counted-loop
+                                           :costs #{}}]}
+                  :allocation-audit {:hidden-allocations #{}
+                                     :status :complete}
+                  :boxing-audit {:hidden-boxing #{}
+                                 :status :complete}
+                  :dispatch-specialization-report
+                  {:dispatch :loop-fused
+                   :residual-dispatch #{}
+                   :status :complete}
+                  :runtime-check-report {:erased-checks #{}
+                                         :retained-checks #{}
+                                         :unaccounted-checks #{}
+                                         :proof-ids #{}
+                                         :status :complete}
+                  :effect-proof {:source-effects #{}
+                                 :optimized-effects #{}}
+                  :capability-proof {:source-capabilities #{}
+                                     :optimized-capabilities #{}}
+                  :status :zero-cost}
+                 {:claim-id :zc/wrapper-record-erased
+                  :optimization :abstraction-erasure
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :abstraction :newtype-wrapper
+                  :equivalent-form :raw-field-load
+                  :source-operation :meters/value
+                  :expected-erased-costs #{:allocation
+                                           :representation-conversion}
+                  :erased-costs #{:allocation
+                                  :representation-conversion}
+                  :residual-costs #{}
+                  :semantic-proof #{:same-representation
+                                    :field-identity-preserved
+                                    :effects-preserved}
+                  :safety-proof #{:layout-preserved}
+                  :proof-ids [:safe15/newtype-wrapper-erased]
+                  :artifacts #{:before-mir
+                               :after-mir
+                               :dispatch-report
+                               :allocation-audit
+                               :boxing-audit
+                               :runtime-check-report}
+                  :before-ir {:artifact-id :mir/before-wrapper-record
+                              :operations [{:op :wrap
+                                            :costs #{:allocation
+                                                     :representation-conversion}}]}
+                  :after-ir {:artifact-id :mir/after-wrapper-record
+                             :operations [{:op :field-load
+                                           :costs #{}}]}
+                  :allocation-audit {:hidden-allocations #{}
+                                     :status :complete}
+                  :boxing-audit {:hidden-boxing #{}
+                                 :status :complete}
+                  :dispatch-specialization-report
+                  {:dispatch :field-load
+                   :residual-dispatch #{}
+                   :status :complete}
+                  :runtime-check-report {:erased-checks #{}
+                                         :retained-checks #{}
+                                         :unaccounted-checks #{}
+                                         :proof-ids #{}
+                                         :status :complete}
+                  :effect-proof {:source-effects #{}
+                                 :optimized-effects #{}}
+                  :capability-proof {:source-capabilities #{}
+                                     :optimized-capabilities #{}}
+                  :status :zero-cost}
+                 {:claim-id :zc/runtime-check-erased-with-proof
+                  :optimization :abstraction-erasure
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :abstraction :collection-view
+                  :equivalent-form :bounds-proven-slice-loop
+                  :source-operation :view/slice-sum
+                  :expected-erased-costs #{:runtime-bounds-check}
+                  :erased-costs #{:runtime-bounds-check}
+                  :residual-costs #{}
+                  :semantic-proof #{:same-slice-range
+                                    :effects-preserved}
+                  :safety-proof #{:bounds-proof-dominates-use}
+                  :proof-ids [:safe15/slice-bounds-check-erasure]
+                  :artifacts #{:before-mir
+                               :after-mir
+                               :dispatch-report
+                               :allocation-audit
+                               :boxing-audit
+                               :runtime-check-report}
+                  :before-ir {:artifact-id :mir/before-slice-bounds
+                              :operations [{:op :bounds-check
+                                            :costs #{:runtime-bounds-check}}]}
+                  :after-ir {:artifact-id :mir/after-slice-bounds
+                             :operations [{:op :load
+                                           :costs #{}}]}
+                  :allocation-audit {:hidden-allocations #{}
+                                     :status :complete}
+                  :boxing-audit {:hidden-boxing #{}
+                                 :status :complete}
+                  :dispatch-specialization-report
+                  {:dispatch :direct
+                   :residual-dispatch #{}
+                   :status :complete}
+                  :runtime-check-report
+                  {:erased-checks #{:bounds}
+                   :retained-checks #{}
+                   :unaccounted-checks #{}
+                   :proof-ids #{:safe15/slice-bounds-check-erasure}
+                   :status :complete}
+                  :effect-proof {:source-effects #{}
+                                 :optimized-effects #{}}
+                  :capability-proof {:source-capabilities #{}
+                                     :optimized-capabilities #{}}
+                  :status :zero-cost}]}}}))
+
+(def zero-cost-ready true)

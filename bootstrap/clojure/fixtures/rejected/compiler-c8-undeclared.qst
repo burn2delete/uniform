@@ -1,0 +1,9 @@
+(ns compiler.c8.undeclared
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c8-effect-check {:fail :undeclared}}}))
+
+(def value 1)

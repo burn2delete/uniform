@@ -1,0 +1,11 @@
+; Rejected P14 TEST9 fixture.
+(ns conformance.test9-seed
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:conformance {:system {:fail :test9001}}}))
+
+(defn main [] :- I64 1)

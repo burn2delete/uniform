@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-type.json",
+  "set": {
+    "/domain_facts/0/crosses_boundary": false
+  }
+}

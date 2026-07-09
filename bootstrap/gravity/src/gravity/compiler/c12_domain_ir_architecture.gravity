@@ -1,0 +1,375 @@
+; Stage1 Gravity-owned C12 domain IR architecture contract.
+(ns gravity.compiler.c12-domain-ir-architecture
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c12-domain-ir-contract
+             c12-domain-ir-registry-contract
+             c12-domain-ir-artifact-schema-contract
+             c12-semantic-anchor-contract
+             c12-domain-lowering-contract
+             c12-domain-fallback-contract
+             c12-domain-proof-contract
+             c12-plugin-boundary-contract
+             c12-domain-ir-diagnostic-catalog
+             build-c12-domain-registration
+             build-c12-semantic-anchor
+             build-c12-domain-artifact
+             verify-c12-domain-ir-architecture])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :domain-ir-architecture
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C12" "C11" "C13" "C14" "C15" "C17"
+                           "C18" "MATH3" "MATH4" "SAFE1" "SAFE15"
+                           "D1" "D3" "D6" "D8" "D9" "P1" "P11"
+                           "B1" "B11" "L19" "S1" "PKG1" "PKG3"
+                           "BOOT1" "BOOT2" "BOOT3" "BOOT4" "BOOT5"
+                           "BOOT6" "BOOT7" "BOOT8" "TEST2"]
+               :implements [:domain-ir-registry
+                             :domain-ir-artifact-schema
+                             :semantic-anchor-map
+                             :mir-input-anchor-contract
+                             :entry-pass-records
+                             :exit-pass-records
+                             :domain-verifier-report
+                             :proof-and-certificate-references
+                             :lowering-eligibility-matrix
+                             :fallback-records
+                             :plugin-registration-policy
+                             :domain-ir-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :core-node-identity :typed-core-anchors
+                            :mir-operation-anchors :mir-domain-anchors
+                            :type-facts :effect-facts
+                            :ownership-facts :capability-facts
+                            :profile-target-metadata
+                            :safety-outcomes :proof-obligations
+                            :certificate-references
+                            :source-map-fields
+                            :fallback-legality
+                            :plugin-policy-records
+                            :self-hosting-source-metadata}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c12-domain-ir-contract-subset
+                                    :clojure-c12-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-domain-ir-registration.gravity"
+                              "compiler-domain-ir-anchor.gravity"
+                              "compiler-domain-ir-schema.gravity"
+                              "compiler-domain-ir-facts.gravity"
+                              "compiler-domain-ir-verify.gravity"
+                              "compiler-domain-ir-proof.gravity"
+                              "compiler-domain-ir-lowering.gravity"
+                              "compiler-domain-ir-fallback.gravity"
+                              "compiler-domain-ir-plugin.gravity"]}}}))
+
+(def c12-domain-ir-contract
+  {:artifact :gravity/c12-domain-ir-contract
+   :required-inputs [:checked-core-or-verified-mir
+                     :domain-ir-registry
+                     :semantic-anchor-map
+                     :type-facts
+                     :effect-facts
+                     :ownership-facts
+                     :capability-facts
+                     :profile-target-facts
+                     :safety-outcomes
+                     :source-provenance]
+   :required-outputs [:domain-ir-artifacts
+                      :entry-pass-records
+                      :exit-pass-records
+                      :domain-verifier-report
+                      :proof-and-certificate-references
+                      :lowering-eligibility-matrix
+                      :fallback-records
+                      :plugin-registration-policy
+                      :domain-ir-diagnostic-stream]
+   :standard-families [:efir :schema :workflow :ai-agent
+                      :query :hdl :ui :gpu
+                      :ffi-boundary :package-artifact]
+   :must-preserve [:typed-core-anchors :mir-operation-anchors
+                   :source-spans :origin-chains :source-map-fields
+                   :types :effects :ownership :capabilities
+                   :profile :target :safety-outcomes
+                   :proof-obligations :artifact-provenance]
+   :forbidden [:domain-ir-as-separate-language
+               :backend-consuming-unverified-domain-ir
+               :domain-artifact-without-anchor
+               :opaque-plugin-payload
+               :optimization-without-evidence
+               :fallback-without-legality-record]})
+
+(def c12-domain-ir-registry-contract
+  {:artifact :gravity/c12-domain-ir-registry-contract
+   :registration-fields [:artifact :domain :owner-doc :schema
+                         :semantic-anchor :entry-passes :exit-passes
+                         :verifier :supported-profiles
+                         :target-lowerings :optimization-rules
+                         :proof-obligations :fallback :diagnostics]
+   :registry-rules [:stable-domain-identity
+                    :owner-document-required
+                    :schema-hash-required
+                    :typed-core-or-mir-anchor-required
+                    :entry-and-exit-passes-declared
+                    :verifier-required-before-lowering
+                    :profile-and-target-legality-declared
+                    :diagnostic-family-stable]
+   :plugin-visible-fields [:domain :owner-doc :schema :verifier
+                           :supported-profiles :target-lowerings
+                           :proof-obligations :fallback]
+   :forbidden [:implicit-registration
+               :backend-local-domain-table
+               :unstable-plugin-registration
+               :registration-without-diagnostics]})
+
+(def c12-domain-ir-artifact-schema-contract
+  {:artifact :gravity/c12-domain-ir-artifact-schema-contract
+   :artifact-fields [:artifact :domain :artifact-id :owner-doc
+                     :schema :source :semantic-anchor :profile
+                     :target-request :facts :payload :verifier
+                     :proofs :lowering-status :fallback
+                     :plugin-policy :provenance]
+   :source-fields [:syntax-id :span :origin-chain :source-map]
+   :fact-fields [:types :effects :ownership :capabilities
+                 :profile :target :safety :provenance]
+   :payload-rules [:payload-schema-owned-by-domain-document
+                   :payload-version-recorded
+                   :payload-hash-stable
+                   :payload-not-opaque-to-verifier]
+   :forbidden [:payload-without-schema
+               :domain-facts-erased
+               :source-map-field-missing
+               :artifact-id-derived-from-rendered-text]})
+
+(def c12-semantic-anchor-contract
+  {:artifact :gravity/c12-semantic-anchor-contract
+   :anchor-fields [:anchor-id :domain :typed-core :mir-ops
+                   :source-span :origin-chain :source-map
+                   :equivalence-proof :fallback]
+   :anchor-kinds [:typed-core-node :mir-op :mir-subgraph
+                  :domain-boundary-record :provider-declaration
+                  :package-manifest-entry :schema-declaration]
+   :rules [:at-least-one-typed-core-or-mir-anchor
+           :anchor-survives-optimization-or-is-remapped
+           :source-origin-chain-preserved
+           :mir-input-verified-before-domain-entry
+           :fallback-anchor-points-to-residual-mir]
+   :forbidden [:unanchored-domain-artifact
+               :anchor-to-target-only-semantics
+               :source-map-stops-at-macro-expansion
+               :anchor-remap-without-proof]})
+
+(def c12-domain-lowering-contract
+  {:artifact :gravity/c12-domain-lowering-contract
+   :entry-pass-fields [:domain :entry-passes :input-artifacts
+                       :consumed-facts :preserved-facts
+                       :invalidated-facts :translated-facts
+                       :diagnostics]
+   :exit-pass-fields [:domain :exit-passes :requires
+                      :emits :proof-or-certificate
+                      :fallback-record :diagnostics]
+   :lowering-statuses [:eligible :fallback :rejected]
+   :legal-exits [:mir-subgraph :target-provider-call
+                 :backend-specific-ir :runtime-manifest
+                 :generated-code :package-artifact
+                 :verification-artifact]
+   :forbidden [:exit-before-verifier
+               :target-lowering-without-proof
+               :backend-consuming-opaque-domain-ir
+               :target-support-inferred-at-runtime]})
+
+(def c12-domain-fallback-contract
+  {:artifact :gravity/c12-domain-fallback-contract
+   :fallback-fields [:domain :target-request :fallback
+                     :residual :semantic-anchor :profile
+                     :capabilities :runtime-checks
+                     :diagnostic-on-missing-fallback]
+   :fallback-kinds [:mir-provider-call :runtime-schema-validator
+                    :mir-workflow-state-machine
+                    :mir-tool-dispatch
+                    :mir-provider-query-call
+                    :mir-state-machine-simulator
+                    :mir-ui-state-adapter
+                    :mir-scalar-kernel
+                    :safe-wrapper-mir
+                    :mir-package-record
+                    :reject-with-diagnostic]
+   :rules [:fallback-must-preserve-semantics
+           :fallback-must-preserve-facts
+           :fallback-must-be-profile-legal
+           :fallback-must-not-add-authority
+           :fallback-must-be-artifacted]
+   :forbidden [:silent-drop-to-host-runtime
+               :fallback-that-weakens-safety
+               :fallback-that-adds-capability
+               :unsupported-target-without-diagnostic]})
+
+(def c12-domain-proof-contract
+  {:artifact :gravity/c12-domain-proof-contract
+   :proof-fields [:proof-id :domain :claim :artifact-id
+                  :semantic-anchor :kind :assumptions
+                  :checker :inputs :result :source-span]
+   :evidence-kinds [:static-proof
+                    :certificate-validation
+                    :translation-validation
+                    :typed-mir-equivalence
+                    :proof-replay
+                    :conformance-fixture]
+   :required-for [:domain-optimization
+                  :check-elision
+                  :numeric-approximation
+                  :workflow-replay-transform
+                  :schema-generation
+                  :target-lowering]
+   :forbidden [:benchmark-as-correctness-evidence
+               :provider-claim-as-proof
+               :eml-tree-identity-as-equality
+               :proof-without-checker
+               :stale-proof-after-anchor-remap]})
+
+(def c12-plugin-boundary-contract
+  {:artifact :gravity/c12-plugin-boundary-contract
+   :plugin-fields [:plugin-id :package :domain :registration
+                   :schema :verifier :capabilities
+                   :profile-set :target-set
+                   :sandbox-policy :owner-doc]
+   :policy-rules [:package-visible-registration
+                  :capabilities-declared-before-entry-pass
+                  :verifier-owned-by-plugin-or-domain
+                  :opaque-payload-rejected
+                  :host-authority-denied
+                  :diagnostics-stable]
+   :boundary-statuses [:accepted :rejected :requires-human-review]
+   :forbidden [:ambient-plugin-authority
+               :plugin-defined-backend-escape
+               :plugin-registration-without-owner-doc
+               :plugin-verifier-hidden-from-artifacts]})
+
+(def c12-domain-ir-diagnostic-catalog
+  {:diagnostics ["C12-REGISTRATION"
+                 "C12-ANCHOR"
+                 "C12-SCHEMA"
+                 "C12-FACTS"
+                 "C12-VERIFY"
+                 "C12-PROOF"
+                 "C12-LOWERING"
+                 "C12-FALLBACK"
+                 "C12-PLUGIN"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :domain :artifact-id :source-span
+                              :semantic-anchor :owner-doc
+                              :profile :target :verifier
+                              :missing-fact :proof-id
+                              :fallback-status :plugin-id
+                              :remediation]
+   :stops [:optimization
+           :target-lowering
+           :runtime-selection
+           :package-release
+           :self-hosting-stage-claim]
+   :must-not-depend-on [:localized-rendering-text
+                        :backend-private-state
+                        :provider-claim
+                        :plugin-host-runtime
+                        :opaque-domain-payload]})
+
+(defn build-c12-domain-registration
+  [domain owner-doc schema semantic-anchor entry-passes exit-passes verifier supported-profiles target-lowerings proof-obligations fallback]
+  (quote {:artifact :gravity/domain-ir-registration
+          :domain domain
+          :owner-doc owner-doc
+          :schema schema
+          :semantic-anchor semantic-anchor
+          :entry-passes entry-passes
+          :exit-passes exit-passes
+          :verifier verifier
+          :supported-profiles supported-profiles
+          :target-lowerings target-lowerings
+          :proof-obligations proof-obligations
+          :fallback fallback
+          :diagnostics c12-domain-ir-diagnostic-catalog
+          :contract c12-domain-ir-registry-contract}))
+
+(defn build-c12-semantic-anchor
+  [anchor-id domain typed-core mir-ops source-span origin-chain source-map equivalence-proof fallback]
+  (quote {:artifact :gravity/domain-ir-semantic-anchor
+          :anchor-id anchor-id
+          :domain domain
+          :typed-core typed-core
+          :mir-ops mir-ops
+          :source-span source-span
+          :origin-chain origin-chain
+          :source-map source-map
+          :equivalence-proof equivalence-proof
+          :fallback fallback
+          :contract c12-semantic-anchor-contract}))
+
+(defn build-c12-domain-artifact
+  [domain artifact-id owner-doc schema source semantic-anchor profile target-request facts payload verifier proofs lowering-status fallback plugin-policy]
+  (quote {:artifact :gravity/domain-ir
+          :domain domain
+          :artifact-id artifact-id
+          :owner-doc owner-doc
+          :schema schema
+          :source source
+          :semantic-anchor semantic-anchor
+          :profile profile
+          :target-request target-request
+          :facts facts
+          :payload payload
+          :verifier verifier
+          :proofs proofs
+          :lowering-status lowering-status
+          :fallback fallback
+          :plugin-policy plugin-policy
+          :contract c12-domain-ir-artifact-schema-contract}))
+
+(defn verify-c12-domain-ir-architecture [verified-mir-or-typed-core-artifact]
+  (quote {:status :stage1-source-owned
+          :verified-mir-or-typed-core-artifact verified-mir-or-typed-core-artifact
+          :checks [:domain-ir-registrations-complete
+                   :registry-records-stable-for-plugins
+                   :domain-artifact-schema-fields-present
+                   :typed-core-or-mir-anchors-present
+                   :mir-input-anchors-verified
+                   :source-provenance-and-source-map-fields-present
+                   :type-effect-ownership-capability-facts-preserved
+                   :profile-target-safety-facts-preserved
+                   :domain-verifiers-accepted-before-exit
+                   :proof-or-certificate-required-for-optimization
+                   :lowering-eligibility-recorded
+                   :fallback-legality-recorded
+                   :plugin-domain-boundaries-enforced
+                   :stable-c12-diagnostics-covered
+                   :self-hosting-lineage-recorded]
+          :diagnostics c12-domain-ir-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :origin-chains :generated-origin
+                      :core-node-identity
+                      :typed-core-anchors
+                      :mir-operation-anchors
+                      :mir-domain-anchors
+                      :type-facts :effect-facts
+                      :ownership-facts :capability-facts
+                      :profile-target-metadata
+                      :safety-outcomes
+                      :proof-obligations
+                      :certificate-references
+                      :source-map-fields
+                      :fallback-legality
+                      :plugin-policy-records
+                      :artifact-provenance]}))

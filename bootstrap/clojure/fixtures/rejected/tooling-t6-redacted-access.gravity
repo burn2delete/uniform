@@ -1,0 +1,11 @@
+; Rejected P13 T6 fixture.
+(ns tooling.t6-redacted-access
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:debug/inspect})
+  (:capabilities #{:debug/inspect})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t6004}}}))
+
+(defn main [] :- I64 1)

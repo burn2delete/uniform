@@ -1,0 +1,10 @@
+(ns math.approx-roundoff
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:approximation
+           {:certificate-overrides
+            [{:roundoff-valid? false}]}}}))

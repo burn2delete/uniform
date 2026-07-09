@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: concurrent effect lacks authority.
+(ns runtime.r6-capability
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:network/http})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-capability}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,9 @@
+(ns math.opt-rounding-target
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:rounding-target-overrides {:rounding-modes []}}}}))

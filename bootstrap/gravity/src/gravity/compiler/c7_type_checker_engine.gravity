@@ -1,0 +1,217 @@
+; Stage1 Gravity-owned C7 type checker contract.
+(ns gravity.compiler.c7-type-checker-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c7-type-fact-contract
+             c7-type-environment-contract
+             c7-constraint-ledger-contract
+             c7-dynamic-boundary-contract
+             c7-type-diagnostic-catalog
+             build-c7-type-fact
+             build-c7-function-type
+             verify-c7-type-checker])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :type-checker
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C7" "L5" "L7" "L8" "L9" "L10"
+                           "C5" "C6" "C8" "C9" "C10" "C11"
+                           "C12" "C14" "C15" "P1" "SAFE1"
+                           "SAFE2" "SAFE3" "SAFE4" "SAFE5"
+                           "SAFE6" "SAFE9" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2"]
+               :implements [:typed-core-module
+                             :type-environment
+                             :constraint-ledger
+                             :function-type-table
+                             :generic-instantiation-table
+                             :protocol-dispatch-type-table
+                             :dynamic-boundary-record
+                             :cast-conversion-record
+                             :layout-fact-record
+                             :schema-type-link
+                             :typed-core-verifier-report
+                             :type-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :binding-identity :namespace-context
+                            :profile-target-metadata
+                            :effect-capability-metadata
+                            :core-node-identity :evaluation-order
+                            :dynamic-boundaries :schema-identity
+                            :layout-facts
+                            :ownership-resource-type-facts
+                            :latent-effects :thrown-error-effects}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c7-type-checker-contract-subset
+                                    :clojure-c7-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c7-type-mismatch.gravity"
+                              "compiler-c7-annotation.gravity"
+                              "compiler-c7-dynamic.gravity"
+                              "compiler-c7-cast.gravity"
+                              "compiler-c7-nullability.gravity"
+                              "compiler-c7-generic.gravity"
+                              "compiler-c7-protocol.gravity"
+                              "compiler-c7-layout.gravity"
+                              "compiler-c7-schema.gravity"
+                              "compiler-c7-verify.gravity"]}}}))
+
+(def c7-type-fact-contract
+  {:artifact :gravity/c7-type-fact-contract
+   :required-fields [:core-node-id :type-id :type-form
+                     :source-span :binding-id :profile :target
+                     :effects :capabilities :ownership
+                     :layout :nullability :dynamic-boundary]
+   :fact-kinds [:literal :local :binding :function :generic
+                :protocol-dispatch :schema-derived :layout
+                :resource :dynamic :cast :foreign]
+   :must-preserve [:core-node-identity :source-spans
+                   :binding-identity :profile-target-metadata
+                   :effect-capability-metadata :artifact-provenance]
+   :forbidden [:untyped-core-node
+               :backend-only-type-legality
+               :implicit-dynamic-boundary
+               :unchecked-nullability
+               :erased-ownership-resource-fact]})
+
+(def c7-type-environment-contract
+  {:artifact :gravity/c7-type-environment-contract
+   :environment-fields [:namespace :imports :locals :bindings
+                        :type-aliases :protocols :schema-types
+                        :profile :target :dynamic-boundaries]
+   :records [:type-fact-table :function-type-table
+             :generic-instantiation-table
+             :protocol-dispatch-table :layout-fact-table
+             :ownership-resource-fact-table
+             :schema-type-link-table]
+   :feeds [:effect-checking :ownership-checking
+           :safety-analysis :mir-construction
+           :domain-ir-lowering :diagnostic-rendering]
+   :invalidates-on [:core-node-change :binding-table-change
+                    :profile-target-change :schema-version-change
+                    :generic-bound-change :protocol-method-change
+                    :layout-policy-change]})
+
+(def c7-constraint-ledger-contract
+  {:artifact :gravity/c7-constraint-ledger-contract
+   :constraint-fields [:constraint-id :kind :lhs :rhs :origin
+                       :profile :target :status :diagnostics]
+   :constraint-kinds [:equality :subtype :numeric-mode
+                      :generic-bound :protocol-conformance
+                      :layout-availability :ownership-region
+                      :resource-lifetime :nullability
+                      :effect-capability-annotation]
+   :statuses [:solved :deferred-to-profile-check
+              :deferred-to-ownership-check :rejected]
+   :determinism [:stable-ordering :local-inference-only
+                 :no-runtime-profile-discovery
+                 :no-backend-dependent-resolution]})
+
+(def c7-dynamic-boundary-contract
+  {:artifact :gravity/c7-dynamic-boundary-contract
+   :boundary-fields [:boundary-id :core-node-id :source-span
+                     :input-type :output-type :check-strategy
+                     :profile :target :diagnostic]
+   :check-strategies [:compile-time-proof
+                      :runtime-check
+                      :unsafe-island-required
+                      :rejected]
+   :required-links [:typed-core-anchor :source-span
+                    :constraint-ledger-entry
+                    :diagnostic-origin
+                    :artifact-provenance]
+   :forbidden [:implicit-any
+               :silent-truncation
+               :unchecked-foreign-boundary
+               :dynamic-boundary-without-diagnostic-path]})
+
+(def c7-type-diagnostic-catalog
+  {:diagnostics ["C7-TYPE-MISMATCH" "C7-ANNOTATION"
+                 "C7-DYNAMIC" "C7-CAST"
+                 "C7-NULLABILITY" "C7-GENERIC"
+                 "C7-PROTOCOL" "C7-LAYOUT"
+                 "C7-SCHEMA" "C7-VERIFY"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :core-node-id :type-id
+                              :source-span :binding-id
+                              :constraint-id :profile :target
+                              :remediation]
+   :stops [:effect-checking :ownership-checking
+           :safety-analysis :mir-construction
+           :target-lowering]
+   :must-not-depend-on [:host-reflection
+                        :backend-only-legality
+                        :runtime-only-type-resolution
+                        :localized-rendering-text]})
+
+(defn build-c7-type-fact
+  [core-node-id type-id type-form source-span binding-id profile target effects capabilities ownership layout nullability dynamic-boundary]
+  (quote {:artifact :gravity/c7-type-fact
+          :core-node-id core-node-id
+          :type-id type-id
+          :type-form type-form
+          :source-span source-span
+          :binding-id binding-id
+          :profile profile
+          :target target
+          :effects effects
+          :capabilities capabilities
+          :ownership ownership
+          :layout layout
+          :nullability nullability
+          :dynamic-boundary dynamic-boundary
+          :contract c7-type-fact-contract}))
+
+(defn build-c7-function-type
+  [function-id parameter-types return-type latent-effects capabilities ownership-constraints profile-constraints thrown-error-effects source-span]
+  (quote {:artifact :gravity/c7-function-type
+          :function-id function-id
+          :parameters parameter-types
+          :return return-type
+          :latent-effects latent-effects
+          :capabilities capabilities
+          :ownership-constraints ownership-constraints
+          :profile-constraints profile-constraints
+          :thrown-error-effects thrown-error-effects
+          :source-span source-span
+          :contract c7-type-environment-contract}))
+
+(defn verify-c7-type-checker [typed-core-artifact]
+  (quote {:status :stage1-source-owned
+          :typed-core-artifact typed-core-artifact
+          :checks [:every-core-node-typed-or-diagnosed
+                   :function-types-record-latent-effects
+                   :function-types-record-capabilities
+                   :function-types-record-ownership-constraints
+                   :local-inference-deterministic
+                   :profile-required-facts-rejected-when-missing
+                   :dynamic-boundaries-explicit
+                   :casts-and-conversions-checked
+                   :generics-and-protocol-dispatch-artifacted
+                   :schema-derived-types-preserve-schema-identity
+                   :typed-core-verifier-before-effects]
+          :diagnostics c7-type-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :binding-identity :namespace-context
+                      :profile-target-metadata
+                      :effect-capability-metadata
+                      :core-node-identity :dynamic-boundaries
+                      :schema-identity :layout-facts
+                      :ownership-resource-type-facts
+                      :latent-effects :thrown-error-effects
+                      :artifact-provenance]}))

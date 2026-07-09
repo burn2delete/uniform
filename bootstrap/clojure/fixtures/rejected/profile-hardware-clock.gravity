@@ -1,0 +1,8 @@
+(ns profile.bad.hardware-clock
+  (:profile :hardware)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p8/clock))

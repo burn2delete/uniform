@@ -1,0 +1,6 @@
+; Rejected P08 R10 fixture.
+(ns runtime.r10-wrapper (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:ffi/call}) (:capabilities #{:ffi/c}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r10-wrapper}}}))
+(defn main [] :- I64 1)

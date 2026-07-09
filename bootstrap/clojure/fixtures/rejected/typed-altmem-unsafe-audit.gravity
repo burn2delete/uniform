@@ -1,0 +1,9 @@
+(ns altmem.unsafe-audit
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/unsafe-audit :missing-invariant))

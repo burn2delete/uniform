@@ -1,0 +1,159 @@
+{
+  "kind": "phase03-profile-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P03-D046",
+      "document": "P1",
+      "governing_doc": "docs/phase-03-profile-system/046-p1-profile-system-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_artifact_fields": ["profile_manifests", "effect_permission_table", "capability_permission_table", "namespace_validation_reports", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p1-missing-profile.json", "diagnostic": "P1-MISSING-PROFILE"},
+      "coverage_claims": ["profile declarations require exactly one active profile", "effective effects and capabilities are intersected", "backend eligibility remains a report"]
+    },
+    {
+      "task_id": "P03-D047",
+      "document": "P2",
+      "governing_doc": "docs/phase-03-profile-system/047-p2-core-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":core",
+        "required_artifact_fields": ["profile_manifests", "effect_permission_table", "capability_permission_table", "profile_conformance_fixture_results"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p2-core-effect.json", "diagnostic": "P2-EFFECT"},
+      "coverage_claims": [":core has empty runtime effects and capabilities", ":core rejects IO and nondeterminism", ":core remains portable typed core"]
+    },
+    {
+      "task_id": "P03-D048",
+      "document": "P3",
+      "governing_doc": "docs/phase-03-profile-system/048-p3-meta-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":meta",
+        "required_artifact_fields": ["profile_manifests", "runtime_assumption_records", "profile_conformance_fixture_results"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p3-build-effect.json", "diagnostic": "P3-BUILD-EFFECT"},
+      "coverage_claims": [":meta build effects are declared and granted", "generated code remains checked in the target profile", "hermetic replay is recorded as runtime support"]
+    },
+    {
+      "task_id": "P03-D049",
+      "document": "P4",
+      "governing_doc": "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":hosted",
+        "required_artifact_fields": ["profile_manifests", "runtime_assumption_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p4-raw-memory.json", "diagnostic": "P4-RAW-MEMORY"},
+      "coverage_claims": [":hosted records host runtime and source-map assumptions", "host interop is capability governed", "raw memory is rejected"]
+    },
+    {
+      "task_id": "P03-D050",
+      "document": "P5",
+      "governing_doc": "docs/phase-03-profile-system/050-p5-native-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":native",
+        "required_artifact_fields": ["profile_manifests", "memory_regime_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p5-hidden-alloc.json", "diagnostic": "P5-ALLOC"},
+      "coverage_claims": [":native records memory providers and target permissions", "FFI, atomics, SIMD, and check erasure are checked effects", "hidden allocation rejects"]
+    },
+    {
+      "task_id": "P03-D051",
+      "document": "P6",
+      "governing_doc": "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":firmware",
+        "required_artifact_fields": ["profile_manifests", "memory_regime_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p6-unbounded-alloc.json", "diagnostic": "P6-ALLOC"},
+      "coverage_claims": [":firmware records bounded memory policy", "MMIO and interrupts require capabilities", "unbounded allocation rejects"]
+    },
+    {
+      "task_id": "P03-D052",
+      "document": "P7",
+      "governing_doc": "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":kernel",
+        "required_artifact_fields": ["profile_manifests", "memory_regime_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p7-hidden-alloc.json", "diagnostic": "P7-HIDDEN-ALLOC"},
+      "coverage_claims": [":kernel records device, scheduler, and raw-memory authority", "unsafe policy is domain-review", "hidden allocation rejects"]
+    },
+    {
+      "task_id": "P03-D053",
+      "document": "P8",
+      "governing_doc": "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":hardware",
+        "required_artifact_fields": ["profile_manifests", "memory_regime_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p8-tag-loss.json", "diagnostic": "P8-TAG"},
+      "coverage_claims": [":hardware records HDL-capability target permissions", "capability tag storage is a memory regime", "tag loss rejects"]
+    },
+    {
+      "task_id": "P03-D054",
+      "document": "P9",
+      "governing_doc": "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":distributed",
+        "required_artifact_fields": ["profile_manifests", "runtime_assumption_records", "profile_conformance_fixture_results"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p9-replay.json", "diagnostic": "P9-REPLAY"},
+      "coverage_claims": [":distributed records workflow runtime and event-log support", "checked nondeterminism requires evidence", "unrecorded replay-sensitive nondeterminism rejects"]
+    },
+    {
+      "task_id": "P03-D055",
+      "document": "P10",
+      "governing_doc": "docs/phase-03-profile-system/055-p10-ai-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":ai",
+        "required_artifact_fields": ["profile_manifests", "runtime_assumption_records", "profile_conformance_fixture_results"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p10-prompt.json", "diagnostic": "P10-PROMPT"},
+      "coverage_claims": [":ai records model/tool/memory/human-review effects", "write tools require evidence", "prompt policy injection rejects"]
+    },
+    {
+      "task_id": "P03-D056",
+      "document": "P11",
+      "governing_doc": "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":gpu",
+        "required_artifact_fields": ["profile_manifests", "memory_regime_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p11-host-effect.json", "diagnostic": "P11-HOST-EFFECT"},
+      "coverage_claims": [":gpu records host/device boundary and device memory regimes", "approx math is checked with evidence", "host effects in kernels reject"]
+    },
+    {
+      "task_id": "P03-D057",
+      "document": "P12",
+      "governing_doc": "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_profile": ":formal",
+        "required_artifact_fields": ["profile_manifests", "runtime_assumption_records", "backend_eligibility_reports"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p12-nondeterminism.json", "diagnostic": "P12-NONDETERMINISM"},
+      "coverage_claims": [":formal records proof runtime and symbolic IR support", "solver calls are checked effects", "unmodeled nondeterminism rejects"]
+    },
+    {
+      "task_id": "P03-D058",
+      "document": "P13",
+      "governing_doc": "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-03/fixtures/profiles/accepted-profile-system.json",
+        "required_artifact_fields": ["cross_profile_dependency_graph", "profile_compatibility_matrix"]
+      },
+      "rejected": {"fixture": "docs/artifacts/phase-03/fixtures/profiles/rejected-p13-direct-import.json", "diagnostic": "P13-DIRECT"},
+      "coverage_claims": ["compatibility is matrix-driven, not linear inheritance", "facade and artifact-only edges carry evidence", "illegal direct imports reject"]
+    }
+  ]
+}

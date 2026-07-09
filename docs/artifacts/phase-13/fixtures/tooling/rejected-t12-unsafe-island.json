@@ -1,0 +1,9 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "safety_audit_report": {
+      "missing_unsafe_island": true
+    }
+  }
+}

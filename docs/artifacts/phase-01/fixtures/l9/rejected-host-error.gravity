@@ -1,0 +1,5 @@
+(ns l9.bad.host
+  (:profile :hosted))
+
+(def bad
+  (host/throwing-call))

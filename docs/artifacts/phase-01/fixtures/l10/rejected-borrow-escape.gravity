@@ -1,0 +1,5 @@
+(ns l10.bad.borrow
+  (:profile :hosted))
+
+(def bad
+  (borrow/escape owner))

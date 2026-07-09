@@ -1,0 +1,19 @@
+{
+  "extends": "accepted-alternative-macro.json",
+  "set": {
+    "/provider/syntax_object_guarantees": [
+      "kind",
+      "children",
+      "literal-values",
+      "source-span",
+      "namespace-context",
+      "lexical-context",
+      "metadata",
+      "attach-metadata",
+      "fresh-identifiers",
+      "hygiene-comparison",
+      "explicit-capture",
+      "serialization"
+    ]
+  }
+}

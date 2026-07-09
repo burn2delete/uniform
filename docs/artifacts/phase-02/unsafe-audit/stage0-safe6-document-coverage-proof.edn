@@ -1,0 +1,29 @@
+{:task-id :P02-D035
+ :document "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/unsafe-audit.gravity"
+ :artifact-kind :gravity/stage0-unsafe-audit-artifact
+ :document-coverage {:unsafe-island-records 1
+                     :safe-wrapper-records 1
+                     :operation-inventories 1
+                     :review-status-records 1
+                     :invariant-proof-links 1
+                     :generated-unsafe-provenance 1
+                     :policy-decision-records 1
+                     :dependency-unsafe-summaries 1
+                     :release-audit-reports 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE6-UNSAFE-FORBIDDEN"
+                        "SAFE6-MISSING-METADATA"
+                        "SAFE6-MISSING-OWNER"
+                        "SAFE6-MISSING-INVARIANT"
+                        "SAFE6-MISSING-BOUNDARY"
+                        "SAFE6-REVIEW-REQUIRED"
+                        "SAFE6-GENERATED-UNSAFE"
+                        "SAFE6-CAPABILITY"
+                        "SAFE6-DEPENDENCY"
+                        "SAFE6-CERTIFICATE"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE6 accepted artifact and 10 rejected diagnostics passed"}]}

@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: schema-less message, state, actor, or service boundary.
+(ns runtime.r7-schema
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-schema}}}))
+
+(defn main [] :- I64 1)

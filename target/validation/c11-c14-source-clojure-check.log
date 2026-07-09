@@ -1,0 +1,4 @@
+gravity stage0 check passed: gravity.compiler.c11-mir-specification
+gravity stage0 check passed: gravity.compiler.c12-domain-ir-architecture
+gravity stage0 check passed: gravity.compiler.c13-mir-optimization-passes
+gravity stage0 check passed: gravity.compiler.c14-target-lowering-architecture

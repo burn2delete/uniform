@@ -1,0 +1,10 @@
+(ns math.approx-selection
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:approximation
+           {:selected-implementation-overrides
+            [{:evidence-accepted? false}]}}}))

@@ -1,0 +1,11 @@
+; Rejected P14 TEST12 fixture.
+(ns conformance.test12-semantic-gate
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:conformance {:system {:fail :test12003}}}))
+
+(defn main [] :- I64 1)

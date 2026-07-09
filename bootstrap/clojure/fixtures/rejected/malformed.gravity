@@ -1,0 +1,7 @@
+(ns broken.main
+  (:profile :hosted)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+
+(defn main []
+  (println "missing delimiter"))

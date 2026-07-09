@@ -1,0 +1,98 @@
+{:capability-based-proof
+ {:accepted-fixtures-covered? true,
+  :signing-sbom-verification-covered? true,
+  :reproducibility-covered? true,
+  :document-coverage-complete? true,
+  :package-and-resolution-covered? true,
+  :project-and-build-graph-covered? true,
+  :rejected-fixtures-covered? true,
+  :status :complete,
+  :registry-provenance-targets-covered? true,
+  :diagnostics-covered? true,
+  :conformance-evidence-covered? true,
+  :capability-and-safety-covered? true},
+ :package-artifact-families
+ [:project-manifest
+  :lockfile
+  :build-graph
+  :artifact-manifest
+  :package-manifest
+  :package-operation
+  :resolution-report
+  :capability-manifest
+  :reproducible-build-recipe
+  :package-safety
+  :registry-record
+  :provenance-record
+  :target-matrix
+  :signing-sbom-verification],
+ :artifact-id
+ "sha256:e9825b01aec9421587d3fb3f6eb401a59919d42e73a0333211e1ae22d81b95d6",
+ :command
+ "clojure -M:gravity package-artifacts bootstrap/clojure/fixtures/accepted/package-artifacts.gravity",
+ :document-set
+ ["PKG1"
+  "PKG2"
+  "PKG3"
+  "PKG4"
+  "PKG5"
+  "PKG6"
+  "PKG7"
+  "PKG8"
+  "PKG9"
+  "PKG10"
+  "PKG11"
+  "PKG12"],
+ :phase "12",
+ :test-command "clojure -M:test",
+ :test-result
+ {:tests 112,
+  :assertions 7231,
+  :failures 0,
+  :errors 0,
+  :banner-rejected-fixtures 1479},
+ :source
+ "bootstrap/clojure/fixtures/accepted/package-artifacts.gravity",
+ :tasks
+ {"P12-D170" :complete,
+  "P12-D171" :complete,
+  "P12-D172" :complete,
+  "P12-D168" :complete,
+  "P12-T01" :complete,
+  "P12-D173" :complete,
+  "P12-T03" :complete,
+  "P12-T05" :complete,
+  "P12-D175" :complete,
+  "P12-D167" :complete,
+  "P12-D169" :complete,
+  "P12-T04" :complete,
+  "P12-D166" :complete,
+  "P12-D174" :complete,
+  "P12-D165" :complete,
+  "P12-T06" :complete,
+  "P12-T02" :complete,
+  "P12-D176" :complete},
+ :status :complete,
+ :package-artifacts-results
+ {:document-contracts 12,
+  :artifact-families 14,
+  :accepted-fixtures 12,
+  :rejected-fixtures 12,
+  :conformance-records 12,
+  :diagnostic-count 114,
+  :status :complete},
+ :kind :gravity/stage0-phase12-package-artifacts-proof,
+ :rejected-fixture-diagnostics
+ ["PKG1006"
+  "PKG2001"
+  "PKG3005"
+  "PKG4001"
+  "PKG5002"
+  "PKG6004"
+  "PKG7003"
+  "PKG8001"
+  "PKG9001"
+  "PKG10001"
+  "PKG11002"
+  "PKG12002"],
+ :artifact-kind :gravity/stage0-package-artifacts-artifact}

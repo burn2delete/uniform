@@ -1,0 +1,4 @@
+(ns runtime.r3-allocator
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:runtime {:minimal-native {:fail :r3-allocator}}}))

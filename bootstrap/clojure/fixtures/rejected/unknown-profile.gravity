@@ -1,0 +1,7 @@
+(ns bad.profile
+  (:profile :quantum)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout}))
+
+(defn main []
+  (println "bad profile"))

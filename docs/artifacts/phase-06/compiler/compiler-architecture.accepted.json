@@ -1,0 +1,1627 @@
+{
+  "compiler_diagnostic_registry": {
+    "catalog": "phase06-compiler-diagnostics",
+    "diagnostics": [
+      {
+        "facts": [
+          "redacted",
+          "stable-id"
+        ],
+        "origin_chain": [
+          "source",
+          "macro",
+          "core"
+        ],
+        "primary": {
+          "source": "samples/hello.grav",
+          "span": "1:1-1:11"
+        },
+        "profile": ":hosted",
+        "remediation": "Remove secret material from diagnostics.",
+        "rule": "C15-REDACTION",
+        "severity": "error",
+        "stage": ":diagnostics",
+        "target": "hosted-c"
+      }
+    ],
+    "golden_stream": [
+      "C1-PIPELINE",
+      "C15-REDACTION"
+    ],
+    "redaction_policy": ":required"
+  },
+  "compiler_verification_plan": {
+    "pass_risks": [
+      {
+        "evidence_present": true,
+        "minimum_evidence": [
+          "translation-validation",
+          "mir-verifier-report"
+        ],
+        "pass": ":build-mir",
+        "release_gate": ":required",
+        "risk": ":high"
+      },
+      {
+        "evidence_present": true,
+        "minimum_evidence": [
+          "hygiene-fixtures",
+          "expansion-replay"
+        ],
+        "pass": ":macro-expand",
+        "release_gate": ":required",
+        "risk": ":high"
+      }
+    ],
+    "release_gate_report": {
+      "evidence": [
+        "fixtures",
+        "diagnostics",
+        "artifact-manifests"
+      ],
+      "phase": "06",
+      "status": ":not-a-release-claim"
+    },
+    "translation_validation": [
+      {
+        "result": ":accepted",
+        "source": "core-hello",
+        "target": "mir-op-1"
+      }
+    ],
+    "trust_report": {
+      "open_risks": [],
+      "trusted_base": [
+        "reader",
+        "core-lowering",
+        "mir-verifier"
+      ]
+    }
+  },
+  "core_ast_module": {
+    "domain_boundaries": [],
+    "evaluation_order": [
+      "core-hello"
+    ],
+    "module": "gravity.user",
+    "nodes": [
+      {
+        "capabilities": [],
+        "effects": [],
+        "id": "core-hello",
+        "kind": ":defn",
+        "origin": "syn-expanded-0001"
+      }
+    ],
+    "verifier": {
+      "checked": [
+        "core-shape",
+        "origin-preservation",
+        "effect-preservation"
+      ],
+      "passed": true
+    }
+  },
+  "diagnostics": [],
+  "domain_ir_modules": {
+    "artifacts": [
+      {
+        "domain": "EFIR",
+        "id": "efir-hello",
+        "optimization": true,
+        "proofs": [
+          "efir-equivalence-proof"
+        ],
+        "semantic_anchor": "mir-op-1",
+        "verifier": {
+          "result": ":accepted"
+        }
+      }
+    ],
+    "lowering_matrix": [
+      {
+        "domain": "EFIR",
+        "fallback": "generic-mir"
+      }
+    ],
+    "registrations": [
+      {
+        "anchor": "mir-op-1",
+        "domain": "EFIR",
+        "profile": ":hosted"
+      },
+      {
+        "anchor": "gravity.user/hello",
+        "domain": "workflow-ir",
+        "profile": ":hosted"
+      }
+    ]
+  },
+  "effect_graph": {
+    "capability_proofs": [
+      {
+        "capability": "none",
+        "node": "core-hello",
+        "result": ":not-required"
+      }
+    ],
+    "effect_nodes": [
+      {
+        "effects": [],
+        "node": "core-hello",
+        "residual": []
+      }
+    ],
+    "ordering_constraints": [
+      "effect-before-mir"
+    ]
+  },
+  "incremental_compilation": {
+    "cache_keys": {
+      "reader": "sha256:reader-stable",
+      "typed-core": "sha256:typed-core"
+    },
+    "dependency_graph": {
+      "samples/hello.grav": [
+        "gravity.core"
+      ]
+    },
+    "invalidation_trace": [
+      {
+        "input": "reader",
+        "invalidates": [
+          "syntax",
+          "typed-core",
+          "mir"
+        ]
+      }
+    ],
+    "revalidation_records": [
+      {
+        "artifact": "typed-core",
+        "status": ":fresh"
+      }
+    ]
+  },
+  "input_hash": "sha256:4a77b1bb49fa2f11171428c112cd480408b3239103c3c54a1105b3529af8448d",
+  "kind": "compiler-architecture-artifact",
+  "macro_expansion_trace": {
+    "build_effects": [
+      ":read-macro-table"
+    ],
+    "capabilities": [
+      "compiler.macro.expand"
+    ],
+    "hygiene_decisions": [
+      {
+        "capture": ":fresh",
+        "generated": "tmp"
+      }
+    ],
+    "input_syntax_id": "syn-hello-0001",
+    "macro": "when",
+    "output_syntax_ids": [
+      "syn-expanded-0001"
+    ],
+    "trace_id": "macro-trace-0001",
+    "trace_replayable": true
+  },
+  "mir_module": {
+    "control_flow": {
+      "entry": [
+        "return"
+      ]
+    },
+    "data_flow": {
+      "return": "literal"
+    },
+    "effects": {
+      "gravity.user/hello": []
+    },
+    "functions": [
+      {
+        "blocks": [
+          "entry"
+        ],
+        "name": "gravity.user/hello"
+      }
+    ],
+    "module": "gravity.user",
+    "ownership": {
+      "gravity.user/hello": ":no-linear-state"
+    },
+    "profile": ":hosted",
+    "safety": {
+      "gravity.user/hello": ":proven-safe"
+    },
+    "source_core": "core-hello",
+    "source_origin_map": {
+      "mir-op-1": "core-hello"
+    },
+    "target_request": "hosted-c",
+    "types": {
+      "gravity.user/hello": "fn() -> String"
+    },
+    "verifier": {
+      "checked": [
+        "typed",
+        "effected",
+        "profile-valid",
+        "source-mapped"
+      ],
+      "passed": true
+    }
+  },
+  "module": "compiler-architecture-smoke",
+  "namespace_analysis": {
+    "binding_table": {
+      "gravity.user/hello": {
+        "kind": ":function",
+        "profile": ":hosted",
+        "visibility": ":public"
+      }
+    },
+    "dependency_graph": {
+      "gravity.user/hello": [
+        "gravity.core/+"
+      ]
+    },
+    "profile": ":hosted",
+    "resolved_symbols": [
+      "gravity.user/hello",
+      "gravity.core/+"
+    ]
+  },
+  "optimization_manifest": {
+    "decision_log": [
+      {
+        "erased_checks": false,
+        "operation": "fold-literal-return",
+        "pass": "constant-fold",
+        "proofs_used": [
+          "literal-equivalence-proof"
+        ],
+        "requires_proof": true,
+        "verifier_result": ":passed"
+      },
+      {
+        "erased_checks": true,
+        "operation": "retain-runtime-check",
+        "pass": "bounds-check-elision",
+        "perf10_record": "perf10-check-elision-record",
+        "requires_proof": false,
+        "verifier_result": ":passed"
+      }
+    ],
+    "invalidation_ledger": [
+      {
+        "fact": "pre-optimization-flow-facts",
+        "regenerated": "post-pass-verifier-report"
+      }
+    ],
+    "pass_registry": [
+      {
+        "contract": "preserve types, effects, safety outcomes",
+        "pass": "constant-fold"
+      }
+    ]
+  },
+  "ownership_analysis": {
+    "borrow_graph": {
+      "borrows": []
+    },
+    "linear_flow": [
+      {
+        "resource": "none",
+        "terminal_state": ":not-applicable"
+      }
+    ],
+    "ownership_graph": {
+      "core-hello": {
+        "owned_values": []
+      }
+    },
+    "runtime_check_records": []
+  },
+  "package": "gravity.phase06.compiler",
+  "pass_contract_manifest": [
+    {
+      "emits": [
+        "tokens",
+        "literal-records"
+      ],
+      "input": "source-unit",
+      "invalidates": [],
+      "output": "reader-artifact",
+      "pass": ":read-source",
+      "preserves": [
+        "source-identity"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "reader-hash",
+        "source-map"
+      ],
+      "required_downstream_facts": [
+        "source-identity",
+        "source-map"
+      ],
+      "requires": [
+        "encoding-policy",
+        "source-identity"
+      ]
+    },
+    {
+      "emits": [
+        "syntax-object-stream"
+      ],
+      "input": "reader-artifact",
+      "invalidates": [
+        "token-only-facts"
+      ],
+      "output": "syntax-object-stream",
+      "pass": ":build-syntax",
+      "preserves": [
+        "source-map",
+        "source-identity"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "syntax-ids",
+        "origin-chains"
+      ],
+      "required_downstream_facts": [
+        "source-map",
+        "syntax-ids",
+        "origin-chains"
+      ],
+      "requires": [
+        "reader-hash",
+        "source-map"
+      ]
+    },
+    {
+      "emits": [
+        "macro-expansion-trace"
+      ],
+      "input": "syntax-object-stream",
+      "invalidates": [
+        "pre-expansion-name-facts"
+      ],
+      "output": "expanded-syntax",
+      "pass": ":macro-expand",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "hygiene-context"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "expansion-trace"
+      ],
+      "required_downstream_facts": [
+        "origin-chains",
+        "hygiene-context",
+        "expansion-trace"
+      ],
+      "requires": [
+        "syntax-ids",
+        "macro-capabilities"
+      ]
+    },
+    {
+      "emits": [
+        "namespace-analysis"
+      ],
+      "input": "expanded-syntax",
+      "invalidates": [
+        "unresolved-symbols"
+      ],
+      "output": "resolved-syntax",
+      "pass": ":resolve-names",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "profile"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "binding-table",
+        "dependency-graph"
+      ],
+      "required_downstream_facts": [
+        "binding-table",
+        "dependency-graph",
+        "profile"
+      ],
+      "requires": [
+        "namespace-policy",
+        "profile-scope"
+      ]
+    },
+    {
+      "emits": [
+        "core-ast-module"
+      ],
+      "input": "resolved-syntax",
+      "invalidates": [
+        "surface-only-forms"
+      ],
+      "output": "core-ast",
+      "pass": ":lower-to-core",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "effects",
+        "capabilities",
+        "unsafe-metadata"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "core-node-ids"
+      ],
+      "required_downstream_facts": [
+        "effects",
+        "capabilities",
+        "unsafe-metadata",
+        "core-node-ids"
+      ],
+      "requires": [
+        "binding-table",
+        "evaluation-order-policy"
+      ]
+    },
+    {
+      "emits": [
+        "typed-core-module"
+      ],
+      "input": "core-ast",
+      "invalidates": [
+        "untyped-core"
+      ],
+      "output": "typed-core",
+      "pass": ":type-check",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "effects",
+        "capabilities"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "type-facts",
+        "constraint-solution"
+      ],
+      "required_downstream_facts": [
+        "type-facts",
+        "constraint-solution",
+        "effects",
+        "capabilities"
+      ],
+      "requires": [
+        "core-node-ids",
+        "type-environment"
+      ]
+    },
+    {
+      "emits": [
+        "effect-graph"
+      ],
+      "input": "typed-core",
+      "invalidates": [
+        "unchecked-effects"
+      ],
+      "output": "typed-effected-core",
+      "pass": ":effect-check",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "effect-graph",
+        "capability-proofs"
+      ],
+      "required_downstream_facts": [
+        "type-facts",
+        "effect-graph",
+        "capability-proofs"
+      ],
+      "requires": [
+        "type-facts",
+        "capability-manifest"
+      ]
+    },
+    {
+      "emits": [
+        "profile-validation-report"
+      ],
+      "input": "typed-effected-core",
+      "invalidates": [
+        "profile-unknown-facts"
+      ],
+      "output": "profile-valid-core",
+      "pass": ":profile-validate",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "capability-proofs"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "profile-validation-report"
+      ],
+      "required_downstream_facts": [
+        "profile-validation-report",
+        "type-facts",
+        "effect-graph"
+      ],
+      "requires": [
+        "profile-contract",
+        "effect-graph"
+      ]
+    },
+    {
+      "emits": [
+        "safety-analysis-report"
+      ],
+      "input": "profile-valid-core",
+      "invalidates": [
+        "unchecked-safety"
+      ],
+      "output": "checked-core",
+      "pass": ":safety-analyze",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "capability-proofs",
+        "profile-validation-report"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "safety-outcomes",
+        "runtime-check-records",
+        "unsafe-audit-records"
+      ],
+      "required_downstream_facts": [
+        "safety-outcomes",
+        "type-facts",
+        "effect-graph",
+        "capability-proofs"
+      ],
+      "requires": [
+        "SAFE1-outcome-policy",
+        "ownership-graph"
+      ]
+    },
+    {
+      "emits": [
+        "mir-module"
+      ],
+      "input": "checked-core",
+      "invalidates": [
+        "core-only-control-flow"
+      ],
+      "output": "gravity-mir",
+      "pass": ":build-mir",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "ownership-graph",
+        "safety-outcomes",
+        "profile-validation-report"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "mir-control-flow",
+        "mir-data-flow"
+      ],
+      "required_downstream_facts": [
+        "mir-control-flow",
+        "mir-data-flow",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes"
+      ],
+      "requires": [
+        "type-facts",
+        "effect-graph",
+        "ownership-graph",
+        "safety-outcomes"
+      ]
+    },
+    {
+      "emits": [
+        "mir-verifier-report"
+      ],
+      "input": "gravity-mir",
+      "invalidates": [
+        "unverified-mir"
+      ],
+      "output": "verified-mir",
+      "pass": ":verify-mir",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes",
+        "semantic-anchors"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "mir-verifier-report"
+      ],
+      "required_downstream_facts": [
+        "mir-verifier-report",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes"
+      ],
+      "requires": [
+        "mir-control-flow",
+        "mir-data-flow",
+        "type-facts"
+      ]
+    },
+    {
+      "emits": [
+        "optimization-manifest"
+      ],
+      "input": "verified-mir",
+      "invalidates": [
+        "pre-optimization-flow-facts"
+      ],
+      "output": "optimized-mir",
+      "pass": ":optimize-mir",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes",
+        "semantic-anchors"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "optimization-decision-log",
+        "post-pass-verifier-report"
+      ],
+      "required_downstream_facts": [
+        "optimization-decision-log",
+        "post-pass-verifier-report",
+        "type-facts",
+        "effect-graph"
+      ],
+      "requires": [
+        "optimization-pass-registry",
+        "mir-verifier-report"
+      ]
+    },
+    {
+      "emits": [
+        "domain-ir-modules"
+      ],
+      "input": "optimized-mir",
+      "invalidates": [
+        "generic-only-domain-facts"
+      ],
+      "output": "domain-ir-modules",
+      "pass": ":lower-domain-ir",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "domain-ir-artifacts",
+        "domain-lowering-matrix",
+        "semantic-anchors"
+      ],
+      "required_downstream_facts": [
+        "domain-ir-artifacts",
+        "semantic-anchors",
+        "type-facts",
+        "effect-graph"
+      ],
+      "requires": [
+        "domain-ir-registry",
+        "semantic-anchors"
+      ]
+    },
+    {
+      "emits": [
+        "domain-verifier-reports"
+      ],
+      "input": "domain-ir-modules",
+      "invalidates": [
+        "unverified-domain-ir"
+      ],
+      "output": "verified-domain-ir",
+      "pass": ":verify-domain-ir",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes",
+        "semantic-anchors"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "domain-verifier-reports"
+      ],
+      "required_downstream_facts": [
+        "domain-verifier-reports",
+        "semantic-anchors",
+        "type-facts"
+      ],
+      "requires": [
+        "domain-ir-artifacts",
+        "semantic-anchors"
+      ]
+    },
+    {
+      "emits": [
+        "target-lowering-manifest"
+      ],
+      "input": "verified-mir-or-domain-ir",
+      "invalidates": [
+        "target-neutral-layout-facts"
+      ],
+      "output": "target-artifacts",
+      "pass": ":lower-target",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes",
+        "proof-to-metadata-map"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "target-artifact-manifest",
+        "source-map"
+      ],
+      "required_downstream_facts": [
+        "target-artifact-manifest",
+        "source-map",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes"
+      ],
+      "requires": [
+        "target-eligibility",
+        "abi-contract",
+        "runtime-contract"
+      ]
+    },
+    {
+      "emits": [
+        "artifact-bundle-manifest"
+      ],
+      "input": "target-artifacts",
+      "invalidates": [],
+      "output": "artifact-bundle",
+      "pass": ":emit-artifacts",
+      "preserves": [
+        "source-map",
+        "origin-chains",
+        "type-facts",
+        "effect-graph",
+        "safety-outcomes",
+        "provenance-records"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "regenerates": [
+        "artifact-bundle-manifest"
+      ],
+      "required_downstream_facts": [
+        "artifact-bundle-manifest",
+        "source-map",
+        "provenance-records"
+      ],
+      "requires": [
+        "target-artifact-manifest",
+        "provenance-records"
+      ]
+    }
+  ],
+  "phase": "06",
+  "pipeline_manifest": {
+    "artifact_graph": {
+      "checked_core": "typed-effected-safe-core",
+      "mir": "gravity-mir",
+      "source": "syntax-object-stream",
+      "target": "hosted-c-artifact"
+    },
+    "backend_input": ":verified-mir",
+    "diagnostic_stream": [
+      "compiler-diagnostic-registry"
+    ],
+    "pass_contracts": [
+      {
+        "emits": [
+          "tokens",
+          "literal-records"
+        ],
+        "input": "source-unit",
+        "invalidates": [],
+        "output": "reader-artifact",
+        "pass": ":read-source",
+        "preserves": [
+          "source-identity"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "reader-hash",
+          "source-map"
+        ],
+        "required_downstream_facts": [
+          "source-identity",
+          "source-map"
+        ],
+        "requires": [
+          "encoding-policy",
+          "source-identity"
+        ]
+      },
+      {
+        "emits": [
+          "syntax-object-stream"
+        ],
+        "input": "reader-artifact",
+        "invalidates": [
+          "token-only-facts"
+        ],
+        "output": "syntax-object-stream",
+        "pass": ":build-syntax",
+        "preserves": [
+          "source-map",
+          "source-identity"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "syntax-ids",
+          "origin-chains"
+        ],
+        "required_downstream_facts": [
+          "source-map",
+          "syntax-ids",
+          "origin-chains"
+        ],
+        "requires": [
+          "reader-hash",
+          "source-map"
+        ]
+      },
+      {
+        "emits": [
+          "macro-expansion-trace"
+        ],
+        "input": "syntax-object-stream",
+        "invalidates": [
+          "pre-expansion-name-facts"
+        ],
+        "output": "expanded-syntax",
+        "pass": ":macro-expand",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "hygiene-context"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "expansion-trace"
+        ],
+        "required_downstream_facts": [
+          "origin-chains",
+          "hygiene-context",
+          "expansion-trace"
+        ],
+        "requires": [
+          "syntax-ids",
+          "macro-capabilities"
+        ]
+      },
+      {
+        "emits": [
+          "namespace-analysis"
+        ],
+        "input": "expanded-syntax",
+        "invalidates": [
+          "unresolved-symbols"
+        ],
+        "output": "resolved-syntax",
+        "pass": ":resolve-names",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "profile"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "binding-table",
+          "dependency-graph"
+        ],
+        "required_downstream_facts": [
+          "binding-table",
+          "dependency-graph",
+          "profile"
+        ],
+        "requires": [
+          "namespace-policy",
+          "profile-scope"
+        ]
+      },
+      {
+        "emits": [
+          "core-ast-module"
+        ],
+        "input": "resolved-syntax",
+        "invalidates": [
+          "surface-only-forms"
+        ],
+        "output": "core-ast",
+        "pass": ":lower-to-core",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "effects",
+          "capabilities",
+          "unsafe-metadata"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "core-node-ids"
+        ],
+        "required_downstream_facts": [
+          "effects",
+          "capabilities",
+          "unsafe-metadata",
+          "core-node-ids"
+        ],
+        "requires": [
+          "binding-table",
+          "evaluation-order-policy"
+        ]
+      },
+      {
+        "emits": [
+          "typed-core-module"
+        ],
+        "input": "core-ast",
+        "invalidates": [
+          "untyped-core"
+        ],
+        "output": "typed-core",
+        "pass": ":type-check",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "effects",
+          "capabilities"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "type-facts",
+          "constraint-solution"
+        ],
+        "required_downstream_facts": [
+          "type-facts",
+          "constraint-solution",
+          "effects",
+          "capabilities"
+        ],
+        "requires": [
+          "core-node-ids",
+          "type-environment"
+        ]
+      },
+      {
+        "emits": [
+          "effect-graph"
+        ],
+        "input": "typed-core",
+        "invalidates": [
+          "unchecked-effects"
+        ],
+        "output": "typed-effected-core",
+        "pass": ":effect-check",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "effect-graph",
+          "capability-proofs"
+        ],
+        "required_downstream_facts": [
+          "type-facts",
+          "effect-graph",
+          "capability-proofs"
+        ],
+        "requires": [
+          "type-facts",
+          "capability-manifest"
+        ]
+      },
+      {
+        "emits": [
+          "profile-validation-report"
+        ],
+        "input": "typed-effected-core",
+        "invalidates": [
+          "profile-unknown-facts"
+        ],
+        "output": "profile-valid-core",
+        "pass": ":profile-validate",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "capability-proofs"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "profile-validation-report"
+        ],
+        "required_downstream_facts": [
+          "profile-validation-report",
+          "type-facts",
+          "effect-graph"
+        ],
+        "requires": [
+          "profile-contract",
+          "effect-graph"
+        ]
+      },
+      {
+        "emits": [
+          "safety-analysis-report"
+        ],
+        "input": "profile-valid-core",
+        "invalidates": [
+          "unchecked-safety"
+        ],
+        "output": "checked-core",
+        "pass": ":safety-analyze",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "capability-proofs",
+          "profile-validation-report"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "safety-outcomes",
+          "runtime-check-records",
+          "unsafe-audit-records"
+        ],
+        "required_downstream_facts": [
+          "safety-outcomes",
+          "type-facts",
+          "effect-graph",
+          "capability-proofs"
+        ],
+        "requires": [
+          "SAFE1-outcome-policy",
+          "ownership-graph"
+        ]
+      },
+      {
+        "emits": [
+          "mir-module"
+        ],
+        "input": "checked-core",
+        "invalidates": [
+          "core-only-control-flow"
+        ],
+        "output": "gravity-mir",
+        "pass": ":build-mir",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "ownership-graph",
+          "safety-outcomes",
+          "profile-validation-report"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "mir-control-flow",
+          "mir-data-flow"
+        ],
+        "required_downstream_facts": [
+          "mir-control-flow",
+          "mir-data-flow",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes"
+        ],
+        "requires": [
+          "type-facts",
+          "effect-graph",
+          "ownership-graph",
+          "safety-outcomes"
+        ]
+      },
+      {
+        "emits": [
+          "mir-verifier-report"
+        ],
+        "input": "gravity-mir",
+        "invalidates": [
+          "unverified-mir"
+        ],
+        "output": "verified-mir",
+        "pass": ":verify-mir",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes",
+          "semantic-anchors"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "mir-verifier-report"
+        ],
+        "required_downstream_facts": [
+          "mir-verifier-report",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes"
+        ],
+        "requires": [
+          "mir-control-flow",
+          "mir-data-flow",
+          "type-facts"
+        ]
+      },
+      {
+        "emits": [
+          "optimization-manifest"
+        ],
+        "input": "verified-mir",
+        "invalidates": [
+          "pre-optimization-flow-facts"
+        ],
+        "output": "optimized-mir",
+        "pass": ":optimize-mir",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes",
+          "semantic-anchors"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "optimization-decision-log",
+          "post-pass-verifier-report"
+        ],
+        "required_downstream_facts": [
+          "optimization-decision-log",
+          "post-pass-verifier-report",
+          "type-facts",
+          "effect-graph"
+        ],
+        "requires": [
+          "optimization-pass-registry",
+          "mir-verifier-report"
+        ]
+      },
+      {
+        "emits": [
+          "domain-ir-modules"
+        ],
+        "input": "optimized-mir",
+        "invalidates": [
+          "generic-only-domain-facts"
+        ],
+        "output": "domain-ir-modules",
+        "pass": ":lower-domain-ir",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "domain-ir-artifacts",
+          "domain-lowering-matrix",
+          "semantic-anchors"
+        ],
+        "required_downstream_facts": [
+          "domain-ir-artifacts",
+          "semantic-anchors",
+          "type-facts",
+          "effect-graph"
+        ],
+        "requires": [
+          "domain-ir-registry",
+          "semantic-anchors"
+        ]
+      },
+      {
+        "emits": [
+          "domain-verifier-reports"
+        ],
+        "input": "domain-ir-modules",
+        "invalidates": [
+          "unverified-domain-ir"
+        ],
+        "output": "verified-domain-ir",
+        "pass": ":verify-domain-ir",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes",
+          "semantic-anchors"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "domain-verifier-reports"
+        ],
+        "required_downstream_facts": [
+          "domain-verifier-reports",
+          "semantic-anchors",
+          "type-facts"
+        ],
+        "requires": [
+          "domain-ir-artifacts",
+          "semantic-anchors"
+        ]
+      },
+      {
+        "emits": [
+          "target-lowering-manifest"
+        ],
+        "input": "verified-mir-or-domain-ir",
+        "invalidates": [
+          "target-neutral-layout-facts"
+        ],
+        "output": "target-artifacts",
+        "pass": ":lower-target",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes",
+          "proof-to-metadata-map"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "target-artifact-manifest",
+          "source-map"
+        ],
+        "required_downstream_facts": [
+          "target-artifact-manifest",
+          "source-map",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes"
+        ],
+        "requires": [
+          "target-eligibility",
+          "abi-contract",
+          "runtime-contract"
+        ]
+      },
+      {
+        "emits": [
+          "artifact-bundle-manifest"
+        ],
+        "input": "target-artifacts",
+        "invalidates": [],
+        "output": "artifact-bundle",
+        "pass": ":emit-artifacts",
+        "preserves": [
+          "source-map",
+          "origin-chains",
+          "type-facts",
+          "effect-graph",
+          "safety-outcomes",
+          "provenance-records"
+        ],
+        "profiles": [
+          ":hosted"
+        ],
+        "regenerates": [
+          "artifact-bundle-manifest"
+        ],
+        "required_downstream_facts": [
+          "artifact-bundle-manifest",
+          "source-map",
+          "provenance-records"
+        ],
+        "requires": [
+          "target-artifact-manifest",
+          "provenance-records"
+        ]
+      }
+    ],
+    "stages": [
+      ":read-source",
+      ":build-syntax",
+      ":macro-expand",
+      ":resolve-names",
+      ":lower-to-core",
+      ":type-check",
+      ":effect-check",
+      ":profile-validate",
+      ":safety-analyze",
+      ":build-mir",
+      ":verify-mir",
+      ":optimize-mir",
+      ":lower-domain-ir",
+      ":verify-domain-ir",
+      ":lower-target",
+      ":emit-artifacts"
+    ]
+  },
+  "plugin_system": {
+    "execution_traces": [
+      {
+        "input": "verified-mir",
+        "output": "verified-mir",
+        "plugin": "gravity.phase06.trace-plugin",
+        "sandbox": ":compiler-plugin-sandbox"
+      }
+    ],
+    "plugins": [
+      {
+        "api_compatible": true,
+        "manifest": {
+          "api": "compiler-pass-api-v1",
+          "capabilities": [
+            "compiler.pass.observe"
+          ]
+        },
+        "name": "gravity.phase06.trace-plugin",
+        "output_verified": true,
+        "registered_passes": [
+          "trace-observer"
+        ]
+      }
+    ]
+  },
+  "reader_artifacts": {
+    "encoding": "utf-8",
+    "incremental_hash": "sha256:reader-stable",
+    "literal_records": [
+      {
+        "id": "lit-hello",
+        "kind": ":string",
+        "value_hash": "sha256:hello"
+      }
+    ],
+    "source_identity": "sha256:reader-source",
+    "source_map": {
+      "spans": 2,
+      "version": "c2-smoke"
+    },
+    "source_unit": "samples/hello.grav",
+    "tokens": [
+      {
+        "kind": ":list-open",
+        "raw": "(",
+        "span": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "kind": ":symbol",
+        "raw": "def",
+        "span": {
+          "column": 2,
+          "line": 1
+        }
+      }
+    ],
+    "unstable_hash": false
+  },
+  "safety_pipeline": {
+    "outcomes": [
+      {
+        "evidence": "typed immutable literal",
+        "operation": "string-literal-return",
+        "outcome": ":proven-safe"
+      },
+      {
+        "evidence": "bounds check retained",
+        "operation": "buffer-boundary-example",
+        "outcome": ":runtime-checked"
+      },
+      {
+        "evidence": "unsafe metadata and audit record",
+        "operation": "raw-pointer-example",
+        "outcome": ":unsafe-island"
+      },
+      {
+        "evidence": "borrow escape diagnostic",
+        "operation": "invalid-alias-example",
+        "outcome": ":rejected"
+      }
+    ],
+    "runtime_check_records": [
+      {
+        "check": "bounds",
+        "operation": "buffer-boundary-example"
+      }
+    ],
+    "unsafe_audit_records": [
+      {
+        "metadata": ":unsafe-island",
+        "operation": "raw-pointer-example",
+        "review": ":ai/human-review"
+      }
+    ]
+  },
+  "syntax_object_stream": [
+    {
+      "form": "(def hello)",
+      "hygiene": {
+        "captures": [],
+        "marks": []
+      },
+      "metadata": {
+        "source_identity": "sha256:reader-source"
+      },
+      "namespace": "gravity.user",
+      "origin": {
+        "chain": [
+          "source",
+          "reader"
+        ],
+        "reader_hash": "sha256:reader-stable"
+      },
+      "phase": ":runtime",
+      "profile": ":hosted",
+      "span": {
+        "end": 11,
+        "source": "samples/hello.grav",
+        "start": 0
+      },
+      "syntax_id": "syn-hello-0001",
+      "version": "c3-v1"
+    }
+  ],
+  "target_lowering_manifest": {
+    "abi": {
+      "calling_convention": "gravity-hosted-c"
+    },
+    "artifact_manifest": {
+      "artifact": "hello.o",
+      "provenance": "compiler-architecture-smoke",
+      "source_map": "hello.source-map.json"
+    },
+    "eligibility": {
+      "accepted": true,
+      "profile": ":hosted",
+      "target": "hosted-c"
+    },
+    "input_verified": true,
+    "proof_to_metadata": [
+      {
+        "metadata": "debug.proof.literal",
+        "proof": "literal-equivalence-proof"
+      }
+    ],
+    "runtime_contracts": [
+      "string-runtime"
+    ]
+  },
+  "typed_core_module": {
+    "constraints": [
+      {
+        "id": "constraint-return",
+        "result": ":solved"
+      }
+    ],
+    "conversion_records": [],
+    "function_signatures": {
+      "gravity.user/hello": {
+        "capabilities": [],
+        "latent_effects": [],
+        "params": [],
+        "returns": "String"
+      }
+    },
+    "module": "gravity.user",
+    "typed_nodes": [
+      {
+        "node": "core-hello",
+        "type": "String"
+      }
+    ]
+  }
+}

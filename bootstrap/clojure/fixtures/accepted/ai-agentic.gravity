@@ -1,0 +1,17 @@
+; P11 fixture covers AI and agentic programming artifacts across A1-A11.
+(ns ai.agentic
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call :ai/tool-call :ai/memory-read
+              :ai/memory-write :workflow/replay})
+  (:capabilities #{:model/invoke :tool/execute :ticket/write
+                   :memory/read :memory/write :human/review})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {}}}))
+
+(def ai-phase-id 11)
+
+(defn main [] :- I64
+  ai-phase-id)

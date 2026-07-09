@@ -1,0 +1,9 @@
+(ns compiler.c4.build-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c4-macro {:fail :build-effect}}}))
+
+(def value 1)

@@ -1,0 +1,11 @@
+; Rejected P13 T3 fixture.
+(ns tooling.t3-round-trip
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t3002}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,10 @@
+(ns math.opt-certificate
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:candidate-overrides [{:certificate nil
+                                   :certificate-status :missing}]}}}))

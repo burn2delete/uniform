@@ -1,0 +1,63 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "alternative-macro-provider-artifact",
+      "coverage": [
+        "macro provider declaration",
+        "expansion trace",
+        "syntax object serialization",
+        "hygiene and capture records",
+        "build effect trace",
+        "incremental cache decision",
+        "reference equivalence",
+        "facet-aware dispatch",
+        "generated code validation"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/accepted-alternative-macro.json"
+    }
+  ],
+  "document": "L16",
+  "kind": "l16-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L16-PROVIDER",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-provider.json"
+    },
+    {
+      "diagnostic": "L16-EQUIVALENCE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-equivalence.json"
+    },
+    {
+      "diagnostic": "L16-SYNTAX-OBJECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-syntax-object.json"
+    },
+    {
+      "diagnostic": "L16-HYGIENE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-hygiene.json"
+    },
+    {
+      "diagnostic": "L16-PHASE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-phase.json"
+    },
+    {
+      "diagnostic": "L16-BUILD-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-build-effect.json"
+    },
+    {
+      "diagnostic": "L16-HERMETIC",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-hermetic.json"
+    },
+    {
+      "diagnostic": "L16-CACHE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-cache.json"
+    },
+    {
+      "diagnostic": "L16-FACET",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-facet.json"
+    },
+    {
+      "diagnostic": "L16-GENERATED",
+      "fixture": "docs/artifacts/phase-01/fixtures/l16/rejected-generated.json"
+    }
+  ]
+}

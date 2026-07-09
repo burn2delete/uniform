@@ -1,0 +1,6 @@
+; Rejected P09 DOM21 fixture.
+(ns domain.dom21-edge (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom21-edge}}}))
+(defn main [] :- I64 1)

@@ -1,0 +1,5 @@
+(ns typed.bad.mismatch
+  (:profile :hosted))
+
+(def bad
+  (typed/assert :Integer "not an integer"))

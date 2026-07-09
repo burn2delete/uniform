@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "set": {
+    "/source_schema_ir/weakened_projection": true
+  }
+}

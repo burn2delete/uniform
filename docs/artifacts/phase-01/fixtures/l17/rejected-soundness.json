@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/soundness_evidence/:native"
+  ],
+  "extends": "accepted-alternative-type.json"
+}

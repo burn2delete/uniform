@@ -1,0 +1,11 @@
+(ns l8.bad.ambiguous
+  (:profile :native))
+
+(defprotocol Closeable
+  (close [resource] :- Unit))
+
+(extend FileHandle Closeable
+  (close [resource] resource))
+
+(extend FileHandle Closeable
+  (close [resource] resource))

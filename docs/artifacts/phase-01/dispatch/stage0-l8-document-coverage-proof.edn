@@ -1,0 +1,46 @@
+{:proof/id :p01-d018-stage0-l8-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D018
+ :governing-docs ["docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md"
+                  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/dispatch-system.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/dispatch-system.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:protocol-table
+                  :implementation-table
+                  :method-signature-records
+                  :dispatch-mode-records
+                  :multimethod-dispatch-tables
+                  :interface-lowering-artifacts
+                  :host-interop-dispatch-records
+                  :dispatch-conformance-fixture]
+ :artifact-summary {:module dispatch.system
+                    :profile :hosted
+                    :dispatch-conformance-status :complete
+                    :protocols 1
+                    :implementations 1
+                    :method-signatures 1
+                    :dispatch-mode-records 7
+                    :multimethod-dispatch-tables 1
+                    :interface-lowering-artifacts 4
+                    :host-interop-dispatch-records 1
+                    :inferred-effects #{:resource/close :ai/tool-call}}
+ :covered-dispatch-families [:protocol :implementation :method-signature
+                             :direct :dictionary :vtable :hosted-dynamic
+                             :multimethod :host-interop :tool
+                             :interface-lowering :method-effects]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-dispatch-protocol-method.gravity" "L8-PROTOCOL-METHOD"
+                    "bootstrap/clojure/fixtures/rejected/typed-dispatch-ambiguous.gravity" "L8-DISPATCH-AMBIGUOUS"
+                    "bootstrap/clojure/fixtures/rejected/typed-dispatch-missing.gravity" "L8-DISPATCH-MISSING"
+                    "bootstrap/clojure/fixtures/rejected/typed-dispatch-dynamic-forbidden.gravity" "L8-DYNAMIC-FORBIDDEN"
+                    "bootstrap/clojure/fixtures/rejected/typed-dispatch-method-effect.gravity" "L8-METHOD-EFFECT"
+                    "bootstrap/clojure/fixtures/rejected/typed-dispatch-host.gravity" "L8-HOST-DISPATCH"
+                    "bootstrap/clojure/fixtures/rejected/typed-dispatch-tool.gravity" "L8-TOOL-DISPATCH"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L8 document task by proving protocol tables, implementation tables, method signatures, dispatch modes, multimethod records, interface lowering artifacts, host interop dispatch records, method effect visibility, and stable L8 diagnostics. It does not claim production ABI lowering, optimizer specialization proofs, full generic dispatch, or self-hosting."}

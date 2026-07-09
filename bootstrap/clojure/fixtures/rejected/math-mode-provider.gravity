@@ -1,0 +1,14 @@
+(ns math.mode-provider
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:provider-eligibility
+                      [{:provider :provider/bad-fast-sin
+                        :function :sin
+                        :selected? true
+                        :eligible? false
+                        :numeric-mode :certified-approx
+                        :missing-requirement :certificate}]}}}))

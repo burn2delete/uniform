@@ -1,0 +1,86 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D101
+ :date "2026-06-29"
+ :status :complete
+ :capability :b4-wasm-backend-document-coverage
+ :command "clojure -M:gravity backend-b4-wasm-document bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+ :artifact-kind :gravity/stage0-b4-wasm-backend-document-artifact
+ :artifact-hash "sha256:740fa44225485c19f0e9892397be9677da8b6dd03ff807162220a0d85dd07509"
+ :summary {:diagnostics 14
+           :rejected-designs 7
+           :conformance-criteria 19
+           :wat-hash "sha256:7994880e22f33ce05742175d958c3eed3937ff9dea451563780b3b19cea6a703"
+           :wit-hash "sha256:5e608eef1a35d9b2f191e2581d574af21f69dadd734ae36b135c270996de19ac"
+           :wat-structural true
+           :external-wasm-toolchain :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b4-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-component.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-canonical-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-import.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-export.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-memory.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-bounds.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-nondeterminism.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-async.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-wasi-async.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-simd.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-atomic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-host-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-manifest.gravity"]
+ :diagnostics ["B4-TARGET"
+               "B4-COMPONENT"
+               "B4-CANONICAL-ABI"
+               "B4-IMPORT"
+               "B4-EXPORT"
+               "B4-MEMORY"
+               "B4-BOUNDS"
+               "B4-NONDETERMINISM"
+               "B4-ASYNC"
+               "B4-WASI-ASYNC"
+               "B4-SIMD"
+               "B4-ATOMIC"
+               "B4-HOST-SCHEMA"
+               "B4-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :target-feature-record-pinned? true
+                :component-contract-covered? true
+                :canonical-abi-covered? true
+                :imports-capability-declared? true
+                :exports-schema-declared? true
+                :linear-memory-pointer-policy-covered? true
+                :bounds-proof-covered? true
+                :replay-nondeterminism-covered? true
+                :async-and-wasi-async-covered? true
+                :simd-feature-covered? true
+                :atomic-feature-covered? true
+                :host-boundary-schema-covered? true
+                :manifest-complete? true
+                :wat-structurally-valid? true
+                :diagnostics-covered? true
+                :external-wasm-toolchain-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 80 tests containing 4541 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1094}
+              {:command "clojure -M:gravity backend-b4-wasm-document bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:740fa44225485c19f0e9892397be9677da8b6dd03ff807162220a0d85dd07509"}
+              {:command "clojure -M -e <extract B4 WAT/WIT and structural validation>"
+               :result :passed
+               :wat-hash "sha256:7994880e22f33ce05742175d958c3eed3937ff9dea451563780b3b19cea6a703"
+               :wit-hash "sha256:5e608eef1a35d9b2f191e2581d574af21f69dadd734ae36b135c270996de19ac"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 10 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D101 for deterministic Clojure stage0 coverage of the B4 Wasm backend design document contract."
+                 "No wat2wasm, wasm-tools, wasmtime, or wasm-validate command is installed in the current environment, so this proof records structural WAT validation and does not claim external Wasm toolchain validation, executable Wasm runtime behavior, browser/edge/WASI embedding execution, or full Phase 07 completion."]}

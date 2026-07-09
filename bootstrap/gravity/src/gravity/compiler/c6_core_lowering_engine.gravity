@@ -1,0 +1,194 @@
+; Stage1 Gravity-owned C6 AST and core lowering contract.
+(ns gravity.compiler.c6-core-lowering-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c6-core-node-contract
+             c6-lowering-rule-contract
+             c6-domain-boundary-contract
+             c6-core-lowering-diagnostic-catalog
+             build-c6-core-node
+             build-c6-desugaring-trace
+             verify-c6-core-lowering])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :core-lowering
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C6" "L2" "L7" "L9" "L14"
+                           "C3" "C4" "C5" "C7" "C8"
+                           "C9" "C10" "C12" "C15" "C16"
+                           "MATH3" "SAFE6" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2"]
+               :implements [:core-node-contract
+                             :surface-to-core-map
+                             :desugaring-trace
+                             :evaluation-order-record
+                             :domain-boundary-record
+                             :core-verifier-report
+                             :lowering-rule-version-record
+                             :core-lowering-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :namespace-context :binding-identity
+                            :profile-target-metadata
+                            :effect-capability-metadata
+                            :unsafe-metadata :evaluation-order
+                            :domain-boundary-anchors
+                            :lowering-rule-versions}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c6-core-lowering-contract-subset
+                                    :clojure-c6-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c6-lowering-gap.gravity"
+                              "compiler-c6-core-shape.gravity"
+                              "compiler-c6-eval-order.gravity"
+                              "compiler-c6-origin.gravity"
+                              "compiler-c6-effect-drop.gravity"
+                              "compiler-c6-unsafe-drop.gravity"
+                              "compiler-c6-domain-boundary.gravity"
+                              "compiler-c6-verify.gravity"]}}}))
+
+(def c6-core-node-contract
+  {:artifact :gravity/c6-core-node-contract
+   :core-forms [:quote :if :do :let :fn :loop :recur
+                :def :var :set! :try :throw :match]
+   :required-fields [:node-id :form :children :source
+                     :binding-context :profile :target
+                     :metadata :facts :generated?]
+   :source-fields [:syntax-id :span :origin-chain
+                   :generated-origin :macro-origin]
+   :seed-facts [:resolved-bindings :namespace-context
+                :profile-context :target-context
+                :declared-effects :declared-capabilities
+                :unsafe-metadata]
+   :forbidden [:textual-rewrite
+               :surface-only-form-without-domain-boundary
+               :backend-specific-core-node
+               :erased-effect-or-capability
+               :erased-unsafe-metadata
+               :generated-node-without-origin]})
+
+(def c6-lowering-rule-contract
+  {:artifact :gravity/c6-lowering-rule-contract
+   :rule-fields [:rule-id :source-kind :core-root
+                 :introduced-forms :preserved-facts
+                 :generated-origins :evaluation-order
+                 :version :invalidates]
+   :standard-rules [{:surface :defn :lowers-to [:def :fn]}
+                    {:surface :when :lowers-to [:if :do :quote]}
+                    {:surface :cond :lowers-to [:if]}
+                    {:surface :case :lowers-to [:match]}
+                    {:surface :with-open :lowers-to [:try]}
+                    {:surface :result-option-helper :lowers-to [:match]}
+                    {:surface :facet-form
+                     :lowers-to [:core-form :domain-boundary]}]
+   :preserves [:left-to-right-evaluation
+               :source-spans
+               :generated-origin
+               :declared-effects
+               :declared-capabilities
+               :profile-clauses
+               :allocation-behavior
+               :ownership-hints
+               :proof-obligations]
+   :invalidates [:typed-core :mir :diagnostics
+                 :conformance-fixtures]})
+
+(def c6-domain-boundary-contract
+  {:artifact :gravity/c6-domain-boundary-contract
+   :boundary-fields [:boundary-id :source-syntax
+                     :owner-document :required-checker
+                     :semantic-anchor :profile :target
+                     :effects :capabilities :fallback]
+   :domain-irs [:efir :schema-ir :workflow-graph-ir
+                :hardware-state-machine-ir :ai-agent-ir
+                :query-ir :ui-ir :gpu-kernel-ir]
+   :required-links [:source-syntax :typed-core-anchor
+                    :mir-anchor :diagnostic-origin
+                    :artifact-provenance]
+   :forbidden [:domain-ir-without-semantic-anchor
+               :backend-escape-before-core-verification
+               :lost-profile-target-effect-or-capability]})
+
+(def c6-core-lowering-diagnostic-catalog
+  {:diagnostics ["C6-LOWERING-GAP" "C6-CORE-SHAPE"
+                 "C6-EVAL-ORDER" "C6-ORIGIN"
+                 "C6-EFFECT-DROP" "C6-UNSAFE-DROP"
+                 "C6-DOMAIN-BOUNDARY" "C6-VERIFY"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :syntax-id :core-node-id
+                              :source-span :generated-origin-chain
+                              :lowering-rule :profile :target
+                              :remediation]
+   :stops [:type-checking :effect-checking :ownership-checking
+           :safety-analysis :mir-construction :target-lowering]
+   :must-not-depend-on [:textual-rewrite-order
+                        :backend-only-legality
+                        :runtime-only-profile-availability
+                        :unrecorded-macro-output]})
+
+(defn build-c6-core-node
+  [node-id form children syntax-id source-span origin-chain binding-context profile target metadata facts generated?]
+  (quote {:artifact :gravity/c6-core-node
+          :node-id node-id
+          :form form
+          :children children
+          :source {:syntax-id syntax-id
+                   :span source-span
+                   :origin-chain origin-chain}
+          :binding-context binding-context
+          :profile profile
+          :target target
+          :metadata metadata
+          :facts facts
+          :generated? generated?
+          :contract c6-core-node-contract}))
+
+(defn build-c6-desugaring-trace
+  [surface-syntax surface-kind core-root introduced-forms preserved introduced-origin evaluation-order]
+  (quote {:artifact :gravity/c6-desugaring-trace
+          :surface-syntax surface-syntax
+          :surface-kind surface-kind
+          :core-root core-root
+          :introduced-forms introduced-forms
+          :preserved preserved
+          :introduced-origin introduced-origin
+          :evaluation-order evaluation-order
+          :diagnostics []
+          :contract c6-lowering-rule-contract}))
+
+(defn verify-c6-core-lowering [core-lowering-artifact]
+  (quote {:status :stage1-source-owned
+          :core-lowering-artifact core-lowering-artifact
+          :checks [:every-executable-form-lowered-or-diagnosed
+                   :core-node-shape-valid
+                   :left-to-right-evaluation-recorded
+                   :generated-origin-linked
+                   :effects-and-capabilities-preserved
+                   :unsafe-metadata-preserved
+                   :domain-boundaries-anchored
+                   :core-verifier-before-type-checking
+                   :lowering-rule-versions-recorded]
+          :diagnostics c6-core-lowering-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :origin-chains :generated-origin
+                      :namespace-context :binding-identity
+                      :profile-target-metadata
+                      :effect-capability-metadata
+                      :unsafe-metadata :evaluation-order
+                      :domain-boundary-anchors
+                      :lowering-rule-versions
+                      :artifact-provenance]}))

@@ -1,0 +1,9 @@
+(ns typed.bad.memory.uninit
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (memory/uninit-read value))

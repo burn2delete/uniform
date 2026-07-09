@@ -1,0 +1,15 @@
+(ns math.efir-eml
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:eml-records
+      [{:eml-id :eml/bad
+        :graph-id :efir/sigmoid
+        :lowered? true
+        :preserves-branch-policy? false
+        :preserves-source? true}]}}}))

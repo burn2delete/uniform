@@ -1,0 +1,400 @@
+{
+  "kind": "runtime-architecture-input",
+  "package": "gravity.phase08.runtime",
+  "module": "runtime-architecture-smoke",
+  "runtime_manifest": {
+    "family": "minimal-native",
+    "profile": ":native",
+    "target": "llvm-linux",
+    "services": {
+      "linked": [
+        "startup",
+        "panic",
+        "atomics"
+      ],
+      "generated": [
+        "bounds-checks",
+        "resource-cleanup"
+      ],
+      "delegated": [
+        "allocator/provider"
+      ],
+      "external": [
+        "filesystem/provider"
+      ],
+      "forbidden": [
+        "gc",
+        "dynamic-eval",
+        "ai/model-call"
+      ]
+    },
+    "capability_checks": true,
+    "diagnostics": "gravity/runtime-diagnostics",
+    "startup_failure_model": {
+      "startup": "native-entry",
+      "panic": "abort-with-report",
+      "cleanup": "linear-resource-teardown"
+    }
+  },
+  "runtime_family_selection": {
+    "families": [
+      "no_runtime",
+      "minimal_native",
+      "managed",
+      "memory",
+      "concurrency",
+      "distributed",
+      "ai",
+      "repl",
+      "ffi",
+      "capability",
+      "observability"
+    ],
+    "profile_matrix": {
+      ":firmware": [
+        "no_runtime",
+        "memory",
+        "observability"
+      ],
+      ":native": [
+        "minimal_native",
+        "memory",
+        "concurrency",
+        "ffi",
+        "capability",
+        "observability"
+      ],
+      ":hosted": [
+        "managed",
+        "memory",
+        "concurrency",
+        "repl",
+        "ffi",
+        "capability",
+        "observability"
+      ],
+      ":distributed": [
+        "distributed",
+        "concurrency",
+        "capability",
+        "observability"
+      ],
+      ":ai": [
+        "ai",
+        "distributed",
+        "capability",
+        "observability"
+      ]
+    }
+  },
+  "runtime_service_table": {
+    "linked": [
+      "startup",
+      "panic",
+      "atomics"
+    ],
+    "generated": [
+      "bounds-checks",
+      "numeric-checks",
+      "resource-cleanup"
+    ],
+    "delegated": [
+      "host-gc-through-adapter",
+      "allocator-provider"
+    ],
+    "external": [
+      "database-provider",
+      "model-provider"
+    ],
+    "forbidden": [
+      "ambient-shell",
+      "ambient-secrets",
+      "hidden-gc"
+    ],
+    "capability_enforcement": [
+      "filesystem",
+      "network",
+      "database",
+      "secrets",
+      "ffi",
+      "model",
+      "tool",
+      "ai/human-review"
+    ],
+    "replay_records": [
+      "clock",
+      "random",
+      "model-output",
+      "tool-output"
+    ]
+  },
+  "runtime_families": {
+    "no_runtime": {
+      "family": "no_runtime",
+      "runtime": ":none",
+      "profile": ":firmware",
+      "target": "bare-metal-c",
+      "startup": "reset-handler",
+      "memory_map": {
+        "static": "static-map",
+        "stack": "bounded-stack",
+        "heap": "none"
+      },
+      "failure_policy": "trap-or-reset",
+      "forbidden_services": [
+        "gc",
+        "scheduler",
+        "reflection",
+        "dynamic-eval",
+        "host-io"
+      ],
+      "generated_support": [
+        "bounds-checks",
+        "panic-stub",
+        "mmio-accessors"
+      ]
+    },
+    "minimal_native": {
+      "family": "minimal_native",
+      "profile": ":native",
+      "target": "llvm-linux",
+      "linked_services": [
+        "startup",
+        "panic",
+        "atomics",
+        "runtime-checks"
+      ],
+      "allocator_provider": "region-aware",
+      "panic_policy": "abort-with-report",
+      "atomic_provider": "native-atomics",
+      "ffi_helpers": [
+        "layout-adapter",
+        "error-conversion"
+      ],
+      "capability_table": [
+        "filesystem/read",
+        "ffi/call"
+      ],
+      "debug_release_policy": {
+        "debug_stack_traces": true,
+        "release_stack_traces": false
+      }
+    },
+    "managed": {
+      "family": "managed",
+      "profile": ":hosted",
+      "host": {
+        "kind": "jvm",
+        "version": "21"
+      },
+      "adapters": [
+        "null-to-option",
+        "exception-to-effect",
+        "host-source-map"
+      ],
+      "collection_semantics": "gravity-compatible",
+      "resource_cleanup": "deterministic-close",
+      "reflection_policy": "capability-gated"
+    },
+    "memory": {
+      "family": "memory",
+      "provider_manifests": [
+        "no-allocation",
+        "stack",
+        "region",
+        "arena",
+        "gc",
+        "foreign",
+        "device"
+      ],
+      "allocation_contracts": [
+        "region-lexical-lifetime",
+        "linear-resource-ledger"
+      ],
+      "runtime_check_map": [
+        "bounds",
+        "initialization",
+        "double-release",
+        "region-escape"
+      ],
+      "debug_trace_schema": "allocation-trace"
+    },
+    "concurrency": {
+      "family": "concurrency",
+      "scheduler": "native-thread-pool",
+      "task_tree": "structured-task-tree",
+      "sync_graph": "lock-atomic-channel-graph",
+      "atomic_support": [
+        "acquire-release",
+        "sequential"
+      ],
+      "actor_channel_schemas": [
+        "message-schema",
+        "ownership-transfer"
+      ],
+      "cancellation_policy": "cleanup-before-cancel"
+    },
+    "distributed": {
+      "family": "distributed",
+      "topology": "service-topology",
+      "schemas": [
+        "message-schema",
+        "state-schema",
+        "service-boundary-schema"
+      ],
+      "event_log_schema": "event-log-v1",
+      "replay_log_schema": "replay-v1",
+      "idempotency": "idempotency-key-map",
+      "retry_timeout_compensation": "retry-timeout-compensation-table",
+      "capability_table": [
+        "database.read",
+        "network.http",
+        "service.invoke"
+      ]
+    },
+    "ai": {
+      "family": "ai",
+      "agent": "support-agent",
+      "model_call_ledger": "model-call-ledger",
+      "prompt_provenance": "prompt-digest-record",
+      "tool_log": "tool-invocation-log",
+      "policy_graph": "ai-policy-graph",
+      "human_review": "destructive-tool-review",
+      "budget_trace": "token-cost-budget",
+      "replay_barriers": [
+        "model-output",
+        "tool-output",
+        "human-review"
+      ]
+    },
+    "repl": {
+      "family": "repl",
+      "profile": ":meta",
+      "session_manifest": "interactive-session",
+      "transcript": "session-transcript",
+      "syntax_snapshot": "syntax-object-snapshot",
+      "typed_core_snapshot": "typed-core-snapshot",
+      "mir_snapshot": "mir-snapshot",
+      "capability_decisions": "interactive-capability-log",
+      "hot_reload": "invalidation-record"
+    },
+    "ffi": {
+      "family": "ffi",
+      "binding_manifest": "ffi-binding-manifest",
+      "symbol_resolution": "symbol-resolution-record",
+      "abi_layout_validation": "abi-layout-validation-report",
+      "adapter_artifact": "generated-adapter",
+      "safe_wrapper_contract": "safe-wrapper-contract",
+      "foreign_handle_lifetimes": "foreign-handle-lifetime-table",
+      "callback_adapters": "callback-adapter-manifest",
+      "unsafe_audit": "ffi-unsafe-audit-record"
+    },
+    "capability": {
+      "family": "capability",
+      "capability_table": [
+        "filesystem",
+        "network",
+        "database",
+        "secrets",
+        "ffi",
+        "raw-memory",
+        "model",
+        "tool",
+        "ai/human-review",
+        "observability"
+      ],
+      "decision_log": [
+        {
+          "action": "network-fetch",
+          "principal": "module:client",
+          "effect": ":network/http",
+          "capability": "network.http",
+          "decision": "grant",
+          "redaction": "none"
+        },
+        {
+          "action": "shell-exec",
+          "principal": "module:client",
+          "effect": ":shell/exec",
+          "capability": "shell.exec",
+          "decision": "deny",
+          "redaction": "applied"
+        }
+      ],
+      "delegated_handles": [
+        "network-http-handle"
+      ],
+      "revocation_records": [
+        "network-http-handle-revoke"
+      ],
+      "redaction_policy": "secret-redaction"
+    },
+    "observability": {
+      "family": "observability",
+      "event_schemas": [
+        "panic",
+        "trap",
+        "allocation",
+        "task",
+        "actor",
+        "workflow",
+        "model",
+        "tool",
+        "ffi",
+        "capability",
+        "safety-check"
+      ],
+      "structured_log_schema": "runtime-log-schema",
+      "trace_schema": "runtime-trace-schema",
+      "metric_schema": "runtime-metric-schema",
+      "diagnostic_bundle": "runtime-diagnostic-bundle",
+      "sink_capabilities": [
+        "local-log",
+        "audit-sink"
+      ],
+      "redaction_policy": "secret-taint-prompt-redaction",
+      "required_audit_events": [
+        "capability-denial",
+        "unsafe-audit-use",
+        "model-call",
+        "replay-barrier"
+      ]
+    }
+  },
+  "runtime_conformance_report": {
+    "families": [
+      "no_runtime",
+      "minimal_native",
+      "managed",
+      "memory",
+      "concurrency",
+      "distributed",
+      "ai",
+      "repl",
+      "ffi",
+      "capability",
+      "observability"
+    ],
+    "accepted_fixtures": [
+      "runtime-family-selection",
+      "capability-enforcement",
+      "ffi-boundary",
+      "replay-record",
+      "observability-event"
+    ],
+    "negative_diagnostics": [
+      "R1-FORBIDDEN",
+      "R2-HIDDEN-SERVICE",
+      "R3-CAPABILITY",
+      "R4-NULL",
+      "R5-LIFETIME",
+      "R6-RACE",
+      "R7-REPLAY",
+      "R8-TOOL",
+      "R9-CHECKS",
+      "R10-POINTER",
+      "R11-AMBIENT",
+      "R12-SECRET"
+    ]
+  }
+}

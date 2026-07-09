@@ -1,0 +1,22 @@
+; tooling trivia retained by the C2 reader document fixture
+(ns compiler.c2-reader
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main numeric text keyword-value quoted-value tagged-value])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:compiler {:c2-reader {}}}))
+
+'compiler.c2-reader/reader-origin-fixture
+
+(def ^{:doc "metadata survives C2 reading"} numeric 42)
+(def ratio 3/4)
+(def decimal 1.25)
+(def text "line\nvalue")
+(def keyword-value :reader/example)
+(def quoted-value 'compiler.c2-reader/value)
+(def tagged-value #inst "2026-06-25T00:00:00.000-00:00")
+
+(defn main []
+  (println "compiler-c2-reader"))

@@ -1,0 +1,9 @@
+(ns compiler.c4.generated-unsafe
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c4-macro {:fail :generated-unsafe}}}))
+
+(def value 1)

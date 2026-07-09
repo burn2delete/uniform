@@ -1,0 +1,453 @@
+; Stage1 Gravity-owned B10 workflow graph backend source-model contract.
+(ns gravity.backend.b10-workflow-graph-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b10-workflow-graph-backend-contract
+             b10-workflow-ir-handoff-contract
+             b10-step-schema-contract
+             b10-event-log-replay-contract
+             b10-retry-compensation-contract
+             b10-capability-policy-contract
+             b10-taint-audit-contract
+             b10-artifact-manifest-contract
+             b10-diagnostic-catalog
+             build-b10-workflow-backend-manifest
+             build-b10-workflow-ir-handoff-record
+             build-b10-step-schema-record
+             build-b10-event-log-replay-record
+             build-b10-retry-compensation-record
+             build-b10-capability-policy-record
+             build-b10-taint-audit-record
+             build-b10-artifact-record
+             verify-b10-workflow-graph-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :workflow-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B10" "B1" "D1" "D3"
+                                        "C11" "C12" "C14" "P9" "P10"
+                                        "SAFE10" "SAFE11" "SAFE12"
+                                        "SAFE13" "B13" "B14" "R1" "R7"
+                                        "PKG7" "BOOT1" "BOOT3" "BOOT8"
+                                        "TEST13"]
+               :documents ["B10" "B1" "D1" "D3"
+                           "C11" "C12" "C14" "P9" "P10"
+                           "SAFE10" "SAFE11" "SAFE12"
+                           "SAFE13" "B13" "B14" "R1" "R7"
+                           "PKG7" "BOOT1" "BOOT3" "BOOT8"
+                           "TEST13"]
+               :implements [:workflow-backend-source-model
+                             :workflow-ir-handoff-contract
+                             :workflow-graph-artifact-contract
+                             :step-message-state-schema-contract
+                             :event-log-replay-contract
+                             :idempotency-retry-timeout-contract
+                             :compensation-handler-contract
+                             :capability-policy-human-review-contract
+                             :tool-model-provider-manifest-contract
+                             :taint-audit-provenance-contract
+                             :stable-b10-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :workflow-ir-anchor
+                            :profile-contracts :target-contracts
+                            :distributed-profile-legality
+                            :ai-profile-legality
+                            :schema-facts :message-schema-facts
+                            :step-state-schema-facts
+                            :event-log-schema
+                            :replay-policy
+                            :idempotency-keys
+                            :retry-timeout-cancellation
+                            :compensation-handlers
+                            :effect-facts :capability-facts
+                            :provider-policy
+                            :tool-model-provider-metadata
+                            :human-review-records
+                            :taint-facts
+                            :generated-origin-maps
+                            :audit-metadata
+                            :safety-outcomes
+                            :proof-references
+                            :source-debug-map
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :database :external-service
+                                    :model-call :tool-call :memory
+                                    :secret :workflow-runtime
+                                    :event-log-runtime
+                                    :scheduler :provider-registry
+                                    :deployment-service]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b10-workflow-backend-contract-subset
+                                    :clojure-b10-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b10-schema.gravity"
+                              "backend-b10-replay.gravity"
+                              "backend-b10-idempotency.gravity"
+                              "backend-b10-retry.gravity"
+                              "backend-b10-compensation.gravity"
+                              "backend-b10-capability.gravity"
+                              "backend-b10-policy.gravity"
+                              "backend-b10-taint.gravity"
+                              "backend-b10-graph.gravity"
+                              "backend-b10-manifest.gravity"]}}}))
+
+(def b10-workflow-graph-backend-contract
+  {:artifact :gravity/b10-workflow-graph-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/workflow-graph
+   :profile :distributed
+   :target :durable-workflow
+   :accepts [:verified-mir :verified-workflow-domain-ir]
+   :emits [:workflow-backend-manifest
+           :workflow-graph-artifact
+           :step-schema-bundle
+           :event-log-schema
+           :replay-policy
+           :replay-fixture
+           :idempotency-key-map
+           :retry-timeout-cancellation-compensation-table
+           :external-capability-manifest
+           :tool-model-provider-manifest
+           :human-review-policy-graph
+           :policy-graph
+           :taint-validation-report
+           :audit-provenance-record
+           :workflow-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :c11-verified-mir
+              :c12-workflow-domain-ir
+              :c14-target-lowering-record
+              :distributed-profile
+              :ai-profile
+              :workflow-step-message-state-schemas
+              :event-log-schema
+              :replay-policy
+              :idempotency
+              :retry-timeout-cancellation
+              :compensation
+              :capability-manifest
+              :provider-policy
+              :human-review-policy
+              :taint-validation
+              :audit-provenance]
+   :rules [:workflow-graph-is-an-artifact-not-an-sdk-side-path
+           :nondeterminism-is-recorded-isolated-or-rejected
+           :side-effects-are-not-reissued-during-replay-without-idempotency
+           :steps-messages-and-state-have-versioned-schemas
+           :tools-models-memory-secrets-and-services-require-capabilities
+           :prompt-and-model-output-cannot-create-authority
+           :human-review-gates-are-recorded-as-ai-human-review-effects
+           :source-policy-safety-capability-and-profile-metadata-are-preserved]
+   :forbidden [:unrecorded-clock
+               :unrecorded-randomness
+               :unrecorded-network-response
+               :unrecorded-database-state
+               :schema-less-step
+               :schema-less-message
+               :ambient-tool-access
+               :ambient-model-access
+               :ambient-secret-access
+               :side-effecting-replay-without-idempotency
+               :prompt-authority
+               :workflow-artifact-without-manifest]})
+
+(def b10-workflow-ir-handoff-contract
+  {:artifact :gravity/b10-workflow-ir-handoff-contract
+   :required-fields [:domain-anchor
+                     :source-artifact
+                     :accepted-by
+                     :workflow-id
+                     :workflow-ir-version
+                     :profile
+                     :target
+                     :source-generated-origin-links]
+   :rules [:input-is-verified-mir-or-workflow-domain-ir
+           :ordinary-source-forms-are-not-accepted-by-backend
+           :origin-links-connect-mir-domain-ir-and-workflow-artifacts]
+   :reject-when [:missing-workflow-anchor
+                 :missing-workflow-id
+                 :unchecked-source-input
+                 :missing-origin-link]})
+
+(def b10-step-schema-contract
+  {:artifact :gravity/b10-step-schema-contract
+   :required-fields [:workflow-input-schema
+                     :workflow-output-schema
+                     :step-input-schema
+                     :step-output-schema
+                     :message-schema
+                     :durable-state-schema
+                     :migration-policy
+                     :source-schema-map]
+   :rules [:workflow-boundaries-have-schemas
+           :durable-state-has-migration-policy
+           :schema-drift-requires-migration-record]
+   :reject-when [:missing-workflow-input-schema
+                 :missing-step-schema
+                 :missing-message-schema
+                 :missing-state-schema
+                 :missing-migration-policy]})
+
+(def b10-event-log-replay-contract
+  {:artifact :gravity/b10-event-log-replay-contract
+   :required-fields [:event-log-schema
+                     :workflow-input-digest
+                     :step-input-output-digests
+                     :clock-random-service-model-tool-records
+                     :human-review-decisions
+                     :policy-decisions
+                     :replay-safe-steps
+                     :side-effect-reissue-policy]
+   :rules [:replay-records-nondeterministic-decisions
+           :side-effects-are-not-reissued-without-idempotency
+           :model-and-tool-replay-pins-provider-prompt-tool-version-and-policy]
+   :reject-when [:missing-event-log-schema
+                 :unrecorded-nondeterminism
+                 :side-effecting-replay
+                 :unpinned-model-or-tool-replay]})
+
+(def b10-retry-compensation-contract
+  {:artifact :gravity/b10-retry-compensation-contract
+   :required-fields [:step-id
+                     :effect
+                     :idempotency-key
+                     :retry-policy
+                     :timeout-policy
+                     :cancellation-policy
+                     :failure-map
+                     :compensation-handler]
+   :rules [:side-effecting-steps-have-idempotency-keys
+           :retry-timeout-cancellation-and-failure-map-are-explicit
+           :destructive-or-external-writes-have-compensation]
+   :reject-when [:missing-idempotency-key
+                 :missing-retry-policy
+                 :missing-timeout-policy
+                 :missing-cancellation-policy
+                 :missing-compensation-handler]})
+
+(def b10-capability-policy-contract
+  {:artifact :gravity/b10-capability-policy-contract
+   :required-fields [:external-service-authority
+                     :database-authority
+                     :filesystem-network-authority
+                     :model-tool-grants
+                     :memory-secret-access
+                     :budget-rate-policy
+                     :provider-policy
+                     :human-review-policy]
+   :rules [:effects-do-not-imply-authority
+           :external-access-requires-manifest-grants
+           :human-review-is-recorded-but-not-authority-by-itself
+           :provider-substitution-follows-policy]
+   :reject-when [:ambient-service-access
+                 :ambient-model-access
+                 :ambient-tool-access
+                 :missing-human-review-policy
+                 :provider-substitution-without-policy]})
+
+(def b10-taint-audit-contract
+  {:artifact :gravity/b10-taint-audit-contract
+   :required-fields [:tainted-sources
+                     :validated-sinks
+                     :schema-validation-evidence
+                     :human-review-records
+                     :policy-decisions
+                     :audit-provenance
+                     :source-debug-map]
+   :rules [:model-tool-message-and-external-output-remain-tainted-until-validated
+           :trusted-sinks-require-validation-policy-and-review-when-required
+           :audit-provenance-preserves-source-and-generated-origins]
+   :reject-when [:unvalidated-model-output-to-trusted-sink
+                 :unvalidated-tool-output-to-trusted-sink
+                 :missing-human-review-record
+                 :missing-audit-provenance]})
+
+(def b10-artifact-manifest-contract
+  {:artifact :gravity/b10-artifact-manifest-contract
+   :required-fields [:workflow-backend-manifest
+                     :workflow-ir-handoff-record
+                     :workflow-graph-artifact
+                     :step-schema-bundle
+                     :event-log-schema
+                     :replay-policy
+                     :replay-fixtures
+                     :idempotency-key-map
+                     :retry-timeout-cancellation-compensation-table
+                     :external-capability-manifest
+                     :tool-model-provider-manifest
+                     :human-review-policy-graph
+                     :policy-graph
+                     :taint-validation-report
+                     :audit-provenance-record
+                     :diagnostic-stream
+                     :source-debug-map
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :workflow-graph-records-content-hash
+           :source-debug-map-preserves-workflow-step-and-policy-origins
+           :audit-records-link-to-policy-human-review-and-taint-evidence]
+   :forbidden [:workflow-graph-without-manifest
+               :replay-without-event-log
+               :external-access-without-capability-manifest
+               :debug-map-without-source-origin]})
+
+(def b10-diagnostic-catalog
+  {:artifact :gravity/b10-diagnostic-catalog
+   :ids [{:id "B10-SCHEMA"
+          :meaning :missing-workflow-step-message-state-or-boundary-schema}
+         {:id "B10-REPLAY"
+          :meaning :unrecorded-nondeterminism-or-side-effect-in-replay}
+         {:id "B10-IDEMPOTENCY"
+          :meaning :side-effecting-step-without-idempotency-key}
+         {:id "B10-RETRY"
+          :meaning :missing-retry-timeout-cancellation-or-failure-map}
+         {:id "B10-COMPENSATION"
+          :meaning :missing-compensation-for-effect-that-requires-it}
+         {:id "B10-CAPABILITY"
+          :meaning :service-database-model-tool-memory-secret-or-review-authority-gap}
+         {:id "B10-POLICY"
+          :meaning :policy-budget-provider-or-human-review-violation}
+         {:id "B10-TAINT"
+          :meaning :unvalidated-model-tool-message-or-external-output-reaching-trusted-sink}
+         {:id "B10-GRAPH"
+          :meaning :invalid-workflow-graph-cycle-edge-or-compensation-path}
+         {:id "B10-MANIFEST"
+          :meaning :incomplete-workflow-artifact-set}]
+   :required-diagnostic-fields [:workflow-id
+                                :step-id
+                                :source-span
+                                :generated-origin-chain
+                                :schema-id
+                                :effect
+                                :capability
+                                :provider
+                                :replay-mode
+                                :missing-policy
+                                :remediation]})
+
+(defn build-b10-workflow-backend-manifest
+  [target emits requires rejects]
+  {:artifact :gravity/workflow-backend-manifest
+   :backend :gravity.backend/workflow-graph
+   :version "source-model-v1"
+   :target target
+   :emits emits
+   :requires requires
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b10-workflow-ir-handoff-record
+  [domain-anchor source-artifact workflow-id workflow-ir-version]
+  {:artifact :gravity/b10-workflow-ir-handoff-record
+   :domain-anchor domain-anchor
+   :source-artifact source-artifact
+   :workflow-id workflow-id
+   :workflow-ir-version workflow-ir-version
+   :required-fields (:required-fields b10-workflow-ir-handoff-contract)
+   :source-model-only? true})
+
+(defn build-b10-step-schema-record
+  [workflow-input workflow-output step-schemas state-schema migration-policy]
+  {:artifact :gravity/b10-step-schema-record
+   :workflow-input-schema workflow-input
+   :workflow-output-schema workflow-output
+   :step-schemas step-schemas
+   :durable-state-schema state-schema
+   :migration-policy migration-policy
+   :required-fields (:required-fields b10-step-schema-contract)
+   :source-model-only? true})
+
+(defn build-b10-event-log-replay-record
+  [event-log-schema recorded-values replay-safe-steps side-effect-policy]
+  {:artifact :gravity/b10-event-log-replay-record
+   :event-log-schema event-log-schema
+   :recorded-values recorded-values
+   :replay-safe-steps replay-safe-steps
+   :side-effect-reissue-policy side-effect-policy
+   :required-fields (:required-fields b10-event-log-replay-contract)
+   :source-model-only? true})
+
+(defn build-b10-retry-compensation-record
+  [step-id effect idempotency-key retry-policy compensation-handler]
+  {:artifact :gravity/b10-retry-compensation-record
+   :step-id step-id
+   :effect effect
+   :idempotency-key idempotency-key
+   :retry-policy retry-policy
+   :compensation-handler compensation-handler
+   :required-fields (:required-fields b10-retry-compensation-contract)
+   :source-model-only? true})
+
+(defn build-b10-capability-policy-record
+  [capabilities providers budget-policy human-review-policy]
+  {:artifact :gravity/b10-capability-policy-record
+   :capabilities capabilities
+   :providers providers
+   :budget-policy budget-policy
+   :human-review-policy human-review-policy
+   :required-fields (:required-fields b10-capability-policy-contract)
+   :source-model-only? true})
+
+(defn build-b10-taint-audit-record
+  [tainted-sources validated-sinks human-review-records provenance]
+  {:artifact :gravity/b10-taint-audit-record
+   :tainted-sources tainted-sources
+   :validated-sinks validated-sinks
+   :human-review-records human-review-records
+   :provenance provenance
+   :required-fields (:required-fields b10-taint-audit-contract)
+   :source-model-only? true})
+
+(defn build-b10-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b10-workflow-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b10-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b10-workflow-graph-backend-design
+  [manifest]
+  {:artifact :gravity/b10-workflow-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-workflow-ir? true
+   :distributed-profile-legality-covered? true
+   :ai-profile-legality-covered? true
+   :workflow-step-message-state-schemas-covered? true
+   :event-log-replay-covered? true
+   :idempotency-retry-timeout-covered? true
+   :compensation-covered? true
+   :capability-policy-human-review-covered? true
+   :tool-model-provider-manifest-covered? true
+   :taint-audit-provenance-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :external-workflow-runtime-validation? false
+   :workflow-runtime-execution-claimed? false
+   :production-backend-execution? false
+   :source-model-only? true})

@@ -1,0 +1,16 @@
+(ns compiler.mir.type
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.buffer :as buffer :profile :hosted]
+             [gravity.safe1 :as safe1 :profile :hosted])
+  (:exports [main checked-buffer proven-read checked-read])
+  (:effects #{:io/write :memory/allocate :safety/check-failure})
+  (:capabilities #{:io/stdout :memory/allocator})
+  (:safety :safe)
+  (:metadata {:compiler {:checked-core {}
+                         :mir {:fail :type}}}))
+
+(def checked-buffer (buffer/new 16))
+(def proven-read (safe1/outcome :buffer/read :proven-safe :bounds :proof/p06-t03-range :none))
+(def checked-read (safe1/runtime-check :buffer/read :bounds :panic/bounds))
+(defn main [] (when true (println "mir")))

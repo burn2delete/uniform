@@ -1,0 +1,5 @@
+(ns l8.bad.host
+  (:profile :hosted))
+
+(def bad
+  (host-dispatch java.lang.String/trim value))

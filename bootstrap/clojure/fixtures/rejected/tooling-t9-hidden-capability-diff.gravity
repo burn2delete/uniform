@@ -1,0 +1,11 @@
+; Rejected P13 T9 fixture.
+(ns tooling.t9-hidden-capability-diff
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:network/http})
+  (:capabilities #{:http/client})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t9001}}}))
+
+(defn main [] :- I64 1)

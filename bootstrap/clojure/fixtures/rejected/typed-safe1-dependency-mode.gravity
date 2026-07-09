@@ -1,0 +1,12 @@
+(ns safe1.dependency-mode
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (safe1/dependency-mode :legacy/unsafe-lib
+                         :safe
+                         :unsafe
+                         :rejected))

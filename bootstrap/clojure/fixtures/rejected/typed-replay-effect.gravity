@@ -1,0 +1,10 @@
+(ns typed.replay.effect
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:time/read})
+  (:capabilities #{:time/read})
+  (:safety :safe))
+
+(def bad
+  (time/now))

@@ -1,0 +1,9 @@
+(ns typed.bad.memory.bounds
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (bounds/get buffer 9))

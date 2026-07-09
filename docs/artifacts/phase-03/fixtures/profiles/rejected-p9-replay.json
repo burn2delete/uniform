@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/7/checks/unrecorded_nondeterminism": true
+  }
+}

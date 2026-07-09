@@ -1,0 +1,12 @@
+(ns typed.bad.memory.move
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{:memory/allocator})
+  (:safety :safe))
+
+(def bad
+  (let [buf (buffer/new 16)]
+    (do
+      (ownership/move buf)
+      buf)))

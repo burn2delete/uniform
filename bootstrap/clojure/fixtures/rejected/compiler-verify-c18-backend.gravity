@@ -1,0 +1,4 @@
+(ns compiler.verify.c18-backend
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:compiler {:verification {:fail :c18-backend}}}))

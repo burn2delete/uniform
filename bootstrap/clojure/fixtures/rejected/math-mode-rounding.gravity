@@ -1,0 +1,16 @@
+(ns math.mode-rounding
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:mode-records
+                      [{:record-id :missing-rounding
+                        :math/mode :certified-approx
+                        :scope {:kind :function :name 'math.mode/sin}
+                        :precision {:type :F32 :absolute-error-max 1.0e-5}
+                        :float-exceptions {:nan :propagate
+                                           :inf :domain-error
+                                           :signed-zero :preserve
+                                           :denormals :preserve}}]}}}))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-safety.json",
+  "set": {
+    "/operations/1/concurrency/workflow_replay_missing": true
+  }
+}

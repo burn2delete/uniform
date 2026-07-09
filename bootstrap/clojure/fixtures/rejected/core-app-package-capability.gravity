@@ -1,0 +1,14 @@
+(ns core.app.package-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:resolution-reports
+                         [{:artifact-id "resolution:bad"
+                           :selected-graph ["gravity/http@2.1.4"]
+                           :capability-compatible false}]}}}))
+
+(defn main []
+  (println "bad package capability"))

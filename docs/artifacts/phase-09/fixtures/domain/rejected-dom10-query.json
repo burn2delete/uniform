@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-coverage.json",
+  "delete": [
+    "/domains/DOM10/evidence/prepared_bindings"
+  ]
+}

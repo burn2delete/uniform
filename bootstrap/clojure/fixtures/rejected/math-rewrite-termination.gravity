@@ -1,0 +1,11 @@
+(ns math.rewrite-termination
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:termination-report {:strategy :unbounded
+                                 :unbounded? true
+                                 :deterministic? false}}}}))

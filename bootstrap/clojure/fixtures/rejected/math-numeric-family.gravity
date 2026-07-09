@@ -1,0 +1,9 @@
+(ns math.numeric-family
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:numeric-kind-lattice
+                      [{:family :fixed-integer}]}}}))

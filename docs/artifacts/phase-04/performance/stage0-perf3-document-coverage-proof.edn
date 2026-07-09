@@ -1,0 +1,72 @@
+{:proof-id :stage0-perf3-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D061
+ :document "PERF3"
+ :governing-document "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md"
+ :status :passed
+ :implementation-surface
+ {:command "specialization"
+  :entrypoint :gravity.bootstrap/specialization-file-artifact
+  :artifact-kind :gravity/stage0-specialization-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/specialization-partial-eval.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/specialization-key-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-guard-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-effect-ungranted.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-hermetic.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-source-map.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-cache.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-profile-illegal.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-proof-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/specialization-variant-ambiguous.gravity"]}
+ :accepted-behavior
+ ["specialization keys include behavior-affecting type, const, shape, profile, target, layout, numeric, provider, and proof facts"
+  "guard predicates are emitted before variant selection"
+  "pure partial evaluation is hermetic and replayable"
+  "specialized artifacts link to generic source maps and generated-origin chains"
+  "cache invalidation records include source, macro, profile, target, target feature, layout, numeric mode, provider, and proof inputs"
+  "variant manifests declare strategy, guard binding, profile, target, effects, capabilities, and safety state"
+  "erased checks retain specialized SAFE15 proof ids"]
+ :rejected-behavior
+ ["missing or unstable specialization keys"
+  "missing, invalid, or too-late guards"
+  "undeclared build effects during partial evaluation"
+  "non-hermetic or non-replayable partial evaluation"
+  "missing generic-to-specialized source maps"
+  "invalid cache reuse"
+  "profile-illegal specialized variants"
+  "check erasure without specialized proof"
+  "ambiguous or unsafe variant selection"]
+ :required-artifacts
+ [:specialization-key-report
+  :guard-predicate-set
+  :specialized-artifact-manifest
+  :generic-to-specialized-source-map
+  :compile-time-evaluation-log
+  :variant-manifest
+  :cache-invalidation-record
+  :specialization-conformance-results]
+ :diagnostics
+ ["PERF3-KEY" "PERF3-GUARD" "PERF3-EFFECT" "PERF3-HERMETIC"
+  "PERF3-SOURCE-MAP" "PERF3-CACHE" "PERF3-PROFILE" "PERF3-PROOF"
+  "PERF3-VARIANT"]
+ :dependencies
+ ["PERF1" "L5" "L6" "L12" "SAFE15" "P1" "P13" "compiler MIR specialization"]
+ :conformance
+ {:type-const-shape-profile-target-specialization :complete
+  :pure-hermetic-partial-evaluation :complete
+  :undeclared-effectful-partial-evaluation-rejection :complete
+  :guard-predicate-emission :complete
+  :generic-to-specialized-source-mapping :complete
+  :cache-invalidation :complete
+  :proof-backed-check-erasure :complete
+  :variant-selection-artifacts :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 37 tests containing 1908 assertions. 0 failures, 0 errors."}
+  {:command "clojure -M -e '(require ... specialization summary)'"
+   :output "{:kind :gravity/stage0-specialization-artifact, :pass :specialization-validation, :status :complete, :modes #{:type :const :shape :target :profile}, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This completes PERF3 document coverage only for the Clojure stage0 specialization artifact boundary."
+  "It is not release performance, production partial evaluator breadth, backend MIR execution, or self-hosting evidence."]}

@@ -1,0 +1,14 @@
+(ns profile.bad.compatibility-matrix
+  (:profile :core)
+  (:target :jvm)
+  (:requires [native.sys :as sys
+              :profile :native
+              :edge :direct
+              :boundary :facade
+              :facade native.sys/core-view
+              :evidence #{:typed-api :safety-proof}])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

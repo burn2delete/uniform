@@ -1,0 +1,229 @@
+{
+  "branch_effect_summary": [
+    {
+      "branch_index": 0,
+      "guard_effects": [
+        ":io/write"
+      ],
+      "match_node": "core-00010"
+    }
+  ],
+  "branch_type_narrowing_table": [
+    {
+      "bindings": [
+        "value"
+      ],
+      "branch_index": 0,
+      "match_node": "core-00005",
+      "narrowed_type": "Ok"
+    },
+    {
+      "bindings": [
+        "error"
+      ],
+      "branch_index": 1,
+      "match_node": "core-00005",
+      "narrowed_type": "Err"
+    },
+    {
+      "bindings": [
+        "path"
+      ],
+      "branch_index": 0,
+      "match_node": "core-00010",
+      "narrowed_type": "map"
+    },
+    {
+      "bindings": [],
+      "branch_index": 1,
+      "match_node": "core-00010",
+      "narrowed_type": "wildcard"
+    },
+    {
+      "bindings": [
+        "id",
+        "name"
+      ],
+      "branch_index": 0,
+      "match_node": "core-00018",
+      "narrowed_type": "map"
+    },
+    {
+      "bindings": [],
+      "branch_index": 1,
+      "match_node": "core-00018",
+      "narrowed_type": "wildcard"
+    }
+  ],
+  "decision_trees": [
+    {
+      "branches": [
+        {
+          "branch_index": 0,
+          "pattern_kind": "constructor",
+          "span": {
+            "end_byte": 136,
+            "end_column": 15,
+            "end_line": 8,
+            "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity",
+            "start_byte": 126,
+            "start_column": 5,
+            "start_line": 8
+          }
+        },
+        {
+          "branch_index": 1,
+          "pattern_kind": "constructor",
+          "span": {
+            "end_byte": 158,
+            "end_column": 16,
+            "end_line": 9,
+            "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity",
+            "start_byte": 147,
+            "start_column": 5,
+            "start_line": 9
+          }
+        }
+      ],
+      "match_node": "core-00005",
+      "scrutinee_type": "Result"
+    },
+    {
+      "branches": [
+        {
+          "branch_index": 0,
+          "pattern_kind": "map",
+          "span": {
+            "end_byte": 263,
+            "end_column": 54,
+            "end_line": 13,
+            "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity",
+            "start_byte": 214,
+            "start_column": 5,
+            "start_line": 13
+          }
+        },
+        {
+          "branch_index": 1,
+          "pattern_kind": "wildcard",
+          "span": {
+            "end_byte": 274,
+            "end_column": 6,
+            "end_line": 14,
+            "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity",
+            "start_byte": 273,
+            "start_column": 5,
+            "start_line": 14
+          }
+        }
+      ],
+      "match_node": "core-00010",
+      "scrutinee_type": "Dynamic"
+    },
+    {
+      "branches": [
+        {
+          "branch_index": 0,
+          "pattern_kind": "map",
+          "span": {
+            "end_byte": 371,
+            "end_column": 24,
+            "end_line": 18,
+            "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity",
+            "start_byte": 352,
+            "start_column": 5,
+            "start_line": 18
+          }
+        },
+        {
+          "branch_index": 1,
+          "pattern_kind": "wildcard",
+          "span": {
+            "end_byte": 380,
+            "end_column": 6,
+            "end_line": 19,
+            "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity",
+            "start_byte": 379,
+            "start_column": 5,
+            "start_line": 19
+          }
+        }
+      ],
+      "match_node": "core-00018",
+      "scrutinee_type": "Validated"
+    }
+  ],
+  "diagnostics": [],
+  "exhaustiveness_report": [
+    {
+      "constructors": [
+        "Err",
+        "Ok"
+      ],
+      "has_default": false,
+      "match_node": "core-00005",
+      "profile": ":hosted"
+    },
+    {
+      "constructors": [],
+      "has_default": true,
+      "match_node": "core-00010",
+      "profile": ":hosted"
+    },
+    {
+      "constructors": [],
+      "has_default": true,
+      "match_node": "core-00018",
+      "profile": ":hosted"
+    }
+  ],
+  "kind": "match-analysis-artifact",
+  "match_count": 3,
+  "module": "l7.match",
+  "ownership_move_borrow_facts": [
+    {
+      "binding": "value",
+      "branch_index": 0,
+      "match_node": "core-00005",
+      "mode": "borrow-or-bind"
+    },
+    {
+      "binding": "error",
+      "branch_index": 1,
+      "match_node": "core-00005",
+      "mode": "borrow-or-bind"
+    },
+    {
+      "binding": "path",
+      "branch_index": 0,
+      "match_node": "core-00010",
+      "mode": "borrow-or-bind"
+    },
+    {
+      "binding": "id",
+      "branch_index": 0,
+      "match_node": "core-00018",
+      "mode": "borrow-or-bind"
+    },
+    {
+      "binding": "name",
+      "branch_index": 0,
+      "match_node": "core-00018",
+      "mode": "borrow-or-bind"
+    }
+  ],
+  "profile": ":hosted",
+  "schema_validation_links": [
+    {
+      "branch_index": 0,
+      "match_node": "core-00018",
+      "schema": "validated-boundary"
+    },
+    {
+      "branch_index": 1,
+      "match_node": "core-00018",
+      "schema": "validated-boundary"
+    }
+  ],
+  "source": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity"
+}

@@ -1,0 +1,13 @@
+(ns compile.hermetic-input
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:build/read-file})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :declared-inputs #{"schemas/declared.schema.edn"}
+              :hermetic true
+              :cache-policy :strict}))
+
+(def invalid
+  (compile/read-schema "schemas/ambient.schema.edn"))

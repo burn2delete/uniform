@@ -1,0 +1,42 @@
+{:task-id :P01-T06
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :scope "Phase 01 interop and alternative subsystem hooks"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/alternative-macro.gravity"
+                          "bootstrap/clojure/fixtures/accepted/alternative-type.gravity"
+                          "bootstrap/clojure/fixtures/accepted/alternative-memory.gravity"
+                          "bootstrap/clojure/fixtures/accepted/interop-migration.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-altmacro-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-alttype-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-altmem-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-interop-*.gravity"]
+ :capability-proof {:accepted-fixtures ["bootstrap/clojure/fixtures/accepted/alternative-macro.gravity"
+                                        "bootstrap/clojure/fixtures/accepted/alternative-type.gravity"
+                                        "bootstrap/clojure/fixtures/accepted/alternative-memory.gravity"
+                                        "bootstrap/clojure/fixtures/accepted/interop-migration.gravity"]
+                    :proof-records ["docs/artifacts/phase-01/alternative-macros/stage0-l16-document-coverage-proof.edn"
+                                    "docs/artifacts/phase-01/alternative-types/stage0-l17-document-coverage-proof.edn"
+                                    "docs/artifacts/phase-01/alternative-memory/stage0-l18-document-coverage-proof.edn"
+                                    "docs/artifacts/phase-01/interop/stage0-l19-document-coverage-proof.edn"]
+                    :all-conformance-status :complete
+                    :diagnostic-count 44
+                    :validated-boundaries [:alternative-macro
+                                           :alternative-type
+                                           :alternative-memory
+                                           :interop-migration]
+                    :capability-basis :alternative-subsystems-and-interop-boundaries-preserve-source-spans-generated-origin-effects-capabilities-safety-profiles-and-provenance}
+ :validation [{:command "clojure -M:test"
+               :result "22 tests, 974 assertions, 176 rejected fixtures"}
+              {:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/alternative-macro.gravity"
+               :result "complete L16 alternative macro conformance"}
+              {:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/alternative-type.gravity"
+               :result "complete L17 alternative type conformance"}
+              {:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/alternative-memory.gravity"
+               :result "complete L18 alternative memory conformance"}
+              {:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/interop-migration.gravity"
+               :result "complete L19 interop conformance"}]
+ :residual-risks ["Stage0 proves constrained extension hooks as compiler artifacts, not a production plugin system."
+                  "Package distribution, backend lowering, runtime provider loading, governance policy, and self-hosting remain later-phase work."]}

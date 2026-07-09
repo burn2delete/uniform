@@ -1,0 +1,115 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-T01
+ :date "2026-06-25"
+ :status :complete
+ :capability :compiler-pass-contract-manifest
+ :command "clojure -M:gravity compiler-passes bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"
+ :artifact-kind :gravity/stage0-pass-contract-manifest-artifact
+ :artifact-hash "sha256:777fa920f45f520006f5a510839998d6bfdaec7863cc5873eb115b555492af25"
+ :summary {:stages 19
+           :contracts 19
+           :diagnostic-families 26
+           :cache-keys 1
+           :plugin-passes 1
+           :risk-records 19
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+                       "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+                       "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+                       "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+                       "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+                       "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md"
+                       "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
+                       "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+                       "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"
+                       "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
+                       "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+                       "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+                       "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+                       "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                       "docs/phase-01-core-language/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-02-safety/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-03-profile-system/IMPLEMENTATION-ROADMAP.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"]
+ :rejected-fixtures ["compiler-pipeline-order.gravity"
+                     "compiler-pass-contract.gravity"
+                     "compiler-evidence-drop.gravity"
+                     "compiler-unchecked-backend.gravity"
+                     "compiler-manifest-gap.gravity"
+                     "compiler-diagnostic-schema.gravity"
+                     "compiler-diagnostic-id.gravity"
+                     "compiler-diagnostic-span.gravity"
+                     "compiler-diagnostic-origin.gravity"
+                     "compiler-diagnostic-facts.gravity"
+                     "compiler-diagnostic-remediation.gravity"
+                     "compiler-diagnostic-redaction.gravity"
+                     "compiler-diagnostic-order.gravity"
+                     "compiler-cache-key.gravity"
+                     "compiler-cache-entry.gravity"
+                     "compiler-stale-proof.gravity"
+                     "compiler-speculative-publish.gravity"
+                     "compiler-plugin-manifest.gravity"
+                     "compiler-plugin-api.gravity"
+                     "compiler-plugin-capability.gravity"
+                     "compiler-plugin-pass-contract.gravity"
+                     "compiler-plugin-output.gravity"
+                     "compiler-verification-risk.gravity"
+                     "compiler-verification-evidence.gravity"
+                     "compiler-trust-report.gravity"
+                     "compiler-release-gate.gravity"]
+ :diagnostic-ids ["C1-PIPELINE"
+                  "C1-PASS-CONTRACT"
+                  "C1-EVIDENCE-DROP"
+                  "C1-UNCHECKED-BACKEND"
+                  "C1-MANIFEST"
+                  "C15-SCHEMA"
+                  "C15-ID"
+                  "C15-SPAN"
+                  "C15-ORIGIN"
+                  "C15-FACTS"
+                  "C15-REMEDIATION"
+                  "C15-REDACTION"
+                  "C15-ORDER"
+                  "C16-KEY"
+                  "C16-ENTRY"
+                  "C16-PROOF"
+                  "C16-SPECULATIVE"
+                  "C17-MANIFEST"
+                  "C17-API"
+                  "C17-CAPABILITY"
+                  "C17-PASS-CONTRACT"
+                  "C17-OUTPUT"
+                  "C18-RISK"
+                  "C18-EVIDENCE"
+                  "C18-TRUST-REPORT"
+                  "C18-RELEASE-GATE"]
+ :capability-based-proof {:canonical-order-exposed? true
+                          :contracts-complete? true
+                          :metadata-preserved-or-replaced? true
+                          :backend-lowering-checked? true
+                          :diagnostics-structured? true
+                          :incremental-keys-complete? true
+                          :plugin-capabilities-scoped? true
+                          :verification-gates-present? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity compiler-passes bootstrap/clojure/fixtures/accepted/compiler-passes.gravity"
+               :result :accepted}
+              {:command "clojure -M -e '(read-string (slurp \"docs/artifacts/phase-06/compiler/stage0-p06-t01-pass-contract-proof.edn\"))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes the Clojure stage0 P06-T01 pass-contract manifest boundary."
+                 "This artifact does not itself claim MIR output, target lowering, Phase 06 document coverage, external plugin ecosystem support, release readiness, or self-hosting."]}

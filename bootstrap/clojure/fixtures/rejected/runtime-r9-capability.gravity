@@ -1,0 +1,6 @@
+; Rejected P08 R9 fixture.
+(ns runtime.r9-capability (:profile :meta) (:target :jvm) (:exports [main])
+  (:effects #{:build/read-file}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r9-capability}}}))
+(defn main [] :- I64 1)

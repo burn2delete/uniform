@@ -1,0 +1,16 @@
+(ns math.approx-checker
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:approximation
+           {:certificate-overrides
+            [{:checker {:name :gravity-stage0-interval-checker
+                        :version "1"
+                        :input-hash "sha256:stage0-sigmoid-checker-input"
+                        :transcript-hash "sha256:stage0-sigmoid-checker-transcript"
+                        :independent? false
+                        :replayable? false
+                        :trust-root :gravity-stage0-checker}}]}}}))

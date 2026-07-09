@@ -1,0 +1,132 @@
+(ns performance.layout
+  (:profile :native)
+  (:target :jvm)
+  (:exports [layout-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/layout-particle-soa
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:type :Particle
+                              :count-range [1024 1048576]}
+                :layout {:source :array-of-structs
+                         :optimized :struct-of-arrays
+                         :alignment 64}
+                :safety-mode :safe-optimized
+                :objective {:metric :cache-misses
+                            :direction :lower-is-better}
+                :semantic-proof #{:field-semantics-preserved
+                                  :effects-preserved
+                                  :profile-legal}
+                :safety-proof #{:alias-proof-preserved
+                                :ownership-preserved
+                                :aligned-access-proven}
+                :benchmark {:harness :bench/particle-layout
+                            :samples 30
+                            :baseline :particle-aos
+                            :environment-fingerprint
+                            {:cpu :x86-64
+                             :os :linux
+                             :compiler :gravity-stage0-clojure
+                             :backend :llvm
+                             :runtime :minimal-native
+                             :features #{:avx2}}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :optimization-decisions
+               [{:pass :stage0/performance-claim
+                 :decision :accept
+                 :preserves #{:types :effects :profile :safety}}]
+               :layout
+               {:suite-id :perf4/layout-optimization
+                :records
+                [{:record-id :layout/particle-soa
+                  :type :Particle
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :layout :struct-of-arrays
+                  :source-layout :array-of-structs
+                  :transformation :aos-to-soa
+                  :fields [{:name :x :type :F32 :alignment 4}
+                           {:name :y :type :F32 :alignment 4}
+                           {:name :vx :type :F32 :alignment 4}
+                           {:name :vy :type :F32 :alignment 4}]
+                  :alignment 64
+                  :padding :target-derived
+                  :abi :internal
+                  :proofs #{:no-observable-address-identity
+                            :exclusive-ownership
+                            :alias-proof
+                            :aligned-access}
+                  :boundary {:kind :internal
+                             :public? false
+                             :ffi? false
+                             :persistence? false
+                             :adapter nil}
+                  :address-identity
+                  {:observable? false
+                   :proof-id :proof/no-observable-address-identity
+                   :debug-map :debug/particle-soa-fields}
+                  :alias-proof
+                  {:proof-id :proof/particle-alias
+                   :method :exclusive-ownership
+                   :status :complete}
+                  :ownership-proof
+                  {:proof-id :proof/particle-ownership
+                   :method :borrow-check
+                   :status :complete}
+                  :alignment-proof
+                  {:proof-id :proof/particle-alignment
+                   :target-supported? true
+                   :access-safe? true
+                   :alignment 64
+                   :vector-requirement 32
+                   :fallback :scalar}
+                  :packing-record
+                  {:packed? false
+                   :padding :target-derived
+                   :access-safety-facts #{:aligned-access
+                                          :initialized-padding}}
+                  :cache-shape
+                  {:access-pattern :streaming-hot-fields
+                   :working-set :one-million-particles
+                   :stride 4
+                   :field-hotness {:x :hot
+                                   :y :hot
+                                   :vx :hot
+                                   :vy :hot}
+                   :cache-line-size 64
+                   :target-fingerprint
+                   {:cpu :x86-64
+                    :features #{:avx2}
+                    :compiler :gravity-stage0-clojure}
+                   :benchmark :bench/particle-layout}
+                  :device-transfer
+                  {:host-layout :struct-of-arrays
+                   :device-layout :struct-of-arrays
+                   :compatible? true
+                   :adapter nil}
+                  :debug-source-map
+                  {:source-type :Particle
+                   :field-map {:x [:x]
+                               :y [:y]
+                               :vx [:vx]
+                               :vy [:vy]}
+                   :optimized-record :layout/particle-soa}
+                  :erased-checks #{:alignment-check}
+                  :proof-id :proof/particle-alignment
+                  :artifacts #{:layout-manifest
+                               :alignment-proof
+                               :alias-ownership-report
+                               :address-identity-report
+                               :abi-compatibility-record
+                               :cache-shape-report
+                               :device-transfer-layout-record
+                               :debug-source-map}}]}}}))
+
+(def layout-ready true)

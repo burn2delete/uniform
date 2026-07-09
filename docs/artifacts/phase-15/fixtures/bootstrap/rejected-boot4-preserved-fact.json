@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-bootstrap-self-hosting.json",
+  "compiler_coding_standard": {
+    "lost_preserved_fact": true
+  }
+}

@@ -1,0 +1,11 @@
+; Rejected P15 BOOT3 fixture.
+(ns bootstrap.boot3-ambient-authority
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read})
+  (:capabilities #{:fs/read})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot3002}}}))
+
+(defn main [] :- I64 1)

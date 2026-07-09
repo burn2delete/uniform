@@ -1,0 +1,10 @@
+(ns l8.bad.effect
+  (:profile :native))
+
+(defprotocol Printable
+  (print-it [value] :- Unit
+    :effects #{}))
+
+(extend Thing Printable
+  (print-it [value]
+    (println value)))

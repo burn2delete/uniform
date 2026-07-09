@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "concurrency_library": {"data_race": true}}

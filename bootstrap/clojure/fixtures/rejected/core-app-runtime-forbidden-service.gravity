@@ -1,0 +1,19 @@
+(ns core.app.runtime-forbidden-service
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:runtime {:compiled-gate
+                        {:selections
+                         [{:family :managed
+                           :profile :hosted
+                           :target :jvm
+                           :selection-mode :explicit
+                           :artifact-id :runtime/core-app
+                           :hidden-services [:ambient-reflection]
+                           :used-services [:ambient-reflection]
+                           :forbidden [:ambient-reflection :dynamic-eval]}]}}}))
+
+(defn main []
+  (println "bad runtime service"))

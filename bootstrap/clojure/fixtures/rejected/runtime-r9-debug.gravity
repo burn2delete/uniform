@@ -1,0 +1,6 @@
+; Rejected P08 R9 fixture.
+(ns runtime.r9-debug (:profile :meta) (:target :jvm) (:exports [main])
+  (:effects #{:debug/read-state}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r9-debug}}}))
+(defn main [] :- I64 1)

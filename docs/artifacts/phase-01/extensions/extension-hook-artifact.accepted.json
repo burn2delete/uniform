@@ -1,0 +1,207 @@
+{
+  "active_profile": ":hosted",
+  "diagnostics": [],
+  "interop_boundaries": [
+    {
+      "abi_or_protocol": ":c",
+      "boundary_kind": ":native-abi",
+      "capabilities": [
+        ":ffi/c"
+      ],
+      "effects": [
+        ":ffi/call"
+      ],
+      "error_mapping": {
+        "foreign_exception": "Rejected",
+        "signal": "InteropSignal"
+      },
+      "foreign_source": "libc",
+      "id": "native/strlen",
+      "language": ":c",
+      "memory_behavior": {
+        "arg0": ":borrowed-cstring",
+        "retains_pointer": false
+      },
+      "ownership": {
+        "arg0": ":borrowed",
+        "result": ":value"
+      },
+      "profiles": [
+        ":native",
+        ":hosted"
+      ],
+      "provider": "gravity.ffi/libc",
+      "safety": ":unsafe",
+      "status": "accepted",
+      "threading": ":blocking-safe",
+      "type_mapping": {
+        "arg0": "CString",
+        "result": "USize"
+      },
+      "version": "1.0.0"
+    }
+  ],
+  "kind": "extension-hook-artifact",
+  "module": "extension.demo",
+  "normal_pipeline_required": [
+    "reader",
+    "namespace",
+    "macro_trace",
+    "core_ast",
+    "typed_core"
+  ],
+  "pipeline_artifacts": {
+    "core_ast": {
+      "kind": "core-ast-artifact",
+      "path": "docs/artifacts/phase-01/core/core-ast.accepted.json"
+    },
+    "macro_trace": {
+      "kind": "macro-expansion-trace",
+      "path": "docs/artifacts/phase-01/macro/macro-expansion-trace.accepted.json"
+    },
+    "namespace": {
+      "kind": "module-artifact",
+      "path": "docs/artifacts/phase-01/namespace/module.accepted-server.json"
+    },
+    "reader": {
+      "kind": "syntax-object-stream",
+      "path": "docs/artifacts/phase-01/reader/syntax-object-stream.accepted-hosted-hello.json"
+    },
+    "typed_core": {
+      "kind": "typed-effected-core-artifact",
+      "path": "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json"
+    }
+  },
+  "providers": [
+    {
+      "build_effects": [
+        ":build/read-file",
+        ":compiler/read-ir"
+      ],
+      "cache_inputs": [
+        "source",
+        "provider",
+        "profile",
+        "target",
+        "grant",
+        "compiler-version"
+      ],
+      "generated_origin_chain": [
+        "gravity.core/when:fixture-1"
+      ],
+      "generated_validation": [
+        "macro-trace",
+        "core-ast",
+        "typed-core"
+      ],
+      "governing_doc": "L16",
+      "grants": [
+        {
+          "effect": ":build/read-file",
+          "grant_id": "grant.macro.templates",
+          "provider": "gravity.build/hermetic-inputs",
+          "replayable": true
+        },
+        {
+          "effect": ":compiler/read-ir",
+          "grant_id": "grant.macro.ir-read",
+          "provider": "gravity.compiler/ir-readonly",
+          "replayable": true
+        }
+      ],
+      "id": "custom.macros/typed-expander",
+      "implements": [
+        ":macro/expand",
+        ":macro/hygiene",
+        ":macro/provenance"
+      ],
+      "kind": ":macro-system",
+      "phase_model": [
+        "read",
+        "namespace",
+        "load",
+        "invoke",
+        "validate-generated",
+        "re-expand",
+        "typed-core"
+      ],
+      "profiles": [
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "reference_equivalence": {
+        "corpus": "L4",
+        "result": ":equivalent"
+      },
+      "status": "accepted",
+      "syntax_object_guarantees": [
+        "source-span",
+        "metadata",
+        "hygiene",
+        "generated-origin-chain"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "capability_preservation": true,
+      "effect_preservation": true,
+      "exported_facts": [
+        "ownership",
+        "linear-resource",
+        "dynamic-boundary-records"
+      ],
+      "fact_schema": ":gravity.types/facts-v1",
+      "governing_doc": "L17",
+      "gradual": true,
+      "id": "research.types/refinement",
+      "kind": ":type-system",
+      "profiles": [
+        ":hosted",
+        ":native"
+      ],
+      "soundness_claim": ":conservative-extension",
+      "soundness_evidence": [
+        "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json"
+      ],
+      "status": "accepted",
+      "typed_core_artifact": "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json",
+      "version": "0.1.0"
+    },
+    {
+      "allocation": {
+        "bounded": true,
+        "hidden": false
+      },
+      "governing_doc": "L18",
+      "id": "custom.memory/arena",
+      "kind": ":memory-system",
+      "profiles": [
+        ":native",
+        ":firmware"
+      ],
+      "safe_outcomes": [
+        ":proven-safe",
+        ":runtime-checked",
+        ":rejected",
+        ":unsafe-island"
+      ],
+      "status": "accepted",
+      "unsafe_wrappers": [
+        {
+          "evidence": [
+            "arena-bounds-check",
+            "linear-release-test"
+          ],
+          "id": "arena/read-checked",
+          "invariants": [
+            ":in-bounds",
+            ":initialized",
+            ":lifetime-valid"
+          ]
+        }
+      ],
+      "version": "0.2.0"
+    }
+  ]
+}

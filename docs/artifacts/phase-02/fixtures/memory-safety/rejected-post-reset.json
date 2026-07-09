@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/3/arena/use_after_reset": true
+  }
+}

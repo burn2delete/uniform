@@ -1,0 +1,13 @@
+(ns core.app.runtime-managed-manifest
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:runtime {:compiled-gate
+                        {:managed-runtimes
+                         [{:family :managed
+                           :host-runtime :clojure-jvm}]}}}))
+
+(defn main []
+  (println "bad runtime managed manifest"))

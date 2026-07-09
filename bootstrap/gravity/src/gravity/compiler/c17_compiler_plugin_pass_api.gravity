@@ -1,0 +1,567 @@
+; Stage1 Gravity-owned C17 compiler plugin and pass API source-model bridge.
+(ns gravity.compiler.c17-compiler-plugin-pass-api
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c17-plugin-manifest-contract
+             c17-api-compatibility-contract
+             c17-compiler-capability-contract
+             c17-pass-contract
+             c17-sandbox-contract
+             c17-build-effect-contract
+             c17-trust-contract
+             c17-domain-registration-contract
+             c17-facet-registration-contract
+             c17-output-verification-contract
+             c17-provenance-contract
+             c17-plugin-diagnostic-catalog
+             build-c17-plugin-manifest
+             build-c17-pass-registration
+             build-c17-sandbox-grant
+             build-c17-plugin-execution-trace
+             verify-c17-compiler-plugin-pass-api])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :compiler-plugin-pass-api
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :bridge {:kind :source-model
+                        :production-execution? false
+                        :central-integration :pending}
+               :documents ["C17" "C1" "C12" "C13" "C15" "C16"
+                           "C18" "L12" "L14" "L15" "D0" "D1"
+                           "D3" "D6" "D8" "D9" "P1" "P3"
+                           "PKG3" "PKG6" "PKG7" "PKG8" "PKG10"
+                           "PKG12" "BOOT1" "BOOT2" "BOOT3" "BOOT4"
+                           "BOOT5" "BOOT6" "BOOT7" "BOOT8" "TEST2"
+                           "TEST10" "TEST13"]
+               :governing-document-ids ["C17" "C1" "C12" "C13"
+                                        "C15" "C16" "C18" "L12"
+                                        "L14" "L15" "D1" "D3"
+                                        "D8" "D9" "BOOT1" "BOOT3"
+                                        "BOOT8"]
+               :implements [:plugin-manifest-contract
+                             :api-compatibility-contract
+                             :compiler-capability-scopes
+                             :pass-contract-registration
+                             :sandbox-policy-contract
+                             :build-effect-grant-contract
+                             :trust-and-signature-contract
+                             :domain-ir-registration-boundary
+                             :facet-registration-boundary
+                             :plugin-output-verification
+                             :plugin-execution-trace
+                             :plugin-cache-key-inputs
+                             :plugin-diagnostic-catalog
+                             :self-hosting-provenance-metadata]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :pass-contracts :api-version-facts
+                            :compiler-capability-scopes
+                            :build-effect-grants
+                            :trust-policy-records
+                            :sandbox-policy-records
+                            :domain-ir-anchors
+                            :facet-registration-records
+                            :plugin-output-verifier-reports
+                            :execution-traces
+                            :cache-key-inputs
+                            :self-hosting-metadata}
+               :authority {:effects #{}
+                           :capabilities #{}
+                           :ambient-authority :denied}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c17-plugin-contract-subset
+                                    :clojure-c17-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c17-manifest.gravity"
+                              "compiler-c17-api.gravity"
+                              "compiler-c17-capability.gravity"
+                              "compiler-c17-build-effect.gravity"
+                              "compiler-c17-sandbox.gravity"
+                              "compiler-c17-pass-contract.gravity"
+                              "compiler-c17-output.gravity"
+                              "compiler-c17-domain.gravity"
+                              "compiler-c17-facet.gravity"
+                              "compiler-c17-trust.gravity"]}}}))
+
+(def c17-plugin-manifest-contract
+  {:artifact :gravity/c17-plugin-manifest-contract
+   :manifest-artifact :gravity/compiler-plugin
+   :required-fields [:artifact :plugin :package
+                     :api-version :compiler-compatibility
+                     :trust :profile :build-effects
+                     :capabilities :capability-scopes
+                     :passes :domains :facets
+                     :emits :conformance :provenance]
+   :package-fields [:name :version :source-hash
+                    :signatures :dependency-graph]
+   :identity-fields [:plugin :package :api-version
+                     :manifest-hash :source-hash]
+   :profile :meta
+   :load-before [:plugin-code]
+   :rules [:manifest-loaded-before-plugin-code
+           :api-compatibility-checked-before-load
+           :policy-version-trust-and-capability-checked
+           :build-effects-declared-before-evaluation
+           :package-identity-does-not-imply-authority
+           :plugin-output-routes-through-normal-verifiers]
+   :forbidden [:implicit-plugin-authority
+               :unversioned-plugin-api
+               :hidden-compiler-state-mutation
+               :ambient-filesystem-network-process-or-environment-access
+               :unsafe-behavior-without-artifacts
+               :output-bypassing-verifier]})
+
+(def c17-api-compatibility-contract
+  {:artifact :gravity/c17-api-compatibility-contract
+   :required-fields [:plugin :package :api-version
+                     :compiler-api-version
+                     :compiler-compatibility
+                     :compatibility-result
+                     :diagnostics]
+   :compatibility-fields [:min :max-exclusive
+                          :declared-features
+                          :required-contracts
+                          :deprecated-contracts]
+   :result-values [:accepted :rejected :requires-migration]
+   :rules [:api-version-stable
+           :compiler-range-checked-before-loading
+           :feature-negotiation-recorded
+           :incompatible-api-emits-c17-api
+           :compatibility-report-feeds-cache-key]
+   :forbidden [:load-before-compatibility-check
+               :wording-derived-api-identity
+               :host-runtime-api-as-compiler-contract
+               :silent-compatibility-downgrade]})
+
+(def c17-compiler-capability-contract
+  {:artifact :gravity/c17-compiler-capability-contract
+   :standard-capability :compiler/ir-transform
+   :standard-scopes [:read-syntax
+                    :write-syntax
+                    :read-typed-core
+                    :write-typed-core
+                    :read-mir
+                    :write-mir
+                    :read-domain-ir
+                    :write-domain-ir
+                    :register-pass
+                    :register-facet
+                    :register-domain-ir
+                    :request-proof
+                    :provide-proof
+                    :emit-diagnostics
+                    :emit-artifacts
+                    :query-compiler-configuration]
+   :scope-axes [:artifact-kind :namespace
+                :pass-phase :package-policy
+                :profile :target :source-root]
+   :grant-fields [:capability :scopes :granted-by
+                  :package-policy :profile :target
+                  :artifact-kinds :expires :provenance]
+   :rules [:read-scope-does-not-imply-write-scope
+           :register-scope-required-for-new-pass-domain-or-facet
+           :proof-scope-required-for-proof-request-or-provider
+           :diagnostic-scope-required-for-plugin-diagnostic-emission
+           :capability-grants-separate-from-effects
+           :excessive-capability-request-rejected]
+   :forbidden [:ambient-compiler-object
+               :package-name-as-capability
+               :read-mir-implying-write-mir
+               :effect-name-treated-as-authority
+               :unscoped-compiler-capability]})
+
+(def c17-pass-contract
+  {:artifact :gravity/c17-pass-contract
+   :required-fields [:pass-id :plugin :version
+                     :input :output :requires
+                     :preserves :invalidates :regenerates
+                     :proof-obligations :emits
+                     :capabilities :profile-constraints
+                     :sandbox-policy :diagnostics]
+   :context-fields [:grants :read-only-facts
+                    :write-authority :compiler-api-version
+                    :profile :target :artifact-store]
+   :rules [:same-contract-fields-as-built-in-passes
+           :context-exposes-only-granted-capabilities
+           :write-authority-is-explicit
+           :preserved-invalidated-and-regenerated-facts-declared
+           :proof-obligations-artifacted
+           :post-output-verifier-required]
+   :forbidden [:pass-without-contract
+               :hidden-compiler-state-mutation
+               :implicit-write-authority
+               :fact-drop-without-invalidation
+               :diagnostic-free-rejection
+               :unsafe-transform-without-audit]})
+
+(def c17-sandbox-contract
+  {:artifact :gravity/c17-sandbox-contract
+   :restricted-authority [:filesystem
+                         :network
+                         :process
+                         :environment
+                         :compiler-ir
+                         :model-call
+                         :tool-call
+                         :artifact-write
+                         :registry-access
+                         :clock
+                         :random]
+   :sandbox-fields [:plugin :package :trust
+                    :grants :build-effects
+                    :capability-scopes
+                    :artifact-access
+                    :diagnostic-policy
+                    :replay-record]
+   :execution-results [:accepted-output
+                       :rejected-by-policy
+                       :sandbox-violation
+                       :requires-human-review]
+   :rules [:sandboxed-plugin-receives-only-declared-artifacts
+           :build-effects-denied-unless-granted
+           :artifact-writes-limited-to-declared-outputs
+           :tool-model-and-shell-access-denied-by-default
+           :sandbox-violations-emit-c17-sandbox
+           :deterministic-transformations-are-cacheable]
+   :forbidden [:ambient-filesystem-read
+               :ambient-network-access
+               :ambient-process-spawn
+               :environment-probe-without-build-effect
+               :compiler-private-state-access
+               :unrecorded-nondeterminism]})
+
+(def c17-build-effect-contract
+  {:artifact :gravity/c17-build-effect-contract
+   :build-effect-kinds [:filesystem-read
+                       :filesystem-write
+                       :environment-read
+                       :network-fetch
+                       :process-spawn
+                       :registry-query
+                       :model-call
+                       :tool-call
+                       :clock-read
+                       :random-read]
+   :grant-fields [:effect :scope :granted-by
+                  :hermetic-policy :replay-record
+                  :cache-key-input :diagnostics]
+   :hermetic-denials [:environment-read
+                      :network-fetch
+                      :process-spawn
+                      :model-call
+                      :tool-call
+                      :undeclared-filesystem-read]
+   :rules [:build-effects-are-not-runtime-effects
+           :effect-presence-does-not-grant-capability
+           :hermetic-mode-denies-ungranted-build-effect
+           :replay-record-required-for-nondeterministic-build-effect
+           :build-effect-grants-participate-in-cache-keys]
+   :forbidden [:implicit-build-script-authority
+               :dependency-install-side-effect
+               :environment-read-by-default
+               :network-fetch-by-package-identity
+               :unreplayable-build-nondeterminism]})
+
+(def c17-trust-contract
+  {:artifact :gravity/c17-trust-contract
+   :trust-levels [:built-in
+                 :trusted-package
+                 :sandboxed
+                 :audit-required
+                 :rejected]
+   :trust-fields [:plugin :package :version
+                  :signatures :policy-decision
+                  :source-provenance :dependency-provenance
+                  :audit-record :human-review
+                  :revocation-status]
+   :rules [:trust-checked-before-loading
+           :trusted-package-requires-policy-and-signature
+           :sandboxed-is-default-for-untrusted-package
+           :audit-required-needs-human-or-governance-approval
+           :rejected-trust-blocks-load
+           :revoked-input-invalidates-plugin-trust]
+   :forbidden [:package-identity-alone-as-trust
+               :unsigned-trusted-package
+               :audit-required-without-review-record
+               :trust-upgrade-during-execution
+               :revoked-signature-accepted]})
+
+(def c17-domain-registration-contract
+  {:artifact :gravity/c17-domain-registration-contract
+   :required-fields [:plugin :domain :owner-doc
+                     :schema :verifier
+                     :supported-profiles
+                     :effects :capabilities
+                     :lowering-paths
+                     :semantic-anchor
+                     :diagnostics :conformance]
+   :registration-results [:accepted :rejected :requires-human-review]
+   :rules [:domain-registration-routes-through-c12
+           :schema-required
+           :verifier-required-before-lowering
+           :semantic-anchor-to-typed-core-or-mir-required
+           :effects-and-capabilities-declared
+           :opaque-payloads-rejected]
+   :forbidden [:domain-ir-without-anchor
+               :opaque-domain-payload
+               :backend-only-domain-registration
+               :plugin-domain-without-owner-doc
+               :domain-lowering-without-verifier]})
+
+(def c17-facet-registration-contract
+  {:artifact :gravity/c17-facet-registration-contract
+   :required-fields [:plugin :facet :owner-doc
+                     :schema :verifier
+                     :supported-profiles
+                     :effects :capabilities
+                     :lowering-paths
+                     :diagnostics :conformance]
+   :registration-results [:accepted :rejected :requires-human-review]
+   :rules [:facet-registration-routes-through-l14
+           :facet-schema-required
+           :facet-verifier-required
+           :profile-legality-declared
+           :effect-and-capability-impact-declared
+           :conformance-fixtures-required]
+   :forbidden [:facet-without-profile-contract
+               :facet-granting-ambient-authority
+               :opaque-facet-payload
+               :facet-lowering-without-diagnostics
+               :facet-registration-without-owner-doc]})
+
+(def c17-output-verification-contract
+  {:artifact :gravity/c17-output-verification-contract
+   :output-kinds [:transformed-syntax
+                 :typed-core
+                 :gravity-mir
+                 :optimized-mir
+                 :domain-ir
+                 :facet-registration
+                 :diagnostic-stream
+                 :proof-request
+                 :proof-certificate
+                 :target-helper-artifact]
+   :required-fields [:plugin :pass :input :output
+                     :declared-output-kind
+                     :verifier :verifier-result
+                     :diagnostics :proofs
+                     :preserved-facts
+                     :invalidated-facts
+                     :provenance]
+   :verifier-results [:passed :failed :rejected-before-execution]
+   :rules [:plugin-output-matches-declared-kind
+           :declared-output-verifier-runs
+           :failed-output-emits-c17-output
+           :normal-compiler-artifact-rules-apply
+           :generated-effects-capabilities-and-unsafe-are-rechecked
+           :output-provenance-feeds-self-hosting-comparison]
+   :forbidden [:output-bypassing-verifier
+               :target-artifact-from-unchecked-output
+               :unsafe-generated-code-without-audit
+               :diagnostic-stream-without-c15-shape
+               :proof-certificate-without-checker]})
+
+(def c17-provenance-contract
+  {:artifact :gravity/c17-provenance-contract
+   :execution-trace-artifact :gravity/plugin-execution
+   :trace-fields [:plugin :pass :input :output
+                  :grants :grant-hash
+                  :build-effects
+                  :decisions :diagnostics
+                  :verifier-result
+                  :replay-record
+                  :cache-key :provenance]
+   :cache-key-inputs [:plugin-package
+                     :plugin-version
+                     :manifest-hash
+                     :grants
+                     :dependencies
+                     :compiler-api-version
+                     :build-effects
+                     :replay-records
+                     :input-artifacts]
+   :bootstrap-fields [:compiled-by :verified-by
+                     :source-hash :compiler-hash
+                     :stage :equivalence-report]
+   :rules [:execution-trace-participates-in-incremental-cache
+           :cache-key-includes-grants-and-replay-records
+           :self-hosting-comparison-can-replay-plugin-boundary
+           :artifact-provenance-links-plugin-input-and-output
+           :diagnostics-retain-plugin-package-and-pass-identity]
+   :forbidden [:execution-without-trace
+               :cache-key-missing-grant-hash
+               :provenance-without-compiler-lineage
+               :replay-by-reexecuting-nondeterminism
+               :output-without-input-edge]})
+
+(def c17-plugin-diagnostic-catalog
+  {:diagnostics ["C17-MANIFEST"
+                 "C17-API"
+                 "C17-CAPABILITY"
+                 "C17-BUILD-EFFECT"
+                 "C17-SANDBOX"
+                 "C17-PASS-CONTRACT"
+                 "C17-OUTPUT"
+                 "C17-DOMAIN"
+                 "C17-FACET"
+                 "C17-TRUST"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :plugin-id :package-id
+                              :version :pass-id
+                              :manifest-span
+                              :manifest-entry
+                              :requested-capability
+                              :requested-build-effect
+                              :trust-level
+                              :compiler-api-version
+                              :source-or-artifact-id
+                              :profile :target
+                              :remediation]
+   :rule-to-message-key {:C17-MANIFEST :plugin.malformed-manifest
+                         :C17-API :plugin.incompatible-api
+                         :C17-CAPABILITY :plugin.capability-denied
+                         :C17-BUILD-EFFECT :plugin.build-effect-denied
+                         :C17-SANDBOX :plugin.sandbox-violation
+                         :C17-PASS-CONTRACT :plugin.invalid-pass-contract
+                         :C17-OUTPUT :plugin.output-verifier-failed
+                         :C17-DOMAIN :plugin.invalid-domain-registration
+                         :C17-FACET :plugin.invalid-facet-registration
+                         :C17-TRUST :plugin.trust-rejected}
+   :stops [:plugin-load
+           :pass-registration
+           :pass-execution
+           :domain-ir-lowering
+           :facet-activation
+           :target-lowering
+           :artifact-emission
+           :package-release
+           :self-hosting-comparison]
+   :must-not-depend-on [:localized-rendering-text
+                        :package-identity-alone
+                        :host-exception-text
+                        :compiler-private-state
+                        :unordered-map-iteration]})
+
+(defn build-c17-plugin-manifest
+  [plugin package api-version compiler-compatibility trust profile build-effects capabilities capability-scopes passes domains facets emits conformance provenance]
+  (quote {:artifact :gravity/compiler-plugin
+          :plugin plugin
+          :package package
+          :api-version api-version
+          :compiler-compatibility compiler-compatibility
+          :trust trust
+          :profile profile
+          :build-effects build-effects
+          :capabilities capabilities
+          :capability-scopes capability-scopes
+          :passes passes
+          :domains domains
+          :facets facets
+          :emits emits
+          :conformance conformance
+          :provenance provenance
+          :contract c17-plugin-manifest-contract}))
+
+(defn build-c17-pass-registration
+  [plugin pass-id version input output requires preserves invalidates regenerates proof-obligations emits capabilities profiles sandbox-policy diagnostics]
+  (quote {:artifact :gravity/c17-pass-registration
+          :plugin plugin
+          :pass-id pass-id
+          :version version
+          :input input
+          :output output
+          :requires requires
+          :preserves preserves
+          :invalidates invalidates
+          :regenerates regenerates
+          :proof-obligations proof-obligations
+          :emits emits
+          :capabilities capabilities
+          :profile-constraints profiles
+          :sandbox-policy sandbox-policy
+          :diagnostics diagnostics
+          :contract c17-pass-contract}))
+
+(defn build-c17-sandbox-grant
+  [plugin package trust grants build-effects capability-scopes artifact-access replay-record]
+  (quote {:artifact :gravity/c17-sandbox-grant
+          :plugin plugin
+          :package package
+          :trust trust
+          :grants grants
+          :build-effects build-effects
+          :capability-scopes capability-scopes
+          :artifact-access artifact-access
+          :replay-record replay-record
+          :contract c17-sandbox-contract}))
+
+(defn build-c17-plugin-execution-trace
+  [plugin pass input output grants build-effects decisions diagnostics verifier-result replay-record provenance]
+  (quote {:artifact :gravity/plugin-execution
+          :plugin plugin
+          :pass pass
+          :input input
+          :output output
+          :grants grants
+          :grant-hash [:stable-hash grants]
+          :build-effects build-effects
+          :decisions decisions
+          :diagnostics diagnostics
+          :verifier-result verifier-result
+          :replay-record replay-record
+          :provenance provenance
+          :contract c17-provenance-contract}))
+
+(defn verify-c17-compiler-plugin-pass-api [plugin-api-record]
+  (quote {:status :stage1-source-owned
+          :scope :source-model-bridge
+          :production-execution? false
+          :plugin-api-record plugin-api-record
+          :checks [:plugin-manifest-fields-present
+                   :api-compatibility-checked-before-load
+                   :compiler-capabilities-scoped
+                   :build-effects-granted-or-denied
+                   :trust-policy-checked-before-load
+                   :sandbox-denies-ambient-authority
+                   :pass-contract-fields-complete
+                   :pass-context-limited-to-granted-capabilities
+                   :domain-registration-routes-through-c12
+                   :facet-registration-routes-through-l14
+                   :plugin-output-verifier-runs
+                   :diagnostics-follow-c15-shape
+                   :execution-trace-recorded
+                   :cache-key-includes-manifest-grants-dependencies-and-replay
+                   :bootstrap-provenance-recorded
+                   :self-hosting-comparison-boundary-explicit]
+          :diagnostics c17-plugin-diagnostic-catalog
+          :does-not-claim [:production-plugin-loading
+                           :production-pass-execution
+                           :runtime-sandbox-implementation
+                           :central-whitelist-integration
+                           :roadmap-completion]
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :pass-contracts
+                      :api-version-facts
+                      :compiler-capability-scopes
+                      :build-effect-grants
+                      :trust-policy-records
+                      :sandbox-policy-records
+                      :domain-ir-anchors
+                      :facet-registration-records
+                      :plugin-output-verifier-reports
+                      :execution-traces
+                      :cache-key-inputs
+                      :self-hosting-metadata]}))

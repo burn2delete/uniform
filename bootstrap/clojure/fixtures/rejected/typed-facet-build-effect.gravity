@@ -1,0 +1,9 @@
+(ns facet.build-effect
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (facet/build-effect :gravity.facet.schema))

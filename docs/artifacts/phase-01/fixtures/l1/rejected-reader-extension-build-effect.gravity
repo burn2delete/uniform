@@ -1,0 +1,5 @@
+(ns l1.extension.bad
+  (:profile :hosted))
+
+(def generated
+  #schema "schema.graphql")

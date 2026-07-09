@@ -1,0 +1,6 @@
+; Rejected P09 DOM6 fixture.
+(ns domain.dom6-taint (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom6-taint}}}))
+(defn main [] :- I64 1)

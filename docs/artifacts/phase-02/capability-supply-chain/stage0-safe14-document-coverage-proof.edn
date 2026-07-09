@@ -1,0 +1,29 @@
+{:task-id :P02-D043
+ :document "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/capability-supply-chain.gravity"
+ :artifact-kind :gravity/stage0-capability-supply-chain-safety-artifact
+ :document-coverage {:package-safety-manifests 1
+                     :lockfile-records 1
+                     :build-effect-summaries 1
+                     :runtime-capability-summaries 1
+                     :unsafe-island-summaries 1
+                     :native-dependency-records 1
+                     :generated-artifact-provenance 1
+                     :signature-attestation-records 1
+                     :transitive-authority-diffs 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE14-MANIFEST"
+                        "SAFE14-BUILD-EFFECT"
+                        "SAFE14-RUNTIME-CAPABILITY"
+                        "SAFE14-LOCKFILE"
+                        "SAFE14-UNSAFE-SUMMARY"
+                        "SAFE14-NATIVE-DEP"
+                        "SAFE14-GENERATED"
+                        "SAFE14-SIGNATURE"
+                        "SAFE14-AUTHORITY-DIFF"
+                        "SAFE14-POSTINSTALL"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE14 accepted records and 10 rejected diagnostics passed"}]}

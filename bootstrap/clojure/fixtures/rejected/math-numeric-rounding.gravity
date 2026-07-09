@@ -1,0 +1,14 @@
+(ns math.numeric-rounding
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:conversion-rules
+                      [{:rule-id :float-no-rounding
+                        :profile :native
+                        :target :llvm-x86-64-linux
+                        :source-family :float
+                        :target-family :float
+                        :conversion-mode :explicitly-rounded}]}}}))

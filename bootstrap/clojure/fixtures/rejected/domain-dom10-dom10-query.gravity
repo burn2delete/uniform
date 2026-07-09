@@ -1,0 +1,6 @@
+; Rejected P09 DOM10 fixture.
+(ns domain.dom10-query (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom10-query}}}))
+(defn main [] :- I64 1)

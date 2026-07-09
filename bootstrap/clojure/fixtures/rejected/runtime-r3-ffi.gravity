@@ -1,0 +1,4 @@
+(ns runtime.r3-ffi
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:runtime {:minimal-native {:fail :r3-ffi}}}))

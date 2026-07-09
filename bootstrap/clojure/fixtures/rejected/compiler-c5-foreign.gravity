@@ -1,0 +1,9 @@
+(ns compiler.c5.foreign
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c5-resolution {:fail :foreign}}}))
+
+(def value 1)

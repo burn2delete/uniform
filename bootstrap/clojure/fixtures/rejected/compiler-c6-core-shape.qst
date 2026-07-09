@@ -1,0 +1,9 @@
+(ns compiler.c6.core-shape
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c6-lowering {:fail :core-shape}}}))
+
+(def value 1)

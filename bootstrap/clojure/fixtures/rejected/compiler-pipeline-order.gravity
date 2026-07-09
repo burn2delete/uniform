@@ -1,0 +1,9 @@
+(ns compiler.pipeline-order
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:passes {:stage-order [:read-source
+                                                :build-syntax
+                                                :lower-target]}}}))

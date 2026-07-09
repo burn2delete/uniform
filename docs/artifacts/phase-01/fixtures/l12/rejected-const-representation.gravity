@@ -1,0 +1,6 @@
+(ns bad.const
+  (:profile :hosted)
+  (:target :native))
+
+(defconst process-handle
+  (compile-time (unstable/handle "fd-1")))

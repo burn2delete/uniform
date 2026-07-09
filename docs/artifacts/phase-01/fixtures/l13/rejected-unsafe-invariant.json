@@ -1,0 +1,48 @@
+{
+  "call_checks": [],
+  "compatibility_records": [],
+  "kind": "standard-library-contract-set",
+  "namespaces": [
+    {
+      "allocation": {
+        ":native": ":region-or-managed"
+      },
+      "apis": [
+        {
+          "allocation": {
+            ":native": ":none"
+          },
+          "blocking": false,
+          "capabilities": [],
+          "classification": ":unsafe-wrapper",
+          "effects": [],
+          "failure_modes": [
+            "Result"
+          ],
+          "nondeterminism": ":none",
+          "panic": false,
+          "stability": ":stable",
+          "symbol": "with-borrowed-slice",
+          "type": "OwnedBuffer, Range -> Result"
+        }
+      ],
+      "capabilities": [],
+      "effects": [],
+      "examples": [
+        {
+          "compiles": true,
+          "profile": ":native",
+          "source": "(memory/with-borrowed-slice buffer range)"
+        }
+      ],
+      "layer": 2,
+      "name": "gravity.memory",
+      "profiles": [
+        ":native"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    }
+  ],
+  "unsafe_audits": []
+}

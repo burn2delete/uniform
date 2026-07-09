@@ -1,0 +1,33 @@
+{:artifact :gravity/stage0-r2-no-runtime-document-proof
+ :task "P08-D113"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r2-document bootstrap/clojure/fixtures/accepted/runtime-selection-no-runtime.gravity"
+ :artifact-kind :gravity/stage0-r2-no-runtime-document-artifact
+ :artifact-id "sha256:41905da48d6c9373ec5f9594d411c16ffc4dfc971c2b6846e11cf1351d85c99d"
+ :input-artifact "sha256:7242d64adcdea1a655fe0f56a318d1d48f35ec49dd2813e48a31a7b7802c5cc8"
+ :input-artifact-kind :gravity/stage0-runtime-selection-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-selection-no-runtime.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r2-*.gravity"]
+ :required-diagnostic-ids
+ ["R2-HIDDEN-SERVICE" "R2-STARTUP" "R2-MEMORY" "R2-DISPATCH"
+  "R2-FAILURE" "R2-CAPABILITY" "R2-PROOF" "R2-MANIFEST"]
+ :capability-based-proof
+ {:runtime-selection-input-verified? true
+  :runtime-none-manifest-covered? true
+  :startup-section-memory-covered? true
+  :hidden-services-rejected? true
+  :failure-policy-covered? true
+  :target-authority-covered? true
+  :proof-evidence-covered? true
+  :generated-support-provenance-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 8
+  :test-command "clojure -M:test"
+  :test-result "98 tests, 6066 assertions, 0 failures, 0 errors, 1328 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R2 no-runtime execution model document through the runtime-selection no-runtime manifest. It does not claim external firmware boot, hardware simulation, native object execution, or complete Phase 08 document coverage."}

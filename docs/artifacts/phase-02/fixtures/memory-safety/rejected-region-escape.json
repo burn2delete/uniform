@@ -1,0 +1,11 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/3/region/escapes": [
+      {
+        "path": ":return",
+        "destination": "caller"
+      }
+    ]
+  }
+}

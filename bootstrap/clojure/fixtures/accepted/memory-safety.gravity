@@ -1,0 +1,149 @@
+(ns safety.memory
+  (:profile :native)
+  (:target :jvm)
+  (:exports [memory-op runtime-check allocation escape proof backend unsafe-audit
+             ownership borrow lifetime transfer runtime-borrow region arena
+             reset provider cleanup linear terminal exceptional structured
+             generated conformance])
+  (:effects #{:safety/check-failure :memory/raw :resource/close})
+  (:capabilities #{:memory/raw})
+  (:safety :audited-unsafe))
+
+(def memory-op
+  (safe2/memory-operation :load
+                          :buffer/main
+                          :proven-safe
+                          #{:storage-exists :initialized :in-bounds
+                            :lifetime-valid :alias-valid
+                            :allocator-valid :profile-permits}
+                          :ownership-backed
+                          :gravity.memory/stage0))
+
+(def runtime-check
+  (safe2/runtime-check :bounds
+                       :buffer/main
+                       :panic/bounds
+                       :runtime-checked))
+
+(def allocation
+  (safe2/allocation-release :alloc/buffer
+                            :release/buffer
+                            :gravity.memory/stage0
+                            :matched))
+
+(def escape
+  (safe2/escape-analysis :buffer/main
+                         :request-region
+                         :not-escaped
+                         :no-escape))
+
+(def proof
+  (safe2/optimization-proof :bounds
+                            :proof/range-analysis-33
+                            :preserved))
+
+(def backend
+  (safe2/backend-preservation :buffer/main
+                              #{:alignment :bounds :lifetime
+                                :aliasing :allocator :volatile}
+                              :preserved))
+
+(def unsafe-audit
+  (safe2/unsafe-audit :raw/read
+                      :memory.safe/read-u8
+                      "memory-team"
+                      :alignment-and-bounds-checked))
+
+(def ownership
+  (safe3/ownership-graph :buffer/main
+                         :owner/parser
+                         :owned-mutable
+                         :valid))
+
+(def borrow
+  (safe3/borrow-graph :owner/parser
+                      :borrow/header
+                      :immutable
+                      :lexical
+                      :valid))
+
+(def lifetime
+  (safe3/lifetime-map :borrow/header
+                      :lifetime/body
+                      :within-owner
+                      :valid))
+
+(def transfer
+  (safe3/transfer-record :socket/main
+                         :owner/parser
+                         :actor/worker
+                         :moved))
+
+(def runtime-borrow
+  (safe3/runtime-borrow-check :borrow/dynamic
+                              :borrow-state
+                              :panic/borrow))
+
+(def region
+  (safe4/region-lifetime :region/request
+                         :alloc/scratch
+                         :lexical
+                         :no-escape))
+
+(def arena
+  (safe4/arena-generation :arena/parser
+                          1
+                          :active
+                          :valid))
+
+(def reset
+  (safe4/reset-invalidation :arena/parser
+                            1
+                            2
+                            :invalidated))
+
+(def provider
+  (safe4/provider-record :gravity.memory/arena
+                         #{:native :hosted}
+                         :declared-reset
+                         :thread-affine))
+
+(def cleanup
+  (safe4/cleanup-record :region/request
+                        :drop-initialized
+                        :at-most-once
+                        :valid))
+
+(def linear
+  (safe5/linear-flow :file/main
+                     :owned
+                     :closed
+                     :exactly-once))
+
+(def terminal
+  (safe5/terminal-operation :file/main
+                            :resource/close
+                            :closed
+                            :normal))
+
+(def exceptional
+  (safe5/exceptional-cleanup :file/main
+                             :panic
+                             :resource/close
+                             :covered))
+
+(def structured
+  (safe5/structured-lowering :with-open
+                             :file/main
+                             :acquire-body-cleanup
+                             :preserved))
+
+(def generated
+  (safe5/generated-flow :macro/with-open
+                        :file/main
+                        :not-duplicated
+                        :preserved))
+
+(def conformance
+  (safe-memory/conformance #{:SAFE2 :SAFE3 :SAFE4 :SAFE5}
+                           :complete))

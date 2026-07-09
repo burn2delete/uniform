@@ -1,0 +1,4 @@
+(ns backend.b7-dialect
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:backend {:native-lowering {:fail :b7-dialect}}}))

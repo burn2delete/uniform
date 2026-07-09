@@ -1,0 +1,13 @@
+accepted .gravity: gravity stage0 check passed: backend.specialized-lowering
+accepted .qst: gravity stage0 check passed: backend.specialized-lowering
+rejected backend-b9-cdc: .gravity rc=1 .qst rc=1 diag=B9-CDC
+rejected backend-b9-clock: .gravity rc=1 .qst rc=1 diag=B9-CLOCK
+rejected backend-b9-interface: .gravity rc=1 .qst rc=1 diag=B9-INTERFACE
+rejected backend-b9-manifest: .gravity rc=1 .qst rc=1 diag=B9-MANIFEST
+rejected backend-b9-reset: .gravity rc=1 .qst rc=1 diag=B9-RESET
+rejected backend-b9-runtime: .gravity rc=1 .qst rc=1 diag=B9-RUNTIME
+rejected backend-b9-target: .gravity rc=1 .qst rc=1 diag=B9-TARGET
+rejected backend-b9-timing: .gravity rc=1 .qst rc=1 diag=B9-TIMING
+rejected backend-b9-unbounded: .gravity rc=1 .qst rc=1 diag=B9-UNBOUNDED
+rejected backend-b9-width: .gravity rc=1 .qst rc=1 diag=B9-WIDTH
+B9 public check bridge probes passed: accepted=2 rejected-pairs=10

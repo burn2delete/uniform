@@ -1,0 +1,79 @@
+{
+  "kind": "safe13-ai-tool-safety-input",
+  "source_span": {
+    "source": "fixtures/safe13/prompt-injection.gravity",
+    "line": 21,
+    "column": 7
+  },
+  "model_call": {
+    "id": "model-call-tool-router",
+    "effect": ":model/call",
+    "provider_id": "ai-provider-demo",
+    "model_id": "tool-router",
+    "input_schema": "ToolRouteRequest",
+    "output_schema": "ToolRoute",
+    "cost_policy": "bounded-demo",
+    "retention_policy": ":no-training",
+    "replay_policy": ":audit",
+    "trace_id": "trace-safe13-tool-router"
+  },
+  "prompt_provenance": [
+    {
+      "role": "system",
+      "trusted": true,
+      "source": "agent-policy.gravity"
+    },
+    {
+      "role": "user",
+      "trusted": false,
+      "source": "request.body",
+      "controls_privileged_policy": true
+    }
+  ],
+  "tool_call": {
+    "tool_id": "shell.exec",
+    "input_schema_validated": true,
+    "capabilities": [
+      ":tool/invoke",
+      ":shell/exec"
+    ],
+    "granted_capabilities": [
+      ":tool/invoke",
+      ":shell/exec"
+    ],
+    "side_effect_class": ":privileged",
+    "human_review_required": true,
+    "human_review": {
+      "mode": ":required",
+      "reviewer": "human",
+      "decision": ":approved"
+    }
+  },
+  "taint": {
+    "model_output_validated": true,
+    "secret_redaction": true
+  },
+  "generated_code": {
+    "provenance": true,
+    "executed_before_checks": false,
+    "compiler_safety_checks": [
+      "macro",
+      "type",
+      "effect",
+      "capability",
+      "memory",
+      "package",
+      "safety"
+    ]
+  },
+  "replay_records": [
+    {
+      "id": "replay-safe13-tool-router",
+      "policy": ":audit",
+      "status": ":recorded"
+    }
+  ],
+  "agent_memory": {
+    "retention_policy": ":redacted"
+  }
+}

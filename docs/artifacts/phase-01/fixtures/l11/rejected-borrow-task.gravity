@@ -1,0 +1,5 @@
+(ns l11.bad.borrow
+  (:profile :hosted))
+
+(def bad
+  (task/borrow borrowed-value))

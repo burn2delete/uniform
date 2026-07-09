@@ -1,0 +1,16 @@
+{
+  "artifact_id": "phase-00-change-control-rejected-under-evidenced-bootstrap-fixture",
+  "kind": "change-control-request-fixture",
+  "task": "P00-T05",
+  "category": "bootstrap-trust",
+  "change_summary": "Invalid fixture attempts to change bootstrap trust and safety guarantees without required evidence.",
+  "affected_docs": ["D0", "D2", "D8", "D9", "BOOT1"],
+  "affected_surfaces": ["safe-code guarantee"],
+  "required_evidence": ["migration-notes", "affected-document-list"],
+  "review_record": {"state": "incomplete-fixture", "reviewers": ["bootstrap-owner"]},
+  "diagnostics": ["P00-T05-MISSING-EVIDENCE", "D2-SAFETY-DEFERRED", "D9-BOOTSTRAP-EQUIV"],
+  "moves_release_gate": true,
+  "weakens_safety": true,
+  "bootstrap_trust_change": true,
+  "artifact_provenance_change": true
+}

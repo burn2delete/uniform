@@ -1,0 +1,5 @@
+(ns l5.bad.schema
+  (:profile :hosted))
+
+(def bad
+  (schema/weaken User {:id "unchecked"}))

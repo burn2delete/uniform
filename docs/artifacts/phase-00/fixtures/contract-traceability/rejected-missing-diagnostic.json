@@ -1,0 +1,29 @@
+{
+  "artifact_id": "phase-00-contract-traceability-rejected-fixture",
+  "kind": "contract-traceability-index",
+  "task": "P00-T01",
+  "source_documents": [
+    {
+      "id": "D0",
+      "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
+    }
+  ],
+  "release_gates": [
+    {
+      "id": "M0",
+      "name": "Documentation Lock"
+    }
+  ],
+  "traceability": [
+    {
+      "id": "D0-FIXTURE-TRACE-MISSING-DIAGNOSTIC",
+      "source_doc": "D0",
+      "requirement": "Profiles are compile-time contracts and runtime assumptions must be visible before support is claimed.",
+      "downstream_documents": ["P1", "R1"],
+      "diagnostics": [],
+      "artifacts": ["profile-manifest", "runtime-manifest"],
+      "release_gates": ["M0"],
+      "evidence_expectation": "This fixture is intentionally invalid because a trace link without diagnostics cannot enforce the contract."
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+(ns safety.boundary.reject (:profile :hosted) (:target :jvm) (:exports [failure]) (:safety :safe))
+(def failure (safe7/capability :bad))

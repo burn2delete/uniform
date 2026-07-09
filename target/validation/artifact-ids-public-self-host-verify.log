@@ -1,0 +1,4 @@
+docs/artifacts/phase-18/command/p18-t04-executable-command-contract-proof.edn sha256:b25020490b1f9cc3ebc1911f00a2ce2a25f6bf31fa70f94d31e6406fdc9aeb24 :complete
+docs/artifacts/phase-18/command/p18-t04-public-self-host-verify-command-proof.edn sha256:23858f1d7df7e73dcb0ef779c4ce0ba1630a55784f63f066fc89c42cd78f330c :incomplete
+docs/artifacts/phase-18/release/p18-t06-final-release-proof.edn sha256:0e98caa34ae2e9ebb3a255f52811dadd58df3ea41f10e48d8d37fa2f5d52c269 :incomplete
+docs/artifacts/phase-18/jvm-cli/p18-t02-packaged-jvm-cli-proof.edn sha256:412ba3f5d77a5c3d3062d2d7a6403a2ad27b42af1464bde7102b5cbc0191fb04 :complete

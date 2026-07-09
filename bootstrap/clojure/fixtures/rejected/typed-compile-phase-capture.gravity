@@ -1,0 +1,9 @@
+(ns compile.phase-capture
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (compile/runtime-capture runtime-handle))

@@ -1,0 +1,40 @@
+(ns profile.compatibility.matrix
+  (:profile :kernel)
+  (:target :jvm)
+  (:requires [gravity.core :as g :profile :core]
+             [kernel.util :as ku :profile :kernel]
+             [native.collections :as nc
+              :profile :native
+              :edge :facade-required
+              :boundary :facade
+              :facade native.collections/kernel-stack
+              :evidence #{:typed-api :safety-proof :no-gc
+                          :no-hidden-allocation :no-throw}
+              :producer-effects #{}
+              :producer-capabilities #{}
+              :memory {:hidden-allocation :forbidden
+                       :raw-memory :unsafe-only}
+              :runtime {:required false :providers #{}}
+              :provider gravity.providers/native-kernel-stack])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:profile-compatibility
+              {:artifact-boundaries
+               [{:producer-namespace hardware.uart
+                 :producer-profile :hardware
+                 :artifact :uart-hdl
+                 :artifact-kind :hdl
+                 :artifact-schema :rtl-module
+                 :evidence #{:schema :provenance :timing}
+                 :effects #{}
+                 :capabilities #{}}]
+               :standard-library-facades
+               [{:namespace gravity.collections
+                 :facade gravity.collections/kernel-stack
+                 :profile :core
+                 :implementation-profile :native
+                 :evidence #{:typed-api :safety-proof
+                             :no-hidden-allocation}}]}}))
+
+(def compatibility-ok true)

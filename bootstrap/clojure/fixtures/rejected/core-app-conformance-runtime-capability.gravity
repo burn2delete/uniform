@@ -1,0 +1,13 @@
+(ns core.app.conformance-runtime-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:runtime-conformance-reports
+                             [{:artifact-id "runtime-report:bad"
+                               :capability-decision-log []}]}}}))
+
+(defn main []
+  (println "bad conformance runtime capability"))

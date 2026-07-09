@@ -1,0 +1,5 @@
+(ns l1.semantic
+  (:profile :core))
+
+(def bad-later
+  (host/reflect "syntax-valid but semantically illegal in core"))

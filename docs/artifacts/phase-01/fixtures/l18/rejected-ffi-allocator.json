@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/ffi_allocator_records/0/release_provider": "libc/free"
+  }
+}

@@ -1,0 +1,8 @@
+(ns profile.bad.ai-model
+  (:profile :ai)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p10/model))

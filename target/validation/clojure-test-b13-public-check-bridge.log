@@ -1,0 +1,10 @@
+
+Testing gravity.bootstrap-test
+
+FAIL in (b2-document-artifact-preserves-p07-d099-contract) (bootstrap_test.clj:12677)
+expected: (= [(str (fixture "accepted/backend-specialized-lowering.gravity") ":query") (str (fixture "accepted/backend-specialized-lowering.gravity") ":bindings") (str (fixture "accepted/backend-specialized-lowering.gravity") ":migration") (str (fixture "accepted/backend-specialized-lowering.gravity") ":adapter")] (get-in manifest [:source-debug-map :locations]))
+  actual: (not (= ["bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity:query" "bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity:bindings" "bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity:migration" "bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity:adapter"] nil))
+
+FAIL in (b2-document-artifact-preserves-p07-d099-contract) (bootstrap_test.clj:12686)
+expected: (= (str (fixture "accepted/backend-specialized-lowering.gravity") ":query") (get-in manifest [:prepared-binding-manifest :parameters 0 :source-span]))
+  actual: (not (= "bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity:query" nil))

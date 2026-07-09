@@ -1,0 +1,71 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D100
+ :date "2026-06-29"
+ :status :complete
+ :capability :b3-llvm-backend-document-coverage
+ :command "clojure -M:gravity backend-b3-llvm-document bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+ :artifact-kind :gravity/stage0-b3-llvm-backend-document-artifact
+ :artifact-hash "sha256:95a7aa1c57d6f2b15f0f651b8f6c59a0c029106f878ba370d2b631142b855b96"
+ :summary {:diagnostics 10
+           :rejected-designs 5
+           :positive-lowering-criteria 10
+           :llvm-ir-hash "sha256:aac51a9351372d2c7778105ed7feb9905510e76186b472d106d2c9b88be67020"
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b3-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-ub.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-pointer.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-atomic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-pass.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-manifest.gravity"]
+ :diagnostics ["B3-TARGET"
+               "B3-METADATA"
+               "B3-UB"
+               "B3-POINTER"
+               "B3-NUMERIC"
+               "B3-ATOMIC"
+               "B3-RUNTIME"
+               "B3-ABI"
+               "B3-PASS"
+               "B3-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :target-and-data-layout-pinned? true
+                :proof-gated-metadata-covered? true
+                :safe-llvm-undefined-behavior-rejected? true
+                :pointer-ownership-memory-covered? true
+                :numeric-floating-lowering-covered? true
+                :atomic-volatile-ordering-covered? true
+                :runtime-helpers-profile-legal? true
+                :abi-record-covered? true
+                :pass-pipeline-verification-covered? true
+                :source-debug-proof-safety-capability-preserved? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :requires-external-llvm-verifier-proof? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 79 tests containing 4465 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1080}
+              {:command "clojure -M:gravity backend-b3-llvm-document bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:95a7aa1c57d6f2b15f0f651b8f6c59a0c029106f878ba370d2b631142b855b96"}
+              {:command "clang -target x86_64-unknown-linux-gnu -x ir -S -o /tmp/gravity-p07-b3.s /tmp/gravity-p07-b3.ll"
+               :result :passed
+               :llvm-ir-hash "sha256:aac51a9351372d2c7778105ed7feb9905510e76186b472d106d2c9b88be67020"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 9 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D100 for deterministic Clojure stage0 coverage of the B3 LLVM backend design document contract."
+                 "The emitted LLVM IR passes pinned-target clang IR validation, but this does not claim production LLVM optimization, object/library packaging, target execution, sanitizer integration, or full Phase 07 completion."]}

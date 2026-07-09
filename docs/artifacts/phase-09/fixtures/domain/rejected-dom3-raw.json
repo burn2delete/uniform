@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-coverage.json",
+  "delete": [
+    "/domains/DOM3/evidence/raw_memory"
+  ]
+}

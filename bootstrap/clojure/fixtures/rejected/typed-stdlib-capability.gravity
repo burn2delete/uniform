@@ -1,0 +1,9 @@
+(ns stdlib.capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/capability-missing 'gravity.fs/read-text))

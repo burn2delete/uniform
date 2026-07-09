@@ -1,0 +1,9 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "package_operation": {
+      "download_verification_failure": true
+    }
+  }
+}

@@ -1,0 +1,51 @@
+(ns profile.validation.kernel
+  (:profile :kernel)
+  (:target :jvm)
+  (:exports [driver])
+  (:effects #{:memory/raw :memory/mmio :interrupt/register})
+  (:capabilities #{:memory/raw :hardware/mmio :hardware/interrupt})
+  (:safety :safe)
+  (:metadata {:memory {:hidden-allocation false
+                       :allocator :kernel/page-frame
+                       :regions true}
+              :runtime {:required false
+                        :providers #{:scheduler :interrupts :device-map}}
+              :package-allowed-effects #{:memory/raw :memory/mmio
+                                         :interrupt/register}
+              :provider-effect-grants #{:memory/raw :memory/mmio
+                                        :interrupt/register}
+              :deployment-allowed-effects #{:memory/raw :memory/mmio
+                                            :interrupt/register}
+              :package-capabilities #{:memory/raw :hardware/mmio
+                                      :hardware/interrupt}
+              :provider-capability-grants #{:memory/raw :hardware/mmio
+                                            :hardware/interrupt}
+              :deployment-capabilities #{:memory/raw :hardware/mmio
+                                         :hardware/interrupt}
+              :profile-validation
+              {:kernel-capability-manifest {:subsystem :uart
+                                            :capabilities #{:memory/raw
+                                                            :hardware/mmio
+                                                            :hardware/interrupt}}
+               :kernel-memory-map {:regions [:text :rodata :device-mmio]
+                                   :dma {:rx-buffer :owned}}
+               :allocator-policy {:provider :kernel/page-frame
+                                  :hidden-allocation false
+                                  :failure :result}
+               :interrupt-safety-report {:uart-ready {:stack-bytes 256
+                                                      :reentrant false
+                                                      :shared-state :atomic}}
+               :scheduler-atomic-support-report {:blocking :declared
+                                                 :preemption :bounded
+                                                 :atomics #{:acquire :release}}
+               :unsafe-island-audit-report [{:operation :raw-register-write
+                                             :owner :uart-driver
+                                             :status :reviewed}]
+               :driver-abi-manifest {:abi :gravity-kernel-driver-v1
+                                     :device :uart0
+                                     :error-map :status-values}
+               :no-hidden-allocation-proof {:status :proven
+                                            :checked-functions [driver]}}}))
+
+(def driver
+  {:device :uart0})

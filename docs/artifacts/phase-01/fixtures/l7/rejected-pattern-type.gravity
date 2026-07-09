@@ -1,0 +1,7 @@
+(ns l7.bad.type
+  (:profile :hosted))
+
+(def bad
+  (match 1
+    "one" :wrong
+    _ :ok))

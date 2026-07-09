@@ -1,0 +1,13 @@
+(ns core.app.ai-review-payload
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:human-reviews
+                    [{:human-review-id :update-priority-review
+                      :payload-hash-rule :unchecked}]}}}))
+
+(defn main []
+  (println "bad ai review payload"))

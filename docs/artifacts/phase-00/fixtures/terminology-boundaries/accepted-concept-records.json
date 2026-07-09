@@ -1,0 +1,52 @@
+{
+  "artifact_id": "phase-00-terminology-accepted-concept-records",
+  "kind": "terminology-boundary-fixture",
+  "task": "P00-T03",
+  "records": [
+    {
+      "id": "namespace-concept-record",
+      "concept": "namespace",
+      "profile": ":hosted",
+      "target": "jvm",
+      "declared_effects": [":io/write", ":network/http"],
+      "required_capabilities": [":io/stdout", ":http/client"],
+      "runtime": "hosted-jvm",
+      "backend": "jvm-bytecode",
+      "runtime_family": "hosted-jvm",
+      "diagnostics": ["D3-PROFILE-TARGET-CONFLATION"]
+    },
+    {
+      "id": "artifact-concept-record",
+      "concept": "artifact",
+      "kind": "workflow-graph",
+      "schema": "gravity.artifact.workflow.v1",
+      "source_hash": "sha256:fixture-source",
+      "compiler_identity": "gravity-fixture-compiler",
+      "profile": ":distributed",
+      "target": "workflow-graph",
+      "effects": [":network/http"],
+      "capabilities": [":http/client"],
+      "safety_status": ":safe",
+      "provenance": ["source-form", "typed-core", "workflow-ir", "artifact-emission"],
+      "runtime": "workflow-runtime",
+      "backend": "workflow-backend",
+      "runtime_family": "workflow-runtime",
+      "diagnostics": ["D3-ARTIFACT-UNSTRUCTURED"]
+    },
+    {
+      "id": "unsafe-island-record",
+      "concept": "unsafe-island",
+      "profile": ":kernel",
+      "target": "llvm-x86_64-linux",
+      "effects": [":memory/raw"],
+      "capabilities": [":memory/unsafe"],
+      "unsafe_behavior": true,
+      "unsafe_island": "drivers/uart.gravity:42:3",
+      "audit_artifact": "unsafe-island-audit.fixture.json",
+      "runtime": "minimal-native",
+      "backend": "llvm",
+      "runtime_family": "minimal-native",
+      "diagnostics": ["D3-UNSAFE-UNTRACKED"]
+    }
+  ]
+}

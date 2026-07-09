@@ -1,0 +1,55 @@
+{:proof/id :p01-d020-stage0-l10-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D020
+ :governing-docs ["docs/phase-01-core-language/020-l10-memory-model-specification.md"
+                  "docs/phase-01-core-language/015-l5-type-system-specification.md"
+                  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+                  "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+                  "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/memory-model.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/memory-model.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:memory-regime-annotations
+                  :ownership-borrow-facts
+                  :lifetime-region-facts
+                  :initialization-facts
+                  :allocation-effect-records
+                  :linear-resource-table
+                  :unsafe-raw-memory-audit-records
+                  :mmio-capability-records
+                  :allocator-runtime-manifests
+                  :memory-conformance-fixture]
+ :artifact-summary {:module memory.model
+                    :profile :native
+                    :memory-conformance-status :complete
+                    :memory-regime-annotations 17
+                    :ownership-borrow-facts 5
+                    :lifetime-region-facts 2
+                    :initialization-facts 1
+                    :allocation-effect-records 8
+                    :linear-resource-table 1
+                    :unsafe-raw-memory-audit-records 2
+                    :mmio-capability-records 1
+                    :allocator-runtime-manifests 8
+                    :inferred-effects #{:memory/allocate :memory/free
+                                        :memory/raw :memory/mmio
+                                        :resource/open :resource/close}}
+ :covered-memory-families [:allocation-effect :allocator-runtime :arena
+                           :borrow :bounds-check :gc :gpu-device
+                           :host-managed :initialization :linear :mmio
+                           :ownership :raw :region :stack :static]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-memory-hidden-alloc.gravity" "L10-HIDDEN-ALLOC"
+                    "bootstrap/clojure/fixtures/rejected/typed-memory-use-after-move.gravity" "L10-USE-AFTER-MOVE"
+                    "bootstrap/clojure/fixtures/rejected/typed-memory-borrow-escape.gravity" "L10-BORROW-ESCAPE"
+                    "bootstrap/clojure/fixtures/rejected/typed-memory-uninit-read.gravity" "L10-UNINIT-READ"
+                    "bootstrap/clojure/fixtures/rejected/typed-memory-bounds.gravity" "L10-BOUNDS"
+                    "bootstrap/clojure/fixtures/rejected/typed-raw-safe.gravity" "L10-RAW-SAFE"
+                    "bootstrap/clojure/fixtures/rejected/typed-memory-mmio.gravity" "L10-MMIO-CAP"
+                    "bootstrap/clojure/fixtures/rejected/typed-linear-resource.gravity" "L10-LINEAR-RESOURCE"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L10 document task by proving memory regime annotations, ownership and borrow facts, region and arena lifetime facts, initialization facts, allocation records, linear resource records, raw/MMIO audit records, allocator/runtime manifests, complete memory conformance, and stable L10 diagnostics. It does not claim production borrow inference, backend layout selection, device synchronization, optimizer check-elision proofs, runtime allocator implementation, or self-hosting."}

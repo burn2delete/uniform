@@ -1,0 +1,1 @@
+{:command "gravity", :phase "P18-T02", :bootstrap-hosted? true, :packaged-jvm-cli? true, :seedless-release? false, :executable-command-contract? true, :delegates-to "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main", :replaced-by "Phase 18 self-hosted release artifact"}

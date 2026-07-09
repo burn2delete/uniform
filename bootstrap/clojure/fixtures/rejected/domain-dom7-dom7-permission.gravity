@@ -1,0 +1,6 @@
+; Rejected P09 DOM7 fixture.
+(ns domain.dom7-permission (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom7-permission}}}))
+(defn main [] :- I64 1)

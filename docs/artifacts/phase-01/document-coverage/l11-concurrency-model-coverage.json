@@ -1,0 +1,45 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "typed-effected-core-artifact",
+      "coverage": [
+        "structured task facts",
+        "task scope graph",
+        "scheduler capability facts"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity"
+    }
+  ],
+  "document": "L11",
+  "kind": "l11-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L11-DATA-RACE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l11/rejected-data-race.gravity"
+    },
+    {
+      "diagnostic": "L11-BORROW-TASK",
+      "fixture": "docs/artifacts/phase-01/fixtures/l11/rejected-borrow-task.gravity"
+    },
+    {
+      "diagnostic": "L11-TASK-SCOPE",
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/rejected-task-scope.gravity"
+    },
+    {
+      "diagnostic": "L11-SCHEDULER",
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/rejected-scheduler-profile.gravity"
+    },
+    {
+      "diagnostic": "L11-ATOMIC-ORDER",
+      "fixture": "docs/artifacts/phase-01/fixtures/l11/rejected-atomic-order.gravity"
+    },
+    {
+      "diagnostic": "L11-REPLAY-RACE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l11/rejected-replay-race.gravity"
+    },
+    {
+      "diagnostic": "L11-GPU-BARRIER",
+      "fixture": "docs/artifacts/phase-01/fixtures/l11/rejected-gpu-barrier.gravity"
+    }
+  ]
+}

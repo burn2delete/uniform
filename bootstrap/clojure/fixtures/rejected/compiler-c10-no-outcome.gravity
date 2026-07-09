@@ -1,0 +1,9 @@
+(ns compiler.c10.no-outcome
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c10-safety-analysis {:fail :no-outcome}}}))
+
+(def value 1)

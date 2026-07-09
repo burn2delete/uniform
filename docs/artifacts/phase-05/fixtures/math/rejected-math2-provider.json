@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-math-system.json",
+  "set": {
+    "/elementary_registry/selection_decisions/0/selected_status": ":rejected"
+  }
+}

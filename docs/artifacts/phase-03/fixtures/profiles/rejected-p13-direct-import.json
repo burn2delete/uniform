@@ -1,0 +1,14 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/imports/0/consumer": {
+      "namespace": "gravity.core.algebra",
+      "profile": ":core"
+    },
+    "/imports/0/producer": {
+      "namespace": "gravity.native.engine",
+      "profile": ":native"
+    },
+    "/imports/0/edge": ":direct"
+  }
+}

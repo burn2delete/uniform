@@ -1,0 +1,12 @@
+(ns math.rewrite-side-condition
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:rewrite-trace-overrides
+            [{:side-condition-results
+              [{:condition '(not= (cos x) 0)
+                :result :unproved}]}]}}}))

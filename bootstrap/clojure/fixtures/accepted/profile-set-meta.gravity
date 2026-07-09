@@ -1,0 +1,20 @@
+(ns profile.set.meta
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [gravity.compile :as compile :profile :meta])
+  (:exports [schema])
+  (:effects #{:build/read-file})
+  (:capabilities #{:compiler/ir})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :declared-inputs #{:schema/user}
+              :package-allowed-effects #{:build/read-file}
+              :provider-effect-grants #{:build/read-file}
+              :deployment-allowed-effects #{:build/read-file}
+              :package-capabilities #{:compiler/ir}
+              :provider-capability-grants #{:compiler/ir}
+              :deployment-capabilities #{:compiler/ir}
+              :hermetic true}))
+
+(def schema
+  (compile/read-schema :schema/user))

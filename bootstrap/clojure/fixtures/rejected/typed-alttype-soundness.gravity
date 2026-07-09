@@ -1,0 +1,9 @@
+(ns alttype.soundness
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (alttype/soundness :missing-proof))

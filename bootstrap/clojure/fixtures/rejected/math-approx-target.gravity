@@ -1,0 +1,10 @@
+(ns math.approx-target
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:approximation
+           {:certificate-overrides
+            [{:target-satisfied? false}]}}}))

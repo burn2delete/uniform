@@ -1,0 +1,9 @@
+(ns safe1.check-illegal
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (safe1/check-illegal :buffer/read))

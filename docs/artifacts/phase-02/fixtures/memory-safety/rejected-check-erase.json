@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/0/proof_records/0/replaces_check": "different-check"
+  }
+}

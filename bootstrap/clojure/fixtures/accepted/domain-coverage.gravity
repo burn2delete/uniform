@@ -1,0 +1,15 @@
+; P09 fixture covers domain-specific computing coverage across DOM1-DOM21.
+(ns domain.coverage
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:domain/coverage})
+  (:capabilities #{:domain/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {}}}))
+
+(def domain-phase-id 9)
+
+(defn main [] :- I64
+  domain-phase-id)

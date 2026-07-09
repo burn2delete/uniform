@@ -1,0 +1,6 @@
+(ns bad.effect
+  (:profile :hosted)
+  (:capabilities #{:io/stdout}))
+
+(defn main []
+  (println "missing effect"))

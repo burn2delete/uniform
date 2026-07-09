@@ -1,0 +1,107 @@
+{:task-id :P02-T06
+ :documents ["docs/phase-02-safety/041-safe12-macro-safety.md"
+             "docs/phase-02-safety/042-safe13-ai-tool-safety.md"
+             "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
+             "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"]
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe12-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe13-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe15-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe16-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+ :artifact-kind :gravity/stage0-safety-conformance-artifact
+ :capability-proof {:module safety.conformance
+                    :profile :hosted
+                    :safety-mode :safe
+                    :pass :macro-ai-proof-certificate-safety-conformance
+                    :input :typed-effected-core
+                    :output :safety-conformance-report
+                    :conformance-status :complete
+                    :document-statuses {:SAFE12 :complete
+                                        :SAFE13 :complete
+                                        :SAFE15 :complete
+                                        :SAFE16 :complete}
+                    :missing-families []
+                    :safe12-records {:macro-safety-declarations 1
+                                     :generated-origin-chains 1
+                                     :macro-build-effect-records 1
+                                     :generated-unsafe-island-records 1
+                                     :hygiene-capture-records 1
+                                     :taint-capability-propagation-records 1
+                                     :facet-output-records 1
+                                     :alternative-macro-engine-equivalence 1}
+                    :safe13-records {:model-call-traces 1
+                                     :tool-call-traces 1
+                                     :prompt-provenance-records 1
+                                     :tool-schema-validation-records 1
+                                     :human-review-records 1
+                                     :ai-replay-records 1
+                                     :model-output-taint-records 1
+                                     :generated-code-safety-records 1
+                                     :memory-retention-policies 1}
+                    :safe15-records {:safety-proof-records 1
+                                     :safety-certificates 1
+                                     :check-erasure-records 1
+                                     :certificate-trust-records 1
+                                     :certificate-invalidation-records 1
+                                     :imported-certificate-verifications 1
+                                     :proof-provider-records 1
+                                     :unsafe-wrapper-audit-views 1
+                                     :backend-proof-preservation-records 1}
+                    :safe16-records {:fixture-manifests 1
+                                     :expected-outcome-manifests 15
+                                     :diagnostic-match-records 1
+                                     :runtime-check-inspections 1
+                                     :unsafe-audit-inspections 1
+                                     :certificate-inspections 1
+                                     :profile-matrix-reports 1
+                                     :backend-preservation-reports 1
+                                     :machine-readable-conformance-reports 1}
+                    :capability-basis :safe12-safe13-safe15-safe16-conformance-evidence}
+ :rejected-diagnostics ["SAFE12-GENERATED-UNSAFE"
+                        "SAFE12-BUILD-EFFECT"
+                        "SAFE12-CAPABILITY"
+                        "SAFE12-HYGIENE"
+                        "SAFE12-PHASE"
+                        "SAFE12-TAINT"
+                        "SAFE12-PROFILE"
+                        "SAFE12-ORIGIN"
+                        "SAFE12-FACET"
+                        "SAFE12-ENGINE"
+                        "SAFE13-MODEL-EFFECT"
+                        "SAFE13-TOOL-CAPABILITY"
+                        "SAFE13-TOOL-SCHEMA"
+                        "SAFE13-PROMPT-INJECTION"
+                        "SAFE13-HUMAN-REVIEW"
+                        "SAFE13-SECRET"
+                        "SAFE13-GENERATED-CODE"
+                        "SAFE13-REPLAY"
+                        "SAFE13-RETENTION"
+                        "SAFE13-DESTRUCTIVE-TOOL"
+                        "SAFE15-PROOF-MISSING"
+                        "SAFE15-CERT-SCHEMA"
+                        "SAFE15-CERT-TRUST"
+                        "SAFE15-CERT-MISMATCH"
+                        "SAFE15-INVALIDATED"
+                        "SAFE15-CHECK-ERASE"
+                        "SAFE15-PROVIDER"
+                        "SAFE15-MANUAL"
+                        "SAFE15-BACKEND"
+                        "SAFE16-FIXTURE"
+                        "SAFE16-OUTCOME"
+                        "SAFE16-DIAGNOSTIC"
+                        "SAFE16-ARTIFACT"
+                        "SAFE16-PROFILE"
+                        "SAFE16-CERTIFICATE"
+                        "SAFE16-BACKEND"
+                        "SAFE16-REPORT"]
+ :validation [{:command "clojure -M:gravity safety-conformance bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+               :result "emitted :gravity/stage0-safety-conformance-artifact with complete SAFE12, SAFE13, SAFE15, and SAFE16 conformance"}
+              {:command "clojure -M:test"
+               :result "28 tests, 1493 assertions, 337 rejected fixtures"}]
+ :residual-risks ["This is the stage0 Phase 02 safety conformance boundary; production-scale fixture generation, cross-backend certificate exchange, and full self-hosted conformance execution remain later work."]}

@@ -1,0 +1,15 @@
+(ns core.app.conformance-differential-divergence
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:differential-reports
+                             [{:artifact-id "differential-report:bad"
+                               :accepted-divergence
+                               [{:oracle :jvm
+                                 :reason :unexplained}]}]}}}))
+
+(defn main []
+  (println "bad conformance differential divergence"))

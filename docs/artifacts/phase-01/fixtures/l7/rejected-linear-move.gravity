@@ -1,0 +1,7 @@
+(ns l7.bad.linear
+  (:profile :hosted))
+
+(def bad
+  (match resource
+    (MoveLinear handle) handle
+    _ nil))

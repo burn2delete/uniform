@@ -1,0 +1,63 @@
+{:task-id :P02-D030
+ :document "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/safety-outcomes.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe1-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-outcomes.gravity"
+ :artifact-kind :gravity/stage0-safety-artifact
+ :document-coverage {:required-outcomes [:proven-safe
+                                         :runtime-checked
+                                         :rejected
+                                         :unsafe-island]
+                     :covered-outcomes [:proven-safe
+                                        :runtime-checked
+                                        :rejected
+                                        :unsafe-island]
+                     :runtime-check-records 1
+                     :unsafe-island-audit-records 1
+                     :proof-references 1
+                     :generated-code-provenance-records 1
+                     :optimization-check-erasure-justifications 1
+                     :dependency-safety-mode-records 1
+                     :profile-safety-capability-report :present
+                     :safety-certificate-inputs :present
+                     :conformance-status :complete
+                     :missing-families []}
+ :accepted-behavior ["Every safety-sensitive operation in the accepted fixture is classified into exactly one SAFE1 outcome."
+                     "A proven-safe operation requires a proof reference."
+                     "A runtime-checked operation records a condition and defined failure behavior."
+                     "A rejected operation records a diagnostic identity."
+                     "An unsafe island records owner, reason, invariant, review policy, effects, capabilities, and safe wrapper boundary."
+                     "Generated-code provenance and optimization check-erasure proof records survive the safety artifact boundary."
+                     "Dependency safety mode records reject weaker or unaudited dependencies."]
+ :rejected-diagnostics [{:fixture "typed-safe1-no-outcome.gravity"
+                         :diagnostic "SAFE1-NO-OUTCOME"}
+                        {:fixture "typed-safe1-proof-missing.gravity"
+                         :diagnostic "SAFE1-PROOF-MISSING"}
+                        {:fixture "typed-safe1-check-missing.gravity"
+                         :diagnostic "SAFE1-CHECK-MISSING"}
+                        {:fixture "typed-safe1-check-illegal.gravity"
+                         :diagnostic "SAFE1-CHECK-ILLEGAL"}
+                        {:fixture "typed-safe1-unsafe-policy.gravity"
+                         :diagnostic "SAFE1-UNSAFE-POLICY"}
+                        {:fixture "typed-safe1-unsafe-metadata.gravity"
+                         :diagnostic "SAFE1-UNSAFE-METADATA"}
+                        {:fixture "typed-safe1-generated-provenance.gravity"
+                         :diagnostic "SAFE1-GENERATED-PROVENANCE"}
+                        {:fixture "typed-safe1-optimization-proof.gravity"
+                         :diagnostic "SAFE1-OPTIMIZATION-PROOF"}
+                        {:fixture "typed-safe1-dependency-mode.gravity"
+                         :diagnostic "SAFE1-DEPENDENCY-MODE"}]
+ :validation [{:command "clojure -M:gravity safety bootstrap/clojure/fixtures/accepted/safety-outcomes.gravity"
+               :result "emitted :gravity/stage0-safety-artifact covering SAFE1 required outputs"}
+              {:command "clojure -M -e safety-artifact-summary"
+               :result ":gravity/stage0-safety-artifact safety.outcomes :complete 4 1 1"}
+              {:command "clojure -M:test"
+               :result "27 tests, 1351 assertions, 300 rejected fixtures"}]
+ :residual-risks ["SAFE1 document coverage is complete only for the stage0 safety artifact boundary."
+                  "SAFE2 through SAFE16 remain open and must receive their own Clojure-backed capability proofs before their roadmap tasks can be checked."
+                  "This does not claim production safety, backend certification, release conformance, or self-hosting."]}

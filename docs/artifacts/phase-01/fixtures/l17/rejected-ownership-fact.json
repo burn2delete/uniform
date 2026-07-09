@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-type.json",
+  "set": {
+    "/fact_exports/ownership/complete": false
+  }
+}

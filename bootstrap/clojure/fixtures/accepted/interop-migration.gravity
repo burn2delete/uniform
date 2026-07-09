@@ -1,0 +1,164 @@
+(ns interop.migration
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [native-boundary hosted-boundary schema-boundary process-boundary
+             network-boundary metadata generated safe-wrapper type-map
+             ownership errors authority migration parity compatibility
+             drift profile-rejection])
+  (:effects #{:ffi/call})
+  (:capabilities #{:ffi/call})
+  (:safety :audited-unsafe)
+  (:metadata {:provider-policy {:interop-provider 'gravity.ffi/c}}))
+
+(def native-boundary
+  (interop/foreign-declaration :c/strlen
+                               :native-abi
+                               :c
+                               :c
+                               "strlen"
+                               "Fn[CString]->USize"
+                               #{:ffi/call}
+                               #{:ffi/call}
+                               {:arg0 :borrowed}
+                               :unsafe
+                               #{:native :hosted}
+                               #{:jvm}
+                               "1.0.0"))
+
+(def hosted-boundary
+  (interop/foreign-declaration :jvm/string
+                               :managed-host
+                               :jvm
+                               :jvm-method
+                               "java.lang.String"
+                               "String->JvmString"
+                               #{}
+                               #{}
+                               {:value :host-rooted}
+                               :safe
+                               #{:hosted}
+                               #{:jvm}
+                               "17"))
+
+(def schema-boundary
+  (interop/foreign-declaration :graphql/github
+                               :schema
+                               :graphql
+                               :graphql-schema
+                               "schema.graphql"
+                               "GraphQL->GravityTypes"
+                               #{:build/read-file}
+                               #{:schema/read}
+                               {:response :owned}
+                               :safe
+                               #{:hosted :distributed}
+                               #{:jvm}
+                               "2026-06-24"))
+
+(def process-boundary
+  (interop/foreign-declaration :process/git
+                               :process
+                               :posix
+                               :subprocess
+                               "git"
+                               "Args->ExitStatus"
+                               #{:shell/exec}
+                               #{:shell/exec}
+                               {:stdout :owned}
+                               :unsafe
+                               #{:hosted :native}
+                               #{:jvm}
+                               "2.0"))
+
+(def network-boundary
+  (interop/foreign-declaration :http/service
+                               :network
+                               :http
+                               :rest
+                               "https://api.example.test"
+                               "Request->Result[Response,HttpError]"
+                               #{:network/http}
+                               #{:network/client}
+                               {:response :owned}
+                               :safe
+                               #{:hosted :distributed}
+                               #{:jvm}
+                               "v1"))
+
+(def metadata
+  (interop/boundary-metadata :c/strlen
+                             :native-abi
+                             "1.0.0"
+                             'gravity.ffi/c))
+
+(def generated
+  (interop/generated-binding :graphql/github
+                             :graphql
+                             "sha256:schema-v1"
+                             "2026-06-24"
+                             #{:GithubUser :GithubRepository}))
+
+(def safe-wrapper
+  (interop/safe-wrapper-audit :c/strlen
+                              :interop.string/safe-strlen
+                              :strlen
+                              #{:cstring/non-null :cstring/null-terminated}
+                              #{:result/within-buffer}
+                              #{:wrapper-null-check
+                                :terminator-scan-test}))
+
+(def type-map
+  (interop/type-mapping :c/strlen
+                        "String"
+                        "CString"
+                        :gravity-to-foreign
+                        :checked
+                        :result))
+
+(def ownership
+  (interop/ownership-map :c/strlen
+                         {:arg0 :borrowed}
+                         :libc
+                         :none))
+
+(def errors
+  (interop/error-map :http/service
+                     #{:timeout :network :unknown}
+                     #{:HttpTimeout :HttpNetwork :HttpUnknown}))
+
+(def authority
+  (interop/capability-effect :c/strlen
+                             #{:ffi/call}
+                             #{:ffi/call}
+                             'gravity.ffi/c))
+
+(def migration
+  (interop/migration-shim :python/model-pipeline
+                          "legacy_pipeline.py"
+                          'app.model.pipeline
+                          #{:input-schema :output-schema}
+                          #{:implicit-global-state}
+                          #{"generated/pipeline.gravity"}
+                          "interop-working-group"))
+
+(def parity
+  (interop/parity-report :python/model-pipeline
+                         :interop/parity
+                         :passed))
+
+(def compatibility
+  (interop/compatibility-record :graphql/github
+                                "2026-06-24"
+                                :schema-version
+                                :none))
+
+(def drift
+  (interop/schema-drift-check :graphql/github
+                              "sha256:schema-v1"
+                              "sha256:schema-v1"
+                              :passed))
+
+(def profile-rejection
+  (interop/profile-rejection :jvm/string
+                             :core
+                             :portable-string))

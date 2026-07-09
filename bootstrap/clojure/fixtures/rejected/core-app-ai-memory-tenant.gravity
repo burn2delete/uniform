@@ -1,0 +1,14 @@
+(ns core.app.ai-memory-tenant
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:memories
+                    [{:memory-id "support-memory"
+                      :partition [:tenant-id]
+                      :cross-tenant :allow}]}}}))
+
+(defn main []
+  (println "bad ai memory tenant"))

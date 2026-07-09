@@ -1,0 +1,61 @@
+{:phase "05"
+ :task "P05-T04"
+ :documents ["MATH5"]
+ :artifact-kind :gravity/stage0-certified-approximation-artifact
+ :artifact-hash "sha256:f57180b860c45a46a4ba20b31bee8e7a3efcf2f093d4dbe900d1cb918fc3cddf"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-approximation.gravity"
+ :command "clojure -M:gravity approximation bootstrap/clojure/fixtures/accepted/math-approximation.gravity"
+ :summary
+ {:pass :certified-approximation
+  :output :approximation-certificate
+  :certificate-count 1
+  :candidate-count 2
+  :selected-implementation-count 1
+  :checker-transcript-count 1
+  :required-diagnostic-count 9
+  :status :complete}
+ :capability-based-proof
+ {:certificates-shaped? true
+  :efir-anchors-present? true
+  :domain-coverage-complete? true
+  :approximation-and-roundoff-separated? true
+  :target-assumptions-explicit? true
+  :checker-independent-replayable? true
+  :runtime-selection-certificate-linked? true
+  :capability-authority-preserved? true
+  :status :complete}
+ :rejected-fixtures
+ [{:fixture "math-approx-cert-shape.gravity" :diagnostic "MATH5-CERT-SHAPE"}
+  {:fixture "math-approx-efir.gravity" :diagnostic "MATH5-EFIR"}
+  {:fixture "math-approx-domain.gravity" :diagnostic "MATH5-DOMAIN"}
+  {:fixture "math-approx-branch.gravity" :diagnostic "MATH5-BRANCH"}
+  {:fixture "math-approx-error.gravity" :diagnostic "MATH5-APPROX-ERROR"}
+  {:fixture "math-approx-roundoff.gravity" :diagnostic "MATH5-ROUNDOFF"}
+  {:fixture "math-approx-target.gravity" :diagnostic "MATH5-TARGET"}
+  {:fixture "math-approx-checker.gravity" :diagnostic "MATH5-CHECKER"}
+  {:fixture "math-approx-selection.gravity" :diagnostic "MATH5-SELECTION"}]
+ :validation
+ {:clojure-test
+  {:command "clojure -M:test"
+   :result "Ran 44 tests containing 2226 assertions. 0 failures, 0 errors."
+   :rejected-fixtures 623}
+  :artifact-summary
+  {:command "clojure -M -e '(require (quote [gravity.bootstrap :as b])) ...'"
+   :result
+   {:kind :gravity/stage0-certified-approximation-artifact
+    :pass :certified-approximation
+    :output :approximation-certificate
+    :status :complete
+    :certificates 1
+    :candidates 2
+    :selected 1
+    :checkers 1
+    :diagnostics 9
+    :proof :complete}}}
+ :limits
+ [:stage0-certificate-validation-only
+  :no-general-synthesis-engine-claim
+  :no-interval-proof-engine-claim
+  :no-symbolic-rewrite-engine-claim
+  :no-production-math-optimizer-claim
+  :no-self-hosting-claim]}

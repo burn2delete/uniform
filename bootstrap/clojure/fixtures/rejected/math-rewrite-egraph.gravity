@@ -1,0 +1,14 @@
+(ns math.rewrite-egraph
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:egraph-report {:run-id :egraph/bad
+                            :valid? false
+                            :cost-model {}
+                            :bounds {}
+                            :proof-replay []
+                            :explanation nil}}}}))

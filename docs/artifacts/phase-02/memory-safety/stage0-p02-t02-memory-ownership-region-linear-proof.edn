@@ -1,0 +1,121 @@
+{:task-id :P02-T02
+ :documents ["docs/phase-02-safety/031-safe2-memory-safety-model.md"
+             "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md"
+             "docs/phase-02-safety/033-safe4-region-and-arena-safety.md"
+             "docs/phase-02-safety/034-safe5-linear-resource-safety.md"]
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe2-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe3-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe4-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe5-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+ :artifact-kind :gravity/stage0-memory-safety-artifact
+ :capability-proof {:module safety.memory
+                    :profile :native
+                    :safety-mode :audited-unsafe
+                    :pass :memory-ownership-region-linear-safety
+                    :input :typed-effected-core
+                    :output :memory-safety-analysis-report
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:safe2-memory-operation
+                                       :safe2-runtime-check
+                                       :safe2-allocation-release
+                                       :safe2-escape-analysis
+                                       :safe2-optimization-proof
+                                       :safe2-backend-preservation
+                                       :safe2-unsafe-audit
+                                       :safe3-ownership-graph
+                                       :safe3-borrow-graph
+                                       :safe3-lifetime-map
+                                       :safe3-transfer
+                                       :safe3-runtime-borrow-check
+                                       :safe4-region-lifetime
+                                       :safe4-arena-generation
+                                       :safe4-reset-invalidation
+                                       :safe4-provider
+                                       :safe4-cleanup
+                                       :safe5-linear-flow
+                                       :safe5-terminal-operation
+                                       :safe5-exceptional-cleanup
+                                       :safe5-structured-lowering
+                                       :safe5-generated-flow]
+                    :memory-safety-operation-records 1
+                    :runtime-check-records 1
+                    :allocation-release-maps 1
+                    :escape-analysis-records 1
+                    :proof-records 1
+                    :backend-preservation-records 1
+                    :unsafe-memory-audit-records 1
+                    :ownership-graphs 1
+                    :borrow-graphs 1
+                    :lifetime-interval-maps 1
+                    :ownership-transfer-records 1
+                    :runtime-borrow-check-records 1
+                    :region-lifetime-maps 1
+                    :arena-generation-graphs 1
+                    :reset-invalidation-records 1
+                    :provider-records 1
+                    :cleanup-records 1
+                    :linear-flow-graphs 1
+                    :terminal-operation-records 1
+                    :exceptional-cleanup-records 1
+                    :structured-resource-lowerings 1
+                    :generated-linear-flow-records 1
+                    :capability-basis :safe2-through-safe5-memory-ownership-region-linear-records-with-profile-effect-capability-and-certificate-inputs}
+ :rejected-diagnostics {:SAFE2 ["SAFE2-UNINIT"
+                                "SAFE2-BOUNDS"
+                                "SAFE2-LIFETIME"
+                                "SAFE2-ESCAPE"
+                                "SAFE2-ALIAS"
+                                "SAFE2-ALLOC-FAILURE"
+                                "SAFE2-ALLOCATOR"
+                                "SAFE2-USE-AFTER-RELEASE"
+                                "SAFE2-DOUBLE-RELEASE"
+                                "SAFE2-RAW"
+                                "SAFE2-CHECK-ERASE"
+                                "SAFE2-PROFILE"]
+                        :SAFE3 ["SAFE3-USE-AFTER-MOVE"
+                                "SAFE3-USE-AFTER-CONSUME"
+                                "SAFE3-BORROW-ESCAPE"
+                                "SAFE3-MUT-ALIAS"
+                                "SAFE3-MOVE-WHILE-BORROWED"
+                                "SAFE3-CONSUME-WHILE-BORROWED"
+                                "SAFE3-LIFETIME"
+                                "SAFE3-TASK-CAPTURE"
+                                "SAFE3-FFI-OWNERSHIP"
+                                "SAFE3-RUNTIME-CHECK"
+                                "SAFE3-UNSAFE-ALIAS"]
+                        :SAFE4 ["SAFE4-REGION-ESCAPE"
+                                "SAFE4-ARENA-ESCAPE"
+                                "SAFE4-POST-RESET"
+                                "SAFE4-INNER-TO-OUTER"
+                                "SAFE4-RETURN"
+                                "SAFE4-TASK"
+                                "SAFE4-FFI-RETAIN"
+                                "SAFE4-CLEANUP"
+                                "SAFE4-PROVIDER"
+                                "SAFE4-RUNTIME-CHECK"]
+                        :SAFE5 ["SAFE5-LEAK"
+                                "SAFE5-DOUBLE-CLOSE"
+                                "SAFE5-USE-AFTER-CLOSE"
+                                "SAFE5-BRANCH"
+                                "SAFE5-TRANSFER"
+                                "SAFE5-CAPTURE"
+                                "SAFE5-WRONG-PROVIDER"
+                                "SAFE5-CLEANUP-FAILURE"
+                                "SAFE5-CANCEL"
+                                "SAFE5-GENERATED"]}
+ :validation [{:command "clojure -M:gravity memory-safety bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+               :result "emitted :gravity/stage0-memory-safety-artifact"}
+              {:command "clojure -M -e memory-safety-artifact-summary"
+               :result ":gravity/stage0-memory-safety-artifact safety.memory :complete 1 1 1 1 1"}
+              {:command "clojure -M:test"
+               :result "27 tests, 1351 assertions, 300 rejected fixtures"}]
+ :residual-risks ["This is the stage0 SAFE2-SAFE5 artifact boundary; deeper production MIR analysis, backend preservation suites, and runtime enforcement remain later-phase work."
+                  "The Clojure seed remains temporary until Phase 15 replaces the bootstrap with Gravity-owned compiler stages."]}

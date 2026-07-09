@@ -1,0 +1,47 @@
+(ns concurrency.model
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [task-result atomic-value atomic-read locked-value sent-message
+             actor-message ownership-transfer immutable-share workflow-branch
+             hardware-state gpu-kernel])
+  (:effects #{:thread/spawn :time/schedule :async/await :async/suspend
+              :sync/block :workflow/event :memory/allocate})
+  (:capabilities #{:scheduler/task :workflow/event :memory/allocator})
+  (:safety :safe))
+
+(def task-result
+  (task/scope
+    (task/spawn
+      (fn [] true))
+    (task/await :stage0-task)))
+
+(def atomic-value
+  (atomic/cell 1))
+
+(def atomic-read
+  (atomic/load-ordered atomic-value :seq-cst))
+
+(def locked-value
+  (lock/with :state-lock
+    (fn [] true)))
+
+(def sent-message
+  (channel/send :updates {:ok true}))
+
+(def actor-message
+  (actor/send :worker {:job 1}))
+
+(def ownership-transfer
+  (task/transfer (buffer/new 32)))
+
+(def immutable-share
+  (shared/immutable [1 2 3]))
+
+(def workflow-branch
+  (workflow/parallel :step-a :step-b))
+
+(def hardware-state
+  (hardware/state :clock :register))
+
+(def gpu-kernel
+  (gpu/kernel :grid :barrier))

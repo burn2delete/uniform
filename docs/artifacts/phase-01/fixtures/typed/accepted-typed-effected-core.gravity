@@ -1,0 +1,29 @@
+(ns typed.demo
+  (:profile :hosted)
+  (:effects :io/write :memory/allocate :resource/open :resource/close :dynamic/eval :thread/spawn :time/schedule)
+  (:capabilities :io/stdout :memory/allocator :resource/file :scheduler/task))
+
+(def checked-integer
+  (typed/assert :Integer 42))
+
+(def hosted-dynamic
+  (dynamic/value "runtime"))
+
+(def log-message
+  (fn [message]
+    (println message)))
+
+(def owned-buffer
+  (buffer/new 64))
+
+(def file-cycle
+  (let [file (resource/open "tmp/data.txt")]
+    (do
+      (resource/close file)
+      true)))
+
+(def scheduled-work
+  (task/scope
+    (task/spawn
+      (fn []
+        (println "inside task")))))

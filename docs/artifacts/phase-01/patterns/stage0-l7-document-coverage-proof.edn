@@ -1,0 +1,44 @@
+{:proof/id :p01-d017-stage0-l7-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D017
+ :governing-docs ["docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
+                  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/pattern-match.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/pattern-match.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:match-decision-tree-artifact
+                  :exhaustiveness-report
+                  :branch-type-narrowing-table
+                  :branch-effect-summary
+                  :unreachable-branch-diagnostics
+                  :match-schema-validation-links
+                  :pattern-ownership-facts
+                  :pattern-conformance-fixture]
+ :artifact-summary {:module pattern.match
+                    :profile :hosted
+                    :pattern-conformance-status :complete
+                    :match-decision-trees 9
+                    :exhaustiveness-records 9
+                    :branch-type-narrowing-records 13
+                    :branch-effect-records 19
+                    :schema-validation-links 1
+                    :pattern-ownership-facts 13
+                    :inferred-effects #{:io/write :network/http
+                                        :resource/open :resource/close}}
+ :covered-pattern-families [:literal :record :map :vector :constructor :enum
+                            :guard :default :schema :linear]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-pattern-nonexhaustive.gravity" "L7-NONEXHAUSTIVE"
+                    "bootstrap/clojure/fixtures/rejected/typed-pattern-unreachable.gravity" "L7-UNREACHABLE"
+                    "bootstrap/clojure/fixtures/rejected/typed-pattern-duplicate-binding.gravity" "L7-DUP-BINDING"
+                    "bootstrap/clojure/fixtures/rejected/typed-pattern-type.gravity" "L7-PATTERN-TYPE"
+                    "bootstrap/clojure/fixtures/rejected/typed-pattern-guard-effect.gravity" "L7-GUARD-EFFECT"
+                    "bootstrap/clojure/fixtures/rejected/typed-pattern-unvalidated-shape.gravity" "L7-UNVALIDATED-SHAPE"
+                    "bootstrap/clojure/fixtures/rejected/typed-pattern-linear-move.gravity" "L7-LINEAR-MOVE"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L7 document task by proving match decision-tree records, exhaustiveness records, branch type narrowing, guard effect summaries, schema validation links, ownership facts, and stable L7 diagnostics. It does not claim backend decision-tree lowering, workflow replay branch semantics, formal proof generation, or self-hosting."}

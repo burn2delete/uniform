@@ -1,0 +1,9 @@
+(ns compiler.c4.return
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c4-macro {:fail :return}}}))
+
+(def value 1)

@@ -1,0 +1,64 @@
+(ns facet.system
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [schema-manifest workflow-manifest activation generated-code
+             domain-ir composition privacy-boundary compatibility-event])
+  (:effects #{:build/write-artifact :compiler/write-ir})
+  (:capabilities #{:compiler/ir})
+  (:safety :safe)
+  (:metadata {:facets #{:gravity.facet.schema
+                        :gravity.facet.workflow
+                        :gravity.facet.zk}
+              :build-grants #{:build/write-artifact}}))
+
+(def schema-manifest
+  (facet/manifest :gravity.facet.schema
+                  "0.1.0"
+                  #{'schema 'decode/json}
+                  #{:hosted :native :meta}
+                  #{}
+                  #{:build/write-artifact}
+                  #{:compiler/ir}
+                  #{:gravity.core :gravity.ir.schema}
+                  #{:schema/artifact :schema/codec}
+                  :experimental))
+
+(def workflow-manifest
+  (facet/manifest :gravity.facet.workflow
+                  "0.1.0"
+                  #{'workflow 'step 'activity}
+                  #{:hosted :distributed :meta}
+                  #{:gravity.facet.schema}
+                  #{:build/write-artifact}
+                  #{:compiler/ir}
+                  #{:gravity.core :gravity.ir.workflow}
+                  #{:workflow/schema :workflow/replay-plan}
+                  :draft))
+
+(def activation
+  (facet/activate #{:gravity.facet.schema
+                    :gravity.facet.workflow
+                    :gravity.facet.zk}))
+
+(def generated-code
+  (facet/generated-code :gravity.facet.schema 'User :validation-code))
+
+(def domain-ir
+  (facet/domain-ir :gravity.facet.schema :schema-ir "0.1.0"))
+
+(def composition
+  (facet/compose :gravity.facet.workflow
+                 :gravity.facet.schema
+                 :payload-validation))
+
+(def privacy-boundary
+  (facet/privacy-record :gravity.facet.zk
+                        :witness/user-email
+                        :public/UserProof
+                        :disclosure-policy))
+
+(def compatibility-event
+  (facet/compat-event :gravity.facet.schema
+                      "0.1.0"
+                      "0.2.0"
+                      :minor-addition))

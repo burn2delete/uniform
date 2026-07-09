@@ -1,0 +1,31 @@
+{:task-id :P02-D045
+ :document "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+ :artifact-kind :gravity/stage0-safety-conformance-artifact
+ :document-coverage {:fixture-manifests 1
+                     :expected-outcome-manifests 15
+                     :diagnostic-match-records 1
+                     :runtime-check-inspections 1
+                     :unsafe-audit-inspections 1
+                     :certificate-inspections 1
+                     :profile-matrix-reports 1
+                     :backend-preservation-reports 1
+                     :machine-readable-conformance-reports 1
+                     :covered-documents [:SAFE1 :SAFE2 :SAFE3 :SAFE4 :SAFE5
+                                         :SAFE6 :SAFE7 :SAFE8 :SAFE9 :SAFE10
+                                         :SAFE11 :SAFE12 :SAFE13 :SAFE14
+                                         :SAFE15]
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE16-FIXTURE"
+                        "SAFE16-OUTCOME"
+                        "SAFE16-DIAGNOSTIC"
+                        "SAFE16-ARTIFACT"
+                        "SAFE16-PROFILE"
+                        "SAFE16-CERTIFICATE"
+                        "SAFE16-BACKEND"
+                        "SAFE16-REPORT"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE16 accepted records and 8 rejected diagnostics passed"}]}

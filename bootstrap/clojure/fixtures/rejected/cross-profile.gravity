@@ -1,0 +1,8 @@
+(ns invalid.cross-profile
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [native.sys :as sys :profile :native])
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main [] nil)

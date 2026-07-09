@@ -1,0 +1,122 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-T03
+ :date "2026-06-25"
+ :status :complete
+ :capability :hosted-wasm-jvm-js-ts-lowering
+ :command "clojure -M:gravity hosted-lowering bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+ :artifact-kind :gravity/stage0-hosted-lowering-artifact
+ :artifact-hash "sha256:34c45b4dfdbb2368b351b1117cf9d56b34c8a8728fa151c2b018e1656fa7c239"
+ :summary {:target-backends [:gravity.backend/wasm
+                              :gravity.backend/jvm
+                              :gravity.backend/js-ts]
+           :artifact-manifests 3
+           :diagnostics 36
+           :negative-diagnostic-results 36
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md"
+                       "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md"
+                       "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md"
+                       "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"
+                       "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b4-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-component.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-canonical-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-import.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-export.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-memory.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-bounds.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-nondeterminism.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-async.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-wasi-async.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-simd.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-atomic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-host-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b4-manifest.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-null.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-exception.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-reflection.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-classloading.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-interop.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-resource.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-thread.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-native-image.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b5-manifest.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-global.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-import.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-nullish.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-exception.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-eval.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-prototype.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-async.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-ui.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-manifest.gravity"]
+ :diagnostic-ids ["B4-TARGET"
+                  "B4-COMPONENT"
+                  "B4-CANONICAL-ABI"
+                  "B4-IMPORT"
+                  "B4-EXPORT"
+                  "B4-MEMORY"
+                  "B4-BOUNDS"
+                  "B4-NONDETERMINISM"
+                  "B4-ASYNC"
+                  "B4-WASI-ASYNC"
+                  "B4-SIMD"
+                  "B4-ATOMIC"
+                  "B4-HOST-SCHEMA"
+                  "B4-MANIFEST"
+                  "B5-TARGET"
+                  "B5-NULL"
+                  "B5-EXCEPTION"
+                  "B5-REFLECTION"
+                  "B5-CLASSLOADING"
+                  "B5-INTEROP"
+                  "B5-RESOURCE"
+                  "B5-THREAD"
+                  "B5-NATIVE-IMAGE"
+                  "B5-PROFILE"
+                  "B5-MANIFEST"
+                  "B6-TARGET"
+                  "B6-GLOBAL"
+                  "B6-IMPORT"
+                  "B6-NULLISH"
+                  "B6-EXCEPTION"
+                  "B6-NUMERIC"
+                  "B6-EVAL"
+                  "B6-PROTOTYPE"
+                  "B6-ASYNC"
+                  "B6-UI"
+                  "B6-MANIFEST"]
+ :capability-based-proof {:backend-interface-input-verified? true
+                          :wasm-lowering-complete? true
+                          :wasm-host-authority-declared? true
+                          :jvm-lowering-complete? true
+                          :jvm-null-exception-boundaries-checked? true
+                          :js-ts-lowering-complete? true
+                          :js-ts-host-boundaries-declared? true
+                          :artifact-emission-complete? true
+                          :source-proof-capability-metadata-preserved? true
+                          :conformance-record-passed? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 73 tests containing 4064 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 981}
+              {:command "clojure -M:gravity hosted-lowering bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:34c45b4dfdbb2368b351b1117cf9d56b34c8a8728fa151c2b018e1656fa7c239"}
+              {:command "clojure -M -e <phase-07 backend EDN parse>"
+               :result "parsed 3 phase-07 backend EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result "passed with no output"}]
+ :residual-risk ["This completes P07-T03 for deterministic Clojure stage0 emission of Wasm, JVM, and JavaScript/TypeScript target artifacts plus host-boundary manifests only."
+                 "It does not claim external Wasm, JVM, JavaScript, bundler, or browser execution, production hosted backend stabilization, release readiness, or full backend conformance."]}

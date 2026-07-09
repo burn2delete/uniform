@@ -1,0 +1,7 @@
+(ns core.app.profile-runtime
+  (:profile :core)
+  (:target :jvm)
+  (:safety :safe))
+
+(defn main []
+  (println "wrong runtime profile"))

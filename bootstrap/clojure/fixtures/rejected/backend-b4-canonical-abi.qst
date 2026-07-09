@@ -1,0 +1,4 @@
+(ns backend.b4-canonical-abi
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:hosted-lowering {:fail :b4-canonical-abi}}}))

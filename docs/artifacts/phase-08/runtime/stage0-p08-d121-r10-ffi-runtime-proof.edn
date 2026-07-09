@@ -1,0 +1,35 @@
+{:artifact :gravity/stage0-r10-ffi-runtime-document-proof
+ :task "P08-D121"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r10-document bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :artifact-kind :gravity/stage0-r10-ffi-runtime-document-artifact
+ :artifact-id "sha256:74e1f2350b2038b4693f72f86e9ce476f7efbf27b9ea896094cefb2026c3f58f"
+ :input-artifact "sha256:8b14783b42260dc2becf865b32107a6f7adc943f4d8857de77aa0a8ed258ecb9"
+ :input-artifact-kind :gravity/stage0-ai-repl-ffi-capability-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r10-*.gravity"]
+ :required-diagnostic-ids
+ ["R10-BINDING" "R10-ABI" "R10-WRAPPER" "R10-POINTER" "R10-NULL"
+  "R10-EFFECT" "R10-CAPABILITY" "R10-CALLBACK" "R10-DYNAMIC"
+  "R10-MANIFEST"]
+ :capability-based-proof
+ {:ffi-runtime-input-verified? true
+  :manifest-and-bindings-covered? true
+  :abi-layout-covered? true
+  :safe-wrapper-covered? true
+  :handle-lifetime-covered? true
+  :adapter-null-effect-capability-covered? true
+  :callback-adapter-covered? true
+  :dynamic-loading-policy-covered? true
+  :unsafe-audit-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 10
+  :test-command "clojure -M:test"
+  :test-result "106 tests, 6624 assertions, 0 failures, 0 errors, 1406 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R10 FFI runtime document through the P08-T05 AI/REPL/FFI/capability runtime artifact. It does not claim dynamic foreign library loading, production ABI probing, native linker integration, host operating-system FFI execution, release readiness, or complete Phase 08 document coverage."}

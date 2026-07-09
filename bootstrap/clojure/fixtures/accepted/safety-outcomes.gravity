@@ -1,0 +1,72 @@
+(ns safety.outcomes
+  (:profile :native)
+  (:target :jvm)
+  (:exports [proven checked rejected island runtime generated optimized
+             dependency conformance])
+  (:effects #{:safety/check-failure :memory/raw})
+  (:capabilities #{:memory/raw})
+  (:safety :audited-unsafe))
+
+(def proven
+  (safe1/outcome :buffer/read
+                 :proven-safe
+                 :bounds
+                 :proof/range-analysis-17
+                 :none))
+
+(def checked
+  (safe1/outcome :dynamic/cast
+                 :runtime-checked
+                 :type-check
+                 :runtime-check/cast
+                 :panic/type))
+
+(def rejected
+  (safe1/outcome :ffi/call
+                 :rejected
+                 :capability
+                 :diagnostic/ffi-capability
+                 :SAFE1-CHECK-MISSING))
+
+(def island
+  (safe1/outcome :raw/mmio-read32
+                 :unsafe-island
+                 :mmio
+                 :audit/mmio-read
+                 :none))
+
+(def runtime
+  (safe1/runtime-check :buffer/read
+                       :bounds
+                       :panic/bounds))
+
+(def unsafe-audit
+  (safe1/unsafe-island :raw/mmio-read32
+                       "kernel-mmio"
+                       :mmio-read
+                       :aligned-mapped-volatile-register
+                       :mmio.safe/read-u32
+                       #{:device-map-check :alignment-fixture}))
+
+(def generated
+  (safe1/generated-provenance :macro/safe-buffer
+                              :source-buffer-read
+                              :generated-buffer-read
+                              :preserved))
+
+(def optimized
+  (safe1/optimization-erasure :buffer/read
+                              :bounds
+                              :proven-safe
+                              :proof/range-analysis-17))
+
+(def dependency
+  (safe1/dependency-mode :gravity.safe/buffer
+                         :safe
+                         :safe
+                         :accepted))
+
+(def conformance
+  (safe1/conformance #{:proven-safe :runtime-checked
+                       :rejected :unsafe-island}
+                     :complete))

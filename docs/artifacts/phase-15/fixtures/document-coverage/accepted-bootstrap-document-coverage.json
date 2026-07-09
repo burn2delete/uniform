@@ -1,0 +1,117 @@
+{
+  "kind": "phase15-bootstrap-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P15-D203",
+      "document": "BOOT1",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["bootstrap_stage_matrix"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot1-stage-evidence.json",
+        "diagnostic": "BOOT1001"
+      },
+      "coverage_claims": ["stage manifests", "conformance reports", "TCB deltas", "locked dependencies", "compiler lineage"]
+    },
+    {
+      "task_id": "P15-D204",
+      "document": "BOOT2",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["seed_compiler_manifest"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot2-profile.json",
+        "diagnostic": "BOOT2002"
+      },
+      "coverage_claims": ["implemented subset", "excluded documents", "host dependencies", "stable diagnostics", "stage comparison metadata"]
+    },
+    {
+      "task_id": "P15-D205",
+      "document": "BOOT3",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["self_hosted_component_manifest"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot3-ambient-authority.json",
+        "diagnostic": "BOOT3002"
+      },
+      "coverage_claims": ["module migration manifests", "meta profile", "equivalence reports", "diagnostic compatibility", "TCB deltas"]
+    },
+    {
+      "task_id": "P15-D206",
+      "document": "BOOT4",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["compiler_coding_standard_report"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot4-preserved-fact.json",
+        "diagnostic": "BOOT4003"
+      },
+      "coverage_claims": ["effect declarations", "pass preservation", "diagnostic manifests", "deterministic output", "unsafe audit"]
+    },
+    {
+      "task_id": "P15-D207",
+      "document": "BOOT5",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["stage_compatibility_matrix"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot5-conformance-link.json",
+        "diagnostic": "BOOT5003"
+      },
+      "coverage_claims": ["matrix rows", "explicit support", "profile/backend reports", "gap review", "versioned matrix changes"]
+    },
+    {
+      "task_id": "P15-D208",
+      "document": "BOOT6",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["trusting_trust_report"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot6-environment.json",
+        "diagnostic": "BOOT6001"
+      },
+      "coverage_claims": ["controlled environment", "rebuild comparison", "diverse rebuild identity", "accepted deltas", "revocation checks"]
+    },
+    {
+      "task_id": "P15-D209",
+      "document": "BOOT7",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["equivalence_report"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot7-compiler-identity.json",
+        "diagnostic": "BOOT7001"
+      },
+      "coverage_claims": ["compiler identities", "comparison modes", "diagnostic equivalence", "accepted deltas", "release decision"]
+    },
+    {
+      "task_id": "P15-D210",
+      "document": "BOOT8",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+        "required_artifact_fields": ["bootstrap_provenance_record"]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot8-lineage.json",
+        "diagnostic": "BOOT8002"
+      },
+      "coverage_claims": ["source/compiler/lockfile/build/environment hashes", "evidence links", "canonicalization", "revocation", "auditor lineage"]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+(ns profile.bad.formal-nondeterminism
+  (:profile :formal)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p12/nondeterminism))

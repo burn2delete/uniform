@@ -1,0 +1,25 @@
+{:task-id :P02-D033
+ :document "docs/phase-02-safety/033-safe4-region-and-arena-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+ :artifact-kind :gravity/stage0-memory-safety-artifact
+ :document-coverage {:region-lifetime-maps 1
+                     :arena-generation-graphs 1
+                     :reset-invalidation-records 1
+                     :provider-records 1
+                     :cleanup-records 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE4-REGION-ESCAPE"
+                        "SAFE4-ARENA-ESCAPE"
+                        "SAFE4-POST-RESET"
+                        "SAFE4-INNER-TO-OUTER"
+                        "SAFE4-RETURN"
+                        "SAFE4-TASK"
+                        "SAFE4-FFI-RETAIN"
+                        "SAFE4-CLEANUP"
+                        "SAFE4-PROVIDER"
+                        "SAFE4-RUNTIME-CHECK"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE4 accepted artifact and 10 rejected diagnostics passed"}]}

@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/grants/0"
+  ],
+  "extends": "accepted-providers.json"
+}

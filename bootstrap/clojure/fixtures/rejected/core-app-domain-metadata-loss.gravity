@@ -1,0 +1,26 @@
+(ns core.app.domain-metadata-loss
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:domain {:compiled-gate
+                       {:domain-slices
+                        [{:document-id "DOM17"
+                          :domain :compiler-tooling
+                          :slice-id :core-app/domain
+                          :profile :hosted
+                          :target :jvm
+                          :effects #{:io/write}
+                          :capabilities #{:io/stdout}
+                          :artifacts [:stage0-instruction-plan]
+                          :accepted-fixtures ["accepted/core-app.gravity"]
+                          :rejected-fixtures ["rejected/core-app-domain-manifest.gravity"]
+                          :metadata-preserved? false
+                          :replacement-scope
+                          {:claim-id "phase09-compiled-slice"
+                           :claim-status :slice-supported}
+                          :conformance {:status :complete}}]}}}))
+
+(defn main []
+  (println "bad domain metadata"))

@@ -1,0 +1,18 @@
+(ns math.mode-scope
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:mode-records
+                      [{:record-id :scope-a
+                        :math/mode :checked
+                        :scope {:kind :function :name 'math.mode/f}
+                        :precision {:type :I32}
+                        :integer-overflow :checked}
+                       {:record-id :scope-b
+                        :math/mode :wrapping
+                        :scope {:kind :function :name 'math.mode/f}
+                        :precision {:type :I32}
+                        :integer-overflow :wrapping}]}}}))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/device_sync_records/0/synchronized": false
+  }
+}

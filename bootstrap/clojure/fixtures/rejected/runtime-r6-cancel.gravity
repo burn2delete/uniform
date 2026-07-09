@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: missing cancellation or cleanup behavior.
+(ns runtime.r6-cancel
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:thread/spawn})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-cancel}}}))
+
+(defn main [] :- I64 1)

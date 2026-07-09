@@ -1,0 +1,69 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-T05
+ :date "2026-06-29"
+ :status :complete
+ :capability :backend-artifact-emission-and-provenance
+ :command "clojure -M:gravity artifact-emission bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity"
+ :artifact-kind :gravity/stage0-artifact-emission-artifact
+ :artifact-hash "sha256:fb13e5e7323c6a7ba0ddaa92862b950d4a9c89002207d7094a41fb6298e6f79b"
+ :summary {:artifact-manifests 12
+           :content-hash-records 12
+           :artifact-graph-nodes 16
+           :artifact-graph-edges 15
+           :diagnostics 10
+           :release-gate :blocked-development-only
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"
+                       "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-artifact-b13-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-hash.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-provenance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-sourcemap.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-evidence.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-conformance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-reproducibility.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-release.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-graph.gravity"]
+ :diagnostics ["B13-SCHEMA"
+               "B13-HASH"
+               "B13-PROVENANCE"
+               "B13-SOURCEMAP"
+               "B13-EVIDENCE"
+               "B13-TARGET"
+               "B13-CONFORMANCE"
+               "B13-REPRODUCIBILITY"
+               "B13-RELEASE"
+               "B13-GRAPH"]
+ :proof-checks {:backend-inputs-verified? true
+                :common-manifest-schema-complete? true
+                :content-hashes-complete? true
+                :provenance-complete? true
+                :source-debug-map-preserved? true
+                :evidence-bundle-complete? true
+                :effect-capability-summary-complete? true
+                :target-runtime-abi-metadata-complete? true
+                :reproducibility-recorded? true
+                :development-release-gate-blocked? true
+                :artifact-graph-complete? true
+                :conformance-evidence-complete? true
+                :diagnostics-covered? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 75 tests containing 4233 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1042}
+              {:command "clojure -M:gravity artifact-emission bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity"
+               :result :accepted
+               :artifact-hash "sha256:fb13e5e7323c6a7ba0ddaa92862b950d4a9c89002207d7094a41fb6298e6f79b"}
+              {:command "clojure -M -e <phase-07 backend EDN parse>"
+               :result "parsed 5 phase-07 backend EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result "passed with no output"}]
+ :residual-risk ["This completes P07-T05 for deterministic Clojure stage0 backend artifact emission, manifest validation, provenance graphing, reproducibility metadata, conformance references, and development-only release gating."
+                 "It does not claim signing, packaging, deployment, release-grade artifact approval, external target toolchain execution, or full backend conformance."]}

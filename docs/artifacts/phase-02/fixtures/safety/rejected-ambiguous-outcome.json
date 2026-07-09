@@ -1,0 +1,12 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "set": {
+    "/operations/0/outcomes": [
+      ":proven-safe",
+      ":runtime-checked"
+    ]
+  },
+  "delete": [
+    "/operations/0/outcome"
+  ]
+}

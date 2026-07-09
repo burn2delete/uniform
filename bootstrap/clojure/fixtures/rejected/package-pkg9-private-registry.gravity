@@ -1,0 +1,11 @@
+; Rejected P12 PKG9 fixture.
+(ns package.pkg9-private-registry
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:build/network})
+  (:capabilities #{:registry/read})
+  (:safety :safe)
+  (:metadata {:package {:artifacts {:fail :pkg9001}}}))
+
+(defn main [] :- I64 1)

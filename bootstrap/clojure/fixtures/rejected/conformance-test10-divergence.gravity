@@ -1,0 +1,11 @@
+; Rejected P14 TEST10 fixture.
+(ns conformance.test10-divergence
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:conformance {:system {:fail :test10002}}}))
+
+(defn main [] :- I64 1)

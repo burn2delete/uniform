@@ -1,0 +1,95 @@
+{
+  "kind": "safe13-ai-tool-safety-input",
+  "source_span": {
+    "source": "fixtures/safe13/agent-tool.gravity",
+    "line": 18,
+    "column": 5
+  },
+  "model_call": {
+    "id": "model-call-plan-edit",
+    "effect": ":model/call",
+    "provider_id": "ai-provider-demo",
+    "model_id": "safe-edit-planner",
+    "model_version": "2026-06-24",
+    "input_schema": "SafeEditRequest",
+    "output_schema": "SafeEditPlan",
+    "cost_policy": "bounded-demo",
+    "retention_policy": ":no-training",
+    "replay_policy": ":audit",
+    "trace_id": "trace-safe13-plan-edit"
+  },
+  "prompt_provenance": [
+    {
+      "role": "system",
+      "trusted": true,
+      "source": "agent-policy.gravity"
+    },
+    {
+      "role": "user",
+      "trusted": false,
+      "source": "request.body",
+      "controls_privileged_policy": false
+    },
+    {
+      "role": "tool-result",
+      "trusted": false,
+      "source": "repo.search",
+      "controls_privileged_policy": false
+    }
+  ],
+  "tool_call": {
+    "tool_id": "repo.apply_patch",
+    "input_schema_validated": true,
+    "capabilities": [
+      ":tool/invoke",
+      ":fs/write"
+    ],
+    "granted_capabilities": [
+      ":tool/invoke",
+      ":fs/write"
+    ],
+    "side_effect_class": ":write",
+    "human_review_required": true,
+    "human_review": {
+      "mode": ":required",
+      "reviewer": "human",
+      "decision": ":approved",
+      "summary_digest": "sha256:0376f0ec6d91a3ddff991a61b4d58e1c58ab21ba04a385759f143c6bfe4a55f3"
+    }
+  },
+  "taint": {
+    "model_output_validated": true,
+    "secret_redaction": true,
+    "validated_categories": [
+      "Tainted/AIOutput",
+      "Tainted/ToolOutput",
+      "Tainted/Prompt"
+    ]
+  },
+  "generated_code": {
+    "provenance": true,
+    "executed_before_checks": false,
+    "compiler_safety_checks": [
+      "macro",
+      "type",
+      "effect",
+      "capability",
+      "memory",
+      "package",
+      "safety"
+    ]
+  },
+  "replay_records": [
+    {
+      "id": "replay-safe13-plan-edit",
+      "policy": ":audit",
+      "model_trace": "trace-safe13-plan-edit",
+      "tool_trace": "repo.apply_patch",
+      "status": ":recorded"
+    }
+  ],
+  "agent_memory": {
+    "retention_policy": ":redacted",
+    "secret_capability": ":secret/read"
+  }
+}

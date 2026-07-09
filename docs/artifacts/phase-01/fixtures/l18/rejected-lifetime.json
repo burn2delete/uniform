@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/lifetime_facts/0/valid": false
+  }
+}

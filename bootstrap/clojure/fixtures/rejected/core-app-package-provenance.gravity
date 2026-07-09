@@ -1,0 +1,13 @@
+(ns core.app.package-provenance
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:provenance-records
+                         [{:artifact-id "provenance:bad"
+                           :subject "artifact:library-001"}]}}}))
+
+(defn main []
+  (println "bad package provenance"))

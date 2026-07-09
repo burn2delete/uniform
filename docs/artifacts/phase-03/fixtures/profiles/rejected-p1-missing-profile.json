@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-profile-system.json",
+  "delete": [
+    "/namespaces/0/active_profile"
+  ]
+}

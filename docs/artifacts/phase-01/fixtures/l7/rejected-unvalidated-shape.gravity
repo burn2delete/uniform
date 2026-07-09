@@ -1,0 +1,7 @@
+(ns l7.bad.unvalidated
+  (:profile :hosted))
+
+(def bad
+  (match (network/input)
+    {:id id} id
+    _ nil))

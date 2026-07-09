@@ -1,0 +1,12 @@
+(ns bad.macro.not-syntax
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defmacro bad []
+  42)
+
+(defn main []
+  (bad))

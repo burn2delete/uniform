@@ -1,0 +1,43 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "typed-effected-core-artifact",
+      "coverage": [
+        "type facts",
+        "function signatures",
+        "latent effects",
+        "dynamic boundaries",
+        "ownership/resource facts"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity"
+    }
+  ],
+  "document": "L5",
+  "kind": "l5-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L5-ANNOTATION-REQUIRED",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-annotation-required.gravity"
+    },
+    {
+      "diagnostic": "L5-CAST-UNSAFE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-cast-unsafe.gravity"
+    },
+    {
+      "diagnostic": "L5-UNINIT-READ",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-uninit-read.gravity"
+    },
+    {
+      "diagnostic": "L5-LINEAR-DUP",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-linear-dup.gravity"
+    },
+    {
+      "diagnostic": "L5-SCHEMA-WEAKEN",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-schema-weaken.gravity"
+    },
+    {
+      "diagnostic": "L5-LATENT-EFFECT-MISSING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-latent-effect-missing.gravity"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+(ns math.proof-domain
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof {:claim-overrides [{:domain-valid? false}]}}}))

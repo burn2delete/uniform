@@ -1,0 +1,9 @@
+(ns compiler.c2-delimiter
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+
+(defn main []
+  true)

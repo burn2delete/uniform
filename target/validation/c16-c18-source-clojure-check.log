@@ -1,0 +1,3 @@
+gravity stage0 check passed: gravity.compiler.c16-incremental-compilation-design
+gravity stage0 check passed: gravity.compiler.c17-compiler-plugin-pass-api
+gravity stage0 check passed: gravity.compiler.c18-compiler-verification-pass-correctness

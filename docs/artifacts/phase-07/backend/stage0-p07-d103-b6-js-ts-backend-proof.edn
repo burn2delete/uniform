@@ -1,0 +1,111 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D103
+ :date "2026-06-29"
+ :status :complete
+ :capability :b6-js-ts-backend-document-coverage
+ :command "clojure -M:gravity backend-b6-js-ts-document bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+ :artifact-kind :gravity/stage0-b6-js-ts-backend-document-artifact
+ :artifact-hash "sha256:7e92739c88869742e3ab926322236eeb154a9263489d05e3f91d5e42fbf2c0fb"
+ :summary {:diagnostics 11
+           :rejected-designs 5
+           :conformance-criteria 11
+           :javascript-hash "sha256:f1756942748d60c03be8162234433db6410b6406904ba1779850a796be7f1722"
+           :typescript-declarations-hash "sha256:cfee7a641df17bebfae23e63be5274d10c1e619eb6086e4088667e1779a4ddfc"
+           :source-map-hash "sha256:412a7fe7d49915abb9bff5c2819aabc33fc391ce694c9d36fa9bf9750007afbd"
+           :package-json-hash "sha256:83e85c844a757e1e281d5b44381d370ee2cbd864b0dbdf46a5fafd9ccf7b332b"
+           :javascript-structural true
+           :typescript-structural true
+           :source-map-structural true
+           :package-json-structural true
+           :node-syntax-proof :passed
+           :node-runtime-proof :passed
+           :json-metadata-proof :passed
+           :typescript-compiler-proof :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b6-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-global.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-import.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-nullish.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-exception.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-eval.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-prototype.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-async.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-ui.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b6-manifest.gravity"]
+ :diagnostics ["B6-TARGET"
+               "B6-GLOBAL"
+               "B6-IMPORT"
+               "B6-NULLISH"
+               "B6-EXCEPTION"
+               "B6-NUMERIC"
+               "B6-EVAL"
+               "B6-PROTOTYPE"
+               "B6-ASYNC"
+               "B6-UI"
+               "B6-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :runtime-module-target-pinned? true
+                :javascript-module-emitted? true
+                :typescript-declarations-emitted? true
+                :source-map-generated-origin-preserved? true
+                :host-global-capabilities-declared? true
+                :package-import-policy-covered? true
+                :nullish-exception-translation-covered? true
+                :numeric-representation-covered? true
+                :async-effect-boundaries-covered? true
+                :dynamic-code-and-prototype-rejected? true
+                :ui-metadata-recorded? true
+                :source-debug-map-preserved? true
+                :js-source-structurally-valid? true
+                :ts-declarations-structurally-valid? true
+                :source-map-structurally-valid? true
+                :package-json-structurally-valid? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :requires-external-node-proof? true
+                :requires-external-tsc-proof? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 82 tests containing 4705 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1116}
+              {:command "clojure -M:gravity backend-b6-js-ts-document bootstrap/clojure/fixtures/accepted/backend-hosted-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:7e92739c88869742e3ab926322236eeb154a9263489d05e3f91d5e42fbf2c0fb"}
+              {:command "clojure -M -e <extract B6 JS/TS/package/source-map files>"
+               :result {:dir "/tmp/gravity-p07-b6-js-ts"
+                        :files ["gravity-stage0.d.ts"
+                                "gravity-stage0.mjs"
+                                "gravity-stage0.mjs.map"
+                                "package.json"]
+                        :javascript-structural true
+                        :typescript-structural true}}
+              {:command "node --check /tmp/gravity-p07-b6-js-ts/gravity-stage0.mjs"
+               :result :passed}
+              {:command "node -e <dynamic import B6 module and execute boundary functions>"
+               :result {:entry "7"
+                        :option "none"
+                        :promise "ok"
+                        :number 1.5
+                        :packed "1,2,3"}}
+              {:command "node -e <parse B6 package.json and source map JSON>"
+               :result ["package.json:module"
+                        "gravity-stage0.mjs.map:gravity-stage0.mjs"]}
+              {:command "tsc --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: tsc"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 12 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D103 for deterministic Clojure stage0 coverage of the B6 JavaScript/TypeScript backend design document contract."
+                 "The emitted JavaScript module passes Node syntax and runtime import checks, and package/source-map JSON parse successfully."
+                 "The current environment does not provide tsc, so TypeScript declarations are structurally validated by the Clojure proof and recorded for external TypeScript compiler validation later; this does not claim browser bundler, edge runtime, React Native, or production JS package release support."]}

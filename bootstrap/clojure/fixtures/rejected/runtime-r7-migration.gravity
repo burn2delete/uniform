@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: unsafe schema or event-log upgrade.
+(ns runtime.r7-migration
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-migration}}}))
+
+(defn main [] :- I64 1)

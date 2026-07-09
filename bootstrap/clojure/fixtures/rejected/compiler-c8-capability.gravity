@@ -1,0 +1,9 @@
+(ns compiler.c8.capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c8-effect-check {:fail :capability}}}))
+
+(def value 1)

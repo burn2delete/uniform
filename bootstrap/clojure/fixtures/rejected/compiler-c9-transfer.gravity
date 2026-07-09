@@ -1,0 +1,9 @@
+(ns compiler.c9.transfer
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c9-ownership-check {:fail :transfer}}}))
+
+(def value 1)

@@ -1,0 +1,60 @@
+{:proof-id :stage0-p03-t01-profile-manifest-proof
+ :date "2026-06-24"
+ :phase 3
+ :task :P03-T01
+ :status :passed
+ :capability :profile-manifest-schema
+ :implementation
+ {:source "bootstrap/clojure/src/gravity/bootstrap.clj"
+  :tests "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-manifest.gravity"
+  :accepted-standard-profile-fixtures
+  ["bootstrap/clojure/fixtures/accepted/profile-accepted-core.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-hosted.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-native.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-firmware.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-kernel.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-hardware.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-distributed.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-ai.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-gpu.gravity"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-formal.gravity"]}
+ :artifact
+ {:command "clojure -M:gravity profile-manifest bootstrap/clojure/fixtures/accepted/profile-manifest.gravity"
+  :kind :gravity/stage0-profile-manifest-artifact
+  :pass :profile-manifest-validation
+  :output :profile-manifest
+  :manifest-status :complete
+  :active-profile :hosted
+  :target :jvm
+  :effective-effects #{:io/write}
+  :effective-capabilities #{:io/stdout}
+  :backend-decision :eligible}
+ :required-p1-outputs
+ {:profile-manifest :emitted
+  :effect-permission-table :emitted
+  :capability-permission-table :emitted
+  :memory-regime-record :emitted
+  :runtime-assumption-record :emitted
+  :cross-profile-dependency-graph :emitted
+  :backend-eligibility-report :emitted
+  :profile-diagnostics :emitted
+  :profile-conformance-fixture :emitted}
+ :rejected-fixtures
+ {"bootstrap/clojure/fixtures/rejected/profile-missing-profile.gravity" "P1-MISSING-PROFILE"
+  "bootstrap/clojure/fixtures/rejected/profile-ambiguous-profile.gravity" "P1-AMBIGUOUS-PROFILE"
+  "bootstrap/clojure/fixtures/rejected/profile-effect.gravity" "P1-EFFECT"
+  "bootstrap/clojure/fixtures/rejected/profile-capability.gravity" "P1-CAPABILITY"
+  "bootstrap/clojure/fixtures/rejected/profile-memory.gravity" "P1-MEMORY"
+  "bootstrap/clojure/fixtures/rejected/profile-runtime.gravity" "P1-RUNTIME"
+  "bootstrap/clojure/fixtures/rejected/profile-cross-import.gravity" "P1-CROSS-IMPORT"
+  "bootstrap/clojure/fixtures/rejected/profile-macro.gravity" "P1-MACRO"
+  "bootstrap/clojure/fixtures/rejected/profile-facet.gravity" "P1-FACET"
+  "bootstrap/clojure/fixtures/rejected/profile-backend.gravity" "P1-BACKEND"}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. P1 profile manifest artifacts, P2-P5 profile-set artifacts, P6-P8/P11-P12 constrained profile-validation artifacts, and 479 rejected fixtures"}]
+ :limits
+ ["This proves the P1 shared profile-manifest schema and diagnostics at the Clojure stage0 boundary."
+  "It does not complete the profile-specific P2 through P13 implementation tasks."]}

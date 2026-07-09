@@ -1,0 +1,12 @@
+(ns typed.pattern.type
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (match 1
+    "one" :wrong
+    _ :ok))

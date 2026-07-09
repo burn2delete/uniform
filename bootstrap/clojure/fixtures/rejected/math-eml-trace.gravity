@@ -1,0 +1,18 @@
+(ns math.eml-trace
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:eml
+     {:normalization-trace
+      [{:step 1
+        :stage :basis-introduce
+        :rule :bad-heuristic-choice
+        :premises [{:fact :domain
+                    :value {'x {:real [-8.0 8.0]}}}]
+        :source {:efir-node :exp-neg-x
+                 :span "math/eml-trace.gravity:8:1"}
+        :replayable? false}]}}}))

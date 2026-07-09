@@ -1,0 +1,4 @@
+(ns backend.artifact-b13-evidence
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:artifact-emission {:fail :b13-evidence}}}))

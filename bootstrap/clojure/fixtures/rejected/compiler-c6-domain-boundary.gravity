@@ -1,0 +1,9 @@
+(ns compiler.c6.domain-boundary
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c6-lowering {:fail :domain-boundary}}}))
+
+(def value 1)

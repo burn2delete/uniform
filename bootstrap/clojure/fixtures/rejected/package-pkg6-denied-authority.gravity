@@ -1,0 +1,11 @@
+; Rejected P12 PKG6 fixture.
+(ns package.pkg6-denied-authority
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:build/package-index})
+  (:capabilities #{:package/resolve})
+  (:safety :safe)
+  (:metadata {:package {:artifacts {:fail :pkg6004}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,6 @@
+; Rejected P09 DOM9 fixture.
+(ns domain.dom9-convergence (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom9-convergence}}}))
+(defn main [] :- I64 1)

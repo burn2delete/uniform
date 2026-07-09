@@ -1,0 +1,8 @@
+(ns profile.bad.firmware-stack
+  (:profile :firmware)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p6/stack))

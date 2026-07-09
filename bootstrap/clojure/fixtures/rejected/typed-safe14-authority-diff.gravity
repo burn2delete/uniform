@@ -1,0 +1,2 @@
+(ns safety.supply-chain.reject (:profile :hosted) (:target :jvm) (:exports [failure]) (:safety :safe))
+(def failure (safe14/authority-diff :bad))

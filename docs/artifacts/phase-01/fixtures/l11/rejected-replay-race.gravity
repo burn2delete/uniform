@@ -1,0 +1,5 @@
+(ns l11.bad.replay
+  (:profile :distributed))
+
+(def bad
+  (workflow/race branch-a branch-b))

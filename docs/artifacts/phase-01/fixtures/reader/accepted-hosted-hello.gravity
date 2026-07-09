@@ -1,0 +1,15 @@
+(ns hello.main
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.io :as io])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:doc "Reader fixture"}))
+
+^{:doc "Entry point"}
+(defn main [name :- String] :- Nil
+  (println "Hello" name))
+
+'(data not call)
+

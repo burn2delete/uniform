@@ -1,0 +1,9 @@
+{
+  "extends": "accepted-math-system.json",
+  "set": {
+    "/interval_proofs/0/partition/unresolved": [
+      "c2"
+    ],
+    "/interval_proofs/0/residual_checks_allowed": false
+  }
+}

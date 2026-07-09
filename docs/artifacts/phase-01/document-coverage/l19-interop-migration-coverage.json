@@ -1,0 +1,67 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "interop-migration-artifact",
+      "coverage": [
+        "foreign binding declarations",
+        "ABI/protocol/schema metadata",
+        "generated binding provenance",
+        "safe wrapper audits",
+        "ownership and error maps",
+        "capability and effect records",
+        "migration shims",
+        "parity reports",
+        "compatibility records"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/accepted-interop.json"
+    }
+  ],
+  "document": "L19",
+  "kind": "l19-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L19-BOUNDARY-INCOMPLETE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-boundary-incomplete.json"
+    },
+    {
+      "diagnostic": "L19-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-profile.json"
+    },
+    {
+      "diagnostic": "L19-TYPE-MAP",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-type-map.json"
+    },
+    {
+      "diagnostic": "L19-OWNERSHIP",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-ownership.json"
+    },
+    {
+      "diagnostic": "L19-ERROR-MAP",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-error-map.json"
+    },
+    {
+      "diagnostic": "L19-CAPABILITY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-capability.json"
+    },
+    {
+      "diagnostic": "L19-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-effect.json"
+    },
+    {
+      "diagnostic": "L19-SAFE-WRAPPER",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-safe-wrapper.json"
+    },
+    {
+      "diagnostic": "L19-SCHEMA-DRIFT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-schema-drift.json"
+    },
+    {
+      "diagnostic": "L19-MIGRATION-PARITY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-migration-parity.json"
+    },
+    {
+      "diagnostic": "L19-HOST-LEAK",
+      "fixture": "docs/artifacts/phase-01/fixtures/l19/rejected-host-leak.json"
+    }
+  ]
+}

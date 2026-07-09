@@ -1,0 +1,42 @@
+(ns profile.validation.gpu
+  (:profile :gpu)
+  (:target :jvm)
+  (:exports [kernel])
+  (:effects #{:pure})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:memory {:hidden-allocation false
+                       :device-memory :linear}
+              :runtime {:required false
+                        :providers #{:device :kernel-launch}}
+              :package-allowed-effects #{:pure}
+              :provider-effect-grants #{:pure}
+              :deployment-allowed-effects #{:pure}
+              :package-capabilities #{}
+              :provider-capability-grants #{}
+              :deployment-capabilities #{}
+              :profile-validation
+              {:host-device-boundary-manifest {:host-profile :native
+                                               :device-profile :gpu
+                                               :boundary :device-buffer}
+               :kernel-ir {:kernel :tanh-activation
+                           :address-spaces #{:global :shared}}
+               :device-memory-lifetime-report {:buffers {:xs {:owner :kernel
+                                                              :lifetime :launch
+                                                              :linear true}}}
+               :transfer-graph {:edges [[:host :device] [:device :host]]
+                                :implicit-transfers false}
+               :synchronization-graph {:edges [[:copy-in :kernel]
+                                               [:kernel :copy-out]]
+                                       :barriers [:workgroup]}
+               :target-feature-manifest {:target :spir-v
+                                         :features #{:simt :f32}}
+               :occupancy-launch-report {:workgroup [256]
+                                         :grid [1]
+                                         :occupancy :checked}
+               :math-approximation-certificates {:mode :certified-approx
+                                                 :max-error "1e-5"
+                                                 :certificate :tanh-cert}}}))
+
+(def kernel
+  {:kernel :tanh-activation})

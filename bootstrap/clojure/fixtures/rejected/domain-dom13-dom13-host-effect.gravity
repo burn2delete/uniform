@@ -1,0 +1,6 @@
+; Rejected P09 DOM13 fixture.
+(ns domain.dom13-host-effect (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom13-host-effect}}}))
+(defn main [] :- I64 1)

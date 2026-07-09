@@ -1,0 +1,69 @@
+{:task-id :P01-D022
+ :document "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/compile-time-evaluation.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-compile-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/compile-time-evaluation.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'compile.time
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:build-effect-log
+                                       :cache-decision
+                                       :cache-key
+                                       :defconst
+                                       :generated-code
+                                       :grant-record
+                                       :hermetic-replay
+                                       :model-codegen
+                                       :nondeterministic-replay
+                                       :pure-constant
+                                       :schema-loading
+                                       :target-probe
+                                       :write-artifact]
+                    :compile-time-trace-events 9
+                    :constant-table-entries 2
+                    :generated-form-provenance-records 2
+                    :hermetic-replay-records 8
+                    :cache-key-records 9
+                    :compile-time-grant-proof-records 6
+                    :build-effect-log-records 6
+                    :inferred-build-effects #{:build/read-file
+                                              :build/random
+                                              :build/target-probe
+                                              :build/write-artifact
+                                              :build/model-call}
+                    :capability-basis :metadata-build-grants}
+ :rejected-diagnostics [{:fixture "typed-compile-pure-effect.gravity"
+                         :diagnostic "L12-PURE-EFFECT"}
+                        {:fixture "typed-compile-build-grant.gravity"
+                         :diagnostic "L12-BUILD-GRANT"}
+                        {:fixture "typed-compile-hermetic-input.gravity"
+                         :diagnostic "L12-HERMETIC-INPUT"}
+                        {:fixture "typed-compile-nondeterminism.gravity"
+                         :diagnostic "L12-NONDETERMINISM"}
+                        {:fixture "typed-compile-const-representation.gravity"
+                         :diagnostic "L12-CONST-REPRESENTATION"}
+                        {:fixture "typed-compile-generated-illegal.gravity"
+                         :diagnostic "L12-GENERATED-ILLEGAL"}
+                        {:fixture "typed-compile-phase-capture.gravity"
+                         :diagnostic "L12-PHASE-CAPTURE"}
+                        {:fixture "typed-compile-cache-unsafe.gravity"
+                         :diagnostic "L12-CACHE-UNSAFE"}
+                        {:fixture "typed-compile-secret-leak.gravity"
+                         :diagnostic "L12-SECRET-LEAK"}
+                        {:fixture "typed-compile-fuel.gravity"
+                         :diagnostic "L12-FUEL"}]
+ :validation [{:command "clojure -M:test"
+               :result "19 tests, 771 assertions, 142 rejected fixtures"}
+              {:command "clojure -M -e artifact-summary"
+               :result "complete L12 compile-time conformance with 9 trace events and 6 grant proofs"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 10 L12 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records compile-time authority and provenance but does not claim production plugin execution."
+                  "Package lockfile persistence, content-addressed cache storage, and backend artifact replay remain downstream phase work."
+                  "Self-hosted compile-time evaluation remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

@@ -1,0 +1,9 @@
+(ns altmem.bounds
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/bounds :out-of-range))

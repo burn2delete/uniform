@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/namespace/build_effect_grants/0"
+  ],
+  "extends": "accepted-facet-system.json"
+}

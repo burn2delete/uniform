@@ -1,0 +1,298 @@
+(ns safety.capability-supply-chain
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [fs-requirement network-requirement environment-requirement
+             secret-requirement process-requirement model-requirement
+             tool-requirement memory-requirement ffi-requirement
+             compiler-requirement hardware-requirement grant-intersection
+             provider-selection scope-check attenuation revocation
+             secret-redaction runtime-check usage-summary package-manifest
+             lockfile build-effects runtime-capabilities unsafe-summary
+             native-dependency generated-provenance signature-attestation
+             authority-diff safe10-conformance safe14-conformance])
+  (:effects #{:build/read-file :build/write-artifact})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file :build/write-artifact}
+              :supply-chain-policy {:safe-build true
+                                    :lockfile-required true
+                                    :authority-diff-required true}}))
+
+(def fs-requirement
+  (safe10/capability-requirement :filesystem/read
+                                 :filesystem
+                                 :filesystem/read
+                                 :runtime
+                                 :manifest-and-type
+                                 'gravity.fs/read-scoped
+                                 :grant/config-read
+                                 {:paths ["config/app.edn"]}))
+
+(def network-requirement
+  (safe10/capability-requirement :network/client
+                                 :network
+                                 :network/http
+                                 :runtime
+                                 :manifest-and-effect
+                                 'gravity.net/http-client
+                                 :grant/http-client
+                                 {:hosts ["api.example.test"]}))
+
+(def environment-requirement
+  (safe10/capability-requirement :environment/read
+                                 :environment
+                                 :environment/read
+                                 :runtime
+                                 :manifest
+                                 'gravity.env/scoped
+                                 :grant/env-read
+                                 {:keys ["GRAVITY_ENV"]}))
+
+(def secret-requirement
+  (safe10/capability-requirement :secrets/read
+                                 :secret
+                                 :secrets/read
+                                 :runtime
+                                 :manifest-and-artifact
+                                 'gravity.secrets/scoped
+                                 :grant/secret-read
+                                 {:secret-names ["db/password"]}))
+
+(def process-requirement
+  (safe10/capability-requirement :shell/exec
+                                 :process
+                                 :shell/exec
+                                 :runtime
+                                 :manifest
+                                 'gravity.shell/audited
+                                 :grant/shell-tool
+                                 {:commands ["gravity-tool"]}))
+
+(def model-requirement
+  (safe10/capability-requirement :ai/model
+                                 :model
+                                 :ai/model-call
+                                 :runtime
+                                 :manifest-and-cost-policy
+                                 'gravity.ai/model-provider
+                                 :grant/local-model
+                                 {:model-id "stage0-small"}))
+
+(def tool-requirement
+  (safe10/capability-requirement :ai/tool
+                                 :tool
+                                 :ai/tool-call
+                                 :runtime
+                                 :manifest-and-schema
+                                 'gravity.ai/tool-provider
+                                 :grant/schema-tool
+                                 {:tool-id :schema-validator}))
+
+(def memory-requirement
+  (safe10/capability-requirement :memory/raw
+                                 :memory
+                                 :memory/raw
+                                 :runtime
+                                 :unsafe-island-and-manifest
+                                 'gravity.memory/raw-unsafe
+                                 :grant/raw-memory
+                                 {:regions [:ffi-buffer]}))
+
+(def ffi-requirement
+  (safe10/capability-requirement :ffi/call
+                                 :ffi
+                                 :ffi/call
+                                 :runtime
+                                 :unsafe-island-and-wrapper
+                                 'gravity.ffi/audited
+                                 :grant/ffi-c
+                                 {:symbols ["strlen"]}))
+
+(def compiler-requirement
+  (safe10/capability-requirement :compiler/ir
+                                 :compiler
+                                 :compiler/read-ir
+                                 :build
+                                 :build-manifest-and-pass
+                                 'gravity.compiler/ir-store
+                                 :grant/compiler-ir
+                                 {:ir-level :mir}))
+
+(def hardware-requirement
+  (safe10/capability-requirement :hardware/mmio
+                                 :hardware
+                                 :memory/mmio
+                                 :runtime
+                                 :hardware-profile-policy
+                                 'gravity.hardware/mmio-audited
+                                 :grant/mmio-control
+                                 {:address-ranges ["0x1000-0x1fff"]}))
+
+(def grant-intersection
+  (safe10/grant-intersection :grant/config-read
+                             :filesystem/read
+                             {:paths ["config/*.edn"]}
+                             {:paths ["config/app.edn"]}
+                             {:paths ["config/**"]}
+                             {:profile :hosted}
+                             {:deployment :local-safe}
+                             {:paths ["config/app.edn"]}
+                             {:paths ["config/app.edn"]}
+                             :allowed))
+
+(def provider-selection
+  (safe10/provider-selection :filesystem/read
+                             'gravity.fs/read-scoped
+                             "fixture-1"
+                             :manifest
+                             {:paths ["config/app.edn"]}
+                             :runtime
+                             :trusted-core
+                             :gravity.provider/fs-v1
+                             :gravity.conformance/fs))
+
+(def scope-check
+  (safe10/scope-check :filesystem/read
+                      :filesystem
+                      {:paths ["config/app.edn"]}
+                      {:paths ["config/*.edn"]}
+                      true
+                      :result-error))
+
+(def attenuation
+  (safe10/attenuation-record :filesystem/read
+                             :filesystem/read-public
+                             {:paths ["config/**"]}
+                             {:paths ["config/public.edn"]}
+                             :request-lifetime
+                             true))
+
+(def revocation
+  (safe10/revocation-record :network/client
+                            'gravity.net/http-client
+                            :deployment-controller
+                            :capability-revoked
+                            :thread-safe
+                            true
+                            true))
+
+(def secret-redaction
+  (safe10/secret-redaction "db/password"
+                           :name-only
+                           :public-artifacts-redacted
+                           :no-export))
+
+(def runtime-check
+  (safe10/runtime-check :database/read
+                        'gravity.db/read-scoped
+                        {:databases ["app"]}
+                        :result-error
+                        :audit/db-read
+                        :runtime-checked))
+
+(def usage-summary
+  (safe10/usage-summary "gravity.app"
+                        #{:filesystem/read :network/client :database/read}
+                        #{:build/read-file :compiler/ir}
+                        #{:filesystem :network :environment :secret :process
+                          :model :tool :memory :ffi :compiler :hardware}
+                        #{:source :package :workspace :profile :deployment
+                          :runtime-provider}
+                        :deployment/local-safe))
+
+(def package-manifest
+  (safe14/package-manifest "gravity.app"
+                           "0.1.0"
+                           #{:hosted :native}
+                           #{:filesystem/read :network/client}
+                           #{:build/read-file}
+                           #{:build/network :build/exec}
+                           {:count 0 :families #{}}
+                           [:libssl]
+                           []
+                           [:schema/user-binding]
+                           true))
+
+(def lockfile
+  (safe14/lockfile-record "gravity.app"
+                          "0.1.0"
+                          "sha256:package"
+                          {'gravity.fs/read-scoped "fixture-1"}
+                          #{:build/read-file}
+                          {:libssl "sha256:libssl"}
+                          {:schema/user-binding "sha256:schema-binding"}
+                          #{:build/read-file/replay}
+                          true))
+
+(def build-effects
+  (safe14/build-effect-summary "gravity.app"
+                               #{:build/read-file}
+                               #{:grant/schema-build-read}
+                               #{'gravity.fs/read-scoped}
+                               true
+                               #{}))
+
+(def runtime-capabilities
+  (safe14/runtime-capability-summary "gravity.app"
+                                     ["root" "gravity.app"]
+                                     #{:filesystem/read :network/client}
+                                     #{:filesystem/read :network/client}
+                                     #{}
+                                     :root-approved))
+
+(def unsafe-summary
+  (safe14/unsafe-summary-record "gravity.app"
+                                0
+                                #{}
+                                #{:hosted}
+                                #{}
+                                :review-not-required
+                                :certificate/not-required
+                                #{}))
+
+(def native-dependency
+  (safe14/native-dependency "gravity.app"
+                            "libssl"
+                            "3.0.0"
+                            "registry/native/libssl"
+                            "sha256:libssl"
+                            :c-abi
+                            #{:jvm :native}
+                            :dynamic
+                            "Apache-2.0"
+                            "gravity.openssl.safe"
+                            #{:ffi/call}
+                            #{}))
+
+(def generated-provenance
+  (safe14/generated-provenance :schema/user-binding
+                               :schema-generator
+                               #{"sha256:user-schema"}
+                               #{:build/read-file}
+                               #{:grant/schema-build-read}
+                               "sha256:schema-binding"
+                               true
+                               #{:schema-validated :taint-preserved}))
+
+(def signature-attestation
+  (safe14/signature-attestation "gravity.app"
+                                "sha256:package"
+                                :sigstore/stage0
+                                :slsa/provenance
+                                true))
+
+(def authority-diff
+  (safe14/authority-diff-record "gravity.app"
+                                "0.1.0"
+                                "0.1.1"
+                                #{}
+                                #{}
+                                #{}
+                                :no-new-authority
+                                :no-unapproved-expansion))
+
+(def safe10-conformance
+  (safe10/conformance :complete))
+
+(def safe14-conformance
+  (safe14/conformance :complete))

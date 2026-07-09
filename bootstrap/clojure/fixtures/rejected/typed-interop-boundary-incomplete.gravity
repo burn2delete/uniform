@@ -1,0 +1,9 @@
+(ns interop.boundary-incomplete
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/boundary-incomplete :missing-metadata))

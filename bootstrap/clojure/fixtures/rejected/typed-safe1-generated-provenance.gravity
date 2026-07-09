@@ -1,0 +1,9 @@
+(ns safe1.generated-provenance
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (safe1/generated-provenance-missing :macro/raw-read))

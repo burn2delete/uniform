@@ -1,0 +1,68 @@
+{:task-id :P01-D026
+ :document "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/alternative-macro.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-altmacro-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/alternative-macro.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'alternative.macro
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:build-effect
+                                       :cache
+                                       :equivalence
+                                       :explicit-capture
+                                       :expansion-trace
+                                       :facet-aware
+                                       :generated-origin
+                                       :generated-validation
+                                       :hygiene
+                                       :phase-boundary
+                                       :provider
+                                       :reference-l4
+                                       :source-span
+                                       :syntax-object]
+                    :provider-declarations 1
+                    :expansion-traces 1
+                    :syntax-object-serializations 1
+                    :hygiene-records 1
+                    :explicit-capture-records 1
+                    :build-effect-traces 1
+                    :cache-decisions 1
+                    :equivalence-reports 1
+                    :facet-dispatch-records 1
+                    :generated-validation-records 1
+                    :capability-basis :l4-equivalent-provider-trace-and-normal-validation}
+ :rejected-diagnostics [{:fixture "typed-altmacro-provider.gravity"
+                         :diagnostic "L16-PROVIDER"}
+                        {:fixture "typed-altmacro-equivalence.gravity"
+                         :diagnostic "L16-EQUIVALENCE"}
+                        {:fixture "typed-altmacro-syntax-object.gravity"
+                         :diagnostic "L16-SYNTAX-OBJECT"}
+                        {:fixture "typed-altmacro-hygiene.gravity"
+                         :diagnostic "L16-HYGIENE"}
+                        {:fixture "typed-altmacro-phase.gravity"
+                         :diagnostic "L16-PHASE"}
+                        {:fixture "typed-altmacro-build-effect.gravity"
+                         :diagnostic "L16-BUILD-EFFECT"}
+                        {:fixture "typed-altmacro-hermetic.gravity"
+                         :diagnostic "L16-HERMETIC"}
+                        {:fixture "typed-altmacro-cache.gravity"
+                         :diagnostic "L16-CACHE"}
+                        {:fixture "typed-altmacro-facet.gravity"
+                         :diagnostic "L16-FACET"}
+                        {:fixture "typed-altmacro-generated.gravity"
+                         :diagnostic "L16-GENERATED"}]
+ :validation [{:command "clojure -M:test"
+               :result "19 tests, 771 assertions, 142 rejected fixtures"}
+              {:command "clojure -M -e artifact-summary"
+               :result "complete L16 alternative macro conformance with provider, trace, syntax, hygiene, capture, build-effect, cache, equivalence, facet, and generated-validation records"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 10 L16 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records an alternative macro contract and L4 equivalence evidence but does not implement a second production expander."
+                  "Full language-server integration, larger L4 corpus comparison, production incremental caches, and provider boot remain downstream work."
+                  "Self-hosted alternative macro checking remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

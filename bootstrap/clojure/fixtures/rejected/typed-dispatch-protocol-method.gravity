@@ -1,0 +1,10 @@
+(ns typed.dispatch.protocol-method
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (dispatch/protocol-method-mismatch :Closeable :FileHandle :close))

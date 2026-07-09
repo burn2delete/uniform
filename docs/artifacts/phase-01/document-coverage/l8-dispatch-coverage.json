@@ -1,0 +1,47 @@
+{
+  "accepted": [
+    {
+      "artifact": "docs/artifacts/phase-01/dispatch/dispatch-analysis.accepted.json",
+      "coverage": [
+        "protocol table",
+        "implementation table",
+        "method signature records",
+        "dispatch mode records",
+        "interface lowering artifacts"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/accepted-dispatch.gravity"
+    }
+  ],
+  "document": "L8",
+  "kind": "l8-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L8-PROTOCOL-METHOD",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-protocol-method.gravity"
+    },
+    {
+      "diagnostic": "L8-DISPATCH-AMBIGUOUS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-dispatch-ambiguous.gravity"
+    },
+    {
+      "diagnostic": "L8-DISPATCH-MISSING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-dispatch-missing.gravity"
+    },
+    {
+      "diagnostic": "L8-DYNAMIC-FORBIDDEN",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-dynamic-forbidden.gravity"
+    },
+    {
+      "diagnostic": "L8-METHOD-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-method-effect.gravity"
+    },
+    {
+      "diagnostic": "L8-HOST-DISPATCH",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-host-dispatch.gravity"
+    },
+    {
+      "diagnostic": "L8-TOOL-DISPATCH",
+      "fixture": "docs/artifacts/phase-01/fixtures/l8/rejected-tool-dispatch.gravity"
+    }
+  ]
+}

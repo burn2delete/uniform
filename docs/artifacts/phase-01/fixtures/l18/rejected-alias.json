@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/alias_facts/0/violates": true
+  }
+}

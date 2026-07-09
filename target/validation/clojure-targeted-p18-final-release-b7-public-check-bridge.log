@@ -1,0 +1,31 @@
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19951)
+compiler-c4-build-effect.gravity
+expected: (str/includes? (:err gravity-result) expected-diagnostic)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:87859:1).\nEOF while reading, starting at line 87858\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-9384538851686126183.edn\n" "C4-BUILD-EFFECT"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19957)
+compiler-c4-build-effect.gravity
+expected: (str/includes? (:err gravity-result) gravity-fixture)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:87859:1).\nEOF while reading, starting at line 87858\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-9384538851686126183.edn\n" "compiler-c4-build-effect.gravity"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19963)
+compiler-c4-build-effect.qst
+expected: (= (str/replace (:err gravity-result) #"\.gravity" ".qst") (:err qst-result))
+  actual: (not (= "Syntax error reading source at (gravity/bootstrap.clj:87859:1).\nEOF while reading, starting at line 87858\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-9384538851686126183.edn\n" "{:diagnostic-family :c4-macro-expansion, :remediation \"Rebuild macro expansion with syntax-object inputs and outputs, authorized build effects, visible hygiene, generated-origin links, replayable traces, and downstream safety checks.\", :missing-fields [:build-effect], :bootstrap-stage :stage0, :source-span {:source \"bootstrap/clojure/fixtures/rejected/compiler-c4-build-effect.qst\", :form-index 0}, :stage :macro-expansion, :active-profile :hosted, :build-effects #{}, :macro fixture/build-effect, :id \"C4-BUILD-EFFECT\", :document-id \"C4\", :call-site-span nil, :target :jvm, :expected-document \"docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md\", :message \"macro used undeclared or ungranted build effects\"}\n"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20457)
+backend-b9-cdc.gravity
+expected: (str/includes? (:err gravity-result) expected-diagnostic)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:90845:3).\nUnmatched delimiter: )\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-6299954622233999559.edn\n" "B9-CDC"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20463)
+backend-b9-cdc.gravity
+expected: (str/includes? (:err gravity-result) gravity-fixture)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:90845:3).\nUnmatched delimiter: )\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-6299954622233999559.edn\n" "backend-b9-cdc.gravity"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20469)
+backend-b9-cdc.qst
+expected: (= (str/replace (:err gravity-result) #"\.gravity" ".qst") (:err qst-result))
+  actual: (not (= "Syntax error reading source at (gravity/bootstrap.clj:90845:3).\nUnmatched delimiter: )\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-6299954622233999559.edn\n" "{:diagnostic-family :b9-hdl-backend-document, :remediation \"B9 requires verified hardware IR, fixed-width layout, explicit clock/reset and CDC records, finite-state control, hardware interface schemas, timing constraints, testbench/simulation trace evidence, source maps, and HDL artifact provenance.\", :missing-fields [:b9-cdc], :bootstrap-stage :stage0, :source-span {:source \"bootstrap/clojure/fixtures/rejected/backend-b9-cdc.qst\", :form-index 0}, :stage :b9-hdl-backend-document-coverage, :fallback-status :rejected, :id \"B9-CDC\", :target :systemverilog, :backend :gravity.backend/hdl, :profile :hardware, :message \"B9 HDL backend design document coverage validation failed\"}\n"))
+P18 final release targeted test completed

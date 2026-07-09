@@ -1,0 +1,12 @@
+(ns math.efir
+  (:profile :native)
+  (:target :jvm)
+  (:exports [efir-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:math {:numeric {}
+                     :efir {}}}))
+
+(defn efir-ready []
+  true)

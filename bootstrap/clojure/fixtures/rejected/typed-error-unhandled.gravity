@@ -1,0 +1,10 @@
+(ns typed.error.unhandled
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (error/unhandled))

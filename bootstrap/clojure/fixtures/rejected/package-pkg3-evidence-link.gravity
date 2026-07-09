@@ -1,0 +1,11 @@
+; Rejected P12 PKG3 fixture.
+(ns package.pkg3-evidence-link
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:build/package-index})
+  (:capabilities #{:artifact/read})
+  (:safety :safe)
+  (:metadata {:package {:artifacts {:fail :pkg3005}}}))
+
+(defn main [] :- I64 1)

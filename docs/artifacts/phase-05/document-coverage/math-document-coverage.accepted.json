@@ -1,0 +1,249 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "numeric family lattice",
+        "conversion rule table",
+        "implicit narrowing rejection"
+      ],
+      "document": "MATH1",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md",
+      "task_id": "P05-D069"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "defelementary-style declaration record",
+        "provider eligibility report",
+        "ineligible provider rejection"
+      ],
+      "document": "MATH2",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md",
+      "task_id": "P05-D070"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "EFIR graph with semantic anchors",
+        "domain, codomain, mode, precision, and branch policy",
+        "missing branch policy rejection"
+      ],
+      "document": "MATH3",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md",
+      "task_id": "P05-D071"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "EFIR-to-EML trace",
+        "bounded deterministic search manifest",
+        "candidate-before-proof rejection"
+      ],
+      "document": "MATH4",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md",
+      "task_id": "P05-D072"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "approximation certificate shape",
+        "separate approximation and roundoff bounds",
+        "error-bound rejection"
+      ],
+      "document": "MATH5",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md",
+      "task_id": "P05-D073"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "exact interval proof domain",
+        "deterministic partition replay",
+        "unresolved-cell rejection"
+      ],
+      "document": "MATH6",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md",
+      "task_id": "P05-D074"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "numeric-mode environment",
+        "precision contracts",
+        "target-default rejection"
+      ],
+      "document": "MATH7",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md",
+      "task_id": "P05-D075"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "floating manifest",
+        "backend lowering record",
+        "strict FMA rejection"
+      ],
+      "document": "MATH8",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md",
+      "task_id": "P05-D076"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "guarded rewrite rule",
+        "rewrite trace replay record",
+        "tree-identity equality rejection"
+      ],
+      "document": "MATH9",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md",
+      "task_id": "P05-D077"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "elementary optimization decision record",
+        "correct-rounding interval ledger",
+        "selected candidate proof rejection"
+      ],
+      "document": "MATH10",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md",
+      "task_id": "P05-D078"
+    },
+    {
+      "artifact_hash": "sha256:9860a55856aa5f05fdaf2889e5d22cbbc02798cced463be188381b3ad5f314db",
+      "artifact_kind": "math-system-artifact",
+      "coverage": [
+        "math conformance suite manifest",
+        "positive and negative fixtures",
+        "diagnostic mismatch rejection"
+      ],
+      "document": "MATH11",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/accepted-math-system.json",
+      "governing_doc": "docs/phase-05-mathematical-and-elementary-function-system/079-math11-math-verification-and-conformance-test-plan.md",
+      "task_id": "P05-D079"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 11,
+    "documents": 11,
+    "rejected_diagnostics": 11,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "MATH1",
+    "MATH2",
+    "MATH3",
+    "MATH4",
+    "MATH5",
+    "MATH6",
+    "MATH7",
+    "MATH8",
+    "MATH9",
+    "MATH10",
+    "MATH11"
+  ],
+  "input_hash": "sha256:1abc2755081097e0d2a3ef122d62f51c6355b3a16aa5588dfc8c2096af9d99a5",
+  "kind": "phase05-math-document-coverage-artifact",
+  "phase": "05",
+  "rejected": [
+    {
+      "diagnostic": "MATH1-NARROW",
+      "document": "MATH1",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math1-narrow.json",
+      "missing_fact": "explicit-conversion-mode",
+      "task_id": "P05-D069"
+    },
+    {
+      "diagnostic": "MATH2-PROVIDER",
+      "document": "MATH2",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math2-provider.json",
+      "missing_fact": "eligible-provider",
+      "task_id": "P05-D070"
+    },
+    {
+      "diagnostic": "MATH3-BRANCH",
+      "document": "MATH3",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math3-branch.json",
+      "missing_fact": "branch_policy",
+      "task_id": "P05-D071"
+    },
+    {
+      "diagnostic": "MATH4-CANDIDATE",
+      "document": "MATH4",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math4-candidate.json",
+      "missing_fact": "proved-or-bounded-candidate",
+      "task_id": "P05-D072"
+    },
+    {
+      "diagnostic": "MATH5-APPROX-ERROR",
+      "document": "MATH5",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math5-error.json",
+      "missing_fact": "combined-error-bound",
+      "task_id": "P05-D073"
+    },
+    {
+      "diagnostic": "MATH6-UNRESOLVED",
+      "document": "MATH6",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math6-unresolved.json",
+      "missing_fact": "resolved-cells-or-residual-check",
+      "task_id": "P05-D074"
+    },
+    {
+      "diagnostic": "MATH7-TARGET-DEFAULT",
+      "document": "MATH7",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math7-target-default.json",
+      "missing_fact": "explicit-target-contract",
+      "task_id": "P05-D075"
+    },
+    {
+      "diagnostic": "MATH8-FMA",
+      "document": "MATH8",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math8-fma.json",
+      "missing_fact": "fma-proof-or-relaxed-mode",
+      "task_id": "P05-D076"
+    },
+    {
+      "diagnostic": "MATH9-EQUALITY",
+      "document": "MATH9",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math9-equality.json",
+      "missing_fact": "proof-artifact",
+      "task_id": "P05-D077"
+    },
+    {
+      "diagnostic": "MATH10-PROOF",
+      "document": "MATH10",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math10-proof.json",
+      "missing_fact": "proof-or-certificate",
+      "task_id": "P05-D078"
+    },
+    {
+      "diagnostic": "MATH11-DIAGNOSTIC",
+      "document": "MATH11",
+      "fixture": "docs/artifacts/phase-05/fixtures/math/rejected-math11-diagnostic.json",
+      "missing_fact": "expected-diagnostic",
+      "task_id": "P05-D079"
+    }
+  ]
+}

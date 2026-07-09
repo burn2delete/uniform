@@ -1,0 +1,9 @@
+(ns compiler.c6.lowering-gap
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c6-lowering {:fail :gap}}}))
+
+(def value 1)

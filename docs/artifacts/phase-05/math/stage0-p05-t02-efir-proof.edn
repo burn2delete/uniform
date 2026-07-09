@@ -1,0 +1,70 @@
+{:phase "05"
+ :task "P05-T02"
+ :documents ["MATH2" "MATH3"]
+ :artifact-kind :gravity/stage0-efir-artifact
+ :artifact-hash "sha256:9cc5c7236470cc443f82b550b5cf7bd5041144ff755a57c63d3f54dea7561ea1"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-efir.gravity"
+ :command "clojure -M:gravity efir bootstrap/clojure/fixtures/accepted/math-efir.gravity"
+ :summary
+ {:pass :efir-validation
+  :output :efir-graph
+  :elementary-declaration-count 1
+  :efir-graph-count 1
+  :provider-count 2
+  :required-diagnostic-count 18
+  :status :complete}
+ :capability-based-proof
+ {:elementary-declarations-complete? true
+  :providers-mode-eligible? true
+  :semantic-runtime-separated? true
+  :efir-graphs-anchored? true
+  :numeric-mode-and-precision-attached? true
+  :branch-policy-preserved? true
+  :runtime-selection-anchored? true
+  :eml-not-used-as-equality? true
+  :capability-authority-preserved? true
+  :status :complete}
+ :rejected-fixtures
+ [{:fixture "math-efir-declaration.gravity" :diagnostic "MATH2-DECLARATION"}
+  {:fixture "math-efir-domain.gravity" :diagnostic "MATH2-DOMAIN"}
+  {:fixture "math-efir-branch.gravity" :diagnostic "MATH2-BRANCH"}
+  {:fixture "math-efir-provider.gravity" :diagnostic "MATH2-PROVIDER"}
+  {:fixture "math-efir-numeric-mode.gravity" :diagnostic "MATH2-NUMERIC-MODE"}
+  {:fixture "math-efir-certificate.gravity" :diagnostic "MATH2-CERTIFICATE"}
+  {:fixture "math-efir-equivalence.gravity" :diagnostic "MATH2-EQUIVALENCE"}
+  {:fixture "math-efir-effect.gravity" :diagnostic "MATH2-EFFECT"}
+  {:fixture "math-efir-target.gravity" :diagnostic "MATH2-TARGET"}
+  {:fixture "math-efir-node.gravity" :diagnostic "MATH3-NODE"}
+  {:fixture "math-efir-graph-domain.gravity" :diagnostic "MATH3-DOMAIN"}
+  {:fixture "math-efir-graph-codomain.gravity" :diagnostic "MATH3-CODOMAIN"}
+  {:fixture "math-efir-graph-branch.gravity" :diagnostic "MATH3-BRANCH"}
+  {:fixture "math-efir-graph-precision.gravity" :diagnostic "MATH3-PRECISION"}
+  {:fixture "math-efir-graph-source.gravity" :diagnostic "MATH3-SOURCE"}
+  {:fixture "math-efir-rewrite.gravity" :diagnostic "MATH3-REWRITE"}
+  {:fixture "math-efir-eml.gravity" :diagnostic "MATH3-EML"}
+  {:fixture "math-efir-runtime.gravity" :diagnostic "MATH3-RUNTIME"}]
+ :validation
+ {:clojure-test
+  {:command "clojure -M:test"
+   :result "Ran 42 tests containing 2151 assertions. 0 failures, 0 errors."
+   :rejected-fixtures 605}
+  :artifact-summary
+  {:command "clojure -M -e '(require (quote [gravity.bootstrap :as b])) ...'"
+   :result
+   {:kind :gravity/stage0-efir-artifact
+    :pass :efir-validation
+    :output :efir-graph
+    :status :complete
+    :declarations 1
+    :graphs 1
+    :providers 2
+    :diagnostics 18
+    :proof :complete}}}
+ :limits
+ [:stage0-efir-graph-only
+  :no-eml-normalization-or-search-claim
+  :no-certified-approximation-generation-claim
+  :no-interval-proof-engine-claim
+  :no-symbolic-rewrite-engine-claim
+  :no-production-math-runtime-claim
+  :no-self-hosting-claim]}

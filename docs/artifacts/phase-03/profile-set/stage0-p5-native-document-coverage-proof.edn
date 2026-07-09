@@ -1,0 +1,22 @@
+{:proof-id :stage0-p5-native-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D050
+ :document "P5"
+ :profile :native
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-set-native.gravity"
+ :artifact-kind :gravity/stage0-profile-set-artifact
+ :effective-effects #{:memory/allocate :thread/spawn :time/schedule}
+ :effective-capabilities #{:memory/allocator :scheduler/task}
+ :diagnostic-fixtures
+ {"P5-ALLOC" "bootstrap/clojure/fixtures/rejected/profile-native-alloc.gravity"
+  "P5-MEMORY-PROVIDER" "bootstrap/clojure/fixtures/rejected/profile-native-memory-provider.gravity"
+  "P5-FFI" "bootstrap/clojure/fixtures/rejected/profile-native-ffi.gravity"
+  "P5-RAW-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-native-raw-memory.gravity"
+  "P5-THREAD" "bootstrap/clojure/fixtures/rejected/profile-native-thread.gravity"
+  "P5-ATOMIC" "bootstrap/clojure/fixtures/rejected/profile-native-atomic.gravity"
+  "P5-SIMD" "bootstrap/clojure/fixtures/rejected/profile-native-simd.gravity"
+  "P5-NUMERIC" "bootstrap/clojure/fixtures/rejected/profile-native-numeric.gravity"
+  "P5-OPTIMIZATION" "bootstrap/clojure/fixtures/rejected/profile-native-optimization.gravity"
+  "P5-RUNTIME" "bootstrap/clojure/fixtures/rejected/profile-native-runtime.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

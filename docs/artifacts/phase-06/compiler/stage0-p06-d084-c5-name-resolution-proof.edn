@@ -1,0 +1,73 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D084
+ :date "2026-06-25"
+ :status :complete
+ :capability :c5-name-resolution-document-coverage
+ :command "clojure -M:gravity compiler-c5-resolution bootstrap/clojure/fixtures/accepted/compiler-c5-name-resolution.gravity"
+ :artifact-kind :gravity/stage0-c5-name-resolution-artifact
+ :artifact-hash "sha256:9b94f6b87dabeb53716f20d452d70a8726f94a6861a81e051bf38612a4a8da94"
+ :summary {:binding-records 45
+           :namespace-bindings 16
+           :local-bindings 5
+           :aliases 3
+           :dependency-edges 3
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+                       "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
+                       "docs/phase-01-core-language/015-l5-type-system-specification.md"
+                       "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                       "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c5-name-resolution.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c5-unresolved.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-ambiguous.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-private.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-alias.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-shadow.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-cycle.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-cross-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c5-foreign.gravity"]
+ :diagnostic-ids ["C5-UNRESOLVED"
+                  "C5-AMBIGUOUS"
+                  "C5-PRIVATE"
+                  "C5-ALIAS"
+                  "C5-SHADOW"
+                  "C5-CYCLE"
+                  "C5-CROSS-PROFILE"
+                  "C5-CAPABILITY"
+                  "C5-TARGET"
+                  "C5-FOREIGN"]
+ :capability-based-proof {:local-resolution? true
+                          :namespace-resolution? true
+                          :alias-qualified-resolution? true
+                          :fully-qualified-resolution? true
+                          :macro-and-type-position-resolution? true
+                          :binding-identity-stable? true
+                          :visibility-diagnostics-covered? true
+                          :dependency-graph-emitted? true
+                          :cross-profile-boundaries-recorded? true
+                          :target-and-capability-compatibility? true
+                          :incremental-invalidation-recorded? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 57 tests containing 3012 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 820}
+              {:command "clojure -M:gravity compiler-c5-resolution bootstrap/clojure/fixtures/accepted/compiler-c5-name-resolution.gravity"
+               :result :accepted
+               :artifact-hash "sha256:9b94f6b87dabeb53716f20d452d70a8726f94a6861a81e051bf38612a4a8da94"}
+              {:command "clojure -M -e '(read every docs/artifacts/phase-06/compiler EDN proof file)'"
+               :result "parsed 11 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D084 for the Clojure stage0 C5 name resolution document boundary only."
+                 "It does not claim production-grade global package resolution, full type checking, complete target lowering, release readiness, or self-hosting."]}

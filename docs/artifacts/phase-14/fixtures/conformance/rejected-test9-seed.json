@@ -1,0 +1,9 @@
+{
+  "kind": "conformance-system-fixture-patch",
+  "base": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+  "patch": {
+    "fuzz_property_suite": {
+      "missing_seed": true
+    }
+  }
+}

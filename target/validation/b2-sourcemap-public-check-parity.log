@@ -1,0 +1,4 @@
+PASS accepted backend-native-lowering.gravity :: gravity stage0 check passed: backend.native-lowering
+PASS accepted backend-native-lowering.qst :: gravity stage0 check passed: backend.native-lowering
+PASS rejected backend-b2-abi.gravity B2-ABI
+PASS rejected backend-b2-abi.qst B2-ABI

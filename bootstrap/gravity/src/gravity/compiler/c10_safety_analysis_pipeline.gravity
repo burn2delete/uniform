@@ -1,0 +1,342 @@
+; Stage1 Gravity-owned C10 safety analysis pipeline contract.
+(ns gravity.compiler.c10-safety-analysis-pipeline
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c10-safety-analysis-contract
+             c10-operation-inventory-contract
+             c10-outcome-record-contract
+             c10-runtime-proof-unsafe-contract
+             c10-generated-taint-capability-contract
+             c10-ffi-numeric-optimization-contract
+             c10-safety-diagnostic-catalog
+             build-c10-safety-operation
+             build-c10-safety-outcome
+             verify-c10-safety-analysis])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :safety-analysis
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C10" "SAFE1" "SAFE2" "SAFE3" "SAFE4"
+                           "SAFE5" "SAFE6" "SAFE7" "SAFE8" "SAFE9"
+                           "SAFE10" "SAFE11" "SAFE12" "SAFE13"
+                           "SAFE14" "SAFE15" "SAFE16" "C7" "C8"
+                           "C9" "C11" "C15" "D8" "D9" "P1"
+                           "P6" "P7" "PERF10" "R1" "R11"
+                           "PKG6" "PKG7" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2"]
+               :implements [:safety-operation-inventory
+                             :safe1-outcome-records
+                             :runtime-check-records
+                             :proof-obligation-records
+                             :certificate-reference-records
+                             :unsafe-island-audit-manifest
+                             :taint-safety-report
+                             :capability-safety-report
+                             :generated-code-safety-provenance
+                             :ffi-safety-boundary-records
+                             :numeric-safety-records
+                             :optimization-invalidation-records
+                             :safety-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :core-node-identity :type-facts
+                            :effect-facts :capability-facts
+                            :ownership-facts :profile-target-metadata
+                            :safe1-outcomes :runtime-check-records
+                            :proof-obligations :certificate-references
+                            :unsafe-island-audits
+                            :generated-origin-chains
+                            :taint-flow-records
+                            :capability-proof-records
+                            :ffi-boundary-facts
+                            :numeric-mode-facts
+                            :optimization-invalidation-records}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c10-safety-analysis-contract-subset
+                                    :clojure-c10-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c10-no-outcome.gravity"
+                              "compiler-c10-proof.gravity"
+                              "compiler-c10-check.gravity"
+                              "compiler-c10-unsafe.gravity"
+                              "compiler-c10-generated.gravity"
+                              "compiler-c10-taint.gravity"
+                              "compiler-c10-capability.gravity"
+                              "compiler-c10-ffi.gravity"
+                              "compiler-c10-numeric.gravity"
+                              "compiler-c10-optimization.gravity"]}}}))
+
+(def c10-safety-analysis-contract
+  {:artifact :gravity/c10-safety-analysis-contract
+   :required-fields [:module :operations :outcomes
+                     :runtime-checks :proof-obligations
+                     :certificate-references
+                     :unsafe-islands :taint-report
+                     :capability-report
+                     :generated-code-provenance
+                     :ffi-boundaries :numeric-safety
+                     :optimization-invalidation
+                     :diagnostics]
+   :required-input-facts [:type-facts :effect-facts
+                          :capability-facts :ownership-facts
+                          :profile-validation-facts
+                          :generated-origin-chains]
+   :must-compute [:safety-operation-inventory
+                  :exactly-one-safe1-outcome-per-operation
+                  :runtime-check-list
+                  :proof-obligation-list
+                  :certificate-reference-list
+                  :unsafe-island-audit-manifest
+                  :taint-and-capability-safety-report
+                  :generated-code-safety-provenance
+                  :optimization-proof-preservation-report]
+   :must-preserve [:core-node-identity
+                   :source-spans
+                   :type-facts
+                   :effect-facts
+                   :capability-facts
+                   :ownership-facts
+                   :artifact-provenance]
+   :forbidden [:lint-only-safety-analysis
+               :backend-only-safety-legalization
+               :runtime-check-with-undefined-failure
+               :unsafe-operation-without-audit
+               :generated-code-dropping-safety-provenance
+               :optimization-erasing-check-without-proof]})
+
+(def c10-operation-inventory-contract
+  {:artifact :gravity/c10-operation-inventory-contract
+   :operation-kinds [:load :store :allocation :deallocation
+                     :pointer-conversion :initialization
+                     :moved-field-read :index :slice
+                     :numeric-overflow :division :shift
+                     :numeric-cast :elementary-approximation
+                     :borrow :move :consume :region
+                     :arena :linear-resource :ffi-call
+                     :host-interop :concurrency
+                     :atomic :lock :task-capture
+                     :channel :capability-use
+                     :taint-sink :sanitizer-boundary
+                     :macro-generated-unsafe
+                     :ai-tool-call :supply-chain-import
+                     :certificate-trust-point]
+   :required-fields [:operation-id :kind :core-node-id
+                     :source-span :generated-origin-chain
+                     :profile :target :type-fact-id
+                     :effect-fact-id :capability-proof-id
+                     :ownership-fact-id :safety-mode]
+   :downstream-consumers [:mir-construction :optimizer
+                          :target-lowering :runtime-selection
+                          :package-release :safety-certificate]
+   :forbidden [:operation-without-core-node
+               :operation-without-source-span
+               :generated-operation-without-origin
+               :profile-or-target-omitted
+               :safety-sensitive-operation-uninventoried]})
+
+(def c10-outcome-record-contract
+  {:artifact :gravity/c10-outcome-record-contract
+   :outcomes [:proven-safe :runtime-checked
+              :rejected :unsafe-island]
+   :required-fields [:operation-id :outcome :source
+                     :profile :target :safety-mode
+                     :specialized-safe-rule
+                     :facts :proof :runtime-check
+                     :unsafe-audit :diagnostic]
+   :outcome-rules [:exactly-one-outcome-per-operation
+                   :proven-safe-requires-proof-or-static-facts
+                   :runtime-checked-requires-check-record
+                   :rejected-requires-stable-diagnostic
+                   :unsafe-island-requires-audit-record
+                   :generated-code-outcomes-preserve-origin]
+   :forbidden [:missing-outcome
+               :multiple-outcomes
+               :proven-safe-without-evidence
+               :runtime-checked-without-check
+               :unsafe-island-without-policy
+               :rejected-without-diagnostic]})
+
+(def c10-runtime-proof-unsafe-contract
+  {:artifact :gravity/c10-runtime-proof-unsafe-contract
+   :runtime-check-fields [:check-id :condition :operation-id
+                          :emitted-location :profile :target
+                          :failure-behavior :effects-introduced
+                          :performance-class
+                          :guard-proof
+                          :invalidation-conditions]
+   :proof-obligation-fields [:proof-id :claim :operation-id
+                             :source-span :assumptions
+                             :method :provider :profile
+                             :target :result]
+   :unsafe-island-fields [:audit-id :operation :owner
+                          :reason :source-span
+                          :generated-origin-chain
+                          :profile :target :effects
+                          :capabilities :preconditions
+                          :postconditions :invariants
+                          :evidence :safe-wrapper
+                          :review :re-review]
+   :forbidden [:check-without-defined-failure
+               :proof-without-checker-or-provider
+               :certificate-reference-without-trust-status
+               :unsafe-island-missing-owner
+               :unsafe-island-missing-safe-boundary
+               :unsafe-island-hidden-from-artifacts]})
+
+(def c10-generated-taint-capability-contract
+  {:artifact :gravity/c10-generated-taint-capability-contract
+   :generated-origin-fields [:generated-form :generator
+                             :source-form :macro-or-tool
+                             :model-or-provider
+                             :origin-chain]
+   :taint-report-fields [:taint-source :taint-category
+                         :flow-path :validator
+                         :sink :residual-constraints
+                         :secret-redaction]
+   :capability-report-fields [:requested-capability
+                              :provider :grant
+                              :scope :policy-layer
+                              :phase :runtime-check]
+   :rules [:generated-unsafe-diagnoses-generated-and-generator-spans
+           :taint-facts-survive-to-sinks
+           :secret-taint-redacted-from-public-artifacts
+           :capability-use-covered-by-proof-or-check
+           :ambient-authority-rejected-in-constrained-profiles]
+   :forbidden [:generated-unsafe-without-origin
+               :taint-sink-without-validator-or-policy
+               :secret-in-diagnostic
+               :capability-from-effect-name
+               :ambient-authority-by-default]})
+
+(def c10-ffi-numeric-optimization-contract
+  {:artifact :gravity/c10-ffi-numeric-optimization-contract
+   :ffi-fields [:boundary-id :foreign-symbol
+                :abi :ownership-transfer
+                :nullability :lifetime :error-model
+                :capabilities :unsafe-audit]
+   :numeric-fields [:operation-id :numeric-mode
+                    :overflow-policy :division-policy
+                    :shift-policy :cast-policy
+                    :elementary-domain-proof
+                    :runtime-check-or-proof]
+   :optimization-fields [:transform-id :affected-operation
+                         :preserved-facts :invalidated-facts
+                         :replacement-proof
+                         :restored-runtime-check
+                         :diagnostic-on-gap]
+   :rules [:ffi-boundary-has-safety-facts
+           :numeric-operation-has-proof-or-check
+           :optimization-invalidates-or-preserves-proof
+           :check-elision-requires-certificate
+           :backend-receives-safety-facts]
+   :forbidden [:ffi-call-without-boundary-record
+               :numeric-mode-implicit-fast-path
+               :optimization-using-stale-evidence
+               :check-erasure-without-proof
+               :backend-assumption-as-safety-evidence]})
+
+(def c10-safety-diagnostic-catalog
+  {:diagnostics ["C10-NO-OUTCOME"
+                 "C10-PROOF"
+                 "C10-CHECK"
+                 "C10-UNSAFE"
+                 "C10-GENERATED"
+                 "C10-TAINT"
+                 "C10-CAPABILITY"
+                 "C10-FFI"
+                 "C10-NUMERIC"
+                 "C10-OPTIMIZATION"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :operation-id
+                              :specialized-safe-rule
+                              :source-span
+                              :generated-origin-chain
+                              :profile :target :safety-mode
+                              :missing-fact
+                              :proof-id :runtime-check-id
+                              :remediation]
+   :stops [:mir-construction
+           :optimizer
+           :target-lowering
+           :runtime-selection
+           :package-release
+           :safety-certificate]
+   :must-not-depend-on [:localized-rendering-text
+                        :backend-undefined-behavior
+                        :host-runtime-accident
+                        :optimizer-assumption
+                        :implicit-unsafe-policy]})
+
+(defn build-c10-safety-operation
+  [operation-id kind core-node-id source-span generated-origin profile target]
+  (quote {:artifact :gravity/c10-safety-operation
+          :operation-id operation-id
+          :kind kind
+          :core-node-id core-node-id
+          :source-span source-span
+          :generated-origin-chain generated-origin
+          :profile profile
+          :target target
+          :contract c10-operation-inventory-contract}))
+
+(defn build-c10-safety-outcome
+  [operation-id outcome source profile target safety-mode proof runtime-check unsafe-audit diagnostic]
+  (quote {:artifact :gravity/c10-safety-outcome
+          :operation-id operation-id
+          :outcome outcome
+          :source source
+          :profile profile
+          :target target
+          :safety-mode safety-mode
+          :proof proof
+          :runtime-check runtime-check
+          :unsafe-audit unsafe-audit
+          :diagnostic diagnostic
+          :contract c10-outcome-record-contract}))
+
+(defn verify-c10-safety-analysis [ownership-checked-core-artifact]
+  (quote {:status :stage1-source-owned
+          :ownership-checked-core-artifact ownership-checked-core-artifact
+          :checks [:safety-operation-inventory-complete
+                   :exactly-one-safe1-outcome-per-operation
+                   :runtime-checks-have-defined-failure
+                   :proof-obligations-recorded
+                   :certificate-references-recorded
+                   :unsafe-islands-have-audit-records
+                   :generated-code-origin-preserved
+                   :taint-sinks-authorized
+                   :capability-use-covered
+                   :ffi-boundaries-checked
+                   :numeric-operations-proven-or-checked
+                   :optimization-invalidation-recorded
+                   :mir-safety-facts-preserved]
+          :diagnostics c10-safety-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :core-node-identity :type-facts
+                      :effect-facts :capability-facts
+                      :ownership-facts
+                      :profile-target-metadata
+                      :safe1-outcomes
+                      :runtime-check-records
+                      :proof-obligations
+                      :certificate-references
+                      :unsafe-island-audits
+                      :generated-origin-chains
+                      :taint-flow-records
+                      :ffi-boundary-facts
+                      :numeric-mode-facts
+                      :optimization-invalidation-records
+                      :artifact-provenance]}))

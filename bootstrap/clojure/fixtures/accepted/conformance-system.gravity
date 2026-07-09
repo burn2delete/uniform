@@ -1,0 +1,16 @@
+; P14 fixture covers testing, verification, and conformance artifacts across TEST1-TEST13.
+(ns conformance.system
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read :filesystem/write :workflow/replay
+              :ai/model-call})
+  (:capabilities #{:fs/read :fs/write :workflow/replay
+                   :model/invoke :human/review})
+  (:safety :safe)
+  (:metadata {:conformance {:system {}}}))
+
+(def conformance-phase-id 14)
+
+(defn main [] :- I64
+  conformance-phase-id)

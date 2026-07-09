@@ -1,0 +1,21 @@
+(ns math.efir-branch
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:elementary-declarations
+      [{:function-id :math/bad-branch
+        :source-span "math/efir-branch.gravity:8:1"
+        :domain {'x {:real [-8.0 8.0]}}
+        :codomain {:real [0.0 1.0]}
+        :branch-policy :real-only
+        :branch-compatible? false
+        :exceptional-values {:nan :propagate}
+        :semantic-form '(log x)
+        :numeric-modes #{:certified-approx}
+        :provider-requirements #{:domain :codomain :branch-policy}
+        :efir-anchor :efir/bad-branch}]}}}))

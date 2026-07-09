@@ -1,0 +1,8 @@
+(ns profile.bad.kernel-raw-memory
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p7/raw-memory))

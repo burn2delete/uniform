@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "platform_os_library": {"target_host_confusion": true}}

@@ -1,0 +1,370 @@
+{
+  "artifact_id": "phase-00-contract-traceability-2026-06-24",
+  "kind": "contract-traceability-index",
+  "task": "P00-T01",
+  "source_basis": [
+    "AGENTS.md",
+    "docs/implementation-roadmap.md",
+    "docs/phase-00-foundation-and-thesis/README.md",
+    "docs/source-concepts.md",
+    "tmp/pdfs/gravity-lisp-design.txt",
+    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+    "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md",
+    "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md",
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md",
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+  ],
+  "terminology_boundaries": [
+    "profile-target",
+    "effect-capability",
+    "runtime-backend",
+    "artifact-file"
+  ],
+  "source_documents": [
+    {
+      "id": "D0",
+      "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
+    },
+    {
+      "id": "D1",
+      "path": "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    },
+    {
+      "id": "D2",
+      "path": "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    },
+    {
+      "id": "D3",
+      "path": "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+    },
+    {
+      "id": "D4",
+      "path": "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md"
+    },
+    {
+      "id": "D5",
+      "path": "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md"
+    },
+    {
+      "id": "D6",
+      "path": "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    },
+    {
+      "id": "D7",
+      "path": "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md"
+    },
+    {
+      "id": "D8",
+      "path": "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+    },
+    {
+      "id": "D9",
+      "path": "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+    }
+  ],
+  "release_gates": [
+    {
+      "id": "M0",
+      "name": "Documentation Lock"
+    },
+    {
+      "id": "M1",
+      "name": "Reader, Syntax, and Hosted Hello"
+    },
+    {
+      "id": "M2",
+      "name": "Typed Core and Effects"
+    },
+    {
+      "id": "M3",
+      "name": "Profiles and Safe-Code Contract"
+    },
+    {
+      "id": "M4",
+      "name": "MIR and Native Lowering"
+    },
+    {
+      "id": "M5",
+      "name": "Package, Build, and Schema Spine"
+    },
+    {
+      "id": "M6",
+      "name": "Workflow and AI Vertical Slice"
+    },
+    {
+      "id": "M7",
+      "name": "Standard Library and Tooling"
+    },
+    {
+      "id": "M8",
+      "name": "Self-Hosting Ramp"
+    }
+  ],
+  "traceability": [
+    {
+      "id": "D0-LANGUAGE-IDENTITY",
+      "source_doc": "D0",
+      "requirement": "Later language features identify whether they are source syntax, core semantics, compiler behavior, runtime behavior, package policy, artifact schema, or governance policy.",
+      "downstream_documents": ["L1", "L2", "C1", "R1", "PKG1", "GOV1"],
+      "diagnostics": ["D0-PROFILE-RUNTIME", "D1-PIPELINE-ORDER", "D3-PROFILE-TARGET-CONFLATION"],
+      "artifacts": ["syntax-object-stream", "typed-core-module", "runtime-manifest", "artifact-provenance-graph"],
+      "release_gates": ["M0", "M1", "M2", "M4"],
+      "evidence_expectation": "A minimal source program can be traced from source forms through syntax, typed core, selected runtime, and provenance records."
+    },
+    {
+      "id": "D0-PROFILE-CONTRACTS",
+      "source_doc": "D0",
+      "requirement": "Every profile states allowed behavior, rejected behavior, delegated behavior, required checks, and emitted evidence before backend lowering.",
+      "downstream_documents": ["P1", "P2", "P3", "P4", "P5", "P13", "TEST4"],
+      "diagnostics": ["D0-PROFILE-RUNTIME", "D2-SAFETY-DEFERRED", "D8-UNCLASSIFIED-DANGER"],
+      "artifacts": ["profile-manifest", "profile-validation-report", "profile-fixture-suite"],
+      "release_gates": ["M3"],
+      "evidence_expectation": "Accepted and rejected profile fixtures prove legality before target lowering."
+    },
+    {
+      "id": "D0-SAFETY-OUTCOMES",
+      "source_doc": "D0",
+      "requirement": "Dangerous operations are classified as proven safe, runtime checked, rejected, or unsafe island with audit metadata.",
+      "downstream_documents": ["SAFE1", "SAFE6", "SAFE15", "C10", "TEST5"],
+      "diagnostics": ["D0-UNSAFE-HIDDEN", "D8-UNCLASSIFIED-DANGER", "D8-UNSAFE-MISSING-METADATA"],
+      "artifacts": ["safety-analysis-report", "unsafe-island-audit-record", "runtime-check-manifest"],
+      "release_gates": ["M3", "M4"],
+      "evidence_expectation": "Safety fixtures include accepted safe code, rejected unsafe code, runtime-checked cases, and unsafe audit records."
+    },
+    {
+      "id": "D0-ARTIFACT-DISCIPLINE",
+      "source_doc": "D0",
+      "requirement": "Schemas, AI agents, workflows, proofs, diagnostics, build outputs, and package metadata are first-class artifacts with provenance.",
+      "downstream_documents": ["B13", "S9", "A5", "PKG3", "TEST1"],
+      "diagnostics": ["D0-ARTIFACT-MISSING", "D1-ARTIFACT-GAP", "D3-ARTIFACT-UNSTRUCTURED"],
+      "artifacts": ["artifact-record", "artifact-schema-registry", "artifact-provenance-graph"],
+      "release_gates": ["M4", "M5", "M6"],
+      "evidence_expectation": "Every emitted artifact records source identity, compiler identity, profile, target, effects, capabilities, safety status, and provenance."
+    },
+    {
+      "id": "D0-BOOTSTRAP-TRUST",
+      "source_doc": "D0",
+      "requirement": "The bootstrap path reduces trusted code over time through reproducibility and equivalence evidence.",
+      "downstream_documents": ["BOOT1", "BOOT6", "BOOT7", "TEST13", "GOV1"],
+      "diagnostics": ["D9-BOOTSTRAP-EQUIV", "D2-MILESTONE-EVIDENCE"],
+      "artifacts": ["bootstrap-stage-matrix", "compiler-identity-record", "equivalence-report"],
+      "release_gates": ["M8"],
+      "evidence_expectation": "Stage records include source hashes, artifact hashes, compiler identities, and permitted difference reports."
+    },
+    {
+      "id": "D1-CANONICAL-PIPELINE",
+      "source_doc": "D1",
+      "requirement": "The reader, macro expansion, semantic checks, MIR, domain IRs, optimization, lowering, emission, and provenance steps expose equivalent pass facts even when fused.",
+      "downstream_documents": ["C1", "C2", "C4", "C11", "C18", "B1"],
+      "diagnostics": ["D1-PIPELINE-ORDER", "D1-BACKEND-UNCHECKED"],
+      "artifacts": ["pass-contract-manifest", "macro-expansion-trace", "mir-module", "pass-correctness-record"],
+      "release_gates": ["M1", "M2", "M4"],
+      "evidence_expectation": "Pipeline fixtures show required facts before each consuming pass and reject out-of-order consumption."
+    },
+    {
+      "id": "D1-DOMAIN-IR-ANCHORS",
+      "source_doc": "D1",
+      "requirement": "Every domain IR preserves a semantic anchor to typed core or MIR and emits auditable artifacts.",
+      "downstream_documents": ["C12", "MATH3", "S1", "A6", "B10", "DOM21"],
+      "diagnostics": ["D1-DOMAIN-ANCHOR", "D9-EML-EQUALITY"],
+      "artifacts": ["domain-ir-module", "semantic-anchor-record", "domain-artifact-record"],
+      "release_gates": ["M4", "M5", "M6"],
+      "evidence_expectation": "Domain IR examples include typed-core or MIR anchors and rejected unanchored artifacts."
+    },
+    {
+      "id": "D1-RUNTIME-SELECTION",
+      "source_doc": "D1",
+      "requirement": "Runtime selection is a consequence of profile and target, not an implicit compiler default.",
+      "downstream_documents": ["R1", "R2", "R3", "R4", "R11", "B1"],
+      "diagnostics": ["D1-RUNTIME-AMBIENT", "D4-HIDDEN-RUNTIME"],
+      "artifacts": ["runtime-manifest", "no-runtime-proof", "capability-enforcement-report"],
+      "release_gates": ["M4", "M6"],
+      "evidence_expectation": "Runtime manifests show required services and no-runtime artifacts prove absence of undeclared services."
+    },
+    {
+      "id": "D2-MILESTONE-EVIDENCE",
+      "source_doc": "D2",
+      "requirement": "Each milestone compiles something real, rejects something real, emits artifacts, and records diagnostics before support is claimed.",
+      "downstream_documents": ["TEST1", "TEST2", "TEST4", "TEST5", "TEST13"],
+      "diagnostics": ["D2-MILESTONE-EVIDENCE", "D2-ARTIFACT-MISSING"],
+      "artifacts": ["milestone-manifest", "source-fixtures", "negative-fixtures", "diagnostic-golden-files"],
+      "release_gates": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"],
+      "evidence_expectation": "A milestone bundle cannot pass unless positive fixtures, negative fixtures, diagnostics, artifacts, and open risks are present."
+    },
+    {
+      "id": "D2-DEPENDENCY-SPINE",
+      "source_doc": "D2",
+      "requirement": "Implementation follows the critical chain from D0 through BOOT1 unless later work consumes documented interfaces without claiming release status.",
+      "downstream_documents": ["L1", "L2", "SAFE1", "P1", "PERF1", "C1", "C11", "B1", "R1", "PKG1", "T1", "BOOT1"],
+      "diagnostics": ["D2-SEQUENCE-SKIP", "D2-SAFETY-DEFERRED"],
+      "artifacts": ["roadmap-status-report", "dependency-spine-report", "phase-proof-report"],
+      "release_gates": ["M0", "M8"],
+      "evidence_expectation": "Roadmap updates cite the governing upstream contracts and do not mark downstream support without upstream evidence."
+    },
+    {
+      "id": "D3-TERM-DISTINCTIONS",
+      "source_doc": "D3",
+      "requirement": "Normative text and artifacts keep profile distinct from target, effect from capability, runtime from backend, and artifact from file.",
+      "downstream_documents": ["P1", "L6", "R1", "B1", "S9", "PKG3", "GOV2"],
+      "diagnostics": ["D3-AMBIGUOUS-RUNTIME", "D3-PROFILE-TARGET-CONFLATION", "D3-EFFECT-CAPABILITY-CONFLATION"],
+      "artifacts": ["terminology-check-report", "concept-record-fixture", "diagnostic-vocabulary-registry"],
+      "release_gates": ["M0", "M2", "M3"],
+      "evidence_expectation": "Terminology fixtures accept D3-aligned records and reject concept conflation in manifests and diagnostics."
+    },
+    {
+      "id": "D3-CONCEPT-RECORDS",
+      "source_doc": "D3",
+      "requirement": "Compiler, runtime, package, tooling, and governance artifacts use stable D3 concept names for profile, target, effect, capability, safety mode, and provenance.",
+      "downstream_documents": ["C15", "S9", "PKG6", "T10", "GOV6"],
+      "diagnostics": ["D3-ARTIFACT-UNSTRUCTURED", "D3-UNSAFE-UNTRACKED"],
+      "artifacts": ["concept-record-schema", "diagnostic-registry", "artifact-schema-registry"],
+      "release_gates": ["M0", "M4", "M5"],
+      "evidence_expectation": "Artifact schemas and diagnostics share the D3 vocabulary without backend-specific translation."
+    },
+    {
+      "id": "D4-COVERAGE-CLAIMS",
+      "source_doc": "D4",
+      "requirement": "Every coverage claim names domain, profiles, accepted subset, effects, capabilities, artifacts, and a credible replacement slice.",
+      "downstream_documents": ["DOM1", "DOM9", "DOM18", "TEST1", "TEST6"],
+      "diagnostics": ["D4-COVERAGE-INCOMPLETE", "D4-COVERAGE-TOY", "D4-REPLACEMENT-OVERCLAIM"],
+      "artifacts": ["domain-coverage-manifest", "accepted-domain-fixture", "rejected-domain-fixture"],
+      "release_gates": ["M6", "M7"],
+      "evidence_expectation": "Coverage reports distinguish implemented, designed, delegated, and out-of-scope slices."
+    },
+    {
+      "id": "D4-INTEROP-BOUNDARY",
+      "source_doc": "D4",
+      "requirement": "Interop boundaries are typed, effect-annotated, capability-gated, profile-legal, audited if unsafe, represented in artifacts, and fixture-covered.",
+      "downstream_documents": ["L19", "B1", "R10", "S7", "PKG10"],
+      "diagnostics": ["D4-INTEROP-UNTRACKED", "D5-INTEROP-HIDDEN"],
+      "artifacts": ["interop-boundary-record", "capability-manifest", "conformance-report"],
+      "release_gates": ["M4", "M5", "M7"],
+      "evidence_expectation": "Interop fixtures include accepted boundaries and rejected untracked external behavior."
+    },
+    {
+      "id": "D5-REPLACEMENT-RECORDS",
+      "source_doc": "D5",
+      "requirement": "Replacement claims specify incumbent family, Gravity profiles, targets, supported slice, unsupported slice, interop boundaries, artifacts, tests, and performance expectations.",
+      "downstream_documents": ["DOM5", "DOM6", "DOM10", "DOM18", "GOV1"],
+      "diagnostics": ["D5-OVERBROAD-CLAIM", "D5-UNSUPPORTED-UNSTATED"],
+      "artifacts": ["replacement-slice-record", "behavior-parity-report", "migration-notes"],
+      "release_gates": ["M7"],
+      "evidence_expectation": "Replacement records cannot pass without accepted and rejected fixtures for the claimed slice."
+    },
+    {
+      "id": "D5-UNSAFE-MIGRATION",
+      "source_doc": "D5",
+      "requirement": "Replacement and migration cannot bypass type, effect, profile, capability, memory, safety, package, or artifact checks.",
+      "downstream_documents": ["SAFE6", "L19", "PKG8", "TEST5", "GOV9"],
+      "diagnostics": ["D5-UNSAFE-MIGRATION", "D8-GENERATED-UNSAFE"],
+      "artifacts": ["unsafe-audit-record", "safe-wrapper-test-report", "migration-safety-report"],
+      "release_gates": ["M3", "M7"],
+      "evidence_expectation": "Migrated or generated code must pass the same safety/profile checks as handwritten code."
+    },
+    {
+      "id": "D6-PERFORMANCE-CLAIMS",
+      "source_doc": "D6",
+      "requirement": "Performance claims name profile, target, runtime, backend, safety mode, layout, input domain, erased checks, proof obligations, and benchmark method.",
+      "downstream_documents": ["PERF1", "PERF5", "PERF10", "TEST12", "STD5"],
+      "diagnostics": ["D6-CLAIM-INCOMPLETE", "D6-TARGET-ASSUMPTION"],
+      "artifacts": ["performance-claim-record", "benchmark-report", "target-feature-record"],
+      "release_gates": ["M4", "M7"],
+      "evidence_expectation": "Benchmark evidence records source hash, compiler identity, target fingerprint, optimization manifest, sample count, and baseline."
+    },
+    {
+      "id": "D6-CHECK-ELISION",
+      "source_doc": "D6",
+      "requirement": "Optimizations preserve, regenerate, retain, or reject safety facts and never erase checks without surviving proof.",
+      "downstream_documents": ["PERF10", "C13", "SAFE15", "TEST12"],
+      "diagnostics": ["D6-CHECK-ELISION-UNPROVED", "D8-CHECK-ERASED", "D9-CHECK-ELISION-NO-PROOF"],
+      "artifacts": ["check-elision-certificate", "optimization-manifest", "proof-certificate"],
+      "release_gates": ["M4"],
+      "evidence_expectation": "Optimization fixtures cover preserved proof, regenerated proof, retained runtime check, and rejected transformation."
+    },
+    {
+      "id": "D7-EXTENSION-MANIFESTS",
+      "source_doc": "D7",
+      "requirement": "Extensions declare kind, owner, input contract, output contract, profiles, effects, capabilities, safety mode, artifact schema, fixtures, diagnostics, version, and compatibility policy.",
+      "downstream_documents": ["L4", "L15", "C17", "PKG4", "GOV7"],
+      "diagnostics": ["D7-EXTENSION-MANIFEST", "D7-CAPABILITY-BYPASS"],
+      "artifacts": ["extension-manifest", "provider-contract", "extension-conformance-report"],
+      "release_gates": ["M5", "M7"],
+      "evidence_expectation": "Extension fixtures accept declared behavior and reject missing capabilities, unsupported profiles, and undeclared build effects."
+    },
+    {
+      "id": "D7-PASS-CONTRACTS",
+      "source_doc": "D7",
+      "requirement": "Compiler passes declare preserved facts, invalidated facts, regenerated facts, diagnostics, proof obligations, and artifacts.",
+      "downstream_documents": ["C17", "C18", "PERF3", "TEST2"],
+      "diagnostics": ["D7-PASS-CONTRACT", "D1-PIPELINE-ORDER"],
+      "artifacts": ["pass-contract-manifest", "pass-correctness-record", "diagnostic-golden-files"],
+      "release_gates": ["M4"],
+      "evidence_expectation": "Pass fixtures prove preserved and invalidated facts before downstream consumers use the output."
+    },
+    {
+      "id": "D8-SAFETY-CLASSIFICATION",
+      "source_doc": "D8",
+      "requirement": "Every dangerous operation is classified into exactly one safety outcome: proven safe, runtime checked, rejected, or unsafe island.",
+      "downstream_documents": ["SAFE1", "SAFE2", "SAFE6", "C10", "TEST5"],
+      "diagnostics": ["D8-UNCLASSIFIED-DANGER", "D8-GENERATED-UNSAFE"],
+      "artifacts": ["safety-analysis-report", "runtime-check-manifest", "artifact-safety-summary"],
+      "release_gates": ["M3", "M4"],
+      "evidence_expectation": "Safety analysis reports include source or generated-origin spans and one legal outcome per dangerous operation."
+    },
+    {
+      "id": "D8-UNSAFE-ISLANDS",
+      "source_doc": "D8",
+      "requirement": "Unsafe islands declare reason, source span, profiles, effects, capabilities, preconditions, postconditions, invariants, safe wrapper, evidence, owner, review state, and re-review policy.",
+      "downstream_documents": ["SAFE6", "PKG8", "STD6", "GOV9"],
+      "diagnostics": ["D8-UNSAFE-MISSING-METADATA", "D8-SAFE-WRAPPER-LEAK"],
+      "artifacts": ["unsafe-island-audit-record", "safe-wrapper-test-report", "security-review-record"],
+      "release_gates": ["M3", "M7"],
+      "evidence_expectation": "Unsafe internals are eligible for safe APIs only when wrapper tests or proofs cover every precondition."
+    },
+    {
+      "id": "D8-CAPABILITY-SAFETY",
+      "source_doc": "D8",
+      "requirement": "Package, build, runtime, AI, and tool systems enforce the same effect and capability authority rules as source code.",
+      "downstream_documents": ["SAFE10", "PKG6", "R11", "A4", "T13"],
+      "diagnostics": ["D8-CAPABILITY-SAFETY", "D7-CAPABILITY-BYPASS"],
+      "artifacts": ["capability-manifest", "capability-enforcement-report", "tool-policy-record"],
+      "release_gates": ["M3", "M5", "M6"],
+      "evidence_expectation": "Capability fixtures reject undeclared filesystem, network, shell, database, secret, model, tool, FFI, and raw-memory authority."
+    },
+    {
+      "id": "D9-PROOF-CERTIFICATES",
+      "source_doc": "D9",
+      "requirement": "Every proof or certificate names its claim, domain, assumptions, checker, inputs, and result.",
+      "downstream_documents": ["MATH5", "MATH6", "SAFE15", "C18", "TEST11"],
+      "diagnostics": ["D9-PROOF-MISSING", "D9-CERT-UNCHECKABLE"],
+      "artifacts": ["proof-certificate", "approximation-certificate", "mir-verifier-report"],
+      "release_gates": ["M4", "M7"],
+      "evidence_expectation": "Certificate fixtures include accepted checkable certificates and rejected uncheckable certificates."
+    },
+    {
+      "id": "D9-MATH-EQUIVALENCE",
+      "source_doc": "D9",
+      "requirement": "Mathematical equivalence is not inferred from syntax similarity or EML tree identity alone.",
+      "downstream_documents": ["MATH3", "MATH4", "MATH9", "PERF8", "TEST11"],
+      "diagnostics": ["D9-EML-EQUALITY", "D6-FAST-MATH-IMPLICIT"],
+      "artifacts": ["efir-graph", "eml-normalization-trace", "rewrite-certificate"],
+      "release_gates": ["M7"],
+      "evidence_expectation": "Math fixtures reject EML tree identity as equality without symbolic, interval, SMT, rewrite, or approximation proof."
+    },
+    {
+      "id": "D9-REPLAY-AND-BOOTSTRAP",
+      "source_doc": "D9",
+      "requirement": "Replay, package, and bootstrap evidence are reproducible from recorded inputs and sufficient to audit nondeterminism and stage equivalence.",
+      "downstream_documents": ["A6", "R7", "PKG7", "BOOT6", "BOOT7", "TEST13"],
+      "diagnostics": ["D9-REPLAY-GAP", "D9-BOOTSTRAP-EQUIV"],
+      "artifacts": ["replay-record", "reproducible-build-evidence", "bootstrap-equivalence-report"],
+      "release_gates": ["M5", "M6", "M8"],
+      "evidence_expectation": "Replay fixtures do not redo nondeterministic operations, and bootstrap fixtures compare stage outputs with recorded compiler identities."
+    }
+  ]
+}

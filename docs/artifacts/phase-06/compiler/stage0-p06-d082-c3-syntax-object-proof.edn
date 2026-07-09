@@ -1,0 +1,72 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D082
+ :date "2026-06-25"
+ :status :complete
+ :capability :c3-syntax-object-document-coverage
+ :command "clojure -M:gravity compiler-c3-syntax bootstrap/clojure/fixtures/accepted/compiler-c3-syntax-object.gravity"
+ :artifact-kind :gravity/stage0-c3-syntax-object-artifact
+ :artifact-hash "sha256:8015efb36d657957b1ea0405fb51b3efd213465c726e46f75830b77e44fbe34b"
+ :summary {:syntax-objects 6
+           :generated-syntax-objects 1
+           :hygiene-contexts 6
+           :origin-chain-nodes 6
+           :metadata-ledger-status :complete
+           :fact-ledger-status :complete
+           :serialization-roundtrip true
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+                       "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+                       "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
+                       "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
+                       "docs/phase-01-core-language/014-l4-macro-system-specification.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c3-syntax-object.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c3-shape.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-id.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-span.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-origin.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-hygiene.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-capture.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-fact-stale.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c3-serialize.gravity"]
+ :diagnostic-ids ["C3-SHAPE"
+                  "C3-ID"
+                  "C3-SPAN"
+                  "C3-ORIGIN"
+                  "C3-HYGIENE"
+                  "C3-CAPTURE"
+                  "C3-METADATA"
+                  "C3-FACT-STALE"
+                  "C3-SERIALIZE"]
+ :capability-based-proof {:construction-from-reader-seeds? true
+                          :stable-syntax-ids? true
+                          :source-and-generated-origins? true
+                          :hygiene-propagated? true
+                          :intentional-capture-recorded? true
+                          :capture-rejection-covered? true
+                          :metadata-preservation-and-change? true
+                          :fact-invalidation-recorded? true
+                          :serialization-round-trips? true
+                          :syntax-verifier-passed? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 800}
+              {:command "clojure -M:gravity compiler-c3-syntax bootstrap/clojure/fixtures/accepted/compiler-c3-syntax-object.gravity"
+               :result :accepted
+               :artifact-hash "sha256:8015efb36d657957b1ea0405fb51b3efd213465c726e46f75830b77e44fbe34b"}
+              {:command "clojure -M -e '(read every docs/artifacts/phase-06/compiler EDN proof file)'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D082 for the Clojure stage0 C3 syntax object document boundary only."
+                 "It does not claim the full production macro expander, name resolver, backend code generation, release readiness, or self-hosting."]}

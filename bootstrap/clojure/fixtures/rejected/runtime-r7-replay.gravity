@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: unrecorded nondeterminism or replay-incompatible change.
+(ns runtime.r7-replay
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:time/schedule :network/http})
+  (:capabilities #{:http/client})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-replay}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,8 @@
+(ns core.app.profile-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:safety :safe))
+
+(defn main []
+  (println "missing capability"))

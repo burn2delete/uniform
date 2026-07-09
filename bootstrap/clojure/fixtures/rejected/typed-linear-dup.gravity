@@ -1,0 +1,10 @@
+(ns typed.bad.linear-dup
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:resource/open})
+  (:capabilities #{:resource/file})
+  (:safety :safe))
+
+(def bad
+  (let [file (resource/open "tmp/data.txt")]
+    (linear/dup file)))

@@ -1,0 +1,8 @@
+(ns l8.bad.missing
+  (:profile :native))
+
+(defprotocol Closeable
+  (close [resource] :- Unit))
+
+(def bad
+  (close file-handle))

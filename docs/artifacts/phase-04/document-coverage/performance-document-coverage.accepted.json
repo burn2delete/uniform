@@ -1,0 +1,228 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "complete performance claim context",
+        "optimization decisions preserve or regenerate safety and semantic facts",
+        "target fingerprint and variant artifact evidence"
+      ],
+      "document": "PERF1",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/059-perf1-performance-model-specification.md",
+      "task_id": "P04-D059"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "before and after IR records",
+        "erased and residual cost accounting",
+        "zero-cost family conformance entries"
+      ],
+      "document": "PERF2",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md",
+      "task_id": "P04-D060"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "specialization keys include behavior-affecting facts",
+        "guard predicate and source map emission",
+        "cache invalidation inputs"
+      ],
+      "document": "PERF3",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md",
+      "task_id": "P04-D061"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "layout manifest and transformation evidence",
+        "alias and ownership proof checks",
+        "ABI boundary rejection"
+      ],
+      "document": "PERF4",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md",
+      "task_id": "P04-D062"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "machine-readable benchmark manifest",
+        "environment fingerprint and sample summary",
+        "safety and correctness gate enforcement"
+      ],
+      "document": "PERF5",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md",
+      "task_id": "P04-D063"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "profile-data identity record",
+        "privacy and redaction policy",
+        "reproducible PGO decision log"
+      ],
+      "document": "PERF6",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md",
+      "task_id": "P04-D064"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "candidate-space declaration",
+        "candidate rejection before benchmarking",
+        "guard table and fallback enforcement"
+      ],
+      "document": "PERF7",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md",
+      "task_id": "P04-D065"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "lane, alias, bounds, and alignment proof checks",
+        "intrinsic feature guard record",
+        "cache evidence record"
+      ],
+      "document": "PERF8",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md",
+      "task_id": "P04-D066"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "latency contract artifact",
+        "bounded-loop and allocation-free evidence",
+        "unbounded loop rejection"
+      ],
+      "document": "PERF9",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md",
+      "task_id": "P04-D067"
+    },
+    {
+      "artifact_hash": "sha256:43b6884527d67425aa5560883a8d6e341783655ecd35f40cac3625b7f7ec1395",
+      "artifact_kind": "performance-model-artifact",
+      "coverage": [
+        "proof-backed check-elision certificates",
+        "policy check discharge through equivalent policy artifacts",
+        "missing proof rejection"
+      ],
+      "document": "PERF10",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+      "governing_doc": "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+      "task_id": "P04-D068"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 10,
+    "documents": 10,
+    "rejected_diagnostics": 10,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "PERF1",
+    "PERF2",
+    "PERF3",
+    "PERF4",
+    "PERF5",
+    "PERF6",
+    "PERF7",
+    "PERF8",
+    "PERF9",
+    "PERF10"
+  ],
+  "input_hash": "sha256:840ae88b06b5befbd92379a383b571114d637f3bfd90ea12eb20a95f040cdc8e",
+  "kind": "phase04-performance-document-coverage-artifact",
+  "phase": "04",
+  "rejected": [
+    {
+      "diagnostic": "PERF1-CLAIM",
+      "document": "PERF1",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf1-claim.json",
+      "missing_fact": "target",
+      "task_id": "P04-D059"
+    },
+    {
+      "diagnostic": "PERF2-RESIDUAL",
+      "document": "PERF2",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf2-residual.json",
+      "missing_fact": ":dynamic-dispatch",
+      "task_id": "P04-D060"
+    },
+    {
+      "diagnostic": "PERF3-KEY",
+      "document": "PERF3",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf3-key.json",
+      "missing_fact": "target_features",
+      "task_id": "P04-D061"
+    },
+    {
+      "diagnostic": "PERF4-ABI",
+      "document": "PERF4",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf4-abi.json",
+      "missing_fact": "boundary-adapter",
+      "task_id": "P04-D062"
+    },
+    {
+      "diagnostic": "PERF5-SAFETY-GATE",
+      "document": "PERF5",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf5-safety-gate.json",
+      "missing_fact": "safety-gate",
+      "task_id": "P04-D063"
+    },
+    {
+      "diagnostic": "PERF6-STALE",
+      "document": "PERF6",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf6-stale.json",
+      "missing_fact": "fresh-profile-data",
+      "task_id": "P04-D064"
+    },
+    {
+      "diagnostic": "PERF7-FALLBACK",
+      "document": "PERF7",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf7-fallback.json",
+      "missing_fact": "fallback",
+      "task_id": "P04-D065"
+    },
+    {
+      "diagnostic": "PERF8-LANE",
+      "document": "PERF8",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf8-lane.json",
+      "missing_fact": ":lane-independence",
+      "task_id": "P04-D066"
+    },
+    {
+      "diagnostic": "PERF9-LOOP",
+      "document": "PERF9",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf9-loop.json",
+      "missing_fact": "loop-bound",
+      "task_id": "P04-D067"
+    },
+    {
+      "diagnostic": "PERF10-PROOF-MISSING",
+      "document": "PERF10",
+      "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf10-proof.json",
+      "missing_fact": "proof-id",
+      "task_id": "P04-D068"
+    }
+  ]
+}

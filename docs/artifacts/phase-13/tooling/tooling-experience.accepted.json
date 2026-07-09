@@ -1,0 +1,1031 @@
+{
+  "cli_command_set": {
+    "artifact_id": "cli-contract:gravity",
+    "artifact_outputs": [
+      "artifact-manifest",
+      "diagnostic-stream",
+      "verification-report"
+    ],
+    "capability_prompts": {
+      "human_review_required": [
+        ":package/publish",
+        ":ai/apply-patch"
+      ],
+      "shown_grants": [
+        ":http/client",
+        ":db/query"
+      ]
+    },
+    "commands": [
+      "check",
+      "build",
+      "test",
+      "run",
+      "repl",
+      "fmt",
+      "lint",
+      "doc",
+      "package",
+      "registry",
+      "audit",
+      "verify",
+      "inspect-ir",
+      "profile",
+      "ai",
+      "explain"
+    ],
+    "diagnostic_routing": {
+      "schema": "GravityDiagnosticStream/v1",
+      "sources": [
+        "compiler",
+        "package",
+        "runtime",
+        "tooling"
+      ]
+    },
+    "document": "T1",
+    "exit_codes": {
+      "authority_missing": 6,
+      "build_or_verify_failure": 4,
+      "check_failure": 1,
+      "success": 0,
+      "usage_error": 2
+    },
+    "golden_fixtures": [
+      "cli-check-success.json",
+      "cli-authority-denied.json"
+    ],
+    "json_output": true,
+    "secret_redaction": {
+      "mode": "redact-values",
+      "secret_names_visible": true
+    },
+    "tool_id": "gravity-cli"
+  },
+  "coverage_summary": {
+    "command_count": 16,
+    "documents": 13,
+    "status": ":passed",
+    "tasks": 6
+  },
+  "debugger_trace": {
+    "artifact_id": "debug-trace:phase13",
+    "breakpoints": [
+      {
+        "artifact_location": "jvm:Support.main:42",
+        "source_span": "src/support/main.grav:42:3"
+      }
+    ],
+    "debug_data_version": "GravityDebug/v1",
+    "document": "T6",
+    "policy_denials": [
+      {
+        "operation": "mutate-state",
+        "reason": "missing debug authority"
+      }
+    ],
+    "profile": ":hosted",
+    "session_id": "debug:phase13",
+    "source_map_validation": {
+      "status": ":passed"
+    },
+    "stack_frames": [
+      {
+        "function": "support.main/serve",
+        "source_span": "src/support/main.grav:42:3"
+      }
+    ],
+    "target": ":jvm-21",
+    "tool_id": "gravity-debug",
+    "variable_reports": [
+      {
+        "name": "request",
+        "redacted": false,
+        "type": "SupportRequest"
+      }
+    ]
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "T1": {
+      "artifact_id": "cli-contract:gravity",
+      "artifact_outputs": [
+        "artifact-manifest",
+        "diagnostic-stream",
+        "verification-report"
+      ],
+      "capability_prompts": {
+        "human_review_required": [
+          ":package/publish",
+          ":ai/apply-patch"
+        ],
+        "shown_grants": [
+          ":http/client",
+          ":db/query"
+        ]
+      },
+      "commands": [
+        "check",
+        "build",
+        "test",
+        "run",
+        "repl",
+        "fmt",
+        "lint",
+        "doc",
+        "package",
+        "registry",
+        "audit",
+        "verify",
+        "inspect-ir",
+        "profile",
+        "ai",
+        "explain"
+      ],
+      "diagnostic_routing": {
+        "schema": "GravityDiagnosticStream/v1",
+        "sources": [
+          "compiler",
+          "package",
+          "runtime",
+          "tooling"
+        ]
+      },
+      "document": "T1",
+      "exit_codes": {
+        "authority_missing": 6,
+        "build_or_verify_failure": 4,
+        "check_failure": 1,
+        "success": 0,
+        "usage_error": 2
+      },
+      "golden_fixtures": [
+        "cli-check-success.json",
+        "cli-authority-denied.json"
+      ],
+      "json_output": true,
+      "secret_redaction": {
+        "mode": "redact-values",
+        "secret_names_visible": true
+      },
+      "tool_id": "gravity-cli"
+    },
+    "T10": {
+      "artifact_id": "ir-inspector:phase13",
+      "compiler_version": "gravityc-seed:0.1.0",
+      "document": "T10",
+      "pass_diff_reports": [
+        {
+          "nonsemantic_renumbering_ignored": true,
+          "pass": "bounds-check-elision"
+        }
+      ],
+      "preservation_reports": [
+        {
+          "evidence": "proof:bounds-check-elision",
+          "preserved": [
+            "types",
+            "effects",
+            "source-spans"
+          ]
+        }
+      ],
+      "profile": ":hosted",
+      "project_hash": "sha256:project-001",
+      "redacted": true,
+      "source_span_maps": [
+        "source-map:reader-to-mir"
+      ],
+      "stage_id": "typed-core",
+      "stage_views": [
+        "syntax-objects",
+        "typed-core",
+        "mir",
+        "artifact-manifest"
+      ],
+      "target": ":jvm-21",
+      "tool_id": "gravity-inspect-ir"
+    },
+    "T11": {
+      "artifact_id": "artifact:library-001",
+      "benchmark_id": "bench/support-agent-check",
+      "capabilities": [
+        ":profiler/read-counters"
+      ],
+      "check_elision_report": {
+        "evidence": [
+          "proof:bounds-check-elision"
+        ],
+        "status": ":accepted"
+      },
+      "comparison_policy": {
+        "latency_p95_threshold": "10pct"
+      },
+      "compiler_version": "gravityc-seed:0.1.0",
+      "document": "T11",
+      "environment": {
+        "host": "linux-x64",
+        "runtime": ":managed"
+      },
+      "profile": ":hosted",
+      "report_id": "perf-report:phase13",
+      "samples": [
+        {
+          "latency_ms": 12.5,
+          "source_span": "src/support/main.grav:42:3"
+        }
+      ],
+      "target": ":jvm-21",
+      "tool_id": "gravity-profile"
+    },
+    "T12": {
+      "ai_safety": {
+        "prompt_authority": "partitioned",
+        "tool_escalations": 0
+      },
+      "artifact_id": "audit-report:phase13",
+      "capability_graph": {
+        "denied": [
+          ":shell/exec"
+        ],
+        "granted": [
+          ":http/client"
+        ],
+        "requested": [
+          ":http/client"
+        ],
+        "used": [
+          ":http/client"
+        ]
+      },
+      "document": "T12",
+      "ffi_boundaries": [],
+      "missing_evidence_report": [],
+      "package_safety": {
+        "sbom": "sbom:support-agent-001",
+        "unsafe_summary": {
+          "count": 0
+        }
+      },
+      "proof_index": [
+        {
+          "checker": "gravity.safety/check",
+          "proof_id": "proof:support-agent-capability-summary"
+        }
+      ],
+      "redacted": true,
+      "report_id": "safety-audit:phase13",
+      "taint_graph": [
+        {
+          "sink": "support.workflow/model-call",
+          "source": "user-ticket",
+          "validator": "schema:triage-input"
+        }
+      ],
+      "tool_id": "gravity-audit",
+      "unsafe_islands": []
+    },
+    "T13": {
+      "artifact_id": "ai-tooling:phase13",
+      "document": "T13",
+      "generated_source_provenance": [
+        {
+          "input": "prompt:patch-proposal-001",
+          "output": "patch:proposal-001"
+        }
+      ],
+      "human_review_record": {
+        "decision": ":approved",
+        "review_id": "review:phase13-ai"
+      },
+      "modes": [
+        "diagnostic-explanation",
+        "patch-proposal",
+        "test-generation",
+        "package-update-review"
+      ],
+      "patch_artifact": {
+        "schema": "GravityPatch/v1",
+        "validated": true
+      },
+      "plan_artifact": {
+        "schema": "GravityAIPlan/v1",
+        "validated": true
+      },
+      "prompt_model_ledger": [
+        "prompt:patch-proposal-001",
+        "model:gpt-tooling-001"
+      ],
+      "replay_trace": {
+        "hidden_tool_use_detected": false,
+        "trace_id": "replay:phase13-ai"
+      },
+      "tool_call_ledger": [
+        {
+          "capability": ":repo/read",
+          "tool": "search"
+        }
+      ],
+      "tool_id": "gravity-ai-assist",
+      "validation_report": {
+        "effect": "passed",
+        "safety": "passed",
+        "test": "passed",
+        "type": "passed"
+      }
+    },
+    "T2": {
+      "artifact_id": "repl-session:support-agent",
+      "capability_grants": [
+        ":fs/read",
+        ":http/client"
+      ],
+      "diagnostics": [],
+      "document": "T2",
+      "evaluation_history": [
+        {
+          "checks": [
+            "reader",
+            "macro",
+            "type",
+            "effect",
+            "profile",
+            "safety"
+          ],
+          "form": "(:effects '(fs/read \"notes.txt\"))",
+          "result": [
+            ":filesystem/read"
+          ]
+        }
+      ],
+      "lockfile_hash": "sha256:lock-001",
+      "namespace": "support.main",
+      "profile": ":hosted",
+      "project_manifest_hash": "sha256:project-001",
+      "session_id": "repl:phase13-support-agent",
+      "target": ":jvm-21",
+      "transcript_redacted": true
+    },
+    "T3": {
+      "artifact_id": "fmt-report:phase13",
+      "changed_files": [
+        "src/support/main.grav"
+      ],
+      "comments_preserved": true,
+      "configuration_hash": "sha256:fmt-config-001",
+      "diff_output": true,
+      "document": "T3",
+      "formatter_version": "gravity-fmt:0.1.0",
+      "json_report": {
+        "changed_ranges": [
+          "src/support/main.grav:1:1"
+        ],
+        "files": 1
+      },
+      "metadata_preserved": true,
+      "reader_round_trip": true,
+      "tool_id": "gravity-fmt"
+    },
+    "T4": {
+      "artifact_id": "lint-report:phase13",
+      "baseline": {
+        "mode": "fail-on-new",
+        "stale_entries": 0
+      },
+      "compiler_facts": [
+        "types",
+        "effects",
+        "capabilities",
+        "profile",
+        "artifacts"
+      ],
+      "diagnostics": [
+        {
+          "id": "LINT-CAP-MIN",
+          "severity": ":warning",
+          "source_span": "src/support/main.grav:12:4"
+        }
+      ],
+      "document": "T4",
+      "json_export": true,
+      "profile_target_applicability": {
+        ":hosted/:jvm-21": [
+          "effects",
+          "capabilities"
+        ]
+      },
+      "rule_metadata": {
+        "LINT-CAP-MIN": {
+          "fixable": false,
+          "inputs": [
+            "capability-manifest"
+          ]
+        }
+      },
+      "rules": [
+        "profile",
+        "effects",
+        "safety",
+        "package",
+        "ai"
+      ],
+      "tool_id": "gravity-lint"
+    },
+    "T5": {
+      "artifact_id": "lsp-matrix:phase13",
+      "code_action_records": [
+        {
+          "checks": [
+            "reader-round-trip",
+            "type",
+            "effect"
+          ],
+          "title": "Add capability request"
+        }
+      ],
+      "compiler_state": "compiler-state:phase13",
+      "completion_constraints": [
+        "namespace",
+        "profile",
+        "visibility",
+        "target"
+      ],
+      "diagnostics_match_cli": true,
+      "document": "T5",
+      "hover_facts": [
+        "type",
+        "effects",
+        "capabilities",
+        "profile",
+        "docs"
+      ],
+      "rename_boundaries": [
+        "namespace",
+        "macro-origin"
+      ],
+      "server_id": "gravity-lsp:0.1.0",
+      "tool_id": "gravity-lsp",
+      "trace_redacted": true
+    },
+    "T6": {
+      "artifact_id": "debug-trace:phase13",
+      "breakpoints": [
+        {
+          "artifact_location": "jvm:Support.main:42",
+          "source_span": "src/support/main.grav:42:3"
+        }
+      ],
+      "debug_data_version": "GravityDebug/v1",
+      "document": "T6",
+      "policy_denials": [
+        {
+          "operation": "mutate-state",
+          "reason": "missing debug authority"
+        }
+      ],
+      "profile": ":hosted",
+      "session_id": "debug:phase13",
+      "source_map_validation": {
+        "status": ":passed"
+      },
+      "stack_frames": [
+        {
+          "function": "support.main/serve",
+          "source_span": "src/support/main.grav:42:3"
+        }
+      ],
+      "target": ":jvm-21",
+      "tool_id": "gravity-debug",
+      "variable_reports": [
+        {
+          "name": "request",
+          "redacted": false,
+          "type": "SupportRequest"
+        }
+      ]
+    },
+    "T7": {
+      "api_signature_index": [
+        "support.main/serve"
+      ],
+      "artifact_id": "docs:support-agent",
+      "compiler_version": "gravityc-seed:0.1.0",
+      "document": "T7",
+      "effect_capability_docs": {
+        "support.main/serve": {
+          "capabilities": [
+            ":http/client"
+          ],
+          "effects": [
+            ":network/http"
+          ]
+        }
+      },
+      "example_validation_report": {
+        "checked": 3,
+        "failed": 0
+      },
+      "package_version": "0.3.0",
+      "redacted": true,
+      "schema_links": [
+        "schema:SupportRequest/v1"
+      ],
+      "source_hash": "sha256:source-001",
+      "structured_docs": true,
+      "tool_id": "gravity-doc"
+    },
+    "T8": {
+      "artifact_events": [
+        {
+          "artifact_id": "artifact:library-001",
+          "build_node": "emit-library",
+          "profile": ":hosted",
+          "target": ":jvm-21"
+        }
+      ],
+      "artifact_id": "dev-session:phase13",
+      "bug_report_redacted": true,
+      "capability_grants": [
+        ":http/client"
+      ],
+      "diagnostic_stream": "diagnostic-stream:dev-001",
+      "document": "T8",
+      "incremental_updates": [
+        {
+          "input": "src/support/main.grav",
+          "result": "converged-with-cli"
+        }
+      ],
+      "profile": ":hosted",
+      "project": "gravity.edn",
+      "runtime_log": "runtime-log:dev-001",
+      "session_id": "dev:phase13",
+      "target": ":jvm-21",
+      "tool_id": "gravity-dev"
+    },
+    "T9": {
+      "access_denials": [
+        {
+          "metadata_leaked": false,
+          "package": "acme/private"
+        }
+      ],
+      "artifact_id": "registry-ux:gravity-http",
+      "document": "T9",
+      "human_view": {
+        "matches_json": true
+      },
+      "package_detail_json": {
+        "capabilities": [
+          ":http/client"
+        ],
+        "profiles": [
+          ":hosted",
+          ":native"
+        ],
+        "targets": [
+          ":jvm-21",
+          ":wasm32-wasi"
+        ]
+      },
+      "policy_compatibility": {
+        "status": ":compatible"
+      },
+      "search_results": {
+        "filters": [
+          "profile",
+          "target",
+          "capability",
+          "safety"
+        ],
+        "respected": true
+      },
+      "tool_id": "gravity-registry",
+      "update_diff": {
+        "capability_delta": [],
+        "provenance_delta": [
+          "builder-attestation"
+        ],
+        "safety_delta": []
+      },
+      "verification_report": {
+        "provenance": "verified",
+        "sbom": "verified",
+        "signature": "verified"
+      }
+    }
+  },
+  "formatter_fixture": {
+    "artifact_id": "fmt-report:phase13",
+    "changed_files": [
+      "src/support/main.grav"
+    ],
+    "comments_preserved": true,
+    "configuration_hash": "sha256:fmt-config-001",
+    "diff_output": true,
+    "document": "T3",
+    "formatter_version": "gravity-fmt:0.1.0",
+    "json_report": {
+      "changed_ranges": [
+        "src/support/main.grav:1:1"
+      ],
+      "files": 1
+    },
+    "metadata_preserved": true,
+    "reader_round_trip": true,
+    "tool_id": "gravity-fmt"
+  },
+  "input_hash": "sha256:42630a9fe06246834cf96b8aab2fee84a14cc24fd87657346daf9855446a3152",
+  "kind": "tooling-experience-artifact",
+  "linter_diagnostic_report": {
+    "artifact_id": "lint-report:phase13",
+    "baseline": {
+      "mode": "fail-on-new",
+      "stale_entries": 0
+    },
+    "compiler_facts": [
+      "types",
+      "effects",
+      "capabilities",
+      "profile",
+      "artifacts"
+    ],
+    "diagnostics": [
+      {
+        "id": "LINT-CAP-MIN",
+        "severity": ":warning",
+        "source_span": "src/support/main.grav:12:4"
+      }
+    ],
+    "document": "T4",
+    "json_export": true,
+    "profile_target_applicability": {
+      ":hosted/:jvm-21": [
+        "effects",
+        "capabilities"
+      ]
+    },
+    "rule_metadata": {
+      "LINT-CAP-MIN": {
+        "fixable": false,
+        "inputs": [
+          "capability-manifest"
+        ]
+      }
+    },
+    "rules": [
+      "profile",
+      "effects",
+      "safety",
+      "package",
+      "ai"
+    ],
+    "tool_id": "gravity-lint"
+  },
+  "lsp_capability_matrix": {
+    "artifact_id": "lsp-matrix:phase13",
+    "code_action_records": [
+      {
+        "checks": [
+          "reader-round-trip",
+          "type",
+          "effect"
+        ],
+        "title": "Add capability request"
+      }
+    ],
+    "compiler_state": "compiler-state:phase13",
+    "completion_constraints": [
+      "namespace",
+      "profile",
+      "visibility",
+      "target"
+    ],
+    "diagnostics_match_cli": true,
+    "document": "T5",
+    "hover_facts": [
+      "type",
+      "effects",
+      "capabilities",
+      "profile",
+      "docs"
+    ],
+    "rename_boundaries": [
+      "namespace",
+      "macro-origin"
+    ],
+    "server_id": "gravity-lsp:0.1.0",
+    "tool_id": "gravity-lsp",
+    "trace_redacted": true
+  },
+  "package": "acme/support-agent",
+  "phase": "13",
+  "repl_session_artifact": {
+    "artifact_id": "repl-session:support-agent",
+    "capability_grants": [
+      ":fs/read",
+      ":http/client"
+    ],
+    "diagnostics": [],
+    "document": "T2",
+    "evaluation_history": [
+      {
+        "checks": [
+          "reader",
+          "macro",
+          "type",
+          "effect",
+          "profile",
+          "safety"
+        ],
+        "form": "(:effects '(fs/read \"notes.txt\"))",
+        "result": [
+          ":filesystem/read"
+        ]
+      }
+    ],
+    "lockfile_hash": "sha256:lock-001",
+    "namespace": "support.main",
+    "profile": ":hosted",
+    "project_manifest_hash": "sha256:project-001",
+    "session_id": "repl:phase13-support-agent",
+    "target": ":jvm-21",
+    "transcript_redacted": true
+  },
+  "tooling_ui_data_model": {
+    "ai_tooling": {
+      "artifact_id": "ai-tooling:phase13",
+      "document": "T13",
+      "generated_source_provenance": [
+        {
+          "input": "prompt:patch-proposal-001",
+          "output": "patch:proposal-001"
+        }
+      ],
+      "human_review_record": {
+        "decision": ":approved",
+        "review_id": "review:phase13-ai"
+      },
+      "modes": [
+        "diagnostic-explanation",
+        "patch-proposal",
+        "test-generation",
+        "package-update-review"
+      ],
+      "patch_artifact": {
+        "schema": "GravityPatch/v1",
+        "validated": true
+      },
+      "plan_artifact": {
+        "schema": "GravityAIPlan/v1",
+        "validated": true
+      },
+      "prompt_model_ledger": [
+        "prompt:patch-proposal-001",
+        "model:gpt-tooling-001"
+      ],
+      "replay_trace": {
+        "hidden_tool_use_detected": false,
+        "trace_id": "replay:phase13-ai"
+      },
+      "tool_call_ledger": [
+        {
+          "capability": ":repo/read",
+          "tool": "search"
+        }
+      ],
+      "tool_id": "gravity-ai-assist",
+      "validation_report": {
+        "effect": "passed",
+        "safety": "passed",
+        "test": "passed",
+        "type": "passed"
+      }
+    },
+    "dev_server": {
+      "artifact_events": [
+        {
+          "artifact_id": "artifact:library-001",
+          "build_node": "emit-library",
+          "profile": ":hosted",
+          "target": ":jvm-21"
+        }
+      ],
+      "artifact_id": "dev-session:phase13",
+      "bug_report_redacted": true,
+      "capability_grants": [
+        ":http/client"
+      ],
+      "diagnostic_stream": "diagnostic-stream:dev-001",
+      "document": "T8",
+      "incremental_updates": [
+        {
+          "input": "src/support/main.grav",
+          "result": "converged-with-cli"
+        }
+      ],
+      "profile": ":hosted",
+      "project": "gravity.edn",
+      "runtime_log": "runtime-log:dev-001",
+      "session_id": "dev:phase13",
+      "target": ":jvm-21",
+      "tool_id": "gravity-dev"
+    },
+    "documentation": {
+      "api_signature_index": [
+        "support.main/serve"
+      ],
+      "artifact_id": "docs:support-agent",
+      "compiler_version": "gravityc-seed:0.1.0",
+      "document": "T7",
+      "effect_capability_docs": {
+        "support.main/serve": {
+          "capabilities": [
+            ":http/client"
+          ],
+          "effects": [
+            ":network/http"
+          ]
+        }
+      },
+      "example_validation_report": {
+        "checked": 3,
+        "failed": 0
+      },
+      "package_version": "0.3.0",
+      "redacted": true,
+      "schema_links": [
+        "schema:SupportRequest/v1"
+      ],
+      "source_hash": "sha256:source-001",
+      "structured_docs": true,
+      "tool_id": "gravity-doc"
+    },
+    "ir_inspector": {
+      "artifact_id": "ir-inspector:phase13",
+      "compiler_version": "gravityc-seed:0.1.0",
+      "document": "T10",
+      "pass_diff_reports": [
+        {
+          "nonsemantic_renumbering_ignored": true,
+          "pass": "bounds-check-elision"
+        }
+      ],
+      "preservation_reports": [
+        {
+          "evidence": "proof:bounds-check-elision",
+          "preserved": [
+            "types",
+            "effects",
+            "source-spans"
+          ]
+        }
+      ],
+      "profile": ":hosted",
+      "project_hash": "sha256:project-001",
+      "redacted": true,
+      "source_span_maps": [
+        "source-map:reader-to-mir"
+      ],
+      "stage_id": "typed-core",
+      "stage_views": [
+        "syntax-objects",
+        "typed-core",
+        "mir",
+        "artifact-manifest"
+      ],
+      "target": ":jvm-21",
+      "tool_id": "gravity-inspect-ir"
+    },
+    "profiler": {
+      "artifact_id": "artifact:library-001",
+      "benchmark_id": "bench/support-agent-check",
+      "capabilities": [
+        ":profiler/read-counters"
+      ],
+      "check_elision_report": {
+        "evidence": [
+          "proof:bounds-check-elision"
+        ],
+        "status": ":accepted"
+      },
+      "comparison_policy": {
+        "latency_p95_threshold": "10pct"
+      },
+      "compiler_version": "gravityc-seed:0.1.0",
+      "document": "T11",
+      "environment": {
+        "host": "linux-x64",
+        "runtime": ":managed"
+      },
+      "profile": ":hosted",
+      "report_id": "perf-report:phase13",
+      "samples": [
+        {
+          "latency_ms": 12.5,
+          "source_span": "src/support/main.grav:42:3"
+        }
+      ],
+      "target": ":jvm-21",
+      "tool_id": "gravity-profile"
+    },
+    "registry": {
+      "access_denials": [
+        {
+          "metadata_leaked": false,
+          "package": "acme/private"
+        }
+      ],
+      "artifact_id": "registry-ux:gravity-http",
+      "document": "T9",
+      "human_view": {
+        "matches_json": true
+      },
+      "package_detail_json": {
+        "capabilities": [
+          ":http/client"
+        ],
+        "profiles": [
+          ":hosted",
+          ":native"
+        ],
+        "targets": [
+          ":jvm-21",
+          ":wasm32-wasi"
+        ]
+      },
+      "policy_compatibility": {
+        "status": ":compatible"
+      },
+      "search_results": {
+        "filters": [
+          "profile",
+          "target",
+          "capability",
+          "safety"
+        ],
+        "respected": true
+      },
+      "tool_id": "gravity-registry",
+      "update_diff": {
+        "capability_delta": [],
+        "provenance_delta": [
+          "builder-attestation"
+        ],
+        "safety_delta": []
+      },
+      "verification_report": {
+        "provenance": "verified",
+        "sbom": "verified",
+        "signature": "verified"
+      }
+    },
+    "safety_audit": {
+      "ai_safety": {
+        "prompt_authority": "partitioned",
+        "tool_escalations": 0
+      },
+      "artifact_id": "audit-report:phase13",
+      "capability_graph": {
+        "denied": [
+          ":shell/exec"
+        ],
+        "granted": [
+          ":http/client"
+        ],
+        "requested": [
+          ":http/client"
+        ],
+        "used": [
+          ":http/client"
+        ]
+      },
+      "document": "T12",
+      "ffi_boundaries": [],
+      "missing_evidence_report": [],
+      "package_safety": {
+        "sbom": "sbom:support-agent-001",
+        "unsafe_summary": {
+          "count": 0
+        }
+      },
+      "proof_index": [
+        {
+          "checker": "gravity.safety/check",
+          "proof_id": "proof:support-agent-capability-summary"
+        }
+      ],
+      "redacted": true,
+      "report_id": "safety-audit:phase13",
+      "taint_graph": [
+        {
+          "sink": "support.workflow/model-call",
+          "source": "user-ticket",
+          "validator": "schema:triage-input"
+        }
+      ],
+      "tool_id": "gravity-audit",
+      "unsafe_islands": []
+    }
+  }
+}

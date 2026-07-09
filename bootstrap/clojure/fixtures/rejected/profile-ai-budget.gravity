@@ -1,0 +1,8 @@
+(ns profile.bad.ai-budget
+  (:profile :ai)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p10/budget))

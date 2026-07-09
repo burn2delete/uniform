@@ -1,0 +1,357 @@
+; Stage1 Gravity-owned C9 ownership, lifetime, and region checker contract.
+(ns gravity.compiler.c9-ownership-checker-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c9-ownership-analysis-contract
+             c9-borrow-graph-contract
+             c9-lifetime-interval-contract
+             c9-region-arena-contract
+             c9-linear-resource-flow-contract
+             c9-transfer-runtime-unsafe-contract
+             c9-ownership-diagnostic-catalog
+             build-c9-borrow-record
+             build-c9-linear-resource-record
+             verify-c9-ownership-checker])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :ownership-checker
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C9" "L10" "SAFE3" "SAFE4" "SAFE5"
+                           "SAFE8" "C7" "C8" "C10" "C11"
+                           "C15" "P1" "P6" "P7" "R1" "R11"
+                           "PKG7" "BOOT1" "BOOT2" "BOOT3"
+                           "BOOT4" "BOOT5" "BOOT6" "BOOT7"
+                           "BOOT8" "TEST2"]
+               :implements [:ownership-analysis
+                             :ownership-graph
+                             :borrow-graph
+                             :lifetime-interval-map
+                             :move-and-consume-records
+                             :escape-analysis-report
+                             :region-lifetime-graph
+                             :arena-generation-graph
+                             :linear-resource-flow-graph
+                             :transfer-records
+                             :runtime-check-records
+                             :unsafe-audit-references
+                             :ownership-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :core-node-identity :type-facts
+                            :effect-facts :capability-facts
+                            :ownership-facts :borrow-graph
+                            :lifetime-intervals :move-records
+                            :consume-records :escape-analysis
+                            :region-lifetimes :arena-generations
+                            :linear-resource-flow :transfer-records
+                            :runtime-check-records
+                            :unsafe-audit-references
+                            :profile-target-metadata}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c9-ownership-checker-contract-subset
+                                    :clojure-c9-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c9-use-after-move.gravity"
+                              "compiler-c9-use-after-consume.gravity"
+                              "compiler-c9-borrow-escape.gravity"
+                              "compiler-c9-mut-alias.gravity"
+                              "compiler-c9-move-while-borrowed.gravity"
+                              "compiler-c9-region-escape.gravity"
+                              "compiler-c9-arena-generation.gravity"
+                              "compiler-c9-linear-leak.gravity"
+                              "compiler-c9-linear-double.gravity"
+                              "compiler-c9-transfer.gravity"
+                              "compiler-c9-runtime-check.gravity"
+                              "compiler-c9-unsafe.gravity"]}}}))
+
+(def c9-ownership-analysis-contract
+  {:artifact :gravity/c9-ownership-analysis-contract
+   :required-fields [:module :owners :moves :consumes
+                     :borrows :lifetimes :regions :arenas
+                     :linear :transfers :runtime-checks
+                     :unsafe-audit-references :diagnostics]
+   :owner-kinds [:persistent-immutable
+                 :owned-mutable
+                 :borrowed-immutable
+                 :borrowed-mutable
+                 :linear
+                 :region-owned
+                 :arena-owned
+                 :foreign-owned
+                 :provider-scoped]
+   :must-compute [:ownership-graph
+                  :borrow-graph
+                  :lifetime-interval-map
+                  :move-and-consume-records
+                  :escape-analysis-report
+                  :region-lifetime-graph
+                  :arena-generation-graph
+                  :linear-resource-flow-graph
+                  :transfer-records
+                  :runtime-check-records
+                  :unsafe-audit-references]
+   :must-preserve [:core-node-identity
+                   :source-spans
+                   :type-facts
+                   :effect-facts
+                   :capability-facts
+                   :artifact-provenance]
+   :forbidden [:implicit-copy-of-owned-mutable-value
+               :backend-only-ownership-legality
+               :runtime-only-lifetime-legality
+               :hidden-gc-region-fallback
+               :linear-finalizer-only-cleanup
+               :generated-code-dropping-ownership-facts]})
+
+(def c9-borrow-graph-contract
+  {:artifact :gravity/c9-borrow-graph-contract
+   :node-kinds [:owner :borrow :reference :field
+                :range :provider-scope]
+   :edge-kinds [:immutable-borrow
+                :mutable-borrow
+                :field-projection
+                :slice-or-range-borrow
+                :move
+                :consume
+                :transfer
+                :interior-mutability-provider-alias]
+   :alias-rules [:many-immutable-or-one-mutable
+                 :mutable-borrow-exclusive-for-range
+                 :move-forbidden-during-active-borrow
+                 :consume-forbidden-during-active-borrow
+                 :field-or-range-splitting-only-when-proven
+                 :unknown-overlap-treated-as-aliasing]
+   :required-fields [:borrow-id :owner-id :value-id
+                     :kind :range :lifetime :source-span
+                     :profile :target]
+   :forbidden [:mutable-access-with-active-alias
+               :move-while-borrowed
+               :consume-while-borrowed
+               :borrow-without-lifetime
+               :borrow-fact-lost-before-mir]})
+
+(def c9-lifetime-interval-contract
+  {:artifact :gravity/c9-lifetime-interval-contract
+   :interval-kinds [:lexical-scope
+                    :closure
+                    :stack-slot
+                    :owned-heap-value
+                    :region
+                    :arena-generation
+                    :foreign-call
+                    :callback
+                    :provider-scope
+                    :structured-task
+                    :device-buffer
+                    :generated-artifact]
+   :required-fields [:lifetime-id :start :end :owner
+                     :allowed-escape-destinations
+                     :invalidation-conditions
+                     :source-span]
+   :escape-destinations [:function-return
+                         :global-or-static-storage
+                         :closure-capture
+                         :task-or-actor-transfer
+                         :workflow-state
+                         :ffi-retention
+                         :callback-retention
+                         :ai-tool-model-request
+                         :generated-artifact
+                         :region-or-arena-storage]
+   :legal-alternatives [:copy
+                        :serialization
+                        :ownership-transfer
+                        :promotion-to-longer-lived-owner
+                        :unsafe-boundary-with-audit]
+   :forbidden [:borrow-outliving-owner
+               :borrow-outliving-provider-scope
+               :borrow-outliving-callback
+               :detached-task-capturing-local-borrow
+               :generated-artifact-capturing-short-lifetime]})
+
+(def c9-region-arena-contract
+  {:artifact :gravity/c9-region-arena-contract
+   :required-region-fields [:region-id :scope :allocations
+                            :escapes :cleanup-policy
+                            :provider :source-span]
+   :required-arena-fields [:arena-id :generation
+                           :allocation-sites :resets
+                           :invalidated-values
+                           :runtime-generation-checks
+                           :provider]
+   :region-rules [:region-values-do-not-escape-scope
+                  :inner-region-values-not-stored-in-outer-storage
+                  :foreign-retention-requires-copy-or-transfer
+                  :structured-task-must-complete-before-region-exit
+                  :cleanup-runs-at-most-once]
+   :arena-rules [:reset-creates-new-generation
+                 :prior-generation-values-invalidated
+                 :runtime-generation-checks-require-profile-support
+                 :arena-reset-rejects-outstanding-access
+                 :provider-declares-reset-and-threading]
+   :forbidden [:return-region-reference
+               :store-region-reference-globally
+               :capture-region-value-in-longer-lived-closure
+               :send-region-value-to-detached-task
+               :ffi-retains-region-memory
+               :use-after-arena-reset
+               :hidden-gc-fallback]})
+
+(def c9-linear-resource-flow-contract
+  {:artifact :gravity/c9-linear-resource-flow-contract
+   :operation-kinds [:acquire :borrow :transfer :close
+                     :commit :rollback :unlock :cancel
+                     :release :poison :forget]
+   :path-kinds [:normal :error :panic :cancellation :early-return]
+   :terminal-states [:closed :committed :rolled-back
+                     :unlocked :cancelled :released
+                     :transferred :poisoned]
+   :required-fields [:resource-id :provider-id :acquire-span
+                     :current-owner :control-path
+                     :terminal-operation :profile
+                     :generated-origin-chain]
+   :rules [:exactly-one-terminal-state-on-every-path
+           :transfer-consumes-source-binding
+           :destination-records-cleanup-obligation
+           :error-panic-and-cancellation-paths-covered
+           :generated-code-preserves-linear-flow]
+   :forbidden [:missing-terminal-operation
+               :duplicate-terminal-operation
+               :use-after-terminal-state
+               :cleanup-only-on-some-branches
+               :release-through-wrong-provider
+               :macro-duplicates-linear-value
+               :best-effort-cleanup-safe-claim]})
+
+(def c9-transfer-runtime-unsafe-contract
+  {:artifact :gravity/c9-transfer-runtime-unsafe-contract
+   :transfer-destinations [:function
+                           :task
+                           :actor
+                           :workflow
+                           :ffi
+                           :callback
+                           :tool-request
+                           :model-request
+                           :generated-artifact]
+   :runtime-check-kinds [:dynamic-borrow-state
+                         :region-generation
+                         :arena-generation
+                         :provider-scope-validity
+                         :resource-terminal-state]
+   :runtime-check-requirements [:profile-allows-metadata
+                                :profile-declares-failure-behavior
+                                :provider-supports-check
+                                :check-record-in-artifacts]
+   :unsafe-kinds [:lifetime-extension
+                  :alias-recovery
+                  :manual-resource-flow
+                  :foreign-retention
+                  :raw-region-access]
+   :required-unsafe-fields [:audit-id :reason :safe-boundary
+                            :owner :review :source-span
+                            :preconditions :postconditions]
+   :forbidden [:implicit-ownership-transfer
+               :runtime-check-without-profile-support
+               :unsafe-lifetime-extension-without-audit
+               :manual-resource-flow-without-audit
+               :capability-treated-as-ownership-proof]})
+
+(def c9-ownership-diagnostic-catalog
+  {:diagnostics ["C9-USE-AFTER-MOVE"
+                 "C9-USE-AFTER-CONSUME"
+                 "C9-BORROW-ESCAPE"
+                 "C9-MUT-ALIAS"
+                 "C9-MOVE-WHILE-BORROWED"
+                 "C9-REGION-ESCAPE"
+                 "C9-ARENA-GENERATION"
+                 "C9-LINEAR-LEAK"
+                 "C9-LINEAR-DOUBLE"
+                 "C9-TRANSFER"
+                 "C9-RUNTIME-CHECK"
+                 "C9-UNSAFE"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :value-id :owner-id :borrow-id
+                              :region-id :arena-generation
+                              :resource-id :control-path
+                              :source-span
+                              :generated-origin-chain
+                              :profile :target :remediation]
+   :stops [:safety-analysis
+           :mir-construction
+           :optimizer
+           :target-lowering
+           :runtime-selection
+           :package-release]
+   :must-not-depend-on [:localized-rendering-text
+                        :host-runtime-undefined-behavior
+                        :backend-only-lifetime-state
+                        :implicit-unsafe-audit]})
+
+(defn build-c9-borrow-record
+  [borrow-id owner-id value-id kind range lifetime source-span]
+  (quote {:artifact :gravity/c9-borrow-record
+          :borrow-id borrow-id
+          :owner-id owner-id
+          :value-id value-id
+          :kind kind
+          :range range
+          :lifetime lifetime
+          :source-span source-span
+          :contract c9-borrow-graph-contract}))
+
+(defn build-c9-linear-resource-record
+  [resource-id provider-id acquire-span current-owner control-path terminal]
+  (quote {:artifact :gravity/c9-linear-resource-record
+          :resource-id resource-id
+          :provider-id provider-id
+          :acquire-span acquire-span
+          :current-owner current-owner
+          :control-path control-path
+          :terminal-operation terminal
+          :contract c9-linear-resource-flow-contract}))
+
+(defn verify-c9-ownership-checker [effected-core-artifact]
+  (quote {:status :stage1-source-owned
+          :effected-core-artifact effected-core-artifact
+          :checks [:ownership-graph-computed
+                   :borrow-graph-computed
+                   :many-immutable-or-one-mutable-proven
+                   :moves-and-consumes-invalidated
+                   :lifetime-intervals-recorded
+                   :borrow-escapes-rejected
+                   :region-escapes-rejected
+                   :arena-generations-invalidated-on-reset
+                   :linear-resources-exactly-once
+                   :transfer-boundaries-explicit
+                   :runtime-checks-profile-gated
+                   :unsafe-audit-references-required
+                   :mir-ownership-annotations-preserved]
+          :diagnostics c9-ownership-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :core-node-identity :type-facts
+                      :effect-facts :capability-facts
+                      :ownership-facts :borrow-graph
+                      :lifetime-intervals
+                      :move-records :consume-records
+                      :escape-analysis
+                      :region-lifetimes
+                      :arena-generations
+                      :linear-resource-flow
+                      :transfer-records
+                      :runtime-check-records
+                      :unsafe-audit-references
+                      :profile-target-metadata
+                      :artifact-provenance]}))

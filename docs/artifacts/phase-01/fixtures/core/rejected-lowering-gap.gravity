@@ -1,0 +1,7 @@
+(ns core.bad.gap
+  (:profile :hosted))
+
+(def bad
+  (cond
+    true 1
+    false 0))

@@ -1,0 +1,21 @@
+(ns math.mode-downgrade
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:mode-records
+                      [{:record-id :bad-downgrade
+                        :math/mode :faithful
+                        :scope {:kind :expression :id :e1}
+                        :precision {:type :F32 :ulp-max 1}
+                        :rounding :nearest-even
+                        :float-exceptions {:nan :propagate
+                                           :inf :propagate
+                                           :signed-zero :preserve
+                                           :denormals :preserve}
+                        :mode-change {:kind :weakening
+                                      :from :correctly-rounded
+                                      :to :faithful
+                                      :approved? false}}]}}}))

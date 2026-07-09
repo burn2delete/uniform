@@ -1,0 +1,479 @@
+{
+  "acquire_terminal_operation_records": [
+    {
+      "operation_id": "linear-file-flow",
+      "provider_id": "gravity.resource/file-host",
+      "resource_id": "file-1",
+      "source_span": {
+        "column": 3,
+        "line": 49,
+        "source": "src/memory_demo.gravity"
+      },
+      "terminal_state": ":closed"
+    }
+  ],
+  "allocation_release_map": [
+    {
+      "allocation_id": "alloc-buffer-1",
+      "allocation_site": "core-00017",
+      "allocator_provider": "gravity.memory/owned-buffer",
+      "operation_id": "mem-owned-load",
+      "release_policy": ":owned-by-value",
+      "source_span": {
+        "column": 9,
+        "line": 12,
+        "source": "src/memory_demo.gravity"
+      }
+    }
+  ],
+  "arena_generation_graph": [
+    {
+      "arena_id": "arena-a",
+      "generation": 2,
+      "invalidated_generation": 1,
+      "operation_id": "region-arena-valid",
+      "reset_at": "line 42",
+      "source_span": {
+        "column": 3,
+        "line": 35,
+        "source": "src/memory_demo.gravity"
+      }
+    }
+  ],
+  "borrow_graph": [
+    {
+      "borrow_id": "borrow-slice-1",
+      "lifetime": "scope:parse-body",
+      "mode": ":immutable",
+      "operation_id": "mem-slice-runtime-bounds",
+      "owner_id": "buffer-owner-1",
+      "source_span": {
+        "column": 11,
+        "line": 18,
+        "source": "src/memory_demo.gravity"
+      }
+    },
+    {
+      "borrow_id": "borrow-slice-1",
+      "mode": ":immutable",
+      "operation_id": "owner-borrow-flow",
+      "owner_id": "buffer-owner-1",
+      "source_span": {
+        "column": 5,
+        "line": 27,
+        "source": "src/memory_demo.gravity"
+      }
+    }
+  ],
+  "cancellation_cleanup_records": [
+    {
+      "operation_id": "linear-file-flow",
+      "path": "cancel",
+      "resource_id": "file-1",
+      "source_span": {
+        "column": 3,
+        "line": 49,
+        "source": "src/memory_demo.gravity"
+      },
+      "terminal_state": ":closed"
+    }
+  ],
+  "diagnostics": [],
+  "documents": [
+    "SAFE2",
+    "SAFE3",
+    "SAFE4",
+    "SAFE5"
+  ],
+  "escape_analysis_records": [
+    {
+      "escape_paths": [],
+      "operation_id": "region-arena-valid",
+      "region_id": "region-r",
+      "source_span": {
+        "column": 3,
+        "line": 35,
+        "source": "src/memory_demo.gravity"
+      },
+      "status": ":proven-contained"
+    }
+  ],
+  "exceptional_cleanup_records": [
+    {
+      "operation_id": "linear-file-flow",
+      "path": "error",
+      "resource_id": "file-1",
+      "source_span": {
+        "column": 3,
+        "line": 49,
+        "source": "src/memory_demo.gravity"
+      },
+      "terminal_state": ":closed"
+    }
+  ],
+  "input_hash": "sha256:ba49c71b77720c17cff2f8a5a2efea50f1dbe479689ec87bf098eaf149d53e7f",
+  "kind": "memory-safety-artifact",
+  "lifetime_interval_map": [
+    {
+      "ends_at": "line 21",
+      "lifetime_id": "scope:parse-body",
+      "operation_id": "mem-slice-runtime-bounds",
+      "source_span": {
+        "column": 11,
+        "line": 18,
+        "source": "src/memory_demo.gravity"
+      },
+      "starts_at": "line 17",
+      "status": ":valid"
+    }
+  ],
+  "linear_resource_flow_graph": [
+    {
+      "operation_id": "linear-file-flow",
+      "resource_id": "file-1",
+      "source_span": {
+        "column": 3,
+        "line": 49,
+        "source": "src/memory_demo.gravity"
+      },
+      "states": [
+        ":owned",
+        ":closed"
+      ]
+    }
+  ],
+  "memory_safety_facts": [
+    {
+      "active_profile": ":native",
+      "effect_facts": {
+        "capabilities": [
+          ":memory/allocator"
+        ],
+        "effects": [
+          ":memory/allocate"
+        ]
+      },
+      "fact_results": {
+        "aliasing": ":proven",
+        "allocator": ":proven",
+        "bounds": ":proven",
+        "initialized": ":proven",
+        "lifetime": ":proven",
+        "profile_memory_regime": ":proven",
+        "storage_exists": ":proven"
+      },
+      "memory_regime": ":ownership",
+      "operation_id": "mem-owned-load",
+      "operation_kind": ":memory-access",
+      "provider_id": "gravity.memory/owned-buffer",
+      "required_facts": [
+        "storage_exists",
+        "initialized",
+        "bounds",
+        "lifetime",
+        "aliasing",
+        "allocator",
+        "profile_memory_regime"
+      ],
+      "safety_outcome": ":proven-safe",
+      "source_span": {
+        "column": 9,
+        "line": 12,
+        "source": "src/memory_demo.gravity"
+      },
+      "type_facts": {
+        "index_type": "USize",
+        "result_type": "U8",
+        "value_type": "Owned[Buffer]"
+      }
+    },
+    {
+      "active_profile": ":native",
+      "effect_facts": {
+        "capabilities": [],
+        "effects": []
+      },
+      "fact_results": {
+        "aliasing": ":proven",
+        "bounds": ":runtime-checked",
+        "initialized": ":proven",
+        "lifetime": ":proven",
+        "profile_memory_regime": ":proven",
+        "storage_exists": ":proven"
+      },
+      "memory_regime": ":borrowing",
+      "operation_id": "mem-slice-runtime-bounds",
+      "operation_kind": ":memory-access",
+      "provider_id": "gravity.memory/slice-view",
+      "required_facts": [
+        "storage_exists",
+        "initialized",
+        "bounds",
+        "lifetime",
+        "aliasing",
+        "profile_memory_regime"
+      ],
+      "safety_outcome": ":runtime-checked",
+      "source_span": {
+        "column": 11,
+        "line": 18,
+        "source": "src/memory_demo.gravity"
+      },
+      "type_facts": {
+        "index_type": "USize",
+        "result_type": "U8",
+        "value_type": "Borrow[Slice[U8]]"
+      }
+    },
+    {
+      "active_profile": ":native",
+      "effect_facts": {
+        "capabilities": [],
+        "effects": []
+      },
+      "fact_results": {
+        "aliasing": ":proven",
+        "lifetime": ":proven",
+        "profile_memory_regime": ":proven",
+        "storage_exists": ":proven"
+      },
+      "memory_regime": ":ownership",
+      "operation_id": "owner-borrow-flow",
+      "operation_kind": ":ownership",
+      "provider_id": "gravity.memory/owned-buffer",
+      "required_facts": [
+        "storage_exists",
+        "lifetime",
+        "aliasing",
+        "profile_memory_regime"
+      ],
+      "safety_outcome": ":proven-safe",
+      "source_span": {
+        "column": 5,
+        "line": 27,
+        "source": "src/memory_demo.gravity"
+      },
+      "type_facts": {
+        "borrow_type": "Borrow[Buffer]",
+        "owner_type": "Owned[Buffer]"
+      }
+    },
+    {
+      "active_profile": ":native",
+      "effect_facts": {
+        "capabilities": [
+          ":memory/allocator"
+        ],
+        "effects": [
+          ":memory/allocate"
+        ]
+      },
+      "fact_results": {
+        "initialized": ":proven",
+        "lifetime": ":proven",
+        "profile_memory_regime": ":proven",
+        "storage_exists": ":proven"
+      },
+      "memory_regime": ":region",
+      "operation_id": "region-arena-valid",
+      "operation_kind": ":region",
+      "provider_id": "gravity.memory/region-provider",
+      "required_facts": [
+        "storage_exists",
+        "initialized",
+        "lifetime",
+        "profile_memory_regime"
+      ],
+      "safety_outcome": ":proven-safe",
+      "source_span": {
+        "column": 3,
+        "line": 35,
+        "source": "src/memory_demo.gravity"
+      },
+      "type_facts": {
+        "arena_type": "Arena[a, Node]",
+        "region_type": "Region[r, Scratch]"
+      }
+    },
+    {
+      "active_profile": ":native",
+      "effect_facts": {
+        "capabilities": [
+          ":resource/file"
+        ],
+        "effects": [
+          ":resource/open",
+          ":resource/close"
+        ]
+      },
+      "fact_results": {
+        "profile_memory_regime": ":proven",
+        "release_state": ":proven",
+        "storage_exists": ":proven"
+      },
+      "memory_regime": ":linear-resource",
+      "operation_id": "linear-file-flow",
+      "operation_kind": ":linear-resource",
+      "provider_id": "gravity.resource/file-host",
+      "required_facts": [
+        "storage_exists",
+        "release_state",
+        "profile_memory_regime"
+      ],
+      "safety_outcome": ":proven-safe",
+      "source_span": {
+        "column": 3,
+        "line": 49,
+        "source": "src/memory_demo.gravity"
+      },
+      "type_facts": {
+        "resource_type": "Linear[FileHandle]"
+      }
+    },
+    {
+      "active_profile": ":kernel",
+      "effect_facts": {
+        "capabilities": [
+          ":hardware/mmio"
+        ],
+        "effects": [
+          ":memory/mmio"
+        ]
+      },
+      "fact_results": {
+        "lifetime": ":proven",
+        "profile_memory_regime": ":proven",
+        "raw_policy": ":unsafe-island",
+        "storage_exists": ":proven"
+      },
+      "memory_regime": ":mmio",
+      "operation_id": "raw-mmio-audited",
+      "operation_kind": ":raw-memory",
+      "provider_id": "gravity.kernel/mmio-provider",
+      "required_facts": [
+        "storage_exists",
+        "lifetime",
+        "raw_policy",
+        "profile_memory_regime"
+      ],
+      "safety_outcome": ":unsafe-island",
+      "source_span": {
+        "column": 5,
+        "line": 44,
+        "source": "drivers/mmio.gravity"
+      },
+      "type_facts": {
+        "address_type": "MMIO[U32]",
+        "result_type": "U32"
+      }
+    }
+  ],
+  "module": "safety.memory",
+  "move_and_consume_records": [
+    {
+      "operation_id": "owner-borrow-flow",
+      "owner_id": "buffer-owner-1",
+      "source_span": {
+        "column": 5,
+        "line": 27,
+        "source": "src/memory_demo.gravity"
+      },
+      "state": ":not-moved"
+    }
+  ],
+  "ownership_graph": [
+    {
+      "current_owner": "local:buf",
+      "operation_id": "owner-borrow-flow",
+      "owner_id": "buffer-owner-1",
+      "source_span": {
+        "column": 5,
+        "line": 27,
+        "source": "src/memory_demo.gravity"
+      },
+      "state": ":owned"
+    }
+  ],
+  "ownership_transfer_records": [
+    {
+      "destination_cleanup_contract": "worker-consumes-or-transfers",
+      "destination_owner": "task:worker",
+      "operation_id": "owner-borrow-flow",
+      "owner_id": "socket-owner-1",
+      "source_consumed": true,
+      "source_owner": "local:sock",
+      "source_span": {
+        "column": 5,
+        "line": 27,
+        "source": "src/memory_demo.gravity"
+      },
+      "transfer_kind": ":task-spawn"
+    }
+  ],
+  "package": "gravity.safety.demo",
+  "profile": ":native",
+  "proof_records": [
+    {
+      "checker": "gravity.safety.range/check",
+      "claim": "index is inside buffer length",
+      "id": "bounds-proof-mem-owned-load",
+      "operation_id": "mem-owned-load",
+      "replaces_check": "bounds",
+      "result": ":accepted",
+      "source_span": {
+        "column": 9,
+        "line": 12,
+        "source": "src/memory_demo.gravity"
+      }
+    }
+  ],
+  "region_lifetime_graph": [
+    {
+      "lifetime": "with-region:r",
+      "operation_id": "region-arena-valid",
+      "parent": null,
+      "region_id": "region-r",
+      "source_span": {
+        "column": 3,
+        "line": 35,
+        "source": "src/memory_demo.gravity"
+      }
+    }
+  ],
+  "runtime_check_records": [
+    {
+      "artifact_record": "runtime-checks/check-slice-bounds",
+      "condition": "bounds",
+      "failure_behavior": ":panic/bounds",
+      "id": "check-slice-bounds",
+      "operation_id": "mem-slice-runtime-bounds",
+      "profile_legal": true,
+      "source_span": {
+        "column": 11,
+        "line": 18,
+        "source": "src/memory_demo.gravity"
+      }
+    }
+  ],
+  "safety_artifact": "docs/artifacts/phase-02/safety/safety-classification.accepted.json",
+  "target": ":llvm",
+  "typed_core_artifact_hash": "sha256:69a4f8c0cd6f20f46a3d9e1863f89c0b708ec2f23d072c24f448ad751c633bc0",
+  "unsafe_memory_audit_records": [
+    {
+      "evidence": [
+        ":device-map-check",
+        ":alignment-fixture"
+      ],
+      "id": "SAFE-MMIO-READ",
+      "operation_id": "raw-mmio-audited",
+      "owner": "kernel-mmio",
+      "reason": ":mmio-read",
+      "safe_boundary": "read-register",
+      "source_span": {
+        "column": 5,
+        "line": 44,
+        "source": "drivers/mmio.gravity"
+      }
+    }
+  ]
+}

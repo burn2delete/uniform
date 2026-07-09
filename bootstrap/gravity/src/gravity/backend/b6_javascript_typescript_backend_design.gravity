@@ -1,0 +1,532 @@
+; Stage1 Gravity-owned B6 JavaScript / TypeScript backend source-model contract.
+(ns gravity.backend.b6-javascript-typescript-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b6-javascript-typescript-backend-contract
+             b6-runtime-module-target-contract
+             b6-typescript-api-contract
+             b6-host-global-import-contract
+             b6-nullish-exception-contract
+             b6-numeric-representation-contract
+             b6-async-event-loop-contract
+             b6-dynamic-code-prototype-contract
+             b6-ui-binding-contract
+             b6-artifact-manifest-contract
+             b6-diagnostic-catalog
+             build-b6-js-ts-backend-manifest
+             build-b6-runtime-module-target-record
+             build-b6-typescript-api-record
+             build-b6-host-capability-manifest
+             build-b6-nullish-exception-map
+             build-b6-numeric-representation-manifest
+             build-b6-async-effect-map
+             build-b6-artifact-record
+             verify-b6-javascript-typescript-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :js-ts-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B6" "B1" "D1" "D3"
+                                        "C11" "C14"
+                                        "P4" "P9" "P10" "P13"
+                                        "SAFE9" "SAFE10"
+                                        "SAFE11" "SAFE12"
+                                        "SCHEMA" "R1" "R4"
+                                        "R6" "R11" "R12"
+                                        "B13" "B14"
+                                        "PKG2" "PKG6" "PKG7"
+                                        "TOOL2" "BOOT1" "BOOT3"
+                                        "BOOT8" "TEST13"]
+               :documents ["B6" "B1" "D1" "D3"
+                           "C11" "C14"
+                           "P4" "P9" "P10" "P13"
+                           "SAFE9" "SAFE10"
+                           "SAFE11" "SAFE12"
+                           "SCHEMA" "R1" "R4"
+                           "R6" "R11" "R12"
+                           "B13" "B14"
+                           "PKG2" "PKG6" "PKG7"
+                           "TOOL2" "BOOT1" "BOOT3"
+                           "BOOT8" "TEST13"]
+               :implements [:javascript-typescript-backend-source-model
+                             :runtime-module-target-contract
+                             :typescript-api-declaration-contract
+                             :host-global-import-capability-contract
+                             :nullish-exception-translation-contract
+                             :numeric-representation-contract
+                             :async-event-loop-contract
+                             :dynamic-code-prototype-policy-contract
+                             :ui-binding-metadata-contract
+                             :js-ts-artifact-manifest-contract
+                             :stable-b6-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :runtime-kind :ecmascript-target
+                            :module-format :bundler-policy
+                            :package-boundary :tree-shaking-assumptions
+                            :source-map-strategy
+                            :typescript-declaration-identity
+                            :opaque-host-boundaries
+                            :async-effect-facts
+                            :promise-rejection-translation
+                            :event-callback-failure-policy
+                            :host-global-authority-facts
+                            :package-import-integrity-facts
+                            :side-effect-policy
+                            :nullish-adapter-facts
+                            :exception-translation-map
+                            :numeric-mode-facts
+                            :number-bigint-typed-array-representation
+                            :schema-validation-records
+                            :dynamic-import-policy
+                            :eval-function-constructor-policy
+                            :prototype-mutation-policy
+                            :object-layout-policy
+                            :ui-component-schema-metadata
+                            :effect-facts :capability-facts
+                            :safety-outcomes :unsafe-audit-links
+                            :proof-references :source-maps
+                            :generated-origin-maps
+                            :debug-maps :dependency-provenance
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :dom
+                                    :host-global :dynamic-import
+                                    :eval :function-constructor
+                                    :prototype-mutation
+                                    :package-manager]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b6-js-ts-backend-contract-subset
+                                    :clojure-b6-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b6-target.gravity"
+                              "backend-b6-global.gravity"
+                              "backend-b6-import.gravity"
+                              "backend-b6-nullish.gravity"
+                              "backend-b6-exception.gravity"
+                              "backend-b6-numeric.gravity"
+                              "backend-b6-eval.gravity"
+                              "backend-b6-prototype.gravity"
+                              "backend-b6-async.gravity"
+                              "backend-b6-ui.gravity"
+                              "backend-b6-manifest.gravity"]}}}))
+
+(def b6-javascript-typescript-backend-contract
+  {:artifact :gravity/b6-javascript-typescript-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/js-ts
+   :accepts [:verified-mir :verified-domain-ir]
+   :hosted-runtime? true
+   :emits [:js-ts-backend-manifest
+           :runtime-module-target-record
+           :javascript-module-artifacts
+           :typescript-declaration-files
+           :source-maps-and-generated-origin-maps
+           :host-global-import-capability-manifest
+           :package-dependency-manifest
+           :async-effect-boundary-map
+           :nullish-exception-translation-map
+           :numeric-representation-manifest
+           :ui-component-binding-metadata
+           :js-ts-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :mir-module
+              :domain-ir-anchors
+              :profile-manifest
+              :target-manifest
+              :runtime-provider-manifest
+              :capability-manifest
+              :package-policy
+              :schema-manifest
+              :async-effect-map
+              :numeric-mode-manifest
+              :source-map]
+   :rules [:javascript-typescript-is-hosted-runtime-not-gravity-semantics
+           :backend-consumes-only-verified-ir
+           :runtime-ecmascript-module-bundler-package-and-source-map-strategy-are-pinned
+           :typescript-declarations-describe-apis-but-do-not-prove-safety
+           :host-globals-and-package-imports-require-effects-capabilities-schemas-and-integrity-policy
+           :null-and-undefined-enter-safe-gravity-only-through-option-result-checked-adapters-or-opaque-host-values
+           :exceptions-rejected-promises-and-callback-failures-translate-through-declared-error-panic-or-effect-channels
+           :numeric-lowering-records-number-bigint-typed-array-and-schema-boundaries
+           :dynamic-code-prototype-mutation-and-hidden-global-state-are-rejected-without-audited-unsafe-wrapper]
+   :forbidden [:source-to-javascript-shortcut
+               :ambient-host-global-access
+               :untyped-package-import
+               :unchecked-nullish-flow
+               :untranslated-host-exception
+               :lossy-number-lowering
+               :implicit-eval-or-function-constructor
+               :prototype-mutation
+               :artifact-without-js-ts-manifest]})
+
+(def b6-runtime-module-target-contract
+  {:artifact :gravity/b6-runtime-module-target-contract
+   :runtime-kinds [:browser :node :edge :serverless
+                  :desktop-shell :react-native-hosted]
+   :module-formats [:esm :commonjs-wrapper :worker-module
+                   :bundler-entry :package-export]
+   :required-fields [:runtime-kind
+                     :ecmascript-target
+                     :module-format
+                     :bundler-policy
+                     :package-boundary
+                     :tree-shaking-assumptions
+                     :source-map-strategy
+                     :host-global-policy
+                     :event-loop-policy
+                     :supported-builtins
+                     :polyfill-policy]
+   :rules [:target-is-explicit-and-repeatable
+           :runtime-feature-probing-is-manifested
+           :tree-shaking-does-not-hide-side-effects
+           :source-map-strategy-preserves-generated-origin]
+   :reject-when [:unsupported-runtime-kind
+                 :unsupported-ecmascript-target
+                 :implicit-bundler-assumption
+                 :source-map-policy-missing]})
+
+(def b6-typescript-api-contract
+  {:artifact :gravity/b6-typescript-api-contract
+   :declaration-kinds [:function :class :type-alias :interface
+                      :namespace :opaque-host-value]
+   :required-fields [:exported-gravity-symbol
+                     :typescript-name
+                     :gravity-type
+                     :typescript-type
+                     :effect-boundary
+                     :capability-boundary
+                     :nullish-policy
+                     :exception-policy
+                     :opaque-host-policy
+                     :source-map-anchor]
+   :rules [:declarations-preserve-exported-api-shape
+           :opaque-host-values-are-identified
+           :typescript-annotations-are-not-trusted-as-safety-proofs
+           :async-and-error-boundaries-are-visible-to-consumers]
+   :forbidden [:declaration-erases-effect
+               :declaration-erases-capability
+               :any-type-for-safe-api-without-opaque-policy
+               :typescript-only-safety-claim]})
+
+(def b6-host-global-import-contract
+  {:artifact :gravity/b6-host-global-import-contract
+   :authority-kinds [:host-global :package-import :dynamic-import
+                    :timer :event-source :dom :process :storage]
+   :required-fields [:symbol
+                     :host-runtime
+                     :effect
+                     :capability
+                     :schema
+                     :integrity
+                     :side-effect-policy
+                     :taint-policy
+                     :fallback-policy
+                     :source-span]
+   :rules [:host-global-authority-is-never-ambient
+           :package-imports-record-version-integrity-and-side-effects
+           :untyped-imports-require-opaque-or-unsafe-boundary
+           :dynamic-import-is-effectful-and-capability-gated]
+   :forbidden [:implicit-globalthis-access
+               :untyped-side-effectful-import
+               :hidden-package-initializer-effect
+               :dynamic-import-without-capability]})
+
+(def b6-nullish-exception-contract
+  {:artifact :gravity/b6-nullish-exception-contract
+   :nullish-forms [:option :result :checked-adapter :opaque-host-value]
+   :failure-channels [:gravity-error
+                     :gravity-panic
+                     :declared-effect-channel
+                     :fatal-runtime-record]
+   :required-fields [:source-span
+                     :host-symbol
+                     :gravity-type
+                     :nullish-policy
+                     :exception-or-rejection-kind
+                     :translation-channel
+                     :event-callback-policy
+                     :host-error-identity-preservation]
+   :rules [:null-and-undefined-do-not-inhabit-safe-gravity-types
+           :rejected-promises-translate-through-declared-channel
+           :event-callback-failures-are-recorded
+           :host-error-identity-is-preserved-or-redacted-by-policy]
+   :reject-when [:unchecked-null-or-undefined-flow
+                 :untranslated-host-exception
+                 :rejected-promise-as-ordinary-value
+                 :callback-failure-without-effect-record]})
+
+(def b6-numeric-representation-contract
+  {:artifact :gravity/b6-numeric-representation-contract
+   :representations [:number :bigint :typed-array
+                    :checked-helper :schema-boundary]
+   :required-fields [:gravity-numeric-type
+                     :javascript-representation
+                     :typescript-representation
+                     :overflow-policy
+                     :precision-policy
+                     :nan-policy
+                     :signed-zero-policy
+                     :json-serialization-policy
+                     :mixed-number-bigint-policy
+                     :source-span]
+   :rules [:number-lowering-declares-finite-nan-and-signed-zero-policy
+           :bigint-boundaries-declare-json-and-mixing-policy
+           :typed-array-lowering-records-element-width-and-endianness
+           :lossy-conversion-is-rejected-or-proven-safe]
+   :forbidden [:silent-precision-loss
+               :unchecked-number-bigint-mixing
+               :implicit-json-bigint-serialization
+               :nan-crossing-safe-boundary-without-policy]})
+
+(def b6-async-event-loop-contract
+  {:artifact :gravity/b6-async-event-loop-contract
+   :async-forms [:promise :await :timer :event-callback
+                :stream :worker-message :abort-signal]
+   :required-fields [:async-form
+                     :effect
+                     :capability
+                     :scheduler-or-event-loop
+                     :cancellation-policy
+                     :backpressure-policy
+                     :replay-nondeterminism-policy
+                     :failure-channel
+                     :source-map-anchor]
+   :rules [:async-boundaries-preserve-effects-and-capabilities
+           :cancellation-and-backpressure-are-explicit
+           :event-loop-assumptions-are-manifested
+           :replay-sensitive-profiles-record-nondeterminism]
+   :reject-when [:implicit-async-effect
+                 :timer-without-clock-capability
+                 :event-callback-without-failure-policy
+                 :replay-profile-with-unrecorded-nondeterminism]})
+
+(def b6-dynamic-code-prototype-contract
+  {:artifact :gravity/b6-dynamic-code-prototype-contract
+   :dynamic-features [:eval :function-constructor :dynamic-import
+                     :prototype-mutation :monkey-patch
+                     :object-shape-assumption]
+   :required-fields [:feature
+                     :policy
+                     :effect
+                     :capability
+                     :profile-allowance
+                     :package-policy
+                     :unsafe-audit-link
+                     :fallback-or-rejection]
+   :rules [:dynamic-code-is-rejected-by-default
+           :prototype-mutation-is-rejected-by-default
+           :unsafe-dynamic-use-requires-explicit-audited-wrapper
+           :object-layout-assumptions-are-schema-or-frozen-record-based]
+   :forbidden [:hidden-eval
+               :hidden-function-constructor
+               :implicit-prototype-mutation
+               :safe-api-depending-on-mutable-host-prototype]})
+
+(def b6-ui-binding-contract
+  {:artifact :gravity/b6-ui-binding-contract
+   :binding-kinds [:component :props-schema :state-hook
+                  :dom-event :hydration-boundary :asset]
+   :required-fields [:component-id
+                     :props-schema
+                     :state-effect-record
+                     :dom-event-capability
+                     :style-or-asset-dependency
+                     :source-map-anchor
+                     :hot-reload-identity
+                     :taint-policy]
+   :rules [:ui-bindings-preserve-source-identity
+           :dom-events-require-effects-and-capabilities
+           :props-and-host-boundaries-use-schema-records
+           :hydration-and-hot-reload-do-not-change-semantics]
+   :reject-when [:component-without-schema
+                 :dom-event-without-capability
+                 :asset-dependency-without-provenance
+                 :hydration-boundary-erases-source-origin]})
+
+(def b6-artifact-manifest-contract
+  {:artifact :gravity/b6-artifact-manifest-contract
+   :required-fields [:js-ts-backend-manifest
+                     :runtime-module-target-record
+                     :javascript-module-artifacts
+                     :typescript-declaration-files
+                     :source-maps-and-generated-origin-maps
+                     :package-metadata
+                     :capability-manifest
+                     :package-dependency-manifest
+                     :async-effect-boundary-map
+                     :nullish-exception-translation-map
+                     :numeric-representation-manifest
+                     :ui-component-binding-metadata
+                     :diagnostic-stream
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :module-and-package-artifacts-record-content-hashes
+           :source-maps-preserve-gravity-origin
+           :package-metadata-records-dependencies-capabilities-and-side-effects]
+   :forbidden [:javascript-without-manifest
+               :typescript-declarations-without-source-origin
+               :source-map-without-provenance
+               :package-metadata-without-capability-record]})
+
+(def b6-diagnostic-catalog
+  {:artifact :gravity/b6-diagnostic-catalog
+   :ids [{:id "B6-TARGET"
+          :meaning :unsupported-runtime-ecmascript-module-or-bundler-target}
+         {:id "B6-GLOBAL"
+          :meaning :host-global-without-effect-capability-or-schema}
+         {:id "B6-IMPORT"
+          :meaning :package-import-without-typed-boundary-integrity-or-side-effect-policy}
+         {:id "B6-NULLISH"
+          :meaning :unchecked-null-or-undefined-flow}
+         {:id "B6-EXCEPTION"
+          :meaning :untranslated-exception-rejected-promise-or-callback-failure}
+         {:id "B6-NUMERIC"
+          :meaning :unsupported-or-lossy-javascript-numeric-representation}
+         {:id "B6-EVAL"
+          :meaning :eval-function-constructor-or-dynamic-code-without-policy}
+         {:id "B6-PROTOTYPE"
+          :meaning :prototype-mutation-or-unsafe-object-layout-assumption}
+         {:id "B6-ASYNC"
+          :meaning :async-boundary-without-effect-cancellation-or-event-loop-record}
+         {:id "B6-UI"
+          :meaning :ui-binding-without-schema-capability-or-source-map-metadata}
+         {:id "B6-MANIFEST"
+          :meaning :incomplete-javascript-typescript-backend-artifact-manifest}]
+   :required-diagnostic-fields [:source-span
+                                :mir-operation-or-domain-anchor
+                                :runtime-kind
+                                :ecmascript-target
+                                :module-format
+                                :host-symbol
+                                :package-id
+                                :missing-effect-fact
+                                :missing-capability-fact
+                                :missing-schema-fact
+                                :selected-adapter-or-rejection
+                                :remediation]})
+
+(defn build-b6-js-ts-backend-manifest
+  [target emitted-artifacts required-facts rejects]
+  {:artifact :gravity/js-ts-backend-manifest
+   :backend :gravity.backend/js-ts
+   :version "source-model-v1"
+   :target target
+   :emits emitted-artifacts
+   :requires required-facts
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b6-runtime-module-target-record
+  [runtime ecmascript module-format bundler source-map-strategy]
+  {:artifact :gravity/b6-runtime-module-target-record
+   :runtime runtime
+   :ecmascript ecmascript
+   :module-format module-format
+   :bundler bundler
+   :source-map-strategy source-map-strategy
+   :required-fields (:required-fields b6-runtime-module-target-contract)
+   :source-model-only? true})
+
+(defn build-b6-typescript-api-record
+  [symbol type effect-boundary capability-boundary source-map-anchor]
+  {:artifact :gravity/b6-typescript-api-record
+   :symbol symbol
+   :type type
+   :effect-boundary effect-boundary
+   :capability-boundary capability-boundary
+   :source-map-anchor source-map-anchor
+   :required-fields (:required-fields b6-typescript-api-contract)
+   :source-model-only? true})
+
+(defn build-b6-host-capability-manifest
+  [globals imports dynamic-import-policy side-effect-policy]
+  {:artifact :gravity/b6-host-capability-manifest
+   :globals globals
+   :imports imports
+   :dynamic-import-policy dynamic-import-policy
+   :side-effect-policy side-effect-policy
+   :required-fields (:required-fields b6-host-global-import-contract)
+   :source-model-only? true})
+
+(defn build-b6-nullish-exception-map
+  [nullish-map exception-map callback-policy]
+  {:artifact :gravity/b6-nullish-exception-map
+   :nullish-map nullish-map
+   :exception-map exception-map
+   :callback-policy callback-policy
+   :nullish-forms (:nullish-forms b6-nullish-exception-contract)
+   :failure-channels (:failure-channels b6-nullish-exception-contract)
+   :source-model-only? true})
+
+(defn build-b6-numeric-representation-manifest
+  [representations overflow-policy precision-policy serialization-policy]
+  {:artifact :gravity/b6-numeric-representation-manifest
+   :representations representations
+   :overflow-policy overflow-policy
+   :precision-policy precision-policy
+   :serialization-policy serialization-policy
+   :required-fields (:required-fields b6-numeric-representation-contract)
+   :source-model-only? true})
+
+(defn build-b6-async-effect-map
+  [async-forms event-loop cancellation backpressure]
+  {:artifact :gravity/b6-async-effect-map
+   :async-forms async-forms
+   :event-loop event-loop
+   :cancellation cancellation
+   :backpressure backpressure
+   :required-fields (:required-fields b6-async-event-loop-contract)
+   :source-model-only? true})
+
+(defn build-b6-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b6-js-ts-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b6-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b6-javascript-typescript-backend-design
+  [manifest]
+  {:artifact :gravity/b6-javascript-typescript-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :runtime-module-target-covered? true
+   :typescript-api-declarations-covered? true
+   :host-global-import-capabilities-covered? true
+   :nullish-exception-translation-covered? true
+   :numeric-representation-covered? true
+   :async-event-loop-covered? true
+   :dynamic-code-prototype-policy-covered? true
+   :ui-binding-metadata-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :production-backend-execution? false
+   :source-model-only? true})

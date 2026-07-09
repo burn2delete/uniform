@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-backend-architecture.json",
+  "set": {
+    "/concrete_backends/workflow_graph/unrecorded_nondeterminism": true
+  }
+}

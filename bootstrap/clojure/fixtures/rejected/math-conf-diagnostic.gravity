@@ -1,0 +1,11 @@
+(ns math.conf-diagnostic
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:negative-diagnostic-overrides
+            [{:expected-diagnostic "MATH10-PROOF"
+              :actual-diagnostic "MATH10-CANDIDATE"}]}}}))

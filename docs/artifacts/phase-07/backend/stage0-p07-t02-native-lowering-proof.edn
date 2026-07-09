@@ -1,0 +1,140 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-T02
+ :date "2026-06-25"
+ :status :complete
+ :capability :native-c-llvm-mlir-lowering
+ :command "clojure -M:gravity native-lowering bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+ :artifact-kind :gravity/stage0-native-lowering-artifact
+ :artifact-hash "sha256:49dae323205553d38dc4f259777e1835560ce58a70d71596bc471f2251f7cd3c"
+ :summary {:target-backends [:gravity.backend/c
+                              :gravity.backend/llvm
+                              :gravity.backend/mlir]
+           :artifact-manifests 3
+           :diagnostics 45
+           :negative-diagnostic-results 45
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/099-b2-c-backend-design.md"
+                       "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md"
+                       "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md"
+                       "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"
+                       "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b2-dialect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-ub.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-pointer.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-ffi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-mmio.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-manifest.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-ub.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-pointer.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-atomic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-pass.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b3-manifest.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-dialect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-verify.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-conversion.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-alias.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-pass.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-handoff.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-manifest.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-hash.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-provenance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-sourcemap.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-evidence.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-conformance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-reproducibility.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-release.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b13-graph.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b14-positive.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b14-negative.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b14-differential.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b14-nondeterminism.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b14-skip.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b14-evidence.gravity"]
+ :diagnostic-ids ["B2-DIALECT"
+                  "B2-UB"
+                  "B2-ABI"
+                  "B2-POINTER"
+                  "B2-NUMERIC"
+                  "B2-RUNTIME"
+                  "B2-FFI"
+                  "B2-MMIO"
+                  "B2-MANIFEST"
+                  "B3-TARGET"
+                  "B3-METADATA"
+                  "B3-UB"
+                  "B3-POINTER"
+                  "B3-NUMERIC"
+                  "B3-ATOMIC"
+                  "B3-RUNTIME"
+                  "B3-ABI"
+                  "B3-PASS"
+                  "B3-MANIFEST"
+                  "B7-DIALECT"
+                  "B7-VERIFY"
+                  "B7-CONVERSION"
+                  "B7-METADATA"
+                  "B7-EFFECT"
+                  "B7-NUMERIC"
+                  "B7-ALIAS"
+                  "B7-PASS"
+                  "B7-HANDOFF"
+                  "B7-MANIFEST"
+                  "B13-SCHEMA"
+                  "B13-HASH"
+                  "B13-PROVENANCE"
+                  "B13-SOURCEMAP"
+                  "B13-EVIDENCE"
+                  "B13-TARGET"
+                  "B13-CONFORMANCE"
+                  "B13-REPRODUCIBILITY"
+                  "B13-RELEASE"
+                  "B13-GRAPH"
+                  "B14-POSITIVE"
+                  "B14-NEGATIVE"
+                  "B14-DIFFERENTIAL"
+                  "B14-NONDETERMINISM"
+                  "B14-SKIP"
+                  "B14-EVIDENCE"]
+ :capability-based-proof {:backend-interface-input-verified? true
+                          :c-lowering-complete? true
+                          :c-undefined-behavior-rejected? true
+                          :llvm-lowering-complete? true
+                          :llvm-proof-metadata-gated? true
+                          :mlir-lowering-complete? true
+                          :mlir-conversion-verified? true
+                          :artifact-emission-complete? true
+                          :source-proof-capability-metadata-preserved? true
+                          :conformance-record-passed? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 72 tests containing 3981 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 945}
+              {:command "clojure -M:gravity native-lowering bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:49dae323205553d38dc4f259777e1835560ce58a70d71596bc471f2251f7cd3c"}
+              {:command "clojure -M -e <phase-07 backend EDN parse>"
+               :result "parsed 2 phase-07 backend EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result "passed with no output"}]
+ :residual-risk ["This completes P07-T02 for deterministic Clojure stage0 emission of C, LLVM, and MLIR target artifacts plus manifests only."
+                 "It does not claim external C compiler, LLVM, or MLIR toolchain execution, production native backend stabilization, release readiness, or full backend conformance."]}

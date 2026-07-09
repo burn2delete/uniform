@@ -1,0 +1,210 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:91c0322d3f7d5f7af3bd85c4cf8d0bec02d5f5f1579802507252a3de79d681e6",
+      "artifact_id": "phase15-bootstrap-strategy-accepted",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "stage manifests",
+        "conformance reports",
+        "TCB deltas",
+        "locked dependencies",
+        "compiler lineage"
+      ],
+      "document": "BOOT1",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md",
+      "task_id": "P15-D203"
+    },
+    {
+      "artifact_hash": "sha256:3c723e72b34f206f177fd3c4e5257d7c7930974c813e67905f44f2a3dd6b2b21",
+      "artifact_id": "phase15-seed-compiler-manifest",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "implemented subset",
+        "excluded documents",
+        "host dependencies",
+        "stable diagnostics",
+        "stage comparison metadata"
+      ],
+      "document": "BOOT2",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md",
+      "task_id": "P15-D204"
+    },
+    {
+      "artifact_hash": "sha256:2886630c189b303e545efe5d04fef6d52ed2a258439aae4067927b7c69a0c026",
+      "artifact_id": "phase15-self-hosted-module-plan",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "module migration manifests",
+        "meta profile",
+        "equivalence reports",
+        "diagnostic compatibility",
+        "TCB deltas"
+      ],
+      "document": "BOOT3",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md",
+      "task_id": "P15-D205"
+    },
+    {
+      "artifact_hash": "sha256:2d1d1589d354a6cd9ee60e1e34f54c87fc71f876b20c06229aa168df429de55e",
+      "artifact_id": "phase15-compiler-coding-standard-report",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "effect declarations",
+        "pass preservation",
+        "diagnostic manifests",
+        "deterministic output",
+        "unsafe audit"
+      ],
+      "document": "BOOT4",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md",
+      "task_id": "P15-D206"
+    },
+    {
+      "artifact_hash": "sha256:82a558c05b417986e8c52db59a8c9d108c1cd6591d49157f7fdac88adc99b036",
+      "artifact_id": "phase15-stage-compatibility-matrix",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "matrix rows",
+        "explicit support",
+        "profile/backend reports",
+        "gap review",
+        "versioned matrix changes"
+      ],
+      "document": "BOOT5",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md",
+      "task_id": "P15-D207"
+    },
+    {
+      "artifact_hash": "sha256:6bbff22207c6fd59205306c01c58cd72d5d4e7005a0ce44de750e1c1cfae4b61",
+      "artifact_id": "phase15-trusting-trust-report",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "controlled environment",
+        "rebuild comparison",
+        "diverse rebuild identity",
+        "accepted deltas",
+        "revocation checks"
+      ],
+      "document": "BOOT6",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md",
+      "task_id": "P15-D208"
+    },
+    {
+      "artifact_hash": "sha256:c594d7423a4df8e73b110ff23fd38fde8fd92c1c02be2257d97993abfd42dbc1",
+      "artifact_id": "phase15-stage-equivalence-report",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "compiler identities",
+        "comparison modes",
+        "diagnostic equivalence",
+        "accepted deltas",
+        "release decision"
+      ],
+      "document": "BOOT7",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
+      "task_id": "P15-D209"
+    },
+    {
+      "artifact_hash": "sha256:33799ea939814d1e5a91345bdaf12ffc992731cc072500947653939be31244db",
+      "artifact_id": "phase15-bootstrap-provenance",
+      "artifact_kind": "bootstrap-self-hosting-artifact",
+      "coverage": [
+        "source/compiler/lockfile/build/environment hashes",
+        "evidence links",
+        "canonicalization",
+        "revocation",
+        "auditor lineage"
+      ],
+      "document": "BOOT8",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json",
+      "governing_doc": "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+      "task_id": "P15-D210"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 8,
+    "documents": 8,
+    "rejected_diagnostics": 8,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "BOOT1",
+    "BOOT2",
+    "BOOT3",
+    "BOOT4",
+    "BOOT5",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8"
+  ],
+  "input_hash": "sha256:f73785b35584b48a211bb94c27624562132dc5eb15bc9d0e90fbdde51032aea3",
+  "kind": "phase15-bootstrap-document-coverage-artifact",
+  "phase": "15",
+  "rejected": [
+    {
+      "diagnostic": "BOOT1001",
+      "document": "BOOT1",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot1-stage-evidence.json",
+      "missing_fact": "stage-evidence",
+      "task_id": "P15-D203"
+    },
+    {
+      "diagnostic": "BOOT2002",
+      "document": "BOOT2",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot2-profile.json",
+      "missing_fact": "profile-rejection",
+      "task_id": "P15-D204"
+    },
+    {
+      "diagnostic": "BOOT3002",
+      "document": "BOOT3",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot3-ambient-authority.json",
+      "missing_fact": "ambient-authority",
+      "task_id": "P15-D205"
+    },
+    {
+      "diagnostic": "BOOT4003",
+      "document": "BOOT4",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot4-preserved-fact.json",
+      "missing_fact": "preserved-fact",
+      "task_id": "P15-D206"
+    },
+    {
+      "diagnostic": "BOOT5003",
+      "document": "BOOT5",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot5-conformance-link.json",
+      "missing_fact": "conformance-link",
+      "task_id": "P15-D207"
+    },
+    {
+      "diagnostic": "BOOT6001",
+      "document": "BOOT6",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot6-environment.json",
+      "missing_fact": "environment-record",
+      "task_id": "P15-D208"
+    },
+    {
+      "diagnostic": "BOOT7001",
+      "document": "BOOT7",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot7-compiler-identity.json",
+      "missing_fact": "compiler-identity",
+      "task_id": "P15-D209"
+    },
+    {
+      "diagnostic": "BOOT8002",
+      "document": "BOOT8",
+      "fixture": "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot8-lineage.json",
+      "missing_fact": "compiler-lineage",
+      "task_id": "P15-D210"
+    }
+  ]
+}

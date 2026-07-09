@@ -1,0 +1,105 @@
+{:kind :gravity/stage0-phase09-domain-coverage-proof
+ :phase "09"
+ :status :complete
+ :artifact-kind :gravity/stage0-domain-coverage-artifact
+ :artifact-id "sha256:4bf23d9d1720695755ab715013d44deef8c27a0ae127eff05a2dcf1e2aa82e00"
+ :source "bootstrap/clojure/fixtures/accepted/domain-coverage.gravity"
+ :command "clojure -M:gravity domain-coverage bootstrap/clojure/fixtures/accepted/domain-coverage.gravity"
+ :test-command "clojure -M:test"
+ :test-result {:tests 109
+               :assertions 6907
+               :failures 0
+               :errors 0
+               :banner-rejected-fixtures 1447}
+ :document-set ["DOM1" "DOM2" "DOM3" "DOM4" "DOM5" "DOM6" "DOM7"
+                "DOM8" "DOM9" "DOM10" "DOM11" "DOM12" "DOM13"
+                "DOM14" "DOM15" "DOM16" "DOM17" "DOM18" "DOM19"
+                "DOM20" "DOM21"]
+ :domain-coverage-results {:domain-records 21
+                           :accepted-fixtures 21
+                           :rejected-fixtures 21
+                           :replacement-claims 21
+                           :conformance-records 21
+                           :diagnostic-count 206
+                           :status :complete}
+ :tasks {"P09-T01" :complete
+         "P09-T02" :complete
+         "P09-T03" :complete
+         "P09-T04" :complete
+         "P09-T05" :complete
+         "P09-T06" :complete
+         "P09-D124" :complete
+         "P09-D125" :complete
+         "P09-D126" :complete
+         "P09-D127" :complete
+         "P09-D128" :complete
+         "P09-D129" :complete
+         "P09-D130" :complete
+         "P09-D131" :complete
+         "P09-D132" :complete
+         "P09-D133" :complete
+         "P09-D134" :complete
+         "P09-D135" :complete
+         "P09-D136" :complete
+         "P09-D137" :complete
+         "P09-D138" :complete
+         "P09-D139" :complete
+         "P09-D140" :complete
+         "P09-D141" :complete
+         "P09-D142" :complete
+         "P09-D143" :complete
+         "P09-D144" :complete}
+ :capability-based-proof {:domain-slice-template-covered? true
+                          :systems-domains-covered? true
+                          :application-domains-covered? true
+                          :data-and-distributed-domains-covered? true
+                          :ai-and-tooling-domains-covered? true
+                          :domain-claim-governance-covered? true
+                          :document-coverage-complete? true
+                          :accepted-fixtures-covered? true
+                          :rejected-fixtures-covered? true
+                          :conformance-evidence-covered? true
+                          :special-domain-obligations-covered? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :special-domain-obligations {:DOM15 [:DOM15-PASSKEY
+                                      :DOM15-PRIVATE-COMPUTE
+                                      :DOM15-BOUNDARY
+                                      :DOM15-NOISE
+                                      :DOM15-LEAKAGE
+                                      :DOM15-CUSTODY]
+                              :DOM16 [:DOM16-AA-PROFILE
+                                      :DOM16-ERC4337
+                                      :DOM16-EIP7702
+                                      :DOM16-ERC7579
+                                      :DOM16-ORDERING
+                                      :DOM16-MEV]
+                              :DOM19 [:DOM19-ZK-RELATION
+                                      :DOM19-ZK-INPUT
+                                      :DOM19-ZK-SETUP
+                                      :DOM19-ZK-PRIVACY
+                                      :DOM19-ZK-COST
+                                      :DOM19-ZK-CHAIN
+                                      :DOM19-ZK-PROVIDER]}
+ :rejected-fixture-diagnostics ["DOM1-WIDTH"
+                                "DOM2-MMIO"
+                                "DOM3-RAW"
+                                "DOM4-DMA"
+                                "DOM5-OPTIMIZATION"
+                                "DOM6-TAINT"
+                                "DOM7-PERMISSION"
+                                "DOM8-SCHEMA"
+                                "DOM9-CONVERGENCE"
+                                "DOM10-QUERY"
+                                "DOM11-LINEAGE"
+                                "DOM12-CERTIFICATE"
+                                "DOM13-HOST-EFFECT"
+                                "DOM14-DETERMINISM"
+                                "DOM15-BOUNDARY"
+                                "DOM16-AA-PROFILE"
+                                "DOM17-METADATA"
+                                "DOM18-TOOL"
+                                "DOM19-ZK-SETUP"
+                                "DOM20-TAINT"
+                                "DOM21-EDGE"
+                                "P09-CLAIM"]}

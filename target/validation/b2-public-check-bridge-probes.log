@@ -1,0 +1,122 @@
+## ACCEPT bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity
+exit=0
+[stdout]
+gravity stage0 check passed: backend.native-lowering
+[stderr]
+
+## ACCEPT bootstrap/clojure/fixtures/accepted/backend-native-lowering.qst
+exit=0
+[stdout]
+gravity stage0 check passed: backend.native-lowering
+[stderr]
+
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-abi.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-abi], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-abi.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-abi", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-abi, :fallback-status :rejected, :id "B2-ABI", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-abi.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-abi], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-abi.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-abi", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-abi, :fallback-status :rejected, :id "B2-ABI", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-dialect.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-dialect], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-dialect.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-dialect", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-dialect, :fallback-status :rejected, :id "B2-DIALECT", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-dialect.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-dialect], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-dialect.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-dialect", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-dialect, :fallback-status :rejected, :id "B2-DIALECT", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-ffi.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-ffi], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-ffi.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-ffi", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-ffi, :fallback-status :rejected, :id "B2-FFI", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-ffi.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-ffi], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-ffi.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-ffi", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-ffi, :fallback-status :rejected, :id "B2-FFI", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-manifest.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-manifest], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-manifest.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-manifest", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-manifest, :fallback-status :rejected, :id "B2-MANIFEST", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-manifest.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-manifest], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-manifest.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-manifest", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-manifest, :fallback-status :rejected, :id "B2-MANIFEST", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-mmio.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-mmio], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-mmio.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-mmio", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-mmio, :fallback-status :rejected, :id "B2-MMIO", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-mmio.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-mmio], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-mmio.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-mmio", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-mmio, :fallback-status :rejected, :id "B2-MMIO", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-numeric.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-numeric], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-numeric.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-numeric", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-numeric, :fallback-status :rejected, :id "B2-NUMERIC", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-numeric.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-numeric], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-numeric.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-numeric", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-numeric, :fallback-status :rejected, :id "B2-NUMERIC", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-pointer.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-pointer], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-pointer.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-pointer", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-pointer, :fallback-status :rejected, :id "B2-POINTER", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-pointer.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-pointer], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-pointer.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-pointer", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-pointer, :fallback-status :rejected, :id "B2-POINTER", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-runtime.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-runtime], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-runtime.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-runtime", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-runtime, :fallback-status :rejected, :id "B2-RUNTIME", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-runtime.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-runtime], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-runtime.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-runtime", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-runtime, :fallback-status :rejected, :id "B2-RUNTIME", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-ub.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-ub], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-ub.gravity", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-ub", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-ub, :fallback-status :rejected, :id "B2-UB", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b2-ub.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b2-c-backend-document, :remediation "Emit C only from verified backend input with a declared C dialect, no implicit C undefined behavior, pinned ABI/layout and pointer facts, profile-legal runtime helpers, complete FFI/MMIO/numeric evidence, source maps, and a complete C artifact manifest.", :missing-fields [:b2-ub], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b2-ub.qst", :form-index 0}, :stage :b2-c-backend-document-coverage, :artifact-id "b2-document-b2-ub", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b2-c-backend], :missing-fact :b2-ub, :fallback-status :rejected, :id "B2-UB", :target :x86_64-stage0, :backend :gravity.backend/c, :profile :native, :message "B2 C backend design document coverage validation failed"}
+## PASS
+B2 public check bridge accepted .gravity/.qst parity and rejected diagnostic parity passed.

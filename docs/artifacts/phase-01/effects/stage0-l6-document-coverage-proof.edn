@@ -1,0 +1,57 @@
+{:proof/id :p01-d016-stage0-l6-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D016
+ :governing-docs ["docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+                  "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/effect-system.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/effect-system.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:effect-registry-snapshot
+                  :effect-environment
+                  :effect-conformance-fixture
+                  :function-latent-effect-table
+                  :namespace-effect-summary
+                  :module-effect-summary
+                  :build-effect-log
+                  :replay-effect-log
+                  :handled-effect-table
+                  :handler-capability-and-profile-report
+                  :continuation-and-replay-safety-report
+                  :effect-legality-report
+                  :mir-effect-annotations]
+ :artifact-summary {:module effect.system
+                    :profile :ai
+                    :safety :audited-unsafe
+                    :effect-conformance-status :complete
+                    :build-effect-records 11
+                    :replay-effect-records 13
+                    :handled-effect-records 1
+                    :mir-effect-annotations 105
+                    :latent-effects #{:network/http}}
+ :covered-effect-families [:pure :io :filesystem :network :database
+                           :memory-allocation :raw-memory :mmio :interrupt
+                           :resource :time :random :async :generator
+                           :resumable-error :ffi :reflection :dynamic
+                           :compiler :build :secrets :shell :workflow :ai
+                           :unsafe-island :handler]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-effect-undeclared.gravity" "L6-EFFECT-UNDECLARED"
+                    "bootstrap/clojure/fixtures/rejected/typed-effect-profile.gravity" "L6-EFFECT-PROFILE"
+                    "bootstrap/clojure/fixtures/rejected/typed-effect-capability.gravity" "L6-EFFECT-CAPABILITY"
+                    "bootstrap/clojure/fixtures/rejected/typed-build-effect.gravity" "L6-BUILD-EFFECT"
+                    "bootstrap/clojure/fixtures/rejected/typed-replay-effect.gravity" "L6-REPLAY-EFFECT"
+                    "bootstrap/clojure/fixtures/rejected/typed-effect-order.gravity" "L6-EFFECT-ORDER"
+                    "bootstrap/clojure/fixtures/rejected/typed-effect-unknown.gravity" "L6-EFFECT-UNKNOWN"
+                    "bootstrap/clojure/fixtures/rejected/typed-handler-type.gravity" "L6-HANDLER-TYPE"
+                    "bootstrap/clojure/fixtures/rejected/typed-handler-profile.gravity" "L6-HANDLER-PROFILE"
+                    "bootstrap/clojure/fixtures/rejected/typed-handler-capability.gravity" "L6-HANDLER-CAPABILITY"
+                    "bootstrap/clojure/fixtures/rejected/typed-handler-continuation.gravity" "L6-HANDLER-CONTINUATION"
+                    "bootstrap/clojure/fixtures/rejected/typed-handler-replay.gravity" "L6-HANDLER-REPLAY"
+                    "bootstrap/clojure/fixtures/rejected/typed-handler-coverage.gravity" "L6-HANDLER-COVERAGE"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L6 document task by proving effect registry coverage, effect legality, build grants, replay records, handled-effect records, handler capability/profile records, continuation/replay records, MIR effect annotations, and stable L6 diagnostics. It does not claim production runtime replay, backend lowering, package policy, or self-hosting."}

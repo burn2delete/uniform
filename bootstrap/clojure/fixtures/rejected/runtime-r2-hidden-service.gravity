@@ -1,0 +1,4 @@
+(ns runtime.r2-hidden-service
+  (:profile :firmware)
+  (:target :jvm)
+  (:metadata {:runtime {:selection {:fail :r2-hidden-service}}}))

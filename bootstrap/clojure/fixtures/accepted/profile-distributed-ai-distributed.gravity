@@ -1,0 +1,55 @@
+(ns profile.distributed-ai.distributed
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [workflow])
+  (:effects #{:workflow/event :workflow/replay :network/http
+              :database/read :database/write :time/read})
+  (:capabilities #{:workflow/event :workflow/replay :network/client
+                   :database/read :database/write :time/read})
+  (:safety :safe)
+  (:metadata {:memory {:hidden-allocation :declared}
+              :runtime {:required true
+                        :providers #{:workflow :replay :scheduler}}
+              :package-allowed-effects #{:workflow/event :workflow/replay
+                                         :network/http :database/read
+                                         :database/write :time/read}
+              :provider-effect-grants #{:workflow/event :workflow/replay
+                                        :network/http :database/read
+                                        :database/write :time/read}
+              :deployment-allowed-effects #{:workflow/event :workflow/replay
+                                            :network/http :database/read
+                                            :database/write :time/read}
+              :package-capabilities #{:workflow/event :workflow/replay
+                                      :network/client :database/read
+                                      :database/write :time/read}
+              :provider-capability-grants #{:workflow/event :workflow/replay
+                                            :network/client :database/read
+                                            :database/write :time/read}
+              :deployment-capabilities #{:workflow/event :workflow/replay
+                                         :network/client :database/read
+                                         :database/write :time/read}
+              :profile-validation
+              {:workflow-graph {:workflow :order-saga
+                                :steps [:reserve :charge :ship]
+                                :replay-safe true}
+               :message-schema-bundle {:schemas {:order-created 1
+                                                 :payment-authorized 1}
+                                       :compatibility :backward}
+               :event-log-schema {:stream :orders
+                                  :version 1
+                                  :retention :durable}
+               :retry-timeout-compensation-table {:charge {:retry {:max 3}
+                                                           :timeout-ms 30000
+                                                           :idempotency-key :order-id
+                                                           :compensate :refund}}
+               :external-service-capability-manifest {:services {:payment {:capability :network/client
+                                                                            :failure-map :typed}}}
+               :replay-policy-log-schema {:policy :record-effects
+                                          :records [:inputs :outputs :errors]}
+               :persistence-boundary-records {:database :orders
+                                              :event-log :orders}
+               :distributed-conformance-results {:status :complete
+                                                 :fixtures [:accepted :rejected]}}}))
+
+(def workflow
+  {:workflow :order-saga})

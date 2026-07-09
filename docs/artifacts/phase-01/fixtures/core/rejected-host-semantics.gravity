@@ -1,0 +1,5 @@
+(ns core.bad.host
+  (:profile :hosted))
+
+(def bad
+  (host/null))

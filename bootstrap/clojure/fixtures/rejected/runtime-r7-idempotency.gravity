@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: side-effecting step lacks idempotency.
+(ns runtime.r7-idempotency
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:network/http})
+  (:capabilities #{:http/client})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-idempotency}}}))
+
+(defn main [] :- I64 1)

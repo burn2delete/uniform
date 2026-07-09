@@ -1,0 +1,234 @@
+{
+  "kind": "phase12-package-document-coverage-input",
+  "documents": [
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "project_manifest"
+        ]
+      },
+      "coverage_claims": [
+        "normalized project manifest includes package identity, profiles, targets, effects, capabilities, unsafe policy, release policy, generated roots, and canonical hash",
+        "release builds require a complete lockfile and offline project parsing"
+      ],
+      "document": "PKG1",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+      "rejected": {
+        "diagnostic": "PKG1006",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg1-release-lockfile.json"
+      },
+      "task_id": "P12-D165"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "build_graph"
+        ]
+      },
+      "coverage_claims": [
+        "typed build graph records graph inputs, node inputs and outputs, effects, cache keys, tool identity, generated-source provenance, and release evidence",
+        "undeclared build effects fail before artifact emission"
+      ],
+      "document": "PKG2",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md",
+      "rejected": {
+        "diagnostic": "PKG2001",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg2-undeclared-effect.json"
+      },
+      "task_id": "P12-D166"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "artifact_manifest"
+        ]
+      },
+      "coverage_claims": [
+        "artifact manifest records schema version, source graph, project hash, lockfile hash, compiler, profile, target, content hash, dependencies, capability summary, safety evidence, and canonical provenance",
+        "safety or proof claims without evidence links are rejected"
+      ],
+      "document": "PKG3",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md",
+      "rejected": {
+        "diagnostic": "PKG3005",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg3-evidence-link.json"
+      },
+      "task_id": "P12-D167"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "package_manifest"
+        ]
+      },
+      "coverage_claims": [
+        "package operation record captures effects, lockfile diff, verification report, capability diff, safety diff, provenance diff, and machine-readable output",
+        "download verification failure blocks package operations"
+      ],
+      "document": "PKG4",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md",
+      "rejected": {
+        "diagnostic": "PKG4001",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg4-download-verification.json"
+      },
+      "task_id": "P12-D168"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "lockfile"
+        ]
+      },
+      "coverage_claims": [
+        "resolution report records canonical solver inputs, deterministic selected graph, complete lockfile, target variants, capability diff, provenance summary, and offline proof",
+        "capability-incompatible dependencies are rejected before build execution"
+      ],
+      "document": "PKG5",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+      "rejected": {
+        "diagnostic": "PKG5002",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg5-capability-incompatible.json"
+      },
+      "task_id": "P12-D169"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "capability_manifest"
+        ]
+      },
+      "coverage_claims": [
+        "capability manifest separates declared effects, requested capabilities, denied authority, dependency summaries, deployment grants, runtime handles, audit schema, and SBOM fields",
+        "denied transitive authority fails closed"
+      ],
+      "document": "PKG6",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+      "rejected": {
+        "diagnostic": "PKG6004",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg6-denied-authority.json"
+      },
+      "task_id": "P12-D170"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "reproducible_build"
+        ]
+      },
+      "coverage_claims": [
+        "reproducible build recipe records source, project, lockfile, compiler, environment, target matrix, graph hash, allowed external inputs, expected artifacts, output hashes, and verification report",
+        "uncontrolled network input rejects reproducible build claims"
+      ],
+      "document": "PKG7",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+      "rejected": {
+        "diagnostic": "PKG7003",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg7-uncontrolled-network.json"
+      },
+      "task_id": "P12-D171"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "document_contracts"
+        ]
+      },
+      "coverage_claims": [
+        "package safety record includes unsafe islands, safe wrappers, FFI boundaries, privileged effects, capabilities, taint sinks, proof claims, tests, review state, vulnerability state, and schema validation",
+        "unsafe forms without audit metadata are rejected"
+      ],
+      "document": "PKG8",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md",
+      "rejected": {
+        "diagnostic": "PKG8001",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg8-unsafe-audit.json"
+      },
+      "task_id": "P12-D172"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "document_contracts"
+        ]
+      },
+      "coverage_claims": [
+        "registry record tracks access policy, index signatures, latent states, publish review, yank or revocation history, mirror attestation, and registry source lock entries",
+        "private registry reads require grants before metadata is exposed"
+      ],
+      "document": "PKG9",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
+      "rejected": {
+        "diagnostic": "PKG9001",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg9-private-registry.json"
+      },
+      "task_id": "P12-D173"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "provenance_record"
+        ]
+      },
+      "coverage_claims": [
+        "provenance record links artifact content to source graph, project hash, lockfile, compiler, builder, recipe, dependency graph, generated source ledger, SBOM, signatures, revocation status, and schema version",
+        "release artifacts without provenance fail closed"
+      ],
+      "document": "PKG10",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md",
+      "rejected": {
+        "diagnostic": "PKG10001",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg10-provenance.json"
+      },
+      "task_id": "P12-D174"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "target_matrix"
+        ]
+      },
+      "coverage_claims": [
+        "target matrix expands concrete profile, backend, target, runtime, support level, artifact kind, per-target dependency, capability, artifact, and conformance evidence",
+        "implicit host target assumptions are rejected for release builds"
+      ],
+      "document": "PKG11",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md",
+      "rejected": {
+        "diagnostic": "PKG11002",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg11-implicit-host-target.json"
+      },
+      "task_id": "P12-D175"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+        "required_artifact_fields": [
+          "sbom",
+          "signature_verification_report"
+        ]
+      },
+      "coverage_claims": [
+        "release verification records canonical signature payload, SBOM dependencies, capability and unsafe summaries, provenance attestation, keyless identity, transparency log evidence, root metadata, verification checks, and policy decision",
+        "noncanonical signature payloads are rejected before release acceptance"
+      ],
+      "document": "PKG12",
+      "governing_doc": "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+      "rejected": {
+        "diagnostic": "PKG12002",
+        "fixture": "docs/artifacts/phase-12/fixtures/package/rejected-pkg12-noncanonical-signature.json"
+      },
+      "task_id": "P12-D176"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+(ns compiler.c9.arena-generation
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c9-ownership-check {:fail :arena-generation}}}))
+
+(def value 1)

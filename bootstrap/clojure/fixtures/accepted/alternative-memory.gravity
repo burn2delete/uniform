@@ -1,0 +1,101 @@
+(ns alternative.memory
+  (:profile :native)
+  (:target :jvm)
+  (:exports [provider allocation lifetime unsafe-audit layout runtime-check
+             release device ffi conformance safety])
+  (:effects #{:memory/allocate :memory/raw :memory/mmio :ffi/call})
+  (:capabilities #{:memory/allocator :memory/raw :hardware/mmio :ffi/call})
+  (:safety :audited-unsafe)
+  (:metadata {:provider-policy {:memory-provider 'custom.memory/arena}}))
+
+(def provider
+  (altmem/provider-declaration 'custom.memory/arena
+                               "fixture-1"
+                               #{:native :firmware}
+                               #{:jvm}
+                               #{:alloc/arena :alloc/region
+                                 :alloc/foreign :alloc/device
+                                 :memory-mapped-io}
+                               {:hidden false
+                                :bounded true
+                                :can-fail true
+                                :may-block false}
+                               #{'gravity.contracts/MemorySafety
+                                 'gravity.contracts/RegionSafety
+                                 'gravity.contracts/OwnershipSafety
+                                 'gravity.contracts/RawMemoryBoundary
+                                 'gravity.contracts/MMIOSafety
+                                 'gravity.contracts/ForeignHeapSafety}
+                               #{:proof/arena-safety}
+                               :gravity.conformance/memory-arena))
+
+(def allocation
+  (altmem/allocation-strategy 'custom.memory/arena
+                              :alloc/arena
+                              false
+                              true
+                              true
+                              false
+                              :explicit-allocation))
+
+(def lifetime
+  (altmem/lifetime-facts 'custom.memory/arena
+                         :arena/frame
+                         #{:lifetime :aliasing :ownership :region
+                           :escape :initialization}
+                         :no-escape))
+
+(def unsafe-audit
+  (altmem/unsafe-boundary-audit 'custom.memory/arena
+                                :mmio.safe/read-u32
+                                :mmio/read32
+                                :aligned-mapped-volatile-register
+                                #{:alignment-check :device-map-check
+                                  :width-check :capability-scope}))
+
+(def layout
+  (altmem/layout-metadata 'custom.memory/arena
+                          :Buffer
+                          :align-16
+                          64
+                          :little-endian))
+
+(def runtime-check
+  (altmem/runtime-check 'custom.memory/arena
+                        :bounds
+                        :runtime-checked
+                        :retained))
+
+(def release
+  (altmem/release-evidence 'custom.memory/arena
+                           :resource/file
+                           :exactly-once
+                           :no-leak))
+
+(def device
+  (altmem/device-map 'custom.memory/arena
+                     :gpu/global
+                     :host-device-sync
+                     :device/register-map))
+
+(def ffi
+  (altmem/ffi-allocator 'custom.memory/arena
+                        :lib/example
+                        :example/malloc
+                        :example/free
+                        :compatible))
+
+(def conformance
+  (altmem/conformance-report 'custom.memory/arena
+                             :gravity.conformance/memory-arena
+                             :passed
+                             #{:leak :double-release :bounds :uninit
+                               :alias :device-sync :mmio-width
+                               :ffi-allocator}))
+
+(def safety
+  (altmem/safety-classification 'custom.memory/arena
+                                :buffer/read
+                                #{:proven-safe :runtime-checked
+                                  :rejected :unsafe-island}
+                                :proof/arena-safety))

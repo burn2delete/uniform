@@ -1,0 +1,42 @@
+{:phase "05"
+ :task "P05-D072"
+ :document "MATH4"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md"
+ :artifact-kind :gravity/stage0-eml-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-eml.gravity"
+ :covered-artifact-fields
+ [:eml-expression-tree
+  :efir-to-eml-node-map
+  :domain-environment
+  :branch-policy-ledger
+  :normalization-trace
+  :search-space-manifest
+  :candidate-list
+  :proof-request-table
+  :complex-intermediate-ledger
+  :accepted-proof-artifacts
+  :eml-conformance-results]
+ :required-diagnostic-ids
+ ["MATH4-EFIR" "MATH4-BASIS" "MATH4-DOMAIN" "MATH4-BRANCH"
+  "MATH4-COMPLEX" "MATH4-TRACE" "MATH4-SEARCH"
+  "MATH4-CANDIDATE" "MATH4-PROOF"]
+ :rejected-fixtures
+ [{:fixture "math-eml-efir.gravity" :diagnostic "MATH4-EFIR"}
+  {:fixture "math-eml-basis.gravity" :diagnostic "MATH4-BASIS"}
+  {:fixture "math-eml-domain.gravity" :diagnostic "MATH4-DOMAIN"}
+  {:fixture "math-eml-branch.gravity" :diagnostic "MATH4-BRANCH"}
+  {:fixture "math-eml-complex.gravity" :diagnostic "MATH4-COMPLEX"}
+  {:fixture "math-eml-trace.gravity" :diagnostic "MATH4-TRACE"}
+  {:fixture "math-eml-search.gravity" :diagnostic "MATH4-SEARCH"}
+  {:fixture "math-eml-candidate.gravity" :diagnostic "MATH4-CANDIDATE"}
+  {:fixture "math-eml-proof.gravity" :diagnostic "MATH4-PROOF"}]
+ :capability-based-proof
+ {:verified-efir-required? true
+  :semantic-facts-preserved? true
+  :trace-replayable? true
+  :search-bounded-deterministic? true
+  :candidate-promotion-proof-gated? true
+  :complex-intermediates-tracked? true
+  :eml-tree-identity-not-equality? true
+  :status :complete}
+ :status :complete}

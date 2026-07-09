@@ -1,0 +1,4 @@
+(ns backend.b6-nullish
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:hosted-lowering {:fail :b6-nullish}}}))

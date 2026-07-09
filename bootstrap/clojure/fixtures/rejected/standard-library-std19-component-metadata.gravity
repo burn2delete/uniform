@@ -1,0 +1,11 @@
+; Rejected P16 STD19 fixture.
+(ns standard-library.std19-component-metadata
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std19001}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,14 @@
+(ns core.app.ai-agent-eval
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:agents
+                    [{:agent-id "support-triage"
+                      :models ["primary-ai/gpt-support"]
+                      :eval-gates []}]}}}))
+
+(defn main []
+  (println "bad ai agent eval"))

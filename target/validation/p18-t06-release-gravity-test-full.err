@@ -1,0 +1,1 @@
+{:id "P18T04006", :message "bootstrap-hosted public test command cannot be claimed as full language conformance", :phase "P18-T04", :bootstrap-hosted? true, :full-language-conformance? false}

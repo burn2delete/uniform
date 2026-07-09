@@ -1,0 +1,9 @@
+(ns interop.migration-parity
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/migration-parity :parity-failed))

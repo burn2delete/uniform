@@ -1,0 +1,9 @@
+(ns altmem.mmio
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/mmio :invalid-width))

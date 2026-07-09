@@ -1,0 +1,53 @@
+{:proof-id :stage0-perf10-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D068
+ :document "PERF10"
+ :governing-document "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
+ :status :passed
+ :implementation-surface
+ {:command "realtime-governance"
+  :entrypoint :gravity.bootstrap/realtime-governance-file-artifact
+  :artifact-kind :gravity/stage0-realtime-governance-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/realtime-governance.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/realtime-elision-proof-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-dominance.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-invalidated.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-residual.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-policy.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-backend.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-certificate.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-elision-sourcemap.gravity"]}
+ :accepted-behavior
+ ["check elision records name erased check, proof, pass, profile, target, IR node, source map, certificate, residual checks, invalidation outcome, and backend preservation"
+  "bounds, overflow, division, shift, null, initialization, lifetime, borrow, linear, race, taint, and capability policy checks are represented"
+  "policy checks require equivalent policy artifacts rather than performance-only removal"]
+ :rejected-behavior
+ ["missing proof"
+  "non-dominating proof"
+  "invalidated proof without regeneration, kept check, or rejection"
+  "missing residual checks"
+  "policy check removed for performance"
+  "backend preservation failure"
+  "invalid certificate"
+  "lost source map or generated-origin mapping"]
+ :required-artifacts
+ [:check-elision-certificate :dominating-proof-fact-list
+  :residual-check-report :invalidated-proof-regeneration-log
+  :pass-decision-record :backend-preservation-record]
+ :diagnostics
+ ["PERF10-PROOF-MISSING" "PERF10-DOMINANCE" "PERF10-INVALIDATED"
+  "PERF10-RESIDUAL" "PERF10-POLICY" "PERF10-BACKEND"
+  "PERF10-CERTIFICATE" "PERF10-SOURCEMAP"]
+ :conformance
+ {:proof-backed-elision :complete
+  :dominance-and-invalidation :complete
+  :residual-check-reporting :complete
+  :policy-artifact-preservation :complete
+  :backend-and-source-map-preservation :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 40 tests containing 2053 assertions. 0 failures, 0 errors."}]
+ :limits
+ ["This completes PERF10 document coverage only for the Clojure stage0 artifact boundary."]}

@@ -1,0 +1,4 @@
+(ns backend.b2-abi
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:backend {:native-lowering {:fail :b2-abi}}}))

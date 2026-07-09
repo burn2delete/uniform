@@ -1,0 +1,11 @@
+; Rejected P13 T8 fixture.
+(ns tooling.t8-hot-reload
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/replay})
+  (:capabilities #{:workflow/replay})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t8003}}}))
+
+(defn main [] :- I64 1)

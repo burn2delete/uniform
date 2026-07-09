@@ -1,0 +1,8 @@
+(ns profile.bad.gpu-math
+  (:profile :gpu)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p11/math))

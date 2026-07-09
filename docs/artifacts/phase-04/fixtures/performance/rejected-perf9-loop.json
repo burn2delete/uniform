@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-performance-model.json",
+  "set": {
+    "/realtime_contracts/0/bounds/iterations": null,
+    "/realtime_contracts/0/unbounded_loops": true
+  }
+}

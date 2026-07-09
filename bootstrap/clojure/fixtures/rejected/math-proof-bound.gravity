@@ -1,0 +1,8 @@
+(ns math.proof-bound
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof {:bound-overrides [{:bounds-sufficient? false}]}}}))

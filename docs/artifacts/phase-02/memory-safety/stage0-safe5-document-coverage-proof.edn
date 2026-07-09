@@ -1,0 +1,25 @@
+{:task-id :P02-D034
+ :document "docs/phase-02-safety/034-safe5-linear-resource-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+ :artifact-kind :gravity/stage0-memory-safety-artifact
+ :document-coverage {:linear-flow-graphs 1
+                     :terminal-operation-records 1
+                     :exceptional-cleanup-records 1
+                     :structured-resource-lowerings 1
+                     :generated-linear-flow-records 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE5-LEAK"
+                        "SAFE5-DOUBLE-CLOSE"
+                        "SAFE5-USE-AFTER-CLOSE"
+                        "SAFE5-BRANCH"
+                        "SAFE5-TRANSFER"
+                        "SAFE5-CAPTURE"
+                        "SAFE5-WRONG-PROVIDER"
+                        "SAFE5-CLEANUP-FAILURE"
+                        "SAFE5-CANCEL"
+                        "SAFE5-GENERATED"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE5 accepted artifact and 10 rejected diagnostics passed"}]}

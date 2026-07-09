@@ -1,0 +1,8 @@
+(ns math.proof-branch
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof {:claim-overrides [{:branch-compatible? false}]}}}))

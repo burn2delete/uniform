@@ -1,0 +1,14 @@
+(ns math.rewrite-counterexample
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:counterexamples
+            [{:rule :sqrt-square
+              :claim '(= (sqrt (* x x)) x)
+              :domain {'x {:real :all}}
+              :counterexample {'x -1}
+              :disproves-accepted? true}]}}}))

@@ -1,0 +1,9 @@
+(ns interop.capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/capability-error :missing-authority))

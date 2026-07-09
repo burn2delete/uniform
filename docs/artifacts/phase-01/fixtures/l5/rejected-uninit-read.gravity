@@ -1,0 +1,5 @@
+(ns l5.bad.uninit
+  (:profile :hosted))
+
+(def bad
+  (uninit/read slot))

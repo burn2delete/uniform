@@ -1,0 +1,86 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D104
+ :date "2026-06-29"
+ :status :complete
+ :capability :b7-mlir-backend-document-coverage
+ :command "clojure -M:gravity backend-b7-mlir-document bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+ :artifact-kind :gravity/stage0-b7-mlir-backend-document-artifact
+ :artifact-hash "sha256:f18c36fb4c2f6ed26f7496a126af0461422909c02ea18574ad126ee5454baf26"
+ :summary {:diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 8
+           :mlir-module-hash "sha256:cc21e8ec124d36748b452a234203aa20881baeeeb9fdd8a256feb83f9f51286f"
+           :mlir-structural true
+           :downstream-handoffs [:gravity.backend/llvm :gravity.backend/gpu]
+           :external-mlir-toolchain :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b7-dialect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-verify.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-conversion.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-alias.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-pass.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-handoff.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b7-manifest.gravity"]
+ :diagnostics ["B7-DIALECT"
+               "B7-VERIFY"
+               "B7-CONVERSION"
+               "B7-METADATA"
+               "B7-EFFECT"
+               "B7-NUMERIC"
+               "B7-ALIAS"
+               "B7-PASS"
+               "B7-HANDOFF"
+               "B7-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :dialect-registry-covered? true
+                :gravity-operation-schema-covered? true
+                :standard-dialect-fact-mapping-covered? true
+                :operation-type-mapping-covered? true
+                :mlir-module-emitted? true
+                :conversion-legality-passed? true
+                :pass-pipeline-verified? true
+                :mlir-verifier-report-passed? true
+                :proof-to-dialect-map-covered? true
+                :source-debug-map-preserved? true
+                :downstream-handoff-covered? true
+                :metadata-preservation-policy-covered? true
+                :semantic-authority-preserved? true
+                :mlir-structurally-valid? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :external-mlir-toolchain-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 83 tests containing 4784 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1126}
+              {:command "clojure -M:gravity backend-b7-mlir-document bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:f18c36fb4c2f6ed26f7496a126af0461422909c02ea18574ad126ee5454baf26"}
+              {:command "clojure -M -e <extract B7 MLIR module and structural validation>"
+               :result {:mlir "/tmp/gravity-p07-b7.mlir"
+                        :mlir-structural true
+                        :dialects [:gravity.mir :gravity.efir :func :arith :scf :cf :memref :affine :vector :gpu :llvm]
+                        :handoffs [:gravity.backend/llvm :gravity.backend/gpu]}}
+              {:command "sed -n '1,40p' /tmp/gravity-p07-b7.mlir"
+               :result :passed}
+              {:command "mlir-opt --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: mlir-opt"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 13 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D104 for deterministic Clojure stage0 coverage of the B7 MLIR backend design document contract."
+                 "The emitted MLIR module has structural stage0 validation, dialect/schema/conversion/pass/handoff records, and source/proof metadata preservation evidence."
+                 "The current environment does not provide mlir-opt, so external MLIR verifier validation remains unavailable; this does not claim production MLIR optimization, LLVM/GPU toolchain execution, or full Phase 07 completion."]}

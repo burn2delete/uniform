@@ -1,0 +1,26 @@
+(ns core.app.compiler-evidence-drop
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:compiler {:compiled-gate
+                         {:pass-contracts
+                          [{:pass :emit-instruction-plan
+                            :owner-doc :C1
+                            :input :macro-expanded-core
+                            :output :stage0-instruction-plan
+                            :requires #{:profile :effects}
+                            :preserves #{:source-spans}
+                            :invalidates #{:types}
+                            :regenerates #{}
+                            :capabilities #{}
+                            :profiles #{:hosted}
+                            :emits #{}
+                            :rejects #{"L2-MAIN-ARITY"}
+                            :verifier-gate? true
+                            :risk :high
+                            :evidence-class #{:fixture}}]}}}))
+
+(defn main []
+  (println "bad compiler evidence drop"))

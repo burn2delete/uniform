@@ -1,0 +1,9 @@
+(ns compiler.c4.depth
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c4-macro {:fail :depth}}}))
+
+(def value 1)

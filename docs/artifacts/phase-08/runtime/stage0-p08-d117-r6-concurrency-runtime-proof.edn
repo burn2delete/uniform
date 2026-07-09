@@ -1,0 +1,35 @@
+{:artifact :gravity/stage0-r6-concurrency-runtime-document-proof
+ :task "P08-D117"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r6-document bootstrap/clojure/fixtures/accepted/runtime-concurrency-distributed.gravity"
+ :artifact-kind :gravity/stage0-r6-concurrency-runtime-document-artifact
+ :artifact-id "sha256:38faa7dd87b6415e74e2a009fcd02ccd849610e894211aed6b95dc9dc1cf6263"
+ :input-artifact "sha256:ddf812b528edaff888298cefc7ca11aec5d4b6374f87765c4172875d287cea94"
+ :input-artifact-kind :gravity/stage0-concurrency-distributed-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-concurrency-distributed.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r6-*.gravity"]
+ :required-diagnostic-ids
+ ["R6-SCHEDULER" "R6-RACE" "R6-ATOMIC" "R6-TASK" "R6-CANCEL"
+  "R6-ACTOR" "R6-BLOCKING" "R6-CAPABILITY" "R6-REPLAY"
+  "R6-MANIFEST"]
+ :capability-based-proof
+ {:concurrency-runtime-input-verified? true
+  :scheduler-and-execution-models-declared? true
+  :structured-tasks-owned-and-joined? true
+  :cancellation-cleanup-covered? true
+  :atomics-target-supported? true
+  :shared-state-synchronized-or-transferred? true
+  :actor-channel-schemas-complete? true
+  :blocking-and-concurrent-effects-authorized? true
+  :replay-sensitive-concurrency-safe? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 10
+  :test-command "clojure -M:test"
+  :test-result "102 tests, 6337 assertions, 0 failures, 0 errors, 1366 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R6 concurrency runtime document through the P08-T04 concurrency/distributed runtime artifact. It does not claim production schedulers, native thread pools, managed host execution, durable workflow provider execution, GPU queue execution, or complete Phase 08 document coverage."}

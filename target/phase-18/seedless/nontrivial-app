@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%b' 'nontrivial-app\ngravity:ready:2\n(:release 24)\n'

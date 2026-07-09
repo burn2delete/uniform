@@ -1,0 +1,366 @@
+{
+  "kind": "phase06-compiler-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P06-D080",
+      "document": "C1",
+      "governing_doc": "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "pipeline_manifest",
+          "pass_contract_manifest"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c1-pipeline.json",
+        "diagnostic": "C1-PIPELINE"
+      },
+      "coverage_claims": [
+        "canonical compiler pipeline manifest",
+        "pass contracts with preserved and invalidated facts",
+        "unchecked backend input rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D081",
+      "document": "C2",
+      "governing_doc": "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "reader_artifacts"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c2-hash.json",
+        "diagnostic": "C2-HASH"
+      },
+      "coverage_claims": [
+        "reader source identity and token artifacts",
+        "stable incremental hash",
+        "unstable hash rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D082",
+      "document": "C3",
+      "governing_doc": "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "syntax_object_stream"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c3-origin.json",
+        "diagnostic": "C3-ORIGIN"
+      },
+      "coverage_claims": [
+        "syntax id, span, origin, namespace, phase, profile, and hygiene",
+        "source metadata preservation",
+        "missing origin rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D083",
+      "document": "C4",
+      "governing_doc": "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "macro_expansion_trace"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c4-trace.json",
+        "diagnostic": "C4-TRACE"
+      },
+      "coverage_claims": [
+        "replayable macro expansion trace",
+        "build effect and capability record",
+        "unreplayable trace rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D084",
+      "document": "C5",
+      "governing_doc": "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "namespace_analysis"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c5-unresolved.json",
+        "diagnostic": "C5-UNRESOLVED"
+      },
+      "coverage_claims": [
+        "binding table and dependency graph",
+        "profile-aware namespace analysis",
+        "unresolved symbol rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D085",
+      "document": "C6",
+      "governing_doc": "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "core_ast_module"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c6-lowering.json",
+        "diagnostic": "C6-LOWERING-GAP"
+      },
+      "coverage_claims": [
+        "core AST node and evaluation order artifact",
+        "effect, capability, origin, and unsafe metadata preservation",
+        "lowering gap rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D086",
+      "document": "C7",
+      "governing_doc": "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "typed_core_module"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c7-verify.json",
+        "diagnostic": "C7-VERIFY"
+      },
+      "coverage_claims": [
+        "typed core function signatures",
+        "constraint solution records",
+        "missing type fact rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D087",
+      "document": "C8",
+      "governing_doc": "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "effect_graph"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c8-capability.json",
+        "diagnostic": "C8-CAPABILITY"
+      },
+      "coverage_claims": [
+        "effect graph",
+        "capability proof records",
+        "missing capability rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D088",
+      "document": "C9",
+      "governing_doc": "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "ownership_analysis"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c9-linear.json",
+        "diagnostic": "C9-LINEAR-LEAK"
+      },
+      "coverage_claims": [
+        "ownership graph",
+        "borrow graph and linear flow terminal states",
+        "linear leak rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D089",
+      "document": "C10",
+      "governing_doc": "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "safety_pipeline"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c10-outcome.json",
+        "diagnostic": "C10-NO-OUTCOME"
+      },
+      "coverage_claims": [
+        "SAFE1 outcome records",
+        "runtime check and unsafe audit records",
+        "missing outcome rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D090",
+      "document": "C11",
+      "governing_doc": "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "mir_module"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c11-type.json",
+        "diagnostic": "C11-TYPE"
+      },
+      "coverage_claims": [
+        "typed and effected MIR module",
+        "profile, target, ownership, safety, and source maps",
+        "missing MIR type table rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D091",
+      "document": "C12",
+      "governing_doc": "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "domain_ir_modules"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c12-anchor.json",
+        "diagnostic": "C12-ANCHOR"
+      },
+      "coverage_claims": [
+        "domain IR registrations",
+        "semantic anchors and domain verifier reports",
+        "missing anchor rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D092",
+      "document": "C13",
+      "governing_doc": "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "optimization_manifest"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c13-proof.json",
+        "diagnostic": "C13-PROOF"
+      },
+      "coverage_claims": [
+        "optimization pass registry",
+        "decision log and invalidation ledger",
+        "missing proof rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D093",
+      "document": "C14",
+      "governing_doc": "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "target_lowering_manifest"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c14-input.json",
+        "diagnostic": "C14-INPUT"
+      },
+      "coverage_claims": [
+        "verified MIR or domain IR input",
+        "target eligibility and artifact manifest",
+        "unverified target input rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D094",
+      "document": "C15",
+      "governing_doc": "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "compiler_diagnostic_registry"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c15-redaction.json",
+        "diagnostic": "C15-REDACTION"
+      },
+      "coverage_claims": [
+        "structured diagnostic registry",
+        "stable origin chains and remediation fields",
+        "secret leakage rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D095",
+      "document": "C16",
+      "governing_doc": "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "incremental_compilation"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c16-proof.json",
+        "diagnostic": "C16-PROOF"
+      },
+      "coverage_claims": [
+        "cache keys and dependency graph",
+        "revalidation and invalidation traces",
+        "stale proof reuse rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D096",
+      "document": "C17",
+      "governing_doc": "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "plugin_system"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c17-capability.json",
+        "diagnostic": "C17-CAPABILITY"
+      },
+      "coverage_claims": [
+        "plugin manifest and API compatibility",
+        "sandboxed execution trace",
+        "missing compiler capability rejection"
+      ]
+    },
+    {
+      "task_id": "P06-D097",
+      "document": "C18",
+      "governing_doc": "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/accepted-compiler-architecture.json",
+        "required_artifact_fields": [
+          "compiler_verification_plan"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-06/fixtures/compiler/rejected-c18-evidence.json",
+        "diagnostic": "C18-EVIDENCE"
+      },
+      "coverage_claims": [
+        "pass risk and minimum evidence records",
+        "trust report and release gate report",
+        "missing required evidence rejection"
+      ]
+    }
+  ]
+}

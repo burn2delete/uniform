@@ -1,0 +1,12 @@
+(ns core.app.conformance-bootstrap-provenance
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:self-hosting-validation-reports
+                             [{:artifact-id "self-hosting-report:bad"}]}}}))
+
+(defn main []
+  (println "bad conformance bootstrap provenance"))

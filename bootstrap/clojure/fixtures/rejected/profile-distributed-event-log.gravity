@@ -1,0 +1,8 @@
+(ns profile.bad.distributed-event-log
+  (:profile :distributed)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p9/event-log))

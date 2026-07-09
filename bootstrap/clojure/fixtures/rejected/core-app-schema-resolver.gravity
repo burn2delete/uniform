@@ -1,0 +1,17 @@
+(ns core.app.schema-resolver
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:schema {:compiled-gate
+                       {:api-projections
+                        [{:graphql {:artifact :gravity/graphql-generation
+                                    :resolver-adapter
+                                    {:capability-check :missing}
+                                    :capabilities #{}}
+                          :openapi {:artifact :gravity/openapi-generation
+                                    :error-schema "ErrorEnvelope"}}]}}}))
+
+(defn main []
+  (println "bad schema resolver"))

@@ -1,0 +1,4 @@
+B12 lower-stage spot proof passed: .qst artifact source-debug-map, permission manifest, platform map, and rejected diagnostic preserve source extension.
+artifact-id: sha256:b5499a3bb4ee75c345f4b53ca8dfc4721474bb9e7a37ac79293d14b524ba6215
+source-debug-map-locations: bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:mobile bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:permissions bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:lifecycle bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:storage
+rejected-diagnostic: B12-TARGET backend-b12-target.qst

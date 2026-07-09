@@ -1,0 +1,8 @@
+{
+  "extends": "accepted-performance-model.json",
+  "set": {
+    "/zero_cost_claims/0/residual_costs": [
+      ":dynamic-dispatch"
+    ]
+  }
+}

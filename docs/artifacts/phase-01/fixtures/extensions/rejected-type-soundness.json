@@ -1,0 +1,30 @@
+{
+  "active_profile": ":kernel",
+  "kind": "phase-01-extension-hooks",
+  "module": "extension.bad.type-soundness",
+  "normal_pipeline_artifacts": {
+    "core_ast": "docs/artifacts/phase-01/core/core-ast.accepted.json",
+    "macro_trace": "docs/artifacts/phase-01/macro/macro-expansion-trace.accepted.json",
+    "namespace": "docs/artifacts/phase-01/namespace/module.accepted-server.json",
+    "reader": "docs/artifacts/phase-01/reader/syntax-object-stream.accepted-hosted-hello.json",
+    "typed_core": "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json"
+  },
+  "providers": [
+    {
+      "capability_preservation": true,
+      "effect_preservation": true,
+      "exported_facts": [
+        "ownership"
+      ],
+      "id": "research.types/kernel-claim",
+      "kind": ":type-system",
+      "profiles": [
+        ":kernel"
+      ],
+      "soundness_claim": ":strict-extension",
+      "soundness_evidence": [],
+      "version": "0.1.0"
+    }
+  ],
+  "interop_boundaries": []
+}

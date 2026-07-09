@@ -1,0 +1,11 @@
+; Rejected P16 STD3 fixture.
+(ns standard-library.std3-allocation
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std3001}}}))
+
+(defn main [] :- I64 1)

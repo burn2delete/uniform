@@ -1,0 +1,8 @@
+(ns profile.bad.distributed-service-error
+  (:profile :distributed)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p9/service-error))

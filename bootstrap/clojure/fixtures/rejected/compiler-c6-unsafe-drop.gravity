@@ -1,0 +1,9 @@
+(ns compiler.c6.unsafe-drop
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c6-lowering {:fail :unsafe-drop}}}))
+
+(def value 1)

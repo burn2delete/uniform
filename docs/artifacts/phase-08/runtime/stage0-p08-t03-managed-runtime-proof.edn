@@ -1,0 +1,51 @@
+{:artifact :gravity/stage0-managed-runtime-proof
+ :task "P08-T03"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-managed bootstrap/clojure/fixtures/accepted/runtime-managed-host.gravity"
+ :artifact-kind :gravity/stage0-managed-runtime-artifact
+ :artifact-id "sha256:77e43188411edfac7a56f48d81a8e7ccbdf12f855fa814638a1d02cf51729bd6"
+ :input-artifact "sha256:f903f759d277bd89cb6ce6475638fc1a3be74ef6c882bb041232a87127c891e3"
+ :input-artifact-kind :gravity/stage0-minimal-native-memory-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-managed-host.gravity"
+ :rejected-fixtures
+ ["bootstrap/clojure/fixtures/rejected/runtime-r4-host.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-null.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-exception.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-reflection.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-collection.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-resource.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-sourcemap.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-profile.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r4-manifest.gravity"]
+ :required-diagnostic-ids
+ ["R4-HOST"
+  "R4-NULL"
+  "R4-EXCEPTION"
+  "R4-REFLECTION"
+  "R4-COLLECTION"
+  "R4-RESOURCE"
+  "R4-SOURCEMAP"
+  "R4-PROFILE"
+  "R4-MANIFEST"]
+ :capability-based-proof
+ {:minimal-native-memory-input-verified? true
+  :host-runtime-targets-declared? true
+  :manifest-declares-host-services? true
+  :null-and-exception-translation-checked? true
+  :reflection-and-dynamic-use-capability-gated? true
+  :collection-semantics-gravity-compatible? true
+  :linear-resources-deterministic? true
+  :hosted_state_does_not_grant_capabilities? true
+  :host-adapters-typed-and-mapped? true
+  :source-debug-map-complete? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:host-targets [:jvm :javascript :wasm-host]
+  :diagnostic-count 9
+  :test-command "clojure -M:test"
+  :test-result "93 tests, 5634 assertions, 0 failures, 0 errors, 1242 rejected fixtures"}
+ :residual-risk
+ "This proves the Clojure stage0 managed runtime manifest and diagnostic boundary. It does not claim production JVM, JavaScript, or Wasm host runtime execution, external package integration, release readiness, or complete Phase 08 coverage."}

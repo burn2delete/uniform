@@ -1,0 +1,9 @@
+(ns compiler.c7.annotation
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :annotation}}}))
+
+(def value 1)

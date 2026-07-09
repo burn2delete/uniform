@@ -1,0 +1,179 @@
+{
+  "attenuation_revocation_records": [
+    {
+      "derived": "grant/http-client-readonly",
+      "parent": "grant/http-client",
+      "revocation": ":not-required",
+      "scope_relation": ":subset",
+      "source_record": "cap-http-client"
+    }
+  ],
+  "build_effect_summaries": [
+    {
+      "effect": ":build/read-file",
+      "grant": "grant/build-schema",
+      "replay": ":content-addressed",
+      "source_record": "pkg-gravity-app"
+    }
+  ],
+  "capability_requirement_records": [
+    {
+      "capability": ":http/client",
+      "effect": ":network/http",
+      "operation": "fetch-user",
+      "source_record": "cap-http-client"
+    }
+  ],
+  "capability_usage_summary": [
+    {
+      "capability": ":http/client",
+      "operations": [
+        "fetch-user"
+      ],
+      "phase": ":runtime",
+      "source_record": "cap-http-client"
+    }
+  ],
+  "diagnostics": [],
+  "documents": [
+    "SAFE10",
+    "SAFE14"
+  ],
+  "generated_artifact_provenance": [
+    {
+      "artifact": "schema/user",
+      "generator": "gravity.schema",
+      "output_digest": "sha256:user-schema-artifact",
+      "source_digest": "sha256:user-schema",
+      "source_record": "pkg-gravity-app"
+    }
+  ],
+  "grant_intersection_records": [
+    {
+      "effective_scope": {
+        "hosts": [
+          "api.example.com"
+        ],
+        "methods": [
+          "GET"
+        ]
+      },
+      "grant_id": "grant/http-client",
+      "layers": [
+        "source",
+        "package",
+        "workspace",
+        "profile",
+        "deployment",
+        "runtime-provider"
+      ],
+      "source_record": "cap-http-client"
+    }
+  ],
+  "input_hash": "sha256:84abe3024dd913d6ce05ee6f92496d79806205f16b899becf233d32e4ed9ed67",
+  "kind": "capability-supply-chain-artifact",
+  "lockfile_dependency_graph_records": [
+    {
+      "dependencies": [
+        "gravity.net@1.0.0"
+      ],
+      "lockfile": "gravity.lock",
+      "source_record": "pkg-gravity-app",
+      "status": ":pinned"
+    }
+  ],
+  "module": "app.main",
+  "native_dependency_abi_records": [
+    {
+      "abi": ":c",
+      "digest": "sha256:libexample",
+      "library": "libexample",
+      "source_record": "pkg-gravity-app",
+      "version": "1.2.3"
+    }
+  ],
+  "package": "gravity.app",
+  "package_safety_manifests": [
+    {
+      "build_effects": [
+        ":build/read-file"
+      ],
+      "package": "gravity.app",
+      "reproducible": true,
+      "runtime_capabilities": [
+        ":http/client"
+      ],
+      "source_record": "pkg-gravity-app",
+      "version": "0.1.0"
+    }
+  ],
+  "profile": ":hosted",
+  "provider_selection_records": [
+    {
+      "provider_id": "gravity.net/fetch",
+      "selection": ":package-manifest",
+      "source_record": "cap-http-client",
+      "version": "1.0.0"
+    }
+  ],
+  "runtime_capability_check_records": [
+    {
+      "failure_behavior": "(Result Err CapabilityDenied)",
+      "provider_id": "gravity.net/fetch",
+      "source_record": "cap-http-client"
+    }
+  ],
+  "runtime_capability_summaries": [
+    {
+      "approved_by": "deployment-policy",
+      "capability": ":http/client",
+      "source_record": "pkg-gravity-app"
+    }
+  ],
+  "scope_check_records": [
+    {
+      "capability": ":http/client",
+      "requested_scope": "api.example.com GET",
+      "source_record": "cap-http-client",
+      "status": ":accepted"
+    }
+  ],
+  "secret_redaction_records": [
+    {
+      "artifact_policy": ":name-only",
+      "secret_name": "API_TOKEN",
+      "source_record": "cap-http-client"
+    }
+  ],
+  "signature_attestation_records": [
+    {
+      "attestation": ":accepted",
+      "package": "gravity.app",
+      "signature": ":verified",
+      "source_record": "pkg-gravity-app"
+    }
+  ],
+  "supply_chain_conformance_reports": [
+    {
+      "source_record": "pkg-gravity-app",
+      "status": ":passed",
+      "suite": "supply-chain-basic"
+    }
+  ],
+  "target": ":wasm",
+  "transitive_authority_diffs": [
+    {
+      "approval": ":not-required",
+      "authority_change": ":none",
+      "source_record": "pkg-gravity-app",
+      "update": "gravity.net 1.0.0"
+    }
+  ],
+  "unsafe_island_summaries": [
+    {
+      "count": 0,
+      "source_record": "pkg-gravity-app",
+      "status": ":none"
+    }
+  ]
+}

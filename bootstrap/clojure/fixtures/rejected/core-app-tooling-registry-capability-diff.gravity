@@ -1,0 +1,14 @@
+(ns core.app.tooling-registry-capability-diff
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:registry-ux-records
+                         [{:tool-id :gravity-registry
+                           :update-diff
+                           {:capability-diff-visible false}}]}}}))
+
+(defn main []
+  (println "bad tooling registry capability diff"))

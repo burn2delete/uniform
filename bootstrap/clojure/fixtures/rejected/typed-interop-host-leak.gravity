@@ -1,0 +1,9 @@
+(ns interop.host-leak
+  (:profile :core)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/host-leak :jvm-reflection))

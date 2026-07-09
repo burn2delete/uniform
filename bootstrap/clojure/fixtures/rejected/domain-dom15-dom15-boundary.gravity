@@ -1,0 +1,6 @@
+; Rejected P09 DOM15 fixture.
+(ns domain.dom15-boundary (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom15-boundary}}}))
+(defn main [] :- I64 1)

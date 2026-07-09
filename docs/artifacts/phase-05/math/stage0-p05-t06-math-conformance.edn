@@ -1,0 +1,86 @@
+{:phase "05"
+ :task "P05-T06"
+ :documents ["MATH10" "MATH11"]
+ :artifact-kind :gravity/stage0-math-conformance-artifact
+ :artifact-hash "sha256:2fa35b071e721d89e1c8bc438fdc4bb1815d02539570becfda110c2c9bb214cf"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-conformance.gravity"
+ :command "clojure -M:gravity math-conformance bootstrap/clojure/fixtures/accepted/math-conformance.gravity"
+ :summary
+ {:pass :math-optimization-conformance
+  :output :math-conformance-report
+  :subgraph-count 1
+  :candidate-count 2
+  :fixture-count 1
+  :oracle-count 2
+  :result-matrix-count 1
+  :required-diagnostic-count 26
+  :status :complete}
+ :capability-based-proof
+ {:verified-efir-input? true
+  :candidates-proof-gated? true
+  :correct-rounding-target-complete? true
+  :accepted-result-intervals-resolved? true
+  :synthesis-checkable? true
+  :provider-comparison-semantic? true
+  :simd-gpu-guarded? true
+  :autotune-replayable? true
+  :fallback-legal? true
+  :conformance-manifest-complete? true
+  :oracles-trusted? true
+  :artifact-family-replay-complete? true
+  :negative-diagnostics-deterministic? true
+  :provenance-complete? true
+  :status :complete}
+ :rejected-fixtures
+ [{:fixture "math-opt-detect.gravity" :diagnostic "MATH10-DETECT"}
+  {:fixture "math-opt-efir.gravity" :diagnostic "MATH10-EFIR"}
+  {:fixture "math-opt-candidate.gravity" :diagnostic "MATH10-CANDIDATE"}
+  {:fixture "math-opt-proof.gravity" :diagnostic "MATH10-PROOF"}
+  {:fixture "math-opt-certificate.gravity" :diagnostic "MATH10-CERTIFICATE"}
+  {:fixture "math-opt-rounding-target.gravity" :diagnostic "MATH10-ROUNDING-TARGET"}
+  {:fixture "math-opt-rounding-interval.gravity" :diagnostic "MATH10-ROUNDING-INTERVAL"}
+  {:fixture "math-opt-synthesis.gravity" :diagnostic "MATH10-SYNTHESIS"}
+  {:fixture "math-opt-fusion.gravity" :diagnostic "MATH10-FUSION"}
+  {:fixture "math-opt-provider.gravity" :diagnostic "MATH10-PROVIDER"}
+  {:fixture "math-opt-provider-compare.gravity" :diagnostic "MATH10-PROVIDER-COMPARE"}
+  {:fixture "math-opt-simd.gravity" :diagnostic "MATH10-SIMD"}
+  {:fixture "math-opt-gpu.gravity" :diagnostic "MATH10-GPU"}
+  {:fixture "math-opt-autotune.gravity" :diagnostic "MATH10-AUTOTUNE"}
+  {:fixture "math-opt-fallback.gravity" :diagnostic "MATH10-FALLBACK"}
+  {:fixture "math-conf-fixture.gravity" :diagnostic "MATH11-FIXTURE"}
+  {:fixture "math-conf-oracle.gravity" :diagnostic "MATH11-ORACLE"}
+  {:fixture "math-conf-artifact.gravity" :diagnostic "MATH11-ARTIFACT"}
+  {:fixture "math-conf-efir.gravity" :diagnostic "MATH11-EFIR"}
+  {:fixture "math-conf-eml.gravity" :diagnostic "MATH11-EML"}
+  {:fixture "math-conf-certificate.gravity" :diagnostic "MATH11-CERTIFICATE"}
+  {:fixture "math-conf-interval.gravity" :diagnostic "MATH11-INTERVAL"}
+  {:fixture "math-conf-floating.gravity" :diagnostic "MATH11-FLOATING"}
+  {:fixture "math-conf-rewrite.gravity" :diagnostic "MATH11-REWRITE"}
+  {:fixture "math-conf-optimization.gravity" :diagnostic "MATH11-OPTIMIZATION"}
+  {:fixture "math-conf-diagnostic.gravity" :diagnostic "MATH11-DIAGNOSTIC"}]
+ :validation
+ {:clojure-test
+  {:command "clojure -M:test"
+   :result "Ran 46 tests containing 2348 assertions. 0 failures, 0 errors."
+   :rejected-fixtures 668}
+  :artifact-summary
+  {:command "clojure -M -e '(require (quote [gravity.bootstrap :as b])) ...'"
+   :result
+   {:kind :gravity/stage0-math-conformance-artifact
+    :pass :math-optimization-conformance
+    :output :math-conformance-report
+    :status :complete
+    :subgraphs 1
+    :candidates 2
+    :fixtures 1
+    :oracles 2
+    :matrix 1
+    :diagnostics 26
+    :proof :complete}}}
+ :limits
+ [:stage0-optimization-decision-validation-only
+  :stage0-conformance-suite-validation-only
+  :no-production-optimizer-claim
+  :no-production-math-runtime-claim
+  :no-backend-codegen-claim
+  :no-self-hosting-claim]}

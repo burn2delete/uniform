@@ -1,0 +1,8 @@
+(ns compiler.c2-set
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad #{1 1})

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-coverage.json",
+  "delete": [
+    "/domains/DOM16/evidence/aa_profile"
+  ]
+}

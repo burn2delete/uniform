@@ -1,0 +1,8 @@
+(ns profile.bad.ai-replay
+  (:profile :ai)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p10/replay))

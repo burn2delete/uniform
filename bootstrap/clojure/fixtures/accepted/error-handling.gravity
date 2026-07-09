@@ -1,0 +1,51 @@
+(ns error.handling
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [some-value none-value ok-value err-value thrown-value
+             panic-record safety-record host-record ffi-record workflow-record
+             ai-record result-handled])
+  (:effects #{:error/throw :panic/fail :safety/check-failure :host/error
+              :ffi/error :workflow/failure :ai/error})
+  (:capabilities #{:ffi/call :workflow/event :ai/tool})
+  (:safety :safe))
+
+(def some-value
+  (option/some 42))
+
+(def none-value
+  (option/none))
+
+(def ok-value
+  (result/ok 42))
+
+(def err-value
+  (result/err :bad-input))
+
+(def thrown-value
+  (try
+    (throw :bad-input)
+    (catch Error e
+      (result/err e))))
+
+(def panic-record
+  (panic :hosted "unrecoverable"))
+
+(def safety-record
+  (safety/check :bounds :runtime-checked))
+
+(def host-record
+  (host/error-normalized :NullPointerException))
+
+(def ffi-record
+  (ffi/error-mapped :errno))
+
+(def workflow-record
+  (workflow/failure-recorded :step-1))
+
+(def ai-record
+  (ai/error-recorded :tool-provider))
+
+(def result-handled
+  (match ok-value
+    (Ok value) value
+    (Err error) error))

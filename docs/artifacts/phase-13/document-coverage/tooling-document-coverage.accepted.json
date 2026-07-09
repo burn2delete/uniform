@@ -1,0 +1,304 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:68e154b7deb7cec33f61a556b9204f24f130708c3aae5bb800a402627efef8ff",
+      "artifact_id": "cli-contract:gravity",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "CLI command set includes stable exit codes, JSON output, diagnostics, artifact outputs, capability prompts, secret redaction, and golden fixtures",
+        "authority-denied commands produce stable structured diagnostics"
+      ],
+      "document": "T1",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md",
+      "task_id": "P13-D177",
+      "tool_id": "gravity-cli"
+    },
+    {
+      "artifact_hash": "sha256:5bbb1c48a30e792c5443e27f87b9fec4ccf885714d97997dd3f475d420705887",
+      "artifact_id": "repl-session:support-agent",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "REPL session artifact records project and lockfile hashes, profile, target, namespace, capability grants, checked evaluations, diagnostics, and redacted transcript state",
+        "runtime effects without REPL grants are rejected"
+      ],
+      "document": "T2",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md",
+      "task_id": "P13-D178",
+      "tool_id": null
+    },
+    {
+      "artifact_hash": "sha256:ef01e930d255e87287c35198e6d8233f52159c8d4c84dd37d41b43826ff6b62e",
+      "artifact_id": "fmt-report:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Formatter report records configuration hash, reader round-trip status, changed files, diff output, JSON report, and comment/metadata preservation",
+        "round-trip mismatches reject formatting output"
+      ],
+      "document": "T3",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md",
+      "task_id": "P13-D179",
+      "tool_id": "gravity-fmt"
+    },
+    {
+      "artifact_hash": "sha256:c44bdb177b84e2ebdc0ff09023df56834be8d28b8fd29ade63a2b11572a551f0",
+      "artifact_id": "lint-report:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Lint report records rule ids, diagnostics, baselines, rule metadata, compiler facts, profile/target applicability, and JSON export",
+        "auto-fixes that alter semantics without validation are rejected"
+      ],
+      "document": "T4",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md",
+      "task_id": "P13-D180",
+      "tool_id": "gravity-lint"
+    },
+    {
+      "artifact_hash": "sha256:d94d64e2fb7530c54d89da09a4510cc34c7ecad451c3aefecfd8fed200c73322",
+      "artifact_id": "lsp-matrix:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "LSP matrix records compiler state, CLI diagnostic parity, hover facts, completion constraints, code action checks, rename boundaries, and redacted trace state",
+        "editor diagnostics that conflict with compiler diagnostics are rejected"
+      ],
+      "document": "T5",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md",
+      "task_id": "P13-D181",
+      "tool_id": "gravity-lsp"
+    },
+    {
+      "artifact_hash": "sha256:fed0946dab4e09e4bfe7bd15b4bd46a41875b54a8bf1da8e241c51430bef779e",
+      "artifact_id": "debug-trace:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Debugger trace records artifact/profile/target identity, debug data version, breakpoints, stack frames, variable reports, policy denials, and source-map validation",
+        "redacted value inspection is rejected"
+      ],
+      "document": "T6",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md",
+      "task_id": "P13-D182",
+      "tool_id": "gravity-debug"
+    },
+    {
+      "artifact_hash": "sha256:ef0d9fea49e187882bdba6a55c6b9809e1faee7c9ac0d676ddba5be7b063de8b",
+      "artifact_id": "docs:support-agent",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Documentation artifact records source hash, compiler version, package version, API signatures, effect/capability docs, schema links, example validation, structured docs, and redaction",
+        "stale generated docs are rejected"
+      ],
+      "document": "T7",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md",
+      "task_id": "P13-D183",
+      "tool_id": "gravity-doc"
+    },
+    {
+      "artifact_hash": "sha256:d4bf9608a4c76e19e43567d5f66ffaca815bb4e679013c1f593b4522f644ebb4",
+      "artifact_id": "dev-session:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Dev server session records project/profile/target/grants, incremental updates, diagnostic stream, artifact events, runtime log, and redacted bug-report bundle",
+        "hot reload that invalidates checked assumptions is rejected"
+      ],
+      "document": "T8",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md",
+      "task_id": "P13-D184",
+      "tool_id": "gravity-dev"
+    },
+    {
+      "artifact_hash": "sha256:a7e02bed9e5bd91f032d8eb014a9f7adc1ffb175de51aba157455fea28ebecfd",
+      "artifact_id": "registry-ux:gravity-http",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Registry UX record aligns human and JSON views, update diffs, verification reports, search filters, access denials, and policy compatibility reports",
+        "hidden capability diffs are rejected"
+      ],
+      "document": "T9",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md",
+      "task_id": "P13-D185",
+      "tool_id": "gravity-registry"
+    },
+    {
+      "artifact_hash": "sha256:56471528abf6aa61ed7ef772de8f7e42f235c1797bd58bfb5e5a55c36faa8d1a",
+      "artifact_id": "ir-inspector:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "IR inspector bundle records stage id, compiler version, project hash, profile, target, stage views, source-span maps, pass diffs, preservation reports, and redaction",
+        "IR views that drop source origins are rejected"
+      ],
+      "document": "T10",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md",
+      "task_id": "P13-D186",
+      "tool_id": "gravity-inspect-ir"
+    },
+    {
+      "artifact_hash": "sha256:3f5e43cf3d00bd2c510bdd9cb6e96895acff5926deedef5a08ea693c71e7a552",
+      "artifact_id": "artifact:library-001",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Profiler report records profile, target, artifact, benchmark, environment, compiler, samples, comparison policy, check-elision report, and capabilities",
+        "check-elision claims without proof or analysis evidence are rejected"
+      ],
+      "document": "T11",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md",
+      "task_id": "P13-D187",
+      "tool_id": "gravity-profile"
+    },
+    {
+      "artifact_hash": "sha256:80d140bf3a11031119c650bc99eb7f70ec40fea10caef0048e5b95bab9bc4e08",
+      "artifact_id": "audit-report:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "Safety audit report records unsafe index, capability graph, taint graph, FFI boundaries, AI safety, package safety, proof index, missing evidence, and redaction",
+        "known unsafe islands omitted from audit reports are rejected"
+      ],
+      "document": "T12",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md",
+      "task_id": "P13-D188",
+      "tool_id": "gravity-audit"
+    },
+    {
+      "artifact_hash": "sha256:697678686136968088f647a9f23cdf543595018d655b1b6edfe16fddb7749e4e",
+      "artifact_id": "ai-tooling:phase13",
+      "artifact_kind": "tooling-experience-artifact",
+      "coverage": [
+        "AI tooling record includes modes, plan artifact, patch artifact, generated-source provenance, prompt/model ledger, tool-call ledger, validation report, human-review record, and replay trace",
+        "generated source not checked by the compiler is rejected"
+      ],
+      "document": "T13",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md",
+      "task_id": "P13-D189",
+      "tool_id": "gravity-ai-assist"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 13,
+    "documents": 13,
+    "rejected_diagnostics": 13,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10",
+    "T11",
+    "T12",
+    "T13"
+  ],
+  "input_hash": "sha256:bd6a142494867133251e7d63c7f5d8ace58f54208a6a009054fdfe1076b706ab",
+  "kind": "phase13-tooling-document-coverage-artifact",
+  "phase": "13",
+  "rejected": [
+    {
+      "diagnostic": "T1003",
+      "document": "T1",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t1-authority-denial.json",
+      "missing_fact": "capability-grant",
+      "task_id": "P13-D177"
+    },
+    {
+      "diagnostic": "T2002",
+      "document": "T2",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t2-missing-capability.json",
+      "missing_fact": "repl-capability-grant",
+      "task_id": "P13-D178"
+    },
+    {
+      "diagnostic": "T3002",
+      "document": "T3",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t3-round-trip.json",
+      "missing_fact": "reader-round-trip",
+      "task_id": "P13-D179"
+    },
+    {
+      "diagnostic": "T4003",
+      "document": "T4",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t4-unsafe-autofix.json",
+      "missing_fact": "validated-autofix",
+      "task_id": "P13-D180"
+    },
+    {
+      "diagnostic": "T5001",
+      "document": "T5",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t5-diagnostic-mismatch.json",
+      "missing_fact": "compiler-diagnostic-match",
+      "task_id": "P13-D181"
+    },
+    {
+      "diagnostic": "T6004",
+      "document": "T6",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t6-redacted-access.json",
+      "missing_fact": "redacted-value",
+      "task_id": "P13-D182"
+    },
+    {
+      "diagnostic": "T7001",
+      "document": "T7",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t7-stale-docs.json",
+      "missing_fact": "source-hash",
+      "task_id": "P13-D183"
+    },
+    {
+      "diagnostic": "T8003",
+      "document": "T8",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t8-hot-reload.json",
+      "missing_fact": "safe-hot-reload",
+      "task_id": "P13-D184"
+    },
+    {
+      "diagnostic": "T9001",
+      "document": "T9",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t9-hidden-capability-diff.json",
+      "missing_fact": "capability-diff",
+      "task_id": "P13-D185"
+    },
+    {
+      "diagnostic": "T10002",
+      "document": "T10",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t10-lost-origin.json",
+      "missing_fact": "source-origin",
+      "task_id": "P13-D186"
+    },
+    {
+      "diagnostic": "T11003",
+      "document": "T11",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t11-check-elision.json",
+      "missing_fact": "check-elision-evidence",
+      "task_id": "P13-D187"
+    },
+    {
+      "diagnostic": "T12001",
+      "document": "T12",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t12-unsafe-island.json",
+      "missing_fact": "unsafe-island-evidence",
+      "task_id": "P13-D188"
+    },
+    {
+      "diagnostic": "T13002",
+      "document": "T13",
+      "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t13-generated-source.json",
+      "missing_fact": "generated-source-checks",
+      "task_id": "P13-D189"
+    }
+  ]
+}

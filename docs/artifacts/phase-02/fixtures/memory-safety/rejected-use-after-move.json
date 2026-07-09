@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/2/ownership/use_after_move": true,
+    "/operations/2/ownership/move_path": "move-to-task"
+  }
+}

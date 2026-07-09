@@ -1,0 +1,8 @@
+(ns l5.bad.linear
+  (:profile :hosted)
+  (:effects :resource/open)
+  (:capabilities :resource/file))
+
+(def bad
+  (let [file (resource/open "tmp/data.txt")]
+    (linear/dup file)))

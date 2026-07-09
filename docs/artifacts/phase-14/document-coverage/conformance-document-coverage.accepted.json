@@ -1,0 +1,304 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:07ea6409330d924aa83b1b360ba48660de2b47c69918ba59dafec5cd34d0dd72",
+      "artifact_id": "conformance:language",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "language suite records positive and negative fixtures, profile/target metadata, golden reader and typed-core output, diagnostic JSON, and result summary",
+        "malformed fixture metadata is rejected"
+      ],
+      "document": "TEST1",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md",
+      "suite_id": "suite:language-conformance",
+      "task_id": "P14-D190"
+    },
+    {
+      "artifact_hash": "sha256:99f31df844fbceb4f9d25518fcbf488afdfd3669b85de3f2a5d08a02822b16dd",
+      "artifact_id": "conformance:compiler",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "compiler tests include stage goldens, preservation reports, pass evidence, diagnostic goldens, cache traces, plugin denials, and crash reducers",
+        "lost preserved compiler facts are rejected"
+      ],
+      "document": "TEST2",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md",
+      "suite_id": "suite:compiler-tests",
+      "task_id": "P14-D191"
+    },
+    {
+      "artifact_hash": "sha256:27d77920f48b2bdda1315d6e4af0e6042f8406b514a991b52c5ffc6d184485f3",
+      "artifact_id": "conformance:runtime",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "runtime tests record runtime families, profile, target, artifact, capability decisions, memory, concurrency, replay, AI ledger, FFI, and observability reports",
+        "capability enforcement failures are rejected"
+      ],
+      "document": "TEST3",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md",
+      "suite_id": "suite:runtime-tests",
+      "task_id": "P14-D192"
+    },
+    {
+      "artifact_hash": "sha256:9ecc6047a8c5f3a9a76e0e06a63d406fae7886f2f39bdb670051777cb06309b4",
+      "artifact_id": "conformance:profiles",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "profile compliance records profile matrix, target matrix, positive and negative results, capability legality, runtime service legality, and delegation artifacts",
+        "fixtures without profile/target identity are rejected"
+      ],
+      "document": "TEST4",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md",
+      "suite_id": "suite:profile-compliance",
+      "task_id": "P14-D193"
+    },
+    {
+      "artifact_hash": "sha256:0e4efe777002f36acb78088e0a25e9c4c54e18f847cc1cd1b5b96b1a9dde3d17",
+      "artifact_id": "conformance:safety",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "safety conformance records all four safety outcomes, positive and negative fixtures, unsafe audits, runtime checks, proofs, capability denials, taint flow, and check-elision evidence",
+        "unsafe fixtures without audit artifacts are rejected"
+      ],
+      "document": "TEST5",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md",
+      "suite_id": "suite:safety-conformance",
+      "task_id": "P14-D194"
+    },
+    {
+      "artifact_hash": "sha256:5afcbd237b26c3bdf969cadfc75227d7d843a759353ca44bf5f13d39444d2ad4",
+      "artifact_id": "conformance:backend",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "backend conformance records backend matrix, profile, target, backend, runtime, manifests, outputs, diagnostics, source maps, ABI/layout, and differential comparison",
+        "backend artifacts without manifests are rejected"
+      ],
+      "document": "TEST6",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md",
+      "suite_id": "suite:backend-conformance",
+      "task_id": "P14-D195"
+    },
+    {
+      "artifact_hash": "sha256:8b1b05e7fdebfc1ea4f539e7b081ae56eb490e0090fd391b8c5fd43ea52e47d0",
+      "artifact_id": "conformance:stdlib",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "standard library tests record module reports, profile availability, capability-denial fixtures, property tests, docs example checks, and stability report",
+        "untested public APIs are rejected"
+      ],
+      "document": "TEST7",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md",
+      "suite_id": "suite:stdlib-tests",
+      "task_id": "P14-D196"
+    },
+    {
+      "artifact_hash": "sha256:1e2d13588fca6e44aeb633d7423649d03a0cd08c296e8cfeccd94d10ea3bc4ad",
+      "artifact_id": "conformance:ai-workflow",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "AI/workflow eval records eval report, dataset, scored outputs, replay traces, tool/memory ledgers, human-review records, safety probes, budget, and release decision",
+        "workflow evals without replay traces are rejected"
+      ],
+      "document": "TEST8",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md",
+      "suite_id": "suite:ai-workflow-eval",
+      "task_id": "P14-D197"
+    },
+    {
+      "artifact_hash": "sha256:dafa2b386cee523b9444d3472cbb0a3c2b7e023f2702a984b995b1d5ff281842",
+      "artifact_id": "conformance:fuzz-property",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "fuzz/property suite records seed corpus, generated case manifest, property report, minimized reproducers, crash report, coverage, and promoted regressions",
+        "fuzz targets without seed or generator identity are rejected"
+      ],
+      "document": "TEST9",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md",
+      "suite_id": "suite:fuzz-property",
+      "task_id": "P14-D198"
+    },
+    {
+      "artifact_hash": "sha256:257b916254637be282d7fe5bc943cef063912cf70f23398ced4146d36c582462",
+      "artifact_id": "conformance:differential",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "differential report records oracle manifest, observables, profile, target, backend, runtime, numeric mode, comparisons, reproducer, and accepted divergence",
+        "unexplained target divergence is rejected"
+      ],
+      "document": "TEST10",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md",
+      "suite_id": "suite:differential",
+      "task_id": "P14-D199"
+    },
+    {
+      "artifact_hash": "sha256:1b2eb7e615540eadc387cac796945bf4ea9f4288e8e83d5a48be21c49bba6b3f",
+      "artifact_id": "conformance:formal",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "formal proof report records semantics artifacts, proof objects, certificate manifests, checker reports, assumptions, counterexamples, and proof invalidation",
+        "uncheckable proof claims are rejected"
+      ],
+      "document": "TEST11",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md",
+      "suite_id": "suite:formal-verification",
+      "task_id": "P14-D200"
+    },
+    {
+      "artifact_hash": "sha256:48ba208131852e25ff5487b313fc742f8aa69f43978587a3a611ef51781b55ea",
+      "artifact_id": "conformance:performance",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "performance regression records benchmark identity, raw measurements, performance report, comparison, regression decision, semantic gate, and safety evidence",
+        "performance passes with failed semantic gates are rejected"
+      ],
+      "document": "TEST12",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md",
+      "suite_id": "suite:performance-regression",
+      "task_id": "P14-D201"
+    },
+    {
+      "artifact_hash": "sha256:b8ad607928c095930dc57a1d91782c8220d4de2070ecac940512afabdeea06fc",
+      "artifact_id": "conformance:self-hosting",
+      "artifact_kind": "conformance-system-artifact",
+      "coverage": [
+        "self-hosting validation records stage manifest, compiler artifact, conformance report, rebuild log, comparison report, provenance attestation, TCB delta, and unsafe audit report",
+        "bootstrap artifacts without provenance are rejected"
+      ],
+      "document": "TEST13",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+      "governing_doc": "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md",
+      "suite_id": "suite:self-hosting",
+      "task_id": "P14-D202"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 13,
+    "documents": 13,
+    "rejected_diagnostics": 13,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "TEST1",
+    "TEST2",
+    "TEST3",
+    "TEST4",
+    "TEST5",
+    "TEST6",
+    "TEST7",
+    "TEST8",
+    "TEST9",
+    "TEST10",
+    "TEST11",
+    "TEST12",
+    "TEST13"
+  ],
+  "input_hash": "sha256:13845ad9aebbeaa316a18ce532c84c454e2e1a4d123d86fbdcf7d5360c3c2860",
+  "kind": "phase14-conformance-document-coverage-artifact",
+  "phase": "14",
+  "rejected": [
+    {
+      "diagnostic": "TEST1001",
+      "document": "TEST1",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test1-metadata.json",
+      "missing_fact": "fixture-metadata",
+      "task_id": "P14-D190"
+    },
+    {
+      "diagnostic": "TEST2002",
+      "document": "TEST2",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test2-preserved-fact.json",
+      "missing_fact": "preserved-fact",
+      "task_id": "P14-D191"
+    },
+    {
+      "diagnostic": "TEST3002",
+      "document": "TEST3",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test3-capability.json",
+      "missing_fact": "capability-denial",
+      "task_id": "P14-D192"
+    },
+    {
+      "diagnostic": "TEST4001",
+      "document": "TEST4",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test4-profile-target.json",
+      "missing_fact": "profile-target",
+      "task_id": "P14-D193"
+    },
+    {
+      "diagnostic": "TEST5002",
+      "document": "TEST5",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test5-unsafe-audit.json",
+      "missing_fact": "unsafe-audit",
+      "task_id": "P14-D194"
+    },
+    {
+      "diagnostic": "TEST6004",
+      "document": "TEST6",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test6-artifact-manifest.json",
+      "missing_fact": "artifact-manifest",
+      "task_id": "P14-D195"
+    },
+    {
+      "diagnostic": "TEST7001",
+      "document": "TEST7",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test7-untested-api.json",
+      "missing_fact": "public-api-test",
+      "task_id": "P14-D196"
+    },
+    {
+      "diagnostic": "TEST8003",
+      "document": "TEST8",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test8-replay-trace.json",
+      "missing_fact": "workflow-replay",
+      "task_id": "P14-D197"
+    },
+    {
+      "diagnostic": "TEST9001",
+      "document": "TEST9",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test9-seed.json",
+      "missing_fact": "seed-generator",
+      "task_id": "P14-D198"
+    },
+    {
+      "diagnostic": "TEST10002",
+      "document": "TEST10",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test10-divergence.json",
+      "missing_fact": "accepted-divergence",
+      "task_id": "P14-D199"
+    },
+    {
+      "diagnostic": "TEST11003",
+      "document": "TEST11",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test11-proof.json",
+      "missing_fact": "machine-checkable-proof",
+      "task_id": "P14-D200"
+    },
+    {
+      "diagnostic": "TEST12003",
+      "document": "TEST12",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test12-semantic-gate.json",
+      "missing_fact": "semantic-gate",
+      "task_id": "P14-D201"
+    },
+    {
+      "diagnostic": "TEST13002",
+      "document": "TEST13",
+      "fixture": "docs/artifacts/phase-14/fixtures/conformance/rejected-test13-provenance.json",
+      "missing_fact": "bootstrap-provenance",
+      "task_id": "P14-D202"
+    }
+  ]
+}

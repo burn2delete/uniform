@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-performance-model.json",
+  "set": {
+    "/autotuning_records/0/guard_table/fallback": null
+  }
+}

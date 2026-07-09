@@ -1,0 +1,9 @@
+(ns compiler.c6.origin
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c6-lowering {:fail :origin}}}))
+
+(def value 1)

@@ -1,0 +1,6 @@
+(ns core.bad.set
+  (:profile :hosted))
+
+(def bad
+  (let [value 0]
+    (set! value 1)))

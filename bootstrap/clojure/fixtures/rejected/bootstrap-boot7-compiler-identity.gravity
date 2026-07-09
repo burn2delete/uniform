@@ -1,0 +1,11 @@
+; Rejected P15 BOOT7 fixture.
+(ns bootstrap.boot7-compiler-identity
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot7001}}}))
+
+(defn main [] :- I64 1)

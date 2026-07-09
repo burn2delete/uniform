@@ -1,0 +1,74 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D096
+ :date "2026-06-25"
+ :status :complete
+ :capability :c17-compiler-plugin-document-coverage
+ :command "clojure -M:gravity compiler-c17-plugin bootstrap/clojure/fixtures/accepted/compiler-c17-plugin.gravity"
+ :artifact-kind :gravity/stage0-c17-compiler-plugin-artifact
+ :artifact-hash "sha256:db2917d2f7edf975c9d563a5f81a4154906c86a73d90b40a26406f18cdcdb89a"
+ :summary {:plugin-manifests 1
+           :trust-grants 2
+           :pass-registrations 2
+           :domain-registrations 1
+           :facet-registrations 1
+           :plugin-cache-keys 2
+           :plugin-execution-traces 2
+           :plugin-outputs 2
+           :diagnostics 10
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+                       "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+                       "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c17-plugin.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-verify-c17-manifest.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-api.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-build-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-sandbox.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-pass-contract.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-output.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-domain.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-facet.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c17-trust.gravity"]
+ :diagnostic-ids ["C17-MANIFEST"
+                  "C17-API"
+                  "C17-CAPABILITY"
+                  "C17-BUILD-EFFECT"
+                  "C17-SANDBOX"
+                  "C17-PASS-CONTRACT"
+                  "C17-OUTPUT"
+                  "C17-DOMAIN"
+                  "C17-FACET"
+                  "C17-TRUST"]
+ :capability-based-proof {:c16-incremental-input-verified? true
+                          :manifest-loaded? true
+                          :api-compatible? true
+                          :sandbox-and-trust-grants? true
+                          :capabilities-scoped? true
+                          :build-effect-denial-covered? true
+                          :pass-contracts-registered? true
+                          :output-artifacts-verified? true
+                          :domain-and-facet-registrations-verified? true
+                          :execution-trace-cache-key-integrated? true
+                          :diagnostics-covered? true
+                          :conformance-passed? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 69 tests containing 3759 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 879}
+              {:command "clojure -M:gravity compiler-c17-plugin bootstrap/clojure/fixtures/accepted/compiler-c17-plugin.gravity"
+               :result :accepted
+               :artifact-hash "sha256:db2917d2f7edf975c9d563a5f81a4154906c86a73d90b40a26406f18cdcdb89a"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 23 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D096 for the Clojure stage0 C17 compiler plugin/pass API document boundary only."
+                 "It does not claim production plugin packaging, release readiness, or self-hosting."]}

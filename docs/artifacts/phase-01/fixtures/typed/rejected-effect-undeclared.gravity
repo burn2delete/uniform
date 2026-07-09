@@ -1,0 +1,6 @@
+(ns typed.bad.effect
+  (:profile :hosted)
+  (:capabilities :io/stdout))
+
+(def bad
+  (println "undeclared effect"))

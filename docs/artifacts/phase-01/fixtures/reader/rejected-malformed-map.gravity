@@ -1,0 +1,5 @@
+(ns bad.map
+  (:profile :hosted))
+
+{:a 1 :b}
+

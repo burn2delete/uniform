@@ -1,0 +1,14 @@
+(ns math.mode-residual
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:mode-records
+                      [{:record-id :residual-forbidden
+                        :math/mode :checked
+                        :scope {:kind :function :name 'math.mode/f}
+                        :precision {:type :I32}
+                        :residual-checks #{:overflow-check}
+                        :residual-allowed? false}]}}}))

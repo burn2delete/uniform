@@ -1,0 +1,9 @@
+(ns compiler.c10.proof
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c10-safety-analysis {:fail :proof}}}))
+
+(def value 1)

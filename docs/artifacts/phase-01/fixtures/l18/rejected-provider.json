@@ -1,0 +1,8 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/provider/profiles": [
+      ":hosted"
+    ]
+  }
+}

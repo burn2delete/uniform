@@ -1,0 +1,68 @@
+(ns memory.model
+  (:profile :native)
+  (:target :jvm)
+  (:exports [gc-value owned-buffer borrowed-buffer mutable-borrow
+             region-buffer arena-buffer stack-buffer static-buffer
+             initialized-buffer checked-bounds raw-record mmio-record
+             gpu-buffer host-object ownership-transfer linear-cycle
+             released-buffer])
+  (:effects #{:memory/allocate :memory/free :memory/raw :memory/mmio
+              :resource/open :resource/close})
+  (:capabilities #{:memory/allocator :memory/raw :hardware/mmio
+                   :resource/file})
+  (:safety :audited-unsafe))
+
+(def gc-value
+  (memory/gc-alloc :object))
+
+(def owned-buffer
+  (buffer/new 64))
+
+(def borrowed-buffer
+  (borrow/read owned-buffer))
+
+(def mutable-borrow
+  (borrow/write owned-buffer))
+
+(def region-buffer
+  (region/alloc :frame :Byte 1024))
+
+(def arena-buffer
+  (arena/alloc :frame :Byte 256))
+
+(def stack-buffer
+  (stack/alloc :Byte 32))
+
+(def static-buffer
+  (static/ref :global-table))
+
+(def initialized-buffer
+  (memory/init :Buffer))
+
+(def checked-bounds
+  (bounds/check :vector 2 4))
+
+(def raw-record
+  (unsafe/raw-read :ptr))
+
+(def mmio-record
+  (unsafe/mmio-read :status-register))
+
+(def gpu-buffer
+  (gpu/device-buffer :global 4096))
+
+(def host-object
+  (host/managed-object :jvm-object))
+
+(def ownership-transfer
+  (let [buf (buffer/new 128)]
+    (ownership/move buf)))
+
+(def linear-cycle
+  (let [file (resource/open "tmp/data.txt")]
+    (do
+      (resource/close file)
+      true)))
+
+(def released-buffer
+  (memory/free owned-buffer))

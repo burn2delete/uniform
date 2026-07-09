@@ -1,0 +1,10 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "registry_record": {
+      "private_access_denied": true,
+      "registry_id": "acme/private"
+    }
+  }
+}

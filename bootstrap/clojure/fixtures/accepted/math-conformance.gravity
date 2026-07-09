@@ -1,0 +1,16 @@
+(ns math.conformance
+  (:profile :native)
+  (:target :jvm)
+  (:exports [conformance-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:math {:numeric {}
+                     :efir {}
+                     :eml {}
+                     :approximation {}
+                     :proof {}
+                     :conformance {}}}))
+
+(defn conformance-ready []
+  true)

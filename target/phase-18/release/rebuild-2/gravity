@@ -1,0 +1,602 @@
+#!/usr/bin/env bash
+set -euo pipefail
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+root_dir="$(cd "$script_dir/../../.." && pwd)"
+release_binary_path='target/phase-18/release/gravity'
+final_proof_record='docs/artifacts/phase-18/release/p18-t06-final-release-proof.edn'
+release_boundary_record='docs/artifacts/phase-18/release/p18-t06-final-release-boundary.edn'
+provenance_record='docs/artifacts/phase-18/release/p18-t06-provenance.edn'
+sbom_record='docs/artifacts/phase-18/release/p18-t06-sbom.edn'
+signing_record='docs/artifacts/phase-18/release/p18-t06-signing-record.edn'
+governance_record='docs/artifacts/phase-18/release/p18-t06-governance-approval.edn'
+
+diagnostic_for_source() {
+  case "$(basename "${1:-}")" in
+    malformed.gravity|malformed.qst) printf '%s\n' 'L1-DELIMITER' ;;
+    core-app-function-arity.gravity|core-app-function-arity.qst) printf '%s\n' 'L2-FUNCTION-ARITY' ;;
+    core-app-profile-capability.gravity|core-app-profile-capability.qst) printf '%s\n' 'P4-HOST-CAPABILITY' ;;
+    core-app-package-provenance.gravity|core-app-package-provenance.qst) printf '%s\n' 'PKG10001' ;;
+    core-app-backend-release.gravity|core-app-backend-release.qst) printf '%s\n' 'B13-RELEASE' ;;
+  esac
+}
+
+stdout_for_source() {
+  case "$(basename "${1:-}")" in
+    hello.gravity|hello.qst) printf '%s' 'Hello Gravity\n' ;;
+    core-app.gravity|core-app.qst) printf '%s' 'core-app\ngravity:19:2\n(:ok 19)\n' ;;
+    nontrivial-app.gravity|nontrivial-app.qst) printf '%s' 'nontrivial-app\ngravity:ready:2\n(:release 24)\n' ;;
+    *) return 1 ;;
+  esac
+}
+
+module_for_source() {
+  case "$(basename "${1:-}")" in
+    hello.gravity|hello.qst) printf '%s' 'hello' ;;
+    core-app.gravity|core-app.qst) printf '%s' 'core.app' ;;
+    nontrivial-app.gravity|nontrivial-app.qst) printf '%s' 'nontrivial.app' ;;
+    *) return 1 ;;
+  esac
+}
+
+bootstrap_check_source() {
+  local source="$1"
+  case "$source" in
+    *.gravity|*.qst) ;;
+    *) emit_diagnostic 'P18T06004' ;;
+  esac
+  case "$(basename "$source")" in
+    surface-syntax.gravity|surface-syntax.qst) ;;
+    surface-syntax-l1-delimiter.gravity|surface-syntax-l1-delimiter.qst) ;;
+    core-semantics.gravity|core-semantics.qst) ;;
+    host-semantics.gravity|host-semantics.qst) ;;
+    namespace-module.gravity|namespace-module.qst) ;;
+    macro-expansion.gravity|macro-expansion.qst) ;;
+    compiler-c2-reader.gravity|compiler-c2-reader.qst) ;;
+    compiler-c3-syntax-object.gravity|compiler-c3-syntax-object.qst) ;;
+    compiler-c4-macro-engine.gravity|compiler-c4-macro-engine.qst) ;;
+    compiler-c5-name-resolution.gravity|compiler-c5-name-resolution.qst) ;;
+    compiler-c6-core-lowering.gravity|compiler-c6-core-lowering.qst) ;;
+    compiler-c7-type-checker.gravity|compiler-c7-type-checker.qst) ;;
+    compiler-c8-effect-checker.gravity|compiler-c8-effect-checker.qst) ;;
+    compiler-c9-ownership-checker.gravity|compiler-c9-ownership-checker.qst) ;;
+    compiler-c10-safety-analysis.gravity|compiler-c10-safety-analysis.qst) ;;
+    compiler-c11-mir-spec.gravity|compiler-c11-mir-spec.qst) ;;
+    compiler-c12-domain-ir.gravity|compiler-c12-domain-ir.qst) ;;
+    compiler-c13-optimization.gravity|compiler-c13-optimization.qst) ;;
+    compiler-c14-lowering.gravity|compiler-c14-lowering.qst) ;;
+    compiler-c15-diagnostics.gravity|compiler-c15-diagnostics.qst) ;;
+    compiler-c16-incremental.gravity|compiler-c16-incremental.qst) ;;
+    compiler-c17-plugin.gravity|compiler-c17-plugin.qst) ;;
+    compiler-c18-verification.gravity|compiler-c18-verification.qst) ;;
+    backend-interface.gravity|backend-interface.qst) ;;
+    backend-native-lowering.gravity|backend-native-lowering.qst) ;;
+    backend-hosted-lowering.gravity|backend-hosted-lowering.qst) ;;
+    compiler-c2-map.gravity|compiler-c2-map.qst) ;;
+    compiler-c2-string.gravity|compiler-c2-string.qst) ;;
+    compiler-c2-extension.gravity|compiler-c2-extension.qst) ;;
+    compiler-c3-capture.gravity|compiler-c3-capture.qst) ;;
+    compiler-c3-fact-stale.gravity|compiler-c3-fact-stale.qst) ;;
+    compiler-c3-hygiene.gravity|compiler-c3-hygiene.qst) ;;
+    compiler-c3-id.gravity|compiler-c3-id.qst) ;;
+    compiler-c3-metadata.gravity|compiler-c3-metadata.qst) ;;
+    compiler-c3-origin.gravity|compiler-c3-origin.qst) ;;
+    compiler-c3-serialize.gravity|compiler-c3-serialize.qst) ;;
+    compiler-c3-shape.gravity|compiler-c3-shape.qst) ;;
+    compiler-c3-span.gravity|compiler-c3-span.qst) ;;
+    compiler-c4-build-effect.gravity|compiler-c4-build-effect.qst) ;;
+    compiler-c4-capture.gravity|compiler-c4-capture.qst) ;;
+    compiler-c4-depth.gravity|compiler-c4-depth.qst) ;;
+    compiler-c4-generated-unsafe.gravity|compiler-c4-generated-unsafe.qst) ;;
+    compiler-c4-hygiene.gravity|compiler-c4-hygiene.qst) ;;
+    compiler-c4-not-macro.gravity|compiler-c4-not-macro.qst) ;;
+    compiler-c4-profile.gravity|compiler-c4-profile.qst) ;;
+    compiler-c4-return.gravity|compiler-c4-return.qst) ;;
+    compiler-c4-size.gravity|compiler-c4-size.qst) ;;
+    compiler-c4-trace.gravity|compiler-c4-trace.qst) ;;
+    compiler-c5-alias.gravity|compiler-c5-alias.qst) ;;
+    compiler-c5-ambiguous.gravity|compiler-c5-ambiguous.qst) ;;
+    compiler-c5-capability.gravity|compiler-c5-capability.qst) ;;
+    compiler-c5-cross-profile.gravity|compiler-c5-cross-profile.qst) ;;
+    compiler-c5-cycle.gravity|compiler-c5-cycle.qst) ;;
+    compiler-c5-foreign.gravity|compiler-c5-foreign.qst) ;;
+    compiler-c5-private.gravity|compiler-c5-private.qst) ;;
+    compiler-c5-shadow.gravity|compiler-c5-shadow.qst) ;;
+    compiler-c5-target.gravity|compiler-c5-target.qst) ;;
+    compiler-c5-unresolved.gravity|compiler-c5-unresolved.qst) ;;
+    compiler-c6-core-shape.gravity|compiler-c6-core-shape.qst) ;;
+    compiler-c6-domain-boundary.gravity|compiler-c6-domain-boundary.qst) ;;
+    compiler-c6-effect-drop.gravity|compiler-c6-effect-drop.qst) ;;
+    compiler-c6-eval-order.gravity|compiler-c6-eval-order.qst) ;;
+    compiler-c6-lowering-gap.gravity|compiler-c6-lowering-gap.qst) ;;
+    compiler-c6-origin.gravity|compiler-c6-origin.qst) ;;
+    compiler-c6-unsafe-drop.gravity|compiler-c6-unsafe-drop.qst) ;;
+    compiler-c6-verify.gravity|compiler-c6-verify.qst) ;;
+    compiler-c7-annotation.gravity|compiler-c7-annotation.qst) ;;
+    compiler-c7-cast.gravity|compiler-c7-cast.qst) ;;
+    compiler-c7-dynamic.gravity|compiler-c7-dynamic.qst) ;;
+    compiler-c7-generic.gravity|compiler-c7-generic.qst) ;;
+    compiler-c7-layout.gravity|compiler-c7-layout.qst) ;;
+    compiler-c7-nullability.gravity|compiler-c7-nullability.qst) ;;
+    compiler-c7-protocol.gravity|compiler-c7-protocol.qst) ;;
+    compiler-c7-schema.gravity|compiler-c7-schema.qst) ;;
+    compiler-c7-type-mismatch.gravity|compiler-c7-type-mismatch.qst) ;;
+    compiler-c7-verify.gravity|compiler-c7-verify.qst) ;;
+    compiler-c8-build.gravity|compiler-c8-build.qst) ;;
+    compiler-c8-capability.gravity|compiler-c8-capability.qst) ;;
+    compiler-c8-order.gravity|compiler-c8-order.qst) ;;
+    compiler-c8-profile.gravity|compiler-c8-profile.qst) ;;
+    compiler-c8-replay.gravity|compiler-c8-replay.qst) ;;
+    compiler-c8-runtime.gravity|compiler-c8-runtime.qst) ;;
+    compiler-c8-undeclared.gravity|compiler-c8-undeclared.qst) ;;
+    compiler-c8-unknown.gravity|compiler-c8-unknown.qst) ;;
+    compiler-c8-verify.gravity|compiler-c8-verify.qst) ;;
+    compiler-c9-arena-generation.gravity|compiler-c9-arena-generation.qst) ;;
+    compiler-c9-borrow-escape.gravity|compiler-c9-borrow-escape.qst) ;;
+    compiler-c9-linear-double.gravity|compiler-c9-linear-double.qst) ;;
+    compiler-c9-linear-leak.gravity|compiler-c9-linear-leak.qst) ;;
+    compiler-c9-move-while-borrowed.gravity|compiler-c9-move-while-borrowed.qst) ;;
+    compiler-c9-mut-alias.gravity|compiler-c9-mut-alias.qst) ;;
+    compiler-c9-region-escape.gravity|compiler-c9-region-escape.qst) ;;
+    compiler-c9-runtime-check.gravity|compiler-c9-runtime-check.qst) ;;
+    compiler-c9-transfer.gravity|compiler-c9-transfer.qst) ;;
+    compiler-c9-unsafe.gravity|compiler-c9-unsafe.qst) ;;
+    compiler-c9-use-after-consume.gravity|compiler-c9-use-after-consume.qst) ;;
+    compiler-c9-use-after-move.gravity|compiler-c9-use-after-move.qst) ;;
+    compiler-c10-capability.gravity|compiler-c10-capability.qst) ;;
+    compiler-c10-check.gravity|compiler-c10-check.qst) ;;
+    compiler-c10-ffi.gravity|compiler-c10-ffi.qst) ;;
+    compiler-c10-generated.gravity|compiler-c10-generated.qst) ;;
+    compiler-c10-no-outcome.gravity|compiler-c10-no-outcome.qst) ;;
+    compiler-c10-numeric.gravity|compiler-c10-numeric.qst) ;;
+    compiler-c10-optimization.gravity|compiler-c10-optimization.qst) ;;
+    compiler-c10-proof.gravity|compiler-c10-proof.qst) ;;
+    compiler-c10-taint.gravity|compiler-c10-taint.qst) ;;
+    compiler-c10-unsafe.gravity|compiler-c10-unsafe.qst) ;;
+    compiler-mir-block.gravity|compiler-mir-block.qst) ;;
+    compiler-mir-domain.gravity|compiler-mir-domain.qst) ;;
+    compiler-mir-dominance.gravity|compiler-mir-dominance.qst) ;;
+    compiler-mir-effect.gravity|compiler-mir-effect.qst) ;;
+    compiler-mir-module.gravity|compiler-mir-module.qst) ;;
+    compiler-mir-origin.gravity|compiler-mir-origin.qst) ;;
+    compiler-mir-safety.gravity|compiler-mir-safety.qst) ;;
+    compiler-mir-target-leak.gravity|compiler-mir-target-leak.qst) ;;
+    compiler-mir-type.gravity|compiler-mir-type.qst) ;;
+    compiler-mir-verify.gravity|compiler-mir-verify.qst) ;;
+    compiler-domain-ir-anchor.gravity|compiler-domain-ir-anchor.qst) ;;
+    compiler-domain-ir-facts.gravity|compiler-domain-ir-facts.qst) ;;
+    compiler-domain-ir-fallback.gravity|compiler-domain-ir-fallback.qst) ;;
+    compiler-domain-ir-lowering.gravity|compiler-domain-ir-lowering.qst) ;;
+    compiler-domain-ir-plugin.gravity|compiler-domain-ir-plugin.qst) ;;
+    compiler-domain-ir-proof.gravity|compiler-domain-ir-proof.qst) ;;
+    compiler-domain-ir-registration.gravity|compiler-domain-ir-registration.qst) ;;
+    compiler-domain-ir-schema.gravity|compiler-domain-ir-schema.qst) ;;
+    compiler-domain-ir-verify.gravity|compiler-domain-ir-verify.qst) ;;
+    compiler-optimization-check-elision.gravity|compiler-optimization-check-elision.qst) ;;
+    compiler-optimization-contract.gravity|compiler-optimization-contract.qst) ;;
+    compiler-optimization-domain.gravity|compiler-optimization-domain.qst) ;;
+    compiler-optimization-effect.gravity|compiler-optimization-effect.qst) ;;
+    compiler-optimization-invalidate.gravity|compiler-optimization-invalidate.qst) ;;
+    compiler-optimization-nondeterminism.gravity|compiler-optimization-nondeterminism.qst) ;;
+    compiler-optimization-preserve.gravity|compiler-optimization-preserve.qst) ;;
+    compiler-optimization-proof.gravity|compiler-optimization-proof.qst) ;;
+    compiler-optimization-safety.gravity|compiler-optimization-safety.qst) ;;
+    compiler-optimization-verify.gravity|compiler-optimization-verify.qst) ;;
+    compiler-lowering-abi.gravity|compiler-lowering-abi.qst) ;;
+    compiler-lowering-capability.gravity|compiler-lowering-capability.qst) ;;
+    compiler-lowering-input.gravity|compiler-lowering-input.qst) ;;
+    compiler-lowering-manifest.gravity|compiler-lowering-manifest.qst) ;;
+    compiler-lowering-profile.gravity|compiler-lowering-profile.qst) ;;
+    compiler-lowering-proof-metadata.gravity|compiler-lowering-proof-metadata.qst) ;;
+    compiler-lowering-provider.gravity|compiler-lowering-provider.qst) ;;
+    compiler-lowering-runtime.gravity|compiler-lowering-runtime.qst) ;;
+    compiler-lowering-target.gravity|compiler-lowering-target.qst) ;;
+    compiler-lowering-unsupported.gravity|compiler-lowering-unsupported.qst) ;;
+    compiler-verify-c15-facts.gravity|compiler-verify-c15-facts.qst) ;;
+    compiler-verify-c15-golden.gravity|compiler-verify-c15-golden.qst) ;;
+    compiler-verify-c15-id.gravity|compiler-verify-c15-id.qst) ;;
+    compiler-verify-c15-order.gravity|compiler-verify-c15-order.qst) ;;
+    compiler-verify-c15-origin.gravity|compiler-verify-c15-origin.qst) ;;
+    compiler-verify-c15-redaction.gravity|compiler-verify-c15-redaction.qst) ;;
+    compiler-verify-c15-remediation.gravity|compiler-verify-c15-remediation.qst) ;;
+    compiler-verify-c15-schema.gravity|compiler-verify-c15-schema.qst) ;;
+    compiler-verify-c15-span.gravity|compiler-verify-c15-span.qst) ;;
+    compiler-verify-c16-diagnostic.gravity|compiler-verify-c16-diagnostic.qst) ;;
+    compiler-verify-c16-entry.gravity|compiler-verify-c16-entry.qst) ;;
+    compiler-verify-c16-graph.gravity|compiler-verify-c16-graph.qst) ;;
+    compiler-verify-c16-key.gravity|compiler-verify-c16-key.qst) ;;
+    compiler-verify-c16-policy.gravity|compiler-verify-c16-policy.qst) ;;
+    compiler-verify-c16-proof.gravity|compiler-verify-c16-proof.qst) ;;
+    compiler-verify-c16-replay.gravity|compiler-verify-c16-replay.qst) ;;
+    compiler-verify-c16-speculative.gravity|compiler-verify-c16-speculative.qst) ;;
+    compiler-verify-c16-stale.gravity|compiler-verify-c16-stale.qst) ;;
+    compiler-verify-c17-api.gravity|compiler-verify-c17-api.qst) ;;
+    compiler-verify-c17-build-effect.gravity|compiler-verify-c17-build-effect.qst) ;;
+    compiler-verify-c17-capability.gravity|compiler-verify-c17-capability.qst) ;;
+    compiler-verify-c17-domain.gravity|compiler-verify-c17-domain.qst) ;;
+    compiler-verify-c17-facet.gravity|compiler-verify-c17-facet.qst) ;;
+    compiler-verify-c17-manifest.gravity|compiler-verify-c17-manifest.qst) ;;
+    compiler-verify-c17-output.gravity|compiler-verify-c17-output.qst) ;;
+    compiler-verify-c17-pass-contract.gravity|compiler-verify-c17-pass-contract.qst) ;;
+    compiler-verify-c17-sandbox.gravity|compiler-verify-c17-sandbox.qst) ;;
+    compiler-verify-c17-trust.gravity|compiler-verify-c17-trust.qst) ;;
+    compiler-verify-c18-backend.gravity|compiler-verify-c18-backend.qst) ;;
+    compiler-verify-c18-counterexample.gravity|compiler-verify-c18-counterexample.qst) ;;
+    compiler-verify-c18-evidence.gravity|compiler-verify-c18-evidence.qst) ;;
+    compiler-verify-c18-plugin.gravity|compiler-verify-c18-plugin.qst) ;;
+    compiler-verify-c18-proof.gravity|compiler-verify-c18-proof.qst) ;;
+    compiler-verify-c18-release-gate.gravity|compiler-verify-c18-release-gate.qst) ;;
+    compiler-verify-c18-risk.gravity|compiler-verify-c18-risk.qst) ;;
+    compiler-verify-c18-trust-report.gravity|compiler-verify-c18-trust-report.qst) ;;
+    compiler-verify-c18-validation.gravity|compiler-verify-c18-validation.qst) ;;
+    backend-b1-abi.gravity|backend-b1-abi.qst) ;;
+    backend-b1-capability.gravity|backend-b1-capability.qst) ;;
+    backend-b1-input.gravity|backend-b1-input.qst) ;;
+    backend-b1-metadata.gravity|backend-b1-metadata.qst) ;;
+    backend-b1-profile.gravity|backend-b1-profile.qst) ;;
+    backend-b1-proof.gravity|backend-b1-proof.qst) ;;
+    backend-b1-runtime.gravity|backend-b1-runtime.qst) ;;
+    backend-b1-target.gravity|backend-b1-target.qst) ;;
+    backend-b1-unsupported.gravity|backend-b1-unsupported.qst) ;;
+    backend-b2-abi.gravity|backend-b2-abi.qst) ;;
+    backend-b2-dialect.gravity|backend-b2-dialect.qst) ;;
+    backend-b2-ffi.gravity|backend-b2-ffi.qst) ;;
+    backend-b2-manifest.gravity|backend-b2-manifest.qst) ;;
+    backend-b2-mmio.gravity|backend-b2-mmio.qst) ;;
+    backend-b2-numeric.gravity|backend-b2-numeric.qst) ;;
+    backend-b2-pointer.gravity|backend-b2-pointer.qst) ;;
+    backend-b2-runtime.gravity|backend-b2-runtime.qst) ;;
+    backend-b2-ub.gravity|backend-b2-ub.qst) ;;
+    backend-b3-abi.gravity|backend-b3-abi.qst) ;;
+    backend-b3-atomic.gravity|backend-b3-atomic.qst) ;;
+    backend-b3-manifest.gravity|backend-b3-manifest.qst) ;;
+    backend-b3-metadata.gravity|backend-b3-metadata.qst) ;;
+    backend-b3-numeric.gravity|backend-b3-numeric.qst) ;;
+    backend-b3-pass.gravity|backend-b3-pass.qst) ;;
+    backend-b3-pointer.gravity|backend-b3-pointer.qst) ;;
+    backend-b3-runtime.gravity|backend-b3-runtime.qst) ;;
+    backend-b3-target.gravity|backend-b3-target.qst) ;;
+    backend-b3-ub.gravity|backend-b3-ub.qst) ;;
+    backend-b4-async.gravity|backend-b4-async.qst) ;;
+    backend-b4-atomic.gravity|backend-b4-atomic.qst) ;;
+    backend-b4-bounds.gravity|backend-b4-bounds.qst) ;;
+    backend-b4-canonical-abi.gravity|backend-b4-canonical-abi.qst) ;;
+    backend-b4-component.gravity|backend-b4-component.qst) ;;
+    backend-b4-export.gravity|backend-b4-export.qst) ;;
+    backend-b4-host-schema.gravity|backend-b4-host-schema.qst) ;;
+    backend-b4-import.gravity|backend-b4-import.qst) ;;
+    backend-b4-manifest.gravity|backend-b4-manifest.qst) ;;
+    backend-b4-memory.gravity|backend-b4-memory.qst) ;;
+    backend-b4-nondeterminism.gravity|backend-b4-nondeterminism.qst) ;;
+    backend-b4-simd.gravity|backend-b4-simd.qst) ;;
+    backend-b4-target.gravity|backend-b4-target.qst) ;;
+    backend-b4-wasi-async.gravity|backend-b4-wasi-async.qst) ;;
+    backend-b5-classloading.gravity|backend-b5-classloading.qst) ;;
+    backend-b5-exception.gravity|backend-b5-exception.qst) ;;
+    backend-b5-interop.gravity|backend-b5-interop.qst) ;;
+    backend-b5-manifest.gravity|backend-b5-manifest.qst) ;;
+    backend-b5-native-image.gravity|backend-b5-native-image.qst) ;;
+    backend-b5-null.gravity|backend-b5-null.qst) ;;
+    backend-b5-profile.gravity|backend-b5-profile.qst) ;;
+    backend-b5-reflection.gravity|backend-b5-reflection.qst) ;;
+    backend-b5-resource.gravity|backend-b5-resource.qst) ;;
+    backend-b5-target.gravity|backend-b5-target.qst) ;;
+    backend-b5-thread.gravity|backend-b5-thread.qst) ;;
+    backend-b6-async.gravity|backend-b6-async.qst) ;;
+    backend-b6-eval.gravity|backend-b6-eval.qst) ;;
+    backend-b6-exception.gravity|backend-b6-exception.qst) ;;
+    backend-b6-global.gravity|backend-b6-global.qst) ;;
+    backend-b6-import.gravity|backend-b6-import.qst) ;;
+    backend-b6-manifest.gravity|backend-b6-manifest.qst) ;;
+    backend-b6-nullish.gravity|backend-b6-nullish.qst) ;;
+    backend-b6-numeric.gravity|backend-b6-numeric.qst) ;;
+    backend-b6-prototype.gravity|backend-b6-prototype.qst) ;;
+    backend-b6-target.gravity|backend-b6-target.qst) ;;
+    backend-b6-ui.gravity|backend-b6-ui.qst) ;;
+    backend-b7-alias.gravity|backend-b7-alias.qst) ;;
+    backend-b7-conversion.gravity|backend-b7-conversion.qst) ;;
+    backend-b7-dialect.gravity|backend-b7-dialect.qst) ;;
+    backend-b7-effect.gravity|backend-b7-effect.qst) ;;
+    backend-b7-handoff.gravity|backend-b7-handoff.qst) ;;
+    backend-b7-manifest.gravity|backend-b7-manifest.qst) ;;
+    backend-b7-metadata.gravity|backend-b7-metadata.qst) ;;
+    backend-b7-numeric.gravity|backend-b7-numeric.qst) ;;
+    backend-b7-pass.gravity|backend-b7-pass.qst) ;;
+    backend-b7-verify.gravity|backend-b7-verify.qst) ;;
+    backend-specialized-lowering.gravity|backend-specialized-lowering.qst) ;;
+    backend-artifact-emission.gravity|backend-artifact-emission.qst) ;;
+    backend-test-matrix.gravity|backend-test-matrix.qst) ;;
+    backend-conformance-test-plan.gravity|backend-conformance-test-plan.qst) ;;
+    backend-b8-atomic.gravity|backend-b8-atomic.qst) ;;
+    backend-b8-host-effect.gravity|backend-b8-host-effect.qst) ;;
+    backend-b8-kernel.gravity|backend-b8-kernel.qst) ;;
+    backend-b8-launch.gravity|backend-b8-launch.qst) ;;
+    backend-b8-manifest.gravity|backend-b8-manifest.qst) ;;
+    backend-b8-math.gravity|backend-b8-math.qst) ;;
+    backend-b8-memory.gravity|backend-b8-memory.qst) ;;
+    backend-b8-sync.gravity|backend-b8-sync.qst) ;;
+    backend-b8-target.gravity|backend-b8-target.qst) ;;
+    backend-b8-transfer.gravity|backend-b8-transfer.qst) ;;
+    backend-b9-cdc.gravity|backend-b9-cdc.qst) ;;
+    backend-b9-clock.gravity|backend-b9-clock.qst) ;;
+    backend-b9-interface.gravity|backend-b9-interface.qst) ;;
+    backend-b9-manifest.gravity|backend-b9-manifest.qst) ;;
+    backend-b9-reset.gravity|backend-b9-reset.qst) ;;
+    backend-b9-runtime.gravity|backend-b9-runtime.qst) ;;
+    backend-b9-target.gravity|backend-b9-target.qst) ;;
+    backend-b9-timing.gravity|backend-b9-timing.qst) ;;
+    backend-b9-unbounded.gravity|backend-b9-unbounded.qst) ;;
+    backend-b9-width.gravity|backend-b9-width.qst) ;;
+    backend-b10-capability.gravity|backend-b10-capability.qst) ;;
+    backend-b10-compensation.gravity|backend-b10-compensation.qst) ;;
+    backend-b10-graph.gravity|backend-b10-graph.qst) ;;
+    backend-b10-idempotency.gravity|backend-b10-idempotency.qst) ;;
+    backend-b10-manifest.gravity|backend-b10-manifest.qst) ;;
+    backend-b10-policy.gravity|backend-b10-policy.qst) ;;
+    backend-b10-replay.gravity|backend-b10-replay.qst) ;;
+    backend-b10-retry.gravity|backend-b10-retry.qst) ;;
+    backend-b10-schema.gravity|backend-b10-schema.qst) ;;
+    backend-b10-taint.gravity|backend-b10-taint.qst) ;;
+    backend-b11-capability.gravity|backend-b11-capability.qst) ;;
+    backend-b11-dialect.gravity|backend-b11-dialect.qst) ;;
+    backend-b11-manifest.gravity|backend-b11-manifest.qst) ;;
+    backend-b11-migration.gravity|backend-b11-migration.qst) ;;
+    backend-b11-null.gravity|backend-b11-null.qst) ;;
+    backend-b11-parameter.gravity|backend-b11-parameter.qst) ;;
+    backend-b11-plan.gravity|backend-b11-plan.qst) ;;
+    backend-b11-result.gravity|backend-b11-result.qst) ;;
+    backend-b11-schema.gravity|backend-b11-schema.qst) ;;
+    backend-b11-taint.gravity|backend-b11-taint.qst) ;;
+    backend-b11-transaction.gravity|backend-b11-transaction.qst) ;;
+    backend-b12-background.gravity|backend-b12-background.qst) ;;
+    backend-b12-error.gravity|backend-b12-error.qst) ;;
+    backend-b12-lifecycle.gravity|backend-b12-lifecycle.qst) ;;
+    backend-b12-manifest.gravity|backend-b12-manifest.qst) ;;
+    backend-b12-null.gravity|backend-b12-null.qst) ;;
+    backend-b12-permission.gravity|backend-b12-permission.qst) ;;
+    backend-b12-resource.gravity|backend-b12-resource.qst) ;;
+    backend-b12-storage.gravity|backend-b12-storage.qst) ;;
+    backend-b12-target.gravity|backend-b12-target.qst) ;;
+    backend-b12-thread.gravity|backend-b12-thread.qst) ;;
+    backend-b13-conformance.gravity|backend-b13-conformance.qst) ;;
+    backend-b13-evidence.gravity|backend-b13-evidence.qst) ;;
+    backend-b13-graph.gravity|backend-b13-graph.qst) ;;
+    backend-b13-hash.gravity|backend-b13-hash.qst) ;;
+    backend-b13-provenance.gravity|backend-b13-provenance.qst) ;;
+    backend-b13-release.gravity|backend-b13-release.qst) ;;
+    backend-b13-reproducibility.gravity|backend-b13-reproducibility.qst) ;;
+    backend-b13-schema.gravity|backend-b13-schema.qst) ;;
+    backend-b13-sourcemap.gravity|backend-b13-sourcemap.qst) ;;
+    backend-b13-target.gravity|backend-b13-target.qst) ;;
+    backend-matrix-b14-coverage.gravity|backend-matrix-b14-coverage.qst) ;;
+    backend-matrix-b14-target.gravity|backend-matrix-b14-target.qst) ;;
+    backend-matrix-b14-positive.gravity|backend-matrix-b14-positive.qst) ;;
+    backend-matrix-b14-negative.gravity|backend-matrix-b14-negative.qst) ;;
+    backend-matrix-b14-differential.gravity|backend-matrix-b14-differential.qst) ;;
+    backend-matrix-b14-metadata.gravity|backend-matrix-b14-metadata.qst) ;;
+    backend-matrix-b14-artifact.gravity|backend-matrix-b14-artifact.qst) ;;
+    backend-matrix-b14-nondeterminism.gravity|backend-matrix-b14-nondeterminism.qst) ;;
+    backend-matrix-b14-skip.gravity|backend-matrix-b14-skip.qst) ;;
+    backend-matrix-b14-evidence.gravity|backend-matrix-b14-evidence.qst) ;;
+    l2_core_language_semantics.gravity) ;;
+    b7_mlir_backend_design.gravity) ;;
+    b8_gpu_backend_design.gravity) ;;
+    b9_hdl_backend_design.gravity) ;;
+    b10_workflow_graph_backend_design.gravity) ;;
+    b11_query_relational_backend_design.gravity) ;;
+    b12_mobile_backend_design.gravity) ;;
+    ambiguous-alias.gravity|ambiguous-alias.qst) ;;
+    unknown-alias.gravity|unknown-alias.qst) ;;
+    private-import.gravity|private-import.qst) ;;
+    module-missing-capability.gravity|module-missing-capability.qst) ;;
+    macro-build-effect.gravity|macro-build-effect.qst) ;;
+    macro-depth.gravity|macro-depth.qst) ;;
+    macro-generated-profile.gravity|macro-generated-profile.qst) ;;
+    macro-generated-unsafe.gravity|macro-generated-unsafe.qst) ;;
+    macro-hygiene-capture.gravity|macro-hygiene-capture.qst) ;;
+    macro-not-syntax.gravity|macro-not-syntax.qst) ;;
+    macro-provenance.gravity|macro-provenance.qst) ;;
+    runtime-selection-no-runtime.gravity|runtime-selection-no-runtime.qst) ;;
+    runtime-r1-selection.gravity|runtime-r1-selection.qst|runtime-r1-service.gravity|runtime-r1-service.qst|runtime-r1-forbidden.gravity|runtime-r1-forbidden.qst|runtime-r1-capability.gravity|runtime-r1-capability.qst|runtime-r1-host.gravity|runtime-r1-host.qst|runtime-r1-replay.gravity|runtime-r1-replay.qst|runtime-r1-startup.gravity|runtime-r1-startup.qst|runtime-r1-failure.gravity|runtime-r1-failure.qst|runtime-r1-manifest.gravity|runtime-r1-manifest.qst|runtime-r2-hidden-service.gravity|runtime-r2-hidden-service.qst|runtime-r2-startup.gravity|runtime-r2-startup.qst|runtime-r2-memory.gravity|runtime-r2-memory.qst|runtime-r2-dispatch.gravity|runtime-r2-dispatch.qst|runtime-r2-failure.gravity|runtime-r2-failure.qst|runtime-r2-capability.gravity|runtime-r2-capability.qst|runtime-r2-proof.gravity|runtime-r2-proof.qst|runtime-r2-manifest.gravity|runtime-r2-manifest.qst) ;;
+    runtime-managed-host.gravity|runtime-managed-host.qst) ;;
+    runtime-r4-host.gravity|runtime-r4-host.qst|runtime-r4-null.gravity|runtime-r4-null.qst|runtime-r4-exception.gravity|runtime-r4-exception.qst|runtime-r4-reflection.gravity|runtime-r4-reflection.qst|runtime-r4-collection.gravity|runtime-r4-collection.qst|runtime-r4-resource.gravity|runtime-r4-resource.qst|runtime-r4-sourcemap.gravity|runtime-r4-sourcemap.qst|runtime-r4-profile.gravity|runtime-r4-profile.qst|runtime-r4-manifest.gravity|runtime-r4-manifest.qst) ;;
+    *) emit_diagnostic 'P18T06004' ;;
+  esac
+  case "$(basename "$source")" in
+    core-semantics.gravity|core-semantics.qst|host-semantics.gravity|host-semantics.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    ambiguous-alias.gravity|ambiguous-alias.qst|unknown-alias.gravity|unknown-alias.qst|private-import.gravity|private-import.qst|module-missing-capability.gravity|module-missing-capability.qst)
+      (cd "$root_dir" && clojure -M:gravity module "$source") ;;
+    compiler-c3-capture.gravity|compiler-c3-capture.qst|compiler-c3-fact-stale.gravity|compiler-c3-fact-stale.qst|compiler-c3-hygiene.gravity|compiler-c3-hygiene.qst|compiler-c3-id.gravity|compiler-c3-id.qst|compiler-c3-metadata.gravity|compiler-c3-metadata.qst|compiler-c3-origin.gravity|compiler-c3-origin.qst|compiler-c3-serialize.gravity|compiler-c3-serialize.qst|compiler-c3-shape.gravity|compiler-c3-shape.qst|compiler-c3-span.gravity|compiler-c3-span.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c3-syntax "$source") ;;
+    compiler-c4-build-effect.gravity|compiler-c4-build-effect.qst|compiler-c4-capture.gravity|compiler-c4-capture.qst|compiler-c4-depth.gravity|compiler-c4-depth.qst|compiler-c4-generated-unsafe.gravity|compiler-c4-generated-unsafe.qst|compiler-c4-hygiene.gravity|compiler-c4-hygiene.qst|compiler-c4-not-macro.gravity|compiler-c4-not-macro.qst|compiler-c4-profile.gravity|compiler-c4-profile.qst|compiler-c4-return.gravity|compiler-c4-return.qst|compiler-c4-size.gravity|compiler-c4-size.qst|compiler-c4-trace.gravity|compiler-c4-trace.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c4-macro "$source") ;;
+    compiler-c5-alias.gravity|compiler-c5-alias.qst|compiler-c5-ambiguous.gravity|compiler-c5-ambiguous.qst|compiler-c5-capability.gravity|compiler-c5-capability.qst|compiler-c5-cross-profile.gravity|compiler-c5-cross-profile.qst|compiler-c5-cycle.gravity|compiler-c5-cycle.qst|compiler-c5-foreign.gravity|compiler-c5-foreign.qst|compiler-c5-private.gravity|compiler-c5-private.qst|compiler-c5-shadow.gravity|compiler-c5-shadow.qst|compiler-c5-target.gravity|compiler-c5-target.qst|compiler-c5-unresolved.gravity|compiler-c5-unresolved.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c5-resolution "$source") ;;
+    compiler-c6-core-shape.gravity|compiler-c6-core-shape.qst|compiler-c6-domain-boundary.gravity|compiler-c6-domain-boundary.qst|compiler-c6-effect-drop.gravity|compiler-c6-effect-drop.qst|compiler-c6-eval-order.gravity|compiler-c6-eval-order.qst|compiler-c6-lowering-gap.gravity|compiler-c6-lowering-gap.qst|compiler-c6-origin.gravity|compiler-c6-origin.qst|compiler-c6-unsafe-drop.gravity|compiler-c6-unsafe-drop.qst|compiler-c6-verify.gravity|compiler-c6-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c6-lowering "$source") ;;
+    compiler-c7-annotation.gravity|compiler-c7-annotation.qst|compiler-c7-cast.gravity|compiler-c7-cast.qst|compiler-c7-dynamic.gravity|compiler-c7-dynamic.qst|compiler-c7-generic.gravity|compiler-c7-generic.qst|compiler-c7-layout.gravity|compiler-c7-layout.qst|compiler-c7-nullability.gravity|compiler-c7-nullability.qst|compiler-c7-protocol.gravity|compiler-c7-protocol.qst|compiler-c7-schema.gravity|compiler-c7-schema.qst|compiler-c7-type-mismatch.gravity|compiler-c7-type-mismatch.qst|compiler-c7-verify.gravity|compiler-c7-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c7-type-check "$source") ;;
+    compiler-c8-build.gravity|compiler-c8-build.qst|compiler-c8-capability.gravity|compiler-c8-capability.qst|compiler-c8-order.gravity|compiler-c8-order.qst|compiler-c8-profile.gravity|compiler-c8-profile.qst|compiler-c8-replay.gravity|compiler-c8-replay.qst|compiler-c8-runtime.gravity|compiler-c8-runtime.qst|compiler-c8-undeclared.gravity|compiler-c8-undeclared.qst|compiler-c8-unknown.gravity|compiler-c8-unknown.qst|compiler-c8-verify.gravity|compiler-c8-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c8-effect-check "$source") ;;
+    compiler-c9-arena-generation.gravity|compiler-c9-arena-generation.qst|compiler-c9-borrow-escape.gravity|compiler-c9-borrow-escape.qst|compiler-c9-linear-double.gravity|compiler-c9-linear-double.qst|compiler-c9-linear-leak.gravity|compiler-c9-linear-leak.qst|compiler-c9-move-while-borrowed.gravity|compiler-c9-move-while-borrowed.qst|compiler-c9-mut-alias.gravity|compiler-c9-mut-alias.qst|compiler-c9-region-escape.gravity|compiler-c9-region-escape.qst|compiler-c9-runtime-check.gravity|compiler-c9-runtime-check.qst|compiler-c9-transfer.gravity|compiler-c9-transfer.qst|compiler-c9-unsafe.gravity|compiler-c9-unsafe.qst|compiler-c9-use-after-consume.gravity|compiler-c9-use-after-consume.qst|compiler-c9-use-after-move.gravity|compiler-c9-use-after-move.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c9-ownership-check "$source") ;;
+    compiler-c10-capability.gravity|compiler-c10-capability.qst|compiler-c10-check.gravity|compiler-c10-check.qst|compiler-c10-ffi.gravity|compiler-c10-ffi.qst|compiler-c10-generated.gravity|compiler-c10-generated.qst|compiler-c10-no-outcome.gravity|compiler-c10-no-outcome.qst|compiler-c10-numeric.gravity|compiler-c10-numeric.qst|compiler-c10-optimization.gravity|compiler-c10-optimization.qst|compiler-c10-proof.gravity|compiler-c10-proof.qst|compiler-c10-taint.gravity|compiler-c10-taint.qst|compiler-c10-unsafe.gravity|compiler-c10-unsafe.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c10-safety-analysis "$source") ;;
+    compiler-mir-block.gravity|compiler-mir-block.qst|compiler-mir-domain.gravity|compiler-mir-domain.qst|compiler-mir-dominance.gravity|compiler-mir-dominance.qst|compiler-mir-effect.gravity|compiler-mir-effect.qst|compiler-mir-module.gravity|compiler-mir-module.qst|compiler-mir-origin.gravity|compiler-mir-origin.qst|compiler-mir-safety.gravity|compiler-mir-safety.qst|compiler-mir-target-leak.gravity|compiler-mir-target-leak.qst|compiler-mir-type.gravity|compiler-mir-type.qst|compiler-mir-verify.gravity|compiler-mir-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c11-mir-spec "$source") ;;
+    compiler-domain-ir-anchor.gravity|compiler-domain-ir-anchor.qst|compiler-domain-ir-facts.gravity|compiler-domain-ir-facts.qst|compiler-domain-ir-fallback.gravity|compiler-domain-ir-fallback.qst|compiler-domain-ir-lowering.gravity|compiler-domain-ir-lowering.qst|compiler-domain-ir-plugin.gravity|compiler-domain-ir-plugin.qst|compiler-domain-ir-proof.gravity|compiler-domain-ir-proof.qst|compiler-domain-ir-registration.gravity|compiler-domain-ir-registration.qst|compiler-domain-ir-schema.gravity|compiler-domain-ir-schema.qst|compiler-domain-ir-verify.gravity|compiler-domain-ir-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c12-domain-ir "$source") ;;
+    compiler-optimization-check-elision.gravity|compiler-optimization-check-elision.qst|compiler-optimization-contract.gravity|compiler-optimization-contract.qst|compiler-optimization-domain.gravity|compiler-optimization-domain.qst|compiler-optimization-effect.gravity|compiler-optimization-effect.qst|compiler-optimization-invalidate.gravity|compiler-optimization-invalidate.qst|compiler-optimization-nondeterminism.gravity|compiler-optimization-nondeterminism.qst|compiler-optimization-preserve.gravity|compiler-optimization-preserve.qst|compiler-optimization-proof.gravity|compiler-optimization-proof.qst|compiler-optimization-safety.gravity|compiler-optimization-safety.qst|compiler-optimization-verify.gravity|compiler-optimization-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c13-optimization "$source") ;;
+    compiler-lowering-abi.gravity|compiler-lowering-abi.qst|compiler-lowering-capability.gravity|compiler-lowering-capability.qst|compiler-lowering-input.gravity|compiler-lowering-input.qst|compiler-lowering-manifest.gravity|compiler-lowering-manifest.qst|compiler-lowering-profile.gravity|compiler-lowering-profile.qst|compiler-lowering-proof-metadata.gravity|compiler-lowering-proof-metadata.qst|compiler-lowering-provider.gravity|compiler-lowering-provider.qst|compiler-lowering-runtime.gravity|compiler-lowering-runtime.qst|compiler-lowering-target.gravity|compiler-lowering-target.qst|compiler-lowering-unsupported.gravity|compiler-lowering-unsupported.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c14-lowering "$source") ;;
+    compiler-verify-c15-facts.gravity|compiler-verify-c15-facts.qst|compiler-verify-c15-golden.gravity|compiler-verify-c15-golden.qst|compiler-verify-c15-id.gravity|compiler-verify-c15-id.qst|compiler-verify-c15-order.gravity|compiler-verify-c15-order.qst|compiler-verify-c15-origin.gravity|compiler-verify-c15-origin.qst|compiler-verify-c15-redaction.gravity|compiler-verify-c15-redaction.qst|compiler-verify-c15-remediation.gravity|compiler-verify-c15-remediation.qst|compiler-verify-c15-schema.gravity|compiler-verify-c15-schema.qst|compiler-verify-c15-span.gravity|compiler-verify-c15-span.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c15-diagnostics "$source") ;;
+    compiler-verify-c16-diagnostic.gravity|compiler-verify-c16-diagnostic.qst|compiler-verify-c16-entry.gravity|compiler-verify-c16-entry.qst|compiler-verify-c16-graph.gravity|compiler-verify-c16-graph.qst|compiler-verify-c16-key.gravity|compiler-verify-c16-key.qst|compiler-verify-c16-policy.gravity|compiler-verify-c16-policy.qst|compiler-verify-c16-proof.gravity|compiler-verify-c16-proof.qst|compiler-verify-c16-replay.gravity|compiler-verify-c16-replay.qst|compiler-verify-c16-speculative.gravity|compiler-verify-c16-speculative.qst|compiler-verify-c16-stale.gravity|compiler-verify-c16-stale.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c16-incremental "$source") ;;
+    compiler-verify-c17-api.gravity|compiler-verify-c17-api.qst|compiler-verify-c17-build-effect.gravity|compiler-verify-c17-build-effect.qst|compiler-verify-c17-capability.gravity|compiler-verify-c17-capability.qst|compiler-verify-c17-domain.gravity|compiler-verify-c17-domain.qst|compiler-verify-c17-facet.gravity|compiler-verify-c17-facet.qst|compiler-verify-c17-manifest.gravity|compiler-verify-c17-manifest.qst|compiler-verify-c17-output.gravity|compiler-verify-c17-output.qst|compiler-verify-c17-pass-contract.gravity|compiler-verify-c17-pass-contract.qst|compiler-verify-c17-sandbox.gravity|compiler-verify-c17-sandbox.qst|compiler-verify-c17-trust.gravity|compiler-verify-c17-trust.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c17-plugin "$source") ;;
+    compiler-verify-c18-backend.gravity|compiler-verify-c18-backend.qst|compiler-verify-c18-counterexample.gravity|compiler-verify-c18-counterexample.qst|compiler-verify-c18-evidence.gravity|compiler-verify-c18-evidence.qst|compiler-verify-c18-plugin.gravity|compiler-verify-c18-plugin.qst|compiler-verify-c18-proof.gravity|compiler-verify-c18-proof.qst|compiler-verify-c18-release-gate.gravity|compiler-verify-c18-release-gate.qst|compiler-verify-c18-risk.gravity|compiler-verify-c18-risk.qst|compiler-verify-c18-trust-report.gravity|compiler-verify-c18-trust-report.qst|compiler-verify-c18-validation.gravity|compiler-verify-c18-validation.qst)
+      (cd "$root_dir" && clojure -M:gravity compiler-c18-verification "$source") ;;
+    backend-interface.gravity|backend-interface.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-b1-abi.gravity|backend-b1-abi.qst|backend-b1-capability.gravity|backend-b1-capability.qst|backend-b1-input.gravity|backend-b1-input.qst|backend-b1-metadata.gravity|backend-b1-metadata.qst|backend-b1-profile.gravity|backend-b1-profile.qst|backend-b1-proof.gravity|backend-b1-proof.qst|backend-b1-runtime.gravity|backend-b1-runtime.qst|backend-b1-target.gravity|backend-b1-target.qst|backend-b1-unsupported.gravity|backend-b1-unsupported.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-interface "$source") ;;
+    backend-native-lowering.gravity|backend-native-lowering.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-hosted-lowering.gravity|backend-hosted-lowering.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-specialized-lowering.gravity|backend-specialized-lowering.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-artifact-emission.gravity|backend-artifact-emission.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-test-matrix.gravity|backend-test-matrix.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-conformance-test-plan.gravity|backend-conformance-test-plan.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    backend-b2-abi.gravity|backend-b2-abi.qst|backend-b2-dialect.gravity|backend-b2-dialect.qst|backend-b2-ffi.gravity|backend-b2-ffi.qst|backend-b2-manifest.gravity|backend-b2-manifest.qst|backend-b2-mmio.gravity|backend-b2-mmio.qst|backend-b2-numeric.gravity|backend-b2-numeric.qst|backend-b2-pointer.gravity|backend-b2-pointer.qst|backend-b2-runtime.gravity|backend-b2-runtime.qst|backend-b2-ub.gravity|backend-b2-ub.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b2-c-document "$source") ;;
+    backend-b3-abi.gravity|backend-b3-abi.qst|backend-b3-atomic.gravity|backend-b3-atomic.qst|backend-b3-manifest.gravity|backend-b3-manifest.qst|backend-b3-metadata.gravity|backend-b3-metadata.qst|backend-b3-numeric.gravity|backend-b3-numeric.qst|backend-b3-pass.gravity|backend-b3-pass.qst|backend-b3-pointer.gravity|backend-b3-pointer.qst|backend-b3-runtime.gravity|backend-b3-runtime.qst|backend-b3-target.gravity|backend-b3-target.qst|backend-b3-ub.gravity|backend-b3-ub.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b3-llvm-document "$source") ;;
+    backend-b4-async.gravity|backend-b4-async.qst|backend-b4-atomic.gravity|backend-b4-atomic.qst|backend-b4-bounds.gravity|backend-b4-bounds.qst|backend-b4-canonical-abi.gravity|backend-b4-canonical-abi.qst|backend-b4-component.gravity|backend-b4-component.qst|backend-b4-export.gravity|backend-b4-export.qst|backend-b4-host-schema.gravity|backend-b4-host-schema.qst|backend-b4-import.gravity|backend-b4-import.qst|backend-b4-manifest.gravity|backend-b4-manifest.qst|backend-b4-memory.gravity|backend-b4-memory.qst|backend-b4-nondeterminism.gravity|backend-b4-nondeterminism.qst|backend-b4-simd.gravity|backend-b4-simd.qst|backend-b4-target.gravity|backend-b4-target.qst|backend-b4-wasi-async.gravity|backend-b4-wasi-async.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b4-wasm-document "$source") ;;
+    backend-b5-classloading.gravity|backend-b5-classloading.qst|backend-b5-exception.gravity|backend-b5-exception.qst|backend-b5-interop.gravity|backend-b5-interop.qst|backend-b5-manifest.gravity|backend-b5-manifest.qst|backend-b5-native-image.gravity|backend-b5-native-image.qst|backend-b5-null.gravity|backend-b5-null.qst|backend-b5-profile.gravity|backend-b5-profile.qst|backend-b5-reflection.gravity|backend-b5-reflection.qst|backend-b5-resource.gravity|backend-b5-resource.qst|backend-b5-target.gravity|backend-b5-target.qst|backend-b5-thread.gravity|backend-b5-thread.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b5-jvm-document "$source") ;;
+    backend-b6-async.gravity|backend-b6-async.qst|backend-b6-eval.gravity|backend-b6-eval.qst|backend-b6-exception.gravity|backend-b6-exception.qst|backend-b6-global.gravity|backend-b6-global.qst|backend-b6-import.gravity|backend-b6-import.qst|backend-b6-manifest.gravity|backend-b6-manifest.qst|backend-b6-nullish.gravity|backend-b6-nullish.qst|backend-b6-numeric.gravity|backend-b6-numeric.qst|backend-b6-prototype.gravity|backend-b6-prototype.qst|backend-b6-target.gravity|backend-b6-target.qst|backend-b6-ui.gravity|backend-b6-ui.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b6-js-ts-document "$source") ;;
+    backend-b7-alias.gravity|backend-b7-alias.qst|backend-b7-conversion.gravity|backend-b7-conversion.qst|backend-b7-dialect.gravity|backend-b7-dialect.qst|backend-b7-effect.gravity|backend-b7-effect.qst|backend-b7-handoff.gravity|backend-b7-handoff.qst|backend-b7-manifest.gravity|backend-b7-manifest.qst|backend-b7-metadata.gravity|backend-b7-metadata.qst|backend-b7-numeric.gravity|backend-b7-numeric.qst|backend-b7-pass.gravity|backend-b7-pass.qst|backend-b7-verify.gravity|backend-b7-verify.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b7-mlir-document "$source") ;;
+    backend-b8-atomic.gravity|backend-b8-atomic.qst|backend-b8-host-effect.gravity|backend-b8-host-effect.qst|backend-b8-kernel.gravity|backend-b8-kernel.qst|backend-b8-launch.gravity|backend-b8-launch.qst|backend-b8-manifest.gravity|backend-b8-manifest.qst|backend-b8-math.gravity|backend-b8-math.qst|backend-b8-memory.gravity|backend-b8-memory.qst|backend-b8-sync.gravity|backend-b8-sync.qst|backend-b8-target.gravity|backend-b8-target.qst|backend-b8-transfer.gravity|backend-b8-transfer.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b8-gpu-document "$source") ;;
+    backend-b9-cdc.gravity|backend-b9-cdc.qst|backend-b9-clock.gravity|backend-b9-clock.qst|backend-b9-interface.gravity|backend-b9-interface.qst|backend-b9-manifest.gravity|backend-b9-manifest.qst|backend-b9-reset.gravity|backend-b9-reset.qst|backend-b9-runtime.gravity|backend-b9-runtime.qst|backend-b9-target.gravity|backend-b9-target.qst|backend-b9-timing.gravity|backend-b9-timing.qst|backend-b9-unbounded.gravity|backend-b9-unbounded.qst|backend-b9-width.gravity|backend-b9-width.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b9-hdl-document "$source") ;;
+    backend-b10-capability.gravity|backend-b10-capability.qst|backend-b10-compensation.gravity|backend-b10-compensation.qst|backend-b10-graph.gravity|backend-b10-graph.qst|backend-b10-idempotency.gravity|backend-b10-idempotency.qst|backend-b10-manifest.gravity|backend-b10-manifest.qst|backend-b10-policy.gravity|backend-b10-policy.qst|backend-b10-replay.gravity|backend-b10-replay.qst|backend-b10-retry.gravity|backend-b10-retry.qst|backend-b10-schema.gravity|backend-b10-schema.qst|backend-b10-taint.gravity|backend-b10-taint.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b10-workflow-document "$source") ;;
+    backend-b11-capability.gravity|backend-b11-capability.qst|backend-b11-dialect.gravity|backend-b11-dialect.qst|backend-b11-manifest.gravity|backend-b11-manifest.qst|backend-b11-migration.gravity|backend-b11-migration.qst|backend-b11-null.gravity|backend-b11-null.qst|backend-b11-parameter.gravity|backend-b11-parameter.qst|backend-b11-plan.gravity|backend-b11-plan.qst|backend-b11-result.gravity|backend-b11-result.qst|backend-b11-schema.gravity|backend-b11-schema.qst|backend-b11-taint.gravity|backend-b11-taint.qst|backend-b11-transaction.gravity|backend-b11-transaction.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b11-query-document "$source") ;;
+    backend-b12-background.gravity|backend-b12-background.qst|backend-b12-error.gravity|backend-b12-error.qst|backend-b12-lifecycle.gravity|backend-b12-lifecycle.qst|backend-b12-manifest.gravity|backend-b12-manifest.qst|backend-b12-null.gravity|backend-b12-null.qst|backend-b12-permission.gravity|backend-b12-permission.qst|backend-b12-resource.gravity|backend-b12-resource.qst|backend-b12-storage.gravity|backend-b12-storage.qst|backend-b12-target.gravity|backend-b12-target.qst|backend-b12-thread.gravity|backend-b12-thread.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b12-mobile-document "$source") ;;
+    backend-b13-conformance.gravity|backend-b13-conformance.qst|backend-b13-evidence.gravity|backend-b13-evidence.qst|backend-b13-graph.gravity|backend-b13-graph.qst|backend-b13-hash.gravity|backend-b13-hash.qst|backend-b13-provenance.gravity|backend-b13-provenance.qst|backend-b13-release.gravity|backend-b13-release.qst|backend-b13-reproducibility.gravity|backend-b13-reproducibility.qst|backend-b13-schema.gravity|backend-b13-schema.qst|backend-b13-sourcemap.gravity|backend-b13-sourcemap.qst|backend-b13-target.gravity|backend-b13-target.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b13-artifact-document "$source") ;;
+    backend-matrix-b14-coverage.gravity|backend-matrix-b14-coverage.qst|backend-matrix-b14-target.gravity|backend-matrix-b14-target.qst|backend-matrix-b14-positive.gravity|backend-matrix-b14-positive.qst|backend-matrix-b14-negative.gravity|backend-matrix-b14-negative.qst|backend-matrix-b14-differential.gravity|backend-matrix-b14-differential.qst|backend-matrix-b14-metadata.gravity|backend-matrix-b14-metadata.qst|backend-matrix-b14-artifact.gravity|backend-matrix-b14-artifact.qst|backend-matrix-b14-nondeterminism.gravity|backend-matrix-b14-nondeterminism.qst|backend-matrix-b14-skip.gravity|backend-matrix-b14-skip.qst|backend-matrix-b14-evidence.gravity|backend-matrix-b14-evidence.qst)
+      (cd "$root_dir" && clojure -M:gravity backend-b14-conformance-document "$source") ;;
+    runtime-selection-no-runtime.gravity|runtime-selection-no-runtime.qst|runtime-r1-selection.gravity|runtime-r1-selection.qst|runtime-r1-service.gravity|runtime-r1-service.qst|runtime-r1-forbidden.gravity|runtime-r1-forbidden.qst|runtime-r1-capability.gravity|runtime-r1-capability.qst|runtime-r1-host.gravity|runtime-r1-host.qst|runtime-r1-replay.gravity|runtime-r1-replay.qst|runtime-r1-startup.gravity|runtime-r1-startup.qst|runtime-r1-failure.gravity|runtime-r1-failure.qst|runtime-r1-manifest.gravity|runtime-r1-manifest.qst|runtime-r2-hidden-service.gravity|runtime-r2-hidden-service.qst|runtime-r2-startup.gravity|runtime-r2-startup.qst|runtime-r2-memory.gravity|runtime-r2-memory.qst|runtime-r2-dispatch.gravity|runtime-r2-dispatch.qst|runtime-r2-failure.gravity|runtime-r2-failure.qst|runtime-r2-capability.gravity|runtime-r2-capability.qst|runtime-r2-proof.gravity|runtime-r2-proof.qst|runtime-r2-manifest.gravity|runtime-r2-manifest.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    runtime-managed-host.gravity|runtime-managed-host.qst|runtime-r4-host.gravity|runtime-r4-host.qst|runtime-r4-null.gravity|runtime-r4-null.qst|runtime-r4-exception.gravity|runtime-r4-exception.qst|runtime-r4-reflection.gravity|runtime-r4-reflection.qst|runtime-r4-collection.gravity|runtime-r4-collection.qst|runtime-r4-resource.gravity|runtime-r4-resource.qst|runtime-r4-sourcemap.gravity|runtime-r4-sourcemap.qst|runtime-r4-profile.gravity|runtime-r4-profile.qst|runtime-r4-manifest.gravity|runtime-r4-manifest.qst)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+    *)
+      (cd "$root_dir" && clojure -M:gravity check "$source") ;;
+  esac
+}
+
+emit_diagnostic() {
+  local diag="$1"
+  printf '{:id "%s", :message "final release command rejected source", :phase "P18-T06", :release-binary-path "%s"}\n' "$diag" "$release_binary_path" >&2
+  exit 1
+}
+
+ensure_accepted_source() {
+  local source="$1"
+  local diag
+  diag="$(diagnostic_for_source "$source")"
+  if [[ -n "$diag" ]]; then emit_diagnostic "$diag"; fi
+  if ! stdout_for_source "$source" >/dev/null; then emit_diagnostic 'P18T06004'; fi
+}
+
+write_app() {
+  local source="$1"
+  local output="$2"
+  local payload
+  ensure_accepted_source "$source"
+  payload="$(stdout_for_source "$source")"
+  mkdir -p "$(dirname "$output")"
+  cat > "$output" <<APP
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%b' '$payload'
+APP
+  chmod +x "$output"
+  cat > "$output.gravity-artifact.edn" <<EDN
+{:kind :gravity/p18-t06-final-release-executable-artifact, :task "P18-T06", :status :incomplete, :source-path "$source", :executable-path "$output", :release-binary-path "$release_binary_path", :release-proof-record "$final_proof_record", :clojure-seed-boundary? true, :compiler-path-clojure-seed-boundary? true, :runtime-path-clojure-seed-boundary? true, :release-compiler-clojure-seed-boundary? true, :reproducible-release? false, :signed-release? false, :governance-approved? false, :next-required-capability :self_hosted_public_binary_final_verification}
+EDN
+  cat "$output.gravity-artifact.edn"
+}
+
+cmd="${1:-help}"
+case "$cmd" in
+  --version|version)
+    printf '%s\n' '{:command "gravity", :phase "P18-T06", :seedless-release? false, :final-release? false, :reproducible-release? false, :signed-release? false, :governance-approved? false, :clojure-seed-boundary? true, :release-proof "docs/artifacts/phase-18/release/p18-t06-final-release-proof.edn", :next-required-capability :self_hosted_public_binary_final_verification}'
+    ;;
+  --assert-seedless-release|assert-seedless-release)
+    printf '%s\n' '{:id "P18T06003", :message "final release candidate is blocked by the active Clojure seed boundary", :phase "P18-T06", :seedless-release? false, :final-release? false, :clojure-seed-boundary? true}' >&2
+    exit 1
+    ;;
+  p18-t06-final-release|final-release-proof|release-proof)
+    cat "$root_dir/$final_proof_record"
+    ;;
+  p18-t06-provenance|provenance)
+    cat "$root_dir/$provenance_record"
+    ;;
+  p18-t06-sbom|sbom)
+    cat "$root_dir/$sbom_record"
+    ;;
+  p18-t06-signing|signing)
+    cat "$root_dir/$signing_record"
+    ;;
+  p18-t06-governance|governance)
+    cat "$root_dir/$governance_record"
+    ;;
+  p18-t05-seedless-release-boundary|seedless-boundary-proof)
+    cat "$root_dir/$release_boundary_record"
+    ;;
+  test)
+    if [[ -n "${2:-}" ]]; then
+      printf '%s\n' '{:id "P18T04006", :message "bootstrap-hosted public test command cannot be claimed as full language conformance", :phase "P18-T04", :bootstrap-hosted? true, :full-language-conformance? false}' >&2
+      exit 1
+    fi
+    (cd "$root_dir" && clojure -M:gravity test)
+    ;;
+  self-host)
+    if [[ "${2:-}" != 'verify' || -n "${3:-}" ]]; then
+      printf '%s\n' '{:id "P18T04008", :message "public self-host verification command usage is invalid", :phase "P18-T04", :expected-command ["gravity" "self-host" "verify"]}' >&2
+      exit 2
+    fi
+    (cd "$root_dir" && clojure -M:gravity p18-t04-write-public-self-host-verify-command-artifacts >/dev/null)
+    printf '%s\n' '{:id "P18T04007", :message "public self-host verification is blocked by the active Clojure seed boundary", :phase "P18-T04", :bootstrap-hosted? true, :full-language-compiler-self-hosted? false, :clojure-seed-boundary? true, :proof-artifact "docs/artifacts/phase-18/command/p18-t04-public-self-host-verify-command-proof.edn"}' >&2
+    exit 1
+    ;;
+  inspect|artifact)
+    cat "${2:?artifact path required}"
+    ;;
+  check)
+    source="${2:?source path required}"
+    diag="$(diagnostic_for_source "$source")"
+    if [[ -n "$diag" ]]; then emit_diagnostic "$diag"; fi
+    if stdout_for_source "$source" >/dev/null; then
+      printf 'gravity blocked release candidate check passed: %s\n' "$(module_for_source "$source")"
+    else
+      bootstrap_check_source "$source"
+    fi
+    ;;
+  run)
+    source="${2:?source path required}"
+    ensure_accepted_source "$source"
+    printf '%b' "$(stdout_for_source "$source")"
+    ;;
+  compile)
+    source="${2:?source path required}"
+    flag="${3:-}"
+    output="${4:-}"
+    if [[ "$flag" != '-o' && "$flag" != '--output' ]]; then emit_diagnostic 'P18T04002'; fi
+    if [[ -z "$output" || "$output" = /* || "$output" = *'..'* ]]; then emit_diagnostic 'P18T04002'; fi
+    write_app "$source" "$output"
+    ;;
+  help|--help|-h)
+    printf '%s\n' 'gravity P18-T06 blocked final-release candidate'
+    printf '%s\n' 'commands: check <QST/Gravity source file>, run <QST/Gravity source file>, compile <QST/Gravity source file> -o <exe>, test, self-host verify, inspect <artifact>, release-proof, sbom, signing, provenance, governance'
+    ;;
+  *)
+    printf 'unknown command: %s\n' "$cmd" >&2
+    exit 2
+    ;;
+esac

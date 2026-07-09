@@ -1,0 +1,11 @@
+(ns compiler.checked-core.evidence-drop
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:checked-core {:fail :evidence-drop}}}))
+
+(defn ready []
+  true)

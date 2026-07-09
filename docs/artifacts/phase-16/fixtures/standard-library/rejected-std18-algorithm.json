@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "cryptography_library": {"ambiguous_algorithm": true}}

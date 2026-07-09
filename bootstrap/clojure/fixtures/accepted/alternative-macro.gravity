@@ -1,0 +1,83 @@
+(ns alternative.macro
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [provider expansion syntax-object hygiene capture build-trace
+             cache-decision equivalence facet-dispatch generated-validation])
+  (:effects #{:build/read-file})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :replay-records #{:build/read-file}
+              :language-facets #{:gravity.facet.schema}}))
+
+(def provider
+  (altmacro/provider-declaration 'custom.macros/typed-expander
+                                 "fixture-1"
+                                 #{:hosted :native :meta}
+                                 #{:jvm}
+                                 #{:gravity.facet.schema}
+                                 #{:build/read-file}
+                                 #{:compiler/ir}
+                                 #{:span :lexical-context :metadata
+                                   :hygiene :generated-origin}
+                                 :hygienic
+                                 :l4-compatible
+                                 :deterministic
+                                 :gravity.macro/trace-v1
+                                 :gravity.conformance/macro-l4
+                                 #{}))
+
+(def expansion
+  (altmacro/expansion-trace 'custom.macros/typed-expander
+                            "fixture-1"
+                            'alternative.macro/derive
+                            :syntax/input-1
+                            :syntax/output-1
+                            :macro-invocation
+                            #{:gravity.facet.schema}))
+
+(def syntax-object
+  (altmacro/syntax-object :syntax/output-1 :list))
+
+(def hygiene
+  (altmacro/hygiene-record 'custom.macros/typed-expander
+                           'alternative.macro/derive
+                           :hygienic))
+
+(def capture
+  (altmacro/explicit-capture 'custom.macros/typed-expander
+                             'alternative.macro/with-env
+                             'env))
+
+(def build-trace
+  (altmacro/build-effect-trace 'custom.macros/typed-expander
+                               'alternative.macro/derive
+                               :build/read-file
+                               :grant/macro-schema
+                               "sha256:macro-input"
+                               "sha256:macro-output"
+                               :replay-required
+                               :redacted))
+
+(def cache-decision
+  (altmacro/cache-decision 'custom.macros/typed-expander
+                           'alternative.macro/derive
+                           #{:source :provider :profile :target
+                             :facet :grant :compiler-version}
+                           :miss
+                           #{:source :provider :profile :target
+                             :facet :grant :compiler-version}))
+
+(def equivalence
+  (altmacro/equivalence-report 'custom.macros/typed-expander
+                               'alternative.macro/derive
+                               :structural-alpha-equivalent
+                               :expansion-result))
+
+(def facet-dispatch
+  (altmacro/facet-dispatch 'custom.macros/typed-expander
+                           :gravity.facet.schema))
+
+(def generated-validation
+  (altmacro/generated-validation 'custom.macros/typed-expander
+                                 'alternative.macro/derive))

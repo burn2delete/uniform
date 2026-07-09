@@ -1,0 +1,6 @@
+(ns bad.pure
+  (:profile :hosted)
+  (:target :native))
+
+(defconst schema
+  (compile-time (read-file "schemas/user.json")))

@@ -1,0 +1,15 @@
+(ns core.app.schema-projection
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:schema {:compiled-gate
+                       {:schema-models
+                        [{:schema-id "TicketClassification"
+                          :schema-version 2
+                          :schema-hash "sha256:wrong"
+                          :weakens-source-schema? true}]}}}))
+
+(defn main []
+  (println "bad schema projection"))

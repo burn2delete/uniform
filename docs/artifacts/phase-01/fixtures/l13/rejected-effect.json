@@ -1,0 +1,67 @@
+{
+  "call_checks": [
+    {
+      "active_profile": ":hosted",
+      "capability_context": [
+        ":fs/read"
+      ],
+      "caller_effects": [],
+      "namespace": "gravity.fs",
+      "symbol": "read-text",
+      "target": "hosted-fixture"
+    }
+  ],
+  "compatibility_records": [],
+  "kind": "standard-library-contract-set",
+  "namespaces": [
+    {
+      "allocation": {
+        ":hosted": ":managed"
+      },
+      "apis": [
+        {
+          "allocation": {
+            ":hosted": ":managed"
+          },
+          "blocking": true,
+          "capabilities": [
+            ":fs/read"
+          ],
+          "classification": ":capability",
+          "effects": [
+            ":filesystem/read"
+          ],
+          "failure_modes": [
+            "Result"
+          ],
+          "nondeterminism": ":filesystem-state",
+          "panic": false,
+          "stability": ":stable",
+          "symbol": "read-text",
+          "type": "Capability, Path -> Result"
+        }
+      ],
+      "capabilities": [
+        ":fs/read"
+      ],
+      "effects": [
+        ":filesystem/read"
+      ],
+      "examples": [
+        {
+          "compiles": true,
+          "profile": ":hosted",
+          "source": "(fs/read-text fs path)"
+        }
+      ],
+      "layer": 3,
+      "name": "gravity.fs",
+      "profiles": [
+        ":hosted"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    }
+  ],
+  "unsafe_audits": []
+}

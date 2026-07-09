@@ -1,0 +1,9 @@
+(ns interop.ownership
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/ownership-error :missing-release))

@@ -1,0 +1,9 @@
+(ns interop.safe-wrapper
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/safe-wrapper-error :unproven))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-coverage.json",
+  "set": {
+    "/domains/DOM1/replacement_scope/claim_status": ":full-replacement"
+  }
+}

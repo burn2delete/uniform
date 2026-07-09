@@ -1,0 +1,36 @@
+{:artifact :gravity/stage0-r8-ai-runtime-document-proof
+ :task "P08-D119"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r8-document bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :artifact-kind :gravity/stage0-r8-ai-runtime-document-artifact
+ :artifact-id "sha256:756e18dd53acf260f032307b6adfa2d93257de7d8902ff19ded5779fdd02b5ec"
+ :input-artifact "sha256:8b14783b42260dc2becf865b32107a6f7adc943f4d8857de77aa0a8ed258ecb9"
+ :input-artifact-kind :gravity/stage0-ai-repl-ffi-capability-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r8-*.gravity"]
+ :required-diagnostic-ids
+ ["R8-MODEL" "R8-PROMPT" "R8-TOOL" "R8-TAINT" "R8-SECRET"
+  "R8-MEMORY" "R8-HUMAN-REVIEW" "R8-REPLAY" "R8-BUDGET"
+  "R8-GENERATED" "R8-MANIFEST"]
+ :capability-based-proof
+ {:ai-runtime-input-verified? true
+  :manifest-and-agent-state-covered? true
+  :model-calls-covered? true
+  :prompt-provenance-covered? true
+  :tool-invocations-covered? true
+  :taint-and-output-validation-covered? true
+  :secret-and-memory-policy-covered? true
+  :human-review-covered? true
+  :replay-and-budget-covered? true
+  :generated-code-compiler-gated? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 11
+  :test-command "clojure -M:test"
+  :test-result "104 tests, 6492 assertions, 0 failures, 0 errors, 1387 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R8 AI runtime document through the P08-T05 AI/REPL/FFI/capability runtime artifact. It does not claim live model or tool provider execution, production policy engines, deployed memory stores, human review service integration, or complete Phase 08 document coverage."}

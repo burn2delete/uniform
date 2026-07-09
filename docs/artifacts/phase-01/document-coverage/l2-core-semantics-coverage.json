@@ -1,0 +1,59 @@
+{
+  "accepted": [
+    {
+      "artifact": "docs/artifacts/phase-01/core/core-ast.accepted.json",
+      "coverage": [
+        "quote",
+        "if",
+        "do",
+        "let",
+        "fn",
+        "loop",
+        "recur",
+        "def",
+        "var",
+        "set!",
+        "try",
+        "throw",
+        "match",
+        "call records",
+        "evaluation-order records",
+        "source map records",
+        "macro-generated provenance"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity"
+    }
+  ],
+  "document": "L2",
+  "kind": "l2-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L2-UNKNOWN-CORE-FORM",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-unknown-core-form.gravity"
+    },
+    {
+      "diagnostic": "L2-EVAL-ORDER",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-eval-order.gravity"
+    },
+    {
+      "diagnostic": "L2-RECUR-TARGET",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-recur-target.gravity"
+    },
+    {
+      "diagnostic": "L2-SET-ILLEGAL",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-set-illegal.gravity"
+    },
+    {
+      "diagnostic": "L2-THROW-ILLEGAL",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-throw-illegal.gravity"
+    },
+    {
+      "diagnostic": "L2-HOST-SEMANTICS",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-host-semantics.gravity"
+    },
+    {
+      "diagnostic": "L2-LOWERING-GAP",
+      "fixture": "docs/artifacts/phase-01/fixtures/core/rejected-lowering-gap.gravity"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/pipeline_manifest/stages/1": ":resolve-names"
+  }
+}

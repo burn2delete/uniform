@@ -1,0 +1,10 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "lsp_capability_matrix": {
+      "diagnostic_mismatch": true,
+      "diagnostics_match_cli": false
+    }
+  }
+}

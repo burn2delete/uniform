@@ -1,0 +1,28 @@
+{:task-id :P02-D041
+ :document "docs/phase-02-safety/041-safe12-macro-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+ :artifact-kind :gravity/stage0-safety-conformance-artifact
+ :document-coverage {:macro-safety-declarations 1
+                     :generated-origin-chains 1
+                     :macro-build-effect-records 1
+                     :generated-unsafe-island-records 1
+                     :hygiene-capture-records 1
+                     :taint-capability-propagation-records 1
+                     :facet-output-records 1
+                     :alternative-macro-engine-equivalence 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE12-GENERATED-UNSAFE"
+                        "SAFE12-BUILD-EFFECT"
+                        "SAFE12-CAPABILITY"
+                        "SAFE12-HYGIENE"
+                        "SAFE12-PHASE"
+                        "SAFE12-TAINT"
+                        "SAFE12-PROFILE"
+                        "SAFE12-ORIGIN"
+                        "SAFE12-FACET"
+                        "SAFE12-ENGINE"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE12 accepted records and 10 rejected diagnostics passed"}]}

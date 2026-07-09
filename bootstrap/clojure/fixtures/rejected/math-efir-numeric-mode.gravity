@@ -1,0 +1,20 @@
+(ns math.efir-numeric-mode
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:elementary-declarations
+      [{:function-id :math/bad-mode
+        :source-span "math/efir-numeric-mode.gravity:8:1"
+        :domain {'x {:real [-8.0 8.0]}}
+        :codomain {:real [0.0 1.0]}
+        :branch-policy :real-only
+        :exceptional-values {:nan :propagate}
+        :semantic-form '(sqrt x)
+        :numeric-modes #{:target-default}
+        :provider-requirements #{:domain :codomain :branch-policy}
+        :efir-anchor :efir/bad-mode}]}}}))

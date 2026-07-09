@@ -1,0 +1,9 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "set": {
+    "/operations/1/runtime_check/profile_legal": false,
+    "/operations/1/runtime_check/profile_support": [
+      ":hosted"
+    ]
+  }
+}

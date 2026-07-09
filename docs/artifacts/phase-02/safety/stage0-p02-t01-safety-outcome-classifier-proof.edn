@@ -1,0 +1,67 @@
+{:task-id :P02-T01
+ :document "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/safety-outcomes.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe1-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-outcomes.gravity"
+ :artifact-kind :gravity/stage0-safety-artifact
+ :capability-proof {:module safety.outcomes
+                    :profile :native
+                    :safety-mode :audited-unsafe
+                    :pass :safety-outcome-classifier
+                    :input :typed-effected-core
+                    :output :safety-analysis-report
+                    :conformance-status :complete
+                    :missing-families []
+                    :legal-outcomes [:proven-safe
+                                     :rejected
+                                     :runtime-checked
+                                     :unsafe-island]
+                    :covered-families [:proven-safe
+                                       :runtime-checked
+                                       :rejected
+                                       :unsafe-island
+                                       :runtime-check-record
+                                       :unsafe-island-audit
+                                       :generated-provenance
+                                       :optimization-proof
+                                       :dependency-mode]
+                    :safety-classification-records 4
+                    :runtime-check-records 1
+                    :unsafe-island-audit-records 1
+                    :generated-code-safety-provenance 1
+                    :optimization-check-erasure-justifications 1
+                    :dependency-safety-mode-records 1
+                    :certificate-input-status :complete
+                    :capability-basis :safe1-explicit-four-outcome-classification-with-profile-effect-capability-and-provenance-facts}
+ :rejected-diagnostics [{:fixture "typed-safe1-no-outcome.gravity"
+                         :diagnostic "SAFE1-NO-OUTCOME"}
+                        {:fixture "typed-safe1-proof-missing.gravity"
+                         :diagnostic "SAFE1-PROOF-MISSING"}
+                        {:fixture "typed-safe1-check-missing.gravity"
+                         :diagnostic "SAFE1-CHECK-MISSING"}
+                        {:fixture "typed-safe1-check-illegal.gravity"
+                         :diagnostic "SAFE1-CHECK-ILLEGAL"}
+                        {:fixture "typed-safe1-unsafe-policy.gravity"
+                         :diagnostic "SAFE1-UNSAFE-POLICY"}
+                        {:fixture "typed-safe1-unsafe-metadata.gravity"
+                         :diagnostic "SAFE1-UNSAFE-METADATA"}
+                        {:fixture "typed-safe1-generated-provenance.gravity"
+                         :diagnostic "SAFE1-GENERATED-PROVENANCE"}
+                        {:fixture "typed-safe1-optimization-proof.gravity"
+                         :diagnostic "SAFE1-OPTIMIZATION-PROOF"}
+                        {:fixture "typed-safe1-dependency-mode.gravity"
+                         :diagnostic "SAFE1-DEPENDENCY-MODE"}]
+ :validation [{:command "clojure -M:gravity safety bootstrap/clojure/fixtures/accepted/safety-outcomes.gravity"
+               :result "emitted :gravity/stage0-safety-artifact"}
+              {:command "clojure -M -e safety-artifact-summary"
+               :result ":gravity/stage0-safety-artifact safety.outcomes :complete 4 1 1"}
+              {:command "clojure -M:test"
+               :result "27 tests, 1351 assertions, 300 rejected fixtures"}]
+ :residual-risks ["This is the stage0 SAFE1 classifier boundary only; it does not implement the later Phase 02 memory, unsafe-audit, domain, capability, supply-chain, certificate, or conformance tasks."
+                  "The Clojure seed remains temporary until Phase 15 replaces the bootstrap with Gravity-owned compiler stages."
+                  "Production backend lowering, native runtime enforcement, package authority, and self-hosting remain open."]}

@@ -1,0 +1,9 @@
+(ns stdlib.resource
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/resource-leak 'gravity.resource/open))

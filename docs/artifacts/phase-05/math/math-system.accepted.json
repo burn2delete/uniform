@@ -1,0 +1,778 @@
+{
+  "approximation_certificates": [
+    {
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "exceptional_values": {
+          "inf": ":domain-error",
+          "nan": ":propagate"
+        }
+      },
+      "certificate_id": "cert/sigmoid-poly",
+      "checker": {
+        "independent": true,
+        "name": ":gravity-interval-checker",
+        "replayable": true,
+        "transcript_hash": "sha256:transcript",
+        "version": "1"
+      },
+      "codomain": {
+        "real": [
+          0,
+          1
+        ]
+      },
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "error_proof": {
+        "approximation": 4.2e-13,
+        "combined": 9e-13,
+        "method": ":interval",
+        "reconstruction": 1.7e-13,
+        "roundoff": 3.1e-13
+      },
+      "function": "sigmoid",
+      "implementation": {
+        "degree": 9,
+        "evaluation": ":estrin",
+        "kind": ":piecewise-polynomial",
+        "pieces": 8
+      },
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "absolute_error_max": 1e-12,
+        "relative_error_max": 2e-12,
+        "type": ":F64"
+      },
+      "source_span": {
+        "column": 12,
+        "line": 3,
+        "source": "fixtures/math/sigmoid.gravity"
+      },
+      "target_assumptions": {
+        "arch": ":x86-64",
+        "denormals": ":preserved",
+        "features": [
+          ":avx2",
+          ":fma"
+        ],
+        "rounding": ":nearest-even",
+        "satisfied": true
+      },
+      "target_efir": "efir/sigmoid"
+    }
+  ],
+  "conversion_rule_table": [
+    {
+      "from": "I32",
+      "id": "conv/i32-to-i64",
+      "lossy": false,
+      "mode": ":widening-exact",
+      "rounding_required": false,
+      "to": "I64"
+    },
+    {
+      "from": "I64",
+      "id": "conv/i64-to-i32",
+      "lossy": true,
+      "mode": ":checked-narrowing",
+      "precision_loss": false,
+      "precision_record": "record/checked-range-i32",
+      "rounding_required": false,
+      "to": "I32"
+    },
+    {
+      "from": "F64",
+      "id": "conv/f64-to-i32",
+      "lossy": true,
+      "mode": ":explicitly-rounded",
+      "precision_loss": true,
+      "precision_record": "record/f64-i32-rounding",
+      "rounding": ":toward-zero",
+      "rounding_required": true,
+      "to": "I32"
+    }
+  ],
+  "diagnostics": [],
+  "domain_ir_registration": {
+    "domain": ":efir",
+    "entry_passes": [
+      ":elementary-detect",
+      ":efir-build"
+    ],
+    "exit_passes": [
+      ":efir-to-mir",
+      ":efir-to-target-provider"
+    ],
+    "fallback": ":mir-provider-call",
+    "owner_doc": "MATH3",
+    "proof_obligations": [
+      ":domain",
+      ":branch-policy",
+      ":numeric-mode",
+      ":roundoff"
+    ],
+    "schema": "schema/efir",
+    "semantic_anchor": [
+      ":typed-core-node",
+      ":mir-op"
+    ],
+    "supported_profiles": [
+      ":core",
+      ":native",
+      ":gpu",
+      ":formal"
+    ],
+    "target_lowerings": [
+      ":llvm",
+      ":wasm",
+      ":gpu"
+    ],
+    "verifier": "gravity.math/verify-efir"
+  },
+  "efir_graphs": [
+    {
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "log": ":principal"
+      },
+      "codomain": {
+        "real": [
+          0,
+          1
+        ]
+      },
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "graph_id": "efir/sigmoid",
+      "nodes": [
+        {
+          "codomain": {
+            "real": [
+              -8,
+              8
+            ]
+          },
+          "domain": {
+            "real": [
+              -8,
+              8
+            ]
+          },
+          "id": "n1",
+          "op": ":var"
+        },
+        {
+          "args": [
+            "n1"
+          ],
+          "codomain": {
+            "real": [
+              0,
+              2981
+            ]
+          },
+          "domain": {
+            "real": [
+              -8,
+              8
+            ]
+          },
+          "id": "n2",
+          "op": ":exp"
+        }
+      ],
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "absolute_error_max": 1e-12,
+        "type": ":F64"
+      },
+      "proof_obligations": [
+        ":domain-coverage",
+        ":roundoff",
+        ":branch-consistency"
+      ],
+      "runtime_selection": {
+        "efir_anchor": "efir/sigmoid",
+        "provider": "gravity.poly"
+      },
+      "semantic_anchor": {
+        "mir_ops": [
+          "mir/sigmoid"
+        ],
+        "typed_core": [
+          "core/sigmoid"
+        ]
+      },
+      "source_anchors": [
+        {
+          "origin": ":source",
+          "span": "fixtures/math/sigmoid.gravity:3:12"
+        }
+      ],
+      "source_span": {
+        "column": 12,
+        "line": 3,
+        "source": "fixtures/math/sigmoid.gravity"
+      }
+    }
+  ],
+  "elementary_function_registry": [
+    {
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "log": ":principal"
+      },
+      "codomain": {
+        "real": [
+          0,
+          1
+        ]
+      },
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "exceptional_values": {
+        "inf": ":domain-error",
+        "nan": ":propagate"
+      },
+      "function": "sigmoid",
+      "numeric_modes": [
+        ":certified-approx",
+        ":exact-real"
+      ],
+      "providers": [
+        "gravity.poly",
+        "gravity.libm"
+      ],
+      "semantic_form": "(/ 1 (+ 1 (exp (- x))))"
+    }
+  ],
+  "elementary_optimization_decisions": [
+    {
+      "autotune": {
+        "replayable": true,
+        "selection_record": "tune/sigmoid-poly"
+      },
+      "backend_lowering": {
+        "map": "lowering/sigmoid-llvm",
+        "preserves_efir": true
+      },
+      "candidates": [
+        {
+          "cost": {
+            "latency_ns": 37
+          },
+          "id": "libm/sigmoid",
+          "requires_proof": false,
+          "status": ":legal"
+        },
+        {
+          "cost": {
+            "latency_ns": 6
+          },
+          "id": "poly/sigmoid-degree9",
+          "proof": "cert/sigmoid-poly",
+          "requires_proof": true,
+          "status": ":legal"
+        },
+        {
+          "id": "hardware-native/sigmoid",
+          "reason": "missing error bound",
+          "status": ":rejected"
+        }
+      ],
+      "correct_rounding_target": {
+        "rounding_modes": [
+          ":nearest-even"
+        ],
+        "target_id": "round/sigmoid-f64-nearest-even",
+        "tie_policy": ":nearest-even"
+      },
+      "decision_id": "opt/sigmoid-poly",
+      "efir": "efir/sigmoid",
+      "fallback": "libm/sigmoid",
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "absolute_error_max": 1e-12
+      },
+      "profile": ":native",
+      "proofs": [
+        "cert/sigmoid-poly",
+        "proof/sigmoid-error"
+      ],
+      "rounding_interval_ledger": "ledger/sigmoid-rounding-interval",
+      "selected": "poly/sigmoid-degree9",
+      "source_spans": [
+        "fixtures/math/sigmoid.gravity:3:12"
+      ],
+      "target": "llvm-x86_64-linux"
+    }
+  ],
+  "eml_traces": [
+    {
+      "artifact_id": "eml/sigmoid-normalized",
+      "basis": ":exp-minus-log",
+      "branch_policy": {
+        "complex_intermediates": ":forbidden",
+        "log": ":principal"
+      },
+      "candidates": [
+        {
+          "branch_policy": {
+            "complex_intermediates": ":forbidden"
+          },
+          "candidate_id": "candidate/sigmoid-poly",
+          "proof": "cert/sigmoid-poly",
+          "state": ":bounded",
+          "used_for_lowering": true
+        }
+      ],
+      "domain": {
+        "x": {
+          "real": [
+            -8,
+            8
+          ]
+        }
+      },
+      "node_map": [
+        {
+          "efir": "n2",
+          "eml": "e2",
+          "span": "fixtures/math/sigmoid.gravity:3:12"
+        }
+      ],
+      "normalization_trace": [
+        {
+          "introduced_assumptions": [],
+          "invalidated": [],
+          "premises": [
+            ":domain-real"
+          ],
+          "rule": ":basis-introduce-exp",
+          "step": 1
+        }
+      ],
+      "numeric_mode": ":certified-approx",
+      "precision": {
+        "absolute_error_max": 1e-12,
+        "type": ":F64"
+      },
+      "search_manifest": {
+        "deterministic": true,
+        "fuel": {
+          "candidate_limit": 20000,
+          "time_ms": 500
+        },
+        "grammar": {
+          "basis": ":exp-minus-log",
+          "max_depth": 6
+        }
+      },
+      "source_efir": "efir/sigmoid",
+      "source_span": {
+        "column": 12,
+        "line": 3,
+        "source": "fixtures/math/sigmoid.gravity"
+      },
+      "trace_replayable": true
+    }
+  ],
+  "floating_manifests": [
+    {
+      "backend_lowering": {
+        "proof": "cert/sigmoid-poly",
+        "satisfies_manifest": true,
+        "target": "llvm-x86_64-linux"
+      },
+      "denormals": ":preserve",
+      "determinism": ":profile-target-stable",
+      "exceptions": {
+        "divide_by_zero": ":infinity",
+        "inexact": ":status-flag",
+        "invalid": ":quiet-nan",
+        "overflow": ":infinity",
+        "underflow": ":subnormal-or-zero-by-policy"
+      },
+      "fma": ":forbidden-unless-certified",
+      "fma_transform": false,
+      "format": ":binary64",
+      "infinity": ":ieee754",
+      "manifest_id": "float/sigmoid-f64",
+      "nan": {
+        "quiet": ":propagate",
+        "signaling": ":quiet-and-flag"
+      },
+      "numeric_mode": ":certified-approx",
+      "operation": "sigmoid",
+      "precision": {
+        "absolute_error_max": 1e-12
+      },
+      "reassociation": ":forbidden",
+      "reassociation_transform": false,
+      "rounding": ":nearest-ties-to-even",
+      "signed_zero": ":preserve",
+      "status_flags": ":observable-through-declared-api",
+      "strict": true
+    }
+  ],
+  "input_hash": "sha256:b3351195e9b6ee7029ab07a467714726caa8e0746ffbf822aae27ce3b82a8068",
+  "interval_proof_artifacts": [
+    {
+      "bound_ledger": {
+        "approximation": "42/100000000000000",
+        "reconstruction": "17/100000000000000",
+        "roundoff": "31/100000000000000"
+      },
+      "branch_policy": {
+        "complex_intermediates": ":forbidden"
+      },
+      "checker_transcript": "transcript/sigmoid-interval",
+      "claim": {
+        "bound": "1/1000000000000",
+        "kind": ":bounded-error"
+      },
+      "claim_id": "proof/sigmoid-error",
+      "domain": {
+        "x": {
+          "real": [
+            "-8",
+            "8"
+          ]
+        }
+      },
+      "domain_exact": true,
+      "numeric_mode": ":certified-approx",
+      "outward_rounding_proved": true,
+      "partition": {
+        "cells": [
+          {
+            "domain": {
+              "x": {
+                "real": [
+                  "-8",
+                  "0"
+                ]
+              }
+            },
+            "id": "c0",
+            "status": ":proved"
+          },
+          {
+            "domain": {
+              "x": {
+                "real": [
+                  "0",
+                  "8"
+                ]
+              }
+            },
+            "id": "c1",
+            "status": ":proved"
+          }
+        ],
+        "id": "partition/sigmoid",
+        "replayable": true,
+        "unresolved": []
+      },
+      "precision": {
+        "absolute_error_max": 1e-12,
+        "type": ":F64"
+      },
+      "safe15_reference": "safe15/cert/sigmoid-error",
+      "source": {
+        "efir": "efir/sigmoid",
+        "eml_candidate": "candidate/sigmoid-poly",
+        "span": "fixtures/math/sigmoid.gravity:3:12"
+      }
+    }
+  ],
+  "kind": "math-system-artifact",
+  "math_conformance_report": {
+    "documents": [
+      "MATH1",
+      "MATH2",
+      "MATH3",
+      "MATH4",
+      "MATH5",
+      "MATH6",
+      "MATH7",
+      "MATH8",
+      "MATH9",
+      "MATH10"
+    ],
+    "fixtures": [
+      {
+        "actual": {
+          "compile": ":accepted",
+          "diagnostic": null
+        },
+        "domain": {
+          "x": {
+            "real": [
+              -1,
+              1
+            ]
+          }
+        },
+        "expected": {
+          "compile": ":accepted",
+          "diagnostic": null
+        },
+        "expected_artifacts": [
+          ":efir",
+          ":approximation-certificate",
+          ":floating-manifest",
+          ":lowering-record"
+        ],
+        "fixture_id": "sin-certified-f64-basic",
+        "mode": ":certified-approx",
+        "profile": ":native",
+        "source": "(sin x)",
+        "target": ":x86_64-linux"
+      },
+      {
+        "actual": {
+          "compile": ":rejected",
+          "diagnostic": "MATH1-NARROW"
+        },
+        "domain": {
+          "big-i64": {
+            "int": [
+              -9223372036854775808,
+              9223372036854775807
+            ]
+          }
+        },
+        "expected": {
+          "compile": ":rejected",
+          "diagnostic": "MATH1-NARROW"
+        },
+        "expected_artifacts": [
+          ":diagnostic"
+        ],
+        "fixture_id": "implicit-narrow-rejected",
+        "mode": ":checked",
+        "profile": ":native",
+        "source": "(as I32 big-i64)",
+        "target": ":x86_64-linux"
+      }
+    ],
+    "invalidation_tests": [
+      ":source-change",
+      ":domain-change",
+      ":numeric-mode-change",
+      ":target-feature-change",
+      ":provider-version-change"
+    ],
+    "oracles": [
+      ":exact-rational",
+      ":interval-checker",
+      ":symbolic-checker",
+      ":provider-conformance"
+    ],
+    "profiles": [
+      ":core",
+      ":hosted",
+      ":native",
+      ":gpu",
+      ":formal",
+      ":firmware"
+    ],
+    "result_matrix": [
+      {
+        "profile": ":native",
+        "status": ":passed",
+        "target": ":x86_64-linux"
+      }
+    ],
+    "suite_id": "suite/math-phase05",
+    "targets": [
+      ":portable",
+      ":x86_64-linux",
+      ":wasm32",
+      ":gpu-sm80"
+    ]
+  },
+  "module": "math/elementary",
+  "numeric_kind_lattice": [
+    ":fixed-int",
+    ":big-int",
+    ":ratio",
+    ":real",
+    ":floating",
+    ":complex",
+    ":interval",
+    ":symbolic",
+    ":quantity"
+  ],
+  "numeric_mode_table": {
+    "inheritance_trace": [
+      {
+        "local_override": ":none",
+        "resolved": ":certified-approx",
+        "source": "namespace math.core"
+      }
+    ],
+    "mode_environment": [
+      {
+        "downgrade": false,
+        "mode": ":certified-approx",
+        "numeric_mode": ":certified-approx",
+        "precision": {
+          "absolute_error_max": 1e-12,
+          "type": ":F64"
+        },
+        "profile": ":native",
+        "rounding": ":nearest-even",
+        "scope": "function/sigmoid",
+        "target": "llvm-x86_64-linux",
+        "target_default": false
+      }
+    ],
+    "precision_contracts": [
+      {
+        "absolute_error_max": 1e-12,
+        "certificate_required": true,
+        "domain": {
+          "x": {
+            "real": [
+              -8,
+              8
+            ]
+          }
+        },
+        "id": "precision/sigmoid-f64",
+        "mode": ":certified-approx"
+      }
+    ],
+    "provider_mode_eligibility": [
+      {
+        "mode": ":certified-approx",
+        "provider": "gravity.poly",
+        "status": ":eligible"
+      }
+    ]
+  },
+  "package": "gravity.math.phase05",
+  "phase": "05",
+  "profile_support_matrix": [
+    {
+      "families": [
+        ":fixed-int",
+        ":symbolic"
+      ],
+      "modes": [
+        ":checked",
+        ":symbolic"
+      ],
+      "profile": ":core"
+    },
+    {
+      "families": [
+        ":fixed-int",
+        ":floating",
+        ":interval",
+        ":symbolic"
+      ],
+      "modes": [
+        ":checked",
+        ":certified-approx",
+        ":correctly-rounded"
+      ],
+      "profile": ":native"
+    },
+    {
+      "families": [
+        ":real",
+        ":interval",
+        ":symbolic"
+      ],
+      "modes": [
+        ":exact-real",
+        ":interval",
+        ":symbolic"
+      ],
+      "profile": ":formal"
+    }
+  ],
+  "provider_eligibility_reports": [
+    {
+      "certificate": "cert/sigmoid-poly",
+      "function": "sigmoid",
+      "profile": ":native",
+      "provider": "gravity.poly",
+      "status": ":eligible",
+      "target": "llvm-x86_64-linux"
+    },
+    {
+      "function": "sigmoid",
+      "profile": ":native",
+      "provider": "gravity.fast",
+      "reason": "missing certificate",
+      "status": ":rejected",
+      "target": "llvm-x86_64-linux"
+    }
+  ],
+  "rewrite_rule_registry": [
+    {
+      "branch_policy": {
+        "cos": ":real",
+        "sin": ":real",
+        "tan": ":principal"
+      },
+      "domain": {
+        "x": {
+          "real": ":all"
+        }
+      },
+      "numeric_modes": [
+        ":symbolic",
+        ":exact-real",
+        ":interval"
+      ],
+      "pattern": "(tan x)",
+      "proof_ref": "proof/tan-via-sin-cos",
+      "proof_status": ":proved",
+      "replacement": "(/ (sin x) (cos x))",
+      "rule_id": "rewrite/tan-via-sin-cos",
+      "source": {
+        "package": "gravity.math",
+        "span": "stdlib/math/rewrite.gravity:9:1"
+      },
+      "tree_identity_equality": false,
+      "used_for_code": true
+    }
+  ],
+  "rewrite_trace_reports": [
+    {
+      "preserved": [
+        ":domain",
+        ":branch-policy",
+        ":floating-manifest"
+      ],
+      "rule": "rewrite/tan-via-sin-cos",
+      "state": ":proved",
+      "step": 1,
+      "trace_id": "trace/tan-via-sin-cos"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{:proof-id :stage0-perf1-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D059
+ :document "PERF1"
+ :status :passed
+ :governing-document "docs/phase-04-performance-model/059-perf1-performance-model-specification.md"
+ :capability :performance-model-specification-document-coverage
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/performance-claim.gravity"
+ :accepted-artifact-kind :gravity/stage0-performance-claim-artifact
+ :required-artifacts
+ [:performance-contract-manifest
+  :optimization-decision-log
+  :target-feature-report
+  :layout-input-shape-record
+  :benchmark-report
+  :proof-index
+  :generated-variant-manifest
+  :performance-conformance-results]
+ :rejected-diagnostics
+ ["PERF1-CLAIM" "PERF1-EVIDENCE" "PERF1-SAFETY" "PERF1-PROFILE"
+  "PERF1-EFFECT" "PERF1-CAPABILITY" "PERF1-NUMERIC" "PERF1-TARGET"
+  "PERF1-VARIANT"]
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"
+ :limits
+ ["This completes PERF1 document coverage for the Clojure stage0 boundary only."]}

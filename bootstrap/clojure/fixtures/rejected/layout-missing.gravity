@@ -1,0 +1,37 @@
+(ns performance.bad.layout-missing
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/layout-missing
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:type :Particle}
+                :layout {:source :array-of-structs}
+                :safety-mode :safe-optimized
+                :semantic-proof #{:field-semantics-preserved}
+                :safety-proof #{:ownership-preserved}
+                :benchmark {:harness :bench/layout-bad
+                            :environment-fingerprint {:cpu :x86-64}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :layout
+               {:suite-id :perf4/bad-layout
+                :records
+                [{:record-id :layout/missing
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :layout :struct-of-arrays
+                  :transformation :aos-to-soa
+                  :fields []
+                  :alignment 64
+                  :abi :internal
+                  :proofs #{:alias-proof}
+                  :artifacts #{:layout-manifest}}]}}}))
+
+(def bad true)

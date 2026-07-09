@@ -1,0 +1,89 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D105
+ :date "2026-06-29"
+ :status :complete
+ :capability :b8-gpu-backend-document-coverage
+ :command "clojure -M:gravity backend-b8-gpu-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+ :artifact-kind :gravity/stage0-b8-gpu-backend-document-artifact
+ :artifact-hash "sha256:92258a5fed1a81d9295eb082155911aeb3c79e936e5201e8c0c0f7495e9662b7"
+ :summary {:diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 10
+           :kernel-module-hash "sha256:f2b13b2b56e21f406643c86dfe48614a352fe1a576aab850df9a6100fe2d1671"
+           :host-stub-hash "sha256:543a2842d5813b241d9223d415a51a5a2da7eb6b85ea04ede41d367e22147a51"
+           :kernel-structural true
+           :host-stub-structural true
+           :external-spirv-validation :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b8-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-kernel.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-host-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-memory.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-transfer.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-sync.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-atomic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-launch.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-math.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b8-manifest.gravity"]
+ :diagnostics ["B8-TARGET"
+               "B8-KERNEL"
+               "B8-HOST-EFFECT"
+               "B8-MEMORY"
+               "B8-TRANSFER"
+               "B8-SYNC"
+               "B8-ATOMIC"
+               "B8-LAUNCH"
+               "B8-MATH"
+               "B8-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :target-feature-binary-format-covered? true
+                :host-device-boundary-declared? true
+                :kernel-legality-covered? true
+                :host-effect-absence-covered? true
+                :device-memory-lifetimes-covered? true
+                :explicit-transfer-graph-covered? true
+                :synchronization-graph-covered? true
+                :atomics-memory-scope-covered? true
+                :launch-occupancy-covered? true
+                :math-certificate-covered? true
+                :source-debug-map-preserved? true
+                :kernel-structurally-valid? true
+                :host-stub-structurally-valid? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :external-spirv-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 84 tests containing 4859 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1136}
+              {:command "clojure -M:gravity backend-b8-gpu-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:92258a5fed1a81d9295eb082155911aeb3c79e936e5201e8c0c0f7495e9662b7"}
+              {:command "clojure -M -e <extract B8 GPU kernel and host stub>"
+               :result {:dir "/tmp/gravity-p07-b8-gpu"
+                        :files ["gravity_stage0_gpu.spvasm"
+                                "gravity_stage0_gpu_host.c"]
+                        :kernel-structural true
+                        :host-stub-structural true}}
+              {:command "sed -n '1,35p' /tmp/gravity-p07-b8-gpu/gravity_stage0_gpu.spvasm"
+               :result :passed}
+              {:command "sed -n '1,20p' /tmp/gravity-p07-b8-gpu/gravity_stage0_gpu_host.c"
+               :result :passed}
+              {:command "spirv-val --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: spirv-val"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 14 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D105 for deterministic Clojure stage0 coverage of the B8 GPU backend design document contract."
+                 "The emitted GPU kernel and host stub have structural stage0 validation, host/device boundary records, device memory lifetimes, transfer and synchronization graphs, atomics, launch descriptors, target feature and occupancy records, math certificates, and source/proof metadata preservation evidence."
+                 "The current environment does not provide spirv-val, so external SPIR-V validation remains unavailable; this does not claim production GPU code generation, device execution, driver/toolchain validation, or full Phase 07 completion."]}

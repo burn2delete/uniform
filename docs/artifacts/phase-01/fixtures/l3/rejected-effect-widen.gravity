@@ -1,0 +1,6 @@
+(ns l3.bad.effect
+  (:profile :hosted)
+  (:capabilities #{:io/stdout}))
+
+(def main
+  (println "undeclared effect"))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-interop.json",
+  "set": {
+    "/generated_bindings/0/current_schema_digest": "sha256:graphql-schema-v2"
+  }
+}

@@ -1,0 +1,11 @@
+(ns compiler.c1-self-host
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c1-architecture {:fail :self-host}}}))
+
+(defn main []
+  true)

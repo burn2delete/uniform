@@ -1,0 +1,540 @@
+; Stage1 Gravity-owned B12 mobile backend source-model contract.
+(ns gravity.backend.b12-mobile-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b12-mobile-backend-contract
+             b12-platform-target-contract
+             b12-mobile-ir-handoff-contract
+             b12-platform-binding-contract
+             b12-permission-manifest-contract
+             b12-resource-asset-contract
+             b12-lifecycle-threading-contract
+             b12-null-error-callback-contract
+             b12-storage-sync-contract
+             b12-store-audit-contract
+             b12-artifact-manifest-contract
+             b12-diagnostic-catalog
+             build-b12-mobile-backend-manifest
+             build-b12-platform-target-record
+             build-b12-mobile-ir-handoff-record
+             build-b12-platform-binding-record
+             build-b12-permission-record
+             build-b12-lifecycle-threading-record
+             build-b12-null-error-callback-record
+             build-b12-storage-sync-record
+             build-b12-artifact-record
+             verify-b12-mobile-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :mobile-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B12" "B1" "D1" "D3"
+                                        "C12" "C14" "P4" "P5" "P13"
+                                        "SAFE5" "SAFE10" "SAFE11" "SAFE13"
+                                        "B13" "B14" "R1" "R4" "R5" "R6"
+                                        "R11" "R12" "PKG7" "PKG10" "PKG12"
+                                        "BOOT1" "BOOT3" "BOOT8" "TEST13"]
+               :documents ["B12" "B1" "D1" "D3"
+                           "C12" "C14" "P4" "P5" "P13"
+                           "SAFE5" "SAFE10" "SAFE11" "SAFE13"
+                           "B13" "B14" "R1" "R4" "R5" "R6"
+                           "R11" "R12" "PKG7" "PKG10" "PKG12"
+                           "BOOT1" "BOOT3" "BOOT8" "TEST13"]
+               :implements [:mobile-backend-source-model
+                             :mobile-ir-handoff-contract
+                             :platform-target-record-contract
+                             :platform-binding-descriptor-contract
+                             :permission-manifest-contract
+                             :resource-asset-manifest-contract
+                             :lifecycle-threading-contract
+                             :null-error-callback-adapter-contract
+                             :storage-sync-schema-contract
+                             :store-audit-metadata-contract
+                             :mobile-artifact-manifest-contract
+                             :stable-b12-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :mobile-ir-anchor :ui-domain-ir-anchor
+                            :profile-contracts :target-contracts
+                            :platform :os-range :architecture :abi
+                            :bundle-id :package-id :packaging-mode
+                            :runtime-provider :ui-bridge
+                            :lifecycle-model :threading-model
+                            :permission-model :app-store-policy-target
+                            :platform-binding-descriptors
+                            :typed-platform-adapters
+                            :nullability-policy :error-mapping
+                            :callback-adapters :deep-link-adapters
+                            :scene-activity-intent-adapters
+                            :effect-facts :capability-facts
+                            :permission-manifest
+                            :resource-asset-manifest
+                            :background-task-policy
+                            :local-storage-schema
+                            :migration-policy :offline-sync-policy
+                            :sensor-camera-microphone-policy
+                            :notification-policy :keychain-policy
+                            :network-policy :bluetooth-policy
+                            :store-audit-metadata
+                            :source-debug-map
+                            :device-simulator-conformance-record
+                            :safety-outcomes
+                            :proof-references
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :mobile-simulator :mobile-device
+                                    :platform-api :signing-service
+                                    :app-store-connect :permission-prompt
+                                    :sensor :camera :microphone
+                                    :contacts :photos :location
+                                    :bluetooth :keychain :notification
+                                    :local-database :background-task]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b12-mobile-backend-contract-subset
+                                    :clojure-b12-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b12-target.gravity"
+                              "backend-b12-permission.gravity"
+                              "backend-b12-lifecycle.gravity"
+                              "backend-b12-thread.gravity"
+                              "backend-b12-null.gravity"
+                              "backend-b12-error.gravity"
+                              "backend-b12-background.gravity"
+                              "backend-b12-storage.gravity"
+                              "backend-b12-resource.gravity"
+                              "backend-b12-manifest.gravity"]}}}))
+
+(def b12-mobile-backend-contract
+  {:artifact :gravity/b12-mobile-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/mobile
+   :component :mobile-backend
+   :target :mobile-app-bundle
+   :accepts [:verified-mir :verified-ui-domain-ir :verified-mobile-domain-ir]
+   :emits [:mobile-backend-manifest
+           :platform-target-record
+           :app-bundle-artifact
+           :platform-binding-descriptors
+           :permission-manifest
+           :resource-asset-manifest
+           :lifecycle-threading-map
+           :ui-bridge-metadata
+           :null-error-callback-adapter-record
+           :local-storage-sync-schema-bundle
+           :store-audit-metadata
+           :source-debug-map
+           :device-simulator-conformance-record
+           :mobile-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :c12-ui-or-mobile-domain-ir
+              :c14-target-lowering-record
+              :platform-target-record
+              :permission-manifest
+              :capability-manifest
+              :lifecycle-threading-contract
+              :platform-binding-map
+              :resource-asset-manifest
+              :storage-sync-schema
+              :artifact-provenance]
+   :rules [:backend-consumes-verified-mir-or-domain-ir-not-raw-source
+           :platform-api-calls-require-effects-capabilities-and-permissions
+           :ui-work-runs-on-main-thread-or-platform-actor
+           :background-work-sensors-network-storage-and-notifications-require-policy
+           :platform-null-errors-callbacks-intents-scenes-and-deep-links-are-typed
+           :offline-sync-local-persistence-and-replay-use-schema-and-migration-artifacts
+           :source-proof-safety-capability-profile-and-provenance-metadata-are-preserved]
+   :forbidden [:unchecked-source-input
+               :platform-api-without-capability
+               :permissionless-platform-api
+               :hidden-background-work
+               :unmodeled-lifecycle-assumption
+               :ui-update-off-main-thread
+               :unchecked-platform-null
+               :unmapped-platform-exception
+               :callback-without-effect
+               :storage-without-schema
+               :bundle-without-manifest]})
+
+(def b12-platform-target-contract
+  {:artifact :gravity/b12-platform-target-contract
+   :required-fields [:platform
+                     :os-range
+                     :architecture
+                     :bundle-or-package-id
+                     :packaging-mode
+                     :runtime-provider
+                     :ui-bridge
+                     :lifecycle-model
+                     :threading-model
+                     :permission-model
+                     :app-store-policy-target]
+   :rules [:platform-os-architecture-and-bundle-identity-are-declared
+           :runtime-provider-and-ui-bridge-are-explicit
+           :store-policy-target-is-recorded-before-release]
+   :reject-when [:missing-platform
+                 :missing-os-range
+                 :missing-architecture
+                 :missing-bundle-or-package-id
+                 :unsupported-ui-bridge
+                 :missing-store-policy-target]})
+
+(def b12-mobile-ir-handoff-contract
+  {:artifact :gravity/b12-mobile-ir-handoff-contract
+   :required-fields [:domain-anchor
+                     :source-artifact
+                     :accepted-by
+                     :mobile-ir-version
+                     :profile
+                     :target
+                     :source-generated-origin-links]
+   :rules [:input-is-verified-mir-ui-domain-ir-or-mobile-domain-ir
+           :ordinary-source-forms-are-not-accepted-by-backend
+           :origin-links-connect-mir-domain-ir-and-mobile-artifacts]
+   :reject-when [:missing-mobile-anchor
+                 :unchecked-source-input
+                 :missing-origin-link
+                 :unverified-target-lowering-record]})
+
+(def b12-platform-binding-contract
+  {:artifact :gravity/b12-platform-binding-contract
+   :required-fields [:platform-symbol
+                     :framework
+                     :gravity-type
+                     :platform-type
+                     :nullability
+                     :error-mapping
+                     :thread-affinity
+                     :lifecycle-state-required
+                     :permission
+                     :capability
+                     :taint-policy
+                     :resource-cleanup
+                     :source-generated-origin-chain]
+   :rules [:platform-calls-are-through-typed-adapters
+           :nullability-and-error-behavior-are-explicit
+           :thread-and-lifecycle-affinity-are-checked
+           :permissions-and-capabilities-authorize-platform-use]
+   :reject-when [:missing-platform-adapter
+                 :unchecked-nullability
+                 :unmapped-platform-error
+                 :missing-permission
+                 :missing-capability
+                 :invalid-thread-affinity
+                 :missing-resource-cleanup]})
+
+(def b12-permission-manifest-contract
+  {:artifact :gravity/b12-permission-manifest-contract
+   :required-fields [:permissions
+                     :capabilities
+                     :permission-text
+                     :deployment-grants
+                     :runtime-requests
+                     :denial-policy
+                     :policy-source-location]
+   :rules [:permissions-are-derived-from-effects-and-capabilities
+           :platform-prompts-and-store-declarations-match-manifest
+           :denied-permissions-return-typed-errors-or-disable-feature]
+   :reject-when [:permissionless-platform-api
+                 :permission-without-capability
+                 :capability-without-permission-policy
+                 :missing-user-facing-reason
+                 :missing-denial-policy]})
+
+(def b12-resource-asset-contract
+  {:artifact :gravity/b12-resource-asset-contract
+   :required-fields [:app-bundle
+                     :assets
+                     :resources
+                     :native-libraries
+                     :content-hashes
+                     :source-origin-links
+                     :package-policy]
+   :rules [:bundle-resources-have-content-hashes-and-origin-links
+           :native-libraries-record-abi-profile-and-safety-boundaries
+           :asset-and-resource-manifests-feed-package-provenance]
+   :reject-when [:bundle-without-manifest
+                 :resource-without-hash
+                 :asset-without-origin
+                 :native-library-without-abi
+                 :package-policy-gap]})
+
+(def b12-lifecycle-threading-contract
+  {:artifact :gravity/b12-lifecycle-threading-contract
+   :required-fields [:lifecycle-states
+                     :ui-thread
+                     :platform-actor
+                     :background-workers
+                     :structured-concurrency-policy
+                     :cancellation-policy
+                     :callback-affinity
+                     :deep-link-policy
+                     :notification-policy]
+   :rules [:ui-updates-run-on-main-thread-or-platform-actor
+           :callbacks-deep-links-intents-and-scenes-enter-typed-adapters
+           :background-work-is-explicit-and-cancellable]
+   :reject-when [:missing-lifecycle-state
+                 :ui-update-off-main-thread
+                 :unmodeled-callback-affinity
+                 :hidden-background-work
+                 :missing-cancellation-policy]})
+
+(def b12-null-error-callback-contract
+  {:artifact :gravity/b12-null-error-callback-contract
+   :required-fields [:platform-null-policy
+                     :exception-policy
+                     :callback-policy
+                     :intent-activity-scene-policy
+                     :deep-link-policy
+                     :delegate-method-policy
+                     :typed-error-map
+                     :typed-effect-map]
+   :rules [:platform-nulls-map-to-gravity-option-or-checked-error
+           :platform-exceptions-map-to-gravity-errors
+           :callbacks-intents-activities-scenes-and-deep-links-are-typed]
+   :reject-when [:unchecked-platform-null
+                 :unmapped-platform-exception
+                 :callback-without-effect
+                 :deep-link-without-typed-route
+                 :delegate-method-without-adapter]})
+
+(def b12-storage-sync-contract
+  {:artifact :gravity/b12-storage-sync-contract
+   :required-fields [:local-schema
+                     :migration-policy
+                     :storage-provider
+                     :retention-policy
+                     :backup-policy
+                     :sync-behavior
+                     :conflict-handling
+                     :offline-queue-replay
+                     :taint-category
+                     :capability]
+   :rules [:local-persistence-is-schema-and-migration-backed
+           :offline-sync-and-replay-are-idempotent-and-policy-recorded
+           :storage-network-and-secret-boundaries-require-capabilities]
+   :reject-when [:storage-without-schema
+                 :missing-migration-policy
+                 :unmodeled-conflict-resolution
+                 :offline-replay-without-idempotency
+                 :storage-capability-gap]})
+
+(def b12-store-audit-contract
+  {:artifact :gravity/b12-store-audit-contract
+   :required-fields [:permissions
+                     :privacy-labels
+                     :background-modes
+                     :tracking-policy
+                     :ai-tool-provider-policy
+                     :release-policy-target
+                     :source-provenance]
+   :rules [:store-audit-metadata-is-generated-from-permissions-effects-and-capabilities
+           :privacy-background-tracking-and-ai-provider-policy-is-recorded
+           :release-path-keeps-source-provenance-and-review-evidence]
+   :reject-when [:missing-privacy-label
+                 :undeclared-background-mode
+                 :tracking-policy-gap
+                 :ai-provider-policy-gap
+                 :missing-release-policy-target]})
+
+(def b12-artifact-manifest-contract
+  {:artifact :gravity/b12-artifact-manifest-contract
+   :required-fields [:mobile-backend-manifest
+                     :platform-target-record
+                     :app-bundle-artifact
+                     :platform-binding-descriptors
+                     :permission-manifest
+                     :resource-asset-manifest
+                     :lifecycle-threading-map
+                     :null-error-callback-adapter-record
+                     :local-storage-sync-schema-bundle
+                     :store-audit-metadata
+                     :diagnostic-stream
+                     :source-debug-map
+                     :device-simulator-conformance-record
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :bundle-resources-record-content-hash-and-origin
+           :permission-and-capability-manifests-link-to-source-spans
+           :source-debug-map-links-platform-artifacts-to-source-units
+           :conformance-record-distinguishes-source-model-from-device-execution]
+   :forbidden [:app-bundle-without-manifest
+               :platform-binding-without-adapter-record
+               :permission-manifest-without-capability-links
+               :source-map-without-source-origin
+               :device-execution-claim-without-proof]})
+
+(def b12-diagnostic-catalog
+  {:artifact :gravity/b12-diagnostic-catalog
+   :ids [{:id "B12-TARGET"
+          :meaning :missing-or-unsupported-platform-target}
+         {:id "B12-PERMISSION"
+          :meaning :platform-api-permission-or-capability-gap}
+         {:id "B12-LIFECYCLE"
+          :meaning :missing-or-unmodeled-mobile-lifecycle-state}
+         {:id "B12-THREAD"
+          :meaning :ui-platform-actor-or-thread-affinity-violation}
+         {:id "B12-NULL"
+          :meaning :unchecked-platform-null-or-callback-value}
+         {:id "B12-ERROR"
+          :meaning :unmapped-platform-exception-or-error}
+         {:id "B12-BACKGROUND"
+          :meaning :hidden-or-unauthorized-background-work}
+         {:id "B12-STORAGE"
+          :meaning :local-storage-sync-schema-or-migration-gap}
+         {:id "B12-RESOURCE"
+          :meaning :resource-asset-bundle-or-native-library-manifest-gap}
+         {:id "B12-MANIFEST"
+          :meaning :incomplete-mobile-artifact-manifest}]
+   :required-diagnostic-fields [:source-span
+                                :generated-origin-chain
+                                :platform
+                                :os-range
+                                :bundle-or-package-id
+                                :platform-symbol
+                                :effect
+                                :capability
+                                :permission
+                                :lifecycle-state
+                                :thread-affinity
+                                :resource-id
+                                :remediation]})
+
+(defn build-b12-mobile-backend-manifest
+  [target emits requires rejects]
+  {:artifact :gravity/mobile-backend-manifest
+   :backend :gravity.backend/mobile
+   :version "source-model-v1"
+   :target target
+   :emits emits
+   :requires requires
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b12-platform-target-record
+  [platform os-range architecture bundle-or-package-id ui-bridge policy-target]
+  {:artifact :gravity/b12-platform-target-record
+   :platform platform
+   :os-range os-range
+   :architecture architecture
+   :bundle-or-package-id bundle-or-package-id
+   :ui-bridge ui-bridge
+   :app-store-policy-target policy-target
+   :required-fields (:required-fields b12-platform-target-contract)
+   :source-model-only? true})
+
+(defn build-b12-mobile-ir-handoff-record
+  [domain-anchor source-artifact mobile-ir-version origin-links]
+  {:artifact :gravity/b12-mobile-ir-handoff-record
+   :domain-anchor domain-anchor
+   :source-artifact source-artifact
+   :mobile-ir-version mobile-ir-version
+   :source-generated-origin-links origin-links
+   :required-fields (:required-fields b12-mobile-ir-handoff-contract)
+   :source-model-only? true})
+
+(defn build-b12-platform-binding-record
+  [platform-symbol framework gravity-type platform-type capability permission]
+  {:artifact :gravity/b12-platform-binding-record
+   :platform-symbol platform-symbol
+   :framework framework
+   :gravity-type gravity-type
+   :platform-type platform-type
+   :capability capability
+   :permission permission
+   :required-fields (:required-fields b12-platform-binding-contract)
+   :source-model-only? true})
+
+(defn build-b12-permission-record
+  [permission capability permission-text denial-policy source-location]
+  {:artifact :gravity/b12-permission-record
+   :permission permission
+   :capability capability
+   :permission-text permission-text
+   :denial-policy denial-policy
+   :policy-source-location source-location
+   :required-fields (:required-fields b12-permission-manifest-contract)
+   :source-model-only? true})
+
+(defn build-b12-lifecycle-threading-record
+  [lifecycle-states ui-thread platform-actor background-workers callback-affinity]
+  {:artifact :gravity/b12-lifecycle-threading-record
+   :lifecycle-states lifecycle-states
+   :ui-thread ui-thread
+   :platform-actor platform-actor
+   :background-workers background-workers
+   :callback-affinity callback-affinity
+   :required-fields (:required-fields b12-lifecycle-threading-contract)
+   :source-model-only? true})
+
+(defn build-b12-null-error-callback-record
+  [platform-null-policy exception-policy callback-policy typed-error-map]
+  {:artifact :gravity/b12-null-error-callback-record
+   :platform-null-policy platform-null-policy
+   :exception-policy exception-policy
+   :callback-policy callback-policy
+   :typed-error-map typed-error-map
+   :required-fields (:required-fields b12-null-error-callback-contract)
+   :source-model-only? true})
+
+(defn build-b12-storage-sync-record
+  [local-schema migration-policy storage-provider sync-behavior capability]
+  {:artifact :gravity/b12-storage-sync-record
+   :local-schema local-schema
+   :migration-policy migration-policy
+   :storage-provider storage-provider
+   :sync-behavior sync-behavior
+   :capability capability
+   :required-fields (:required-fields b12-storage-sync-contract)
+   :source-model-only? true})
+
+(defn build-b12-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b12-mobile-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b12-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b12-mobile-backend-design
+  [manifest]
+  {:artifact :gravity/b12-mobile-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-mir-or-domain-ir? true
+   :platform-target-covered? true
+   :platform-bindings-covered? true
+   :permission-capability-checks-covered? true
+   :resource-assets-covered? true
+   :lifecycle-threading-covered? true
+   :null-error-callback-adapters-covered? true
+   :storage-sync-migration-covered? true
+   :store-audit-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :simulator-execution-claimed? false
+   :device-execution-claimed? false
+   :production-app-bundle-claimed? false
+   :source-model-only? true})

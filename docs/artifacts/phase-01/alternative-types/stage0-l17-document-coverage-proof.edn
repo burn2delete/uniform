@@ -1,0 +1,75 @@
+{:task-id :P01-D027
+ :document "docs/phase-01-core-language/027-l17-alternative-type-system-contract.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/alternative-type.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-alttype-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/alternative-type.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'alternative.type
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:capability-preservation
+                                       :diagnostic-map
+                                       :domain-fact
+                                       :effect-preservation
+                                       :fact-export
+                                       :gradual-boundary
+                                       :l15-capability-export
+                                       :macro-generated-map
+                                       :optimization-proof
+                                       :ownership-facts
+                                       :profile-soundness
+                                       :proof-artifact
+                                       :provider
+                                       :reference-compatibility
+                                       :runtime-check
+                                       :safe-profile-evidence
+                                       :source-span
+                                       :typed-core-lowering]
+                    :provider-declarations 1
+                    :typed-core-lowering-rules 1
+                    :fact-export-schemas 1
+                    :proof-artifacts 1
+                    :runtime-check-records 1
+                    :diagnostic-mapping-records 1
+                    :compatibility-reports 1
+                    :profile-soundness-evidence 1
+                    :effect-capability-records 1
+                    :ownership-facts 1
+                    :gradual-boundaries 1
+                    :domain-facts 1
+                    :optimization-proofs 1
+                    :capability-basis :selected-provider-lowers-to-typed-core-with-preserved-effects-capabilities-facts-and-proof-refs}
+ :rejected-diagnostics [{:fixture "typed-alttype-provider.gravity"
+                         :diagnostic "L17-PROVIDER"}
+                        {:fixture "typed-alttype-lowering.gravity"
+                         :diagnostic "L17-LOWERING"}
+                        {:fixture "typed-alttype-soundness.gravity"
+                         :diagnostic "L17-SOUNDNESS"}
+                        {:fixture "typed-alttype-effect-erasure.gravity"
+                         :diagnostic "L17-EFFECT-ERASURE"}
+                        {:fixture "typed-alttype-capability-erasure.gravity"
+                         :diagnostic "L17-CAPABILITY-ERASURE"}
+                        {:fixture "typed-alttype-ownership-fact.gravity"
+                         :diagnostic "L17-OWNERSHIP-FACT"}
+                        {:fixture "typed-alttype-gradual-boundary.gravity"
+                         :diagnostic "L17-GRADUAL-BOUNDARY"}
+                        {:fixture "typed-alttype-unsafe-cast.gravity"
+                         :diagnostic "L17-UNSAFE-CAST"}
+                        {:fixture "typed-alttype-domain-fact.gravity"
+                         :diagnostic "L17-DOMAIN-FACT"}
+                        {:fixture "typed-alttype-diagnostic-map.gravity"
+                         :diagnostic "L17-DIAGNOSTIC-MAP"}]
+ :validation [{:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/alternative-type.gravity"
+               :result "emitted :gravity/stage0-typed-core-artifact with complete L17 alternative type conformance"}
+              {:command "clojure -M:test"
+               :result "20 tests, 837 assertions, 152 rejected fixtures"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 10 L17 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records the alternative type-system contract and typed-core boundary evidence but does not implement a second production solver."
+                  "Full L5 corpus comparison, production proof checking, language-server integration, and optimizer use of refinement artifacts remain downstream work."
+                  "Self-hosted alternative type checking remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

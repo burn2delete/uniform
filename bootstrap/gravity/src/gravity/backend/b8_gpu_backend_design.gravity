@@ -1,0 +1,498 @@
+; Stage1 Gravity-owned B8 GPU backend source-model contract.
+(ns gravity.backend.b8-gpu-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b8-gpu-backend-contract
+             b8-host-device-boundary-contract
+             b8-kernel-lowering-contract
+             b8-device-memory-contract
+             b8-transfer-graph-contract
+             b8-synchronization-contract
+             b8-launch-occupancy-contract
+             b8-math-certificate-contract
+             b8-artifact-manifest-contract
+             b8-diagnostic-catalog
+             build-b8-gpu-backend-manifest
+             build-b8-host-device-boundary-record
+             build-b8-kernel-lowering-record
+             build-b8-device-memory-record
+             build-b8-transfer-graph-record
+             build-b8-synchronization-record
+             build-b8-launch-descriptor
+             build-b8-math-certificate-bundle
+             build-b8-artifact-record
+             verify-b8-gpu-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :gpu-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B8" "B1" "D1" "D3"
+                                        "C11" "C12" "C14" "B7"
+                                        "P5" "P11"
+                                        "SAFE2" "SAFE5" "SAFE8"
+                                        "SAFE9" "SAFE10" "SAFE15"
+                                        "PERF8" "PERF10"
+                                        "MATH5" "MATH8"
+                                        "B13" "B14" "R1" "R5"
+                                        "PKG7" "BOOT1" "BOOT3"
+                                        "BOOT8" "TEST13"]
+               :documents ["B8" "B1" "D1" "D3"
+                           "C11" "C12" "C14" "B7"
+                           "P5" "P11"
+                           "SAFE2" "SAFE5" "SAFE8"
+                           "SAFE9" "SAFE10" "SAFE15"
+                           "PERF8" "PERF10"
+                           "MATH5" "MATH8"
+                           "B13" "B14" "R1" "R5"
+                           "PKG7" "BOOT1" "BOOT3"
+                           "BOOT8" "TEST13"]
+               :implements [:gpu-backend-source-model
+                             :host-device-boundary-contract
+                             :kernel-lowering-contract
+                             :device-memory-lifetime-contract
+                             :transfer-graph-contract
+                             :synchronization-graph-contract
+                             :launch-occupancy-contract
+                             :math-certificate-contract
+                             :gpu-artifact-manifest-contract
+                             :stable-b8-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :gpu-profile-legality
+                            :host-device-boundary
+                            :kernel-symbols :kernel-argument-schemas
+                            :address-space-facts :layout-facts
+                            :alignment-facts :alias-facts
+                            :lifetime-facts :mutability-facts
+                            :transfer-state-facts
+                            :linear-device-buffer-ownership
+                            :transfer-graph :synchronization-graph
+                            :barrier-facts :atomic-order-facts
+                            :memory-scope-facts :queue-stream-ordering
+                            :launch-geometry :occupancy-assumptions
+                            :shared-local-memory-usage
+                            :register-pressure-assumptions
+                            :target-feature-record
+                            :numeric-mode-facts
+                            :math-certificate-references
+                            :effect-facts :capability-facts
+                            :safety-outcomes
+                            :proof-references
+                            :source-debug-map
+                            :generated-origin-maps
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :gpu-device
+                                    :cuda-toolchain :spirv-toolchain
+                                    :metal-toolchain :webgpu-adapter
+                                    :vendor-dsp-toolchain]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b8-gpu-backend-contract-subset
+                                    :clojure-b8-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b8-target.gravity"
+                              "backend-b8-kernel.gravity"
+                              "backend-b8-host-effect.gravity"
+                              "backend-b8-memory.gravity"
+                              "backend-b8-transfer.gravity"
+                              "backend-b8-sync.gravity"
+                              "backend-b8-atomic.gravity"
+                              "backend-b8-launch.gravity"
+                              "backend-b8-math.gravity"
+                              "backend-b8-manifest.gravity"]}}}))
+
+(def b8-gpu-backend-contract
+  {:artifact :gravity/b8-gpu-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/gpu
+   :accepts [:verified-mir :verified-gpu-domain-ir]
+   :emits [:gpu-backend-manifest
+           :kernel-ir-or-target-module
+           :device-binary-or-intermediate-artifact
+           :host-stub-artifact
+           :launch-descriptor
+           :device-memory-lifetime-report
+           :transfer-graph
+           :synchronization-graph
+           :target-feature-occupancy-report
+           :math-certificate-bundle
+           :source-debug-map
+           :gpu-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :c14-target-lowering-record
+              :gpu-profile
+              :host-device-boundary
+              :kernel-legality-report
+              :device-memory-lifetimes
+              :explicit-transfer-graph
+              :sync-graph
+              :launch-descriptor
+              :target-feature-record
+              :numeric-mode
+              :math-certificate
+              :capability-grants
+              :source-map]
+   :rules [:device-code-is-not-ordinary-host-code
+           :kernel-code-must-be-accepted-by-gpu-profile
+           :host-effects-cannot-enter-device-code-through-captures
+           :device-buffers-are-linear-unless-provider-proves-safe-sharing
+           :host-device-transfers-are-explicit-graph-edges
+           :barriers-atomics-memory-scopes-and-queues-preserve-safe-semantics
+           :numeric-lowering-preserves-declared-modes-and-certificates
+           :relaxed-reductions-and-approximate-math-require-explicit-evidence
+           :source-proof-safety-capability-and-profile-metadata-are-preserved]
+   :forbidden [:host-effect-in-kernel
+               :host-allocation-in-kernel
+               :blocking-io-in-kernel
+               :reflection-or-dynamic-eval-in-kernel
+               :implicit-host-device-transfer
+               :unchecked-device-aliasing
+               :shared-mutable-device-state-without-sync
+               :unsupported-closure-or-dynamic-dispatch
+               :unmanifested-launch-geometry
+               :uncertified-fast-math
+               :gpu-artifact-without-manifest]})
+
+(def b8-host-device-boundary-contract
+  {:artifact :gravity/b8-host-device-boundary-contract
+   :required-fields [:host-profile
+                     :host-provider
+                     :device-target
+                     :feature-set
+                     :kernel-symbol
+                     :argument-schemas
+                     :device-buffer-ownership
+                     :transfer-direction
+                     :synchronization-edges
+                     :launch-order
+                     :capability-grants
+                     :source-generated-origin-links]
+   :rules [:host-orchestration-is-separate-from-device-execution
+           :device-kernels-remain-gpu-profile
+           :capability-grants-authorize-provider-use
+           :source-and-generated-origin-links-are-preserved]
+   :reject-when [:missing-device-target
+                 :host-effect-captured-by-kernel
+                 :missing-capability-grant
+                 :missing-origin-link]})
+
+(def b8-kernel-lowering-contract
+  {:artifact :gravity/b8-kernel-lowering-contract
+   :required-mappings [:work-item
+                       :lane
+                       :subgroup
+                       :workgroup
+                       :block
+                       :grid
+                       :vector-index
+                       :address-spaces
+                       :shared-local-memory
+                       :barriers
+                       :fences
+                       :atomics
+                       :device-function-calls
+                       :target-intrinsics]
+   :rules [:kernel-arguments-carry-address-space-layout-alignment-alias-lifetime-mutability-transfer-state
+           :unsupported-recursion-allocation-dispatch-callbacks-and-closures-are-rejected
+           :target-intrinsics-require-provider-control]
+   :forbidden [:dynamic-allocation
+               :host-callback
+               :unproven-closure-capture
+               :unsupported-dynamic-dispatch
+               :target-intrinsic-without-provider]})
+
+(def b8-device-memory-contract
+  {:artifact :gravity/b8-device-memory-contract
+   :required-fields [:allocation-provider
+                     :address-space
+                     :element-layout
+                     :alignment
+                     :aliasing
+                     :lifetime
+                     :transfer-state
+                     :host-visibility
+                     :synchronization-status
+                     :release-path]
+   :rules [:device-buffers-are-linear-by-default
+           :safe-sharing-requires-provider-proof
+           :host-visibility-is-controlled-by-transfer-and-sync
+           :release-paths-are-recorded]
+   :reject-when [:missing-lifetime
+                 :invalid-address-space
+                 :invalid-alignment
+                 :unsafe-aliasing
+                 :unsynchronized-host-read
+                 :unsynchronized-device-write
+                 :use-after-release
+                 :double-release]})
+
+(def b8-transfer-graph-contract
+  {:artifact :gravity/b8-transfer-graph-contract
+   :required-fields [:nodes
+                     :edges
+                     :buffer
+                     :direction
+                     :synchronization
+                     :source-span
+                     :capability-reference]
+   :directions [:host-to-device
+                :device-to-host
+                :device-to-device
+                :mapped-host-visible]
+   :rules [:transfers-are-explicit-graph-edges
+           :hidden-transfer-insertion-is-rejected
+           :transfer-completion-is-linked-to-sync-graph]
+   :forbidden [:implicit-transfer
+               :transfer-without-buffer-state
+               :transfer-without-completion-edge]})
+
+(def b8-synchronization-contract
+  {:artifact :gravity/b8-synchronization-contract
+   :required-fields [:queue-stream-dependencies
+                     :kernel-launch-ordering
+                     :host-device-fences
+                     :workgroup-barriers
+                     :subgroup-barriers
+                     :atomic-operation
+                     :memory-order
+                     :memory-scope
+                     :transfer-completion
+                     :event-dependencies]
+   :rules [:memory-order-and-scope-cannot-be-weakened
+           :target-that-cannot-represent-sync-must-reject-or-use-equivalent-runtime-provider
+           :barriers-and-atomics-preserve-safe-concurrency-semantics]
+   :reject-when [:missing-barrier
+                 :missing-fence
+                 :unsupported-atomic-order
+                 :unsupported-memory-scope
+                 :queue-dependency-gap
+                 :weakened-memory-order]})
+
+(def b8-launch-occupancy-contract
+  {:artifact :gravity/b8-launch-occupancy-contract
+   :required-fields [:kernel
+                     :queue
+                     :grid-size
+                     :workgroup-size
+                     :occupancy-assumptions
+                     :shared-local-memory-usage
+                     :register-pressure-assumptions
+                     :target-features]
+   :rules [:workgroup-and-grid-size-are-recorded
+           :occupancy-assumptions-are-evidence-not-semantics
+           :target-features-are-declared-before-lowering]
+   :reject-when [:invalid-launch-geometry
+                 :unsupported-target-feature
+                 :shared-memory-over-limit
+                 :unrecorded-occupancy-assumption]})
+
+(def b8-math-certificate-contract
+  {:artifact :gravity/b8-math-certificate-contract
+   :required-fields [:precision
+                     :rounding
+                     :fused-operation-policy
+                     :denormal-behavior
+                     :reduction-associativity
+                     :approximation-bounds
+                     :provider-implementation
+                     :certificate-or-validation-artifact]
+   :rules [:declared-numeric-mode-is-preserved
+           :strict-reductions-are-not-reassociated
+           :relaxed-reductions-require-explicit-mode
+           :approximate-math-requires-certificate]
+   :reject-when [:missing-numeric-mode
+                 :missing-reduction-proof
+                 :uncertified-approximation
+                 :unrecorded-denormal-policy
+                 :unrecorded-fused-operation-policy]})
+
+(def b8-artifact-manifest-contract
+  {:artifact :gravity/b8-artifact-manifest-contract
+   :required-fields [:gpu-backend-manifest
+                     :kernel-ir-or-target-module
+                     :device-binary-or-intermediate-artifact
+                     :host-stub-artifact
+                     :launch-descriptor
+                     :device-memory-lifetime-report
+                     :transfer-graph
+                     :synchronization-graph
+                     :target-feature-and-occupancy-report
+                     :math-certificate-bundle
+                     :source-debug-map
+                     :diagnostic-stream
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :device-binary-records-content-hash
+           :host-stub-records-provider-and-capabilities
+           :source-debug-map-preserves-kernel-and-transfer-origins]
+   :forbidden [:device-binary-without-manifest
+               :host-stub-without-capability-record
+               :launch-without-transfer-or-sync-graph
+               :debug-map-without-source-origin]})
+
+(def b8-diagnostic-catalog
+  {:artifact :gravity/b8-diagnostic-catalog
+   :ids [{:id "B8-TARGET"
+          :meaning :unsupported-api-device-feature-or-binary-format}
+         {:id "B8-KERNEL"
+          :meaning :construct-illegal-inside-kernel}
+         {:id "B8-HOST-EFFECT"
+          :meaning :host-only-effect-captured-by-device-code}
+         {:id "B8-MEMORY"
+          :meaning :missing-device-memory-lifetime-layout-alignment-or-address-space-fact}
+         {:id "B8-TRANSFER"
+          :meaning :missing-implicit-or-unsynchronized-transfer}
+         {:id "B8-SYNC"
+          :meaning :missing-barrier-fence-queue-dependency-or-workgroup-sync}
+         {:id "B8-ATOMIC"
+          :meaning :unsupported-atomic-order-or-memory-scope}
+         {:id "B8-LAUNCH"
+          :meaning :invalid-launch-geometry-occupancy-or-shared-memory-use}
+         {:id "B8-MATH"
+          :meaning :missing-numeric-mode-reduction-proof-or-certificate}
+         {:id "B8-MANIFEST"
+          :meaning :incomplete-gpu-artifact-set}]
+   :required-diagnostic-fields [:kernel-id
+                                :source-span
+                                :mir-operation-or-domain-anchor
+                                :device-target
+                                :address-space
+                                :buffer-id
+                                :launch-descriptor
+                                :missing-proof-or-feature
+                                :remediation]})
+
+(defn build-b8-gpu-backend-manifest
+  [target emits requires rejects]
+  {:artifact :gravity/gpu-backend-manifest
+   :backend :gravity.backend/gpu
+   :version "source-model-v1"
+   :target target
+   :emits emits
+   :requires requires
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b8-host-device-boundary-record
+  [host-profile device-target kernel-symbol argument-schemas]
+  {:artifact :gravity/b8-host-device-boundary-record
+   :host-profile host-profile
+   :device-target device-target
+   :kernel-symbol kernel-symbol
+   :argument-schemas argument-schemas
+   :required-fields (:required-fields b8-host-device-boundary-contract)
+   :source-model-only? true})
+
+(defn build-b8-kernel-lowering-record
+  [kernel-symbol index-map address-spaces rejected-constructs]
+  {:artifact :gravity/b8-kernel-lowering-record
+   :kernel-symbol kernel-symbol
+   :index-map index-map
+   :address-spaces address-spaces
+   :rejected-constructs rejected-constructs
+   :required-mappings (:required-mappings b8-kernel-lowering-contract)
+   :source-model-only? true})
+
+(defn build-b8-device-memory-record
+  [buffer-id address-space layout lifetime transfer-state]
+  {:artifact :gravity/b8-device-memory-record
+   :buffer-id buffer-id
+   :address-space address-space
+   :layout layout
+   :lifetime lifetime
+   :transfer-state transfer-state
+   :required-fields (:required-fields b8-device-memory-contract)
+   :source-model-only? true})
+
+(defn build-b8-transfer-graph-record
+  [nodes edges synchronization]
+  {:artifact :gravity/b8-transfer-graph-record
+   :nodes nodes
+   :edges edges
+   :synchronization synchronization
+   :required-fields (:required-fields b8-transfer-graph-contract)
+   :source-model-only? true})
+
+(defn build-b8-synchronization-record
+  [queues barriers atomics fences]
+  {:artifact :gravity/b8-synchronization-record
+   :queue-stream-dependencies queues
+   :barriers barriers
+   :atomics atomics
+   :fences fences
+   :required-fields (:required-fields b8-synchronization-contract)
+   :source-model-only? true})
+
+(defn build-b8-launch-descriptor
+  [kernel queue grid-size workgroup-size target-features]
+  {:artifact :gravity/b8-launch-descriptor
+   :kernel kernel
+   :queue queue
+   :grid-size grid-size
+   :workgroup-size workgroup-size
+   :target-features target-features
+   :required-fields (:required-fields b8-launch-occupancy-contract)
+   :source-model-only? true})
+
+(defn build-b8-math-certificate-bundle
+  [numeric-mode certificates reductions]
+  {:artifact :gravity/b8-math-certificate-bundle
+   :numeric-mode numeric-mode
+   :certificates certificates
+   :reduction-policy reductions
+   :required-fields (:required-fields b8-math-certificate-contract)
+   :source-model-only? true})
+
+(defn build-b8-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b8-gpu-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b8-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b8-gpu-backend-design
+  [manifest]
+  {:artifact :gravity/b8-gpu-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :gpu-profile-legality-covered? true
+   :host-device-boundary-covered? true
+   :kernel-lowering-covered? true
+   :device-memory-covered? true
+   :transfer-graph-covered? true
+   :synchronization-covered? true
+   :launch-occupancy-covered? true
+   :math-certificates-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :external-spirv-validation? false
+   :device-execution-claimed? false
+   :production-backend-execution? false
+   :source-model-only? true})

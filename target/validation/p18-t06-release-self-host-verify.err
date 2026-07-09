@@ -1,0 +1,1 @@
+{:id "P18T04007", :message "public self-host verification is blocked by the active Clojure seed boundary", :phase "P18-T04", :bootstrap-hosted? true, :full-language-compiler-self-hosted? false, :clojure-seed-boundary? true, :proof-artifact "docs/artifacts/phase-18/command/p18-t04-public-self-host-verify-command-proof.edn"}

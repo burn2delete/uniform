@@ -1,0 +1,9 @@
+(ns profile.bad-facet
+  (:profile :firmware)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (facet/profile :gravity.facet.workflow))

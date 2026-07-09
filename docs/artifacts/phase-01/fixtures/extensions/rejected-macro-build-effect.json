@@ -1,0 +1,50 @@
+{
+  "active_profile": ":hosted",
+  "kind": "phase-01-extension-hooks",
+  "module": "extension.bad.macro-build",
+  "normal_pipeline_artifacts": {
+    "core_ast": "docs/artifacts/phase-01/core/core-ast.accepted.json",
+    "macro_trace": "docs/artifacts/phase-01/macro/macro-expansion-trace.accepted.json",
+    "namespace": "docs/artifacts/phase-01/namespace/module.accepted-server.json",
+    "reader": "docs/artifacts/phase-01/reader/syntax-object-stream.accepted-hosted-hello.json",
+    "typed_core": "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json"
+  },
+  "providers": [
+    {
+      "build_effects": [
+        ":build/network"
+      ],
+      "generated_validation": [
+        "macro-trace",
+        "core-ast",
+        "typed-core"
+      ],
+      "grants": [],
+      "id": "custom.macros/networked",
+      "kind": ":macro-system",
+      "phase_model": [
+        "read",
+        "namespace",
+        "load",
+        "invoke",
+        "validate-generated",
+        "re-expand",
+        "typed-core"
+      ],
+      "profiles": [
+        ":hosted"
+      ],
+      "reference_equivalence": {
+        "result": ":equivalent"
+      },
+      "syntax_object_guarantees": [
+        "source-span",
+        "metadata",
+        "hygiene",
+        "generated-origin-chain"
+      ],
+      "version": "1.0.0"
+    }
+  ],
+  "interop_boundaries": []
+}

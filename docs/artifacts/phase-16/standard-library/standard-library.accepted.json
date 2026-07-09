@@ -1,0 +1,3356 @@
+{
+  "api_stability_record": {
+    "allocation_behavior": ":artifact",
+    "artifact_id": "phase16-std20-stability",
+    "artifacts": [
+      "stability-manifest",
+      "compatibility-report",
+      "deprecation-record",
+      "signed-provenance"
+    ],
+    "conformance_fixtures": [
+      "std20-compatibility-deprecation-migration"
+    ],
+    "docs_examples": [
+      "230-std20-standard-library-stability-policy.md"
+    ],
+    "document": "STD20",
+    "effect_capability_matrix": {
+      "capabilities": [],
+      "effects": [
+        ":artifact/stability"
+      ]
+    },
+    "exports": [
+      {
+        "allocation": ":artifact",
+        "capabilities": [],
+        "effects": [
+          ":artifact/stability"
+        ],
+        "name": "stability-entry",
+        "profiles": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":meta"
+        ],
+        "stability": ":stable"
+      }
+    ],
+    "governance_record": "GOV3-STD20",
+    "module": "standard-library-stability-policy",
+    "namespace": "gravity.stdlib.stability",
+    "negative_fixtures": [
+      "STD20001",
+      "STD20002",
+      "STD20003",
+      "STD20008"
+    ],
+    "profile_support_matrix": {
+      "accepted": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "rejected": [
+        ":missing-stability"
+      ]
+    },
+    "profiles": [
+      ":core",
+      ":hosted",
+      ":native",
+      ":meta"
+    ],
+    "provenance_record": "phase16-std20-provenance",
+    "safe_wrapper_audit": "std20-no-unsafe-surface",
+    "stability": ":stable"
+  },
+  "coverage_summary": {
+    "documents": 20,
+    "module_count": 20,
+    "status": ":passed",
+    "tasks": 6
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "STD1": {
+      "allocation_behavior": ":declared-per-export",
+      "artifact_id": "phase16-std1-architecture",
+      "artifacts": [
+        "library-module-manifest",
+        "profile-support-matrix",
+        "compatibility-report"
+      ],
+      "conformance_fixtures": [
+        "std1-profile-effect-capability-fixtures"
+      ],
+      "docs_examples": [
+        "211-std1-standard-library-architecture.md"
+      ],
+      "document": "STD1",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": []
+      },
+      "exports": [
+        {
+          "allocation": ":declared-per-export",
+          "capabilities": [],
+          "effects": [],
+          "name": "module-manifest",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD1",
+      "module": "standard-library-architecture",
+      "namespace": "gravity.stdlib",
+      "negative_fixtures": [
+        "STD1001",
+        "STD1002",
+        "STD1003",
+        "STD1004",
+        "STD1005",
+        "STD1006",
+        "STD1007",
+        "STD1008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":meta"
+        ],
+        "rejected": []
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std1-provenance",
+      "safe_wrapper_audit": "std1-safe-wrapper-audit",
+      "stability": ":draft"
+    },
+    "STD10": {
+      "allocation_behavior": ":schema-artifact",
+      "artifact_id": "phase16-std10-schema",
+      "artifacts": [
+        "schema-module-manifest",
+        "schema-artifact",
+        "validator-artifact",
+        "canonical-fixture"
+      ],
+      "conformance_fixtures": [
+        "std10-validation-canonical-migration-boundary"
+      ],
+      "docs_examples": [
+        "220-std10-serialization-and-schema-library-specification.md"
+      ],
+      "document": "STD10",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":artifact/schema"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [],
+          "effects": [
+            ":artifact/schema"
+          ],
+          "name": "defschema",
+          "profiles": [
+            ":core",
+            ":native",
+            ":hosted",
+            ":distributed",
+            ":ai",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD10",
+      "module": "serialization-schema-library",
+      "namespace": "gravity.schema",
+      "negative_fixtures": [
+        "STD10001",
+        "STD10002",
+        "STD10003",
+        "STD10007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":distributed",
+          ":ai"
+        ],
+        "rejected": [
+          ":decode-without-validation"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std10-provenance",
+      "safe_wrapper_audit": "std10-codec-audit",
+      "stability": ":draft"
+    },
+    "STD11": {
+      "allocation_behavior": ":provider-declared",
+      "artifact_id": "phase16-std11-database",
+      "artifacts": [
+        "database-module-manifest",
+        "query-plan-artifact",
+        "migration-artifact",
+        "provider-record"
+      ],
+      "conformance_fixtures": [
+        "std11-parameter-row-transaction-migration"
+      ],
+      "docs_examples": [
+        "221-std11-database-and-query-library-specification.md"
+      ],
+      "document": "STD11",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":db/read",
+          ":db/write"
+        ],
+        "effects": [
+          ":database/read",
+          ":database/write"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":row-schema-bounded",
+          "capabilities": [
+            ":db/read"
+          ],
+          "effects": [
+            ":database/read"
+          ],
+          "name": "query",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD11",
+      "module": "database-query-library",
+      "namespace": "gravity.db",
+      "negative_fixtures": [
+        "STD11001",
+        "STD11002",
+        "STD11003",
+        "STD11007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed"
+        ],
+        "rejected": [
+          ":string-interpolation-query"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std11-provenance",
+      "safe_wrapper_audit": "std11-provider-adapter-audit",
+      "stability": ":draft"
+    },
+    "STD12": {
+      "allocation_behavior": ":workflow-state-schema",
+      "artifact_id": "phase16-std12-workflow",
+      "artifacts": [
+        "workflow-graph-artifact",
+        "event-log-schema",
+        "activity-manifest",
+        "replay-fixture"
+      ],
+      "conformance_fixtures": [
+        "std12-graph-replay-activity-compensation"
+      ],
+      "docs_examples": [
+        "222-std12-workflow-library-specification.md"
+      ],
+      "document": "STD12",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":workflow/activity"
+        ],
+        "effects": [
+          ":workflow/graph",
+          ":workflow/activity"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [],
+          "effects": [
+            ":workflow/graph"
+          ],
+          "name": "defworkflow",
+          "profiles": [
+            ":distributed",
+            ":ai",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD12",
+      "module": "workflow-library",
+      "namespace": "gravity.workflow",
+      "negative_fixtures": [
+        "STD12001",
+        "STD12002",
+        "STD12003",
+        "STD12007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":distributed",
+          ":ai",
+          ":hosted"
+        ],
+        "rejected": [
+          ":unrecorded-replay-side-effect"
+        ]
+      },
+      "profiles": [
+        ":distributed",
+        ":ai",
+        ":hosted",
+        ":native",
+        ":core",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std12-provenance",
+      "safe_wrapper_audit": "std12-runtime-adapter-audit",
+      "stability": ":draft"
+    },
+    "STD13": {
+      "allocation_behavior": ":artifact-and-policy-bounded",
+      "artifact_id": "phase16-std13-ai",
+      "artifacts": [
+        "ai-module-manifest",
+        "prompt-artifact",
+        "tool-manifest",
+        "agent-manifest",
+        "eval-report"
+      ],
+      "conformance_fixtures": [
+        "std13-model-prompt-tool-agent-eval"
+      ],
+      "docs_examples": [
+        "223-std13-ai-and-agent-library-specification.md"
+      ],
+      "document": "STD13",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":ai/model",
+          ":ai/tool"
+        ],
+        "effects": [
+          ":ai/model-call",
+          ":ai/tool-call"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [
+            ":ai/model"
+          ],
+          "effects": [
+            ":ai/model-call"
+          ],
+          "name": "defagent",
+          "profiles": [
+            ":ai",
+            ":distributed",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD13",
+      "module": "ai-agent-library",
+      "namespace": "gravity.ai",
+      "negative_fixtures": [
+        "STD13001",
+        "STD13002",
+        "STD13003",
+        "STD13008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":ai",
+          ":distributed",
+          ":hosted"
+        ],
+        "rejected": [
+          ":policy-bypass"
+        ]
+      },
+      "profiles": [
+        ":ai",
+        ":distributed",
+        ":hosted",
+        ":native",
+        ":core",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std13-provenance",
+      "safe_wrapper_audit": "std13-ai-tool-safety-audit",
+      "stability": ":draft"
+    },
+    "STD14": {
+      "allocation_behavior": ":test-artifact",
+      "artifact_id": "phase16-std14-testing",
+      "artifacts": [
+        "testing-module-manifest",
+        "structured-test-report",
+        "fuzz-counterexample",
+        "golden-update-record"
+      ],
+      "conformance_fixtures": [
+        "std14-seed-golden-diagnostic-report"
+      ],
+      "docs_examples": [
+        "224-std14-testing-library-specification.md"
+      ],
+      "document": "STD14",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":test/live-service"
+        ],
+        "effects": [
+          ":test/property",
+          ":test/fuzz",
+          ":test/live-service"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":test-artifact",
+          "capabilities": [],
+          "effects": [
+            ":test/property"
+          ],
+          "name": "defproperty",
+          "profiles": [
+            ":core",
+            ":native",
+            ":hosted",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD14",
+      "module": "testing-library",
+      "namespace": "gravity.test",
+      "negative_fixtures": [
+        "STD14001",
+        "STD14002",
+        "STD14003",
+        "STD14007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":formal"
+        ],
+        "rejected": [
+          ":undeclared-live-effect"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std14-provenance",
+      "safe_wrapper_audit": "std14-live-service-test-audit",
+      "stability": ":draft"
+    },
+    "STD15": {
+      "allocation_behavior": ":syntax-artifact",
+      "artifact_id": "phase16-std15-meta",
+      "artifacts": [
+        "meta-module-manifest",
+        "macro-expansion-artifact",
+        "pass-manifest",
+        "plugin-manifest"
+      ],
+      "conformance_fixtures": [
+        "std15-hygiene-generated-code-pass-plugin"
+      ],
+      "docs_examples": [
+        "225-std15-compiler-meta-programming-library-specification.md"
+      ],
+      "document": "STD15",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":compiler/macro",
+          ":compiler/pass"
+        ],
+        "effects": [
+          ":compile-time/eval"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":syntax-artifact",
+          "capabilities": [
+            ":compiler/macro"
+          ],
+          "effects": [
+            ":compile-time/eval"
+          ],
+          "name": "defmacro",
+          "profiles": [
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD15",
+      "module": "compiler-meta-library",
+      "namespace": "gravity.meta",
+      "negative_fixtures": [
+        "STD15001",
+        "STD15002",
+        "STD15003",
+        "STD15008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":meta",
+          ":hosted",
+          ":native"
+        ],
+        "rejected": [
+          ":unchecked-generated-code"
+        ]
+      },
+      "profiles": [
+        ":meta",
+        ":core",
+        ":hosted",
+        ":native",
+        ":distributed",
+        ":ai",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std15-provenance",
+      "safe_wrapper_audit": "std15-unsafe-extension-audit",
+      "stability": ":draft"
+    },
+    "STD16": {
+      "allocation_behavior": ":declared-by-provider",
+      "artifact_id": "phase16-std16-platform",
+      "artifacts": [
+        "platform-module-manifest",
+        "target-manifest",
+        "host-delegation-record",
+        "replay-record"
+      ],
+      "conformance_fixtures": [
+        "std16-target-host-process-time-random"
+      ],
+      "docs_examples": [
+        "226-std16-platform-and-os-library-specification.md"
+      ],
+      "document": "STD16",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":platform/env",
+          ":platform/process",
+          ":platform/random"
+        ],
+        "effects": [
+          ":platform/env",
+          ":platform/process",
+          ":platform/random"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":none",
+          "capabilities": [],
+          "effects": [],
+          "name": "target",
+          "profiles": [
+            ":core",
+            ":meta",
+            ":native",
+            ":hosted"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD16",
+      "module": "platform-os-library",
+      "namespace": "gravity.platform",
+      "negative_fixtures": [
+        "STD16001",
+        "STD16002",
+        "STD16004",
+        "STD16005"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":distributed"
+        ],
+        "rejected": [
+          ":ambient-host-facts"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel",
+        ":hardware"
+      ],
+      "provenance_record": "phase16-std16-provenance",
+      "safe_wrapper_audit": "std16-process-platform-audit",
+      "stability": ":draft"
+    },
+    "STD17": {
+      "allocation_behavior": ":no-hidden-heap",
+      "artifact_id": "phase16-std17-hardware",
+      "artifacts": [
+        "hardware-module-manifest",
+        "memory-map-artifact",
+        "interrupt-table",
+        "dma-ownership-evidence"
+      ],
+      "conformance_fixtures": [
+        "std17-register-interrupt-dma-clock"
+      ],
+      "docs_examples": [
+        "227-std17-hardware-and-firmware-library-specification.md"
+      ],
+      "document": "STD17",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":hardware/device",
+          ":interrupt/register",
+          ":dma/use"
+        ],
+        "effects": [
+          ":hardware/mmio",
+          ":hardware/interrupt",
+          ":hardware/dma"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":none",
+          "capabilities": [
+            ":hardware/device"
+          ],
+          "effects": [
+            ":hardware/mmio"
+          ],
+          "name": "register",
+          "profiles": [
+            ":hardware",
+            ":firmware",
+            ":kernel",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD17",
+      "module": "hardware-firmware-library",
+      "namespace": "gravity.hardware",
+      "negative_fixtures": [
+        "STD17001",
+        "STD17002",
+        "STD17005",
+        "STD17008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":hardware",
+          ":firmware",
+          ":kernel",
+          ":meta"
+        ],
+        "rejected": [
+          ":missing-device-capability"
+        ]
+      },
+      "profiles": [
+        ":hardware",
+        ":firmware",
+        ":kernel",
+        ":native",
+        ":hosted",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std17-provenance",
+      "safe_wrapper_audit": "std17-mmio-dma-interrupt-audit",
+      "stability": ":draft"
+    },
+    "STD18": {
+      "allocation_behavior": ":secret-policy-bounded",
+      "artifact_id": "phase16-std18-crypto",
+      "artifacts": [
+        "crypto-module-manifest",
+        "algorithm-policy",
+        "post-quantum-policy",
+        "hybrid-suite-artifact",
+        "migration-inventory"
+      ],
+      "conformance_fixtures": [
+        "std18-policy-pq-hybrid-redaction-vectors"
+      ],
+      "docs_examples": [
+        "228-std18-cryptography-library-specification.md"
+      ],
+      "document": "STD18",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":crypto/provider",
+          ":crypto/key"
+        ],
+        "effects": [
+          ":crypto/random",
+          ":crypto/provider"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":ciphertext-output",
+          "capabilities": [
+            ":crypto/provider"
+          ],
+          "effects": [
+            ":crypto/random"
+          ],
+          "name": "aead-encrypt",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD18",
+      "module": "cryptography-library",
+      "namespace": "gravity.crypto",
+      "negative_fixtures": [
+        "STD18001",
+        "STD18002",
+        "STD18003",
+        "STD18010",
+        "STD18013"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":formal"
+        ],
+        "rejected": [
+          ":ambiguous-algorithm"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std18-provenance",
+      "safe_wrapper_audit": "std18-constant-time-secret-audit",
+      "stability": ":draft"
+    },
+    "STD19": {
+      "allocation_behavior": ":component-state-schema",
+      "artifact_id": "phase16-std19-ui",
+      "artifacts": [
+        "ui-module-manifest",
+        "component-artifact",
+        "route-artifact",
+        "snapshot-fixture"
+      ],
+      "conformance_fixtures": [
+        "std19-component-event-render-route-adapter"
+      ],
+      "docs_examples": [
+        "229-std19-ui-and-application-library-specification.md"
+      ],
+      "document": "STD19",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":ui/platform-adapter"
+        ],
+        "effects": [
+          ":ui/render",
+          ":ui/event"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":component-state",
+          "capabilities": [],
+          "effects": [
+            ":ui/render"
+          ],
+          "name": "defcomponent",
+          "profiles": [
+            ":hosted",
+            ":native",
+            ":core",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD19",
+      "module": "ui-application-library",
+      "namespace": "gravity.ui",
+      "negative_fixtures": [
+        "STD19001",
+        "STD19002",
+        "STD19005",
+        "STD19007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":hosted",
+          ":native",
+          ":core",
+          ":meta"
+        ],
+        "rejected": [
+          ":missing-component-metadata"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel",
+        ":hardware"
+      ],
+      "provenance_record": "phase16-std19-provenance",
+      "safe_wrapper_audit": "std19-adapter-safe-wrapper-audit",
+      "stability": ":draft"
+    },
+    "STD2": {
+      "allocation_behavior": ":bounded-or-none",
+      "artifact_id": "phase16-std2-core",
+      "artifacts": [
+        "core-module-manifest",
+        "core-api-signatures",
+        "rewrite-specialization-facts"
+      ],
+      "conformance_fixtures": [
+        "std2-equality-option-result-metadata"
+      ],
+      "docs_examples": [
+        "212-std2-core-library-specification.md"
+      ],
+      "document": "STD2",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": []
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-result",
+          "capabilities": [],
+          "effects": [],
+          "name": "map-result",
+          "profiles": [
+            ":core",
+            ":meta",
+            ":hosted",
+            ":native"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD2",
+      "module": "core-library",
+      "namespace": "gravity.core",
+      "negative_fixtures": [
+        "STD2001",
+        "STD2002",
+        "STD2004",
+        "STD2006"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":meta",
+          ":hosted",
+          ":native"
+        ],
+        "rejected": [
+          ":host-state"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":meta",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":hardware",
+        ":gpu",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std2-provenance",
+      "safe_wrapper_audit": "std2-no-unsafe-surface",
+      "stability": ":draft"
+    },
+    "STD20": {
+      "allocation_behavior": ":artifact",
+      "artifact_id": "phase16-std20-stability",
+      "artifacts": [
+        "stability-manifest",
+        "compatibility-report",
+        "deprecation-record",
+        "signed-provenance"
+      ],
+      "conformance_fixtures": [
+        "std20-compatibility-deprecation-migration"
+      ],
+      "docs_examples": [
+        "230-std20-standard-library-stability-policy.md"
+      ],
+      "document": "STD20",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":artifact/stability"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [],
+          "effects": [
+            ":artifact/stability"
+          ],
+          "name": "stability-entry",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native",
+            ":meta"
+          ],
+          "stability": ":stable"
+        }
+      ],
+      "governance_record": "GOV3-STD20",
+      "module": "standard-library-stability-policy",
+      "namespace": "gravity.stdlib.stability",
+      "negative_fixtures": [
+        "STD20001",
+        "STD20002",
+        "STD20003",
+        "STD20008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":meta"
+        ],
+        "rejected": [
+          ":missing-stability"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std20-provenance",
+      "safe_wrapper_audit": "std20-no-unsafe-surface",
+      "stability": ":stable"
+    },
+    "STD3": {
+      "allocation_behavior": ":explicit-per-representation",
+      "artifact_id": "phase16-std3-collections",
+      "artifacts": [
+        "collection-module-manifest",
+        "representation-notes",
+        "benchmark-evidence"
+      ],
+      "conformance_fixtures": [
+        "std3-bounds-iterator-transient-equality"
+      ],
+      "docs_examples": [
+        "213-std3-collections-library-specification.md"
+      ],
+      "document": "STD3",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":memory/allocate"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-result",
+          "capabilities": [],
+          "effects": [
+            ":memory/allocate"
+          ],
+          "name": "assoc",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD3",
+      "module": "collections-library",
+      "namespace": "gravity.collections",
+      "negative_fixtures": [
+        "STD3001",
+        "STD3002",
+        "STD3003",
+        "STD3008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":firmware"
+        ],
+        "rejected": [
+          ":hidden-unbounded-allocation"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":gpu",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std3-provenance",
+      "safe_wrapper_audit": "std3-optimized-internals-audit",
+      "stability": ":draft"
+    },
+    "STD4": {
+      "allocation_behavior": ":declared-by-operation",
+      "artifact_id": "phase16-std4-text",
+      "artifacts": [
+        "text-module-manifest",
+        "unicode-version-record",
+        "host-delegation-record"
+      ],
+      "conformance_fixtures": [
+        "std4-utf8-boundary-normalization-locale"
+      ],
+      "docs_examples": [
+        "214-std4-string-and-text-library-specification.md"
+      ],
+      "document": "STD4",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": []
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-result",
+          "capabilities": [],
+          "effects": [],
+          "name": "slice-graphemes",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD4",
+      "module": "text-library",
+      "namespace": "gravity.text",
+      "negative_fixtures": [
+        "STD4001",
+        "STD4002",
+        "STD4003",
+        "STD4004",
+        "STD4008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native"
+        ],
+        "rejected": [
+          ":invalid-byte-boundary"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":distributed",
+        ":ai",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std4-provenance",
+      "safe_wrapper_audit": "std4-simd-validation-audit",
+      "stability": ":draft"
+    },
+    "STD5": {
+      "allocation_behavior": ":none-or-artifact",
+      "artifact_id": "phase16-std5-math",
+      "artifacts": [
+        "math-module-manifest",
+        "efir-artifact",
+        "approximation-certificate",
+        "target-lowering-record"
+      ],
+      "conformance_fixtures": [
+        "std5-checked-modes-efir-certificates"
+      ],
+      "docs_examples": [
+        "215-std5-numeric-and-math-library-specification.md"
+      ],
+      "document": "STD5",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":math/certificate"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":none",
+          "capabilities": [],
+          "effects": [
+            ":math/certificate"
+          ],
+          "name": "sin",
+          "profiles": [
+            ":core",
+            ":native",
+            ":hosted",
+            ":gpu",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD5",
+      "module": "numeric-and-math-library",
+      "namespace": "gravity.math",
+      "negative_fixtures": [
+        "STD5001",
+        "STD5003",
+        "STD5004",
+        "STD5008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":formal",
+          ":gpu"
+        ],
+        "rejected": [
+          ":implicit-fast-math"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":gpu",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std5-provenance",
+      "safe_wrapper_audit": "std5-numeric-intrinsics-audit",
+      "stability": ":draft"
+    },
+    "STD6": {
+      "allocation_behavior": ":allocator-or-region-required",
+      "artifact_id": "phase16-std6-memory",
+      "artifacts": [
+        "memory-module-manifest",
+        "borrow-proof",
+        "linear-resource-close-graph",
+        "unsafe-audit-record"
+      ],
+      "conformance_fixtures": [
+        "std6-borrow-region-linear-resource"
+      ],
+      "docs_examples": [
+        "216-std6-memory-and-resource-library-specification.md"
+      ],
+      "document": "STD6",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":memory/region"
+        ],
+        "effects": [
+          ":memory/allocate"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":region-bounded",
+          "capabilities": [
+            ":memory/region"
+          ],
+          "effects": [
+            ":memory/allocate"
+          ],
+          "name": "with-region",
+          "profiles": [
+            ":firmware",
+            ":kernel",
+            ":native",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD6",
+      "module": "memory-resource-library",
+      "namespace": "gravity.memory",
+      "negative_fixtures": [
+        "STD6001",
+        "STD6002",
+        "STD6004",
+        "STD6006"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":firmware",
+          ":kernel",
+          ":formal"
+        ],
+        "rejected": [
+          ":ambient-allocation"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":firmware",
+        ":kernel",
+        ":hardware",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std6-provenance",
+      "safe_wrapper_audit": "std6-unsafe-memory-audit",
+      "stability": ":draft"
+    },
+    "STD7": {
+      "allocation_behavior": ":runtime-declared",
+      "artifact_id": "phase16-std7-concurrency",
+      "artifacts": [
+        "concurrency-module-manifest",
+        "race-analysis-report",
+        "scheduler-replay-log"
+      ],
+      "conformance_fixtures": [
+        "std7-race-structured-replay-atomic"
+      ],
+      "docs_examples": [
+        "217-std7-concurrency-library-specification.md"
+      ],
+      "document": "STD7",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":scheduler/run"
+        ],
+        "effects": [
+          ":concurrency/spawn"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-task",
+          "capabilities": [
+            ":scheduler/run"
+          ],
+          "effects": [
+            ":concurrency/spawn"
+          ],
+          "name": "task-scope",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD7",
+      "module": "concurrency-library",
+      "namespace": "gravity.concurrent",
+      "negative_fixtures": [
+        "STD7001",
+        "STD7002",
+        "STD7003",
+        "STD7005"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed",
+          ":firmware"
+        ],
+        "rejected": [
+          ":unsynchronized-shared-mutation"
+        ]
+      },
+      "profiles": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":firmware",
+        ":kernel",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std7-provenance",
+      "safe_wrapper_audit": "std7-scheduler-lock-audit",
+      "stability": ":draft"
+    },
+    "STD8": {
+      "allocation_behavior": ":declared-by-stream-policy",
+      "artifact_id": "phase16-std8-io",
+      "artifacts": [
+        "io-module-manifest",
+        "path-policy-artifact",
+        "resource-lifetime-record"
+      ],
+      "conformance_fixtures": [
+        "std8-capability-path-resource-atomicity"
+      ],
+      "docs_examples": [
+        "218-std8-io-and-filesystem-library-specification.md"
+      ],
+      "document": "STD8",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":fs/read",
+          ":fs/write"
+        ],
+        "effects": [
+          ":filesystem/read",
+          ":filesystem/write"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-file-policy",
+          "capabilities": [
+            ":fs/read"
+          ],
+          "effects": [
+            ":filesystem/read"
+          ],
+          "name": "read-text",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD8",
+      "module": "io-filesystem-library",
+      "namespace": "gravity.io.fs",
+      "negative_fixtures": [
+        "STD8001",
+        "STD8002",
+        "STD8003",
+        "STD8007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed",
+          ":meta"
+        ],
+        "rejected": [
+          ":ambient-filesystem"
+        ]
+      },
+      "profiles": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std8-provenance",
+      "safe_wrapper_audit": "std8-privileged-adapter-audit",
+      "stability": ":draft"
+    },
+    "STD9": {
+      "allocation_behavior": ":body-policy-bounded",
+      "artifact_id": "phase16-std9-network",
+      "artifacts": [
+        "network-module-manifest",
+        "request-response-schema",
+        "redaction-record"
+      ],
+      "conformance_fixtures": [
+        "std9-capability-timeout-tls-schema-redaction"
+      ],
+      "docs_examples": [
+        "219-std9-network-and-http-library-specification.md"
+      ],
+      "document": "STD9",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":net/outbound",
+          ":net/listen"
+        ],
+        "effects": [
+          ":network/outbound",
+          ":network/listen"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-body-policy",
+          "capabilities": [
+            ":net/outbound"
+          ],
+          "effects": [
+            ":network/outbound"
+          ],
+          "name": "get",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD9",
+      "module": "network-http-library",
+      "namespace": "gravity.net.http",
+      "negative_fixtures": [
+        "STD9001",
+        "STD9002",
+        "STD9003",
+        "STD9004",
+        "STD9008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed"
+        ],
+        "rejected": [
+          ":ambient-network"
+        ]
+      },
+      "profiles": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std9-provenance",
+      "safe_wrapper_audit": "std9-tls-socket-audit",
+      "stability": ":draft"
+    }
+  },
+  "input_hash": "sha256:67f00e18c5a0b5cf4d6921e072af45e54a41fed4524609e529c57ed512a7e1a4",
+  "kind": "standard-library-artifact",
+  "library_conformance_fixture": {
+    "STD1": [
+      "std1-profile-effect-capability-fixtures"
+    ],
+    "STD10": [
+      "std10-validation-canonical-migration-boundary"
+    ],
+    "STD11": [
+      "std11-parameter-row-transaction-migration"
+    ],
+    "STD12": [
+      "std12-graph-replay-activity-compensation"
+    ],
+    "STD13": [
+      "std13-model-prompt-tool-agent-eval"
+    ],
+    "STD14": [
+      "std14-seed-golden-diagnostic-report"
+    ],
+    "STD15": [
+      "std15-hygiene-generated-code-pass-plugin"
+    ],
+    "STD16": [
+      "std16-target-host-process-time-random"
+    ],
+    "STD17": [
+      "std17-register-interrupt-dma-clock"
+    ],
+    "STD18": [
+      "std18-policy-pq-hybrid-redaction-vectors"
+    ],
+    "STD19": [
+      "std19-component-event-render-route-adapter"
+    ],
+    "STD2": [
+      "std2-equality-option-result-metadata"
+    ],
+    "STD20": [
+      "std20-compatibility-deprecation-migration"
+    ],
+    "STD3": [
+      "std3-bounds-iterator-transient-equality"
+    ],
+    "STD4": [
+      "std4-utf8-boundary-normalization-locale"
+    ],
+    "STD5": [
+      "std5-checked-modes-efir-certificates"
+    ],
+    "STD6": [
+      "std6-borrow-region-linear-resource"
+    ],
+    "STD7": [
+      "std7-race-structured-replay-atomic"
+    ],
+    "STD8": [
+      "std8-capability-path-resource-atomicity"
+    ],
+    "STD9": [
+      "std9-capability-timeout-tls-schema-redaction"
+    ]
+  },
+  "library_module_manifest": [
+    {
+      "allocation_behavior": ":declared-per-export",
+      "artifact_id": "phase16-std1-architecture",
+      "artifacts": [
+        "library-module-manifest",
+        "profile-support-matrix",
+        "compatibility-report"
+      ],
+      "conformance_fixtures": [
+        "std1-profile-effect-capability-fixtures"
+      ],
+      "docs_examples": [
+        "211-std1-standard-library-architecture.md"
+      ],
+      "document": "STD1",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": []
+      },
+      "exports": [
+        {
+          "allocation": ":declared-per-export",
+          "capabilities": [],
+          "effects": [],
+          "name": "module-manifest",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD1",
+      "module": "standard-library-architecture",
+      "namespace": "gravity.stdlib",
+      "negative_fixtures": [
+        "STD1001",
+        "STD1002",
+        "STD1003",
+        "STD1004",
+        "STD1005",
+        "STD1006",
+        "STD1007",
+        "STD1008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":meta"
+        ],
+        "rejected": []
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std1-provenance",
+      "safe_wrapper_audit": "std1-safe-wrapper-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":bounded-or-none",
+      "artifact_id": "phase16-std2-core",
+      "artifacts": [
+        "core-module-manifest",
+        "core-api-signatures",
+        "rewrite-specialization-facts"
+      ],
+      "conformance_fixtures": [
+        "std2-equality-option-result-metadata"
+      ],
+      "docs_examples": [
+        "212-std2-core-library-specification.md"
+      ],
+      "document": "STD2",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": []
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-result",
+          "capabilities": [],
+          "effects": [],
+          "name": "map-result",
+          "profiles": [
+            ":core",
+            ":meta",
+            ":hosted",
+            ":native"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD2",
+      "module": "core-library",
+      "namespace": "gravity.core",
+      "negative_fixtures": [
+        "STD2001",
+        "STD2002",
+        "STD2004",
+        "STD2006"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":meta",
+          ":hosted",
+          ":native"
+        ],
+        "rejected": [
+          ":host-state"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":meta",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":hardware",
+        ":gpu",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std2-provenance",
+      "safe_wrapper_audit": "std2-no-unsafe-surface",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":explicit-per-representation",
+      "artifact_id": "phase16-std3-collections",
+      "artifacts": [
+        "collection-module-manifest",
+        "representation-notes",
+        "benchmark-evidence"
+      ],
+      "conformance_fixtures": [
+        "std3-bounds-iterator-transient-equality"
+      ],
+      "docs_examples": [
+        "213-std3-collections-library-specification.md"
+      ],
+      "document": "STD3",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":memory/allocate"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-result",
+          "capabilities": [],
+          "effects": [
+            ":memory/allocate"
+          ],
+          "name": "assoc",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD3",
+      "module": "collections-library",
+      "namespace": "gravity.collections",
+      "negative_fixtures": [
+        "STD3001",
+        "STD3002",
+        "STD3003",
+        "STD3008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":firmware"
+        ],
+        "rejected": [
+          ":hidden-unbounded-allocation"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":gpu",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std3-provenance",
+      "safe_wrapper_audit": "std3-optimized-internals-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":declared-by-operation",
+      "artifact_id": "phase16-std4-text",
+      "artifacts": [
+        "text-module-manifest",
+        "unicode-version-record",
+        "host-delegation-record"
+      ],
+      "conformance_fixtures": [
+        "std4-utf8-boundary-normalization-locale"
+      ],
+      "docs_examples": [
+        "214-std4-string-and-text-library-specification.md"
+      ],
+      "document": "STD4",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": []
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-result",
+          "capabilities": [],
+          "effects": [],
+          "name": "slice-graphemes",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD4",
+      "module": "text-library",
+      "namespace": "gravity.text",
+      "negative_fixtures": [
+        "STD4001",
+        "STD4002",
+        "STD4003",
+        "STD4004",
+        "STD4008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native"
+        ],
+        "rejected": [
+          ":invalid-byte-boundary"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":distributed",
+        ":ai",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std4-provenance",
+      "safe_wrapper_audit": "std4-simd-validation-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":none-or-artifact",
+      "artifact_id": "phase16-std5-math",
+      "artifacts": [
+        "math-module-manifest",
+        "efir-artifact",
+        "approximation-certificate",
+        "target-lowering-record"
+      ],
+      "conformance_fixtures": [
+        "std5-checked-modes-efir-certificates"
+      ],
+      "docs_examples": [
+        "215-std5-numeric-and-math-library-specification.md"
+      ],
+      "document": "STD5",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":math/certificate"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":none",
+          "capabilities": [],
+          "effects": [
+            ":math/certificate"
+          ],
+          "name": "sin",
+          "profiles": [
+            ":core",
+            ":native",
+            ":hosted",
+            ":gpu",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD5",
+      "module": "numeric-and-math-library",
+      "namespace": "gravity.math",
+      "negative_fixtures": [
+        "STD5001",
+        "STD5003",
+        "STD5004",
+        "STD5008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":formal",
+          ":gpu"
+        ],
+        "rejected": [
+          ":implicit-fast-math"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":gpu",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std5-provenance",
+      "safe_wrapper_audit": "std5-numeric-intrinsics-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":allocator-or-region-required",
+      "artifact_id": "phase16-std6-memory",
+      "artifacts": [
+        "memory-module-manifest",
+        "borrow-proof",
+        "linear-resource-close-graph",
+        "unsafe-audit-record"
+      ],
+      "conformance_fixtures": [
+        "std6-borrow-region-linear-resource"
+      ],
+      "docs_examples": [
+        "216-std6-memory-and-resource-library-specification.md"
+      ],
+      "document": "STD6",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":memory/region"
+        ],
+        "effects": [
+          ":memory/allocate"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":region-bounded",
+          "capabilities": [
+            ":memory/region"
+          ],
+          "effects": [
+            ":memory/allocate"
+          ],
+          "name": "with-region",
+          "profiles": [
+            ":firmware",
+            ":kernel",
+            ":native",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD6",
+      "module": "memory-resource-library",
+      "namespace": "gravity.memory",
+      "negative_fixtures": [
+        "STD6001",
+        "STD6002",
+        "STD6004",
+        "STD6006"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":firmware",
+          ":kernel",
+          ":formal"
+        ],
+        "rejected": [
+          ":ambient-allocation"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":firmware",
+        ":kernel",
+        ":hardware",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std6-provenance",
+      "safe_wrapper_audit": "std6-unsafe-memory-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":runtime-declared",
+      "artifact_id": "phase16-std7-concurrency",
+      "artifacts": [
+        "concurrency-module-manifest",
+        "race-analysis-report",
+        "scheduler-replay-log"
+      ],
+      "conformance_fixtures": [
+        "std7-race-structured-replay-atomic"
+      ],
+      "docs_examples": [
+        "217-std7-concurrency-library-specification.md"
+      ],
+      "document": "STD7",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":scheduler/run"
+        ],
+        "effects": [
+          ":concurrency/spawn"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-task",
+          "capabilities": [
+            ":scheduler/run"
+          ],
+          "effects": [
+            ":concurrency/spawn"
+          ],
+          "name": "task-scope",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD7",
+      "module": "concurrency-library",
+      "namespace": "gravity.concurrent",
+      "negative_fixtures": [
+        "STD7001",
+        "STD7002",
+        "STD7003",
+        "STD7005"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed",
+          ":firmware"
+        ],
+        "rejected": [
+          ":unsynchronized-shared-mutation"
+        ]
+      },
+      "profiles": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":firmware",
+        ":kernel",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std7-provenance",
+      "safe_wrapper_audit": "std7-scheduler-lock-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":declared-by-stream-policy",
+      "artifact_id": "phase16-std8-io",
+      "artifacts": [
+        "io-module-manifest",
+        "path-policy-artifact",
+        "resource-lifetime-record"
+      ],
+      "conformance_fixtures": [
+        "std8-capability-path-resource-atomicity"
+      ],
+      "docs_examples": [
+        "218-std8-io-and-filesystem-library-specification.md"
+      ],
+      "document": "STD8",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":fs/read",
+          ":fs/write"
+        ],
+        "effects": [
+          ":filesystem/read",
+          ":filesystem/write"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-file-policy",
+          "capabilities": [
+            ":fs/read"
+          ],
+          "effects": [
+            ":filesystem/read"
+          ],
+          "name": "read-text",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD8",
+      "module": "io-filesystem-library",
+      "namespace": "gravity.io.fs",
+      "negative_fixtures": [
+        "STD8001",
+        "STD8002",
+        "STD8003",
+        "STD8007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed",
+          ":meta"
+        ],
+        "rejected": [
+          ":ambient-filesystem"
+        ]
+      },
+      "profiles": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std8-provenance",
+      "safe_wrapper_audit": "std8-privileged-adapter-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":body-policy-bounded",
+      "artifact_id": "phase16-std9-network",
+      "artifacts": [
+        "network-module-manifest",
+        "request-response-schema",
+        "redaction-record"
+      ],
+      "conformance_fixtures": [
+        "std9-capability-timeout-tls-schema-redaction"
+      ],
+      "docs_examples": [
+        "219-std9-network-and-http-library-specification.md"
+      ],
+      "document": "STD9",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":net/outbound",
+          ":net/listen"
+        ],
+        "effects": [
+          ":network/outbound",
+          ":network/listen"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":bounded-by-body-policy",
+          "capabilities": [
+            ":net/outbound"
+          ],
+          "effects": [
+            ":network/outbound"
+          ],
+          "name": "get",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD9",
+      "module": "network-http-library",
+      "namespace": "gravity.net.http",
+      "negative_fixtures": [
+        "STD9001",
+        "STD9002",
+        "STD9003",
+        "STD9004",
+        "STD9008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed"
+        ],
+        "rejected": [
+          ":ambient-network"
+        ]
+      },
+      "profiles": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std9-provenance",
+      "safe_wrapper_audit": "std9-tls-socket-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":schema-artifact",
+      "artifact_id": "phase16-std10-schema",
+      "artifacts": [
+        "schema-module-manifest",
+        "schema-artifact",
+        "validator-artifact",
+        "canonical-fixture"
+      ],
+      "conformance_fixtures": [
+        "std10-validation-canonical-migration-boundary"
+      ],
+      "docs_examples": [
+        "220-std10-serialization-and-schema-library-specification.md"
+      ],
+      "document": "STD10",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":artifact/schema"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [],
+          "effects": [
+            ":artifact/schema"
+          ],
+          "name": "defschema",
+          "profiles": [
+            ":core",
+            ":native",
+            ":hosted",
+            ":distributed",
+            ":ai",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD10",
+      "module": "serialization-schema-library",
+      "namespace": "gravity.schema",
+      "negative_fixtures": [
+        "STD10001",
+        "STD10002",
+        "STD10003",
+        "STD10007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":distributed",
+          ":ai"
+        ],
+        "rejected": [
+          ":decode-without-validation"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std10-provenance",
+      "safe_wrapper_audit": "std10-codec-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":provider-declared",
+      "artifact_id": "phase16-std11-database",
+      "artifacts": [
+        "database-module-manifest",
+        "query-plan-artifact",
+        "migration-artifact",
+        "provider-record"
+      ],
+      "conformance_fixtures": [
+        "std11-parameter-row-transaction-migration"
+      ],
+      "docs_examples": [
+        "221-std11-database-and-query-library-specification.md"
+      ],
+      "document": "STD11",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":db/read",
+          ":db/write"
+        ],
+        "effects": [
+          ":database/read",
+          ":database/write"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":row-schema-bounded",
+          "capabilities": [
+            ":db/read"
+          ],
+          "effects": [
+            ":database/read"
+          ],
+          "name": "query",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":distributed"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD11",
+      "module": "database-query-library",
+      "namespace": "gravity.db",
+      "negative_fixtures": [
+        "STD11001",
+        "STD11002",
+        "STD11003",
+        "STD11007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":native",
+          ":hosted",
+          ":distributed"
+        ],
+        "rejected": [
+          ":string-interpolation-query"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std11-provenance",
+      "safe_wrapper_audit": "std11-provider-adapter-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":workflow-state-schema",
+      "artifact_id": "phase16-std12-workflow",
+      "artifacts": [
+        "workflow-graph-artifact",
+        "event-log-schema",
+        "activity-manifest",
+        "replay-fixture"
+      ],
+      "conformance_fixtures": [
+        "std12-graph-replay-activity-compensation"
+      ],
+      "docs_examples": [
+        "222-std12-workflow-library-specification.md"
+      ],
+      "document": "STD12",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":workflow/activity"
+        ],
+        "effects": [
+          ":workflow/graph",
+          ":workflow/activity"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [],
+          "effects": [
+            ":workflow/graph"
+          ],
+          "name": "defworkflow",
+          "profiles": [
+            ":distributed",
+            ":ai",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD12",
+      "module": "workflow-library",
+      "namespace": "gravity.workflow",
+      "negative_fixtures": [
+        "STD12001",
+        "STD12002",
+        "STD12003",
+        "STD12007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":distributed",
+          ":ai",
+          ":hosted"
+        ],
+        "rejected": [
+          ":unrecorded-replay-side-effect"
+        ]
+      },
+      "profiles": [
+        ":distributed",
+        ":ai",
+        ":hosted",
+        ":native",
+        ":core",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std12-provenance",
+      "safe_wrapper_audit": "std12-runtime-adapter-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":artifact-and-policy-bounded",
+      "artifact_id": "phase16-std13-ai",
+      "artifacts": [
+        "ai-module-manifest",
+        "prompt-artifact",
+        "tool-manifest",
+        "agent-manifest",
+        "eval-report"
+      ],
+      "conformance_fixtures": [
+        "std13-model-prompt-tool-agent-eval"
+      ],
+      "docs_examples": [
+        "223-std13-ai-and-agent-library-specification.md"
+      ],
+      "document": "STD13",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":ai/model",
+          ":ai/tool"
+        ],
+        "effects": [
+          ":ai/model-call",
+          ":ai/tool-call"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [
+            ":ai/model"
+          ],
+          "effects": [
+            ":ai/model-call"
+          ],
+          "name": "defagent",
+          "profiles": [
+            ":ai",
+            ":distributed",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD13",
+      "module": "ai-agent-library",
+      "namespace": "gravity.ai",
+      "negative_fixtures": [
+        "STD13001",
+        "STD13002",
+        "STD13003",
+        "STD13008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":ai",
+          ":distributed",
+          ":hosted"
+        ],
+        "rejected": [
+          ":policy-bypass"
+        ]
+      },
+      "profiles": [
+        ":ai",
+        ":distributed",
+        ":hosted",
+        ":native",
+        ":core",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std13-provenance",
+      "safe_wrapper_audit": "std13-ai-tool-safety-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":test-artifact",
+      "artifact_id": "phase16-std14-testing",
+      "artifacts": [
+        "testing-module-manifest",
+        "structured-test-report",
+        "fuzz-counterexample",
+        "golden-update-record"
+      ],
+      "conformance_fixtures": [
+        "std14-seed-golden-diagnostic-report"
+      ],
+      "docs_examples": [
+        "224-std14-testing-library-specification.md"
+      ],
+      "document": "STD14",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":test/live-service"
+        ],
+        "effects": [
+          ":test/property",
+          ":test/fuzz",
+          ":test/live-service"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":test-artifact",
+          "capabilities": [],
+          "effects": [
+            ":test/property"
+          ],
+          "name": "defproperty",
+          "profiles": [
+            ":core",
+            ":native",
+            ":hosted",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD14",
+      "module": "testing-library",
+      "namespace": "gravity.test",
+      "negative_fixtures": [
+        "STD14001",
+        "STD14002",
+        "STD14003",
+        "STD14007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":formal"
+        ],
+        "rejected": [
+          ":undeclared-live-effect"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std14-provenance",
+      "safe_wrapper_audit": "std14-live-service-test-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":syntax-artifact",
+      "artifact_id": "phase16-std15-meta",
+      "artifacts": [
+        "meta-module-manifest",
+        "macro-expansion-artifact",
+        "pass-manifest",
+        "plugin-manifest"
+      ],
+      "conformance_fixtures": [
+        "std15-hygiene-generated-code-pass-plugin"
+      ],
+      "docs_examples": [
+        "225-std15-compiler-meta-programming-library-specification.md"
+      ],
+      "document": "STD15",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":compiler/macro",
+          ":compiler/pass"
+        ],
+        "effects": [
+          ":compile-time/eval"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":syntax-artifact",
+          "capabilities": [
+            ":compiler/macro"
+          ],
+          "effects": [
+            ":compile-time/eval"
+          ],
+          "name": "defmacro",
+          "profiles": [
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD15",
+      "module": "compiler-meta-library",
+      "namespace": "gravity.meta",
+      "negative_fixtures": [
+        "STD15001",
+        "STD15002",
+        "STD15003",
+        "STD15008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":meta",
+          ":hosted",
+          ":native"
+        ],
+        "rejected": [
+          ":unchecked-generated-code"
+        ]
+      },
+      "profiles": [
+        ":meta",
+        ":core",
+        ":hosted",
+        ":native",
+        ":distributed",
+        ":ai",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std15-provenance",
+      "safe_wrapper_audit": "std15-unsafe-extension-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":declared-by-provider",
+      "artifact_id": "phase16-std16-platform",
+      "artifacts": [
+        "platform-module-manifest",
+        "target-manifest",
+        "host-delegation-record",
+        "replay-record"
+      ],
+      "conformance_fixtures": [
+        "std16-target-host-process-time-random"
+      ],
+      "docs_examples": [
+        "226-std16-platform-and-os-library-specification.md"
+      ],
+      "document": "STD16",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":platform/env",
+          ":platform/process",
+          ":platform/random"
+        ],
+        "effects": [
+          ":platform/env",
+          ":platform/process",
+          ":platform/random"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":none",
+          "capabilities": [],
+          "effects": [],
+          "name": "target",
+          "profiles": [
+            ":core",
+            ":meta",
+            ":native",
+            ":hosted"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD16",
+      "module": "platform-os-library",
+      "namespace": "gravity.platform",
+      "negative_fixtures": [
+        "STD16001",
+        "STD16002",
+        "STD16004",
+        "STD16005"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":distributed"
+        ],
+        "rejected": [
+          ":ambient-host-facts"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel",
+        ":hardware"
+      ],
+      "provenance_record": "phase16-std16-provenance",
+      "safe_wrapper_audit": "std16-process-platform-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":no-hidden-heap",
+      "artifact_id": "phase16-std17-hardware",
+      "artifacts": [
+        "hardware-module-manifest",
+        "memory-map-artifact",
+        "interrupt-table",
+        "dma-ownership-evidence"
+      ],
+      "conformance_fixtures": [
+        "std17-register-interrupt-dma-clock"
+      ],
+      "docs_examples": [
+        "227-std17-hardware-and-firmware-library-specification.md"
+      ],
+      "document": "STD17",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":hardware/device",
+          ":interrupt/register",
+          ":dma/use"
+        ],
+        "effects": [
+          ":hardware/mmio",
+          ":hardware/interrupt",
+          ":hardware/dma"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":none",
+          "capabilities": [
+            ":hardware/device"
+          ],
+          "effects": [
+            ":hardware/mmio"
+          ],
+          "name": "register",
+          "profiles": [
+            ":hardware",
+            ":firmware",
+            ":kernel",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD17",
+      "module": "hardware-firmware-library",
+      "namespace": "gravity.hardware",
+      "negative_fixtures": [
+        "STD17001",
+        "STD17002",
+        "STD17005",
+        "STD17008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":hardware",
+          ":firmware",
+          ":kernel",
+          ":meta"
+        ],
+        "rejected": [
+          ":missing-device-capability"
+        ]
+      },
+      "profiles": [
+        ":hardware",
+        ":firmware",
+        ":kernel",
+        ":native",
+        ":hosted",
+        ":meta",
+        ":formal"
+      ],
+      "provenance_record": "phase16-std17-provenance",
+      "safe_wrapper_audit": "std17-mmio-dma-interrupt-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":secret-policy-bounded",
+      "artifact_id": "phase16-std18-crypto",
+      "artifacts": [
+        "crypto-module-manifest",
+        "algorithm-policy",
+        "post-quantum-policy",
+        "hybrid-suite-artifact",
+        "migration-inventory"
+      ],
+      "conformance_fixtures": [
+        "std18-policy-pq-hybrid-redaction-vectors"
+      ],
+      "docs_examples": [
+        "228-std18-cryptography-library-specification.md"
+      ],
+      "document": "STD18",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":crypto/provider",
+          ":crypto/key"
+        ],
+        "effects": [
+          ":crypto/random",
+          ":crypto/provider"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":ciphertext-output",
+          "capabilities": [
+            ":crypto/provider"
+          ],
+          "effects": [
+            ":crypto/random"
+          ],
+          "name": "aead-encrypt",
+          "profiles": [
+            ":native",
+            ":hosted",
+            ":formal"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD18",
+      "module": "cryptography-library",
+      "namespace": "gravity.crypto",
+      "negative_fixtures": [
+        "STD18001",
+        "STD18002",
+        "STD18003",
+        "STD18010",
+        "STD18013"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":native",
+          ":hosted",
+          ":formal"
+        ],
+        "rejected": [
+          ":ambiguous-algorithm"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel"
+      ],
+      "provenance_record": "phase16-std18-provenance",
+      "safe_wrapper_audit": "std18-constant-time-secret-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":component-state-schema",
+      "artifact_id": "phase16-std19-ui",
+      "artifacts": [
+        "ui-module-manifest",
+        "component-artifact",
+        "route-artifact",
+        "snapshot-fixture"
+      ],
+      "conformance_fixtures": [
+        "std19-component-event-render-route-adapter"
+      ],
+      "docs_examples": [
+        "229-std19-ui-and-application-library-specification.md"
+      ],
+      "document": "STD19",
+      "effect_capability_matrix": {
+        "capabilities": [
+          ":ui/platform-adapter"
+        ],
+        "effects": [
+          ":ui/render",
+          ":ui/event"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":component-state",
+          "capabilities": [],
+          "effects": [
+            ":ui/render"
+          ],
+          "name": "defcomponent",
+          "profiles": [
+            ":hosted",
+            ":native",
+            ":core",
+            ":meta"
+          ],
+          "stability": ":draft"
+        }
+      ],
+      "governance_record": "GOV3-STD19",
+      "module": "ui-application-library",
+      "namespace": "gravity.ui",
+      "negative_fixtures": [
+        "STD19001",
+        "STD19002",
+        "STD19005",
+        "STD19007"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":hosted",
+          ":native",
+          ":core",
+          ":meta"
+        ],
+        "rejected": [
+          ":missing-component-metadata"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":distributed",
+        ":ai",
+        ":meta",
+        ":formal",
+        ":firmware",
+        ":kernel",
+        ":hardware"
+      ],
+      "provenance_record": "phase16-std19-provenance",
+      "safe_wrapper_audit": "std19-adapter-safe-wrapper-audit",
+      "stability": ":draft"
+    },
+    {
+      "allocation_behavior": ":artifact",
+      "artifact_id": "phase16-std20-stability",
+      "artifacts": [
+        "stability-manifest",
+        "compatibility-report",
+        "deprecation-record",
+        "signed-provenance"
+      ],
+      "conformance_fixtures": [
+        "std20-compatibility-deprecation-migration"
+      ],
+      "docs_examples": [
+        "230-std20-standard-library-stability-policy.md"
+      ],
+      "document": "STD20",
+      "effect_capability_matrix": {
+        "capabilities": [],
+        "effects": [
+          ":artifact/stability"
+        ]
+      },
+      "exports": [
+        {
+          "allocation": ":artifact",
+          "capabilities": [],
+          "effects": [
+            ":artifact/stability"
+          ],
+          "name": "stability-entry",
+          "profiles": [
+            ":core",
+            ":hosted",
+            ":native",
+            ":meta"
+          ],
+          "stability": ":stable"
+        }
+      ],
+      "governance_record": "GOV3-STD20",
+      "module": "standard-library-stability-policy",
+      "namespace": "gravity.stdlib.stability",
+      "negative_fixtures": [
+        "STD20001",
+        "STD20002",
+        "STD20003",
+        "STD20008"
+      ],
+      "profile_support_matrix": {
+        "accepted": [
+          ":core",
+          ":hosted",
+          ":native",
+          ":meta"
+        ],
+        "rejected": [
+          ":missing-stability"
+        ]
+      },
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "provenance_record": "phase16-std20-provenance",
+      "safe_wrapper_audit": "std20-no-unsafe-surface",
+      "stability": ":stable"
+    }
+  ],
+  "phase": "16",
+  "profile_support_matrix": {
+    "STD1": {
+      "accepted": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "rejected": []
+    },
+    "STD10": {
+      "accepted": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":ai"
+      ],
+      "rejected": [
+        ":decode-without-validation"
+      ]
+    },
+    "STD11": {
+      "accepted": [
+        ":native",
+        ":hosted",
+        ":distributed"
+      ],
+      "rejected": [
+        ":string-interpolation-query"
+      ]
+    },
+    "STD12": {
+      "accepted": [
+        ":distributed",
+        ":ai",
+        ":hosted"
+      ],
+      "rejected": [
+        ":unrecorded-replay-side-effect"
+      ]
+    },
+    "STD13": {
+      "accepted": [
+        ":ai",
+        ":distributed",
+        ":hosted"
+      ],
+      "rejected": [
+        ":policy-bypass"
+      ]
+    },
+    "STD14": {
+      "accepted": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":formal"
+      ],
+      "rejected": [
+        ":undeclared-live-effect"
+      ]
+    },
+    "STD15": {
+      "accepted": [
+        ":meta",
+        ":hosted",
+        ":native"
+      ],
+      "rejected": [
+        ":unchecked-generated-code"
+      ]
+    },
+    "STD16": {
+      "accepted": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":distributed"
+      ],
+      "rejected": [
+        ":ambient-host-facts"
+      ]
+    },
+    "STD17": {
+      "accepted": [
+        ":hardware",
+        ":firmware",
+        ":kernel",
+        ":meta"
+      ],
+      "rejected": [
+        ":missing-device-capability"
+      ]
+    },
+    "STD18": {
+      "accepted": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":formal"
+      ],
+      "rejected": [
+        ":ambiguous-algorithm"
+      ]
+    },
+    "STD19": {
+      "accepted": [
+        ":hosted",
+        ":native",
+        ":core",
+        ":meta"
+      ],
+      "rejected": [
+        ":missing-component-metadata"
+      ]
+    },
+    "STD2": {
+      "accepted": [
+        ":core",
+        ":meta",
+        ":hosted",
+        ":native"
+      ],
+      "rejected": [
+        ":host-state"
+      ]
+    },
+    "STD20": {
+      "accepted": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":meta"
+      ],
+      "rejected": [
+        ":missing-stability"
+      ]
+    },
+    "STD3": {
+      "accepted": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware"
+      ],
+      "rejected": [
+        ":hidden-unbounded-allocation"
+      ]
+    },
+    "STD4": {
+      "accepted": [
+        ":core",
+        ":hosted",
+        ":native"
+      ],
+      "rejected": [
+        ":invalid-byte-boundary"
+      ]
+    },
+    "STD5": {
+      "accepted": [
+        ":core",
+        ":native",
+        ":formal",
+        ":gpu"
+      ],
+      "rejected": [
+        ":implicit-fast-math"
+      ]
+    },
+    "STD6": {
+      "accepted": [
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":formal"
+      ],
+      "rejected": [
+        ":ambient-allocation"
+      ]
+    },
+    "STD7": {
+      "accepted": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":firmware"
+      ],
+      "rejected": [
+        ":unsynchronized-shared-mutation"
+      ]
+    },
+    "STD8": {
+      "accepted": [
+        ":native",
+        ":hosted",
+        ":distributed",
+        ":meta"
+      ],
+      "rejected": [
+        ":ambient-filesystem"
+      ]
+    },
+    "STD9": {
+      "accepted": [
+        ":native",
+        ":hosted",
+        ":distributed"
+      ],
+      "rejected": [
+        ":ambient-network"
+      ]
+    }
+  },
+  "safe_wrapper_audit": {
+    "STD1": "std1-safe-wrapper-audit",
+    "STD10": "std10-codec-audit",
+    "STD11": "std11-provider-adapter-audit",
+    "STD12": "std12-runtime-adapter-audit",
+    "STD13": "std13-ai-tool-safety-audit",
+    "STD14": "std14-live-service-test-audit",
+    "STD15": "std15-unsafe-extension-audit",
+    "STD16": "std16-process-platform-audit",
+    "STD17": "std17-mmio-dma-interrupt-audit",
+    "STD18": "std18-constant-time-secret-audit",
+    "STD19": "std19-adapter-safe-wrapper-audit",
+    "STD2": "std2-no-unsafe-surface",
+    "STD20": "std20-no-unsafe-surface",
+    "STD3": "std3-optimized-internals-audit",
+    "STD4": "std4-simd-validation-audit",
+    "STD5": "std5-numeric-intrinsics-audit",
+    "STD6": "std6-unsafe-memory-audit",
+    "STD7": "std7-scheduler-lock-audit",
+    "STD8": "std8-privileged-adapter-audit",
+    "STD9": "std9-tls-socket-audit"
+  }
+}

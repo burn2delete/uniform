@@ -1,0 +1,26 @@
+{:task-id :P02-D032
+ :document "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+ :artifact-kind :gravity/stage0-memory-safety-artifact
+ :document-coverage {:ownership-graphs 1
+                     :borrow-graphs 1
+                     :lifetime-interval-maps 1
+                     :ownership-transfer-records 1
+                     :runtime-borrow-check-records 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE3-USE-AFTER-MOVE"
+                        "SAFE3-USE-AFTER-CONSUME"
+                        "SAFE3-BORROW-ESCAPE"
+                        "SAFE3-MUT-ALIAS"
+                        "SAFE3-MOVE-WHILE-BORROWED"
+                        "SAFE3-CONSUME-WHILE-BORROWED"
+                        "SAFE3-LIFETIME"
+                        "SAFE3-TASK-CAPTURE"
+                        "SAFE3-FFI-OWNERSHIP"
+                        "SAFE3-RUNTIME-CHECK"
+                        "SAFE3-UNSAFE-ALIAS"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE3 accepted artifact and 11 rejected diagnostics passed"}]}

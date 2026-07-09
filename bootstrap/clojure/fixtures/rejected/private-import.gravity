@@ -1,0 +1,8 @@
+(ns invalid.private-import
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [app.secret :as secret :refer [private-token] :profile :hosted])
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main [] nil)

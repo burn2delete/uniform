@@ -1,0 +1,21 @@
+(ns math.efir-provider
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:elementary-declarations
+      [{:function-id :math/no-provider
+        :source-span "math/efir-provider.gravity:8:1"
+        :domain {'x {:real [-8.0 8.0]}}
+        :codomain {:real [0.0 1.0]}
+        :branch-policy :real-only
+        :exceptional-values {:nan :propagate}
+        :semantic-form '(exp x)
+        :numeric-modes #{:certified-approx}
+        :provider-requirements #{:domain :codomain :branch-policy}
+        :efir-anchor :efir/no-provider}]
+      :provider-manifest []}}}))

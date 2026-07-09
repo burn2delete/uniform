@@ -1,0 +1,9 @@
+(ns profile.accepted.meta
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

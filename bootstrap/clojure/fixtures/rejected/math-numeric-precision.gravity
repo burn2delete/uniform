@@ -1,0 +1,16 @@
+(ns math.numeric-precision
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:conversion-rules
+                      [{:rule-id :lossy-float
+                        :profile :native
+                        :target :llvm-x86-64-linux
+                        :source-family :float
+                        :target-family :float
+                        :conversion-mode :explicitly-rounded
+                        :rounding :nearest-ties-to-even
+                        :precision-loss? true}]}}}))

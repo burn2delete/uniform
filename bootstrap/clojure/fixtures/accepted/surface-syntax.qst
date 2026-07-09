@@ -1,0 +1,14 @@
+(ns syntax.surface
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.io :as io])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:providers [stdout])
+  (:metadata {:owner :stage0}))
+
+^{:doc "metadata survives reading"}
+(def value {:numbers [1 2 3]
+            :flags #{:alpha :beta}
+            :quoted 'value})

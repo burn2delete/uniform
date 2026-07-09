@@ -1,0 +1,4 @@
+(ns runtime.r1-manifest
+  (:profile :firmware)
+  (:target :jvm)
+  (:metadata {:runtime {:selection {:fail :r1-manifest}}}))

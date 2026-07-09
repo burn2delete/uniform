@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: invalid actor state, mailbox, snapshot, or delivery policy.
+(ns runtime.r7-actor
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-actor}}}))
+
+(defn main [] :- I64 1)

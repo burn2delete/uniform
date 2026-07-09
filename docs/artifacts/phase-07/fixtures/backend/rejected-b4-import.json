@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-backend-architecture.json",
+  "set": {
+    "/concrete_backends/wasm/ambient_imports": true
+  }
+}

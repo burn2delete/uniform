@@ -1,0 +1,9 @@
+(ns altmem.escape
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/escape :arena-value-escapes))

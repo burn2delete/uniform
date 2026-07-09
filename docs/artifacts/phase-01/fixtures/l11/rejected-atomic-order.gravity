@@ -1,0 +1,5 @@
+(ns l11.bad.atomic
+  (:profile :native))
+
+(def bad
+  (atomic/load flag))

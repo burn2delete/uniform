@@ -1,0 +1,9 @@
+(ns altmem.alias
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/alias :mutable-alias))

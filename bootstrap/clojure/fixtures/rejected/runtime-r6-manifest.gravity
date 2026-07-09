@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: incomplete concurrency runtime artifact.
+(ns runtime.r6-manifest
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:thread/spawn})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-manifest}}}))
+
+(defn main [] :- I64 1)

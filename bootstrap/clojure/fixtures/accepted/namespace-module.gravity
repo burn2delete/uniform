@@ -1,0 +1,18 @@
+(ns app.server
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.io :as io :profile :hosted :effects #{:io/write}]
+             [shared.core :as shared :profile :core :boundary :pure])
+  (:imports [java.time.Instant :as instant :profile :hosted :boundary :interop])
+  (:exports [main start])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe-optimized)
+  (:providers [stdout])
+  (:metadata {:package acme/app}))
+
+(defn main []
+  (println "module ok"))
+
+(def start main)
+(def private-helper 42)

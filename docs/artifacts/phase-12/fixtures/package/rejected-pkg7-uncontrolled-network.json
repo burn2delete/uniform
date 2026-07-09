@@ -1,0 +1,10 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "reproducible_build": {
+      "effect": ":build/network",
+      "uncontrolled_network": true
+    }
+  }
+}

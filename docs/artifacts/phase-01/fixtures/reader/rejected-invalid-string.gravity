@@ -1,0 +1,5 @@
+(ns bad.string
+  (:profile :hosted))
+
+"bad \q escape"
+

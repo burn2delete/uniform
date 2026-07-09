@@ -1,0 +1,4 @@
+(ns backend.b14-artifact
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:interface {:fail :b14-artifact}}}))

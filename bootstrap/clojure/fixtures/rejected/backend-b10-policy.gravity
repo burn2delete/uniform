@@ -1,0 +1,4 @@
+(ns backend.b10-policy
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:specialized-lowering {:fail :b10-policy}}}))

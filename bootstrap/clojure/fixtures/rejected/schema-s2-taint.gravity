@@ -1,0 +1,12 @@
+; Rejected P10 S2 fixture.
+(ns schema.s2-taint
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/validate})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s2-taint}}}))
+
+(defn main [] :- I64 2)

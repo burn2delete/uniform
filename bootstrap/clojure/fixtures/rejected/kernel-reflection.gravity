@@ -1,0 +1,9 @@
+(ns bad.kernel
+  (:profile :kernel)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout}))
+
+(host-reflect java.lang.String)
+
+(defn main []
+  (println "bad reflection"))

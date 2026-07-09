@@ -1,0 +1,51 @@
+(ns core.demo
+  (:profile :hosted)
+  (:effects :io/write :error/throw :state/mutate)
+  (:capabilities :io/stdout :mutation/local))
+
+(def quoted-data
+  (quote {:kind :demo :items [1 2 3]}))
+
+(def macro-equivalent
+  (when true
+    (do
+      (println "macro branch"))))
+
+(def handwritten-equivalent
+  (if true
+    (do
+      (println "macro branch"))
+    nil))
+
+(def mutable-example
+  (let [^:mutable counter 0
+        next-value 1]
+    (do
+      (set! counter next-value)
+      counter)))
+
+(def looping-example
+  (loop [i 1]
+    (if i
+      (recur 0)
+      i)))
+
+(def function-example
+  (fn [x]
+    (do
+      (println x)
+      x)))
+
+(def var-example
+  (var quoted-data))
+
+(def error-example
+  (try
+    (throw :boom)
+    (catch :any err
+      err)))
+
+(def match-example
+  (match :ok
+    [:ok 1
+     _ 0]))

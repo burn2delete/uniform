@@ -1,0 +1,33 @@
+
+Testing gravity.bootstrap-test
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19645)
+expected: (zero? (:exit c3-syntax-check))
+  actual: (not (zero? 1))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19646)
+expected: (str/includes? (:out c3-syntax-check) "gravity stage0 check passed: compiler.c3.syntax-object")
+  actual: (not (str/includes? "" "gravity stage0 check passed: compiler.c3.syntax-object"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19649)
+expected: (= (:out c3-syntax-check) (:out c3-syntax-qst-check))
+  actual: (not (= "" "gravity stage0 check passed: compiler.c3.syntax-object\n"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:19673)
+expected: (zero? (:exit c8-effect-qst-check))
+  actual: (not (zero? 1))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20260)
+backend-b7-verify.gravity
+expected: (str/includes? (:err gravity-result) expected-diagnostic)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:47074:1).\nEOF while reading string\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-604258481344098416.edn\n" "B7-VERIFY"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20266)
+backend-b7-verify.gravity
+expected: (str/includes? (:err gravity-result) gravity-fixture)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:47074:1).\nEOF while reading string\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-604258481344098416.edn\n" "backend-b7-verify.gravity"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20272)
+backend-b7-verify.qst
+expected: (= (str/replace (:err gravity-result) #"\.gravity" ".qst") (:err qst-result))
+  actual: (not (= "Syntax error reading source at (gravity/bootstrap.clj:47074:1).\nEOF while reading string\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-604258481344098416.edn\n" "{:diagnostic-family :b7-mlir-backend-document, :remediation \"Emit MLIR only from verified MIR/domain IR with declared dialect registry, operation schemas, verifier and conversion legality reports, pass invalidation/repair logs, proof-to-dialect mappings, source/debug preservation, and complete downstream handoff manifests.\", :missing-fields [:b7-verify], :bootstrap-stage :stage0, :source-span {:source \"bootstrap/clojure/fixtures/rejected/backend-b7-verify.qst\", :form-index 0}, :stage :b7-mlir-backend-document-coverage, :artifact-id \"b7-document-b7-verify\", :fallback-status :rejected, :id \"B7-VERIFY\", :backend :gravity.backend/mlir, :profile :native, :message \"B7 MLIR backend design document coverage validation failed\"}\n"))

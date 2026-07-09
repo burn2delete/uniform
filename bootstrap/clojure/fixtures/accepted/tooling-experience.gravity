@@ -1,0 +1,17 @@
+; P13 fixture covers tooling and developer-experience artifacts across T1-T13.
+(ns tooling.experience
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read :filesystem/write :network/http
+              :ai/model-call :workflow/replay :debug/inspect})
+  (:capabilities #{:fs/read :fs/write :http/client :model/invoke
+                   :workflow/replay :debug/inspect :repo/read
+                   :human/review})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {}}}))
+
+(def tooling-phase-id 13)
+
+(defn main [] :- I64
+  tooling-phase-id)

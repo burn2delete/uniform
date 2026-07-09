@@ -1,0 +1,59 @@
+{:proof/id :p01-d021-stage0-l11-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D021
+ :governing-docs ["docs/phase-01-core-language/021-l11-concurrency-model-specification.md"
+                  "docs/phase-01-core-language/012-l2-core-language-semantics.md"
+                  "docs/phase-01-core-language/015-l5-type-system-specification.md"
+                  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-01-core-language/020-l10-memory-model-specification.md"
+                  "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+                  "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/concurrency-model.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/concurrency-model.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:concurrency-facts
+                  :concurrency-effect-records
+                  :task-scope-graphs
+                  :concurrency-ownership-transfer-records
+                  :synchronization-facts
+                  :atomic-ordering-records
+                  :actor-channel-schemas
+                  :workflow-replay-records
+                  :scheduler-runtime-manifests
+                  :race-analysis-reports
+                  :concurrency-conformance-fixture]
+ :artifact-summary {:module concurrency.model
+                    :profile :hosted
+                    :concurrency-conformance-status :complete
+                    :concurrency-facts 13
+                    :concurrency-effect-records 9
+                    :task-scope-graphs 2
+                    :concurrency-ownership-transfer-records 1
+                    :synchronization-facts 4
+                    :atomic-ordering-records 2
+                    :actor-channel-schemas 2
+                    :workflow-replay-records 1
+                    :scheduler-runtime-manifests 5
+                    :race-analysis-reports 2
+                    :inferred-effects #{:thread/spawn :time/schedule
+                                        :async/await :async/suspend
+                                        :sync/block :workflow/event
+                                        :memory/allocate}}
+ :covered-concurrency-families [:actor :async-await :atomic :channel
+                                :gpu-kernel :hardware-state
+                                :immutable-sharing :lock
+                                :ownership-transfer :race-analysis
+                                :scheduler-runtime :structured-task
+                                :task-scope :workflow-replay]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-concurrency-data-race.gravity" "L11-DATA-RACE"
+                    "bootstrap/clojure/fixtures/rejected/typed-concurrency-borrow-task.gravity" "L11-BORROW-TASK"
+                    "bootstrap/clojure/fixtures/rejected/typed-task-scope.gravity" "L11-TASK-SCOPE"
+                    "bootstrap/clojure/fixtures/rejected/typed-scheduler-profile.gravity" "L11-SCHEDULER"
+                    "bootstrap/clojure/fixtures/rejected/typed-concurrency-atomic-order.gravity" "L11-ATOMIC-ORDER"
+                    "bootstrap/clojure/fixtures/rejected/typed-concurrency-replay-race.gravity" "L11-REPLAY-RACE"
+                    "bootstrap/clojure/fixtures/rejected/typed-concurrency-gpu-barrier.gravity" "L11-GPU-BARRIER"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L11 document task by proving concurrency effect records, task scope graphs, ownership transfer records, synchronization facts, atomic ordering records, actor/channel schemas, workflow replay records, scheduler/runtime manifests, race analysis reports, complete concurrency conformance, and stable L11 diagnostics. It does not claim production schedulers, actor runtimes, channel runtimes, distributed replay execution, hardware/GPU lowering, optimizer ordering proofs, or self-hosting."}

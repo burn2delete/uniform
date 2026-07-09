@@ -1,0 +1,9 @@
+(ns math.opt-synthesis
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:synthesis-overrides [{:constraints-checkable? false}]}}}))

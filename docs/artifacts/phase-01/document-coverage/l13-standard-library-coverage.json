@@ -1,0 +1,57 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "standard-library-contract-artifact",
+      "coverage": [
+        "namespace profile declarations",
+        "public API metadata",
+        "profile availability report",
+        "executable examples",
+        "unsafe wrapper audits",
+        "numeric behavior records",
+        "compatibility records"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/accepted-standard-library.json"
+    }
+  ],
+  "document": "L13",
+  "kind": "l13-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L13-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-profile.json"
+    },
+    {
+      "diagnostic": "L13-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-effect.json"
+    },
+    {
+      "diagnostic": "L13-CAPABILITY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-capability.json"
+    },
+    {
+      "diagnostic": "L13-ALLOC",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-allocation.json"
+    },
+    {
+      "diagnostic": "L13-RESOURCE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-resource.json"
+    },
+    {
+      "diagnostic": "L13-NUMERIC-MODE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-numeric-mode.json"
+    },
+    {
+      "diagnostic": "L13-UNSAFE-INVARIANT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-unsafe-invariant.json"
+    },
+    {
+      "diagnostic": "L13-EXAMPLE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-example.json"
+    },
+    {
+      "diagnostic": "L13-COMPAT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l13/rejected-compat.json"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+; Rejected P09 DOM16 fixture.
+(ns domain.dom16-aa-profile (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom16-aa-profile}}}))
+(defn main [] :- I64 1)

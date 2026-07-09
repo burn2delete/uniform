@@ -1,0 +1,9 @@
+(ns compiler.c10.optimization
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c10-safety-analysis {:fail :optimization}}}))
+
+(def value 1)

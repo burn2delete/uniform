@@ -1,0 +1,245 @@
+(ns capability.providers
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [fs-provider model-provider compiler-provider runtime-grant
+             build-grant capability-value source-selection manifest-selection
+             policy-selection profile-selection compiler-selection fs-scope
+             network-scope environment-scope model-scope tool-scope memory-scope
+             compiler-scope build-replay runtime-manifest conformance-result
+             math-replacement memory-replacement attenuated-capability
+             revoked-capability])
+  (:effects #{:build/read-file})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :provider-policy {:selection-order [:source-annotation
+                                                   :manifest
+                                                   :workspace-policy
+                                                   :profile-default
+                                                   :compiler-default]
+                                :trust-levels #{:trusted-core
+                                                :trusted-package
+                                                :sandboxed}}}))
+
+(def fs-provider
+  (provider/declaration 'gravity.fs/memory
+                        "fixture-1"
+                        :filesystem
+                        #{:filesystem/read}
+                        #{:hosted :native}
+                        #{:jvm}
+                        #{:filesystem/read}
+                        #{}
+                        #{'gravity.contracts/FileSystem}
+                        #{:not-found :permission-denied}
+                        :trusted-core
+                        :gravity.provider/fs-v1
+                        :gravity.conformance/fs))
+
+(def model-provider
+  (provider/declaration 'gravity.ai/local-model
+                        "fixture-1"
+                        :model
+                        #{:ai/model}
+                        #{:hosted :ai}
+                        #{:jvm}
+                        #{:ai/model-call}
+                        #{}
+                        #{'gravity.contracts/ModelProvider}
+                        #{:rate-limited :invalid-output}
+                        :sandboxed
+                        :gravity.provider/model-v1
+                        :gravity.conformance/model))
+
+(def compiler-provider
+  (provider/declaration 'gravity.compiler/ir-store
+                        "fixture-1"
+                        :compiler
+                        #{:compiler/ir}
+                        #{:hosted :meta}
+                        #{:jvm}
+                        #{:compiler/read-ir}
+                        #{:build/read-file}
+                        #{'gravity.contracts/CompilerIR}
+                        #{:invalid-ir}
+                        :trusted-core
+                        :gravity.provider/compiler-ir-v1
+                        :gravity.conformance/compiler-ir))
+
+(def runtime-grant
+  (provider/grant :grant/config-read
+                  :package/app
+                  :filesystem/read
+                  'gravity.fs/memory
+                  {:paths ["config/*.edn"]}
+                  :runtime
+                  :process-end
+                  :required))
+
+(def build-grant
+  (provider/grant :grant/schema-build-read
+                  :package/app
+                  :filesystem/read
+                  'gravity.fs/memory
+                  {:paths ["schemas/*.edn"]}
+                  :build
+                  :build-end
+                  :required))
+
+(def capability-value
+  (provider/capability-value :filesystem/read
+                             'gravity.fs/memory
+                             {:paths ["config/app.edn"]}
+                             :runtime
+                             :process-end
+                             :thread-safe))
+
+(def source-selection
+  (provider/select :filesystem/read
+                   'gravity.fs/memory
+                   "fixture-1"
+                   :source-annotation
+                   {:paths ["config/app.edn"]}
+                   :runtime
+                   :trusted-core
+                   :gravity.provider/fs-v1
+                   :gravity.conformance/fs))
+
+(def manifest-selection
+  (provider/select :network/client
+                   'gravity.net/http-client
+                   "fixture-1"
+                   :manifest
+                   {:hosts ["api.example.test"]}
+                   :runtime
+                   :trusted-core
+                   :gravity.provider/network-v1
+                   :gravity.conformance/network))
+
+(def policy-selection
+  (provider/select :ai/model
+                   'gravity.ai/local-model
+                   "fixture-1"
+                   :workspace-policy
+                   {:model-id "stage0-small"}
+                   :runtime
+                   :sandboxed
+                   :gravity.provider/model-v1
+                   :gravity.conformance/model))
+
+(def profile-selection
+  (provider/select :memory/allocator
+                   'gravity.memory/gc-host
+                   "fixture-1"
+                   :profile-default
+                   {:region :managed}
+                   :runtime
+                   :trusted-core
+                   :gravity.provider/memory-v1
+                   :gravity.conformance/memory))
+
+(def compiler-selection
+  (provider/select :compiler/ir
+                   'gravity.compiler/ir-store
+                   "fixture-1"
+                   :compiler-default
+                   {:ir-level :mir}
+                   :build
+                   :trusted-core
+                   :gravity.provider/compiler-ir-v1
+                   :gravity.conformance/compiler-ir))
+
+(def fs-scope
+  (provider/scope-audit :filesystem/read
+                        :filesystem
+                        {:paths ["config/app.edn"]}
+                        {:paths ["config/*.edn"]}
+                        true))
+
+(def network-scope
+  (provider/scope-audit :network/client
+                        :network
+                        {:hosts ["api.example.test"]}
+                        {:hosts ["*.example.test"]}
+                        true))
+
+(def environment-scope
+  (provider/scope-audit :environment/read
+                        :environment
+                        {:keys ["GRAVITY_ENV"]}
+                        {:keys ["GRAVITY_*"]}
+                        true))
+
+(def model-scope
+  (provider/scope-audit :ai/model
+                        :model
+                        {:model-id "stage0-small"}
+                        {:models ["stage0-small"]}
+                        true))
+
+(def tool-scope
+  (provider/scope-audit :ai/tool
+                        :tool
+                        {:tool-id :schema-validator}
+                        {:tools [:schema-validator]}
+                        true))
+
+(def memory-scope
+  (provider/scope-audit :memory/allocator
+                        :memory
+                        {:region :managed}
+                        {:regions [:managed]}
+                        true))
+
+(def compiler-scope
+  (provider/scope-audit :compiler/ir
+                        :compiler
+                        {:ir-level :mir}
+                        {:ir-levels [:mir]}
+                        true))
+
+(def build-replay
+  (provider/compile-replay 'gravity.fs/memory
+                           :filesystem/read
+                           "sha256:stage0-provider-input"
+                           "sha256:stage0-provider-output"
+                           true
+                           :redacted))
+
+(def runtime-manifest
+  (provider/runtime-manifest 'gravity.fs/memory
+                             "fixture-1"
+                             #{:filesystem/read}
+                             {:paths ["config/*.edn"]}
+                             :trusted-core))
+
+(def conformance-result
+  (provider/conformance 'gravity.fs/memory
+                        :gravity.conformance/fs
+                        :passed
+                        #{:declaration :grant :scope :runtime}))
+
+(def math-replacement
+  (provider/replacement :math/sin
+                        'gravity.math.elementary/default
+                        'custom.math.interval/sin
+                        :contract-preserved
+                        :safe))
+
+(def memory-replacement
+  (provider/replacement :memory/allocator
+                        'gravity.memory/gc-host
+                        'custom.memory/arena
+                        :contract-preserved
+                        :safe))
+
+(def attenuated-capability
+  (provider/attenuate :filesystem/read
+                      {:paths ["config/**"]}
+                      {:paths ["config/app.edn"]}))
+
+(def revoked-capability
+  (provider/revoke :filesystem/read
+                   :hosted
+                   :revocable-handle
+                   :supported))

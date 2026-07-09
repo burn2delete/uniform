@@ -1,0 +1,8 @@
+(ns typed.bad.scope
+  (:profile :hosted)
+  (:effects :thread/spawn :time/schedule)
+  (:capabilities :scheduler/task))
+
+(def bad
+  (task/spawn
+    (fn [] true)))

@@ -1,0 +1,503 @@
+{
+  "kind": "phase02-safety-document-coverage-input",
+  "package": "gravity.safety.demo",
+  "module": "safety.document.coverage",
+  "documents": [
+    {
+      "task_id": "P02-D030",
+      "document": "SAFE1",
+      "governing_doc": "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+      "implementation_surfaces": [
+        "src/gravity/safety.py",
+        "tools/validate_safety_classifier.py"
+      ],
+      "accepted": {
+        "validator": "safety-classifier",
+        "fixture": "docs/artifacts/phase-02/fixtures/safety/accepted-safety-classification.json",
+        "required_artifact_fields": [
+          "operations",
+          "runtime_checks",
+          "unsafe_island_audit_records",
+          "proof_references",
+          "optimization_check_erasure_justifications",
+          "safety_certificate_inputs"
+        ]
+      },
+      "rejected": {
+        "validator": "safety-classifier",
+        "fixture": "docs/artifacts/phase-02/fixtures/safety/rejected-no-outcome.json",
+        "diagnostic": "SAFE1-NO-OUTCOME"
+      },
+      "coverage_claims": [
+        "exactly one safety outcome per operation",
+        "runtime checks and unsafe islands remain artifact-visible",
+        "check erasure requires proof evidence"
+      ]
+    },
+    {
+      "task_id": "P02-D031",
+      "document": "SAFE2",
+      "governing_doc": "docs/phase-02-safety/031-safe2-memory-safety-model.md",
+      "implementation_surfaces": [
+        "src/gravity/memory_safety.py",
+        "tools/validate_memory_safety.py"
+      ],
+      "accepted": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+        "required_artifact_fields": [
+          "memory_safety_facts",
+          "runtime_check_records",
+          "allocation_release_map",
+          "unsafe_memory_audit_records",
+          "proof_records"
+        ]
+      },
+      "rejected": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-uninit.json",
+        "diagnostic": "SAFE2-UNINIT"
+      },
+      "coverage_claims": [
+        "memory operations carry SAFE1 outcomes",
+        "initialization, bounds, lifetime, provider, and raw-memory facts are checked",
+        "runtime checks and proof records are emitted"
+      ]
+    },
+    {
+      "task_id": "P02-D032",
+      "document": "SAFE3",
+      "governing_doc": "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md",
+      "implementation_surfaces": [
+        "src/gravity/memory_safety.py",
+        "tools/validate_memory_safety.py"
+      ],
+      "accepted": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+        "required_artifact_fields": [
+          "ownership_graph",
+          "borrow_graph",
+          "lifetime_interval_map",
+          "move_and_consume_records",
+          "ownership_transfer_records"
+        ]
+      },
+      "rejected": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-use-after-move.json",
+        "diagnostic": "SAFE3-USE-AFTER-MOVE"
+      },
+      "coverage_claims": [
+        "ownership and borrow graphs are artifact-visible",
+        "move and consume state rejects illegal reuse",
+        "lifetime intervals constrain escapes"
+      ]
+    },
+    {
+      "task_id": "P02-D033",
+      "document": "SAFE4",
+      "governing_doc": "docs/phase-02-safety/033-safe4-region-and-arena-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/memory_safety.py",
+        "tools/validate_memory_safety.py"
+      ],
+      "accepted": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+        "required_artifact_fields": [
+          "region_lifetime_graph",
+          "arena_generation_graph",
+          "escape_analysis_records",
+          "runtime_check_records"
+        ]
+      },
+      "rejected": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-region-escape.json",
+        "diagnostic": "SAFE4-REGION-ESCAPE"
+      },
+      "coverage_claims": [
+        "region lifetime and arena generation graphs are emitted",
+        "escape analysis rejects shorter lifetime leaks",
+        "runtime generation checks remain artifact-visible"
+      ]
+    },
+    {
+      "task_id": "P02-D034",
+      "document": "SAFE5",
+      "governing_doc": "docs/phase-02-safety/034-safe5-linear-resource-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/memory_safety.py",
+        "tools/validate_memory_safety.py"
+      ],
+      "accepted": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+        "required_artifact_fields": [
+          "linear_resource_flow_graph",
+          "acquire_terminal_operation_records",
+          "exceptional_cleanup_records",
+          "cancellation_cleanup_records"
+        ]
+      },
+      "rejected": {
+        "validator": "memory-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-linear-leak.json",
+        "diagnostic": "SAFE5-LEAK"
+      },
+      "coverage_claims": [
+        "linear resources reach exactly one terminal state",
+        "normal, exceptional, and cancellation cleanup records are emitted",
+        "missing release paths reject with stable diagnostics"
+      ]
+    },
+    {
+      "task_id": "P02-D035",
+      "document": "SAFE6",
+      "governing_doc": "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md",
+      "implementation_surfaces": [
+        "src/gravity/unsafe_audit.py",
+        "tools/validate_unsafe_audit.py"
+      ],
+      "accepted": {
+        "validator": "unsafe-audit",
+        "fixture": "docs/artifacts/phase-02/fixtures/unsafe-audit/accepted-unsafe-audit.json",
+        "required_artifact_fields": [
+          "unsafe_island_records",
+          "safe_wrapper_records",
+          "unsafe_operation_inventory",
+          "review_status_records",
+          "release_audit_report"
+        ]
+      },
+      "rejected": {
+        "validator": "unsafe-audit",
+        "fixture": "docs/artifacts/phase-02/fixtures/unsafe-audit/rejected-missing-owner.json",
+        "diagnostic": "SAFE6-MISSING-OWNER"
+      },
+      "coverage_claims": [
+        "unsafe islands require complete metadata",
+        "safe wrappers connect public APIs to unsafe internals",
+        "review and release audit records are machine-readable"
+      ]
+    },
+    {
+      "task_id": "P02-D036",
+      "document": "SAFE7",
+      "governing_doc": "docs/phase-02-safety/036-safe7-ffi-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/domain_safety.py",
+        "tools/validate_domain_safety.py"
+      ],
+      "accepted": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+        "required_artifact_fields": [
+          "foreign_declaration_records",
+          "abi_protocol_records",
+          "type_mapping_records",
+          "safe_wrapper_audit_records",
+          "error_translation_maps",
+          "ffi_conformance_reports"
+        ]
+      },
+      "rejected": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-ffi-raw-call.json",
+        "diagnostic": "SAFE7-RAW-CALL"
+      },
+      "coverage_claims": [
+        "foreign declarations include ABI, ownership, effect, capability, and error metadata",
+        "safe wrappers own FFI invariants",
+        "raw foreign calls reject in safe code"
+      ]
+    },
+    {
+      "task_id": "P02-D037",
+      "document": "SAFE8",
+      "governing_doc": "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/domain_safety.py",
+        "tools/validate_domain_safety.py"
+      ],
+      "accepted": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+        "required_artifact_fields": [
+          "concurrency_graph",
+          "task_capture_records",
+          "ownership_transfer_records",
+          "atomic_memory_order_records",
+          "backend_memory_order_preservation_records"
+        ]
+      },
+      "rejected": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-concurrency-data-race.json",
+        "diagnostic": "SAFE8-DATA-RACE"
+      },
+      "coverage_claims": [
+        "concurrent mutation requires synchronization or ownership transfer",
+        "atomic orders and backend preservation are checked",
+        "data races reject with stable diagnostics"
+      ]
+    },
+    {
+      "task_id": "P02-D038",
+      "document": "SAFE9",
+      "governing_doc": "docs/phase-02-safety/038-safe9-numeric-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/domain_safety.py",
+        "tools/validate_domain_safety.py"
+      ],
+      "accepted": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+        "required_artifact_fields": [
+          "numeric_mode_records",
+          "numeric_check_records",
+          "range_interval_proof_records",
+          "floating_point_mode_records",
+          "backend_numeric_lowering_records"
+        ]
+      },
+      "rejected": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-numeric-overflow.json",
+        "diagnostic": "SAFE9-OVERFLOW"
+      },
+      "coverage_claims": [
+        "numeric modes are explicit",
+        "checks and range proofs are artifact-visible",
+        "unsafe or unproved overflow rejects"
+      ]
+    },
+    {
+      "task_id": "P02-D039",
+      "document": "SAFE10",
+      "governing_doc": "docs/phase-02-safety/039-safe10-capability-security-model.md",
+      "implementation_surfaces": [
+        "src/gravity/capability_supply_chain.py",
+        "tools/validate_capability_supply_chain.py"
+      ],
+      "accepted": {
+        "validator": "capability-supply-chain",
+        "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/accepted-capability-supply-chain.json",
+        "required_artifact_fields": [
+          "capability_requirement_records",
+          "grant_intersection_records",
+          "provider_selection_records",
+          "scope_check_records",
+          "secret_redaction_records",
+          "runtime_capability_check_records"
+        ]
+      },
+      "rejected": {
+        "validator": "capability-supply-chain",
+        "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/rejected-capability-missing.json",
+        "diagnostic": "SAFE10-MISSING"
+      },
+      "coverage_claims": [
+        "authority-bearing operations require grants and providers",
+        "grant intersections, scopes, and runtime denials are emitted",
+        "missing capabilities reject"
+      ]
+    },
+    {
+      "task_id": "P02-D040",
+      "document": "SAFE11",
+      "governing_doc": "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/domain_safety.py",
+        "tools/validate_domain_safety.py"
+      ],
+      "accepted": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+        "required_artifact_fields": [
+          "taint_source_records",
+          "taint_flow_records",
+          "validator_sanitizer_contracts",
+          "sink_authorization_records",
+          "secret_redaction_records"
+        ]
+      },
+      "rejected": {
+        "validator": "domain-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-taint-sink.json",
+        "diagnostic": "SAFE11-TAINTED-SINK"
+      },
+      "coverage_claims": [
+        "taint sources, validators, residual constraints, and sinks are explicit",
+        "secret redaction records are emitted",
+        "unvalidated tainted sink flow rejects"
+      ]
+    },
+    {
+      "task_id": "P02-D041",
+      "document": "SAFE12",
+      "governing_doc": "docs/phase-02-safety/041-safe12-macro-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/safety_document_coverage.py",
+        "tools/validate_phase02_document_coverage.py",
+        "src/gravity/macros.py"
+      ],
+      "accepted": {
+        "validator": "safe12-macro-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe12-macro-safety.json",
+        "required_artifact_fields": [
+          "macro_expansion_trace",
+          "generated_origin_chain",
+          "macro_build_effect_records",
+          "macro_safety_declaration_records",
+          "hygiene_capture_records",
+          "taint_capability_propagation_records"
+        ]
+      },
+      "rejected": {
+        "validator": "safe12-macro-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe12-build-effect.json",
+        "diagnostic": "SAFE12-BUILD-EFFECT"
+      },
+      "coverage_claims": [
+        "macro expansion preserves origin, hygiene, taint, capability, and profile metadata",
+        "macro build effects must be declared and granted",
+        "generated code remains subject to ordinary safety passes"
+      ]
+    },
+    {
+      "task_id": "P02-D042",
+      "document": "SAFE13",
+      "governing_doc": "docs/phase-02-safety/042-safe13-ai-tool-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/safety_document_coverage.py",
+        "tools/validate_phase02_document_coverage.py"
+      ],
+      "accepted": {
+        "validator": "safe13-ai-tool-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe13-ai-tool-safety.json",
+        "required_artifact_fields": [
+          "model_call_trace",
+          "tool_call_trace",
+          "prompt_message_provenance_records",
+          "tool_schema_validation_records",
+          "human_review_records",
+          "replay_records",
+          "model_output_taint_records",
+          "generated_code_safety_records"
+        ]
+      },
+      "rejected": {
+        "validator": "safe13-ai-tool-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe13-prompt-injection.json",
+        "diagnostic": "SAFE13-PROMPT-INJECTION"
+      },
+      "coverage_claims": [
+        "model and tool calls carry effects, capabilities, schemas, traces, and replay policy",
+        "human-review records gate write tools",
+        "untrusted prompt roles cannot control privileged tools"
+      ]
+    },
+    {
+      "task_id": "P02-D043",
+      "document": "SAFE14",
+      "governing_doc": "docs/phase-02-safety/043-safe14-supply-chain-safety.md",
+      "implementation_surfaces": [
+        "src/gravity/capability_supply_chain.py",
+        "tools/validate_capability_supply_chain.py"
+      ],
+      "accepted": {
+        "validator": "capability-supply-chain",
+        "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/accepted-capability-supply-chain.json",
+        "required_artifact_fields": [
+          "package_safety_manifests",
+          "lockfile_dependency_graph_records",
+          "build_effect_summaries",
+          "runtime_capability_summaries",
+          "generated_artifact_provenance",
+          "signature_attestation_records",
+          "transitive_authority_diffs"
+        ]
+      },
+      "rejected": {
+        "validator": "capability-supply-chain",
+        "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/rejected-postinstall.json",
+        "diagnostic": "SAFE14-POSTINSTALL"
+      },
+      "coverage_claims": [
+        "package safety manifests and lockfiles gate builds",
+        "build effects and transitive authority diffs are visible",
+        "undeclared postinstall execution rejects"
+      ]
+    },
+    {
+      "task_id": "P02-D044",
+      "document": "SAFE15",
+      "governing_doc": "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+      "implementation_surfaces": [
+        "src/gravity/safety_document_coverage.py",
+        "tools/validate_phase02_document_coverage.py",
+        "src/gravity/safety.py"
+      ],
+      "accepted": {
+        "validator": "safe15-certificate-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe15-certificate-safety.json",
+        "required_artifact_fields": [
+          "proof_records",
+          "safety_certificates",
+          "check_erasure_records",
+          "certificate_trust_records",
+          "invalidation_records",
+          "imported_certificate_verification_records"
+        ]
+      },
+      "rejected": {
+        "validator": "safe15-certificate-safety",
+        "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe15-cert-trust.json",
+        "diagnostic": "SAFE15-CERT-TRUST"
+      },
+      "coverage_claims": [
+        "proof records and certificates carry stable identity and trust metadata",
+        "check erasure ties to proof and certificate ids",
+        "untrusted certificates reject"
+      ]
+    },
+    {
+      "task_id": "P02-D045",
+      "document": "SAFE16",
+      "governing_doc": "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+      "implementation_surfaces": [
+        "src/gravity/safety_conformance.py",
+        "tools/validate_safety_conformance.py",
+        "src/gravity/safety_document_coverage.py",
+        "tools/validate_phase02_document_coverage.py"
+      ],
+      "accepted": {
+        "validator": "safety-conformance",
+        "fixture": "docs/artifacts/phase-02/fixtures/conformance/accepted-safety-conformance.json",
+        "required_artifact_fields": [
+          "fixture_corpus",
+          "expected_outcome_manifest",
+          "diagnostic_match_records",
+          "runtime_check_inspection_records",
+          "unsafe_audit_inspection_records",
+          "certificate_inspection_records",
+          "profile_matrix_reports",
+          "backend_preservation_reports",
+          "safety_conformance_summary"
+        ]
+      },
+      "rejected": {
+        "validator": "safety-conformance",
+        "fixture": "docs/artifacts/phase-02/fixtures/conformance/rejected-outcome.json",
+        "diagnostic": "SAFE16-OUTCOME"
+      },
+      "coverage_claims": [
+        "conformance suite records fixture families for SAFE1 through SAFE15",
+        "expected outcomes and diagnostics are structured",
+        "artifact, profile, certificate, and backend inspections are machine-readable"
+      ]
+    }
+  ]
+}

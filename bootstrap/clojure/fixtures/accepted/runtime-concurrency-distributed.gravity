@@ -1,0 +1,16 @@
+; P08-T04 fixture covers concurrency, distributed, and replay runtimes.
+(ns runtime.concurrency-distributed
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:thread/spawn :time/schedule :network/http :database/write
+              :workflow/event})
+  (:capabilities #{:http/client :db/write})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {}}}))
+
+(def workflow-id 4)
+
+(defn main [] :- I64
+  workflow-id)

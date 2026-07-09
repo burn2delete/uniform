@@ -1,0 +1,9 @@
+(ns math.rewrite-trace
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof {:rewrite-trace-overrides
+                   [{:replayable? false}]}}}))

@@ -1,0 +1,12 @@
+; Rejected P11 A10 fixture.
+(ns ai.a10-payload
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/tool-call})
+  (:capabilities #{:tool/execute :human/review})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a10005}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,11 @@
+; Rejected P16 STD14 fixture.
+(ns standard-library.std14-test-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std14001}}}))
+
+(defn main [] :- I64 1)

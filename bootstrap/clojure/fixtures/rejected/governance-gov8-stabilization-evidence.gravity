@@ -1,0 +1,11 @@
+; Rejected P17 GOV8 fixture.
+(ns governance.gov8-stabilization-evidence
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov8001}}}))
+
+(defn main [] :- I64 1)

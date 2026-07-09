@@ -1,0 +1,114 @@
+(ns alternative.type
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [provider lowering fact-export proof runtime-check diagnostic-map
+             compatibility soundness effects ownership gradual domain
+             optimization])
+  (:effects #{:compiler/write-ir})
+  (:capabilities #{:compiler/ir})
+  (:safety :safe)
+  (:metadata {:language-facets #{:gravity.facet.schema}
+              :provider-policy {:type-provider 'research.types/refinement}}))
+
+(def provider
+  (alttype/provider-declaration 'research.types/refinement
+                                "fixture-1"
+                                #{:hosted :native :meta}
+                                #{:jvm}
+                                #{:gravity.facet.schema}
+                                #{:refinement :gradual :ownership :schema
+                                  :domain}
+                                #{:compiler/read-ir :compiler/write-ir}
+                                #{:compiler/ir}
+                                :gravity.types/facts-v1
+                                :gravity.proof/refinement-v1
+                                :gravity.conformance/types-l5
+                                :conservative-extension
+                                #{}))
+
+(def lowering
+  (alttype/typed-core-lowering 'research.types/refinement
+                               :typed-core-v1
+                               #{:expression-types :binding-types
+                                 :function-types :function-effects
+                                 :capability-requirements :panic
+                                 :allocation :resource :ownership
+                                 :casts :proof-refs :profile
+                                 :source-span}
+                               #{:effects :capabilities :panic
+                                 :allocation :resource :ownership
+                                 :casts :proof-refs :profile
+                                 :source-span}))
+
+(def fact-export
+  (alttype/fact-export 'research.types/refinement
+                       :gravity.types/facts-v1
+                       #{:ownership :region :linear :initialization
+                         :nullability :taint :schema :domain
+                         :capability-value}))
+
+(def proof
+  (alttype/proof-artifact 'research.types/refinement
+                          :proof/refinement-1
+                          :gravity.proof/refinement-v1
+                          :profile-safe))
+
+(def runtime-check
+  (alttype/runtime-check 'research.types/refinement
+                         :cast/User
+                         "Dynamic"
+                         "User"
+                         :runtime-checked
+                         "DecodeError"
+                         :caller-json))
+
+(def diagnostic-map
+  (alttype/diagnostic-map 'research.types/refinement
+                          :diag/type-1
+                          :syntax/generated-1
+                          "alternative-type.gravity"
+                          :fact/user-schema))
+
+(def compatibility
+  (alttype/compatibility-report 'research.types/refinement
+                                :l5-reference
+                                :conservative-extension
+                                :passed))
+
+(def soundness
+  (alttype/profile-soundness 'research.types/refinement
+                             :meta
+                             :proof/refinement-1
+                             :passed))
+
+(def effects
+  (alttype/effect-capability-preservation 'research.types/refinement
+                                          #{:network/http}
+                                          #{:network/client}
+                                          #{:panic/result}
+                                          #{:memory/allocate}
+                                          #{:resource/file}))
+
+(def ownership
+  (alttype/ownership-facts 'research.types/refinement
+                           #{:borrow :region :linear :initialization
+                             :allocation :resource}))
+
+(def gradual
+  (alttype/gradual-boundary 'research.types/refinement
+                            "Dynamic"
+                            "User"
+                            :checked-cast
+                            :caller-json
+                            "DecodeError"))
+
+(def domain
+  (alttype/domain-facts 'research.types/refinement
+                        :gravity.facet.schema
+                        #{:schema/User :nullability :taint}))
+
+(def optimization
+  (alttype/optimization-proof 'research.types/refinement
+                              :bounds-check-elision
+                              :proof/refinement-1
+                              :runtime-check))

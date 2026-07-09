@@ -1,0 +1,9 @@
+(ns core.app.front-end-unclosed
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(defn main []
+  (println "unterminated")

@@ -1,0 +1,11 @@
+(ns compiler.checked-core.safety-outcome
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:checked-core {:fail :safety-outcome}}}))
+
+(defn ready []
+  true)

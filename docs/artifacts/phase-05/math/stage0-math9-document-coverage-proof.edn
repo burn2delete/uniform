@@ -1,0 +1,43 @@
+{:phase "05"
+ :task "P05-D077"
+ :document "MATH9"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md"
+ :artifact-kind :gravity/stage0-math-proof-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-proof.gravity"
+ :covered-artifact-fields
+ [:rewrite-rule-registry
+  :rule-proof-artifact
+  :rewrite-application-trace
+  :counterexample-fixture
+  :termination-report
+  :egraph-saturation-report
+  :equality-explanation-trace
+  :math-proof-conformance-results]
+ :required-diagnostic-ids
+ ["MATH9-RULE-SHAPE" "MATH9-DOMAIN" "MATH9-BRANCH"
+  "MATH9-SIDE-CONDITION" "MATH9-PROOF" "MATH9-TRACE"
+  "MATH9-TERMINATION" "MATH9-COUNTEREXAMPLE" "MATH9-EGRAPH"
+  "MATH9-EQUALITY"]
+ :rejected-fixtures
+ [{:fixture "math-rewrite-rule-shape.gravity" :diagnostic "MATH9-RULE-SHAPE"}
+  {:fixture "math-rewrite-domain.gravity" :diagnostic "MATH9-DOMAIN"}
+  {:fixture "math-rewrite-branch.gravity" :diagnostic "MATH9-BRANCH"}
+  {:fixture "math-rewrite-side-condition.gravity" :diagnostic "MATH9-SIDE-CONDITION"}
+  {:fixture "math-rewrite-proof.gravity" :diagnostic "MATH9-PROOF"}
+  {:fixture "math-rewrite-trace.gravity" :diagnostic "MATH9-TRACE"}
+  {:fixture "math-rewrite-termination.gravity" :diagnostic "MATH9-TERMINATION"}
+  {:fixture "math-rewrite-counterexample.gravity" :diagnostic "MATH9-COUNTEREXAMPLE"}
+  {:fixture "math-rewrite-egraph.gravity" :diagnostic "MATH9-EGRAPH"}
+  {:fixture "math-rewrite-equality.gravity" :diagnostic "MATH9-EQUALITY"}]
+ :capability-based-proof
+ {:rule-shape-checked? true
+  :domain-and-branch-checked? true
+  :side-conditions-discharged? true
+  :accepted-rewrites-proof-gated? true
+  :rewrite-trace-replayable? true
+  :termination-bounded? true
+  :counterexamples-reject-accepted-identities? true
+  :egraph-extraction-proof-backed? true
+  :tree-identity-not-equality? true
+  :status :complete}
+ :status :complete}

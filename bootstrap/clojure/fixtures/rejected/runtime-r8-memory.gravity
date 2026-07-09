@@ -1,0 +1,6 @@
+; Rejected P08 R8 fixture.
+(ns runtime.r8-memory (:profile :ai) (:target :jvm) (:exports [main])
+  (:effects #{:ai/memory}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r8-memory}}}))
+(defn main [] :- I64 1)

@@ -1,0 +1,11 @@
+; Rejected P16 STD13 fixture.
+(ns standard-library.std13-ai-metadata
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std13001}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-performance-model.json",
+  "delete": [
+    "/specializations/0/key/target_features"
+  ]
+}

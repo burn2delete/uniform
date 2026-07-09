@@ -1,0 +1,73 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D090
+ :date "2026-06-25"
+ :status :complete
+ :capability :c11-mir-specification-document-coverage
+ :command "clojure -M:gravity compiler-c11-mir-spec bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"
+ :artifact-kind :gravity/stage0-c11-mir-spec-artifact
+ :artifact-hash "sha256:39867f721bbe5b520ec8218af20782eacee2699a5c45874d3ad1a9d89f2d3ee6"
+ :summary {:operations 20
+           :operation-families 20
+           :blocks 1
+           :data-flow-edges 19
+           :type-table-entries 18
+           :effect-table-entries 20
+           :source-origins 20
+           :safety-outcomes 12
+           :runtime-checks 3
+           :domain-anchors 1
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
+                       "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-mir-module.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-block.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-dominance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-type.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-safety.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-origin.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-domain.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-target-leak.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-mir-verify.gravity"]
+ :diagnostic-ids ["C11-MODULE"
+                  "C11-BLOCK"
+                  "C11-DOMINANCE"
+                  "C11-TYPE"
+                  "C11-EFFECT"
+                  "C11-SAFETY"
+                  "C11-ORIGIN"
+                  "C11-DOMAIN"
+                  "C11-TARGET-LEAK"
+                  "C11-VERIFY"]
+ :capability-based-proof {:module-serialized? true
+                          :blocks-terminated? true
+                          :operations-typed? true
+                          :effect-ordering-present? true
+                          :safety-outcomes-linked? true
+                          :origins-linked? true
+                          :domain-anchors-valid? true
+                          :target-independent? true
+                          :operation-family-coverage-complete? true
+                          :diagnostics-covered? true
+                          :verifier-passed? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 63 tests containing 3357 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c11-mir-spec bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity"
+               :result :accepted
+               :artifact-hash "sha256:39867f721bbe5b520ec8218af20782eacee2699a5c45874d3ad1a9d89f2d3ee6"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 17 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D090 for the Clojure stage0 C11 MIR specification document boundary only."
+                 "It does not claim target lowering, backend code generation, release readiness, or self-hosting."]}

@@ -1,0 +1,10 @@
+(ns invalid.eval-order
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout}))
+
+(defn main []
+  (reorder-effects
+    (println "first")
+    (println "second")))

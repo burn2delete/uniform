@@ -1,0 +1,42 @@
+(ns compile.time
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [page-size user-schema generated-code emitted-artifact
+             target-features replayed-seed model-generated cached-result])
+  (:effects #{:build/read-file :build/write-artifact :build/target-probe
+              :build/random :build/model-call})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file :build/write-artifact
+                              :build/target-probe :build/random
+                              :build/model-call}
+              :declared-inputs #{"schemas/user.schema.edn"}
+              :target-manifests #{:jvm}
+              :replay-policy #{:build/random :build/model-call}
+              :hermetic true
+              :cache-policy :strict
+              :language-facets #{:compile-time-evaluation}}))
+
+(defconst page-size
+  (compile-time 4096))
+
+(def user-schema
+  (compile/read-schema "schemas/user.schema.edn"))
+
+(def generated-code
+  (derive-code :json/User user-schema))
+
+(def emitted-artifact
+  (compile/emit-artifact "generated/user.gravity" generated-code))
+
+(def target-features
+  (compile/target-probe :jvm))
+
+(def replayed-seed
+  (compile/replay-random :stage0-seed))
+
+(def model-generated
+  (compile/model-derive :schema-adapter user-schema))
+
+(def cached-result
+  (compile/cache :json/User generated-code))

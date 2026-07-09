@@ -1,0 +1,16 @@
+{
+  "artifact_id": "phase-00-change-control-accepted-language-identity-fixture",
+  "kind": "change-control-request-fixture",
+  "task": "P00-T05",
+  "category": "language-identity",
+  "change_summary": "Fixture change updates a cross-phase language identity term without changing release support.",
+  "affected_docs": ["D0", "D1", "D3", "GOV1"],
+  "affected_surfaces": ["source forms", "typed core", "runtime selection", "artifact graph"],
+  "required_evidence": ["migration-notes", "compatibility-analysis", "conformance-updates", "affected-document-list", "artifact-schema-updates", "diagnostic-updates"],
+  "review_record": {"state": "approved-fixture", "reviewers": ["language-owner", "compiler-owner", "governance-owner"]},
+  "diagnostics": ["P00-T05-MISSING-EVIDENCE", "P00-T05-AFFECTED-SURFACES"],
+  "moves_release_gate": false,
+  "weakens_safety": false,
+  "bootstrap_trust_change": false,
+  "artifact_provenance_change": false
+}

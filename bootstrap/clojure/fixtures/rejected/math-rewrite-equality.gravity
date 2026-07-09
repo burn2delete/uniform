@@ -1,0 +1,12 @@
+(ns math.rewrite-equality
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:equality-claims
+            [{:claim-id :equality/bad
+              :source :tree-identity
+              :accepted? true}]}}}))

@@ -1,0 +1,53 @@
+{:kind :gravity/capability-proof
+ :phase :phase-01-core-language
+ :tasks [:P01-T04 :P01-D012]
+ :capability :core-lowering-and-l2-semantics
+ :status :complete
+ :bootstrap {:owner :clojure-bootstrap
+             :stage :stage0
+             :retirement-objective :replace-with-gravity-self-hosted-compiler}
+ :governing-docs ["docs/phase-01-core-language/012-l2-core-language-semantics.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+                     "bootstrap/clojure/fixtures/accepted/hello.gravity"]
+ :rejected-fixtures [{:path "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+                      :diagnostic "L2-UNKNOWN-CORE-FORM"}
+                     {:path "bootstrap/clojure/fixtures/rejected/eval-order.gravity"
+                      :diagnostic "L2-EVAL-ORDER"}
+                     {:path "bootstrap/clojure/fixtures/rejected/recur-target.gravity"
+                      :diagnostic "L2-RECUR-TARGET"}
+                     {:path "bootstrap/clojure/fixtures/rejected/set-illegal.gravity"
+                      :diagnostic "L2-SET-ILLEGAL"}
+                     {:path "bootstrap/clojure/fixtures/rejected/throw-illegal.gravity"
+                      :diagnostic "L2-THROW-ILLEGAL"}
+                     {:path "bootstrap/clojure/fixtures/rejected/host-semantics.gravity"
+                      :diagnostic "L2-HOST-SEMANTICS"}
+                     {:path "bootstrap/clojure/fixtures/rejected/lowering-gap.gravity"
+                      :diagnostic "L2-LOWERING-GAP"}]
+ :artifact-command "clojure -M:gravity core bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+ :artifact-summary {:kind :gravity/stage0-core-artifact
+                    :module core.semantics
+                    :profile :hosted
+                    :target :jvm
+                    :core-forms [:quote :if :do :let :fn :loop :recur :def :var :set! :try :throw :match]
+                    :records [:expanded-core-ast
+                              :core-node-source-map
+                              :core-form-kind-records
+                              :evaluation-order-metadata
+                              :latent-function-effect-records
+                              :call-records]}
+ :validation [{:command "clojure -M:test"
+               :output "Ran 7 tests containing 111 assertions. 0 failures, 0 errors."}
+              {:command "clojure -M:gravity core bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+               :output "emitted :gravity/stage0-core-artifact for core.semantics"}
+              {:command "python3 tools/validate_gravity_docs.py"
+               :output "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}]
+ :non-claims [:full-compile-time-macro-ecosystem
+              :type-checking
+              :effect-algebra-completeness
+              :profile-validation
+              :mir-construction
+              :native-lowering
+              :self-hosting]}

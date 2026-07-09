@@ -1,0 +1,9 @@
+(ns profile.accepted.gpu
+  (:profile :gpu)
+  (:target :jvm)
+  (:exports [value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

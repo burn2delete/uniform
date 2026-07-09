@@ -1,0 +1,35 @@
+{:artifact :gravity/stage0-r3-minimal-native-document-proof
+ :task "P08-D114"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r3-document bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+ :artifact-kind :gravity/stage0-r3-minimal-native-document-artifact
+ :artifact-id "sha256:7bacbb4d496c38be31291e20dac92b41ff64f8052a644b39ec71767621ae2528"
+ :input-artifact "sha256:f903f759d277bd89cb6ce6475638fc1a3be74ef6c882bb041232a87127c891e3"
+ :input-artifact-kind :gravity/stage0-minimal-native-memory-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r3-*.gravity"]
+ :required-diagnostic-ids
+ ["R3-SERVICE" "R3-ALLOCATOR" "R3-PANIC" "R3-ATOMICS"
+  "R3-FFI" "R3-CAPABILITY" "R3-DEBUG" "R3-MANAGED"
+  "R3-MANIFEST"]
+ :capability-based-proof
+ {:minimal-native-input-verified? true
+  :linked-services-covered? true
+  :allocator-policy-covered? true
+  :panic-policy-covered? true
+  :atomics-safe8-covered? true
+  :ffi-safe7-covered? true
+  :helper-capability-covered? true
+  :debug-release-covered? true
+  :managed-services-rejected? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 9
+  :test-command "clojure -M:test"
+  :test-result "99 tests, 6133 assertions, 0 failures, 0 errors, 1337 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R3 minimal native runtime document through the minimal-native runtime manifest. It does not claim native object linking, production allocator execution, C/LLVM backend execution, or complete Phase 08 document coverage."}

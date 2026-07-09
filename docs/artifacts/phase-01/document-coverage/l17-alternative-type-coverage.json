@@ -1,0 +1,62 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "alternative-type-system-artifact",
+      "coverage": [
+        "type provider declaration",
+        "typed core lowering",
+        "fact export schema",
+        "proof artifacts",
+        "runtime check records",
+        "diagnostic mapping",
+        "reference compatibility",
+        "profile soundness"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/accepted-alternative-type.json"
+    }
+  ],
+  "document": "L17",
+  "kind": "l17-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L17-PROVIDER",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-provider.json"
+    },
+    {
+      "diagnostic": "L17-LOWERING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-lowering.json"
+    },
+    {
+      "diagnostic": "L17-SOUNDNESS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-soundness.json"
+    },
+    {
+      "diagnostic": "L17-EFFECT-ERASURE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-effect-erasure.json"
+    },
+    {
+      "diagnostic": "L17-CAPABILITY-ERASURE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-capability-erasure.json"
+    },
+    {
+      "diagnostic": "L17-OWNERSHIP-FACT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-ownership-fact.json"
+    },
+    {
+      "diagnostic": "L17-GRADUAL-BOUNDARY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-gradual-boundary.json"
+    },
+    {
+      "diagnostic": "L17-UNSAFE-CAST",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-unsafe-cast.json"
+    },
+    {
+      "diagnostic": "L17-DOMAIN-FACT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-domain-fact.json"
+    },
+    {
+      "diagnostic": "L17-DIAGNOSTIC-MAP",
+      "fixture": "docs/artifacts/phase-01/fixtures/l17/rejected-diagnostic-map.json"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-facet-system.json",
+  "set": {
+    "/composition_edges/0/effects_visible": false
+  }
+}

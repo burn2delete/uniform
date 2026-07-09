@@ -1,0 +1,4 @@
+(ns backend.b8-math
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:specialized-lowering {:fail :b8-math}}}))

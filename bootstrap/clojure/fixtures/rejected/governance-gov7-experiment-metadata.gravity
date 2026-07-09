@@ -1,0 +1,11 @@
+; Rejected P17 GOV7 fixture.
+(ns governance.gov7-experiment-metadata
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov7001}}}))
+
+(defn main [] :- I64 1)

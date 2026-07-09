@@ -1,0 +1,20 @@
+; Accepted fixture for the stage1 reader-table execution bridge.
+(ns stage1.reader.execution
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:reader {:stage :stage1
+                       :table :gravity.bootstrap.reader/stage1-reader-table}}))
+
+(def answer 42)
+
+(def sample-data
+  {:name "stage1-reader"
+   :items [1 2 3]
+   :flags #{:source-spans :syntax-identity}
+   :nested {:ok true :missing nil}})
+
+(defn main [] answer)

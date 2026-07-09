@@ -1,0 +1,12 @@
+(ns typed.pattern.unreachable
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (match :red
+    _ :default
+    :red :never))

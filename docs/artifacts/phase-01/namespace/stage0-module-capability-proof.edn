@@ -1,0 +1,59 @@
+{:kind :gravity/capability-proof
+ :phase :phase-01-core-language
+ :tasks [:P01-T02 :P01-D013]
+ :capability :namespace-module-analyzer
+ :status :complete
+ :bootstrap {:owner :clojure-bootstrap
+             :stage :stage0
+             :retirement-objective :replace-with-gravity-self-hosted-compiler}
+ :governing-docs ["docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/namespace-module.gravity"
+                     "bootstrap/clojure/fixtures/accepted/hello.gravity"]
+ :rejected-fixtures [{:path "bootstrap/clojure/fixtures/rejected/multiple-profile.gravity"
+                      :diagnostic "L3-PROFILE-MULTIPLE"}
+                     {:path "bootstrap/clojure/fixtures/rejected/unknown-alias.gravity"
+                      :diagnostic "L3-UNKNOWN-ALIAS"}
+                     {:path "bootstrap/clojure/fixtures/rejected/ambiguous-alias.gravity"
+                      :diagnostic "L3-AMBIGUOUS-NAME"}
+                     {:path "bootstrap/clojure/fixtures/rejected/private-import.gravity"
+                      :diagnostic "L3-PRIVATE-IMPORT"}
+                     {:path "bootstrap/clojure/fixtures/rejected/cross-profile.gravity"
+                      :diagnostic "L3-CROSS-PROFILE"}
+                     {:path "bootstrap/clojure/fixtures/rejected/effect-widen.gravity"
+                      :diagnostic "L3-EFFECT-WIDEN"}
+                     {:path "bootstrap/clojure/fixtures/rejected/module-missing-capability.gravity"
+                      :diagnostic "L3-CAPABILITY-MISSING"}]
+ :artifact-command "clojure -M:gravity module bootstrap/clojure/fixtures/accepted/namespace-module.gravity"
+ :artifact-summary {:kind :gravity/stage0-module-artifact
+                    :module app.server
+                    :profile :hosted
+                    :target :jvm
+                    :exports [main start]
+                    :effects [:io/write]
+                    :capabilities [:io/stdout]
+                    :safety :safe-optimized
+                    :records [:namespace-table
+                              :alias-table
+                              :import-export-table
+                              :module-dependency-graph
+                              :namespace-effect-summary
+                              :namespace-capability-summary
+                              :profile-boundary-records
+                              :module-artifact
+                              :public-api-manifest]}
+ :validation [{:command "clojure -M:test"
+               :output "Ran 7 tests containing 111 assertions. 0 failures, 0 errors."}
+              {:command "clojure -M:gravity module bootstrap/clojure/fixtures/accepted/namespace-module.gravity"
+               :output "emitted :gravity/stage0-module-artifact for app.server"}
+              {:command "python3 tools/validate_gravity_docs.py"
+               :output "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}]
+ :non-claims [:full-name-resolution
+              :package-grant-resolution
+              :cross-file-import-graph-loading
+              :type-checking
+              :effect-checking-completeness
+              :native-lowering
+              :self-hosting]}

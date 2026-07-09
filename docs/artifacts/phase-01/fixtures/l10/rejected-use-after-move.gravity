@@ -1,0 +1,5 @@
+(ns l10.bad.move
+  (:profile :hosted))
+
+(def bad
+  (move/use-after buffer))

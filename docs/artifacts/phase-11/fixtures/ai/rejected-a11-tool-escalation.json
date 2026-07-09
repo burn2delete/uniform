@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "set": {
+    "/injection_defense/model_text_authorizes_tool": true
+  }
+}

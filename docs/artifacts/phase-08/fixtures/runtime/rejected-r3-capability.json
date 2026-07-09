@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-runtime-architecture.json",
+  "set": {
+    "/runtime_families/minimal_native/helper_effect_without_capability": "filesystem/read"
+  }
+}

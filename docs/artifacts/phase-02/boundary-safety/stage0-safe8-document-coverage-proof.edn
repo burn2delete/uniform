@@ -1,0 +1,30 @@
+{:task-id :P02-D037
+ :document "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+ :artifact-kind :gravity/stage0-boundary-safety-artifact
+ :document-coverage {:concurrency-graphs 1
+                     :task-capture-records 1
+                     :ownership-transfer-records 1
+                     :shared-state-access-records 1
+                     :synchronization-proof-records 1
+                     :atomic-memory-order-records 1
+                     :blocking-cancellation-records 1
+                     :backend-preservation-records 1
+                     :race-analysis-reports 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE8-DATA-RACE"
+                        "SAFE8-TASK-CAPTURE"
+                        "SAFE8-MOVE"
+                        "SAFE8-SHARE"
+                        "SAFE8-LOCK-GUARD"
+                        "SAFE8-ATOMIC-ORDER"
+                        "SAFE8-FENCE"
+                        "SAFE8-CHANNEL"
+                        "SAFE8-ACTOR"
+                        "SAFE8-WORKFLOW-REPLAY"
+                        "SAFE8-BACKEND"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE8 accepted records and 11 rejected diagnostics passed"}]}

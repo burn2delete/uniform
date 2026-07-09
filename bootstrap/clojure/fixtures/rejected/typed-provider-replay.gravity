@@ -1,0 +1,9 @@
+(ns provider.replay
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (provider/replay :filesystem/read))

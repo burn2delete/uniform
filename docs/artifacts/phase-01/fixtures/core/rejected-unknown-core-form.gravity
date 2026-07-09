@@ -1,0 +1,6 @@
+(ns core.bad.unknown
+  (:profile :hosted))
+
+(def bad
+  (core/while true
+    1))

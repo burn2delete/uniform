@@ -1,0 +1,1033 @@
+{
+  "compatibility_report": {
+    "affected_surfaces": [
+      ":source",
+      ":effect",
+      ":capability",
+      ":diagnostic",
+      ":artifact",
+      ":package"
+    ],
+    "artifact_id": "phase17-gov2-compatibility",
+    "artifacts": [
+      "compatibility-matrix",
+      "migration-record",
+      "package-compatibility-metadata"
+    ],
+    "decision": ":compatible-tightening",
+    "diagnostics": [
+      "GOV2001",
+      "GOV2002",
+      "GOV2003",
+      "GOV2004",
+      "GOV2008"
+    ],
+    "document": "GOV2",
+    "evidence": [
+      "baseline-release",
+      "profile-target-matrix",
+      "diagnostic-golden",
+      "artifact-migration"
+    ],
+    "owner": "compatibility-working-group",
+    "provenance_record": "phase17-gov2-provenance",
+    "record_id": "COMPAT-accepted",
+    "review_gates": [
+      ":baseline-comparison",
+      ":migration",
+      ":security-exception"
+    ],
+    "scope": [
+      "source",
+      "semantic",
+      "effect",
+      "capability",
+      "profile",
+      "diagnostic",
+      "artifact",
+      "runtime",
+      "package"
+    ],
+    "state": ":implemented"
+  },
+  "coverage_summary": {
+    "documents": 10,
+    "status": ":passed",
+    "tasks": 6
+  },
+  "deprecation_plan": {
+    "affected_surfaces": [
+      ":source",
+      ":semantic",
+      ":diagnostic",
+      ":artifact",
+      ":profile",
+      ":package"
+    ],
+    "artifact_id": "phase17-gov8-deprecation-stabilization",
+    "artifacts": [
+      "deprecation-plan",
+      "stabilization-record",
+      "migration-artifact"
+    ],
+    "decision": ":accepted",
+    "diagnostics": [
+      "GOV8001",
+      "GOV8002",
+      "GOV8003",
+      "GOV8004",
+      "GOV8008"
+    ],
+    "document": "GOV8",
+    "evidence": [
+      "stabilization-record",
+      "deprecation-record",
+      "compatibility-baseline",
+      "migration-tool",
+      "release-notes"
+    ],
+    "owner": "release-governance-group",
+    "provenance_record": "phase17-gov8-provenance",
+    "record_id": "STABLE-DEP-accepted",
+    "review_gates": [
+      ":conformance-history",
+      ":compatibility-surface",
+      ":security",
+      ":experiment-closure",
+      ":migration"
+    ],
+    "scope": [
+      "stabilization",
+      "deprecation",
+      "removal",
+      "migration"
+    ],
+    "state": ":implemented"
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "GOV1": {
+      "affected_surfaces": [
+        ":source",
+        ":semantic",
+        ":diagnostic",
+        ":artifact",
+        ":profile"
+      ],
+      "artifact_id": "phase17-gov1-language-evolution",
+      "artifacts": [
+        "change-record",
+        "release-note",
+        "implementation-link",
+        "test-link"
+      ],
+      "decision": ":accepted-with-evidence",
+      "diagnostics": [
+        "GOV1001",
+        "GOV1002",
+        "GOV1003",
+        "GOV1004",
+        "GOV1007"
+      ],
+      "document": "GOV1",
+      "evidence": [
+        "compatibility-report",
+        "safety-review",
+        "profile-fixtures",
+        "conformance-fixtures",
+        "migration-record"
+      ],
+      "owner": "language-governance-group",
+      "provenance_record": "phase17-gov1-provenance",
+      "record_id": "GOV1-CHANGE-accepted",
+      "review_gates": [
+        ":compatibility",
+        ":safety",
+        ":security",
+        ":profile",
+        ":conformance"
+      ],
+      "scope": [
+        "language",
+        "profiles",
+        "compiler-artifacts",
+        "standard-library"
+      ],
+      "state": ":implemented"
+    },
+    "GOV10": {
+      "affected_surfaces": [
+        ":package",
+        ":registry",
+        ":capability",
+        ":supply-chain",
+        ":security",
+        ":conformance"
+      ],
+      "artifact_id": "phase17-gov10-package",
+      "artifacts": [
+        "registry-package-record",
+        "yank-record",
+        "advisory-record",
+        "namespace-transfer-record"
+      ],
+      "decision": ":accepted",
+      "diagnostics": [
+        "GOV10001",
+        "GOV10002",
+        "GOV10003",
+        "GOV10004",
+        "GOV10008"
+      ],
+      "document": "GOV10",
+      "evidence": [
+        "package-governance-record",
+        "signed-package-manifest",
+        "capability-manifest",
+        "sbom",
+        "conformance-report"
+      ],
+      "owner": "registry-governance-group",
+      "provenance_record": "phase17-gov10-provenance",
+      "record_id": "PKG-GOV-accepted",
+      "review_gates": [
+        ":identity",
+        ":signing",
+        ":provenance",
+        ":capability",
+        ":unsafe-ai-metadata",
+        ":advisory",
+        ":namespace"
+      ],
+      "scope": [
+        "registry",
+        "packages",
+        "yanks",
+        "advisories",
+        "namespaces",
+        "provenance"
+      ],
+      "state": ":implemented"
+    },
+    "GOV2": {
+      "affected_surfaces": [
+        ":source",
+        ":effect",
+        ":capability",
+        ":diagnostic",
+        ":artifact",
+        ":package"
+      ],
+      "artifact_id": "phase17-gov2-compatibility",
+      "artifacts": [
+        "compatibility-matrix",
+        "migration-record",
+        "package-compatibility-metadata"
+      ],
+      "decision": ":compatible-tightening",
+      "diagnostics": [
+        "GOV2001",
+        "GOV2002",
+        "GOV2003",
+        "GOV2004",
+        "GOV2008"
+      ],
+      "document": "GOV2",
+      "evidence": [
+        "baseline-release",
+        "profile-target-matrix",
+        "diagnostic-golden",
+        "artifact-migration"
+      ],
+      "owner": "compatibility-working-group",
+      "provenance_record": "phase17-gov2-provenance",
+      "record_id": "COMPAT-accepted",
+      "review_gates": [
+        ":baseline-comparison",
+        ":migration",
+        ":security-exception"
+      ],
+      "scope": [
+        "source",
+        "semantic",
+        "effect",
+        "capability",
+        "profile",
+        "diagnostic",
+        "artifact",
+        "runtime",
+        "package"
+      ],
+      "state": ":implemented"
+    },
+    "GOV3": {
+      "affected_surfaces": [
+        ":stdlib",
+        ":profile",
+        ":artifact",
+        ":diagnostic",
+        ":package"
+      ],
+      "artifact_id": "phase17-gov3-standard-library",
+      "artifacts": [
+        "standard-library-review-record",
+        "release-manifest",
+        "signed-provenance"
+      ],
+      "decision": ":accepted",
+      "diagnostics": [
+        "GOV3001",
+        "GOV3002",
+        "GOV3003",
+        "GOV3004",
+        "GOV3008"
+      ],
+      "document": "GOV3",
+      "evidence": [
+        "module-ownership-map",
+        "module-manifests",
+        "api-fixtures",
+        "unsafe-audit",
+        "compatibility-report"
+      ],
+      "owner": "stdlib-working-group",
+      "provenance_record": "phase17-gov3-provenance",
+      "record_id": "STD-GOV-accepted",
+      "review_gates": [
+        ":api",
+        ":profile",
+        ":safety",
+        ":security",
+        ":compatibility",
+        ":conformance",
+        ":release"
+      ],
+      "scope": [
+        "standard-library",
+        "exports",
+        "stability",
+        "profiles",
+        "safe-wrappers"
+      ],
+      "state": ":implemented"
+    },
+    "GOV4": {
+      "affected_surfaces": [
+        ":security",
+        ":capability",
+        ":taint",
+        ":unsafe",
+        ":package",
+        ":ai"
+      ],
+      "artifact_id": "phase17-gov4-security-review",
+      "artifacts": [
+        "security-review-record",
+        "security-compatibility-exception",
+        "advisory-backport-plan"
+      ],
+      "decision": ":accepted-with-mitigation",
+      "diagnostics": [
+        "GOV4001",
+        "GOV4002",
+        "GOV4003",
+        "GOV4004",
+        "GOV4008"
+      ],
+      "document": "GOV4",
+      "evidence": [
+        "threat-model",
+        "capability-denial-fixtures",
+        "redaction-tests",
+        "ai-tool-auth-tests",
+        "supply-chain-risk-record"
+      ],
+      "owner": "security-working-group",
+      "provenance_record": "phase17-gov4-provenance",
+      "record_id": "SEC-accepted",
+      "review_gates": [
+        ":threat-model",
+        ":capability",
+        ":taint",
+        ":secret",
+        ":unsafe-ffi",
+        ":ai",
+        ":supply-chain"
+      ],
+      "scope": [
+        "capabilities",
+        "secrets",
+        "taint",
+        "unsafe",
+        "ffi",
+        "packages",
+        "ai-tools"
+      ],
+      "state": ":implemented"
+    },
+    "GOV5": {
+      "affected_surfaces": [
+        ":target",
+        ":profile",
+        ":backend",
+        ":runtime",
+        ":package",
+        ":performance"
+      ],
+      "artifact_id": "phase17-gov5-target-support",
+      "artifacts": [
+        "target-support-matrix",
+        "debug-diagnostic-fixtures",
+        "signed-target-package"
+      ],
+      "decision": ":supported-subset",
+      "diagnostics": [
+        "GOV5001",
+        "GOV5002",
+        "GOV5003",
+        "GOV5005",
+        "GOV5008"
+      ],
+      "document": "GOV5",
+      "evidence": [
+        "target-tier-record",
+        "profile-support-matrix",
+        "backend-fixtures",
+        "runtime-service-manifest",
+        "performance-baseline"
+      ],
+      "owner": "backend-working-group",
+      "provenance_record": "phase17-gov5-provenance",
+      "record_id": "TARGET-accepted",
+      "review_gates": [
+        ":profile-conformance",
+        ":backend-lowering",
+        ":runtime-manifest",
+        ":package-artifacts",
+        ":security",
+        ":deprecation"
+      ],
+      "scope": [
+        "targets",
+        "profiles",
+        "backends",
+        "runtimes",
+        "packages",
+        "performance"
+      ],
+      "state": ":implemented"
+    },
+    "GOV6": {
+      "affected_surfaces": [
+        ":rfc",
+        ":semantic",
+        ":profile",
+        ":safety",
+        ":compatibility",
+        ":tests"
+      ],
+      "artifact_id": "phase17-gov6-rfc",
+      "artifacts": [
+        "rfc-record",
+        "spec-diff",
+        "final-decision-record",
+        "release-note-link"
+      ],
+      "decision": ":accepted-and-implemented",
+      "diagnostics": [
+        "GOV6001",
+        "GOV6002",
+        "GOV6003",
+        "GOV6006",
+        "GOV6008"
+      ],
+      "document": "GOV6",
+      "evidence": [
+        "required-sections",
+        "affected-documents",
+        "test-plan",
+        "migration-plan",
+        "decision-history"
+      ],
+      "owner": "rfc-editors",
+      "provenance_record": "phase17-gov6-provenance",
+      "record_id": "RFC-accepted",
+      "review_gates": [
+        ":design",
+        ":compatibility",
+        ":security",
+        ":profile",
+        ":conformance",
+        ":final-comment"
+      ],
+      "scope": [
+        "nontrivial-semantic-change",
+        "review-history",
+        "implementation-link",
+        "validation-link"
+      ],
+      "state": ":implemented"
+    },
+    "GOV7": {
+      "affected_surfaces": [
+        ":experiment",
+        ":profile",
+        ":package",
+        ":build",
+        ":release-notes"
+      ],
+      "artifact_id": "phase17-gov7-experiment",
+      "artifacts": [
+        "experiment-registry",
+        "compiler-flag-record",
+        "release-note"
+      ],
+      "decision": ":active-with-expiry",
+      "diagnostics": [
+        "GOV7001",
+        "GOV7002",
+        "GOV7003",
+        "GOV7005",
+        "GOV7008"
+      ],
+      "document": "GOV7",
+      "evidence": [
+        "experiment-record",
+        "package-opt-in-artifact",
+        "experiment-on-off-fixtures",
+        "rollback-plan"
+      ],
+      "owner": "experiment-review-group",
+      "provenance_record": "phase17-gov7-provenance",
+      "record_id": "EXP-accepted",
+      "review_gates": [
+        ":explicit-opt-in",
+        ":on-off-fixtures",
+        ":expiry-check",
+        ":specialized-review",
+        ":stabilization"
+      ],
+      "scope": [
+        "experiments",
+        "opt-in",
+        "expiry",
+        "rollback",
+        "stabilization"
+      ],
+      "state": ":active"
+    },
+    "GOV8": {
+      "affected_surfaces": [
+        ":source",
+        ":semantic",
+        ":diagnostic",
+        ":artifact",
+        ":profile",
+        ":package"
+      ],
+      "artifact_id": "phase17-gov8-deprecation-stabilization",
+      "artifacts": [
+        "deprecation-plan",
+        "stabilization-record",
+        "migration-artifact"
+      ],
+      "decision": ":accepted",
+      "diagnostics": [
+        "GOV8001",
+        "GOV8002",
+        "GOV8003",
+        "GOV8004",
+        "GOV8008"
+      ],
+      "document": "GOV8",
+      "evidence": [
+        "stabilization-record",
+        "deprecation-record",
+        "compatibility-baseline",
+        "migration-tool",
+        "release-notes"
+      ],
+      "owner": "release-governance-group",
+      "provenance_record": "phase17-gov8-provenance",
+      "record_id": "STABLE-DEP-accepted",
+      "review_gates": [
+        ":conformance-history",
+        ":compatibility-surface",
+        ":security",
+        ":experiment-closure",
+        ":migration"
+      ],
+      "scope": [
+        "stabilization",
+        "deprecation",
+        "removal",
+        "migration"
+      ],
+      "state": ":implemented"
+    },
+    "GOV9": {
+      "affected_surfaces": [
+        ":unsafe",
+        ":safety",
+        ":backend",
+        ":target",
+        ":stdlib",
+        ":package"
+      ],
+      "artifact_id": "phase17-gov9-unsafe",
+      "artifacts": [
+        "unsafe-governance-audit",
+        "release-unsafe-provenance"
+      ],
+      "decision": ":audited",
+      "diagnostics": [
+        "GOV9001",
+        "GOV9002",
+        "GOV9003",
+        "GOV9006",
+        "GOV9008"
+      ],
+      "document": "GOV9",
+      "evidence": [
+        "unsafe-island-record",
+        "safe-wrapper-proof",
+        "negative-fixtures",
+        "fuzz-sanitizer-record",
+        "stale-audit-report"
+      ],
+      "owner": "unsafe-review-board",
+      "provenance_record": "phase17-gov9-provenance",
+      "record_id": "UNSAFE-accepted",
+      "review_gates": [
+        ":boundary",
+        ":memory",
+        ":concurrency",
+        ":ffi",
+        ":backend",
+        ":security",
+        ":regression"
+      ],
+      "scope": [
+        "unsafe-islands",
+        "safe-wrappers",
+        "preconditions",
+        "backend-revalidation",
+        "stale-audits"
+      ],
+      "state": ":implemented"
+    }
+  },
+  "ecosystem_package_governance_record": {
+    "affected_surfaces": [
+      ":package",
+      ":registry",
+      ":capability",
+      ":supply-chain",
+      ":security",
+      ":conformance"
+    ],
+    "artifact_id": "phase17-gov10-package",
+    "artifacts": [
+      "registry-package-record",
+      "yank-record",
+      "advisory-record",
+      "namespace-transfer-record"
+    ],
+    "decision": ":accepted",
+    "diagnostics": [
+      "GOV10001",
+      "GOV10002",
+      "GOV10003",
+      "GOV10004",
+      "GOV10008"
+    ],
+    "document": "GOV10",
+    "evidence": [
+      "package-governance-record",
+      "signed-package-manifest",
+      "capability-manifest",
+      "sbom",
+      "conformance-report"
+    ],
+    "owner": "registry-governance-group",
+    "provenance_record": "phase17-gov10-provenance",
+    "record_id": "PKG-GOV-accepted",
+    "review_gates": [
+      ":identity",
+      ":signing",
+      ":provenance",
+      ":capability",
+      ":unsafe-ai-metadata",
+      ":advisory",
+      ":namespace"
+    ],
+    "scope": [
+      "registry",
+      "packages",
+      "yanks",
+      "advisories",
+      "namespaces",
+      "provenance"
+    ],
+    "state": ":implemented"
+  },
+  "experiment_registry": {
+    "affected_surfaces": [
+      ":experiment",
+      ":profile",
+      ":package",
+      ":build",
+      ":release-notes"
+    ],
+    "artifact_id": "phase17-gov7-experiment",
+    "artifacts": [
+      "experiment-registry",
+      "compiler-flag-record",
+      "release-note"
+    ],
+    "decision": ":active-with-expiry",
+    "diagnostics": [
+      "GOV7001",
+      "GOV7002",
+      "GOV7003",
+      "GOV7005",
+      "GOV7008"
+    ],
+    "document": "GOV7",
+    "evidence": [
+      "experiment-record",
+      "package-opt-in-artifact",
+      "experiment-on-off-fixtures",
+      "rollback-plan"
+    ],
+    "owner": "experiment-review-group",
+    "provenance_record": "phase17-gov7-provenance",
+    "record_id": "EXP-accepted",
+    "review_gates": [
+      ":explicit-opt-in",
+      ":on-off-fixtures",
+      ":expiry-check",
+      ":specialized-review",
+      ":stabilization"
+    ],
+    "scope": [
+      "experiments",
+      "opt-in",
+      "expiry",
+      "rollback",
+      "stabilization"
+    ],
+    "state": ":active"
+  },
+  "input_hash": "sha256:618520eedf6e907687220e90f22b249efea3b3c208f634a6bb09fc428c031474",
+  "kind": "governance-evolution-artifact",
+  "language_change_record": {
+    "affected_surfaces": [
+      ":source",
+      ":semantic",
+      ":diagnostic",
+      ":artifact",
+      ":profile"
+    ],
+    "artifact_id": "phase17-gov1-language-evolution",
+    "artifacts": [
+      "change-record",
+      "release-note",
+      "implementation-link",
+      "test-link"
+    ],
+    "decision": ":accepted-with-evidence",
+    "diagnostics": [
+      "GOV1001",
+      "GOV1002",
+      "GOV1003",
+      "GOV1004",
+      "GOV1007"
+    ],
+    "document": "GOV1",
+    "evidence": [
+      "compatibility-report",
+      "safety-review",
+      "profile-fixtures",
+      "conformance-fixtures",
+      "migration-record"
+    ],
+    "owner": "language-governance-group",
+    "provenance_record": "phase17-gov1-provenance",
+    "record_id": "GOV1-CHANGE-accepted",
+    "review_gates": [
+      ":compatibility",
+      ":safety",
+      ":security",
+      ":profile",
+      ":conformance"
+    ],
+    "scope": [
+      "language",
+      "profiles",
+      "compiler-artifacts",
+      "standard-library"
+    ],
+    "state": ":implemented"
+  },
+  "phase": "17",
+  "rfc_record": {
+    "affected_surfaces": [
+      ":rfc",
+      ":semantic",
+      ":profile",
+      ":safety",
+      ":compatibility",
+      ":tests"
+    ],
+    "artifact_id": "phase17-gov6-rfc",
+    "artifacts": [
+      "rfc-record",
+      "spec-diff",
+      "final-decision-record",
+      "release-note-link"
+    ],
+    "decision": ":accepted-and-implemented",
+    "diagnostics": [
+      "GOV6001",
+      "GOV6002",
+      "GOV6003",
+      "GOV6006",
+      "GOV6008"
+    ],
+    "document": "GOV6",
+    "evidence": [
+      "required-sections",
+      "affected-documents",
+      "test-plan",
+      "migration-plan",
+      "decision-history"
+    ],
+    "owner": "rfc-editors",
+    "provenance_record": "phase17-gov6-provenance",
+    "record_id": "RFC-accepted",
+    "review_gates": [
+      ":design",
+      ":compatibility",
+      ":security",
+      ":profile",
+      ":conformance",
+      ":final-comment"
+    ],
+    "scope": [
+      "nontrivial-semantic-change",
+      "review-history",
+      "implementation-link",
+      "validation-link"
+    ],
+    "state": ":implemented"
+  },
+  "security_review_record": {
+    "affected_surfaces": [
+      ":security",
+      ":capability",
+      ":taint",
+      ":unsafe",
+      ":package",
+      ":ai"
+    ],
+    "artifact_id": "phase17-gov4-security-review",
+    "artifacts": [
+      "security-review-record",
+      "security-compatibility-exception",
+      "advisory-backport-plan"
+    ],
+    "decision": ":accepted-with-mitigation",
+    "diagnostics": [
+      "GOV4001",
+      "GOV4002",
+      "GOV4003",
+      "GOV4004",
+      "GOV4008"
+    ],
+    "document": "GOV4",
+    "evidence": [
+      "threat-model",
+      "capability-denial-fixtures",
+      "redaction-tests",
+      "ai-tool-auth-tests",
+      "supply-chain-risk-record"
+    ],
+    "owner": "security-working-group",
+    "provenance_record": "phase17-gov4-provenance",
+    "record_id": "SEC-accepted",
+    "review_gates": [
+      ":threat-model",
+      ":capability",
+      ":taint",
+      ":secret",
+      ":unsafe-ffi",
+      ":ai",
+      ":supply-chain"
+    ],
+    "scope": [
+      "capabilities",
+      "secrets",
+      "taint",
+      "unsafe",
+      "ffi",
+      "packages",
+      "ai-tools"
+    ],
+    "state": ":implemented"
+  },
+  "standard_library_governance_record": {
+    "affected_surfaces": [
+      ":stdlib",
+      ":profile",
+      ":artifact",
+      ":diagnostic",
+      ":package"
+    ],
+    "artifact_id": "phase17-gov3-standard-library",
+    "artifacts": [
+      "standard-library-review-record",
+      "release-manifest",
+      "signed-provenance"
+    ],
+    "decision": ":accepted",
+    "diagnostics": [
+      "GOV3001",
+      "GOV3002",
+      "GOV3003",
+      "GOV3004",
+      "GOV3008"
+    ],
+    "document": "GOV3",
+    "evidence": [
+      "module-ownership-map",
+      "module-manifests",
+      "api-fixtures",
+      "unsafe-audit",
+      "compatibility-report"
+    ],
+    "owner": "stdlib-working-group",
+    "provenance_record": "phase17-gov3-provenance",
+    "record_id": "STD-GOV-accepted",
+    "review_gates": [
+      ":api",
+      ":profile",
+      ":safety",
+      ":security",
+      ":compatibility",
+      ":conformance",
+      ":release"
+    ],
+    "scope": [
+      "standard-library",
+      "exports",
+      "stability",
+      "profiles",
+      "safe-wrappers"
+    ],
+    "state": ":implemented"
+  },
+  "target_support_matrix": {
+    "affected_surfaces": [
+      ":target",
+      ":profile",
+      ":backend",
+      ":runtime",
+      ":package",
+      ":performance"
+    ],
+    "artifact_id": "phase17-gov5-target-support",
+    "artifacts": [
+      "target-support-matrix",
+      "debug-diagnostic-fixtures",
+      "signed-target-package"
+    ],
+    "decision": ":supported-subset",
+    "diagnostics": [
+      "GOV5001",
+      "GOV5002",
+      "GOV5003",
+      "GOV5005",
+      "GOV5008"
+    ],
+    "document": "GOV5",
+    "evidence": [
+      "target-tier-record",
+      "profile-support-matrix",
+      "backend-fixtures",
+      "runtime-service-manifest",
+      "performance-baseline"
+    ],
+    "owner": "backend-working-group",
+    "provenance_record": "phase17-gov5-provenance",
+    "record_id": "TARGET-accepted",
+    "review_gates": [
+      ":profile-conformance",
+      ":backend-lowering",
+      ":runtime-manifest",
+      ":package-artifacts",
+      ":security",
+      ":deprecation"
+    ],
+    "scope": [
+      "targets",
+      "profiles",
+      "backends",
+      "runtimes",
+      "packages",
+      "performance"
+    ],
+    "state": ":implemented"
+  },
+  "unsafe_governance_audit": {
+    "affected_surfaces": [
+      ":unsafe",
+      ":safety",
+      ":backend",
+      ":target",
+      ":stdlib",
+      ":package"
+    ],
+    "artifact_id": "phase17-gov9-unsafe",
+    "artifacts": [
+      "unsafe-governance-audit",
+      "release-unsafe-provenance"
+    ],
+    "decision": ":audited",
+    "diagnostics": [
+      "GOV9001",
+      "GOV9002",
+      "GOV9003",
+      "GOV9006",
+      "GOV9008"
+    ],
+    "document": "GOV9",
+    "evidence": [
+      "unsafe-island-record",
+      "safe-wrapper-proof",
+      "negative-fixtures",
+      "fuzz-sanitizer-record",
+      "stale-audit-report"
+    ],
+    "owner": "unsafe-review-board",
+    "provenance_record": "phase17-gov9-provenance",
+    "record_id": "UNSAFE-accepted",
+    "review_gates": [
+      ":boundary",
+      ":memory",
+      ":concurrency",
+      ":ffi",
+      ":backend",
+      ":security",
+      ":regression"
+    ],
+    "scope": [
+      "unsafe-islands",
+      "safe-wrappers",
+      "preconditions",
+      "backend-revalidation",
+      "stale-audits"
+    ],
+    "state": ":implemented"
+  }
+}

@@ -1,0 +1,138 @@
+; Stage1 Gravity-owned C15 compiler diagnostics contract.
+(ns gravity.compiler.c15-compiler-diagnostics
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c15-diagnostic-shape-contract
+             c15-diagnostic-stream-contract
+             c15-diagnostic-catalog
+             build-c15-diagnostic
+             verify-c15-diagnostic-stream])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :compiler-diagnostics
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C15" "C2" "C3" "C4" "C5" "C6" "C7"
+                           "C8" "C9" "C10" "C11" "C12" "C13"
+                           "C14" "T1" "TEST2" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8"]
+               :implements [:structured-diagnostic-schema
+                             :stable-diagnostic-id-contract
+                             :diagnostic-stream-contract
+                             :related-span-map
+                             :origin-chain-linkage
+                             :fact-payload-schema
+                             :remediation-records
+                             :redaction-report
+                             :cli-ide-ci-rendering-records
+                             :golden-diagnostic-fixtures]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :related-spans
+                            :diagnostic-facts :remediation-records
+                            :redaction-markers :deterministic-ordering
+                            :golden-fixture-identity}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-compiler-diagnostic-schema-subset
+                                    :clojure-compiler-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
+                             :accepted-source-extensions [".gravity"]
+                             :rejected-fixtures
+                             ["compiler-verify-c15-facts.gravity"
+                              "compiler-verify-c15-golden.gravity"
+                              "compiler-verify-c15-id.gravity"
+                              "compiler-verify-c15-order.gravity"
+                              "compiler-verify-c15-origin.gravity"
+                              "compiler-verify-c15-redaction.gravity"
+                              "compiler-verify-c15-remediation.gravity"
+                              "compiler-verify-c15-schema.gravity"
+                              "compiler-verify-c15-span.gravity"]}}}))
+
+(def c15-diagnostic-shape-contract
+  {:artifact :gravity/diagnostic-contract
+   :required-fields [:diagnostic-id :rule :severity :lifecycle
+                     :stage :message-key :primary :related
+                     :origin-chain :profile :target :facts
+                     :remediation :redactions]
+   :primary-fields [:span :syntax-id :artifact]
+   :related-fields [:role :span :artifact]
+   :id-stability-inputs [:rule :primary-artifact :stage
+                         :semantic-facts]
+   :forbidden [:plain-string-diagnostic
+               :wording-derived-id
+               :secret-value
+               :hidden-generated-producer]})
+
+(def c15-diagnostic-stream-contract
+  {:artifact :gravity/diagnostic-stream-contract
+   :stream-fields [:stage :input-artifact :output-artifact
+                   :diagnostics :summary-counts
+                   :deterministic-ordering-key
+                   :redaction-policy :rendering-version]
+   :renderers [:cli :ide :ci :safety-report :package-report]
+   :golden-fixture-fields [:rule :severity :primary-span
+                           :related-span-roles :stage :profile
+                           :target :fact-keys :remediation-kinds
+                           :redaction-markers :ordering-key]
+   :preserves [:stable-diagnostic-ids :source-spans
+               :origin-chains :related-spans :diagnostic-facts
+               :remediation-records :redaction-markers]})
+
+(def c15-diagnostic-catalog
+  {:diagnostics ["C15-SCHEMA" "C15-ID" "C15-SPAN" "C15-ORIGIN"
+                 "C15-FACTS" "C15-REMEDIATION" "C15-REDACTION"
+                 "C15-ORDER" "C15-GOLDEN"]
+   :diagnostic-system-fields [:stage :offending-diagnostic-id
+                              :schema-field :artifact-id
+                              :remediation]
+   :must-not-depend-on [:localized-prose :renderer-wording
+                        :private-secret-value]
+   :stable-rendering-views [:cli :ide :ci :json-golden]})
+
+(defn build-c15-diagnostic
+  [rule severity stage primary related origin-chain profile target facts remediation redactions]
+  (quote {:artifact :gravity/diagnostic
+          :diagnostic-id [:stable-id rule primary stage facts]
+          :rule rule
+          :severity severity
+          :lifecycle :active
+          :stage stage
+          :message-key rule
+          :primary primary
+          :related related
+          :origin-chain origin-chain
+          :profile profile
+          :target target
+          :facts facts
+          :remediation remediation
+          :redactions redactions
+          :contract c15-diagnostic-shape-contract}))
+
+(defn verify-c15-diagnostic-stream [diagnostic-stream]
+  (quote {:status :stage1-source-owned
+          :diagnostic-stream diagnostic-stream
+          :checks [:schema-fields-present
+                   :stable-rule-ids
+                   :primary-source-span-present
+                   :generated-origin-chain-linked
+                   :fact-payload-structured
+                   :remediation-recorded
+                   :redaction-policy-applied
+                   :deterministic-ordering-key
+                   :golden-fixture-stable]
+          :diagnostics c15-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :origin-chains :related-spans
+                      :diagnostic-facts :remediation-records
+                      :redaction-markers :golden-fixture-identity]}))

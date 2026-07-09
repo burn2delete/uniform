@@ -1,0 +1,446 @@
+{
+  "abi_protocol_schema_metadata": [
+    {
+      "abi_or_protocol": ":c",
+      "boundary_id": "native.c.strlen",
+      "kind": ":native-abi",
+      "version": "glibc-2.39"
+    },
+    {
+      "abi_or_protocol": ":jvm",
+      "boundary_id": "host.jvm.string",
+      "kind": ":managed-host",
+      "version": "21"
+    },
+    {
+      "abi_or_protocol": ":graphql",
+      "boundary_id": "schema.github.graphql",
+      "kind": ":schema",
+      "version": "schema-v1"
+    },
+    {
+      "abi_or_protocol": ":stdio-json",
+      "boundary_id": "process.ffmpeg",
+      "kind": ":process",
+      "version": "6.1"
+    },
+    {
+      "abi_or_protocol": ":https-json",
+      "boundary_id": "network.payments",
+      "kind": ":network",
+      "version": "2026-06"
+    }
+  ],
+  "capability_effect_records": [
+    {
+      "boundary_id": "native.c.strlen",
+      "capabilities": [
+        ":ffi/c"
+      ],
+      "effects": [
+        ":ffi/call"
+      ]
+    },
+    {
+      "boundary_id": "host.jvm.string",
+      "capabilities": [
+        ":host/jvm"
+      ],
+      "effects": [
+        ":host/reflect"
+      ]
+    },
+    {
+      "boundary_id": "schema.github.graphql",
+      "capabilities": [
+        ":schema/read",
+        ":http/client"
+      ],
+      "effects": [
+        ":build/read-file",
+        ":network/http"
+      ]
+    },
+    {
+      "boundary_id": "process.ffmpeg",
+      "capabilities": [
+        ":process/run"
+      ],
+      "effects": [
+        ":process/exec"
+      ]
+    },
+    {
+      "boundary_id": "network.payments",
+      "capabilities": [
+        ":http/client"
+      ],
+      "effects": [
+        ":network/http"
+      ]
+    }
+  ],
+  "compatibility_deprecation_records": [
+    {
+      "boundary_id": "schema.github.graphql",
+      "compatibility": ":compatible",
+      "version_from": "schema-v1",
+      "version_to": "schema-v1"
+    }
+  ],
+  "diagnostics": [],
+  "document": "L19",
+  "error_translation_maps": [
+    {
+      "complete": true,
+      "map": {
+        "segfault": "UnsafeBoundaryViolation"
+      }
+    },
+    {
+      "complete": true,
+      "map": {
+        "Throwable": "JvmError"
+      }
+    },
+    {
+      "complete": true,
+      "map": {
+        "GraphQLError": "GraphqlError",
+        "HttpError": "NetworkError"
+      }
+    },
+    {
+      "complete": true,
+      "map": {
+        "exit-nonzero": "ProcessError"
+      }
+    },
+    {
+      "complete": true,
+      "map": {
+        "status": "HttpStatusError",
+        "timeout": "HttpTimeout"
+      }
+    }
+  ],
+  "foreign_binding_declaration_records": [
+    {
+      "abi_or_protocol": ":c",
+      "capabilities": [
+        ":ffi/c"
+      ],
+      "effects": [
+        ":ffi/call"
+      ],
+      "errors": {
+        "complete": true,
+        "map": {
+          "segfault": "UnsafeBoundaryViolation"
+        }
+      },
+      "foreign_source": "string.h:strlen",
+      "id": "native.c.strlen",
+      "kind": ":native-abi",
+      "memory_behavior": {
+        "allocator": "caller-owned",
+        "nullability": "non-null",
+        "retains_pointer": false
+      },
+      "ownership": {
+        "arg0": ":borrowed",
+        "complete": true,
+        "release": ":none"
+      },
+      "profiles": [
+        ":native",
+        ":hosted"
+      ],
+      "provider": "gravity.ffi/c",
+      "safety": ":wrapped-safe",
+      "targets": [
+        "linux-x86_64"
+      ],
+      "threading": {
+        "blocking": false,
+        "thread_affinity": ":none"
+      },
+      "type_mapping": {
+        "direction": "foreign-to-gravity",
+        "mappings": [
+          "CString -> borrowed non-null null-terminated bytes",
+          "size_t -> USize"
+        ],
+        "status": ":checked"
+      },
+      "version": "glibc-2.39"
+    },
+    {
+      "abi_or_protocol": ":jvm",
+      "capabilities": [
+        ":host/jvm"
+      ],
+      "effects": [
+        ":host/reflect"
+      ],
+      "errors": {
+        "complete": true,
+        "map": {
+          "Throwable": "JvmError"
+        }
+      },
+      "foreign_source": "java.lang.String",
+      "host_bridge": {
+        "leaks_host_behavior": true,
+        "runtime_version": "java-21"
+      },
+      "id": "host.jvm.string",
+      "kind": ":managed-host",
+      "memory_behavior": {
+        "rooting": "host-gc"
+      },
+      "ownership": {
+        "complete": true,
+        "object": ":host-owned-rooted"
+      },
+      "profiles": [
+        ":hosted"
+      ],
+      "provider": "gravity.host/jvm",
+      "safety": ":safe",
+      "targets": [
+        "jvm"
+      ],
+      "threading": {
+        "blocking": false,
+        "thread_affinity": ":host"
+      },
+      "type_mapping": {
+        "direction": "bidirectional",
+        "mappings": [
+          "String -> JVM String"
+        ],
+        "status": ":checked"
+      },
+      "version": "21"
+    },
+    {
+      "abi_or_protocol": ":graphql",
+      "capabilities": [
+        ":schema/read",
+        ":http/client"
+      ],
+      "effects": [
+        ":build/read-file",
+        ":network/http"
+      ],
+      "errors": {
+        "complete": true,
+        "map": {
+          "GraphQLError": "GraphqlError",
+          "HttpError": "NetworkError"
+        }
+      },
+      "foreign_source": "schemas/github.graphql",
+      "id": "schema.github.graphql",
+      "kind": ":schema",
+      "memory_behavior": {
+        "allocation": ":managed-or-region"
+      },
+      "ownership": {
+        "complete": true,
+        "responses": ":gravity-owned"
+      },
+      "profiles": [
+        ":hosted",
+        ":native",
+        ":distributed"
+      ],
+      "provider": "gravity.schema/graphql",
+      "safety": ":safe",
+      "targets": [
+        "linux-x86_64"
+      ],
+      "threading": {
+        "blocking": true,
+        "thread_affinity": ":none"
+      },
+      "type_mapping": {
+        "direction": "schema-to-gravity",
+        "mappings": [
+          "nullable -> Option",
+          "union -> Result/schema union"
+        ],
+        "status": ":checked"
+      },
+      "version": "schema-v1"
+    },
+    {
+      "abi_or_protocol": ":stdio-json",
+      "capabilities": [
+        ":process/run"
+      ],
+      "effects": [
+        ":process/exec"
+      ],
+      "errors": {
+        "complete": true,
+        "map": {
+          "exit-nonzero": "ProcessError"
+        }
+      },
+      "foreign_source": "ffmpeg",
+      "id": "process.ffmpeg",
+      "kind": ":process",
+      "memory_behavior": {
+        "streams": ":bounded"
+      },
+      "ownership": {
+        "complete": true,
+        "stdio": ":process-owned"
+      },
+      "profiles": [
+        ":hosted",
+        ":native"
+      ],
+      "provider": "gravity.process/local",
+      "safety": ":safe",
+      "targets": [
+        "linux-x86_64"
+      ],
+      "threading": {
+        "blocking": true,
+        "thread_affinity": ":worker"
+      },
+      "type_mapping": {
+        "direction": "json-protocol",
+        "mappings": [
+          "Json -> Gravity data"
+        ],
+        "status": ":checked"
+      },
+      "version": "6.1"
+    },
+    {
+      "abi_or_protocol": ":https-json",
+      "capabilities": [
+        ":http/client"
+      ],
+      "effects": [
+        ":network/http"
+      ],
+      "errors": {
+        "complete": true,
+        "map": {
+          "status": "HttpStatusError",
+          "timeout": "HttpTimeout"
+        }
+      },
+      "foreign_source": "https://payments.example/api",
+      "id": "network.payments",
+      "kind": ":network",
+      "memory_behavior": {
+        "responses": ":bounded-buffer"
+      },
+      "ownership": {
+        "complete": true,
+        "request": ":borrowed",
+        "response": ":gravity-owned"
+      },
+      "profiles": [
+        ":hosted",
+        ":native",
+        ":distributed"
+      ],
+      "provider": "gravity.http/client",
+      "safety": ":safe",
+      "targets": [
+        "linux-x86_64"
+      ],
+      "threading": {
+        "blocking": false,
+        "thread_affinity": ":none"
+      },
+      "type_mapping": {
+        "direction": "schema-to-gravity",
+        "mappings": [
+          "OpenAPI schema -> Gravity request/response"
+        ],
+        "status": ":checked"
+      },
+      "version": "2026-06"
+    }
+  ],
+  "generated_binding_source_and_provenance": [
+    {
+      "boundary_id": "schema.github.graphql",
+      "current_schema_digest": "sha256:graphql-schema-v1",
+      "generated_files": [
+        "app/github/generated.gravity"
+      ],
+      "provenance": "import-schema :graphql",
+      "source_digest": "sha256:graphql-schema-v1"
+    }
+  ],
+  "incumbent_parity_test_reports": [
+    {
+      "boundary_id": "native.c.strlen",
+      "golden_tests": 12,
+      "status": ":passed"
+    }
+  ],
+  "kind": "interop-migration-artifact",
+  "migration_shim_records": [
+    {
+      "behavior_preserved": [
+        "strlen byte count for valid CString"
+      ],
+      "behavior_rejected": [
+        "implicit null strings"
+      ],
+      "incumbent_source": "string.h",
+      "owner": "interop-working-group",
+      "shim": "safe-strlen",
+      "stability": ":temporary"
+    }
+  ],
+  "ownership_lifetime_maps": [
+    {
+      "arg0": ":borrowed",
+      "complete": true,
+      "release": ":none"
+    },
+    {
+      "complete": true,
+      "object": ":host-owned-rooted"
+    },
+    {
+      "complete": true,
+      "responses": ":gravity-owned"
+    },
+    {
+      "complete": true,
+      "stdio": ":process-owned"
+    },
+    {
+      "complete": true,
+      "request": ":borrowed",
+      "response": ":gravity-owned"
+    }
+  ],
+  "safe_wrapper_audit_records": [
+    {
+      "boundary_id": "native.c.strlen",
+      "evidence": [
+        "wrapper-null-check",
+        "terminator-scan-test"
+      ],
+      "invariants": [
+        "cstring/non-null",
+        "cstring/null-terminated",
+        "foreign-call-does-not-retain-pointer"
+      ],
+      "wrapper": "safe-strlen"
+    }
+  ]
+}

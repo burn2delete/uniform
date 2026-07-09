@@ -1,0 +1,134 @@
+## ACCEPT bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity
+exit=0
+[stdout]
+gravity stage0 check passed: backend.native-lowering
+[stderr]
+
+## ACCEPT bootstrap/clojure/fixtures/accepted/backend-native-lowering.qst
+exit=0
+[stdout]
+gravity stage0 check passed: backend.native-lowering
+[stderr]
+
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-abi.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-abi], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-abi.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-abi", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-ABI", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-abi.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-abi], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-abi.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-abi", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-ABI", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-atomic.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-atomic], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-atomic.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-atomic", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-ATOMIC", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-atomic.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-atomic], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-atomic.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-atomic", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-ATOMIC", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-manifest.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-manifest], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-manifest.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-manifest", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-MANIFEST", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-manifest.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-manifest], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-manifest.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-manifest", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-MANIFEST", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-metadata.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-metadata], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-metadata.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-metadata", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-METADATA", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-metadata.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-metadata], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-metadata.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-metadata", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-METADATA", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-numeric.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-numeric], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-numeric.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-numeric", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-NUMERIC", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-numeric.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-numeric], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-numeric.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-numeric", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-NUMERIC", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-pass.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-pass], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-pass.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-pass", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-PASS", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-pass.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-pass], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-pass.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-pass", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-PASS", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-pointer.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-pointer], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-pointer.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-pointer", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-POINTER", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-pointer.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-pointer], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-pointer.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-pointer", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-POINTER", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-runtime.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-runtime], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-runtime.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-runtime", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-RUNTIME", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-runtime.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-runtime], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-runtime.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-runtime", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-RUNTIME", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-target.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-target], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-target.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-target", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-TARGET", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-target.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-target], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-target.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-target", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-TARGET", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-ub.gravity
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-ub], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-ub.gravity", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-ub", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-UB", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## REJECT bootstrap/clojure/fixtures/rejected/backend-b3-ub.qst
+exit=1
+[stdout]
+
+[stderr]
+{:diagnostic-family :b3-llvm-backend-document, :remediation "Emit LLVM only from verified backend input with a pinned target/data layout, proof-gated metadata and attributes, conservative defined IR for safe code, preserved pointer/numeric/atomic/runtime/ABI facts, verified pass pipelines, and complete artifact manifests.", :missing-fields [:b3-ub], :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/backend-b3-ub.qst", :form-index 0}, :stage :b3-llvm-backend-document-coverage, :artifact-id "b3-document-b3-ub", :generated-origin-chain [:mir :c14-target-lowering :b1-interface :b3-llvm-backend], :fallback-status :rejected, :id "B3-UB", :backend :gravity.backend/llvm, :profile :native, :message "B3 LLVM backend design document coverage validation failed"}
+## PASS
+B3 public check bridge accepted .gravity/.qst parity and rejected diagnostic parity passed.

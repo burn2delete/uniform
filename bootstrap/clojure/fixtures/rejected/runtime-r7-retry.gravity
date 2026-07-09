@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: missing retry, timeout, cancellation, or failure mapping.
+(ns runtime.r7-retry
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-retry}}}))
+
+(defn main [] :- I64 1)

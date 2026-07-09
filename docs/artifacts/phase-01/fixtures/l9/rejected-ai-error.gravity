@@ -1,0 +1,5 @@
+(ns l9.bad.ai
+  (:profile :ai))
+
+(def bad
+  (tool/fail :lookup))

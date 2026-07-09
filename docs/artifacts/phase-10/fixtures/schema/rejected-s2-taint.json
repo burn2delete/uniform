@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "delete": [
+    "/serialization_fixture/taint_boundary_record"
+  ]
+}

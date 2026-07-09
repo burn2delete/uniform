@@ -1,0 +1,9 @@
+{
+  "kind": "conformance-system-fixture-patch",
+  "base": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+  "patch": {
+    "runtime_tests": {
+      "capability_enforcement_failure": true
+    }
+  }
+}

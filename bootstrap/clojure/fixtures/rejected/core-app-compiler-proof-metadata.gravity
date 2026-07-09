@@ -1,0 +1,18 @@
+(ns core.app.compiler-proof-metadata
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:compiler {:compiled-gate
+                         {:target-lowering
+                          [{:input-kind :verified-mir
+                            :input-artifact-id :mir/core-app
+                            :verified? true
+                            :backend :jvm
+                            :target-metadata
+                            [{:target-metadata :nuw
+                              :operation :op/add}]}]}}}))
+
+(defn main []
+  (println "bad compiler proof metadata"))

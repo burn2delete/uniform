@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/bounds_checks/0/in_bounds": false
+  }
+}

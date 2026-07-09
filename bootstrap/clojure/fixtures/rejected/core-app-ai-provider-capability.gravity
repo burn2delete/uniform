@@ -1,0 +1,14 @@
+(ns core.app.ai-provider-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:providers
+                    [{:provider-id :primary-ai
+                      :model-id "gpt-support"
+                      :capability :ambient}]}}}))
+
+(defn main []
+  (println "bad ai provider capability"))

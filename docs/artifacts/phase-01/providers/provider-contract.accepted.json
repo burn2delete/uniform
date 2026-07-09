@@ -1,0 +1,456 @@
+{
+  "capability_scope_audit_logs": [
+    {
+      "audit": ":required",
+      "capability": ":fs/read",
+      "grant_id": "grant.build.schema",
+      "phase": ":build",
+      "principal": ":package/app",
+      "provider": "gravity.fs/hermetic-input",
+      "request_id": "request.schema-read",
+      "scope": {
+        "path": "schemas/user.json"
+      }
+    },
+    {
+      "audit": ":required",
+      "capability": ":fs/read",
+      "grant_id": "grant.runtime.config",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "gravity.fs/posix",
+      "request_id": "request.config-read",
+      "scope": {
+        "path": "config/app.edn"
+      }
+    },
+    {
+      "audit": ":record",
+      "capability": ":math/sin",
+      "grant_id": "grant.math.sin",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "gravity.math.elementary/default",
+      "request_id": "request.math-sin",
+      "scope": {
+        "function": ":math/sin"
+      }
+    },
+    {
+      "audit": ":record",
+      "capability": ":memory/arena",
+      "grant_id": "grant.memory.arena",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "custom.memory/arena",
+      "request_id": "request.memory-arena",
+      "scope": {
+        "region": "request-arena"
+      }
+    },
+    {
+      "audit": ":record",
+      "capability": ":math/cos",
+      "grant_id": "grant.math.cos",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "gravity.math.elementary/default",
+      "request_id": "request.math-cos",
+      "scope": {
+        "function": ":math/cos"
+      }
+    }
+  ],
+  "compile_time_replay_records": [
+    {
+      "output_digest": "sha256:schema-user",
+      "provider": "gravity.fs/hermetic-input",
+      "redaction_policy": ":public",
+      "replayable": true,
+      "request_id": "request.schema-read"
+    }
+  ],
+  "diagnostics": [],
+  "document": "L15",
+  "grant_records": [
+    {
+      "audit": ":required",
+      "capability": ":fs/read",
+      "expires": ":build-end",
+      "id": "grant.build.schema",
+      "phase": ":build",
+      "principal": ":package/app",
+      "provider": "gravity.fs/hermetic-input",
+      "scope": {
+        "paths": [
+          "schemas/*"
+        ]
+      }
+    },
+    {
+      "audit": ":required",
+      "capability": ":fs/read",
+      "expires": ":process-end",
+      "id": "grant.runtime.config",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "gravity.fs/posix",
+      "scope": {
+        "paths": [
+          "config/*"
+        ]
+      }
+    },
+    {
+      "audit": ":record",
+      "capability": ":math/sin",
+      "expires": ":artifact",
+      "id": "grant.math.sin",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "gravity.math.elementary/default",
+      "scope": {
+        "functions": [
+          ":math/sin"
+        ]
+      }
+    },
+    {
+      "audit": ":record",
+      "capability": ":memory/arena",
+      "expires": ":scope-end",
+      "id": "grant.memory.arena",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "custom.memory/arena",
+      "scope": {
+        "regions": [
+          "request-arena"
+        ]
+      }
+    },
+    {
+      "audit": ":record",
+      "capability": ":math/cos",
+      "expires": ":artifact",
+      "id": "grant.math.cos",
+      "phase": ":runtime",
+      "principal": ":package/app",
+      "provider": "gravity.math.elementary/default",
+      "scope": {
+        "functions": [
+          ":math/cos"
+        ]
+      }
+    }
+  ],
+  "kind": "capability-provider-artifact",
+  "provider_conformance_results": [
+    {
+      "provider": "gravity.fs/hermetic-input",
+      "status": ":passed",
+      "suite": ":gravity.conformance/fs-build"
+    },
+    {
+      "provider": "gravity.fs/posix",
+      "status": ":passed",
+      "suite": ":gravity.conformance/fs-runtime"
+    },
+    {
+      "provider": "gravity.math.elementary/default",
+      "status": ":passed",
+      "suite": ":gravity.conformance/elementary-math"
+    },
+    {
+      "provider": "custom.memory/arena",
+      "status": ":passed",
+      "suite": ":gravity.conformance/memory-region"
+    }
+  ],
+  "provider_declaration_records": [
+    {
+      "artifact_schema": ":gravity.provider/fs-build-v1",
+      "blocking": false,
+      "build_effects": [
+        ":build/read-file"
+      ],
+      "concurrency": ":single-build-task",
+      "contracts": [
+        "gravity.contracts/FileInputProvider"
+      ],
+      "determinism": ":content-addressed",
+      "failure_types": [
+        "ProviderDenied",
+        "InputMissing"
+      ],
+      "id": "gravity.fs/hermetic-input",
+      "implements": [
+        ":fs/read"
+      ],
+      "profiles": [
+        ":hosted",
+        ":native"
+      ],
+      "replayable": true,
+      "resource_memory": ":no-runtime-resource",
+      "revocation_supported": false,
+      "runtime_effects": [],
+      "targets": [
+        "linux-x86_64",
+        "wasm32"
+      ],
+      "trust": ":trusted-core",
+      "version": "1.0.0"
+    },
+    {
+      "artifact_schema": ":gravity.provider/fs-runtime-v1",
+      "blocking": true,
+      "build_effects": [],
+      "concurrency": ":thread-safe",
+      "contracts": [
+        "gravity.contracts/FileSystem"
+      ],
+      "determinism": ":host-filesystem-state",
+      "failure_types": [
+        "ProviderDenied",
+        "IoError"
+      ],
+      "id": "gravity.fs/posix",
+      "implements": [
+        ":fs/read",
+        ":fs/write"
+      ],
+      "profiles": [
+        ":hosted",
+        ":native"
+      ],
+      "replayable": false,
+      "resource_memory": ":linear-file-handles",
+      "revocation_supported": true,
+      "runtime_effects": [
+        ":filesystem/read",
+        ":filesystem/write"
+      ],
+      "targets": [
+        "linux-x86_64"
+      ],
+      "trust": ":trusted-package",
+      "version": "1.0.0"
+    },
+    {
+      "artifact_schema": ":gravity.provider/math-v1",
+      "blocking": false,
+      "build_effects": [],
+      "concurrency": ":pure",
+      "contracts": [
+        "gravity.contracts/ElementaryMath"
+      ],
+      "determinism": ":declared-numeric-mode",
+      "failure_types": [
+        "ApproximationError"
+      ],
+      "id": "gravity.math.elementary/default",
+      "implements": [
+        ":math/sin",
+        ":math/cos"
+      ],
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":gpu"
+      ],
+      "replayable": true,
+      "resource_memory": ":none",
+      "revocation_supported": false,
+      "runtime_effects": [],
+      "targets": [
+        "portable-core",
+        "linux-x86_64"
+      ],
+      "trust": ":trusted-core",
+      "version": "1.0.0"
+    },
+    {
+      "artifact_schema": ":gravity.provider/memory-v1",
+      "blocking": false,
+      "build_effects": [],
+      "concurrency": ":single-owner",
+      "contracts": [
+        "gravity.contracts/RegionSafety",
+        "gravity.contracts/MemorySafety"
+      ],
+      "determinism": ":scope-lifetime",
+      "failure_types": [
+        "AllocationDenied"
+      ],
+      "id": "custom.memory/arena",
+      "implements": [
+        ":memory/arena"
+      ],
+      "profiles": [
+        ":native",
+        ":firmware"
+      ],
+      "replayable": true,
+      "resource_memory": ":arena-region",
+      "revocation_supported": false,
+      "runtime_effects": [
+        ":memory/allocate"
+      ],
+      "targets": [
+        "linux-x86_64",
+        "cortex-m"
+      ],
+      "trust": ":trusted-package",
+      "version": "0.3.0"
+    }
+  ],
+  "provider_selection_records": [
+    {
+      "capability": ":fs/read",
+      "phase": ":build",
+      "profile": ":native",
+      "provider": "gravity.fs/hermetic-input",
+      "provider_version": "1.0.0",
+      "request_id": "request.schema-read",
+      "selection_order": [
+        ":source-annotation",
+        ":package-manifest",
+        ":workspace-policy",
+        ":profile-default",
+        ":compiler-default"
+      ],
+      "selection_source": ":source-annotation",
+      "target": "linux-x86_64",
+      "trust": ":trusted-core"
+    },
+    {
+      "capability": ":fs/read",
+      "phase": ":runtime",
+      "profile": ":hosted",
+      "provider": "gravity.fs/posix",
+      "provider_version": "1.0.0",
+      "request_id": "request.config-read",
+      "selection_order": [
+        ":source-annotation",
+        ":package-manifest",
+        ":workspace-policy",
+        ":profile-default",
+        ":compiler-default"
+      ],
+      "selection_source": ":package-manifest",
+      "target": "linux-x86_64",
+      "trust": ":trusted-package"
+    },
+    {
+      "capability": ":math/sin",
+      "phase": ":runtime",
+      "profile": ":native",
+      "provider": "gravity.math.elementary/default",
+      "provider_version": "1.0.0",
+      "request_id": "request.math-sin",
+      "selection_order": [
+        ":source-annotation",
+        ":package-manifest",
+        ":workspace-policy",
+        ":profile-default",
+        ":compiler-default"
+      ],
+      "selection_source": ":workspace-policy",
+      "target": "linux-x86_64",
+      "trust": ":trusted-core"
+    },
+    {
+      "capability": ":memory/arena",
+      "phase": ":runtime",
+      "profile": ":native",
+      "provider": "custom.memory/arena",
+      "provider_version": "0.3.0",
+      "request_id": "request.memory-arena",
+      "selection_order": [
+        ":source-annotation",
+        ":package-manifest",
+        ":workspace-policy",
+        ":profile-default",
+        ":compiler-default"
+      ],
+      "selection_source": ":profile-default",
+      "target": "linux-x86_64",
+      "trust": ":trusted-package"
+    },
+    {
+      "capability": ":math/cos",
+      "phase": ":runtime",
+      "profile": ":native",
+      "provider": "gravity.math.elementary/default",
+      "provider_version": "1.0.0",
+      "request_id": "request.math-cos",
+      "selection_order": [
+        ":source-annotation",
+        ":package-manifest",
+        ":workspace-policy",
+        ":profile-default",
+        ":compiler-default"
+      ],
+      "selection_source": ":compiler-default",
+      "target": "linux-x86_64",
+      "trust": ":trusted-core"
+    }
+  ],
+  "runtime_provider_manifests": [
+    {
+      "contract": [
+        "gravity.contracts/FileSystem"
+      ],
+      "profile": ":hosted",
+      "provider": "gravity.fs/posix",
+      "provider_version": "1.0.0",
+      "request_id": "request.config-read",
+      "scope": {
+        "path": "config/app.edn"
+      },
+      "target": "linux-x86_64"
+    },
+    {
+      "contract": [
+        "gravity.contracts/ElementaryMath"
+      ],
+      "profile": ":native",
+      "provider": "gravity.math.elementary/default",
+      "provider_version": "1.0.0",
+      "request_id": "request.math-sin",
+      "scope": {
+        "function": ":math/sin"
+      },
+      "target": "linux-x86_64"
+    },
+    {
+      "contract": [
+        "gravity.contracts/RegionSafety",
+        "gravity.contracts/MemorySafety"
+      ],
+      "profile": ":native",
+      "provider": "custom.memory/arena",
+      "provider_version": "0.3.0",
+      "request_id": "request.memory-arena",
+      "scope": {
+        "region": "request-arena"
+      },
+      "target": "linux-x86_64"
+    },
+    {
+      "contract": [
+        "gravity.contracts/ElementaryMath"
+      ],
+      "profile": ":native",
+      "provider": "gravity.math.elementary/default",
+      "provider_version": "1.0.0",
+      "request_id": "request.math-cos",
+      "scope": {
+        "function": ":math/cos"
+      },
+      "target": "linux-x86_64"
+    }
+  ]
+}

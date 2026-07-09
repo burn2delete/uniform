@@ -1,0 +1,9 @@
+(ns provider.missing
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (provider/missing :filesystem/read))

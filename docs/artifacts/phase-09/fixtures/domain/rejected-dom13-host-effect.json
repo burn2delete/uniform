@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-coverage.json",
+  "delete": [
+    "/domains/DOM13/evidence/host_effect"
+  ]
+}

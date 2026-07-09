@@ -1,0 +1,73 @@
+(ns safety.unsafe
+  (:profile :native)
+  (:target :jvm)
+  (:exports [island wrapper inventory review proof generated policy dependency
+             release conformance])
+  (:effects #{:memory/raw})
+  (:capabilities #{:memory/raw})
+  (:safety :audited-unsafe))
+
+(def island
+  (safe6/unsafe-island :island/raw-malloc
+                       :raw/malloc
+                       :call-audited-c-allocator
+                       "runtime-memory"
+                       #{:non-null-on-success :freed-by-safe-wrapper}
+                       #{:size-nonzero :allocator-initialized}
+                       #{:owned-buffer-or-error}
+                       :runtime.memory/allocate-buffer
+                       :domain-review))
+
+(def wrapper
+  (safe6/safe-wrapper :runtime.memory/allocate-buffer
+                      #{:island/raw-malloc}
+                      :owned-buffer-released-by-buffer-drop
+                      :result-or-panic))
+
+(def inventory
+  (safe6/operation-inventory :gravity.runtime
+                             #{:raw-pointer :manual-allocation}
+                             1
+                             #{:runtime.memory/allocate-buffer}))
+
+(def review
+  (safe6/review-status :island/raw-malloc
+                       :domain-review
+                       "memory-reviewer"
+                       :approved
+                       :on-source-change))
+
+(def proof
+  (safe6/invariant-proof :island/raw-malloc
+                         :owned-buffer-released-by-buffer-drop
+                         #{:test/alloc-release :proof/owned-buffer}
+                         :recorded))
+
+(def generated
+  (safe6/generated-provenance :macro/with-unsafe-buffer
+                              :source-allocate-buffer
+                              :generated-raw-malloc
+                              :island/raw-malloc))
+
+(def policy
+  (safe6/policy-decision :domain-review
+                         :gravity.runtime
+                         :accepted
+                         :review-current))
+
+(def dependency
+  (safe6/dependency-summary :legacy.alloc
+                            1
+                            #{:manual-allocation}
+                            #{:approved}
+                            #{:legacy.alloc/safe-allocate}
+                            :accepted))
+
+(def release
+  (safe6/release-audit :gravity.runtime
+                       1
+                       :approved
+                       :certificate-recorded))
+
+(def conformance
+  (safe6/conformance :complete))

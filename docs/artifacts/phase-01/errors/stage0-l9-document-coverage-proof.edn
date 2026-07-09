@@ -1,0 +1,48 @@
+{:proof/id :p01-d019-stage0-l9-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D019
+ :governing-docs ["docs/phase-01-core-language/019-l9-error-handling-specification.md"
+                  "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
+                  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/error-handling.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/error-handling.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:error-type-declarations
+                  :thrown-error-effect-records
+                  :panic-lowering-records
+                  :safety-check-failure-records
+                  :ffi-error-mapping-artifacts
+                  :workflow-failure-records
+                  :ai-tool-error-records
+                  :host-error-normalization-records
+                  :error-conformance-fixture]
+ :artifact-summary {:module error.handling
+                    :profile :hosted
+                    :error-conformance-status :complete
+                    :error-type-declarations 4
+                    :thrown-error-effect-records 1
+                    :panic-lowering-records 1
+                    :safety-check-failure-records 1
+                    :host-error-normalization-records 1
+                    :ffi-error-mapping-artifacts 1
+                    :workflow-failure-records 1
+                    :ai-tool-error-records 1
+                    :inferred-effects #{:error/throw :panic/fail
+                                        :safety/check-failure :host/error
+                                        :ffi/error :workflow/failure :ai/error}}
+ :covered-error-families [:option :result :try :throw :panic :safety-check
+                          :host-error :ffi-error :workflow-error :ai-error]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-error-throw-effect.gravity" "L9-THROW-EFFECT"
+                    "bootstrap/clojure/fixtures/rejected/typed-error-unhandled.gravity" "L9-UNHANDLED"
+                    "bootstrap/clojure/fixtures/rejected/typed-error-panic-profile.gravity" "L9-PANIC-PROFILE"
+                    "bootstrap/clojure/fixtures/rejected/typed-error-host.gravity" "L9-HOST-ERROR"
+                    "bootstrap/clojure/fixtures/rejected/typed-error-ffi.gravity" "L9-FFI-ERROR"
+                    "bootstrap/clojure/fixtures/rejected/typed-error-workflow.gravity" "L9-WORKFLOW-ERROR"
+                    "bootstrap/clojure/fixtures/rejected/typed-error-ai.gravity" "L9-AI-ERROR"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L9 document task by proving Option/Result declarations, try/throw records, panic lowering records, safety check failure records, host and FFI error normalization, workflow failure records, AI/tool error records, and stable L9 diagnostics. It does not claim production runtime exception lowering, workflow execution, AI provider recovery, FFI cleanup semantics, or self-hosting."}

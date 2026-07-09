@@ -1,0 +1,11 @@
+(ns math.conf-artifact
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:artifact-result-overrides
+            [{:complete? false
+              :missing [:lowering-record]}]}}}))

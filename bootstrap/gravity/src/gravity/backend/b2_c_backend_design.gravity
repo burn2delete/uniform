@@ -1,0 +1,431 @@
+; Stage1 Gravity-owned B2 C backend source-model contract.
+(ns gravity.backend.b2-c-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b2-c-backend-contract
+             b2-dialect-contract
+             b2-safe-c-subset-contract
+             b2-abi-layout-contract
+             b2-pointer-memory-contract
+             b2-numeric-lowering-contract
+             b2-runtime-helper-contract
+             b2-artifact-manifest-contract
+             b2-diagnostic-catalog
+             build-b2-c-backend-manifest
+             build-b2-dialect-selection
+             build-b2-abi-layout-manifest
+             build-b2-pointer-provenance-record
+             build-b2-runtime-helper-manifest
+             build-b2-c-artifact-record
+             verify-b2-c-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :c-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B2" "B1" "D1" "D3"
+                                        "C11" "C12" "C14"
+                                        "SAFE2" "SAFE7" "SAFE9"
+                                        "SAFE15" "P6" "P7"
+                                        "B13" "B14" "R1"
+                                        "PKG7" "BOOT1" "BOOT3"
+                                        "BOOT8" "TEST13"]
+               :documents ["B2" "B1" "D1" "D3"
+                           "C11" "C12" "C14"
+                           "SAFE2" "SAFE7" "SAFE9"
+                           "SAFE15" "P6" "P7"
+                           "B13" "B14" "R1"
+                           "PKG7" "BOOT1" "BOOT3"
+                           "BOOT8" "TEST13"]
+               :implements [:c-backend-source-model
+                             :c-dialect-selection-contract
+                             :safe-c-subset-contract
+                             :abi-layout-manifest-contract
+                             :pointer-provenance-contract
+                             :numeric-lowering-contract
+                             :runtime-helper-selection-contract
+                             :c-artifact-manifest-contract
+                             :stable-b2-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :c-dialect-selection :abi-records
+                            :layout-records :pointer-provenance
+                            :alignment-facts :lifetime-facts
+                            :aliasing-facts :numeric-mode-facts
+                            :runtime-provider-records
+                            :effect-facts :capability-facts
+                            :safety-outcomes :unsafe-audit-links
+                            :proof-references :source-maps
+                            :debug-maps :dependency-provenance
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b2-c-backend-contract-subset
+                                    :clojure-b2-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b2-dialect.gravity"
+                              "backend-b2-ub.gravity"
+                              "backend-b2-abi.gravity"
+                              "backend-b2-pointer.gravity"
+                              "backend-b2-numeric.gravity"
+                              "backend-b2-runtime.gravity"
+                              "backend-b2-ffi.gravity"
+                              "backend-b2-mmio.gravity"
+                              "backend-b2-manifest.gravity"]}}}))
+
+(def b2-c-backend-contract
+  {:artifact :gravity/b2-c-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/c
+   :accepts [:verified-mir :verified-domain-ir]
+   :emits [:c-source
+           :c-header
+           :c-build-manifest
+           :c-backend-manifest
+           :c-dialect-selection
+           :abi-layout-manifest
+           :runtime-helper-manifest
+           :proof-to-c-assumption-map
+           :source-debug-map
+           :c-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :profile-manifest
+              :target-manifest
+              :c-dialect
+              :abi-policy
+              :layout-record
+              :pointer-provenance
+              :safety-bundle
+              :proof-table
+              :runtime-helper-policy
+              :source-map]
+   :rules [:c-is-target-artifact-not-gravity-semantics
+           :backend-consumes-only-verified-ir
+           :dialect-is-declared-before-emission
+           :safe-gravity-never-depends-on-c-undefined-behavior
+           :abi-layout-and-runtime-helpers-are-manifested
+           :source-debug-and-provenance-maps-are-preserved]
+   :forbidden [:source-to-c-shortcut
+               :implicit-c-dialect
+               :unchecked-c-undefined-behavior
+               :unpinned-abi-or-layout
+               :hidden-libc-or-allocator-dependence
+               :pointer-cast-without-provenance
+               :artifact-without-c-manifest]})
+
+(def b2-dialect-contract
+  {:artifact :gravity/b2-c-dialect-contract
+   :supported-dialects [:freestanding-c11
+                        :hosted-c17
+                        :named-compiler-extension-profile]
+   :required-fields [:dialect :hosted? :freestanding?
+                     :compiler-family :compiler-version-constraint
+                     :target-triple :flags :runtime-helper-policy
+                     :profile :target :proof-assumptions]
+   :rules [:dialect-record-is-explicit
+           :compiler-flags-match-proof-assumptions
+           :freestanding-profile-forbids-hidden-host-services
+           :extension-profile-is-named-and-audited]
+   :reject-when [:missing-dialect
+                 :unsupported-dialect
+                 :extension-without-profile
+                 :flag-invalidates-proof-assumption
+                 :freestanding-hidden-host-service]})
+
+(def b2-safe-c-subset-contract
+  {:artifact :gravity/b2-safe-c-subset-contract
+   :requires [:verified-ir-operation
+              :source-span
+              :profile
+              :target
+              :safety-outcome
+              :proof-or-runtime-check
+              :generated-origin-chain]
+   :safe-lowering-outcomes [:proven-safe
+                            :runtime-checked
+                            :rejected
+                            :unsafe-island]
+   :checked-hazards [:signed-overflow
+                     :uninitialized-read
+                     :invalid-shift
+                     :strict-aliasing-assumption
+                     :pointer-arithmetic
+                     :invalid-object-lifetime
+                     :fallthrough-hazard
+                     :unchecked-narrowing]
+   :rules [:each-c-hazard-has-safe-outcome
+           :unsafe-island-carries-audit-metadata
+           :runtime-checks-use-profile-selected-helpers
+           :proof-elided-checks-link-to-certificates]
+   :forbidden [:implicit-fifth-safety-outcome
+               :backend-ub-as-optimization
+               :safe-code-with-unsafe-c-hazard
+               :dropped-generated-origin-chain]})
+
+(def b2-abi-layout-contract
+  {:artifact :gravity/b2-abi-layout-contract
+   :required-fields [:compiler-family
+                     :compiler-version-constraint
+                     :target-triple
+                     :data-model
+                     :endianness
+                     :alignment
+                     :struct-field-order
+                     :padding
+                     :enum-and-tag-widths
+                     :closure-representation
+                     :slice-and-buffer-representation
+                     :region-and-arena-handle-representation
+                     :linear-resource-handle-representation
+                     :ffi-calling-convention]
+   :represented-forms [:struct
+                       :tagged-union
+                       :closure
+                       :region
+                       :arena
+                       :linear-resource
+                       :ffi-boundary]
+   :rules [:layout-manifest-pins-implementation-defined-behavior
+           :stable-artifacts-reject-unpinned-layout
+           :ffi-layout-matches-declared-calling-convention
+           :source-and-debug-maps-reference-layout-records]
+   :reject-when [:unpinned-implementation-defined-behavior
+                 :unrepresentable-layout
+                 :ffi-calling-convention-gap
+                 :missing-layout-provenance]})
+
+(def b2-pointer-memory-contract
+  {:artifact :gravity/b2-pointer-memory-contract
+   :required-facts [:object-identity
+                    :valid-range
+                    :alignment
+                    :lifetime
+                    :aliasing-mode
+                    :mutability
+                    :nullability
+                    :allocator-or-provider-identity
+                    :provenance-across-casts]
+   :lowering-rules [:raw-pointer-arithmetic-needs-proof-or-unsafe-island
+                    :nullability-facts-drive-checks
+                    :aliasing-facts-drive-c-type-and-helper-selection
+                    :mmio-uses-profile-specific-volatile-helpers
+                    :atomic-ordering-is-recorded]
+   :mmio-required-fields [:width :address-space :ordering
+                          :volatile-fact :profile :target]
+   :forbidden [:pointer-cast-loses-provenance
+               :raw-pointer-arithmetic-without-range-proof
+               :volatile-without-mmio-or-interop-fact
+               :atomic-without-memory-order
+               :allocator-invention-by-backend]})
+
+(def b2-numeric-lowering-contract
+  {:artifact :gravity/b2-numeric-lowering-contract
+   :numeric-modes [:checked-integer
+                   :wrapping-integer
+                   :saturating-integer
+                   :declared-floating
+                   :certified-elementary-function]
+   :rules [:checked-integers-emit-checks-or-proof-elision
+           :wrapping-integers-use-explicit-wrapping-semantics
+           :saturating-integers-call-or-inline-saturating-helpers
+           :floating-operations-preserve-math-manifests
+           :elementary-functions-reference-certificates
+           :compiler-flags-match-numeric-proof-assumptions]
+   :reject-when [:unsafe-overflow
+                 :invalid-shift
+                 :unchecked-narrowing
+                 :floating-mode-gap
+                 :fast-math-without-proof
+                 :missing-elementary-function-certificate]})
+
+(def b2-runtime-helper-contract
+  {:artifact :gravity/b2-runtime-helper-contract
+   :helper-categories [:panic-and-trap
+                       :bounds-check
+                       :numeric-check
+                       :allocation-provider
+                       :region-and-arena-provider
+                       :resource-cleanup
+                       :atomics
+                       :ffi-adapter
+                       :math-provider
+                       :debug-and-provenance-hook]
+   :required-fields [:helper-id :category :profile-support
+                     :target-support :required-capabilities
+                     :provided-effects :source :provenance
+                     :no-runtime-eligible?]
+   :rules [:helper-selection-is-profile-driven
+           :freestanding-profiles-require-declared-helpers
+           :firmware-and-kernel-profiles-forbid-hidden-allocation
+           :capabilities-are-preserved-through-helper-selection]
+   :forbidden [:hidden-libc-dependence
+               :hidden-allocator-dependence
+               :hidden-gc-shim
+               :reflection-or-dynamic-eval-helper
+               :helper-without-profile-support]})
+
+(def b2-artifact-manifest-contract
+  {:artifact :gravity/b2-c-artifact-manifest-contract
+   :required-artifacts [:c-backend-manifest
+                        :c-dialect-selection-record
+                        :c-source-file
+                        :c-header-file
+                        :runtime-helper-manifest
+                        :abi-layout-manifest
+                        :proof-to-c-assumption-map
+                        :c-build-manifest
+                        :source-debug-map
+                        :c-backend-diagnostics]
+   :required-fields [:artifact-id
+                     :source-input-digest
+                     :compiler-identity
+                     :profile
+                     :target
+                     :dialect
+                     :effects
+                     :capabilities
+                     :safety-summary
+                     :proof-summary
+                     :unsafe-audit-links
+                     :dependency-graph
+                     :source-map
+                     :debug-map]
+   :rules [:actual-source-path-and-extension-are-preserved
+           :c-build-flags-are-manifested
+           :proof-to-c-assumptions-are-machine-linked
+           :diagnostics-reference-source-and-generated-origin]
+   :forbidden [:manifest-without-source-unit-identity
+               :c-file-without-artifact-record
+               :generated-c-without-proof-assumption-map
+               :diagnostic-without-stable-b2-id]})
+
+(def b2-diagnostic-catalog
+  {:artifact :gravity/b2-diagnostic-catalog
+   :diagnostics
+   [{:id "B2-DIALECT"
+     :meaning :unsupported-or-missing-c-dialect}
+    {:id "B2-UB"
+     :meaning :lowering-would-rely-on-c-undefined-behavior}
+    {:id "B2-ABI"
+     :meaning :unpinned-or-unrepresentable-abi-or-layout}
+    {:id "B2-POINTER"
+     :meaning :missing-pointer-provenance-alignment-or-lifetime}
+    {:id "B2-NUMERIC"
+     :meaning :unsafe-overflow-shift-narrowing-or-floating-semantics}
+    {:id "B2-RUNTIME"
+     :meaning :hidden-or-forbidden-helper-runtime-dependence}
+    {:id "B2-FFI"
+     :meaning :incomplete-foreign-boundary-mapping}
+    {:id "B2-MMIO"
+     :meaning :volatile-or-hardware-access-without-required-facts}
+    {:id "B2-MANIFEST"
+     :meaning :incomplete-c-artifact-manifest}]
+   :required-diagnostic-fields [:mir-operation-or-domain-anchor
+                                :source-span
+                                :generated-origin-chain
+                                :profile
+                                :target
+                                :c-dialect
+                                :missing-fact
+                                :helper-selected-or-rejected
+                                :remediation]})
+
+(defn build-b2-c-backend-manifest
+  [dialects emitted-artifacts required-facts]
+  {:artifact :gravity/c-backend-manifest
+   :backend :gravity.backend/c
+   :version "source-model-v1"
+   :dialects dialects
+   :emits emitted-artifacts
+   :requires required-facts
+   :rejects [:implicit-c-ub
+             :unpinned-abi
+             :missing-pointer-provenance
+             :hidden-libc
+             :unchecked-overflow]
+   :source-model-only? true})
+
+(defn build-b2-dialect-selection
+  [dialect compiler flags proof-assumptions]
+  {:artifact :gravity/b2-c-dialect-selection-record
+   :dialect dialect
+   :compiler compiler
+   :flags flags
+   :proof-assumptions proof-assumptions
+   :required-fields (:required-fields b2-dialect-contract)
+   :source-model-only? true})
+
+(defn build-b2-abi-layout-manifest
+  [target-triple data-model layout-records]
+  {:artifact :gravity/b2-abi-layout-manifest
+   :target-triple target-triple
+   :data-model data-model
+   :layout-records layout-records
+   :required-fields (:required-fields b2-abi-layout-contract)
+   :source-model-only? true})
+
+(defn build-b2-pointer-provenance-record
+  [object-id range lifetime aliasing]
+  {:artifact :gravity/b2-pointer-provenance-record
+   :object-identity object-id
+   :valid-range range
+   :lifetime lifetime
+   :aliasing-mode aliasing
+   :required-facts (:required-facts b2-pointer-memory-contract)
+   :source-model-only? true})
+
+(defn build-b2-runtime-helper-manifest
+  [profile helpers]
+  {:artifact :gravity/b2-runtime-helper-manifest
+   :profile profile
+   :helpers helpers
+   :helper-categories (:helper-categories b2-runtime-helper-contract)
+   :source-model-only? true})
+
+(defn build-b2-c-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b2-c-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b2-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b2-c-backend-design
+  [manifest]
+  {:artifact :gravity/b2-c-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :dialect-explicit? true
+   :safe-c-subset-covered? true
+   :abi-layout-manifest-required? true
+   :pointer-provenance-required? true
+   :runtime-helper-manifest-required? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :production-backend-execution? false
+   :source-model-only? true})

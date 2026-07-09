@@ -1,0 +1,500 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:d9757ac6b7e14f205d228bb281c152eb91dc40a3fa47847a2eeba2837802c1dc",
+      "artifact_id": "phase16-std1-architecture",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "module manifest",
+        "profile metadata",
+        "effects/capabilities",
+        "docs examples",
+        "stability"
+      ],
+      "document": "STD1",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+      "module": "standard-library-architecture",
+      "task_id": "P16-D211"
+    },
+    {
+      "artifact_hash": "sha256:ae8f275b69d9602fbdbe6b6b3567543d35902c4ad6fc705e156184a5dea40f36",
+      "artifact_id": "phase16-std2-core",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "pure core exports",
+        "host-state rejection",
+        "option/result fixtures",
+        "restricted profile matrix"
+      ],
+      "document": "STD2",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/212-std2-core-library-specification.md",
+      "module": "core-library",
+      "task_id": "P16-D212"
+    },
+    {
+      "artifact_hash": "sha256:047406906104dfa03e14ffca8044015efddfe316d4047c89de1435a5adcfedf5",
+      "artifact_id": "phase16-std3-collections",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "persistent collections",
+        "allocation metadata",
+        "bounds fixtures",
+        "unsafe internals audit"
+      ],
+      "document": "STD3",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
+      "module": "collections-library",
+      "task_id": "P16-D213"
+    },
+    {
+      "artifact_hash": "sha256:5d3f837bd346e0f82bd710812f4043bf6e0abc3dc0dbd2bd6e5455a1f3047a8b",
+      "artifact_id": "phase16-std4-text",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "bytes/text distinction",
+        "boundary validation",
+        "Unicode artifacts",
+        "taint fixtures"
+      ],
+      "document": "STD4",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md",
+      "module": "text-library",
+      "task_id": "P16-D214"
+    },
+    {
+      "artifact_hash": "sha256:33a82a56bd6702ac83acd9428a02a4b10dcb5e4c53931547eaf4b3905dbf7ee3",
+      "artifact_id": "phase16-std5-math",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "numeric modes",
+        "EFIR artifacts",
+        "certificates",
+        "target lowering"
+      ],
+      "document": "STD5",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md",
+      "module": "numeric-and-math-library",
+      "task_id": "P16-D215"
+    },
+    {
+      "artifact_hash": "sha256:d93646d0fa6da644d435f99a4a02cf7a89c1164a1eecce8cf20c6992e577da6f",
+      "artifact_id": "phase16-std6-memory",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "borrows",
+        "regions",
+        "linear resources",
+        "unsafe memory audit"
+      ],
+      "document": "STD6",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md",
+      "module": "memory-resource-library",
+      "task_id": "P16-D216"
+    },
+    {
+      "artifact_hash": "sha256:68526b30042813e50dc53ef3da452f1d78bfded02e2c09978555ebefc3df6655",
+      "artifact_id": "phase16-std7-concurrency",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "race analysis",
+        "structured concurrency",
+        "scheduler replay",
+        "atomic target evidence"
+      ],
+      "document": "STD7",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/217-std7-concurrency-library-specification.md",
+      "module": "concurrency-library",
+      "task_id": "P16-D217"
+    },
+    {
+      "artifact_hash": "sha256:e96d46d9328e26d8c8fbae934d82db5938ccf1aa50a2e92c1632bb26b485e50b",
+      "artifact_id": "phase16-std8-io",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "filesystem capabilities",
+        "path policy",
+        "resource lifetime",
+        "workflow replay denial"
+      ],
+      "document": "STD8",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md",
+      "module": "io-filesystem-library",
+      "task_id": "P16-D218"
+    },
+    {
+      "artifact_hash": "sha256:e4d268364e4c845e3983e567252829cd113e76c1a8dc5358b4135b795e84dbae",
+      "artifact_id": "phase16-std9-network",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "network capabilities",
+        "timeout policy",
+        "TLS artifacts",
+        "redaction"
+      ],
+      "document": "STD9",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md",
+      "module": "network-http-library",
+      "task_id": "P16-D219"
+    },
+    {
+      "artifact_hash": "sha256:ae25343b1b8e8897a45f592b3a34b38c785cbbb9ba280f1c6439d5e92beedd3b",
+      "artifact_id": "phase16-std10-schema",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "schema artifacts",
+        "validator artifacts",
+        "canonical encoding",
+        "boundary validation"
+      ],
+      "document": "STD10",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md",
+      "module": "serialization-schema-library",
+      "task_id": "P16-D220"
+    },
+    {
+      "artifact_hash": "sha256:f7bd68ccd9f7b1de10eaee468dcf655158173d1963c0ef8058b7ef0657623f3c",
+      "artifact_id": "phase16-std11-database",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "query parameterization",
+        "row schemas",
+        "migration artifacts",
+        "provider records"
+      ],
+      "document": "STD11",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md",
+      "module": "database-query-library",
+      "task_id": "P16-D221"
+    },
+    {
+      "artifact_hash": "sha256:f415632e279c0899e65a705550531fc0ec56177cb70d47ef2c9346b237d2a225",
+      "artifact_id": "phase16-std12-workflow",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "workflow graph",
+        "event log schema",
+        "activity manifest",
+        "replay rejection"
+      ],
+      "document": "STD12",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/222-std12-workflow-library-specification.md",
+      "module": "workflow-library",
+      "task_id": "P16-D222"
+    },
+    {
+      "artifact_hash": "sha256:5e5a6ef6b45df2d28780458236a338647c242ea8ae3376c902101b284a034201",
+      "artifact_id": "phase16-std13-ai",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "model metadata",
+        "prompt artifacts",
+        "tool manifests",
+        "eval reports"
+      ],
+      "document": "STD13",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md",
+      "module": "ai-agent-library",
+      "task_id": "P16-D223"
+    },
+    {
+      "artifact_hash": "sha256:d40939a5a9ab818d5b2cd02bc75892ce6e2ebb71532a4bd11dd8fb8ba72a2a5d",
+      "artifact_id": "phase16-std14-testing",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "structured reports",
+        "property/fuzz seeds",
+        "golden records",
+        "diagnostic fixtures"
+      ],
+      "document": "STD14",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/224-std14-testing-library-specification.md",
+      "module": "testing-library",
+      "task_id": "P16-D224"
+    },
+    {
+      "artifact_hash": "sha256:172491e9ac3bcb49b3618bc1165e9defcc53e21e42c947ee9956694af90fed83",
+      "artifact_id": "phase16-std15-meta",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "macro provenance",
+        "ordinary pipeline checks",
+        "pass manifests",
+        "plugin manifests"
+      ],
+      "document": "STD15",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md",
+      "module": "compiler-meta-library",
+      "task_id": "P16-D225"
+    },
+    {
+      "artifact_hash": "sha256:8f5e45f6e3a79ee8758e4333ab96122c9fd19a87344bef148a4fc11ab8accb66",
+      "artifact_id": "phase16-std16-platform",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "target facts",
+        "host delegation",
+        "redaction",
+        "replay records"
+      ],
+      "document": "STD16",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md",
+      "module": "platform-os-library",
+      "task_id": "P16-D226"
+    },
+    {
+      "artifact_hash": "sha256:363a0ae13223a3febfe5e615612ceece7bd73cc9f6a946daec8fd34973ddae4b",
+      "artifact_id": "phase16-std17-hardware",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "MMIO capability",
+        "memory map",
+        "interrupt table",
+        "DMA evidence"
+      ],
+      "document": "STD17",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md",
+      "module": "hardware-firmware-library",
+      "task_id": "P16-D227"
+    },
+    {
+      "artifact_hash": "sha256:c3f1ac60916c8a3abc981e4077689116a3f993a41d3576455449278e974b0e12",
+      "artifact_id": "phase16-std18-crypto",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "algorithm policy",
+        "secret redaction",
+        "post-quantum policy",
+        "hybrid suite",
+        "migration inventory"
+      ],
+      "document": "STD18",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md",
+      "module": "cryptography-library",
+      "task_id": "P16-D228"
+    },
+    {
+      "artifact_hash": "sha256:a3fd0c5687231b7302071586d93310a8f0c0a314916e1e93e14f832c24bb5700",
+      "artifact_id": "phase16-std19-ui",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "component artifacts",
+        "event contracts",
+        "accessibility metadata",
+        "adapter records"
+      ],
+      "document": "STD19",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md",
+      "module": "ui-application-library",
+      "task_id": "P16-D229"
+    },
+    {
+      "artifact_hash": "sha256:574cf59e2bb12fee719fa688de9c6c99d465bb18e02cc390fc11824000e3578d",
+      "artifact_id": "phase16-std20-stability",
+      "artifact_kind": "standard-library-artifact",
+      "coverage": [
+        "stability manifest",
+        "compatibility report",
+        "deprecation records",
+        "signed provenance"
+      ],
+      "document": "STD20",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/accepted-standard-library.json",
+      "governing_doc": "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md",
+      "module": "standard-library-stability-policy",
+      "task_id": "P16-D230"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 20,
+    "documents": 20,
+    "rejected_diagnostics": 20,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "STD1",
+    "STD2",
+    "STD3",
+    "STD4",
+    "STD5",
+    "STD6",
+    "STD7",
+    "STD8",
+    "STD9",
+    "STD10",
+    "STD11",
+    "STD12",
+    "STD13",
+    "STD14",
+    "STD15",
+    "STD16",
+    "STD17",
+    "STD18",
+    "STD19",
+    "STD20"
+  ],
+  "input_hash": "sha256:7a51ea08fbf0cbad4f8b3205b6ad8c050c86ab2ca17456ef59f149f0022743a8",
+  "kind": "phase16-standard-library-document-coverage-artifact",
+  "phase": "16",
+  "rejected": [
+    {
+      "diagnostic": "STD1001",
+      "document": "STD1",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std1-profile-metadata.json",
+      "missing_fact": "profile-metadata",
+      "task_id": "P16-D211"
+    },
+    {
+      "diagnostic": "STD2002",
+      "document": "STD2",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std2-host-state.json",
+      "missing_fact": "host-state",
+      "task_id": "P16-D212"
+    },
+    {
+      "diagnostic": "STD3001",
+      "document": "STD3",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std3-allocation.json",
+      "missing_fact": "allocation-policy",
+      "task_id": "P16-D213"
+    },
+    {
+      "diagnostic": "STD4002",
+      "document": "STD4",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std4-text-boundary.json",
+      "missing_fact": "text-boundary",
+      "task_id": "P16-D214"
+    },
+    {
+      "diagnostic": "STD5003",
+      "document": "STD5",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std5-certificate.json",
+      "missing_fact": "math-certificate",
+      "task_id": "P16-D215"
+    },
+    {
+      "diagnostic": "STD6002",
+      "document": "STD6",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std6-borrow.json",
+      "missing_fact": "borrow-lifetime",
+      "task_id": "P16-D216"
+    },
+    {
+      "diagnostic": "STD7001",
+      "document": "STD7",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std7-race.json",
+      "missing_fact": "synchronization-proof",
+      "task_id": "P16-D217"
+    },
+    {
+      "diagnostic": "STD8001",
+      "document": "STD8",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std8-capability.json",
+      "missing_fact": "filesystem-capability",
+      "task_id": "P16-D218"
+    },
+    {
+      "diagnostic": "STD9001",
+      "document": "STD9",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std9-capability.json",
+      "missing_fact": "network-capability",
+      "task_id": "P16-D219"
+    },
+    {
+      "diagnostic": "STD10001",
+      "document": "STD10",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std10-validation.json",
+      "missing_fact": "schema-validation",
+      "task_id": "P16-D220"
+    },
+    {
+      "diagnostic": "STD11002",
+      "document": "STD11",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std11-query.json",
+      "missing_fact": "query-parameterization",
+      "task_id": "P16-D221"
+    },
+    {
+      "diagnostic": "STD12001",
+      "document": "STD12",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std12-replay.json",
+      "missing_fact": "workflow-replay-record",
+      "task_id": "P16-D222"
+    },
+    {
+      "diagnostic": "STD13001",
+      "document": "STD13",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std13-ai-metadata.json",
+      "missing_fact": "ai-call-metadata",
+      "task_id": "P16-D223"
+    },
+    {
+      "diagnostic": "STD14001",
+      "document": "STD14",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std14-test-effect.json",
+      "missing_fact": "test-effect-capability",
+      "task_id": "P16-D224"
+    },
+    {
+      "diagnostic": "STD15002",
+      "document": "STD15",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std15-generated-code.json",
+      "missing_fact": "generated-code-checks",
+      "task_id": "P16-D225"
+    },
+    {
+      "diagnostic": "STD16002",
+      "document": "STD16",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std16-target-host.json",
+      "missing_fact": "target-host-facts",
+      "task_id": "P16-D226"
+    },
+    {
+      "diagnostic": "STD17001",
+      "document": "STD17",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std17-hardware-capability.json",
+      "missing_fact": "hardware-capability",
+      "task_id": "P16-D227"
+    },
+    {
+      "diagnostic": "STD18001",
+      "document": "STD18",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std18-algorithm.json",
+      "missing_fact": "crypto-algorithm-policy",
+      "task_id": "P16-D228"
+    },
+    {
+      "diagnostic": "STD19001",
+      "document": "STD19",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std19-component-metadata.json",
+      "missing_fact": "ui-component-metadata",
+      "task_id": "P16-D229"
+    },
+    {
+      "diagnostic": "STD20001",
+      "document": "STD20",
+      "fixture": "docs/artifacts/phase-16/fixtures/standard-library/rejected-std20-stability.json",
+      "missing_fact": "stability-level",
+      "task_id": "P16-D230"
+    }
+  ]
+}

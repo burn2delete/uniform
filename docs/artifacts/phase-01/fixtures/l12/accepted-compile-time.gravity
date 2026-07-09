@@ -1,0 +1,30 @@
+(ns app.compile
+  (:profile :hosted)
+  (:target :native)
+  (:effects :build/read-file :build/env :build/write-artifact)
+  (:capabilities :provider/schema-loader :provider/env :provider/artifact-writer)
+  (:providers :provider/schema-loader :provider/env :provider/artifact-writer))
+
+(build-policy
+  :mode :hermetic
+  :compiler-version "gravity-fixture-1"
+  :target "native-fixture"
+  :facets [:core :compile-time]
+  :declared-inputs ["schemas/user.json"]
+  :declared-env ["GRAVITY_SCHEMA_MODE"])
+
+(build-grant :build/read-file :provider/schema-loader "schemas/user.json" :build :hosted :content-digest)
+(build-grant :build/env :provider/env "GRAVITY_SCHEMA_MODE" :build :hosted :redacted-presence)
+(build-grant :build/write-artifact :provider/artifact-writer "build/generated/user-codec.gravity" :build :hosted :content-digest)
+
+(defconst page-size
+  (compile-time (* 4 1024)))
+
+(def generated-table
+  (compile-time (pure/generate-table 4)))
+
+(derive-code :json/User UserSchema
+  (:build-effect :build/read-file :provider/schema-loader "schemas/user.json" "sha256:schema-user-v1" :content-digest)
+  (:build-effect :build/env :provider/env "GRAVITY_SCHEMA_MODE" "redacted:present" :redacted-presence)
+  (:build-effect :build/write-artifact :provider/artifact-writer "build/generated/user-codec.gravity" "sha256:user-codec-v1" :content-digest)
+  (:generated-form (def UserCodec (fn [user] user)) "sha256:generated-user-codec-v1"))

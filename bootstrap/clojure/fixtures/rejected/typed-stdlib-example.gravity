@@ -1,0 +1,9 @@
+(ns stdlib.example
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/example-fail 'gravity.collections.vector :firmware))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-type.json",
+  "set": {
+    "/unsafe_casts/0/safe_evidence": true
+  }
+}

@@ -1,0 +1,47 @@
+{:proof-id :stage0-p03-t02-core-meta-hosted-native-proof
+ :date "2026-06-24"
+ :phase 3
+ :task :P03-T02
+ :status :passed
+ :capability :core-meta-hosted-native-profile-set
+ :command "clojure -M:gravity profile-set bootstrap/clojure/fixtures/accepted/profile-set-core.gravity"
+ :artifact-kind :gravity/stage0-profile-set-artifact
+ :accepted-fixtures
+ {:core "bootstrap/clojure/fixtures/accepted/profile-set-core.gravity"
+  :meta "bootstrap/clojure/fixtures/accepted/profile-set-meta.gravity"
+  :hosted "bootstrap/clojure/fixtures/accepted/profile-set-hosted.gravity"
+  :native "bootstrap/clojure/fixtures/accepted/profile-set-native.gravity"}
+ :accepted-results
+ {:core {:document "P2"
+         :effective-effects #{}
+         :effective-capabilities #{}}
+  :meta {:document "P3"
+         :effective-effects #{:build/read-file}
+         :effective-capabilities #{:compiler/ir}}
+  :hosted {:document "P4"
+           :effective-effects #{:memory/allocate :reflection/use
+                                :dynamic/eval :host/error}
+           :effective-capabilities #{:memory/allocator :reflection/use}}
+  :native {:document "P5"
+           :effective-effects #{:memory/allocate :thread/spawn :time/schedule}
+           :effective-capabilities #{:memory/allocator :scheduler/task}}}
+ :rejected-diagnostics
+ {"P2" ["P2-EFFECT" "P2-CAPABILITY" "P2-RUNTIME" "P2-MEMORY"
+        "P2-UNSAFE" "P2-NONDETERMINISM" "P2-MACRO" "P2-IMPORT"
+        "P2-BACKEND"]
+  "P3" ["P3-BUILD-EFFECT" "P3-HERMETIC" "P3-COMPILER-CAPABILITY"
+        "P3-PASS-CONTRACT" "P3-FACT-INVALIDATION"
+        "P3-GENERATED-PROFILE" "P3-GENERATED-SAFETY" "P3-PHASE"
+        "P3-SOURCE-MAP"]
+  "P4" ["P4-HOST-EFFECT" "P4-HOST-CAPABILITY" "P4-REFLECTION"
+        "P4-DYNAMIC" "P4-HOST-OBJECT" "P4-EXCEPTION" "P4-RESOURCE"
+        "P4-RAW-MEMORY" "P4-CROSS-IMPORT" "P4-SOURCEMAP"]
+  "P5" ["P5-ALLOC" "P5-MEMORY-PROVIDER" "P5-FFI" "P5-RAW-MEMORY"
+        "P5-THREAD" "P5-ATOMIC" "P5-SIMD" "P5-NUMERIC"
+        "P5-OPTIMIZATION" "P5-RUNTIME"]}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. P2-P5 profile-set artifacts, P6-P8/P11-P12 constrained profile-validation artifacts, and 479 rejected fixtures"}]
+ :limits
+ ["This proves the first profile set at the stage0 profile artifact boundary."
+  "Later Phase 03 proof records complete firmware, kernel, hardware, GPU, formal, distributed, AI, compatibility matrix, and all-profile compliance work."]}

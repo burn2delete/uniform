@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: unsupported blocking effect.
+(ns runtime.r6-blocking
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-blocking}}}))
+
+(defn main [] :- I64 1)

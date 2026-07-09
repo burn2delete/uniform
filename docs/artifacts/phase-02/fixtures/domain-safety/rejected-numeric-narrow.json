@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-domain-safety.json",
+  "set": {
+    "/operations/2/numeric/narrow_unchecked": true
+  }
+}

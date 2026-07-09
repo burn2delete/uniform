@@ -1,0 +1,13 @@
+(ns safe1.proof-missing
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (safe1/outcome :buffer/read
+                 :proven-safe
+                 :bounds
+                 nil
+                 :none))

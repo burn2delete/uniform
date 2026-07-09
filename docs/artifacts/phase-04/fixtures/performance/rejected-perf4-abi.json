@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-performance-model.json",
+  "set": {
+    "/layouts/0/changes_public_boundary": true
+  }
+}

@@ -1,0 +1,36 @@
+{:artifact :gravity/stage0-r12-runtime-observability-document-proof
+ :task "P08-D123"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r12-document bootstrap/clojure/fixtures/accepted/runtime-observability.gravity"
+ :artifact-kind :gravity/stage0-r12-runtime-observability-document-artifact
+ :artifact-id "sha256:b8382c9a55e4036f07d7543e6036d2f9a6ba74db3eb2809be1261aa1486485a2"
+ :input-artifact "sha256:2a4c0a7bba2fbf747726f96bf0595af10a6b950d1fd9e5f2a4376d18489d5dc4"
+ :input-artifact-kind :gravity/stage0-runtime-observability-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-observability.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r12-*.gravity"]
+ :required-diagnostic-ids
+ ["R12-SINK" "R12-SCHEMA" "R12-SOURCE" "R12-SECRET"
+  "R12-SEMANTICS" "R12-SAMPLING" "R12-REPLAY" "R12-BUNDLE"
+  "R12-MANIFEST"]
+ :capability-based-proof
+ {:runtime-observability-input-verified? true
+  :manifest-event-sink-policy-covered? true
+  :event-schemas-stable? true
+  :logs-traces-metrics-covered? true
+  :panic-safety-capability-reports-covered? true
+  :redaction-policy-covered? true
+  :semantics-neutral-covered? true
+  :required-audit-events-preserved? true
+  :replay-traces-linked? true
+  :diagnostic-bundle-complete? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 9
+  :test-command "clojure -M:test"
+  :test-result "108 tests, 6778 assertions, 0 failures, 0 errors, 1425 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R12 runtime observability and diagnostics document through the P08-T06 runtime observability artifact. It does not claim production telemetry sink deployment, external incident tooling, live runtime event capture, release readiness, or self-hosted runtime implementation."}

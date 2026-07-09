@@ -1,0 +1,9 @@
+(ns typed.bad.memory.mmio
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{:memory/mmio})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (mmio/read :status-register))

@@ -1,0 +1,13 @@
+(ns bad.hermetic
+  (:profile :hosted)
+  (:target :native))
+
+(build-policy
+  :mode :hermetic
+  :declared-inputs ["schemas/user.json"])
+
+(build-grant :build/read-file :provider/schema-loader "*" :build :hosted :content-digest)
+
+(derive-code :json/User UserSchema
+  (:build-effect :build/read-file :provider/schema-loader "secrets/local.json" "sha256:local" :content-digest)
+  (:generated-form (def UserCodec (fn [user] user)) "sha256:generated-user-codec-v1"))

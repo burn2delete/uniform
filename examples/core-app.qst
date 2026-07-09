@@ -1,0 +1,32 @@
+(ns core.app
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main total build-record render])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(defn total [base scale]
+  (+ base (* scale 2)))
+
+(defn build-record [name score]
+  (assoc (hash-map :name name)
+         :score score
+         :tags (conj (vector "core") "app")))
+
+(defn render [record]
+  (str (get record :name)
+       ":"
+       (get record :score)
+       ":"
+       (count (get record :tags))))
+
+(defn main []
+  (let [score (total 5 7)
+        record (build-record "gravity" score)]
+    (do
+      (println "core-app")
+      (println (render record))
+      (if (> score 10)
+        (println (pr-str (list :ok score)))
+        (println "too-small")))))

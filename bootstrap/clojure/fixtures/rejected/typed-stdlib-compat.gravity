@@ -1,0 +1,9 @@
+(ns stdlib.compat
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/compat-break 'gravity.collections.vector :remove-firmware))

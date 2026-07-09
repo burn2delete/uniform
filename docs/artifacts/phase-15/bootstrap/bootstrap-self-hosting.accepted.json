@@ -1,0 +1,865 @@
+{
+  "bootstrap_provenance_record": {
+    "artifact_id": "phase15-bootstrap-provenance",
+    "auditor_query_index": {
+      "gravityc-stage3": [
+        "gravityc-stage2",
+        "gravityc-stage1",
+        "gravityc-stage0"
+      ]
+    },
+    "build_recipe_hash": "sha256:recipe-stage3",
+    "builder_identity": "bootstrap-builder-001",
+    "canonicalization": "canonical-json-v1",
+    "compiler_artifact_id": "gravityc-stage2",
+    "compiler_hash": "sha256:compiler-stage2",
+    "compiler_lineage_graph": [
+      {
+        "artifact": "gravityc-stage3",
+        "compiled_by": "gravityc-stage2"
+      },
+      {
+        "artifact": "gravityc-stage2",
+        "compiled_by": "gravityc-stage1"
+      },
+      {
+        "artifact": "gravityc-stage1",
+        "compiled_by": "gravityc-stage0"
+      }
+    ],
+    "conformance_report_links": [
+      "stage3-supported-feature-conformance"
+    ],
+    "dependency_graph_hash": "sha256:dependencies-stage3",
+    "document": "BOOT8",
+    "environment_manifest_hash": "sha256:environment-stage3",
+    "equivalence_report_links": [
+      "phase15-stage-equivalence-report"
+    ],
+    "lockfile_hash": "sha256:lock-stage3",
+    "revocation_check": {
+      "revoked_inputs": [],
+      "status": "passed"
+    },
+    "safety_report_links": [
+      "compiler-unsafe-audit-stage3"
+    ],
+    "sbom_links": [
+      "stage3-sbom"
+    ],
+    "signature_links": [
+      "stage3-provenance-signature"
+    ],
+    "source_graph_hash": "sha256:source-stage3",
+    "stage": "stage3"
+  },
+  "bootstrap_stage_matrix": [
+    {
+      "backends": [
+        ":c"
+      ],
+      "compiler_owner": "seed",
+      "profiles": [
+        ":core"
+      ],
+      "release_eligible": false,
+      "stage": "stage0"
+    },
+    {
+      "backends": [
+        ":c"
+      ],
+      "compiler_owner": "gravity-reader-macro",
+      "profiles": [
+        ":core",
+        ":meta"
+      ],
+      "release_eligible": false,
+      "stage": "stage1"
+    },
+    {
+      "backends": [
+        ":c",
+        ":wasm"
+      ],
+      "compiler_owner": "gravity-analyzer-mir",
+      "profiles": [
+        ":core",
+        ":meta",
+        ":hosted"
+      ],
+      "release_eligible": false,
+      "stage": "stage2"
+    },
+    {
+      "backends": [
+        ":c",
+        ":wasm",
+        ":llvm"
+      ],
+      "compiler_owner": "self-hosted-candidate",
+      "profiles": [
+        ":core",
+        ":meta",
+        ":hosted"
+      ],
+      "release_eligible": true,
+      "stage": "stage3"
+    }
+  ],
+  "compiler_coding_standard_report": {
+    "ambient_access_policy": "deny-host-time-random-network-filesystem",
+    "artifact_id": "phase15-compiler-coding-standard-report",
+    "deterministic_output_report": "fixed-input-output-order",
+    "diagnostic_manifest": "stable-compiler-diagnostics",
+    "document": "BOOT4",
+    "effect_capability_declarations": [
+      {
+        "capabilities": [],
+        "effects": [],
+        "module": "reader"
+      },
+      {
+        "capabilities": [
+          ":compiler-artifact-write"
+        ],
+        "effects": [
+          ":artifact-io"
+        ],
+        "module": "build-artifact-writer"
+      }
+    ],
+    "generated_artifact_provenance": "generated-compiler-artifact-provenance",
+    "module_manifests": [
+      "reader-module-manifest",
+      "mir-module-manifest"
+    ],
+    "pass_preservation_report": "stage2-pass-preservation",
+    "preservation_tests": [
+      "preserve-source-spans",
+      "preserve-types-effects-safety"
+    ],
+    "unsafe_audit_report": "compiler-unsafe-islands-reviewed"
+  },
+  "coverage_summary": {
+    "documents": 8,
+    "stage_count": 4,
+    "status": ":passed",
+    "tasks": 6
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "BOOT1": {
+      "artifact_id": "phase15-bootstrap-strategy-accepted",
+      "compiler_lineage": [
+        {
+          "artifact": "gravityc-stage3",
+          "compiled_by": "gravityc-stage2"
+        }
+      ],
+      "conformance_reports": [
+        "phase14-self-hosting-validation",
+        "stage3-language-subset-conformance"
+      ],
+      "document": "BOOT1",
+      "equivalence_reports": [
+        "phase15-stage2-stage3-equivalence"
+      ],
+      "locked_dependencies": [
+        "gravity-lock:stage3"
+      ],
+      "produced_artifacts": [
+        "gravityc-stage0",
+        "gravityc-stage1",
+        "gravityc-stage2",
+        "gravityc-stage3"
+      ],
+      "release_gates": [
+        ":conformance",
+        ":equivalence",
+        ":reproducible",
+        ":provenance"
+      ],
+      "stage_gaps": [
+        {
+          "gap": "full GPU backend migration",
+          "stage": "stage3",
+          "status": "deferred-with-owner"
+        }
+      ],
+      "stage_manifests": [
+        {
+          "backends": [
+            ":c"
+          ],
+          "compiler_owner": "seed",
+          "profiles": [
+            ":core"
+          ],
+          "release_eligible": false,
+          "stage": "stage0"
+        },
+        {
+          "backends": [
+            ":c"
+          ],
+          "compiler_owner": "gravity-reader-macro",
+          "profiles": [
+            ":core",
+            ":meta"
+          ],
+          "release_eligible": false,
+          "stage": "stage1"
+        },
+        {
+          "backends": [
+            ":c",
+            ":wasm"
+          ],
+          "compiler_owner": "gravity-analyzer-mir",
+          "profiles": [
+            ":core",
+            ":meta",
+            ":hosted"
+          ],
+          "release_eligible": false,
+          "stage": "stage2"
+        },
+        {
+          "backends": [
+            ":c",
+            ":wasm",
+            ":llvm"
+          ],
+          "compiler_owner": "self-hosted-candidate",
+          "profiles": [
+            ":core",
+            ":meta",
+            ":hosted"
+          ],
+          "release_eligible": true,
+          "stage": "stage3"
+        }
+      ],
+      "stages": [
+        "stage0",
+        "stage1",
+        "stage2",
+        "stage3"
+      ],
+      "supported_backends": [
+        ":c",
+        ":wasm",
+        ":llvm"
+      ],
+      "supported_profiles": [
+        ":core",
+        ":meta",
+        ":hosted"
+      ],
+      "tcb_deltas": [
+        {
+          "removed_trusted_components": [
+            "reader",
+            "macroexpander",
+            "analyzer",
+            "mir-passes"
+          ],
+          "stage": "stage3"
+        }
+      ],
+      "trusted_inputs": [
+        "seed-compiler",
+        "locked-package-graph",
+        "bootstrap-runtime"
+      ],
+      "unsafe_audit_records": [
+        "compiler-unsafe-audit-stage3"
+      ]
+    },
+    "BOOT2": {
+      "artifact_id": "phase15-seed-compiler-manifest",
+      "bootstrap_backend_artifact": "gravityc-seed-c-backend",
+      "conformance_report": "seed-language-compiler-backend-subset",
+      "diagnostics": [
+        "BOOT2001",
+        "BOOT2002",
+        "BOOT2003",
+        "BOOT2004",
+        "BOOT2005",
+        "BOOT2006"
+      ],
+      "document": "BOOT2",
+      "excluded_documents": [
+        "A1",
+        "DOM16",
+        "M7",
+        "PKG9"
+      ],
+      "host_dependencies": [
+        "python:3.12.0",
+        "c-toolchain:bootstrap"
+      ],
+      "implemented_documents": [
+        "L1",
+        "L2",
+        "L3",
+        "C1",
+        "C2",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C11",
+        "C15"
+      ],
+      "metadata_for_stage_comparison": [
+        "source-hash",
+        "compiler-hash",
+        "backend-id",
+        "diagnostic-json"
+      ],
+      "provenance_record": "seed-provenance-stage0",
+      "runtime_assumptions": [
+        "deterministic-filesystem-order",
+        "disabled-network-after-fetch"
+      ],
+      "supported_profiles": [
+        ":core",
+        ":meta"
+      ]
+    },
+    "BOOT3": {
+      "artifact_id": "phase15-self-hosted-module-plan",
+      "diagnostic_compatibility_report": "self-hosted-diagnostic-spans",
+      "document": "BOOT3",
+      "equivalence_reports": [
+        "self-hosted-reader-equivalence",
+        "self-hosted-mir-equivalence"
+      ],
+      "migrated_modules": [
+        "reader",
+        "syntax",
+        "macroexpander",
+        "resolver",
+        "typed-core",
+        "effect-checker",
+        "mir",
+        "diagnostics"
+      ],
+      "module_manifests": [
+        {
+          "effects": [],
+          "inputs": [
+            "source-bytes"
+          ],
+          "module": "reader",
+          "outputs": [
+            "syntax-tree"
+          ],
+          "preserves": [
+            "source-spans"
+          ]
+        },
+        {
+          "effects": [],
+          "inputs": [
+            "typed-core"
+          ],
+          "module": "mir",
+          "outputs": [
+            "mir"
+          ],
+          "preserves": [
+            "types",
+            "effects",
+            "source-spans",
+            "safety-facts"
+          ]
+        }
+      ],
+      "profile": ":meta",
+      "provenance_records": [
+        "generated-reader-provenance",
+        "generated-mir-provenance"
+      ],
+      "stage_comparisons": [
+        "stage1-reader-macro",
+        "stage2-analyzer-mir"
+      ],
+      "tcb_deltas": [
+        "reader-removed-from-seed-tcb",
+        "mir-removed-from-seed-tcb"
+      ],
+      "unsafe_audit_records": [
+        "compiler-internals-safe-api-audit"
+      ]
+    },
+    "BOOT4": {
+      "ambient_access_policy": "deny-host-time-random-network-filesystem",
+      "artifact_id": "phase15-compiler-coding-standard-report",
+      "deterministic_output_report": "fixed-input-output-order",
+      "diagnostic_manifest": "stable-compiler-diagnostics",
+      "document": "BOOT4",
+      "effect_capability_declarations": [
+        {
+          "capabilities": [],
+          "effects": [],
+          "module": "reader"
+        },
+        {
+          "capabilities": [
+            ":compiler-artifact-write"
+          ],
+          "effects": [
+            ":artifact-io"
+          ],
+          "module": "build-artifact-writer"
+        }
+      ],
+      "generated_artifact_provenance": "generated-compiler-artifact-provenance",
+      "module_manifests": [
+        "reader-module-manifest",
+        "mir-module-manifest"
+      ],
+      "pass_preservation_report": "stage2-pass-preservation",
+      "preservation_tests": [
+        "preserve-source-spans",
+        "preserve-types-effects-safety"
+      ],
+      "unsafe_audit_report": "compiler-unsafe-islands-reviewed"
+    },
+    "BOOT5": {
+      "artifact_id": "phase15-stage-compatibility-matrix",
+      "backend_conformance_reports": {
+        "stage3": [
+          "c-backend-conformance",
+          "wasm-backend-conformance",
+          "llvm-backend-conformance"
+        ]
+      },
+      "conformance_link_table": {
+        "stage3": [
+          "phase14-self-hosting-validation",
+          "phase14-language-compiler-runtime-profile"
+        ]
+      },
+      "document": "BOOT5",
+      "matrix_change_record": {
+        "linked_artifact": "gravityc-stage3",
+        "version": "2026-06-24.phase15"
+      },
+      "profile_compliance_reports": {
+        "stage3": "profile-meta-hosted-compliance"
+      },
+      "release_readiness_summary": {
+        "stage3": "eligible-after-policy-review"
+      },
+      "stage_gap_report": [
+        {
+          "gap": "full GPU backend migration",
+          "owner": "backend-roadmap",
+          "reviewed": true,
+          "stage": "stage3"
+        }
+      ],
+      "stages": [
+        "stage0",
+        "stage1",
+        "stage2",
+        "stage3"
+      ],
+      "support_level_report": {
+        "stage3": "release-candidate-subset"
+      },
+      "supported_features": {
+        "stage3": [
+          "reader",
+          "macroexpander",
+          "analyzer",
+          "mir",
+          "diagnostics",
+          "package-build-subset"
+        ]
+      },
+      "unsupported_features": {
+        "stage3": [
+          "full-gpu-backend",
+          "full-ai-runtime"
+        ]
+      },
+      "version": "2026-06-24.phase15"
+    },
+    "BOOT6": {
+      "accepted_delta_report": [
+        {
+          "field": "provenance.timestamp",
+          "policy": "normalized",
+          "reviewed": true
+        }
+      ],
+      "artifact_id": "phase15-trusting-trust-report",
+      "build_recipe": "bootstrap-recipe-stage3",
+      "compiler_lineage": [
+        {
+          "artifact": "gravityc-stage3",
+          "compiled_by": "gravityc-stage2"
+        }
+      ],
+      "diverse_rebuild_report": {
+        "identity": "diverse-toolchain-001",
+        "status": "matched",
+        "toolchain": "independent-c-toolchain"
+      },
+      "document": "BOOT6",
+      "environment_manifest": {
+        "filesystem_order": "sorted",
+        "locale": "C",
+        "network": "disabled-after-fetch",
+        "time": "fixed",
+        "toolchain": "diverse-c-bootstrap"
+      },
+      "locked_dependencies": [
+        "gravity-lock:stage3"
+      ],
+      "network_policy": "disabled-after-dependency-fetch",
+      "rebuild_comparison_report": {
+        "content_hash": "sha256:content",
+        "manifest_hash": "sha256:manifest",
+        "status": "matched"
+      },
+      "release_trust_summary": {
+        "residual_trusted_components": [
+          "seed-c-toolchain"
+        ],
+        "tcb_delta": "reduced"
+      },
+      "revocation_check_report": {
+        "revoked_inputs": [],
+        "status": "passed"
+      }
+    },
+    "BOOT7": {
+      "accepted_deltas": [
+        {
+          "field": "provenance.builder",
+          "review": "BOOT7-reviewed-delta"
+        }
+      ],
+      "artifact_id": "phase15-stage-equivalence-report",
+      "compared_artifacts": [
+        "gravityc-stage3",
+        "stdlib-core-stage3",
+        "diagnostic-bundle-stage3"
+      ],
+      "comparison_modes": [
+        ":manifest",
+        ":diagnostics",
+        ":conformance",
+        ":artifact-hashes",
+        ":ir-modulo-ids",
+        ":accepted-delta"
+      ],
+      "compiler_a": "gravityc-stage2",
+      "compiler_b": "gravityc-stage3",
+      "conformance_report": "stage3-supported-feature-conformance",
+      "diagnostic_comparison_report": "stable-code-and-span-comparison",
+      "document": "BOOT7",
+      "ir_comparison_report": "ir-equivalence-modulo-generated-ids",
+      "performance_bounds": {
+        "compile_time_ratio": "<=1.10",
+        "status": "within-bound"
+      },
+      "provenance_links": [
+        "phase15-bootstrap-provenance"
+      ],
+      "release_decision": "advance-stage3-with-recorded-deltas"
+    },
+    "BOOT8": {
+      "artifact_id": "phase15-bootstrap-provenance",
+      "auditor_query_index": {
+        "gravityc-stage3": [
+          "gravityc-stage2",
+          "gravityc-stage1",
+          "gravityc-stage0"
+        ]
+      },
+      "build_recipe_hash": "sha256:recipe-stage3",
+      "builder_identity": "bootstrap-builder-001",
+      "canonicalization": "canonical-json-v1",
+      "compiler_artifact_id": "gravityc-stage2",
+      "compiler_hash": "sha256:compiler-stage2",
+      "compiler_lineage_graph": [
+        {
+          "artifact": "gravityc-stage3",
+          "compiled_by": "gravityc-stage2"
+        },
+        {
+          "artifact": "gravityc-stage2",
+          "compiled_by": "gravityc-stage1"
+        },
+        {
+          "artifact": "gravityc-stage1",
+          "compiled_by": "gravityc-stage0"
+        }
+      ],
+      "conformance_report_links": [
+        "stage3-supported-feature-conformance"
+      ],
+      "dependency_graph_hash": "sha256:dependencies-stage3",
+      "document": "BOOT8",
+      "environment_manifest_hash": "sha256:environment-stage3",
+      "equivalence_report_links": [
+        "phase15-stage-equivalence-report"
+      ],
+      "lockfile_hash": "sha256:lock-stage3",
+      "revocation_check": {
+        "revoked_inputs": [],
+        "status": "passed"
+      },
+      "safety_report_links": [
+        "compiler-unsafe-audit-stage3"
+      ],
+      "sbom_links": [
+        "stage3-sbom"
+      ],
+      "signature_links": [
+        "stage3-provenance-signature"
+      ],
+      "source_graph_hash": "sha256:source-stage3",
+      "stage": "stage3"
+    }
+  },
+  "equivalence_report": {
+    "accepted_deltas": [
+      {
+        "field": "provenance.builder",
+        "review": "BOOT7-reviewed-delta"
+      }
+    ],
+    "artifact_id": "phase15-stage-equivalence-report",
+    "compared_artifacts": [
+      "gravityc-stage3",
+      "stdlib-core-stage3",
+      "diagnostic-bundle-stage3"
+    ],
+    "comparison_modes": [
+      ":manifest",
+      ":diagnostics",
+      ":conformance",
+      ":artifact-hashes",
+      ":ir-modulo-ids",
+      ":accepted-delta"
+    ],
+    "compiler_a": "gravityc-stage2",
+    "compiler_b": "gravityc-stage3",
+    "conformance_report": "stage3-supported-feature-conformance",
+    "diagnostic_comparison_report": "stable-code-and-span-comparison",
+    "document": "BOOT7",
+    "ir_comparison_report": "ir-equivalence-modulo-generated-ids",
+    "performance_bounds": {
+      "compile_time_ratio": "<=1.10",
+      "status": "within-bound"
+    },
+    "provenance_links": [
+      "phase15-bootstrap-provenance"
+    ],
+    "release_decision": "advance-stage3-with-recorded-deltas"
+  },
+  "input_hash": "sha256:acac6b309687956b22946cd9bbf53e43fce4f0913a5fdbe66ba1909d447588cd",
+  "kind": "bootstrap-self-hosting-artifact",
+  "phase": "15",
+  "seed_compiler_manifest": {
+    "artifact_id": "phase15-seed-compiler-manifest",
+    "bootstrap_backend_artifact": "gravityc-seed-c-backend",
+    "conformance_report": "seed-language-compiler-backend-subset",
+    "diagnostics": [
+      "BOOT2001",
+      "BOOT2002",
+      "BOOT2003",
+      "BOOT2004",
+      "BOOT2005",
+      "BOOT2006"
+    ],
+    "document": "BOOT2",
+    "excluded_documents": [
+      "A1",
+      "DOM16",
+      "M7",
+      "PKG9"
+    ],
+    "host_dependencies": [
+      "python:3.12.0",
+      "c-toolchain:bootstrap"
+    ],
+    "implemented_documents": [
+      "L1",
+      "L2",
+      "L3",
+      "C1",
+      "C2",
+      "C5",
+      "C6",
+      "C7",
+      "C8",
+      "C11",
+      "C15"
+    ],
+    "metadata_for_stage_comparison": [
+      "source-hash",
+      "compiler-hash",
+      "backend-id",
+      "diagnostic-json"
+    ],
+    "provenance_record": "seed-provenance-stage0",
+    "runtime_assumptions": [
+      "deterministic-filesystem-order",
+      "disabled-network-after-fetch"
+    ],
+    "supported_profiles": [
+      ":core",
+      ":meta"
+    ]
+  },
+  "self_hosted_component_manifest": [
+    {
+      "effects": [],
+      "inputs": [
+        "source-bytes"
+      ],
+      "module": "reader",
+      "outputs": [
+        "syntax-tree"
+      ],
+      "preserves": [
+        "source-spans"
+      ]
+    },
+    {
+      "effects": [],
+      "inputs": [
+        "typed-core"
+      ],
+      "module": "mir",
+      "outputs": [
+        "mir"
+      ],
+      "preserves": [
+        "types",
+        "effects",
+        "source-spans",
+        "safety-facts"
+      ]
+    }
+  ],
+  "stage_compatibility_matrix": {
+    "artifact_id": "phase15-stage-compatibility-matrix",
+    "backend_conformance_reports": {
+      "stage3": [
+        "c-backend-conformance",
+        "wasm-backend-conformance",
+        "llvm-backend-conformance"
+      ]
+    },
+    "conformance_link_table": {
+      "stage3": [
+        "phase14-self-hosting-validation",
+        "phase14-language-compiler-runtime-profile"
+      ]
+    },
+    "document": "BOOT5",
+    "matrix_change_record": {
+      "linked_artifact": "gravityc-stage3",
+      "version": "2026-06-24.phase15"
+    },
+    "profile_compliance_reports": {
+      "stage3": "profile-meta-hosted-compliance"
+    },
+    "release_readiness_summary": {
+      "stage3": "eligible-after-policy-review"
+    },
+    "stage_gap_report": [
+      {
+        "gap": "full GPU backend migration",
+        "owner": "backend-roadmap",
+        "reviewed": true,
+        "stage": "stage3"
+      }
+    ],
+    "stages": [
+      "stage0",
+      "stage1",
+      "stage2",
+      "stage3"
+    ],
+    "support_level_report": {
+      "stage3": "release-candidate-subset"
+    },
+    "supported_features": {
+      "stage3": [
+        "reader",
+        "macroexpander",
+        "analyzer",
+        "mir",
+        "diagnostics",
+        "package-build-subset"
+      ]
+    },
+    "unsupported_features": {
+      "stage3": [
+        "full-gpu-backend",
+        "full-ai-runtime"
+      ]
+    },
+    "version": "2026-06-24.phase15"
+  },
+  "trusting_trust_report": {
+    "accepted_delta_report": [
+      {
+        "field": "provenance.timestamp",
+        "policy": "normalized",
+        "reviewed": true
+      }
+    ],
+    "artifact_id": "phase15-trusting-trust-report",
+    "build_recipe": "bootstrap-recipe-stage3",
+    "compiler_lineage": [
+      {
+        "artifact": "gravityc-stage3",
+        "compiled_by": "gravityc-stage2"
+      }
+    ],
+    "diverse_rebuild_report": {
+      "identity": "diverse-toolchain-001",
+      "status": "matched",
+      "toolchain": "independent-c-toolchain"
+    },
+    "document": "BOOT6",
+    "environment_manifest": {
+      "filesystem_order": "sorted",
+      "locale": "C",
+      "network": "disabled-after-fetch",
+      "time": "fixed",
+      "toolchain": "diverse-c-bootstrap"
+    },
+    "locked_dependencies": [
+      "gravity-lock:stage3"
+    ],
+    "network_policy": "disabled-after-dependency-fetch",
+    "rebuild_comparison_report": {
+      "content_hash": "sha256:content",
+      "manifest_hash": "sha256:manifest",
+      "status": "matched"
+    },
+    "release_trust_summary": {
+      "residual_trusted_components": [
+        "seed-c-toolchain"
+      ],
+      "tcb_delta": "reduced"
+    },
+    "revocation_check_report": {
+      "revoked_inputs": [],
+      "status": "passed"
+    }
+  }
+}

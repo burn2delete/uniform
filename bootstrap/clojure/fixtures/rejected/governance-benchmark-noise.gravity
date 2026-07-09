@@ -1,0 +1,54 @@
+(ns performance.bad.governance-benchmark-noise
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance {:claim {:claim-id :perf/bad-benchmark-noise
+                                     :profile :native
+                                     :target :llvm-x86-64-linux
+                                     :target-features #{:avx2}
+                                     :input-shape {:element-type :f32}
+                                     :layout {:buffer :contiguous}
+                                     :safety-mode :safe-optimized
+                                     :semantic-proof #{:types-preserved}
+                                     :safety-proof #{:bounds-preserved}
+                                     :benchmark {:harness :bench/bad
+                                                 :environment-fingerprint {:cpu :x86-64}}
+                                     :artifacts #{:optimized-mir
+                                                  :proof-index
+                                                  :benchmark-report}}
+                           :governance {:suite-id :bad/benchmark-noise
+                                        :benchmarks [{:benchmark-id :bench/bad-noise
+                                                      :profile :native
+                                                      :target :llvm-x86-64-linux
+                                                      :workload :w
+                                                      :metric :ns
+                                                      :warmup {:iterations 10}
+                                                      :units :ns
+                                                      :samples 10
+                                                      :statistics {:median 1}
+                                                      :environment-fingerprint {:source-hash "sha256:s"
+                                                                                :compiler :gravity-stage0-clojure
+                                                                                :runtime :rt
+                                                                                :target :llvm-x86-64-linux
+                                                                                :profile :native
+                                                                                :provider-versions {:allocator :v1}}
+                                                      :acceptance {:min-samples 30
+                                                                   :max-regression-percent 5}
+                                                      :gates {:safety true
+                                                              :correctness true}
+                                                      :baseline {:baseline-id :b
+                                                                 :reviewed? true
+                                                                 :history [:v1]}
+                                                      :sample-summary {:count 10
+                                                                       :variance-stable? false
+                                                                       :noise-classification :unstable}
+                                                      :regression-report {:classification :no-regression
+                                                                          :percent 0
+                                                                          :threshold 5}
+                                                      :baseline-registry {:registry-id :r}}]
+                                        :pgo-records [{}]
+                                        :autotuning-records [{}]}}}))
+
+(def bad true)

@@ -1,0 +1,9 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "project_manifest": {
+      "lockfile_complete": false
+    }
+  }
+}

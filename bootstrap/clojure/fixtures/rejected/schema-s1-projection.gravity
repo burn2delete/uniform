@@ -1,0 +1,12 @@
+; Rejected P10 S1 fixture.
+(ns schema.s1-projection
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s1-projection}}}))
+
+(defn main [] :- I64 1)

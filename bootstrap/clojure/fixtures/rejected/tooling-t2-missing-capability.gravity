@@ -1,0 +1,11 @@
+; Rejected P13 T2 fixture.
+(ns tooling.t2-missing-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t2002}}}))
+
+(defn main [] :- I64 1)

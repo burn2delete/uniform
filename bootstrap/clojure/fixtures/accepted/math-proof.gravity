@@ -1,0 +1,15 @@
+(ns math.proof
+  (:profile :native)
+  (:target :jvm)
+  (:exports [proof-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:math {:numeric {}
+                     :efir {}
+                     :eml {}
+                     :approximation {}
+                     :proof {}}}))
+
+(defn proof-ready []
+  true)

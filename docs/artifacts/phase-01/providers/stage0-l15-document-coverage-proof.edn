@@ -1,0 +1,83 @@
+{:task-id :P01-D025
+ :document "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/capability-provider.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-capability-missing.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-provider-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/capability-provider.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'capability.providers
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:artifact-record
+                                       :attenuation
+                                       :build-runtime-separation
+                                       :compile-time-replay
+                                       :conformance
+                                       :declaration
+                                       :explicit-capability-value
+                                       :grant
+                                       :replacement
+                                       :revocation
+                                       :runtime-manifest
+                                       :scope-audit
+                                       :selection-source]
+                    :selection-sources [:compiler-default
+                                        :manifest
+                                        :profile-default
+                                        :source-annotation
+                                        :workspace-policy]
+                    :scope-categories [:compiler
+                                       :environment
+                                       :filesystem
+                                       :memory
+                                       :model
+                                       :network
+                                       :tool]
+                    :provider-declarations 3
+                    :grant-records 2
+                    :capability-values 1
+                    :provider-selections 5
+                    :scope-audit-logs 7
+                    :compile-time-provider-replay-records 1
+                    :runtime-provider-manifests 1
+                    :provider-conformance-results 1
+                    :provider-replacement-records 2
+                    :capability-attenuation-records 1
+                    :capability-revocation-records 1
+                    :capability-basis :declared-provider-contracts-grants-and-selection-records}
+ :rejected-diagnostics [{:fixture "typed-capability-missing.gravity"
+                         :diagnostic "L15-CAPABILITY-MISSING"}
+                        {:fixture "typed-provider-missing.gravity"
+                         :diagnostic "L15-PROVIDER-MISSING"}
+                        {:fixture "typed-provider-ambiguous.gravity"
+                         :diagnostic "L15-PROVIDER-AMBIGUOUS"}
+                        {:fixture "typed-provider-profile.gravity"
+                         :diagnostic "L15-PROFILE"}
+                        {:fixture "typed-provider-scope.gravity"
+                         :diagnostic "L15-SCOPE"}
+                        {:fixture "typed-provider-phase.gravity"
+                         :diagnostic "L15-PHASE"}
+                        {:fixture "typed-provider-trust.gravity"
+                         :diagnostic "L15-TRUST"}
+                        {:fixture "typed-provider-replay.gravity"
+                         :diagnostic "L15-REPLAY"}
+                        {:fixture "typed-provider-secret.gravity"
+                         :diagnostic "L15-SECRET"}
+                        {:fixture "typed-provider-contract.gravity"
+                         :diagnostic "L15-CONTRACT"}
+                        {:fixture "typed-provider-revocation.gravity"
+                         :diagnostic "L15-REVOCATION"}]
+ :validation [{:command "clojure -M:test"
+               :result "19 tests, 771 assertions, 142 rejected fixtures"}
+              {:command "clojure -M -e artifact-summary"
+               :result "complete L15 provider conformance with 3 declarations, 2 grants, 5 deterministic selections, 7 scope audits, replay, runtime manifest, conformance, replacement, attenuation, and revocation records"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 11 L15 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records the common provider machinery but does not claim full runtime provider initialization."
+                  "Package lockfile integration, platform-provider boot, and category-specific provider suites remain downstream phase work."
+                  "Self-hosted provider checking remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

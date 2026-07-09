@@ -1,0 +1,15 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/4/linear_resource/paths/0/terminal_operations": [
+      {
+        "operation": ":closed",
+        "provider_id": "gravity.resource/file-host"
+      },
+      {
+        "operation": ":closed",
+        "provider_id": "gravity.resource/file-host"
+      }
+    ]
+  }
+}

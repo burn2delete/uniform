@@ -1,0 +1,13 @@
+(ns math.numeric-allocation
+  (:profile :firmware)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:profile-support-matrix
+                      [{:profile :firmware
+                        :target :armv7m
+                        :family :bigint
+                        :available? true
+                        :allocation :unbounded}]}}}))

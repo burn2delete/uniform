@@ -1,0 +1,11 @@
+(ns math.numeric-modes
+  (:profile :native)
+  (:target :jvm)
+  (:exports [numeric-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:math {:numeric {}}}))
+
+(defn numeric-ready []
+  true)

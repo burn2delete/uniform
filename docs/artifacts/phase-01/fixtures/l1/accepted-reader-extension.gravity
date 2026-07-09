@@ -1,0 +1,6 @@
+(ns l1.extension
+  (:profile :hosted)
+  (:providers [gravity.reader/uuid]))
+
+(def id
+  #uuid "00000000-0000-0000-0000-000000000000")

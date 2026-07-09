@@ -1,0 +1,223 @@
+{
+  "kind": "capability-supply-chain-input",
+  "document": [
+    "SAFE10",
+    "SAFE14"
+  ],
+  "package": "gravity.app",
+  "module": "app.main",
+  "profile": ":hosted",
+  "target": ":wasm",
+  "capability_checks": [
+    {
+      "id": "cap-http-client",
+      "package_id": "gravity.app",
+      "version": "0.1.0",
+      "requested_capability": ":http/client",
+      "provider_id": "gravity.net/fetch",
+      "grant_id": "grant/http-client",
+      "denied_policy_layer": null,
+      "dependency_path": [
+        "gravity.app"
+      ],
+      "scope": {
+        "hosts": [
+          "api.example.com"
+        ],
+        "methods": [
+          "GET"
+        ]
+      },
+      "phase": ":runtime",
+      "active_profile": ":hosted",
+      "source_span": {
+        "source": "src/app.gravity",
+        "line": 18,
+        "column": 5
+      },
+      "available": true,
+      "policy_denied": false,
+      "scope_exceeded": false,
+      "provider_available": true,
+      "ambient_undeclared": false,
+      "phase_mismatch": false,
+      "secret_leak": false,
+      "attenuation_expands": false,
+      "revocation_unsupported": false,
+      "runtime_failure_undeclared": false,
+      "capability_requirement_records": [
+        {
+          "operation": "fetch-user",
+          "effect": ":network/http",
+          "capability": ":http/client"
+        }
+      ],
+      "grant_intersection_records": [
+        {
+          "grant_id": "grant/http-client",
+          "layers": [
+            "source",
+            "package",
+            "workspace",
+            "profile",
+            "deployment",
+            "runtime-provider"
+          ],
+          "effective_scope": {
+            "hosts": [
+              "api.example.com"
+            ],
+            "methods": [
+              "GET"
+            ]
+          }
+        }
+      ],
+      "provider_selection_records": [
+        {
+          "provider_id": "gravity.net/fetch",
+          "version": "1.0.0",
+          "selection": ":package-manifest"
+        }
+      ],
+      "scope_check_records": [
+        {
+          "capability": ":http/client",
+          "requested_scope": "api.example.com GET",
+          "status": ":accepted"
+        }
+      ],
+      "attenuation_revocation_records": [
+        {
+          "parent": "grant/http-client",
+          "derived": "grant/http-client-readonly",
+          "scope_relation": ":subset",
+          "revocation": ":not-required"
+        }
+      ],
+      "secret_redaction_records": [
+        {
+          "secret_name": "API_TOKEN",
+          "artifact_policy": ":name-only"
+        }
+      ],
+      "runtime_capability_check_records": [
+        {
+          "provider_id": "gravity.net/fetch",
+          "failure_behavior": "(Result Err CapabilityDenied)"
+        }
+      ],
+      "capability_usage_summary": [
+        {
+          "capability": ":http/client",
+          "phase": ":runtime",
+          "operations": [
+            "fetch-user"
+          ]
+        }
+      ]
+    }
+  ],
+  "package_checks": [
+    {
+      "id": "pkg-gravity-app",
+      "package_id": "gravity.app",
+      "version": "0.1.0",
+      "dependency_path": [
+        "gravity.app"
+      ],
+      "source_span": {
+        "source": "package.gravity",
+        "line": 1,
+        "column": 1
+      },
+      "manifest_complete": true,
+      "build_effects_granted": true,
+      "runtime_capabilities_approved": true,
+      "lockfile_pinned": true,
+      "unsafe_summary_accepted": true,
+      "native_dep_complete": true,
+      "generated_provenance_complete": true,
+      "signature_valid": true,
+      "authority_diff_approved": true,
+      "postinstall_declared": true,
+      "package_safety_manifests": [
+        {
+          "package": "gravity.app",
+          "version": "0.1.0",
+          "runtime_capabilities": [
+            ":http/client"
+          ],
+          "build_effects": [
+            ":build/read-file"
+          ],
+          "reproducible": true
+        }
+      ],
+      "lockfile_dependency_graph_records": [
+        {
+          "lockfile": "gravity.lock",
+          "dependencies": [
+            "gravity.net@1.0.0"
+          ],
+          "status": ":pinned"
+        }
+      ],
+      "build_effect_summaries": [
+        {
+          "effect": ":build/read-file",
+          "grant": "grant/build-schema",
+          "replay": ":content-addressed"
+        }
+      ],
+      "runtime_capability_summaries": [
+        {
+          "capability": ":http/client",
+          "approved_by": "deployment-policy"
+        }
+      ],
+      "unsafe_island_summaries": [
+        {
+          "count": 0,
+          "status": ":none"
+        }
+      ],
+      "native_dependency_abi_records": [
+        {
+          "library": "libexample",
+          "version": "1.2.3",
+          "abi": ":c",
+          "digest": "sha256:libexample"
+        }
+      ],
+      "generated_artifact_provenance": [
+        {
+          "artifact": "schema/user",
+          "generator": "gravity.schema",
+          "source_digest": "sha256:user-schema",
+          "output_digest": "sha256:user-schema-artifact"
+        }
+      ],
+      "signature_attestation_records": [
+        {
+          "package": "gravity.app",
+          "signature": ":verified",
+          "attestation": ":accepted"
+        }
+      ],
+      "transitive_authority_diffs": [
+        {
+          "update": "gravity.net 1.0.0",
+          "authority_change": ":none",
+          "approval": ":not-required"
+        }
+      ],
+      "supply_chain_conformance_reports": [
+        {
+          "suite": "supply-chain-basic",
+          "status": ":passed"
+        }
+      ]
+    }
+  ]
+}

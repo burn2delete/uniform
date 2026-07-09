@@ -1,0 +1,12 @@
+(ns math.opt-fusion
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:candidate-overrides
+            [{:family :fused-polynomial
+              :whole-expression-certificate nil
+              :per-call-certificates [:cert/per-call-a :cert/per-call-b]}]}}}))

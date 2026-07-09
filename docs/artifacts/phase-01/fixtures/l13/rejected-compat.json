@@ -1,0 +1,57 @@
+{
+  "call_checks": [],
+  "compatibility_records": [
+    {
+      "namespace": "gravity.collections.vector",
+      "removed_profiles": [
+        ":firmware"
+      ],
+      "semver_level": ":minor",
+      "symbol": "vector/of",
+      "version_from": "0.1.0",
+      "version_to": "0.2.0"
+    }
+  ],
+  "kind": "standard-library-contract-set",
+  "namespaces": [
+    {
+      "allocation": {
+        ":firmware": ":static-or-region"
+      },
+      "apis": [
+        {
+          "allocation": {
+            ":firmware": ":none"
+          },
+          "blocking": false,
+          "capabilities": [],
+          "classification": ":pure",
+          "effects": [],
+          "failure_modes": [],
+          "nondeterminism": ":none",
+          "panic": false,
+          "stability": ":stable",
+          "symbol": "vector/of",
+          "type": "(A*) -> Vector[A]"
+        }
+      ],
+      "capabilities": [],
+      "effects": [],
+      "examples": [
+        {
+          "compiles": true,
+          "profile": ":firmware",
+          "source": "(vector/of 1 2 3)"
+        }
+      ],
+      "layer": 1,
+      "name": "gravity.collections.vector",
+      "profiles": [
+        ":firmware"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    }
+  ],
+  "unsafe_audits": []
+}

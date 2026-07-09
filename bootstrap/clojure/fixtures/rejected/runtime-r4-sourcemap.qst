@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: host failure lacks a Gravity source map.
+(ns runtime.r4-sourcemap
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/error})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-sourcemap}}}))
+
+(defn main [] :- I64
+  1)

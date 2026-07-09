@@ -1,0 +1,401 @@
+{
+  "ai_runtime": {
+    "agent": "support-agent",
+    "budget_trace": "token-cost-budget",
+    "family": "ai",
+    "human_review": "destructive-tool-review",
+    "model_call_ledger": "model-call-ledger",
+    "policy_graph": "ai-policy-graph",
+    "prompt_provenance": "prompt-digest-record",
+    "replay_barriers": [
+      "model-output",
+      "tool-output",
+      "human-review"
+    ],
+    "tool_log": "tool-invocation-log"
+  },
+  "capability_enforcement_report": {
+    "capability_table": [
+      "filesystem",
+      "network",
+      "database",
+      "secrets",
+      "ffi",
+      "raw-memory",
+      "model",
+      "tool",
+      "ai/human-review",
+      "observability"
+    ],
+    "decision_log": [
+      {
+        "action": "network-fetch",
+        "capability": "network.http",
+        "decision": "grant",
+        "effect": ":network/http",
+        "principal": "module:client",
+        "redaction": "none"
+      },
+      {
+        "action": "shell-exec",
+        "capability": "shell.exec",
+        "decision": "deny",
+        "effect": ":shell/exec",
+        "principal": "module:client",
+        "redaction": "applied"
+      }
+    ],
+    "delegated_handles": [
+      "network-http-handle"
+    ],
+    "family": "capability",
+    "redaction_policy": "secret-redaction",
+    "revocation_records": [
+      "network-http-handle-revoke"
+    ]
+  },
+  "concurrency_runtime": {
+    "actor_channel_schemas": [
+      "message-schema",
+      "ownership-transfer"
+    ],
+    "atomic_support": [
+      "acquire-release",
+      "sequential"
+    ],
+    "cancellation_policy": "cleanup-before-cancel",
+    "family": "concurrency",
+    "scheduler": "native-thread-pool",
+    "sync_graph": "lock-atomic-channel-graph",
+    "task_tree": "structured-task-tree"
+  },
+  "diagnostics": [],
+  "distributed_runtime": {
+    "capability_table": [
+      "database.read",
+      "network.http",
+      "service.invoke"
+    ],
+    "event_log_schema": "event-log-v1",
+    "family": "distributed",
+    "idempotency": "idempotency-key-map",
+    "replay_log_schema": "replay-v1",
+    "retry_timeout_compensation": "retry-timeout-compensation-table",
+    "schemas": [
+      "message-schema",
+      "state-schema",
+      "service-boundary-schema"
+    ],
+    "topology": "service-topology"
+  },
+  "ffi_runtime": {
+    "abi_layout_validation": "abi-layout-validation-report",
+    "adapter_artifact": "generated-adapter",
+    "binding_manifest": "ffi-binding-manifest",
+    "callback_adapters": "callback-adapter-manifest",
+    "family": "ffi",
+    "foreign_handle_lifetimes": "foreign-handle-lifetime-table",
+    "safe_wrapper_contract": "safe-wrapper-contract",
+    "symbol_resolution": "symbol-resolution-record",
+    "unsafe_audit": "ffi-unsafe-audit-record"
+  },
+  "input_hash": "sha256:40d35cb2b9545705661d0213591ce7fcf9ffd92cd50afeac56bf049abc02b806",
+  "kind": "runtime-architecture-artifact",
+  "managed_runtime": {
+    "adapters": [
+      "null-to-option",
+      "exception-to-effect",
+      "host-source-map"
+    ],
+    "collection_semantics": "gravity-compatible",
+    "family": "managed",
+    "host": {
+      "kind": "jvm",
+      "version": "21"
+    },
+    "profile": ":hosted",
+    "reflection_policy": "capability-gated",
+    "resource_cleanup": "deterministic-close"
+  },
+  "memory_runtime": {
+    "allocation_contracts": [
+      "region-lexical-lifetime",
+      "linear-resource-ledger"
+    ],
+    "debug_trace_schema": "allocation-trace",
+    "family": "memory",
+    "provider_manifests": [
+      "no-allocation",
+      "stack",
+      "region",
+      "arena",
+      "gc",
+      "foreign",
+      "device"
+    ],
+    "runtime_check_map": [
+      "bounds",
+      "initialization",
+      "double-release",
+      "region-escape"
+    ]
+  },
+  "minimal_native_runtime": {
+    "allocator_provider": "region-aware",
+    "atomic_provider": "native-atomics",
+    "capability_table": [
+      "filesystem/read",
+      "ffi/call"
+    ],
+    "debug_release_policy": {
+      "debug_stack_traces": true,
+      "release_stack_traces": false
+    },
+    "family": "minimal_native",
+    "ffi_helpers": [
+      "layout-adapter",
+      "error-conversion"
+    ],
+    "linked_services": [
+      "startup",
+      "panic",
+      "atomics",
+      "runtime-checks"
+    ],
+    "panic_policy": "abort-with-report",
+    "profile": ":native",
+    "target": "llvm-linux"
+  },
+  "module": "runtime-architecture-smoke",
+  "no_runtime_manifest": {
+    "failure_policy": "trap-or-reset",
+    "family": "no_runtime",
+    "forbidden_services": [
+      "gc",
+      "scheduler",
+      "reflection",
+      "dynamic-eval",
+      "host-io"
+    ],
+    "generated_support": [
+      "bounds-checks",
+      "panic-stub",
+      "mmio-accessors"
+    ],
+    "memory_map": {
+      "heap": "none",
+      "stack": "bounded-stack",
+      "static": "static-map"
+    },
+    "profile": ":firmware",
+    "runtime": ":none",
+    "startup": "reset-handler",
+    "target": "bare-metal-c"
+  },
+  "observability_event_schema": {
+    "diagnostic_bundle": "runtime-diagnostic-bundle",
+    "event_schemas": [
+      "panic",
+      "trap",
+      "allocation",
+      "task",
+      "actor",
+      "workflow",
+      "model",
+      "tool",
+      "ffi",
+      "capability",
+      "safety-check"
+    ],
+    "family": "observability",
+    "metric_schema": "runtime-metric-schema",
+    "redaction_policy": "secret-taint-prompt-redaction",
+    "required_audit_events": [
+      "capability-denial",
+      "unsafe-audit-use",
+      "model-call",
+      "replay-barrier"
+    ],
+    "sink_capabilities": [
+      "local-log",
+      "audit-sink"
+    ],
+    "structured_log_schema": "runtime-log-schema",
+    "trace_schema": "runtime-trace-schema"
+  },
+  "package": "gravity.phase08.runtime",
+  "phase": "08",
+  "repl_runtime": {
+    "capability_decisions": "interactive-capability-log",
+    "family": "repl",
+    "hot_reload": "invalidation-record",
+    "mir_snapshot": "mir-snapshot",
+    "profile": ":meta",
+    "session_manifest": "interactive-session",
+    "syntax_snapshot": "syntax-object-snapshot",
+    "transcript": "session-transcript",
+    "typed_core_snapshot": "typed-core-snapshot"
+  },
+  "runtime_conformance_report": {
+    "accepted_fixtures": [
+      "runtime-family-selection",
+      "capability-enforcement",
+      "ffi-boundary",
+      "replay-record",
+      "observability-event"
+    ],
+    "families": [
+      "no_runtime",
+      "minimal_native",
+      "managed",
+      "memory",
+      "concurrency",
+      "distributed",
+      "ai",
+      "repl",
+      "ffi",
+      "capability",
+      "observability"
+    ],
+    "negative_diagnostics": [
+      "R1-FORBIDDEN",
+      "R2-HIDDEN-SERVICE",
+      "R3-CAPABILITY",
+      "R4-NULL",
+      "R5-LIFETIME",
+      "R6-RACE",
+      "R7-REPLAY",
+      "R8-TOOL",
+      "R9-CHECKS",
+      "R10-POINTER",
+      "R11-AMBIENT",
+      "R12-SECRET"
+    ]
+  },
+  "runtime_family_selection": {
+    "families": [
+      "no_runtime",
+      "minimal_native",
+      "managed",
+      "memory",
+      "concurrency",
+      "distributed",
+      "ai",
+      "repl",
+      "ffi",
+      "capability",
+      "observability"
+    ],
+    "profile_matrix": {
+      ":ai": [
+        "ai",
+        "distributed",
+        "capability",
+        "observability"
+      ],
+      ":distributed": [
+        "distributed",
+        "concurrency",
+        "capability",
+        "observability"
+      ],
+      ":firmware": [
+        "no_runtime",
+        "memory",
+        "observability"
+      ],
+      ":hosted": [
+        "managed",
+        "memory",
+        "concurrency",
+        "repl",
+        "ffi",
+        "capability",
+        "observability"
+      ],
+      ":native": [
+        "minimal_native",
+        "memory",
+        "concurrency",
+        "ffi",
+        "capability",
+        "observability"
+      ]
+    }
+  },
+  "runtime_manifest": {
+    "capability_checks": true,
+    "diagnostics": "gravity/runtime-diagnostics",
+    "family": "minimal-native",
+    "profile": ":native",
+    "services": {
+      "delegated": [
+        "allocator/provider"
+      ],
+      "external": [
+        "filesystem/provider"
+      ],
+      "forbidden": [
+        "gc",
+        "dynamic-eval",
+        "ai/model-call"
+      ],
+      "generated": [
+        "bounds-checks",
+        "resource-cleanup"
+      ],
+      "linked": [
+        "startup",
+        "panic",
+        "atomics"
+      ]
+    },
+    "startup_failure_model": {
+      "cleanup": "linear-resource-teardown",
+      "panic": "abort-with-report",
+      "startup": "native-entry"
+    },
+    "target": "llvm-linux"
+  },
+  "runtime_service_table": {
+    "capability_enforcement": [
+      "filesystem",
+      "network",
+      "database",
+      "secrets",
+      "ffi",
+      "model",
+      "tool",
+      "ai/human-review"
+    ],
+    "delegated": [
+      "host-gc-through-adapter",
+      "allocator-provider"
+    ],
+    "external": [
+      "database-provider",
+      "model-provider"
+    ],
+    "forbidden": [
+      "ambient-shell",
+      "ambient-secrets",
+      "hidden-gc"
+    ],
+    "generated": [
+      "bounds-checks",
+      "numeric-checks",
+      "resource-cleanup"
+    ],
+    "linked": [
+      "startup",
+      "panic",
+      "atomics"
+    ],
+    "replay_records": [
+      "clock",
+      "random",
+      "model-output",
+      "tool-output"
+    ]
+  }
+}

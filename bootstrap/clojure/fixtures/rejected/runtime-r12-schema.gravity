@@ -1,0 +1,6 @@
+; Rejected P08 R12 fixture.
+(ns runtime.r12-schema (:profile :ai) (:target :jvm) (:exports [main])
+  (:effects #{:runtime/observability}) (:capabilities #{:observability/write}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:observability {:fail :r12-schema}}}))
+(defn main [] :- I64 1)

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+case "${1:-}" in
+  ""|"help"|"-h"|"--help")
+    cat <<'EOF'
+gravity-bootstrap explicit Clojure seed command
+
+Usage:
+  gravity-bootstrap --version
+  gravity-bootstrap <gravity-bootstrap-command> <file.qst|file.gravity>
+
+Metadata:
+  :bootstrap-hosted? true
+  :seed-boundary :clojure-stage0
+  :public-release-boundary? false
+EOF
+    ;;
+  "--version"|"version")
+    cat <<'EOF'
+{:command "gravity-bootstrap"
+ :bootstrap-hosted? true
+ :seed-boundary :clojure-stage0
+ :public-release-boundary? false
+ :delegates-to "clojure -M:gravity"}
+EOF
+    ;;
+  *)
+    cd "${ROOT_DIR}"
+    exec clojure -M:gravity "$@"
+    ;;
+esac

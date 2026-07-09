@@ -1,0 +1,9 @@
+(ns bad.capability
+  (:profile :native)
+  (:target :llvm)
+  (:effects #{:network/listen})
+  (:capabilities #{:network/listener :secret/read}))
+
+(defn main []
+  true)
+

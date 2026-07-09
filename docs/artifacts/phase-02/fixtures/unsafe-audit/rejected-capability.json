@@ -1,0 +1,10 @@
+{
+  "extends": "accepted-unsafe-audit.json",
+  "set": {
+    "/islands/0/capabilities": [
+      ":ffi/c",
+      ":memory/raw",
+      ":secrets/read"
+    ]
+  }
+}

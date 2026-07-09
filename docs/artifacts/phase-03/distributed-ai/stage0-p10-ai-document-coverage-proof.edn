@@ -1,0 +1,29 @@
+{:proof-id :stage0-p10-ai-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D055
+ :document "P10"
+ :profile :ai
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-distributed-ai-ai.gravity"
+ :artifact-kind :gravity/stage0-distributed-ai-profile-artifact
+ :effective-effects #{:ai/model-call :ai/tool-call :ai/embedding
+                      :ai/memory-read :ai/memory-write :ai/human-review}
+ :effective-capabilities #{:ai/model :ai/tool :ai/memory :ai/human-review}
+ :required-artifacts
+ [:agent-manifest :model-call-trace-schema :prompt-provenance-record
+  :tool-capability-manifest :tool-schema-bundle :memory-policy-record
+  :policy-human-review-graph :replay-log-schema
+  :generated-code-safety-record :ai-conformance-results]
+ :boundary-kind :agent-tool-boundary
+ :diagnostic-fixtures
+ {"P10-MODEL" "bootstrap/clojure/fixtures/rejected/profile-ai-model.gravity"
+  "P10-TOOL" "bootstrap/clojure/fixtures/rejected/profile-ai-tool.gravity"
+  "P10-PROMPT" "bootstrap/clojure/fixtures/rejected/profile-ai-prompt.gravity"
+  "P10-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-ai-memory.gravity"
+  "P10-SECRET" "bootstrap/clojure/fixtures/rejected/profile-ai-secret.gravity"
+  "P10-GENERATED" "bootstrap/clojure/fixtures/rejected/profile-ai-generated.gravity"
+  "P10-REPLAY" "bootstrap/clojure/fixtures/rejected/profile-ai-replay.gravity"
+  "P10-BUDGET" "bootstrap/clojure/fixtures/rejected/profile-ai-budget.gravity"
+  "P10-DESTRUCTIVE" "bootstrap/clojure/fixtures/rejected/profile-ai-destructive.gravity"
+  "P10-RAW" "bootstrap/clojure/fixtures/rejected/profile-ai-raw.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

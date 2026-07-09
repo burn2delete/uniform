@@ -1,0 +1,58 @@
+(ns pattern.match
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [literal-match vector-match map-match record-match union-match
+             enum-match guarded-map validated-shape linear-resource-match])
+  (:effects #{:io/write :network/http :resource/open :resource/close})
+  (:capabilities #{:io/stdout :network/client :resource/file})
+  (:safety :safe))
+
+(def literal-match
+  (match 1
+    1 :one
+    _ :other))
+
+(def vector-match
+  (match [1 2]
+    [x y] x
+    _ nil))
+
+(def map-match
+  (match {:id 1 :name "Ada"}
+    {:id id :name name} id
+    _ nil))
+
+(def record-match
+  (match (record/new :Vec3 {:x 1 :y 2 :z 3})
+    (Vec3 x y z) x
+    _ nil))
+
+(def union-match
+  (match (union/ok :Result 42)
+    (Ok value) value
+    (Err error) error))
+
+(def enum-match
+  (match :red
+    :red 1
+    :green 2
+    _ 0))
+
+(def guarded-map
+  (match {:method :GET :path "/"}
+    {:method :GET :path path :when (println "guard")} path
+    _ :not-found))
+
+(def validated-shape
+  (match (schema/validate :User (network/input))
+    {:id id :name name} id
+    _ nil))
+
+(def linear-resource-match
+  (let [file (resource/open "tmp/pattern.txt")]
+    (do
+      (match file
+        (Borrow handle) handle
+        _ nil)
+      (resource/close file)
+      true)))

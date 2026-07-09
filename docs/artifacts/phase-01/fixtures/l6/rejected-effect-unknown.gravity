@@ -1,0 +1,5 @@
+(ns l6.bad.unknown
+  (:profile :hosted))
+
+(def bad
+  (effect/unknown))

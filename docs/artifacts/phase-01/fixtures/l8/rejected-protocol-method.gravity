@@ -1,0 +1,9 @@
+(ns l8.bad.method
+  (:profile :native))
+
+(defprotocol Closeable
+  (close [resource] :- Unit))
+
+(extend FileHandle Closeable
+  (close [resource extra]
+    resource))

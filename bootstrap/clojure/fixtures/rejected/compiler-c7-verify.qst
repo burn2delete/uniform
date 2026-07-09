@@ -1,0 +1,9 @@
+(ns compiler.c7.verify
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :verify}}}))
+
+(def value 1)

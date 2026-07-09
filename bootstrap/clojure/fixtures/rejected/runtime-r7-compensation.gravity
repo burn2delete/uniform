@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: missing compensation for side effect.
+(ns runtime.r7-compensation
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:database/write})
+  (:capabilities #{:db/write})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-compensation}}}))
+
+(defn main [] :- I64 1)

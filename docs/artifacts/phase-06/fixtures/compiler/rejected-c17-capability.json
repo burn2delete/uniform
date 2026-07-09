@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/plugin_system/plugins/0/missing_capability": "compiler.pass.rewrite"
+  }
+}

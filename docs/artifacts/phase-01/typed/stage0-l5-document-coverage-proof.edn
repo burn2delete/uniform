@@ -1,0 +1,60 @@
+{:proof/id :p01-d015-stage0-l5-document-coverage
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-D015
+ :governing-docs ["docs/phase-01-core-language/015-l5-type-system-specification.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/typed-core.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/typed-core.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-summary {:type-facts 229
+                    :type-conformance-status :complete
+                    :missing-type-categories []
+                    :runtime-check-records [{:kind :dynamic-cast
+                                             :target-type "String"
+                                             :source-type "Dynamic"
+                                             :status :runtime-checked}]
+                    :schema-preservation {:schema :User
+                                          :schema-identity :User
+                                          :validation-boundary :preserved
+                                          :nullability :preserved
+                                          :optionality :preserved
+                                          :bounds :preserved
+                                          :refinements :preserved
+                                          :taint :preserved}
+                    :mir-type-preservation-records 229}
+ :required-type-categories [:bottom :never :nil :unit :boolean
+                            :signed-integer :unsigned-integer :machine-integer
+                            :big-integer :floating :exact-numeric :symbol
+                            :keyword :string :text-view :list :vector :map
+                            :set :tuple :struct :record :enum :tagged-union
+                            :function :protocol :interface :existential
+                            :generic :effect :region :owned :borrow
+                            :borrow-mut :pointer :raw-pointer :mmio :uninit
+                            :init :linear :tainted :compile-time
+                            :const-generic :schema-derived :syntax :ir
+                            :artifact-reference :dynamic]
+ :covered-type-categories [:artifact-reference :big-integer :boolean :borrow
+                           :borrow-mut :bottom :compile-time :const-generic
+                           :dynamic :effect :enum :exact-numeric :existential
+                           :floating :function :generic :init :interface :ir
+                           :keyword :linear :list :machine-integer :map :mmio
+                           :never :nil :owned :pointer :protocol :raw-pointer
+                           :record :region :schema-derived :set
+                           :signed-integer :string :struct :symbol :syntax
+                           :tagged-union :tainted :text-view :tuple :uninit
+                           :unit :unsigned-integer :vector]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-type-mismatch.gravity" "L5-TYPE-MISMATCH"
+                    "bootstrap/clojure/fixtures/rejected/typed-dynamic-forbidden.gravity" "L5-DYNAMIC-FORBIDDEN"
+                    "bootstrap/clojure/fixtures/rejected/typed-annotation-required.gravity" "L5-ANNOTATION-REQUIRED"
+                    "bootstrap/clojure/fixtures/rejected/typed-cast-unsafe.gravity" "L5-CAST-UNSAFE"
+                    "bootstrap/clojure/fixtures/rejected/typed-implicit-cast.gravity" "L5-CAST-UNSAFE"
+                    "bootstrap/clojure/fixtures/rejected/typed-host-null.gravity" "L5-TYPE-MISMATCH"
+                    "bootstrap/clojure/fixtures/rejected/typed-uninit-read.gravity" "L5-UNINIT-READ"
+                    "bootstrap/clojure/fixtures/rejected/typed-linear-dup.gravity" "L5-LINEAR-DUP"
+                    "bootstrap/clojure/fixtures/rejected/typed-schema-weaken.gravity" "L5-SCHEMA-WEAKEN"
+                    "bootstrap/clojure/fixtures/rejected/typed-latent-effect-missing.gravity" "L5-LATENT-EFFECT-MISSING"}
+ :validation {:commands ["clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/typed-core.gravity"
+                         "clojure -M:test"]
+              :test-output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes the stage0 L5 document-coverage task. It does not claim Phase 03 profile matrix completion, Phase 06 production MIR, backend lowering, release safety, or self-hosting."}

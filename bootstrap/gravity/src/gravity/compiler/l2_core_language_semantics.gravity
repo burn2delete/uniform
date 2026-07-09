@@ -1,0 +1,355 @@
+; Stage1 Gravity-owned L2 core language semantics contract.
+(ns gravity.compiler.l2-core-language-semantics
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [l2-core-form-contract
+             l2-evaluation-order-contract
+             l2-value-variable-contract
+             l2-nonlocal-control-contract
+             l2-core-diagnostic-catalog
+             l2-conformance-fixture-contract
+             build-l2-core-form-record
+             build-l2-evaluation-order-record
+             verify-l2-core-semantics])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :core-semantics
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["D0" "D1" "D2" "D3" "D6" "D8" "D9"
+                           "L1" "L2" "L5" "L6" "L7" "L9"
+                           "L10" "L11" "L15" "P1" "P2" "P3"
+                           "C1" "C6" "C7" "C8" "C10" "C11"
+                           "C15" "C18" "SAFE1" "SAFE15"
+                           "SAFE16" "BOOT1" "BOOT2" "BOOT3"
+                           "BOOT4" "BOOT5" "BOOT6" "BOOT7"
+                           "BOOT8" "TEST1" "TEST2"]
+               :governing-document-ids ["L2" "C1" "C6" "C15"
+                                        "C18" "SAFE1" "SAFE15"
+                                        "SAFE16" "BOOT1" "BOOT2"
+                                        "BOOT3" "BOOT4" "BOOT5"
+                                        "BOOT6" "BOOT7" "BOOT8"
+                                        "TEST1" "TEST2"]
+               :implements [:core-form-semantics
+                             :deterministic-evaluation-order
+                             :value-model-contract
+                             :variable-and-var-model-contract
+                             :explicit-mutation-contract
+                             :nonlocal-control-contract
+                             :stable-l2-diagnostic-catalog
+                             :accepted-core-semantics-fixtures
+                             :rejected-core-semantics-fixtures]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :core-node-identity :evaluation-order
+                            :binding-identity :namespace-context
+                            :profile-target-metadata
+                            :effect-capability-metadata
+                            :safety-facts :proof-obligations
+                            :value-model :variable-model
+                            :nonlocal-control-facts
+                            :core-conformance-fixture-identity}
+               :claim-boundary {:stage1-source-contract true
+                                :seed-verifier-executable true
+                                :self-hosted-compiler-complete? false
+                                :production-compiler-complete? false
+                                :clojure-seed-retired? false}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-l2-core-semantics-contract-subset
+                                    :clojure-l2-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :accepted-fixtures
+                             ["bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+                              "bootstrap/clojure/fixtures/accepted/core-semantics.qst"]
+                             :rejected-fixtures
+                             ["bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+                              "bootstrap/clojure/fixtures/rejected/eval-order.gravity"
+                              "bootstrap/clojure/fixtures/rejected/recur-target.gravity"
+                              "bootstrap/clojure/fixtures/rejected/set-illegal.gravity"
+                              "bootstrap/clojure/fixtures/rejected/throw-illegal.gravity"
+                              "bootstrap/clojure/fixtures/rejected/host-semantics.gravity"
+                              "bootstrap/clojure/fixtures/rejected/host-semantics.qst"
+                              "bootstrap/clojure/fixtures/rejected/lowering-gap.gravity"]
+                             :required-future-fixture-families
+                             [:l2-value-variable-model
+                              :l2-nonlocal-control
+                              :l2-macro-handwritten-equivalence
+                              :l2-profile-legality-matrix]}}}))
+
+(def l2-core-form-contract
+  {:artifact :gravity/l2-core-form-contract
+   :scope :stage1-source-contract
+   :core-forms [:quote :if :do :let :fn :loop :recur
+                :def :var :set! :try :throw :match]
+   :core-form-record-fields [:node-id :form :operands
+                             :source-span :origin-chain
+                             :profile :target :facts
+                             :diagnostics]
+   :implementation-entries
+   [{:form :quote
+     :semantics [:return-data-without-evaluation
+                 :preserve-macro-tooling-information
+                 :deny-executable-authority-from-data]}
+    {:form :if
+     :semantics [:evaluate-condition
+                 :select-exactly-one-branch
+                 :false-and-nil-are-false]}
+    {:form :do
+     :semantics [:evaluate-left-to-right
+                 :return-last-expression]}
+    {:form :let
+     :semantics [:evaluate-initializers-left-to-right
+                 :create-lexical-bindings
+                 :default-bindings-immutable]}
+    {:form :fn
+     :semantics [:create-function-value
+                 :record-parameters-return-and-latent-effects
+                 :check-closure-captures-later]}
+    {:form :loop
+     :semantics [:establish-recur-target
+                 :record-arity-and-type-shape]}
+    {:form :recur
+     :semantics [:transfer-to-nearest-compatible-target
+                 :reject-missing-or-incompatible-target]}
+    {:form :def
+     :semantics [:install-top-level-var
+                 :record-artifact-visible-definition
+                 :defer-runtime-redefinition-to-profile-legality]}
+    {:form :var
+     :semantics [:reference-top-level-var-object
+                 :reject-var-identity-where-profile-forbids]}
+    {:form :set!
+     :semantics [:update-explicit-mutable-location
+                 :require-mutation-permission
+                 :reject-ambient-mutation]}
+    {:form :try
+     :semantics [:evaluate-protected-code
+                 :handle-typed-throw-paths
+                 :respect-profile-error-lowering]}
+    {:form :throw
+     :semantics [:transfer-control-with-typed-error
+                 :record-error-effect
+                 :reject-where-profile-or-effect-rules-forbid]}
+    {:form :match
+     :semantics [:destructure-l2-and-l7-patterns
+                 :record-scrutinee-guard-and-branch-order
+                 :feed-result-and-error-flow]}]
+   :required-downstream-checks [:type-checking :effect-checking
+                                :profile-validation :capability-validation
+                                :safety-analysis :mir-construction]
+   :forbidden [:target-specific-core-semantics
+               :host-null-as-core-value
+               :hidden-global-mutation
+               :implicit-dynamic-eval
+               :backend-undefined-behavior
+               :macro-expanded-code-skipping-core-checks]})
+
+(def l2-evaluation-order-contract
+  {:artifact :gravity/l2-evaluation-order-contract
+   :required-ordering-contexts [:operator-and-arguments-before-application
+                                :function-arguments-left-to-right
+                                :binding-initializers-left-to-right
+                                :do-expressions-left-to-right
+                                :effectful-expressions-left-to-right
+                                :match-scrutinee-before-guards
+                                :match-guards-before-branches
+                                :try-protected-before-handlers]
+   :order-record-fields [:record-id :core-node-id :context
+                         :ordered-children :effect-facts
+                         :pure-reorder-policy :diagnostics]
+   :optimization-rules [:pure-expressions-may-reorder-after-effect-check
+                        :effectful-expressions-preserve-l2-order
+                        :diagnostics-must-remain-source-stable
+                        :reordering-requires-proof-or-diagnostic]
+   :feeds [:effect-checker :safety-analysis :optimizer
+           :diagnostic-rendering :conformance-fixtures]
+   :forbidden [:effectful-reorder-without-proof
+               :optimizer-changing-diagnostic-cause
+               :target-evaluation-order-as-source-truth
+               :lost-evaluation-order-record]})
+
+(def l2-value-variable-contract
+  {:artifact :gravity/l2-value-variable-contract
+   :value-kinds [:nil :boolean :integer :floating :exact-numeric
+                 :character :string :symbol :keyword
+                 :persistent-list :persistent-vector
+                 :persistent-map :persistent-set
+                 :tuple :record :struct :tagged-union
+                 :function :closure :var :mutable-cell
+                 :linear-resource :region-value
+                 :ownership-value :syntax-object
+                 :artifact-reference]
+   :variable-kinds [:lexical-binding :top-level-var
+                    :mutable-local-cell :reference-cell
+                    :register :field :compiler-slot]
+   :binding-rules [:lexical-bindings-are-default-immutable
+                   :def-is-artifact-visible-definition
+                   :var-identity-is-profile-controlled
+                   :set-target-must-be-explicit-location
+                   :mutation-requires-effect-capability-or-profile-permission]
+   :refined-by ["L5" "L6" "L10" "L15" "P1" "SAFE1" "C7" "C8" "C10"]
+   :forbidden [:implicit-null
+               :hidden-global-mutation
+               :runtime-only-var-legality
+               :unchecked-mutable-location
+               :backend-defined-value-identity]})
+
+(def l2-nonlocal-control-contract
+  {:artifact :gravity/l2-nonlocal-control-contract
+   :control-forms [:loop :recur :try :throw :match]
+   :control-records [:recur-target-record
+                     :typed-error-flow-record
+                     :handler-selection-record
+                     :panic-or-result-lowering-record
+                     :match-decision-record]
+   :rules [:recur-target-is-nearest-compatible-loop-or-function
+           :recur-arity-and-types-match-target
+           :throw-has-typed-error-value-and-error-effect
+           :try-handlers-respect-typed-error-and-profile-legality
+           :systems-profiles-may-rewrite-or-reject-stackful-exceptions
+           :match-participates-in-result-and-error-flow]
+   :diagnostic-links ["L2-RECUR-TARGET" "L2-THROW-ILLEGAL"
+                      "L2-HOST-SEMANTICS" "L2-LOWERING-GAP"]
+   :forbidden [:untyped-exception-escape
+               :host-exception-as-core-semantics
+               :recur-without-compatible-target
+               :control-transfer-without-diagnostic-path]})
+
+(def l2-core-diagnostic-catalog
+  {:diagnostics ["L2-UNKNOWN-CORE-FORM"
+                 "L2-EVAL-ORDER"
+                 "L2-RECUR-TARGET"
+                 "L2-SET-ILLEGAL"
+                 "L2-THROW-ILLEGAL"
+                 "L2-HOST-SEMANTICS"
+                 "L2-LOWERING-GAP"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :core-node-id :syntax-id
+                              :source-span :origin-chain
+                              :stage :profile :target
+                              :facts :remediation]
+   :stops [:type-checking :effect-checking
+           :profile-validation :safety-analysis
+           :mir-construction :target-lowering]
+   :must-not-depend-on [:localized-rendering-text
+                        :host-exception-wording
+                        :backend-specific-undefined-behavior
+                        :runtime-only-legality]})
+
+(def l2-conformance-fixture-contract
+  {:artifact :gravity/l2-conformance-fixture-contract
+   :accepted-fixtures
+   [{:fixture "bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+     :source-extension ".gravity"
+     :covers [:quote :if :do :let :fn :loop :recur
+              :def :var :set! :try :throw :match]}
+    {:fixture "bootstrap/clojure/fixtures/accepted/core-semantics.qst"
+     :source-extension ".qst"
+     :covers [:quote :if :do :let :fn :loop :recur
+              :def :var :set! :try :throw :match]}
+    {:fixture "bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+     :covers [:function-arguments-left-to-right
+              :binding-initializers-left-to-right
+              :do-expressions-left-to-right
+              :effectful-order-records]}]
+   :rejected-fixtures
+   [{:fixture "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+     :diagnostic "L2-UNKNOWN-CORE-FORM"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/eval-order.gravity"
+     :diagnostic "L2-EVAL-ORDER"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/recur-target.gravity"
+     :diagnostic "L2-RECUR-TARGET"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/set-illegal.gravity"
+     :diagnostic "L2-SET-ILLEGAL"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/throw-illegal.gravity"
+     :diagnostic "L2-THROW-ILLEGAL"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/host-semantics.gravity"
+     :source-extension ".gravity"
+     :diagnostic "L2-HOST-SEMANTICS"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/host-semantics.qst"
+     :source-extension ".qst"
+     :diagnostic "L2-HOST-SEMANTICS"}
+    {:fixture "bootstrap/clojure/fixtures/rejected/lowering-gap.gravity"
+     :diagnostic "L2-LOWERING-GAP"}]
+   :required-future-fixture-families
+   [:l2-value-variable-model
+    :l2-nonlocal-control
+    :l2-macro-handwritten-equivalence
+    :l2-profile-legality-matrix]
+   :fixture-requirements [:profile :target :expected-verdict
+                          :expected-core-artifact
+                          :expected-diagnostic-json
+                          :source-span-match
+                          :artifact-inspection]
+   :forbidden [:prose-only-conformance
+               :diagnostics-matched-only-by-wording
+               :accepted-fixture-without-core-artifact
+               :rejected-fixture-without-stable-diagnostic]})
+
+(defn build-l2-core-form-record
+  [node-id form operands source-span origin-chain profile target facts]
+  (quote {:artifact :gravity/l2-core-form-record
+          :node-id node-id
+          :form form
+          :operands operands
+          :source-span source-span
+          :origin-chain origin-chain
+          :profile profile
+          :target target
+          :facts facts
+          :contract l2-core-form-contract}))
+
+(defn build-l2-evaluation-order-record
+  [record-id core-node-id context ordered-children effect-facts pure-reorder-policy]
+  (quote {:artifact :gravity/l2-evaluation-order-record
+          :record-id record-id
+          :core-node-id core-node-id
+          :context context
+          :ordered-children ordered-children
+          :effect-facts effect-facts
+          :pure-reorder-policy pure-reorder-policy
+          :contract l2-evaluation-order-contract}))
+
+(defn verify-l2-core-semantics [core-semantics-artifact]
+  (quote {:status :stage1-source-owned
+          :scope :seed-verifier-contract
+          :core-semantics-artifact core-semantics-artifact
+          :claim-boundary {:stage1-source-contract true
+                           :seed-verifier-executable true
+                           :self-hosted-compiler-complete? false
+                           :production-compiler-complete? false
+                           :clojure-seed-retired? false}
+          :checks [:core-form-set-matches-l2
+                   :each-core-form-has-implementation-entry
+                   :deterministic-evaluation-order-recorded
+                   :value-and-variable-model-recorded
+                   :set-targets-require-explicit-mutable-location
+                   :nonlocal-control-records-present
+                   :stable-l2-diagnostics-declared
+                   :accepted-and-rejected-fixtures-declared
+                   :host-semantics-rejected-as-core-semantics
+                   :semantic-facts-preserved-for-c7-c8-c10-c11]
+          :diagnostics l2-core-diagnostic-catalog
+          :fixtures l2-conformance-fixture-contract
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :origin-chains :generated-origin
+                      :core-node-identity :evaluation-order
+                      :binding-identity :namespace-context
+                      :profile-target-metadata
+                      :effect-capability-metadata
+                      :safety-facts :proof-obligations
+                      :value-model :variable-model
+                      :nonlocal-control-facts
+                      :core-conformance-fixture-identity]}))

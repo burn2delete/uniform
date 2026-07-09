@@ -1,0 +1,61 @@
+{:phase "05"
+ :task "P05-T03"
+ :documents ["MATH4"]
+ :artifact-kind :gravity/stage0-eml-artifact
+ :artifact-hash "sha256:f33bc0d445d0d6fd5e697819abf9d37dd6c6632cc8e86e9b8d06a1dc1c83b6bc"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-eml.gravity"
+ :command "clojure -M:gravity eml bootstrap/clojure/fixtures/accepted/math-eml.gravity"
+ :summary
+ {:pass :eml-normalization
+  :output :eml-trace
+  :eml-expression-count 1
+  :normalization-trace-count 2
+  :candidate-count 2
+  :accepted-proof-count 1
+  :required-diagnostic-count 9
+  :status :complete}
+ :capability-based-proof
+ {:efir-input-verified? true
+  :semantic-facts-preserved? true
+  :trace-replayable? true
+  :search-bounded-deterministic? true
+  :candidate-promotion-proof-gated? true
+  :complex-intermediates-tracked? true
+  :eml-not-runtime-or-equality? true
+  :capability-authority-preserved? true
+  :status :complete}
+ :rejected-fixtures
+ [{:fixture "math-eml-efir.gravity" :diagnostic "MATH4-EFIR"}
+  {:fixture "math-eml-basis.gravity" :diagnostic "MATH4-BASIS"}
+  {:fixture "math-eml-domain.gravity" :diagnostic "MATH4-DOMAIN"}
+  {:fixture "math-eml-branch.gravity" :diagnostic "MATH4-BRANCH"}
+  {:fixture "math-eml-complex.gravity" :diagnostic "MATH4-COMPLEX"}
+  {:fixture "math-eml-trace.gravity" :diagnostic "MATH4-TRACE"}
+  {:fixture "math-eml-search.gravity" :diagnostic "MATH4-SEARCH"}
+  {:fixture "math-eml-candidate.gravity" :diagnostic "MATH4-CANDIDATE"}
+  {:fixture "math-eml-proof.gravity" :diagnostic "MATH4-PROOF"}]
+ :validation
+ {:clojure-test
+  {:command "clojure -M:test"
+   :result "Ran 43 tests containing 2188 assertions. 0 failures, 0 errors."
+   :rejected-fixtures 614}
+  :artifact-summary
+  {:command "clojure -M -e '(require (quote [gravity.bootstrap :as b])) ...'"
+   :result
+   {:kind :gravity/stage0-eml-artifact
+    :pass :eml-normalization
+    :output :eml-trace
+    :status :complete
+    :expressions 1
+    :trace 2
+    :candidates 2
+    :proofs 1
+    :diagnostics 9
+    :proof :complete}}}
+ :limits
+ [:stage0-eml-trace-only
+  :no-certified-approximation-generation-claim
+  :no-interval-proof-engine-claim
+  :no-symbolic-rewrite-engine-claim
+  :no-production-math-optimizer-claim
+  :no-self-hosting-claim]}

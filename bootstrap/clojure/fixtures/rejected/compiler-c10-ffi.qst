@@ -1,0 +1,9 @@
+(ns compiler.c10.ffi
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c10-safety-analysis {:fail :ffi}}}))
+
+(def value 1)

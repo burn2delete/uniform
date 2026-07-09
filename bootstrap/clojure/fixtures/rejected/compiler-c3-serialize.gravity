@@ -1,0 +1,9 @@
+(ns compiler.c3.serialize
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c3-syntax {:fail :serialize}}}))
+
+(def value 1)

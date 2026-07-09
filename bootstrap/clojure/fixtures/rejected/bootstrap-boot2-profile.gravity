@@ -1,0 +1,11 @@
+; Rejected P15 BOOT2 fixture.
+(ns bootstrap.boot2-profile
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot2002}}}))
+
+(defn main [] :- I64 1)

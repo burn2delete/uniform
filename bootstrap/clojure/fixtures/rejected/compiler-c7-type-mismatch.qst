@@ -1,0 +1,9 @@
+(ns compiler.c7.type-mismatch
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :type-mismatch}}}))
+
+(def value 1)

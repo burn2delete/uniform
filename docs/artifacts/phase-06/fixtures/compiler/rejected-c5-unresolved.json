@@ -1,0 +1,8 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/namespace_analysis/unresolved_symbols": [
+      "gravity.user/missing"
+    ]
+  }
+}

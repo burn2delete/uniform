@@ -1,0 +1,11 @@
+; Rejected P16 STD8 fixture.
+(ns standard-library.std8-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std8001}}}))
+
+(defn main [] :- I64 1)

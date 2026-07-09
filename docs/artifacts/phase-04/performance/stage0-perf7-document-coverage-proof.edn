@@ -1,0 +1,63 @@
+{:proof-id :stage0-perf7-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D065
+ :document "PERF7"
+ :governing-document "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md"
+ :status :passed
+ :implementation-surface
+ {:command "performance-governance"
+  :entrypoint :gravity.bootstrap/performance-governance-file-artifact
+  :artifact-kind :gravity/stage0-performance-governance-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/performance-governance.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/governance-autotune-candidate-space.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-candidate-rejected.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-guard.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-selection.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-certificate.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-dispatch.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-repro.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-autotune-fallback.gravity"]}
+ :accepted-behavior
+ ["candidate spaces are declared before tuning with objective, variants, constraints, and benchmark"
+  "invalid candidates are rejected before benchmarking or selection"
+  "variant guard tables are explicit and non-overlapping"
+  "selected variants record objective, benchmark comparison, target fingerprint, certificates, reason, dispatch overhead, fallback, source map, compatibility, and reproducibility inputs"]
+ :rejected-behavior
+ ["missing candidate space"
+  "rejected candidate benchmarked or selected"
+  "missing or overlapping guard table"
+  "selection missing objective, benchmark, target, or reason"
+  "selected variant missing certificates"
+  "unaccounted dispatch overhead"
+  "non-reproducible tuning record"
+  "missing safe fallback"]
+ :required-artifacts
+ [:autotuning-candidate-space-manifest
+  :autotuning-candidate-rejection-report
+  :autotuning-variant-guard-table
+  :autotuning-selection-certificate
+  :dispatch-overhead-report
+  :autotuning-reproducibility-record]
+ :diagnostics
+ ["PERF7-CANDIDATE-SPACE" "PERF7-CANDIDATE-REJECTED"
+  "PERF7-GUARD" "PERF7-SELECTION" "PERF7-CERTIFICATE"
+  "PERF7-DISPATCH" "PERF7-REPRO" "PERF7-FALLBACK"]
+ :dependencies
+ ["PERF1" "PERF5" "PERF6" "D6" "D9" "SAFE15" "target feature facts"]
+ :conformance
+ {:candidate-space-manifest :complete
+  :candidate-rejection-policy :complete
+  :guard-table-validation :complete
+  :selection-certificate :complete
+  :dispatch-overhead-reporting :complete
+  :fallback-and-reproducibility :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 39 tests containing 1989 assertions. 0 failures, 0 errors."}
+  {:command "clojure -M -e '(require ... performance-governance summary)'"
+   :output "{:autotuning 1, :diagnostics 24, :proof :complete, :status :complete}"}]
+ :limits
+ ["This completes PERF7 document coverage only for the Clojure stage0 governance artifact boundary."
+  "It is not PERF8 vectorization implementation, runtime dispatch code generation, backend execution, or self-hosting evidence."]}

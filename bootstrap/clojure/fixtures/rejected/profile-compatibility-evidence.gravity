@@ -1,0 +1,18 @@
+(ns profile.bad.compatibility-evidence
+  (:profile :kernel)
+  (:target :jvm)
+  (:requires [native.collections :as nc
+              :profile :native
+              :edge :facade-required
+              :boundary :facade
+              :facade native.collections/kernel-stack
+              :evidence #{:typed-api}
+              :producer-effects #{}
+              :producer-capabilities #{}
+              :memory {:hidden-allocation :forbidden}
+              :runtime {:required false :providers #{}}])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

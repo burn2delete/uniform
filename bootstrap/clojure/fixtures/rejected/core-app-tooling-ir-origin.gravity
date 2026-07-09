@@ -1,0 +1,13 @@
+(ns core.app.tooling-ir-origin
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:ir-inspector-bundles
+                         [{:tool-id :gravity-inspect-ir
+                           :source-span-maps []}]}}}))
+
+(defn main []
+  (println "bad tooling ir origin"))

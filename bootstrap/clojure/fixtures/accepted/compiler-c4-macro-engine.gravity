@@ -1,0 +1,59 @@
+; P06-D083 C4 macro expansion engine fixture keeps comments as retained trivia.
+(ns compiler.c4.macro-engine
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :compiler {:c4-macro {}}}))
+
+'(reader abbreviation for c4)
+
+(defmacro stage0-build
+  {:version "stage0-c4.1"
+   :build-effects #{:build/read-file}
+   :required-build-capabilities #{:fs/read}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  [value]
+  (syntax-quote
+    (do (unquote value))))
+
+(defmacro stage0-capture
+  {:version "stage0-c4.1"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :explicit-capture
+   :output-contract :gravity-syntax}
+  [name & body]
+  (syntax-quote
+    (let [(unquote name) "captured"]
+      (do (splice-unquote body)))))
+
+(defmacro stage0-unsafe
+  {:version "stage0-c4.1"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax
+   :allow-unsafe true}
+  []
+  (syntax-quote
+    (unsafe {:reason "stage0 C4 generated unsafe conformance"
+             :owner "compiler-c4"
+             :review "C4-GENERATED-UNSAFE-ACCEPTED"}
+      nil)))
+
+^{:doc "C4 metadata must survive expansion."}
+(def expanded-value
+  (stage0-build 42))
+
+(def captured-value
+  (stage0-capture local-name
+    local-name))
+
+(def generated-unsafe
+  (stage0-unsafe))
+
+(def message "c4 macro engine")

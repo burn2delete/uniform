@@ -1,0 +1,21 @@
+(ns stage1.rejected.missing-lineage
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :reader
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["BOOT1" "C2"]
+               :implements [:reader]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance}}}))
+
+(defn main [] 0)

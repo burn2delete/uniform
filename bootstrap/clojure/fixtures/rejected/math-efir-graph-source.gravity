@@ -1,0 +1,24 @@
+(ns math.efir-graph-source
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:efir-graphs
+      [{:ir :gravity/efir
+        :graph-id :efir/sigmoid
+        :semantic-anchor {:typed-core [:typed/math-sigmoid-call]}
+        :domain {'x {:real [-8.0 8.0]}}
+        :codomain {:real [0.0 1.0]}
+        :nodes [{:id :x
+                 :op :var
+                 :domain {:real [-8.0 8.0]}
+                 :codomain {:real [-8.0 8.0]}}]
+        :numeric-mode :certified-approx
+        :branch-policy :real-only
+        :precision {:type :F32 :absolute-error-max 1.0e-5}
+        :runtime-anchor :provider/poly-sigmoid-f32
+        :status :complete}]}}}))

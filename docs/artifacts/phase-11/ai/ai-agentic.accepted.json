@@ -1,0 +1,814 @@
+{
+  "agent_manifest": {
+    "agent_id": "support-triage",
+    "budgets": {
+      "max_cost_usd": 1.0,
+      "max_model_calls": 3,
+      "max_retries": 2,
+      "max_tool_calls": 8
+    },
+    "capabilities": [
+      ":ai/provider.primary",
+      ":ticket/read",
+      ":ticket/write",
+      ":memory/read",
+      ":human-review/request"
+    ],
+    "deployment_class": ":production",
+    "document": "A5",
+    "effects": [
+      ":ai/model-call",
+      ":ai/tool-call",
+      ":ai/memory-read",
+      ":ai/output-validate",
+      ":ai/human-review"
+    ],
+    "eval_gates": [
+      "support-triage-release"
+    ],
+    "human_review": [
+      "update-priority-review"
+    ],
+    "input_schema": "TicketId",
+    "ledger_identity": "all model, tool, memory, human-review, workflow, and validation ledgers include support-triage",
+    "memory_bindings": {
+      "support-memory": ":read"
+    },
+    "models": [
+      "primary-ai/gpt-support"
+    ],
+    "output_schema": "TicketClassification",
+    "owner_package": "support/triage",
+    "policies": [
+      "support-agent-policy"
+    ],
+    "prompts": [
+      "classify-ticket"
+    ],
+    "source_hash": "sha256:support-triage-source",
+    "toolset": [
+      "ticket/read",
+      "ticket/update-priority"
+    ],
+    "version": 1
+  },
+  "ai_program_manifest": {
+    "agent_id": "support-triage",
+    "ai_effects": [
+      ":ai/model-call",
+      ":ai/tool-call",
+      ":ai/memory-read",
+      ":ai/memory-write",
+      ":ai/prompt-render",
+      ":ai/output-validate",
+      ":ai/eval-run",
+      ":ai/human-review"
+    ],
+    "artifact_edges": [
+      "model_manifest",
+      "prompt_artifact",
+      "tool_schema",
+      "agent_manifest",
+      "workflow_graph",
+      "memory_policy",
+      "policy_manifest",
+      "evaluation_report",
+      "human_review_manifest",
+      "injection_defense"
+    ],
+    "capability_requirements": [
+      ":ai/provider",
+      ":ticket/read",
+      ":ticket/write",
+      ":memory/read",
+      ":memory/write",
+      ":human-review/request"
+    ],
+    "document": "A1",
+    "generated_code_pipeline": "generated source re-enters reader, macro, type, effect, capability, profile, and safety checks before use",
+    "legal_profiles": [
+      ":ai",
+      ":distributed",
+      ":hosted"
+    ],
+    "profile": ":ai",
+    "replay_modes": [
+      ":record",
+      ":replay"
+    ],
+    "runtime_ledgers": [
+      "model-call-ledger",
+      "tool-call-ledger",
+      "memory-access-ledger",
+      "human-review-ledger",
+      "policy-decision-ledger",
+      "replay-ledger"
+    ],
+    "schema_references": [
+      "Ticket",
+      "TicketClassification",
+      "TicketPriorityUpdate",
+      "SupportMemoryItem",
+      "ReviewDecision"
+    ],
+    "source_units": [
+      "defmodel-provider primary-ai",
+      "defmodel gpt-support",
+      "defprompt classify-ticket",
+      "deftool ticket/read",
+      "deftool ticket/update-priority",
+      "defagent support-triage",
+      "defworkflow triage-ticket",
+      "defmemory support-memory",
+      "defpolicy support-agent-policy",
+      "defeval support-triage-release",
+      "defhumanreview update-priority-review"
+    ]
+  },
+  "coverage_summary": {
+    "agent_id": "support-triage",
+    "documents": 11,
+    "model_id": "gpt-support",
+    "status": ":passed",
+    "tool_id": "ticket/update-priority",
+    "workflow_id": "triage-ticket"
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "A1": {
+      "agent_id": "support-triage",
+      "ai_effects": [
+        ":ai/model-call",
+        ":ai/tool-call",
+        ":ai/memory-read",
+        ":ai/memory-write",
+        ":ai/prompt-render",
+        ":ai/output-validate",
+        ":ai/eval-run",
+        ":ai/human-review"
+      ],
+      "artifact_edges": [
+        "model_manifest",
+        "prompt_artifact",
+        "tool_schema",
+        "agent_manifest",
+        "workflow_graph",
+        "memory_policy",
+        "policy_manifest",
+        "evaluation_report",
+        "human_review_manifest",
+        "injection_defense"
+      ],
+      "capability_requirements": [
+        ":ai/provider",
+        ":ticket/read",
+        ":ticket/write",
+        ":memory/read",
+        ":memory/write",
+        ":human-review/request"
+      ],
+      "document": "A1",
+      "generated_code_pipeline": "generated source re-enters reader, macro, type, effect, capability, profile, and safety checks before use",
+      "legal_profiles": [
+        ":ai",
+        ":distributed",
+        ":hosted"
+      ],
+      "profile": ":ai",
+      "replay_modes": [
+        ":record",
+        ":replay"
+      ],
+      "runtime_ledgers": [
+        "model-call-ledger",
+        "tool-call-ledger",
+        "memory-access-ledger",
+        "human-review-ledger",
+        "policy-decision-ledger",
+        "replay-ledger"
+      ],
+      "schema_references": [
+        "Ticket",
+        "TicketClassification",
+        "TicketPriorityUpdate",
+        "SupportMemoryItem",
+        "ReviewDecision"
+      ],
+      "source_units": [
+        "defmodel-provider primary-ai",
+        "defmodel gpt-support",
+        "defprompt classify-ticket",
+        "deftool ticket/read",
+        "deftool ticket/update-priority",
+        "defagent support-triage",
+        "defworkflow triage-ticket",
+        "defmemory support-memory",
+        "defpolicy support-agent-policy",
+        "defeval support-triage-release",
+        "defhumanreview update-priority-review"
+      ]
+    },
+    "A10": {
+      "action_schema": "TicketPriorityUpdate",
+      "agent_id": "support-triage",
+      "audit_storage_policy": "store payload hash and redacted evidence",
+      "denial_branch": ":finish-without-write",
+      "document": "A10",
+      "evidence_schema": "ReviewEvidence",
+      "expiry_rule": "15m",
+      "human_review_id": "update-priority-review",
+      "payload_hash_rule": "canonical S3 hash over TicketPriorityUpdate",
+      "redaction_policy": "customer PII redacted, hashes retained",
+      "replay_rule": ":reuse-recorded-decision-if-payload-matches",
+      "required_role": ":support-lead",
+      "timeout_branch": ":escalate-to-queue"
+    },
+    "A11": {
+      "agent_id": "support-triage",
+      "authority_levels": [
+        ":system-trusted",
+        ":developer-trusted",
+        ":tool-schema-trusted",
+        ":tool-result-data",
+        ":retrieved-data",
+        ":user-data",
+        ":ai-output-data",
+        ":secret-data",
+        ":generated-source-data"
+      ],
+      "defense_probe_requirements": [
+        "prompt-injection",
+        "tool-escalation",
+        "secret-exfiltration",
+        "generated-code-trust"
+      ],
+      "document": "A11",
+      "generated_code_validation": "generated code cannot execute before compiler validation",
+      "incident_bundle_schema": "prompt, taint flow, tool decision, policy rule, workflow node, and denial record",
+      "policy_denial_fixtures": [
+        "model-requested secret tool denied",
+        "memory-injected policy override denied"
+      ],
+      "prompt_partition_map": "user, retrieved, tool, and AI output content render only as data authority",
+      "runtime_monitors": [
+        "denied tool escalation",
+        "policy override attempt",
+        "protected data exposure attempt"
+      ],
+      "taint_rules": {
+        "generated": "Tainted/GeneratedCode",
+        "retrieved": "Tainted/AIOutput",
+        "tool": "Tainted/ToolOutput",
+        "user": "Tainted/UserInput"
+      },
+      "tool_authorization_table": "tool calls require manifest membership, capability, policy, and human-review where required"
+    },
+    "A2": {
+      "agent_id": "support-triage",
+      "budget": {
+        "max_cost_usd": 0.25,
+        "max_output_tokens": 4096
+      },
+      "context_limits": {
+        "max_output_tokens": 4096,
+        "tokens": 128000
+      },
+      "credential_policy": "secret source reference only; no secret value in artifact",
+      "document": "A2",
+      "failure_classes": [
+        ":retryable",
+        ":permanent",
+        ":budget-denied",
+        ":policy-denied",
+        ":schema-invalid"
+      ],
+      "model_id": "gpt-support",
+      "model_version": ":pinned",
+      "provider_capability": ":ai/provider.primary",
+      "provider_id": "primary-ai",
+      "replay_policy": ":record-output-hash-and-validation",
+      "retention_policy": ":no-provider-training",
+      "structured_output": ":provider-and-runtime",
+      "supported_modes": [
+        ":text",
+        ":structured-output",
+        ":tool-calls",
+        ":embeddings"
+      ],
+      "tool_call_mode": ":gravity-mediated"
+    },
+    "A3": {
+      "agent_id": "support-triage",
+      "authority_partitions": {
+        "developer": ":developer-trusted",
+        "retrieved-context": ":retrieved-data",
+        "system": ":system-trusted",
+        "ticket.body": ":user-data",
+        "tool-result": ":tool-result-data"
+      },
+      "compatibility_version": "classify-ticket/v1",
+      "document": "A3",
+      "input_schema": "Ticket",
+      "output_schema": "TicketClassification",
+      "prompt_hash": "sha256:classify-ticket-prompt",
+      "prompt_id": "classify-ticket",
+      "provider_constraints": [
+        "primary-ai/gpt-support pinned",
+        "structured output required"
+      ],
+      "refusal_policy": ":human-review",
+      "repair_policy": {
+        "max_attempts": 1
+      },
+      "taint_map": {
+        "retrieved-context": "Tainted/AIOutput",
+        "ticket.body": "Tainted/UserInput",
+        "tool-result": "Tainted/ToolOutput"
+      },
+      "tool_visibility": [
+        "ticket/read"
+      ]
+    },
+    "A4": {
+      "agent_id": "support-triage",
+      "capabilities": [
+        ":ticket/write"
+      ],
+      "declared_effects": [
+        ":database/write"
+      ],
+      "document": "A4",
+      "human_review_policy": "required for priority increase",
+      "idempotency": {
+        "key": [
+          "ticket-id",
+          "new-priority"
+        ]
+      },
+      "input_schema": "TicketPriorityUpdate",
+      "output_schema": "TicketUpdateResult",
+      "redaction_policy": "secret and private fields redacted from ledgers",
+      "replay_behavior": ":recorded-result",
+      "retry_policy": ":retry-idempotent-only",
+      "side_effect_class": ":write",
+      "timeout_policy": "5s",
+      "tool_id": "ticket/update-priority",
+      "version": 1
+    },
+    "A5": {
+      "agent_id": "support-triage",
+      "budgets": {
+        "max_cost_usd": 1.0,
+        "max_model_calls": 3,
+        "max_retries": 2,
+        "max_tool_calls": 8
+      },
+      "capabilities": [
+        ":ai/provider.primary",
+        ":ticket/read",
+        ":ticket/write",
+        ":memory/read",
+        ":human-review/request"
+      ],
+      "deployment_class": ":production",
+      "document": "A5",
+      "effects": [
+        ":ai/model-call",
+        ":ai/tool-call",
+        ":ai/memory-read",
+        ":ai/output-validate",
+        ":ai/human-review"
+      ],
+      "eval_gates": [
+        "support-triage-release"
+      ],
+      "human_review": [
+        "update-priority-review"
+      ],
+      "input_schema": "TicketId",
+      "ledger_identity": "all model, tool, memory, human-review, workflow, and validation ledgers include support-triage",
+      "memory_bindings": {
+        "support-memory": ":read"
+      },
+      "models": [
+        "primary-ai/gpt-support"
+      ],
+      "output_schema": "TicketClassification",
+      "owner_package": "support/triage",
+      "policies": [
+        "support-agent-policy"
+      ],
+      "prompts": [
+        "classify-ticket"
+      ],
+      "source_hash": "sha256:support-triage-source",
+      "toolset": [
+        "ticket/read",
+        "ticket/update-priority"
+      ],
+      "version": 1
+    },
+    "A6": {
+      "agent_id": "support-triage",
+      "budget_accounting": "model, tool, retry, and human-review budgets recorded",
+      "compensation_table": "ticket update uses idempotency key; no repeated write during replay",
+      "document": "A6",
+      "effect_capability_table": "node effects and capabilities are recorded per node",
+      "event_log_schema": "TriageWorkflowEvent/v1",
+      "human_review_payload_schemas": [
+        "TicketPriorityUpdate",
+        "ReviewEvidence"
+      ],
+      "migration_compatibility": "event log compatible for v1 replay",
+      "nodes": [
+        "input",
+        "ticket-read",
+        "prompt-render",
+        "model-classify",
+        "output-validate",
+        "human-review",
+        "ticket-update",
+        "finalize"
+      ],
+      "replay_mode": ":recorded-effects",
+      "retry_table": "model and tool retries preserve budget accounting",
+      "state_schema": "TriageWorkflowState/v1",
+      "workflow_id": "triage-ticket"
+    },
+    "A7": {
+      "agent_id": "support-triage",
+      "deletion_policy": "delete removes vector and ledger retrieval entry",
+      "document": "A7",
+      "embedding_model": "support-embedding",
+      "item_schema": "SupportMemoryItem",
+      "memory_id": "support-memory",
+      "metadata_schema": "SupportMemoryMetadata",
+      "partitioning": [
+        "tenant-id",
+        "project-id"
+      ],
+      "prompt_policy": ":quote-as-untrusted-data",
+      "read_capability": ":memory/read.support",
+      "redaction_policy": "secrets and customer PII redacted before embedding",
+      "replay_policy": ":record-result-ids-and-ranking",
+      "retention_policy": {
+        "days": 90
+      },
+      "retrieval_trace": "query hash, item ids, ranking scores, embedding identity, taint labels, and replay token recorded",
+      "vector_dimension": 1536,
+      "write_capability": ":memory/write.support"
+    },
+    "A8": {
+      "agent_id": "support-triage",
+      "allow_effects": [
+        ":ai/model-call",
+        ":ai/tool-call",
+        ":ai/memory-read",
+        ":ai/output-validate"
+      ],
+      "budget_rules": {
+        "max_cost_usd": 1.0,
+        "max_tool_calls": 8
+      },
+      "data_class_rules": {
+        "private": ":validated-before-tool",
+        "public": ":display-ok",
+        "secret": ":redacted-only"
+      },
+      "decision_ledger": "records allow, deny, require-human-review, require-validation, require-eval, and narrow-and-continue decisions",
+      "deny_effects": [
+        ":secrets/read",
+        ":shell/exec",
+        ":package/publish"
+      ],
+      "deployment_promotion_rules": "production requires support-triage-release passing",
+      "document": "A8",
+      "generated_code_rules": "must compile and pass safety checks before use",
+      "human_review_rules": {
+        "ticket/update-priority": "required for priority increase"
+      },
+      "policy_id": "support-agent-policy",
+      "provider_fallback_rules": "fallback requires compatible structured output and passing eval",
+      "taint_rules": {
+        "ai-output": ":untrusted-until-schema-validated",
+        "retrieved-memory": ":data-only",
+        "tool-output": ":validate-before-trusted-use"
+      }
+    },
+    "A9": {
+      "agent_id": "support-triage",
+      "budget_summary": "max cost 25.00 USD; observed 8.31 USD",
+      "dataset_identity": "SupportTriageCases/v4",
+      "document": "A9",
+      "eval_id": "support-triage-release",
+      "metric_definitions": {
+        "classification_accuracy": {
+          "direction": "min",
+          "threshold": 0.9
+        },
+        "schema_validity": {
+          "direction": "equals",
+          "threshold": 1.0
+        },
+        "unsafe_tool_denial": {
+          "direction": "equals",
+          "threshold": 1.0
+        }
+      },
+      "provider_identities": [
+        "primary-ai/gpt-support:pinned"
+      ],
+      "release_gate_status": ":passed",
+      "run_environment": "ci-recorded-replay",
+      "safety_probe_results": [
+        "prompt-injection passed",
+        "tool-escalation passed",
+        "secret-exfiltration passed"
+      ],
+      "subject_identity": "sha256:support-triage-agent-v1",
+      "thresholds": [
+        "classification_accuracy >= 0.90",
+        "schema_validity == 1.0",
+        "unsafe_tool_denial == 1.0"
+      ],
+      "variance_analysis": "stable under recorded replay"
+    }
+  },
+  "evaluation_report": {
+    "agent_id": "support-triage",
+    "budget_summary": "max cost 25.00 USD; observed 8.31 USD",
+    "dataset_identity": "SupportTriageCases/v4",
+    "document": "A9",
+    "eval_id": "support-triage-release",
+    "metric_definitions": {
+      "classification_accuracy": {
+        "direction": "min",
+        "threshold": 0.9
+      },
+      "schema_validity": {
+        "direction": "equals",
+        "threshold": 1.0
+      },
+      "unsafe_tool_denial": {
+        "direction": "equals",
+        "threshold": 1.0
+      }
+    },
+    "provider_identities": [
+      "primary-ai/gpt-support:pinned"
+    ],
+    "release_gate_status": ":passed",
+    "run_environment": "ci-recorded-replay",
+    "safety_probe_results": [
+      "prompt-injection passed",
+      "tool-escalation passed",
+      "secret-exfiltration passed"
+    ],
+    "subject_identity": "sha256:support-triage-agent-v1",
+    "thresholds": [
+      "classification_accuracy >= 0.90",
+      "schema_validity == 1.0",
+      "unsafe_tool_denial == 1.0"
+    ],
+    "variance_analysis": "stable under recorded replay"
+  },
+  "human_review_manifest": {
+    "action_schema": "TicketPriorityUpdate",
+    "agent_id": "support-triage",
+    "audit_storage_policy": "store payload hash and redacted evidence",
+    "denial_branch": ":finish-without-write",
+    "document": "A10",
+    "evidence_schema": "ReviewEvidence",
+    "expiry_rule": "15m",
+    "human_review_id": "update-priority-review",
+    "payload_hash_rule": "canonical S3 hash over TicketPriorityUpdate",
+    "redaction_policy": "customer PII redacted, hashes retained",
+    "replay_rule": ":reuse-recorded-decision-if-payload-matches",
+    "required_role": ":support-lead",
+    "timeout_branch": ":escalate-to-queue"
+  },
+  "injection_defense": {
+    "agent_id": "support-triage",
+    "authority_levels": [
+      ":system-trusted",
+      ":developer-trusted",
+      ":tool-schema-trusted",
+      ":tool-result-data",
+      ":retrieved-data",
+      ":user-data",
+      ":ai-output-data",
+      ":secret-data",
+      ":generated-source-data"
+    ],
+    "defense_probe_requirements": [
+      "prompt-injection",
+      "tool-escalation",
+      "secret-exfiltration",
+      "generated-code-trust"
+    ],
+    "document": "A11",
+    "generated_code_validation": "generated code cannot execute before compiler validation",
+    "incident_bundle_schema": "prompt, taint flow, tool decision, policy rule, workflow node, and denial record",
+    "policy_denial_fixtures": [
+      "model-requested secret tool denied",
+      "memory-injected policy override denied"
+    ],
+    "prompt_partition_map": "user, retrieved, tool, and AI output content render only as data authority",
+    "runtime_monitors": [
+      "denied tool escalation",
+      "policy override attempt",
+      "protected data exposure attempt"
+    ],
+    "taint_rules": {
+      "generated": "Tainted/GeneratedCode",
+      "retrieved": "Tainted/AIOutput",
+      "tool": "Tainted/ToolOutput",
+      "user": "Tainted/UserInput"
+    },
+    "tool_authorization_table": "tool calls require manifest membership, capability, policy, and human-review where required"
+  },
+  "input_hash": "sha256:30609bd60887f4838ef2e628469ab3f9b1c6c9e9ff19864996fe64a70e8072d7",
+  "kind": "ai-agentic-artifact",
+  "memory_policy": {
+    "agent_id": "support-triage",
+    "deletion_policy": "delete removes vector and ledger retrieval entry",
+    "document": "A7",
+    "embedding_model": "support-embedding",
+    "item_schema": "SupportMemoryItem",
+    "memory_id": "support-memory",
+    "metadata_schema": "SupportMemoryMetadata",
+    "partitioning": [
+      "tenant-id",
+      "project-id"
+    ],
+    "prompt_policy": ":quote-as-untrusted-data",
+    "read_capability": ":memory/read.support",
+    "redaction_policy": "secrets and customer PII redacted before embedding",
+    "replay_policy": ":record-result-ids-and-ranking",
+    "retention_policy": {
+      "days": 90
+    },
+    "retrieval_trace": "query hash, item ids, ranking scores, embedding identity, taint labels, and replay token recorded",
+    "vector_dimension": 1536,
+    "write_capability": ":memory/write.support"
+  },
+  "model_manifest": {
+    "agent_id": "support-triage",
+    "budget": {
+      "max_cost_usd": 0.25,
+      "max_output_tokens": 4096
+    },
+    "context_limits": {
+      "max_output_tokens": 4096,
+      "tokens": 128000
+    },
+    "credential_policy": "secret source reference only; no secret value in artifact",
+    "document": "A2",
+    "failure_classes": [
+      ":retryable",
+      ":permanent",
+      ":budget-denied",
+      ":policy-denied",
+      ":schema-invalid"
+    ],
+    "model_id": "gpt-support",
+    "model_version": ":pinned",
+    "provider_capability": ":ai/provider.primary",
+    "provider_id": "primary-ai",
+    "replay_policy": ":record-output-hash-and-validation",
+    "retention_policy": ":no-provider-training",
+    "structured_output": ":provider-and-runtime",
+    "supported_modes": [
+      ":text",
+      ":structured-output",
+      ":tool-calls",
+      ":embeddings"
+    ],
+    "tool_call_mode": ":gravity-mediated"
+  },
+  "module": "ai-agentic-smoke",
+  "package": "gravity.phase11.ai",
+  "phase": "11",
+  "policy_manifest": {
+    "agent_id": "support-triage",
+    "allow_effects": [
+      ":ai/model-call",
+      ":ai/tool-call",
+      ":ai/memory-read",
+      ":ai/output-validate"
+    ],
+    "budget_rules": {
+      "max_cost_usd": 1.0,
+      "max_tool_calls": 8
+    },
+    "data_class_rules": {
+      "private": ":validated-before-tool",
+      "public": ":display-ok",
+      "secret": ":redacted-only"
+    },
+    "decision_ledger": "records allow, deny, require-human-review, require-validation, require-eval, and narrow-and-continue decisions",
+    "deny_effects": [
+      ":secrets/read",
+      ":shell/exec",
+      ":package/publish"
+    ],
+    "deployment_promotion_rules": "production requires support-triage-release passing",
+    "document": "A8",
+    "generated_code_rules": "must compile and pass safety checks before use",
+    "human_review_rules": {
+      "ticket/update-priority": "required for priority increase"
+    },
+    "policy_id": "support-agent-policy",
+    "provider_fallback_rules": "fallback requires compatible structured output and passing eval",
+    "taint_rules": {
+      "ai-output": ":untrusted-until-schema-validated",
+      "retrieved-memory": ":data-only",
+      "tool-output": ":validate-before-trusted-use"
+    }
+  },
+  "prompt_artifact": {
+    "agent_id": "support-triage",
+    "authority_partitions": {
+      "developer": ":developer-trusted",
+      "retrieved-context": ":retrieved-data",
+      "system": ":system-trusted",
+      "ticket.body": ":user-data",
+      "tool-result": ":tool-result-data"
+    },
+    "compatibility_version": "classify-ticket/v1",
+    "document": "A3",
+    "input_schema": "Ticket",
+    "output_schema": "TicketClassification",
+    "prompt_hash": "sha256:classify-ticket-prompt",
+    "prompt_id": "classify-ticket",
+    "provider_constraints": [
+      "primary-ai/gpt-support pinned",
+      "structured output required"
+    ],
+    "refusal_policy": ":human-review",
+    "repair_policy": {
+      "max_attempts": 1
+    },
+    "taint_map": {
+      "retrieved-context": "Tainted/AIOutput",
+      "ticket.body": "Tainted/UserInput",
+      "tool-result": "Tainted/ToolOutput"
+    },
+    "tool_visibility": [
+      "ticket/read"
+    ]
+  },
+  "tool_schema": {
+    "agent_id": "support-triage",
+    "capabilities": [
+      ":ticket/write"
+    ],
+    "declared_effects": [
+      ":database/write"
+    ],
+    "document": "A4",
+    "human_review_policy": "required for priority increase",
+    "idempotency": {
+      "key": [
+        "ticket-id",
+        "new-priority"
+      ]
+    },
+    "input_schema": "TicketPriorityUpdate",
+    "output_schema": "TicketUpdateResult",
+    "redaction_policy": "secret and private fields redacted from ledgers",
+    "replay_behavior": ":recorded-result",
+    "retry_policy": ":retry-idempotent-only",
+    "side_effect_class": ":write",
+    "timeout_policy": "5s",
+    "tool_id": "ticket/update-priority",
+    "version": 1
+  },
+  "workflow_graph": {
+    "agent_id": "support-triage",
+    "budget_accounting": "model, tool, retry, and human-review budgets recorded",
+    "compensation_table": "ticket update uses idempotency key; no repeated write during replay",
+    "document": "A6",
+    "effect_capability_table": "node effects and capabilities are recorded per node",
+    "event_log_schema": "TriageWorkflowEvent/v1",
+    "human_review_payload_schemas": [
+      "TicketPriorityUpdate",
+      "ReviewEvidence"
+    ],
+    "migration_compatibility": "event log compatible for v1 replay",
+    "nodes": [
+      "input",
+      "ticket-read",
+      "prompt-render",
+      "model-classify",
+      "output-validate",
+      "human-review",
+      "ticket-update",
+      "finalize"
+    ],
+    "replay_mode": ":recorded-effects",
+    "retry_table": "model and tool retries preserve budget accounting",
+    "state_schema": "TriageWorkflowState/v1",
+    "workflow_id": "triage-ticket"
+  }
+}

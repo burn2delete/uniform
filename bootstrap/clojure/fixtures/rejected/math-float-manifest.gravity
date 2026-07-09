@@ -1,0 +1,7 @@
+(ns math.float-manifest
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric {:floating-manifests [{}]}}}))

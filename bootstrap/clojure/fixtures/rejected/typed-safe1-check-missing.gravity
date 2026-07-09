@@ -1,0 +1,11 @@
+(ns safe1.check-missing
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{:safety/check-failure})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (safe1/runtime-check :buffer/read
+                       nil
+                       :panic/bounds))

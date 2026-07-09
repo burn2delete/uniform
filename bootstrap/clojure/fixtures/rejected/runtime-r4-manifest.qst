@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: incomplete managed runtime artifact.
+(ns runtime.r4-manifest
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/error})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-manifest}}}))
+
+(defn main [] :- I64
+  1)

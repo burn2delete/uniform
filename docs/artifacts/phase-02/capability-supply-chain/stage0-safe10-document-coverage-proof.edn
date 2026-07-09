@@ -1,0 +1,40 @@
+{:task-id :P02-D039
+ :document "docs/phase-02-safety/039-safe10-capability-security-model.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/capability-supply-chain.gravity"
+ :artifact-kind :gravity/stage0-capability-supply-chain-safety-artifact
+ :document-coverage {:capability-requirement-records 11
+                     :required-capability-families [:compiler
+                                                    :environment
+                                                    :ffi
+                                                    :filesystem
+                                                    :hardware
+                                                    :memory
+                                                    :model
+                                                    :network
+                                                    :process
+                                                    :secret
+                                                    :tool]
+                     :grant-intersection-records 1
+                     :provider-selection-records 1
+                     :scope-check-records 1
+                     :attenuation-records 1
+                     :revocation-records 1
+                     :secret-redaction-records 1
+                     :runtime-capability-check-records 1
+                     :capability-usage-summaries 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE10-MISSING"
+                        "SAFE10-DENIED"
+                        "SAFE10-SCOPE"
+                        "SAFE10-PROVIDER"
+                        "SAFE10-AMBIENT"
+                        "SAFE10-PHASE"
+                        "SAFE10-SECRET-LEAK"
+                        "SAFE10-ATTENUATION"
+                        "SAFE10-REVOCATION"
+                        "SAFE10-RUNTIME"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE10 accepted records and 10 rejected diagnostics passed"}]}

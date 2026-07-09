@@ -1,0 +1,57 @@
+{
+  "artifact_id": "phase-00-terminology-rejected-conflations",
+  "kind": "terminology-boundary-fixture",
+  "task": "P00-T03",
+  "records": [
+    {
+      "id": "profile-target-conflation",
+      "concept": "namespace",
+      "profile": "llvm-x86_64-linux",
+      "target": ":native",
+      "declared_effects": [":io/write"],
+      "required_capabilities": [":io/stdout"],
+      "runtime": "minimal-native",
+      "backend": "llvm",
+      "runtime_family": "minimal-native"
+    },
+    {
+      "id": "effect-capability-conflation",
+      "concept": "namespace",
+      "profile": ":hosted",
+      "target": "jvm",
+      "declared_effects": [":http/client"],
+      "required_capabilities": [":network/http"],
+      "runtime": "hosted-jvm",
+      "backend": "jvm-bytecode",
+      "runtime_family": "hosted-jvm"
+    },
+    {
+      "id": "runtime-backend-conflation",
+      "concept": "runtime-manifest",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "effects": [":io/write"],
+      "capabilities": [":io/stdout"],
+      "runtime": "llvm",
+      "backend": "minimal-native",
+      "uses_runtime_term": true
+    },
+    {
+      "id": "artifact-file-conflation",
+      "concept": "artifact",
+      "file": "build/out.bin"
+    },
+    {
+      "id": "unsafe-untracked",
+      "concept": "manifest",
+      "profile": ":kernel",
+      "target": "llvm-x86_64-linux",
+      "effects": [":memory/raw"],
+      "capabilities": [":memory/unsafe"],
+      "unsafe_behavior": true,
+      "runtime": "minimal-native",
+      "backend": "llvm",
+      "runtime_family": "minimal-native"
+    }
+  ]
+}

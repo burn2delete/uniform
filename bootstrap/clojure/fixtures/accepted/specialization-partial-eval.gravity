@@ -1,0 +1,147 @@
+(ns performance.specialization
+  (:profile :native)
+  (:target :jvm)
+  (:exports [specialization-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/specialization-native
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:element-type :f32
+                              :layout :contiguous
+                              :length 128}
+                :layout {:buffer :contiguous
+                         :element :f32
+                         :alignment 32}
+                :safety-mode :safe-optimized
+                :objective {:metric :variant-specialization
+                            :direction :prove-equivalence}
+                :semantic-proof #{:generic-equivalence
+                                  :effects-preserved
+                                  :profile-legal}
+                :safety-proof #{:range-proof-preserved
+                                :bounds-erasure-proven}
+                :benchmark {:harness :bench/specialization-fixed-map
+                            :samples 30
+                            :baseline :generic-fixed-map
+                            :environment-fingerprint
+                            {:cpu :x86-64
+                             :os :linux
+                             :compiler :gravity-stage0-clojure
+                             :backend :llvm
+                             :runtime :minimal-native
+                             :features #{:avx2}}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :optimization-decisions
+               [{:pass :stage0/performance-claim
+                 :decision :accept
+                 :preserves #{:types :effects :profile :safety}}]
+               :specialization
+               {:suite-id :perf3/specialization-partial-eval
+                :records
+                [{:record-id :spec/fixed-map-f32-128-avx2
+                  :optimization :specialization
+                  :source-function :fixed-map
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :specialization-modes #{:type
+                                          :const
+                                          :shape
+                                          :profile
+                                          :target}
+                  :behavior-facts #{:T
+                                    :N
+                                    :shape
+                                    :profile
+                                    :target
+                                    :target-features
+                                    :numeric-mode
+                                    :layout
+                                    :proof-facts
+                                    :provider-versions}
+                  :key {:T :F32
+                        :N 128
+                        :shape {:collection :array
+                                :length 128}
+                        :profile :native
+                        :target :llvm-x86-64-linux
+                        :target-features #{:avx2}
+                        :numeric-mode :strict-f32
+                        :layout :contiguous
+                        :proof-facts #{:proof/range-vector-index}
+                        :provider-versions {:range-analysis :stage0}}
+                  :guard "(and (= N 128) (feature? :avx2))"
+                  :guard-stage :compile-time
+                  :effects #{}
+                  :capabilities #{}
+                  :semantic-proof #{:generic-equivalence
+                                    :guard-covers-specialized-domain
+                                    :effects-preserved}
+                  :safety-proof #{:range-proof-preserved
+                                  :bounds-erasure-proven}
+                  :artifacts #{:specialized-mir
+                               :guard-table
+                               :source-map}
+                  :partial-evaluation
+                  {:pure true
+                   :build-effects #{}
+                   :grants #{}
+                   :hermetic true
+                   :replay-record :replay/none
+                   :evaluation-log
+                   [{:event :const-generic-read
+                     :value {:N 128}}
+                    {:event :loop-unroll
+                     :count 128}]}
+                  :source-map
+                  {:source-map-id :sourcemap/fixed-map-f32-128-avx2
+                   :generic-source :fixed-map
+                   :specialized-variant
+                   :variant/fixed-map-f32-128-avx2
+                   :generated-origin-chain
+                   [:source/fixed-map :specializer/stage0]}
+                  :cache-key-inputs #{:source
+                                      :macro-expansion
+                                      :T
+                                      :N
+                                      :shape
+                                      :profile
+                                      :target
+                                      :target-features
+                                      :layout
+                                      :numeric-mode
+                                      :proof-facts
+                                      :provider-versions}
+                  :invalidation-inputs #{:source
+                                         :macro-expansion
+                                         :T
+                                         :N
+                                         :shape
+                                         :profile
+                                         :target
+                                         :target-features
+                                         :layout
+                                         :numeric-mode
+                                         :proof-facts
+                                         :provider-versions}
+                  :erased-checks #{:bounds}
+                  :proof-id :proof/range-vector-index
+                  :variant-id :variant/fixed-map-f32-128-avx2
+                  :variant-selection
+                  {:variant-id :variant/fixed-map-f32-128-avx2
+                   :strategy :compile-time-static
+                   :guard-binding :guard/fixed-map-f32-128-avx2
+                   :profile :native
+                   :target :llvm-x86-64-linux
+                   :ambiguous? false
+                   :unsafe? false}
+                  :generated-origin-chain
+                  [:source/fixed-map :specializer/stage0]}]}}}))
+
+(def specialization-ready true)

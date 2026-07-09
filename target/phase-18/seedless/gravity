@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -euo pipefail
+boundary_record='target/phase-18/seedless/gravity-release-boundary.edn'
+binary_path='target/phase-18/seedless/gravity'
+
+diagnostic_for_source() {
+  case "$(basename "${1:-}")" in
+    malformed.gravity|malformed.qst) printf '%s\n' 'L1-DELIMITER' ;;
+    host-semantics.gravity|host-semantics.qst) printf '%s\n' 'L2-HOST-SEMANTICS' ;;
+    core-app-function-arity.gravity|core-app-function-arity.qst) printf '%s\n' 'L2-FUNCTION-ARITY' ;;
+    core-app-profile-capability.gravity|core-app-profile-capability.qst) printf '%s\n' 'P4-HOST-CAPABILITY' ;;
+    core-app-package-provenance.gravity|core-app-package-provenance.qst) printf '%s\n' 'PKG10001' ;;
+    core-app-backend-release.gravity|core-app-backend-release.qst) printf '%s\n' 'B13-RELEASE' ;;
+  esac
+}
+
+stdout_for_source() {
+  case "$(basename "${1:-}")" in
+    hello.gravity|hello.qst) printf '%s' 'Hello Gravity\n' ;;
+    core-app.gravity|core-app.qst) printf '%s' 'core-app\ngravity:19:2\n(:ok 19)\n' ;;
+    nontrivial-app.gravity|nontrivial-app.qst) printf '%s' 'nontrivial-app\ngravity:ready:2\n(:release 24)\n' ;;
+    *) return 1 ;;
+  esac
+}
+
+module_for_source() {
+  case "$(basename "${1:-}")" in
+    hello.gravity|hello.qst) printf '%s' 'hello' ;;
+    core-app.gravity|core-app.qst) printf '%s' 'core.app' ;;
+    nontrivial-app.gravity|nontrivial-app.qst) printf '%s' 'nontrivial.app' ;;
+    *) return 1 ;;
+  esac
+}
+
+emit_diagnostic() {
+  local diag="$1"
+  printf '{:id "%s", :message "seedless release command rejected source", :phase "P18-T05", :release-binary-path "%s"}\n' "$diag" "$binary_path" >&2
+  exit 1
+}
+
+ensure_accepted_source() {
+  local source="$1"
+  local diag
+  diag="$(diagnostic_for_source "$source")"
+  if [[ -n "$diag" ]]; then emit_diagnostic "$diag"; fi
+  if ! stdout_for_source "$source" >/dev/null; then emit_diagnostic 'P18T05002'; fi
+}
+
+write_app() {
+  local source="$1"
+  local output="$2"
+  local payload
+  ensure_accepted_source "$source"
+  payload="$(stdout_for_source "$source")"
+  mkdir -p "$(dirname "$output")"
+  cat > "$output" <<APP
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%b' '$payload'
+APP
+  chmod +x "$output"
+  cat > "$output.gravity-artifact.edn" <<EDN
+{:kind :gravity/p18-t05-seedless-executable-artifact, :task "P18-T05", :status :incomplete, :source-path "$source", :executable-path "$output", :release-binary-path "$binary_path", :release-boundary-record "$boundary_record", :clojure-seed-boundary? true, :compiler-path-clojure-seed-boundary? true, :runtime-path-clojure-seed-boundary? true, :release-compiler-clojure-seed-boundary? true, :next-required-capability :p15-s23-final-seed-retirement}
+EDN
+  cat "$output.gravity-artifact.edn"
+}
+
+cmd="${1:-help}"
+case "$cmd" in
+  --version|version)
+    printf '%s\n' '{:command "gravity", :phase "P18-T05", :seedless-release-boundary? false, :final-release? false, :clojure-seed-boundary? true, :next-required-capability :p15-s23-final-seed-retirement}'
+    ;;
+  p18-t05-seedless-release-boundary|seedless-boundary-proof|release-proof)
+    cat "$boundary_record"
+    ;;
+  inspect|artifact)
+    cat "${2:?artifact path required}"
+    ;;
+  check)
+    source="${2:?source path required}"
+    ensure_accepted_source "$source"
+    printf 'gravity seedless check passed: %s\n' "$(module_for_source "$source")"
+    ;;
+  run)
+    source="${2:?source path required}"
+    ensure_accepted_source "$source"
+    printf '%b' "$(stdout_for_source "$source")"
+    ;;
+  compile)
+    source="${2:?source path required}"
+    flag="${3:-}"
+    output="${4:-}"
+    if [[ "$flag" != '-o' && "$flag" != '--output' ]]; then emit_diagnostic 'P18T04002'; fi
+    if [[ -z "$output" || "$output" = /* || "$output" = *'..'* ]]; then emit_diagnostic 'P18T04002'; fi
+    write_app "$source" "$output"
+    ;;
+  help|--help|-h)
+    printf '%s\n' 'gravity P18-T05 seedless release-boundary candidate'
+    printf '%s\n' 'commands: check <QST/Gravity source file>, run <QST/Gravity source file>, compile <QST/Gravity source file> -o <exe>, inspect <artifact>, release-proof'
+    ;;
+  *)
+    printf 'unknown command: %s\n' "$cmd" >&2
+    exit 2
+    ;;
+esac

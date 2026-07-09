@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-performance-model.json",
+  "delete": [
+    "/simd_records/0/proofs/0"
+  ]
+}

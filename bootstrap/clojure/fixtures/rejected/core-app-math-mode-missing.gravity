@@ -1,0 +1,10 @@
+(ns core.app.math-mode-missing
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:math {:numeric {:mode-records [{}]}}}))
+
+(defn main []
+  (println "missing numeric mode should not compile"))

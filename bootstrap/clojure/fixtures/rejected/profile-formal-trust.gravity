@@ -1,0 +1,8 @@
+(ns profile.bad.formal-trust
+  (:profile :formal)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p12/trust))

@@ -1,0 +1,9 @@
+(ns compile.fuel
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (compile/fuel-loop :unbounded))

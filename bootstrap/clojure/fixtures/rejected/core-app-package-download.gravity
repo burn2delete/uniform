@@ -1,0 +1,15 @@
+(ns core.app.package-download
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:package-operations
+                         [{:artifact-id "package-operation:bad"
+                           :operation :add
+                           :package-id "gravity/http"
+                           :download-verified false}]}}}))
+
+(defn main []
+  (println "bad package download"))

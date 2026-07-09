@@ -1,0 +1,16 @@
+(ns l8.dispatch
+  (:profile :native)
+  (:effects :resource/close)
+  (:capabilities :fs/write))
+
+(defprotocol Closeable
+  (close [resource] :- Unit
+    :effects #{:resource/close}
+    :capabilities #{:fs/write}))
+
+(extend FileHandle Closeable
+  (close [resource]
+    (fs/close resource)))
+
+(def close-it
+  (close file-handle))

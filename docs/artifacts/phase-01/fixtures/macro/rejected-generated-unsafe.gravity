@@ -1,0 +1,8 @@
+(ns macro.bad-unsafe
+  (:profile :native)
+  (:target :llvm)
+  (:safety :safe))
+
+(def value
+  (unsafe-nth xs i))
+

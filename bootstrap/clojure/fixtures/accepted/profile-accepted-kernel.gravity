@@ -1,0 +1,9 @@
+(ns profile.accepted.kernel
+  (:profile :kernel)
+  (:target :jvm)
+  (:exports [value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

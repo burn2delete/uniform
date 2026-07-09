@@ -1,0 +1,12 @@
+; Rejected P10 S9 fixture.
+(ns schema.s9-evidence
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s9-evidence}}}))
+
+(defn main [] :- I64 9)

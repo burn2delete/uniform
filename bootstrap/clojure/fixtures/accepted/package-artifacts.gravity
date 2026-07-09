@@ -1,0 +1,16 @@
+; P12 fixture covers build, package, and artifact-system records across PKG1-PKG12.
+(ns package.artifacts
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:build/network :filesystem/write :build/sign
+              :build/package-index})
+  (:capabilities #{:package/resolve :package/fetch :artifact/sign
+                   :registry/read :sbom/write})
+  (:safety :safe)
+  (:metadata {:package {:artifacts {}}}))
+
+(def package-phase-id 12)
+
+(defn main [] :- I64
+  package-phase-id)

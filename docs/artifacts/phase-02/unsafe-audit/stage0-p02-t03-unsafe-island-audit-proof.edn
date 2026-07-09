@@ -1,0 +1,56 @@
+{:task-id :P02-T03
+ :document "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/unsafe-audit.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe6-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/unsafe-audit.gravity"
+ :artifact-kind :gravity/stage0-unsafe-audit-artifact
+ :capability-proof {:module safety.unsafe
+                    :profile :native
+                    :safety-mode :audited-unsafe
+                    :pass :unsafe-island-extraction-and-audit
+                    :input :typed-effected-core
+                    :output :unsafe-audit-report
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:unsafe-island
+                                       :safe-wrapper
+                                       :operation-inventory
+                                       :review-status
+                                       :invariant-proof
+                                       :generated-provenance
+                                       :policy-decision
+                                       :dependency-summary
+                                       :release-audit]
+                    :unsafe-island-records 1
+                    :safe-wrapper-records 1
+                    :operation-inventories 1
+                    :review-status-records 1
+                    :invariant-proof-links 1
+                    :generated-unsafe-provenance 1
+                    :policy-decision-records 1
+                    :dependency-unsafe-summaries 1
+                    :release-audit-reports 1
+                    :capability-basis :safe6-explicit-unsafe-island-audit-with-review-policy-safe-wrapper-generated-provenance-dependency-and-release-records}
+ :rejected-diagnostics ["SAFE6-UNSAFE-FORBIDDEN"
+                        "SAFE6-MISSING-METADATA"
+                        "SAFE6-MISSING-OWNER"
+                        "SAFE6-MISSING-INVARIANT"
+                        "SAFE6-MISSING-BOUNDARY"
+                        "SAFE6-REVIEW-REQUIRED"
+                        "SAFE6-GENERATED-UNSAFE"
+                        "SAFE6-CAPABILITY"
+                        "SAFE6-DEPENDENCY"
+                        "SAFE6-CERTIFICATE"]
+ :validation [{:command "clojure -M:gravity unsafe-audit bootstrap/clojure/fixtures/accepted/unsafe-audit.gravity"
+               :result "emitted :gravity/stage0-unsafe-audit-artifact"}
+              {:command "clojure -M -e unsafe-audit-artifact-summary"
+               :result ":gravity/stage0-unsafe-audit-artifact safety.unsafe :complete 1 1 1 1"}
+              {:command "clojure -M:test"
+               :result "27 tests, 1351 assertions, 300 rejected fixtures"}]
+ :residual-risks ["This is the stage0 SAFE6 artifact boundary; production package policy integration, release signing, and downstream publication gates remain later-phase work."
+                  "The Clojure seed remains temporary until Phase 15 replaces the bootstrap with Gravity-owned compiler stages."]}

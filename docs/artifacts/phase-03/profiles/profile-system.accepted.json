@@ -1,0 +1,1827 @@
+{
+  "backend_eligibility_reports": [
+    {
+      "backend": "typed-core",
+      "eligible": true,
+      "profile": ":core",
+      "required_features": [
+        ":pure-core"
+      ],
+      "status": ":eligible",
+      "target": ":portable-typed-core"
+    },
+    {
+      "backend": "hosted-compiler",
+      "eligible": true,
+      "profile": ":meta",
+      "required_features": [
+        ":artifact-store"
+      ],
+      "status": ":eligible",
+      "target": ":compiler-host"
+    },
+    {
+      "backend": "js",
+      "eligible": true,
+      "profile": ":hosted",
+      "required_features": [
+        ":source-map"
+      ],
+      "status": ":eligible",
+      "target": ":javascript"
+    },
+    {
+      "backend": "llvm",
+      "eligible": true,
+      "profile": ":native",
+      "required_features": [
+        ":ffi",
+        ":atomics"
+      ],
+      "status": ":eligible",
+      "target": ":llvm"
+    },
+    {
+      "backend": "embedded-c",
+      "eligible": true,
+      "profile": ":firmware",
+      "required_features": [
+        ":linker-script"
+      ],
+      "status": ":eligible",
+      "target": ":cortex-m"
+    },
+    {
+      "backend": "llvm",
+      "eligible": true,
+      "profile": ":kernel",
+      "required_features": [
+        ":no-std"
+      ],
+      "status": ":eligible",
+      "target": ":llvm-kernel"
+    },
+    {
+      "backend": "hdl",
+      "eligible": true,
+      "profile": ":hardware",
+      "required_features": [
+        ":tag-preservation"
+      ],
+      "status": ":eligible",
+      "target": ":capability-hardware"
+    },
+    {
+      "backend": "workflow",
+      "eligible": true,
+      "profile": ":distributed",
+      "required_features": [
+        ":replay-log"
+      ],
+      "status": ":eligible",
+      "target": ":service-runtime"
+    },
+    {
+      "backend": "agent",
+      "eligible": true,
+      "profile": ":ai",
+      "required_features": [
+        ":tool-policy"
+      ],
+      "status": ":eligible",
+      "target": ":agent-runtime"
+    },
+    {
+      "backend": "spir-v",
+      "eligible": true,
+      "profile": ":gpu",
+      "required_features": [
+        ":device-memory"
+      ],
+      "status": ":eligible",
+      "target": ":spir-v"
+    },
+    {
+      "backend": "proof",
+      "eligible": true,
+      "profile": ":formal",
+      "required_features": [
+        ":trusted-kernel"
+      ],
+      "status": ":eligible",
+      "target": ":symbolic-ir"
+    }
+  ],
+  "capability_permission_table": [
+    {
+      "capabilities": [],
+      "profile": ":core"
+    },
+    {
+      "capabilities": [
+        ":compiler/ir-transform",
+        ":build/read-file",
+        ":build/model-call",
+        ":build/tool-call"
+      ],
+      "profile": ":meta"
+    },
+    {
+      "capabilities": [
+        ":host/runtime",
+        ":fs/read",
+        ":net/client",
+        ":process/spawn"
+      ],
+      "profile": ":hosted"
+    },
+    {
+      "capabilities": [
+        ":memory/allocator",
+        ":ffi/c",
+        ":thread/scheduler",
+        ":fs/read",
+        ":target/simd"
+      ],
+      "profile": ":native"
+    },
+    {
+      "capabilities": [
+        ":hardware/mmio",
+        ":interrupt/register",
+        ":memory/static-budget"
+      ],
+      "profile": ":firmware"
+    },
+    {
+      "capabilities": [
+        ":hardware/mmio",
+        ":interrupt/register",
+        ":kernel/scheduler",
+        ":memory/raw"
+      ],
+      "profile": ":kernel"
+    },
+    {
+      "capabilities": [
+        ":hardware/port",
+        ":hardware/bus",
+        ":hardware/capability-target"
+      ],
+      "profile": ":hardware"
+    },
+    {
+      "capabilities": [
+        ":net/client",
+        ":db/query",
+        ":workflow/replay",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "profile": ":distributed"
+    },
+    {
+      "capabilities": [
+        ":model/call",
+        ":embedding/call",
+        ":tool/invoke",
+        ":secret/read",
+        ":fs/write",
+        ":net/client"
+      ],
+      "profile": ":ai"
+    },
+    {
+      "capabilities": [
+        ":gpu/device",
+        ":device/memory",
+        ":target/feature"
+      ],
+      "profile": ":gpu"
+    },
+    {
+      "capabilities": [
+        ":proof/kernel",
+        ":solver/call",
+        ":proof/import"
+      ],
+      "profile": ":formal"
+    }
+  ],
+  "cross_profile_dependency_graph": [
+    {
+      "artifact": null,
+      "consumer": {
+        "namespace": "gravity.hosted.ui",
+        "profile": ":hosted"
+      },
+      "edge": ":direct",
+      "evidence": [
+        ":core-portable"
+      ],
+      "facade": null,
+      "producer": {
+        "namespace": "gravity.core.algebra",
+        "profile": ":core"
+      },
+      "status": ":accepted"
+    },
+    {
+      "artifact": null,
+      "consumer": {
+        "namespace": "gravity.kernel.uart",
+        "profile": ":kernel"
+      },
+      "edge": ":facade-required",
+      "evidence": [
+        ":no-gc",
+        ":no-hidden-allocation",
+        ":no-throw"
+      ],
+      "facade": {
+        "capabilities": [
+          ":memory/allocator"
+        ],
+        "effects": [
+          ":memory/allocate"
+        ],
+        "memory_assumptions": [
+          ":no-gc",
+          ":no-hidden-allocation"
+        ],
+        "name": "gravity.native.ring-buffer/kernel-facade",
+        "runtime_assumptions": [
+          ":no-host-exceptions"
+        ],
+        "safety_evidence": [
+          ":safe5-linear-cleanup",
+          ":safe6-audit"
+        ]
+      },
+      "producer": {
+        "namespace": "gravity.native.ring-buffer",
+        "profile": ":native"
+      },
+      "status": ":accepted"
+    },
+    {
+      "artifact": {
+        "kind": ":proof-object",
+        "schema": "SAFE15",
+        "source_import": false
+      },
+      "consumer": {
+        "namespace": "gravity.formal.range",
+        "profile": ":formal"
+      },
+      "edge": ":artifact-only",
+      "evidence": [
+        ":certificate-chain"
+      ],
+      "facade": null,
+      "producer": {
+        "namespace": "gravity.native.engine",
+        "profile": ":native"
+      },
+      "status": ":accepted"
+    }
+  ],
+  "diagnostics": [],
+  "effect_permission_table": [
+    {
+      "allowed_effects": [],
+      "checked_effects": [],
+      "forbidden_effects": [
+        ":filesystem/read",
+        ":network/http",
+        ":ffi/call",
+        ":memory/raw",
+        ":thread/spawn",
+        ":model/call",
+        ":tool/invoke",
+        ":host/reflection"
+      ],
+      "profile": ":core"
+    },
+    {
+      "allowed_effects": [
+        ":compiler/read-ir",
+        ":compiler/write-ir",
+        ":build/read-file"
+      ],
+      "checked_effects": [
+        ":build/model-call",
+        ":build/tool-call"
+      ],
+      "forbidden_effects": [
+        ":runtime/fs",
+        ":runtime/secret",
+        ":memory/raw"
+      ],
+      "profile": ":meta"
+    },
+    {
+      "allowed_effects": [
+        ":host/interop",
+        ":ui/event-loop",
+        ":filesystem/read"
+      ],
+      "checked_effects": [
+        ":host/reflection",
+        ":host/dynamic-load",
+        ":process/spawn",
+        ":network/http"
+      ],
+      "forbidden_effects": [
+        ":memory/raw",
+        ":hardware/mmio",
+        ":interrupt/register"
+      ],
+      "profile": ":hosted"
+    },
+    {
+      "allowed_effects": [
+        ":memory/allocate",
+        ":ffi/call",
+        ":thread/spawn",
+        ":filesystem/read"
+      ],
+      "checked_effects": [
+        ":memory/raw",
+        ":atomic/order",
+        ":target/simd",
+        ":optimization/check-erasure"
+      ],
+      "forbidden_effects": [
+        ":host/reflection",
+        ":host/dynamic-eval",
+        ":model/call"
+      ],
+      "profile": ":native"
+    },
+    {
+      "allowed_effects": [
+        ":memory/allocate-bounded",
+        ":interrupt/register",
+        ":memory/mmio"
+      ],
+      "checked_effects": [
+        ":memory/raw",
+        ":atomic/order",
+        ":timing/bounded-loop"
+      ],
+      "forbidden_effects": [
+        ":gc",
+        ":host/reflection",
+        ":host/dynamic-eval",
+        ":network/http",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "profile": ":firmware"
+    },
+    {
+      "allowed_effects": [
+        ":memory/mmio",
+        ":scheduler/operate",
+        ":atomic/order"
+      ],
+      "checked_effects": [
+        ":memory/raw",
+        ":interrupt/register",
+        ":critical-section"
+      ],
+      "forbidden_effects": [
+        ":gc",
+        ":host/reflection",
+        ":host/dynamic-eval",
+        ":network/http",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "profile": ":kernel"
+    },
+    {
+      "allowed_effects": [
+        ":hardware/synthesis",
+        ":hardware/clock",
+        ":hardware/reset"
+      ],
+      "checked_effects": [
+        ":hardware/cdc",
+        ":hardware/capability-target",
+        ":hardware/timing"
+      ],
+      "forbidden_effects": [
+        ":gc",
+        ":heap/allocate",
+        ":host/io",
+        ":thread/spawn",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "profile": ":hardware"
+    },
+    {
+      "allowed_effects": [
+        ":workflow/step",
+        ":message/send",
+        ":database/query",
+        ":network/http"
+      ],
+      "checked_effects": [
+        ":clock/read",
+        ":random/read",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "forbidden_effects": [
+        ":memory/raw",
+        ":hardware/mmio",
+        ":interrupt/register"
+      ],
+      "profile": ":distributed"
+    },
+    {
+      "allowed_effects": [
+        ":model/call",
+        ":embedding/call",
+        ":tool/invoke",
+        ":ai/human-review",
+        ":memory/read",
+        ":memory/write"
+      ],
+      "checked_effects": [
+        ":filesystem/write",
+        ":network/http",
+        ":shell/exec",
+        ":deploy/publish"
+      ],
+      "forbidden_effects": [
+        ":memory/raw",
+        ":ffi/call"
+      ],
+      "profile": ":ai"
+    },
+    {
+      "allowed_effects": [
+        ":gpu/kernel",
+        ":device/transfer",
+        ":device/sync"
+      ],
+      "checked_effects": [
+        ":device/atomic",
+        ":device/approx-math",
+        ":target/intrinsic"
+      ],
+      "forbidden_effects": [
+        ":filesystem/read",
+        ":network/http",
+        ":process/spawn",
+        ":model/call",
+        ":host/reflection"
+      ],
+      "profile": ":gpu"
+    },
+    {
+      "allowed_effects": [
+        ":proof/check"
+      ],
+      "checked_effects": [
+        ":solver/call",
+        ":proof/import",
+        ":math/approximation"
+      ],
+      "forbidden_effects": [
+        ":filesystem/read",
+        ":network/http",
+        ":clock/read",
+        ":random/read",
+        ":model/call",
+        ":tool/invoke",
+        ":memory/raw"
+      ],
+      "profile": ":formal"
+    }
+  ],
+  "input_hash": "sha256:6e7bc22f393cc660766a763ea3f07ae6478699d4c25adda5102b0dbc1069b7e1",
+  "kind": "profile-system-artifact",
+  "memory_regime_records": [
+    {
+      "memory": {
+        "hidden_allocation": ":not-source-visible",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":semantic-immutable"
+        ]
+      },
+      "profile": ":core"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":implementation-only",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":compiler-owned"
+        ]
+      },
+      "profile": ":meta"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":declared",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":managed",
+          ":linear-resource"
+        ]
+      },
+      "profile": ":hosted"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":declared",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":ownership",
+          ":borrowing",
+          ":region",
+          ":arena",
+          ":stack",
+          ":static",
+          ":foreign"
+        ]
+      },
+      "profile": ":native"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":forbidden",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":stack",
+          ":static",
+          ":bounded-region",
+          ":bounded-arena",
+          ":mmio"
+        ]
+      },
+      "profile": ":firmware"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":forbidden",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":stack",
+          ":static",
+          ":page-frame",
+          ":kernel-arena",
+          ":mmio"
+        ]
+      },
+      "profile": ":kernel"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":forbidden",
+        "raw_memory": ":not-runtime",
+        "regimes": [
+          ":register",
+          ":memory-block",
+          ":fifo",
+          ":capability-tagged-storage"
+        ]
+      },
+      "profile": ":hardware"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":runtime-provider",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":durable-state",
+          ":event-log",
+          ":message-schema"
+        ]
+      },
+      "profile": ":distributed"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":provider-declared",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":agent-memory",
+          ":retrieval-index"
+        ]
+      },
+      "profile": ":ai"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":provider-declared",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":device",
+          ":shared-local",
+          ":host-device-boundary"
+        ]
+      },
+      "profile": ":gpu"
+    },
+    {
+      "memory": {
+        "hidden_allocation": ":proof-engine",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":symbolic",
+          ":modeled-region"
+        ]
+      },
+      "profile": ":formal"
+    }
+  ],
+  "namespace_validation_reports": [
+    {
+      "active_profile": ":core",
+      "effective_capabilities": [],
+      "effective_effects": [],
+      "memory_regimes": [
+        ":semantic-immutable"
+      ],
+      "namespace": "gravity.core.algebra",
+      "runtime_assumptions": [],
+      "status": ":accepted",
+      "target": ":portable-typed-core"
+    },
+    {
+      "active_profile": ":meta",
+      "effective_capabilities": [
+        ":build/read-file",
+        ":compiler/ir-transform"
+      ],
+      "effective_effects": [
+        ":build/read-file",
+        ":compiler/read-ir",
+        ":compiler/write-ir"
+      ],
+      "memory_regimes": [
+        ":compiler-owned"
+      ],
+      "namespace": "gravity.compiler.inline",
+      "runtime_assumptions": [
+        ":compiler-artifact-store",
+        ":hermetic-replay"
+      ],
+      "status": ":accepted",
+      "target": ":compiler-host"
+    },
+    {
+      "active_profile": ":hosted",
+      "effective_capabilities": [
+        ":host/runtime"
+      ],
+      "effective_effects": [
+        ":host/interop",
+        ":ui/event-loop"
+      ],
+      "memory_regimes": [
+        ":managed",
+        ":linear-resource"
+      ],
+      "namespace": "gravity.hosted.ui",
+      "runtime_assumptions": [
+        ":host-gc",
+        ":host-exceptions",
+        ":event-loop"
+      ],
+      "status": ":accepted",
+      "target": ":javascript"
+    },
+    {
+      "active_profile": ":native",
+      "effective_capabilities": [
+        ":ffi/c",
+        ":memory/allocator",
+        ":target/simd",
+        ":thread/scheduler"
+      ],
+      "effective_effects": [
+        ":ffi/call",
+        ":memory/allocate",
+        ":target/simd",
+        ":thread/spawn"
+      ],
+      "memory_regimes": [
+        ":ownership",
+        ":region",
+        ":foreign"
+      ],
+      "namespace": "gravity.native.engine",
+      "runtime_assumptions": [
+        ":allocator",
+        ":scheduler"
+      ],
+      "status": ":accepted",
+      "target": ":llvm"
+    },
+    {
+      "active_profile": ":firmware",
+      "effective_capabilities": [
+        ":hardware/mmio",
+        ":interrupt/register",
+        ":memory/static-budget"
+      ],
+      "effective_effects": [
+        ":interrupt/register",
+        ":memory/allocate-bounded",
+        ":memory/mmio"
+      ],
+      "memory_regimes": [
+        ":stack",
+        ":static",
+        ":bounded-region",
+        ":mmio"
+      ],
+      "namespace": "gravity.firmware.sensor",
+      "runtime_assumptions": [
+        ":startup-vector"
+      ],
+      "status": ":accepted",
+      "target": ":cortex-m"
+    },
+    {
+      "active_profile": ":kernel",
+      "effective_capabilities": [
+        ":hardware/mmio",
+        ":kernel/scheduler",
+        ":memory/raw"
+      ],
+      "effective_effects": [
+        ":memory/mmio",
+        ":memory/raw",
+        ":scheduler/operate"
+      ],
+      "memory_regimes": [
+        ":stack",
+        ":static",
+        ":kernel-arena",
+        ":mmio"
+      ],
+      "namespace": "gravity.kernel.uart",
+      "runtime_assumptions": [
+        ":boot-abi",
+        ":kernel-scheduler"
+      ],
+      "status": ":accepted",
+      "target": ":llvm-kernel"
+    },
+    {
+      "active_profile": ":hardware",
+      "effective_capabilities": [
+        ":hardware/capability-target",
+        ":hardware/port"
+      ],
+      "effective_effects": [
+        ":hardware/capability-target",
+        ":hardware/clock",
+        ":hardware/reset",
+        ":hardware/synthesis"
+      ],
+      "memory_regimes": [
+        ":register",
+        ":memory-block",
+        ":capability-tagged-storage"
+      ],
+      "namespace": "gravity.hardware.counter",
+      "runtime_assumptions": [],
+      "status": ":accepted",
+      "target": ":capability-hardware"
+    },
+    {
+      "active_profile": ":distributed",
+      "effective_capabilities": [
+        ":db/query",
+        ":workflow/replay"
+      ],
+      "effective_effects": [
+        ":clock/read",
+        ":database/query",
+        ":message/send",
+        ":workflow/step"
+      ],
+      "memory_regimes": [
+        ":durable-state",
+        ":event-log",
+        ":message-schema"
+      ],
+      "namespace": "gravity.workflow.orders",
+      "runtime_assumptions": [
+        ":workflow-runtime",
+        ":event-log",
+        ":scheduler"
+      ],
+      "status": ":accepted",
+      "target": ":service-runtime"
+    },
+    {
+      "active_profile": ":ai",
+      "effective_capabilities": [
+        ":fs/write",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "effective_effects": [
+        ":ai/human-review",
+        ":filesystem/write",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "memory_regimes": [
+        ":agent-memory",
+        ":retrieval-index"
+      ],
+      "namespace": "gravity.agent.support",
+      "runtime_assumptions": [
+        ":agent-runtime",
+        ":tool-runner",
+        ":policy-engine"
+      ],
+      "status": ":accepted",
+      "target": ":agent-runtime"
+    },
+    {
+      "active_profile": ":gpu",
+      "effective_capabilities": [
+        ":device/memory",
+        ":gpu/device",
+        ":target/feature"
+      ],
+      "effective_effects": [
+        ":device/approx-math",
+        ":device/sync",
+        ":device/transfer",
+        ":gpu/kernel"
+      ],
+      "memory_regimes": [
+        ":device",
+        ":shared-local",
+        ":host-device-boundary"
+      ],
+      "namespace": "gravity.gpu.tanh",
+      "runtime_assumptions": [
+        ":device-runtime",
+        ":kernel-launcher"
+      ],
+      "status": ":accepted",
+      "target": ":spir-v"
+    },
+    {
+      "active_profile": ":formal",
+      "effective_capabilities": [
+        ":proof/kernel",
+        ":solver/call"
+      ],
+      "effective_effects": [
+        ":proof/check",
+        ":solver/call"
+      ],
+      "memory_regimes": [
+        ":symbolic"
+      ],
+      "namespace": "gravity.formal.range",
+      "runtime_assumptions": [
+        ":trusted-kernel",
+        ":symbolic-ir"
+      ],
+      "status": ":accepted",
+      "target": ":symbolic-ir"
+    }
+  ],
+  "phase": "03",
+  "profile_compatibility_matrix": [
+    {
+      "consumer": ":ai",
+      "direct_imports": [
+        ":ai",
+        ":core",
+        ":distributed"
+      ]
+    },
+    {
+      "consumer": ":core",
+      "direct_imports": [
+        ":core"
+      ]
+    },
+    {
+      "consumer": ":distributed",
+      "direct_imports": [
+        ":core",
+        ":distributed"
+      ]
+    },
+    {
+      "consumer": ":firmware",
+      "direct_imports": [
+        ":core",
+        ":firmware"
+      ]
+    },
+    {
+      "consumer": ":formal",
+      "direct_imports": [
+        ":core",
+        ":formal"
+      ]
+    },
+    {
+      "consumer": ":gpu",
+      "direct_imports": [
+        ":core",
+        ":gpu"
+      ]
+    },
+    {
+      "consumer": ":hardware",
+      "direct_imports": [
+        ":core",
+        ":hardware"
+      ]
+    },
+    {
+      "consumer": ":hosted",
+      "direct_imports": [
+        ":core",
+        ":hosted"
+      ]
+    },
+    {
+      "consumer": ":kernel",
+      "direct_imports": [
+        ":core",
+        ":kernel"
+      ]
+    },
+    {
+      "consumer": ":meta",
+      "direct_imports": [
+        ":core",
+        ":meta"
+      ]
+    },
+    {
+      "consumer": ":native",
+      "direct_imports": [
+        ":core",
+        ":native"
+      ]
+    }
+  ],
+  "profile_conformance_fixture_results": [
+    {
+      "accepted_fixture": "profiles/core/accepted.gravity",
+      "diagnostics": [
+        "P2-EFFECT"
+      ],
+      "profile": ":core",
+      "rejected_fixture": "profiles/core/rejected-effect.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/meta/accepted.gravity",
+      "diagnostics": [
+        "P3-BUILD-EFFECT"
+      ],
+      "profile": ":meta",
+      "rejected_fixture": "profiles/meta/rejected-build-effect.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/hosted/accepted.gravity",
+      "diagnostics": [
+        "P4-RAW-MEMORY"
+      ],
+      "profile": ":hosted",
+      "rejected_fixture": "profiles/hosted/rejected-raw-memory.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/native/accepted.gravity",
+      "diagnostics": [
+        "P5-ALLOC"
+      ],
+      "profile": ":native",
+      "rejected_fixture": "profiles/native/rejected-hidden-alloc.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/firmware/accepted.gravity",
+      "diagnostics": [
+        "P6-ALLOC"
+      ],
+      "profile": ":firmware",
+      "rejected_fixture": "profiles/firmware/rejected-unbounded-alloc.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/kernel/accepted.gravity",
+      "diagnostics": [
+        "P7-HIDDEN-ALLOC"
+      ],
+      "profile": ":kernel",
+      "rejected_fixture": "profiles/kernel/rejected-hidden-alloc.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/hardware/accepted.gravity",
+      "diagnostics": [
+        "P8-TAG"
+      ],
+      "profile": ":hardware",
+      "rejected_fixture": "profiles/hardware/rejected-tag-loss.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/distributed/accepted.gravity",
+      "diagnostics": [
+        "P9-REPLAY"
+      ],
+      "profile": ":distributed",
+      "rejected_fixture": "profiles/distributed/rejected-replay.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/ai/accepted.gravity",
+      "diagnostics": [
+        "P10-PROMPT"
+      ],
+      "profile": ":ai",
+      "rejected_fixture": "profiles/ai/rejected-prompt.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/gpu/accepted.gravity",
+      "diagnostics": [
+        "P11-HOST-EFFECT"
+      ],
+      "profile": ":gpu",
+      "rejected_fixture": "profiles/gpu/rejected-host-effect.gravity"
+    },
+    {
+      "accepted_fixture": "profiles/formal/accepted.gravity",
+      "diagnostics": [
+        "P12-NONDETERMINISM"
+      ],
+      "profile": ":formal",
+      "rejected_fixture": "profiles/formal/rejected-nondeterminism.gravity"
+    }
+  ],
+  "profile_manifests": [
+    {
+      "allowed_effects": [],
+      "allowed_forms": [
+        ":fn",
+        ":let",
+        ":if",
+        ":match",
+        ":record",
+        ":result"
+      ],
+      "artifact_boundaries": [
+        ":proof",
+        ":schema-data"
+      ],
+      "capabilities": [],
+      "checked_effects": [],
+      "document": "P2",
+      "forbidden_effects": [
+        ":filesystem/read",
+        ":network/http",
+        ":ffi/call",
+        ":memory/raw",
+        ":thread/spawn",
+        ":model/call",
+        ":tool/invoke",
+        ":host/reflection"
+      ],
+      "memory": {
+        "hidden_allocation": ":not-source-visible",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":semantic-immutable"
+        ]
+      },
+      "name": ":core",
+      "runtime": {
+        "required": false,
+        "services": []
+      },
+      "target_permissions": [
+        ":portable-typed-core"
+      ],
+      "unsafe_policy": ":forbidden"
+    },
+    {
+      "allowed_effects": [
+        ":compiler/read-ir",
+        ":compiler/write-ir",
+        ":build/read-file"
+      ],
+      "allowed_forms": [
+        ":macro",
+        ":defpass",
+        ":analyzer",
+        ":artifact"
+      ],
+      "artifact_boundaries": [
+        ":syntax",
+        ":typed-core",
+        ":mir",
+        ":efir",
+        ":diagnostic"
+      ],
+      "capabilities": [
+        ":compiler/ir-transform",
+        ":build/read-file",
+        ":build/model-call",
+        ":build/tool-call"
+      ],
+      "checked_effects": [
+        ":build/model-call",
+        ":build/tool-call"
+      ],
+      "document": "P3",
+      "forbidden_effects": [
+        ":runtime/fs",
+        ":runtime/secret",
+        ":memory/raw"
+      ],
+      "memory": {
+        "hidden_allocation": ":implementation-only",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":compiler-owned"
+        ]
+      },
+      "name": ":meta",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":compiler-artifact-store",
+          ":hermetic-replay"
+        ]
+      },
+      "target_permissions": [
+        ":compiler-host"
+      ],
+      "unsafe_policy": ":reviewed"
+    },
+    {
+      "allowed_effects": [
+        ":host/interop",
+        ":ui/event-loop",
+        ":filesystem/read"
+      ],
+      "allowed_forms": [
+        ":fn",
+        ":let",
+        ":try",
+        ":host-interop",
+        ":event-loop"
+      ],
+      "artifact_boundaries": [
+        ":host-interop",
+        ":schema",
+        ":service"
+      ],
+      "capabilities": [
+        ":host/runtime",
+        ":fs/read",
+        ":net/client",
+        ":process/spawn"
+      ],
+      "checked_effects": [
+        ":host/reflection",
+        ":host/dynamic-load",
+        ":process/spawn",
+        ":network/http"
+      ],
+      "document": "P4",
+      "forbidden_effects": [
+        ":memory/raw",
+        ":hardware/mmio",
+        ":interrupt/register"
+      ],
+      "memory": {
+        "hidden_allocation": ":declared",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":managed",
+          ":linear-resource"
+        ]
+      },
+      "name": ":hosted",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":host-gc",
+          ":host-exceptions",
+          ":event-loop"
+        ]
+      },
+      "target_permissions": [
+        ":jvm",
+        ":javascript",
+        ":hosted-wasm"
+      ],
+      "unsafe_policy": ":reviewed"
+    },
+    {
+      "allowed_effects": [
+        ":memory/allocate",
+        ":ffi/call",
+        ":thread/spawn",
+        ":filesystem/read"
+      ],
+      "allowed_forms": [
+        ":fn",
+        ":let",
+        ":try",
+        ":unsafe",
+        ":extern"
+      ],
+      "artifact_boundaries": [
+        ":ffi",
+        ":native-object",
+        ":abi"
+      ],
+      "capabilities": [
+        ":memory/allocator",
+        ":ffi/c",
+        ":thread/scheduler",
+        ":fs/read",
+        ":target/simd"
+      ],
+      "checked_effects": [
+        ":memory/raw",
+        ":atomic/order",
+        ":target/simd",
+        ":optimization/check-erasure"
+      ],
+      "document": "P5",
+      "forbidden_effects": [
+        ":host/reflection",
+        ":host/dynamic-eval",
+        ":model/call"
+      ],
+      "memory": {
+        "hidden_allocation": ":declared",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":ownership",
+          ":borrowing",
+          ":region",
+          ":arena",
+          ":stack",
+          ":static",
+          ":foreign"
+        ]
+      },
+      "name": ":native",
+      "runtime": {
+        "required": false,
+        "services": [
+          ":allocator",
+          ":scheduler",
+          ":optional-gc"
+        ]
+      },
+      "target_permissions": [
+        ":llvm",
+        ":native-wasm"
+      ],
+      "unsafe_policy": ":reviewed"
+    },
+    {
+      "allowed_effects": [
+        ":memory/allocate-bounded",
+        ":interrupt/register",
+        ":memory/mmio"
+      ],
+      "allowed_forms": [
+        ":fn",
+        ":let",
+        ":interrupt-handler",
+        ":device-map"
+      ],
+      "artifact_boundaries": [
+        ":firmware-image",
+        ":linker-script",
+        ":device-map"
+      ],
+      "capabilities": [
+        ":hardware/mmio",
+        ":interrupt/register",
+        ":memory/static-budget"
+      ],
+      "checked_effects": [
+        ":memory/raw",
+        ":atomic/order",
+        ":timing/bounded-loop"
+      ],
+      "document": "P6",
+      "forbidden_effects": [
+        ":gc",
+        ":host/reflection",
+        ":host/dynamic-eval",
+        ":network/http",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "memory": {
+        "hidden_allocation": ":forbidden",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":stack",
+          ":static",
+          ":bounded-region",
+          ":bounded-arena",
+          ":mmio"
+        ]
+      },
+      "name": ":firmware",
+      "runtime": {
+        "required": false,
+        "services": [
+          ":startup-vector"
+        ]
+      },
+      "target_permissions": [
+        ":cortex-m",
+        ":embedded-c"
+      ],
+      "unsafe_policy": ":reviewed"
+    },
+    {
+      "allowed_effects": [
+        ":memory/mmio",
+        ":scheduler/operate",
+        ":atomic/order"
+      ],
+      "allowed_forms": [
+        ":fn",
+        ":let",
+        ":interrupt-handler",
+        ":driver-boundary",
+        ":unsafe"
+      ],
+      "artifact_boundaries": [
+        ":kernel-module",
+        ":driver-abi",
+        ":device-map"
+      ],
+      "capabilities": [
+        ":hardware/mmio",
+        ":interrupt/register",
+        ":kernel/scheduler",
+        ":memory/raw"
+      ],
+      "checked_effects": [
+        ":memory/raw",
+        ":interrupt/register",
+        ":critical-section"
+      ],
+      "document": "P7",
+      "forbidden_effects": [
+        ":gc",
+        ":host/reflection",
+        ":host/dynamic-eval",
+        ":network/http",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "memory": {
+        "hidden_allocation": ":forbidden",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":stack",
+          ":static",
+          ":page-frame",
+          ":kernel-arena",
+          ":mmio"
+        ]
+      },
+      "name": ":kernel",
+      "runtime": {
+        "required": false,
+        "services": [
+          ":boot-abi",
+          ":kernel-scheduler"
+        ]
+      },
+      "target_permissions": [
+        ":llvm-kernel",
+        ":boot-image"
+      ],
+      "unsafe_policy": ":domain-review"
+    },
+    {
+      "allowed_effects": [
+        ":hardware/synthesis",
+        ":hardware/clock",
+        ":hardware/reset"
+      ],
+      "allowed_forms": [
+        ":module",
+        ":register",
+        ":wire",
+        ":port",
+        ":state-machine"
+      ],
+      "artifact_boundaries": [
+        ":hardware-ir",
+        ":hdl",
+        ":netlist",
+        ":timing"
+      ],
+      "capabilities": [
+        ":hardware/port",
+        ":hardware/bus",
+        ":hardware/capability-target"
+      ],
+      "checked_effects": [
+        ":hardware/cdc",
+        ":hardware/capability-target",
+        ":hardware/timing"
+      ],
+      "document": "P8",
+      "forbidden_effects": [
+        ":gc",
+        ":heap/allocate",
+        ":host/io",
+        ":thread/spawn",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "memory": {
+        "hidden_allocation": ":forbidden",
+        "raw_memory": ":not-runtime",
+        "regimes": [
+          ":register",
+          ":memory-block",
+          ":fifo",
+          ":capability-tagged-storage"
+        ]
+      },
+      "name": ":hardware",
+      "runtime": {
+        "required": false,
+        "services": []
+      },
+      "target_permissions": [
+        ":verilog",
+        ":capability-hardware"
+      ],
+      "unsafe_policy": ":hardware-audit"
+    },
+    {
+      "allowed_effects": [
+        ":workflow/step",
+        ":message/send",
+        ":database/query",
+        ":network/http"
+      ],
+      "allowed_forms": [
+        ":workflow",
+        ":workflow-step",
+        ":actor",
+        ":service-boundary"
+      ],
+      "artifact_boundaries": [
+        ":workflow-graph",
+        ":message-schema",
+        ":event-log"
+      ],
+      "capabilities": [
+        ":net/client",
+        ":db/query",
+        ":workflow/replay",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "checked_effects": [
+        ":clock/read",
+        ":random/read",
+        ":model/call",
+        ":tool/invoke"
+      ],
+      "document": "P9",
+      "forbidden_effects": [
+        ":memory/raw",
+        ":hardware/mmio",
+        ":interrupt/register"
+      ],
+      "memory": {
+        "hidden_allocation": ":runtime-provider",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":durable-state",
+          ":event-log",
+          ":message-schema"
+        ]
+      },
+      "name": ":distributed",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":workflow-runtime",
+          ":event-log",
+          ":scheduler"
+        ]
+      },
+      "target_permissions": [
+        ":service-runtime"
+      ],
+      "unsafe_policy": ":service-boundary-review"
+    },
+    {
+      "allowed_effects": [
+        ":model/call",
+        ":embedding/call",
+        ":tool/invoke",
+        ":ai/human-review",
+        ":memory/read",
+        ":memory/write"
+      ],
+      "allowed_forms": [
+        ":defagent",
+        ":defmodel",
+        ":deftool",
+        ":defprompt",
+        ":defmemory"
+      ],
+      "artifact_boundaries": [
+        ":agent-manifest",
+        ":tool-schema",
+        ":replay-log"
+      ],
+      "capabilities": [
+        ":model/call",
+        ":embedding/call",
+        ":tool/invoke",
+        ":secret/read",
+        ":fs/write",
+        ":net/client"
+      ],
+      "checked_effects": [
+        ":filesystem/write",
+        ":network/http",
+        ":shell/exec",
+        ":deploy/publish"
+      ],
+      "document": "P10",
+      "forbidden_effects": [
+        ":memory/raw",
+        ":ffi/call"
+      ],
+      "memory": {
+        "hidden_allocation": ":provider-declared",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":agent-memory",
+          ":retrieval-index"
+        ]
+      },
+      "name": ":ai",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":agent-runtime",
+          ":tool-runner",
+          ":policy-engine"
+        ]
+      },
+      "target_permissions": [
+        ":agent-runtime"
+      ],
+      "unsafe_policy": ":human-review"
+    },
+    {
+      "allowed_effects": [
+        ":gpu/kernel",
+        ":device/transfer",
+        ":device/sync"
+      ],
+      "allowed_forms": [
+        ":kernel",
+        ":device-buffer",
+        ":workgroup",
+        ":barrier"
+      ],
+      "artifact_boundaries": [
+        ":kernel-ir",
+        ":transfer-graph",
+        ":math-certificate"
+      ],
+      "capabilities": [
+        ":gpu/device",
+        ":device/memory",
+        ":target/feature"
+      ],
+      "checked_effects": [
+        ":device/atomic",
+        ":device/approx-math",
+        ":target/intrinsic"
+      ],
+      "document": "P11",
+      "forbidden_effects": [
+        ":filesystem/read",
+        ":network/http",
+        ":process/spawn",
+        ":model/call",
+        ":host/reflection"
+      ],
+      "memory": {
+        "hidden_allocation": ":provider-declared",
+        "raw_memory": ":unsafe-only",
+        "regimes": [
+          ":device",
+          ":shared-local",
+          ":host-device-boundary"
+        ]
+      },
+      "name": ":gpu",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":device-runtime",
+          ":kernel-launcher"
+        ]
+      },
+      "target_permissions": [
+        ":spir-v",
+        ":cuda",
+        ":webgpu"
+      ],
+      "unsafe_policy": ":reviewed"
+    },
+    {
+      "allowed_effects": [
+        ":proof/check"
+      ],
+      "allowed_forms": [
+        ":prove",
+        ":lemma",
+        ":assume",
+        ":symbolic"
+      ],
+      "artifact_boundaries": [
+        ":proof-object",
+        ":assumption-manifest",
+        ":certificate-chain"
+      ],
+      "capabilities": [
+        ":proof/kernel",
+        ":solver/call",
+        ":proof/import"
+      ],
+      "checked_effects": [
+        ":solver/call",
+        ":proof/import",
+        ":math/approximation"
+      ],
+      "document": "P12",
+      "forbidden_effects": [
+        ":filesystem/read",
+        ":network/http",
+        ":clock/read",
+        ":random/read",
+        ":model/call",
+        ":tool/invoke",
+        ":memory/raw"
+      ],
+      "memory": {
+        "hidden_allocation": ":proof-engine",
+        "raw_memory": ":forbidden",
+        "regimes": [
+          ":symbolic",
+          ":modeled-region"
+        ]
+      },
+      "name": ":formal",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":trusted-kernel",
+          ":symbolic-ir"
+        ]
+      },
+      "target_permissions": [
+        ":symbolic-ir"
+      ],
+      "unsafe_policy": ":forbidden"
+    }
+  ],
+  "runtime_assumption_records": [
+    {
+      "profile": ":core",
+      "runtime": {
+        "required": false,
+        "services": []
+      }
+    },
+    {
+      "profile": ":meta",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":compiler-artifact-store",
+          ":hermetic-replay"
+        ]
+      }
+    },
+    {
+      "profile": ":hosted",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":host-gc",
+          ":host-exceptions",
+          ":event-loop"
+        ]
+      }
+    },
+    {
+      "profile": ":native",
+      "runtime": {
+        "required": false,
+        "services": [
+          ":allocator",
+          ":scheduler",
+          ":optional-gc"
+        ]
+      }
+    },
+    {
+      "profile": ":firmware",
+      "runtime": {
+        "required": false,
+        "services": [
+          ":startup-vector"
+        ]
+      }
+    },
+    {
+      "profile": ":kernel",
+      "runtime": {
+        "required": false,
+        "services": [
+          ":boot-abi",
+          ":kernel-scheduler"
+        ]
+      }
+    },
+    {
+      "profile": ":hardware",
+      "runtime": {
+        "required": false,
+        "services": []
+      }
+    },
+    {
+      "profile": ":distributed",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":workflow-runtime",
+          ":event-log",
+          ":scheduler"
+        ]
+      }
+    },
+    {
+      "profile": ":ai",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":agent-runtime",
+          ":tool-runner",
+          ":policy-engine"
+        ]
+      }
+    },
+    {
+      "profile": ":gpu",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":device-runtime",
+          ":kernel-launcher"
+        ]
+      }
+    },
+    {
+      "profile": ":formal",
+      "runtime": {
+        "required": true,
+        "services": [
+          ":trusted-kernel",
+          ":symbolic-ir"
+        ]
+      }
+    }
+  ]
+}

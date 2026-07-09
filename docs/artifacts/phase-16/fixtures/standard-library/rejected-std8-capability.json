@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "io_filesystem_library": {"missing_filesystem_capability": true}}

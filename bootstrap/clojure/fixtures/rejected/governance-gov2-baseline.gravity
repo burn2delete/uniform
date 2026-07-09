@@ -1,0 +1,11 @@
+; Rejected P17 GOV2 fixture.
+(ns governance.gov2-baseline
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov2001}}}))
+
+(defn main [] :- I64 1)

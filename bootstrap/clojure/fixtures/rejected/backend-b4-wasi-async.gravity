@@ -1,0 +1,4 @@
+(ns backend.b4-wasi-async
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:hosted-lowering {:fail :b4-wasi-async}}}))

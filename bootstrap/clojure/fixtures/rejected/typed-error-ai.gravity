@@ -1,0 +1,10 @@
+(ns typed.error.ai
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (ai/error-unsafe))

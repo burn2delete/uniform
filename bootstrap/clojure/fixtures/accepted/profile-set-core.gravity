@@ -1,0 +1,18 @@
+(ns profile.set.core
+  (:profile :core)
+  (:target :jvm)
+  (:requires [gravity.typed :as typed :profile :core]
+             [gravity.union :as union :profile :core])
+  (:exports [value result choice])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value
+  (typed/value :Integer 1))
+
+(def result
+  (union/ok :Result value))
+
+(def choice
+  (if true value value))

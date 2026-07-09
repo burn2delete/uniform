@@ -1,0 +1,17 @@
+(ns core.app.runtime-capability-grant
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:runtime {:compiled-gate
+                        {:capability-decisions
+                         [{:action-id "core-app/stdout"
+                           :principal :core.app/main
+                           :effect :io/write
+                           :capability :io/stdout
+                           :provider :clojure-jvm-stdout
+                           :decision :deny}]}}}))
+
+(defn main []
+  (println "bad runtime capability"))

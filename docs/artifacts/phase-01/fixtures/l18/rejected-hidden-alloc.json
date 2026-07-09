@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/active_profile": ":firmware",
+    "/allocation_strategy/hidden": true
+  }
+}

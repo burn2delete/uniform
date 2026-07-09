@@ -1,0 +1,41 @@
+{:phase "05"
+ :task "P05-D071"
+ :document "MATH3"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md"
+ :artifact-kind :gravity/stage0-efir-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-efir.gravity"
+ :covered-artifact-fields
+ [:efir-graph
+  :domain-environment
+  :codomain-facts
+  :proof-obligation-seed-list
+  :source-anchor-map
+  :runtime-implementation-anchor
+  :rewrite-records
+  :eml-lowering-records
+  :efir-conformance-results]
+ :required-diagnostic-ids
+ ["MATH3-NODE" "MATH3-DOMAIN" "MATH3-CODOMAIN"
+  "MATH3-BRANCH" "MATH3-PRECISION" "MATH3-SOURCE"
+  "MATH3-REWRITE" "MATH3-EML" "MATH3-RUNTIME"]
+ :rejected-fixtures
+ [{:fixture "math-efir-node.gravity" :diagnostic "MATH3-NODE"}
+  {:fixture "math-efir-graph-domain.gravity" :diagnostic "MATH3-DOMAIN"}
+  {:fixture "math-efir-graph-codomain.gravity" :diagnostic "MATH3-CODOMAIN"}
+  {:fixture "math-efir-graph-branch.gravity" :diagnostic "MATH3-BRANCH"}
+  {:fixture "math-efir-graph-precision.gravity" :diagnostic "MATH3-PRECISION"}
+  {:fixture "math-efir-graph-source.gravity" :diagnostic "MATH3-SOURCE"}
+  {:fixture "math-efir-rewrite.gravity" :diagnostic "MATH3-REWRITE"}
+  {:fixture "math-efir-eml.gravity" :diagnostic "MATH3-EML"}
+  {:fixture "math-efir-runtime.gravity" :diagnostic "MATH3-RUNTIME"}]
+ :capability-based-proof
+ {:node-shapes-checked? true
+  :domain-and-codomain-attached? true
+  :branch-policy-preserved? true
+  :numeric-mode-and-precision-attached? true
+  :source-and-semantic-anchors-present? true
+  :rewrites-proof-gated? true
+  :eml-lowering-fact-preserving? true
+  :runtime-anchor-checked? true
+  :status :complete}
+ :status :complete}

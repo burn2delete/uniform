@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/diagnostic_system/diagnostics/0/leaks_secret": true
+  }
+}

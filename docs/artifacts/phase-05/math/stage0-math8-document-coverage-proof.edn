@@ -1,0 +1,35 @@
+{:phase "05"
+ :task "P05-D076"
+ :document "MATH8"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/076-math8-floating-point-semantics-specification.md"
+ :artifact-kind :gravity/stage0-numeric-mode-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-numeric-modes.gravity"
+ :covered-artifact-fields
+ [:floating-manifest
+  :target-format-map
+  :rounding-exception-policy-table]
+ :required-diagnostic-ids
+ ["MATH8-MANIFEST" "MATH8-FORMAT" "MATH8-ROUNDING"
+  "MATH8-NAN" "MATH8-INF" "MATH8-ZERO" "MATH8-DENORMAL"
+  "MATH8-FMA" "MATH8-REASSOC" "MATH8-STATUS" "MATH8-BACKEND"]
+ :rejected-fixtures
+ [{:fixture "math-float-manifest.gravity" :diagnostic "MATH8-MANIFEST"}
+  {:fixture "math-float-format.gravity" :diagnostic "MATH8-FORMAT"}
+  {:fixture "math-float-rounding.gravity" :diagnostic "MATH8-ROUNDING"}
+  {:fixture "math-float-nan.gravity" :diagnostic "MATH8-NAN"}
+  {:fixture "math-float-inf.gravity" :diagnostic "MATH8-INF"}
+  {:fixture "math-float-zero.gravity" :diagnostic "MATH8-ZERO"}
+  {:fixture "math-float-denormal.gravity" :diagnostic "MATH8-DENORMAL"}
+  {:fixture "math-float-fma.gravity" :diagnostic "MATH8-FMA"}
+  {:fixture "math-float-reassoc.gravity" :diagnostic "MATH8-REASSOC"}
+  {:fixture "math-float-status.gravity" :diagnostic "MATH8-STATUS"}
+  {:fixture "math-float-backend.gravity" :diagnostic "MATH8-BACKEND"}]
+ :capability-based-proof
+ {:floating-manifests-complete? true
+  :rounding-explicit? true
+  :exceptional-values-explicit? true
+  :strict-fma-and-reassociation-guarded? true
+  :status-flags-preserved? true
+  :backend-preservation-checked? true
+  :status :complete}
+ :status :complete}

@@ -1,0 +1,63 @@
+{:proof-id :stage0-perf6-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D064
+ :document "PERF6"
+ :governing-document "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md"
+ :status :passed
+ :implementation-surface
+ {:command "performance-governance"
+  :entrypoint :gravity.bootstrap/performance-governance-file-artifact
+  :artifact-kind :gravity/stage0-performance-governance-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/performance-governance.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/governance-pgo-data-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-stale.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-identity.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-privacy.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-decision.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-safety.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-repro.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-pgo-workload.gravity"]}
+ :accepted-behavior
+ ["PGO data is keyed by source hash, typed artifact hash, MIR hash, compiler version, profile, target, provider versions, and workload"
+  "PGO status records distinguish accepted, stale, rejected, advisory, and required-missing data"
+  "privacy reports require aggregation or redaction and taint-clean inputs"
+  "PGO decisions log pass id, profile-data identity, preserved facts, and replayable inputs"]
+ :rejected-behavior
+ ["required PGO data missing"
+  "stale PGO data used for release"
+  "identity fields missing or mismatched"
+  "unredacted or tainted profile data"
+  "missing decision log"
+  "decision loses semantic, safety, effect, capability, profile, taint, numeric, or unsafe-audit facts"
+  "non-replayable PGO decision"
+  "workload mismatch"]
+ :required-artifacts
+ [:pgo-profile-data-schema
+  :pgo-hot-cold-map
+  :pgo-decision-log
+  :pgo-staleness-report
+  :pgo-privacy-report
+  :pgo-reproducibility-record]
+ :diagnostics
+ ["PERF6-DATA-MISSING" "PERF6-STALE" "PERF6-IDENTITY"
+  "PERF6-PRIVACY" "PERF6-DECISION" "PERF6-SAFETY"
+  "PERF6-REPRO" "PERF6-WORKLOAD"]
+ :dependencies
+ ["PERF1" "PERF5" "D6" "D9" "SAFE15" "privacy and taint facts"]
+ :conformance
+ {:profile-data-identity :complete
+  :staleness-and-required-missing-policy :complete
+  :privacy-redaction-policy :complete
+  :decision-log-and-fact-preservation :complete
+  :reproducibility-record :complete
+  :workload-match-policy :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 39 tests containing 1989 assertions. 0 failures, 0 errors."}
+  {:command "clojure -M -e '(require ... performance-governance summary)'"
+   :output "{:pgo 1, :diagnostics 24, :proof :complete, :status :complete}"}]
+ :limits
+ ["This completes PERF6 document coverage only for the Clojure stage0 governance artifact boundary."
+  "It does not claim a production profiler, backend PGO pass, or self-hosting."]}

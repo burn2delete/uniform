@@ -1,0 +1,81 @@
+{:capability-based-proof
+ {:accepted-fixtures-covered? true,
+  :tool-agent-memory-policy-covered? true,
+  :ai-programming-surface-covered? true,
+  :injection-defense-covered? true,
+  :document-coverage-complete? true,
+  :workflow-replay-covered? true,
+  :rejected-fixtures-covered? true,
+  :status :complete,
+  :diagnostics-covered? true,
+  :conformance-evidence-covered? true,
+  :evaluation-and-human-review-covered? true,
+  :provider-and-prompt-covered? true},
+ :artifact-id
+ "sha256:54c1c6830ee382ee8a62bf5df4c44f355900e7649cd9e350040415421818ebc4",
+ :command
+ "clojure -M:gravity ai-agentic bootstrap/clojure/fixtures/accepted/ai-agentic.gravity",
+ :document-set
+ ["A1" "A2" "A3" "A4" "A5" "A6" "A7" "A8" "A9" "A10" "A11"],
+ :phase "11",
+ :test-command "clojure -M:test",
+ :test-result
+ {:tests 111,
+  :assertions 7116,
+  :failures 0,
+  :errors 0,
+  :banner-rejected-fixtures 1467},
+ :source "bootstrap/clojure/fixtures/accepted/ai-agentic.gravity",
+ :tasks
+ {"P11-T06" :complete,
+  "P11-D164" :complete,
+  "P11-D163" :complete,
+  "P11-D162" :complete,
+  "P11-D159" :complete,
+  "P11-D158" :complete,
+  "P11-D156" :complete,
+  "P11-D155" :complete,
+  "P11-T05" :complete,
+  "P11-T01" :complete,
+  "P11-T04" :complete,
+  "P11-T03" :complete,
+  "P11-D160" :complete,
+  "P11-T02" :complete,
+  "P11-D157" :complete,
+  "P11-D161" :complete,
+  "P11-D154" :complete},
+ :status :complete,
+ :kind :gravity/stage0-phase11-ai-agentic-proof,
+ :ai-artifact-families
+ [:ai-program-manifest
+  :model-manifest
+  :prompt-artifact
+  :tool-schema
+  :agent-manifest
+  :workflow-graph
+  :memory-policy
+  :policy-manifest
+  :evaluation-report
+  :human-review-manifest
+  :injection-defense],
+ :ai-agentic-results
+ {:document-contracts 11,
+  :artifact-families 11,
+  :accepted-fixtures 11,
+  :rejected-fixtures 11,
+  :conformance-records 11,
+  :diagnostic-count 91,
+  :status :complete},
+ :rejected-fixture-diagnostics
+ ["AI004"
+  "A2001"
+  "A3003"
+  "A4005"
+  "A5005"
+  "A6001"
+  "A7004"
+  "A8004"
+  "A9001"
+  "A10005"
+  "A11002"],
+ :artifact-kind :gravity/stage0-ai-agentic-artifact}

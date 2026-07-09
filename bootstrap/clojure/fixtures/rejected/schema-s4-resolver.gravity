@@ -1,0 +1,12 @@
+; Rejected P10 S4 fixture.
+(ns schema.s4-resolver
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive :database/read})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s4-resolver}}}))
+
+(defn main [] :- I64 4)

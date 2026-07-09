@@ -1,0 +1,11 @@
+(ns typed.handler.capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:network/http})
+  (:capabilities #{:test/fixture})
+  (:safety :safe))
+
+(def bad
+  (effect/handle :network/http :test/http-fixture
+    (http/get "https://example.test")))

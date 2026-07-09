@@ -1,0 +1,5 @@
+(ns l9.bad.panic
+  (:profile :hardware))
+
+(def bad
+  (panic "not lowerable"))

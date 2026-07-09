@@ -1,0 +1,198 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:fd3a69be4a907ec0270e245087bbe81e4c2d636625951f0200251ca090ea5064",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "source schema identity, version, hash, boundaries, compatibility, derivation targets, validators, taint, effects, and projection constraints"
+      ],
+      "document": "S1",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D145"
+    },
+    {
+      "artifact_hash": "sha256:9e6fbb142a9fc3af38677429bf5208c7b16623a3ed1910bfc4ed2b5352436976",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "serializer manifest, trust boundary, schema hash, taint retention, compatibility report, and round-trip vectors"
+      ],
+      "document": "S2",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D146"
+    },
+    {
+      "artifact_hash": "sha256:0187ada35423e3ae009e9cb70f9f9651c02ee663a89d0b34081895468fa6dffe",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "canonical version, schema hash, deterministic ordering, numeric/string/metadata policy, reference vectors, hash input, and signing input"
+      ],
+      "document": "S3",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D147"
+    },
+    {
+      "artifact_hash": "sha256:22f159ef6808d6eea524214c603da8f1e73a0f4308a9ff8c662187a6d0bfe15c",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "GraphQL SDL, resolver adapters, typed client, query validation, auth/capability metadata, schema diff, and source maps"
+      ],
+      "document": "S4",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/148-s4-graphql-generation-design.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D148"
+    },
+    {
+      "artifact_hash": "sha256:8c223217180d560c54978851c4a4562a249c08fcd1fb2ff7bdaa07aabf2eba17",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "OpenAPI route metadata, request/response validators, error model, taint boundary, capability metadata, typed client, contract tests, and source maps"
+      ],
+      "document": "S5",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D149"
+    },
+    {
+      "artifact_hash": "sha256:d43ed87f39da7680ebcad8dae79e731e732a0a8ee356f8ceb8082e915759ff98",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "database mapping, migration policy, data-loss report, rollback/forward policy, review record, capabilities, row adapter, and fixture validation"
+      ],
+      "document": "S6",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/150-s6-database-mapping-and-migration-design.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D150"
+    },
+    {
+      "artifact_hash": "sha256:5f7136c3bb19a8adeaf44704bd2991ffc49819a42be49fd77e8464d1b960ee62",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "binary field order, widths, endian, alignment, padding, discriminants, pointer policy, ownership/lifetime, target ABI, reference vectors, and FFI binding input"
+      ],
+      "document": "S7",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/151-s7-binary-encoding-and-abi-schema-specification.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D151"
+    },
+    {
+      "artifact_hash": "sha256:68d245ceebfb01e5343d7052e92e3d4666e89c736cee47fc66b814aab2b93636",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "typed config schema, sources, precedence, defaults, required and secret fields, effects, capabilities, redaction, build reproducibility, and reload policy"
+      ],
+      "document": "S8",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D152"
+    },
+    {
+      "artifact_hash": "sha256:28bd7af4cc5e208b482d4fa4708ff634223e20e3a28589d91a6cae67493dc7e2",
+      "artifact_kind": "schema-interop-artifact",
+      "coverage": [
+        "artifact kinds, schema versions, required fields, content hash, provenance, evidence, release gate, canonical encoding, and compatibility report"
+      ],
+      "document": "S9",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json",
+      "governing_doc": "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md",
+      "schema_id": "TicketClassification",
+      "task_id": "P10-D153"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 9,
+    "documents": 9,
+    "rejected_diagnostics": 9,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9"
+  ],
+  "input_hash": "sha256:8186c7f35fdc826a3d1fc9de298669bd74f6825353cf260385db9197db15070f",
+  "kind": "phase10-schema-document-coverage-artifact",
+  "phase": "10",
+  "rejected": [
+    {
+      "diagnostic": "S1-PROJECTION",
+      "document": "S1",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s1-projection.json",
+      "missing_fact": "non-weakened-projection",
+      "task_id": "P10-D145"
+    },
+    {
+      "diagnostic": "S2-TAINT",
+      "document": "S2",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s2-taint.json",
+      "missing_fact": "taint-boundary-record",
+      "task_id": "P10-D146"
+    },
+    {
+      "diagnostic": "S3-HASH",
+      "document": "S3",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s3-hash.json",
+      "missing_fact": "canonical-byte-input",
+      "task_id": "P10-D147"
+    },
+    {
+      "diagnostic": "S4-RESOLVER",
+      "document": "S4",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s4-resolver.json",
+      "missing_fact": "resolver-effect-capability",
+      "task_id": "P10-D148"
+    },
+    {
+      "diagnostic": "S5-SCHEMA",
+      "document": "S5",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s5-schema.json",
+      "missing_fact": "request-response-schemas",
+      "task_id": "P10-D149"
+    },
+    {
+      "diagnostic": "S6-DATA-LOSS",
+      "document": "S6",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s6-data-loss.json",
+      "missing_fact": "data-loss-policy-review",
+      "task_id": "P10-D150"
+    },
+    {
+      "diagnostic": "S7-POINTER",
+      "document": "S7",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s7-pointer.json",
+      "missing_fact": "ownership-lifetime-map",
+      "task_id": "P10-D151"
+    },
+    {
+      "diagnostic": "S8-SECRET",
+      "document": "S8",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s8-secret.json",
+      "missing_fact": "redaction-policy",
+      "task_id": "P10-D152"
+    },
+    {
+      "diagnostic": "S9-EVIDENCE",
+      "document": "S9",
+      "fixture": "docs/artifacts/phase-10/fixtures/schema/rejected-s9-evidence.json",
+      "missing_fact": "evidence-schema",
+      "task_id": "P10-D153"
+    }
+  ]
+}

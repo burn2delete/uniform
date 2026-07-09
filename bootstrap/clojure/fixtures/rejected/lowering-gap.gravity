@@ -1,0 +1,9 @@
+(ns invalid.lowering-gap
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main []
+  (with-open [x nil]
+    x))

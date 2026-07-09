@@ -1,0 +1,35 @@
+{:phase "05"
+ :task "P05-D075"
+ :document "MATH7"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/075-math7-numeric-modes-and-precision-contracts.md"
+ :artifact-kind :gravity/stage0-numeric-mode-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-numeric-modes.gravity"
+ :covered-artifact-fields
+ [:numeric-mode-environment
+  :precision-contract-table
+  :mode-inheritance-trace
+  :provider-mode-eligibility-report
+  :rounding-exception-policy-table]
+ :required-diagnostic-ids
+ ["MATH7-MISSING" "MATH7-SCOPE" "MATH7-DOWNGRADE"
+  "MATH7-TARGET-DEFAULT" "MATH7-PRECISION" "MATH7-PROVIDER"
+  "MATH7-ROUNDING" "MATH7-EXCEPTIONAL" "MATH7-RESIDUAL"]
+ :rejected-fixtures
+ [{:fixture "math-mode-missing.gravity" :diagnostic "MATH7-MISSING"}
+  {:fixture "math-mode-scope.gravity" :diagnostic "MATH7-SCOPE"}
+  {:fixture "math-mode-downgrade.gravity" :diagnostic "MATH7-DOWNGRADE"}
+  {:fixture "math-mode-target-default.gravity" :diagnostic "MATH7-TARGET-DEFAULT"}
+  {:fixture "math-mode-precision.gravity" :diagnostic "MATH7-PRECISION"}
+  {:fixture "math-mode-provider.gravity" :diagnostic "MATH7-PROVIDER"}
+  {:fixture "math-mode-rounding.gravity" :diagnostic "MATH7-ROUNDING"}
+  {:fixture "math-mode-exceptional.gravity" :diagnostic "MATH7-EXCEPTIONAL"}
+  {:fixture "math-mode-residual.gravity" :diagnostic "MATH7-RESIDUAL"}]
+ :capability-based-proof
+ {:mode-records-explicit? true
+  :precision-contracts-explicit? true
+  :downgrades-require-authorization? true
+  :target-defaults-rejected? true
+  :providers-mode-checked? true
+  :residual-check-policy-enforced? true
+  :status :complete}
+ :status :complete}

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-safety-conformance.json",
+  "set": {
+    "/fixture_results/3/certificate_inspection/passed": false
+  }
+}

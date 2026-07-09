@@ -1,0 +1,8 @@
+(ns invalid.unknown-alias
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main []
+  (missing/call))

@@ -1,0 +1,29 @@
+(ns core.semantics
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [mutable-count main])
+  (:effects #{:io/write :error/throw :state/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def mutable-count 0)
+
+(defn main []
+  (do
+    (let [x 1]
+      (if true
+        (println "core")
+        nil))
+    (quote data)
+    (fn [a] a)
+    (loop [i 0]
+      (if false
+        (recur 1)
+        i))
+    (var mutable-count)
+    (set! mutable-count 2)
+    (try
+      (throw :boom)
+      (catch e e))
+    (match [:ok 1]
+      [:ok value] value)))

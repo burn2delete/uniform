@@ -1,0 +1,12 @@
+; Rejected P10 S5 fixture.
+(ns schema.s5-schema
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s5-schema}}}))
+
+(defn main [] :- I64 5)

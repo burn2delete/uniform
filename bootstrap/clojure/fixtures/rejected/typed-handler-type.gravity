@@ -1,0 +1,10 @@
+(ns typed.handler.type
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (handler/type-mismatch))

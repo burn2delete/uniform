@@ -1,0 +1,19 @@
+(ns profile.bad.compatibility-runtime
+  (:profile :kernel)
+  (:target :jvm)
+  (:requires [native.collections :as nc
+              :profile :native
+              :edge :facade-required
+              :boundary :facade
+              :facade native.collections/kernel-stack
+              :evidence #{:typed-api :safety-proof :no-gc
+                          :no-hidden-allocation :no-throw}
+              :producer-effects #{}
+              :producer-capabilities #{}
+              :memory {:hidden-allocation :forbidden}
+              :runtime {:required true :providers #{:host}}])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

@@ -1,0 +1,11 @@
+; Rejected P15 BOOT6 fixture.
+(ns bootstrap.boot6-environment
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot6001}}}))
+
+(defn main [] :- I64 1)

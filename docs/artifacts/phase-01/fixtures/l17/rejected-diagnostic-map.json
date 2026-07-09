@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/diagnostic_mapping/source_span"
+  ],
+  "extends": "accepted-alternative-type.json"
+}

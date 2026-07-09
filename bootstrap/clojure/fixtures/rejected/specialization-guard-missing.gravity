@@ -1,0 +1,70 @@
+(ns performance.bad.specialization-guard-missing
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/specialization-guard-missing
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:element-type :f32 :length 128}
+                :layout {:buffer :contiguous}
+                :safety-mode :safe-optimized
+                :semantic-proof #{:generic-equivalence}
+                :safety-proof #{:bounds-preserved}
+                :benchmark {:harness :bench/specialization-bad
+                            :environment-fingerprint {:cpu :x86-64}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :specialization
+               {:suite-id :perf3/bad-guard
+                :records
+                [{:record-id :spec/late-guard
+                  :optimization :specialization
+                  :source-function :fixed-map
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :specialization-modes #{:type :const :target}
+                  :behavior-facts #{:T :N :target-features}
+                  :key {:T :F32 :N 128 :target-features #{:avx2}}
+                  :guard "(feature? :avx2)"
+                  :guard-stage :hot-path
+                  :effects #{}
+                  :capabilities #{}
+                  :semantic-proof #{:generic-equivalence}
+                  :safety-proof #{:bounds-preserved}
+                  :artifacts #{:specialized-mir
+                               :guard-table
+                               :source-map}
+                  :partial-evaluation {:pure true
+                                       :build-effects #{}
+                                       :grants #{}
+                                       :hermetic true
+                                       :replay-record :replay/none}
+                  :source-map {:source-map-id :sourcemap/bad-guard}
+                  :cache-key-inputs #{:source
+                                      :macro-expansion
+                                      :T
+                                      :N
+                                      :target-features
+                                      :profile
+                                      :target}
+                  :invalidation-inputs #{:source
+                                         :macro-expansion
+                                         :T
+                                         :N
+                                         :target-features
+                                         :profile
+                                         :target}
+                  :variant-id :variant/bad-guard
+                  :variant-selection {:variant-id :variant/bad-guard
+                                      :strategy :runtime-guard
+                                      :guard-binding :guard/bad-guard
+                                      :profile :native
+                                      :target :llvm-x86-64-linux}}]}}}))
+
+(def bad true)

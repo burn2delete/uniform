@@ -1,0 +1,8 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/safety_pipeline/operations_without_outcome": [
+      "unchecked-pointer-add"
+    ]
+  }
+}

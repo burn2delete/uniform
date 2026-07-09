@@ -1,0 +1,6 @@
+(ns l10.bad.mmio
+  (:profile :kernel)
+  (:effects :memory/mmio))
+
+(def bad
+  (mmio/read status-register))

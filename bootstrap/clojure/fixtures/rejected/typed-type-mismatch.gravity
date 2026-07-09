@@ -1,0 +1,9 @@
+(ns typed.bad.mismatch
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (typed/assert :Integer "not an integer"))

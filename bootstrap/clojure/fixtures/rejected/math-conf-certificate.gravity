@@ -1,0 +1,9 @@
+(ns math.conf-certificate
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:certificate-replay-overrides [{:replayed? false}]}}}))

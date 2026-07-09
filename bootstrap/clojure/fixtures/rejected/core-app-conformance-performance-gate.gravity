@@ -1,0 +1,13 @@
+(ns core.app.conformance-performance-gate
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:performance-regression-reports
+                             [{:artifact-id "performance-report:bad"
+                               :semantic-gates-passed false}]}}}))
+
+(defn main []
+  (println "bad conformance performance gate"))

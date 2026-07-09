@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/9/checks/host_effect_in_kernel": true
+  }
+}

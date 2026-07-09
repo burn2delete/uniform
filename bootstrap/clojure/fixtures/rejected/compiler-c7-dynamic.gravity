@@ -1,0 +1,9 @@
+(ns compiler.c7.dynamic
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :dynamic}}}))
+
+(def value 1)

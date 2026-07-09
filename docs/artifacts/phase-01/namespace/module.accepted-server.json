@@ -1,0 +1,143 @@
+{
+  "alias_table": {
+    "http": "gravity.net.http",
+    "schema": "app.schema"
+  },
+  "capabilities": [
+    ":network/listener",
+    ":io/stdout"
+  ],
+  "definitions": [
+    {
+      "artifact_links": [],
+      "kind": "defn",
+      "latent_effects": [],
+      "name": "main",
+      "profile_restrictions": [],
+      "required_capabilities": [],
+      "safety_mode": null,
+      "source_span": {
+        "end_byte": 349,
+        "end_column": 11,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity",
+        "start_byte": 345,
+        "start_column": 7,
+        "start_line": 12
+      },
+      "visibility": "public"
+    },
+    {
+      "artifact_links": [],
+      "kind": "defn",
+      "latent_effects": [],
+      "name": "start",
+      "profile_restrictions": [],
+      "required_capabilities": [],
+      "safety_mode": null,
+      "source_span": {
+        "end_byte": 398,
+        "end_column": 12,
+        "end_line": 15,
+        "source": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity",
+        "start_byte": 393,
+        "start_column": 7,
+        "start_line": 15
+      },
+      "visibility": "public"
+    },
+    {
+      "artifact_links": [],
+      "kind": "defn",
+      "latent_effects": [],
+      "name": "internal-helper",
+      "profile_restrictions": [],
+      "required_capabilities": [],
+      "safety_mode": null,
+      "source_span": {
+        "end_byte": 441,
+        "end_column": 22,
+        "end_line": 18,
+        "source": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity",
+        "start_byte": 426,
+        "start_column": 7,
+        "start_line": 18
+      },
+      "visibility": "private"
+    }
+  ],
+  "definitions_hash": "sha256:b229295c5cc68a6c9403fb641bd4a4dbf9362519a49ea86a7f76b2a1c627015a",
+  "dependency_graph": {
+    "dependencies": [
+      "gravity.net.http",
+      "app.schema"
+    ],
+    "module": "app.server"
+  },
+  "effects": [
+    ":network/listen",
+    ":io/write"
+  ],
+  "exports": [
+    "main",
+    "start",
+    "stop"
+  ],
+  "imports": [],
+  "kind": "module-artifact",
+  "metadata": [
+    {
+      ":doc": "Namespace analyzer fixture"
+    }
+  ],
+  "module": "app.server",
+  "package": "acme/server",
+  "profile": ":native",
+  "providers": [],
+  "public_api_manifest": {
+    "exports": [
+      "main",
+      "start",
+      "stop"
+    ],
+    "module": "app.server"
+  },
+  "requires": [
+    {
+      "alias": "http",
+      "foreign": false,
+      "module": "gravity.net.http",
+      "profile": ":native",
+      "refer": [],
+      "span": {
+        "end_byte": 95,
+        "end_column": 42,
+        "end_line": 4,
+        "source": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity",
+        "start_byte": 68,
+        "start_column": 15,
+        "start_line": 4
+      }
+    },
+    {
+      "alias": "schema",
+      "foreign": false,
+      "module": "app.schema",
+      "profile": ":native",
+      "refer": [],
+      "span": {
+        "end_byte": 133,
+        "end_column": 38,
+        "end_line": 5,
+        "source": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity",
+        "start_byte": 110,
+        "start_column": 15,
+        "start_line": 5
+      }
+    }
+  ],
+  "safety": ":safe-optimized",
+  "source_hash": "sha256:154fa1befc66a54ce0a02c5f5c815cf72c7c3fdea704f4f5e66354a13cfb2de0",
+  "source_path": "docs/artifacts/phase-01/fixtures/namespace/accepted-server-module.gravity",
+  "target": ":llvm"
+}

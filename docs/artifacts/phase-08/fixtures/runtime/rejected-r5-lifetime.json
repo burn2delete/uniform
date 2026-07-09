@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-runtime-architecture.json",
+  "set": {
+    "/runtime_families/memory/region_escape": true
+  }
+}

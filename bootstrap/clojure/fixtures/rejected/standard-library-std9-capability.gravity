@@ -1,0 +1,11 @@
+; Rejected P16 STD9 fixture.
+(ns standard-library.std9-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:network/http})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std9001}}}))
+
+(defn main [] :- I64 1)

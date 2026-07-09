@@ -1,0 +1,76 @@
+{
+  "artifact_id": "phase-00-change-control-workflow-2026-06-24",
+  "kind": "change-control-workflow",
+  "task": "P00-T05",
+  "source_basis": [
+    "AGENTS.md",
+    "docs/implementation-roadmap.md",
+    "docs/phase-00-foundation-and-thesis/README.md",
+    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+  ],
+  "diagnostics": [
+    "P00-T05-MISSING-EVIDENCE",
+    "P00-T05-AFFECTED-SURFACES",
+    "P00-T05-UNKNOWN-CATEGORY",
+    "D2-SEQUENCE-SKIP",
+    "D2-SAFETY-DEFERRED",
+    "D2-ARTIFACT-MISSING",
+    "D3-PROFILE-TARGET-CONFLATION",
+    "D8-UNCLASSIFIED-DANGER",
+    "D8-CAPABILITY-SAFETY",
+    "D9-PROOF-MISSING",
+    "D9-BOOTSTRAP-EQUIV"
+  ],
+  "change_categories": [
+    {
+      "id": "language-identity",
+      "trigger": "A change alters Gravity source identity, core semantics, language/compiler/runtime boundaries, or the one-language thesis.",
+      "governing_docs": ["D0", "D1", "D3"],
+      "affected_surfaces": ["source forms", "syntax objects", "typed core", "compiler pipeline", "runtime selection", "artifact graph"],
+      "reviewers": ["language-owner", "compiler-owner", "governance-owner"],
+      "required_evidence": ["migration-notes", "compatibility-analysis", "conformance-updates", "affected-document-list", "artifact-schema-updates", "diagnostic-updates"],
+      "blocking_diagnostics": ["P00-T05-MISSING-EVIDENCE", "P00-T05-AFFECTED-SURFACES", "D3-PROFILE-TARGET-CONFLATION"]
+    },
+    {
+      "id": "safety-guarantee",
+      "trigger": "A change permits new unsafe behavior, weakens safe wrappers, changes safety modes, or delays a safety check.",
+      "governing_docs": ["D0", "D6", "D8", "D9"],
+      "affected_surfaces": ["safe-code guarantee", "unsafe island metadata", "optimizer checks", "runtime check manifests", "artifact safety summaries"],
+      "reviewers": ["safety-owner", "compiler-owner", "runtime-owner", "test-owner"],
+      "required_evidence": ["migration-notes", "compatibility-analysis", "conformance-updates", "affected-document-list", "safety-review", "positive-fixtures", "negative-fixtures", "proof-or-runtime-check-evidence"],
+      "blocking_diagnostics": ["D2-SAFETY-DEFERRED", "D8-UNCLASSIFIED-DANGER", "D8-CAPABILITY-SAFETY", "D9-PROOF-MISSING"]
+    },
+    {
+      "id": "profile-legality",
+      "trigger": "A change moves profile validation, effect legality, capability legality, allocation legality, or target legality.",
+      "governing_docs": ["D0", "D2", "D3", "D8"],
+      "affected_surfaces": ["profile manifests", "effect matrices", "capability matrices", "profile diagnostics", "release gates"],
+      "reviewers": ["profile-owner", "compiler-owner", "package-owner", "test-owner"],
+      "required_evidence": ["migration-notes", "compatibility-analysis", "conformance-updates", "affected-document-list", "profile-matrix-updates", "capability-matrix-updates", "positive-fixtures", "negative-fixtures"],
+      "blocking_diagnostics": ["D2-SEQUENCE-SKIP", "D2-SAFETY-DEFERRED", "D8-CAPABILITY-SAFETY"]
+    },
+    {
+      "id": "artifact-provenance",
+      "trigger": "A change weakens or moves artifact identity, source identity, compiler identity, profile, target, effects, capabilities, safety status, or provenance links.",
+      "governing_docs": ["D0", "D2", "D3", "D9"],
+      "affected_surfaces": ["artifact schemas", "provenance graph", "package metadata", "diagnostic bundles", "benchmark reports", "SBOM records"],
+      "reviewers": ["artifact-owner", "package-owner", "compiler-owner", "governance-owner"],
+      "required_evidence": ["migration-notes", "compatibility-analysis", "conformance-updates", "affected-document-list", "artifact-schema-updates", "provenance-replay-evidence", "diagnostic-updates"],
+      "blocking_diagnostics": ["D2-ARTIFACT-MISSING", "D9-PROOF-MISSING"]
+    },
+    {
+      "id": "bootstrap-trust",
+      "trigger": "A change alters seed compiler trust, bootstrap stage order, compiler identity, stage equivalence, or trust retirement.",
+      "governing_docs": ["D0", "D2", "D3", "D9"],
+      "affected_surfaces": ["seed compiler", "bootstrap stage matrix", "compiler identity records", "source hashes", "artifact hashes", "equivalence report"],
+      "reviewers": ["bootstrap-owner", "compiler-owner", "package-owner", "governance-owner"],
+      "required_evidence": ["migration-notes", "compatibility-analysis", "conformance-updates", "affected-document-list", "bootstrap-equivalence-evidence", "reproducible-build-evidence", "trusting-trust-analysis"],
+      "blocking_diagnostics": ["D2-SEQUENCE-SKIP", "D9-BOOTSTRAP-EQUIV"]
+    }
+  ]
+}

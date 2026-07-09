@@ -1,0 +1,13 @@
+(ns core.app.backend-jvm-manifest
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:backend {:compiled-gate
+                        {:jvm-manifests
+                         [{:backend :gravity.backend/jvm
+                           :artifact-id :jvm/core-app}]}}}))
+
+(defn main []
+  (println "bad backend jvm manifest"))

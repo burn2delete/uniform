@@ -1,0 +1,58 @@
+{:kind :gravity/capability-proof
+ :phase :phase-01-core-language
+ :tasks [:P01-T01 :P01-D011]
+ :capability :reader-syntax-object-stream
+ :status :complete
+ :bootstrap {:owner :clojure-bootstrap
+             :stage :stage0
+             :retirement-objective :replace-with-gravity-self-hosted-compiler}
+ :governing-docs ["docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
+                  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/surface-syntax.gravity"
+                     "bootstrap/clojure/fixtures/accepted/reader-abbreviation.gravity"
+                     "bootstrap/clojure/fixtures/accepted/hello.gravity"]
+ :rejected-fixtures [{:path "bootstrap/clojure/fixtures/rejected/malformed.gravity"
+                      :diagnostic "L1-DELIMITER"}
+                     {:path "bootstrap/clojure/fixtures/rejected/map-arity.gravity"
+                      :diagnostic "L1-MAP-ARITY"}
+                     {:path "bootstrap/clojure/fixtures/rejected/invalid-string.gravity"
+                      :diagnostic "L1-STRING"}
+                     {:path "bootstrap/clojure/fixtures/rejected/invalid-ns-shape.gravity"
+                      :diagnostic "L1-NS-SHAPE"}
+                     {:path "bootstrap/clojure/fixtures/rejected/reader-extension.gravity"
+                      :diagnostic "L1-READER-EXTENSION"}
+                     {:path "bootstrap/clojure/fixtures/rejected/metadata.gravity"
+                      :diagnostic "L1-METADATA"}]
+ :artifact-command "clojure -M:gravity read bootstrap/clojure/fixtures/accepted/surface-syntax.gravity"
+ :artifact-summary {:kind :gravity/stage0-reader-artifact
+                    :source {:encoding :utf-8
+                             :byte-count 353
+                             :form-count 2}
+                    :module-context {:module "syntax.surface"
+                                     :profile :hosted
+                                     :target :jvm
+                                     :effects [:io/write]
+                                     :capabilities [:io/stdout]
+                                     :safety :safe}
+                    :syntax-object-requirements [:byte-spans
+                                                 :line-column-spans
+                                                 :reader-origin
+                                                 :metadata
+                                                 :namespace-context
+                                                 :profile-context
+                                                 :generated-origin]}
+ :validation [{:command "clojure -M:test"
+               :output "Ran 7 tests containing 111 assertions. 0 failures, 0 errors."}
+              {:command "clojure -M:gravity read bootstrap/clojure/fixtures/accepted/surface-syntax.gravity"
+               :output "emitted :gravity/stage0-reader-artifact with 2 syntax objects"}
+              {:command "python3 tools/validate_gravity_docs.py"
+               :output "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}]
+ :non-claims [:core-semantics
+              :namespace-resolution
+              :macro-expansion-completeness
+              :type-checking
+              :effect-checking
+              :native-lowering
+              :self-hosting]}

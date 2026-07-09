@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/4/linear_resource/paths/1/terminal_operations": []
+  }
+}

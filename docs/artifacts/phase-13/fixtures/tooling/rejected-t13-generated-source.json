@@ -1,0 +1,9 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "ai_tooling_record": {
+      "unchecked_generated_source": true
+    }
+  }
+}

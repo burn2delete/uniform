@@ -1,0 +1,347 @@
+START ai-agentic-artifact-preserves-p11-contract
+END ai-agentic-artifact-preserves-p11-contract ms 34.82875 counters nil
+START ai-repl-ffi-capability-artifact-preserves-p08-t05-contract
+END ai-repl-ffi-capability-artifact-preserves-p08-t05-contract ms 500.189667 counters nil
+START alternative-macro-artifact-preserves-l16-boundary
+END alternative-macro-artifact-preserves-l16-boundary ms 15.553583 counters nil
+START alternative-memory-artifact-preserves-l18-boundary
+END alternative-memory-artifact-preserves-l18-boundary ms 13.44225 counters nil
+START alternative-type-artifact-preserves-l17-boundary
+END alternative-type-artifact-preserves-l17-boundary ms 9.0795 counters nil
+START approximation-artifact-preserves-math5-contract
+END approximation-artifact-preserves-math5-contract ms 12.892375 counters nil
+START artifact-emission-artifact-preserves-p07-t05-contract
+END artifact-emission-artifact-preserves-p07-t05-contract ms 258.625042 counters nil
+START b1-document-artifact-preserves-p07-d098-contract
+END b1-document-artifact-preserves-p07-d098-contract ms 62.076667 counters nil
+START b10-document-artifact-preserves-p07-d107-contract
+END b10-document-artifact-preserves-p07-d107-contract ms 65.76 counters nil
+START b11-document-artifact-preserves-p07-d108-contract
+END b11-document-artifact-preserves-p07-d108-contract ms 65.713958 counters nil
+START b11-document-artifact-preserves-qst-source-paths
+END b11-document-artifact-preserves-qst-source-paths ms 58.721584 counters nil
+START b12-document-artifact-preserves-p07-d109-contract
+END b12-document-artifact-preserves-p07-d109-contract ms 77.3005 counters nil
+START b12-document-artifact-preserves-qst-source-paths
+END b12-document-artifact-preserves-qst-source-paths ms 64.938375 counters nil
+START b13-document-artifact-preserves-p07-d110-contract
+END b13-document-artifact-preserves-p07-d110-contract ms 253.233167 counters nil
+START b13-document-artifact-preserves-qst-source-paths
+END b13-document-artifact-preserves-qst-source-paths ms 233.762 counters nil
+START b13-document-rejected-qst-preserves-source-path
+END b13-document-rejected-qst-preserves-source-path ms 1.561375 counters nil
+START b14-document-artifact-preserves-p07-d111-contract
+END b14-document-artifact-preserves-p07-d111-contract ms 263.085458 counters nil
+START b2-document-artifact-preserves-p07-d099-contract
+END b2-document-artifact-preserves-p07-d099-contract ms 61.271209 counters nil
+START b2-document-artifact-preserves-qst-source-paths
+END b2-document-artifact-preserves-qst-source-paths ms 63.508375 counters nil
+START b3-document-artifact-preserves-p07-d100-contract
+END b3-document-artifact-preserves-p07-d100-contract ms 60.536041 counters nil
+START b4-document-artifact-preserves-p07-d101-contract
+END b4-document-artifact-preserves-p07-d101-contract ms 65.660167 counters nil
+START b5-document-artifact-preserves-p07-d102-contract
+END b5-document-artifact-preserves-p07-d102-contract ms 60.869792 counters nil
+START b6-document-artifact-preserves-p07-d103-contract
+END b6-document-artifact-preserves-p07-d103-contract ms 63.128292 counters nil
+START b7-document-artifact-preserves-p07-d104-contract
+END b7-document-artifact-preserves-p07-d104-contract ms 58.614583 counters nil
+START b8-document-artifact-preserves-p07-d105-contract
+END b8-document-artifact-preserves-p07-d105-contract ms 73.451833 counters nil
+START b9-document-artifact-preserves-p07-d106-contract
+END b9-document-artifact-preserves-p07-d106-contract ms 60.922875 counters nil
+START backend-interface-artifact-preserves-p07-t01-contract
+END backend-interface-artifact-preserves-p07-t01-contract ms 53.2265 counters nil
+START backend-test-matrix-artifact-preserves-p07-t06-contract
+END backend-test-matrix-artifact-preserves-p07-t06-contract ms 219.578417 counters nil
+START bootstrap-self-hosting-artifact-preserves-p15-contract
+END bootstrap-self-hosting-artifact-preserves-p15-contract ms 7.569667 counters nil
+START boundary-safety-artifact-preserves-safe7-safe8-safe9-safe11-boundaries
+END boundary-safety-artifact-preserves-safe7-safe8-safe9-safe11-boundaries ms 32.27325 counters nil
+START c1-architecture-artifact-preserves-p06-d080-contract
+END c1-architecture-artifact-preserves-p06-d080-contract ms 290.267916 counters nil
+START c10-safety-analysis-artifact-preserves-p06-d089-contract
+END c10-safety-analysis-artifact-preserves-p06-d089-contract ms 44.385459 counters nil
+START c11-mir-spec-artifact-preserves-p06-d090-contract
+END c11-mir-spec-artifact-preserves-p06-d090-contract ms 47.611 counters nil
+START c12-domain-ir-architecture-artifact-preserves-p06-d091-contract
+END c12-domain-ir-architecture-artifact-preserves-p06-d091-contract ms 48.149208 counters nil
+START c13-mir-optimization-artifact-preserves-p06-d092-contract
+END c13-mir-optimization-artifact-preserves-p06-d092-contract ms 50.244791 counters nil
+START c14-target-lowering-artifact-preserves-p06-d093-contract
+END c14-target-lowering-artifact-preserves-p06-d093-contract ms 49.268083 counters nil
+START c15-compiler-diagnostics-artifact-preserves-p06-d094-contract
+END c15-compiler-diagnostics-artifact-preserves-p06-d094-contract ms 54.091875 counters nil
+START c16-incremental-compilation-artifact-preserves-p06-d095-contract
+END c16-incremental-compilation-artifact-preserves-p06-d095-contract ms 52.916667 counters nil
+START c17-compiler-plugin-artifact-preserves-p06-d096-contract
+END c17-compiler-plugin-artifact-preserves-p06-d096-contract ms 55.819416 counters nil
+START c18-compiler-verification-artifact-preserves-p06-d097-contract
+END c18-compiler-verification-artifact-preserves-p06-d097-contract ms 57.091125 counters nil
+START c2-reader-artifact-preserves-p06-d081-contract
+END c2-reader-artifact-preserves-p06-d081-contract ms 17.406042 counters nil
+START c3-syntax-artifact-preserves-p06-d082-contract
+END c3-syntax-artifact-preserves-p06-d082-contract ms 9.769042 counters nil
+START c4-macro-artifact-preserves-p06-d083-contract
+END c4-macro-artifact-preserves-p06-d083-contract ms 10.842875 counters nil
+START c5-resolution-artifact-preserves-p06-d084-contract
+END c5-resolution-artifact-preserves-p06-d084-contract ms 17.495208 counters nil
+START c6-lowering-artifact-preserves-p06-d085-contract
+END c6-lowering-artifact-preserves-p06-d085-contract ms 25.4715 counters nil
+START c7-type-checker-artifact-preserves-p06-d086-contract
+END c7-type-checker-artifact-preserves-p06-d086-contract ms 35.103708 counters nil
+START c8-effect-checker-artifact-preserves-p06-d087-contract
+END c8-effect-checker-artifact-preserves-p06-d087-contract ms 36.723167 counters nil
+START c9-ownership-checker-artifact-preserves-p06-d088-contract
+END c9-ownership-checker-artifact-preserves-p06-d088-contract ms 40.693625 counters nil
+START capability-provider-artifact-preserves-l15-boundary
+END capability-provider-artifact-preserves-l15-boundary ms 11.573208 counters nil
+START capability-supply-chain-artifact-preserves-safe10-safe14-authority
+END capability-supply-chain-artifact-preserves-safe10-safe14-authority ms 24.214875 counters nil
+START checked-core-artifact-preserves-p06-t02-contract
+END checked-core-artifact-preserves-p06-t02-contract ms 26.986125 counters nil
+START compile-time-artifact-preserves-l12-boundary
+END compile-time-artifact-preserves-l12-boundary ms 6.181375 counters nil
+START compiler-pass-artifact-preserves-p06-t01-contract
+END compiler-pass-artifact-preserves-p06-t01-contract ms 7.78275 counters nil
+START compiler-verification-artifact-preserves-p06-t06-contract
+END compiler-verification-artifact-preserves-p06-t06-contract ms 90.087958 counters nil
+START concurrency-distributed-artifact-preserves-p08-t04-contract
+END concurrency-distributed-artifact-preserves-p08-t04-contract ms 227.321167 counters nil
+START concurrency-model-artifact-preserves-l11-boundary
+END concurrency-model-artifact-preserves-l11-boundary ms 5.53375 counters nil
+START conformance-system-artifact-preserves-p14-contract
+END conformance-system-artifact-preserves-p14-contract ms 8.944417 counters nil
+START constrained-profile-validation-artifact-preserves-p6-p7-p8-p11-p12-contracts
+END constrained-profile-validation-artifact-preserves-p6-p7-p8-p11-p12-contracts ms 12.852292 counters nil
+START core-artifact-preserves-l2-contract
+END core-artifact-preserves-l2-contract ms 2.890917 counters nil
+START dispatch-artifact-preserves-l8-boundary
+END dispatch-artifact-preserves-l8-boundary ms 9.818291 counters nil
+START distributed-ai-profile-artifact-preserves-p9-p10-contracts
+END distributed-ai-profile-artifact-preserves-p9-p10-contracts ms 11.679417 counters nil
+START domain-coverage-artifact-preserves-p09-contract
+END domain-coverage-artifact-preserves-p09-contract ms 21.45175 counters nil
+START domain-ir-artifact-preserves-p06-t04-contract
+END domain-ir-artifact-preserves-p06-t04-contract ms 63.494375 counters nil
+START effect-system-artifact-preserves-l6-boundary
+END effect-system-artifact-preserves-l6-boundary ms 12.534125 counters nil
+START efir-artifact-preserves-math2-3-contract
+END efir-artifact-preserves-math2-3-contract ms 4.741666 counters nil
+START eml-artifact-preserves-math4-contract
+END eml-artifact-preserves-math4-contract ms 6.253917 counters nil
+START error-handling-artifact-preserves-l9-boundary
+END error-handling-artifact-preserves-l9-boundary ms 8.280167 counters nil
+START facet-system-artifact-preserves-l14-boundary
+END facet-system-artifact-preserves-l14-boundary ms 5.371833 counters nil
+START governance-evolution-phase17-artifact-preserves-p17-contract
+END governance-evolution-phase17-artifact-preserves-p17-contract ms 10.609 counters nil
+START hosted-core-app-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-app-rejected-fixtures-produce-stable-diagnostics ms 3.597 counters nil
+START hosted-core-app-runs-user-functions-and-builtins
+END hosted-core-app-runs-user-functions-and-builtins ms 5.899833 counters nil
+START hosted-core-compiled-ai-proof-records-stage0-ai-gate
+END hosted-core-compiled-ai-proof-records-stage0-ai-gate ms 16.211167 counters nil
+START hosted-core-compiled-ai-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-ai-rejected-fixtures-produce-stable-diagnostics ms 17.34275 counters nil
+START hosted-core-compiled-app-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-app-rejected-fixtures-produce-stable-diagnostics ms 5.970875 counters nil
+START hosted-core-compiled-app-runs-instruction-plan
+END hosted-core-compiled-app-runs-instruction-plan ms 11.526625 counters nil
+START hosted-core-compiled-backend-proof-records-stage0-artifact
+END hosted-core-compiled-backend-proof-records-stage0-artifact ms 13.43375 counters nil
+START hosted-core-compiled-backend-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-backend-rejected-fixtures-produce-stable-diagnostics ms 8.263042 counters nil
+START hosted-core-compiled-compiler-proof-records-stage0-pipeline
+END hosted-core-compiled-compiler-proof-records-stage0-pipeline ms 11.5635 counters nil
+START hosted-core-compiled-compiler-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-compiler-rejected-fixtures-produce-stable-diagnostics ms 6.133833 counters nil
+START hosted-core-compiled-conformance-proof-records-stage0-conformance-gate
+END hosted-core-compiled-conformance-proof-records-stage0-conformance-gate ms 8.0175 counters nil
+START hosted-core-compiled-conformance-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-conformance-rejected-fixtures-produce-stable-diagnostics ms 16.591292 counters nil
+START hosted-core-compiled-domain-proof-records-stage0-domain-gate
+END hosted-core-compiled-domain-proof-records-stage0-domain-gate ms 4.497417 counters nil
+START hosted-core-compiled-domain-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-domain-rejected-fixtures-produce-stable-diagnostics ms 7.374083 counters nil
+START hosted-core-compiled-math-proof-records-integer-baseline
+END hosted-core-compiled-math-proof-records-integer-baseline ms 11.13525 counters nil
+START hosted-core-compiled-math-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-math-rejected-fixtures-produce-stable-diagnostics ms 9.23825 counters nil
+START hosted-core-compiled-package-proof-records-stage0-package-gate
+END hosted-core-compiled-package-proof-records-stage0-package-gate ms 7.830459 counters nil
+START hosted-core-compiled-package-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-package-rejected-fixtures-produce-stable-diagnostics ms 9.981791 counters nil
+START hosted-core-compiled-performance-proof-records-unoptimized-baseline
+END hosted-core-compiled-performance-proof-records-unoptimized-baseline ms 4.982959 counters nil
+START hosted-core-compiled-performance-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-performance-rejected-fixtures-produce-stable-diagnostics ms 3.728083 counters nil
+START hosted-core-compiled-profile-proof-validates-effective-authority
+END hosted-core-compiled-profile-proof-validates-effective-authority ms 3.816292 counters nil
+START hosted-core-compiled-profile-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-profile-rejected-fixtures-produce-stable-diagnostics ms 1.975167 counters nil
+START hosted-core-compiled-runtime-proof-records-stage0-runtime
+END hosted-core-compiled-runtime-proof-records-stage0-runtime ms 4.314166 counters nil
+START hosted-core-compiled-runtime-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-runtime-rejected-fixtures-produce-stable-diagnostics ms 6.035958 counters nil
+START hosted-core-compiled-safety-proof-classifies-instruction-plan
+END hosted-core-compiled-safety-proof-classifies-instruction-plan ms 3.896541 counters nil
+START hosted-core-compiled-safety-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-safety-rejected-fixtures-produce-stable-diagnostics ms 1.524375 counters nil
+START hosted-core-compiled-schema-proof-records-stage0-schema-gate
+END hosted-core-compiled-schema-proof-records-stage0-schema-gate ms 4.188959 counters nil
+START hosted-core-compiled-schema-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-schema-rejected-fixtures-produce-stable-diagnostics ms 8.290375 counters nil
+START hosted-core-compiled-tooling-proof-records-stage0-tooling-gate
+END hosted-core-compiled-tooling-proof-records-stage0-tooling-gate ms 4.529 counters nil
+START hosted-core-compiled-tooling-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-tooling-rejected-fixtures-produce-stable-diagnostics ms 11.081 counters nil
+START hosted-hello-runs
+END hosted-hello-runs ms 1.466917 counters nil
+START hosted-lowering-artifact-preserves-p07-t03-contract
+END hosted-lowering-artifact-preserves-p07-t03-contract ms 59.074209 counters nil
+START interop-artifact-preserves-l19-boundary
+END interop-artifact-preserves-l19-boundary ms 12.717292 counters nil
+START layout-artifact-preserves-perf4-contract
+END layout-artifact-preserves-perf4-contract ms 5.519042 counters nil
+START macro-artifact-preserves-l4-contract
+END macro-artifact-preserves-l4-contract ms 9.561291 counters nil
+START managed-runtime-artifact-preserves-p08-t03-contract
+END managed-runtime-artifact-preserves-p08-t03-contract ms 248.187083 counters nil
+START math-conformance-artifact-preserves-math10-11-contract
+END math-conformance-artifact-preserves-math10-11-contract ms 8.005 counters nil
+START math-proof-artifact-preserves-math6-9-contract
+END math-proof-artifact-preserves-math6-9-contract ms 6.250125 counters nil
+START memory-model-artifact-preserves-l10-boundary
+END memory-model-artifact-preserves-l10-boundary ms 6.797 counters nil
+START memory-safety-artifact-preserves-safe2-through-safe5-boundaries
+END memory-safety-artifact-preserves-safe2-through-safe5-boundaries ms 14.559 counters nil
+START minimal-native-memory-artifact-preserves-p08-t02-contract
+END minimal-native-memory-artifact-preserves-p08-t02-contract ms 231.724416 counters nil
+START mir-artifact-preserves-p06-t03-contract
+END mir-artifact-preserves-p06-t03-contract ms 29.479583 counters nil
+START namespace-module-artifact-preserves-l3-contract
+END namespace-module-artifact-preserves-l3-contract ms 3.503 counters nil
+START native-lowering-artifact-preserves-p07-t02-contract
+END native-lowering-artifact-preserves-p07-t02-contract ms 57.755167 counters nil
+START numeric-mode-artifact-preserves-math1-7-8-contract
+END numeric-mode-artifact-preserves-math1-7-8-contract ms 4.216625 counters nil
+START optimization-lowering-artifact-preserves-p06-t05-contract
+END optimization-lowering-artifact-preserves-p06-t05-contract ms 80.75325 counters nil
+START p15-s23-accepted-app-execution-records-proof
+END p15-s23-accepted-app-execution-records-proof ms 174.877292 counters nil
+START p15-s23-accepted-app-execution-rejects-overclaim-candidate
+END p15-s23-accepted-app-execution-rejects-overclaim-candidate ms 168.382708 counters nil
+START p15-s23-compiler-pipeline-manifest-records-canonical-pipeline
+END p15-s23-compiler-pipeline-manifest-records-canonical-pipeline ms 17.936667 counters nil
+START p15-s23-compiler-pipeline-manifest-rejects-overclaim-candidate
+END p15-s23-compiler-pipeline-manifest-rejects-overclaim-candidate ms 0.059375 counters nil
+START p15-s23-compiler-source-inventory-records-next-implementation-input
+END p15-s23-compiler-source-inventory-records-next-implementation-input ms 9.015958 counters nil
+START p15-s23-compiler-source-inventory-rejects-overclaim-candidate
+END p15-s23-compiler-source-inventory-rejects-overclaim-candidate ms 0.060709 counters nil
+START p15-s23-core-lowering-diagnostic-preservation-records-proof
+END p15-s23-core-lowering-diagnostic-preservation-records-proof ms 106.012709 counters nil
+START p15-s23-core-lowering-diagnostic-preservation-rejects-overclaim-candidate
+END p15-s23-core-lowering-diagnostic-preservation-rejects-overclaim-candidate ms 0.070875 counters nil
+START p15-s23-final-seed-retirement-records-incomplete-proof
+END p15-s23-final-seed-retirement-records-incomplete-proof ms 10.898708 counters nil
+START p15-s23-final-seed-retirement-rejects-gaps-and-overclaim
+END p15-s23-final-seed-retirement-rejects-gaps-and-overclaim ms 1.1125 counters nil
+START p15-s23-governance-package-release-records-current-stage-policy
+END p15-s23-governance-package-release-records-current-stage-policy ms 47.682167 counters nil
+START p15-s23-governance-package-release-rejects-gaps-and-overclaim
+END p15-s23-governance-package-release-rejects-gaps-and-overclaim ms 37.591375 counters nil
+START p15-s23-provenance-attestation-records-proof
+END p15-s23-provenance-attestation-records-proof ms 5612.491 counters nil
+START p15-s23-provenance-attestation-rejects-gaps-and-overclaim
+END p15-s23-provenance-attestation-rejects-gaps-and-overclaim ms 4945.6655 counters nil
+START p15-s23-rejected-app-diagnostic-records-proof
+END p15-s23-rejected-app-diagnostic-records-proof ms 238.222167 counters nil
+START p15-s23-rejected-app-diagnostic-rejects-overclaim-candidate
+END p15-s23-rejected-app-diagnostic-rejects-overclaim-candidate ms 240.974916 counters nil
+START p15-s23-reproducible-rebuild-log-records-proof
+END p15-s23-reproducible-rebuild-log-records-proof ms 1295.996417 counters nil
+START p15-s23-reproducible-rebuild-log-rejects-mismatch-and-overclaim
+END p15-s23-reproducible-rebuild-log-rejects-mismatch-and-overclaim ms 1433.374292 counters nil
+START p15-s23-runtime-manifest-capability-enforcement-records-proof
+END p15-s23-runtime-manifest-capability-enforcement-records-proof ms 138.356208 counters nil
+START p15-s23-runtime-manifest-capability-enforcement-rejects-overclaim-candidate
+END p15-s23-runtime-manifest-capability-enforcement-rejects-overclaim-candidate ms 0.060292 counters nil
+START p15-s23-self-hosting-conformance-report-records-proof
+END p15-s23-self-hosting-conformance-report-records-proof ms 1821.028708 counters nil
+START p15-s23-self-hosting-conformance-report-rejects-gaps-and-overclaim
+END p15-s23-self-hosting-conformance-report-rejects-gaps-and-overclaim ms 1673.652125 counters nil
+START p15-s23-source-syntax-serialization-proof-records-roundtrip
+END p15-s23-source-syntax-serialization-proof-records-roundtrip ms 70.363583 counters nil
+START p15-s23-source-syntax-serialization-proof-rejects-overclaim-candidate
+END p15-s23-source-syntax-serialization-proof-rejects-overclaim-candidate ms 0.072 counters nil
+START p15-s23-stage-comparison-report-records-proof
+END p15-s23-stage-comparison-report-records-proof ms 1728.506917 counters nil
+START p15-s23-stage-comparison-report-rejects-mismatch-and-overclaim
+END p15-s23-stage-comparison-report-rejects-mismatch-and-overclaim ms 1571.017375 counters nil
+START p15-s23-stage2-compiler-driver-records-executable-proof
+END p15-s23-stage2-compiler-driver-records-executable-proof ms 9696.211667 counters nil
+START p15-s23-stage2-compiler-driver-rejects-gaps-and-overclaim
+END p15-s23-stage2-compiler-driver-rejects-gaps-and-overclaim ms 1.463125 counters nil
+START p15-s23-stage2-compiler-nucleus-records-transition-proof
+END p15-s23-stage2-compiler-nucleus-records-transition-proof ms 392.297959 counters nil
+START p15-s23-stage2-compiler-nucleus-rejects-gaps-and-overclaim
+END p15-s23-stage2-compiler-nucleus-rejects-gaps-and-overclaim ms 317.31075 counters nil
+START p15-s23-stage2-front-end-executor-records-executable-proof
+END p15-s23-stage2-front-end-executor-records-executable-proof ms 4.009833 counters nil
+START p15-s23-stage2-front-end-executor-rejects-gaps-and-overclaim
+END p15-s23-stage2-front-end-executor-rejects-gaps-and-overclaim ms 1.118958 counters nil
+START p15-s23-stage2-plan-emitter-records-executable-proof
+END p15-s23-stage2-plan-emitter-records-executable-proof ms 633.289208 counters nil
+START p15-s23-stage2-plan-emitter-rejects-gaps-and-overclaim
+END p15-s23-stage2-plan-emitter-rejects-gaps-and-overclaim ms 617.674167 counters nil
+START p15-s23-stage2-runtime-executor-records-executable-proof
+END p15-s23-stage2-runtime-executor-records-executable-proof ms 1234.528416 counters nil
+START p15-s23-stage2-runtime-executor-rejects-gaps-and-overclaim
+END p15-s23-stage2-runtime-executor-rejects-gaps-and-overclaim ms 1260.275458 counters nil
+START p15-s23-stage2-runtime-kernel-records-executable-proof
+END p15-s23-stage2-runtime-kernel-records-executable-proof ms 3.639041 counters nil
+START p15-s23-stage2-runtime-kernel-rejects-gaps-and-overclaim
+END p15-s23-stage2-runtime-kernel-rejects-gaps-and-overclaim ms 1.117541 counters nil
+START p15-s23-stage2-source-front-end-records-executable-proof
+END p15-s23-stage2-source-front-end-records-executable-proof ms 4.739917 counters nil
+START p15-s23-stage2-source-front-end-rejects-gaps-and-overclaim
+END p15-s23-stage2-source-front-end-rejects-gaps-and-overclaim ms 1.269625 counters nil
+START p15-s23-stage2-whole-language-compiler-records-stage-proof
+END p15-s23-stage2-whole-language-compiler-records-stage-proof ms 70.211625 counters nil
+START p15-s23-stage2-whole-language-compiler-rejects-gaps-and-overclaim
+END p15-s23-stage2-whole-language-compiler-rejects-gaps-and-overclaim ms 1.184208 counters nil
+START p15-s23-stage3-equivalence-bundle-records-proof
+END p15-s23-stage3-equivalence-bundle-records-proof ms 44.378166 counters nil
+START p15-s23-stage3-equivalence-bundle-rejects-gaps-and-overclaim
+END p15-s23-stage3-equivalence-bundle-rejects-gaps-and-overclaim ms 1.156042 counters nil
+START p15-s23-stage3-seedless-compiler-candidate-records-proof
+END p15-s23-stage3-seedless-compiler-candidate-records-proof ms 34.662917 counters nil
+START p15-s23-stage3-seedless-compiler-candidate-rejects-gaps-and-overclaim
+END p15-s23-stage3-seedless-compiler-candidate-rejects-gaps-and-overclaim ms 1.21525 counters nil
+START p15-s23-stage3-self-hosted-application-records-proof
+END p15-s23-stage3-self-hosted-application-records-proof ms 22.5035 counters nil
+START p15-s23-stage3-self-hosted-application-rejects-gaps-and-overclaim
+END p15-s23-stage3-self-hosted-application-rejects-gaps-and-overclaim ms 1.16225 counters nil
+START p15-s23-tcb-delta-record-records-proof
+END p15-s23-tcb-delta-record-records-proof ms 8442.651958 counters nil
+START p15-s23-tcb-delta-record-rejects-gaps-and-overclaim
+END p15-s23-tcb-delta-record-rejects-gaps-and-overclaim ms 7887.118542 counters nil
+START p15-s23-unsafe-audit-report-records-proof
+END p15-s23-unsafe-audit-report-records-proof ms 13485.9795 counters nil
+START p15-s23-unsafe-audit-report-rejects-gaps-and-overclaim
+END p15-s23-unsafe-audit-report-rejects-gaps-and-overclaim ms 13832.748125 counters nil
+START p15-s23-whole-language-compiler-artifact-records-current-stage-proof
+END p15-s23-whole-language-compiler-artifact-records-current-stage-proof ms 31225.164083 counters nil
+START p15-s23-whole-language-compiler-artifact-rejects-gaps-and-overclaim
+END p15-s23-whole-language-compiler-artifact-rejects-gaps-and-overclaim ms 31879.582958 counters nil
+START p15-s23-whole-language-self-hosting-gate-records-incomplete-final-proof
+END p15-s23-whole-language-self-hosting-gate-records-incomplete-final-proof ms 137.797083 counters nil
+START p15-s23-whole-language-self-hosting-gate-rejects-overclaims
+END p15-s23-whole-language-self-hosting-gate-rejects-overclaims ms 0.572416 counters nil
+START p18-co-canonical-qst-and-gravity-source-extensions-have-parity
+END p18-co-canonical-qst-and-gravity-source-extensions-have-parity ms 66272.106167 counters nil
+START p18-executable-command-contract-runs-compiled-app
+END p18-executable-command-contract-runs-compiled-app ms 46958.64425 counters nil
+START p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance

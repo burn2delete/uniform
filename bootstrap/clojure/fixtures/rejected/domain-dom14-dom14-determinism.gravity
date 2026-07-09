@@ -1,0 +1,6 @@
+; Rejected P09 DOM14 fixture.
+(ns domain.dom14-determinism (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom14-determinism}}}))
+(defn main [] :- I64 1)

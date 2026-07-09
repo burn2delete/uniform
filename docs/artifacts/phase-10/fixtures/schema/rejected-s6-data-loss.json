@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "set": {
+    "/database_mapping/destructive_without_policy": true
+  }
+}

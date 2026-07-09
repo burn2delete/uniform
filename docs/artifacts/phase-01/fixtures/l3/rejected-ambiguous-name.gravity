@@ -1,0 +1,7 @@
+(ns l3.bad.ambiguous
+  (:profile :native)
+  (:requires [[lib.one :refer [make]]
+              [lib.two :refer [make]]]))
+
+(def main
+  make)

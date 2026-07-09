@@ -1,0 +1,5 @@
+(ns l5.bad.annotation
+  (:profile :native))
+
+(def bad
+  (unknown/value 1))

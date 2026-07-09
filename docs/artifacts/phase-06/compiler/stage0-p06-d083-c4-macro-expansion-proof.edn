@@ -1,0 +1,72 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D083
+ :date "2026-06-25"
+ :status :complete
+ :capability :c4-macro-expansion-document-coverage
+ :command "clojure -M:gravity compiler-c4-macro bootstrap/clojure/fixtures/accepted/compiler-c4-macro-engine.gravity"
+ :artifact-kind :gravity/stage0-c4-macro-expansion-artifact
+ :artifact-hash "sha256:2430d0c2eb94c2f43a11dc468ca27f5bb32186efdf6e697824d2fe6ed4f7c82b"
+ :summary {:expanded-syntax-records 6
+           :macro-expansion-steps 3
+           :hygiene-capture-records 1
+           :build-effect-log-status :complete
+           :macro-safety-status :complete
+           :trace-replay-status :passed
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+                       "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+                       "docs/phase-01-core-language/014-l4-macro-system-specification.md"
+                       "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
+                       "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+                       "docs/phase-02-safety/041-safe12-macro-safety.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c4-macro-engine.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c4-not-macro.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-return.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-depth.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-size.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-build-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-hygiene.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-capture.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-generated-unsafe.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c4-trace.gravity"]
+ :diagnostic-ids ["C4-NOT-MACRO"
+                  "C4-RETURN"
+                  "C4-DEPTH"
+                  "C4-SIZE"
+                  "C4-BUILD-EFFECT"
+                  "C4-HYGIENE"
+                  "C4-CAPTURE"
+                  "C4-GENERATED-UNSAFE"
+                  "C4-PROFILE"
+                  "C4-TRACE"]
+ :capability-based-proof {:syntax-input-output-valid? true
+                          :deterministic-expansion-trace? true
+                          :hygiene-and-capture-recorded? true
+                          :build-effects-authorized? true
+                          :generated-origin-present? true
+                          :generated-unsafe-checked? true
+                          :cache-replay-guarded? true
+                          :diagnostics-covered? true
+                          :self-hosting-comparison-ready? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 810}
+              {:command "clojure -M:gravity compiler-c4-macro bootstrap/clojure/fixtures/accepted/compiler-c4-macro-engine.gravity"
+               :result :accepted
+               :artifact-hash "sha256:2430d0c2eb94c2f43a11dc468ca27f5bb32186efdf6e697824d2fe6ed4f7c82b"}
+              {:command "clojure -M -e '(read every docs/artifacts/phase-06/compiler EDN proof file)'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D083 for the Clojure stage0 C4 macro expansion document boundary only."
+                 "It does not claim a production macro engine, external macro ecosystem, full safety pass execution on generated forms, release readiness, or self-hosting."]}

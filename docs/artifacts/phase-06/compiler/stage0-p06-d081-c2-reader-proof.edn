@@ -1,0 +1,69 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D081
+ :date "2026-06-25"
+ :status :complete
+ :capability :c2-reader-document-coverage
+ :command "clojure -M:gravity compiler-c2-reader bootstrap/clojure/fixtures/accepted/compiler-c2-reader.gravity"
+ :artifact-kind :gravity/stage0-c2-reader-document-artifact
+ :artifact-hash "sha256:10cabc6359fc884e72f45bc2e7918d41391f63be18e5865da6becde0cbaeea9f"
+ :summary {:source-units 1
+           :tokens 10
+           :forms 10
+           :syntax-seeds 10
+           :literal-records 76
+           :extension-records 1
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+                       "docs/phase-01-core-language/011-l1-surface-syntax-and-reader-forms.md"
+                       "docs/phase-01-core-language/014-l4-macro-system-and-hygiene.md"
+                       "docs/phase-01-core-language/022-l12-compile-time-evaluation-and-staging.md"
+                       "docs/phase-01-core-language/025-l15-capability-providers-and-authority-model.md"
+                       "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c2-reader.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c2-encoding.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-delimiter.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-string.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-map.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-set.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-abbrev.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-extension.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c2-hash.gravity"]
+ :diagnostic-ids ["C2-ENCODING"
+                  "C2-DELIMITER"
+                  "C2-STRING"
+                  "C2-MAP"
+                  "C2-SET"
+                  "C2-METADATA"
+                  "C2-ABBREV"
+                  "C2-EXTENSION"
+                  "C2-HASH"]
+ :capability-based-proof {:source-unit-hash-stable? true
+                          :token-and-form-spans-present? true
+                          :abbreviation-origins-present? true
+                          :literal-facts-present? true
+                          :trivia-retained? true
+                          :extension-policy-recorded? true
+                          :incremental-hashes-stable? true
+                          :diagnostics-covered? true
+                          :semantic-errors-deferred? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity compiler-c2-reader bootstrap/clojure/fixtures/accepted/compiler-c2-reader.gravity"
+               :result :accepted
+               :artifact-hash "sha256:10cabc6359fc884e72f45bc2e7918d41391f63be18e5865da6becde0cbaeea9f"}
+              {:command "clojure -M -e '(doseq [path (sort (map str (file-seq (clojure.java.io/file \"docs/artifacts/phase-06/compiler\"))))] (when (.endsWith path \".edn\") (read-string (slurp path))))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D081 for the Clojure stage0 C2 reader document boundary only."
+                 "It does not claim remaining Phase 06 document coverage tasks, backend code generation, release readiness, or self-hosting."]}

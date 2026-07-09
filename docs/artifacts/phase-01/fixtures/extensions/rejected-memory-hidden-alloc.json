@@ -1,0 +1,34 @@
+{
+  "active_profile": ":kernel",
+  "kind": "phase-01-extension-hooks",
+  "module": "extension.bad.memory-hidden",
+  "normal_pipeline_artifacts": {
+    "core_ast": "docs/artifacts/phase-01/core/core-ast.accepted.json",
+    "macro_trace": "docs/artifacts/phase-01/macro/macro-expansion-trace.accepted.json",
+    "namespace": "docs/artifacts/phase-01/namespace/module.accepted-server.json",
+    "reader": "docs/artifacts/phase-01/reader/syntax-object-stream.accepted-hosted-hello.json",
+    "typed_core": "docs/artifacts/phase-01/typed/typed-effected-core.accepted.json"
+  },
+  "providers": [
+    {
+      "allocation": {
+        "bounded": false,
+        "hidden": true
+      },
+      "id": "custom.memory/hidden-gc",
+      "kind": ":memory-system",
+      "profiles": [
+        ":kernel"
+      ],
+      "safe_outcomes": [
+        ":proven-safe",
+        ":runtime-checked",
+        ":rejected",
+        ":unsafe-island"
+      ],
+      "unsafe_wrappers": [],
+      "version": "0.1.0"
+    }
+  ],
+  "interop_boundaries": []
+}

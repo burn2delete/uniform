@@ -1,0 +1,372 @@
+{
+  "compatibility_records": [
+    {
+      "facet_id": ":gravity.facet.schema",
+      "migration_record": "docs/artifacts/phase-01/facets/schema-0.1-migration.json",
+      "schema_version_from": "schema-ir-v1",
+      "schema_version_to": "schema-ir-v1",
+      "stability": ":stable",
+      "version_from": "0.1.0",
+      "version_to": "0.1.1"
+    }
+  ],
+  "composition_edges": [
+    {
+      "boundary_declared": true,
+      "capabilities_visible": true,
+      "effects_visible": true,
+      "from": ":gravity.facet.workflow",
+      "span": {
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/l14/accepted-facet-system.json",
+        "start_line": 12
+      },
+      "to": ":gravity.facet.schema"
+    },
+    {
+      "boundary_declared": true,
+      "capabilities_visible": true,
+      "effects_visible": true,
+      "from": ":gravity.facet.zk",
+      "privacy_boundary": {
+        "preserved": true,
+        "private_value_id": "witness:user-email",
+        "public_output_schema_id": "schema:public-proof-result",
+        "reveal_reason": "declared public verifier output",
+        "witness_id": "witness:signup-proof"
+      },
+      "span": {
+        "end_line": 18,
+        "source": "docs/artifacts/phase-01/fixtures/l14/accepted-facet-system.json",
+        "start_line": 18
+      },
+      "to": ":gravity.facet.schema"
+    }
+  ],
+  "facets": [
+    {
+      "artifact_schema_version": "schema-ir-v1",
+      "artifacts": [
+        ":schema/artifact",
+        ":schema/codec-metadata"
+      ],
+      "build_effects": [
+        ":build/write-artifact"
+      ],
+      "capabilities": [
+        ":schema/derive"
+      ],
+      "id": ":gravity.facet.schema",
+      "lowers_to": [
+        ":gravity.core",
+        ":gravity.ir.schema"
+      ],
+      "profiles": [
+        ":hosted",
+        ":native",
+        ":distributed",
+        ":ai"
+      ],
+      "requires_facets": [],
+      "runtime_effects": [],
+      "stability": ":stable",
+      "surface": [
+        "schema"
+      ],
+      "version": "0.1.0"
+    },
+    {
+      "artifact_schema_version": "workflow-ir-v1",
+      "artifacts": [
+        ":workflow/schema",
+        ":workflow/replay-plan"
+      ],
+      "build_effects": [
+        ":build/write-artifact"
+      ],
+      "capabilities": [
+        ":workflow/scheduler",
+        ":workflow/store"
+      ],
+      "id": ":gravity.facet.workflow",
+      "lowers_to": [
+        ":gravity.core",
+        ":gravity.ir.workflow"
+      ],
+      "profiles": [
+        ":distributed"
+      ],
+      "requires_facets": [
+        ":gravity.facet.schema"
+      ],
+      "runtime_effects": [
+        ":network/http"
+      ],
+      "stability": ":experimental",
+      "surface": [
+        "workflow",
+        "step"
+      ],
+      "version": "0.1.0"
+    },
+    {
+      "artifact_schema_version": "zk-ir-v1",
+      "artifacts": [
+        ":zk/relation",
+        ":zk/verifier"
+      ],
+      "build_effects": [
+        ":build/tool-call"
+      ],
+      "capabilities": [
+        ":zk/prover"
+      ],
+      "id": ":gravity.facet.zk",
+      "lowers_to": [
+        ":gravity.ir.zk"
+      ],
+      "profiles": [
+        ":distributed",
+        ":native"
+      ],
+      "requires_facets": [
+        ":gravity.facet.schema"
+      ],
+      "runtime_effects": [],
+      "stability": ":draft",
+      "surface": [
+        "zk-relation",
+        "witness"
+      ],
+      "version": "0.1.0"
+    }
+  ],
+  "kind": "facet-system-manifest",
+  "lowering_outputs": [
+    {
+      "domain_ir": {
+        "artifact_schema_version": "schema-ir-v1",
+        "build_inputs": [
+          "app/user.gravity"
+        ],
+        "capability_requirements": [
+          ":schema/derive"
+        ],
+        "compatibility_version": "0.1.0",
+        "facet_id": ":gravity.facet.schema",
+        "facet_version": "0.1.0",
+        "generated_origin_map": {
+          "UserCodec": "schema User"
+        },
+        "generated_outputs": [
+          "build/schema/User.schema.json"
+        ],
+        "profile_assumptions": [
+          ":distributed"
+        ],
+        "proof_obligations": [],
+        "serialization_format": "json",
+        "source_span_map": {
+          "User": "app/user.gravity:6"
+        },
+        "type_effect_annotations": {
+          "UserCodec": {
+            "effects": [],
+            "type": "Bytes -> Result[User,DecodeError]"
+          }
+        },
+        "validation_results": {
+          "rule": "schema-fields-typed",
+          "status": ":passed"
+        }
+      },
+      "facet_id": ":gravity.facet.schema",
+      "generated_gravity": {
+        "form_hash": "sha256:schema-generated-user-codec",
+        "validated": true
+      },
+      "generated_origin_chain": [
+        {
+          "facet_id": ":gravity.facet.schema",
+          "phase": "facet-lowering",
+          "source": "schema User"
+        }
+      ],
+      "lowering_status": ":ok",
+      "source_span": {
+        "end_line": 8,
+        "source": "app/user.gravity",
+        "start_line": 6
+      }
+    },
+    {
+      "domain_ir": {
+        "artifact_schema_version": "workflow-ir-v1",
+        "build_inputs": [
+          "app/workflow.gravity"
+        ],
+        "capability_requirements": [
+          ":workflow/scheduler",
+          ":workflow/store"
+        ],
+        "compatibility_version": "0.1.0",
+        "facet_id": ":gravity.facet.workflow",
+        "facet_version": "0.1.0",
+        "generated_origin_map": {
+          "OrderWorkflow": "workflow OrderWorkflow"
+        },
+        "generated_outputs": [
+          "build/workflow/order.workflow.json"
+        ],
+        "profile_assumptions": [
+          ":distributed"
+        ],
+        "proof_obligations": [
+          "replay-safe-step"
+        ],
+        "serialization_format": "json",
+        "source_span_map": {
+          "OrderWorkflow": "app/workflow.gravity:10"
+        },
+        "type_effect_annotations": {
+          "charge": {
+            "effects": [
+              ":network/http"
+            ],
+            "type": "Order -> Result[Receipt,WorkflowError]"
+          }
+        },
+        "validation_results": {
+          "rule": "workflow-replay-safe",
+          "status": ":passed"
+        }
+      },
+      "facet_id": ":gravity.facet.workflow",
+      "generated_gravity": {
+        "form_hash": "sha256:workflow-generated-wrapper",
+        "validated": true
+      },
+      "generated_origin_chain": [
+        {
+          "facet_id": ":gravity.facet.workflow",
+          "phase": "facet-lowering",
+          "source": "workflow OrderWorkflow"
+        }
+      ],
+      "lowering_status": ":ok",
+      "source_span": {
+        "end_line": 18,
+        "source": "app/workflow.gravity",
+        "start_line": 10
+      }
+    },
+    {
+      "domain_ir": {
+        "artifact_schema_version": "zk-ir-v1",
+        "build_inputs": [
+          "app/proof.gravity"
+        ],
+        "capability_requirements": [
+          ":zk/prover"
+        ],
+        "compatibility_version": "0.1.0",
+        "facet_id": ":gravity.facet.zk",
+        "facet_version": "0.1.0",
+        "generated_origin_map": {
+          "SignupProof": "zk-relation SignupProof"
+        },
+        "generated_outputs": [
+          "build/zk/signup.verifier.json"
+        ],
+        "profile_assumptions": [
+          ":distributed"
+        ],
+        "proof_obligations": [
+          "public-private-split"
+        ],
+        "serialization_format": "json",
+        "source_span_map": {
+          "SignupProof": "app/proof.gravity:4"
+        },
+        "type_effect_annotations": {
+          "SignupProof": {
+            "effects": [],
+            "type": "Witness -> Proof"
+          }
+        },
+        "validation_results": {
+          "rule": "witness-boundary-preserved",
+          "status": ":passed"
+        }
+      },
+      "facet_id": ":gravity.facet.zk",
+      "generated_origin_chain": [
+        {
+          "facet_id": ":gravity.facet.zk",
+          "phase": "facet-lowering",
+          "source": "zk-relation SignupProof"
+        }
+      ],
+      "lowering_status": ":ok",
+      "source_span": {
+        "end_line": 12,
+        "source": "app/proof.gravity",
+        "start_line": 4
+      }
+    }
+  ],
+  "namespace": {
+    "active_facets": [
+      ":gravity.facet.schema",
+      ":gravity.facet.workflow",
+      ":gravity.facet.zk"
+    ],
+    "build_effect_grants": [
+      ":build/write-artifact",
+      ":build/tool-call"
+    ],
+    "capability_context": [
+      ":schema/derive",
+      ":workflow/scheduler",
+      ":workflow/store",
+      ":zk/prover"
+    ],
+    "name": "app.orders.workflow",
+    "profile": ":distributed",
+    "span": {
+      "end_line": 4,
+      "source": "app/workflow.gravity",
+      "start_line": 1
+    },
+    "target": "distributed-fixture"
+  },
+  "source_forms": [
+    {
+      "facet_id": ":gravity.facet.schema",
+      "form": "schema",
+      "span": {
+        "end_line": 8,
+        "source": "app/user.gravity",
+        "start_line": 6
+      }
+    },
+    {
+      "facet_id": ":gravity.facet.workflow",
+      "form": "workflow",
+      "span": {
+        "end_line": 18,
+        "source": "app/workflow.gravity",
+        "start_line": 10
+      }
+    },
+    {
+      "facet_id": ":gravity.facet.zk",
+      "form": "zk-relation",
+      "span": {
+        "end_line": 12,
+        "source": "app/proof.gravity",
+        "start_line": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "cli_contract": {
+      "authority_denial": true,
+      "capability": ":package/publish"
+    }
+  }
+}

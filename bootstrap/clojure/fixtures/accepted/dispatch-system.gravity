@@ -1,0 +1,42 @@
+(ns dispatch.system
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [direct-close dictionary-close vtable-close dynamic-close
+             multimethod-event host-trim tool-result])
+  (:effects #{:resource/close :ai/tool-call})
+  (:capabilities #{:resource/file :ai/tool})
+  (:safety :safe))
+
+(defprotocol Closeable
+  (close [resource] :- Unit
+    :effects #{:resource/close}
+    :capabilities #{:resource/file}))
+
+(extend FileHandle Closeable
+  (close [resource]
+    resource))
+
+(defmulti handle-event
+  {:dispatch (fn [event] (:kind event))
+   :closed-cases #{:created :deleted}})
+
+(def direct-close
+  (dispatch/direct :Closeable :FileHandle :close file-handle))
+
+(def dictionary-close
+  (dispatch/dictionary :Closeable :FileHandle :close file-handle))
+
+(def vtable-close
+  (dispatch/vtable :Closeable :FileHandle :close file-handle))
+
+(def dynamic-close
+  (dispatch/dynamic :Closeable :FileHandle :close file-handle))
+
+(def multimethod-event
+  (dispatch/multimethod :handle-event :WorkflowEvent :handle event))
+
+(def host-trim
+  (dispatch/host-normalized :String :trim " value "))
+
+(def tool-result
+  (dispatch/tool :OrderLookup :LookupSchema :lookup request))

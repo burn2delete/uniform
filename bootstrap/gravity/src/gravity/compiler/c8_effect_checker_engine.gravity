@@ -1,0 +1,247 @@
+; Stage1 Gravity-owned C8 effect checker contract.
+(ns gravity.compiler.c8-effect-checker-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c8-effect-graph-contract
+             c8-effect-legality-contract
+             c8-capability-proof-contract
+             c8-build-effect-contract
+             c8-replay-ordering-contract
+             c8-effect-diagnostic-catalog
+             build-c8-effect-node
+             build-c8-capability-proof
+             verify-c8-effect-checker])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :effect-checker
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C8" "L6" "L9" "L12" "L15"
+                           "C7" "C9" "C10" "C11" "C12"
+                           "C15" "P1" "P3" "P6" "P7" "P8"
+                           "R1" "R11" "PKG1" "PKG7"
+                           "SAFE1" "SAFE6" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2"]
+               :implements [:effect-graph
+                             :effect-node-table
+                             :function-latent-effect-table
+                             :namespace-effect-summary
+                             :module-effect-summary
+                             :capability-proof-record
+                             :build-effect-log
+                             :replay-effect-requirements
+                             :effect-ordering-constraints
+                             :residual-effect-report
+                             :effect-legality-report
+                             :effect-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :core-node-identity :type-facts
+                            :function-type-identity :latent-effects
+                            :thrown-error-effects
+                            :profile-target-metadata
+                            :effect-capability-metadata
+                            :package-grant-identity
+                            :runtime-provider-identity
+                            :replay-obligations
+                            :ordering-constraints
+                            :build-runtime-effect-separation
+                            :residual-effects}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c8-effect-checker-contract-subset
+                                    :clojure-c8-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c8-undeclared.gravity"
+                              "compiler-c8-profile.gravity"
+                              "compiler-c8-capability.gravity"
+                              "compiler-c8-build.gravity"
+                              "compiler-c8-replay.gravity"
+                              "compiler-c8-order.gravity"
+                              "compiler-c8-runtime.gravity"
+                              "compiler-c8-unknown.gravity"
+                              "compiler-c8-verify.gravity"]}}}))
+
+(def c8-effect-graph-contract
+  {:artifact :gravity/c8-effect-graph-contract
+   :required-fields [:module :nodes :functions :namespace
+                     :build-effects :replay-required
+                     :ordering-constraints :residual-effects
+                     :diagnostics]
+   :node-fields [:core-node-id :direct :latent :transitive
+                 :ordering :source-span :type-fact-id]
+   :function-fields [:function-id :declared :inferred :latent
+                     :throws :capabilities :source-span]
+   :summaries [:function-latent-effect-table
+               :namespace-effect-summary
+               :module-effect-summary]
+   :must-preserve [:core-node-identity :source-spans
+                   :type-facts :latent-effects
+                   :thrown-error-effects :artifact-provenance]
+   :forbidden [:backend-only-effect-inference
+               :runtime-only-effect-legality
+               :hidden-macro-runtime-effect
+               :missing-effect-diagnostic]})
+
+(def c8-effect-legality-contract
+  {:artifact :gravity/c8-effect-legality-contract
+   :authorities [:function :namespace :profile :package
+                 :deployment :runtime :safety]
+   :result-values [:accepted :rejected]
+   :required-fields [:effect :source :allowed-by
+                     :required-capabilities :granted-capabilities
+                     :profile :target :provider :grant :result]
+   :intersection-rules [:source-declaration-required
+                        :profile-must-allow
+                        :package-grant-must-cover
+                        :deployment-grant-must-cover
+                        :runtime-provider-must-support
+                        :safe-mode-must-permit]
+   :forbidden [:backend-authority-widening
+               :runtime-authority-widening
+               :capability-from-effect-name
+               :implicit-unsafe-effect-acceptance]})
+
+(def c8-capability-proof-contract
+  {:artifact :gravity/c8-capability-proof-contract
+   :required-fields [:effect :source :capability :grant
+                     :provider :phase :status]
+   :grant-fields [:scope :principal :phase :source-span
+                  :package :deployment]
+   :statuses [:accepted :rejected :requires-runtime-check
+              :requires-human-review]
+   :consumers [:profile-validation :safety-analysis
+              :runtime-selection :audit-tooling
+              :package-verification]
+   :forbidden [:ambient-authority
+               :provider-without-grant
+               :grant-without-source
+               :capability-proof-as-safety-proof]})
+
+(def c8-build-effect-contract
+  {:artifact :gravity/c8-build-effect-contract
+   :effect-domains [:build :runtime :package]
+   :build-sources [:reader-extension :macro :compile-time-evaluation
+                   :compiler-plugin :target-probe :code-generator
+                   :dependency-resolution :artifact-generation]
+   :hermeticity-requirements [:declared-build-effect
+                              :package-grant
+                              :replay-record
+                              :artifact-provenance
+                              :diagnostic-on-gap]
+   :must-separate [:macro-build-effects
+                   :macro-emitted-runtime-effects
+                   :package-build-effects
+                   :program-runtime-effects]
+   :forbidden [:runtime-effect-hidden-as-build-effect
+               :build-effect-hidden-as-runtime-effect
+               :unguarded-target-probe
+               :unrecorded-dependency-effect]})
+
+(def c8-replay-ordering-contract
+  {:artifact :gravity/c8-replay-ordering-contract
+   :replay-sensitive-effects [:time :randomness :external-io
+                              :database-read :workflow-event
+                              :model-call :tool-call
+                              :ai-human-review
+                              :scheduler-sensitive-operation]
+   :ordering-modes [:sequence :may-commute :must-not-duplicate
+                    :must-not-eliminate :bracket-resource
+                    :preserve-volatile-order
+                    :preserve-mmio-order
+                    :preserve-atomic-order
+                    :preserve-replay-order]
+   :required-fields [:effect :core-node-id :source-span
+                     :replay-record :ordering :consumer]
+   :downstream-consumers [:workflow-runtime :ai-runtime
+                          :test-replay :optimizer :audit]
+   :forbidden [:replay-gap
+               :optimizer-reorder-without-proof
+               :duplicate-noncommutative-effect
+               :eliminate-observable-effect]})
+
+(def c8-effect-diagnostic-catalog
+  {:diagnostics ["C8-UNDECLARED" "C8-PROFILE"
+                 "C8-CAPABILITY" "C8-BUILD"
+                 "C8-REPLAY" "C8-ORDER"
+                 "C8-RUNTIME" "C8-UNKNOWN"
+                 "C8-VERIFY"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :core-node-id :source-span
+                              :generated-origin-chain
+                              :function :namespace
+                              :effect :capability
+                              :profile :target :provider
+                              :grant :remediation]
+   :stops [:mir-construction :optimizer
+           :target-lowering :runtime-selection
+           :package-release]
+   :must-not-depend-on [:localized-rendering-text
+                        :host-runtime-provider-discovery
+                        :backend-only-effect-legality
+                        :implicit-capability-grant]})
+
+(defn build-c8-effect-node
+  [core-node-id direct latent transitive ordering source-span type-fact-id]
+  (quote {:artifact :gravity/c8-effect-node
+          :core-node-id core-node-id
+          :direct direct
+          :latent latent
+          :transitive transitive
+          :ordering ordering
+          :source-span source-span
+          :type-fact-id type-fact-id
+          :contract c8-effect-graph-contract}))
+
+(defn build-c8-capability-proof
+  [effect source capability grant provider phase status]
+  (quote {:artifact :gravity/c8-capability-proof
+          :effect effect
+          :source source
+          :capability capability
+          :grant grant
+          :provider provider
+          :phase phase
+          :status status
+          :contract c8-capability-proof-contract}))
+
+(defn verify-c8-effect-checker [typed-core-artifact]
+  (quote {:status :stage1-source-owned
+          :typed-core-artifact typed-core-artifact
+          :checks [:direct-latent-transitive-effects-computed
+                   :function-effects-fit-declarations
+                   :namespace-effects-fit-declarations
+                   :profile-effect-rejections-emitted
+                   :capability-proofs-recorded
+                   :build-effects-separated-from-runtime-effects
+                   :hermetic-build-gaps-rejected
+                   :replay-obligations-emitted
+                   :ordering-constraints-emitted
+                   :residual-effects-recorded
+                   :mir-effect-annotations-preserved
+                   :effect-legality-before-mir-construction]
+          :diagnostics c8-effect-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :core-node-identity :type-facts
+                      :function-type-identity
+                      :latent-effects :thrown-error-effects
+                      :profile-target-metadata
+                      :effect-capability-metadata
+                      :package-grant-identity
+                      :runtime-provider-identity
+                      :replay-obligations
+                      :ordering-constraints
+                      :build-runtime-effect-separation
+                      :residual-effects
+                      :artifact-provenance]}))

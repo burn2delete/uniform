@@ -1,0 +1,9 @@
+(ns altmem.ffi-allocator
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/ffi-allocator-error :provider-mismatch))

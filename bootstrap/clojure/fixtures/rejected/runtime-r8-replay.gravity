@@ -1,0 +1,6 @@
+; Rejected P08 R8 fixture.
+(ns runtime.r8-replay (:profile :ai) (:target :jvm) (:exports [main])
+  (:effects #{:ai/model-call}) (:capabilities #{:model/call}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r8-replay}}}))
+(defn main [] :- I64 1)

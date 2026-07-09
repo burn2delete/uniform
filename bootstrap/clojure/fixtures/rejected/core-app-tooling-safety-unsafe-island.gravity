@@ -1,0 +1,15 @@
+(ns core.app.tooling-safety-unsafe-island
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:safety-audit-reports
+                         [{:tool-id :gravity-audit
+                           :unsafe-islands ["ffi.raw"]
+                           :unsafe-island-evidence? false
+                           :proof-index []}]}}}))
+
+(defn main []
+  (println "bad tooling safety unsafe island"))

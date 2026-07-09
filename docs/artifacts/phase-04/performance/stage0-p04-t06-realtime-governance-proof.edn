@@ -1,0 +1,76 @@
+{:proof-id :stage0-p04-t06-realtime-governance-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-T06
+ :documents ["PERF8" "PERF9" "PERF10"]
+ :status :passed
+ :capability :realtime-governance-report
+ :command "clojure -M:gravity realtime-governance bootstrap/clojure/fixtures/accepted/realtime-governance.gravity"
+ :artifact-kind :gravity/stage0-realtime-governance-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/realtime-governance.gravity"
+ :accepted-results
+ {:vectorization-record-count 1
+  :latency-contract-count 1
+  :check-elision-record-count 12
+  :simd-cache-status :complete
+  :realtime-latency-status :complete
+  :check-elision-status :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["PERF8-LANE" "PERF8-ALIAS" "PERF8-BOUNDS" "PERF8-ALIGN"
+  "PERF8-TAIL" "PERF8-NUMERIC" "PERF8-MATH" "PERF8-VOLATILE"
+  "PERF8-INTRINSIC" "PERF8-CACHE"
+  "PERF9-BUDGET" "PERF9-LOOP" "PERF9-RECURSION" "PERF9-ALLOC"
+  "PERF9-GC" "PERF9-BLOCKING" "PERF9-LOCK" "PERF9-PREEMPTION"
+  "PERF9-EVIDENCE" "PERF9-OPTIMIZATION"
+  "PERF10-PROOF-MISSING" "PERF10-DOMINANCE" "PERF10-INVALIDATED"
+  "PERF10-RESIDUAL" "PERF10-POLICY" "PERF10-BACKEND"
+  "PERF10-CERTIFICATE" "PERF10-SOURCEMAP"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/realtime-vector-lane.gravity" "PERF8-LANE"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-alias.gravity" "PERF8-ALIAS"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-bounds.gravity" "PERF8-BOUNDS"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-align.gravity" "PERF8-ALIGN"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-tail.gravity" "PERF8-TAIL"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-numeric.gravity" "PERF8-NUMERIC"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-math.gravity" "PERF8-MATH"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-volatile.gravity" "PERF8-VOLATILE"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-intrinsic.gravity" "PERF8-INTRINSIC"
+  "bootstrap/clojure/fixtures/rejected/realtime-vector-cache.gravity" "PERF8-CACHE"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-budget.gravity" "PERF9-BUDGET"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-loop.gravity" "PERF9-LOOP"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-recursion.gravity" "PERF9-RECURSION"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-alloc.gravity" "PERF9-ALLOC"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-gc.gravity" "PERF9-GC"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-blocking.gravity" "PERF9-BLOCKING"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-lock.gravity" "PERF9-LOCK"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-preemption.gravity" "PERF9-PREEMPTION"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-evidence.gravity" "PERF9-EVIDENCE"
+  "bootstrap/clojure/fixtures/rejected/realtime-latency-optimization.gravity" "PERF9-OPTIMIZATION"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-proof-missing.gravity" "PERF10-PROOF-MISSING"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-dominance.gravity" "PERF10-DOMINANCE"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-invalidated.gravity" "PERF10-INVALIDATED"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-residual.gravity" "PERF10-RESIDUAL"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-policy.gravity" "PERF10-POLICY"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-backend.gravity" "PERF10-BACKEND"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-certificate.gravity" "PERF10-CERTIFICATE"
+  "bootstrap/clojure/fixtures/rejected/realtime-elision-sourcemap.gravity" "PERF10-SOURCEMAP"}
+ :capability-based-proof
+ {:profile-legality-preserved? true
+  :target-request-preserved? true
+  :vector-safety-proofs-preserved? true
+  :intrinsic-guards-recorded? true
+  :latency-bounds-proven? true
+  :runtime-services-isolated? true
+  :check-elision-proof-backed? true
+  :policy-checks-preserved? true
+  :backend-preservation-recorded? true
+  :status :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 40 tests containing 2053 assertions. 0 failures, 0 errors. PERF8-PERF10 realtime governance artifacts, and 558 rejected fixtures"}
+  {:command "clojure -M -e '(require ... realtime-governance summary)'"
+   :output "{:diagnostics 28, :vectors 1, :proof :complete, :checks 12, :output :realtime-governance-report, :status :complete, :kind :gravity/stage0-realtime-governance-artifact, :latency 1, :pass :realtime-governance-validation}"}]
+ :limits
+ ["This proves P04-T06 at the Clojure stage0 realtime governance artifact boundary."
+  "It does not claim native backend execution, production WCET tooling, runtime service implementation, release performance, or self-hosting."]}

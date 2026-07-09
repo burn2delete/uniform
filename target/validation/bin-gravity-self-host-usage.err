@@ -1,0 +1,1 @@
+{:id "P18T04008", :message "public self-host verification command usage is invalid", :bootstrap-stage :stage0, :source-span {:source "gravity self-host"}, :phase "P18-T04", :diagnostic-family :p18-t04-executable-command-contract, :expected-command ["gravity" "self-host" "verify"], :remediation "Use `gravity self-host verify` exactly."}

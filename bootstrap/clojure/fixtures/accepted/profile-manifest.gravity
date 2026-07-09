@@ -1,0 +1,27 @@
+(ns profile.manifest
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.core :as core :profile :core])
+  (:exports [main])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package-allowed-effects #{:io/write}
+              :provider-effect-grants #{:io/write}
+              :deployment-allowed-effects #{:io/write}
+              :package-capabilities #{:io/stdout}
+              :provider-capability-grants #{:io/stdout}
+              :deployment-capabilities #{:io/stdout}
+              :memory {:managed true
+                       :ownership false
+                       :regions false
+                       :hidden-allocation :declared
+                       :raw-memory :unsafe-only}
+              :runtime {:required true
+                        :providers #{:host :stdio}}
+              :unsafe-policy :audited
+              :artifact-boundaries #{:schema :host-object}}))
+
+(def main
+  (fn []
+    (println "profile manifest")))

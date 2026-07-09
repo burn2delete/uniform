@@ -1,0 +1,76 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D092
+ :date "2026-06-25"
+ :status :complete
+ :capability :c13-mir-optimization-document-coverage
+ :command "clojure -M:gravity compiler-c13-optimization bootstrap/clojure/fixtures/accepted/compiler-c13-optimization.gravity"
+ :artifact-kind :gravity/stage0-c13-mir-optimization-artifact
+ :artifact-hash "sha256:dcd53778692db446e3bf54caf889bf66b47765a54abd73c00e6773552a0c2ce9"
+ :summary {:pass-contracts 6
+           :decisions 6
+           :invalidations 6
+           :analysis-caches 6
+           :proof-records 6
+           :post-pass-verifiers 6
+           :diagnostics 10
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
+                       "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c13-optimization.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-optimization-contract.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-preserve.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-invalidate.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-proof.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-check-elision.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-effect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-safety.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-domain.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-nondeterminism.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-optimization-verify.gravity"]
+ :diagnostic-ids ["C13-CONTRACT"
+                  "C13-PRESERVE"
+                  "C13-INVALIDATE"
+                  "C13-PROOF"
+                  "C13-CHECK-ELISION"
+                  "C13-EFFECT"
+                  "C13-SAFETY"
+                  "C13-DOMAIN"
+                  "C13-NONDETERMINISM"
+                  "C13-VERIFY"]
+ :capability-based-proof {:c12-domain-ir-input-verified? true
+                          :pass-contracts-valid? true
+                          :pipeline-deterministic? true
+                          :decisions-complete? true
+                          :changed-and-unchanged-decisions-recorded? true
+                          :invalidations-recorded? true
+                          :analysis-caches-recorded? true
+                          :proof-evidence-present? true
+                          :residual-cost-visible? true
+                          :check-elision-proof? true
+                          :effect-order-preserved? true
+                          :safety-outcomes-current? true
+                          :domain-anchors-preserved? true
+                          :replayable? true
+                          :post-pass-verifiers-passed? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 65 tests containing 3493 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c13-optimization bootstrap/clojure/fixtures/accepted/compiler-c13-optimization.gravity"
+               :result :accepted
+               :artifact-hash "sha256:dcd53778692db446e3bf54caf889bf66b47765a54abd73c00e6773552a0c2ce9"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 19 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D092 for the Clojure stage0 C13 MIR optimization document boundary only."
+                 "It does not claim target lowering, backend code generation, release readiness, or self-hosting."]}

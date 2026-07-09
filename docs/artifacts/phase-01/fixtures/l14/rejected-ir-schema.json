@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/lowering_outputs/0/domain_ir/source_span_map"
+  ],
+  "extends": "accepted-facet-system.json"
+}

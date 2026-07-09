@@ -1,0 +1,446 @@
+{
+  "kind": "phase09-domain-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P09-D124",
+      "document": "DOM1",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom1-width.json",
+        "diagnostic": "DOM1-WIDTH"
+      },
+      "coverage_claims": [
+        "hardware width, clock, CDC, runtime, bounds, interface, timing, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D125",
+      "document": "DOM2",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom2-mmio.json",
+        "diagnostic": "DOM2-MMIO"
+      },
+      "coverage_claims": [
+        "firmware startup, memory map, MMIO, interrupt, runtime, BSP, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D126",
+      "document": "DOM3",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom3-raw.json",
+        "diagnostic": "DOM3-RAW"
+      },
+      "coverage_claims": [
+        "kernel runtime, raw memory, allocation, interrupt, syscall, capability, ABI, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D127",
+      "document": "DOM4",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom4-dma.json",
+        "diagnostic": "DOM4-DMA"
+      },
+      "coverage_claims": [
+        "driver register, MMIO, DMA, interrupt, cache, capability, adapter, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D128",
+      "document": "DOM5",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom5-optimization.json",
+        "diagnostic": "DOM5-OPTIMIZATION"
+      },
+      "coverage_claims": [
+        "native memory, target, UB, optimization, numeric, FFI, benchmark, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D129",
+      "document": "DOM6",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom6-taint.json",
+        "diagnostic": "DOM6-TAINT"
+      },
+      "coverage_claims": [
+        "web DOM, taint, schema, package, numeric, source-map, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D130",
+      "document": "DOM7",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom7-permission.json",
+        "diagnostic": "DOM7-PERMISSION"
+      },
+      "coverage_claims": [
+        "mobile permission, lifecycle, thread, nullability, storage, secret, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D131",
+      "document": "DOM8",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom8-schema.json",
+        "diagnostic": "DOM8-SCHEMA"
+      },
+      "coverage_claims": [
+        "backend route, schema, taint, capability, job, secret, observability, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D132",
+      "document": "DOM9",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom9-convergence.json",
+        "diagnostic": "DOM9-CONVERGENCE"
+      },
+      "coverage_claims": [
+        "distributed schema, replay, idempotency, retry, compensation, capability, migration, CRDT, monotonicity, coordination, conflict, sync, convergence, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D133",
+      "document": "DOM10",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom10-query.json",
+        "diagnostic": "DOM10-QUERY"
+      },
+      "coverage_claims": [
+        "database schema, query, taint, migration, transaction, layout, durability, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D134",
+      "document": "DOM11",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom11-lineage.json",
+        "diagnostic": "DOM11-LINEAGE"
+      },
+      "coverage_claims": [
+        "analytics schema, capability, taint, lineage, memory, numeric, determinism, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D135",
+      "document": "DOM12",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom12-certificate.json",
+        "diagnostic": "DOM12-CERTIFICATE"
+      },
+      "coverage_claims": [
+        "scientific numeric domain, mode, certificate, rewrite, fastmath, interop, benchmark, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D136",
+      "document": "DOM13",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom13-host-effect.json",
+        "diagnostic": "DOM13-HOST-EFFECT"
+      },
+      "coverage_claims": [
+        "GPU kernel, memory, sync, launch, math, host-effect, target, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D137",
+      "document": "DOM14",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom14-determinism.json",
+        "diagnostic": "DOM14-DETERMINISM"
+      },
+      "coverage_claims": [
+        "game timestep, allocation, determinism, numeric, asset, plugin, performance, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D138",
+      "document": "DOM15",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom15-boundary.json",
+        "diagnostic": "DOM15-BOUNDARY"
+      },
+      "coverage_claims": [
+        "security secret, random, provider, WebAuthn, passkey, private computation, boundary, noise, leakage, custody, constant-time, custom crypto, taint, FFI, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D139",
+      "document": "DOM16",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom16-aa-profile.json",
+        "diagnostic": "DOM16-AA-PROFILE"
+      },
+      "coverage_claims": [
+        "blockchain deterministic contract, schemas, account abstraction, ERC-4337, EIP-7702, ERC-7579, upgrade, invariant, ordering, MEV, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D140",
+      "document": "DOM17",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom17-metadata.json",
+        "diagnostic": "DOM17-METADATA"
+      },
+      "coverage_claims": [
+        "compiler tooling pass, metadata, generated code, plugin, macro, diagnostic, bootstrap, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D141",
+      "document": "DOM18",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom18-tool.json",
+        "diagnostic": "DOM18-TOOL"
+      },
+      "coverage_claims": [
+        "AI model, prompt, tool, schema, taint, secret, replay, generated-code, and eval evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D142",
+      "document": "DOM19",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom19-zk-setup.json",
+        "diagnostic": "DOM19-ZK-SETUP"
+      },
+      "coverage_claims": [
+        "formal claim, proof, stale-proof, assumption, counterexample, EML, elision, zk relation, input, setup, privacy, cost, chain, provider, and conformance evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D143",
+      "document": "DOM20",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom20-taint.json",
+        "diagnostic": "DOM20-TAINT"
+      },
+      "coverage_claims": [
+        "scripting argument, filesystem, shell, taint, destructive, hermeticity, secret, and audit evidence"
+      ]
+    },
+    {
+      "task_id": "P09-D144",
+      "document": "DOM21",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+        "required_artifact_fields": [
+          "domain_slice_manifest",
+          "domain_contracts",
+          "replacement_claim_records",
+          "domain_conformance_evidence"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom21-edge.json",
+        "diagnostic": "DOM21-EDGE"
+      },
+      "coverage_claims": [
+        "visual node, edge, effect, capability, human-review, replay, generated-code, mapping, migration, and conformance evidence"
+      ]
+    }
+  ]
+}

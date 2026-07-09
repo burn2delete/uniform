@@ -1,0 +1,29 @@
+{:task-id :P02-D038
+ :document "docs/phase-02-safety/038-safe9-numeric-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+ :artifact-kind :gravity/stage0-boundary-safety-artifact
+ :document-coverage {:numeric-mode-records 1
+                     :runtime-check-records 1
+                     :range-proof-records 1
+                     :floating-mode-records 1
+                     :elementary-approximation-records 1
+                     :relaxed-approval-records 1
+                     :optimization-proof-records 1
+                     :backend-lowering-records 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE9-OVERFLOW"
+                        "SAFE9-DIV-ZERO"
+                        "SAFE9-SHIFT"
+                        "SAFE9-NARROW"
+                        "SAFE9-FLOAT-MODE"
+                        "SAFE9-FLOAT-INPUT"
+                        "SAFE9-ELEMENTARY-DOMAIN"
+                        "SAFE9-APPROX"
+                        "SAFE9-RELAXED"
+                        "SAFE9-OPTIMIZATION"
+                        "SAFE9-BACKEND"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE9 accepted records and 11 rejected diagnostics passed"}]}

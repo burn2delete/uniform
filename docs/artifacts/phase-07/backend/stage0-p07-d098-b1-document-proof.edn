@@ -1,0 +1,61 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D098
+ :date "2026-06-29"
+ :status :complete
+ :capability :b1-backend-interface-document-coverage
+ :command "clojure -M:gravity backend-b1-document bootstrap/clojure/fixtures/accepted/backend-interface.gravity"
+ :artifact-kind :gravity/stage0-b1-backend-interface-document-artifact
+ :artifact-hash "sha256:6d5cd47da1e7950cfd09991ccc2e1c378b3fbc42f7b790f6524fd39fcd8a8e05"
+ :summary {:diagnostics 9
+           :rejected-designs 5
+           :conformance-criteria 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-interface.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b1-input.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-proof.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-unsupported.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b1-metadata.gravity"]
+ :diagnostics ["B1-INPUT"
+               "B1-PROFILE"
+               "B1-TARGET"
+               "B1-ABI"
+               "B1-RUNTIME"
+               "B1-PROOF"
+               "B1-CAPABILITY"
+               "B1-UNSUPPORTED"
+               "B1-METADATA"]
+ :proof-checks {:backend-interface-input-verified? true
+                :manifest-validation-covered? true
+                :verified-input-and-rejection-covered? true
+                :profile-target-eligibility-covered? true
+                :proof-backed-target-metadata-covered? true
+                :unsupported-operation-diagnostics-covered? true
+                :artifact-manifest-emission-covered? true
+                :metadata-preservation-covered? true
+                :backend-conformance-record-covered? true
+                :diagnostics-covered? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 77 tests containing 4339 assertions. 0 failures, 0 errors."
+              :rejected-fixtures 1061}
+              {:command "clojure -M:gravity backend-b1-document bootstrap/clojure/fixtures/accepted/backend-interface.gravity"
+               :result :accepted
+               :artifact-hash "sha256:6d5cd47da1e7950cfd09991ccc2e1c378b3fbc42f7b790f6524fd39fcd8a8e05"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 7 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D098 for deterministic Clojure stage0 coverage of the B1 backend interface document contract."
+                 "It does not claim any concrete backend beyond the interface contract or full Phase 07 completion."]}

@@ -1,0 +1,9 @@
+(ns interop.profile
+  (:profile :core)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/profile :host-bridge))

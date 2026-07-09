@@ -1,0 +1,15 @@
+; P08-T06 fixture covers runtime observability and diagnostics artifacts.
+(ns runtime.observability
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:runtime/observability :ai/model-call})
+  (:capabilities #{:observability/write :model/call})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:observability {}}}))
+
+(def observability-id 6)
+
+(defn main [] :- I64
+  observability-id)

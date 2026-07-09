@@ -1,0 +1,12 @@
+; Rejected P11 A4 fixture.
+(ns ai.a4-human-review
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/tool-call})
+  (:capabilities #{:tool/execute})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a4005}}}))
+
+(defn main [] :- I64 1)

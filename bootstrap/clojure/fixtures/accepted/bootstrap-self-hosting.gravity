@@ -1,0 +1,14 @@
+; P15 fixture covers bootstrap and self-hosting artifacts across BOOT1-BOOT8.
+(ns bootstrap.self-hosting
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read :filesystem/write})
+  (:capabilities #{:fs/read :fs/write})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {}}}))
+
+(def bootstrap-phase-id 15)
+
+(defn main [] :- I64
+  bootstrap-phase-id)

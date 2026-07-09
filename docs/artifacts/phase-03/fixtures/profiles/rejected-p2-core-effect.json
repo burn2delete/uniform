@@ -1,0 +1,8 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/0/requested_effects": [
+      ":network/http"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+(ns core.app.schema-data-loss
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:schema {:compiled-gate
+                       {:database-mappings
+                        [{:artifact :gravity/database-migration
+                          :data-loss-report {:policy :destructive}}]}}}))
+
+(defn main []
+  (println "bad schema data loss"))

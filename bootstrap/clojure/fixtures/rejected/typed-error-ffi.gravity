@@ -1,0 +1,10 @@
+(ns typed.error.ffi
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (ffi/error-unsafe))

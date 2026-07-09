@@ -1,0 +1,12 @@
+; Rejected P10 S3 fixture.
+(ns schema.s3-hash
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s3-hash}}}))
+
+(defn main [] :- I64 3)

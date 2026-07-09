@@ -1,0 +1,9 @@
+(ns interop.schema-drift
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (interop/schema-drift :digest-mismatch))

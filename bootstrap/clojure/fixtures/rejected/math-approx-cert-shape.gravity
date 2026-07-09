@@ -1,0 +1,7 @@
+(ns math.approx-cert-shape
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:approximation {:certificates [{}]}}}))

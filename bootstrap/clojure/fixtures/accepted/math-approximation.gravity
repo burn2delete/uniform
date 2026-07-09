@@ -1,0 +1,14 @@
+(ns math.approximation
+  (:profile :native)
+  (:target :jvm)
+  (:exports [approximation-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:math {:numeric {}
+                     :efir {}
+                     :eml {}
+                     :approximation {}}}))
+
+(defn approximation-ready []
+  true)

@@ -42,6 +42,9 @@ records the second-pass review standard and phase status.
   sequence.
 - Phase `README.md` files are navigation layers, not replacements for the
   documents they link.
+- `docs/phase-18-binary-distribution-and-seedless-release/` is an
+  implementation roadmap extension for the product release boundary. It is not
+  an additional source document in the 240-document inventory.
 - The 240 documents are implementation contracts. Prefer adding code/tests that
   cite or follow the relevant document over copying large spec text into new
   files.
@@ -106,7 +109,7 @@ Run the structural validator after documentation changes:
 Expected output:
 
 ```text
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
+validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
 ```
 
 If that Python path is unavailable, `python3 tools/validate_gravity_docs.py`

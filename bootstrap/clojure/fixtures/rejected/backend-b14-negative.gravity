@@ -1,0 +1,4 @@
+(ns backend.b14-negative
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:backend {:native-lowering {:fail :b14-negative}}}))

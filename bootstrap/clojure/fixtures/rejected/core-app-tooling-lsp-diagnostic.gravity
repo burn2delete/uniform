@@ -1,0 +1,13 @@
+(ns core.app.tooling-lsp-diagnostic
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:lsp-sessions
+                         [{:tool-id :gravity-lsp
+                           :diagnostics-match-cli false}]}}}))
+
+(defn main []
+  (println "bad tooling lsp diagnostic"))

@@ -1,0 +1,9 @@
+(ns compiler.unchecked-backend
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:passes {:contract-overrides
+                                  [{:pass :lower-target
+                                    :input :raw-source}]}}}))

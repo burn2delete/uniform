@@ -1,0 +1,11 @@
+; Rejected P17 GOV5 fixture.
+(ns governance.gov5-target-tier
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov5001}}}))
+
+(defn main [] :- I64 1)

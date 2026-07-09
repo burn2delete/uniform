@@ -1,0 +1,7 @@
+(ns l6.bad.profile
+  (:profile :hardware)
+  (:effects :io/write)
+  (:capabilities :io/stdout))
+
+(def bad
+  (println "hardware profile cannot use host output"))

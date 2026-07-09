@@ -1,0 +1,9 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "documentation_artifact": {
+      "stale_docs": true
+    }
+  }
+}

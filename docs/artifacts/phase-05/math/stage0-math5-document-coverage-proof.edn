@@ -1,0 +1,40 @@
+{:phase "05"
+ :task "P05-D073"
+ :document "MATH5"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/073-math5-certified-approximation-specification.md"
+ :artifact-kind :gravity/stage0-certified-approximation-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-approximation.gravity"
+ :covered-artifact-fields
+ [:candidate-approximation-set
+  :selected-implementation-record
+  :approximation-certificate
+  :checker-transcript
+  :target-assumption-manifest
+  :exceptional-path-coverage-report
+  :runtime-implementation-anchor
+  :rejection-report
+  :approximation-conformance-results]
+ :required-diagnostic-ids
+ ["MATH5-CERT-SHAPE" "MATH5-EFIR" "MATH5-DOMAIN"
+  "MATH5-BRANCH" "MATH5-APPROX-ERROR" "MATH5-ROUNDOFF"
+  "MATH5-TARGET" "MATH5-CHECKER" "MATH5-SELECTION"]
+ :rejected-fixtures
+ [{:fixture "math-approx-cert-shape.gravity" :diagnostic "MATH5-CERT-SHAPE"}
+  {:fixture "math-approx-efir.gravity" :diagnostic "MATH5-EFIR"}
+  {:fixture "math-approx-domain.gravity" :diagnostic "MATH5-DOMAIN"}
+  {:fixture "math-approx-branch.gravity" :diagnostic "MATH5-BRANCH"}
+  {:fixture "math-approx-error.gravity" :diagnostic "MATH5-APPROX-ERROR"}
+  {:fixture "math-approx-roundoff.gravity" :diagnostic "MATH5-ROUNDOFF"}
+  {:fixture "math-approx-target.gravity" :diagnostic "MATH5-TARGET"}
+  {:fixture "math-approx-checker.gravity" :diagnostic "MATH5-CHECKER"}
+  {:fixture "math-approx-selection.gravity" :diagnostic "MATH5-SELECTION"}]
+ :capability-based-proof
+ {:certificate-shape-checked? true
+  :efir-anchor-checked? true
+  :domain-and-branch-checked? true
+  :approximation-and-roundoff-separated? true
+  :target-assumptions-checked? true
+  :checker-independent-replayable? true
+  :runtime-selection-certificate-linked? true
+  :status :complete}
+ :status :complete}

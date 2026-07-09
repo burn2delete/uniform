@@ -1,0 +1,15 @@
+; P08-T02 fixture covers minimal native and memory runtime manifests.
+(ns runtime.minimal-native-memory
+  (:profile :native)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate :memory/release :ffi/call})
+  (:capabilities #{:memory/arena :ffi/c})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:minimal-native {}}}))
+
+(def native-value 42)
+
+(defn main [] :- I64
+  native-value)

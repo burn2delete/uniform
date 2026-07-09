@@ -1,0 +1,111 @@
+{
+  "kind": "safety-conformance-input",
+  "document": "SAFE16",
+  "package": "gravity.safety.demo",
+  "module": "safety.conformance",
+  "fixture_families": [
+    {"document": "SAFE1", "positive": ["safe1/proven", "safe1/runtime-check"], "negative": ["safe1/no-outcome"], "artifact_inspections": ["safety outcome records"]},
+    {"document": "SAFE2", "positive": ["safe2/in-bounds"], "negative": ["safe2/uninit"], "artifact_inspections": ["memory facts"]},
+    {"document": "SAFE3", "positive": ["safe3/immutable-borrow"], "negative": ["safe3/use-after-move"], "artifact_inspections": ["ownership graph"]},
+    {"document": "SAFE4", "positive": ["safe4/nested-region"], "negative": ["safe4/region-escape"], "artifact_inspections": ["region graph"]},
+    {"document": "SAFE5", "positive": ["safe5/with-open"], "negative": ["safe5/leak"], "artifact_inspections": ["linear flow"]},
+    {"document": "SAFE6", "positive": ["safe6/reviewed-island"], "negative": ["safe6/missing-owner"], "artifact_inspections": ["unsafe audit"]},
+    {"document": "SAFE7", "positive": ["safe7/safe-wrapper"], "negative": ["safe7/raw-call"], "artifact_inspections": ["ffi boundary"]},
+    {"document": "SAFE8", "positive": ["safe8/ownership-transfer"], "negative": ["safe8/data-race"], "artifact_inspections": ["concurrency graph"]},
+    {"document": "SAFE9", "positive": ["safe9/checked-overflow"], "negative": ["safe9/narrow"], "artifact_inspections": ["numeric mode"]},
+    {"document": "SAFE10", "positive": ["safe10/scoped-capability"], "negative": ["safe10/missing"], "artifact_inspections": ["grant intersection"]},
+    {"document": "SAFE11", "positive": ["safe11/validated-sink"], "negative": ["safe11/secret-leak"], "artifact_inspections": ["taint flow"]},
+    {"document": "SAFE12", "positive": ["safe12/origin-preserved"], "negative": ["safe12/build-effect"], "artifact_inspections": ["macro expansion trace"]},
+    {"document": "SAFE13", "positive": ["safe13/tool-reviewed"], "negative": ["safe13/prompt-injection"], "artifact_inspections": ["model and tool traces"]},
+    {"document": "SAFE14", "positive": ["safe14/pinned-lockfile"], "negative": ["safe14/postinstall"], "artifact_inspections": ["package safety manifest"]},
+    {"document": "SAFE15", "positive": ["safe15/check-erasure-proof"], "negative": ["safe15/cert-trust"], "artifact_inspections": ["certificate records"]}
+  ],
+  "profile_matrix": [
+    ":core",
+    ":hosted",
+    ":native",
+    ":firmware",
+    ":kernel",
+    ":hardware",
+    ":distributed",
+    ":ai",
+    ":meta"
+  ],
+  "fixture_results": [
+    {
+      "id": "safe1/runtime-check",
+      "document": "SAFE1",
+      "profile": ":native",
+      "target": ":llvm",
+      "source_span": {"source": "fixtures/safe1/runtime-check.gravity", "line": 8, "column": 5},
+      "expected": {"verdict": ":accept", "artifacts": ["runtime-check"]},
+      "actual": {"verdict": ":accept"},
+      "artifact_inspection": {"passed": true},
+      "profile_matrix": {"status": ":match"},
+      "backend_preservation": {"status": ":match"},
+      "runtime_check_inspections": [{"check": "bounds", "artifact": "runtime-checks/check-slice-bounds"}],
+      "diagnostic_matches": []
+    },
+    {
+      "id": "safe2/uninit",
+      "document": "SAFE2",
+      "profile": ":native",
+      "target": ":llvm",
+      "source_span": {"source": "fixtures/safe2/uninit.gravity", "line": 9, "column": 7},
+      "expected": {"verdict": ":reject", "diagnostic": "SAFE2-UNINIT"},
+      "actual": {"verdict": ":reject"},
+      "diagnostic_match": {"id_matches": true, "span_matches": true},
+      "profile_matrix": {"status": ":match"},
+      "backend_preservation": {"status": ":match"},
+      "diagnostic_matches": [{"diagnostic": "SAFE2-UNINIT", "span": "fixtures/safe2/uninit.gravity:9:7"}]
+    },
+    {
+      "id": "safe6/reviewed-island",
+      "document": "SAFE6",
+      "profile": ":kernel",
+      "target": ":arm64",
+      "source_span": {"source": "fixtures/safe6/mmio.gravity", "line": 12, "column": 3},
+      "expected": {"verdict": ":accept", "artifacts": ["unsafe-audit"]},
+      "actual": {"verdict": ":accept"},
+      "artifact_inspection": {"passed": true},
+      "profile_matrix": {"status": ":match"},
+      "backend_preservation": {"status": ":match"},
+      "unsafe_audit_inspections": [{"unsafe_island": "SAFE-MMIO-READ", "artifact": "unsafe-audit"}]
+    },
+    {
+      "id": "safe15/check-erasure-proof",
+      "document": "SAFE15",
+      "profile": ":native",
+      "target": ":llvm",
+      "source_span": {"source": "fixtures/safe15/check-erasure.gravity", "line": 14, "column": 11},
+      "expected": {"verdict": ":accept", "proof": "SAFE15", "artifacts": ["certificate"]},
+      "actual": {"verdict": ":accept"},
+      "artifact_inspection": {"passed": true},
+      "certificate_inspection": {"passed": true},
+      "profile_matrix": {"status": ":match"},
+      "backend_preservation": {"status": ":match"},
+      "certificate_inspections": [{"certificate": "bounds-proof-mem-owned-load", "status": ":accepted"}],
+      "backend_preservation_reports": [{"target": ":llvm", "status": ":preserved"}]
+    }
+  ],
+  "profile_matrix_reports": [
+    {"profile": ":native", "target": ":llvm", "fixtures": 4, "status": ":passed"}
+  ],
+  "backend_preservation_reports": [
+    {"target": ":llvm", "facts": ["memory", "numeric", "atomic", "capability", "ffi"], "status": ":passed"}
+  ],
+  "summary": {
+    "compiler_id": "gravity-seed-python",
+    "compiler_version": "fixture",
+    "machine_readable": true,
+    "status": ":passed",
+    "fixture_family_count": 15,
+    "artifact_ids": [
+      "docs/artifacts/phase-02/safety/safety-classification.accepted.json",
+      "docs/artifacts/phase-02/memory-safety/memory-safety.accepted.json",
+      "docs/artifacts/phase-02/unsafe-audit/unsafe-audit.accepted.json",
+      "docs/artifacts/phase-02/domain-safety/domain-safety.accepted.json",
+      "docs/artifacts/phase-02/capability-supply-chain/capability-supply-chain.accepted.json"
+    ]
+  }
+}

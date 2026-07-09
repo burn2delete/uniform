@@ -1,0 +1,15 @@
+(ns core.app.package-build-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:build-graphs
+                         [{:artifact-id "build-graph:bad"
+                           :declared-effects #{}
+                           :nodes [{:node-id :fetch
+                                    :effects #{:build/network}}]}]}}}))
+
+(defn main []
+  (println "bad package build effect"))

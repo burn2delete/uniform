@@ -1,0 +1,9 @@
+(ns compiler.c7.cast
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :cast}}}))
+
+(def value 1)

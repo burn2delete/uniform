@@ -1,0 +1,12 @@
+; Rejected P11 A2 fixture.
+(ns ai.a2-provider-capability
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call})
+  (:capabilities #{:model/invoke})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a2001}}}))
+
+(defn main [] :- I64 1)

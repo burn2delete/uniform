@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-macro.json",
+  "set": {
+    "/hygiene_records/hidden_capture": true
+  }
+}

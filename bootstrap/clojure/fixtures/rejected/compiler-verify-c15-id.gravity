@@ -1,0 +1,4 @@
+(ns compiler.verify.c15-id
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:compiler {:verification {:fail :c15-id}}}))

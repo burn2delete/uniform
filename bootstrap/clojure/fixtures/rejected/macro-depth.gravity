@@ -1,0 +1,17 @@
+(ns bad.macro.depth
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defmacro forever
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  []
+  (syntax-quote (forever)))
+
+(defn main []
+  (forever))

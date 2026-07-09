@@ -1,0 +1,11 @@
+; Rejected P16 STD2 fixture.
+(ns standard-library.std2-host-state
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std2002}}}))
+
+(defn main [] :- I64 1)

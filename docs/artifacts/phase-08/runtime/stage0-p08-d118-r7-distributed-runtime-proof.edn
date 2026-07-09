@@ -1,0 +1,37 @@
+{:artifact :gravity/stage0-r7-distributed-runtime-document-proof
+ :task "P08-D118"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r7-document bootstrap/clojure/fixtures/accepted/runtime-concurrency-distributed.gravity"
+ :artifact-kind :gravity/stage0-r7-distributed-runtime-document-artifact
+ :artifact-id "sha256:0b5f68611b5ba634e15d0e42d8d26b773ffd0a1dc45e786b990eda768c3d2a2f"
+ :input-artifact "sha256:ddf812b528edaff888298cefc7ca11aec5d4b6374f87765c4172875d287cea94"
+ :input-artifact-kind :gravity/stage0-concurrency-distributed-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-concurrency-distributed.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r7-*.gravity"]
+ :required-diagnostic-ids
+ ["R7-TOPOLOGY" "R7-SCHEMA" "R7-REPLAY" "R7-IDEMPOTENCY"
+  "R7-RETRY" "R7-COMPENSATION" "R7-CAPABILITY" "R7-MIGRATION"
+  "R7-ACTOR" "R7-MANIFEST"]
+ :capability-based-proof
+ {:distributed-runtime-input-verified? true
+  :runtime-provider-services-declared? true
+  :topology-covered? true
+  :schema-bundle-complete? true
+  :event-log-and-replay-safe? true
+  :idempotency-covered? true
+  :retry-timeout-cancellation-compensation-covered? true
+  :capability-enforcement-covered? true
+  :migration-safe? true
+  :actor-snapshot-covered? true
+  :observability-audit-linked? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 10
+  :test-command "clojure -M:test"
+  :test-result "103 tests, 6415 assertions, 0 failures, 0 errors, 1376 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R7 distributed runtime document through the P08-T04 concurrency/distributed runtime artifact. It does not claim external workflow provider execution, deployed event logs, live databases, network services, model/tool providers, migration execution, or complete Phase 08 document coverage."}

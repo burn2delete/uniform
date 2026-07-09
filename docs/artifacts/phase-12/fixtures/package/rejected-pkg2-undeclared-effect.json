@@ -1,0 +1,10 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "build_graph": {
+      "effect": ":build/network",
+      "undeclared_effect": true
+    }
+  }
+}

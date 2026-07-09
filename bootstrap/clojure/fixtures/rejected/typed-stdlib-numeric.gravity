@@ -1,0 +1,9 @@
+(ns stdlib.numeric
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/numeric-target-default 'gravity.math.core/add))

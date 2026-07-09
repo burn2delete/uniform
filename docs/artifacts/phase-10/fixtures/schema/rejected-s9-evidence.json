@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "delete": [
+    "/artifact_schema_registry/evidence_schema"
+  ]
+}

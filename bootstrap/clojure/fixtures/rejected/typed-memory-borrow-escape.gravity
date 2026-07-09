@@ -1,0 +1,9 @@
+(ns typed.bad.memory.borrow
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (borrow/escape (borrow/read source)))

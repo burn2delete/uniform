@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/macro_expansion/trace_replayable": false
+  }
+}

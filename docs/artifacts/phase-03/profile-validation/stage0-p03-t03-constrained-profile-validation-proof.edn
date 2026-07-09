@@ -1,0 +1,78 @@
+{:proof-id :stage0-p03-t03-constrained-profile-validation-proof
+ :date "2026-06-24"
+ :phase 3
+ :task :P03-T03
+ :status :passed
+ :capability :constrained-profile-validation-report
+ :command "clojure -M:gravity profile-validation bootstrap/clojure/fixtures/accepted/profile-validation-hardware.gravity"
+ :artifact-kind :gravity/stage0-constrained-profile-validation-artifact
+ :accepted-fixtures
+ {:firmware "bootstrap/clojure/fixtures/accepted/profile-validation-firmware.gravity"
+  :kernel "bootstrap/clojure/fixtures/accepted/profile-validation-kernel.gravity"
+  :hardware "bootstrap/clojure/fixtures/accepted/profile-validation-hardware.gravity"
+  :gpu "bootstrap/clojure/fixtures/accepted/profile-validation-gpu.gravity"
+  :formal "bootstrap/clojure/fixtures/accepted/profile-validation-formal.gravity"}
+ :accepted-results
+ {:firmware {:document "P6"
+             :effective-effects #{:memory/mmio :interrupt/register}
+             :effective-capabilities #{:hardware/mmio :hardware/interrupt}
+             :required-artifacts 10
+             :capability-proof :complete}
+  :kernel {:document "P7"
+           :effective-effects #{:memory/raw :memory/mmio :interrupt/register}
+           :effective-capabilities #{:memory/raw :hardware/mmio
+                                     :hardware/interrupt}
+           :required-artifacts 8
+           :capability-proof :complete}
+  :hardware {:document "P8"
+             :effective-effects #{:memory/mmio :interrupt/register}
+             :effective-capabilities #{:hardware/mmio :hardware/interrupt}
+             :required-artifacts 12
+             :capability-proof :complete}
+  :gpu {:document "P11"
+        :effective-effects #{:pure}
+        :effective-capabilities #{}
+        :required-artifacts 8
+        :capability-proof :complete}
+  :formal {:document "P12"
+           :effective-effects #{:pure}
+           :effective-capabilities #{}
+           :required-artifacts 8
+           :capability-proof :complete}}
+ :rejected-diagnostics
+ {"P6" ["P6-GC" "P6-ALLOC" "P6-STACK" "P6-STATIC" "P6-MMIO"
+        "P6-INTERRUPT" "P6-LATENCY" "P6-HOST" "P6-EXCEPTION"
+        "P6-CAPABILITY"]
+  "P7" ["P7-HIDDEN-ALLOC" "P7-GC" "P7-RAW-MEMORY" "P7-MMIO"
+        "P7-INTERRUPT" "P7-SCHEDULER" "P7-ATOMIC" "P7-EXCEPTION"
+        "P7-ABI" "P7-AUTHORITY"]
+  "P8" ["P8-WIDTH" "P8-CLOCK" "P8-RESET" "P8-CDC" "P8-UNBOUNDED"
+        "P8-RUNTIME" "P8-PORT" "P8-NUMERIC" "P8-TIMING"
+        "P8-TARGET" "P8-CAPABILITY" "P8-TAG" "P8-COMPARTMENT"
+        "P8-TEMPORAL" "P8-SYNTHESIS"]
+  "P11" ["P11-HOST-EFFECT" "P11-DEVICE-MEMORY" "P11-TRANSFER"
+         "P11-SYNC" "P11-ALIAS" "P11-TARGET-FEATURE" "P11-LAUNCH"
+         "P11-MATH" "P11-RAW" "P11-BOUNDARY"]
+  "P12" ["P12-NONDETERMINISM" "P12-EFFECT" "P12-MATH-MODE"
+         "P12-ASSUMPTION" "P12-PROOF" "P12-CERTIFICATE"
+         "P12-TRUST" "P12-UNSAFE" "P12-SYMBOLIC-LOWERING"
+         "P12-BACKEND"]}
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/profile-firmware-stack.gravity"
+  "P6-STACK"
+  "bootstrap/clojure/fixtures/rejected/profile-kernel-abi.gravity"
+  "P7-ABI"
+  "bootstrap/clojure/fixtures/rejected/profile-hardware-tag.gravity"
+  "P8-TAG"
+  "bootstrap/clojure/fixtures/rejected/profile-gpu-boundary.gravity"
+  "P11-BOUNDARY"
+  "bootstrap/clojure/fixtures/rejected/profile-formal-proof.gravity"
+  "P12-PROOF"}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. P6-P8/P11-P12 constrained profile-validation artifacts, and 479 rejected fixtures"}
+  {:command "clojure -M -e '(require [gravity.bootstrap :as b]) ...'"
+   :output ":firmware P6 :gravity/stage0-constrained-profile-validation-artifact :complete 10 :complete\n:kernel P7 :gravity/stage0-constrained-profile-validation-artifact :complete 8 :complete\n:hardware P8 :gravity/stage0-constrained-profile-validation-artifact :complete 12 :complete\n:gpu P11 :gravity/stage0-constrained-profile-validation-artifact :complete 8 :complete\n:formal P12 :gravity/stage0-constrained-profile-validation-artifact :complete 8 :complete"}]
+ :limits
+ ["This proves constrained profile validation at the Clojure stage0 profile artifact boundary."
+  "It does not complete distributed, AI, compatibility matrix, backend execution, runtime services, performance, package publication, or self-hosting."]}

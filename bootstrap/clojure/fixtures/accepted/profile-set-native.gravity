@@ -1,0 +1,30 @@
+(ns profile.set.native
+  (:profile :native)
+  (:target :jvm)
+  (:requires [gravity.region :as region :profile :native]
+             [gravity.task :as task :profile :native])
+  (:exports [region-buffer worker])
+  (:effects #{:memory/allocate :thread/spawn :time/schedule})
+  (:capabilities #{:memory/allocator :scheduler/task})
+  (:safety :safe)
+  (:metadata {:memory {:default :region
+                       :hidden-allocation false}
+              :runtime {:required false
+                        :providers #{:allocator :threading}}
+              :package-allowed-effects #{:memory/allocate :thread/spawn
+                                         :time/schedule}
+              :provider-effect-grants #{:memory/allocate :thread/spawn
+                                        :time/schedule}
+              :deployment-allowed-effects #{:memory/allocate :thread/spawn
+                                            :time/schedule}
+              :package-capabilities #{:memory/allocator :scheduler/task}
+              :provider-capability-grants #{:memory/allocator :scheduler/task}
+              :deployment-capabilities #{:memory/allocator :scheduler/task}}))
+
+(def region-buffer
+  (region/alloc 64))
+
+(def worker
+  (task/scope
+    (task/spawn
+      (fn [] true))))

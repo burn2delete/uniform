@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-bootstrap-self-hosting.json",
+  "self_hosted_plan": {
+    "ambient_authority": true
+  }
+}

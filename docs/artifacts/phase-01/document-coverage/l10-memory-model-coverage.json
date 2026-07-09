@@ -1,0 +1,49 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "typed-effected-core-artifact",
+      "coverage": [
+        "memory facts",
+        "ownership-backed allocation",
+        "linear resource consumption"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity"
+    }
+  ],
+  "document": "L10",
+  "kind": "l10-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L10-HIDDEN-ALLOC",
+      "fixture": "docs/artifacts/phase-01/fixtures/l10/rejected-hidden-alloc.gravity"
+    },
+    {
+      "diagnostic": "L10-USE-AFTER-MOVE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l10/rejected-use-after-move.gravity"
+    },
+    {
+      "diagnostic": "L10-BORROW-ESCAPE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l10/rejected-borrow-escape.gravity"
+    },
+    {
+      "diagnostic": "L5-UNINIT-READ",
+      "fixture": "docs/artifacts/phase-01/fixtures/l5/rejected-uninit-read.gravity"
+    },
+    {
+      "diagnostic": "L10-BOUNDS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l10/rejected-bounds.gravity"
+    },
+    {
+      "diagnostic": "L10-RAW-SAFE",
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/rejected-raw-safe.gravity"
+    },
+    {
+      "diagnostic": "L10-MMIO-CAP",
+      "fixture": "docs/artifacts/phase-01/fixtures/l10/rejected-mmio-cap.gravity"
+    },
+    {
+      "diagnostic": "L10-LINEAR-RESOURCE",
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/rejected-linear-resource.gravity"
+    }
+  ]
+}

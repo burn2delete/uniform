@@ -1,0 +1,9 @@
+(ns typed.bad.concurrency.borrow
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (task/borrow borrowed))

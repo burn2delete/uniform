@@ -1,0 +1,41 @@
+(ns macro.expansion
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:build-grants #{}}))
+
+(defmacro stage0-unless
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  [condition & body]
+  (syntax-quote
+    (if (unquote condition)
+      nil
+      (do (splice-unquote body)))))
+
+(defmacro capture-local
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :explicit-capture
+   :output-contract :gravity-syntax}
+  [name & body]
+  (syntax-quote
+    (let [(unquote name) 1]
+      (do (splice-unquote body)))))
+
+(defn main []
+  (do
+    (when true
+      (println "macro"))
+    (stage0-unless false
+      (println "unless"))
+    (capture-local intentional
+      (println intentional))
+    (-> "threaded" (println))))

@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: unsupported atomic order, scope, or alignment.
+(ns runtime.r6-atomic
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:thread/spawn})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-atomic}}}))
+
+(defn main [] :- I64 1)

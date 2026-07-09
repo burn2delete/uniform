@@ -1,0 +1,388 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:13566a79d074a8bbbabfef84ace447ac303def090e1703995c40c28e27de06bb",
+      "artifact_kind": "safety-classification-artifact",
+      "coverage": [
+        "exactly one safety outcome per operation",
+        "runtime checks and unsafe islands remain artifact-visible",
+        "check erasure requires proof evidence"
+      ],
+      "document": "SAFE1",
+      "fixture": "docs/artifacts/phase-02/fixtures/safety/accepted-safety-classification.json",
+      "governing_doc": "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+      "task_id": "P02-D030",
+      "validator": "safety-classifier"
+    },
+    {
+      "artifact_hash": "sha256:3b36ac86ee2721fff1b1ccdd0ac7abc9806636bdacce65fe120a10e9ba7677b4",
+      "artifact_kind": "memory-safety-artifact",
+      "coverage": [
+        "memory operations carry SAFE1 outcomes",
+        "initialization, bounds, lifetime, provider, and raw-memory facts are checked",
+        "runtime checks and proof records are emitted"
+      ],
+      "document": "SAFE2",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+      "governing_doc": "docs/phase-02-safety/031-safe2-memory-safety-model.md",
+      "task_id": "P02-D031",
+      "validator": "memory-safety"
+    },
+    {
+      "artifact_hash": "sha256:3b36ac86ee2721fff1b1ccdd0ac7abc9806636bdacce65fe120a10e9ba7677b4",
+      "artifact_kind": "memory-safety-artifact",
+      "coverage": [
+        "ownership and borrow graphs are artifact-visible",
+        "move and consume state rejects illegal reuse",
+        "lifetime intervals constrain escapes"
+      ],
+      "document": "SAFE3",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+      "governing_doc": "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md",
+      "task_id": "P02-D032",
+      "validator": "memory-safety"
+    },
+    {
+      "artifact_hash": "sha256:3b36ac86ee2721fff1b1ccdd0ac7abc9806636bdacce65fe120a10e9ba7677b4",
+      "artifact_kind": "memory-safety-artifact",
+      "coverage": [
+        "region lifetime and arena generation graphs are emitted",
+        "escape analysis rejects shorter lifetime leaks",
+        "runtime generation checks remain artifact-visible"
+      ],
+      "document": "SAFE4",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+      "governing_doc": "docs/phase-02-safety/033-safe4-region-and-arena-safety.md",
+      "task_id": "P02-D033",
+      "validator": "memory-safety"
+    },
+    {
+      "artifact_hash": "sha256:3b36ac86ee2721fff1b1ccdd0ac7abc9806636bdacce65fe120a10e9ba7677b4",
+      "artifact_kind": "memory-safety-artifact",
+      "coverage": [
+        "linear resources reach exactly one terminal state",
+        "normal, exceptional, and cancellation cleanup records are emitted",
+        "missing release paths reject with stable diagnostics"
+      ],
+      "document": "SAFE5",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/accepted-memory-safety.json",
+      "governing_doc": "docs/phase-02-safety/034-safe5-linear-resource-safety.md",
+      "task_id": "P02-D034",
+      "validator": "memory-safety"
+    },
+    {
+      "artifact_hash": "sha256:3499b66ff854c70166bef6903ab18159bb33b3b58837ab6a552e61a960f064b4",
+      "artifact_kind": "unsafe-audit-artifact",
+      "coverage": [
+        "unsafe islands require complete metadata",
+        "safe wrappers connect public APIs to unsafe internals",
+        "review and release audit records are machine-readable"
+      ],
+      "document": "SAFE6",
+      "fixture": "docs/artifacts/phase-02/fixtures/unsafe-audit/accepted-unsafe-audit.json",
+      "governing_doc": "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md",
+      "task_id": "P02-D035",
+      "validator": "unsafe-audit"
+    },
+    {
+      "artifact_hash": "sha256:830a7ff94899dec89dff21d27ace94115f6f6699a56e76796cdcc9bb6283f6d0",
+      "artifact_kind": "domain-safety-artifact",
+      "coverage": [
+        "foreign declarations include ABI, ownership, effect, capability, and error metadata",
+        "safe wrappers own FFI invariants",
+        "raw foreign calls reject in safe code"
+      ],
+      "document": "SAFE7",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+      "governing_doc": "docs/phase-02-safety/036-safe7-ffi-safety.md",
+      "task_id": "P02-D036",
+      "validator": "domain-safety"
+    },
+    {
+      "artifact_hash": "sha256:830a7ff94899dec89dff21d27ace94115f6f6699a56e76796cdcc9bb6283f6d0",
+      "artifact_kind": "domain-safety-artifact",
+      "coverage": [
+        "concurrent mutation requires synchronization or ownership transfer",
+        "atomic orders and backend preservation are checked",
+        "data races reject with stable diagnostics"
+      ],
+      "document": "SAFE8",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+      "governing_doc": "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md",
+      "task_id": "P02-D037",
+      "validator": "domain-safety"
+    },
+    {
+      "artifact_hash": "sha256:830a7ff94899dec89dff21d27ace94115f6f6699a56e76796cdcc9bb6283f6d0",
+      "artifact_kind": "domain-safety-artifact",
+      "coverage": [
+        "numeric modes are explicit",
+        "checks and range proofs are artifact-visible",
+        "unsafe or unproved overflow rejects"
+      ],
+      "document": "SAFE9",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+      "governing_doc": "docs/phase-02-safety/038-safe9-numeric-safety.md",
+      "task_id": "P02-D038",
+      "validator": "domain-safety"
+    },
+    {
+      "artifact_hash": "sha256:ae7f51b98524308e5fb2721745d71fe19b02ebf32a5c660dbe0391f5ef5397e1",
+      "artifact_kind": "capability-supply-chain-artifact",
+      "coverage": [
+        "authority-bearing operations require grants and providers",
+        "grant intersections, scopes, and runtime denials are emitted",
+        "missing capabilities reject"
+      ],
+      "document": "SAFE10",
+      "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/accepted-capability-supply-chain.json",
+      "governing_doc": "docs/phase-02-safety/039-safe10-capability-security-model.md",
+      "task_id": "P02-D039",
+      "validator": "capability-supply-chain"
+    },
+    {
+      "artifact_hash": "sha256:830a7ff94899dec89dff21d27ace94115f6f6699a56e76796cdcc9bb6283f6d0",
+      "artifact_kind": "domain-safety-artifact",
+      "coverage": [
+        "taint sources, validators, residual constraints, and sinks are explicit",
+        "secret redaction records are emitted",
+        "unvalidated tainted sink flow rejects"
+      ],
+      "document": "SAFE11",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/accepted-domain-safety.json",
+      "governing_doc": "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md",
+      "task_id": "P02-D040",
+      "validator": "domain-safety"
+    },
+    {
+      "artifact_hash": "sha256:23b4f49db5c51921a776f04bd0ee293a91534473e778eff9fcb8eb295aed9ecf",
+      "artifact_kind": "safe12-macro-safety-artifact",
+      "coverage": [
+        "macro expansion preserves origin, hygiene, taint, capability, and profile metadata",
+        "macro build effects must be declared and granted",
+        "generated code remains subject to ordinary safety passes"
+      ],
+      "document": "SAFE12",
+      "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe12-macro-safety.json",
+      "governing_doc": "docs/phase-02-safety/041-safe12-macro-safety.md",
+      "task_id": "P02-D041",
+      "validator": "safe12-macro-safety"
+    },
+    {
+      "artifact_hash": "sha256:775899c157ebf9ae2c16640c6902691bcda32f73a0d9fc18d80527d807799495",
+      "artifact_kind": "safe13-ai-tool-safety-artifact",
+      "coverage": [
+        "model and tool calls carry effects, capabilities, schemas, traces, and replay policy",
+        "human-review records gate write tools",
+        "untrusted prompt roles cannot control privileged tools"
+      ],
+      "document": "SAFE13",
+      "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe13-ai-tool-safety.json",
+      "governing_doc": "docs/phase-02-safety/042-safe13-ai-tool-safety.md",
+      "task_id": "P02-D042",
+      "validator": "safe13-ai-tool-safety"
+    },
+    {
+      "artifact_hash": "sha256:ae7f51b98524308e5fb2721745d71fe19b02ebf32a5c660dbe0391f5ef5397e1",
+      "artifact_kind": "capability-supply-chain-artifact",
+      "coverage": [
+        "package safety manifests and lockfiles gate builds",
+        "build effects and transitive authority diffs are visible",
+        "undeclared postinstall execution rejects"
+      ],
+      "document": "SAFE14",
+      "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/accepted-capability-supply-chain.json",
+      "governing_doc": "docs/phase-02-safety/043-safe14-supply-chain-safety.md",
+      "task_id": "P02-D043",
+      "validator": "capability-supply-chain"
+    },
+    {
+      "artifact_hash": "sha256:a5d7c1920dc97614c29cfb4a23f177bdc4f624f7ac418551101e59191d446d47",
+      "artifact_kind": "safe15-certificate-safety-artifact",
+      "coverage": [
+        "proof records and certificates carry stable identity and trust metadata",
+        "check erasure ties to proof and certificate ids",
+        "untrusted certificates reject"
+      ],
+      "document": "SAFE15",
+      "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe15-certificate-safety.json",
+      "governing_doc": "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+      "task_id": "P02-D044",
+      "validator": "safe15-certificate-safety"
+    },
+    {
+      "artifact_hash": "sha256:1640e380a84925365f7779a388a52ed9cbe167d7301e7380c4378b98043f2b53",
+      "artifact_kind": "safety-conformance-artifact",
+      "coverage": [
+        "conformance suite records fixture families for SAFE1 through SAFE15",
+        "expected outcomes and diagnostics are structured",
+        "artifact, profile, certificate, and backend inspections are machine-readable"
+      ],
+      "document": "SAFE16",
+      "fixture": "docs/artifacts/phase-02/fixtures/conformance/accepted-safety-conformance.json",
+      "governing_doc": "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+      "task_id": "P02-D045",
+      "validator": "safety-conformance"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 16,
+    "documents": 16,
+    "rejected_diagnostics": 16,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "SAFE1",
+    "SAFE10",
+    "SAFE11",
+    "SAFE12",
+    "SAFE13",
+    "SAFE14",
+    "SAFE15",
+    "SAFE16",
+    "SAFE2",
+    "SAFE3",
+    "SAFE4",
+    "SAFE5",
+    "SAFE6",
+    "SAFE7",
+    "SAFE8",
+    "SAFE9"
+  ],
+  "input_hash": "sha256:b373eb6f8036c2a9b41799179f9095a8907436e24ef54812a177d878aa4e58db",
+  "kind": "phase02-safety-document-coverage-artifact",
+  "module": "safety.document.coverage",
+  "package": "gravity.safety.demo",
+  "phase": "02",
+  "rejected": [
+    {
+      "diagnostic": "SAFE1-NO-OUTCOME",
+      "document": "SAFE1",
+      "fixture": "docs/artifacts/phase-02/fixtures/safety/rejected-no-outcome.json",
+      "missing_fact": "safety-outcome",
+      "task_id": "P02-D030",
+      "validator": "safety-classifier"
+    },
+    {
+      "diagnostic": "SAFE2-UNINIT",
+      "document": "SAFE2",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-uninit.json",
+      "missing_fact": "initialized",
+      "task_id": "P02-D031",
+      "validator": "memory-safety"
+    },
+    {
+      "diagnostic": "SAFE3-USE-AFTER-MOVE",
+      "document": "SAFE3",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-use-after-move.json",
+      "missing_fact": "available-owner",
+      "task_id": "P02-D032",
+      "validator": "memory-safety"
+    },
+    {
+      "diagnostic": "SAFE4-REGION-ESCAPE",
+      "document": "SAFE4",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-region-escape.json",
+      "missing_fact": "region-bounded-escape",
+      "task_id": "P02-D033",
+      "validator": "memory-safety"
+    },
+    {
+      "diagnostic": "SAFE5-LEAK",
+      "document": "SAFE5",
+      "fixture": "docs/artifacts/phase-02/fixtures/memory-safety/rejected-linear-leak.json",
+      "missing_fact": "terminal-operation",
+      "task_id": "P02-D034",
+      "validator": "memory-safety"
+    },
+    {
+      "diagnostic": "SAFE6-MISSING-OWNER",
+      "document": "SAFE6",
+      "fixture": "docs/artifacts/phase-02/fixtures/unsafe-audit/rejected-missing-owner.json",
+      "missing_fact": "owner",
+      "task_id": "P02-D035",
+      "validator": "unsafe-audit"
+    },
+    {
+      "diagnostic": "SAFE7-RAW-CALL",
+      "document": "SAFE7",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-ffi-raw-call.json",
+      "missing_fact": "safe-wrapper",
+      "task_id": "P02-D036",
+      "validator": "domain-safety"
+    },
+    {
+      "diagnostic": "SAFE8-DATA-RACE",
+      "document": "SAFE8",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-concurrency-data-race.json",
+      "missing_fact": "synchronization",
+      "task_id": "P02-D037",
+      "validator": "domain-safety"
+    },
+    {
+      "diagnostic": "SAFE9-OVERFLOW",
+      "document": "SAFE9",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-numeric-overflow.json",
+      "missing_fact": "overflow-mode-or-proof",
+      "task_id": "P02-D038",
+      "validator": "domain-safety"
+    },
+    {
+      "diagnostic": "SAFE10-MISSING",
+      "document": "SAFE10",
+      "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/rejected-capability-missing.json",
+      "missing_fact": "capability-grant",
+      "task_id": "P02-D039",
+      "validator": "capability-supply-chain"
+    },
+    {
+      "diagnostic": "SAFE11-TAINTED-SINK",
+      "document": "SAFE11",
+      "fixture": "docs/artifacts/phase-02/fixtures/domain-safety/rejected-taint-sink.json",
+      "missing_fact": "sink-authorization",
+      "task_id": "P02-D040",
+      "validator": "domain-safety"
+    },
+    {
+      "diagnostic": "SAFE12-BUILD-EFFECT",
+      "document": "SAFE12",
+      "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe12-build-effect.json",
+      "missing_fact": "declared-granted-build-effects",
+      "task_id": "P02-D041",
+      "validator": "safe12-macro-safety"
+    },
+    {
+      "diagnostic": "SAFE13-PROMPT-INJECTION",
+      "document": "SAFE13",
+      "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe13-prompt-injection.json",
+      "missing_fact": "prompt-role-policy-separation",
+      "task_id": "P02-D042",
+      "validator": "safe13-ai-tool-safety"
+    },
+    {
+      "diagnostic": "SAFE14-POSTINSTALL",
+      "document": "SAFE14",
+      "fixture": "docs/artifacts/phase-02/fixtures/capability-supply-chain/rejected-postinstall.json",
+      "missing_fact": "postinstall-policy",
+      "task_id": "P02-D043",
+      "validator": "capability-supply-chain"
+    },
+    {
+      "diagnostic": "SAFE15-CERT-TRUST",
+      "document": "SAFE15",
+      "fixture": "docs/artifacts/phase-02/fixtures/document-coverage/rejected-safe15-cert-trust.json",
+      "missing_fact": "trusted-signature",
+      "task_id": "P02-D044",
+      "validator": "safe15-certificate-safety"
+    },
+    {
+      "diagnostic": "SAFE16-OUTCOME",
+      "document": "SAFE16",
+      "fixture": "docs/artifacts/phase-02/fixtures/conformance/rejected-outcome.json",
+      "missing_fact": "expected-actual-outcome-match",
+      "task_id": "P02-D045",
+      "validator": "safety-conformance"
+    }
+  ]
+}

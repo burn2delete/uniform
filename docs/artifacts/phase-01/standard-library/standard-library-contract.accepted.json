@@ -1,0 +1,336 @@
+{
+  "compatibility_and_migration_records": [
+    {
+      "added_symbols": [
+        "vector/of"
+      ],
+      "migration_record": "docs/artifacts/phase-01/standard-library/compatibility-vector-0.1.json",
+      "namespace": "gravity.collections.vector",
+      "semver_level": ":minor",
+      "version_from": "0.1.0",
+      "version_to": "0.2.0"
+    }
+  ],
+  "diagnostics": [],
+  "document": "L13",
+  "executable_documentation_examples": [
+    {
+      "compiles": true,
+      "profile": ":core",
+      "source": "(vector/of 1 2 3)"
+    },
+    {
+      "compiles": true,
+      "profile": ":hosted",
+      "source": "(vector/of 1 2 3)"
+    },
+    {
+      "compiles": true,
+      "profile": ":native",
+      "source": "(vector/of 1 2 3)"
+    },
+    {
+      "compiles": true,
+      "profile": ":firmware",
+      "source": "(vector/of 1 2 3)"
+    },
+    {
+      "compiles": true,
+      "profile": ":hosted",
+      "source": "(fs/read-text fs path)"
+    },
+    {
+      "compiles": true,
+      "profile": ":native",
+      "source": "(fs/read-text fs path)"
+    },
+    {
+      "compiles": true,
+      "profile": ":native",
+      "source": "(memory/with-borrowed-slice buffer range)"
+    },
+    {
+      "compiles": true,
+      "profile": ":firmware",
+      "source": "(memory/with-borrowed-slice buffer range)"
+    },
+    {
+      "compiles": true,
+      "profile": ":core",
+      "source": "(math/add-i32 1 2)"
+    },
+    {
+      "compiles": true,
+      "profile": ":hosted",
+      "source": "(math/add-i32 1 2)"
+    },
+    {
+      "compiles": true,
+      "profile": ":native",
+      "source": "(math/add-i32 1 2)"
+    },
+    {
+      "compiles": true,
+      "profile": ":firmware",
+      "source": "(math/add-i32 1 2)"
+    }
+  ],
+  "kind": "standard-library-contract-artifact",
+  "module": "gravity.stdlib",
+  "namespace_contract_metadata": [
+    {
+      "allocation": {
+        ":core": ":none",
+        ":firmware": ":static-or-region",
+        ":hosted": ":managed",
+        ":native": ":region-or-managed"
+      },
+      "capabilities": [],
+      "dependencies": [
+        "gravity.core"
+      ],
+      "effects": [],
+      "layer": 1,
+      "name": "gravity.collections.vector",
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    },
+    {
+      "allocation": {
+        ":hosted": ":managed",
+        ":native": ":region-or-managed"
+      },
+      "capabilities": [
+        ":fs/read"
+      ],
+      "dependencies": [
+        "gravity.resource",
+        "gravity.result"
+      ],
+      "effects": [
+        ":filesystem/read"
+      ],
+      "layer": 3,
+      "name": "gravity.fs",
+      "profiles": [
+        ":hosted",
+        ":native"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    },
+    {
+      "allocation": {
+        ":firmware": ":static-or-region",
+        ":native": ":region-or-managed"
+      },
+      "capabilities": [],
+      "dependencies": [
+        "gravity.resource"
+      ],
+      "effects": [],
+      "layer": 2,
+      "name": "gravity.memory",
+      "profiles": [
+        ":native",
+        ":firmware"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    },
+    {
+      "allocation": {
+        ":core": ":none",
+        ":firmware": ":none",
+        ":hosted": ":none",
+        ":native": ":none"
+      },
+      "capabilities": [],
+      "dependencies": [
+        "gravity.core"
+      ],
+      "effects": [],
+      "layer": 0,
+      "name": "gravity.math.core",
+      "profiles": [
+        ":core",
+        ":hosted",
+        ":native",
+        ":firmware"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    }
+  ],
+  "profile_availability_report": [
+    {
+      "namespaces": [
+        "gravity.collections.vector",
+        "gravity.math.core"
+      ],
+      "profile": ":core"
+    },
+    {
+      "namespaces": [
+        "gravity.collections.vector",
+        "gravity.math.core",
+        "gravity.memory"
+      ],
+      "profile": ":firmware"
+    },
+    {
+      "namespaces": [
+        "gravity.collections.vector",
+        "gravity.fs",
+        "gravity.math.core"
+      ],
+      "profile": ":hosted"
+    },
+    {
+      "namespaces": [
+        "gravity.collections.vector",
+        "gravity.fs",
+        "gravity.math.core",
+        "gravity.memory"
+      ],
+      "profile": ":native"
+    }
+  ],
+  "public_api_records": [
+    {
+      "allocation": {
+        ":core": ":none",
+        ":firmware": ":static-or-region",
+        ":hosted": ":managed",
+        ":native": ":region-or-managed"
+      },
+      "blocking": false,
+      "capabilities": [],
+      "classification": ":pure",
+      "effects": [],
+      "failure_modes": [],
+      "namespace": "gravity.collections.vector",
+      "nondeterminism": ":none",
+      "numeric_mode": null,
+      "panic": false,
+      "stability": ":stable",
+      "symbol": "vector/of",
+      "type": "(A*) -> Vector[A]"
+    },
+    {
+      "allocation": {
+        ":core": ":none",
+        ":firmware": ":none",
+        ":hosted": ":none",
+        ":native": ":none"
+      },
+      "blocking": false,
+      "capabilities": [],
+      "classification": ":checked",
+      "effects": [],
+      "failure_modes": [
+        "Option"
+      ],
+      "namespace": "gravity.collections.vector",
+      "nondeterminism": ":none",
+      "numeric_mode": null,
+      "panic": false,
+      "stability": ":stable",
+      "symbol": "vector/get",
+      "type": "Vector[A], Index -> Option[A]"
+    },
+    {
+      "allocation": {
+        ":hosted": ":managed",
+        ":native": ":region-or-managed"
+      },
+      "blocking": true,
+      "capabilities": [
+        ":fs/read"
+      ],
+      "classification": ":capability",
+      "effects": [
+        ":filesystem/read"
+      ],
+      "failure_modes": [
+        "Result[String,FsError]"
+      ],
+      "namespace": "gravity.fs",
+      "nondeterminism": ":filesystem-state",
+      "numeric_mode": null,
+      "panic": false,
+      "stability": ":stable",
+      "symbol": "read-text",
+      "type": "Capability[:fs/read], Path -> Result[String,FsError]"
+    },
+    {
+      "allocation": {
+        ":firmware": ":none",
+        ":native": ":none"
+      },
+      "blocking": false,
+      "capabilities": [],
+      "classification": ":unsafe-wrapper",
+      "effects": [],
+      "failure_modes": [
+        "Result[BorrowedSlice,BoundsError]"
+      ],
+      "namespace": "gravity.memory",
+      "nondeterminism": ":none",
+      "numeric_mode": null,
+      "panic": false,
+      "stability": ":stable",
+      "symbol": "with-borrowed-slice",
+      "type": "OwnedBuffer, Range -> Result[BorrowedSlice,BoundsError]"
+    },
+    {
+      "allocation": {
+        ":core": ":none",
+        ":firmware": ":none",
+        ":hosted": ":none",
+        ":native": ":none"
+      },
+      "blocking": false,
+      "capabilities": [],
+      "classification": ":pure",
+      "effects": [],
+      "failure_modes": [
+        "Result[Int32,Overflow]"
+      ],
+      "namespace": "gravity.math.core",
+      "nondeterminism": ":none",
+      "numeric_mode": {
+        "floating_point": ":not-applicable",
+        "optimization_rewrite_preserved": true,
+        "overflow": ":checked",
+        "rounding": ":not-applicable",
+        "signedness": ":signed",
+        "width": 32
+      },
+      "panic": false,
+      "stability": ":stable",
+      "symbol": "add-i32",
+      "type": "Int32, Int32 -> Result[Int32,Overflow]"
+    }
+  ],
+  "unsafe_wrapper_audit_records": [
+    {
+      "audit_artifact": "docs/artifacts/phase-01/standard-library/audits/borrowed-slice-audit.json",
+      "invariant": "range bounds are checked before constructing the borrowed slice",
+      "namespace": "gravity.memory",
+      "profiles": [
+        ":native",
+        ":firmware"
+      ],
+      "proof_artifact": "docs/artifacts/phase-01/standard-library/proofs/borrowed-slice-bounds.json",
+      "symbol": "with-borrowed-slice",
+      "unsafe_namespace": "gravity.memory.unsafe"
+    }
+  ]
+}

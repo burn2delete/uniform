@@ -1,0 +1,10 @@
+(ns typed.error.panic-profile
+  (:profile :hardware)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (panic/illegal))

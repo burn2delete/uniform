@@ -1,0 +1,8 @@
+(ns macro.bad-return
+  (:profile :hosted)
+  (:target :jvm)
+  (:safety :safe))
+
+(def value
+  (return-text true))
+

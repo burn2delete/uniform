@@ -1,0 +1,15 @@
+(ns core.app.ai-tool-human-review
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:tools
+                    [{:tool-id "ticket/update-priority"
+                      :effects #{:database/write}
+                      :capabilities #{:ticket/write}
+                      :human-review :not-required}]}}}))
+
+(defn main []
+  (println "bad ai tool human review"))

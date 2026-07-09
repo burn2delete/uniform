@@ -1,0 +1,5 @@
+(ns l10.bad.hidden
+  (:profile :kernel))
+
+(def bad
+  (hidden/alloc 64))

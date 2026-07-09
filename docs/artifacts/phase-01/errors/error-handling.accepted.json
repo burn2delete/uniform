@@ -1,0 +1,68 @@
+{
+  "ai_tool_error_records": [],
+  "diagnostics": [],
+  "error_type_declarations": [
+    {
+      "name": "FileError",
+      "span": {
+        "end_byte": 82,
+        "end_column": 20,
+        "end_line": 5,
+        "source": "docs/artifacts/phase-01/fixtures/l9/accepted-error-handling.gravity",
+        "start_byte": 73,
+        "start_column": 11,
+        "start_line": 5
+      }
+    }
+  ],
+  "ffi_error_mapping_artifacts": [],
+  "function_thrown_error_effect_records": [
+    {
+      "effect": ":error/throw",
+      "handled": true,
+      "span": {
+        "end_byte": 122,
+        "end_column": 18,
+        "end_line": 9,
+        "source": "docs/artifacts/phase-01/fixtures/l9/accepted-error-handling.gravity",
+        "start_byte": 109,
+        "start_column": 5,
+        "start_line": 9
+      }
+    }
+  ],
+  "kind": "error-handling-artifact",
+  "module": "l9.errors",
+  "panic_lowering_records": [
+    {
+      "lowering": "profile-runtime-panic",
+      "profile": ":hosted",
+      "span": {
+        "end_byte": 271,
+        "end_column": 18,
+        "end_line": 19,
+        "source": "docs/artifacts/phase-01/fixtures/l9/accepted-error-handling.gravity",
+        "start_byte": 256,
+        "start_column": 3,
+        "start_line": 19
+      }
+    }
+  ],
+  "profile": ":hosted",
+  "safety_check_failure_records": [
+    {
+      "failure": "typed-profile-failure",
+      "span": {
+        "end_byte": 311,
+        "end_column": 25,
+        "end_line": 22,
+        "source": "docs/artifacts/phase-01/fixtures/l9/accepted-error-handling.gravity",
+        "start_byte": 289,
+        "start_column": 3,
+        "start_line": 22
+      }
+    }
+  ],
+  "source": "docs/artifacts/phase-01/fixtures/l9/accepted-error-handling.gravity",
+  "workflow_failure_records": []
+}

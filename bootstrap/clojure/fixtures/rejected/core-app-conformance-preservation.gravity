@@ -1,0 +1,13 @@
+(ns core.app.conformance-preservation
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:compiler-test-reports
+                             [{:artifact-id "compiler-report:bad"
+                               :preservation-reports []}]}}}))
+
+(defn main []
+  (println "bad conformance preservation"))

@@ -1,0 +1,6 @@
+; Rejected P08 R11 fixture.
+(ns runtime.r11-observability (:profile :ai) (:target :jvm) (:exports [main])
+  (:effects #{:runtime/observability}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r11-observability}}}))
+(defn main [] :- I64 1)

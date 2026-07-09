@@ -1,0 +1,13 @@
+(ns core.app.package-network
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:reproducible-build-recipes
+                         [{:artifact-id "recipe:bad"
+                           :environment {:network :open}}]}}}))
+
+(defn main []
+  (println "bad package network"))

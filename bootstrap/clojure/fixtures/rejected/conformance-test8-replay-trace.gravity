@@ -1,0 +1,11 @@
+; Rejected P14 TEST8 fixture.
+(ns conformance.test8-replay-trace
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/replay})
+  (:capabilities #{:workflow/replay})
+  (:safety :safe)
+  (:metadata {:conformance {:system {:fail :test8003}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,13 @@
+(ns core.app.conformance-safety-audit
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:safety-conformance-reports
+                             [{:artifact-id "safety-report:bad"
+                               :unsafe-audit-records []}]}}}))
+
+(defn main []
+  (println "bad conformance safety audit"))

@@ -1,0 +1,12 @@
+; Rejected P11 A1 fixture.
+(ns ai.a1-tool-authority
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call :ai/tool-call})
+  (:capabilities #{:model/invoke})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :ai004}}}))
+
+(defn main [] :- I64 1)

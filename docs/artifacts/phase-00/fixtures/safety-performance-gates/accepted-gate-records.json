@@ -1,0 +1,198 @@
+{
+  "artifact_id": "phase-00-safety-performance-accepted-gate-records",
+  "kind": "safety-performance-gate-fixture",
+  "task": "P00-T04",
+  "records": [
+    {
+      "claim_id": "preserve-bounds-fact",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "minimal-native",
+      "safety_mode": ":safe-optimized",
+      "input_domain": {"n": ["range", 0, 1024]},
+      "layout": {"vector": "contiguous", "element": "i64"},
+      "effects": [],
+      "capabilities": [],
+      "erased_checks": [":bounds"],
+      "proof_records": [
+        {
+          "claim": "loop index remains within vector length",
+          "domain": {"n": ["range", 0, 1024]},
+          "assumptions": ["vector-length-stable"],
+          "checker": "gravity.mir.range/check",
+          "inputs": ["typed-core", "mir", "range-facts"],
+          "result": "accepted"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/vector-sum",
+        "baseline": "c-o3",
+        "samples": 50,
+        "target_fingerprint": "llvm-x86_64-linux-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:preserve-source",
+        "optimization_manifest": "optimization-manifest-preserve.fixture.json"
+      },
+      "artifacts": ["optimized-mir", "proof-certificate", "benchmark-report"],
+      "safety_outcome": ":proven-safe",
+      "optimization_choice": "preserve-fact"
+    },
+    {
+      "claim_id": "regenerate-overflow-fact",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "minimal-native",
+      "safety_mode": ":safe-optimized",
+      "input_domain": {"x": ["range", 0, 100], "y": ["range", 0, 100]},
+      "layout": {"scalar": "i64"},
+      "effects": [],
+      "capabilities": [],
+      "erased_checks": [":overflow"],
+      "proof_records": [
+        {
+          "claim": "addition cannot overflow i64 for fixture domain",
+          "domain": {"x": ["range", 0, 100], "y": ["range", 0, 100]},
+          "assumptions": ["i64-range"],
+          "checker": "gravity.numeric.range/check",
+          "inputs": ["typed-core", "numeric-mode-record"],
+          "result": "accepted"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/scalar-add",
+        "baseline": "c-o3",
+        "samples": 30,
+        "target_fingerprint": "llvm-x86_64-linux-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:regenerate-source",
+        "optimization_manifest": "optimization-manifest-regenerate.fixture.json"
+      },
+      "artifacts": ["optimized-mir", "proof-certificate", "benchmark-report"],
+      "safety_outcome": ":proven-safe",
+      "optimization_choice": "regenerate-fact"
+    },
+    {
+      "claim_id": "retain-runtime-taint-check",
+      "profile": ":distributed",
+      "target": "workflow-graph",
+      "backend": "workflow-backend",
+      "runtime": "workflow-runtime",
+      "safety_mode": ":safe",
+      "input_domain": {"payload": "untrusted-json"},
+      "layout": {"event": "durable-record"},
+      "effects": [":network/http"],
+      "capabilities": [":http/client"],
+      "erased_checks": [],
+      "proof_records": [
+        {
+          "claim": "runtime taint check remains in workflow graph",
+          "domain": {"payload": "untrusted-json"},
+          "assumptions": ["schema-validator-present"],
+          "checker": "gravity.workflow.taint/check",
+          "inputs": ["workflow-ir", "runtime-check-manifest"],
+          "result": "accepted"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/workflow-taint-check",
+        "baseline": "unoptimized-workflow",
+        "samples": 20,
+        "target_fingerprint": "workflow-runtime-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:runtime-check-source",
+        "optimization_manifest": "optimization-manifest-retain.fixture.json"
+      },
+      "artifacts": ["workflow-graph", "runtime-check-manifest", "benchmark-report"],
+      "safety_outcome": ":runtime-checked",
+      "optimization_choice": "retain-runtime-check"
+    },
+    {
+      "claim_id": "reject-capability-check-elision",
+      "profile": ":hosted",
+      "target": "jvm",
+      "backend": "jvm-bytecode",
+      "runtime": "hosted-jvm",
+      "safety_mode": ":safe",
+      "input_domain": {"request": "network-call"},
+      "layout": {"object": "hosted-reference"},
+      "effects": [":network/http"],
+      "capabilities": [":http/client"],
+      "erased_checks": [],
+      "proof_records": [
+        {
+          "claim": "capability check cannot be elided for dynamic grant",
+          "domain": {"request": "network-call"},
+          "assumptions": ["dynamic-deployment-policy"],
+          "checker": "gravity.capability/check",
+          "inputs": ["typed-core", "capability-manifest"],
+          "result": "rejected"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/http-client",
+        "baseline": "unoptimized-hosted",
+        "samples": 20,
+        "target_fingerprint": "jvm-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:reject-source",
+        "optimization_manifest": "optimization-manifest-reject.fixture.json"
+      },
+      "artifacts": ["diagnostic-golden-file", "capability-manifest"],
+      "safety_outcome": ":rejected",
+      "optimization_choice": "reject-transformation",
+      "rejection_diagnostic": "D6-CHECK-ELISION-UNPROVED"
+    },
+    {
+      "claim_id": "unsafe-mmio-fast-path",
+      "profile": ":kernel",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "none",
+      "safety_mode": ":audited-unsafe",
+      "input_domain": {"addr": "aligned-u32-mmio"},
+      "layout": {"register": "volatile-u32"},
+      "effects": [":memory/raw"],
+      "capabilities": [":memory/unsafe"],
+      "erased_checks": [],
+      "proof_records": [
+        {
+          "claim": "safe wrapper checks alignment before unsafe MMIO read",
+          "domain": {"addr": "aligned-u32-mmio"},
+          "assumptions": ["volatile-region"],
+          "checker": "gravity.kernel.mmio/check",
+          "inputs": ["unsafe-island-audit", "safe-wrapper-test-report"],
+          "result": "accepted"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/mmio-read",
+        "baseline": "checked-mmio-read",
+        "samples": 25,
+        "target_fingerprint": "kernel-llvm-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:mmio-source",
+        "optimization_manifest": "optimization-manifest-mmio.fixture.json"
+      },
+      "artifacts": ["unsafe-island-audit-record", "safe-wrapper-test-report", "benchmark-report"],
+      "safety_outcome": ":unsafe-island",
+      "optimization_choice": "preserve-fact",
+      "unsafe_island": {
+        "reason": "MMIO register read",
+        "source_span": "drivers/uart.gravity:42:3",
+        "profiles": [":kernel"],
+        "effects": [":memory/raw"],
+        "capabilities": [":memory/unsafe"],
+        "preconditions": ["aligned-u32-address", "volatile-region"],
+        "postconditions": ["u32-value", "no-alias-created"],
+        "invariants": ["no-safe-alias", "volatile-read-preserved"],
+        "safe_boundary": "mmio/read-u32",
+        "evidence": ["unaligned-address-rejected", "wrapper-bounds-test"],
+        "owner": "kernel-working-group",
+        "review": "SAFETY-FIXTURE-001",
+        "re_review": "on-backend-or-wrapper-change"
+      }
+    }
+  ]
+}

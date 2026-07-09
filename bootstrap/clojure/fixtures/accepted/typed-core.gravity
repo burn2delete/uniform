@@ -1,0 +1,194 @@
+(ns typed.core
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [checked-integer hosted-dynamic checked-dynamic log-message
+             typed-greeting owned-buffer file-cycle scheduled-work
+             record-fact union-fact protocol-fact generic-fact schema-fact
+             bottom-fact never-fact nil-fact unit-fact bool-fact i32-fact
+             u64-fact int-fact bigint-fact f32-fact f64-fact exact-fact
+             symbol-fact keyword-fact string-fact text-fact list-fact
+             vector-fact map-fact set-fact tuple-fact struct-fact
+             enum-fact tagged-union-fact function-fact interface-fact
+             existential-fact generic-type-fact effect-fact region-fact borrow-fact
+             borrow-mut-fact ptr-fact raw-ptr-fact mmio-fact uninit-fact
+             init-fact tainted-fact compile-time-fact const-generic-fact
+             syntax-fact ir-fact artifact-ref-fact])
+  (:effects #{:io/write :memory/allocate :resource/open :resource/close
+              :dynamic/eval :thread/spawn :time/schedule})
+  (:capabilities #{:io/stdout :memory/allocator :resource/file :scheduler/task})
+  (:safety :safe))
+
+(def checked-integer
+  (typed/assert :Integer 42))
+
+(def hosted-dynamic
+  (dynamic/value "runtime"))
+
+(def checked-dynamic
+  (dynamic/cast :String hosted-dynamic))
+
+(def log-message
+  (fn [message :- String]
+    (println message)))
+
+(defn typed-greeting [name :- String] :- String
+  name)
+
+(def owned-buffer
+  (buffer/new 64))
+
+(def file-cycle
+  (let [file (resource/open "tmp/data.txt")]
+    (do
+      (resource/close file)
+      true)))
+
+(def scheduled-work
+  (task/scope
+    (task/spawn
+      (fn []
+        (println "inside task")))))
+
+(def record-fact
+  (record/new :Vec3 {:x 1 :y 2 :z 3}))
+
+(def union-fact
+  (union/ok :Result 42))
+
+(def protocol-fact
+  (protocol/value :Displayable "shown"))
+
+(def generic-fact
+  (generic/id checked-integer))
+
+(def schema-fact
+  (schema/derive :User {:id 1 :email "a@example.test"}))
+
+(def bottom-fact
+  (typed/value :Bottom nil))
+
+(def never-fact
+  (typed/value :Never nil))
+
+(def nil-fact
+  (typed/value :Nil nil))
+
+(def unit-fact
+  (typed/value :Unit nil))
+
+(def bool-fact
+  (typed/value :Boolean true))
+
+(def i32-fact
+  (typed/value :I32 32))
+
+(def u64-fact
+  (typed/value :U64 64))
+
+(def int-fact
+  (typed/value :Int 7))
+
+(def bigint-fact
+  (typed/value :BigInt 123456789))
+
+(def f32-fact
+  (typed/value :F32 1.5))
+
+(def f64-fact
+  (typed/value :F64 2.5))
+
+(def exact-fact
+  (typed/value :Exact 3))
+
+(def symbol-fact
+  (typed/value :Symbol (quote gravity.symbol/value)))
+
+(def keyword-fact
+  (typed/value :Keyword :ok))
+
+(def string-fact
+  (typed/value :String "text"))
+
+(def text-fact
+  (typed/value :Text "view"))
+
+(def list-fact
+  (typed/value :List (quote (1 2 3))))
+
+(def vector-fact
+  (typed/value :Vector [1 2 3]))
+
+(def map-fact
+  (typed/value :Map {:a 1}))
+
+(def set-fact
+  (typed/value :Set #{1 2}))
+
+(def tuple-fact
+  (typed/value :Tuple [1 "two"]))
+
+(def struct-fact
+  (typed/value :Struct {:x 1 :y 2 :z 3}))
+
+(def enum-fact
+  (typed/value :Enum :red))
+
+(def tagged-union-fact
+  (typed/value :TaggedUnion {:tag :ok :value 42}))
+
+(def function-fact
+  (typed/value :Function typed-greeting))
+
+(def interface-fact
+  (typed/value :Interface "renderable"))
+
+(def existential-fact
+  (typed/value :Existential "displayable"))
+
+(def generic-type-fact
+  (typed/value :Generic "generic"))
+
+(def effect-fact
+  (typed/value :Effect :io/write))
+
+(def region-fact
+  (typed/value :Region {:region :r}))
+
+(def borrow-fact
+  (typed/value :Borrow "borrow"))
+
+(def borrow-mut-fact
+  (typed/value :BorrowMut "borrow-mut"))
+
+(def ptr-fact
+  (typed/value :Ptr "ptr"))
+
+(def raw-ptr-fact
+  (typed/value :RawPtr "raw-ptr"))
+
+(def mmio-fact
+  (typed/value :MMIO "mmio"))
+
+(def uninit-fact
+  (typed/value :Uninit "uninit"))
+
+(def init-fact
+  (typed/value :Init "init"))
+
+(def tainted-fact
+  (typed/value :Tainted "tainted"))
+
+(def compile-time-fact
+  (typed/value :CompileTime 1))
+
+(def const-generic-fact
+  (typed/value :ConstGeneric 16))
+
+(def syntax-fact
+  (typed/value :Syntax (quote (println "syntax"))))
+
+(def ir-fact
+  (typed/value :IR {:mir :value}))
+
+(def artifact-ref-fact
+  (typed/value :ArtifactRef "sha256:fixture"))

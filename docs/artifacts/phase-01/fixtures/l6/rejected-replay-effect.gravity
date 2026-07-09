@@ -1,0 +1,7 @@
+(ns l6.bad.replay
+  (:profile :distributed)
+  (:effects :time/read)
+  (:capabilities :time/read))
+
+(def bad
+  (time/now))

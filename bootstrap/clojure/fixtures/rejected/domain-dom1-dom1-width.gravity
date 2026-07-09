@@ -1,0 +1,6 @@
+; Rejected P09 DOM1 fixture.
+(ns domain.dom1-width (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom1-width}}}))
+(defn main [] :- I64 1)

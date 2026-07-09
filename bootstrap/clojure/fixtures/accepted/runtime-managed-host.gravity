@@ -1,0 +1,15 @@
+; P08-T03 fixture covers managed host runtime manifests and adapters.
+(ns runtime.managed-host
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/error :runtime/observability :ffi/call})
+  (:capabilities #{:observability/write :ffi/c})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {}}}))
+
+(def host-value 7)
+
+(defn main [] :- I64
+  host-value)

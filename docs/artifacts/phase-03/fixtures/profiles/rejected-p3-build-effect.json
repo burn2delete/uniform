@@ -1,0 +1,9 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/1/checks/build_effects": [
+      ":build/network"
+    ],
+    "/namespaces/1/checks/build_grants": []
+  }
+}

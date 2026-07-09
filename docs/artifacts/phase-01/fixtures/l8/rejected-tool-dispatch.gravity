@@ -1,0 +1,5 @@
+(ns l8.bad.tool
+  (:profile :ai))
+
+(def bad
+  (tool-dispatch :lookup-order request))

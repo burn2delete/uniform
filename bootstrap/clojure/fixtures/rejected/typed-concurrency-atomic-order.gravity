@@ -1,0 +1,9 @@
+(ns typed.bad.concurrency.atomic
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (atomic/load cell))

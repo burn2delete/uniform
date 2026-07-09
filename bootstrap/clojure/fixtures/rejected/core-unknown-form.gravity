@@ -1,0 +1,8 @@
+(ns invalid.core-unknown-form
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main []
+  (core-unknown 1))

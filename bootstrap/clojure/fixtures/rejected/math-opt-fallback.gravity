@@ -1,0 +1,10 @@
+(ns math.opt-fallback
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:selected-decision-overrides
+            [{:fallback-legal? false}]}}}))

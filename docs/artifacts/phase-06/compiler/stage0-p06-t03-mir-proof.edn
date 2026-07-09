@@ -1,0 +1,78 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-T03
+ :date "2026-06-25"
+ :status :complete
+ :capability :gravity-mir-construction-and-verifier
+ :command "clojure -M:gravity mir bootstrap/clojure/fixtures/accepted/compiler-mir.gravity"
+ :artifact-kind :gravity/stage0-mir-artifact
+ :artifact-hash "sha256:6b27b18f6e09472c8714536bcd7d65fed947243f548aa30c99a5d7cc4517ea53"
+ :summary {:operations 23
+           :operation-families 20
+           :blocks 1
+           :data-flow-edges 22
+           :type-facts 23
+           :safety-outcomes 1
+           :runtime-checks 1
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
+                       "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+                       "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+                       "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+                       "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+                       "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+                       "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md"
+                       "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+                       "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                       "docs/phase-01-core-language/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-02-safety/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-03-profile-system/IMPLEMENTATION-ROADMAP.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-mir.gravity"]
+ :rejected-fixtures ["compiler-mir-module.gravity"
+                     "compiler-mir-block.gravity"
+                     "compiler-mir-dominance.gravity"
+                     "compiler-mir-type.gravity"
+                     "compiler-mir-effect.gravity"
+                     "compiler-mir-safety.gravity"
+                     "compiler-mir-origin.gravity"
+                     "compiler-mir-domain.gravity"
+                     "compiler-mir-target-leak.gravity"
+                     "compiler-mir-verify.gravity"]
+ :diagnostic-ids ["C11-MODULE"
+                  "C11-BLOCK"
+                  "C11-DOMINANCE"
+                  "C11-TYPE"
+                  "C11-EFFECT"
+                  "C11-SAFETY"
+                  "C11-ORIGIN"
+                  "C11-DOMAIN"
+                  "C11-TARGET-LEAK"
+                  "C11-VERIFY"]
+ :capability-based-proof {:module-serialized? true
+                          :blocks-terminated? true
+                          :operations-typed? true
+                          :effect-ordering-present? true
+                          :safety-outcomes-linked? true
+                          :origins-linked? true
+                          :domain-anchors-valid? true
+                          :target-independent? true
+                          :verifier-passed? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity mir bootstrap/clojure/fixtures/accepted/compiler-mir.gravity"
+               :result :accepted}
+              {:command "clojure -M -e '(doseq [path (sort (map str (file-seq (clojure.java.io/file \"docs/artifacts/phase-06/compiler\"))))] (when (.endsWith path \".edn\") (read-string (slurp path))))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-T03 for the Clojure stage0 MIR construction and verifier boundary only."
+                 "It does not claim complete Phase 06 document coverage, backend code generation, release readiness, or self-hosting."]}

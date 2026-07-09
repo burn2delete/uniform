@@ -1,0 +1,17 @@
+(ns core.app.schema-taint
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:schema {:compiled-gate
+                       {:serializers
+                        [{:artifact :gravity/serializer
+                          :decoded-trust :trusted
+                          :retains-taint? false
+                          :canonical {:schema-hash-included true
+                                      :hash-input-record
+                                      {:schema-hash :placeholder}}}]}}}))
+
+(defn main []
+  (println "bad schema taint"))

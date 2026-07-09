@@ -1,0 +1,14 @@
+(ns safe1.unsafe-policy
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{:memory/raw})
+  (:capabilities #{:memory/raw})
+  (:safety :safe))
+
+(def bad
+  (safe1/unsafe-island :raw/mmio-read32
+                       "kernel-mmio"
+                       :mmio-read
+                       :aligned-mapped-register
+                       :mmio.safe/read-u32
+                       #{:audit/mmio}))

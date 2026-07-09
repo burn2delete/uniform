@@ -1,0 +1,10 @@
+(ns math.opt-provider-compare
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:provider-comparison-overrides
+            [{:semantic-fields-complete? false}]}}}))

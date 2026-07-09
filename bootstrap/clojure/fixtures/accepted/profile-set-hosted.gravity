@@ -1,0 +1,32 @@
+(ns profile.set.hosted
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.memory :as memory :profile :hosted]
+             [gravity.reflection :as reflection :profile :hosted]
+             [gravity.dynamic :as dynamic :profile :hosted]
+             [gravity.host :as host :profile :hosted])
+  (:exports [managed reflected dynamic-value host-error])
+  (:effects #{:memory/allocate :reflection/use :dynamic/eval :host/error})
+  (:capabilities #{:memory/allocator :reflection/use})
+  (:safety :safe)
+  (:metadata {:package-allowed-effects #{:memory/allocate :reflection/use
+                                         :dynamic/eval :host/error}
+              :provider-effect-grants #{:memory/allocate :reflection/use
+                                        :dynamic/eval :host/error}
+              :deployment-allowed-effects #{:memory/allocate :reflection/use
+                                            :dynamic/eval :host/error}
+              :package-capabilities #{:memory/allocator :reflection/use}
+              :provider-capability-grants #{:memory/allocator :reflection/use}
+              :deployment-capabilities #{:memory/allocator :reflection/use}}))
+
+(def managed
+  (memory/gc-alloc))
+
+(def reflected
+  (reflection/use "java.lang.String"))
+
+(def dynamic-value
+  (dynamic/value "hosted"))
+
+(def host-error
+  (host/error-normalized :null-pointer))

@@ -1,0 +1,131 @@
+{:task-id :P02-T04
+ :documents ["docs/phase-02-safety/036-safe7-ffi-safety.md"
+             "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md"
+             "docs/phase-02-safety/038-safe9-numeric-safety.md"
+             "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md"]
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe7-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe8-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe9-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe11-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+ :artifact-kind :gravity/stage0-boundary-safety-artifact
+ :capability-proof {:module safety.boundary
+                    :profile :hosted
+                    :safety-mode :audited-unsafe
+                    :pass :ffi-concurrency-numeric-taint-safety
+                    :input :typed-effected-core
+                    :output :safe-wrapper-test-report
+                    :conformance-status :complete
+                    :document-statuses {:SAFE7 :complete
+                                        :SAFE8 :complete
+                                        :SAFE9 :complete
+                                        :SAFE11 :complete}
+                    :missing-families []
+                    :covered-families [:safe7-foreign-declaration
+                                       :safe7-abi-record
+                                       :safe7-type-mapping
+                                       :safe7-ownership-lifetime
+                                       :safe7-safe-wrapper
+                                       :safe7-error-translation
+                                       :safe7-callback-safety
+                                       :safe7-host-bridge
+                                       :safe7-generated-binding
+                                       :safe8-concurrency-graph
+                                       :safe8-task-capture
+                                       :safe8-ownership-transfer
+                                       :safe8-shared-state-access
+                                       :safe8-synchronization-proof
+                                       :safe8-atomic-order
+                                       :safe8-blocking-cancellation
+                                       :safe8-backend-preservation
+                                       :safe8-race-analysis
+                                       :safe9-numeric-mode
+                                       :safe9-runtime-check
+                                       :safe9-range-proof
+                                       :safe9-floating-mode
+                                       :safe9-elementary-approximation
+                                       :safe9-relaxed-approval
+                                       :safe9-optimization-proof
+                                       :safe9-backend-lowering
+                                       :safe11-taint-source
+                                       :safe11-taint-flow
+                                       :safe11-validator-contract
+                                       :safe11-residual-constraint
+                                       :safe11-sink-authorization
+                                       :safe11-parameterization
+                                       :safe11-deserialization
+                                       :safe11-secret-redaction
+                                       :safe11-prompt-tool-policy
+                                       :safe11-generated-taint
+                                       :safe11-unsafe-clear-audit]
+                    :foreign-declaration-records 1
+                    :ffi-safe-wrapper-audits 1
+                    :callback-safety-records 1
+                    :concurrency-graphs 1
+                    :race-analysis-reports 1
+                    :atomic-memory-order-records 1
+                    :numeric-mode-records 1
+                    :numeric-runtime-checks 1
+                    :range-proof-records 1
+                    :elementary-approximation-records 1
+                    :taint-source-records 1
+                    :sink-authorization-records 1
+                    :secret-redaction-records 1
+                    :prompt-tool-policy-records 1
+                    :capability-basis :safe7-safe8-safe9-safe11-boundary-safety-with-safe-wrapper-race-numeric-and-taint-evidence}
+ :rejected-diagnostics ["SAFE7-DECLARATION"
+                        "SAFE7-RAW-CALL"
+                        "SAFE7-TYPE-MAP"
+                        "SAFE7-OWNERSHIP"
+                        "SAFE7-LIFETIME"
+                        "SAFE7-ERROR-MAP"
+                        "SAFE7-CALLBACK"
+                        "SAFE7-CAPABILITY"
+                        "SAFE7-HOST-PROFILE"
+                        "SAFE7-GENERATED"
+                        "SAFE8-DATA-RACE"
+                        "SAFE8-TASK-CAPTURE"
+                        "SAFE8-MOVE"
+                        "SAFE8-SHARE"
+                        "SAFE8-LOCK-GUARD"
+                        "SAFE8-ATOMIC-ORDER"
+                        "SAFE8-FENCE"
+                        "SAFE8-CHANNEL"
+                        "SAFE8-ACTOR"
+                        "SAFE8-WORKFLOW-REPLAY"
+                        "SAFE8-BACKEND"
+                        "SAFE9-OVERFLOW"
+                        "SAFE9-DIV-ZERO"
+                        "SAFE9-SHIFT"
+                        "SAFE9-NARROW"
+                        "SAFE9-FLOAT-MODE"
+                        "SAFE9-FLOAT-INPUT"
+                        "SAFE9-ELEMENTARY-DOMAIN"
+                        "SAFE9-APPROX"
+                        "SAFE9-RELAXED"
+                        "SAFE9-OPTIMIZATION"
+                        "SAFE9-BACKEND"
+                        "SAFE11-TAINTED-SINK"
+                        "SAFE11-VALIDATOR"
+                        "SAFE11-RESIDUAL"
+                        "SAFE11-PARAMETERIZATION"
+                        "SAFE11-DESERIALIZATION"
+                        "SAFE11-SECRET-LEAK"
+                        "SAFE11-PROMPT-INJECTION"
+                        "SAFE11-GENERATED"
+                        "SAFE11-FOREIGN"
+                        "SAFE11-UNSAFE-CLEAR"]
+ :validation [{:command "clojure -M:gravity boundary-safety bootstrap/clojure/fixtures/accepted/boundary-safety.gravity"
+               :result "emitted :gravity/stage0-boundary-safety-artifact"}
+              {:command "clojure -M -e boundary-safety-artifact-summary"
+               :result ":gravity/stage0-boundary-safety-artifact safety.boundary :complete 1 1 1 1"}
+              {:command "clojure -M:test"
+               :result "27 tests, 1351 assertions, 300 rejected fixtures"}]
+ :residual-risks ["This is the stage0 P02-T04 boundary; production FFI ABI verification, backend race certification, numeric backend coverage, full taint lattice analysis, and package policy integration remain later work."
+                  "SAFE10 and SAFE14 are handled by the separate P02-T05 proof; SAFE12, SAFE13, SAFE15, and SAFE16 remain open."]}

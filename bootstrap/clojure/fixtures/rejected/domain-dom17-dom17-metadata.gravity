@@ -1,0 +1,6 @@
+; Rejected P09 DOM17 fixture.
+(ns domain.dom17-metadata (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom17-metadata}}}))
+(defn main [] :- I64 1)

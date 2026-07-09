@@ -1,0 +1,9 @@
+(ns compiler.c3.capture
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c3-syntax {:fail :capture}}}))
+
+(def value 1)

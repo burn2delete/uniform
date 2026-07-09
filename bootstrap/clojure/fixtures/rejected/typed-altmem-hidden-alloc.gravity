@@ -1,0 +1,9 @@
+(ns altmem.hidden-alloc
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/hidden-alloc :implicit-gc))

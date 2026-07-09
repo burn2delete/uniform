@@ -1,0 +1,18 @@
+(ns bad.macro.build-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defmacro read-env
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :uses-build-effects #{:build/env}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  []
+  (syntax-quote nil))
+
+(defn main []
+  (read-env))

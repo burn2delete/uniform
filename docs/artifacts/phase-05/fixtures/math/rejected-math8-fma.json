@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-math-system.json",
+  "set": {
+    "/floating_manifests/0/fma_transform": true,
+    "/floating_manifests/0/fma_proof": null
+  }
+}

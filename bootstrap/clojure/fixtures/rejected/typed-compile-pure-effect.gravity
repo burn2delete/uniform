@@ -1,0 +1,14 @@
+(ns compile.pure-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:build/read-file})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :declared-inputs #{"schemas/user.schema.edn"}
+              :hermetic true
+              :cache-policy :strict}))
+
+(def invalid
+  (compile-time
+    (build/read-file "schemas/user.schema.edn")))

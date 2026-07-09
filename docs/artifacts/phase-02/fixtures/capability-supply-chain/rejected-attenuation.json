@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-capability-supply-chain.json",
+  "set": {
+    "/capability_checks/0/attenuation_expands": true
+  }
+}

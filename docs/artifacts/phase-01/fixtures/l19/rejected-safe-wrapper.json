@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-interop.json",
+  "set": {
+    "/safe_wrappers/0/evidence": []
+  }
+}

@@ -1,0 +1,9 @@
+(ns alttype.capability-erasure
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (alttype/capability-erasure :lost-capabilities))

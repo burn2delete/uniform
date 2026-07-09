@@ -1,0 +1,9 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/5/safety_outcome": ":proven-safe"
+  },
+  "delete": [
+    "/operations/5/unsafe_audit_records"
+  ]
+}

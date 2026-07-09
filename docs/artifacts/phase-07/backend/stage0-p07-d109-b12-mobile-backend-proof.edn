@@ -1,0 +1,97 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D109
+ :date "2026-06-29"
+ :status :complete
+ :capability :b12-mobile-backend-document-coverage
+ :command "clojure -M:gravity backend-b12-mobile-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+ :artifact-kind :gravity/stage0-b12-mobile-backend-document-artifact
+ :artifact-hash "sha256:29bf502e68b2de0452f236333a291ee5afde246dc3fa8b28d7ce32d2ba7cb619"
+ :summary {:diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 9
+           :bundle-hash "sha256:6e5db0525f4cfd690e11c1da4285f70ab5e336d3992952ce5cd145f00883f1c5"
+           :permission-hash "sha256:ed072181cdbca0f65264d892bd2908fe59fefa9b9a0bd940fc1167c256bacbb0"
+           :bundle-structural true
+           :permission-structural true
+           :lifecycle-threading true
+           :storage-sync true
+           :external-mobile-validation :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b12-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-permission.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-lifecycle.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-thread.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-null.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-error.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-background.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-storage.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-resource.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b12-manifest.gravity"]
+ :diagnostics ["B12-TARGET"
+               "B12-PERMISSION"
+               "B12-LIFECYCLE"
+               "B12-THREAD"
+               "B12-NULL"
+               "B12-ERROR"
+               "B12-BACKGROUND"
+               "B12-STORAGE"
+               "B12-RESOURCE"
+               "B12-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :mobile-ir-handoff-covered? true
+                :platform-target-covered? true
+                :application-bundle-emitted? true
+                :platform-bindings-covered? true
+                :permission-manifest-covered? true
+                :resource-asset-manifest-covered? true
+                :lifecycle-and-threading-covered? true
+                :ui-bridge-covered? true
+                :null-and-error-adapters-covered? true
+                :storage-sync-covered? true
+                :background-work-rejected? true
+                :store-audit-covered? true
+                :source-debug-map-preserved? true
+                :device-simulator-record-covered? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :external-mobile-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 88 tests containing 5219 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1177}
+              {:command "clojure -M:gravity backend-b12-mobile-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:29bf502e68b2de0452f236333a291ee5afde246dc3fa8b28d7ce32d2ba7cb619"}
+              {:command "clojure -M -e <extract B12 app bundle, permission, and store audit>"
+               :result {:dir "/tmp/gravity-p07-b12-mobile"
+                        :files ["GravityStage0.app.manifest.edn"
+                                "gravity_stage0_permissions.edn"
+                                "gravity_stage0_store_audit.edn"]
+                        :bundle-structural true
+                        :permission-structural true
+                        :lifecycle-threading true
+                        :storage-sync true}}
+              {:command "sed -n '1,20p' /tmp/gravity-p07-b12-mobile/GravityStage0.app.manifest.edn"
+               :result :passed}
+              {:command "sed -n '1,35p' /tmp/gravity-p07-b12-mobile/gravity_stage0_permissions.edn"
+               :result :passed}
+              {:command "sed -n '1,20p' /tmp/gravity-p07-b12-mobile/gravity_stage0_store_audit.edn"
+               :result :passed}
+              {:command "gravity-mobile-sim --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: gravity-mobile-sim"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 18 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-D106 :P07-D107 :P07-D108 :P07-D109 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D109 for deterministic Clojure stage0 coverage of the B12 mobile backend design document contract."
+                 "The emitted mobile manifest includes mobile IR handoff, platform targets, application bundle artifacts, platform binding descriptors, permission manifests, resource manifests, lifecycle/threading maps, UI bridge metadata, null/error/callback adapters, local storage and sync schemas, background task policy, store-audit metadata, source/debug maps, simulator/device record shape, and stable B12 diagnostics."
+                 "The current environment does not provide gravity-mobile-sim, so external simulator execution, physical device execution, signing, store submission, and full Phase 07 completion remain unclaimed."]}

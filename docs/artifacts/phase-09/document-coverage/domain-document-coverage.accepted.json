@@ -1,0 +1,438 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:99b58bd19a14514ac1cd6784b02ce7be141a35f91af6f27d1262233d5bd8679f",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "hardware width, clock, CDC, runtime, bounds, interface, timing, and conformance evidence"
+      ],
+      "document": "DOM1",
+      "domain": ":hardware-computing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md",
+      "task_id": "P09-D124"
+    },
+    {
+      "artifact_hash": "sha256:d0e677861560b55ab47e25f5b73a773692b800eed495ea6c6c89dc9724bf7f99",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "firmware startup, memory map, MMIO, interrupt, runtime, BSP, and conformance evidence"
+      ],
+      "document": "DOM2",
+      "domain": ":firmware-embedded",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md",
+      "task_id": "P09-D125"
+    },
+    {
+      "artifact_hash": "sha256:a818f4583401022cd6d086b0e1287ae7a7d10af08ccb2c3f694cf3eee6470e6c",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "kernel runtime, raw memory, allocation, interrupt, syscall, capability, ABI, and conformance evidence"
+      ],
+      "document": "DOM3",
+      "domain": ":operating-system-kernel",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md",
+      "task_id": "P09-D126"
+    },
+    {
+      "artifact_hash": "sha256:a432fb758b3f67461c11dd8b9c354c2417fae6b5fca2175a8806266d395b0a82",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "driver register, MMIO, DMA, interrupt, cache, capability, adapter, and conformance evidence"
+      ],
+      "document": "DOM4",
+      "domain": ":drivers-device-interaction",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md",
+      "task_id": "P09-D127"
+    },
+    {
+      "artifact_hash": "sha256:54aa84e1bd2631e9f07f13ddf17adb395ed72ad1f3d7b6c0df2bb5f5348d9627",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "native memory, target, UB, optimization, numeric, FFI, benchmark, and conformance evidence"
+      ],
+      "document": "DOM5",
+      "domain": ":high-performance-native",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md",
+      "task_id": "P09-D128"
+    },
+    {
+      "artifact_hash": "sha256:4b5d98c9712d21049da69c2ef098e7cea67f0a9d80b10a4e35a56d3f323384d6",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "web DOM, taint, schema, package, numeric, source-map, and conformance evidence"
+      ],
+      "document": "DOM6",
+      "domain": ":web-frontend-ui",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+      "task_id": "P09-D129"
+    },
+    {
+      "artifact_hash": "sha256:46027c54538a9e218cad40be4bf78307342b99bbe6d19cf6372bba959eee524a",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "mobile permission, lifecycle, thread, nullability, storage, secret, and conformance evidence"
+      ],
+      "document": "DOM7",
+      "domain": ":mobile-application",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md",
+      "task_id": "P09-D130"
+    },
+    {
+      "artifact_hash": "sha256:fd2fcdc03088abff2b614d307df94147253c87db92dd11504faa857814c77a15",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "backend route, schema, taint, capability, job, secret, observability, and conformance evidence"
+      ],
+      "document": "DOM8",
+      "domain": ":backend-services",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md",
+      "task_id": "P09-D131"
+    },
+    {
+      "artifact_hash": "sha256:a93e30f55b7288948da646c8884e53bc998af5862b25d3411d5e6f2f6997701c",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "distributed schema, replay, idempotency, retry, compensation, capability, migration, CRDT, monotonicity, coordination, conflict, sync, convergence, and conformance evidence"
+      ],
+      "document": "DOM9",
+      "domain": ":distributed-systems",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md",
+      "task_id": "P09-D132"
+    },
+    {
+      "artifact_hash": "sha256:91e332c7d6c80d91d118a9360df19f2c92b4a89f494ab44c3920a41a81f69ee2",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "database schema, query, taint, migration, transaction, layout, durability, and conformance evidence"
+      ],
+      "document": "DOM10",
+      "domain": ":database-storage",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md",
+      "task_id": "P09-D133"
+    },
+    {
+      "artifact_hash": "sha256:f3101fc651856d09c8becfd781baf8d3e0b5f40d355a62e45975b5fbdd6932f8",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "analytics schema, capability, taint, lineage, memory, numeric, determinism, and conformance evidence"
+      ],
+      "document": "DOM11",
+      "domain": ":data-analytics",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md",
+      "task_id": "P09-D134"
+    },
+    {
+      "artifact_hash": "sha256:a63c89462b665f9e5c89608b6fe4b8c7b79ea7ccaf62b40bd7a65318e4f59b7a",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "scientific numeric domain, mode, certificate, rewrite, fastmath, interop, benchmark, and conformance evidence"
+      ],
+      "document": "DOM12",
+      "domain": ":scientific-numeric",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md",
+      "task_id": "P09-D135"
+    },
+    {
+      "artifact_hash": "sha256:c5e925d4231f26c1b76f43e98babbe7b771e6abd59ba2e82227bd5f545795681",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "GPU kernel, memory, sync, launch, math, host-effect, target, and conformance evidence"
+      ],
+      "document": "DOM13",
+      "domain": ":gpu-accelerator",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+      "task_id": "P09-D136"
+    },
+    {
+      "artifact_hash": "sha256:fc84b00d68e60119970fa11ba01354329fae239032581d9f07c4a084f6d5b8a3",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "game timestep, allocation, determinism, numeric, asset, plugin, performance, and conformance evidence"
+      ],
+      "document": "DOM14",
+      "domain": ":game-simulation",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md",
+      "task_id": "P09-D137"
+    },
+    {
+      "artifact_hash": "sha256:3bf38f584e9ec7e9aecff7da4a9e5809aa6d02b0efd9376bab89363357d0fe7e",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "security secret, random, provider, WebAuthn, passkey, private computation, boundary, noise, leakage, custody, constant-time, custom crypto, taint, FFI, and conformance evidence"
+      ],
+      "document": "DOM15",
+      "domain": ":security-crypto",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md",
+      "task_id": "P09-D138"
+    },
+    {
+      "artifact_hash": "sha256:210d2ed51648324b086ecf898bdb65a7b06b18060a7bbb6e85ca8536c57da6b0",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "blockchain deterministic contract, schemas, account abstraction, ERC-4337, EIP-7702, ERC-7579, upgrade, invariant, ordering, MEV, and conformance evidence"
+      ],
+      "document": "DOM16",
+      "domain": ":blockchain-smart-contracts",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md",
+      "task_id": "P09-D139"
+    },
+    {
+      "artifact_hash": "sha256:dc495b1140f76f65d7d1ae9b56dbd039e74c7fcdc527cd9186a8d3a093e9e717",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "compiler tooling pass, metadata, generated code, plugin, macro, diagnostic, bootstrap, and conformance evidence"
+      ],
+      "document": "DOM17",
+      "domain": ":compiler-tooling",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+      "task_id": "P09-D140"
+    },
+    {
+      "artifact_hash": "sha256:2b6701d855a23b45fd1973d82cfdf5808ea7cfe0e2233af53f424546b1672acd",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "AI model, prompt, tool, schema, taint, secret, replay, generated-code, and eval evidence"
+      ],
+      "document": "DOM18",
+      "domain": ":ai-agentic",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md",
+      "task_id": "P09-D141"
+    },
+    {
+      "artifact_hash": "sha256:8ba97c23e91a5feecc392ca7799e012e8d136f3b46fc42022b85ede0147828d6",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "formal claim, proof, stale-proof, assumption, counterexample, EML, elision, zk relation, input, setup, privacy, cost, chain, provider, and conformance evidence"
+      ],
+      "document": "DOM19",
+      "domain": ":formal-verification",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md",
+      "task_id": "P09-D142"
+    },
+    {
+      "artifact_hash": "sha256:6a3c066b4d2171c38c6329641b5b7b708b008d953ef1d2329eba916ae44461ed",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "scripting argument, filesystem, shell, taint, destructive, hermeticity, secret, and audit evidence"
+      ],
+      "document": "DOM20",
+      "domain": ":scripting-shell-automation",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md",
+      "task_id": "P09-D143"
+    },
+    {
+      "artifact_hash": "sha256:07451ac0f11e6dc731cafa0a4cbce93a3ae5ce694629ebc0c12280b546bc3296",
+      "artifact_kind": "domain-coverage-artifact",
+      "coverage": [
+        "visual node, edge, effect, capability, human-review, replay, generated-code, mapping, migration, and conformance evidence"
+      ],
+      "document": "DOM21",
+      "domain": ":low-code-visual-workflow",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json",
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md",
+      "task_id": "P09-D144"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 21,
+    "documents": 21,
+    "rejected_diagnostics": 21,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "DOM1",
+    "DOM2",
+    "DOM3",
+    "DOM4",
+    "DOM5",
+    "DOM6",
+    "DOM7",
+    "DOM8",
+    "DOM9",
+    "DOM10",
+    "DOM11",
+    "DOM12",
+    "DOM13",
+    "DOM14",
+    "DOM15",
+    "DOM16",
+    "DOM17",
+    "DOM18",
+    "DOM19",
+    "DOM20",
+    "DOM21"
+  ],
+  "input_hash": "sha256:d6b751d8b692006a7f17f6c27514a68d73885926f328946f7d8a1097b89f74ea",
+  "kind": "phase09-domain-document-coverage-artifact",
+  "phase": "09",
+  "rejected": [
+    {
+      "diagnostic": "DOM1-WIDTH",
+      "document": "DOM1",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom1-width.json",
+      "missing_fact": "fixed-width integer, port, and interface evidence",
+      "task_id": "P09-D124"
+    },
+    {
+      "diagnostic": "DOM2-MMIO",
+      "document": "DOM2",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom2-mmio.json",
+      "missing_fact": "MMIO register schema",
+      "task_id": "P09-D125"
+    },
+    {
+      "diagnostic": "DOM3-RAW",
+      "document": "DOM3",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom3-raw.json",
+      "missing_fact": "raw memory unsafe audit",
+      "task_id": "P09-D126"
+    },
+    {
+      "diagnostic": "DOM4-DMA",
+      "document": "DOM4",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom4-dma.json",
+      "missing_fact": "DMA ownership and lifetime evidence",
+      "task_id": "P09-D127"
+    },
+    {
+      "diagnostic": "DOM5-OPTIMIZATION",
+      "document": "DOM5",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom5-optimization.json",
+      "missing_fact": "proof-gated optimization evidence",
+      "task_id": "P09-D128"
+    },
+    {
+      "diagnostic": "DOM6-TAINT",
+      "document": "DOM6",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom6-taint.json",
+      "missing_fact": "web taint validation evidence",
+      "task_id": "P09-D129"
+    },
+    {
+      "diagnostic": "DOM7-PERMISSION",
+      "document": "DOM7",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom7-permission.json",
+      "missing_fact": "platform permission evidence",
+      "task_id": "P09-D130"
+    },
+    {
+      "diagnostic": "DOM8-SCHEMA",
+      "document": "DOM8",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom8-schema.json",
+      "missing_fact": "request, response, and config schemas",
+      "task_id": "P09-D131"
+    },
+    {
+      "diagnostic": "DOM9-CONVERGENCE",
+      "document": "DOM9",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom9-convergence.json",
+      "missing_fact": "convergence evidence",
+      "task_id": "P09-D132"
+    },
+    {
+      "diagnostic": "DOM10-QUERY",
+      "document": "DOM10",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom10-query.json",
+      "missing_fact": "prepared query binding evidence",
+      "task_id": "P09-D133"
+    },
+    {
+      "diagnostic": "DOM11-LINEAGE",
+      "document": "DOM11",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom11-lineage.json",
+      "missing_fact": "lineage evidence",
+      "task_id": "P09-D134"
+    },
+    {
+      "diagnostic": "DOM12-CERTIFICATE",
+      "document": "DOM12",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom12-certificate.json",
+      "missing_fact": "approximation certificate",
+      "task_id": "P09-D135"
+    },
+    {
+      "diagnostic": "DOM13-HOST-EFFECT",
+      "document": "DOM13",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom13-host-effect.json",
+      "missing_fact": "host effect rejection evidence",
+      "task_id": "P09-D136"
+    },
+    {
+      "diagnostic": "DOM14-DETERMINISM",
+      "document": "DOM14",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom14-determinism.json",
+      "missing_fact": "deterministic replay evidence",
+      "task_id": "P09-D137"
+    },
+    {
+      "diagnostic": "DOM15-BOUNDARY",
+      "document": "DOM15",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom15-boundary.json",
+      "missing_fact": "plaintext/ciphertext boundary audit",
+      "task_id": "P09-D138"
+    },
+    {
+      "diagnostic": "DOM16-AA-PROFILE",
+      "document": "DOM16",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom16-aa-profile.json",
+      "missing_fact": "account-abstraction profile record",
+      "task_id": "P09-D139"
+    },
+    {
+      "diagnostic": "DOM17-METADATA",
+      "document": "DOM17",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom17-metadata.json",
+      "missing_fact": "metadata preservation evidence",
+      "task_id": "P09-D140"
+    },
+    {
+      "diagnostic": "DOM18-TOOL",
+      "document": "DOM18",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom18-tool.json",
+      "missing_fact": "tool schema and review policy",
+      "task_id": "P09-D141"
+    },
+    {
+      "diagnostic": "DOM19-ZK-SETUP",
+      "document": "DOM19",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom19-zk-setup.json",
+      "missing_fact": "zk setup and trust evidence",
+      "task_id": "P09-D142"
+    },
+    {
+      "diagnostic": "DOM20-TAINT",
+      "document": "DOM20",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom20-taint.json",
+      "missing_fact": "shell taint evidence",
+      "task_id": "P09-D143"
+    },
+    {
+      "diagnostic": "DOM21-EDGE",
+      "document": "DOM21",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom21-edge.json",
+      "missing_fact": "typed visual edge schema",
+      "task_id": "P09-D144"
+    }
+  ]
+}

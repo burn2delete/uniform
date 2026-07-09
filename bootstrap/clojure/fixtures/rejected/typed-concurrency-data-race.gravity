@@ -1,0 +1,9 @@
+(ns typed.bad.concurrency.race
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (shared/mutate state))

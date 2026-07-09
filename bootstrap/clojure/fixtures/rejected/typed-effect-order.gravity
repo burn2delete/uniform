@@ -1,0 +1,12 @@
+(ns typed.effect.order
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def bad
+  (effect/reorder
+    (println "a")
+    (println "b")))

@@ -1,0 +1,557 @@
+; Stage1 Gravity-owned C13 MIR optimization pass contract.
+(ns gravity.compiler.c13-mir-optimization-passes
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c13-mir-optimization-contract
+             c13-optimization-pass-contract
+             c13-invalidation-ledger-contract
+             c13-preservation-contract
+             c13-proof-certificate-contract
+             c13-safety-preservation-contract
+             c13-nondeterminism-contract
+             c13-domain-optimization-contract
+             c13-optimization-diagnostic-catalog
+             build-c13-pass-contract
+             build-c13-decision-record
+             build-c13-invalidation-entry
+             build-c13-check-elision-gate
+             verify-c13-mir-optimization-passes])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :mir-optimization
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C13" "C11" "C12" "C15" "C18"
+                           "PERF1" "PERF2" "PERF10"
+                           "SAFE1" "SAFE15" "MATH10"
+                           "D1" "D3" "D6" "D8" "D9"
+                           "P1" "P13" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2" "TEST10"
+                           "TEST11" "TEST12" "TEST13"]
+               :implements [:mir-optimization-contract
+                             :optimization-pass-contract
+                             :pass-registry-contract
+                             :pipeline-manifest-contract
+                             :decision-log-contract
+                             :invalidation-ledger-contract
+                             :analysis-cache-records
+                             :preservation-proof-contract
+                             :safety-preservation-contract
+                             :effect-preservation-contract
+                             :check-elision-gate
+                             :residual-check-report
+                             :domain-optimization-boundary
+                             :nondeterminism-replay-contract
+                             :post-pass-verifier-report
+                             :optimization-diagnostic-catalog
+                             :self-hosting-pass-metadata]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :mir-module-identity
+                            :mir-operation-identity
+                            :type-facts :effect-facts
+                            :capability-facts :ownership-facts
+                            :safety-outcomes
+                            :runtime-check-records
+                            :proof-obligations
+                            :certificate-references
+                            :profile-target-metadata
+                            :domain-anchors
+                            :optimization-decision-logs
+                            :invalidation-ledgers
+                            :verifier-reports
+                            :residual-cost-reports
+                            :deterministic-ordering
+                            :self-hosting-metadata}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c13-optimization-contract-subset
+                                    :clojure-c13-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c13-contract.gravity"
+                              "compiler-c13-preserve.gravity"
+                              "compiler-c13-invalidate.gravity"
+                              "compiler-c13-proof.gravity"
+                              "compiler-c13-check-elision.gravity"
+                              "compiler-c13-effect.gravity"
+                              "compiler-c13-safety.gravity"
+                              "compiler-c13-domain.gravity"
+                              "compiler-c13-nondeterminism.gravity"
+                              "compiler-c13-verify.gravity"]}}}))
+
+(def c13-mir-optimization-contract
+  {:artifact :gravity/c13-mir-optimization-contract
+   :stage :optimize-mir
+   :input :gravity/mir
+   :output :gravity/optimized-mir
+   :required-input-facts [:verified-mir
+                          :type-facts
+                          :effect-facts
+                          :capability-facts
+                          :ownership-facts
+                          :safety-outcomes
+                          :runtime-check-table
+                          :proof-certificate-table
+                          :source-origin-map
+                          :profile-target-table
+                          :domain-anchor-table]
+   :pipeline-manifest-fields [:pipeline-id :source-hashes
+                              :compiler-id :compiler-version
+                              :profile :target :target-feature-set
+                              :provider-set :package-graph
+                              :build-inputs :optimization-level
+                              :pass-order :pass-versions
+                              :decision-log :invalidation-ledger
+                              :verifier-reports :residual-cost-report
+                              :replay-records]
+   :rules [:contracts-checked-before-pass-execution
+           :contracts-checked-after-pass-output
+           :every-pass-emits-decision-record
+           :mutating-passes-run-post-pass-mir-verifier
+           :facts-preserved-invalidated-regenerated-or-rejected
+           :check-elision-follows-perf10-and-safe15
+           :domain-optimizations-keep-c12-anchors
+           :pass-order-deterministic-for-build-inputs
+           :nondeterministic-choice-replayed-or-rejected
+           :source-origin-and-generated-origin-preserved]
+   :forbidden [:optimization-from-unverified-mir
+               :backend-specific-mir-semantics
+               :undefined-behavior-assumption
+               :hidden-pass-ordering
+               :decision-log-omitted
+               :source-provenance-erased]})
+
+(def c13-optimization-pass-contract
+  {:artifact :gravity/c13-optimization-pass-contract
+   :required-fields [:pass-id :family :version :input-ir :output-ir
+                     :required-analyses :preconditions
+                     :preserves :invalidates :regenerates
+                     :proof-obligations :profile-constraints
+                     :target-assumptions :effect-ordering-policy
+                     :safety-policy :domain-policy :emits]
+   :precondition-classes [:mir-verifier-passed
+                          :analysis-cache-fresh
+                          :profile-compatible
+                          :target-assumptions-declared
+                          :required-proofs-available
+                          :domain-anchors-valid
+                          :diagnostic-catalog-linked]
+   :standard-families [:constant-folding
+                       :constant-propagation
+                       :dead-code-elimination
+                       :common-subexpression-elimination
+                       :inlining
+                       :specialization
+                       :partial-evaluation
+                       :closure-conversion-preparation
+                       :allocation-sinking
+                       :escape-region-placement
+                       :region-arena-optimization
+                       :check-retention-or-elision
+                       :branch-simplification
+                       :match-decision-optimization
+                       :dispatch-specialization
+                       :loop-canonicalization
+                       :loop-unrolling
+                       :vectorization-preparation
+                       :effect-aware-scheduling
+                       :domain-ir-entry
+                       :domain-ir-exit
+                       :efir-fusion
+                       :math-provider-selection
+                       :resource-cleanup-simplification
+                       :target-independent-layout-preparation]
+   :must-not-implement [:target-instruction-selection
+                        :abi-layout-finalization
+                        :register-allocation
+                        :runtime-service-legalization]
+   :forbidden [:pass-without-contract
+               :contract-validated-only-after-execution
+               :implicit-profile-or-target-assumption
+               :proof-obligation-hidden-in-prose
+               :diagnostic-free-rejection]})
+
+(def c13-invalidation-ledger-contract
+  {:artifact :gravity/c13-invalidation-ledger-contract
+   :entry-fields [:ledger-entry-id :pass-id :decision-id
+                  :input-mir :output-mir
+                  :analysis-invalidated :facts-invalidated
+                  :facts-regenerated :proofs-invalidated
+                  :certificates-invalidated
+                  :runtime-checks-restored
+                  :passes-to-rerun :caches-cleared
+                  :diagnostics-affected :source-span
+                  :origin-chain :profile :target]
+   :fact-families [:dominator-tree :control-flow-graph
+                   :data-flow-cache :range-analysis
+                   :alias-analysis :escape-analysis
+                   :layout-facts :type-facts
+                   :effect-facts :capability-facts
+                   :ownership-facts :safety-outcomes
+                   :runtime-check-table :proof-certificates
+                   :source-origin-map :domain-anchor-table
+                   :profile-target-table :diagnostic-stream]
+   :invalidation-triggers [:control-flow-change
+                           :data-flow-change
+                           :operation-rewrite
+                           :effect-order-change
+                           :ownership-state-change
+                           :safety-outcome-change
+                           :runtime-check-change
+                           :proof-assumption-change
+                           :numeric-mode-change
+                           :domain-anchor-change
+                           :profile-change
+                           :target-assumption-change
+                           :provider-set-change]
+   :rules [:conservative-invalidation
+           :unknown-preservation-invalidates
+           :invalidated-proof-restores-check-or-rejects
+           :diagnostic-stream-updated-after-stale-fact]
+   :forbidden [:stale-analysis-cache
+               :missing-invalidated-proof-record
+               :runtime-check-erased-after-proof-invalidated
+               :diagnostic-left-active-with-stale-facts]})
+
+(def c13-preservation-contract
+  {:artifact :gravity/c13-preservation-contract
+   :preservable-facts [:types :effects :capabilities
+                       :ownership :safety-outcomes
+                       :runtime-checks :proofs
+                       :certificates :source-origins
+                       :generated-origins :profile
+                       :target-request :domain-anchors
+                       :diagnostics :artifact-provenance]
+   :preservation-evidence [:structural-equivalence
+                           :semantic-equivalence
+                           :translation-validation
+                           :local-proof
+                           :certificate-check
+                           :verifier-report
+                           :regenerated-fact-table
+                           :residual-check-report]
+   :source-map-fields [:source-span :syntax-id
+                       :core-node-id :mir-module-id
+                       :function-id :block-id :operation-id
+                       :origin-chain :generated-origin
+                       :macro-origin :decision-id]
+   :rules [:claimed-preservation-has-evidence
+           :changed-source-visible-behavior-has-diagnostic-path
+           :generated-origin-chains-survive-rewrite
+           :diagnostic-ids-stable-across-wording
+           :artifact-provenance-records-pass-history]
+   :forbidden [:preserved-claim-without-equivalence
+               :lost-source-span
+               :lost-generated-origin
+               :diagnostic-id-derived-from-rendered-text
+               :artifact-without-pass-provenance]})
+
+(def c13-proof-certificate-contract
+  {:artifact :gravity/c13-proof-certificate-contract
+   :evidence-kinds [:local-proof
+                    :translation-validation
+                    :differential-testing-fixture
+                    :certificate-checker
+                    :domain-verifier
+                    :conformance-acceptance
+                    :residual-runtime-check]
+   :proof-reference-fields [:proof-id :certificate-id
+                            :claim :operation-id
+                            :decision-id :pass-id
+                            :source-span :artifact-node
+                            :assumptions :method :provider
+                            :profile :target :trust-status
+                            :invalidated-by :result]
+   :high-risk-pass-families [:check-retention-or-elision
+                             :effect-aware-scheduling
+                             :dispatch-specialization
+                             :allocation-sinking
+                             :region-arena-optimization
+                             :loop-unrolling
+                             :vectorization-preparation
+                             :domain-ir-entry
+                             :domain-ir-exit
+                             :efir-fusion
+                             :math-provider-selection]
+   :rules [:high-risk-pass-has-evidence
+           :proof-assumptions-checked-after-transform
+           :imported-certificate-trust-verified
+           :check-elision-records-dominating-proof
+           :invalidated-certificate-rechecked-or-rejected]
+   :forbidden [:benchmark-as-correctness-evidence
+               :eml-tree-identity-as-equality-proof
+               :manual-review-as-general-check-elision-proof
+               :opaque-certificate-assumptions
+               :proof-mapping-discarded-without-invalidation]})
+
+(def c13-safety-preservation-contract
+  {:artifact :gravity/c13-safety-preservation-contract
+   :safety-outcomes [:proven-safe :runtime-checked
+                     :rejected :unsafe-island]
+   :check-classes [:bounds :integer-overflow :division-by-zero
+                   :shift-count :null-or-option-access
+                   :initialization :region-lifetime
+                   :borrow-alias :linear-resource
+                   :data-race :taint-sink
+                   :capability-effect :unsafe-audit
+                   :workflow-replay :ai-human-review]
+   :elision-fields [:check-id :check-class :operation-id
+                    :pass-id :decision-id :source-span
+                    :dominating-proof :proof-dominates-use
+                    :certificate :invalidated-by
+                    :residual-checks :profile :target]
+   :effect-rules [:preserve-effect-set
+                  :preserve-required-capabilities
+                  :preserve-ordering-constraints
+                  :do-not-duplicate-noncommutative-effect
+                  :do-not-eliminate-observable-effect
+                  :reorder-only-with-effect-proof]
+   :rules [:exactly-one-safety-outcome-survives
+           :unsafe-island-metadata-preserved
+           :runtime-check-retained-unless-perf10-safe15-proves-elision
+           :policy-check-discharged-only-by-equivalent-policy-artifact
+           :effect-preservation-before-scheduling-change]
+   :forbidden [:implicit-fifth-safety-outcome
+               :check-elision-by-assertion
+               :capability-or-effect-check-removed-for-speed
+               :unsafe-audit-record-dropped
+               :effect-reordered-without-proof]})
+
+(def c13-nondeterminism-contract
+  {:artifact :gravity/c13-nondeterminism-contract
+   :determinism-inputs [:source-hashes :compiler-id
+                       :compiler-version :profile
+                       :target :target-feature-set
+                       :provider-set :package-graph
+                       :build-inputs :optimization-level]
+   :recorded-choice-fields [:choice-id :pass-id :decision-id
+                            :candidate-set :selection-objective
+                            :seed :autotune-inputs
+                            :benchmark-inputs :target-fingerprint
+                            :selected :fallback
+                            :replay-record :hermetic-policy]
+   :nondeterministic-sources [:random-search
+                              :parallel-work-queue
+                              :autotuning
+                              :profile-guided-ranking
+                              :provider-probing
+                              :benchmark-measurement
+                              :external-tool-or-model]
+   :rules [:pass-order-stable
+           :candidate-order-stable
+           :random-seed-recorded
+           :autotune-selection-replayable
+           :hermetic-build-rejects-unreplayable-choice
+           :benchmarks-rank-only-legal-candidates]
+   :forbidden [:hidden-random-choice
+               :filesystem-or-network-probe-without-build-effect
+               :unrecorded-autotune-result
+               :parallel-race-affecting-output
+               :benchmark-used-as-correctness-evidence]})
+
+(def c13-domain-optimization-contract
+  {:artifact :gravity/c13-domain-optimization-contract
+   :domain-families [:efir :schema-ir :workflow-graph-ir
+                     :ai-agent-ir :hdl-state-machine-ir
+                     :gpu-kernel-ir :query-ir
+                     :ffi-boundary-ir :package-artifact-graph-ir]
+   :boundary-fields [:domain :owner-document
+                     :entry-pass :exit-pass
+                     :semantic-anchor :mir-ops
+                     :typed-core-nodes :source-spans
+                     :facts-consumed :facts-preserved
+                     :facts-invalidated :domain-verifier
+                     :proofs :certificates :fallback
+                     :lowering-status :diagnostics]
+   :math-optimization-fields [:efir-graph
+                              :numeric-mode
+                              :branch-policy
+                              :precision-contract
+                              :eml-candidate-references
+                              :provider-comparison
+                              :certificate
+                              :fallback]
+   :accepted-evidence [:proof-replay
+                      :certificate-validation
+                      :translation-validation-against-mir
+                      :translation-validation-against-typed-core
+                      :domain-verifier-report
+                      :conformance-fixture-acceptance]
+   :rules [:domain-ir-is-not-separate-language
+           :semantic-anchor-preserved-or-rebuilt
+           :domain-verifier-before-exit
+           :domain-optimized-result-reenters-through-evidence
+           :fallback-or-rejection-recorded
+           :efir-optimization-follows-math10]
+   :forbidden [:domain-artifact-without-anchor
+               :backend-consumes-unverified-domain-ir
+               :opaque-plugin-domain-payload
+               :eml-normalization-as-runtime-equality
+               :benchmark-only-domain-correctness]})
+
+(def c13-optimization-diagnostic-catalog
+  {:diagnostics ["C13-CONTRACT"
+                 "C13-PRESERVE"
+                 "C13-INVALIDATE"
+                 "C13-PROOF"
+                 "C13-CHECK-ELISION"
+                 "C13-EFFECT"
+                 "C13-SAFETY"
+                 "C13-DOMAIN"
+                 "C13-NONDETERMINISM"
+                 "C13-VERIFY"]
+   :stable-diagnostic-fields [:diagnostic-id :severity
+                              :stage :pass-id :decision-id
+                              :input-mir-id :output-mir-id
+                              :function-id :block-id :operation-id
+                              :changed-operations
+                              :source-span :origin-chain
+                              :missing-fact :invalidated-fact
+                              :proof-id :certificate-id
+                              :runtime-check-id
+                              :domain :domain-anchor
+                              :profile :target :remediation]
+   :rule-to-message-key {:C13-CONTRACT :optimization.invalid-pass-contract
+                         :C13-PRESERVE :optimization.preservation-gap
+                         :C13-INVALIDATE :optimization.invalidation-gap
+                         :C13-PROOF :optimization.proof-gap
+                         :C13-CHECK-ELISION :optimization.check-elision-gap
+                         :C13-EFFECT :optimization.effect-reorder
+                         :C13-SAFETY :optimization.stale-safety
+                         :C13-DOMAIN :optimization.domain-anchor-gap
+                         :C13-NONDETERMINISM :optimization.unreplayable-choice
+                         :C13-VERIFY :optimization.post-pass-verify}
+   :stops [:target-lowering
+           :runtime-selection
+           :artifact-emission
+           :package-release
+           :self-hosting-comparison]
+   :must-not-depend-on [:localized-rendering-text
+                        :backend-undefined-behavior
+                        :host-runtime-accident
+                        :unordered-map-iteration
+                        :unrecorded-benchmark-result]})
+
+(defn build-c13-pass-contract
+  [pass-id family version input-ir output-ir required-analyses preconditions preserves invalidates regenerates proof-obligations profiles target-assumptions emits]
+  (quote {:artifact :gravity/c13-pass-contract
+          :pass-id pass-id
+          :family family
+          :version version
+          :input-ir input-ir
+          :output-ir output-ir
+          :required-analyses required-analyses
+          :preconditions preconditions
+          :preserves preserves
+          :invalidates invalidates
+          :regenerates regenerates
+          :proof-obligations proof-obligations
+          :profile-constraints profiles
+          :target-assumptions target-assumptions
+          :emits emits
+          :contract c13-optimization-pass-contract}))
+
+(defn build-c13-decision-record
+  [pass-id decision-id input-mir output-mir changed-ops reason preserved invalidated proofs-used residual-checks verifier-result source-map]
+  (quote {:artifact :gravity/optimization-decision
+          :pass pass-id
+          :decision-id decision-id
+          :input-mir input-mir
+          :output-mir output-mir
+          :changed-ops changed-ops
+          :reason reason
+          :preserved preserved
+          :invalidated invalidated
+          :proofs-used proofs-used
+          :residual-checks residual-checks
+          :source-map source-map
+          :verifier-result verifier-result
+          :contract c13-mir-optimization-contract}))
+
+(defn build-c13-invalidation-entry
+  [pass-id decision-id analysis-invalidated facts-invalidated facts-regenerated proofs-invalidated runtime-checks-restored caches-cleared diagnostics-affected source-span]
+  (quote {:artifact :gravity/c13-invalidation-ledger-entry
+          :pass-id pass-id
+          :decision-id decision-id
+          :analysis-invalidated analysis-invalidated
+          :facts-invalidated facts-invalidated
+          :facts-regenerated facts-regenerated
+          :proofs-invalidated proofs-invalidated
+          :runtime-checks-restored runtime-checks-restored
+          :caches-cleared caches-cleared
+          :diagnostics-affected diagnostics-affected
+          :source-span source-span
+          :contract c13-invalidation-ledger-contract}))
+
+(defn build-c13-check-elision-gate
+  [pass-id decision-id check-id check-class operation-id proof-id certificate-id residual-checks source-span profile target]
+  (quote {:artifact :gravity/c13-check-elision-gate
+          :pass-id pass-id
+          :decision-id decision-id
+          :check-id check-id
+          :check-class check-class
+          :operation-id operation-id
+          :dominating-proof proof-id
+          :certificate certificate-id
+          :residual-checks residual-checks
+          :source-span source-span
+          :profile profile
+          :target target
+          :policy [:perf10 :safe15]
+          :contract c13-safety-preservation-contract}))
+
+(defn verify-c13-mir-optimization-passes [optimization-artifact]
+  (quote {:status :stage1-source-owned
+          :optimization-artifact optimization-artifact
+          :checks [:input-mir-verified-before-optimization
+                   :pass-contracts-checked-before-execution
+                   :pass-contracts-checked-after-output
+                   :every-pass-emits-decision-record-even-when-unchanged
+                   :deterministic-pipeline-manifest-recorded
+                   :preserved-facts-backed-by-equivalence-evidence
+                   :invalidated-facts-recorded-conservatively
+                   :regenerated-facts-or-residual-checks-recorded
+                   :proofs-and-certificates-preserved-or-invalidated
+                   :check-elision-follows-perf10-and-safe15
+                   :effect-ordering-preserved-or-proven
+                   :safety-outcomes-not-stale
+                   :unsafe-island-metadata-preserved
+                   :domain-anchors-preserved-or-domain-verified
+                   :efir-optimization-follows-math10
+                   :nondeterministic-choice-replayable-or-rejected
+                   :source-spans-and-origin-chains-preserved
+                   :post-pass-verifier-runs-after-mutating-passes
+                   :stable-c13-diagnostics-emitted
+                   :self-hosting-metadata-recorded]
+          :diagnostics c13-optimization-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :origin-chains :generated-origin
+                      :mir-module-identity
+                      :mir-operation-identity
+                      :type-facts :effect-facts
+                      :capability-facts :ownership-facts
+                      :safety-outcomes
+                      :runtime-check-records
+                      :proof-obligations
+                      :certificate-references
+                      :profile-target-metadata
+                      :domain-anchors
+                      :optimization-decision-logs
+                      :invalidation-ledgers
+                      :verifier-reports
+                      :residual-cost-reports
+                      :deterministic-ordering
+                      :self-hosting-metadata]}))

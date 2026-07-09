@@ -1,0 +1,69 @@
+{:proof-id :stage0-perf2-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D060
+ :document "PERF2"
+ :governing-document "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md"
+ :status :passed
+ :implementation-surface
+ {:command "zero-cost"
+  :entrypoint :gravity.bootstrap/zero-cost-file-artifact
+  :artifact-kind :gravity/stage0-zero-cost-abstraction-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/zero-cost-abstractions.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/zero-cost-claim-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-residual.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-allocation.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-boxing.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-dispatch.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-reflection.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-runtime-check.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-profile-illegal.gravity"
+   "bootstrap/clojure/fixtures/rejected/zero-cost-evidence-missing.gravity"]}
+ :accepted-behavior
+ ["zero-cost claims identify an equivalent lower-level form"
+  "before and after MIR records are emitted for every accepted claim"
+  "accepted claims expose erased costs and empty residual-cost sets"
+  "protocol dispatch, generic specialization, iterator fusion, wrapper erasure, and runtime-check erasure are represented"
+  "allocation and boxing audits, dispatch specialization reports, and runtime-check reports are artifacted"
+  "profile, target, effect, capability, safety, and proof evidence are preserved"]
+ :rejected-behavior
+ ["incomplete zero-cost claims"
+  "residual work contradicting zero-cost claims"
+  "hidden allocation"
+  "hidden boxing or representation conversion"
+  "unerased dynamic dispatch"
+  "hidden host reflection"
+  "unaccounted runtime checks"
+  "profile-illegal erasure behavior"
+  "missing before/after IR or proof artifacts"]
+ :required-artifacts
+ [:abstraction-erasure-report
+  :before-after-ir-records
+  :residual-cost-list
+  :allocation-boxing-audit
+  :dispatch-specialization-report
+  :runtime-check-erasure-report
+  :zero-cost-conformance-results]
+ :diagnostics
+ ["PERF2-CLAIM" "PERF2-RESIDUAL" "PERF2-ALLOCATION" "PERF2-BOXING"
+  "PERF2-DISPATCH" "PERF2-REFLECTION" "PERF2-CHECK" "PERF2-PROFILE"
+  "PERF2-EVIDENCE"]
+ :dependencies
+ ["PERF1" "L5" "L6" "L8" "L12" "SAFE15" "C11"]
+ :conformance
+ {:protocol-dispatch-erasure :complete
+  :generic-specialization-boxing-audit :complete
+  :iterator-or-collection-pipeline-erasure :complete
+  :record-and-wrapper-representation-erasure :complete
+  :runtime-check-erasure-with-proof :complete
+  :residual-cost-diagnostics :complete
+  :before-after-ir-inspection :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 36 tests containing 1878 assertions. 0 failures, 0 errors."}
+  {:command "clojure -M -e '(require ... zero-cost summary)'"
+   :output "{:kind :gravity/stage0-zero-cost-abstraction-artifact, :pass :zero-cost-abstraction-validation, :status :complete, :claims 5, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This completes PERF2 document coverage only for the Clojure stage0 zero-cost artifact boundary."
+  "It is not release performance, backend MIR execution, full optimizer implementation, or self-hosting evidence."]}

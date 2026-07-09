@@ -1,0 +1,67 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D085
+ :date "2026-06-25"
+ :status :complete
+ :capability :c6-core-lowering-document-coverage
+ :command "clojure -M:gravity compiler-c6-lowering bootstrap/clojure/fixtures/accepted/compiler-c6-core-lowering.gravity"
+ :artifact-kind :gravity/stage0-c6-core-lowering-artifact
+ :artifact-hash "sha256:baee4e97293095597550832e56e1a67db8a2f06428fe5bf4ae17cdfbf05a554f"
+ :summary {:core-nodes 53
+           :core-roots 6
+           :surface-map-entries 7
+           :evaluation-order-records 24
+           :domain-boundaries 1
+           :rejected-designs 8
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+                       "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
+                       "docs/phase-01-core-language/012-l2-core-language-semantics.md"
+                       "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
+                       "docs/phase-01-core-language/019-l9-error-handling-specification.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+                       "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c6-core-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c6-lowering-gap.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-core-shape.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-eval-order.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-origin.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-effect-drop.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-unsafe-drop.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-domain-boundary.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c6-verify.gravity"]
+ :diagnostic-ids ["C6-LOWERING-GAP"
+                  "C6-CORE-SHAPE"
+                  "C6-EVAL-ORDER"
+                  "C6-ORIGIN"
+                  "C6-EFFECT-DROP"
+                  "C6-UNSAFE-DROP"
+                  "C6-DOMAIN-BOUNDARY"
+                  "C6-VERIFY"]
+ :capability-based-proof {:every-executable-form-lowered? true
+                          :source-to-core-map-present? true
+                          :evaluation-order-preserved? true
+                          :origin-links-present? true
+                          :effect-capability-unsafe-preserved? true
+                          :domain-boundaries-recorded? true
+                          :core-verifier-passed? true
+                          :versioned-rule-invalidation? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 58 tests containing 3065 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 828}
+              {:command "clojure -M:gravity compiler-c6-lowering bootstrap/clojure/fixtures/accepted/compiler-c6-core-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:baee4e97293095597550832e56e1a67db8a2f06428fe5bf4ae17cdfbf05a554f"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 12 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D085 for the Clojure stage0 C6 AST and core lowering document boundary only."
+                 "It does not claim production lowering coverage for every future surface form, complete type checking, MIR construction, backend lowering, release readiness, or self-hosting."]}

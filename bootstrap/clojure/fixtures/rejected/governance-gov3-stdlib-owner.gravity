@@ -1,0 +1,11 @@
+; Rejected P17 GOV3 fixture.
+(ns governance.gov3-stdlib-owner
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov3001}}}))
+
+(defn main [] :- I64 1)

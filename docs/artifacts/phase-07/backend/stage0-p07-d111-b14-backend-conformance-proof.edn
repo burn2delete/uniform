@@ -1,0 +1,87 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D111
+ :date "2026-06-29"
+ :status :complete
+ :capability :b14-backend-conformance-document-coverage
+ :command "clojure -M:gravity backend-b14-conformance-document bootstrap/clojure/fixtures/accepted/backend-test-matrix.gravity"
+ :artifact-kind :gravity/stage0-b14-backend-conformance-document-artifact
+ :artifact-hash "sha256:00ec7dd8ef1fcfd1487b473ff1c2389ad0db0781e143cdf8313f83186e055052"
+ :summary {:backend-test-matrix-input "sha256:2f19bd11d4c955e6c4083e12d0b1a547dce98b890e2ee1d472ca755939d2b1a9"
+           :targets 11
+           :fixture-families 27
+           :positive-results 11
+           :negative-diagnostic-results 10
+           :semantic-comparisons 11
+           :diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 9
+           :release-review-consumers [:artifact-emission :release-review]
+           :external-conformance-runner :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-test-matrix.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-matrix-b14-coverage.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-positive.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-negative.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-differential.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-artifact.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-nondeterminism.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-skip.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-evidence.gravity"]
+ :diagnostics ["B14-COVERAGE"
+               "B14-TARGET"
+               "B14-POSITIVE"
+               "B14-NEGATIVE"
+               "B14-DIFFERENTIAL"
+               "B14-METADATA"
+               "B14-ARTIFACT"
+               "B14-NONDETERMINISM"
+               "B14-SKIP"
+               "B14-EVIDENCE"]
+ :proof-checks {:backend-test-matrix-input-verified? true
+                :phase-7-backends-covered? true
+                :shared-fixture-matrix-covered? true
+                :backend-specific-positive-negative-covered? true
+                :exact-diagnostic-assertions-covered? true
+                :differential-or-semantic-comparison-covered? true
+                :metadata-preservation-covered? true
+                :artifact-manifest-validation-covered? true
+                :nondeterminism-replay-covered? true
+                :target-availability-and-skips-covered? true
+                :evidence-pack-consumable? true
+                :release-review-consumption-covered? true
+                :diagnostics-covered? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 90 tests containing 5371 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1197}
+              {:command "clojure -M:gravity backend-b14-conformance-document bootstrap/clojure/fixtures/accepted/backend-test-matrix.gravity"
+               :result :accepted
+               :artifact-hash "sha256:00ec7dd8ef1fcfd1487b473ff1c2389ad0db0781e143cdf8313f83186e055052"}
+              {:command "clojure -M -e <extract B14 artifact summary>"
+               :result {:artifact-id "sha256:00ec7dd8ef1fcfd1487b473ff1c2389ad0db0781e143cdf8313f83186e055052"
+                        :input-artifact "sha256:2f19bd11d4c955e6c4083e12d0b1a547dce98b890e2ee1d472ca755939d2b1a9"
+                        :targets 11
+                        :fixture-families 27
+                        :positive-results 11
+                        :negative-results 10
+                        :semantic-comparisons 11
+                        :release-review-consumers [:artifact-emission :release-review]
+                        :proof :complete}}
+              {:command "command -v gravity-backend-conformance"
+               :result :not-available-in-current-environment}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 20 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-D106 :P07-D107 :P07-D108 :P07-D109 :P07-D110 :P07-D111 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D111 for deterministic Clojure stage0 coverage of the B14 backend conformance test plan contract."
+                 "The emitted B14 document artifact records the P07-T06 backend-test-matrix input, suite manifest, fixture coverage, target availability, positive and negative results, semantic comparison records, metadata preservation, artifact manifest validation, nondeterminism replay, risk coverage, conformance evidence pack, release-review consumption, and stable B14 diagnostics."
+                 "This completes Phase 07 at the stage0 artifact-shape and diagnostic boundary, but it does not claim external backend target execution, production release readiness, external conformance runner execution, signing, packaging, or deployment."]}

@@ -1,0 +1,15 @@
+(ns math.efir-rewrite
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:rewrite-records
+      [{:rewrite-id :rewrite/bad
+        :graph-id :efir/sigmoid
+        :input-graph :efir/sigmoid
+        :output-graph :efir/sigmoid
+        :claims-equality? true}]}}}))

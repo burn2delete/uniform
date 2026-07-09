@@ -1,0 +1,25 @@
+(ns math.efir-effect
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:provider-manifest
+      [{:provider :provider/poly-sigmoid-f32
+        :function-id :math/sigmoid
+        :selected? true
+        :eligible? true
+        :efir-anchor :efir/sigmoid
+        :domain {'x {:real [-8.0 8.0]}}
+        :codomain {:real [0.0 1.0]}
+        :branch-policy :real-only
+        :numeric-mode :certified-approx
+        :precision {:type :F32 :absolute-error-max 1.0e-5}
+        :profile :native
+        :target :llvm-x86-64-linux
+        :certificate :cert/sigmoid-poly-f32
+        :effects #{:ffi/call}
+        :capabilities #{}}]}}}))

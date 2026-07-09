@@ -1,0 +1,19 @@
+(ns bad.macro.generated-unsafe
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defmacro make-unsafe
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  []
+  (syntax-quote
+    (unsafe
+      {:reason "generated unsafe fixture"}
+      (var unchecked-value))))
+
+(def generated (make-unsafe))

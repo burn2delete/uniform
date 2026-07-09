@@ -1,0 +1,89 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D110
+ :date "2026-06-29"
+ :status :complete
+ :capability :b13-artifact-emission-document-coverage
+ :command "clojure -M:gravity backend-b13-artifact-document bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity"
+ :artifact-kind :gravity/stage0-b13-artifact-emission-document-artifact
+ :artifact-hash "sha256:f40199601b599c261ead7dbbfe378b002057f3de9d6aaed05a96aff41dc75520"
+ :summary {:artifact-emission-input "sha256:fb13e5e7323c6a7ba0ddaa92862b950d4a9c89002207d7094a41fb6298e6f79b"
+           :artifact-manifests 12
+           :content-hash-records 12
+           :artifact-graph-nodes 16
+           :artifact-graph-edges 15
+           :diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 9
+           :release-gate :blocked-development-only
+           :downstream-consumers [:package-system :tooling :conformance]
+           :external-artifact-validator :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-artifact-b13-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-hash.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-provenance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-sourcemap.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-evidence.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-conformance.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-reproducibility.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-release.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-artifact-b13-graph.gravity"]
+ :diagnostics ["B13-SCHEMA"
+               "B13-HASH"
+               "B13-PROVENANCE"
+               "B13-SOURCEMAP"
+               "B13-EVIDENCE"
+               "B13-TARGET"
+               "B13-CONFORMANCE"
+               "B13-REPRODUCIBILITY"
+               "B13-RELEASE"
+               "B13-GRAPH"]
+ :proof-checks {:artifact-emission-input-verified? true
+                :common-manifest-schema-covered? true
+                :content-hashes-covered? true
+                :provenance-covered? true
+                :source-debug-map-preserved? true
+                :evidence-bundle-covered? true
+                :effect-capability-summary-covered? true
+                :runtime-provider-summary-covered? true
+                :target-runtime-abi-covered? true
+                :conformance-reference-covered? true
+                :reproducibility-covered? true
+                :release-gate-covered? true
+                :artifact-graph-covered? true
+                :downstream-consumption-covered? true
+                :diagnostics-covered? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 89 tests containing 5296 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1187}
+              {:command "clojure -M:gravity backend-b13-artifact-document bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity"
+               :result :accepted
+               :artifact-hash "sha256:f40199601b599c261ead7dbbfe378b002057f3de9d6aaed05a96aff41dc75520"}
+              {:command "clojure -M -e <extract B13 artifact summary>"
+               :result {:artifact-id "sha256:f40199601b599c261ead7dbbfe378b002057f3de9d6aaed05a96aff41dc75520"
+                        :input-artifact "sha256:fb13e5e7323c6a7ba0ddaa92862b950d4a9c89002207d7094a41fb6298e6f79b"
+                        :manifests 12
+                        :content-hashes 12
+                        :graph-nodes 16
+                        :graph-edges 15
+                        :release-gate :blocked-development-only
+                        :downstream-consumers [:package-system :tooling :conformance]
+                        :proof :complete}}
+              {:command "command -v gravity-artifact-verify"
+               :result :not-available-in-current-environment}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 19 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-D106 :P07-D107 :P07-D108 :P07-D109 :P07-D110 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D110 for deterministic Clojure stage0 coverage of the B13 artifact emission specification contract."
+                 "The emitted B13 document artifact records the P07-T05 artifact-emission input, common manifest index, content hashes, artifact graph, source/debug map, compiler and dependency provenance, safety/proof/certificate bundle, effect/capability summary, runtime/provider summary, target/runtime/ABI/layout summary, reproducibility record, conformance evidence reference, release gate, downstream package/tooling/conformance consumption record, and stable B13 diagnostics."
+                 "The current environment does not provide gravity-artifact-verify, so this does not claim external signing, packaging, deployment, release-grade validation, or full Phase 07 completion."]}

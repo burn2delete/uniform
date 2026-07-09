@@ -1,0 +1,15 @@
+(ns core.app.performance-elision
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:performance
+              {:check-elision
+               [{:check-class :bounds
+                 :operation :stage0/function-call
+                 :ir-node :stage0/core-app/main
+                 :erased? true}]}}))
+
+(defn main []
+  (println "unproved check elision"))

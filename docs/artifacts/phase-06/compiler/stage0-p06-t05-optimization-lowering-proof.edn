@@ -1,0 +1,91 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-T05
+ :date "2026-06-25"
+ :status :complete
+ :capability :optimization-and-target-lowering-api
+ :command "clojure -M:gravity optimize-lower bootstrap/clojure/fixtures/accepted/compiler-optimization-lowering.gravity"
+ :artifact-kind :gravity/stage0-optimization-lowering-artifact
+ :artifact-hash "sha256:07ed66f3a131e02a57abf31989a7d63e72ebaef7a26d28c1432756c62d68d98e"
+ :summary {:pass-contracts 6
+           :decisions 6
+           :invalidations 6
+           :post-pass-verifiers 6
+           :provider-records 3
+           :target-metadata 3
+           :unsupported-feature-records 1
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
+                       "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+                       "docs/phase-04-performance-model/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-07-backend-architecture/IMPLEMENTATION-ROADMAP.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-optimization-lowering.gravity"]
+ :rejected-fixtures ["compiler-optimization-contract.gravity"
+                     "compiler-optimization-preserve.gravity"
+                     "compiler-optimization-invalidate.gravity"
+                     "compiler-optimization-proof.gravity"
+                     "compiler-optimization-check-elision.gravity"
+                     "compiler-optimization-effect.gravity"
+                     "compiler-optimization-safety.gravity"
+                     "compiler-optimization-domain.gravity"
+                     "compiler-optimization-nondeterminism.gravity"
+                     "compiler-optimization-verify.gravity"
+                     "compiler-lowering-input.gravity"
+                     "compiler-lowering-profile.gravity"
+                     "compiler-lowering-target.gravity"
+                     "compiler-lowering-abi.gravity"
+                     "compiler-lowering-runtime.gravity"
+                     "compiler-lowering-provider.gravity"
+                     "compiler-lowering-proof-metadata.gravity"
+                     "compiler-lowering-capability.gravity"
+                     "compiler-lowering-unsupported.gravity"
+                     "compiler-lowering-manifest.gravity"]
+ :diagnostic-ids ["C13-CONTRACT"
+                  "C13-PRESERVE"
+                  "C13-INVALIDATE"
+                  "C13-PROOF"
+                  "C13-CHECK-ELISION"
+                  "C13-EFFECT"
+                  "C13-SAFETY"
+                  "C13-DOMAIN"
+                  "C13-NONDETERMINISM"
+                  "C13-VERIFY"
+                  "C14-INPUT"
+                  "C14-PROFILE"
+                  "C14-TARGET"
+                  "C14-ABI"
+                  "C14-RUNTIME"
+                  "C14-PROVIDER"
+                  "C14-PROOF-METADATA"
+                  "C14-CAPABILITY"
+                  "C14-UNSUPPORTED"
+                  "C14-MANIFEST"]
+ :capability-based-proof {:pass-contracts-valid? true
+                          :pipeline-deterministic? true
+                          :decisions-complete? true
+                          :invalidations-recorded? true
+                          :proof-evidence-present? true
+                          :post-pass-verifiers-passed? true
+                          :lowering-request-verified? true
+                          :target-eligible? true
+                          :abi-runtime-provider-recorded? true
+                          :proof-metadata-linked? true
+                          :manifest-complete? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity optimize-lower bootstrap/clojure/fixtures/accepted/compiler-optimization-lowering.gravity"
+               :result :accepted}
+              {:command "clojure -M -e '(doseq [path (sort (map str (file-seq (clojure.java.io/file \"docs/artifacts/phase-06/compiler\"))))] (when (.endsWith path \".edn\") (read-string (slurp path))))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-T05 for the Clojure stage0 optimization and target-lowering API boundary only."
+                 "It does not claim complete Phase 06 document coverage tasks, backend code generation, release readiness, or self-hosting."]}

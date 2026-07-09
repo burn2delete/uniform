@@ -1,0 +1,17 @@
+(ns math.mode-target-default
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:mode-records
+                      [{:record-id :target-default
+                        :math/mode :target-default
+                        :scope {:kind :function :name 'math.mode/f}
+                        :precision {:type :F32 :ulp-max 1}
+                        :rounding :nearest-even
+                        :float-exceptions {:nan :propagate
+                                           :inf :propagate
+                                           :signed-zero :preserve
+                                           :denormals :preserve}}]}}}))

@@ -1,0 +1,8 @@
+(ns macro.bad-provenance
+  (:profile :hosted)
+  (:target :jvm)
+  (:safety :safe))
+
+(def value
+  (drop-origin true))
+

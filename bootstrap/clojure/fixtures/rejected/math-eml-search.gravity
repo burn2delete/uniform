@@ -1,0 +1,20 @@
+(ns math.eml-search
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:eml
+     {:search-manifest
+      {:manifest-id :search/bad
+       :grammar {:basis :exp-minus-log
+                 :max-depth 6
+                 :operators [:add :sub :mul :div :eml :neg]}
+       :fuel {:candidate-limit 0
+              :time-ms :unbounded}
+       :ranking {:primary :runtime-cost}
+       :tie-policy :none
+       :deterministic? false
+       :bounded? false}}}}))

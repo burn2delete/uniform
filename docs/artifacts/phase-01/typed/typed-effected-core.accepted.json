@@ -1,0 +1,1662 @@
+{
+  "build_effect_log": [],
+  "capability_report": [
+    {
+      "capability": ":io/stdout",
+      "node_id": "core-00012",
+      "phase": ":runtime",
+      "provider": "gravity.io/stdout-host",
+      "status": "granted"
+    },
+    {
+      "capability": ":memory/allocator",
+      "node_id": "core-00017",
+      "phase": ":runtime",
+      "provider": "gravity.memory/gc-host",
+      "status": "granted"
+    },
+    {
+      "capability": ":resource/file",
+      "node_id": "core-00021",
+      "phase": ":runtime",
+      "provider": "gravity.resource/file-host",
+      "status": "granted"
+    },
+    {
+      "capability": ":resource/file",
+      "node_id": "core-00024",
+      "phase": ":runtime",
+      "provider": "gravity.resource/file-host",
+      "status": "granted"
+    },
+    {
+      "capability": ":io/stdout",
+      "node_id": "core-00033",
+      "phase": ":runtime",
+      "provider": "gravity.io/stdout-host",
+      "status": "granted"
+    },
+    {
+      "capability": ":scheduler/task",
+      "node_id": "core-00035",
+      "phase": ":runtime",
+      "provider": "gravity.scheduler/structured-host",
+      "status": "granted"
+    }
+  ],
+  "concurrency_facts": [
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "family": "structured-task",
+      "node_id": "core-00035"
+    },
+    {
+      "family": "structured-task-scope",
+      "node_id": "core-00036",
+      "tasks": [
+        "core-00035"
+      ]
+    }
+  ],
+  "continuation_and_replay_safety_report": [],
+  "core_artifact_hash": "sha256:69a4f8c0cd6f20f46a3d9e1863f89c0b708ec2f23d072c24f448ad751c633bc0",
+  "declared_capabilities": [
+    ":io/stdout",
+    ":memory/allocator",
+    ":resource/file",
+    ":scheduler/task"
+  ],
+  "declared_effects": [
+    ":io/write",
+    ":memory/allocate",
+    ":resource/open",
+    ":resource/close",
+    ":dynamic/eval",
+    ":thread/spawn",
+    ":time/schedule"
+  ],
+  "diagnostics": [],
+  "dynamic_boundary_records": [
+    {
+      "boundary": "dynamic/value",
+      "effects": [
+        ":dynamic/eval"
+      ],
+      "node_id": "core-00008",
+      "profile": ":hosted"
+    }
+  ],
+  "effect_environment": [
+    {
+      "capabilities": [],
+      "effects": [
+        ":dynamic/eval"
+      ],
+      "node_id": "core-00008",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [],
+      "effects": [
+        ":dynamic/eval"
+      ],
+      "node_id": "core-00009",
+      "source_kind": "core/def"
+    },
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00012",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":memory/allocator"
+      ],
+      "effects": [
+        ":memory/allocate"
+      ],
+      "node_id": "core-00017",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":memory/allocator"
+      ],
+      "effects": [
+        ":memory/allocate"
+      ],
+      "node_id": "core-00018",
+      "source_kind": "core/def"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/open"
+      ],
+      "node_id": "core-00021",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/close"
+      ],
+      "node_id": "core-00024",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/close"
+      ],
+      "node_id": "core-00026",
+      "source_kind": "core/do"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/open",
+        ":resource/close"
+      ],
+      "node_id": "core-00027",
+      "source_kind": "core/let"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/open",
+        ":resource/close"
+      ],
+      "node_id": "core-00028",
+      "source_kind": "core/def"
+    },
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00033",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "node_id": "core-00035",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "node_id": "core-00036",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "node_id": "core-00037",
+      "source_kind": "core/def"
+    }
+  ],
+  "effect_legality_report": [
+    {
+      "capabilities": [],
+      "effects": [
+        ":dynamic/eval"
+      ],
+      "node_id": "core-00008",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [],
+      "effects": [
+        ":dynamic/eval"
+      ],
+      "node_id": "core-00009",
+      "source_kind": "core/def"
+    },
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00012",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":memory/allocator"
+      ],
+      "effects": [
+        ":memory/allocate"
+      ],
+      "node_id": "core-00017",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":memory/allocator"
+      ],
+      "effects": [
+        ":memory/allocate"
+      ],
+      "node_id": "core-00018",
+      "source_kind": "core/def"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/open"
+      ],
+      "node_id": "core-00021",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/close"
+      ],
+      "node_id": "core-00024",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/close"
+      ],
+      "node_id": "core-00026",
+      "source_kind": "core/do"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/open",
+        ":resource/close"
+      ],
+      "node_id": "core-00027",
+      "source_kind": "core/let"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "effects": [
+        ":resource/open",
+        ":resource/close"
+      ],
+      "node_id": "core-00028",
+      "source_kind": "core/def"
+    },
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00033",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "node_id": "core-00035",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "node_id": "core-00036",
+      "source_kind": "core/call"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "node_id": "core-00037",
+      "source_kind": "core/def"
+    }
+  ],
+  "function_latent_effect_table": [
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "latent_effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00013"
+    },
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "latent_effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00034"
+    }
+  ],
+  "function_signature_table": [
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "latent_effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00013",
+      "params": [
+        {
+          "name": "message",
+          "type": "Dynamic"
+        }
+      ],
+      "return_type": "Nil"
+    },
+    {
+      "capabilities": [
+        ":io/stdout"
+      ],
+      "latent_effects": [
+        ":io/write"
+      ],
+      "node_id": "core-00034",
+      "params": [],
+      "return_type": "Nil"
+    }
+  ],
+  "generic_instantiation_records": [],
+  "handled_effect_table": [],
+  "handler_capability_and_profile_report": [],
+  "kind": "typed-effected-core-artifact",
+  "memory_facts": [
+    {
+      "capabilities": [
+        ":memory/allocator"
+      ],
+      "effects": [
+        ":memory/allocate"
+      ],
+      "node_id": "core-00017",
+      "regime": "ownership-backed",
+      "type": "Owned[Buffer]"
+    }
+  ],
+  "module": "typed.demo",
+  "module_effect_summary": {
+    "escaping_effects": [
+      ":dynamic/eval",
+      ":memory/allocate",
+      ":resource/open",
+      ":resource/close",
+      ":thread/spawn",
+      ":time/schedule",
+      ":io/write"
+    ],
+    "handled_effects": []
+  },
+  "namespace_effect_summary": {
+    "declared": [
+      ":io/write",
+      ":memory/allocate",
+      ":resource/open",
+      ":resource/close",
+      ":dynamic/eval",
+      ":thread/spawn",
+      ":time/schedule"
+    ],
+    "inferred": [
+      ":dynamic/eval",
+      ":memory/allocate",
+      ":resource/open",
+      ":resource/close",
+      ":thread/spawn",
+      ":time/schedule",
+      ":io/write"
+    ]
+  },
+  "ownership_resource_type_facts": [
+    {
+      "closed_at": "core-00024",
+      "name": "file",
+      "opened_at": "core-00021",
+      "resource_type": "FileHandle",
+      "status": "consumed"
+    }
+  ],
+  "profile": ":hosted",
+  "provider_selection_records": [
+    {
+      "capability": ":io/stdout",
+      "phase": ":runtime",
+      "provider": "gravity.io/stdout-host",
+      "scope": ":namespace",
+      "selection": ":profile-default",
+      "version": "fixture-1"
+    },
+    {
+      "capability": ":memory/allocator",
+      "phase": ":runtime",
+      "provider": "gravity.memory/gc-host",
+      "scope": ":namespace",
+      "selection": ":profile-default",
+      "version": "fixture-1"
+    },
+    {
+      "capability": ":resource/file",
+      "phase": ":runtime",
+      "provider": "gravity.resource/file-host",
+      "scope": ":namespace",
+      "selection": ":profile-default",
+      "version": "fixture-1"
+    },
+    {
+      "capability": ":resource/file",
+      "phase": ":runtime",
+      "provider": "gravity.resource/file-host",
+      "scope": ":namespace",
+      "selection": ":profile-default",
+      "version": "fixture-1"
+    },
+    {
+      "capability": ":io/stdout",
+      "phase": ":runtime",
+      "provider": "gravity.io/stdout-host",
+      "scope": ":namespace",
+      "selection": ":profile-default",
+      "version": "fixture-1"
+    },
+    {
+      "capability": ":scheduler/task",
+      "phase": ":runtime",
+      "provider": "gravity.scheduler/structured-host",
+      "scope": ":namespace",
+      "selection": ":profile-default",
+      "version": "fixture-1"
+    }
+  ],
+  "replay_effect_log": [],
+  "schema_type_links": [],
+  "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+  "type_environment": [
+    {
+      "name": "checked-integer",
+      "node_id": "core-00005",
+      "type": "Integer"
+    },
+    {
+      "name": "hosted-dynamic",
+      "node_id": "core-00009",
+      "type": "Dynamic"
+    },
+    {
+      "name": "log-message",
+      "node_id": "core-00014",
+      "type": "Fn[1]->Nil"
+    },
+    {
+      "name": "owned-buffer",
+      "node_id": "core-00018",
+      "type": "Owned[Buffer]"
+    },
+    {
+      "name": "file-cycle",
+      "node_id": "core-00028",
+      "type": "Boolean"
+    },
+    {
+      "name": "scheduled-work",
+      "node_id": "core-00037",
+      "type": "TaskScopeResult"
+    }
+  ],
+  "type_facts": [
+    {
+      "node_id": "core-00002",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 275,
+        "end_column": 25,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 267,
+        "start_column": 17,
+        "start_line": 7
+      },
+      "type": "Keyword"
+    },
+    {
+      "node_id": "core-00003",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 278,
+        "end_column": 28,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 276,
+        "start_column": 26,
+        "start_line": 7
+      },
+      "type": "Integer"
+    },
+    {
+      "node_id": "core-00004",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 279,
+        "end_column": 29,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 253,
+        "start_column": 3,
+        "start_line": 7
+      },
+      "type": "Integer"
+    },
+    {
+      "node_id": "core-00005",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 280,
+        "end_column": 30,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 230,
+        "start_column": 1,
+        "start_line": 6
+      },
+      "type": "Integer"
+    },
+    {
+      "node_id": "core-00007",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 328,
+        "end_column": 27,
+        "end_line": 10,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 319,
+        "start_column": 18,
+        "start_line": 10
+      },
+      "type": "String"
+    },
+    {
+      "node_id": "core-00008",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 329,
+        "end_column": 28,
+        "end_line": 10,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 304,
+        "start_column": 3,
+        "start_line": 10
+      },
+      "type": "Dynamic"
+    },
+    {
+      "node_id": "core-00009",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 330,
+        "end_column": 29,
+        "end_line": 10,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 282,
+        "start_column": 1,
+        "start_line": 9
+      },
+      "type": "Dynamic"
+    },
+    {
+      "node_id": "core-00011",
+      "source_kind": "core/symbol-ref",
+      "span": {
+        "end_byte": 385,
+        "end_column": 21,
+        "end_line": 14,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 378,
+        "start_column": 14,
+        "start_line": 14
+      },
+      "type": "Dynamic"
+    },
+    {
+      "node_id": "core-00012",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 386,
+        "end_column": 22,
+        "end_line": 14,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 369,
+        "start_column": 5,
+        "start_line": 14
+      },
+      "type": "Nil"
+    },
+    {
+      "node_id": "core-00013",
+      "source_kind": "core/fn",
+      "span": {
+        "end_byte": 387,
+        "end_column": 23,
+        "end_line": 14,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 351,
+        "start_column": 3,
+        "start_line": 13
+      },
+      "type": "Fn[1]->Nil"
+    },
+    {
+      "node_id": "core-00014",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 388,
+        "end_column": 24,
+        "end_line": 14,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 332,
+        "start_column": 1,
+        "start_line": 12
+      },
+      "type": "Fn[1]->Nil"
+    },
+    {
+      "node_id": "core-00016",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 424,
+        "end_column": 17,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 422,
+        "start_column": 15,
+        "start_line": 17
+      },
+      "type": "Integer"
+    },
+    {
+      "node_id": "core-00017",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 425,
+        "end_column": 18,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 410,
+        "start_column": 3,
+        "start_line": 17
+      },
+      "type": "Owned[Buffer]"
+    },
+    {
+      "node_id": "core-00018",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 426,
+        "end_column": 19,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 390,
+        "start_column": 1,
+        "start_line": 16
+      },
+      "type": "Owned[Buffer]"
+    },
+    {
+      "node_id": "core-00020",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 486,
+        "end_column": 43,
+        "end_line": 20,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 472,
+        "start_column": 29,
+        "start_line": 20
+      },
+      "type": "String"
+    },
+    {
+      "node_id": "core-00021",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 487,
+        "end_column": 44,
+        "end_line": 20,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 457,
+        "start_column": 14,
+        "start_line": 20
+      },
+      "type": "Linear[FileHandle]"
+    },
+    {
+      "node_id": "core-00023",
+      "source_kind": "core/symbol-ref",
+      "span": {
+        "end_byte": 523,
+        "end_column": 27,
+        "end_line": 22,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 519,
+        "start_column": 23,
+        "start_line": 22
+      },
+      "type": "Linear[FileHandle]"
+    },
+    {
+      "node_id": "core-00024",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 524,
+        "end_column": 28,
+        "end_line": 22,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 503,
+        "start_column": 7,
+        "start_line": 22
+      },
+      "type": "Nil"
+    },
+    {
+      "node_id": "core-00025",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 535,
+        "end_column": 11,
+        "end_line": 23,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 531,
+        "start_column": 7,
+        "start_line": 23
+      },
+      "type": "Boolean"
+    },
+    {
+      "node_id": "core-00026",
+      "source_kind": "core/do",
+      "span": {
+        "end_byte": 536,
+        "end_column": 12,
+        "end_line": 23,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 493,
+        "start_column": 5,
+        "start_line": 21
+      },
+      "type": "Boolean"
+    },
+    {
+      "node_id": "core-00027",
+      "source_kind": "core/let",
+      "span": {
+        "end_byte": 537,
+        "end_column": 13,
+        "end_line": 23,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 446,
+        "start_column": 3,
+        "start_line": 20
+      },
+      "type": "Boolean"
+    },
+    {
+      "node_id": "core-00028",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 538,
+        "end_column": 14,
+        "end_line": 23,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 428,
+        "start_column": 1,
+        "start_line": 19
+      },
+      "type": "Boolean"
+    },
+    {
+      "node_id": "core-00032",
+      "source_kind": "core/literal",
+      "span": {
+        "end_byte": 633,
+        "end_column": 31,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 620,
+        "start_column": 18,
+        "start_line": 29
+      },
+      "type": "String"
+    },
+    {
+      "node_id": "core-00033",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 634,
+        "end_column": 32,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 611,
+        "start_column": 9,
+        "start_line": 29
+      },
+      "type": "Nil"
+    },
+    {
+      "node_id": "core-00034",
+      "source_kind": "core/fn",
+      "span": {
+        "end_byte": 635,
+        "end_column": 33,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 596,
+        "start_column": 7,
+        "start_line": 28
+      },
+      "type": "Fn[0]->Nil"
+    },
+    {
+      "node_id": "core-00035",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 636,
+        "end_column": 34,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 578,
+        "start_column": 5,
+        "start_line": 27
+      },
+      "type": "TaskHandle"
+    },
+    {
+      "node_id": "core-00036",
+      "source_kind": "core/call",
+      "span": {
+        "end_byte": 637,
+        "end_column": 35,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 562,
+        "start_column": 3,
+        "start_line": 26
+      },
+      "type": "TaskScopeResult"
+    },
+    {
+      "node_id": "core-00037",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 638,
+        "end_column": 36,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 540,
+        "start_column": 1,
+        "start_line": 25
+      },
+      "type": "TaskScopeResult"
+    }
+  ],
+  "typed_core": [
+    {
+      "capabilities": [],
+      "children": [
+        {
+          "callee": "typed/assert",
+          "capabilities": [],
+          "children": [
+            {
+              "capabilities": [],
+              "concurrency": [],
+              "effects": [],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00002",
+              "profile_context": ":hosted",
+              "source_kind": "core/literal",
+              "span": {
+                "end_byte": 275,
+                "end_column": 25,
+                "end_line": 7,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 267,
+                "start_column": 17,
+                "start_line": 7
+              },
+              "type": "Keyword",
+              "value": ":Integer",
+              "value_kind": "keyword"
+            },
+            {
+              "capabilities": [],
+              "concurrency": [],
+              "effects": [],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00003",
+              "profile_context": ":hosted",
+              "source_kind": "core/literal",
+              "span": {
+                "end_byte": 278,
+                "end_column": 28,
+                "end_line": 7,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 276,
+                "start_column": 26,
+                "start_line": 7
+              },
+              "type": "Integer",
+              "value": 42,
+              "value_kind": "integer"
+            }
+          ],
+          "concurrency": [],
+          "effects": [],
+          "memory": [],
+          "namespace_context": "typed.demo",
+          "node_id": "core-00004",
+          "profile_context": ":hosted",
+          "source_kind": "core/call",
+          "span": {
+            "end_byte": 279,
+            "end_column": 29,
+            "end_line": 7,
+            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+            "start_byte": 253,
+            "start_column": 3,
+            "start_line": 7
+          },
+          "type": "Integer"
+        }
+      ],
+      "concurrency": [],
+      "effects": [],
+      "memory": [],
+      "name": "checked-integer",
+      "namespace_context": "typed.demo",
+      "node_id": "core-00005",
+      "profile_context": ":hosted",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 280,
+        "end_column": 30,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 230,
+        "start_column": 1,
+        "start_line": 6
+      },
+      "type": "Integer"
+    },
+    {
+      "capabilities": [],
+      "children": [
+        {
+          "callee": "dynamic/value",
+          "capabilities": [],
+          "children": [
+            {
+              "capabilities": [],
+              "concurrency": [],
+              "effects": [],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00007",
+              "profile_context": ":hosted",
+              "source_kind": "core/literal",
+              "span": {
+                "end_byte": 328,
+                "end_column": 27,
+                "end_line": 10,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 319,
+                "start_column": 18,
+                "start_line": 10
+              },
+              "type": "String",
+              "value": "runtime",
+              "value_kind": "string"
+            }
+          ],
+          "concurrency": [],
+          "effects": [
+            ":dynamic/eval"
+          ],
+          "memory": [],
+          "namespace_context": "typed.demo",
+          "node_id": "core-00008",
+          "profile_context": ":hosted",
+          "source_kind": "core/call",
+          "span": {
+            "end_byte": 329,
+            "end_column": 28,
+            "end_line": 10,
+            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+            "start_byte": 304,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "type": "Dynamic"
+        }
+      ],
+      "concurrency": [],
+      "effects": [
+        ":dynamic/eval"
+      ],
+      "memory": [],
+      "name": "hosted-dynamic",
+      "namespace_context": "typed.demo",
+      "node_id": "core-00009",
+      "profile_context": ":hosted",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 330,
+        "end_column": 29,
+        "end_line": 10,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 282,
+        "start_column": 1,
+        "start_line": 9
+      },
+      "type": "Dynamic"
+    },
+    {
+      "capabilities": [],
+      "children": [
+        {
+          "capabilities": [],
+          "children": [
+            {
+              "callee": "println",
+              "capabilities": [
+                ":io/stdout"
+              ],
+              "children": [
+                {
+                  "capabilities": [],
+                  "concurrency": [],
+                  "effects": [],
+                  "memory": [],
+                  "name": "message",
+                  "namespace_context": "typed.demo",
+                  "node_id": "core-00011",
+                  "profile_context": ":hosted",
+                  "source_kind": "core/symbol-ref",
+                  "span": {
+                    "end_byte": 385,
+                    "end_column": 21,
+                    "end_line": 14,
+                    "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                    "start_byte": 378,
+                    "start_column": 14,
+                    "start_line": 14
+                  },
+                  "type": "Dynamic"
+                }
+              ],
+              "concurrency": [],
+              "effects": [
+                ":io/write"
+              ],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00012",
+              "profile_context": ":hosted",
+              "source_kind": "core/call",
+              "span": {
+                "end_byte": 386,
+                "end_column": 22,
+                "end_line": 14,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 369,
+                "start_column": 5,
+                "start_line": 14
+              },
+              "type": "Nil"
+            }
+          ],
+          "concurrency": [],
+          "effects": [],
+          "latent_effects": [
+            ":io/write"
+          ],
+          "memory": [],
+          "namespace_context": "typed.demo",
+          "node_id": "core-00013",
+          "profile_context": ":hosted",
+          "source_kind": "core/fn",
+          "span": {
+            "end_byte": 387,
+            "end_column": 23,
+            "end_line": 14,
+            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+            "start_byte": 351,
+            "start_column": 3,
+            "start_line": 13
+          },
+          "type": "Fn[1]->Nil"
+        }
+      ],
+      "concurrency": [],
+      "effects": [],
+      "memory": [],
+      "name": "log-message",
+      "namespace_context": "typed.demo",
+      "node_id": "core-00014",
+      "profile_context": ":hosted",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 388,
+        "end_column": 24,
+        "end_line": 14,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 332,
+        "start_column": 1,
+        "start_line": 12
+      },
+      "type": "Fn[1]->Nil"
+    },
+    {
+      "capabilities": [
+        ":memory/allocator"
+      ],
+      "children": [
+        {
+          "callee": "buffer/new",
+          "capabilities": [
+            ":memory/allocator"
+          ],
+          "children": [
+            {
+              "capabilities": [],
+              "concurrency": [],
+              "effects": [],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00016",
+              "profile_context": ":hosted",
+              "source_kind": "core/literal",
+              "span": {
+                "end_byte": 424,
+                "end_column": 17,
+                "end_line": 17,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 422,
+                "start_column": 15,
+                "start_line": 17
+              },
+              "type": "Integer",
+              "value": 64,
+              "value_kind": "integer"
+            }
+          ],
+          "concurrency": [],
+          "effects": [
+            ":memory/allocate"
+          ],
+          "memory": [],
+          "namespace_context": "typed.demo",
+          "node_id": "core-00017",
+          "profile_context": ":hosted",
+          "source_kind": "core/call",
+          "span": {
+            "end_byte": 425,
+            "end_column": 18,
+            "end_line": 17,
+            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+            "start_byte": 410,
+            "start_column": 3,
+            "start_line": 17
+          },
+          "type": "Owned[Buffer]"
+        }
+      ],
+      "concurrency": [],
+      "effects": [
+        ":memory/allocate"
+      ],
+      "memory": [],
+      "name": "owned-buffer",
+      "namespace_context": "typed.demo",
+      "node_id": "core-00018",
+      "profile_context": ":hosted",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 426,
+        "end_column": 19,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 390,
+        "start_column": 1,
+        "start_line": 16
+      },
+      "type": "Owned[Buffer]"
+    },
+    {
+      "capabilities": [
+        ":resource/file"
+      ],
+      "children": [
+        {
+          "capabilities": [
+            ":resource/file"
+          ],
+          "children": [
+            {
+              "callee": "resource/open",
+              "capabilities": [
+                ":resource/file"
+              ],
+              "children": [
+                {
+                  "capabilities": [],
+                  "concurrency": [],
+                  "effects": [],
+                  "memory": [],
+                  "namespace_context": "typed.demo",
+                  "node_id": "core-00020",
+                  "profile_context": ":hosted",
+                  "source_kind": "core/literal",
+                  "span": {
+                    "end_byte": 486,
+                    "end_column": 43,
+                    "end_line": 20,
+                    "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                    "start_byte": 472,
+                    "start_column": 29,
+                    "start_line": 20
+                  },
+                  "type": "String",
+                  "value": "tmp/data.txt",
+                  "value_kind": "string"
+                }
+              ],
+              "concurrency": [],
+              "effects": [
+                ":resource/open"
+              ],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00021",
+              "profile_context": ":hosted",
+              "source_kind": "core/call",
+              "span": {
+                "end_byte": 487,
+                "end_column": 44,
+                "end_line": 20,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 457,
+                "start_column": 14,
+                "start_line": 20
+              },
+              "type": "Linear[FileHandle]"
+            },
+            {
+              "capabilities": [
+                ":resource/file"
+              ],
+              "children": [
+                {
+                  "callee": "resource/close",
+                  "capabilities": [
+                    ":resource/file"
+                  ],
+                  "children": [
+                    {
+                      "capabilities": [],
+                      "concurrency": [],
+                      "effects": [],
+                      "memory": [],
+                      "name": "file",
+                      "namespace_context": "typed.demo",
+                      "node_id": "core-00023",
+                      "profile_context": ":hosted",
+                      "source_kind": "core/symbol-ref",
+                      "span": {
+                        "end_byte": 523,
+                        "end_column": 27,
+                        "end_line": 22,
+                        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                        "start_byte": 519,
+                        "start_column": 23,
+                        "start_line": 22
+                      },
+                      "type": "Linear[FileHandle]"
+                    }
+                  ],
+                  "concurrency": [],
+                  "effects": [
+                    ":resource/close"
+                  ],
+                  "memory": [],
+                  "namespace_context": "typed.demo",
+                  "node_id": "core-00024",
+                  "profile_context": ":hosted",
+                  "source_kind": "core/call",
+                  "span": {
+                    "end_byte": 524,
+                    "end_column": 28,
+                    "end_line": 22,
+                    "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                    "start_byte": 503,
+                    "start_column": 7,
+                    "start_line": 22
+                  },
+                  "type": "Nil"
+                },
+                {
+                  "capabilities": [],
+                  "concurrency": [],
+                  "effects": [],
+                  "memory": [],
+                  "namespace_context": "typed.demo",
+                  "node_id": "core-00025",
+                  "profile_context": ":hosted",
+                  "source_kind": "core/literal",
+                  "span": {
+                    "end_byte": 535,
+                    "end_column": 11,
+                    "end_line": 23,
+                    "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                    "start_byte": 531,
+                    "start_column": 7,
+                    "start_line": 23
+                  },
+                  "type": "Boolean",
+                  "value": true,
+                  "value_kind": "boolean"
+                }
+              ],
+              "concurrency": [],
+              "effects": [
+                ":resource/close"
+              ],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00026",
+              "profile_context": ":hosted",
+              "source_kind": "core/do",
+              "span": {
+                "end_byte": 536,
+                "end_column": 12,
+                "end_line": 23,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 493,
+                "start_column": 5,
+                "start_line": 21
+              },
+              "type": "Boolean"
+            }
+          ],
+          "concurrency": [],
+          "effects": [
+            ":resource/open",
+            ":resource/close"
+          ],
+          "memory": [],
+          "namespace_context": "typed.demo",
+          "node_id": "core-00027",
+          "profile_context": ":hosted",
+          "source_kind": "core/let",
+          "span": {
+            "end_byte": 537,
+            "end_column": 13,
+            "end_line": 23,
+            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+            "start_byte": 446,
+            "start_column": 3,
+            "start_line": 20
+          },
+          "type": "Boolean"
+        }
+      ],
+      "concurrency": [],
+      "effects": [
+        ":resource/open",
+        ":resource/close"
+      ],
+      "memory": [],
+      "name": "file-cycle",
+      "namespace_context": "typed.demo",
+      "node_id": "core-00028",
+      "profile_context": ":hosted",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 538,
+        "end_column": 14,
+        "end_line": 23,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 428,
+        "start_column": 1,
+        "start_line": 19
+      },
+      "type": "Boolean"
+    },
+    {
+      "capabilities": [
+        ":scheduler/task"
+      ],
+      "children": [
+        {
+          "capabilities": [
+            ":scheduler/task"
+          ],
+          "children": [
+            {
+              "callee": "task/spawn",
+              "capabilities": [
+                ":scheduler/task"
+              ],
+              "children": [
+                {
+                  "capabilities": [],
+                  "children": [
+                    {
+                      "callee": "println",
+                      "capabilities": [
+                        ":io/stdout"
+                      ],
+                      "children": [
+                        {
+                          "capabilities": [],
+                          "concurrency": [],
+                          "effects": [],
+                          "memory": [],
+                          "namespace_context": "typed.demo",
+                          "node_id": "core-00032",
+                          "profile_context": ":hosted",
+                          "source_kind": "core/literal",
+                          "span": {
+                            "end_byte": 633,
+                            "end_column": 31,
+                            "end_line": 29,
+                            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                            "start_byte": 620,
+                            "start_column": 18,
+                            "start_line": 29
+                          },
+                          "type": "String",
+                          "value": "inside task",
+                          "value_kind": "string"
+                        }
+                      ],
+                      "concurrency": [],
+                      "effects": [
+                        ":io/write"
+                      ],
+                      "memory": [],
+                      "namespace_context": "typed.demo",
+                      "node_id": "core-00033",
+                      "profile_context": ":hosted",
+                      "source_kind": "core/call",
+                      "span": {
+                        "end_byte": 634,
+                        "end_column": 32,
+                        "end_line": 29,
+                        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                        "start_byte": 611,
+                        "start_column": 9,
+                        "start_line": 29
+                      },
+                      "type": "Nil"
+                    }
+                  ],
+                  "concurrency": [],
+                  "effects": [],
+                  "latent_effects": [
+                    ":io/write"
+                  ],
+                  "memory": [],
+                  "namespace_context": "typed.demo",
+                  "node_id": "core-00034",
+                  "profile_context": ":hosted",
+                  "source_kind": "core/fn",
+                  "span": {
+                    "end_byte": 635,
+                    "end_column": 33,
+                    "end_line": 29,
+                    "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                    "start_byte": 596,
+                    "start_column": 7,
+                    "start_line": 28
+                  },
+                  "type": "Fn[0]->Nil"
+                }
+              ],
+              "concurrency": [],
+              "effects": [
+                ":thread/spawn",
+                ":time/schedule"
+              ],
+              "memory": [],
+              "namespace_context": "typed.demo",
+              "node_id": "core-00035",
+              "profile_context": ":hosted",
+              "source_kind": "core/call",
+              "span": {
+                "end_byte": 636,
+                "end_column": 34,
+                "end_line": 29,
+                "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+                "start_byte": 578,
+                "start_column": 5,
+                "start_line": 27
+              },
+              "type": "TaskHandle"
+            }
+          ],
+          "concurrency": [],
+          "effects": [
+            ":thread/spawn",
+            ":time/schedule"
+          ],
+          "memory": [],
+          "namespace_context": "typed.demo",
+          "node_id": "core-00036",
+          "profile_context": ":hosted",
+          "source_kind": "core/call",
+          "span": {
+            "end_byte": 637,
+            "end_column": 35,
+            "end_line": 29,
+            "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+            "start_byte": 562,
+            "start_column": 3,
+            "start_line": 26
+          },
+          "type": "TaskScopeResult"
+        }
+      ],
+      "concurrency": [],
+      "effects": [
+        ":thread/spawn",
+        ":time/schedule"
+      ],
+      "memory": [],
+      "name": "scheduled-work",
+      "namespace_context": "typed.demo",
+      "node_id": "core-00037",
+      "profile_context": ":hosted",
+      "source_kind": "core/def",
+      "span": {
+        "end_byte": 638,
+        "end_column": 36,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity",
+        "start_byte": 540,
+        "start_column": 1,
+        "start_line": 25
+      },
+      "type": "TaskScopeResult"
+    }
+  ]
+}

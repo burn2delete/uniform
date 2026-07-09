@@ -1,0 +1,9 @@
+(ns altmem.provider
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/provider :missing))

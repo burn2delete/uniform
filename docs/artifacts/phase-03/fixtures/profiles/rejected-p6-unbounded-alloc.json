@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/4/checks/unbounded_allocation": true
+  }
+}

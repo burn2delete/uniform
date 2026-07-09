@@ -1,0 +1,33 @@
+{:proof-id :stage0-p8-hardware-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D053
+ :document "P8"
+ :profile :hardware
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-validation-hardware.gravity"
+ :artifact-kind :gravity/stage0-constrained-profile-validation-artifact
+ :effective-effects #{:memory/mmio :interrupt/register}
+ :effective-capabilities #{:hardware/mmio :hardware/interrupt}
+ :required-artifacts
+ [:hardware-ir :hdl-module :hardware-target-manifest
+  :fixed-width-layout-manifest :capability-pointer-layout-manifest
+  :capability-tag-preservation-report :clock-domain-report
+  :reset-domain-report :state-machine-graph :port-bus-manifest
+  :timing-constraint-report :compartment-temporal-safety-report]
+ :diagnostic-fixtures
+ {"P8-WIDTH" "bootstrap/clojure/fixtures/rejected/profile-hardware-width.gravity"
+  "P8-CLOCK" "bootstrap/clojure/fixtures/rejected/profile-hardware-clock.gravity"
+  "P8-RESET" "bootstrap/clojure/fixtures/rejected/profile-hardware-reset.gravity"
+  "P8-CDC" "bootstrap/clojure/fixtures/rejected/profile-hardware-cdc.gravity"
+  "P8-UNBOUNDED" "bootstrap/clojure/fixtures/rejected/profile-hardware-unbounded.gravity"
+  "P8-RUNTIME" "bootstrap/clojure/fixtures/rejected/profile-hardware-runtime.gravity"
+  "P8-PORT" "bootstrap/clojure/fixtures/rejected/profile-hardware-port.gravity"
+  "P8-NUMERIC" "bootstrap/clojure/fixtures/rejected/profile-hardware-numeric.gravity"
+  "P8-TIMING" "bootstrap/clojure/fixtures/rejected/profile-hardware-timing.gravity"
+  "P8-TARGET" "bootstrap/clojure/fixtures/rejected/profile-hardware-target.gravity"
+  "P8-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-hardware-capability.gravity"
+  "P8-TAG" "bootstrap/clojure/fixtures/rejected/profile-hardware-tag.gravity"
+  "P8-COMPARTMENT" "bootstrap/clojure/fixtures/rejected/profile-hardware-compartment.gravity"
+  "P8-TEMPORAL" "bootstrap/clojure/fixtures/rejected/profile-hardware-temporal.gravity"
+  "P8-SYNTHESIS" "bootstrap/clojure/fixtures/rejected/profile-hardware-synthesis.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

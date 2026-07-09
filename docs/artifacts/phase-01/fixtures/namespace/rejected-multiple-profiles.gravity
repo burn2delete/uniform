@@ -1,0 +1,7 @@
+(ns bad.profile
+  (:profile :native)
+  (:profile :hosted))
+
+(defn main []
+  true)
+

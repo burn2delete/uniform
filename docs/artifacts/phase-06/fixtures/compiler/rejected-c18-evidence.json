@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/verification_plan/pass_risks/0/evidence_present": false
+  }
+}

@@ -1,0 +1,27 @@
+{:proof-id :stage0-p7-kernel-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D052
+ :document "P7"
+ :profile :kernel
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-validation-kernel.gravity"
+ :artifact-kind :gravity/stage0-constrained-profile-validation-artifact
+ :effective-effects #{:memory/raw :memory/mmio :interrupt/register}
+ :effective-capabilities #{:memory/raw :hardware/mmio :hardware/interrupt}
+ :required-artifacts
+ [:kernel-capability-manifest :kernel-memory-map :allocator-policy
+  :interrupt-safety-report :scheduler-atomic-support-report
+  :unsafe-island-audit-report :driver-abi-manifest
+  :no-hidden-allocation-proof]
+ :diagnostic-fixtures
+ {"P7-HIDDEN-ALLOC" "bootstrap/clojure/fixtures/rejected/profile-kernel-hidden-alloc.gravity"
+  "P7-GC" "bootstrap/clojure/fixtures/rejected/profile-kernel-gc.gravity"
+  "P7-RAW-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-kernel-raw-memory.gravity"
+  "P7-MMIO" "bootstrap/clojure/fixtures/rejected/profile-kernel-mmio.gravity"
+  "P7-INTERRUPT" "bootstrap/clojure/fixtures/rejected/profile-kernel-interrupt.gravity"
+  "P7-SCHEDULER" "bootstrap/clojure/fixtures/rejected/profile-kernel-scheduler.gravity"
+  "P7-ATOMIC" "bootstrap/clojure/fixtures/rejected/profile-kernel-atomic.gravity"
+  "P7-EXCEPTION" "bootstrap/clojure/fixtures/rejected/profile-kernel-exception.gravity"
+  "P7-ABI" "bootstrap/clojure/fixtures/rejected/profile-kernel-abi.gravity"
+  "P7-AUTHORITY" "bootstrap/clojure/fixtures/rejected/profile-kernel-authority.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

@@ -1,0 +1,464 @@
+; Stage1 Gravity-owned B7 MLIR backend source-model contract.
+(ns gravity.backend.b7-mlir-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b7-mlir-backend-contract
+             b7-dialect-registry-contract
+             b7-gravity-dialect-operation-contract
+             b7-standard-dialect-mapping-contract
+             b7-operation-type-mapping-contract
+             b7-pass-pipeline-contract
+             b7-proof-metadata-contract
+             b7-downstream-handoff-contract
+             b7-artifact-manifest-contract
+             b7-diagnostic-catalog
+             build-b7-mlir-backend-manifest
+             build-b7-dialect-registry-record
+             build-b7-operation-schema-record
+             build-b7-pass-pipeline-record
+             build-b7-proof-dialect-map
+             build-b7-downstream-handoff-record
+             build-b7-artifact-record
+             verify-b7-mlir-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :mlir-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B7" "B1" "D1" "D3"
+                                        "C11" "C12" "C13" "C14"
+                                        "SAFE2" "SAFE8" "SAFE9"
+                                        "SAFE10" "SAFE15"
+                                        "PERF8" "PERF10"
+                                        "MATH5" "MATH8"
+                                        "B3" "B8" "B13" "B14"
+                                        "R1" "PKG7"
+                                        "BOOT1" "BOOT3" "BOOT8"
+                                        "TEST13"]
+               :documents ["B7" "B1" "D1" "D3"
+                           "C11" "C12" "C13" "C14"
+                           "SAFE2" "SAFE8" "SAFE9"
+                           "SAFE10" "SAFE15"
+                           "PERF8" "PERF10"
+                           "MATH5" "MATH8"
+                           "B3" "B8" "B13" "B14"
+                           "R1" "PKG7"
+                           "BOOT1" "BOOT3" "BOOT8"
+                           "TEST13"]
+               :implements [:mlir-backend-source-model
+                             :dialect-registry-contract
+                             :gravity-dialect-operation-schema-contract
+                             :standard-dialect-fact-mapping-contract
+                             :operation-type-mapping-contract
+                             :pass-pipeline-invalidation-repair-contract
+                             :proof-to-dialect-attribute-contract
+                             :downstream-handoff-contract
+                             :mlir-artifact-manifest-contract
+                             :stable-b7-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :mlir-version :dialect-registry
+                            :dialect-operation-coverage
+                            :conversion-targets :conversion-legality
+                            :gravity-dialect-operation-schemas
+                            :standard-dialect-fact-mapping
+                            :operation-type-mapping
+                            :pass-pipeline-log
+                            :pass-fact-preservation
+                            :pass-fact-invalidation
+                            :repair-pass-records
+                            :verifier-before-after-records
+                            :proof-to-dialect-attribute-map
+                            :source-debug-map
+                            :generated-origin-maps
+                            :downstream-handoff-manifest
+                            :unsafe-audit-ids
+                            :numeric-mode-facts
+                            :alias-ownership-facts
+                            :effect-facts :capability-facts
+                            :safety-outcomes
+                            :proof-references
+                            :semantic-authority-record
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :mlir-toolchain
+                                    :llvm-toolchain :gpu-toolchain
+                                    :dialect-plugin-loading]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b7-mlir-backend-contract-subset
+                                    :clojure-b7-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b7-dialect.gravity"
+                              "backend-b7-verify.gravity"
+                              "backend-b7-conversion.gravity"
+                              "backend-b7-metadata.gravity"
+                              "backend-b7-effect.gravity"
+                              "backend-b7-numeric.gravity"
+                              "backend-b7-alias.gravity"
+                              "backend-b7-pass.gravity"
+                              "backend-b7-handoff.gravity"
+                              "backend-b7-manifest.gravity"]}}}))
+
+(def b7-mlir-backend-contract
+  {:artifact :gravity/b7-mlir-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/mlir
+   :accepts [:verified-mir :verified-domain-ir]
+   :emits [:mlir-backend-manifest
+           :dialect-registry-manifest
+           :gravity-dialect-operation-schema
+           :mlir-module
+           :conversion-target-legality-report
+           :pass-pipeline-log
+           :mlir-verifier-report
+           :proof-to-dialect-attribute-map
+           :source-debug-map
+           :downstream-handoff-manifest
+           :mlir-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :mir-module
+              :domain-ir-anchors
+              :profile-manifest
+              :target-manifest
+              :dialect-registry
+              :conversion-legality
+              :proof-table
+              :metadata-preservation-policy
+              :source-map]
+   :rules [:mlir-is-interchange-and-optimization-not-gravity-semantics
+           :backend-consumes-only-verified-ir
+           :dialect-registry-version-operations-conversions-and-passes-are-declared
+           :gravity-dialect-operations-encode-type-effect-memory-capability-source-proof-and-profile-facts
+           :standard-dialect-use-maps-gravity-facts-into-attributes-interfaces-symbols-and-debug-metadata
+           :passes-preserve-semantics-or-emit-invalidation-and-repair-records
+           :llvm-gpu-spirv-affine-vector-linalg-func-arith-memref-scf-and-custom-conversions-have-verifier-gates
+           :source-spans-unsafe-audit-capabilities-numeric-alias-and-proof-facts-are-never-dropped
+           :mlir-verifier-or-dialect-undefined-behavior-is-never-safe-gravity-proof]
+   :forbidden [:source-to-mlir-shortcut
+               :mlir-verifier-as-gravity-proof
+               :silent-effect-or-memory-order-change
+               :silent-numeric-mode-change
+               :metadata-loss
+               :illegal-conversion-target
+               :downstream-handoff-without-legality
+               :target-behavior-round-trip-into-generic-mir
+               :artifact-without-mlir-manifest]})
+
+(def b7-dialect-registry-contract
+  {:artifact :gravity/b7-dialect-registry-contract
+   :required-fields [:mlir-version
+                     :dialects
+                     :operation-coverage
+                     :conversion-targets
+                     :legality-checks
+                     :pass-pipeline
+                     :verifier-hooks
+                     :metadata-preservation-policy]
+   :rules [:mlir-version-is-recorded
+           :every-dialect-is-declared
+           :every-operation-has-coverage-or-rejection
+           :conversion-targets-have-legality-checks]
+   :reject-when [:undeclared-dialect
+                 :unsupported-operation
+                 :missing-conversion-target
+                 :missing-verifier-hook]})
+
+(def b7-gravity-dialect-operation-contract
+  {:artifact :gravity/b7-gravity-dialect-operation-contract
+   :required-attributes [:source-span
+                         :generated-origin
+                         :gravity-type
+                         :effect
+                         :capability
+                         :memory-effect
+                         :ownership
+                         :safety-outcome
+                         :proof-reference
+                         :profile
+                         :diagnostic-back-edge]
+   :operation-kinds [:gravity.checked-add
+                    :gravity.call
+                    :gravity.branch
+                    :gravity.return
+                    :gravity.domain-anchor]
+   :rules [:operation-attributes-carry-gravity-facts
+           :source-or-generated-origin-back-edge-required
+           :capability-and-effect-attributes-are-profile-checked
+           :proof-references-remain-authoritative]
+   :forbidden [:operation-without-source-back-edge
+               :effect-erasure
+               :capability-erasure
+               :proof-as-opaque-comment]})
+
+(def b7-standard-dialect-mapping-contract
+  {:artifact :gravity/b7-standard-dialect-mapping-contract
+   :dialects [:func :arith :cf :scf :memref :affine :vector
+             :linalg :gpu :llvm :spirv]
+   :required-mappings [:type
+                       :memory-effect
+                       :side-effect-interface
+                       :symbol-table
+                       :source-location
+                       :debug-metadata
+                       :numeric-mode
+                       :alias-facts
+                       :capability-facts
+                       :proof-references]
+   :rules [:standard-dialect-use-records-missing-gravity-facts
+           :metadata-side-tables-are-part-of-the-artifact
+           :dialect-undefined-behavior-does-not-justify-safe-gravity]
+   :reject-when [:fact-not-representable
+                 :metadata-side-table-missing
+                 :dialect-ub-assumption-as-proof]})
+
+(def b7-operation-type-mapping-contract
+  {:artifact :gravity/b7-operation-type-mapping-contract
+   :required-fields [:mir-operation-or-domain-anchor
+                     :mlir-operation
+                     :operand-type-map
+                     :result-type-map
+                     :memory-effect-map
+                     :control-flow-region-map
+                     :source-span
+                     :generated-origin-chain
+                     :ownership-lifetime-references
+                     :capability-effect-references
+                     :safety-outcome
+                     :proof-references
+                     :diagnostic-back-edge]
+   :rules [:all-mlir-values-have-source-or-generated-origin
+           :compiler-temporaries-record-origin
+           :ownership-and-alias-facts-survive-lowering]
+   :forbidden [:mlir-value-without-origin
+               :temporary-without-origin
+               :alias-fact-loss]})
+
+(def b7-pass-pipeline-contract
+  {:artifact :gravity/b7-pass-pipeline-contract
+   :required-fields [:pass-name
+                     :pass-version
+                     :input-dialect-set
+                     :output-dialect-set
+                     :legality-conditions
+                     :facts-preserved
+                     :facts-invalidated
+                     :verifier-before
+                     :verifier-after
+                     :repair-or-recomputation-pass
+                     :downstream-handoff-target]
+   :rules [:rewrites-preserve-semantics-or-record-invalidation
+           :invalidated-facts-have-repair-or-rejection
+           :cleanup-passes-disabled-when-they-erase-gravity-metadata
+           :effect-memory-numeric-alias-capability-and-profile-changes-update-manifests]
+   :reject-when [:pass-without-verifier-before-after
+                 :fact-invalidation-without-repair
+                 :metadata-erasing-cleanup-pass
+                 :unmanifested-effect-change]})
+
+(def b7-proof-metadata-contract
+  {:artifact :gravity/b7-proof-metadata-contract
+   :proof-maps [:range-to-affine-bound
+                :alias-to-memref-metadata
+                :numeric-mode-to-arith-vector-llvm-attribute
+                :vectorization-to-vector-dialect
+                :synchronization-to-memory-effect-or-gpu-barrier
+                :capability-to-side-effect-attribute
+                :source-provenance-to-location-and-side-table]
+   :rules [:gravity-proof-evidence-remains-authoritative
+           :downstream-backends-consume-attributes-only-through-linked-handoff-manifest
+           :source-debug-map-preserves-generated-origin-and-proof-links]
+   :forbidden [:proof-reference-drop
+               :unsafe-audit-id-drop
+               :unlinked-downstream-proof-consumption]})
+
+(def b7-downstream-handoff-contract
+  {:artifact :gravity/b7-downstream-handoff-contract
+   :destinations [:gravity.backend/llvm
+                 :gravity.backend/gpu
+                 :gravity.backend/spirv
+                 :gravity.backend/custom]
+   :required-fields [:destination-backend
+                     :accepted-dialects
+                     :remaining-illegal-operations
+                     :conversion-target-status
+                     :verifier-status
+                     :source-proof-safety-capability-map
+                     :abi-runtime-provider-assumptions
+                     :target-features
+                     :rejected-or-deferred-constructs]
+   :rules [:handoff-rejects-remaining-illegal-operations
+           :abi-and-runtime-provider-assumptions-are-recorded
+           :source-proof-safety-and-capability-maps-are-preserved]
+   :reject-when [:illegal-operation-without-fallback
+                 :verifier-failure
+                 :missing-abi-assumption
+                 :metadata-map-incomplete]})
+
+(def b7-artifact-manifest-contract
+  {:artifact :gravity/b7-artifact-manifest-contract
+   :required-fields [:mlir-backend-manifest
+                     :dialect-registry-manifest
+                     :gravity-dialect-operation-schema
+                     :mlir-module
+                     :conversion-target-legality-report
+                     :pass-pipeline-log
+                     :mlir-verifier-report
+                     :proof-to-dialect-attribute-map
+                     :source-debug-map
+                     :downstream-handoff-manifest
+                     :diagnostic-stream
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :mlir-module-records-content-hash
+           :source-debug-map-preserves-gravity-origin
+           :handoff-manifests-record-downstream-assumptions]
+   :forbidden [:mlir-module-without-manifest
+               :pass-log-without-verifier-records
+               :handoff-without-provenance
+               :debug-map-without-source-origin]})
+
+(def b7-diagnostic-catalog
+  {:artifact :gravity/b7-diagnostic-catalog
+   :ids [{:id "B7-DIALECT"
+          :meaning :undeclared-or-unsupported-dialect-or-operation}
+         {:id "B7-VERIFY"
+          :meaning :mlir-verifier-failure}
+         {:id "B7-CONVERSION"
+          :meaning :illegal-conversion-target-or-remaining-illegal-operation}
+         {:id "B7-METADATA"
+          :meaning :lost-source-proof-safety-unsafe-audit-effect-or-capability-metadata}
+         {:id "B7-EFFECT"
+          :meaning :unverified-effect-or-memory-order-change}
+         {:id "B7-NUMERIC"
+          :meaning :numeric-mode-loss-or-unsupported-math-lowering}
+         {:id "B7-ALIAS"
+          :meaning :alias-or-ownership-fact-not-preserved}
+         {:id "B7-PASS"
+          :meaning :pass-pipeline-invalidates-facts-without-repair}
+         {:id "B7-HANDOFF"
+          :meaning :incomplete-downstream-handoff-manifest}
+         {:id "B7-MANIFEST"
+          :meaning :incomplete-mlir-backend-artifact}]
+   :required-diagnostic-fields [:source-span
+                                :mir-operation-or-domain-anchor
+                                :mlir-operation
+                                :dialect
+                                :pass-name
+                                :missing-or-invalidated-fact
+                                :downstream-target
+                                :remediation]})
+
+(defn build-b7-mlir-backend-manifest
+  [mlir-version dialects emitted-artifacts required-facts rejects]
+  {:artifact :gravity/mlir-backend-manifest
+   :backend :gravity.backend/mlir
+   :version "source-model-v1"
+   :mlir-version mlir-version
+   :dialects dialects
+   :emits emitted-artifacts
+   :requires required-facts
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b7-dialect-registry-record
+  [mlir-version dialects operation-coverage conversion-targets]
+  {:artifact :gravity/b7-dialect-registry-record
+   :mlir-version mlir-version
+   :dialects dialects
+   :operation-coverage operation-coverage
+   :conversion-targets conversion-targets
+   :required-fields (:required-fields b7-dialect-registry-contract)
+   :source-model-only? true})
+
+(defn build-b7-operation-schema-record
+  [operation attributes type-map verifier-hooks]
+  {:artifact :gravity/b7-operation-schema-record
+   :operation operation
+   :attributes attributes
+   :type-map type-map
+   :verifier-hooks verifier-hooks
+   :required-attributes
+   (:required-attributes b7-gravity-dialect-operation-contract)
+   :source-model-only? true})
+
+(defn build-b7-pass-pipeline-record
+  [pass-name input-dialects output-dialects preserved invalidated]
+  {:artifact :gravity/b7-pass-pipeline-record
+   :pass-name pass-name
+   :input-dialects input-dialects
+   :output-dialects output-dialects
+   :facts-preserved preserved
+   :facts-invalidated invalidated
+   :required-fields (:required-fields b7-pass-pipeline-contract)
+   :source-model-only? true})
+
+(defn build-b7-proof-dialect-map
+  [proof gravity-fact dialect attribute]
+  {:artifact :gravity/b7-proof-dialect-map
+   :proof proof
+   :gravity-fact gravity-fact
+   :dialect dialect
+   :attribute attribute
+   :source-model-only? true})
+
+(defn build-b7-downstream-handoff-record
+  [destination accepted-dialects legality verifier metadata-map]
+  {:artifact :gravity/b7-downstream-handoff-record
+   :destination destination
+   :accepted-dialects accepted-dialects
+   :conversion-target-status legality
+   :verifier-status verifier
+   :source-proof-safety-capability-map metadata-map
+   :required-fields (:required-fields b7-downstream-handoff-contract)
+   :source-model-only? true})
+
+(defn build-b7-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b7-mlir-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b7-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b7-mlir-backend-design
+  [manifest]
+  {:artifact :gravity/b7-mlir-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :dialect-registry-covered? true
+   :gravity-operation-schema-covered? true
+   :standard-dialect-mapping-covered? true
+   :operation-type-mapping-covered? true
+   :pass-pipeline-covered? true
+   :proof-metadata-covered? true
+   :downstream-handoff-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :mlir-verifier-is-gravity-proof? false
+   :production-backend-execution? false
+   :source-model-only? true})

@@ -1,0 +1,533 @@
+; Stage1 Gravity-owned B5 JVM backend source-model contract.
+(ns gravity.backend.b5-jvm-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b5-jvm-backend-contract
+             b5-classfile-target-contract
+             b5-class-module-model-contract
+             b5-value-representation-contract
+             b5-java-interop-contract
+             b5-null-exception-contract
+             b5-reflection-dynamic-contract
+             b5-runtime-thread-resource-contract
+             b5-native-image-contract
+             b5-artifact-manifest-contract
+             b5-diagnostic-catalog
+             build-b5-jvm-backend-manifest
+             build-b5-classfile-target-record
+             build-b5-class-module-manifest
+             build-b5-value-representation-map
+             build-b5-java-interop-descriptor
+             build-b5-null-exception-map
+             build-b5-reflection-manifest
+             build-b5-runtime-helper-manifest
+             build-b5-artifact-record
+             verify-b5-jvm-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :jvm-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B5" "B1" "D1" "D3"
+                                        "C11" "C14"
+                                        "P4" "P13"
+                                        "L9" "L15" "L19"
+                                        "SAFE5" "SAFE7" "SAFE10"
+                                        "SAFE11"
+                                        "B13" "B14" "R1"
+                                        "PKG7" "BOOT1" "BOOT3"
+                                        "BOOT8" "TEST13"]
+               :documents ["B5" "B1" "D1" "D3"
+                           "C11" "C14"
+                           "P4" "P13"
+                           "L9" "L15" "L19"
+                           "SAFE5" "SAFE7" "SAFE10"
+                           "SAFE11"
+                           "B13" "B14" "R1"
+                           "PKG7" "BOOT1" "BOOT3"
+                           "BOOT8" "TEST13"]
+               :implements [:jvm-backend-source-model
+                             :classfile-target-contract
+                             :class-and-module-model-contract
+                             :value-representation-contract
+                             :java-interop-descriptor-contract
+                             :nullability-exception-translation-contract
+                             :reflection-dynamic-use-contract
+                             :runtime-thread-resource-contract
+                             :native-image-configuration-contract
+                             :jvm-artifact-manifest-contract
+                             :stable-b5-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :classfile-version :jvm-runtime-version
+                            :module-system-policy :classloader-policy
+                            :packaging-mode :reflection-policy
+                            :native-image-constraints
+                            :class-and-module-identities
+                            :generated-class-names
+                            :symbol-to-method-mapping
+                            :static-initializer-policy
+                            :field-layout-and-mutability
+                            :generic-signature-strategy
+                            :visibility-and-access-flags
+                            :value-representation-records
+                            :jvm-type-descriptors
+                            :nullability-facts
+                            :boxing-unboxing-policy
+                            :equality-and-hashing-semantics
+                            :ownership-rooting-facts
+                            :java-interop-descriptors
+                            :exception-translation-map
+                            :host-exception-identity
+                            :reflection-dynamic-use-manifest
+                            :classloading-policy
+                            :invokedynamic-policy
+                            :runtime-provider-records
+                            :thread-monitor-executor-effects
+                            :atomic-varhandle-records
+                            :linear-resource-cleanup-paths
+                            :safe5-cleanup-proofs
+                            :effect-facts :capability-facts
+                            :safety-outcomes :unsafe-audit-links
+                            :proof-references :source-maps
+                            :generated-origin-maps
+                            :debug-maps :dependency-provenance
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :reflection
+                                    :classloading :native-access]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b5-jvm-backend-contract-subset
+                                    :clojure-b5-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b5-target.gravity"
+                              "backend-b5-null.gravity"
+                              "backend-b5-exception.gravity"
+                              "backend-b5-reflection.gravity"
+                              "backend-b5-classloading.gravity"
+                              "backend-b5-interop.gravity"
+                              "backend-b5-resource.gravity"
+                              "backend-b5-thread.gravity"
+                              "backend-b5-native-image.gravity"
+                              "backend-b5-profile.gravity"
+                              "backend-b5-manifest.gravity"]}}}))
+
+(def b5-jvm-backend-contract
+  {:artifact :gravity/b5-jvm-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/jvm
+   :accepts [:verified-mir :verified-domain-ir]
+   :hosted-runtime? true
+   :emits [:jvm-backend-manifest
+           :classfile-target-record
+           :class-files
+           :jar-or-module-artifact
+           :java-interop-descriptor
+           :nullability-map
+           :exception-translation-map
+           :reflection-dynamic-use-manifest
+           :native-image-configuration
+           :runtime-helper-manifest
+           :source-debug-map
+           :bootstrap-self-hosting-record
+           :jvm-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :mir-module
+              :domain-ir-anchors
+              :profile-manifest
+              :target-manifest
+              :classfile-target-record
+              :exception-map
+              :nullability-map
+              :runtime-provider-manifest
+              :java-interop-descriptors
+              :proof-table
+              :source-map]
+   :rules [:jvm-is-hosted-runtime-not-gravity-semantics
+           :backend-consumes-only-verified-ir
+           :java-null-enters-safe-gravity-only-through-option-result-wrapper-or-opaque-checked-value
+           :host-exceptions-cross-only-through-declared-error-panic-or-effect-channels
+           :reflection-dynamic-loading-and-native-access-require-policy-effects-and-capabilities
+           :linear-resources-require-safe5-deterministic-cleanup-even-with-gc]
+   :forbidden [:source-to-jvm-shortcut
+               :unchecked-null-flow
+               :untranslated-host-exception
+               :hidden-reflection
+               :hidden-classloading
+               :gc-finalization-as-sole-linear-cleanup
+               :jvm-only-semantics-in-lower-profile-export
+               :artifact-without-jvm-manifest]})
+
+(def b5-classfile-target-contract
+  {:artifact :gravity/b5-classfile-target-contract
+   :required-fields [:classfile-version
+                     :jvm-version-range
+                     :module-system-policy
+                     :classloader-policy
+                     :packaging-mode
+                     :reflection-policy
+                     :dynamic-proxy-policy
+                     :method-handle-policy
+                     :invokedynamic-policy
+                     :native-image-constraints
+                     :debug-metadata-policy
+                     :runtime-helper-policy]
+   :rules [:classfile-target-is-pinned
+           :module-system-policy-is-explicit
+           :classloader-assumptions-are-manifested
+           :native-image-constraints-match-dynamic-use-manifest]
+   :reject-when [:unsupported-classfile-version
+                 :unsupported-jvm-runtime
+                 :missing-module-policy
+                 :hidden-classloader-assumption
+                 :inconsistent-native-image-target]})
+
+(def b5-class-module-model-contract
+  {:artifact :gravity/b5-class-module-model-contract
+   :required-fields [:package-name
+                     :module-name
+                     :generated-class-name
+                     :symbol-to-method-map
+                     :static-initializer-behavior
+                     :field-layout
+                     :field-mutability
+                     :interface-protocol-map
+                     :closure-representation
+                     :generic-signature-strategy
+                     :annotation-policy
+                     :visibility-access-flags
+                     :incremental-stability-record]
+   :rules [:generated-names-are-stable-unless-break-is-manifested
+           :static-initializers-do-not-hide-effects
+           :field-mutability-preserves-gravity-ownership
+           :interfaces-and-protocols-preserve-source-identity]
+   :forbidden [:unstable-generated-class-without-compatibility-break
+               :effectful-static-initializer-without-effect-record
+               :visibility-that-leaks-lower-profile-internals]})
+
+(def b5-value-representation-contract
+  {:artifact :gravity/b5-value-representation-contract
+   :representations [:primitive
+                     :boxed
+                     :record-class
+                     :array
+                     :interface
+                     :invokedynamic-call-site
+                     :opaque-host-object
+                     :runtime-managed-handle]
+   :required-fields [:gravity-type
+                     :jvm-type-descriptor
+                     :nullability
+                     :boxing-unboxing-behavior
+                     :equality-semantics
+                     :hashing-semantics
+                     :mutability
+                     :serialization-boundary
+                     :ownership-rooting-behavior]
+   :rules [:primitive-specialization-preserves-generic-semantics
+           :bridge-methods-or-adapters-are-emitted-when-required
+           :host-references-record-rooting-and-lifetime]
+   :reject-when [:unchecked-null-representation
+                 :missing-bridge-method
+                 :unrooted-host-reference
+                 :serialization-boundary-without-policy]})
+
+(def b5-java-interop-contract
+  {:artifact :gravity/b5-java-interop-contract
+   :descriptor-kinds [:class :method :field :constructor :module]
+   :required-fields [:java-symbol
+                     :jvm-descriptor
+                     :generic-signature
+                     :gravity-type
+                     :nullability
+                     :exception-mapping
+                     :thread-or-event-loop-affinity
+                     :reflection-requirement
+                     :effects
+                     :capabilities
+                     :taint-policy]
+   :rules [:host-api-calls-are-safe-only-through-accepted-descriptors
+           :interop-effects-and-capabilities-are-profile-checked
+           :tainted-host-values-carry-taint-policy]
+   :forbidden [:direct-host-call-without-descriptor
+               :missing-exception-mapping
+               :missing-nullability
+               :implicit-reflection-authority]})
+
+(def b5-null-exception-contract
+  {:artifact :gravity/b5-null-exception-contract
+   :null-forms [:option :result :checked-wrapper :opaque-foreign-value]
+   :exception-channels [:gravity-error
+                       :gravity-panic
+                       :declared-effect-channel
+                       :fatal-runtime-record]
+   :required-fields [:source-span
+                     :host-symbol
+                     :gravity-type
+                     :nullability-policy
+                     :exception-type
+                     :exception-channel
+                     :adapter
+                     :host-exception-identity-preservation]
+   :rules [:java-null-does-not-inhabit-safe-gravity-types
+           :catch-all-wrappers-preserve-source-span-and-host-identity
+           :untyped-exceptions-do-not-cross-as-ordinary-values]
+   :reject-when [:unchecked-java-null-flow
+                 :untranslated-host-exception
+                 :exception-adapter-without-source-origin
+                 :safe-api-exposes-raw-host-exception]})
+
+(def b5-reflection-dynamic-contract
+  {:artifact :gravity/b5-reflection-dynamic-contract
+   :dynamic-features [:reflection
+                      :dynamic-proxy
+                      :method-handle
+                      :invokedynamic
+                      :service-loader
+                      :serialization-framework
+                      :class-loading
+                      :native-access]
+   :required-fields [:feature
+                     :policy
+                     :effect
+                     :capability
+                     :target-symbols
+                     :profile-allowance
+                     :package-policy
+                     :native-image-metadata]
+   :rules [:dynamic-use-is-declared-before-emission
+           :package-denial-forces-direct-call-or-rejection
+           :native-image-configuration-corresponds-to-accepted-dynamic-use]
+   :forbidden [:hidden-reflection
+               :hidden-classloading
+               :implicit-native-access
+               :native-image-config-with-unaccepted-dynamic-use]})
+
+(def b5-runtime-thread-resource-contract
+  {:artifact :gravity/b5-runtime-thread-resource-contract
+   :required-fields [:gc-assumptions
+                     :scheduler-provider
+                     :thread-provider
+                     :synchronized-monitor-use
+                     :atomic-varhandle-use
+                     :executor-integration
+                     :classloader-lifecycle-hooks
+                     :shutdown-behavior
+                     :deterministic-cleanup-helper
+                     :logging-tracing-hooks]
+   :rules [:jvm-gc-does-not-replace-linear-cleanup
+           :blocking-thread-and-monitor-use-record-effects
+           :linear-files-sockets-locks-transactions-and-native-handles-use-safe5-cleanup-paths]
+   :reject-when [:gc-only-linear-resource-cleanup
+                 :undeclared-thread-provider
+                 :undeclared-monitor-or-blocking-effect
+                 :shutdown-hook-without-lifecycle-policy]})
+
+(def b5-native-image-contract
+  {:artifact :gravity/b5-native-image-contract
+   :required-fields [:selected-native-image-toolchain
+                     :reflection-configuration
+                     :resource-configuration
+                     :serialization-configuration
+                     :dynamic-proxy-configuration
+                     :jni-or-native-access-configuration
+                     :initialization-policy
+                     :unsupported-feature-list]
+   :rules [:configuration-matches-accepted-dynamic-use
+           :closed-world-assumptions-are-recorded
+           :unsupported-features-are-rejected-or-adapted]
+   :reject-when [:native-image-config-drift
+                 :dynamic-use-missing-from-config
+                 :native-access-without-capability
+                 :closed-world-assumption-unrecorded]})
+
+(def b5-artifact-manifest-contract
+  {:artifact :gravity/b5-artifact-manifest-contract
+   :required-fields [:jvm-backend-manifest
+                     :classfile-target-record
+                     :class-files
+                     :jar-or-module-artifact
+                     :module-descriptor
+                     :java-interop-descriptor
+                     :nullability-map
+                     :exception-translation-map
+                     :reflection-dynamic-use-manifest
+                     :native-image-configuration
+                     :runtime-helper-manifest
+                     :source-debug-map
+                     :diagnostic-stream
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :jar-and-module-artifacts-record-content-hashes
+           :source-debug-map-preserves-gravity-origin
+           :bootstrap-record-is-emitted-when-compiler-sources-target-jvm]
+   :forbidden [:classfile-without-manifest
+               :jar-without-provenance
+               :debug-map-without-source-origin
+               :bootstrap-claim-without-seed-boundary-record]})
+
+(def b5-diagnostic-catalog
+  {:artifact :gravity/b5-diagnostic-catalog
+   :ids [{:id "B5-TARGET"
+          :meaning :unsupported-classfile-jvm-module-or-packaging-target}
+         {:id "B5-NULL"
+          :meaning :unchecked-java-null-flow}
+         {:id "B5-EXCEPTION"
+          :meaning :untranslated-or-undeclared-host-exception}
+         {:id "B5-REFLECTION"
+          :meaning :reflection-proxy-method-handle-or-invokedynamic-without-policy}
+         {:id "B5-CLASSLOADING"
+          :meaning :hidden-or-denied-dynamic-loading}
+         {:id "B5-INTEROP"
+          :meaning :incomplete-java-boundary-descriptor}
+         {:id "B5-RESOURCE"
+          :meaning :gc-only-cleanup-of-linear-resource}
+         {:id "B5-THREAD"
+          :meaning :undeclared-thread-monitor-scheduler-or-blocking-behavior}
+         {:id "B5-NATIVE-IMAGE"
+          :meaning :native-image-configuration-inconsistent-with-dynamic-use}
+         {:id "B5-PROFILE"
+          :meaning :jvm-only-behavior-exported-through-lower-profile-module}
+         {:id "B5-MANIFEST"
+          :meaning :incomplete-jvm-artifact-manifest}]
+   :required-diagnostic-fields [:source-span
+                                :mir-operation-or-domain-anchor
+                                :jvm-symbol
+                                :classfile-target
+                                :profile
+                                :missing-type-fact
+                                :missing-effect-fact
+                                :missing-capability-fact
+                                :missing-cleanup-fact
+                                :selected-adapter-or-rejection
+                                :remediation]})
+
+(defn build-b5-jvm-backend-manifest
+  [target emitted-artifacts required-facts rejects]
+  {:artifact :gravity/jvm-backend-manifest
+   :backend :gravity.backend/jvm
+   :version "source-model-v1"
+   :target target
+   :emits emitted-artifacts
+   :requires required-facts
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b5-classfile-target-record
+  [classfile runtime module-system packaging]
+  {:artifact :gravity/b5-classfile-target-record
+   :classfile classfile
+   :runtime runtime
+   :module-system module-system
+   :packaging packaging
+   :required-fields (:required-fields b5-classfile-target-contract)
+   :source-model-only? true})
+
+(defn build-b5-class-module-manifest
+  [module-name package-name generated-classes symbol-map]
+  {:artifact :gravity/b5-class-module-manifest
+   :module-name module-name
+   :package-name package-name
+   :generated-classes generated-classes
+   :symbol-map symbol-map
+   :required-fields (:required-fields b5-class-module-model-contract)
+   :source-model-only? true})
+
+(defn build-b5-value-representation-map
+  [representations nullability ownership]
+  {:artifact :gravity/b5-value-representation-map
+   :representations representations
+   :nullability nullability
+   :ownership ownership
+   :required-fields (:required-fields b5-value-representation-contract)
+   :source-model-only? true})
+
+(defn build-b5-java-interop-descriptor
+  [java-symbol descriptor gravity-type effects capabilities]
+  {:artifact :gravity/b5-java-interop-descriptor
+   :java-symbol java-symbol
+   :descriptor descriptor
+   :gravity-type gravity-type
+   :effects effects
+   :capabilities capabilities
+   :required-fields (:required-fields b5-java-interop-contract)
+   :source-model-only? true})
+
+(defn build-b5-null-exception-map
+  [nullability-map exception-map adapters]
+  {:artifact :gravity/b5-null-exception-map
+   :nullability-map nullability-map
+   :exception-map exception-map
+   :adapters adapters
+   :null-forms (:null-forms b5-null-exception-contract)
+   :exception-channels (:exception-channels b5-null-exception-contract)
+   :source-model-only? true})
+
+(defn build-b5-reflection-manifest
+  [dynamic-features policy native-image-metadata]
+  {:artifact :gravity/b5-reflection-dynamic-use-manifest
+   :dynamic-features dynamic-features
+   :policy policy
+   :native-image-metadata native-image-metadata
+   :required-fields (:required-fields b5-reflection-dynamic-contract)
+   :source-model-only? true})
+
+(defn build-b5-runtime-helper-manifest
+  [scheduler thread-provider cleanup-helper hooks]
+  {:artifact :gravity/b5-runtime-helper-manifest
+   :scheduler scheduler
+   :thread-provider thread-provider
+   :cleanup-helper cleanup-helper
+   :hooks hooks
+   :required-fields (:required-fields b5-runtime-thread-resource-contract)
+   :source-model-only? true})
+
+(defn build-b5-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b5-jvm-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b5-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b5-jvm-backend-design
+  [manifest]
+  {:artifact :gravity/b5-jvm-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :classfile-target-covered? true
+   :class-module-model-covered? true
+   :value-representation-covered? true
+   :java-interop-covered? true
+   :null-exception-translation-covered? true
+   :reflection-dynamic-use-covered? true
+   :runtime-thread-resource-covered? true
+   :native-image-configuration-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :production-backend-execution? false
+   :source-model-only? true})

@@ -1,0 +1,10 @@
+(ns compiler.diagnostic-remediation
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:passes {:diagnostic-fixture-overrides
+                                  [{:diagnostic-id
+                                    "diag/c1-pass-contract-stage0"
+                                    :remediation []}]}}}))

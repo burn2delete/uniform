@@ -1,0 +1,29 @@
+{:task-id :P02-D031
+ :document "docs/phase-02-safety/031-safe2-memory-safety-model.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/memory-safety.gravity"
+ :artifact-kind :gravity/stage0-memory-safety-artifact
+ :document-coverage {:memory-safety-operation-records 1
+                     :runtime-check-records 1
+                     :allocation-release-maps 1
+                     :escape-analysis-records 1
+                     :proof-records 1
+                     :backend-preservation-records 1
+                     :unsafe-memory-audit-records 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE2-UNINIT"
+                        "SAFE2-BOUNDS"
+                        "SAFE2-LIFETIME"
+                        "SAFE2-ESCAPE"
+                        "SAFE2-ALIAS"
+                        "SAFE2-ALLOC-FAILURE"
+                        "SAFE2-ALLOCATOR"
+                        "SAFE2-USE-AFTER-RELEASE"
+                        "SAFE2-DOUBLE-RELEASE"
+                        "SAFE2-RAW"
+                        "SAFE2-CHECK-ERASE"
+                        "SAFE2-PROFILE"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE2 accepted artifact and 12 rejected diagnostics passed"}]}

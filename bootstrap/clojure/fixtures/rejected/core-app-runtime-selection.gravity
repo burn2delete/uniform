@@ -1,0 +1,16 @@
+(ns core.app.runtime-selection
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:runtime {:compiled-gate
+                        {:selections
+                         [{:family :universal-hidden
+                           :profile :hosted
+                           :target :jvm
+                           :selection-mode :implicit
+                           :artifact-id :runtime/core-app}]}}}))
+
+(defn main []
+  (println "bad runtime selection"))

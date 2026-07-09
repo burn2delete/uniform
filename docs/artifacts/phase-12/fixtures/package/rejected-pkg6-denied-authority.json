@@ -1,0 +1,11 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "capability_manifest": {
+      "capability": ":shell/exec",
+      "denied_authority": true,
+      "effect": ":shell/exec"
+    }
+  }
+}

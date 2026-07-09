@@ -1,0 +1,9 @@
+(ns bad.cache
+  (:profile :hosted)
+  (:target :native))
+
+(cached-result
+  :key "schema-cache"
+  :created-policy :loose
+  :current-policy :strict
+  :hidden-effects [:build/network])

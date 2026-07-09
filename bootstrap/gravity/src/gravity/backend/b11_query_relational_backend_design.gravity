@@ -1,0 +1,522 @@
+; Stage1 Gravity-owned B11 query/relational backend source-model contract.
+(ns gravity.backend.b11-query-relational-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b11-query-relational-backend-contract
+             b11-query-ir-handoff-contract
+             b11-dialect-schema-contract
+             b11-parameter-taint-contract
+             b11-query-plan-contract
+             b11-transaction-consistency-contract
+             b11-migration-compatibility-contract
+             b11-result-adapter-contract
+             b11-artifact-manifest-contract
+             b11-diagnostic-catalog
+             build-b11-query-backend-manifest
+             build-b11-query-ir-handoff-record
+             build-b11-dialect-schema-record
+             build-b11-parameter-taint-record
+             build-b11-query-plan-record
+             build-b11-transaction-consistency-record
+             build-b11-migration-compatibility-record
+             build-b11-result-adapter-record
+             build-b11-artifact-record
+             verify-b11-query-relational-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :query-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B11" "B1" "D1" "D3"
+                                        "C12" "C14" "P4" "P9" "P13"
+                                        "SAFE10" "SAFE11" "B13" "B14"
+                                        "R1" "R4" "R6" "PKG7"
+                                        "SCHEMA1" "SCHEMA2" "SCHEMA3"
+                                        "BOOT1" "BOOT3" "BOOT8" "TEST13"]
+               :documents ["B11" "B1" "D1" "D3"
+                           "C12" "C14" "P4" "P9" "P13"
+                           "SAFE10" "SAFE11" "B13" "B14"
+                           "R1" "R4" "R6" "PKG7"
+                           "SCHEMA1" "SCHEMA2" "SCHEMA3"
+                           "BOOT1" "BOOT3" "BOOT8" "TEST13"]
+               :implements [:query-backend-source-model
+                             :query-ir-handoff-contract
+                             :dialect-schema-mapping-contract
+                             :prepared-parameter-taint-contract
+                             :relational-plan-contract
+                             :transaction-consistency-contract
+                             :migration-compatibility-contract
+                             :typed-result-adapter-contract
+                             :query-artifact-manifest-contract
+                             :stable-b11-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :query-ir-anchor :schema-ir-anchor
+                            :profile-contracts :target-contracts
+                            :dialect-feature-record
+                            :database-version :schema-version
+                            :schema-diff :schema-compatibility-policy
+                            :query-id :statement-id :plan-id
+                            :relational-algebra
+                            :predicate-boundary-evidence
+                            :prepared-binding-map
+                            :parameter-style :parameter-positions
+                            :taint-facts :validation-schema-facts
+                            :null-semantics :three-valued-logic
+                            :collation-policy :timezone-policy
+                            :numeric-precision-policy
+                            :json-array-enum-behavior
+                            :transaction-policy :isolation-policy
+                            :retry-timeout-idempotency-policy
+                            :lock-and-consistency-assumptions
+                            :migration-state :data-loss-approval
+                            :typed-result-adapter
+                            :effect-facts :capability-facts
+                            :safety-outcomes
+                            :proof-references
+                            :source-debug-map
+                            :generated-origin-maps
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :database :database-provider
+                                    :connection-pool :transaction-runtime
+                                    :migration-runner :sql-execution
+                                    :admin-console :secret]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b11-query-backend-contract-subset
+                                    :clojure-b11-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b11-dialect.gravity"
+                              "backend-b11-schema.gravity"
+                              "backend-b11-taint.gravity"
+                              "backend-b11-parameter.gravity"
+                              "backend-b11-capability.gravity"
+                              "backend-b11-transaction.gravity"
+                              "backend-b11-null.gravity"
+                              "backend-b11-migration.gravity"
+                              "backend-b11-result.gravity"
+                              "backend-b11-plan.gravity"
+                              "backend-b11-manifest.gravity"]}}}))
+
+(def b11-query-relational-backend-contract
+  {:artifact :gravity/b11-query-relational-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/query-relational
+   :component :query-backend
+   :target :query-plan
+   :accepts [:verified-relational-ir :verified-schema-domain-ir :verified-query-domain-ir]
+   :emits [:query-backend-manifest
+           :relational-ir-handoff-record
+           :sql-statement-artifact
+           :prepared-binding-manifest
+           :query-plan-metadata
+           :typed-result-adapter
+           :transaction-isolation-manifest
+           :migration-artifact
+           :schema-diff-compatibility-report
+           :capability-taint-report
+           :source-debug-map
+           :query-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :c12-query-or-schema-domain-ir
+              :c14-target-lowering-record
+              :dialect-map
+              :database-version
+              :schema-version
+              :transaction-policy
+              :isolation-policy
+              :migration-state
+              :capability-manifest
+              :taint-proof
+              :typed-result-adapter
+              :artifact-provenance]
+   :rules [:database-execution-is-effectful-gravity-behavior
+           :backend-consumes-query-ir-or-schema-ir-not-raw-source
+           :external-input-is-parameterized-or-schema-validated
+           :writes-migrations-locks-and-admin-operations-require-effects-and-capabilities
+           :null-collation-timezone-numeric-json-array-and-enum-semantics-are-explicit
+           :predicate-plan-movement-requires-semantic-taint-and-null-evidence
+           :result-adapters-validate-rows-before-safe-gravity-data
+           :schema-drift-requires-compatibility-and-migration-records
+           :source-proof-safety-capability-and-profile-metadata-are-preserved]
+   :forbidden [:unchecked-source-input
+               :tainted-string-query
+               :dynamic-sql-with-tainted-syntax
+               :write-without-capability
+               :migration-without-capability
+               :lock-without-capability
+               :schema-drift-without-migration
+               :data-loss-without-explicit-approval
+               :lossy-result-adapter
+               :provider-specific-sql-as-portable-semantics
+               :query-artifact-without-manifest]})
+
+(def b11-query-ir-handoff-contract
+  {:artifact :gravity/b11-query-ir-handoff-contract
+   :required-fields [:domain-anchor
+                     :source-artifact
+                     :accepted-by
+                     :query-id
+                     :schema-id
+                     :query-ir-version
+                     :profile
+                     :target
+                     :source-generated-origin-links]
+   :rules [:input-is-verified-relational-ir-query-ir-or-schema-ir
+           :ordinary-source-forms-are-not-accepted-by-backend
+           :origin-links-connect-mir-domain-ir-and-query-artifacts]
+   :reject-when [:missing-query-anchor
+                 :missing-schema-id
+                 :unchecked-source-input
+                 :missing-origin-link]})
+
+(def b11-dialect-schema-contract
+  {:artifact :gravity/b11-dialect-schema-contract
+   :required-fields [:database-engine
+                     :database-version
+                     :sql-feature-set
+                     :type-mapping
+                     :schema-version
+                     :schema-id
+                     :constraints
+                     :indexes
+                     :computed-fields
+                     :null-semantics
+                     :collation-policy
+                     :timezone-policy
+                     :numeric-precision-policy
+                     :json-array-enum-behavior
+                     :identifier-quoting
+                     :parameter-style
+                     :migration-operations-supported]
+   :rules [:dialect-version-and-feature-set-are-declared
+           :gravity-schema-records-map-to-database-objects-explicitly
+           :vendor-specific-type-behavior-is-not-portable-semantics]
+   :reject-when [:unsupported-dialect
+                 :missing-schema-version
+                 :missing-type-mapping
+                 :unmodeled-null-semantics
+                 :unmodeled-vendor-type-behavior]})
+
+(def b11-parameter-taint-contract
+  {:artifact :gravity/b11-parameter-taint-contract
+   :required-fields [:parameter-id
+                     :source-expression
+                     :source-span
+                     :gravity-type
+                     :database-type
+                     :taint-category
+                     :validation-schema
+                     :escaping-or-encoding-behavior
+                     :capability-required
+                     :prepared-binding-position]
+   :rules [:every-external-input-has-a-prepared-binding-or-validation-schema
+           :tainted-input-cannot-reach-executable-sql-syntax
+           :compile-time-static-fragments-are-distinct-from-dynamic-sql]
+   :reject-when [:missing-prepared-binding
+                 :missing-validation-schema
+                 :tainted-executable-sql
+                 :invalid-binding-position
+                 :capability-gap]})
+
+(def b11-query-plan-contract
+  {:artifact :gravity/b11-query-plan-contract
+   :required-fields [:query-id
+                     :statement-id
+                     :plan-id
+                     :relational-algebra
+                     :selections
+                     :joins
+                     :filters
+                     :aggregates
+                     :grouping
+                     :ordering
+                     :pagination
+                     :write-operations
+                     :stored-procedure-policy
+                     :database-evaluation
+                     :gravity-post-materialization-evaluation
+                     :hybrid-plan-boundaries
+                     :predicate-movement-evidence]
+   :rules [:query-lowering-records-where-evaluation-occurs
+           :stored-procedures-and-database-functions-require-declared-provider-wrappers
+           :plan-movement-preserves-taint-null-collation-and-semantic-equivalence]
+   :reject-when [:missing-relational-plan
+                 :undeclared-provider-function
+                 :unsupported-write-operation
+                 :unproven-predicate-movement
+                 :plan-without-source-map]})
+
+(def b11-transaction-consistency-contract
+  {:artifact :gravity/b11-transaction-consistency-contract
+   :required-fields [:transaction-id
+                     :effect
+                     :capability-grant
+                     :isolation-level
+                     :retry-policy
+                     :lock-behavior
+                     :timeout
+                     :idempotency-key
+                     :savepoint-behavior
+                     :consistency-assumptions
+                     :error-mapping]
+   :rules [:read-write-admin-effects-are-explicit
+           :capability-grants-authorize-database-effects
+           :distributed-workflow-steps-link-to-replay-idempotency-retry-and-compensation]
+   :reject-when [:missing-effect
+                 :missing-capability
+                 :missing-isolation-level
+                 :missing-retry-policy
+                 :missing-timeout
+                 :missing-idempotency-for-retryable-write
+                 :missing-error-mapping]})
+
+(def b11-migration-compatibility-contract
+  {:artifact :gravity/b11-migration-compatibility-contract
+   :required-fields [:previous-schema-id
+                     :next-schema-id
+                     :schema-diff
+                     :compatibility-policy
+                     :data-preserving-proof
+                     :data-loss-approval
+                     :backfill-plan
+                     :rollback-or-forward-only-policy
+                     :deployment-ordering
+                     :generated-sql
+                     :validation-queries]
+   :rules [:schema-drift-requires-migration-artifact
+           :drop-rewrite-and-reinterpret-data-require-policy-records
+           :data-loss-is-rejected-without-explicit-approval]
+   :reject-when [:schema-drift-without-migration
+                 :missing-compatibility-policy
+                 :missing-data-preserving-proof
+                 :data-loss-without-approval
+                 :missing-validation-query]})
+
+(def b11-result-adapter-contract
+  {:artifact :gravity/b11-result-adapter-contract
+   :required-fields [:adapter-id
+                     :query-id
+                     :row-shape
+                     :column-map
+                     :gravity-result-type
+                     :nullability-validation
+                     :type-conversion-policy
+                     :enum-validation
+                     :numeric-precision-validation
+                     :timezone-conversion
+                     :json-decoding
+                     :taint-policy]
+   :rules [:database-rows-are-validated-before-safe-gravity-data
+           :nullability-type-enum-numeric-timezone-json-and-taint-policies-are-checked
+           :lossy-decoding-is-rejected-or-audited-before-safe-boundary]
+   :reject-when [:unchecked-row-shape
+                 :unchecked-nullability
+                 :lossy-type-conversion
+                 :invalid-enum-value
+                 :unchecked-taint-policy]})
+
+(def b11-artifact-manifest-contract
+  {:artifact :gravity/b11-artifact-manifest-contract
+   :required-fields [:query-backend-manifest
+                     :relational-ir-handoff-record
+                     :sql-statement-artifacts
+                     :prepared-binding-manifest
+                     :query-plan-metadata
+                     :typed-result-adapter
+                     :transaction-isolation-manifest
+                     :migration-artifact
+                     :schema-diff-compatibility-report
+                     :capability-taint-report
+                     :diagnostic-stream
+                     :source-debug-map
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :sql-statements-record-content-hash-and-statement-id
+           :prepared-bindings-link-parameters-to-source-spans
+           :migration-artifacts-link-schema-diff-policy-and-validation-queries
+           :capability-taint-report-links-to-query-parameters-and-effects]
+   :forbidden [:sql-without-manifest
+               :prepared-statement-without-binding-manifest
+               :transaction-without-isolation-manifest
+               :migration-without-schema-diff-report
+               :debug-map-without-source-origin]})
+
+(def b11-diagnostic-catalog
+  {:artifact :gravity/b11-diagnostic-catalog
+   :ids [{:id "B11-DIALECT"
+          :meaning :unsupported-database-dialect-version-feature-or-type}
+         {:id "B11-SCHEMA"
+          :meaning :missing-schema-version-constraint-or-compatibility-data}
+         {:id "B11-TAINT"
+          :meaning :tainted-input-reaching-executable-sql-syntax}
+         {:id "B11-PARAMETER"
+          :meaning :missing-or-invalid-prepared-binding}
+         {:id "B11-CAPABILITY"
+          :meaning :read-write-admin-migration-lock-or-service-authority-gap}
+         {:id "B11-TRANSACTION"
+          :meaning :missing-isolation-retry-timeout-idempotency-or-error-mapping}
+         {:id "B11-NULL"
+          :meaning :unmodeled-sql-null-or-three-valued-logic-behavior}
+         {:id "B11-MIGRATION"
+          :meaning :schema-drift-data-loss-or-missing-migration-policy}
+         {:id "B11-RESULT"
+          :meaning :lossy-or-unchecked-result-decoding}
+         {:id "B11-PLAN"
+          :meaning :semantic-change-from-provider-specific-plan-movement}
+         {:id "B11-MANIFEST"
+          :meaning :incomplete-query-artifact-set}]
+   :required-diagnostic-fields [:source-span
+                                :generated-origin-chain
+                                :query-id
+                                :schema-id
+                                :dialect
+                                :parameter-or-column-id
+                                :effect
+                                :capability
+                                :taint-category
+                                :migration-state
+                                :remediation]})
+
+(defn build-b11-query-backend-manifest
+  [target emits requires rejects]
+  {:artifact :gravity/query-backend-manifest
+   :backend :gravity.backend/query-relational
+   :version "source-model-v1"
+   :target target
+   :emits emits
+   :requires requires
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b11-query-ir-handoff-record
+  [domain-anchor source-artifact query-id schema-id query-ir-version]
+  {:artifact :gravity/b11-query-ir-handoff-record
+   :domain-anchor domain-anchor
+   :source-artifact source-artifact
+   :query-id query-id
+   :schema-id schema-id
+   :query-ir-version query-ir-version
+   :required-fields (:required-fields b11-query-ir-handoff-contract)
+   :source-model-only? true})
+
+(defn build-b11-dialect-schema-record
+  [dialect database-version schema-id schema-version type-mapping semantic-policies]
+  {:artifact :gravity/b11-dialect-schema-record
+   :dialect dialect
+   :database-version database-version
+   :schema-id schema-id
+   :schema-version schema-version
+   :type-mapping type-mapping
+   :semantic-policies semantic-policies
+   :required-fields (:required-fields b11-dialect-schema-contract)
+   :source-model-only? true})
+
+(defn build-b11-parameter-taint-record
+  [parameter-id source-span gravity-type database-type taint-category binding-position]
+  {:artifact :gravity/b11-parameter-taint-record
+   :parameter-id parameter-id
+   :source-span source-span
+   :gravity-type gravity-type
+   :database-type database-type
+   :taint-category taint-category
+   :prepared-binding-position binding-position
+   :required-fields (:required-fields b11-parameter-taint-contract)
+   :source-model-only? true})
+
+(defn build-b11-query-plan-record
+  [query-id statement-id plan-id relational-algebra evaluation-boundaries evidence]
+  {:artifact :gravity/b11-query-plan-record
+   :query-id query-id
+   :statement-id statement-id
+   :plan-id plan-id
+   :relational-algebra relational-algebra
+   :evaluation-boundaries evaluation-boundaries
+   :predicate-movement-evidence evidence
+   :required-fields (:required-fields b11-query-plan-contract)
+   :source-model-only? true})
+
+(defn build-b11-transaction-consistency-record
+  [transaction-id effect capability isolation retry-policy idempotency-key]
+  {:artifact :gravity/b11-transaction-consistency-record
+   :transaction-id transaction-id
+   :effect effect
+   :capability-grant capability
+   :isolation-level isolation
+   :retry-policy retry-policy
+   :idempotency-key idempotency-key
+   :required-fields (:required-fields b11-transaction-consistency-contract)
+   :source-model-only? true})
+
+(defn build-b11-migration-compatibility-record
+  [previous-schema-id next-schema-id schema-diff compatibility-policy validation-queries]
+  {:artifact :gravity/b11-migration-compatibility-record
+   :previous-schema-id previous-schema-id
+   :next-schema-id next-schema-id
+   :schema-diff schema-diff
+   :compatibility-policy compatibility-policy
+   :validation-queries validation-queries
+   :required-fields (:required-fields b11-migration-compatibility-contract)
+   :source-model-only? true})
+
+(defn build-b11-result-adapter-record
+  [adapter-id query-id row-shape gravity-result-type taint-policy]
+  {:artifact :gravity/b11-result-adapter-record
+   :adapter-id adapter-id
+   :query-id query-id
+   :row-shape row-shape
+   :gravity-result-type gravity-result-type
+   :taint-policy taint-policy
+   :required-fields (:required-fields b11-result-adapter-contract)
+   :source-model-only? true})
+
+(defn build-b11-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b11-query-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b11-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b11-query-relational-backend-design
+  [manifest]
+  {:artifact :gravity/b11-query-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-query-or-schema-ir? true
+   :dialect-schema-mapping-covered? true
+   :prepared-parameter-binding-covered? true
+   :taint-capability-checks-covered? true
+   :relational-planning-covered? true
+   :transaction-consistency-covered? true
+   :migration-compatibility-covered? true
+   :result-adapter-validation-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :external-database-validation? false
+   :sql-execution-claimed? false
+   :migration-execution-claimed? false
+   :production-backend-execution? false
+   :source-model-only? true})

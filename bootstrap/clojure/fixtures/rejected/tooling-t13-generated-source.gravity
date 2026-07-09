@@ -1,0 +1,11 @@
+; Rejected P13 T13 fixture.
+(ns tooling.t13-generated-source
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call})
+  (:capabilities #{:model/invoke})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t13002}}}))
+
+(defn main [] :- I64 1)

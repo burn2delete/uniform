@@ -1,0 +1,11 @@
+; Rejected P13 T10 fixture.
+(ns tooling.t10-lost-origin
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t10002}}}))
+
+(defn main [] :- I64 1)

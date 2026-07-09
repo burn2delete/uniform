@@ -1,0 +1,11 @@
+; Rejected P15 BOOT8 fixture.
+(ns bootstrap.boot8-lineage
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot8002}}}))
+
+(defn main [] :- I64 1)

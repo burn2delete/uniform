@@ -1,0 +1,78 @@
+; P06-D084 C5 name resolution fixture exercises namespace, alias, type, macro, and local bindings.
+(ns compiler.c5.name-resolution
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.io :as io :profile :hosted :effects #{:io/write} :capabilities #{:io/stdout}]
+             [shared.core :as shared :profile :core :boundary :pure-core :refer [checksum]])
+  (:imports [java.time.Instant :as instant :profile :hosted :boundary :interop])
+  (:exports [main public-value typed-user])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package gravity/compiler-stage0
+              :build-grants #{:build/read-file}
+              :compiler {:c4-macro {}
+                         :c5-resolution {}}}))
+
+'(reader abbreviation for c5)
+
+(defmacro stage0-build
+  {:version "stage0-c5.1"
+   :build-effects #{:build/read-file}
+   :required-build-capabilities #{:fs/read}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  [value]
+  (syntax-quote
+    (do (unquote value))))
+
+(defmacro stage0-capture
+  {:version "stage0-c5.1"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :explicit-capture
+   :output-contract :gravity-syntax}
+  [name & body]
+  (syntax-quote
+    (let [(unquote name) "captured"]
+      (do (splice-unquote body)))))
+
+(defmacro stage0-unsafe
+  {:version "stage0-c5.1"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax
+   :allow-unsafe true}
+  []
+  (syntax-quote
+    (unsafe {:reason "stage0 C5 generated unsafe conformance"
+             :owner "compiler-c5"
+             :review "C5-GENERATED-UNSAFE-ACCEPTED"}
+      nil)))
+
+(defschema User
+  {:id I64
+   :name String})
+
+(def public-value
+  (stage0-build 7))
+
+(def private-helper 41)
+
+(def captured-value
+  (stage0-capture local-name
+    local-name))
+
+(def generated-unsafe
+  (stage0-unsafe))
+
+(defn typed-user [id :- I64 name :- String] :- User
+  (let [local-score private-helper
+        aliased shared/checksum
+        fully shared.core/checksum
+        writer io/write]
+    (do local-score aliased fully writer id name)))
+
+(defn main []
+  (println "c5 resolver"))

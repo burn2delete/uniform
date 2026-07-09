@@ -1,0 +1,64 @@
+{:proof-id :stage0-p03-t06-profile-compliance-suite-proof
+ :date "2026-06-24"
+ :phase 3
+ :task :P03-T06
+ :status :passed
+ :capability :phase-03-profile-compliance-fixture-suite
+ :command "clojure -M:gravity profile-compliance bootstrap/clojure/fixtures/accepted/profile-compliance-suite.gravity"
+ :artifact-kind :gravity/stage0-profile-compliance-suite-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-compliance-suite.gravity"
+ :accepted-results
+ {:fixture-count 23
+  :covered-profile-count 11
+  :covered-profiles [:core :meta :hosted :native :firmware :kernel
+                     :hardware :distributed :ai :gpu :formal]
+  :covered-document-count 13
+  :covered-documents ["P1" "P2" "P3" "P4" "P5" "P6" "P7" "P8"
+                      "P9" "P10" "P11" "P12" "P13"]
+  :artifact-kinds #{:gravity/stage0-profile-manifest-artifact
+                    :gravity/stage0-profile-set-artifact
+                    :gravity/stage0-constrained-profile-validation-artifact
+                    :gravity/stage0-distributed-ai-profile-artifact
+                    :gravity/stage0-profile-compatibility-artifact}}
+ :rejected-results
+ {:fixture-count 133
+  :covered-diagnostic-count 133
+  :diagnostics-before-backend-lowering? true
+  :diagnostic-families [:P1 :P2 :P3 :P4 :P5 :P6 :P7 :P8 :P9 :P10
+                        :P11 :P12 :P13]
+  :missing-diagnostic-ids #{}
+  :unexpected-diagnostic-ids #{}}
+ :capability-based-proof
+ {:accepted-capability-record-count 23
+  :profile-authority-covered? true
+  :document-authority-covered? true
+  :diagnostic-authority-covered? true
+  :pre-backend-lowering-proof
+  {:profile-validation-before-backend-lowering? true
+   :backend-lowering-artifacts-emitted? false
+   :rejected-fixtures 133}
+  :status :complete}
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/profile-effect.gravity" "P1-EFFECT"
+  "bootstrap/clojure/fixtures/rejected/profile-core-effect.gravity" "P2-EFFECT"
+  "bootstrap/clojure/fixtures/rejected/profile-meta-build-effect.gravity" "P3-BUILD-EFFECT"
+  "bootstrap/clojure/fixtures/rejected/profile-hosted-reflection.gravity" "P4-REFLECTION"
+  "bootstrap/clojure/fixtures/rejected/profile-native-ffi.gravity" "P5-FFI"
+  "bootstrap/clojure/fixtures/rejected/profile-firmware-gc.gravity" "P6-GC"
+  "bootstrap/clojure/fixtures/rejected/profile-kernel-hidden-alloc.gravity" "P7-HIDDEN-ALLOC"
+  "bootstrap/clojure/fixtures/rejected/profile-hardware-width.gravity" "P8-WIDTH"
+  "bootstrap/clojure/fixtures/rejected/profile-distributed-replay.gravity" "P9-REPLAY"
+  "bootstrap/clojure/fixtures/rejected/profile-ai-tool.gravity" "P10-TOOL"
+  "bootstrap/clojure/fixtures/rejected/profile-gpu-sync.gravity" "P11-SYNC"
+  "bootstrap/clojure/fixtures/rejected/profile-formal-proof.gravity" "P12-PROOF"
+  "bootstrap/clojure/fixtures/rejected/profile-compatibility-direct.gravity" "P13-DIRECT"}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. P03 profile compliance suite artifacts, and 479 rejected fixtures"}
+  {:command "clojure -M:gravity profile-compliance bootstrap/clojure/fixtures/accepted/profile-compliance-suite.gravity"
+   :output ":gravity/stage0-profile-compliance-suite-artifact with 23 accepted fixture artifacts, 133 rejected profile diagnostics, 11 profiles, 13 documents, and pre-backend rejection proof"}
+  {:command "clojure -M -e '(require ... profile-compliance summary)'"
+   :output "{:diagnostics 133, :rejected 133, :accepted 23, :pre-backend? true, :documents 13, :status :complete, :kind :gravity/stage0-profile-compliance-suite-artifact, :profiles 11, :pass :profile-compliance-fixture-suite}"}]
+ :limits
+ ["This completes Phase 03 profile-system compliance at the Clojure stage0 artifact boundary."
+  "It does not claim backend execution, runtime service availability, performance, package publication, or self-hosting."]}

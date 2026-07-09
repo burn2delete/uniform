@@ -1,0 +1,13 @@
+(ns core.app.conformance-profile-target
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:profile-compliance-reports
+                             [{:artifact-id "profile-report:bad"
+                               :profile :hosted}]}}}))
+
+(defn main []
+  (println "bad conformance profile target"))

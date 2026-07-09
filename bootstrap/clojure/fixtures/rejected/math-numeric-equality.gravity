@@ -1,0 +1,13 @@
+(ns math.numeric-equality
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:symbolic-equality-claims
+                      [{:claim-id :bad-symbolic-equality
+                        :claimed-equal? true
+                        :lhs '(sin x)
+                        :rhs '(sin x)
+                        :domain {'x {:real [0.0 1.0]}}}]}}}))

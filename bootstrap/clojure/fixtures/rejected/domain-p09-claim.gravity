@@ -1,0 +1,6 @@
+; Rejected P09 broad replacement claim fixture.
+(ns domain.p09-claim (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :p09-claim}}}))
+(defn main [] :- I64 1)

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-bootstrap-self-hosting.json",
+  "stage_compatibility": {
+    "missing_conformance_link": true
+  }
+}

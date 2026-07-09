@@ -1,0 +1,14 @@
+(ns core.app.tooling-linter-autofix
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:linters
+                         [{:tool-id :gravity-lint
+                           :autofix-safe? false
+                           :autofix {:semantics-preserved? false}}]}}}))
+
+(defn main []
+  (println "bad tooling linter autofix"))

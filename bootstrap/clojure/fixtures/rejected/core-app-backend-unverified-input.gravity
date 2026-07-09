@@ -1,0 +1,14 @@
+(ns core.app.backend-unverified-input
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:backend {:compiled-gate
+                        {:inputs
+                         [{:input-kind :stage0-instruction-plan
+                           :input-artifact-id :stage0/core-app-plan
+                           :real-backend? true}]}}}))
+
+(defn main []
+  (println "bad backend input"))

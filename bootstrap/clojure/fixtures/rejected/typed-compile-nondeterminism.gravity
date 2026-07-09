@@ -1,0 +1,12 @@
+(ns compile.nondeterminism
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:build/random})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/random}
+              :hermetic true
+              :cache-policy :strict}))
+
+(def invalid
+  (compile/replay-random :seed))

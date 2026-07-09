@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-type.json",
+  "set": {
+    "/provider/kind": ":proof-engine"
+  }
+}

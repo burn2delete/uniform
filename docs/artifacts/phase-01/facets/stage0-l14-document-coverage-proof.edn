@@ -1,0 +1,66 @@
+{:task-id :P01-D024
+ :document "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/facet-system.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-facet-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/facet-system.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'facet.system
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:activation
+                                       :build-effect
+                                       :capability
+                                       :compatibility
+                                       :composition
+                                       :domain-ir
+                                       :generated-code
+                                       :manifest
+                                       :privacy-boundary
+                                       :schema-version
+                                       :source-map]
+                    :facet-manifests 2
+                    :facet-activations 1
+                    :generated-gravity-records 1
+                    :domain-ir-records 1
+                    :composition-records 1
+                    :privacy-boundary-records 1
+                    :compatibility-records 1
+                    :inferred-effects #{:build/write-artifact
+                                        :compiler/write-ir}
+                    :capability-basis :declared-facet-manifest-and-compiler-ir}
+ :rejected-diagnostics [{:fixture "typed-facet-not-active.gravity"
+                         :diagnostic "L14-FACET-NOT-ACTIVE"}
+                        {:fixture "typed-facet-ambiguous.gravity"
+                         :diagnostic "L14-FACET-AMBIGUOUS"}
+                        {:fixture "typed-facet-profile.gravity"
+                         :diagnostic "L14-PROFILE"}
+                        {:fixture "typed-facet-build-effect.gravity"
+                         :diagnostic "L14-BUILD-EFFECT"}
+                        {:fixture "typed-facet-capability.gravity"
+                         :diagnostic "L14-CAPABILITY"}
+                        {:fixture "typed-facet-lowering.gravity"
+                         :diagnostic "L14-LOWERING"}
+                        {:fixture "typed-facet-domain-check.gravity"
+                         :diagnostic "L14-DOMAIN-CHECK"}
+                        {:fixture "typed-facet-generated-code.gravity"
+                         :diagnostic "L14-GENERATED-CODE"}
+                        {:fixture "typed-facet-ir-schema.gravity"
+                         :diagnostic "L14-IR-SCHEMA"}
+                        {:fixture "typed-facet-composition.gravity"
+                         :diagnostic "L14-COMPOSITION"}
+                        {:fixture "typed-facet-privacy-boundary.gravity"
+                         :diagnostic "L14-PRIVACY-BOUNDARY"}]
+ :validation [{:command "clojure -M:test"
+               :result "19 tests, 771 assertions, 142 rejected fixtures"}
+              {:command "clojure -M -e artifact-summary"
+               :result "complete L14 facet conformance with manifests, activation, generated code, domain IR, composition, privacy, and compatibility records"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 11 L14 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records facet contracts and artifacts but does not claim full facet expansion execution."
+                  "Concrete domain checkers, backend consumers, package lockfile integration, and broad domain-facet conformance remain downstream phase work."
+                  "Self-hosted facet processing remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

@@ -1,0 +1,8 @@
+(ns bad.alias
+  (:profile :native)
+  (:target :llvm)
+  (:capabilities #{:io/stdout}))
+
+(defn main []
+  (http/get "/"))
+

@@ -1,0 +1,109 @@
+{
+  "artifact_id": "phase-00-diagnostic-namespace-registry-2026-06-24",
+  "kind": "diagnostic-namespace-registry",
+  "task": "P00-T03",
+  "source_basis": [
+    "AGENTS.md",
+    "docs/implementation-roadmap.md",
+    "docs/phase-00-foundation-and-thesis/README.md",
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+  ],
+  "concepts": {
+    "profile": "Compile-time contract for legal forms, effects, capabilities, memory regime, runtime assumptions, unsafe rules, and target lowerings.",
+    "target": "Concrete emitted artifact family or backend environment.",
+    "effect": "Semantic action visible to compiler and policy.",
+    "capability": "Granted authority to perform an effect.",
+    "runtime": "Execution support linked, delegated, or generated for a profile and target pair.",
+    "backend": "Compiler component that lowers MIR or a domain IR into target artifacts.",
+    "artifact": "Typed output with provenance.",
+    "file": "Storage container that may hold an artifact but is not artifact identity.",
+    "unsafe-island": "Explicit unsafe region with audit metadata and safe boundary records."
+  },
+  "known_profiles": [":core", ":hosted", ":native", ":kernel", ":distributed", ":ai", ":meta"],
+  "known_targets": ["llvm-x86_64-linux", "jvm", "wasm32-wasi", "workflow-graph", "schema-bundle", "ai-manifest"],
+  "known_effects": [":io/write", ":network/http", ":filesystem/read", ":memory/raw", ":ffi/call", ":model/call", ":tool/call", ":build/network"],
+  "known_capabilities": [":io/stdout", ":http/client", ":fs/read-project", ":memory/unsafe", ":ffi/declared", ":model/provider", ":tool/approved", ":build/network-grant"],
+  "known_backends": ["llvm", "c", "jvm-bytecode", "wasm", "workflow-backend", "schema-backend"],
+  "known_runtime_families": ["none", "minimal-native", "hosted-jvm", "capability-enforcement", "workflow-runtime", "ai-agent-runtime"],
+  "terminology_boundaries": [
+    {
+      "id": "profile-target",
+      "diagnostic": "D3-PROFILE-TARGET-CONFLATION",
+      "rule": "Profile fields must name compile-time contracts and target fields must name emitted artifact families or backend environments."
+    },
+    {
+      "id": "effect-capability",
+      "diagnostic": "D3-EFFECT-CAPABILITY-CONFLATION",
+      "rule": "Effect fields must name semantic actions and capability fields must name granted authorities."
+    },
+    {
+      "id": "runtime-backend",
+      "diagnostic": "D3-AMBIGUOUS-RUNTIME",
+      "rule": "Runtime fields must name execution support families and backend fields must name lowering components."
+    },
+    {
+      "id": "artifact-file",
+      "diagnostic": "D3-ARTIFACT-UNSTRUCTURED",
+      "rule": "Artifact records must include identity and provenance, not just a file path."
+    }
+  ],
+  "diagnostic_namespaces": [
+    {
+      "prefix": "D3",
+      "owner_doc": "D3",
+      "diagnostics": [
+        "D3-AMBIGUOUS-RUNTIME",
+        "D3-PROFILE-TARGET-CONFLATION",
+        "D3-EFFECT-CAPABILITY-CONFLATION",
+        "D3-ARTIFACT-UNSTRUCTURED",
+        "D3-UNSAFE-UNTRACKED"
+      ]
+    },
+    {
+      "prefix": "D2",
+      "owner_doc": "D2",
+      "diagnostics": [
+        "D2-MILESTONE-EVIDENCE",
+        "D2-SEQUENCE-SKIP",
+        "D2-SAFETY-DEFERRED",
+        "D2-ARTIFACT-MISSING"
+      ]
+    },
+    {
+      "prefix": "D8",
+      "owner_doc": "D8",
+      "diagnostics": [
+        "D8-UNCLASSIFIED-DANGER",
+        "D8-UNSAFE-MISSING-METADATA",
+        "D8-SAFE-WRAPPER-LEAK",
+        "D8-CHECK-ERASED",
+        "D8-CAPABILITY-SAFETY",
+        "D8-GENERATED-UNSAFE"
+      ]
+    },
+    {
+      "prefix": "D9",
+      "owner_doc": "D9",
+      "diagnostics": [
+        "D9-PROOF-MISSING",
+        "D9-CERT-UNCHECKABLE",
+        "D9-EML-EQUALITY",
+        "D9-CHECK-ELISION-NO-PROOF",
+        "D9-REPLAY-GAP",
+        "D9-BOOTSTRAP-EQUIV"
+      ]
+    }
+  ],
+  "artifact_identity_fields": [
+    "kind",
+    "schema",
+    "source_hash",
+    "compiler_identity",
+    "profile",
+    "target",
+    "effects",
+    "capabilities",
+    "safety_status",
+    "provenance"
+  ]
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Gravity P18-T04 executable command artifact
+# source: examples/hello.gravity
+# source-sha256: sha256:eb28603def64689a2e4d7018c1f356ea0cffd840600588843f29b1b30574b219
+# compiled-plan-id: sha256:9e6cdb52ad54b2e104765708911ddbc8c57c8fab69c7a1cd97ca95bc84f52488
+# release-artifact-id: sha256:ac5931e6e84eaf3a1c9ef7d0d6a9b2affc33fb7f68023063a1fa50d27bb7e206
+# final-seedless-release: false
+printf '%s' 'Hello Gravity
+'

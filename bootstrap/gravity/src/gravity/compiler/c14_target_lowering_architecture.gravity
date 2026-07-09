@@ -1,0 +1,351 @@
+; Stage1 Gravity-owned C14 target lowering architecture contract.
+(ns gravity.compiler.c14-target-lowering-architecture
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c14-target-lowering-contract
+             c14-lowering-request-contract
+             c14-target-eligibility-contract
+             c14-abi-layout-contract
+             c14-runtime-provider-contract
+             c14-proof-metadata-contract
+             c14-emitted-artifact-contract
+             c14-lowering-diagnostic-catalog
+             build-c14-lowering-request
+             build-c14-target-artifact
+             verify-c14-target-lowering])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :target-lowering
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["C14" "C11" "C12" "C13" "C15"
+                           "B1" "B2" "B3" "B4" "B5" "B6"
+                           "B7" "B8" "B9" "B10" "B11"
+                           "B12" "B13" "B14" "R1" "R2"
+                           "R3" "R4" "R5" "R10" "R11"
+                           "P1" "P13" "SAFE15" "PERF10"
+                           "PKG6" "PKG7" "BOOT1" "BOOT2"
+                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
+                           "BOOT7" "BOOT8" "TEST2"]
+               :implements [:lowering-request-validation
+                             :target-eligibility-report
+                             :abi-layout-manifest
+                             :runtime-provider-manifest
+                             :proof-to-target-metadata-map
+                             :source-generated-origin-map
+                             :target-artifact-manifest
+                             :unsupported-feature-report
+                             :lowering-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :abi-records :layout-records
+                            :runtime-provider-records
+                            :effect-facts :capability-facts
+                            :safety-outcomes :proof-references
+                            :dependency-provenance
+                            :generated-origin-chains
+                            :source-maps}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c14-target-lowering-contract-subset
+                                    :clojure-c14-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-lowering-input.gravity"
+                              "compiler-lowering-profile.gravity"
+                              "compiler-lowering-target.gravity"
+                              "compiler-lowering-abi.gravity"
+                              "compiler-lowering-runtime.gravity"
+                              "compiler-lowering-provider.gravity"
+                              "compiler-lowering-proof-metadata.gravity"
+                              "compiler-lowering-capability.gravity"
+                              "compiler-lowering-unsupported.gravity"
+                              "compiler-lowering-manifest.gravity"]}}}))
+
+(def c14-target-lowering-contract
+  {:artifact :gravity/c14-target-lowering-contract
+   :required-inputs [:verified-mir-or-domain-ir
+                     :profile-manifest
+                     :target-request
+                     :abi-policy
+                     :runtime-policy
+                     :provider-manifest
+                     :effect-summary
+                     :capability-summary
+                     :safety-summary
+                     :proof-table]
+   :required-outputs [:lowering-request
+                      :target-eligibility-report
+                      :abi-layout-manifest
+                      :runtime-provider-manifest
+                      :proof-target-metadata-map
+                      :source-generated-origin-map
+                      :target-artifact-manifest
+                      :unsupported-feature-report
+                      :lowering-diagnostic-stream]
+   :must-preserve [:gravity-semantics
+                   :source-provenance
+                   :profile-contracts
+                   :effect-contracts
+                   :capability-contracts
+                   :safety-outcomes
+                   :proof-references
+                   :dependency-provenance]
+   :forbidden [:lowering-from-unchecked-ir
+               :target-undefined-behavior
+               :hidden-runtime-service
+               :target-metadata-without-proof
+               :capability-or-effect-invention
+               :artifact-without-provenance]})
+
+(def c14-lowering-request-contract
+  {:artifact :gravity/c14-lowering-request-contract
+   :required-fields [:request-id :input :profile :target
+                     :abi :runtime :providers
+                     :required-evidence :source-map
+                     :dependency-provenance]
+   :input-fields [:kind :artifact-id :verifier-report
+                  :optimization-report :domain-anchor-report]
+   :target-fields [:backend :triple :features
+                   :profile-eligibility :fingerprint]
+   :evidence-fields [:safety :proofs :capabilities
+                     :effects :runtime-providers
+                     :dependency-graph]
+   :reject-when [:input-missing
+                 :input-unverified
+                 :input-stale
+                 :profile-backend-ineligible
+                 :target-feature-missing
+                 :required-evidence-missing]})
+
+(def c14-target-eligibility-contract
+  {:artifact :gravity/c14-target-eligibility-contract
+   :checks [:profile-allows-backend
+            :target-supports-required-mir-families
+            :runtime-services-explicit
+            :abi-represents-exports
+            :layout-satisfies-type-ownership-safety
+            :effects-have-authority-preserving-providers
+            :unsafe-islands-have-audit-records
+            :domain-ir-verifiers-accepted
+            :proof-assumptions-valid-for-target]
+   :report-fields [:target :backend :profile
+                   :accepted? :rejections :fallbacks
+                   :missing-features :required-providers
+                   :proof-assumptions :explainability-record]
+   :fallback-rules [:fallback-must-preserve-semantics
+                    :fallback-must-preserve-effects
+                    :fallback-must-preserve-capabilities
+                    :fallback-must-preserve-safety
+                    :fallback-must-match-profile]
+   :forbidden [:backend-folklore-eligibility
+               :silent-target-narrowing
+               :fallback-with-weaker-contract
+               :unexplained-target-unavailability]})
+
+(def c14-abi-layout-contract
+  {:artifact :gravity/c14-abi-layout-contract
+   :abi-fields [:calling-convention
+                :exported-symbols
+                :foreign-symbols
+                :error-model
+                :panic-strategy
+                :ffi-boundaries
+                :debug-unwind-policy]
+   :layout-fields [:data-layout
+                   :alignment
+                   :enum-representation
+                   :tagged-union-representation
+                   :closure-representation
+                   :resource-handle-representation
+                   :stack-layout
+                   :heap-layout
+                   :gc-policy
+                   :address-space-mapping]
+   :required-links [:type-facts
+                    :ownership-facts
+                    :safety-facts
+                    :profile-contract
+                    :target-contract
+                    :source-map]
+   :forbidden [:layout-choice-without-fact
+               :abi-incompatible-export
+               :hidden-gc-or-runtime
+               :ffi-boundary-without-safety-record]})
+
+(def c14-runtime-provider-contract
+  {:artifact :gravity/c14-runtime-provider-contract
+   :provider-kinds [:allocation
+                    :panic
+                    :error-handling
+                    :bounds-check
+                    :safety-check
+                    :atomics
+                    :synchronization
+                    :filesystem
+                    :network
+                    :database
+                    :shell
+                    :math
+                    :ffi-adapter
+                    :workflow-runtime
+                    :ai-model-runtime
+                    :debug-tracing]
+   :provider-fields [:provider-id :kind :profile
+                     :target :effects :capabilities
+                     :safety-policy :runtime-dependency
+                     :source :provenance]
+   :selection-rules [:provider-matches-profile
+                     :provider-matches-target
+                     :provider-covers-effects
+                     :provider-preserves-capabilities
+                     :provider-respects-safety-policy
+                     :no-runtime-profile-has-no-hidden-provider]
+   :forbidden [:ambient-provider-selection
+               :effect-provider-without-capability
+               :hosted-runtime-in-no-runtime-profile
+               :provider-without-provenance]})
+
+(def c14-proof-metadata-contract
+  {:artifact :gravity/c14-proof-target-metadata-contract
+   :target-metadata [:nuw :nsw :noalias :dereferenceable
+                    :alignment :nonnull :fma :fast-math
+                    :volatile :atomic-ordering
+                    :address-space :range]
+   :entry-fields [:target-metadata :operation
+                  :source-span :proof :certificate
+                  :assumptions :profile :target
+                  :backend :invalidated-by]
+   :rules [:metadata-requires-gravity-proof
+           :certificate-trust-status-recorded
+           :proof-assumptions-match-target
+           :optimization-invalidations-applied
+           :metadata-visible-in-artifact-manifest]
+   :forbidden [:backend-assumption-as-proof
+               :fast-math-without-domain-proof
+               :noalias-without-ownership-proof
+               :overflow-metadata-without-numeric-proof
+               :proofless-dereferenceable-pointer]})
+
+(def c14-emitted-artifact-contract
+  {:artifact :gravity/c14-emitted-artifact-contract
+   :manifest-fields [:input :backend :profile :target
+                     :artifacts :source-map :proof-map
+                     :effects :capabilities :safety
+                     :runtime :dependencies :diagnostics]
+   :artifact-fields [:kind :hash :path :format
+                     :target :generated-origin
+                     :source-map-entry]
+   :unsupported-feature-fields [:mir-op-or-domain-artifact
+                                :required-feature :backend
+                                :profile :source-span
+                                :available-alternatives
+                                :fallback-status
+                                :diagnostic-id]
+   :consumers [:backend-conformance
+               :package-artifacts
+               :runtime-selection
+               :tooling-source-maps
+               :self-hosting-rebuild
+               :release-provenance]
+   :forbidden [:artifact-without-source-map
+               :artifact-without-proof-map
+               :artifact-without-capability-summary
+               :artifact-without-dependency-provenance
+               :unsupported-feature-without-diagnostic]})
+
+(def c14-lowering-diagnostic-catalog
+  {:diagnostics ["C14-INPUT"
+                 "C14-PROFILE"
+                 "C14-TARGET"
+                 "C14-ABI"
+                 "C14-RUNTIME"
+                 "C14-PROVIDER"
+                 "C14-PROOF-METADATA"
+                 "C14-CAPABILITY"
+                 "C14-UNSUPPORTED"
+                 "C14-MANIFEST"]
+   :required-fields [:input-artifact-id
+                     :mir-operation-or-domain-anchor
+                     :source-span
+                     :origin-chain
+                     :profile
+                     :target
+                     :backend
+                     :missing-feature
+                     :proof-expected
+                     :provider-expected
+                     :fallback-status
+                     :remediation]
+   :stable-id-rule :c14-rule-plus-offending-lowering-fact
+   :must-not-depend-on [:backend-wording
+                        :localized-message
+                        :host-exception-text]})
+
+(defn build-c14-lowering-request
+  [request-id input profile target abi runtime providers evidence source-map dependency-provenance]
+  (quote {:artifact :gravity/lowering-request
+          :request-id request-id
+          :input input
+          :profile profile
+          :target target
+          :abi abi
+          :runtime runtime
+          :providers providers
+          :required-evidence evidence
+          :source-map source-map
+          :dependency-provenance dependency-provenance
+          :contract c14-lowering-request-contract}))
+
+(defn build-c14-target-artifact
+  [input backend profile target artifacts source-map proof-map effects capabilities safety runtime dependencies diagnostics]
+  (quote {:artifact :gravity/target-artifact-manifest
+          :input input
+          :backend backend
+          :profile profile
+          :target target
+          :artifacts artifacts
+          :source-map source-map
+          :proof-map proof-map
+          :effects effects
+          :capabilities capabilities
+          :safety safety
+          :runtime runtime
+          :dependencies dependencies
+          :diagnostics diagnostics
+          :contract c14-emitted-artifact-contract}))
+
+(defn verify-c14-target-lowering [lowering-record]
+  (quote {:status :stage1-source-owned
+          :lowering-record lowering-record
+          :checks [:verified-mir-or-domain-ir-input
+                   :profile-and-target-eligibility
+                   :abi-and-layout-recorded
+                   :runtime-providers-explicit
+                   :effects-and-capabilities-preserved
+                   :safety-and-proof-references-preserved
+                   :target-metadata-backed-by-proof
+                   :unsupported-features-diagnosed
+                   :artifact-manifest-complete
+                   :source-and-generated-origin-map-preserved
+                   :dependency-provenance-preserved
+                   :hidden-runtime-services-rejected]
+          :diagnostics c14-lowering-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :mir-module-identity :domain-ir-anchors
+                      :profile-contracts :target-contracts
+                      :effect-facts :capability-facts
+                      :safety-outcomes :proof-references
+                      :source-maps :dependency-provenance]}))

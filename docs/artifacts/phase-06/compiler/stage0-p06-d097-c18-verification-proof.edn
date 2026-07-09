@@ -1,0 +1,72 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D097
+ :date "2026-06-25"
+ :status :complete
+ :capability :c18-compiler-verification-document-coverage
+ :command "clojure -M:gravity compiler-c18-verification bootstrap/clojure/fixtures/accepted/compiler-c18-verification.gravity"
+ :artifact-kind :gravity/stage0-c18-compiler-verification-artifact
+ :artifact-hash "sha256:0cd9259ccf67eb4299fb59872730abd61205942e719e740f193485105f65103c"
+ :summary {:risk-records 8
+           :evidence-records 8
+           :translation-validations 2
+           :proof-or-certificate-references 3
+           :counterexamples 1
+           :backend-conformance 1
+           :diagnostics 9
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+                       "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+                       "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c18-verification.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-verify-c18-risk.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-evidence.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-validation.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-proof.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-trust-report.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-release-gate.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-counterexample.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-plugin.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c18-backend.gravity"]
+ :diagnostic-ids ["C18-RISK"
+                  "C18-EVIDENCE"
+                  "C18-VALIDATION"
+                  "C18-PROOF"
+                  "C18-TRUST-REPORT"
+                  "C18-RELEASE-GATE"
+                  "C18-COUNTEREXAMPLE"
+                  "C18-PLUGIN"
+                  "C18-BACKEND"]
+ :capability-based-proof {:c17-plugin-input-verified? true
+                          :pass-risk-classification-complete? true
+                          :high-risk-evidence-present? true
+                          :translation-validation-accepted? true
+                          :proofs-and-certificates-accepted? true
+                          :diagnostics-preserve-source-and-generated-origin? true
+                          :differential-and-property-fixtures-passed? true
+                          :trust-report-complete? true
+                          :release-gate-blocks-missing-evidence? true
+                          :counterexample-regression-captured? true
+                          :experimental-gates-explicit? true
+                          :plugin-evidence-policy-passed? true
+                          :backend-conformance-passed? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 70 tests containing 3829 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 888}
+              {:command "clojure -M:gravity compiler-c18-verification bootstrap/clojure/fixtures/accepted/compiler-c18-verification.gravity"
+               :result :accepted
+               :artifact-hash "sha256:0cd9259ccf67eb4299fb59872730abd61205942e719e740f193485105f65103c"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 24 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D097 for the Clojure stage0 C18 compiler verification and pass-correctness document boundary only."
+                 "It completes Phase 06 document coverage at the Clojure stage0 boundary, but does not claim production compiler readiness, backend code generation, runtime execution, release readiness, or self-hosting."]}

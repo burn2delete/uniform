@@ -1,0 +1,66 @@
+{:task-id :P01-D023
+ :document "docs/phase-01-core-language/023-l13-standard-library-design-principles.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/standard-library.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-stdlib-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/standard-library.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'standard.library
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:allocation-record
+                                       :api-contract
+                                       :blocking-record
+                                       :capability-record
+                                       :compatibility
+                                       :effect-record
+                                       :example
+                                       :namespace-contract
+                                       :numeric-mode
+                                       :panic-record
+                                       :profile-availability
+                                       :resource-api
+                                       :unsafe-wrapper]
+                    :namespace-contracts 1
+                    :api-contracts 2
+                    :profile-availability-reports 1
+                    :documentation-examples 2
+                    :unsafe-wrapper-audits 1
+                    :compatibility-records 1
+                    :numeric-mode-records 1
+                    :resource-records 1
+                    :inferred-effects #{:resource/open
+                                        :memory/raw
+                                        :resource/close}
+                    :capability-basis :declared-standard-library-contracts}
+ :rejected-diagnostics [{:fixture "typed-stdlib-profile.gravity"
+                         :diagnostic "L13-PROFILE"}
+                        {:fixture "typed-stdlib-effect.gravity"
+                         :diagnostic "L13-EFFECT"}
+                        {:fixture "typed-stdlib-capability.gravity"
+                         :diagnostic "L13-CAPABILITY"}
+                        {:fixture "typed-stdlib-alloc.gravity"
+                         :diagnostic "L13-ALLOC"}
+                        {:fixture "typed-stdlib-resource.gravity"
+                         :diagnostic "L13-RESOURCE"}
+                        {:fixture "typed-stdlib-numeric.gravity"
+                         :diagnostic "L13-NUMERIC-MODE"}
+                        {:fixture "typed-stdlib-unsafe-invariant.gravity"
+                         :diagnostic "L13-UNSAFE-INVARIANT"}
+                        {:fixture "typed-stdlib-example.gravity"
+                         :diagnostic "L13-EXAMPLE"}
+                        {:fixture "typed-stdlib-compat.gravity"
+                         :diagnostic "L13-COMPAT"}]
+ :validation [{:command "clojure -M:test"
+               :result "19 tests, 771 assertions, 142 rejected fixtures"}
+              {:command "clojure -M -e artifact-summary"
+               :result "complete L13 standard-library conformance with namespace, API, example, unsafe, compatibility, numeric, and resource records"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 9 L13 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records standard-library contracts but does not claim the Phase 16 production standard library."
+                  "Examples are metadata-backed conformance records, not backend-specific compiled examples for every target."
+                  "Compatibility publication, package registry integration, and broad library APIs remain downstream phase work."]}

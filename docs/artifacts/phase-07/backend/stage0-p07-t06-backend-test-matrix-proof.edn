@@ -1,0 +1,71 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-T06
+ :date "2026-06-29"
+ :status :complete
+ :capability :backend-test-matrix-and-conformance-evidence-pack
+ :command "clojure -M:gravity backend-test-matrix bootstrap/clojure/fixtures/accepted/backend-test-matrix.gravity"
+ :artifact-kind :gravity/stage0-backend-test-matrix-artifact
+ :artifact-hash "sha256:2f19bd11d4c955e6c4083e12d0b1a547dce98b890e2ee1d472ca755939d2b1a9"
+ :summary {:targets 11
+           :fixture-families 27
+           :positive-results 11
+           :negative-diagnostic-results 10
+           :semantic-comparisons 11
+           :diagnostics 10
+           :evidence-pack :complete
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+                       "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-test-matrix.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-matrix-b14-coverage.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-positive.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-negative.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-differential.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-artifact.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-nondeterminism.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-skip.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-matrix-b14-evidence.gravity"]
+ :diagnostics ["B14-COVERAGE"
+               "B14-TARGET"
+               "B14-POSITIVE"
+               "B14-NEGATIVE"
+               "B14-DIFFERENTIAL"
+               "B14-METADATA"
+               "B14-ARTIFACT"
+               "B14-NONDETERMINISM"
+               "B14-SKIP"
+               "B14-EVIDENCE"]
+ :proof-checks {:artifact-emission-input-verified? true
+                :suite-manifest-complete? true
+                :fixture-matrix-complete? true
+                :target-availability-recorded? true
+                :positive-lowering-results-passed? true
+                :negative-diagnostic-results-exact? true
+                :differential-semantic-comparisons-passed? true
+                :metadata-preserved? true
+                :artifact-manifests-valid? true
+                :nondeterminism-recorded? true
+                :unsupported-skips-rejected? true
+                :risk-coverage-complete? true
+                :conformance-evidence-pack-complete? true
+                :diagnostics-covered? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 76 tests containing 4295 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1052}
+              {:command "clojure -M:gravity backend-test-matrix bootstrap/clojure/fixtures/accepted/backend-test-matrix.gravity"
+               :result :accepted
+               :artifact-hash "sha256:2f19bd11d4c955e6c4083e12d0b1a547dce98b890e2ee1d472ca755939d2b1a9"}
+              {:command "clojure -M -e <phase-07 backend EDN parse>"
+               :result "parsed 6 phase-07 backend EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result "passed with no output"}]
+ :residual-risk ["This completes P07-T06 for deterministic Clojure stage0 backend suite manifests, fixture matrices, target availability, positive and negative diagnostic results, semantic comparisons, metadata and artifact validation, replay records, risk coverage, and conformance evidence packs."
+                 "It does not claim external target execution, production backend stabilization, release readiness, or full backend conformance beyond the current stage0 artifact-shape and diagnostic boundary."]}

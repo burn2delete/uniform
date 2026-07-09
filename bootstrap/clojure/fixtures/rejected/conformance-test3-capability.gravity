@@ -1,0 +1,11 @@
+; Rejected P14 TEST3 fixture.
+(ns conformance.test3-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:conformance {:system {:fail :test3002}}}))
+
+(defn main [] :- I64 1)

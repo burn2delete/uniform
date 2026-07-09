@@ -1,0 +1,16 @@
+(ns math.efir-equivalence
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:efir
+     {:equivalence-claims
+      [{:claim-id :equiv/bad
+        :function-id :math/sigmoid
+        :source-expression '(/ 1 (+ 1 (exp (- x))))
+        :efir-graph :efir/sigmoid
+        :domain {'x {:real [-8.0 8.0]}}
+        :claimed-equal? true}]}}}))

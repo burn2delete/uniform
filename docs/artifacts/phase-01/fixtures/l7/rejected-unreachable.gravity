@@ -1,0 +1,7 @@
+(ns l7.bad.unreachable
+  (:profile :hosted))
+
+(def bad
+  (match value
+    _ :default
+    :later :never))

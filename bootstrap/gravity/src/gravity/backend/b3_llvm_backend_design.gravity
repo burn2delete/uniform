@@ -1,0 +1,513 @@
+; Stage1 Gravity-owned B3 LLVM backend source-model contract.
+(ns gravity.backend.b3-llvm-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b3-llvm-backend-contract
+             b3-target-data-layout-contract
+             b3-metadata-attribute-contract
+             b3-safe-llvm-subset-contract
+             b3-pointer-ownership-contract
+             b3-numeric-floating-contract
+             b3-atomic-volatile-contract
+             b3-runtime-abi-contract
+             b3-pass-pipeline-contract
+             b3-artifact-manifest-contract
+             b3-diagnostic-catalog
+             build-b3-llvm-backend-manifest
+             build-b3-target-record
+             build-b3-metadata-map
+             build-b3-runtime-abi-helper-map
+             build-b3-pass-pipeline-record
+             build-b3-llvm-artifact-record
+             verify-b3-llvm-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :llvm-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B3" "B1" "B2" "D1" "D3"
+                                        "C11" "C14"
+                                        "SAFE2" "SAFE8" "SAFE9"
+                                        "SAFE10" "SAFE15"
+                                        "PERF8" "PERF10"
+                                        "MATH5" "MATH8"
+                                        "P6" "P7" "B13" "B14"
+                                        "R1" "PKG7" "BOOT1"
+                                        "BOOT3" "BOOT8" "TEST13"]
+               :documents ["B3" "B1" "B2" "D1" "D3"
+                           "C11" "C14"
+                           "SAFE2" "SAFE8" "SAFE9"
+                           "SAFE10" "SAFE15"
+                           "PERF8" "PERF10"
+                           "MATH5" "MATH8"
+                           "P6" "P7" "B13" "B14"
+                           "R1" "PKG7" "BOOT1"
+                           "BOOT3" "BOOT8" "TEST13"]
+               :implements [:llvm-backend-source-model
+                             :llvm-target-data-layout-contract
+                             :llvm-proof-gated-metadata-contract
+                             :safe-llvm-subset-contract
+                             :llvm-pointer-ownership-contract
+                             :llvm-numeric-floating-contract
+                             :llvm-atomic-volatile-contract
+                             :llvm-runtime-abi-contract
+                             :llvm-pass-pipeline-contract
+                             :llvm-artifact-manifest-contract
+                             :stable-b3-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :llvm-target-record :llvm-data-layout
+                            :llvm-cpu-features :llvm-relocation-model
+                            :llvm-code-model :llvm-abi-records
+                            :llvm-metadata-gates
+                            :llvm-attribute-proofs
+                            :pointer-provenance :ownership-facts
+                            :lifetime-facts :address-space-facts
+                            :initialized-state-facts
+                            :atomic-ordering-facts
+                            :volatile-mmio-facts :numeric-mode-facts
+                            :floating-mode-facts
+                            :math-certificate-references
+                            :runtime-provider-records
+                            :pass-pipeline-records
+                            :llvm-verifier-records
+                            :effect-facts :capability-facts
+                            :safety-outcomes :unsafe-audit-links
+                            :proof-references :source-maps
+                            :debug-maps :dependency-provenance
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b3-llvm-backend-contract-subset
+                                    :clojure-b3-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b3-target.gravity"
+                              "backend-b3-metadata.gravity"
+                              "backend-b3-ub.gravity"
+                              "backend-b3-pointer.gravity"
+                              "backend-b3-numeric.gravity"
+                              "backend-b3-atomic.gravity"
+                              "backend-b3-runtime.gravity"
+                              "backend-b3-abi.gravity"
+                              "backend-b3-pass.gravity"
+                              "backend-b3-manifest.gravity"]}}}))
+
+(def b3-llvm-backend-contract
+  {:artifact :gravity/b3-llvm-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/llvm
+   :accepts [:verified-mir :verified-domain-ir]
+   :emits [:llvm-backend-manifest
+           :llvm-target-data-layout-record
+           :llvm-ir
+           :llvm-bitcode
+           :llvm-object-or-library
+           :proof-to-llvm-metadata-map
+           :runtime-abi-helper-map
+           :llvm-pass-pipeline-record
+           :source-debug-map
+           :safety-capability-unsafe-preservation-map
+           :unsupported-feature-report
+           :llvm-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :mir-module
+              :domain-ir-anchors
+              :profile-manifest
+              :target-manifest
+              :target-triple
+              :data-layout
+              :abi-record
+              :runtime-provider-record
+              :safety-bundle
+              :proof-table
+              :source-map]
+   :rules [:llvm-is-target-artifact-not-gravity-semantics
+           :backend-consumes-only-verified-ir
+           :target-record-is-pinned-before-emission
+           :safe-gravity-never-depends-on-llvm-undefined-behavior
+           :llvm-metadata-is-proof-gated
+           :runtime-helpers-are-selected-through-manifest
+           :source-debug-and-provenance-maps-are-preserved]
+   :forbidden [:source-to-llvm-shortcut
+               :implicit-host-target-layout
+               :proofless-llvm-metadata
+               :llvm-undefined-behavior-as-optimization
+               :hidden-runtime-dependence
+               :pass-pipeline-strips-required-evidence
+               :artifact-without-llvm-manifest]})
+
+(def b3-target-data-layout-contract
+  {:artifact :gravity/b3-target-data-layout-contract
+   :required-fields [:target-triple
+                     :llvm-target-cpu
+                     :target-feature-string
+                     :pointer-widths
+                     :address-spaces
+                     :endianness
+                     :integer-layout
+                     :floating-layout
+                     :aggregate-alignment
+                     :vector-legal-widths
+                     :relocation-model
+                     :code-model
+                     :calling-conventions
+                     :unwind-strategy
+                     :thread-local-storage-policy
+                     :sanitizer-mode
+                     :instrumentation-mode
+                     :object-format]
+   :rules [:target-record-is-explicit
+           :data-layout-matches-profile-and-abi
+           :cpu-features-match-proof-assumptions
+           :object-format-is-declared]
+   :reject-when [:missing-target-triple
+                 :unsupported-target-feature
+                 :data-layout-conflicts-with-profile
+                 :abi-or-object-format-gap
+                 :host-compiler-inferred-layout]})
+
+(def b3-metadata-attribute-contract
+  {:artifact :gravity/b3-metadata-attribute-contract
+   :metadata [:nuw :nsw :exact :nonnull :dereferenceable
+              :align :range :noalias :readonly :writeonly
+              :inbounds :fast :reassoc :contract :afn :tbaa]
+   :required-proof-sources [:non-overflow-proof
+                            :division-or-shift-range-proof
+                            :nullability-or-check-dominance-proof
+                            :bounds-lifetime-initialization-proof
+                            :layout-or-runtime-alignment-proof
+                            :type-refinement-or-interval-proof
+                            :exclusive-borrow-or-region-separation-proof
+                            :pointer-provenance-range-proof
+                            :floating-mode-and-certificate-evidence
+                            :stable-layout-and-aliasing-fact]
+   :rules [:gravity-proof-justifies-llvm-metadata
+           :llvm-metadata-never-justifies-gravity-semantics
+           :missing-proof-omits-metadata-or-selects-guarded-variant
+           :metadata-map-links-source-span-and-proof-record]
+   :forbidden [:proofless-noalias
+               :proofless-overflow-metadata
+               :proofless-inbounds
+               :proofless-dereferenceable
+               :proofless-fast-math
+               :proofless-tbaa]})
+
+(def b3-safe-llvm-subset-contract
+  {:artifact :gravity/b3-safe-llvm-subset-contract
+   :checked-hazards [:llvm-undef
+                     :poison-exposure
+                     :uninitialized-value
+                     :invalid-inbounds
+                     :unguarded-shift
+                     :strict-aliasing-assumption
+                     :unchecked-overflow
+                     :invalid-lifetime-intrinsic]
+   :safe-lowering-outcomes [:proven-safe
+                            :runtime-checked
+                            :rejected
+                            :unsafe-island]
+   :rules [:each-llvm-hazard-has-safe-outcome
+           :safe-code-emits-defined-llvm
+           :unsafe-island-carries-audit-metadata
+           :conservative-llvm-is-selected-when-proof-is-absent]
+   :forbidden [:implicit-fifth-safety-outcome
+               :safe-code-with-llvm-poison
+               :unsafe-lifetime-elision
+               :dropped-generated-origin-chain]})
+
+(def b3-pointer-ownership-contract
+  {:artifact :gravity/b3-pointer-ownership-contract
+   :required-facts [:object-identity
+                    :address-space
+                    :provenance
+                    :allocation-provider
+                    :lifetime-interval
+                    :valid-byte-range
+                    :alignment
+                    :initialized-state
+                    :mutability
+                    :aliasing-mode
+                    :nullability]
+   :lowering-rules [:inbounds-gep-needs-object-identity-and-range-proof
+                    :raw-pointer-cast-needs-ffi-unsafe-or-intrinsic-audit
+                    :stack-heap-arena-region-and-gc-references-name-provider
+                    :lifetime-intrinsics-preserve-diagnostics-and-cleanup
+                    :address-space-facts-survive-lowering]
+   :forbidden [:pointer-cast-loses-provenance
+               :inbounds-without-range-proof
+               :lifetime-marker-invalidates-cleanup
+               :allocator-invention-by-backend]})
+
+(def b3-numeric-floating-contract
+  {:artifact :gravity/b3-numeric-floating-contract
+   :integer-modes [:checked-integer
+                   :wrapping-integer
+                   :saturating-integer
+                   :bounded-integer]
+   :floating-modes [:strict
+                    :reproducible
+                    :relaxed
+                    :approximate
+                    :target-native]
+   :rules [:checked-operations-emit-branches-traps-or-helpers-unless-proof-elides
+           :wrapping-operations-never-add-signed-overflow-assumptions
+           :saturating-operations-use-target-intrinsic-or-helper
+           :range-metadata-comes-from-interval-proof
+           :narrowing-conversions-check-unless-source-proof-permits
+           :fast-math-flags-require-explicit-mode-and-certificate]
+   :reject-when [:unsafe-overflow
+                 :invalid-shift
+                 :unchecked-narrowing
+                 :floating-mode-gap
+                 :fast-math-without-certificate
+                 :missing-elementary-function-certificate]})
+
+(def b3-atomic-volatile-contract
+  {:artifact :gravity/b3-atomic-volatile-contract
+   :required-fields [:operation
+                     :address-space
+                     :memory-order
+                     :synchronization-scope
+                     :alignment
+                     :compare-exchange-failure-ordering
+                     :target-feature-requirement
+                     :fallback-helper]
+   :rules [:atomic-ordering-is-recorded
+           :volatile-and-mmio-remain-volatile
+           :volatile-mmio-is-not-merged-duplicated-or-reordered
+           :concurrency-lowering-preserves-safe8-data-race-evidence
+           :fallback-helper-is-selected-when-llvm-cannot-represent-operation]
+   :forbidden [:atomic-without-memory-order
+               :volatile-without-mmio-or-interop-fact
+               :mmio-access-reordered-across-boundary
+               :compare-exchange-with-unsound-failure-order
+               :hidden-concurrency-runtime-dependence]})
+
+(def b3-runtime-abi-contract
+  {:artifact :gravity/b3-runtime-abi-contract
+   :helper-categories [:allocation
+                       :deallocation
+                       :region-and-arena-management
+                       :panic-trap-and-unwind
+                       :bounds-and-numeric-checks
+                       :resource-cleanup
+                       :atomics-and-synchronization
+                       :math-providers
+                       :ffi-adapters
+                       :stack-probing
+                       :debug-hooks-and-tracing]
+   :required-fields [:helper-id :category :profile-support
+                     :target-support :abi :calling-convention
+                     :required-capabilities :provided-effects
+                     :runtime-provider :provenance
+                     :no-runtime-eligible?]
+   :rules [:helper-selection-is-profile-driven
+           :no-runtime-profiles-reject-hidden-services
+           :hosted-profiles-select-services-only-through-profile-and-capability
+           :kernel-and-firmware-profiles-forbid-hidden-libc-gc-reflection-eval]
+   :forbidden [:hidden-libc-dependence
+               :hidden-allocator-dependence
+               :hidden-gc-shim
+               :reflection-or-dynamic-eval-helper
+               :helper-without-runtime-manifest]})
+
+(def b3-pass-pipeline-contract
+  {:artifact :gravity/b3-pass-pipeline-contract
+   :required-fields [:llvm-version
+                     :target-backend
+                     :optimization-level
+                     :mandatory-verification-passes
+                     :instrumentation-and-sanitizer-passes
+                     :vectorization-and-loop-passes
+                     :target-specific-passes
+                     :metadata-preservation-requirements
+                     :disabled-passes-and-reasons
+                     :post-pass-verifier-results]
+   :rules [:llvm-verifier-runs-after-emission
+           :llvm-verifier-runs-after-configured-optimization-pipelines
+           :metadata-stripping-pass-is-disabled-configured-or-repaired
+           :pass-pipeline-record-preserves-source-safety-capability-proof-and-audit]
+   :reject-when [:pre-pass-verifier-failure
+                 :post-pass-verifier-failure
+                 :required-evidence-stripped
+                 :metadata-repair-not-validated
+                 :pass-pipeline-not-manifested]})
+
+(def b3-artifact-manifest-contract
+  {:artifact :gravity/b3-llvm-artifact-manifest-contract
+   :required-artifacts [:llvm-backend-manifest
+                        :target-data-layout-record
+                        :llvm-ir-file
+                        :llvm-bitcode-file
+                        :object-or-library-file
+                        :proof-to-llvm-metadata-map
+                        :runtime-abi-helper-map
+                        :llvm-pass-pipeline-record
+                        :source-debug-map
+                        :safety-capability-unsafe-preservation-map
+                        :unsupported-feature-report
+                        :llvm-backend-diagnostics]
+   :required-fields [:artifact-id
+                     :source-input-digest
+                     :compiler-identity
+                     :profile
+                     :target
+                     :target-triple
+                     :data-layout
+                     :effects
+                     :capabilities
+                     :safety-summary
+                     :proof-summary
+                     :unsafe-audit-links
+                     :dependency-graph
+                     :source-map
+                     :debug-map
+                     :llvm-verifier-results]
+   :rules [:actual-source-path-and-extension-are-preserved
+           :llvm-target-data-layout-is-manifested
+           :proof-to-metadata-map-is-machine-linked
+           :diagnostics-reference-source-and-generated-origin
+           :llvm-verifier-results-are-recorded]
+   :forbidden [:manifest-without-source-unit-identity
+               :llvm-artifact-without-artifact-record
+               :generated-llvm-without-proof-metadata-map
+               :diagnostic-without-stable-b3-id]})
+
+(def b3-diagnostic-catalog
+  {:artifact :gravity/b3-diagnostic-catalog
+   :diagnostics
+   [{:id "B3-TARGET"
+     :meaning :unsupported-target-triple-cpu-feature-relocation-or-layout}
+    {:id "B3-METADATA"
+     :meaning :llvm-metadata-or-attribute-without-gravity-proof}
+    {:id "B3-UB"
+     :meaning :lowering-would-create-llvm-undefined-behavior-or-poison}
+    {:id "B3-POINTER"
+     :meaning :missing-provenance-range-lifetime-or-address-space-fact}
+    {:id "B3-NUMERIC"
+     :meaning :overflow-shift-narrowing-or-floating-mode-violation}
+    {:id "B3-ATOMIC"
+     :meaning :unsupported-or-unsound-atomic-volatile-mmio-or-sync-lowering}
+    {:id "B3-RUNTIME"
+     :meaning :forbidden-or-missing-runtime-helper-service}
+    {:id "B3-ABI"
+     :meaning :unrepresentable-calling-convention-layout-unwind-or-object-format}
+    {:id "B3-PASS"
+     :meaning :llvm-pass-pipeline-erased-evidence-or-failed-verification}
+    {:id "B3-MANIFEST"
+     :meaning :incomplete-llvm-backend-artifact-manifest}]
+   :required-diagnostic-fields [:mir-operation-or-domain-anchor
+                                :source-span
+                                :generated-origin-chain
+                                :profile
+                                :target-triple
+                                :llvm-construct
+                                :missing-proof-or-provider
+                                :selected-fallback
+                                :remediation]})
+
+(defn build-b3-llvm-backend-manifest
+  [target-record emitted-artifacts required-facts]
+  {:artifact :gravity/llvm-backend-manifest
+   :backend :gravity.backend/llvm
+   :version "source-model-v1"
+   :target-record target-record
+   :emits emitted-artifacts
+   :requires required-facts
+   :metadata-gated (:metadata b3-metadata-attribute-contract)
+   :rejects [:proofless-llvm-metadata
+             :implicit-llvm-ub
+             :unpinned-data-layout
+             :unsupported-runtime-service
+             :pass-pipeline-evidence-loss]
+   :source-model-only? true})
+
+(defn build-b3-target-record
+  [target-triple data-layout cpu features abi]
+  {:artifact :gravity/b3-target-data-layout-record
+   :target-triple target-triple
+   :data-layout data-layout
+   :llvm-target-cpu cpu
+   :target-feature-string features
+   :abi abi
+   :required-fields (:required-fields b3-target-data-layout-contract)
+   :source-model-only? true})
+
+(defn build-b3-metadata-map
+  [metadata proof-records source-map]
+  {:artifact :gravity/b3-proof-to-llvm-metadata-map
+   :metadata metadata
+   :proof-records proof-records
+   :source-map source-map
+   :required-proof-sources
+   (:required-proof-sources b3-metadata-attribute-contract)
+   :source-model-only? true})
+
+(defn build-b3-runtime-abi-helper-map
+  [profile helpers]
+  {:artifact :gravity/b3-runtime-abi-helper-map
+   :profile profile
+   :helpers helpers
+   :helper-categories (:helper-categories b3-runtime-abi-contract)
+   :source-model-only? true})
+
+(defn build-b3-pass-pipeline-record
+  [llvm-version optimization-level passes verifier-results]
+  {:artifact :gravity/b3-pass-pipeline-record
+   :llvm-version llvm-version
+   :optimization-level optimization-level
+   :passes passes
+   :verifier-results verifier-results
+   :required-fields (:required-fields b3-pass-pipeline-contract)
+   :source-model-only? true})
+
+(defn build-b3-llvm-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b3-llvm-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b3-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b3-llvm-backend-design
+  [manifest]
+  {:artifact :gravity/b3-llvm-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :target-data-layout-pinned? true
+   :metadata-proof-gated? true
+   :safe-llvm-subset-covered? true
+   :pointer-ownership-preserved? true
+   :numeric-and-floating-modes-covered? true
+   :atomic-volatile-ordering-preserved? true
+   :runtime-abi-helper-map-required? true
+   :pass-pipeline-verifier-required? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :production-backend-execution? false
+   :source-model-only? true})

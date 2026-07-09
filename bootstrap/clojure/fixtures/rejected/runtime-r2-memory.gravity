@@ -1,0 +1,4 @@
+(ns runtime.r2-memory
+  (:profile :firmware)
+  (:target :jvm)
+  (:metadata {:runtime {:selection {:fail :r2-memory}}}))

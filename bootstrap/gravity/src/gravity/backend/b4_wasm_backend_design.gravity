@@ -1,0 +1,596 @@
+; Stage1 Gravity-owned B4 Wasm backend source-model contract.
+(ns gravity.backend.b4-wasm-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b4-wasm-backend-contract
+             b4-target-feature-contract
+             b4-component-contract
+             b4-canonical-abi-contract
+             b4-import-export-capability-contract
+             b4-linear-memory-contract
+             b4-async-component-contract
+             b4-numeric-simd-atomic-contract
+             b4-runtime-binding-contract
+             b4-artifact-manifest-contract
+             b4-diagnostic-catalog
+             build-b4-wasm-backend-manifest
+             build-b4-target-feature-record
+             build-b4-component-contract-manifest
+             build-b4-canonical-abi-manifest
+             build-b4-import-capability-manifest
+             build-b4-linear-memory-plan
+             build-b4-async-abi-manifest
+             build-b4-wasm-artifact-record
+             verify-b4-wasm-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :wasm-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B4" "B1" "D1" "D3"
+                                        "C11" "C14"
+                                        "P4" "P5" "P9" "P10" "P13"
+                                        "SAFE2" "SAFE8" "SAFE10"
+                                        "SAFE11" "SAFE15"
+                                        "PERF8" "MATH5" "MATH8"
+                                        "SCHEMA" "AI" "WORKFLOW"
+                                        "B13" "B14" "R1"
+                                        "PKG7" "BOOT1" "BOOT3"
+                                        "BOOT8" "TEST13"]
+               :documents ["B4" "B1" "D1" "D3"
+                           "C11" "C14"
+                           "P4" "P5" "P9" "P10" "P13"
+                           "SAFE2" "SAFE8" "SAFE10"
+                           "SAFE11" "SAFE15"
+                           "PERF8" "MATH5" "MATH8"
+                           "SCHEMA" "AI" "WORKFLOW"
+                           "B13" "B14" "R1"
+                           "PKG7" "BOOT1" "BOOT3"
+                           "BOOT8" "TEST13"]
+               :implements [:wasm-backend-source-model
+                             :wasm-target-feature-contract
+                             :component-model-contract
+                             :canonical-abi-contract
+                             :import-export-capability-contract
+                             :linear-memory-contract
+                             :wasi-async-component-contract
+                             :wasm-numeric-simd-atomic-contract
+                             :runtime-binding-contract
+                             :wasm-artifact-manifest-contract
+                             :stable-b4-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :wasm-target-kind :wasm-feature-record
+                            :memory-width :memory-growth-policy
+                            :table-strategy :reference-type-policy
+                            :component-model-abi
+                            :wit-package-interface-world-records
+                            :canonical-abi-records
+                            :import-capability-manifest
+                            :export-schema-manifest
+                            :host-boundary-schema-manifest
+                            :async-abi-records
+                            :completion-cancellation-backpressure-policy
+                            :resource-ownership-facts
+                            :linear-memory-plan
+                            :pointer-and-handle-lifetime-facts
+                            :bounds-check-proofs
+                            :numeric-mode-facts
+                            :math-certificate-references
+                            :simd-feature-proofs
+                            :atomic-ordering-facts
+                            :replay-nondeterminism-records
+                            :runtime-provider-records
+                            :binding-provider-records
+                            :effect-facts :capability-facts
+                            :safety-outcomes :unsafe-audit-links
+                            :proof-references :source-maps
+                            :generated-origin-maps
+                            :debug-maps :dependency-provenance
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :dom :wasi-host]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b4-wasm-backend-contract-subset
+                                    :clojure-b4-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b4-target.gravity"
+                              "backend-b4-component.gravity"
+                              "backend-b4-canonical-abi.gravity"
+                              "backend-b4-import.gravity"
+                              "backend-b4-export.gravity"
+                              "backend-b4-memory.gravity"
+                              "backend-b4-bounds.gravity"
+                              "backend-b4-nondeterminism.gravity"
+                              "backend-b4-async.gravity"
+                              "backend-b4-wasi-async.gravity"
+                              "backend-b4-simd.gravity"
+                              "backend-b4-atomic.gravity"
+                              "backend-b4-host-schema.gravity"
+                              "backend-b4-manifest.gravity"]}}}))
+
+(def b4-wasm-backend-contract
+  {:artifact :gravity/b4-wasm-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/wasm
+   :accepts [:verified-mir :verified-domain-ir]
+   :target-kinds [:core-module
+                  :component-model
+                  :wasi-like-environment
+                  :browser-embedder
+                  :edge-embedder
+                  :native-wasm-embedding]
+   :emits [:wasm-backend-manifest
+           :wasm-target-feature-record
+           :linear-memory-and-table-plan
+           :wasm-module
+           :component-model-artifact
+           :component-contract-manifest
+           :canonical-abi-manifest
+           :import-capability-manifest
+           :export-schema-manifest
+           :host-boundary-schema-manifest
+           :async-abi-manifest
+           :component-composition-plan
+           :host-binding-stubs
+           :runtime-helper-manifest
+           :source-map
+           :generated-origin-map
+           :replay-nondeterminism-record
+           :wasm-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :mir-module
+              :domain-ir-anchors
+              :profile-manifest
+              :target-manifest
+              :linear-memory-plan
+              :import-capabilities
+              :export-schemas
+              :host-boundary-schemas
+              :component-composition-plan
+              :host-provider-manifest
+              :proof-table
+              :source-map]
+   :rules [:wasm-is-target-artifact-not-gravity-semantics
+           :backend-consumes-only-verified-ir
+           :host-authority-enters-only-through-declared-imports
+           :component-boundaries-preserve-effects-capabilities-and-schemas
+           :raw-pointers-offsets-tables-references-and-handles-never-escape-without-abi-schema
+           :replay-sensitive-profiles-record-nondeterministic-imports]
+   :forbidden [:source-to-wasm-shortcut
+               :ambient-host-import
+               :wasm-sandbox-as-capability-check
+               :raw-linear-memory-offset-as-safe-api
+               :unrecorded-nondeterministic-host-call
+               :runtime-feature-probing-when-compile-time-eligibility-required
+               :artifact-without-wasm-manifest]})
+
+(def b4-target-feature-contract
+  {:artifact :gravity/b4-target-feature-contract
+   :required-fields [:wasm-version
+                     :embedding-model
+                     :memory-width
+                     :memory-count
+                     :initial-memory-pages
+                     :maximum-memory-pages
+                     :memory-growth-permission
+                     :table-representation
+                     :reference-type-support
+                     :exception-handling-support
+                     :gc-proposal-support
+                     :simd-support
+                     :relaxed-simd-support
+                     :atomic-and-shared-memory-support
+                     :component-model-abi-version
+                     :wasi-preview-or-profile
+                     :async-component-abi-version
+                     :canonical-abi-adapter-support
+                     :resource-handle-and-borrow-support
+                     :async-func-stream-future-support
+                     :completion-cancellation-backpressure-strategy
+                     :import-namespace
+                     :deterministic-or-replay-required-mode]
+   :rules [:target-kind-is-explicit
+           :wasm32-or-wasm64-is-pinned
+           :feature-dependent-lowering-requires-feature-or-fallback
+           :profile-forbids-runtime-feature-probing-when-compile-time-eligibility-required]
+   :reject-when [:unsupported-wasm-kind
+                 :unsupported-memory-width
+                 :missing-feature-record
+                 :feature-without-profile-valid-fallback
+                 :invalid-embedding-model]})
+
+(def b4-component-contract
+  {:artifact :gravity/b4-component-contract
+   :contract-items [:package :interface :world :function
+                    :record :variant :flags :list
+                    :option :result :stream :future :resource]
+   :world-required-fields [:required-imports
+                           :capability-grants
+                           :exported-functions
+                           :exported-resources
+                           :host-boundary-schemas
+                           :replay-and-nondeterminism-policy
+                           :resource-construction-borrow-transfer-drop-rules
+                           :async-and-streaming-policy
+                           :cancellation-completion-backpressure-policy
+                           :version-and-compatibility-constraints]
+   :rules [:schema-names-are-not-host-authority
+           :interface-items-map-to-gravity-type-effect-capability-and-origin
+           :worlds-are-host-boundary-eligibility-units
+           :resources-are-linear-unless-sharing-is-proven
+           :component-composition-preserves-effects-capabilities-replay-and-ownership]
+   :forbidden [:invalid-wit-like-interface
+               :undeclared-authority-amplification
+               :composition-hides-imported-capability
+               :composition-weakens-host-boundary-schema
+               :composition-drops-replay-metadata
+               :composition-erases-resource-ownership-rule]})
+
+(def b4-canonical-abi-contract
+  {:artifact :gravity/b4-canonical-abi-contract
+   :value-forms [:record :variant :list :option :result
+                 :string :buffer :resource :stream :future]
+   :required-fields [:lowered-form
+                     :lifted-form
+                     :copy-behavior
+                     :borrow-behavior
+                     :transfer-behavior
+                     :drop-behavior
+                     :allocation-function
+                     :realloc-function
+                     :trap-error-and-cancellation-mapping
+                     :host-and-guest-ownership
+                     :schema-version
+                     :schema-hash
+                     :conformance-fixture-id]
+   :rules [:canonical-abi-records-describe-boundary-values
+           :resource-handles-carry-owner-borrow-scope-destructor-and-leak-policy
+           :canonical-abi-records-not-raw-offsets-are-stable-component-contracts
+           :abi-record-links-source-and-generated-origin]
+   :reject-when [:missing-canonical-abi-record
+                 :inconsistent-lift-lower-form
+                 :resource-handle-without-owner
+                 :stream-or-future-without-typed-abi
+                 :schema-hash-gap]})
+
+(def b4-import-export-capability-contract
+  {:artifact :gravity/b4-import-export-capability-contract
+   :import-required-fields [:host-namespace
+                            :host-symbol
+                            :interface-world-item-name
+                            :gravity-effect
+                            :capability-grant
+                            :parameter-schema
+                            :return-schema
+                            :determinism-policy
+                            :replay-policy
+                            :trap-and-error-behavior
+                            :async-or-sync-behavior
+                            :host-resource-ownership
+                            :taint-policy
+                            :source-and-generated-origin]
+   :export-required-fields [:export-id
+                            :stable-boundary-schema
+                            :ownership-and-lifetime-rules
+                            :effect
+                            :capability
+                            :replay-policy
+                            :resource-ownership-record]
+   :rules [:every-import-has-effect-capability-schema-determinism-replay-and-provider
+           :component-imports-are-capability-imports
+           :exports-publish-schema-ownership-effect-capability-and-replay-records
+           :host-boundary-schemas-exist-for-import-export-and-adapter-boundaries]
+   :forbidden [:ambient-host-import
+               :host-function-without-capability-grant
+               :export-without-stable-schema
+               :internal-layout-exposed-as-safe-export
+               :missing-host-provider-record]})
+
+(def b4-linear-memory-contract
+  {:artifact :gravity/b4-linear-memory-contract
+   :required-fields [:allocation-provider
+                     :stack-segment
+                     :heap-segment
+                     :static-data-segments
+                     :exported-memory-policy
+                     :string-representation
+                     :byte-buffer-representation
+                     :struct-tuple-enum-tagged-union-layout
+                     :handle-and-resource-table-representation
+                     :copy-borrow-transfer-rules
+                     :bounds-and-lifetime-proofs
+                     :memory-growth-invalidation-rules]
+   :rules [:pointers-are-internal-offsets-unless-schema-converts-to-handle-or-owned-value
+           :host-may-not-retain-offset-without-lifetime-record
+           :component-linear-memory-is-implementation-detail-of-canonical-adapter
+           :bounds-elision-requires-wasm-memory-semantics-and-gravity-proof]
+   :forbidden [:pointer-escape-without-abi-schema
+               :host-retains-offset-without-lifetime
+               :memory-growth-invalidates-live-pointer-without-record
+               :bounds-check-elision-without-proof]})
+
+(def b4-async-component-contract
+  {:artifact :gravity/b4-async-component-contract
+   :async-items [:async-func :stream :future]
+   :required-fields [:typed-abi-item
+                     :completion-policy
+                     :cancellation-policy
+                     :backpressure-policy
+                     :resource-ownership
+                     :scheduling-metadata
+                     :replay-policy
+                     :drop-or-leak-policy
+                     :error-and-trap-mapping]
+   :rules [:async-is-part-of-component-contract
+           :future-is-single-completion-typed-value
+           :stream-is-typed-sequence-resource
+           :async-imports-require-effect-capability-scheduling-and-cancellation-metadata
+           :replay-sensitive-profiles-record-completions-stream-order-host-wakeups-cancellations-and-errors]
+   :forbidden [:opaque-host-promise-as-typed-abi
+               :blocking-adapter-erases-host-scheduling
+               :dropped-cancellation
+               :unbounded-stream-buffering
+               :erased-backpressure
+               :async-effect-without-capability]})
+
+(def b4-numeric-simd-atomic-contract
+  {:artifact :gravity/b4-numeric-simd-atomic-contract
+   :numeric-requirements [:gravity-numeric-manifest
+                          :checked-or-saturating-helper-or-instruction
+                          :math8-floating-mode
+                          :math5-certificate-reference]
+   :simd-required-fields [:lane-record
+                          :bounds-proof
+                          :alignment-proof
+                          :numeric-mode
+                          :target-feature-record]
+   :atomic-required-fields [:shared-memory-enabled
+                            :memory-order-mapping
+                            :host-embedding-support
+                            :fallback-or-rejection-rule]
+   :rules [:wrapping-integer-operations-may-use-wasm-wrapping-semantics
+           :checked-and-saturating-modes-require-check-helper-or-target-instruction
+           :floating-lowering-preserves-mode-and-certificate
+           :simd-lowering-requires-perf8-and-target-feature-records
+           :atomics-require-shared-memory-ordering-and-host-support]
+   :reject-when [:missing-numeric-manifest
+                 :unsupported-simd-feature
+                 :uncertified-vector-lowering
+                 :shared-memory-gap
+                 :memory-order-gap
+                 :volatile-or-mmio-without-embedding-capability]})
+
+(def b4-runtime-binding-contract
+  {:artifact :gravity/b4-runtime-binding-contract
+   :helper-categories [:allocation
+                       :bounds-and-numeric-checks
+                       :resource-tables
+                       :string-and-buffer-conversion
+                       :async-host-calls
+                       :futures-streams-completion-queues-cancellation-backpressure
+                       :traps-and-panic-formatting
+                       :math-functions
+                       :debug-hooks]
+   :provider-manifests [:browser :node :edge :wasi :custom-embedder]
+   :rules [:runtime-helpers-are-selected-through-provider-manifest
+           :binding-generators-preserve-schema-effects-capabilities-source-maps-and-replay
+           :host-exceptions-and-rejected-promises-are-translated-at-binding-stubs
+           :deterministic-traps-host-failures-and-recorded-events-remain-distinct]
+   :forbidden [:hidden-host-runtime-service
+               :binding-stub-drops-capability
+               :binding-stub-drops-replay-metadata
+               :untyped-host-failure-leaks-through-boundary]})
+
+(def b4-artifact-manifest-contract
+  {:artifact :gravity/b4-wasm-artifact-manifest-contract
+   :required-artifacts [:wasm-backend-manifest
+                        :wasm-target-feature-record
+                        :linear-memory-and-table-plan
+                        :wasm-module
+                        :component-model-artifact
+                        :component-contract-manifest
+                        :canonical-abi-manifest
+                        :import-capability-manifest
+                        :export-schema-manifest
+                        :host-boundary-schema-manifest
+                        :async-abi-manifest
+                        :component-composition-plan
+                        :host-binding-stubs
+                        :runtime-helper-manifest
+                        :source-map
+                        :generated-origin-map
+                        :replay-nondeterminism-record
+                        :wasm-backend-diagnostics]
+   :required-fields [:artifact-id
+                     :source-input-digest
+                     :compiler-identity
+                     :profile
+                     :target
+                     :wasm-target-kind
+                     :feature-record
+                     :effects
+                     :capabilities
+                     :safety-summary
+                     :proof-summary
+                     :unsafe-audit-links
+                     :dependency-graph
+                     :source-map
+                     :generated-origin-map
+                     :replay-record]
+   :rules [:actual-source-path-and-extension-are-preserved
+           :wasm-feature-record-is-manifested
+           :schemas-capabilities-and-replay-records-are-machine-linked
+           :diagnostics-reference-source-and-generated-origin]
+   :forbidden [:manifest-without-source-unit-identity
+               :wasm-artifact-without-artifact-record
+               :generated-wasm-without-boundary-schema-record
+               :diagnostic-without-stable-b4-id]})
+
+(def b4-diagnostic-catalog
+  {:artifact :gravity/b4-diagnostic-catalog
+   :diagnostics
+   [{:id "B4-TARGET"
+     :meaning :unsupported-wasm-kind-memory-width-embedding-or-feature}
+    {:id "B4-COMPONENT"
+     :meaning :invalid-interface-world-resource-or-composition-plan}
+    {:id "B4-CANONICAL-ABI"
+     :meaning :missing-or-inconsistent-canonical-abi-record}
+    {:id "B4-IMPORT"
+     :meaning :host-import-without-effect-capability-schema-or-provider}
+    {:id "B4-EXPORT"
+     :meaning :unstable-or-incomplete-export-schema}
+    {:id "B4-MEMORY"
+     :meaning :invalid-linear-memory-lifetime-growth-or-pointer-escape}
+    {:id "B4-BOUNDS"
+     :meaning :missing-bounds-proof-or-invalid-check-elision}
+    {:id "B4-NONDETERMINISM"
+     :meaning :unrecorded-host-nondeterminism-in-replay-required-code}
+    {:id "B4-ASYNC"
+     :meaning :host-async-behavior-without-effect-or-scheduling-metadata}
+    {:id "B4-WASI-ASYNC"
+     :meaning :wasi-or-component-async-item-without-typed-ownership-completion-cancellation-backpressure-or-replay}
+    {:id "B4-SIMD"
+     :meaning :unsupported-or-uncertified-vector-lowering}
+    {:id "B4-ATOMIC"
+     :meaning :shared-memory-or-memory-order-violation}
+    {:id "B4-HOST-SCHEMA"
+     :meaning :missing-or-incompatible-host-boundary-schema}
+    {:id "B4-MANIFEST"
+     :meaning :incomplete-wasm-artifact-manifest}]
+   :required-diagnostic-fields [:source-span
+                                :mir-operation-or-domain-anchor
+                                :import-or-export-id
+                                :interface-item-or-world-id
+                                :canonical-abi-record-id
+                                :async-item-id
+                                :profile
+                                :embedding
+                                :feature-requirement
+                                :missing-evidence
+                                :fallback-status
+                                :remediation]})
+
+(defn build-b4-wasm-backend-manifest
+  [target feature-record emitted-artifacts required-facts]
+  {:artifact :gravity/wasm-backend-manifest
+   :backend :gravity.backend/wasm
+   :version "source-model-v1"
+   :target target
+   :feature-record feature-record
+   :emits emitted-artifacts
+   :requires required-facts
+   :rejects [:ambient-host-import
+             :pointer-escape
+             :unrecorded-nondeterminism
+             :unsupported-wasm-feature
+             :invalid-component-contract
+             :missing-canonical-abi]
+   :source-model-only? true})
+
+(defn build-b4-target-feature-record
+  [target-kind memory-width features embedding]
+  {:artifact :gravity/b4-wasm-target-feature-record
+   :target-kind target-kind
+   :memory-width memory-width
+   :features features
+   :embedding embedding
+   :required-fields (:required-fields b4-target-feature-contract)
+   :source-model-only? true})
+
+(defn build-b4-component-contract-manifest
+  [packages interfaces worlds resources]
+  {:artifact :gravity/b4-component-contract-manifest
+   :packages packages
+   :interfaces interfaces
+   :worlds worlds
+   :resources resources
+   :contract-items (:contract-items b4-component-contract)
+   :source-model-only? true})
+
+(defn build-b4-canonical-abi-manifest
+  [abi-records schema-version schema-hash]
+  {:artifact :gravity/b4-canonical-abi-manifest
+   :abi-records abi-records
+   :schema-version schema-version
+   :schema-hash schema-hash
+   :required-fields (:required-fields b4-canonical-abi-contract)
+   :source-model-only? true})
+
+(defn build-b4-import-capability-manifest
+  [imports exports host-boundary-schemas]
+  {:artifact :gravity/b4-import-capability-manifest
+   :imports imports
+   :exports exports
+   :host-boundary-schemas host-boundary-schemas
+   :import-required-fields
+   (:import-required-fields b4-import-export-capability-contract)
+   :source-model-only? true})
+
+(defn build-b4-linear-memory-plan
+  [memory-width segments ownership]
+  {:artifact :gravity/b4-linear-memory-plan
+   :memory-width memory-width
+   :segments segments
+   :ownership ownership
+   :required-fields (:required-fields b4-linear-memory-contract)
+   :source-model-only? true})
+
+(defn build-b4-async-abi-manifest
+  [async-items replay-policy scheduling]
+  {:artifact :gravity/b4-async-abi-manifest
+   :async-items async-items
+   :replay-policy replay-policy
+   :scheduling scheduling
+   :required-fields (:required-fields b4-async-component-contract)
+   :source-model-only? true})
+
+(defn build-b4-wasm-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b4-wasm-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b4-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b4-wasm-backend-design
+  [manifest]
+  {:artifact :gravity/b4-wasm-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :target-features-pinned? true
+   :component-contracts-covered? true
+   :canonical-abi-covered? true
+   :import-export-capabilities-covered? true
+   :linear-memory-covered? true
+   :async-component-abi-covered? true
+   :numeric-simd-atomic-covered? true
+   :runtime-binding-manifest-required? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :production-backend-execution? false
+   :source-model-only? true})

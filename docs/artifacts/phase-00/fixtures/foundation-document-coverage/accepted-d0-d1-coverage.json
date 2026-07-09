@@ -1,0 +1,31 @@
+{
+  "artifact_id": "phase-00-foundation-document-coverage-accepted-fixture",
+  "kind": "foundation-document-coverage-fixture",
+  "task": "P00-D001-D010",
+  "documents": [
+    {
+      "id": "D0",
+      "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+      "implementation_surface": "Fixture implementation surface for D0 coverage.",
+      "accepted_behavior": ["Profiles are compile-time contracts."],
+      "rejected_behavior": ["Unsafe behavior invisible to the artifact graph."],
+      "required_artifacts": ["artifact provenance graph"],
+      "diagnostics": ["D0-ARTIFACT-MISSING"],
+      "dependencies": ["root-contract"],
+      "conformance_criteria": ["Every emitted artifact records provenance."],
+      "evidence_refs": ["docs/artifacts/phase-00/foundation-document-coverage.json"]
+    },
+    {
+      "id": "D1",
+      "path": "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+      "implementation_surface": "Fixture implementation surface for D1 coverage.",
+      "accepted_behavior": ["Pipeline facts are visible to consuming passes."],
+      "rejected_behavior": ["Backend receiving unchecked source."],
+      "required_artifacts": ["pass contract manifest"],
+      "diagnostics": ["D1-PIPELINE-ORDER"],
+      "dependencies": ["D0", "D3"],
+      "conformance_criteria": ["Pipeline fixtures expose required facts."],
+      "evidence_refs": ["docs/artifacts/phase-00/foundation-document-coverage.json"]
+    }
+  ]
+}

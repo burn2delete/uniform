@@ -1,0 +1,11 @@
+(ns typed.bad.latent
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def bad
+  (effect/erase-latent
+    (fn []
+      (println "hidden"))))

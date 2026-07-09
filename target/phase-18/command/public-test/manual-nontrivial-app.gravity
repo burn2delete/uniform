@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Gravity P18-T04 executable command artifact
+# source: examples/nontrivial-app.gravity
+# source-sha256: sha256:ddbf6f7ba7983805e8ddf7739690cab7d0c5a697708dc736b835dc20fb5e81b5
+# compiled-plan-id: sha256:e1b378f29e8ccbe463ab97c913811006738d6fe1caec95a47c31275f6eb56d27
+# release-artifact-id: sha256:ac5931e6e84eaf3a1c9ef7d0d6a9b2affc33fb7f68023063a1fa50d27bb7e206
+# final-seedless-release: false
+printf '%s' 'nontrivial-app
+gravity:ready:2
+(:release 24)
+'

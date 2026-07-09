@@ -1,0 +1,213 @@
+{
+  "kind": "phase04-performance-document-coverage-input",
+  "documents": [
+    {
+      "task_id": "P04-D059",
+      "document": "PERF1",
+      "governing_doc": "docs/phase-04-performance-model/059-perf1-performance-model-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "performance_contract_manifest",
+          "optimization_decision_log",
+          "target_feature_reports",
+          "benchmark_reports"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf1-claim.json",
+        "diagnostic": "PERF1-CLAIM"
+      },
+      "coverage_claims": [
+        "complete performance claim context",
+        "optimization decisions preserve or regenerate safety and semantic facts",
+        "target fingerprint and variant artifact evidence"
+      ]
+    },
+    {
+      "task_id": "P04-D060",
+      "document": "PERF2",
+      "governing_doc": "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "zero_cost_conformance_results",
+          "conformance_matrix"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf2-residual.json",
+        "diagnostic": "PERF2-RESIDUAL"
+      },
+      "coverage_claims": [
+        "before and after IR records",
+        "erased and residual cost accounting",
+        "zero-cost family conformance entries"
+      ]
+    },
+    {
+      "task_id": "P04-D061",
+      "document": "PERF3",
+      "governing_doc": "docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "specialization_records",
+          "generated_variant_manifest"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf3-key.json",
+        "diagnostic": "PERF3-KEY"
+      },
+      "coverage_claims": [
+        "specialization keys include behavior-affecting facts",
+        "guard predicate and source map emission",
+        "cache invalidation inputs"
+      ]
+    },
+    {
+      "task_id": "P04-D062",
+      "document": "PERF4",
+      "governing_doc": "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "layout_records"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf4-abi.json",
+        "diagnostic": "PERF4-ABI"
+      },
+      "coverage_claims": [
+        "layout manifest and transformation evidence",
+        "alias and ownership proof checks",
+        "ABI boundary rejection"
+      ]
+    },
+    {
+      "task_id": "P04-D063",
+      "document": "PERF5",
+      "governing_doc": "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "benchmark_reports"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf5-safety-gate.json",
+        "diagnostic": "PERF5-SAFETY-GATE"
+      },
+      "coverage_claims": [
+        "machine-readable benchmark manifest",
+        "environment fingerprint and sample summary",
+        "safety and correctness gate enforcement"
+      ]
+    },
+    {
+      "task_id": "P04-D064",
+      "document": "PERF6",
+      "governing_doc": "docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "pgo_decision_log"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf6-stale.json",
+        "diagnostic": "PERF6-STALE"
+      },
+      "coverage_claims": [
+        "profile-data identity record",
+        "privacy and redaction policy",
+        "reproducible PGO decision log"
+      ]
+    },
+    {
+      "task_id": "P04-D065",
+      "document": "PERF7",
+      "governing_doc": "docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "autotuning_selection_certificates",
+          "generated_variant_manifest"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf7-fallback.json",
+        "diagnostic": "PERF7-FALLBACK"
+      },
+      "coverage_claims": [
+        "candidate-space declaration",
+        "candidate rejection before benchmarking",
+        "guard table and fallback enforcement"
+      ]
+    },
+    {
+      "task_id": "P04-D066",
+      "document": "PERF8",
+      "governing_doc": "docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "simd_cache_records",
+          "target_feature_reports"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf8-lane.json",
+        "diagnostic": "PERF8-LANE"
+      },
+      "coverage_claims": [
+        "lane, alias, bounds, and alignment proof checks",
+        "intrinsic feature guard record",
+        "cache evidence record"
+      ]
+    },
+    {
+      "task_id": "P04-D067",
+      "document": "PERF9",
+      "governing_doc": "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "realtime_latency_reports"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf9-loop.json",
+        "diagnostic": "PERF9-LOOP"
+      },
+      "coverage_claims": [
+        "latency contract artifact",
+        "bounded-loop and allocation-free evidence",
+        "unbounded loop rejection"
+      ]
+    },
+    {
+      "task_id": "P04-D068",
+      "document": "PERF10",
+      "governing_doc": "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+      "accepted": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/accepted-performance-model.json",
+        "required_artifact_fields": [
+          "check_elision_certificates",
+          "proof_index"
+        ]
+      },
+      "rejected": {
+        "fixture": "docs/artifacts/phase-04/fixtures/performance/rejected-perf10-proof.json",
+        "diagnostic": "PERF10-PROOF-MISSING"
+      },
+      "coverage_claims": [
+        "proof-backed check-elision certificates",
+        "policy check discharge through equivalent policy artifacts",
+        "missing proof rejection"
+      ]
+    }
+  ]
+}

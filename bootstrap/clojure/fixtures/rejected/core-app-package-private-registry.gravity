@@ -1,0 +1,14 @@
+(ns core.app.package-private-registry
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:registry-records
+                         [{:artifact-id "registry:bad"
+                           :registry-id :acme/private
+                           :access-grant false}]}}}))
+
+(defn main []
+  (println "bad package private registry"))

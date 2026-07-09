@@ -1,0 +1,82 @@
+; Stage1 Gravity-owned L1/C2 source frontend contract.
+(ns gravity.compiler.l1-c2-surface-syntax-reader
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [l1-c2-source-unit-contract
+             l1-c2-reader-diagnostic-catalog
+             read-l1-c2-source-unit])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :source-frontend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["L1" "C2" "C3" "C15"
+                           "BOOT1" "BOOT2" "BOOT3" "BOOT4"
+                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"]
+               :implements [:source-unit-record
+                             :co-canonical-source-extensions
+                             :surface-syntax-reader-contract
+                             :reader-diagnostic-catalog
+                             :reader-provenance]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-source-extension-filter
+                                    :clojure-reader-source-unit-subset]}
+               :conformance {:accepted-fixture "bootstrap/gravity/src"
+                             :accepted-source-extensions [".qst" ".gravity"]
+                             :rejected-fixtures
+                             ["stage1-bootstrap-missing-owner.gravity"
+                              "stage1-bootstrap-wrong-profile.gravity"
+                              "stage1-bootstrap-ambient-authority.gravity"
+                              "stage1-bootstrap-missing-lineage.gravity"
+                              "stage1-bootstrap-missing-preserved-fact.gravity"
+                              "stage1-bootstrap-incomplete-source-set.gravity"]}}}))
+
+(def l1-c2-source-unit-contract
+  {:artifact :gravity/source-unit-contract
+   :source-kinds {:qst {:extension ".qst"
+                        :meaning :qst-theory-source}
+                  :gravity {:extension ".gravity"
+                            :meaning :gravity-branded-source}}
+   :canonical-source-extensions [".qst" ".gravity"]
+   :identity-fields [:path :extension :encoding :bytes-hash
+                     :reader-options :source-kind]
+   :reader-output [:source-unit-record :token-stream :form-tree
+                   :syntax-seed-stream :reader-source-map
+                   :reader-diagnostics]
+   :preserves [:source-spans :syntax-identity :diagnostic-codes
+               :artifact-provenance]
+   :forbidden [:macro-execution :host-reflection :ambient-io
+               :ambient-network :ambient-shell]})
+
+(def l1-c2-reader-diagnostic-catalog
+  {:l1 ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY"
+        "L1-METADATA" "L1-NS-SHAPE" "L1-READER-EXTENSION"
+        "L1-SOURCE-ENCODING"]
+   :c2 ["C2-ENCODING" "C2-DELIMITER" "C2-STRING" "C2-MAP"
+        "C2-SET" "C2-METADATA" "C2-ABBREV" "C2-EXTENSION"
+        "C2-HASH"]
+   :stable-diagnostic-record-fields [:diagnostic-id :severity
+                                     :source-span :reader-state
+                                     :facts :remediation]})
+
+(defn read-l1-c2-source-unit [source-path source-kind source-text]
+  (quote {:status :stage1-source-owned
+          :source-path source-path
+          :source-kind source-kind
+          :source-text source-text
+          :contract l1-c2-source-unit-contract
+          :diagnostics l1-c2-reader-diagnostic-catalog
+          :emits [:source-unit-record :syntax-seed-stream
+                  :reader-diagnostics]
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance]}))

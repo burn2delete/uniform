@@ -1,0 +1,10 @@
+(ns math.opt-gpu
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:conformance
+           {:candidate-overrides [{:gpu? true
+                                   :device-certificate nil}]}}}))

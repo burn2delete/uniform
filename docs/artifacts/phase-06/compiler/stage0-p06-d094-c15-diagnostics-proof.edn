@@ -1,0 +1,66 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D094
+ :date "2026-06-25"
+ :status :complete
+ :capability :c15-compiler-diagnostics-document-coverage
+ :command "clojure -M:gravity compiler-c15-diagnostics bootstrap/clojure/fixtures/accepted/compiler-c15-diagnostics.gravity"
+ :artifact-kind :gravity/stage0-c15-compiler-diagnostics-artifact
+ :artifact-hash "sha256:a0815c5ae472679476b6c6879fb9e749ec64015b99bc4eedc7edce52becab401"
+ :summary {:structured-diagnostics 4
+           :catalog-rules 9
+           :quick-fixes 9
+           :renderers 5
+           :golden-fixtures 9
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c15-diagnostics.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-verify-c15-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-id.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-span.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-origin.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-facts.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-remediation.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-redaction.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-order.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c15-golden.gravity"]
+ :diagnostic-ids ["C15-SCHEMA"
+                  "C15-ID"
+                  "C15-SPAN"
+                  "C15-ORIGIN"
+                  "C15-FACTS"
+                  "C15-REMEDIATION"
+                  "C15-REDACTION"
+                  "C15-ORDER"
+                  "C15-GOLDEN"]
+ :capability-based-proof {:c14-lowering-input-verified? true
+                          :diagnostic-schema-complete? true
+                          :diagnostic-stream-deterministic? true
+                          :stable-ids? true
+                          :locations-and-origins-linked? true
+                          :facts-structured? true
+                          :remediation-and-quick-fixes? true
+                          :redaction-public-safe? true
+                          :renderers-covered? true
+                          :golden-fixtures-matched? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 67 tests containing 3614 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c15-diagnostics bootstrap/clojure/fixtures/accepted/compiler-c15-diagnostics.gravity"
+               :result :accepted
+               :artifact-hash "sha256:a0815c5ae472679476b6c6879fb9e749ec64015b99bc4eedc7edce52becab401"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 21 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D094 for the Clojure stage0 C15 compiler diagnostics document boundary only."
+                 "It does not claim production diagnostic localization, release readiness, or self-hosting."]}

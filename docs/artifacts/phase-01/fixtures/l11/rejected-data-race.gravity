@@ -1,0 +1,5 @@
+(ns l11.bad.race
+  (:profile :hosted))
+
+(def bad
+  (shared/mutate cell))

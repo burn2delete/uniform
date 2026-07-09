@@ -1,0 +1,62 @@
+{
+  "artifact_id": "phase-00-cross-phase-ambiguity-log-2026-06-24",
+  "kind": "cross-phase-ambiguity-log",
+  "task": "P00-T05",
+  "entries": [
+    {
+      "id": "AMB-P00-LANGUAGE-IDENTITY-001",
+      "category": "language-identity",
+      "status": "resolved",
+      "governing_docs": ["D0", "D1", "D3"],
+      "ambiguity": "Language, compiler platform, and execution ecosystem can be confused when downstream work names runtime behavior as language semantics.",
+      "resolution": "D0 separates the identities and requires artifacts to connect them; D3 rejects runtime/backend and profile/target conflation.",
+      "affected_surfaces": ["source forms", "typed core", "runtime manifests", "artifact graph"],
+      "evidence": ["docs/artifacts/phase-00/contract-traceability.json", "docs/artifacts/phase-00/diagnostic-namespace-registry.json"],
+      "review_required": true
+    },
+    {
+      "id": "AMB-P00-SAFETY-001",
+      "category": "safety-guarantee",
+      "status": "resolved",
+      "governing_docs": ["D0", "D6", "D8", "D9"],
+      "ambiguity": "Performance work can appear to justify erasing safety checks without retained or regenerated evidence.",
+      "resolution": "D6, D8, and D9 are bound by the safety-performance gate model; a pass must preserve, regenerate, retain, or reject.",
+      "affected_surfaces": ["optimizer checks", "proof certificates", "runtime check manifests", "artifact safety summaries"],
+      "evidence": ["docs/artifacts/phase-00/safety-performance-gate-model.json"],
+      "review_required": true
+    },
+    {
+      "id": "AMB-P00-PROFILE-001",
+      "category": "profile-legality",
+      "status": "resolved",
+      "governing_docs": ["D0", "D2", "D3", "D8"],
+      "ambiguity": "Profile legality can be moved after target lowering if profile and target are treated as the same concept.",
+      "resolution": "The terminology registry rejects profile/target conflation and the milestone evidence system blocks deferred safety or profile legality claims.",
+      "affected_surfaces": ["profile manifests", "target lowering", "effect matrices", "capability matrices"],
+      "evidence": ["docs/artifacts/phase-00/diagnostic-namespace-registry.json", "docs/artifacts/phase-00/milestone-evidence-system.json"],
+      "review_required": true
+    },
+    {
+      "id": "AMB-P00-ARTIFACT-001",
+      "category": "artifact-provenance",
+      "status": "resolved",
+      "governing_docs": ["D0", "D2", "D3", "D9"],
+      "ambiguity": "A file path can be mistaken for artifact identity when provenance is not recorded.",
+      "resolution": "The terminology registry requires artifact identity fields and the milestone evidence system requires emitted artifacts and provenance records.",
+      "affected_surfaces": ["artifact schemas", "diagnostic bundles", "benchmark reports", "package metadata"],
+      "evidence": ["docs/artifacts/phase-00/diagnostic-namespace-registry.json", "docs/artifacts/phase-00/milestone-evidence-system.json"],
+      "review_required": true
+    },
+    {
+      "id": "AMB-P00-BOOTSTRAP-001",
+      "category": "bootstrap-trust",
+      "status": "resolved",
+      "governing_docs": ["D0", "D2", "D9"],
+      "ambiguity": "Self-hosting progress can be mistaken for permission to retire seed compiler trust before equivalence evidence exists.",
+      "resolution": "The change-control workflow requires bootstrap equivalence evidence before bootstrap trust changes are accepted.",
+      "affected_surfaces": ["seed compiler", "bootstrap stage matrix", "compiler identity records", "equivalence report"],
+      "evidence": ["docs/artifacts/phase-00/change-control-workflow.json", "docs/artifacts/phase-00/milestone-evidence-system.json"],
+      "review_required": true
+    }
+  ]
+}

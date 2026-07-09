@@ -1,0 +1,5 @@
+(ns l9.bad.workflow
+  (:profile :distributed))
+
+(def bad
+  (workflow/fail :step))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-profile-system.json",
+  "set": {
+    "/namespaces/10/checks/unmodeled_nondeterminism": true
+  }
+}

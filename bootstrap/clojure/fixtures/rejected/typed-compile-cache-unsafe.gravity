@@ -1,0 +1,10 @@
+(ns compile.cache-unsafe
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:cache-policy :loose}))
+
+(def invalid
+  (compile/cache :json/User :generated))

@@ -1,0 +1,75 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "alternative-memory-provider-artifact",
+      "coverage": [
+        "memory provider declaration",
+        "allocation strategy",
+        "lifetime and alias facts",
+        "unsafe boundary audits",
+        "layout metadata",
+        "runtime checks",
+        "release evidence",
+        "device, MMIO, and FFI maps",
+        "conformance report"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/accepted-alternative-memory.json"
+    }
+  ],
+  "document": "L18",
+  "kind": "l18-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L18-PROVIDER",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-provider.json"
+    },
+    {
+      "diagnostic": "L18-HIDDEN-ALLOC",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-hidden-alloc.json"
+    },
+    {
+      "diagnostic": "L18-LIFETIME",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-lifetime.json"
+    },
+    {
+      "diagnostic": "L18-ESCAPE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-escape.json"
+    },
+    {
+      "diagnostic": "L18-ALIAS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-alias.json"
+    },
+    {
+      "diagnostic": "L18-UNINIT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-uninit.json"
+    },
+    {
+      "diagnostic": "L18-DOUBLE-RELEASE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-double-release.json"
+    },
+    {
+      "diagnostic": "L18-LEAK",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-leak.json"
+    },
+    {
+      "diagnostic": "L18-BOUNDS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-bounds.json"
+    },
+    {
+      "diagnostic": "L18-DEVICE-SYNC",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-device-sync.json"
+    },
+    {
+      "diagnostic": "L18-MMIO",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-mmio.json"
+    },
+    {
+      "diagnostic": "L18-FFI-ALLOCATOR",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-ffi-allocator.json"
+    },
+    {
+      "diagnostic": "L18-UNSAFE-AUDIT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l18/rejected-unsafe-audit.json"
+    }
+  ]
+}

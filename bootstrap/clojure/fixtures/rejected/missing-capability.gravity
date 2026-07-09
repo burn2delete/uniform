@@ -1,0 +1,6 @@
+(ns bad.capability
+  (:profile :hosted)
+  (:effects #{:io/write}))
+
+(defn main []
+  (println "missing capability"))

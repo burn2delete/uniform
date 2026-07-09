@@ -1,0 +1,49 @@
+{:proof/id :p01-t05-stage0-typed-core-capability
+ :date "2026-06-24"
+ :agent "Codex"
+ :status :passed
+ :task :P01-T05
+ :governing-docs ["docs/phase-01-core-language/015-l5-type-system-specification.md"
+                  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+                  "docs/phase-01-core-language/020-l10-memory-model-specification.md"
+                  "docs/phase-01-core-language/021-l11-concurrency-model-specification.md"
+                  "docs/phase-01-core-language/025-l15-capability-provider-specification.md"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/typed-core.gravity"
+ :command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/typed-core.gravity"
+ :expected-artifact-kind :gravity/stage0-typed-core-artifact
+ :artifact-facts [:type-facts
+                  :type-category-coverage
+                  :type-conformance-fixture
+                  :function-signature-table
+                  :dynamic-boundary-records
+                  :runtime-check-records
+                  :schema-type-links
+                  :generic-instantiation-records
+                  :mir-type-preservation-records
+                  :effect-environment
+                  :namespace-effect-summary
+                  :module-effect-summary
+                  :capability-report
+                  :provider-selection-records
+                  :memory-facts
+                  :ownership-resource-type-facts
+                  :concurrency-facts]
+ :rejected-fixtures {"bootstrap/clojure/fixtures/rejected/typed-type-mismatch.gravity" "L5-TYPE-MISMATCH"
+                    "bootstrap/clojure/fixtures/rejected/typed-dynamic-forbidden.gravity" "L5-DYNAMIC-FORBIDDEN"
+                    "bootstrap/clojure/fixtures/rejected/typed-annotation-required.gravity" "L5-ANNOTATION-REQUIRED"
+                    "bootstrap/clojure/fixtures/rejected/typed-cast-unsafe.gravity" "L5-CAST-UNSAFE"
+                    "bootstrap/clojure/fixtures/rejected/typed-implicit-cast.gravity" "L5-CAST-UNSAFE"
+                    "bootstrap/clojure/fixtures/rejected/typed-host-null.gravity" "L5-TYPE-MISMATCH"
+                    "bootstrap/clojure/fixtures/rejected/typed-uninit-read.gravity" "L5-UNINIT-READ"
+                    "bootstrap/clojure/fixtures/rejected/typed-linear-dup.gravity" "L5-LINEAR-DUP"
+                    "bootstrap/clojure/fixtures/rejected/typed-schema-weaken.gravity" "L5-SCHEMA-WEAKEN"
+                    "bootstrap/clojure/fixtures/rejected/typed-latent-effect-missing.gravity" "L5-LATENT-EFFECT-MISSING"
+                    "bootstrap/clojure/fixtures/rejected/typed-effect-undeclared.gravity" "L6-EFFECT-UNDECLARED"
+                    "bootstrap/clojure/fixtures/rejected/typed-capability-missing.gravity" "L15-CAPABILITY-MISSING"
+                    "bootstrap/clojure/fixtures/rejected/typed-raw-safe.gravity" "L10-RAW-SAFE"
+                    "bootstrap/clojure/fixtures/rejected/typed-linear-resource.gravity" "L10-LINEAR-RESOURCE"
+                    "bootstrap/clojure/fixtures/rejected/typed-scheduler-profile.gravity" "L11-SCHEDULER"
+                    "bootstrap/clojure/fixtures/rejected/typed-task-scope.gravity" "L11-TASK-SCOPE"}
+ :validation {:command "clojure -M:test"
+              :output "Ran 14 tests containing 530 assertions. 0 failures, 0 errors. clojure bootstrap validation passed: hosted hello, L1 reader artifacts, L2 core artifacts, L3 module artifacts, L4 macro artifacts, L5 typed/effected artifacts, L6 effect-system artifacts, L7 pattern-match artifacts, L8 dispatch artifacts, L9 error-handling artifacts, L10 memory-model artifacts, L11 concurrency artifacts, and 92 rejected fixtures"}
+ :scope-note "This completes P01-T05 by producing the typed/effected core boundary required before profile and safety phases. L5 document coverage is tracked separately in docs/artifacts/phase-01/typed/stage0-l5-document-coverage-proof.edn; L6 document coverage is tracked separately in docs/artifacts/phase-01/effects/stage0-l6-document-coverage-proof.edn; L10, L11, and L15 document-specific tasks remain open."}

@@ -1,0 +1,12 @@
+; Rejected P08 R7 fixture: incomplete distributed runtime artifact.
+(ns runtime.r7-manifest
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r7-manifest}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,42 @@
+; Stage1 Gravity-owned syntax object skeleton.
+(ns gravity.bootstrap.syntax
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [syntax-object])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :syntax
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["BOOT1" "BOOT2" "BOOT3" "BOOT4"
+                           "BOOT5" "BOOT6" "BOOT7" "BOOT8"
+                           "C2" "C3" "C15"]
+               :implements [:syntax-object :origin-chain :fact-ledger
+                             :serialization]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-syntax-object-subset]}
+               :conformance {:accepted-fixture "bootstrap/gravity/src"
+                             :rejected-fixtures
+                             ["stage1-bootstrap-missing-owner.gravity"
+                              "stage1-bootstrap-wrong-profile.gravity"
+                              "stage1-bootstrap-ambient-authority.gravity"
+                              "stage1-bootstrap-missing-lineage.gravity"
+                              "stage1-bootstrap-missing-preserved-fact.gravity"
+                              "stage1-bootstrap-incomplete-source-set.gravity"]}}}))
+
+(defn syntax-object [form span origin]
+  (quote {:status :stage1-source-owned
+          :form form
+          :span span
+          :origin origin
+          :preserves [:source-spans :syntax-identity]}))

@@ -1,0 +1,41 @@
+{
+  "append": {
+    "/providers": {
+      "artifact_schema": ":gravity.provider/math-alt-v1",
+      "blocking": false,
+      "build_effects": [],
+      "concurrency": ":pure",
+      "conformance": {
+        "status": ":passed",
+        "suite": ":gravity.conformance/elementary-math"
+      },
+      "contracts": [
+        "gravity.contracts/ElementaryMath"
+      ],
+      "determinism": ":declared-numeric-mode",
+      "failure_types": [
+        "ApproximationError"
+      ],
+      "id": "custom.math/alternate",
+      "implements": [
+        ":math/sin"
+      ],
+      "profiles": [
+        ":native"
+      ],
+      "replayable": true,
+      "resource_memory": ":none",
+      "revocation_supported": false,
+      "runtime_effects": [],
+      "targets": [
+        "linux-x86_64"
+      ],
+      "trust": ":trusted-package",
+      "version": "0.1.0"
+    }
+  },
+  "extends": "accepted-providers.json",
+  "set": {
+    "/selection_requests/2/selected_provider": null
+  }
+}

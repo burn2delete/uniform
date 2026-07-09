@@ -1,0 +1,58 @@
+{:proof-id :stage0-p04-t01-performance-claim-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-T01
+ :document "PERF1"
+ :status :passed
+ :capability :performance-claim-optimization-manifest
+ :command "clojure -M:gravity performance bootstrap/clojure/fixtures/accepted/performance-claim.gravity"
+ :artifact-kind :gravity/stage0-performance-claim-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/performance-claim.gravity"
+ :accepted-results
+ {:claim-id :perf/vector-sum-native
+  :profile :native
+  :stage0-source-target :jvm
+  :target-request :llvm-x86-64-linux
+  :target-features #{:avx2 :fma}
+  :contract-manifest-status :complete
+  :target-feature-report-status :complete
+  :layout-input-shape-record-status :complete
+  :benchmark-report-status :complete
+  :proof-index-status :complete
+  :capability-proof :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["PERF1-CLAIM" "PERF1-EVIDENCE" "PERF1-SAFETY" "PERF1-PROFILE"
+  "PERF1-EFFECT" "PERF1-CAPABILITY" "PERF1-NUMERIC" "PERF1-TARGET"
+  "PERF1-VARIANT"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/performance-claim-missing.gravity"
+  "PERF1-CLAIM"
+  "bootstrap/clojure/fixtures/rejected/performance-evidence-missing.gravity"
+  "PERF1-EVIDENCE"
+  "bootstrap/clojure/fixtures/rejected/performance-safety-lost.gravity"
+  "PERF1-SAFETY"
+  "bootstrap/clojure/fixtures/rejected/performance-target-fingerprint.gravity"
+  "PERF1-TARGET"
+  "bootstrap/clojure/fixtures/rejected/performance-variant-guard.gravity"
+  "PERF1-VARIANT"}
+ :capability-based-proof
+ {:profile-legality-preserved? true
+  :effect-authority-preserved? true
+  :capability-authority-preserved? true
+  :safety-evidence-preserved? true
+  :target-fingerprint-recorded? true
+  :benchmark-not-used-for-safety-elision? true
+  :status :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. PERF1 performance claim artifacts, and 479 rejected fixtures"}
+  {:command "clojure -M:gravity performance bootstrap/clojure/fixtures/accepted/performance-claim.gravity"
+   :output ":gravity/stage0-performance-claim-artifact with complete optimization manifest and capability proof"}
+  {:command "clojure -M -e '(require ... performance summary)'"
+   :output "{:kind :gravity/stage0-performance-claim-artifact, :pass :performance-claim-validation, :status :complete, :claim :perf/vector-sum-native, :profile :native, :target :llvm-x86-64-linux, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This proves PERF1 and P04-T01 at the Clojure stage0 performance artifact boundary."
+  "Zero-cost abstraction is completed separately by stage0-p04-t02-zero-cost-abstraction-proof.edn."
+  "Specialization and partial evaluation are completed separately by stage0-p04-t03-specialization-proof.edn."
+  "This proof does not complete layout/vectorization, benchmark governance, PGO, autotuning, realtime latency, check elision, backend execution, runtime services, release performance, or self-hosting."]}

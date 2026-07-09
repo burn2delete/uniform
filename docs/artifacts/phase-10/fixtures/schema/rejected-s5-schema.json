@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "delete": [
+    "/openapi_generation/request_validator"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "accepted": [
+    {
+      "artifact": "docs/artifacts/phase-01/patterns/match-analysis.accepted.json",
+      "coverage": [
+        "decision tree",
+        "exhaustiveness report",
+        "branch type narrowing",
+        "guard effect summary",
+        "schema validation links",
+        "ownership move/borrow facts"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/accepted-pattern-match.gravity"
+    }
+  ],
+  "document": "L7",
+  "kind": "l7-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L7-NONEXHAUSTIVE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-nonexhaustive.gravity"
+    },
+    {
+      "diagnostic": "L7-UNREACHABLE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-unreachable.gravity"
+    },
+    {
+      "diagnostic": "L7-DUP-BINDING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-duplicate-binding.gravity"
+    },
+    {
+      "diagnostic": "L7-PATTERN-TYPE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-pattern-type.gravity"
+    },
+    {
+      "diagnostic": "L7-GUARD-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-guard-effect.gravity"
+    },
+    {
+      "diagnostic": "L7-UNVALIDATED-SHAPE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-unvalidated-shape.gravity"
+    },
+    {
+      "diagnostic": "L7-LINEAR-MOVE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l7/rejected-linear-move.gravity"
+    }
+  ]
+}

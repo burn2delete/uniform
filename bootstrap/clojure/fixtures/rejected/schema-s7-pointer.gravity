@@ -1,0 +1,12 @@
+; Rejected P10 S7 fixture.
+(ns schema.s7-pointer
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive})
+  (:capabilities #{:schema/validate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s7-pointer}}}))
+
+(defn main [] :- I64 7)

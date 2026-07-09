@@ -1,0 +1,9 @@
+{
+  "kind": "tooling-experience-fixture-patch",
+  "base": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+  "patch": {
+    "dev_server_session": {
+      "unsafe_hot_reload": true
+    }
+  }
+}

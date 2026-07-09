@@ -1,0 +1,442 @@
+{
+  "diagnostics": [],
+  "document": "SAFE1",
+  "generated_code_safety_provenance": [
+    {
+      "generated_origin": [
+        {
+          "artifact": "schema:user",
+          "generator": "gravity.schema/defschema",
+          "source_span": {
+            "column": 1,
+            "line": 7,
+            "source": "src/safety_demo.gravity"
+          }
+        }
+      ],
+      "operation_id": "op-generated-null-normalize",
+      "operation_kind": ":schema/field-read",
+      "span": {
+        "column": 11,
+        "end_column": 38,
+        "end_line": 20,
+        "line": 20,
+        "source": "src/safety_demo.gravity"
+      }
+    }
+  ],
+  "input_hash": "sha256:24b12c76e494f7b44760d5f9f67b35d6a06c4e6413e00f21751294276c946cf7",
+  "kind": "safety-classification-artifact",
+  "module": "safety.demo",
+  "operations": [
+    {
+      "active_profile": ":native",
+      "artifact_boundary": "safety-classification-artifact",
+      "capability_context": {
+        "capabilities": [
+          ":memory/allocator"
+        ],
+        "providers": [
+          "gravity.memory/gc-host"
+        ]
+      },
+      "danger_dimensions": [
+        ":bounds-safety",
+        ":memory-safety"
+      ],
+      "effect_context": {
+        "effects": [
+          ":memory/allocate"
+        ],
+        "escaping_effects": [
+          ":memory/allocate"
+        ]
+      },
+      "generated_origin": [],
+      "id": "op-bounds-read",
+      "kind": ":buffer/read",
+      "outcome": ":proven-safe",
+      "pipeline_stage": "typed-effected-core",
+      "profile_facts": {
+        "allowed_effects": [
+          ":memory/allocate"
+        ],
+        "checked_effects": [
+          ":memory/raw"
+        ],
+        "runtime": {
+          "bounds_checks": true
+        }
+      },
+      "safety_mode": ":safe-optimized",
+      "source_span": {
+        "column": 7,
+        "end_column": 31,
+        "end_line": 12,
+        "line": 12,
+        "source": "src/safety_demo.gravity"
+      },
+      "specialized_rules": [
+        "SAFE1",
+        "D8",
+        "D9",
+        "L5",
+        "L6"
+      ],
+      "target": ":llvm",
+      "type_context": {
+        "index_type": "USize",
+        "node_id": "core-00017",
+        "result_type": "U8",
+        "value_type": "Owned[Buffer]"
+      }
+    },
+    {
+      "active_profile": ":native",
+      "artifact_boundary": "safety-classification-artifact",
+      "capability_context": {
+        "capabilities": [],
+        "providers": []
+      },
+      "danger_dimensions": [
+        ":initialization-safety",
+        ":type-safety"
+      ],
+      "effect_context": {
+        "effects": [],
+        "escaping_effects": []
+      },
+      "generated_origin": [
+        {
+          "artifact": "schema:user",
+          "generator": "gravity.schema/defschema",
+          "source_span": {
+            "column": 1,
+            "line": 7,
+            "source": "src/safety_demo.gravity"
+          }
+        }
+      ],
+      "id": "op-generated-null-normalize",
+      "kind": ":schema/field-read",
+      "outcome": ":runtime-checked",
+      "pipeline_stage": "typed-effected-core",
+      "profile_facts": {
+        "allowed_effects": [],
+        "checked_effects": [],
+        "runtime": {
+          "panic": ":panic/null"
+        }
+      },
+      "safety_mode": ":safe",
+      "source_span": {
+        "column": 11,
+        "end_column": 38,
+        "end_line": 20,
+        "line": 20,
+        "source": "src/safety_demo.gravity"
+      },
+      "specialized_rules": [
+        "SAFE1",
+        "D8",
+        "L5",
+        "L6",
+        "P1"
+      ],
+      "target": ":llvm",
+      "type_context": {
+        "node_id": "core-00022",
+        "result_type": "String",
+        "value_type": "Maybe[String]"
+      }
+    },
+    {
+      "active_profile": ":core",
+      "artifact_boundary": "safety-classification-artifact",
+      "capability_context": {
+        "capabilities": [
+          ":ffi/c"
+        ],
+        "providers": []
+      },
+      "danger_dimensions": [
+        ":ffi-safety",
+        ":capability-safety"
+      ],
+      "effect_context": {
+        "effects": [
+          ":ffi/call"
+        ],
+        "escaping_effects": [
+          ":ffi/call"
+        ]
+      },
+      "generated_origin": [],
+      "id": "op-rejected-ffi",
+      "kind": ":ffi/call",
+      "outcome": ":rejected",
+      "pipeline_stage": "typed-effected-core",
+      "profile_facts": {
+        "forbidden_effects": [
+          ":ffi/call"
+        ],
+        "runtime": {
+          "ffi": false
+        }
+      },
+      "safety_mode": ":safe",
+      "source_span": {
+        "column": 5,
+        "end_column": 26,
+        "end_line": 31,
+        "line": 31,
+        "source": "src/safety_demo.gravity"
+      },
+      "specialized_rules": [
+        "SAFE1",
+        "P1",
+        "L6"
+      ],
+      "target": ":portable",
+      "type_context": {
+        "callee_type": "Fn[Ptr[U8]]->Integer",
+        "node_id": "core-00031"
+      }
+    },
+    {
+      "active_profile": ":kernel",
+      "artifact_boundary": "safety-classification-artifact",
+      "capability_context": {
+        "capabilities": [
+          ":hardware/mmio"
+        ],
+        "providers": [
+          "gravity.kernel/mmio-provider"
+        ]
+      },
+      "danger_dimensions": [
+        ":memory-safety",
+        ":capability-safety"
+      ],
+      "effect_context": {
+        "effects": [
+          ":memory/mmio"
+        ],
+        "escaping_effects": [
+          ":memory/mmio"
+        ]
+      },
+      "generated_origin": [],
+      "id": "op-mmio-unsafe-island",
+      "kind": ":raw/mmio-read32",
+      "outcome": ":unsafe-island",
+      "pipeline_stage": "typed-effected-core",
+      "profile_facts": {
+        "allowed_effects": [
+          ":memory/mmio"
+        ],
+        "runtime": {
+          "managed": false
+        },
+        "unsafe_policy": ":reviewed"
+      },
+      "safety_mode": ":audited-unsafe",
+      "source_span": {
+        "column": 5,
+        "end_column": 29,
+        "end_line": 44,
+        "line": 44,
+        "source": "drivers/mmio.gravity"
+      },
+      "specialized_rules": [
+        "SAFE1",
+        "D8",
+        "SAFE6",
+        "L6",
+        "P1"
+      ],
+      "target": ":arm64",
+      "type_context": {
+        "address_type": "MMIO[U32]",
+        "node_id": "core-00044",
+        "result_type": "U32"
+      }
+    }
+  ],
+  "optimization_check_erasure_justifications": [
+    {
+      "erased_check": ":bounds",
+      "operation_id": "op-bounds-read",
+      "replacement_proof": "range-analysis-op-bounds-read",
+      "source_span": {
+        "column": 7,
+        "end_column": 31,
+        "end_line": 12,
+        "line": 12,
+        "source": "src/safety_demo.gravity"
+      }
+    }
+  ],
+  "package": "gravity.safety.demo",
+  "profile": ":native",
+  "profile_safety_capability_report": {
+    "capabilities": [
+      ":memory/allocator",
+      ":ffi/c",
+      ":hardware/mmio"
+    ],
+    "effects": [
+      ":memory/allocate",
+      ":ffi/call",
+      ":memory/mmio"
+    ],
+    "operation_count": 4,
+    "outcomes": {
+      ":proven-safe": 1,
+      ":rejected": 1,
+      ":runtime-checked": 1,
+      ":unsafe-island": 1
+    },
+    "profile": ":native",
+    "safety_mode": ":audited-unsafe",
+    "target": ":llvm"
+  },
+  "proof_references": [
+    {
+      "assumptions": [
+        "buffer length is immutable between check and read"
+      ],
+      "checker": "gravity.safety.range/check",
+      "claim": "index remains below buffer length on every control path",
+      "id": "range-analysis-op-bounds-read",
+      "inputs": [
+        "typed-core:core-00017",
+        "l5:type-facts",
+        "l6:effect-facts",
+        "p1:profile-native"
+      ],
+      "kind": ":static-proof",
+      "operation_id": "op-bounds-read",
+      "operation_kind": ":buffer/read",
+      "replaces_check": ":bounds",
+      "result": ":accepted",
+      "source_span": {
+        "column": 7,
+        "end_column": 31,
+        "end_line": 12,
+        "line": 12,
+        "source": "src/safety_demo.gravity"
+      }
+    }
+  ],
+  "rejection_diagnostics": [
+    {
+      "id": "SAFE1-CHECK-ILLEGAL",
+      "missing_fact": "profile-legal-ffi-boundary",
+      "remediation": "Move the call behind a native audited FFI wrapper or remove it from :core code.",
+      "span": {
+        "column": 5,
+        "line": 31,
+        "source": "src/safety_demo.gravity"
+      }
+    }
+  ],
+  "runtime_checks": [
+    {
+      "active_profile": ":native",
+      "artifact_record": "runtime-checks/check-null-normalize",
+      "capability_context": {
+        "capabilities": []
+      },
+      "condition": ":non-null",
+      "effect_context": {
+        "effects": []
+      },
+      "failure_behavior": ":panic/null",
+      "id": "check-null-normalize",
+      "operation_id": "op-generated-null-normalize",
+      "operation_kind": ":schema/field-read",
+      "performance_classification": ":cold-path",
+      "profile_legal": true,
+      "profile_support": [
+        ":hosted",
+        ":native"
+      ],
+      "safety_mode": ":safe",
+      "source_span": {
+        "column": 11,
+        "end_column": 38,
+        "end_line": 20,
+        "line": 20,
+        "source": "src/safety_demo.gravity"
+      },
+      "type_context": {
+        "input": "Maybe[String]",
+        "output": "String"
+      }
+    }
+  ],
+  "safety_certificate_inputs": [
+    {
+      "checker": "gravity.safety.range/check",
+      "id": "range-analysis-op-bounds-read",
+      "kind": "proof-reference",
+      "result": ":accepted"
+    },
+    {
+      "condition": ":non-null",
+      "failure_behavior": ":panic/null",
+      "id": "check-null-normalize",
+      "kind": "runtime-check"
+    },
+    {
+      "id": "SAFE-MMIO-READ",
+      "kind": "unsafe-audit",
+      "owner": "kernel-mmio",
+      "review": "SAFE-MMIO-READ"
+    }
+  ],
+  "safety_mode": ":audited-unsafe",
+  "source": "docs/artifacts/phase-02/fixtures/safety/accepted-safety-classification.gravity",
+  "target": ":llvm",
+  "typed_core_artifact_hash": "sha256:69a4f8c0cd6f20f46a3d9e1863f89c0b708ec2f23d072c24f448ad751c633bc0",
+  "unsafe_island_audit_records": [
+    {
+      "active_profile": ":kernel",
+      "capabilities": [
+        ":hardware/mmio"
+      ],
+      "effects": [
+        ":memory/mmio"
+      ],
+      "evidence": [
+        ":device-map-check",
+        ":alignment-fixture"
+      ],
+      "id": "SAFE-MMIO-READ",
+      "invariants": [
+        ":volatile-read-preserved"
+      ],
+      "operation": ":raw/mmio-read32",
+      "owner": "kernel-mmio",
+      "postconditions": [
+        ":u32-value",
+        ":no-alias-created"
+      ],
+      "preconditions": [
+        ":aligned-u32-address",
+        ":mapped-register"
+      ],
+      "reason": ":mmio-read",
+      "review": "SAFE-MMIO-READ",
+      "review_policy": ":on-device-map-or-backend-change",
+      "safe_boundary": "read-register",
+      "source_span": {
+        "column": 5,
+        "line": 44,
+        "source": "drivers/mmio.gravity"
+      },
+      "target": ":arm64"
+    }
+  ]
+}

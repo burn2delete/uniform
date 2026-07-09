@@ -1,0 +1,45 @@
+{:artifact :gravity/stage0-ai-repl-ffi-capability-runtime-proof
+ :task "P08-T05"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-ai-ffi bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :artifact-kind :gravity/stage0-ai-repl-ffi-capability-runtime-artifact
+ :artifact-id "sha256:8b14783b42260dc2becf865b32107a6f7adc943f4d8857de77aa0a8ed258ecb9"
+ :input-artifact "sha256:ddf812b528edaff888298cefc7ca11aec5d4b6374f87765c4172875d287cea94"
+ :input-artifact-kind :gravity/stage0-concurrency-distributed-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r8-*.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r9-*.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r10-*.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r11-*.gravity"]
+ :required-diagnostic-ids
+ ["R8-MODEL" "R8-PROMPT" "R8-TOOL" "R8-TAINT" "R8-SECRET"
+  "R8-MEMORY" "R8-HUMAN-REVIEW" "R8-REPLAY" "R8-BUDGET"
+  "R8-GENERATED" "R8-MANIFEST" "R9-PROFILE" "R9-CHECKS"
+  "R9-CAPABILITY" "R9-SESSION" "R9-HERMETICITY" "R9-HOT-RELOAD"
+  "R9-DEBUG" "R9-AUDIT" "R9-MANIFEST" "R10-BINDING" "R10-ABI"
+  "R10-WRAPPER" "R10-POINTER" "R10-NULL" "R10-EFFECT"
+  "R10-CAPABILITY" "R10-CALLBACK" "R10-DYNAMIC" "R10-MANIFEST"
+  "R11-GRANT" "R11-AMBIENT" "R11-PRINCIPAL" "R11-DELEGATE"
+  "R11-REVOKE" "R11-TOOL" "R11-SECRET" "R11-OBSERVABILITY"
+  "R11-AUDIT" "R11-MANIFEST"]
+ :capability-based-proof
+ {:concurrency-distributed-input-verified? true
+  :model-tool-memory-policy-complete? true
+  :human-review-replay-budget-complete? true
+  :interactive-eval-uses-normal-checks? true
+  :interactive-state-invalidation-recorded? true
+  :ffi-bindings-wrappers-and_handles_safe? true
+  :runtime-capabilities-deny-by-default? true
+  :delegation-and-redaction-safe? true
+  :capability-conformance-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 40
+  :test-command "clojure -M:test"
+  :test-result "95 tests, 5880 assertions, 0 failures, 0 errors, 1302 rejected fixtures"}
+ :residual-risk
+ "This proves the Clojure stage0 AI, REPL, FFI, and runtime capability manifest boundary. It does not claim live model/tool providers, interactive REPL process execution, dynamic foreign library loading, production deployment policy integration, or complete Phase 08 coverage."}

@@ -1,0 +1,548 @@
+; Stage1 Gravity-owned C16 incremental compilation design contract.
+(ns gravity.compiler.c16-incremental-compilation-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [c16-incremental-compilation-contract
+             c16-incremental-graph-contract
+             c16-cache-key-contract
+             c16-cache-entry-contract
+             c16-invalidation-trace-contract
+             c16-revalidation-contract
+             c16-proof-reuse-contract
+             c16-speculative-reuse-contract
+             c16-plugin-invalidation-contract
+             c16-incremental-diagnostic-contract
+             c16-diagnostic-catalog
+             build-c16-cache-key
+             build-c16-cache-entry
+             build-c16-invalidation-trace
+             build-c16-revalidation-report
+             build-c16-artifact-reuse-report
+             verify-c16-incremental-compilation])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :incremental-compilation
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :ambient-authority #{}
+               :governing-document-ids ["C16" "C1" "C2" "C3" "C4"
+                                        "C5" "C6" "C7" "C8" "C9"
+                                        "C10" "C11" "C12" "C13"
+                                        "C14" "C15" "C17" "C18"
+                                        "L12" "SAFE15" "PERF3"
+                                        "PKG2" "PKG3" "PKG7"
+                                        "PKG10" "BOOT1" "BOOT3"
+                                        "BOOT8" "D1" "D3" "D9"]
+               :documents ["C16" "C1" "C15" "BOOT1" "BOOT3" "BOOT8"]
+               :implements [:incremental-dependency-graph-contract
+                             :stage-cache-key-contract
+                             :cache-entry-manifest-contract
+                             :invalidation-trace-contract
+                             :artifact-reuse-report-contract
+                             :revalidation-report-contract
+                             :stale-proof-rejection-contract
+                             :speculative-interactive-reuse-contract
+                             :plugin-invalidation-contract
+                             :incremental-diagnostic-catalog
+                             :source-model-bridge]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :origin-chains :generated-origin
+                            :pipeline-manifest-identity
+                            :pass-contract-identity
+                            :source-unit-identity
+                            :syntax-stream-identity
+                            :macro-expansion-trace
+                            :namespace-analysis
+                            :type-facts :effect-facts
+                            :capability-facts :ownership-facts
+                            :profile-target-metadata
+                            :safety-outcomes
+                            :mir-module-identity
+                            :domain-ir-anchors
+                            :optimization-decision-logs
+                            :proof-obligations
+                            :certificate-references
+                            :diagnostic-streams
+                            :dependency-graph-edges
+                            :build-effect-replay-records
+                            :package-provider-provenance
+                            :bootstrap-lineage}
+               :non-goals [:production-cache-engine
+                           :filesystem-cache-store
+                           :release-incremental-support-claim
+                           :hidden-global-compiler-state]
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c16-incremental-contract-subset
+                                    :clojure-c16-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["compiler-c16-key.gravity"
+                              "compiler-c16-entry.gravity"
+                              "compiler-c16-stale.gravity"
+                              "compiler-c16-proof.gravity"
+                              "compiler-c16-speculative.gravity"
+                              "compiler-c16-replay.gravity"
+                              "compiler-c16-policy.gravity"
+                              "compiler-c16-diagnostic.gravity"
+                              "compiler-c16-graph.gravity"]}}}))
+
+(def c16-incremental-compilation-contract
+  {:artifact :gravity/c16-incremental-compilation-contract
+   :status :source-model-bridge
+   :stage :incremental-compilation
+   :profile :meta
+   :accepted-source-extensions [".gravity" ".qst"]
+   :required-artifacts [:incremental-dependency-graph
+                        :stage-cache-key-schema
+                        :cache-entry-manifest
+                        :invalidation-trace
+                        :artifact-reuse-report
+                        :revalidation-report
+                        :stale-proof-rejection-report
+                        :incremental-diagnostic-stream]
+   :reuse-rule :optimization-only
+   :release-rule :full-revalidation-before-publish
+   :must-preserve [:semantic-meaning
+                   :profile-legality
+                   :effect-legality
+                   :capability-authority
+                   :safety-outcomes
+                   :proof-validity
+                   :diagnostic-origin
+                   :artifact-provenance
+                   :reproducibility-inputs]
+   :forbidden [:timestamp-only-cache-key
+               :reuse-without-pass-contract-validation
+               :stale-proof-reuse
+               :stale-diagnostic-reuse
+               :speculative-release-artifact
+               :cache-reuse-across-policy-change
+               :ambient-filesystem-or-network-cache-authority]})
+
+(def c16-incremental-graph-contract
+  {:artifact :gravity/c16-incremental-dependency-graph-contract
+   :node-kinds [:source-unit
+                :syntax-object-stream
+                :macro-expansion-trace
+                :namespace-analysis
+                :typed-core
+                :effect-graph
+                :ownership-graph
+                :safety-outcome-set
+                :mir-module
+                :optimization-decision-log
+                :domain-ir-artifact
+                :target-artifact
+                :diagnostic-stream
+                :proof-certificate
+                :package-manifest
+                :provider-manifest
+                :policy-manifest]
+   :edge-fields [:edge-id :from :to :dependency-kind
+                 :field-path :semantic-fact
+                 :producer-stage :consumer-stage
+                 :invalidated-by :source-span
+                 :origin-chain :profile :target]
+   :required-properties [:content-addressed-nodes
+                         :stage-owned-edges
+                         :field-level-edges-when-known
+                         :coarse-edges-marked-conservative
+                         :diagnostics-and-proofs-are-nodes
+                         :package-provider-policy-nodes-present]
+   :forbidden [:hidden-global-dependency
+               :edge-without-invalidation-cause
+               :proof-node-without-claim
+               :diagnostic-node-without-origin
+               :target-node-without-provenance]})
+
+(def c16-cache-key-contract
+  {:artifact :gravity/c16-cache-key-contract
+   :required-fields [:artifact :stage :source :compiler
+                     :pass-contract :dependencies
+                     :profile :target :capabilities
+                     :build-effects :language-facets]
+   :semantic-fields [:source
+                     :reader
+                     :syntax
+                     :macro-expansion
+                     :namespace
+                     :typed-core
+                     :effect-graph
+                     :ownership-graph
+                     :safety-outcomes
+                     :mir-module
+                     :domain-ir
+                     :profile
+                     :target
+                     :compiler
+                     :pass-contract
+                     :dependencies
+                     :build-effects
+                     :capabilities
+                     :language-facets
+                     :package-lock
+                     :provider-policy
+                     :diagnostic-schema
+                     :proof-policy]
+   :stage-specific-rule :stage-selects-required-semantic-subset
+   :invalid-when [:required-field-missing
+                  :stage-field-omitted
+                  :policy-field-omitted
+                  :build-effect-replay-omitted
+                  :diagnostic-schema-omitted
+                  :proof-policy-omitted]
+   :forbidden [:timestamp-only-identity
+               :path-only-source-identity
+               :host-environment-identity
+               :implicit-compiler-global
+               :unordered-dependency-hash]})
+
+(def c16-cache-entry-contract
+  {:artifact :gravity/c16-cache-entry-manifest-contract
+   :required-fields [:artifact :cache-key :artifact-id
+                     :producer :inputs :preserved-facts
+                     :invalidated-by :diagnostics
+                     :trust :revalidation :provenance]
+   :producer-fields [:stage :pass-id :pass-version
+                     :compiler-id :compiler-version
+                     :pass-contract]
+   :provenance-fields [:source :compiler :profile :target
+                       :package-lock :provider-manifests
+                       :build-replay :dependency-graph
+                       :created-by-stage :verified-by-stage]
+   :trust-states [:local-build
+                  :locked-build
+                  :release-candidate
+                  :revoked
+                  :unknown]
+   :revalidation-states [:required-before-use
+                         :required-before-release
+                         :accepted
+                         :speculative
+                         :rejected]
+   :forbidden [:entry-without-cache-key
+               :entry-without-diagnostics
+               :entry-without-invalidation-conditions
+               :entry-without-producer-contract
+               :entry-claiming-release-with-speculation]})
+
+(def c16-invalidation-trace-contract
+  {:artifact :gravity/c16-invalidation-trace-contract
+   :cause-kinds [:source-change
+                 :reader-option-change
+                 :reader-extension-change
+                 :macro-change
+                 :build-grant-change
+                 :replay-input-change
+                 :namespace-change
+                 :package-dependency-change
+                 :type-rule-change
+                 :type-provider-change
+                 :effect-registry-change
+                 :capability-policy-change
+                 :profile-manifest-change
+                 :safety-rule-change
+                 :proof-provider-change
+                 :certificate-trust-policy-change
+                 :optimization-pass-contract-change
+                 :target-feature-change
+                 :backend-change
+                 :runtime-provider-change
+                 :language-facet-change
+                 :diagnostic-schema-change
+                 :plugin-registration-change
+                 :plugin-pass-contract-change]
+   :trace-fields [:trace-id :cause :invalidating-input
+                  :changed-field :affected-nodes
+                  :downstream-stages :proofs-invalidated
+                  :diagnostics-invalidated
+                  :runtime-checks-restored
+                  :source-span :manifest-entry
+                  :profile :target :remediation]
+   :rules [:invalidate-dependent-artifacts-conservatively
+           :name-downstream-revalidation-stages
+           :reject-unknown-proof-freshness
+           :mark-diagnostic-streams-stale-after-fact-change
+           :restore-runtime-checks-when-proof-invalidates]
+   :forbidden [:silent-dependent-reuse
+               :proof-invalidated-without-record
+               :diagnostic-left-active-with-stale-facts
+               :plugin-change-without-cache-clear]})
+
+(def c16-revalidation-contract
+  {:artifact :gravity/c16-revalidation-contract
+   :checks [:cache-key-equality
+            :artifact-schema-version
+            :producer-pass-version
+            :producer-pass-contract
+            :preserved-fact-set
+            :proof-certificate-freshness
+            :profile-compatibility
+            :target-compatibility
+            :capability-policy-compatibility
+            :diagnostic-schema-compatibility
+            :dependency-graph-compatibility
+            :build-effect-replay-present
+            :package-provider-provenance-present]
+   :outcomes [:accepted :rejected :speculative]
+   :partial-rule :partial-revalidation-marks-speculative
+   :release-rule :speculative-artifacts-cannot-publish
+   :report-fields [:artifact-id :cache-key :stage
+                   :checks-run :checks-missing
+                   :outcome :speculation
+                   :blocking-diagnostics
+                   :profile :target :remediation]
+   :forbidden [:release-after-partial-revalidation
+               :accepted-stale-proof
+               :accepted-stale-diagnostic
+               :accepted-policy-mismatch
+               :revalidation-without-report]})
+
+(def c16-proof-reuse-contract
+  {:artifact :gravity/c16-proof-reuse-contract
+   :required-match-fields [:claim :inputs :assumptions
+                           :profile :target :compiler
+                           :provider :package :policy
+                           :invalidation-conditions]
+   :reuse-requires [:fresh-claim
+                    :fresh-inputs
+                    :fresh-assumptions
+                    :fresh-provider-trust
+                    :fresh-certificate-policy
+                    :proof-mapping-record-when-ir-identity-changes
+                    :checker-identity-compatible]
+   :rejection-reports [:stale-proof-rejection-report
+                       :stale-certificate-rejection-report
+                       :proof-mapping-gap-report]
+   :forbidden [:proof-reuse-after-invalidating-change
+               :certificate-reuse-after-trust-revocation
+               :ir-node-remap-without-proof-map
+               :benchmark-as-proof
+               :eml-tree-identity-as-equality]})
+
+(def c16-speculative-reuse-contract
+  {:artifact :gravity/c16-speculative-reuse-contract
+   :allowed-contexts [:interactive-build :repl-inspection :ide-latency-path]
+   :required-markers [:reuse :speculative
+                      :revalidation :partial
+                      :publishable false
+                      :speculation-source
+                      :required-full-revalidation]
+   :boundary-rules [:diagnostics-identify-speculation
+                    :target-artifacts-record-speculation
+                    :package-release-rejects-speculation
+                    :hermetic-release-rebuilds-from-recorded-inputs]
+   :forbidden [:speculative-release-artifact
+               :speculation-hidden-from-diagnostics
+               :speculative-proof-published
+               :speculative-cache-entry-promoted-without-full-check]})
+
+(def c16-plugin-invalidation-contract
+  {:artifact :gravity/c16-plugin-invalidation-contract
+   :plugin-fields [:plugin-id :package :owner-document
+                   :registration :schema :pass-contract
+                   :capabilities :effects :sandbox-policy
+                   :profile-set :target-set :diagnostic-schema]
+   :invalidates-on [:plugin-registration-change
+                    :plugin-version-change
+                    :plugin-schema-change
+                    :plugin-pass-contract-change
+                    :plugin-capability-policy-change
+                    :plugin-effect-policy-change
+                    :plugin-sandbox-policy-change
+                    :plugin-diagnostic-schema-change
+                    :plugin-domain-owner-change
+                    :plugin-provider-manifest-change]
+   :rules [:plugin-cannot-extend-authority-through-cache
+           :opaque-plugin-payloads-rejected
+           :plugin-diagnostics-use-stable-catalog
+           :plugin-produced-artifacts-name-owner-doc
+           :plugin-cache-entries-record-pass-contract]
+   :forbidden [:ambient-plugin-authority
+               :plugin-cache-without-registration
+               :plugin-reuse-after-contract-change
+               :plugin-diagnostic-without-origin
+               :plugin-proof-without-checker]})
+
+(def c16-incremental-diagnostic-contract
+  {:artifact :gravity/c16-incremental-diagnostic-contract
+   :required-fields [:rule :severity :stage :cache-key
+                     :artifact-id :invalidating-input
+                     :source-span :manifest-entry
+                     :profile :target :facts
+                     :remediation]
+   :related-fields [:dependency-edge
+                    :producer-pass
+                    :proof-certificate
+                    :diagnostic-stream
+                    :package-provider
+                    :plugin-registration]
+   :stable-id-rule :c16-rule-plus-cache-artifact-stage-and-invalidating-fact
+   :must-not-depend-on [:localized-rendering-text
+                        :filesystem-timestamp
+                        :host-cache-path
+                        :unordered-map-iteration
+                        :private-secret-value]})
+
+(def c16-diagnostic-catalog
+  {:diagnostics ["C16-KEY"
+                 "C16-ENTRY"
+                 "C16-STALE"
+                 "C16-PROOF"
+                 "C16-SPECULATIVE"
+                 "C16-REPLAY"
+                 "C16-POLICY"
+                 "C16-DIAGNOSTIC"
+                 "C16-GRAPH"]
+   :rule-to-message-key {:C16-KEY :incremental.malformed-cache-key
+                         :C16-ENTRY :incremental.malformed-cache-entry
+                         :C16-STALE :incremental.stale-artifact-reuse
+                         :C16-PROOF :incremental.stale-proof-reuse
+                         :C16-SPECULATIVE :incremental.speculative-publish-boundary
+                         :C16-REPLAY :incremental.missing-build-effect-replay
+                         :C16-POLICY :incremental.incompatible-policy-reuse
+                         :C16-DIAGNOSTIC :incremental.stale-diagnostic-stream
+                         :C16-GRAPH :incremental.dependency-graph-inconsistency}
+   :required-fields [:cache-key :artifact-id :stage
+                     :invalidating-input :source-span
+                     :manifest-entry :profile :target
+                     :remediation]
+   :stops [:target-lowering
+           :artifact-emission
+           :package-release
+           :bootstrap-stage-advance
+           :self-hosting-comparison]
+   :must-not-depend-on [:localized-rendering-text
+                        :timestamp-only-identity
+                        :host-cache-path
+                        :backend-private-state]})
+
+(defn build-c16-cache-key
+  [stage source reader syntax macro-expansion namespace profile target compiler pass-contract dependencies build-effects capabilities language-facets]
+  (quote {:artifact :gravity/cache-key
+          :stage stage
+          :source source
+          :reader reader
+          :syntax syntax
+          :macro-expansion macro-expansion
+          :namespace namespace
+          :profile profile
+          :target target
+          :compiler compiler
+          :pass-contract pass-contract
+          :dependencies dependencies
+          :build-effects build-effects
+          :capabilities capabilities
+          :language-facets language-facets
+          :contract c16-cache-key-contract}))
+
+(defn build-c16-cache-entry
+  [cache-key artifact-id producer inputs preserved-facts invalidated-by diagnostics trust revalidation provenance]
+  (quote {:artifact :gravity/cache-entry
+          :cache-key cache-key
+          :artifact-id artifact-id
+          :producer producer
+          :inputs inputs
+          :preserved-facts preserved-facts
+          :invalidated-by invalidated-by
+          :diagnostics diagnostics
+          :trust trust
+          :revalidation revalidation
+          :provenance provenance
+          :contract c16-cache-entry-contract}))
+
+(defn build-c16-invalidation-trace
+  [trace-id cause invalidating-input affected-nodes downstream-stages proofs-invalidated diagnostics-invalidated profile target remediation]
+  (quote {:artifact :gravity/invalidation-trace
+          :trace-id trace-id
+          :cause cause
+          :invalidating-input invalidating-input
+          :affected-nodes affected-nodes
+          :downstream-stages downstream-stages
+          :proofs-invalidated proofs-invalidated
+          :diagnostics-invalidated diagnostics-invalidated
+          :profile profile
+          :target target
+          :remediation remediation
+          :contract c16-invalidation-trace-contract}))
+
+(defn build-c16-revalidation-report
+  [artifact-id cache-key stage checks-run checks-missing outcome speculation diagnostics profile target]
+  (quote {:artifact :gravity/revalidation-report
+          :artifact-id artifact-id
+          :cache-key cache-key
+          :stage stage
+          :checks-run checks-run
+          :checks-missing checks-missing
+          :outcome outcome
+          :speculation speculation
+          :blocking-diagnostics diagnostics
+          :profile profile
+          :target target
+          :contract c16-revalidation-contract}))
+
+(defn build-c16-artifact-reuse-report
+  [artifact-id cache-entry reuse-status revalidation-report invalidation-trace diagnostics publishable]
+  (quote {:artifact :gravity/artifact-reuse-report
+          :artifact-id artifact-id
+          :cache-entry cache-entry
+          :reuse-status reuse-status
+          :revalidation-report revalidation-report
+          :invalidation-trace invalidation-trace
+          :diagnostics diagnostics
+          :publishable publishable
+          :contract c16-incremental-compilation-contract}))
+
+(defn verify-c16-incremental-compilation [incremental-artifact]
+  (quote {:status :stage1-source-owned
+          :scope :source-model-bridge
+          :incremental-artifact incremental-artifact
+          :checks [:incremental-graph-nodes-and-edges-recorded
+                   :cache-keys-include-semantic-policy-and-build-effect-inputs
+                   :cache-entries-record-producer-contracts-and-diagnostics
+                   :source-macro-namespace-type-effect-profile-capability-safety-changes-invalidate
+                   :proofs-and-certificates-revalidated-or-rejected
+                   :diagnostic-streams-revalidated-after-fact-changes
+                   :build-effect-replay-records-required
+                   :speculative-interactive-reuse-marked-nonpublishable
+                   :plugin-registration-and-pass-contract-changes-invalidate
+                   :policy-profile-target-provider-changes-reject-cross-reuse
+                   :release-artifacts-require-full-revalidation
+                   :stable-c16-diagnostics-emitted
+                   :bootstrap-provenance-and-lineage-recorded
+                   :ambient-authority-denied]
+          :diagnostics c16-diagnostic-catalog
+          :preserves [:source-spans :syntax-identity
+                      :diagnostic-codes :artifact-provenance
+                      :origin-chains :generated-origin
+                      :pipeline-manifest-identity
+                      :pass-contract-identity
+                      :source-unit-identity
+                      :syntax-stream-identity
+                      :macro-expansion-trace
+                      :namespace-analysis
+                      :type-facts :effect-facts
+                      :capability-facts :ownership-facts
+                      :profile-target-metadata
+                      :safety-outcomes
+                      :mir-module-identity
+                      :domain-ir-anchors
+                      :optimization-decision-logs
+                      :proof-obligations
+                      :certificate-references
+                      :diagnostic-streams
+                      :dependency-graph-edges
+                      :build-effect-replay-records
+                      :package-provider-provenance
+                      :bootstrap-lineage]}))

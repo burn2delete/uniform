@@ -1,0 +1,11 @@
+; Rejected P17 GOV10 fixture.
+(ns governance.gov10-package-identity
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov10001}}}))
+
+(defn main [] :- I64 1)

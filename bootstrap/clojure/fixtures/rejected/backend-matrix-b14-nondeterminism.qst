@@ -1,0 +1,4 @@
+(ns backend.matrix-b14-nondeterminism
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:backend {:test-matrix {:fail :b14-nondeterminism}}}))

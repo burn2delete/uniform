@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-interop.json",
+  "set": {
+    "/parity_reports/0/status": ":failed"
+  }
+}

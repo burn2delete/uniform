@@ -1,0 +1,26 @@
+(ns math.float-fma
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:floating-manifests
+                      [{:operation :bad-fma
+                        :format :binary64
+                        :rounding :nearest-ties-to-even
+                        :numeric-mode :faithful
+                        :precision {:ulp-max 1}
+                        :exceptions {:invalid :quiet-nan}
+                        :nan {:quiet :propagate :signaling :quiet-and-flag}
+                        :infinity :ieee754
+                        :signed-zero :preserve
+                        :denormals :preserve
+                        :status-flags :unobservable-by-mode
+                        :fma :allowed
+                        :reassociation :forbidden
+                        :reciprocal-substitution :forbidden
+                        :determinism :target-stable
+                        :backend-lowering {:preserves-manifest? true
+                                           :eligible? true
+                                           :status-preserved? true}}]}}}))

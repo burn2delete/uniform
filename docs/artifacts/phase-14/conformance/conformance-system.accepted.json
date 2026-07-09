@@ -1,0 +1,505 @@
+{
+  "conformance_harness": {
+    "artifact_id": "conformance:language",
+    "diagnostic_json": [
+      "diagnostics/language-core-if.json"
+    ],
+    "document": "TEST1",
+    "fixture_index": {
+      "hash": "sha256:language-fixtures-001",
+      "portable_core": 42
+    },
+    "golden_reader_output": [
+      "goldens/reader/core-if.json"
+    ],
+    "golden_typed_core_output": [
+      "goldens/typed-core/core-if.json"
+    ],
+    "negative_fixtures": [
+      "fixtures/language/missing-effect.grav"
+    ],
+    "positive_fixtures": [
+      "fixtures/language/core-if.grav"
+    ],
+    "profiles": [
+      ":core"
+    ],
+    "result_summary": {
+      "failed": 0,
+      "passed": 84
+    },
+    "suite_id": "suite:language-conformance",
+    "targets": [
+      ":portable-core"
+    ]
+  },
+  "coverage_summary": {
+    "documents": 13,
+    "status": ":passed",
+    "suite_count": 13,
+    "tasks": 6
+  },
+  "diagnostics": [],
+  "differential_report": {
+    "accepted_divergence": [
+      "target-specific-floating-mode"
+    ],
+    "artifact_comparison": "artifact-comparison:differential",
+    "artifact_id": "conformance:differential",
+    "backend": ":jvm",
+    "comparison_report": "comparison:typed-core-vs-jvm",
+    "diagnostic_comparison": "diagnostic-comparison:stable-codes",
+    "document": "TEST10",
+    "minimized_reproducer": "reproducer:differential-001.grav",
+    "numeric_mode": ":checked",
+    "observables": [
+      ":result",
+      ":diagnostic-code",
+      ":artifact-hash"
+    ],
+    "oracle_manifest": [
+      "typed-core-evaluator",
+      "jvm-backend"
+    ],
+    "profile": ":hosted",
+    "runtime": ":managed",
+    "suite_id": "suite:differential",
+    "target": ":jvm-21"
+  },
+  "document_contracts": {
+    "TEST1": {
+      "artifact_id": "conformance:language",
+      "diagnostic_json": [
+        "diagnostics/language-core-if.json"
+      ],
+      "document": "TEST1",
+      "fixture_index": {
+        "hash": "sha256:language-fixtures-001",
+        "portable_core": 42
+      },
+      "golden_reader_output": [
+        "goldens/reader/core-if.json"
+      ],
+      "golden_typed_core_output": [
+        "goldens/typed-core/core-if.json"
+      ],
+      "negative_fixtures": [
+        "fixtures/language/missing-effect.grav"
+      ],
+      "positive_fixtures": [
+        "fixtures/language/core-if.grav"
+      ],
+      "profiles": [
+        ":core"
+      ],
+      "result_summary": {
+        "failed": 0,
+        "passed": 84
+      },
+      "suite_id": "suite:language-conformance",
+      "targets": [
+        ":portable-core"
+      ]
+    },
+    "TEST10": {
+      "accepted_divergence": [
+        "target-specific-floating-mode"
+      ],
+      "artifact_comparison": "artifact-comparison:differential",
+      "artifact_id": "conformance:differential",
+      "backend": ":jvm",
+      "comparison_report": "comparison:typed-core-vs-jvm",
+      "diagnostic_comparison": "diagnostic-comparison:stable-codes",
+      "document": "TEST10",
+      "minimized_reproducer": "reproducer:differential-001.grav",
+      "numeric_mode": ":checked",
+      "observables": [
+        ":result",
+        ":diagnostic-code",
+        ":artifact-hash"
+      ],
+      "oracle_manifest": [
+        "typed-core-evaluator",
+        "jvm-backend"
+      ],
+      "profile": ":hosted",
+      "runtime": ":managed",
+      "suite_id": "suite:differential",
+      "target": ":jvm-21"
+    },
+    "TEST11": {
+      "artifact_id": "conformance:formal",
+      "assumption_manifests": [
+        "assumptions:inline-preserves-effects"
+      ],
+      "certificate_manifests": [
+        "certificate:math-approximation"
+      ],
+      "checker_reports": [
+        "checker:gravity-proof-checker:accepted"
+      ],
+      "counterexamples": [
+        "counterexample:proof-negative"
+      ],
+      "document": "TEST11",
+      "proof_invalidation_reports": [
+        "proof-invalidation:source-change"
+      ],
+      "proof_objects": [
+        "proof:inline-preserves-effects"
+      ],
+      "semantics_artifacts": [
+        "semantics:core-operational"
+      ],
+      "suite_id": "suite:formal-verification"
+    },
+    "TEST12": {
+      "artifact_id": "conformance:performance",
+      "benchmark_manifest": {
+        "artifact_hash": "sha256:artifact-001",
+        "compiler": "gravityc-seed:0.1.0",
+        "environment": "linux-x64-ci",
+        "metric": "latency-p95-us",
+        "profile": ":native",
+        "target": ":llvm-x86_64-linux"
+      },
+      "comparison_report": "perf-comparison:vector-map-native",
+      "document": "TEST12",
+      "performance_report": "perf-report:vector-map-native",
+      "raw_measurements": [
+        {
+          "latency_p95_us": 38.4,
+          "sample_count": 50
+        }
+      ],
+      "regression_decision": ":passed",
+      "safety_evidence_links": [
+        "proof:bounds-check-elision"
+      ],
+      "semantic_gate_report": "semantic-gates:passed",
+      "suite_id": "suite:performance-regression"
+    },
+    "TEST13": {
+      "artifact_id": "conformance:self-hosting",
+      "conformance_report": "conformance:stage2",
+      "document": "TEST13",
+      "provenance_attestation": "provenance:stage2-compiler",
+      "rebuild_log": "rebuild:stage2",
+      "self_hosting_stage": ":stage2",
+      "stage_comparison_report": "stage-comparison:stage1-stage2",
+      "stage_compiler_artifact": "artifact:stage2-compiler",
+      "stage_manifest": "stage-manifest:stage2",
+      "suite_id": "suite:self-hosting",
+      "tcb_delta": "tcb-delta:stage2",
+      "unsafe_audit_report": "unsafe-audit:compiler"
+    },
+    "TEST2": {
+      "artifact_id": "conformance:compiler",
+      "crash_reducers": [
+        "crashes/minimized-reader-001.grav"
+      ],
+      "diagnostic_goldens": [
+        "diagnostics/compiler-c8-capability.json"
+      ],
+      "document": "TEST2",
+      "incremental_cache_traces": [
+        "cache-trace/profile-change.json"
+      ],
+      "pass_evidence": [
+        "proof:inline-preserves-effects"
+      ],
+      "plugin_denial_reports": [
+        "plugin-denial/ambient-authority.json"
+      ],
+      "preservation_reports": [
+        {
+          "pass": "inline-small-functions",
+          "preserves": [
+            "types",
+            "effects",
+            "source-spans"
+          ]
+        }
+      ],
+      "stage_goldens": [
+        "reader",
+        "syntax",
+        "macro",
+        "typed-core",
+        "mir",
+        "lowering"
+      ],
+      "suite_id": "suite:compiler-tests"
+    },
+    "TEST3": {
+      "ai_ledger_report": "ai-ledger:runtime",
+      "artifact_id": "conformance:runtime",
+      "capability_decision_log": [
+        {
+          "effect": ":filesystem/read",
+          "grant": false,
+          "result": ":denied"
+        }
+      ],
+      "concurrency_trace": "trace:runtime-concurrency",
+      "document": "TEST3",
+      "ffi_boundary_report": "ffi-boundary:runtime",
+      "memory_safety_report": "memory-runtime:passed",
+      "observability_schema_report": "observability:redacted",
+      "profile": ":hosted",
+      "replay_trace": "replay:runtime",
+      "runtime_families": [
+        ":minimal-native",
+        ":managed",
+        ":distributed",
+        ":ai",
+        ":capability-enforcement"
+      ],
+      "suite_id": "suite:runtime-tests",
+      "target": ":jvm-21"
+    },
+    "TEST4": {
+      "artifact_delegation_report": "delegation:profile-artifacts",
+      "artifact_id": "conformance:profiles",
+      "capability_legality_report": "capability-legality:profiles",
+      "document": "TEST4",
+      "negative_results": [
+        "kernel-dynamic-eval:rejected"
+      ],
+      "positive_results": [
+        "core-pure-add:accepted"
+      ],
+      "profile_matrix": [
+        ":core",
+        ":meta",
+        ":hosted",
+        ":native",
+        ":firmware",
+        ":kernel",
+        ":hardware",
+        ":distributed",
+        ":ai",
+        ":gpu",
+        ":formal"
+      ],
+      "runtime_service_legality_report": "runtime-legality:profiles",
+      "suite_id": "suite:profile-compliance",
+      "target_matrix": [
+        ":portable-core",
+        ":jvm-21",
+        ":llvm-x86_64-linux",
+        ":workflow-graph"
+      ]
+    },
+    "TEST5": {
+      "artifact_id": "conformance:safety",
+      "capability_denial_report": "capability-denial:safety",
+      "check_elision_report": "check-elision:proof-backed",
+      "document": "TEST5",
+      "negative_fixtures": [
+        "unsafe-no-audit:rejected"
+      ],
+      "positive_fixtures": [
+        "bounds-runtime-check:passed"
+      ],
+      "proof_certificate_report": "proofs:safety",
+      "runtime_check_report": "runtime-checks:safety",
+      "safety_outcomes": [
+        ":proven-safe",
+        ":runtime-checked",
+        ":rejected",
+        ":unsafe-island"
+      ],
+      "suite_id": "suite:safety-conformance",
+      "taint_flow_report": "taint-flow:safety",
+      "unsafe_audit_report": "unsafe-audit:safety"
+    },
+    "TEST6": {
+      "abi_layout_report": "abi-layout:backend",
+      "artifact_id": "conformance:backend",
+      "artifact_manifests": [
+        "artifact:jvm-21-library",
+        "artifact:workflow-graph"
+      ],
+      "backend": ":jvm",
+      "backend_matrix": [
+        ":jvm",
+        ":wasm",
+        ":llvm",
+        ":workflow"
+      ],
+      "diagnostic_json": [
+        "diagnostics/backend-unsupported-op.json"
+      ],
+      "differential_comparison": "differential:backend",
+      "document": "TEST6",
+      "execution_outputs": [
+        "outputs/backend-jvm.json"
+      ],
+      "profile": ":hosted",
+      "runtime": ":managed",
+      "source_map_report": "source-map:backend",
+      "suite_id": "suite:backend-conformance",
+      "target": ":jvm-21"
+    },
+    "TEST7": {
+      "artifact_id": "conformance:stdlib",
+      "capability_denial_reports": [
+        "stdlib/fs-read-denied.json"
+      ],
+      "document": "TEST7",
+      "documentation_example_reports": [
+        "docs/examples/core-map.json"
+      ],
+      "module_reports": [
+        "collections",
+        "strings",
+        "numeric",
+        "schemas"
+      ],
+      "profile_availability_matrix": {
+        "collections": [
+          ":core",
+          ":hosted",
+          ":native"
+        ]
+      },
+      "property_test_reports": [
+        "properties/vector-map-preserves-count.json"
+      ],
+      "stability_report": "stability:stdlib",
+      "suite_id": "suite:stdlib-tests"
+    },
+    "TEST8": {
+      "artifact_id": "conformance:ai-workflow",
+      "budget_report": "budget:ai-eval",
+      "dataset_manifest": "dataset:SupportTickets/v3",
+      "document": "TEST8",
+      "eval_report": "eval:support-workflow-release",
+      "human_review_records": [
+        "human-review:grant",
+        "human-review:deny",
+        "human-review:expiry",
+        "human-review:revocation"
+      ],
+      "release_gate_decision": ":accepted",
+      "replay_traces": [
+        "replay:workflow-happy-path",
+        "replay:tool-denied"
+      ],
+      "safety_probe_report": "safety-probes:ai-workflow",
+      "scored_outputs": [
+        "scores:support-workflow"
+      ],
+      "suite_id": "suite:ai-workflow-eval",
+      "tool_memory_ledgers": [
+        "tool-ledger:ai",
+        "memory-ledger:ai"
+      ]
+    },
+    "TEST9": {
+      "artifact_id": "conformance:fuzz-property",
+      "coverage_report": "coverage:fuzz",
+      "crash_report": "crashes:fuzz-none",
+      "document": "TEST9",
+      "generated_case_manifest": "generated-cases:fuzz",
+      "minimized_reproducers": [
+        "reproducers/reader-printer-001.grav"
+      ],
+      "promoted_regressions": [
+        "regression:reader-printer-roundtrip"
+      ],
+      "property_report": "property:reader-printer-roundtrip",
+      "seed_corpus": {
+        "generator": "well-formed-forms:0.1.0",
+        "profile": ":core",
+        "seed": 918273,
+        "target": ":portable-core"
+      },
+      "suite_id": "suite:fuzz-property"
+    }
+  },
+  "fixture_manifest": {
+    "hash": "sha256:language-fixtures-001",
+    "portable_core": 42
+  },
+  "formal_proof_report": {
+    "artifact_id": "conformance:formal",
+    "assumption_manifests": [
+      "assumptions:inline-preserves-effects"
+    ],
+    "certificate_manifests": [
+      "certificate:math-approximation"
+    ],
+    "checker_reports": [
+      "checker:gravity-proof-checker:accepted"
+    ],
+    "counterexamples": [
+      "counterexample:proof-negative"
+    ],
+    "document": "TEST11",
+    "proof_invalidation_reports": [
+      "proof-invalidation:source-change"
+    ],
+    "proof_objects": [
+      "proof:inline-preserves-effects"
+    ],
+    "semantics_artifacts": [
+      "semantics:core-operational"
+    ],
+    "suite_id": "suite:formal-verification"
+  },
+  "fuzz_property_suite": {
+    "artifact_id": "conformance:fuzz-property",
+    "coverage_report": "coverage:fuzz",
+    "crash_report": "crashes:fuzz-none",
+    "document": "TEST9",
+    "generated_case_manifest": "generated-cases:fuzz",
+    "minimized_reproducers": [
+      "reproducers/reader-printer-001.grav"
+    ],
+    "promoted_regressions": [
+      "regression:reader-printer-roundtrip"
+    ],
+    "property_report": "property:reader-printer-roundtrip",
+    "seed_corpus": {
+      "generator": "well-formed-forms:0.1.0",
+      "profile": ":core",
+      "seed": 918273,
+      "target": ":portable-core"
+    },
+    "suite_id": "suite:fuzz-property"
+  },
+  "golden_diagnostics": [
+    "diagnostics/compiler-c8-capability.json"
+  ],
+  "input_hash": "sha256:9cc20c486a607f57b190a35d22c49daef9c3df4d315cc2b5e3897e9c25fa597f",
+  "kind": "conformance-system-artifact",
+  "performance_regression_report": {
+    "artifact_id": "conformance:performance",
+    "benchmark_manifest": {
+      "artifact_hash": "sha256:artifact-001",
+      "compiler": "gravityc-seed:0.1.0",
+      "environment": "linux-x64-ci",
+      "metric": "latency-p95-us",
+      "profile": ":native",
+      "target": ":llvm-x86_64-linux"
+    },
+    "comparison_report": "perf-comparison:vector-map-native",
+    "document": "TEST12",
+    "performance_report": "perf-report:vector-map-native",
+    "raw_measurements": [
+      {
+        "latency_p95_us": 38.4,
+        "sample_count": 50
+      }
+    ],
+    "regression_decision": ":passed",
+    "safety_evidence_links": [
+      "proof:bounds-check-elision"
+    ],
+    "semantic_gate_report": "semantic-gates:passed",
+    "suite_id": "suite:performance-regression"
+  },
+  "phase": "14"
+}

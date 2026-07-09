@@ -1,0 +1,9 @@
+(ns stdlib.alloc
+  (:profile :firmware)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/alloc-illegal 'gravity.collections.vector/grow))

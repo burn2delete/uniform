@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "memory_library": {"borrow_escape": true}}

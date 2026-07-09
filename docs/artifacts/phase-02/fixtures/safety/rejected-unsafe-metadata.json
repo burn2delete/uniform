@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "delete": [
+    "/operations/3/audit/owner"
+  ]
+}

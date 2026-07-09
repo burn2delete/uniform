@@ -1,0 +1,329 @@
+(ns safety.conformance
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [macro-declaration generated-origin macro-build generated-unsafe
+             hygiene taint-propagation facet-output macro-engine safe12-ok
+             model-call tool-call prompt-provenance tool-schema human-review
+             ai-replay output-taint generated-code memory-policy safe13-ok
+             proof certificate check-erasure trust invalidation imported-cert
+             proof-provider unsafe-wrapper backend-proof safe15-ok
+             fixture-manifest safe1-outcome safe2-outcome safe3-outcome
+             safe4-outcome safe5-outcome safe6-outcome safe7-outcome
+             safe8-outcome safe9-outcome safe10-outcome safe11-outcome
+             safe12-outcome safe13-outcome safe14-outcome safe15-outcome
+             diagnostic-match runtime-inspection unsafe-inspection
+             certificate-inspection profile-matrix backend-preservation
+             conformance-report safe16-ok])
+  (:effects #{:build/read-file :ai/model-call :ai/tool-call
+              :ai/human-review})
+  (:capabilities #{:ai/model :ai/tool :ai/human-review})
+  (:safety :safe)
+  (:metadata {:build-grants #{:build/read-file}
+              :safety-conformance-policy {:fixture-manifest true
+                                          :certificate-inspection true
+                                          :human-review true}}))
+
+(def macro-declaration
+  (safe12/macro-safety-declaration 'gravity.macros/with-safe-buffer
+                                   "sha256:macro-def"
+                                   #{}
+                                   #{}
+                                   :safe6-compatible
+                                   :hygienic
+                                   :compile-runtime-separated))
+
+(def generated-origin
+  (safe12/generated-origin-chain :generated/buffer-wrapper
+                                 'gravity.macros/with-safe-buffer
+                                 :source/call-site
+                                 :source/macro-def
+                                 {:generated :source-span}
+                                 [:source/call-site :source/macro-def]))
+
+(def macro-build
+  (safe12/macro-build-effect-record 'gravity.macros/load-schema
+                                    #{:build/read-file}
+                                    #{:build/read-file}
+                                    #{"schemas/user.edn"}
+                                    :replay-not-required
+                                    :granted))
+
+(def generated-unsafe
+  (safe12/generated-unsafe-island :unsafe/buffer-copy
+                                  'gravity.macros/with-safe-buffer
+                                  :safe6/unsafe-record
+                                  :wrapper/safe-buffer-copy
+                                  #{:bounds-checked :lifetime-local}
+                                  :reviewed))
+
+(def hygiene
+  (safe12/hygiene-capture-record 'gravity.macros/with-capability
+                                 :capability-token
+                                 :explicit
+                                 :policy/no-implicit-capture
+                                 :accepted))
+
+(def taint-propagation
+  (safe12/taint-capability-propagation :generated/sql-query
+                                       #{:Tainted/UserInput}
+                                       #{:database/read}
+                                       #{:db/query}
+                                       :preserved))
+
+(def facet-output
+  (safe12/facet-output-record :facet/sql
+                              'gravity.facets/sql
+                              :domain-ir
+                              #{:schema-check :taint-check}
+                              :checked))
+
+(def macro-engine
+  (safe12/alternative-engine-equivalence :altmacro/stage0
+                                         :gravity.macro/default
+                                         #{:safe12-fixtures}
+                                         :safety-preserved
+                                         :equivalent))
+
+(def safe12-ok
+  (safe12/conformance :complete))
+
+(def model-call
+  (safe13/model-call-trace :provider/local
+                           "stage0-small"
+                           "2026-06-24"
+                           "sha256:prompt"
+                           :schema/input
+                           :schema/output
+                           :bounded-local
+                           :no-retention
+                           :audit))
+
+(def tool-call
+  (safe13/tool-call-trace :tool/schema-validator
+                          :schema/tool-input
+                          :schema/tool-output
+                          :read-only
+                          #{:ai/tool}
+                          :human-review-not-required
+                          :audit))
+
+(def prompt-provenance
+  (safe13/prompt-provenance :prompt/build-summary
+                            #{:system :user}
+                            #{:repo-docs :fixture}
+                            #{}
+                            :role-preserving))
+
+(def tool-schema
+  (safe13/tool-schema-validation :tool/schema-validator
+                                 :schema/tool-input
+                                 "sha256:arguments"
+                                 :validated))
+
+(def human-review
+  (safe13/human-review-record :generated-code-apply
+                              #{:ai/human-review}
+                              :reviewer/stage0
+                              :policy/destructive-tools
+                              :approved
+                              "2026-06-24T00:00:00Z"))
+
+(def ai-replay
+  (safe13/replay-record :interaction/model-1
+                        :audit
+                        "sha256:input"
+                        "sha256:output"
+                        :provider/local
+                        :decision/accepted))
+
+(def output-taint
+  (safe13/model-output-taint :model/output-1
+                             #{:model-output}
+                             #{:schema-validation}
+                             #{:safe-artifact}
+                             :tainted-until-validated))
+
+(def generated-code
+  (safe13/generated-code-safety :artifact/generated-code
+                                :interaction/model-1
+                                :prompt/build-summary
+                                #{:typed-check :safety-check}
+                                :human-review-required))
+
+(def memory-policy
+  (safe13/memory-retention-policy :memory/build-note
+                                  :ephemeral
+                                  :redact-secrets
+                                  :workspace-private
+                                  :delete-on-run-end))
+
+(def safe13-ok
+  (safe13/conformance :complete))
+
+(def proof
+  (safe15/proof-record :proof/range-1
+                       :bounds-safe
+                       :mir/node-7
+                       #{:len-positive :idx-less-than-len}
+                       :abstract-interpretation
+                       :provider/range
+                       #{}
+                       :proven-safe))
+
+(def certificate
+  (safe15/certificate :cert/range-1
+                      "gravity.stage0"
+                      "stage0-clojure"
+                      :provider/range
+                      :bounds-safe
+                      :local-trust-root
+                      :verified))
+
+(def check-erasure
+  (safe15/check-erasure :check/bounds-1
+                        :proof/range-1
+                        :cert/range-1
+                        :idx-less-than-len
+                        :jvm-preserved))
+
+(def trust
+  (safe15/trust-record :cert/range-1
+                       :local
+                       "sig:stage0"
+                       :policy/local-proofs
+                       true))
+
+(def invalidation
+  (safe15/invalidation-record :cert/range-1
+                              :none
+                              :range-assumptions
+                              :retain
+                              :valid))
+
+(def imported-cert
+  (safe15/imported-certificate :cert/imported-1
+                               "sha256:package"
+                               "stage0-clojure"
+                               :profile-target-match
+                               :signature-valid
+                               true))
+
+(def proof-provider
+  (safe15/proof-provider :provider/range
+                         "1.0.0"
+                         #{:bounds-safe :overflow-impossible}
+                         :local
+                         :accepted))
+
+(def unsafe-wrapper
+  (safe15/unsafe-wrapper-audit :wrapper/safe-buffer-copy
+                               :unsafe/buffer-copy
+                               :cert/range-1
+                               :bounds-and-lifetime
+                               :invariant-proven))
+
+(def backend-proof
+  (safe15/backend-preservation :proof/range-1
+                               :jvm
+                               #{:integer-width :bounds-check-semantics}
+                               #{}
+                               :preserved))
+
+(def safe15-ok
+  (safe15/conformance :complete))
+
+(def fixture-manifest
+  (safe16/fixture-manifest :phase02/safety-conformance
+                           :SAFE16
+                           :hosted
+                           :jvm
+                           "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+                           :accept))
+
+(def safe1-outcome
+  (safe16/expected-outcome :safe1/outcome :SAFE1 :accept :accepted nil #{:safety-report}))
+
+(def safe2-outcome
+  (safe16/expected-outcome :safe2/outcome :SAFE2 :reject :rejected "SAFE2-BOUNDS" #{:diagnostic}))
+
+(def safe3-outcome
+  (safe16/expected-outcome :safe3/outcome :SAFE3 :reject :rejected "SAFE3-MUT-ALIAS" #{:diagnostic}))
+
+(def safe4-outcome
+  (safe16/expected-outcome :safe4/outcome :SAFE4 :reject :rejected "SAFE4-REGION-ESCAPE" #{:diagnostic}))
+
+(def safe5-outcome
+  (safe16/expected-outcome :safe5/outcome :SAFE5 :reject :rejected "SAFE5-LEAK" #{:diagnostic}))
+
+(def safe6-outcome
+  (safe16/expected-outcome :safe6/outcome :SAFE6 :reject :rejected "SAFE6-MISSING-METADATA" #{:diagnostic}))
+
+(def safe7-outcome
+  (safe16/expected-outcome :safe7/outcome :SAFE7 :reject :rejected "SAFE7-DECLARATION" #{:diagnostic}))
+
+(def safe8-outcome
+  (safe16/expected-outcome :safe8/outcome :SAFE8 :reject :rejected "SAFE8-DATA-RACE" #{:diagnostic}))
+
+(def safe9-outcome
+  (safe16/expected-outcome :safe9/outcome :SAFE9 :reject :rejected "SAFE9-OVERFLOW" #{:diagnostic}))
+
+(def safe10-outcome
+  (safe16/expected-outcome :safe10/outcome :SAFE10 :reject :rejected "SAFE10-DENIED" #{:diagnostic}))
+
+(def safe11-outcome
+  (safe16/expected-outcome :safe11/outcome :SAFE11 :reject :rejected "SAFE11-TAINTED-SINK" #{:diagnostic}))
+
+(def safe12-outcome
+  (safe16/expected-outcome :safe12/outcome :SAFE12 :reject :rejected "SAFE12-HYGIENE" #{:diagnostic}))
+
+(def safe13-outcome
+  (safe16/expected-outcome :safe13/outcome :SAFE13 :reject :rejected "SAFE13-TOOL-SCHEMA" #{:diagnostic}))
+
+(def safe14-outcome
+  (safe16/expected-outcome :safe14/outcome :SAFE14 :reject :rejected "SAFE14-LOCKFILE" #{:diagnostic}))
+
+(def safe15-outcome
+  (safe16/expected-outcome :safe15/outcome :SAFE15 :accept :certificate-backed-proof nil #{:certificate}))
+
+(def diagnostic-match
+  (safe16/diagnostic-match :safe12/hygiene
+                           "SAFE12-HYGIENE"
+                           "SAFE12-HYGIENE"
+                           true))
+
+(def runtime-inspection
+  (safe16/runtime-check-inspection :safe2/bounds
+                                   :runtime-check/bounds
+                                   :retained-or-proven))
+
+(def unsafe-inspection
+  (safe16/unsafe-audit-inspection :safe6/unsafe
+                                  :unsafe/buffer-copy
+                                  :safe6/audit-record))
+
+(def certificate-inspection
+  (safe16/certificate-inspection :safe15/range
+                                 :cert/range-1
+                                 :proof/range-1))
+
+(def profile-matrix
+  (safe16/profile-matrix :phase02/profile-matrix
+                         #{:hosted :native :ai}
+                         {:hosted :accept :native :accept :ai :accept}))
+
+(def backend-preservation
+  (safe16/backend-preservation :phase02/backend
+                               :jvm
+                               #{:source-spans :proof-assumptions}
+                               #{:runtime-check/bounds}))
+
+(def conformance-report
+  (safe16/conformance-report "stage0-clojure"
+                             "0.1.0"
+                             337
+                             337
+                             48
+                             :passed))
+
+(def safe16-ok
+  (safe16/conformance :complete))

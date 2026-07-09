@@ -1,0 +1,308 @@
+; Stage1 Gravity-owned B1 backend interface source-model contract.
+(ns gravity.backend.b1-backend-interface-specification
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b1-backend-interface-contract
+             b1-backend-input-contract
+             b1-eligibility-contract
+             b1-emission-contract
+             b1-proof-metadata-contract
+             b1-diagnostic-catalog
+             build-b1-backend-manifest
+             build-b1-input-packet
+             build-b1-eligibility-report
+             build-b1-emitted-artifact-record
+             verify-b1-backend-interface])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :backend-interface
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B1" "D1" "D3" "C11"
+                                        "C12" "C14" "P1" "P13"
+                                        "SAFE1" "SAFE15" "PERF10"
+                                        "R1" "B13" "B14" "PKG6"
+                                        "PKG7" "BOOT1" "BOOT3"
+                                        "BOOT8" "TEST2" "TEST13"]
+               :documents ["B1" "D1" "D3" "C11" "C12" "C14"
+                           "P1" "P13" "SAFE1" "SAFE15" "PERF10"
+                           "R1" "B13" "B14" "PKG6" "PKG7"
+                           "BOOT1" "BOOT3" "BOOT8" "TEST2"
+                           "TEST13"]
+               :implements [:backend-interface-source-model
+                             :backend-manifest-contract
+                             :verified-ir-input-contract
+                             :eligibility-report-contract
+                             :artifact-emission-contract
+                             :proof-to-target-metadata-contract
+                             :stable-b1-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :mir-module-identity :domain-ir-anchors
+                            :profile-contracts :target-contracts
+                            :abi-records :layout-records
+                            :runtime-provider-records
+                            :effect-facts :capability-facts
+                            :safety-outcomes :proof-references
+                            :source-maps :debug-maps
+                            :dependency-provenance
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b1-backend-interface-contract-subset
+                                    :clojure-b1-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b1-input.gravity"
+                              "backend-b1-profile.gravity"
+                              "backend-b1-target.gravity"
+                              "backend-b1-abi.gravity"
+                              "backend-b1-runtime.gravity"
+                              "backend-b1-proof.gravity"
+                              "backend-b1-capability.gravity"
+                              "backend-b1-unsupported.gravity"
+                              "backend-b1-metadata.gravity"]}}}))
+
+(def b1-backend-interface-contract
+  {:artifact :gravity/b1-backend-interface-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :accepts [:verified-mir :verified-domain-ir]
+   :requires [:profile-manifest
+              :target-manifest
+              :abi-policy
+              :runtime-provider-selection
+              :effect-summary
+              :capability-proof-summary
+              :safety-bundle
+              :proof-table
+              :source-map
+              :dependency-graph]
+   :emits [:backend-manifest
+           :input-eligibility-report
+           :target-artifact-manifest
+           :abi-layout-record
+           :runtime-provider-dependency-record
+           :proof-to-target-metadata-map
+           :source-debug-map
+           :unsupported-feature-report
+           :backend-diagnostic-stream
+           :backend-conformance-record]
+   :rules [:backend-consumes-only-verified-ir
+           :backend-does-not-consume-source-forms
+           :profile-and-target-legality-are-input-facts
+           :runtime-provider-selection-is-explicit
+           :effects-and-capabilities-are-preserved
+           :safe-gravity-never-depends-on-target-undefined-behavior
+           :target-assumptions-link-to-proofs
+           :emitted-artifacts-carry-provenance]
+   :forbidden [:unchecked-ir-input
+               :source-to-backend-shortcut
+               :target-undefined-behavior-as-semantics
+               :ambient-provider-selection
+               :capability-invention
+               :artifact-without-provenance
+               :backend-support-only-in-prose]})
+
+(def b1-backend-input-contract
+  {:artifact :gravity/b1-backend-input-contract
+   :required-fields [:input
+                     :profile
+                     :target
+                     :abi
+                     :runtime
+                     :providers
+                     :effects
+                     :capabilities
+                     :safety
+                     :proofs
+                     :source-map
+                     :dependencies]
+   :input-kinds [:gravity/mir :gravity/domain-ir]
+   :input-required-fields [:kind :id :verified? :verifier-report]
+   :reject-when [:missing-input-field
+                 :unverified-ir
+                 :stale-verifier-report
+                 :profile-target-incompatible
+                 :missing-safety-bundle
+                 :missing-proof-table
+                 :missing-source-map
+                 :missing-capability-summary]})
+
+(def b1-eligibility-contract
+  {:artifact :gravity/b1-backend-eligibility-contract
+   :checks [:profile-backend-compatibility
+            :target-feature-support
+            :runtime-availability-or-no-runtime-proof
+            :abi-representability
+            :layout-representability
+            :provider-availability
+            :effect-preservation
+            :capability-preservation
+            :safety-bundle-completeness
+            :proof-validity-for-target-assumptions
+            :source-debug-map-preservation]
+   :report-fields [:backend :input-artifact :profile :target
+                   :accepted? :rejections :fallbacks
+                   :missing-evidence :unsupported-operations
+                   :remediation]
+   :fallback-rules [:fallback-must-preserve-gravity-semantics
+                    :fallback-must-preserve-effects
+                    :fallback-must-preserve-capabilities
+                    :fallback-must-preserve-safety
+                    :fallback-must-be-visible-in-artifact-metadata]
+   :forbidden [:silent-target-narrowing
+               :eligibility-by-host-default
+               :fallback-with-weaker-contract]})
+
+(def b1-emission-contract
+  {:artifact :gravity/b1-backend-emission-contract
+   :artifact-fields [:artifact-kind
+                     :digest
+                     :backend-id
+                     :backend-version
+                     :source-input-digest
+                     :profile-fingerprint
+                     :target-fingerprint
+                     :abi-layout-manifest
+                     :runtime-provider-manifest
+                     :safety-summary
+                     :proof-summary
+                     :capability-summary
+                     :source-map
+                     :debug-map
+                     :dependency-graph
+                     :conformance-fixtures]
+   :metadata-rules [:artifact-identity-includes-kind
+                    :artifact-identity-includes-source-hash
+                    :artifact-identity-includes-compiler-identity
+                    :artifact-identity-includes-profile-and-target
+                    :artifact-identity-includes-effects-and-capabilities
+                    :artifact-identity-includes-safety-and-provenance]
+   :forbidden [:file-without-artifact-identity
+               :artifact-without-source-debug-map-when-meaningful
+               :artifact-without-safety-proof-capability-summary
+               :artifact-without-backend-conformance-reference]})
+
+(def b1-proof-metadata-contract
+  {:artifact :gravity/b1-proof-to-target-metadata-contract
+   :target-assumptions [:signed-overflow
+                        :aliasing
+                        :dereferenceable-pointer
+                        :alignment
+                        :volatile-ordering
+                        :atomic-ordering
+                        :floating-rounding
+                        :fast-math-flag
+                        :trap-or-panic-lowering
+                        :tail-call-legality
+                        :host-exception-mapping
+                        :gc-or-no-gc-behavior]
+   :required-fields [:assumption :target-rule
+                     :proof-or-certificate
+                     :source-span :profile :target
+                     :fallback-status :remediation]
+   :rules [:each-target-assumption-has-gravity-proof
+           :proofs-are-machine-checkable-or-explicitly-runtime-checked
+           :missing-proof-emits-b1-proof
+           :target-metadata-without-proof-is-rejected]
+   :forbidden [:benchmark-as-correctness-proof
+               :backend-prose-as-proof
+               :unchecked-host-assumption]})
+
+(def b1-diagnostic-catalog
+  {:artifact :gravity/b1-diagnostic-catalog
+   :diagnostics
+   [{:id "B1-INPUT"
+     :meaning :unverified-or-incomplete-backend-input}
+    {:id "B1-PROFILE"
+     :meaning :profile-backend-incompatibility}
+    {:id "B1-TARGET"
+     :meaning :unsupported-target-feature}
+    {:id "B1-ABI"
+     :meaning :abi-or-layout-gap}
+    {:id "B1-RUNTIME"
+     :meaning :missing-or-forbidden-runtime-service}
+    {:id "B1-PROOF"
+     :meaning :target-assumption-without-proof}
+    {:id "B1-CAPABILITY"
+     :meaning :authority-not-preserved-by-provider-selection}
+    {:id "B1-UNSUPPORTED"
+     :meaning :unsupported-mir-or-domain-operation}
+    {:id "B1-METADATA"
+     :meaning :missing-provenance-source-map-or-safety-metadata}]
+   :required-diagnostic-fields [:backend-id :input-artifact-id
+                                :mir-operation-or-domain-anchor
+                                :source-span :profile :target
+                                :missing-evidence :fallback-status
+                                :remediation]})
+
+(defn build-b1-backend-manifest
+  [backend-id supported-profiles emitted-artifacts]
+  {:artifact :gravity/backend-manifest
+   :backend backend-id
+   :version "source-model-v1"
+   :accepts [:gravity/mir :gravity/domain-ir]
+   :emits emitted-artifacts
+   :requires (:requires b1-backend-interface-contract)
+   :supports-profiles supported-profiles
+   :rejects [:unverified-ir :unsupported-op :missing-proof
+             :implicit-ub :ambient-capability :profile-violation]})
+
+(defn build-b1-input-packet
+  [input profile target evidence]
+  {:artifact :gravity/b1-input-packet
+   :input input
+   :profile profile
+   :target target
+   :evidence evidence
+   :required-fields (:required-fields b1-backend-input-contract)
+   :source-model-only? true})
+
+(defn build-b1-eligibility-report
+  [backend input accepted? rejections]
+  {:artifact :gravity/b1-eligibility-report
+   :backend backend
+   :input input
+   :accepted? accepted?
+   :rejections rejections
+   :checks (:checks b1-eligibility-contract)
+   :source-model-only? true})
+
+(defn build-b1-emitted-artifact-record
+  [artifact-kind digest source-map provenance]
+  {:artifact :gravity/b1-emitted-artifact-record
+   :artifact-kind artifact-kind
+   :digest digest
+   :source-map source-map
+   :provenance provenance
+   :required-fields (:artifact-fields b1-emission-contract)
+   :source-model-only? true})
+
+(defn verify-b1-backend-interface
+  [manifest]
+  {:artifact :gravity/b1-backend-interface-verification
+   :manifest manifest
+   :backend-consumes-only-verified-ir? true
+   :diagnostics-covered? true
+   :artifact-provenance-required? true
+   :proof-to-target-metadata-required? true
+   :production-backend-execution? false
+   :source-model-only? true})

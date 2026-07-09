@@ -1,0 +1,35 @@
+(ns core.app.math-float-reassoc
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:floating-manifests
+                      [{:operation :stage0/bad-reassoc
+                        :format :binary64
+                        :rounding :nearest-ties-to-even
+                        :numeric-mode :faithful
+                        :precision {:ulp-max 1}
+                        :exceptions {:invalid :quiet-nan
+                                     :divide-by-zero :infinity
+                                     :overflow :infinity
+                                     :underflow :subnormal-or-zero-by-policy
+                                     :inexact :ignored-by-mode}
+                        :nan {:quiet :propagate
+                              :signaling :quiet-and-flag
+                              :payload :not-portable}
+                        :infinity :ieee754
+                        :signed-zero :preserve
+                        :denormals :preserve
+                        :status-flags :unobservable-by-mode
+                        :fma :forbidden
+                        :reassociation :allowed
+                        :reciprocal-substitution :forbidden
+                        :determinism :target-stable
+                        :backend-lowering {:preserves-manifest? true
+                                           :eligible? true
+                                           :status-preserved? true}}]}}}))
+
+(defn main []
+  (println "strict reassociation should not compile"))

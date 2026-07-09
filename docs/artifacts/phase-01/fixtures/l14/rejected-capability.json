@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/namespace/capability_context/0"
+  ],
+  "extends": "accepted-facet-system.json"
+}

@@ -1,0 +1,66 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "capability-provider-artifact",
+      "coverage": [
+        "provider declarations",
+        "grant records",
+        "deterministic provider selection",
+        "scope audit logs",
+        "compile-time replay records",
+        "runtime provider manifests",
+        "conformance results",
+        "safe replacement providers"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/accepted-providers.json"
+    }
+  ],
+  "document": "L15",
+  "kind": "l15-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L15-CAPABILITY-MISSING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-capability-missing.json"
+    },
+    {
+      "diagnostic": "L15-PROVIDER-MISSING",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-provider-missing.json"
+    },
+    {
+      "diagnostic": "L15-PROVIDER-AMBIGUOUS",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-provider-ambiguous.json"
+    },
+    {
+      "diagnostic": "L15-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-profile.json"
+    },
+    {
+      "diagnostic": "L15-SCOPE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-scope.json"
+    },
+    {
+      "diagnostic": "L15-PHASE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-phase.json"
+    },
+    {
+      "diagnostic": "L15-TRUST",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-trust.json"
+    },
+    {
+      "diagnostic": "L15-REPLAY",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-replay.json"
+    },
+    {
+      "diagnostic": "L15-SECRET",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-secret.json"
+    },
+    {
+      "diagnostic": "L15-CONTRACT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-contract.json"
+    },
+    {
+      "diagnostic": "L15-REVOCATION",
+      "fixture": "docs/artifacts/phase-01/fixtures/l15/rejected-revocation.json"
+    }
+  ]
+}

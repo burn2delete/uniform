@@ -1,0 +1,100 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D107
+ :date "2026-06-29"
+ :status :complete
+ :capability :b10-workflow-graph-backend-document-coverage
+ :command "clojure -M:gravity backend-b10-workflow-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+ :artifact-kind :gravity/stage0-b10-workflow-graph-backend-document-artifact
+ :artifact-hash "sha256:ac08c37a5a2af599ef264f82d3c1484950f8c791d80fa8fd0734633c13603491"
+ :summary {:diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 9
+           :workflow-graph-hash "sha256:c8d26673a70bde6253aa22c929689ae6412677cab2df4a815036b107f1753b9f"
+           :replay-fixture-hash "sha256:eaebc8693f7b86d8cb6fd9efdf321a7b3c1f616b8b7c9603ca62a51d071fdd83"
+           :workflow-graph-structural true
+           :replay-fixture-structural true
+           :differential-replay true
+           :external-runtime-validation :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b10-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-replay.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-idempotency.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-retry.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-compensation.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-policy.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-taint.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-graph.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b10-manifest.gravity"]
+ :diagnostics ["B10-SCHEMA"
+               "B10-REPLAY"
+               "B10-IDEMPOTENCY"
+               "B10-RETRY"
+               "B10-COMPENSATION"
+               "B10-CAPABILITY"
+               "B10-POLICY"
+               "B10-TAINT"
+               "B10-GRAPH"
+               "B10-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :workflow-ir-handoff-covered? true
+                :workflow-graph-emitted? true
+                :workflow-graph-structurally-valid? true
+                :schema-bundle-covered? true
+                :event-log-schema-covered? true
+                :replay-policy-covered? true
+                :replay-fixture-covered? true
+                :idempotency-covered? true
+                :retry-timeout-cancellation-covered? true
+                :compensation-covered? true
+                :capability-manifest-covered? true
+                :ambient-authority-rejected? true
+                :tool-model-provider-manifest-covered? true
+                :human-review-policy-covered? true
+                :policy-graph-covered? true
+                :taint-validation-covered? true
+                :audit-provenance-preserved? true
+                :source-debug-map-preserved? true
+                :differential-replay-matched? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :external-runtime-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 86 tests containing 5043 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1156}
+              {:command "clojure -M:gravity backend-b10-workflow-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:ac08c37a5a2af599ef264f82d3c1484950f8c791d80fa8fd0734633c13603491"}
+              {:command "clojure -M -e <extract B10 workflow graph, replay fixture, and policy graph>"
+               :result {:dir "/tmp/gravity-p07-b10-workflow"
+                        :files ["gravity_stage0_policy.edn"
+                                "gravity_stage0_workflow.edn"
+                                "gravity_stage0_workflow_replay.edn"]
+                        :workflow-graph-structural true
+                        :replay-fixture-structural true
+                        :differential-replay true}}
+              {:command "sed -n '1,40p' /tmp/gravity-p07-b10-workflow/gravity_stage0_workflow.edn"
+               :result :passed}
+              {:command "sed -n '1,35p' /tmp/gravity-p07-b10-workflow/gravity_stage0_workflow_replay.edn"
+               :result :passed}
+              {:command "sed -n '1,20p' /tmp/gravity-p07-b10-workflow/gravity_stage0_policy.edn"
+               :result :passed}
+              {:command "gravity-workflow-replay --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: gravity-workflow-replay"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 16 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-D106 :P07-D107 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D107 for deterministic Clojure stage0 coverage of the B10 workflow graph backend design document contract."
+                 "The emitted workflow manifest includes workflow graph artifacts, step schemas, event-log schemas, replay policy and replay fixtures, idempotency maps, retry/timeout/cancellation/compensation records, external capability manifests, model/tool provider manifests, human-review and policy graphs, taint validation, audit provenance, source/debug maps, differential replay records, and stable B10 diagnostics."
+                 "The current environment does not provide gravity-workflow-replay, so external durable workflow runtime replay, scheduler execution, deployment, provider execution, and full Phase 07 completion remain unclaimed."]}

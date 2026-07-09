@@ -1,0 +1,70 @@
+{:proof-id :stage0-perf4-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D062
+ :document "PERF4"
+ :governing-document "docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md"
+ :status :passed
+ :implementation-surface
+ {:command "layout"
+  :entrypoint :gravity.bootstrap/layout-file-artifact
+  :artifact-kind :gravity/stage0-layout-optimization-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/layout-optimization.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/layout-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-abi-boundary.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-address-identity.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-alias-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-align-unsupported.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-packed-unsafe.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-cache-missing.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-device-mismatch.gravity"
+   "bootstrap/clojure/fixtures/rejected/layout-proof-missing.gravity"]}
+ :accepted-behavior
+ ["optimized layout manifests name type, fields, alignment, ABI, profile, target, transformation, and proofs"
+  "AoS-to-SoA layout transformation preserves field behavior and debug mapping"
+  "ABI and persistence boundaries are preserved unless an adapter is recorded"
+  "address identity, alias, ownership, alignment, packing, cache, and device-transfer evidence are artifacted"
+  "layout-driven check erasure references a proof id"]
+ :rejected-behavior
+ ["missing or ambiguous layout manifest"
+  "ABI or persistence boundary changes without adapter"
+  "observable address identity violation"
+  "missing alias or ownership proof"
+  "unsupported or unsafe alignment"
+  "packed layout without access-safety facts"
+  "cache claim without target fingerprint or benchmark"
+  "host/device layout mismatch"
+  "layout-driven check erasure without proof"]
+ :required-artifacts
+ [:layout-manifest
+  :alignment-proof
+  :padding-packing-record
+  :alias-ownership-report
+  :address-identity-report
+  :abi-compatibility-record
+  :cache-shape-report
+  :device-transfer-layout-record
+  :layout-conformance-results]
+ :diagnostics
+ ["PERF4-LAYOUT" "PERF4-ABI" "PERF4-ADDRESS" "PERF4-ALIAS"
+  "PERF4-ALIGN" "PERF4-PACKED" "PERF4-CACHE" "PERF4-DEVICE"
+  "PERF4-PROOF"]
+ :dependencies
+ ["PERF1" "L5" "L10" "L18" "SAFE2" "SAFE7" "L19" "P6" "P7" "P8" "P11" "backend layout lowering"]
+ :conformance
+ {:layout-manifest-emission :complete
+  :field-reorder-packing-alignment-aos-soa-hot-cold-evidence :partial-stage0-aos-soa
+  :abi-and-persistence-boundary-preservation :complete
+  :address-identity-rejection :complete
+  :alias-and-ownership-proof-checks :complete
+  :device-transfer-layout-validation :complete
+  :debug-source-mapping :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 38 tests containing 1938 assertions. 0 failures, 0 errors."}
+  {:command "clojure -M -e '(require ... layout summary)'"
+   :output "{:kind :gravity/stage0-layout-optimization-artifact, :pass :layout-optimization-validation, :status :complete, :transforms #{:aos-to-soa}, :diagnostics 9, :proof :complete}"}]
+ :limits
+ ["This completes PERF4 document coverage only for the Clojure stage0 layout artifact boundary."
+  "It is not PERF8 SIMD/vectorization, backend layout execution, release performance, or self-hosting evidence."]}

@@ -1,0 +1,13 @@
+(ns math.mode-exceptional
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:mode-records
+                      [{:record-id :missing-exceptional
+                        :math/mode :certified-approx
+                        :scope {:kind :function :name 'math.mode/sin}
+                        :precision {:type :F32 :absolute-error-max 1.0e-5}
+                        :rounding :nearest-even}]}}}))

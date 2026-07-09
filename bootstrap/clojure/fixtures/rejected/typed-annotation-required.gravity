@@ -1,0 +1,9 @@
+(ns typed.bad.annotation
+  (:profile :kernel)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (unknown/runtime-call 1))

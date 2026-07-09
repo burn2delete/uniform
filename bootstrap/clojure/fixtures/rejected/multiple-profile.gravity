@@ -1,0 +1,7 @@
+(ns invalid.multiple-profile
+  (:profile :hosted)
+  (:profile :hosted)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main [] nil)

@@ -1,0 +1,9 @@
+(ns kernel.driver
+  (:profile :kernel)
+  (:target :llvm)
+  (:requires [[web.ui :as ui]])
+  (:capabilities #{:io/stdout}))
+
+(defn main []
+  (ui/render))
+

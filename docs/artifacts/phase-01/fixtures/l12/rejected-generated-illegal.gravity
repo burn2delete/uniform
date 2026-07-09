@@ -1,0 +1,13 @@
+(ns bad.generated
+  (:profile :hosted)
+  (:target :native))
+
+(build-policy
+  :mode :hermetic
+  :declared-inputs ["schemas/user.json"])
+
+(build-grant :build/read-file :provider/schema-loader "schemas/user.json" :build :hosted :content-digest)
+
+(derive-code :json/User UserSchema
+  (:build-effect :build/read-file :provider/schema-loader "schemas/user.json" "sha256:schema-user-v1" :content-digest)
+  (:generated-form (unsafe (raw/deref ptr)) "sha256:bad-generated-code"))

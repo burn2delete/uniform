@@ -1,0 +1,5 @@
+(ns bad.extension
+  (:profile :hosted))
+
+#unregistered/value
+

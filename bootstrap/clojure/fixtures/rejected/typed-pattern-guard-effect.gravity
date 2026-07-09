@@ -1,0 +1,12 @@
+(ns typed.pattern.guard
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def bad
+  (match {:method :GET}
+    {:method :GET :when (println "guard")} :ok
+    _ :fallback))

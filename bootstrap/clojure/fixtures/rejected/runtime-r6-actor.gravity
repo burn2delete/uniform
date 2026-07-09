@@ -1,0 +1,12 @@
+; Rejected P08 R6 fixture: actor or channel message lacks schema or transfer rules.
+(ns runtime.r6-actor
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/event})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:concurrency {:fail :r6-actor}}}))
+
+(defn main [] :- I64 1)

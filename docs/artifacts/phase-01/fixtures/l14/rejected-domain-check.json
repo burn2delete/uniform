@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-facet-system.json",
+  "set": {
+    "/lowering_outputs/0/domain_ir/validation_results/rule": "schema-field-present",
+    "/lowering_outputs/0/domain_ir/validation_results/status": ":failed"
+  }
+}

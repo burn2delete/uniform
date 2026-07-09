@@ -1,0 +1,414 @@
+(ns performance.realtime
+  (:profile :native)
+  (:target :jvm)
+  (:exports [realtime-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/realtime-vector-control
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2 :fma}
+                :input-shape {:element-type :f32
+                              :layout :contiguous
+                              :length-range [1024 4096]}
+                :layout {:buffer :contiguous
+                         :element :f32
+                         :alignment 32}
+                :safety-mode :safe-optimized
+                :objective {:metric :worst-case-us
+                            :direction :lower-is-better}
+                :semantic-proof #{:types-preserved
+                                  :effects-preserved
+                                  :profile-legal}
+                :safety-proof #{:bounds-preserved
+                                :ownership-preserved
+                                :capabilities-preserved}
+                :benchmark {:harness :bench/realtime-vector-control
+                            :samples 100
+                            :baseline :scalar-control-loop
+                            :environment-fingerprint
+                            {:cpu :x86-64
+                             :os :linux
+                             :compiler :gravity-stage0-clojure
+                             :backend :llvm
+                             :runtime :minimal-native
+                             :features #{:avx2 :fma}}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :optimization-decisions
+               [{:pass :stage0/performance-claim
+                 :decision :accept
+                 :preserves #{:types :effects :profile :safety
+                              :capabilities}}]
+               :generated-variants
+               [{:variant-id :control-loop-avx2
+                 :guard-predicate {:requires-target-features #{:avx2 :fma}
+                                   :min-length 1024}
+                 :status :accepted}]
+               :realtime
+               {:suite-id :perf8-10/realtime-governance
+                :vectorization-records
+                [{:record-id :simd/control-saxpy
+                  :optimization :simd-vectorization
+                  :loop :control/saxpy
+                  :operation :fma-saxpy
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :requires #{:lane-independence
+                              :no-overlap
+                              :bounds-safe
+                              :aligned-or-safe-unaligned}
+                  :vector-width 8
+                  :numeric-mode :strict-f32
+                  :numeric-mode-preserved? true
+                  :reassociation? false
+                  :intrinsics #{:avx2/loadu
+                                :avx2/fma
+                                :avx2/storeu}
+                  :proofs #{:lane-independence
+                            :no-overlap
+                            :bounds-safe
+                            :aligned-or-safe-unaligned}
+                  :lane-independence-report
+                  {:proof-id :proof/lane-independent-saxpy
+                   :loop-carried-dependency? false
+                   :hidden-side-effects? false
+                   :status :complete}
+                  :alias-proof {:proof-id :proof/no-overlap-slices
+                                :legal? true}
+                  :bounds-proof {:proof-id :proof/vector-lane-bounds
+                                 :valid? true}
+                  :alignment-report {:proof-id :proof/safe-loadu
+                                     :alignment 32
+                                     :target-supported? true
+                                     :aligned? false
+                                     :safe-unaligned? true}
+                  :lane-plan {:width 8
+                              :lanes [:x0 :x1 :x2 :x3 :x4 :x5 :x6 :x7]
+                              :tail :scalar-epilogue}
+                  :tail-handling :scalar-epilogue
+                  :intrinsic-map
+                  [{:source-operation :load-f32
+                    :target-intrinsic :avx2/loadu-ps
+                    :required-feature :avx2
+                    :guard {:requires-target-feature :avx2}
+                    :fallback :scalar-load
+                    :numeric-mode :strict-f32
+                    :memory-order :plain}
+                   {:source-operation :mul-add-f32
+                    :target-intrinsic :avx2/fmadd-ps
+                    :required-feature :fma
+                    :guard {:requires-target-feature :fma}
+                    :fallback :mul-then-add-strict
+                    :numeric-mode :strict-f32
+                    :memory-order :plain}]
+                  :elementary-functions []
+                  :math-certificates #{}
+                  :exact-equivalence? true
+                  :volatile-reordered? false
+                  :reordered-ordered-operations []
+                  :cache-transformation
+                  {:kind :tiling-prefetch
+                   :tile-size 256
+                   :prefetch-distance 2
+                   :effect-order-preserved? true
+                   :synchronization-preserved? true
+                   :benchmark :bench/realtime-vector-control}
+                  :tiling-prefetch-plan {:tile-size 256
+                                         :prefetch-distance 2
+                                         :cache-line-size 64}}]
+                :latency-contracts
+                [{:contract-id :latency/control-loop
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :budget {:max-us 50
+                           :jitter-us 5}
+                  :workload {:path :control-loop
+                             :input-count 4096}
+                  :allocation :none
+                  :blocking false
+                  :bounds {:loops-bounded? true
+                           :iterations 4096
+                           :recursion? false
+                           :recursion-depth 0}
+                  :preemption {:interrupt-policy :declared
+                               :preemption-bound-us 3
+                               :locks :bounded}
+                  :locks {:max-hold-us 2
+                          :priority-inversion-policy :none}
+                  :blocking-operations []
+                  :forbidden-runtime #{:gc :dynamic-loading :reflection
+                                       :network :ai/model-call
+                                       :tool-call}
+                  :runtime-services []
+                  :managed-runtime-pauses? false
+                  :evidence [:worst-case-path
+                             :bounded-empirical-latency]
+                  :evidence-summary
+                  {:worst-case-us 42
+                   :jitter-us 3
+                   :target-fingerprint {:cpu :x86-64
+                                        :features #{:avx2 :fma}
+                                        :clock :fixed}
+                   :workload-fingerprint {:path :control-loop
+                                          :input-count 4096}}
+                  :worst-case-path-analysis
+                  {:path-id :wcet/control-loop
+                   :max-us 42
+                   :method :static-plus-empirical}
+                  :bounded-empirical-latency
+                  {:samples 1000
+                   :max-us 41
+                   :measurement :fixed-target}
+                  :optimization-effects
+                  {:unpredictable-latency? false}
+                  :failure-mode :reject-build}]
+                :check-elision-records
+                [{:record-id :elide/bounds
+                  :optimization :bounds-check-elision
+                  :check-class :bounds
+                  :operation :slice-get
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:12:19"
+                  :ir-node :mir/control/slice-get
+                  :dominating-proof :proof/range-control-index
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-bounds
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true
+                                         :backend :llvm}
+                  :source-map {:source-span "control.gravity:12:19"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/overflow
+                  :optimization :integer-overflow-check-elision
+                  :check-class :integer-overflow
+                  :operation :add
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:13:7"
+                  :ir-node :mir/control/add
+                  :dominating-proof :proof/int-range
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-overflow
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:13:7"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/div-zero
+                  :optimization :division-check-elision
+                  :check-class :division-by-zero
+                  :operation :divide
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:14:11"
+                  :ir-node :mir/control/divide
+                  :dominating-proof :proof/nonzero-divisor
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-div-zero
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:14:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/shift
+                  :optimization :shift-check-elision
+                  :check-class :shift-count
+                  :operation :shift-left
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:15:11"
+                  :ir-node :mir/control/shift
+                  :dominating-proof :proof/shift-range
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-shift
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:15:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/null
+                  :optimization :null-check-elision
+                  :check-class :null-option
+                  :operation :option-get
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:16:11"
+                  :ir-node :mir/control/option-get
+                  :dominating-proof :proof/non-null-option
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-null
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:16:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/init
+                  :optimization :initialization-check-elision
+                  :check-class :initialization
+                  :operation :field-read
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:17:11"
+                  :ir-node :mir/control/field-read
+                  :dominating-proof :proof/definite-init
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-init
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:17:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/lifetime
+                  :optimization :region-lifetime-check-elision
+                  :check-class :region-lifetime
+                  :operation :borrow-use
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:18:11"
+                  :ir-node :mir/control/borrow-use
+                  :dominating-proof :proof/region-non-escape
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-lifetime
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:18:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/alias
+                  :optimization :borrow-alias-check-elision
+                  :check-class :borrow-alias
+                  :operation :mut-borrow
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:19:11"
+                  :ir-node :mir/control/mut-borrow
+                  :dominating-proof :proof/alias-exclusive
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-alias
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:19:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/linear
+                  :optimization :linear-resource-check-elision
+                  :check-class :linear-resource
+                  :operation :resource-close
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:20:11"
+                  :ir-node :mir/control/resource-close
+                  :dominating-proof :proof/linear-flow
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-linear
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:20:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/race
+                  :optimization :race-check-elision
+                  :check-class :data-race
+                  :operation :shared-write
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:21:11"
+                  :ir-node :mir/control/shared-write
+                  :dominating-proof :proof/race-free
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-race
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:21:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/taint
+                  :optimization :taint-check-elision
+                  :check-class :taint-sink
+                  :operation :validated-output
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:22:11"
+                  :ir-node :mir/control/output
+                  :dominating-proof :proof/taint-cleared
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/elide-taint
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :proof
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:22:11"
+                               :generated-origin :user-source}}
+                 {:record-id :elide/capability-policy
+                  :optimization :capability-check-discharge
+                  :check-class :capability
+                  :operation :provider-use
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :source-span "control.gravity:23:11"
+                  :ir-node :mir/control/provider-use
+                  :dominating-proof :proof/capability-policy
+                  :proof-dominates-use true
+                  :invalidated-by #{}
+                  :residual-required? false
+                  :residual-checks #{}
+                  :certificate {:certificate-id :cert/discharge-capability
+                                :valid? true}
+                  :pass-id :pass/check-elision
+                  :elision-reason :policy-artifact
+                  :equivalent-policy-artifact :capability-policy/native-runtime
+                  :backend-preservation {:preserves? true}
+                  :source-map {:source-span "control.gravity:23:11"
+                               :generated-origin :user-source}}]}}}))
+
+(def realtime-ready true)

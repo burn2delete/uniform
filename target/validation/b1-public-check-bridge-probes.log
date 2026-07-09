@@ -1,0 +1,12 @@
+ACCEPT bootstrap/clojure/fixtures/accepted/backend-interface.gravity: exit=0 out='gravity stage0 check passed: backend.interface' err=''
+ACCEPT bootstrap/clojure/fixtures/accepted/backend-interface.qst: exit=0 out='gravity stage0 check passed: backend.interface' err=''
+REJECT backend-b1-abi: gravity_exit=1 qst_exit=1 diag=B1-ABI
+REJECT backend-b1-capability: gravity_exit=1 qst_exit=1 diag=B1-CAPABILITY
+REJECT backend-b1-input: gravity_exit=1 qst_exit=1 diag=B1-INPUT
+REJECT backend-b1-metadata: gravity_exit=1 qst_exit=1 diag=B1-METADATA
+REJECT backend-b1-profile: gravity_exit=1 qst_exit=1 diag=B1-PROFILE
+REJECT backend-b1-proof: gravity_exit=1 qst_exit=1 diag=B1-PROOF
+REJECT backend-b1-runtime: gravity_exit=1 qst_exit=1 diag=B1-RUNTIME
+REJECT backend-b1-target: gravity_exit=1 qst_exit=1 diag=B1-TARGET
+REJECT backend-b1-unsupported: gravity_exit=1 qst_exit=1 diag=B1-UNSUPPORTED
+B1 public check bridge probes passed

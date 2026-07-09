@@ -1,0 +1,62 @@
+{:proof-id :stage0-perf5-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D063
+ :document "PERF5"
+ :governing-document "docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md"
+ :status :passed
+ :implementation-surface
+ {:command "performance-governance"
+  :entrypoint :gravity.bootstrap/performance-governance-file-artifact
+  :artifact-kind :gravity/stage0-performance-governance-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/performance-governance.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/governance-benchmark-manifest.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-fingerprint.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-safety-gate.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-correctness-gate.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-regression.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-noise.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-baseline.gravity"
+   "bootstrap/clojure/fixtures/rejected/governance-benchmark-drift.gravity"]}
+ :accepted-behavior
+ ["benchmark manifests carry workload, profile, target, metric, warmup, units, sample count, statistics, environment, thresholds, baseline, and machine-readable report identity"
+  "safety and correctness gates must pass before performance evidence can accept a win"
+  "environment fingerprints tie evidence to source, compiler, runtime, profile, target, and provider versions"
+  "regression, noise, baseline update, and environment drift records are explicit"]
+ :rejected-behavior
+ ["incomplete benchmark manifest"
+  "missing environment fingerprint fields"
+  "safety gate failure"
+  "correctness gate failure"
+  "unaccepted regression"
+  "undersampled or unstable measurements"
+  "unreviewed or history-free baseline update"
+  "incompatible environment drift"]
+ :required-artifacts
+ [:benchmark-manifest
+  :environment-fingerprint
+  :correctness-safety-gate-record
+  :benchmark-sample-summary
+  :regression-report
+  :baseline-registry]
+ :diagnostics
+ ["PERF5-MANIFEST" "PERF5-FINGERPRINT" "PERF5-SAFETY-GATE"
+  "PERF5-CORRECTNESS-GATE" "PERF5-REGRESSION" "PERF5-NOISE"
+  "PERF5-BASELINE" "PERF5-DRIFT"]
+ :dependencies
+ ["PERF1" "D6" "D9" "SAFE15" "profile manifest" "target fingerprint"]
+ :conformance
+ {:benchmark-manifest-emission :complete
+  :environment-fingerprint-validation :complete
+  :safety-and-correctness-gates :complete
+  :noise-and-regression-classification :complete
+  :baseline-review-and-drift-policy :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 39 tests containing 1989 assertions. 0 failures, 0 errors."}
+  {:command "clojure -M -e '(require ... performance-governance summary)'"
+   :output "{:benchmarks 1, :diagnostics 24, :proof :complete, :status :complete}"}]
+ :limits
+ ["This completes PERF5 document coverage only for the Clojure stage0 governance artifact boundary."
+  "It is not release benchmark infrastructure, backend execution, or self-hosting evidence."]}

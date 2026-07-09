@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/0/fact_results/lifetime": ":missing"
+  }
+}

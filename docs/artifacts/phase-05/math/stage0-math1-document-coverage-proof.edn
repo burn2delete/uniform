@@ -1,0 +1,35 @@
+{:phase "05"
+ :task "P05-D069"
+ :document "MATH1"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/069-math1-numeric-tower-specification.md"
+ :artifact-kind :gravity/stage0-numeric-mode-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-numeric-modes.gravity"
+ :covered-artifact-fields
+ [:numeric-kind-lattice
+  :conversion-rule-table
+  :profile-support-matrix
+  :numeric-mode-environment
+  :efir-numeric-annotations
+  :symbolic-equality-proof-table]
+ :required-diagnostic-ids
+ ["MATH1-FAMILY" "MATH1-CONVERSION" "MATH1-NARROW"
+  "MATH1-PRECISION" "MATH1-ROUNDING" "MATH1-BRANCH"
+  "MATH1-ALLOCATION" "MATH1-EQUALITY" "MATH1-PROFILE"]
+ :rejected-fixtures
+ [{:fixture "math-numeric-family.gravity" :diagnostic "MATH1-FAMILY"}
+  {:fixture "math-numeric-conversion.gravity" :diagnostic "MATH1-CONVERSION"}
+  {:fixture "math-numeric-narrow.gravity" :diagnostic "MATH1-NARROW"}
+  {:fixture "math-numeric-precision.gravity" :diagnostic "MATH1-PRECISION"}
+  {:fixture "math-numeric-rounding.gravity" :diagnostic "MATH1-ROUNDING"}
+  {:fixture "math-numeric-branch.gravity" :diagnostic "MATH1-BRANCH"}
+  {:fixture "math-numeric-allocation.gravity" :diagnostic "MATH1-ALLOCATION"}
+  {:fixture "math-numeric-equality.gravity" :diagnostic "MATH1-EQUALITY"}
+  {:fixture "math-numeric-profile.gravity" :diagnostic "MATH1-PROFILE"}]
+ :capability-based-proof
+ {:families-explicit? true
+  :conversion-rules-explicit? true
+  :implicit-narrowing-rejected? true
+  :profile-support-checked? true
+  :symbolic-equality-proof-backed? true
+  :status :complete}
+ :status :complete}

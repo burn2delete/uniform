@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-backend-architecture.json",
+  "delete": [
+    "/backend_conformance_report/target_matrix/0"
+  ]
+}

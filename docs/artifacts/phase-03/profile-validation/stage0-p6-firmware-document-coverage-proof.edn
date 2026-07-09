@@ -1,0 +1,27 @@
+{:proof-id :stage0-p6-firmware-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D051
+ :document "P6"
+ :profile :firmware
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-validation-firmware.gravity"
+ :artifact-kind :gravity/stage0-constrained-profile-validation-artifact
+ :effective-effects #{:memory/mmio :interrupt/register}
+ :effective-capabilities #{:hardware/mmio :hardware/interrupt}
+ :required-artifacts
+ [:stack-budget-record :static-memory-budget :bounded-allocation-report
+  :interrupt-capability-table :mmio-address-map :vector-table-record
+  :linker-script-record :latency-loop-bound-report
+  :firmware-image-manifest :unsafe-audit-records]
+ :diagnostic-fixtures
+ {"P6-GC" "bootstrap/clojure/fixtures/rejected/profile-firmware-gc.gravity"
+  "P6-ALLOC" "bootstrap/clojure/fixtures/rejected/profile-firmware-alloc.gravity"
+  "P6-STACK" "bootstrap/clojure/fixtures/rejected/profile-firmware-stack.gravity"
+  "P6-STATIC" "bootstrap/clojure/fixtures/rejected/profile-firmware-static.gravity"
+  "P6-MMIO" "bootstrap/clojure/fixtures/rejected/profile-firmware-mmio.gravity"
+  "P6-INTERRUPT" "bootstrap/clojure/fixtures/rejected/profile-firmware-interrupt.gravity"
+  "P6-LATENCY" "bootstrap/clojure/fixtures/rejected/profile-firmware-latency.gravity"
+  "P6-HOST" "bootstrap/clojure/fixtures/rejected/profile-firmware-host.gravity"
+  "P6-EXCEPTION" "bootstrap/clojure/fixtures/rejected/profile-firmware-exception.gravity"
+  "P6-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-firmware-capability.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

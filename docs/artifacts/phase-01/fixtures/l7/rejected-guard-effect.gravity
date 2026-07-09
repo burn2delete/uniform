@@ -1,0 +1,7 @@
+(ns l7.bad.guard
+  (:profile :hosted))
+
+(def bad
+  (match request
+    {:method :GET :when (println "guard")} :ok
+    _ :fallback))

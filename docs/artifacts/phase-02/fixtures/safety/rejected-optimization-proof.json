@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "set": {
+    "/operations/0/proof/replaces_check": ":different-check"
+  }
+}

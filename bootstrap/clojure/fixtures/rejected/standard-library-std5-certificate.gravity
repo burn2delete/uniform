@@ -1,0 +1,11 @@
+; Rejected P16 STD5 fixture.
+(ns standard-library.std5-certificate
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std5003}}}))
+
+(defn main [] :- I64 1)

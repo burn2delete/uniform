@@ -1,0 +1,1 @@
+{:id "P1-PROFILE-UNSUPPORTED", :message "stage0 execution supports only the :hosted profile", :bootstrap-stage :stage0, :source-span {:source "bootstrap/clojure/fixtures/rejected/runtime-r12-semantics.gravity", :form-index 0}, :profile :ai, :supported #{:hosted}, :remediation "Use (:profile :hosted) for executable stage0 modules."}

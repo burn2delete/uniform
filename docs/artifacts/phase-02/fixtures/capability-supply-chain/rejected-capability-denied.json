@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-capability-supply-chain.json",
+  "set": {
+    "/capability_checks/0/policy_denied": true,
+    "/capability_checks/0/denied_policy_layer": "workspace"
+  }
+}

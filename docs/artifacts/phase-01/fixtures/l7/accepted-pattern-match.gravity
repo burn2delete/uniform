@@ -1,0 +1,19 @@
+(ns l7.match
+  (:profile :hosted)
+  (:effects :io/write)
+  (:capabilities :io/stdout))
+
+(def result-match
+  (match result
+    (Ok value) value
+    (Err error) (throw error)))
+
+(def guarded-map
+  (match request
+    {:method :GET :path path :when (println "guard")} path
+    _ :not-found))
+
+(def validated-shape
+  (match (schema/validate User input)
+    {:id id :name name} id
+    _ nil))

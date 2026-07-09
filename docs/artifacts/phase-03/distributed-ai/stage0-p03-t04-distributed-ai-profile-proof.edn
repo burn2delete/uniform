@@ -1,0 +1,59 @@
+{:proof-id :stage0-p03-t04-distributed-ai-profile-proof
+ :date "2026-06-24"
+ :phase 3
+ :task :P03-T04
+ :status :passed
+ :capability :distributed-ai-cross-profile-boundary-graph
+ :command "clojure -M:gravity profile-distributed-ai bootstrap/clojure/fixtures/accepted/profile-distributed-ai-distributed.gravity"
+ :artifact-kind :gravity/stage0-distributed-ai-profile-artifact
+ :accepted-fixtures
+ {:distributed "bootstrap/clojure/fixtures/accepted/profile-distributed-ai-distributed.gravity"
+  :ai "bootstrap/clojure/fixtures/accepted/profile-distributed-ai-ai.gravity"}
+ :accepted-results
+ {:distributed {:document "P9"
+                :effective-effects #{:workflow/event :workflow/replay
+                                     :network/http :database/read
+                                     :database/write :time/read}
+                :effective-capabilities #{:workflow/event :workflow/replay
+                                          :network/client :database/read
+                                          :database/write :time/read}
+                :required-artifacts 8
+                :boundary-kind :service-boundary
+                :capability-proof :complete
+                :replay-proof :complete}
+  :ai {:document "P10"
+       :effective-effects #{:ai/model-call :ai/tool-call :ai/embedding
+                            :ai/memory-read :ai/memory-write
+                            :ai/human-review}
+       :effective-capabilities #{:ai/model :ai/tool :ai/memory
+                                 :ai/human-review}
+       :required-artifacts 10
+       :boundary-kind :agent-tool-boundary
+       :capability-proof :complete
+       :replay-proof :complete}}
+ :rejected-diagnostics
+ {"P9" ["P9-REPLAY" "P9-SCHEMA" "P9-MIGRATION" "P9-RETRY"
+        "P9-COMPENSATION" "P9-CAPABILITY" "P9-EFFECT" "P9-RAW"
+        "P9-SERVICE-ERROR" "P9-EVENT-LOG"]
+  "P10" ["P10-MODEL" "P10-TOOL" "P10-PROMPT" "P10-MEMORY"
+         "P10-SECRET" "P10-GENERATED" "P10-REPLAY" "P10-BUDGET"
+         "P10-DESTRUCTIVE" "P10-RAW"]}
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/profile-distributed-replay.gravity"
+  "P9-REPLAY"
+  "bootstrap/clojure/fixtures/rejected/profile-distributed-compensation.gravity"
+  "P9-COMPENSATION"
+  "bootstrap/clojure/fixtures/rejected/profile-ai-prompt.gravity"
+  "P10-PROMPT"
+  "bootstrap/clojure/fixtures/rejected/profile-ai-destructive.gravity"
+  "P10-DESTRUCTIVE"}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. P9-P10 distributed/AI profile-validation artifacts, and 479 rejected fixtures"}
+  {:command "clojure -M:gravity profile-distributed-ai bootstrap/clojure/fixtures/accepted/profile-distributed-ai-distributed.gravity"
+   :output ":gravity/stage0-distributed-ai-profile-artifact with :distributed profile, P9 document, :service-boundary graph, 8 required artifacts, and :complete capability proof"}
+  {:command "clojure -M:gravity profile-distributed-ai bootstrap/clojure/fixtures/accepted/profile-distributed-ai-ai.gravity"
+   :output ":gravity/stage0-distributed-ai-profile-artifact with :ai profile, P10 document, :agent-tool-boundary graph, 10 required artifacts, and :complete capability proof"}]
+ :limits
+ ["This proves distributed and AI profile validation at the Clojure stage0 profile artifact boundary."
+  "Later Phase 03 proof records complete the P13 compatibility matrix and all-profile compliance suite; this record does not claim backend execution, runtime services, performance, package publication, or self-hosting."]}

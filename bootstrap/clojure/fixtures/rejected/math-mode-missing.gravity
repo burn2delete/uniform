@@ -1,0 +1,7 @@
+(ns math.mode-missing
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric {:mode-records [{}]}}}))

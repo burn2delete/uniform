@@ -1,0 +1,54 @@
+{
+  "artifact_id": "phase-00-safety-performance-gate-model-2026-06-24",
+  "kind": "safety-performance-gate-model",
+  "task": "P00-T04",
+  "source_basis": [
+    "AGENTS.md",
+    "docs/implementation-roadmap.md",
+    "docs/phase-00-foundation-and-thesis/README.md",
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+  ],
+  "legal_safety_outcomes": [":proven-safe", ":runtime-checked", ":rejected", ":unsafe-island"],
+  "legal_optimization_choices": ["preserve-fact", "regenerate-fact", "retain-runtime-check", "reject-transformation"],
+  "claim_fields": ["claim_id", "profile", "target", "backend", "runtime", "safety_mode", "input_domain", "layout", "effects", "capabilities", "erased_checks", "proof_records", "benchmark", "artifacts"],
+  "benchmark_fields": ["harness", "baseline", "samples", "target_fingerprint", "compiler_identity", "source_hash", "optimization_manifest"],
+  "proof_fields": ["claim", "domain", "assumptions", "checker", "inputs", "result"],
+  "unsafe_island_fields": ["reason", "source_span", "profiles", "effects", "capabilities", "preconditions", "postconditions", "invariants", "safe_boundary", "evidence", "owner", "review", "re_review"],
+  "diagnostics": [
+    "D6-CLAIM-INCOMPLETE",
+    "D6-CHECK-ELISION-UNPROVED",
+    "D6-FAST-MATH-IMPLICIT",
+    "D6-EFFECT-REORDER",
+    "D6-TARGET-ASSUMPTION",
+    "D8-UNCLASSIFIED-DANGER",
+    "D8-CHECK-ERASED",
+    "D8-UNSAFE-MISSING-METADATA",
+    "D9-PROOF-MISSING",
+    "D9-CERT-UNCHECKABLE",
+    "D9-CHECK-ELISION-NO-PROOF"
+  ],
+  "gate_records": [
+    {
+      "id": "preserve-fact",
+      "description": "Optimization preserves the existing safety fact and keeps proof evidence attached to the artifact."
+    },
+    {
+      "id": "regenerate-fact",
+      "description": "Optimization invalidates an old fact only after regenerating an equivalent proof record."
+    },
+    {
+      "id": "retain-runtime-check",
+      "description": "Optimization cannot prove the property and retains a diagnosed runtime check."
+    },
+    {
+      "id": "reject-transformation",
+      "description": "Optimization cannot preserve or check the property and rejects the transformation."
+    },
+    {
+      "id": "unsafe-island",
+      "description": "Unsafe performance path is isolated behind D8 metadata, safe boundary, and audit evidence."
+    }
+  ]
+}

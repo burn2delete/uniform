@@ -1,0 +1,51 @@
+{
+  "call_checks": [],
+  "compatibility_records": [],
+  "kind": "standard-library-contract-set",
+  "namespaces": [
+    {
+      "allocation": {
+        ":core": ":none"
+      },
+      "apis": [
+        {
+          "allocation": {
+            ":core": ":none"
+          },
+          "blocking": false,
+          "capabilities": [],
+          "classification": ":pure",
+          "effects": [],
+          "failure_modes": [],
+          "nondeterminism": ":none",
+          "numeric_mode": {
+            "optimization_rewrite_preserved": false,
+            "overflow": ":target-default",
+            "width": 32
+          },
+          "panic": false,
+          "stability": ":stable",
+          "symbol": "add-i32",
+          "type": "Int32, Int32 -> Int32"
+        }
+      ],
+      "capabilities": [],
+      "effects": [],
+      "examples": [
+        {
+          "compiles": true,
+          "profile": ":core",
+          "source": "(math/add-i32 1 2)"
+        }
+      ],
+      "layer": 0,
+      "name": "gravity.math.core",
+      "profiles": [
+        ":core"
+      ],
+      "since": "0.1",
+      "stability": ":stable"
+    }
+  ],
+  "unsafe_audits": []
+}

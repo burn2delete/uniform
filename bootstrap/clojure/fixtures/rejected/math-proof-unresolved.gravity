@@ -1,0 +1,13 @@
+(ns math.proof-unresolved
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:partition-overrides
+            [{:unresolved [{:id :cell/unresolved
+                            :domain {'x {:real [0 1]}}}]
+              :residual-check {:permitted? false
+                               :emitted? false}}]}}}))

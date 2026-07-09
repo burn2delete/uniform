@@ -1,0 +1,9 @@
+(ns typed.bad.effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def bad
+  (println "undeclared effect"))

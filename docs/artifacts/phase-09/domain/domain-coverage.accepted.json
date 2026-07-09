@@ -1,0 +1,2947 @@
+{
+  "accepted_domain_fixtures": [
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM1",
+      "evidence": "hardware FIFO slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM2",
+      "evidence": "firmware MMIO slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM3",
+      "evidence": "kernel syscall slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM4",
+      "evidence": "driver DMA slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM5",
+      "evidence": "native vector kernel slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM6",
+      "evidence": "web form slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM7",
+      "evidence": "mobile offline slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM8",
+      "evidence": "backend route slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM9",
+      "evidence": "distributed workflow slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM10",
+      "evidence": "database migration and query slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM11",
+      "evidence": "analytics aggregate slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM12",
+      "evidence": "certified numeric slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM13",
+      "evidence": "GPU reduction slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM14",
+      "evidence": "game simulation slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM15",
+      "evidence": "security and private-compute slices accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM16",
+      "evidence": "blockchain account-abstraction slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM17",
+      "evidence": "compiler tooling slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM18",
+      "evidence": "AI agentic slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM19",
+      "evidence": "formal verification and zk slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM20",
+      "evidence": "scripting automation slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    },
+    {
+      "artifact": "docs/artifacts/phase-09/domain/domain-coverage.accepted.json",
+      "document": "DOM21",
+      "evidence": "visual workflow slice accepted",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_fixtures": 21,
+    "conformance_records": 21,
+    "documents": 21,
+    "domain_records": 21,
+    "rejected_fixtures": 21,
+    "replacement_claims": 21,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "domain_conformance_evidence": [
+    {
+      "accepted_behavior": "hardware FIFO slice has widths, clocks, CDC, runtime none, finite bounds, interface, and timing records",
+      "artifacts": [
+        "hdl-module",
+        "timing-manifest"
+      ],
+      "document": "DOM1",
+      "rejected_behavior": "missing width evidence emits DOM1-WIDTH",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "firmware MMIO slice has startup, memory map, MMIO, interrupt, runtime, BSP, and simulator records",
+      "artifacts": [
+        "memory-map",
+        "mmio-schema"
+      ],
+      "document": "DOM2",
+      "rejected_behavior": "missing MMIO evidence emits DOM2-MMIO",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "kernel syscall slice has runtime, raw memory, allocation, interrupt, syscall, capability, and ABI records",
+      "artifacts": [
+        "unsafe-audit",
+        "syscall-schema"
+      ],
+      "document": "DOM3",
+      "rejected_behavior": "missing raw-memory audit emits DOM3-RAW",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "driver slice has register, MMIO, DMA, interrupt, cache, capability, adapter, and conformance records",
+      "artifacts": [
+        "register-manifest",
+        "dma-lifetime-report"
+      ],
+      "document": "DOM4",
+      "rejected_behavior": "missing DMA lifetime emits DOM4-DMA",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "native kernel slice has memory, target, UB, optimization, numeric, FFI, and benchmark records",
+      "artifacts": [
+        "optimization-proof",
+        "benchmark-report"
+      ],
+      "document": "DOM5",
+      "rejected_behavior": "missing optimization proof emits DOM5-OPTIMIZATION",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "web UI slice has DOM, taint, schema, package, numeric, and source-map records",
+      "artifacts": [
+        "route-manifest",
+        "taint-report"
+      ],
+      "document": "DOM6",
+      "rejected_behavior": "missing taint evidence emits DOM6-TAINT",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "mobile slice has permission, lifecycle, thread, nullability, storage, secret, and simulator records",
+      "artifacts": [
+        "permission-manifest",
+        "storage-migration"
+      ],
+      "document": "DOM7",
+      "rejected_behavior": "missing permission evidence emits DOM7-PERMISSION",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "backend route slice has route, schema, taint, capability, job, secret, and observability records",
+      "artifacts": [
+        "route-manifest",
+        "observability-schema"
+      ],
+      "document": "DOM8",
+      "rejected_behavior": "missing schema evidence emits DOM8-SCHEMA",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "distributed slice has schema, replay, idempotency, retry, compensation, capability, migration, CRDT, monotonicity, coordination, conflict, sync, and convergence records",
+      "artifacts": [
+        "workflow-graph",
+        "convergence-report"
+      ],
+      "document": "DOM9",
+      "rejected_behavior": "missing convergence evidence emits DOM9-CONVERGENCE",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "database slice has schema mapping, prepared bindings, taint, migration, transaction, layout, durability, and recovery records",
+      "artifacts": [
+        "migration-plan",
+        "prepared-binding-manifest"
+      ],
+      "document": "DOM10",
+      "rejected_behavior": "missing prepared binding evidence emits DOM10-QUERY",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "analytics slice has schema, capability, taint, lineage, memory, numeric, determinism, and conformance records",
+      "artifacts": [
+        "query-plan",
+        "lineage-record"
+      ],
+      "document": "DOM11",
+      "rejected_behavior": "missing lineage evidence emits DOM11-LINEAGE",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "scientific numeric slice has domain, mode, certificate, rewrite, fastmath, interop, benchmark, and conformance records",
+      "artifacts": [
+        "efir-graph",
+        "approximation-certificate"
+      ],
+      "document": "DOM12",
+      "rejected_behavior": "missing approximation certificate emits DOM12-CERTIFICATE",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "GPU slice has kernel, memory, sync, launch, math, host-effect, target, and comparison records",
+      "artifacts": [
+        "kernel-binary",
+        "sync-graph"
+      ],
+      "document": "DOM13",
+      "rejected_behavior": "missing host-effect rejection evidence emits DOM13-HOST-EFFECT",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "game slice has timestep, allocation, determinism, numeric, asset, plugin, performance, and replay records",
+      "artifacts": [
+        "replay-trace",
+        "performance-budget"
+      ],
+      "document": "DOM14",
+      "rejected_behavior": "missing determinism evidence emits DOM14-DETERMINISM",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "security slice has secret, random, provider, WebAuthn, passkey, private-compute, boundary, noise, leakage, custody, constant-time, custom-crypto, taint, FFI, and conformance records",
+      "artifacts": [
+        "provider-audit",
+        "private-compute-report"
+      ],
+      "document": "DOM15",
+      "rejected_behavior": "missing plaintext/ciphertext boundary audit emits DOM15-BOUNDARY",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "blockchain slice has deterministic contract, account abstraction, standard profile, ordering, MEV, invariant, and upgrade records",
+      "artifacts": [
+        "contract-wasm",
+        "account-abstraction-report"
+      ],
+      "document": "DOM16",
+      "rejected_behavior": "missing named account-abstraction profile emits DOM16-AA-PROFILE",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "tooling slice has pass, metadata, generated-code, plugin, macro, diagnostic, bootstrap, and conformance records",
+      "artifacts": [
+        "pass-manifest",
+        "diagnostic-fixtures"
+      ],
+      "document": "DOM17",
+      "rejected_behavior": "missing metadata preservation emits DOM17-METADATA",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "AI slice has model, prompt, tool, schema, taint, secret, replay, generated-code, and eval records",
+      "artifacts": [
+        "agent-manifest",
+        "tool-policy"
+      ],
+      "document": "DOM18",
+      "rejected_behavior": "missing tool policy emits DOM18-TOOL",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "formal slice has claim, proof, stale-proof, assumption, counterexample, EML, elision, zk relation/input/setup/privacy/cost/chain/provider, and conformance records",
+      "artifacts": [
+        "proof-object",
+        "zk-privacy-facet-manifest"
+      ],
+      "document": "DOM19",
+      "rejected_behavior": "missing zk setup evidence emits DOM19-ZK-SETUP",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "scripting slice has args, filesystem, shell, taint, destructive, hermeticity, secret, and audit records",
+      "artifacts": [
+        "dry-run-plan",
+        "task-log"
+      ],
+      "document": "DOM20",
+      "rejected_behavior": "missing shell taint evidence emits DOM20-TAINT",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    },
+    {
+      "accepted_behavior": "visual workflow slice has node, edge, effect, capability, human-review, replay, generated-code, mapping, and migration records",
+      "artifacts": [
+        "visual-graph",
+        "workflow-graph"
+      ],
+      "document": "DOM21",
+      "rejected_behavior": "missing typed edge evidence emits DOM21-EDGE",
+      "validation": "python3 tools/validate_domain_coverage.py"
+    }
+  ],
+  "domain_contracts": {
+    "DOM1": {
+      "accepted_examples": [
+        "fifo-slice"
+      ],
+      "artifacts": [
+        "hdl-module",
+        "timing-manifest",
+        "cdc-report",
+        "synthesis-evidence"
+      ],
+      "backends": [
+        ":hdl"
+      ],
+      "capabilities": [
+        "synthesis-target",
+        "clock-domain"
+      ],
+      "conformance": {
+        "accepted_fixture": "fifo-slice.accepted",
+        "artifact_evidence": "hdl-module+cdc+timing",
+        "rejected_fixture": "rejected-dom1-width.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P1",
+        "B1",
+        "R2",
+        "D8",
+        "D9"
+      ],
+      "diagnostics": [
+        "DOM1-WIDTH",
+        "DOM1-CLOCK",
+        "DOM1-CDC",
+        "DOM1-RUNTIME",
+        "DOM1-UNBOUNDED",
+        "DOM1-INTERFACE",
+        "DOM1-TIMING",
+        "DOM1-CONFORMANCE"
+      ],
+      "document": "DOM1",
+      "domain": ":hardware-computing",
+      "effects": [
+        "clocked-state",
+        "signal-transfer"
+      ],
+      "evidence": {
+        "cdc": "clock-domain crossing report records none",
+        "clock_reset": "single clock and reset policy declared",
+        "conformance": "accepted and rejected hardware fixtures exist",
+        "finite_bounds": "state machine has finite transitions",
+        "fixed_widths": "fifo ports declare exact bit widths",
+        "interface_manifest": "port and handshake interface manifest emitted",
+        "no_runtime": "runtime_services is :none",
+        "timing_manifest": "timing budget report emitted"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md",
+      "profiles": [
+        ":hardware"
+      ],
+      "rejected_examples": [
+        "heap-allocation-in-hardware",
+        "unbounded-loop"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full HDL replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "FIFO-style hardware slice"
+        ],
+        "provider_boundaries": [
+          "synthesis toolchain",
+          "physical timing closure"
+        ]
+      },
+      "runtime_services": [
+        ":none"
+      ],
+      "schemas": [
+        "port-schema",
+        "interface-schema",
+        "timing-schema"
+      ],
+      "task_id": "P09-D124"
+    },
+    "DOM10": {
+      "accepted_examples": [
+        "schema-migration",
+        "typed-query",
+        "wal-page-replay"
+      ],
+      "artifacts": [
+        "migration-plan",
+        "prepared-binding-manifest",
+        "row-adapter",
+        "storage-layout",
+        "crash-recovery-fixture"
+      ],
+      "backends": [
+        ":query-relational",
+        ":llvm",
+        ":c"
+      ],
+      "capabilities": [
+        "database",
+        "filesystem",
+        "storage-device"
+      ],
+      "conformance": {
+        "accepted_fixture": "typed-query-migration.accepted",
+        "artifact_evidence": "migration+prepared-bindings+wal-replay",
+        "rejected_fixture": "rejected-dom10-query.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "B11",
+        "P4",
+        "P5",
+        "P9",
+        "S6"
+      ],
+      "diagnostics": [
+        "DOM10-SCHEMA",
+        "DOM10-QUERY",
+        "DOM10-TAINT",
+        "DOM10-MIGRATION",
+        "DOM10-TRANSACTION",
+        "DOM10-LAYOUT",
+        "DOM10-DURABILITY",
+        "DOM10-CONFORMANCE"
+      ],
+      "document": "DOM10",
+      "domain": ":database-storage",
+      "effects": [
+        "transaction",
+        "query-exec",
+        "storage-write"
+      ],
+      "evidence": {
+        "conformance": "query and crash-recovery fixtures exist",
+        "durability": "fsync provider and recovery evidence recorded",
+        "layout": "page layout records endian, alignment, checksum",
+        "migration": "compatibility, data-loss, and rollback policy recorded",
+        "prepared_bindings": "typed query emits prepared statement bindings",
+        "schema": "User schema mapping and version recorded",
+        "taint": "tainted input cannot reach executable SQL",
+        "transaction": "isolation, retry, and error mapping recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md",
+      "profiles": [
+        ":hosted",
+        ":native",
+        ":distributed"
+      ],
+      "rejected_examples": [
+        "tainted-string-query",
+        "data-loss-without-policy"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no portable SQL semantics claim across providers"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "schema migration plus typed query slice",
+          "WAL page replay slice"
+        ],
+        "provider_boundaries": [
+          "external database engine",
+          "filesystem durability provider"
+        ]
+      },
+      "runtime_services": [
+        ":managed",
+        ":memory",
+        ":distributed"
+      ],
+      "schemas": [
+        "schema-mapping",
+        "migration-schema",
+        "page-layout-schema",
+        "wal-schema"
+      ],
+      "task_id": "P09-D133"
+    },
+    "DOM11": {
+      "accepted_examples": [
+        "revenue-aggregate"
+      ],
+      "artifacts": [
+        "query-plan",
+        "lineage-record",
+        "privacy-report",
+        "numeric-mode-report"
+      ],
+      "backends": [
+        ":query-relational",
+        ":llvm",
+        ":gpu",
+        ":workflow-graph"
+      ],
+      "capabilities": [
+        "database",
+        "object-store",
+        "stream"
+      ],
+      "conformance": {
+        "accepted_fixture": "revenue-aggregate.accepted",
+        "artifact_evidence": "schema+query-plan+lineage+numeric",
+        "rejected_fixture": "rejected-dom11-lineage.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "B8",
+        "B10",
+        "B11",
+        "B13",
+        "S1"
+      ],
+      "diagnostics": [
+        "DOM11-SCHEMA",
+        "DOM11-CAPABILITY",
+        "DOM11-TAINT",
+        "DOM11-LINEAGE",
+        "DOM11-MEMORY",
+        "DOM11-NUMERIC",
+        "DOM11-DETERMINISM",
+        "DOM11-CONFORMANCE"
+      ],
+      "document": "DOM11",
+      "domain": ":data-analytics",
+      "effects": [
+        "dataset-read",
+        "aggregate",
+        "sink-write"
+      ],
+      "evidence": {
+        "capability": "data source access requires capability",
+        "conformance": "aggregate accepted fixture and lineage rejection exist",
+        "determinism": "ordering and aggregate determinism recorded",
+        "lineage": "source-to-output lineage record emitted",
+        "memory": "bounded streaming/materialization policy recorded",
+        "numeric": "decimal numeric and approximate policy recorded",
+        "schema": "input, intermediate, and output schemas recorded",
+        "taint": "privacy and taint labels retained through aggregate"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md",
+      "profiles": [
+        ":hosted",
+        ":native",
+        ":distributed"
+      ],
+      "rejected_examples": [
+        "schema-drift",
+        "lineage-loss"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full analytics platform replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "typed aggregate and lineage slice"
+        ],
+        "provider_boundaries": [
+          "warehouse",
+          "stream broker",
+          "object store"
+        ]
+      },
+      "runtime_services": [
+        ":managed",
+        ":distributed",
+        ":capability"
+      ],
+      "schemas": [
+        "dataset-schema",
+        "output-schema",
+        "lineage-schema"
+      ],
+      "task_id": "P09-D134"
+    },
+    "DOM12": {
+      "accepted_examples": [
+        "certified-sine-approximation"
+      ],
+      "artifacts": [
+        "efir-graph",
+        "eml-expression",
+        "approximation-certificate",
+        "accuracy-report"
+      ],
+      "backends": [
+        ":llvm",
+        ":gpu"
+      ],
+      "capabilities": [
+        "numeric-provider",
+        "proof-provider"
+      ],
+      "conformance": {
+        "accepted_fixture": "certified-sine.accepted",
+        "artifact_evidence": "efir+eml+certificate+accuracy",
+        "rejected_fixture": "rejected-dom12-certificate.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "Phase5",
+        "P11",
+        "P12",
+        "SAFE9",
+        "SAFE15"
+      ],
+      "diagnostics": [
+        "DOM12-DOMAIN",
+        "DOM12-MODE",
+        "DOM12-CERTIFICATE",
+        "DOM12-REWRITE",
+        "DOM12-FASTMATH",
+        "DOM12-INTEROP",
+        "DOM12-BENCHMARK",
+        "DOM12-CONFORMANCE"
+      ],
+      "document": "DOM12",
+      "domain": ":scientific-numeric",
+      "effects": [
+        "numeric-kernel",
+        "proof-check",
+        "provider-call"
+      ],
+      "evidence": {
+        "benchmark": "reference implementation and accuracy context recorded",
+        "certificate": "approximation certificate validates error bound",
+        "conformance": "certified approximation and certificate rejection exist",
+        "domain": "input domain and max error recorded",
+        "fastmath": "fast-math flags require numeric mode evidence",
+        "interop": "numeric provider boundary and mode mapping recorded",
+        "mode": "precision, rounding, and branch policy recorded",
+        "rewrite": "symbolic rewrite requires semantic proof"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md",
+      "profiles": [
+        ":core",
+        ":native",
+        ":gpu",
+        ":formal"
+      ],
+      "rejected_examples": [
+        "uncertified-approximation",
+        "invalid-symbolic-equality"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full numeric library replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "certified elementary approximation slice"
+        ],
+        "provider_boundaries": [
+          "BLAS/LAPACK/libm/MPFR providers",
+          "external theorem prover"
+        ]
+      },
+      "runtime_services": [
+        ":math",
+        ":memory",
+        ":proof"
+      ],
+      "schemas": [
+        "efir-graph-schema",
+        "eml-expression-schema",
+        "numeric-mode-schema"
+      ],
+      "task_id": "P09-D135"
+    },
+    "DOM13": {
+      "accepted_examples": [
+        "deterministic-reduction"
+      ],
+      "artifacts": [
+        "kernel-binary",
+        "host-adapter",
+        "launch-descriptor",
+        "sync-graph",
+        "device-reference-report"
+      ],
+      "backends": [
+        ":gpu",
+        ":mlir",
+        ":llvm"
+      ],
+      "capabilities": [
+        "gpu-device",
+        "device-buffer",
+        "host-adapter"
+      ],
+      "conformance": {
+        "accepted_fixture": "deterministic-reduction.accepted",
+        "artifact_evidence": "kernel+adapter+launch+sync+comparison",
+        "rejected_fixture": "rejected-dom13-host-effect.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P11",
+        "B8",
+        "B7",
+        "R5",
+        "R6",
+        "R11"
+      ],
+      "diagnostics": [
+        "DOM13-KERNEL",
+        "DOM13-MEMORY",
+        "DOM13-SYNC",
+        "DOM13-LAUNCH",
+        "DOM13-MATH",
+        "DOM13-HOST-EFFECT",
+        "DOM13-TARGET",
+        "DOM13-CONFORMANCE"
+      ],
+      "document": "DOM13",
+      "domain": ":gpu-accelerator",
+      "effects": [
+        "kernel-launch",
+        "device-transfer",
+        "barrier"
+      ],
+      "evidence": {
+        "conformance": "CPU/reference comparison and host-effect rejection exist",
+        "host_effect": "host IO in kernel has rejected fixture",
+        "kernel": "kernel uses :gpu and legal constructs only",
+        "launch": "workgroup and grid descriptor recorded",
+        "math": "numeric mode and reduction policy recorded",
+        "memory": "device buffer layout, ownership, transfer state recorded",
+        "sync": "barrier, fence, and queue dependencies recorded",
+        "target": "device features and limits recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md",
+      "profiles": [
+        ":gpu",
+        ":native"
+      ],
+      "rejected_examples": [
+        "host-effect-in-kernel",
+        "implicit-transfer"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full accelerator SDK replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "reduction kernel and host adapter slice"
+        ],
+        "provider_boundaries": [
+          "GPU driver",
+          "vendor runtime"
+        ]
+      },
+      "runtime_services": [
+        ":memory",
+        ":concurrency",
+        ":capability"
+      ],
+      "schemas": [
+        "launch-descriptor",
+        "device-memory-manifest",
+        "transfer-graph"
+      ],
+      "task_id": "P09-D136"
+    },
+    "DOM14": {
+      "accepted_examples": [
+        "deterministic-physics-step"
+      ],
+      "artifacts": [
+        "simulation-loop-manifest",
+        "replay-trace",
+        "asset-schema",
+        "performance-budget"
+      ],
+      "backends": [
+        ":llvm",
+        ":gpu",
+        ":javascript-typescript",
+        ":mobile"
+      ],
+      "capabilities": [
+        "input-device",
+        "plugin-sandbox",
+        "asset-store"
+      ],
+      "conformance": {
+        "accepted_fixture": "deterministic-physics-step.accepted",
+        "artifact_evidence": "loop+replay+asset+performance",
+        "rejected_fixture": "rejected-dom14-determinism.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P4",
+        "P5",
+        "P11",
+        "R5",
+        "R6",
+        "S1"
+      ],
+      "diagnostics": [
+        "DOM14-TIMESTEP",
+        "DOM14-ALLOC",
+        "DOM14-DETERMINISM",
+        "DOM14-NUMERIC",
+        "DOM14-ASSET",
+        "DOM14-PLUGIN",
+        "DOM14-PERFORMANCE",
+        "DOM14-CONFORMANCE"
+      ],
+      "document": "DOM14",
+      "domain": ":game-simulation",
+      "effects": [
+        "simulation-step",
+        "input-read",
+        "plugin-call"
+      ],
+      "evidence": {
+        "allocation": "no-allocation frame policy recorded",
+        "asset": "asset and save schemas recorded",
+        "conformance": "replay accepted fixture and determinism rejection exist",
+        "determinism": "replay trace records deterministic state",
+        "numeric": "physics numeric mode recorded",
+        "performance": "target frame budget recorded",
+        "plugin": "plugin capability and sandbox policy recorded",
+        "timestep": "fixed timestep recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/137-dom14-game-engine-and-simulation-domain-specification.md",
+      "profiles": [
+        ":native",
+        ":gpu",
+        ":hosted"
+      ],
+      "rejected_examples": [
+        "unrecorded-randomness",
+        "frame-allocation"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full game engine replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "deterministic simulation step slice"
+        ],
+        "provider_boundaries": [
+          "renderer",
+          "audio engine",
+          "platform SDK"
+        ]
+      },
+      "runtime_services": [
+        ":memory",
+        ":concurrency",
+        ":repl",
+        ":capability"
+      ],
+      "schemas": [
+        "simulation-loop",
+        "asset-schema",
+        "plugin-schema"
+      ],
+      "task_id": "P09-D137"
+    },
+    "DOM15": {
+      "accepted_examples": [
+        "token-signing",
+        "passkey-login",
+        "encrypted-aggregation"
+      ],
+      "artifacts": [
+        "taint-policy",
+        "provider-audit",
+        "credential-ceremony-transcript",
+        "private-compute-report",
+        "leakage-diagnostics"
+      ],
+      "backends": [
+        ":llvm",
+        ":c",
+        ":wasm"
+      ],
+      "capabilities": [
+        "randomness",
+        "key-access",
+        "hsm-kms",
+        "crypto-provider"
+      ],
+      "conformance": {
+        "accepted_fixture": "security-crypto-slices.accepted",
+        "artifact_evidence": "provider+credential+private-compute+leakage",
+        "rejected_fixture": "rejected-dom15-boundary.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "SAFE10",
+        "SAFE11",
+        "SAFE13",
+        "R11",
+        "R12",
+        "B13"
+      ],
+      "diagnostics": [
+        "DOM15-SECRET",
+        "DOM15-RANDOM",
+        "DOM15-PROVIDER",
+        "DOM15-WEBAUTHN",
+        "DOM15-PASSKEY",
+        "DOM15-PRIVATE-COMPUTE",
+        "DOM15-BOUNDARY",
+        "DOM15-NOISE",
+        "DOM15-LEAKAGE",
+        "DOM15-CUSTODY",
+        "DOM15-CONSTANT-TIME",
+        "DOM15-CUSTOM",
+        "DOM15-TAINT",
+        "DOM15-FFI",
+        "DOM15-CONFORMANCE"
+      ],
+      "document": "DOM15",
+      "domain": ":security-crypto",
+      "effects": [
+        "sign",
+        "encrypt",
+        "decrypt",
+        "reveal",
+        "credential-ceremony"
+      ],
+      "evidence": {
+        "boundary": "encrypt/decrypt/reveal/export crossings require boundary audits",
+        "conformance": "secret, passkey, private-compute, and boundary fixtures exist",
+        "constant_time": "constant-time analysis evidence recorded where required",
+        "custody": "key owner, custody, rotation, threshold, participant, and attestation evidence recorded",
+        "custom_crypto": "custom primitives are rejected unless review and vectors exist",
+        "ffi": "safe provider wrapper audit recorded",
+        "leakage": "output, metadata, shape, timing, transcript, prompt, log, and provider leakage recorded",
+        "noise": "noise, depth, precision, and bootstrapping constraints recorded",
+        "passkey": "passkey policy records synced/device-bound state, backup, discovery, lifecycle, and privacy labels",
+        "private_compute": "FHE/MPC provider manifest records scheme, participants, parameters, and audit evidence",
+        "provider": "provider manifest records algorithm, version, and vectors",
+        "random": "randomness requires approved capability",
+        "secret": "secret values have redaction and sink restrictions",
+        "taint": "protocol input taint validation recorded",
+        "webauthn": "ceremony transcript records RP, origin, challenge, signature, UP, UV, and attestation policy"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md",
+      "profiles": [
+        ":core",
+        ":native",
+        ":hosted",
+        ":formal"
+      ],
+      "rejected_examples": [
+        "secret-log",
+        "implicit-decrypt",
+        "noise-budget-exceeded"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no custom primitive or full crypto provider replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "token signing",
+          "WebAuthn/passkey ceremony manifest",
+          "private encrypted aggregation"
+        ],
+        "provider_boundaries": [
+          "vetted crypto library",
+          "HSM/KMS",
+          "FHE/MPC runtime",
+          "authenticator platform"
+        ]
+      },
+      "runtime_services": [
+        ":capability",
+        ":ffi",
+        ":observability",
+        ":proof"
+      ],
+      "schemas": [
+        "secret-policy",
+        "provider-manifest",
+        "webauthn-passkey-policy",
+        "private-computation-manifest"
+      ],
+      "task_id": "P09-D138"
+    },
+    "DOM16": {
+      "accepted_examples": [
+        "token-transfer",
+        "programmable-account",
+        "erc-4337-wallet",
+        "eip-7702-delegation",
+        "erc-7579-module"
+      ],
+      "artifacts": [
+        "contract-wasm",
+        "chain-abi",
+        "gas-report",
+        "determinism-proof",
+        "account-abstraction-report",
+        "ordering-report"
+      ],
+      "backends": [
+        ":wasm",
+        ":workflow-graph",
+        ":query-relational"
+      ],
+      "capabilities": [
+        "state-mutation",
+        "account-validation",
+        "wallet-binding",
+        "chain-provider"
+      ],
+      "conformance": {
+        "accepted_fixture": "blockchain-account-abstraction.accepted",
+        "artifact_evidence": "contract+abi+account-abstraction+ordering",
+        "rejected_fixture": "rejected-dom16-aa-profile.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P2",
+        "P9",
+        "P12",
+        "B4",
+        "B10",
+        "SAFE10",
+        "D9"
+      ],
+      "diagnostics": [
+        "DOM16-DETERMINISM",
+        "DOM16-SCHEMA",
+        "DOM16-NUMERIC",
+        "DOM16-GAS",
+        "DOM16-AUTH",
+        "DOM16-ACCOUNT-VALIDATION",
+        "DOM16-USEROP",
+        "DOM16-SESSION-KEY",
+        "DOM16-PAYMASTER",
+        "DOM16-DELEGATION",
+        "DOM16-REPLAY",
+        "DOM16-BUNDLER",
+        "DOM16-WALLET-BINDING",
+        "DOM16-AA-PROFILE",
+        "DOM16-ERC4337",
+        "DOM16-EIP7702",
+        "DOM16-ERC7579",
+        "DOM16-UPGRADE",
+        "DOM16-INVARIANT",
+        "DOM16-ORDERING",
+        "DOM16-MEV",
+        "DOM16-CONFORMANCE"
+      ],
+      "document": "DOM16",
+      "domain": ":blockchain-smart-contracts",
+      "effects": [
+        "contract-call",
+        "state-transition",
+        "indexer-query",
+        "wallet-signature"
+      ],
+      "evidence": {
+        "aa_profile": "named profile records pin standard, version, chain, schema hashes, and provider assumptions",
+        "account_validation": "account validation logic and policy recorded",
+        "auth": "state mutation authorization recorded",
+        "bundler": "bundler, relayer, aggregator, simulation, mempool, and inclusion assumptions recorded",
+        "conformance": "account profile and ordering rejection fixtures exist",
+        "delegation": "delegate identity, entrypoints, capability transfer, and revocation recorded",
+        "determinism": "contract effects reject clock, randomness, network, filesystem, model, tool, process, and host effects",
+        "eip7702": "authorization tuple, delegation indicator, nonce, code-loading, replay, and gas accounting recorded",
+        "erc4337": "EntryPoint, UserOperation, paymaster, aggregator, mempool, simulation, and encoding evidence recorded",
+        "erc7579": "module types, lifecycle, interface, compatibility, and revocation evidence recorded",
+        "gas": "gas and resource accounting recorded",
+        "invariant": "property tests prove conservation and insufficient-balance rejection",
+        "mev": "front-run, sandwich, slippage, bridge, and auction exposure has bound or mitigation evidence",
+        "numeric": "checked arithmetic and serialization policy recorded",
+        "ordering": "mempool, sequencer, builder, private-flow, and fair-ordering assumptions recorded",
+        "paymaster": "payer, quota, post-operation, and anti-drain rules recorded",
+        "replay": "chain, session, nonce, expiry, and replay domain recorded",
+        "schema": "ABI, state, event, transaction, and account schemas recorded",
+        "session_key": "session key scope, allowance, expiry, revocation, and rotation recorded",
+        "upgrade": "upgrade compatibility and migration evidence recorded",
+        "userop": "user-operation and authorization schemas recorded",
+        "wallet_binding": "typed data, signing prompt, account manifest, and encoding fixture recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/139-dom16-blockchain-and-smart-contract-domain-specification.md",
+      "profiles": [
+        ":core",
+        ":formal",
+        ":distributed"
+      ],
+      "rejected_examples": [
+        "nondeterministic-contract-effect",
+        "account-abstraction-profile-mismatch",
+        "order-sensitive-contract-without-assumption"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no chain consensus or validator replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "token transfer contract",
+          "programmable-account profile slice",
+          "ordering and MEV exposure record"
+        ],
+        "provider_boundaries": [
+          "chain validator",
+          "remote node",
+          "wallet client",
+          "bundler",
+          "paymaster"
+        ]
+      },
+      "runtime_services": [
+        ":distributed",
+        ":capability",
+        ":proof"
+      ],
+      "schemas": [
+        "chain-abi",
+        "state-schema",
+        "event-schema",
+        "user-operation-schema",
+        "account-abstraction-profile"
+      ],
+      "task_id": "P09-D139"
+    },
+    "DOM17": {
+      "accepted_examples": [
+        "mir-optimization-pass"
+      ],
+      "artifacts": [
+        "pass-manifest",
+        "before-after-mir",
+        "diagnostic-fixtures",
+        "plugin-capability-manifest"
+      ],
+      "backends": [
+        ":jvm",
+        ":javascript-typescript",
+        ":llvm"
+      ],
+      "capabilities": [
+        "compiler-plugin",
+        "artifact-read",
+        "artifact-write"
+      ],
+      "conformance": {
+        "accepted_fixture": "mir-optimization-pass.accepted",
+        "artifact_evidence": "pass+mir+diagnostic+plugin",
+        "rejected_fixture": "rejected-dom17-metadata.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "Phase6",
+        "P3",
+        "P4",
+        "P13",
+        "R9",
+        "R11"
+      ],
+      "diagnostics": [
+        "DOM17-PASS",
+        "DOM17-METADATA",
+        "DOM17-GENERATED",
+        "DOM17-PLUGIN",
+        "DOM17-MACRO",
+        "DOM17-DIAGNOSTIC",
+        "DOM17-BOOTSTRAP",
+        "DOM17-CONFORMANCE"
+      ],
+      "document": "DOM17",
+      "domain": ":compiler-tooling",
+      "effects": [
+        "compiler-pass",
+        "diagnostic-emit",
+        "plugin-load"
+      ],
+      "evidence": {
+        "bootstrap": "self-hosting provenance is recorded as dependency, not claimed complete",
+        "conformance": "metadata preservation and plugin rejection fixtures exist",
+        "diagnostic": "diagnostics preserve source and generated-origin chains",
+        "generated": "generated code passes ordinary compiler checks",
+        "macro": "macro hygiene and generated-origin chains recorded",
+        "metadata": "type, effect, safety, capability, and source facts preserved",
+        "pass_contract": "pass input, output, preserved facts, invalidations, effects, capabilities, and diagnostics recorded",
+        "plugin": "plugin effects require build/runtime grants"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+      "profiles": [
+        ":meta",
+        ":hosted",
+        ":native"
+      ],
+      "rejected_examples": [
+        "metadata-loss",
+        "plugin-effect-without-grant"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no self-hosting claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "MIR pass and diagnostic tooling slice"
+        ],
+        "provider_boundaries": [
+          "editor protocol",
+          "external package manager"
+        ]
+      },
+      "runtime_services": [
+        ":repl",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "pass-manifest",
+        "diagnostic-fixture",
+        "plugin-manifest"
+      ],
+      "task_id": "P09-D140"
+    },
+    "DOM18": {
+      "accepted_examples": [
+        "support-triage-agent"
+      ],
+      "artifacts": [
+        "agent-manifest",
+        "prompt-hashes",
+        "tool-policy",
+        "eval-report",
+        "replay-log"
+      ],
+      "backends": [
+        ":workflow-graph",
+        ":javascript-typescript",
+        ":jvm"
+      ],
+      "capabilities": [
+        "model-provider",
+        "tool-call",
+        "memory-store",
+        "human-review"
+      ],
+      "conformance": {
+        "accepted_fixture": "support-triage-agent.accepted",
+        "artifact_evidence": "agent+prompt+tool+eval+replay",
+        "rejected_fixture": "rejected-dom18-tool.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P10",
+        "B10",
+        "R8",
+        "R11",
+        "SAFE13",
+        "Phase11"
+      ],
+      "diagnostics": [
+        "DOM18-MODEL",
+        "DOM18-PROMPT",
+        "DOM18-TOOL",
+        "DOM18-SCHEMA",
+        "DOM18-TAINT",
+        "DOM18-SECRET",
+        "DOM18-REPLAY",
+        "DOM18-GENERATED",
+        "DOM18-EVAL"
+      ],
+      "document": "DOM18",
+      "domain": ":ai-agentic",
+      "effects": [
+        "model-call",
+        "tool-call",
+        "memory-read-write",
+        "human-review"
+      ],
+      "evidence": {
+        "eval": "classification and denial evals recorded",
+        "generated": "generated code must pass compiler checks before execution",
+        "model": "model provider, effect, capability, and budget recorded",
+        "prompt": "prompt roles, hashes, and provenance recorded",
+        "replay": "nondeterminism and provider outputs recorded for replay",
+        "schema": "structured output validator recorded",
+        "secret": "secret exposure policy recorded",
+        "taint": "model, tool, retrieval, and memory outputs remain tainted until validated",
+        "tool": "write tool has schema, capability, human-review, timeout, retry, secret, and replay policy"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/141-dom18-ai-and-agentic-computing-domain-specification.md",
+      "profiles": [
+        ":ai",
+        ":distributed",
+        ":hosted"
+      ],
+      "rejected_examples": [
+        "tool-without-human-review",
+        "schema-less-output"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no model provider replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "support triage agent with human review"
+        ],
+        "provider_boundaries": [
+          "model provider",
+          "retrieval provider",
+          "tool provider"
+        ]
+      },
+      "runtime_services": [
+        ":ai",
+        ":distributed",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "agent-manifest",
+        "tool-schema",
+        "structured-output-schema",
+        "policy-graph"
+      ],
+      "task_id": "P09-D141"
+    },
+    "DOM19": {
+      "accepted_examples": [
+        "bounds-proof",
+        "zk-circuit-proof",
+        "ivc-chain"
+      ],
+      "artifacts": [
+        "claim-manifest",
+        "proof-object",
+        "assumption-manifest",
+        "counterexample",
+        "zk-privacy-facet-manifest",
+        "prover-verifier-cost"
+      ],
+      "backends": [
+        ":proof-kernel",
+        ":mlir",
+        ":zkvm"
+      ],
+      "capabilities": [
+        "proof-provider",
+        "zk-provider",
+        "proof-kernel"
+      ],
+      "conformance": {
+        "accepted_fixture": "formal-zk-proof.accepted",
+        "artifact_evidence": "claim+proof+counterexample+zk+cost",
+        "rejected_fixture": "rejected-dom19-zk-setup.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P12",
+        "Phase5",
+        "C18",
+        "SAFE15",
+        "B13"
+      ],
+      "diagnostics": [
+        "DOM19-CLAIM",
+        "DOM19-PROOF",
+        "DOM19-STALE",
+        "DOM19-ASSUMPTION",
+        "DOM19-COUNTEREXAMPLE",
+        "DOM19-EML",
+        "DOM19-ELISION",
+        "DOM19-ZK-RELATION",
+        "DOM19-ZK-INPUT",
+        "DOM19-ZK-SETUP",
+        "DOM19-ZK-PRIVACY",
+        "DOM19-ZK-COST",
+        "DOM19-ZK-CHAIN",
+        "DOM19-ZK-PROVIDER",
+        "DOM19-CONFORMANCE"
+      ],
+      "document": "DOM19",
+      "domain": ":formal-verification",
+      "effects": [
+        "proof-check",
+        "solver-call",
+        "witness-generation"
+      ],
+      "evidence": {
+        "assumption": "solver and environment assumptions recorded",
+        "claim": "claim records trusted basis, prover, assumptions, hashes, profile, and checked property",
+        "conformance": "proof check and zk setup rejection fixtures exist",
+        "counterexample": "counterexamples map to source, MIR, or artifact edge",
+        "elision": "check elision requires valid proof id",
+        "eml": "EML equality requires semantic proof",
+        "proof": "proof object is checked before use",
+        "stale": "source, relation, witness, setup, verifier key, provider, pass, backend, and target changes invalidate proofs",
+        "zk_chain": "recursive/folding/IVC parent links and root state recorded",
+        "zk_cost": "prover and verifier cost records emitted",
+        "zk_input": "public/private input split and witness-generation record emitted",
+        "zk_privacy": "disclosure, witness custody, public output, declassification, transcript, and leakage boundaries recorded",
+        "zk_provider": "zkVM or proof-kernel provider record policy reviewed",
+        "zk_relation": "circuit, constraint, AIR, R1CS, or Plonkish relation metadata recorded",
+        "zk_setup": "setup, trust model, proving key, verifier key, and provider assumptions recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/142-dom19-formal-verification-domain-specification.md",
+      "profiles": [
+        ":formal",
+        ":core"
+      ],
+      "rejected_examples": [
+        "claim-without-proof",
+        "zk-proof-without-relation",
+        "hidden-setup-trust"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no proof-kernel implementation claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "bounds proof",
+          "zk relation proof manifest",
+          "recursive proof-chain manifest"
+        ],
+        "provider_boundaries": [
+          "theorem prover",
+          "zkVM",
+          "proving network"
+        ]
+      },
+      "runtime_services": [
+        ":proof",
+        ":artifact",
+        ":capability"
+      ],
+      "schemas": [
+        "claim-manifest",
+        "proof-object",
+        "zk-relation",
+        "witness-record",
+        "setup-trust-manifest"
+      ],
+      "task_id": "P09-D142"
+    },
+    "DOM2": {
+      "accepted_examples": [
+        "led-mmio-toggle"
+      ],
+      "artifacts": [
+        "memory-map",
+        "startup-record",
+        "mmio-schema",
+        "simulator-trace"
+      ],
+      "backends": [
+        ":llvm",
+        ":c"
+      ],
+      "capabilities": [
+        "mmio",
+        "interrupt-controller"
+      ],
+      "conformance": {
+        "accepted_fixture": "led-mmio-toggle.accepted",
+        "artifact_evidence": "startup+memory+mmio+simulator",
+        "rejected_fixture": "rejected-dom2-mmio.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P1",
+        "P5",
+        "B3",
+        "R2",
+        "D8"
+      ],
+      "diagnostics": [
+        "DOM2-STARTUP",
+        "DOM2-MEMORY",
+        "DOM2-MMIO",
+        "DOM2-INTERRUPT",
+        "DOM2-RUNTIME",
+        "DOM2-BSP",
+        "DOM2-CONFORMANCE"
+      ],
+      "document": "DOM2",
+      "domain": ":firmware-embedded",
+      "effects": [
+        "device-register-access",
+        "interrupt-handler"
+      ],
+      "evidence": {
+        "bsp": "board support dependency recorded as provider boundary",
+        "conformance": "simulator trace and MMIO rejection fixture exist",
+        "interrupt_vector": "interrupt vector table recorded",
+        "memory_map": "flash, ram, stack, and peripheral ranges recorded",
+        "mmio": "register schema records width, volatile policy, and access",
+        "runtime_boundary": "no hidden heap, GC, reflection, or host IO",
+        "startup": "reset vector and startup entry recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/125-dom2-firmware-and-embedded-domain-specification.md",
+      "profiles": [
+        ":firmware"
+      ],
+      "rejected_examples": [
+        "host-filesystem-in-firmware",
+        "missing-mmio-schema"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full board support replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "MMIO register firmware slice"
+        ],
+        "provider_boundaries": [
+          "board vendor startup files",
+          "hardware simulator"
+        ]
+      },
+      "runtime_services": [
+        ":none",
+        ":minimal-native"
+      ],
+      "schemas": [
+        "memory-map",
+        "mmio-register-schema",
+        "interrupt-vector"
+      ],
+      "task_id": "P09-D125"
+    },
+    "DOM20": {
+      "accepted_examples": [
+        "file-transform-script"
+      ],
+      "artifacts": [
+        "script-package",
+        "dry-run-plan",
+        "task-log",
+        "hermeticity-record"
+      ],
+      "backends": [
+        ":javascript-typescript",
+        ":jvm",
+        ":wasm"
+      ],
+      "capabilities": [
+        "filesystem-root",
+        "process-exec",
+        "network",
+        "deployment"
+      ],
+      "conformance": {
+        "accepted_fixture": "file-transform-script.accepted",
+        "artifact_evidence": "args+command+dry-run+audit",
+        "rejected_fixture": "rejected-dom20-taint.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P4",
+        "P3",
+        "SAFE10",
+        "SAFE11",
+        "R9",
+        "R11",
+        "R12"
+      ],
+      "diagnostics": [
+        "DOM20-ARGS",
+        "DOM20-FILESYSTEM",
+        "DOM20-SHELL",
+        "DOM20-TAINT",
+        "DOM20-DESTRUCTIVE",
+        "DOM20-HERMETICITY",
+        "DOM20-SECRET",
+        "DOM20-AUDIT"
+      ],
+      "document": "DOM20",
+      "domain": ":scripting-shell-automation",
+      "effects": [
+        "file-read",
+        "file-write",
+        "process-exec",
+        "deploy"
+      ],
+      "evidence": {
+        "args": "argument schema recorded",
+        "audit": "dry-run plan and task log emitted",
+        "destructive": "write, delete, and deploy actions carry human-review policy when required",
+        "filesystem": "file access scoped to granted roots",
+        "hermeticity": "environment, network, and filesystem inputs recorded",
+        "secret": "secret use and logging policy recorded",
+        "shell": "command schema, quoting, timeout, and exit mapping recorded",
+        "taint": "tainted input cannot build shell commands or trusted paths"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/143-dom20-scripting-shell-and-automation-domain-specification.md",
+      "profiles": [
+        ":hosted",
+        ":meta"
+      ],
+      "rejected_examples": [
+        "shell-injection",
+        "ambient-filesystem"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full shell or CI platform replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "file transform automation slice"
+        ],
+        "provider_boundaries": [
+          "external command",
+          "CI platform",
+          "deployment provider"
+        ]
+      },
+      "runtime_services": [
+        ":repl",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "argument-schema",
+        "command-schema",
+        "path-schema"
+      ],
+      "task_id": "P09-D143"
+    },
+    "DOM21": {
+      "accepted_examples": [
+        "support-human-review-flow"
+      ],
+      "artifacts": [
+        "visual-graph",
+        "generated-source-map",
+        "workflow-graph",
+        "human-review-policy",
+        "replay-trace"
+      ],
+      "backends": [
+        ":workflow-graph",
+        ":javascript-typescript"
+      ],
+      "capabilities": [
+        "tool-node",
+        "model-node",
+        "human-review"
+      ],
+      "conformance": {
+        "accepted_fixture": "support-human-review-flow.accepted",
+        "artifact_evidence": "visual+generated+workflow+review+replay",
+        "rejected_fixture": "rejected-dom21-edge.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "B10",
+        "R7",
+        "R8",
+        "SAFE10",
+        "SAFE11",
+        "SAFE12",
+        "S1"
+      ],
+      "diagnostics": [
+        "DOM21-NODE",
+        "DOM21-EDGE",
+        "DOM21-EFFECT",
+        "DOM21-CAPABILITY",
+        "DOM21-HUMAN-REVIEW",
+        "DOM21-REPLAY",
+        "DOM21-GENERATED",
+        "DOM21-MAPPING",
+        "DOM21-MIGRATION"
+      ],
+      "document": "DOM21",
+      "domain": ":low-code-visual-workflow",
+      "effects": [
+        "workflow-step",
+        "tool-call",
+        "model-call",
+        "human-review"
+      ],
+      "evidence": {
+        "capability": "tool, model, and service nodes require grants",
+        "edge": "visual edges have typed compatible schemas",
+        "effect": "node side effects are exposed in artifacts",
+        "generated": "generated Gravity source or MIR passes compiler checks",
+        "human_review": "human-review node and policy graph recorded",
+        "mapping": "diagnostics map back to visual nodes and edges",
+        "migration": "graph/schema changes require compatibility record",
+        "node": "visual nodes have typed schemas",
+        "replay": "nondeterminism and decisions recorded for replay"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/144-dom21-low-code-visual-programming-and-workflow-domain-specification.md",
+      "profiles": [
+        ":distributed",
+        ":ai",
+        ":hosted"
+      ],
+      "rejected_examples": [
+        "untyped-edge",
+        "hidden-effect",
+        "diagnostic-without-node-map"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no proprietary low-code platform replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "support human-review visual workflow"
+        ],
+        "provider_boundaries": [
+          "visual editor",
+          "model provider",
+          "tool provider"
+        ]
+      },
+      "runtime_services": [
+        ":distributed",
+        ":ai",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "visual-node-schema",
+        "visual-edge-schema",
+        "workflow-graph-schema",
+        "graph-migration"
+      ],
+      "task_id": "P09-D144"
+    },
+    "DOM3": {
+      "accepted_examples": [
+        "checked-syscall-entry"
+      ],
+      "artifacts": [
+        "unsafe-audit",
+        "syscall-schema",
+        "abi-record",
+        "emulator-smoke"
+      ],
+      "backends": [
+        ":llvm",
+        ":c"
+      ],
+      "capabilities": [
+        "raw-memory",
+        "interrupt-control",
+        "syscall-authority"
+      ],
+      "conformance": {
+        "accepted_fixture": "checked-syscall-entry.accepted",
+        "artifact_evidence": "unsafe-audit+syscall+abi+emulator",
+        "rejected_fixture": "rejected-dom3-raw.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P5",
+        "R5",
+        "R6",
+        "SAFE8",
+        "SAFE10"
+      ],
+      "diagnostics": [
+        "DOM3-RUNTIME",
+        "DOM3-RAW",
+        "DOM3-ALLOC",
+        "DOM3-INTERRUPT",
+        "DOM3-SYSCALL",
+        "DOM3-CAPABILITY",
+        "DOM3-ABI",
+        "DOM3-CONFORMANCE"
+      ],
+      "document": "DOM3",
+      "domain": ":operating-system-kernel",
+      "effects": [
+        "privileged-memory",
+        "interrupt-dispatch",
+        "scheduler-entry"
+      ],
+      "evidence": {
+        "abi": "calling convention and trap ABI recorded",
+        "allocator": "allocator policy recorded for kernel profile",
+        "capability": "privileged operations require capabilities",
+        "conformance": "emulator smoke and raw-memory rejection fixture exist",
+        "interrupt": "interrupt entry and masking policy recorded",
+        "raw_memory": "raw page-table operation is inside unsafe island with audit",
+        "runtime_model": "kernel runtime services are explicit",
+        "syscall": "syscall schema maps taint and capability checks"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/126-dom3-operating-system-and-kernel-domain-specification.md",
+      "profiles": [
+        ":kernel"
+      ],
+      "rejected_examples": [
+        "raw-pointer-without-unsafe-island",
+        "syscall-without-taint"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full kernel replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "syscall and page-table checked slice"
+        ],
+        "provider_boundaries": [
+          "bootloader",
+          "emulator",
+          "architecture manuals"
+        ]
+      },
+      "runtime_services": [
+        ":minimal-native"
+      ],
+      "schemas": [
+        "syscall-schema",
+        "page-table-schema",
+        "kernel-abi"
+      ],
+      "task_id": "P09-D126"
+    },
+    "DOM4": {
+      "accepted_examples": [
+        "dma-ring-buffer-driver"
+      ],
+      "artifacts": [
+        "register-manifest",
+        "dma-lifetime-report",
+        "cache-policy",
+        "adapter-manifest"
+      ],
+      "backends": [
+        ":llvm",
+        ":c",
+        ":mobile"
+      ],
+      "capabilities": [
+        "device-register",
+        "dma",
+        "platform-permission"
+      ],
+      "conformance": {
+        "accepted_fixture": "dma-ring-buffer-driver.accepted",
+        "artifact_evidence": "register+dma+cache+adapter",
+        "rejected_fixture": "rejected-dom4-dma.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P5",
+        "P6",
+        "R5",
+        "R6",
+        "R11"
+      ],
+      "diagnostics": [
+        "DOM4-REGISTER",
+        "DOM4-MMIO",
+        "DOM4-DMA",
+        "DOM4-INTERRUPT",
+        "DOM4-CACHE",
+        "DOM4-CAPABILITY",
+        "DOM4-ADAPTER",
+        "DOM4-CONFORMANCE"
+      ],
+      "document": "DOM4",
+      "domain": ":drivers-device-interaction",
+      "effects": [
+        "mmio",
+        "dma-transfer",
+        "interrupt-callback"
+      ],
+      "evidence": {
+        "adapter": "host adapter and platform permission record emitted",
+        "cache": "cache coherency and flush policy recorded",
+        "capability": "device access requires capability",
+        "conformance": "DMA lifetime accepted and rejected fixtures exist",
+        "dma_lifetime": "DMA buffer ownership and lifetime recorded",
+        "interrupt": "interrupt callback policy recorded",
+        "mmio_audit": "unsafe MMIO block carries audit metadata",
+        "register_schema": "register offsets, widths, and volatility recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md",
+      "profiles": [
+        ":firmware",
+        ":kernel",
+        ":hosted"
+      ],
+      "rejected_examples": [
+        "dma-buffer-escape",
+        "ambient-platform-permission"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full device stack replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "register and DMA driver slice"
+        ],
+        "provider_boundaries": [
+          "OS driver framework",
+          "device firmware"
+        ]
+      },
+      "runtime_services": [
+        ":minimal-native",
+        ":capability"
+      ],
+      "schemas": [
+        "register-schema",
+        "dma-buffer-schema",
+        "host-adapter-schema"
+      ],
+      "task_id": "P09-D127"
+    },
+    "DOM5": {
+      "accepted_examples": [
+        "vectorized-dot-product"
+      ],
+      "artifacts": [
+        "optimization-proof",
+        "native-layout-report",
+        "ffi-boundary",
+        "benchmark-report"
+      ],
+      "backends": [
+        ":llvm",
+        ":gpu",
+        ":c"
+      ],
+      "capabilities": [
+        "native-memory",
+        "ffi-provider"
+      ],
+      "conformance": {
+        "accepted_fixture": "vectorized-dot-product.accepted",
+        "artifact_evidence": "proof+layout+ffi+benchmark",
+        "rejected_fixture": "rejected-dom5-optimization.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P5",
+        "P11",
+        "B3",
+        "B8",
+        "D6",
+        "D9"
+      ],
+      "diagnostics": [
+        "DOM5-MEMORY",
+        "DOM5-TARGET",
+        "DOM5-UB",
+        "DOM5-OPTIMIZATION",
+        "DOM5-NUMERIC",
+        "DOM5-FFI",
+        "DOM5-BENCHMARK",
+        "DOM5-CONFORMANCE"
+      ],
+      "document": "DOM5",
+      "domain": ":high-performance-native",
+      "effects": [
+        "allocation",
+        "foreign-call",
+        "vectorized-compute"
+      ],
+      "evidence": {
+        "benchmark": "target, inputs, and reference comparison recorded",
+        "conformance": "optimization rejection and benchmark fixture exist",
+        "ffi": "foreign provider boundary manifest emitted",
+        "memory": "ownership and alias policy recorded",
+        "numeric": "numeric mode and FMA policy recorded",
+        "optimization": "vectorization and elision require proof record",
+        "target": "target CPU and feature set recorded",
+        "ub": "undefined behavior is rejected or isolated"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/128-dom5-high-performance-native-computing-domain-specification.md",
+      "profiles": [
+        ":native",
+        ":gpu"
+      ],
+      "rejected_examples": [
+        "proofless-fast-math",
+        "undefined-overflow"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full HPC library replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "vectorized native kernel slice"
+        ],
+        "provider_boundaries": [
+          "vendor math libraries",
+          "platform profiler"
+        ]
+      },
+      "runtime_services": [
+        ":memory",
+        ":ffi",
+        ":observability"
+      ],
+      "schemas": [
+        "benchmark-schema",
+        "native-layout-schema"
+      ],
+      "task_id": "P09-D128"
+    },
+    "DOM6": {
+      "accepted_examples": [
+        "typed-form-submit"
+      ],
+      "artifacts": [
+        "component-schema",
+        "route-manifest",
+        "source-map",
+        "taint-report"
+      ],
+      "backends": [
+        ":javascript-typescript",
+        ":wasm"
+      ],
+      "capabilities": [
+        "browser-dom",
+        "network",
+        "storage"
+      ],
+      "conformance": {
+        "accepted_fixture": "typed-form-submit.accepted",
+        "artifact_evidence": "route+component+taint+sourcemap",
+        "rejected_fixture": "rejected-dom6-taint.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P4",
+        "B6",
+        "R4",
+        "R11",
+        "S1"
+      ],
+      "diagnostics": [
+        "DOM6-DOM",
+        "DOM6-TAINT",
+        "DOM6-SCHEMA",
+        "DOM6-PACKAGE",
+        "DOM6-NUMERIC",
+        "DOM6-SOURCEMAP",
+        "DOM6-CONFORMANCE"
+      ],
+      "document": "DOM6",
+      "domain": ":web-frontend-ui",
+      "effects": [
+        "dom-write",
+        "fetch",
+        "local-storage"
+      ],
+      "evidence": {
+        "conformance": "accepted form flow and taint rejection fixture exist",
+        "dom_access": "DOM effects require browser capability",
+        "numeric": "web numeric behavior records target differences",
+        "package": "web bundle artifact records dependencies and source map",
+        "schema": "component, route, API, and form schemas recorded",
+        "sourcemap": "diagnostics map to Gravity source",
+        "taint": "form input remains tainted until validation"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+      "profiles": [
+        ":hosted"
+      ],
+      "rejected_examples": [
+        "tainted-dom-sink",
+        "route-without-schema"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full browser or UI framework replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "typed UI form and route slice"
+        ],
+        "provider_boundaries": [
+          "browser engine",
+          "framework runtime"
+        ]
+      },
+      "runtime_services": [
+        ":managed",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "component-props",
+        "route-schema",
+        "api-schema",
+        "form-schema"
+      ],
+      "task_id": "P09-D129"
+    },
+    "DOM7": {
+      "accepted_examples": [
+        "offline-note-sync"
+      ],
+      "artifacts": [
+        "permission-manifest",
+        "lifecycle-report",
+        "storage-migration",
+        "simulator-test"
+      ],
+      "backends": [
+        ":mobile",
+        ":javascript-typescript"
+      ],
+      "capabilities": [
+        "platform-permission",
+        "secure-storage",
+        "network"
+      ],
+      "conformance": {
+        "accepted_fixture": "offline-note-sync.accepted",
+        "artifact_evidence": "permission+lifecycle+storage+simulator",
+        "rejected_fixture": "rejected-dom7-permission.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P4",
+        "R4",
+        "R6",
+        "R11",
+        "S8"
+      ],
+      "diagnostics": [
+        "DOM7-PERMISSION",
+        "DOM7-LIFECYCLE",
+        "DOM7-THREAD",
+        "DOM7-NULL",
+        "DOM7-STORAGE",
+        "DOM7-SECRET",
+        "DOM7-CONFORMANCE"
+      ],
+      "document": "DOM7",
+      "domain": ":mobile-application",
+      "effects": [
+        "permission-request",
+        "ui-thread",
+        "offline-sync"
+      ],
+      "evidence": {
+        "conformance": "simulator fixture and permission rejection exist",
+        "lifecycle": "foreground, background, and resume behavior recorded",
+        "nullability": "host nullability translation recorded",
+        "permission": "platform permissions are explicit capabilities",
+        "secret": "secure storage and log redaction policy recorded",
+        "storage": "storage schema and migration evidence emitted",
+        "thread": "UI thread and background worker boundaries recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/130-dom7-mobile-application-domain-specification.md",
+      "profiles": [
+        ":hosted",
+        ":mobile"
+      ],
+      "rejected_examples": [
+        "camera-access-without-permission",
+        "secret-log"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full mobile SDK replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "offline mobile data slice"
+        ],
+        "provider_boundaries": [
+          "mobile OS SDK",
+          "platform permission UI"
+        ]
+      },
+      "runtime_services": [
+        ":managed",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "permission-schema",
+        "storage-schema",
+        "offline-sync-schema"
+      ],
+      "task_id": "P09-D130"
+    },
+    "DOM8": {
+      "accepted_examples": [
+        "typed-user-route"
+      ],
+      "artifacts": [
+        "route-manifest",
+        "config-manifest",
+        "worker-policy",
+        "observability-schema"
+      ],
+      "backends": [
+        ":javascript-typescript",
+        ":jvm",
+        ":workflow-graph"
+      ],
+      "capabilities": [
+        "database",
+        "network",
+        "secret",
+        "job-queue"
+      ],
+      "conformance": {
+        "accepted_fixture": "typed-user-route.accepted",
+        "artifact_evidence": "route+config+worker+observability",
+        "rejected_fixture": "rejected-dom8-schema.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P4",
+        "P9",
+        "R7",
+        "R11",
+        "R12",
+        "S1"
+      ],
+      "diagnostics": [
+        "DOM8-ROUTE",
+        "DOM8-SCHEMA",
+        "DOM8-TAINT",
+        "DOM8-CAPABILITY",
+        "DOM8-JOB",
+        "DOM8-SECRET",
+        "DOM8-OBSERVABILITY",
+        "DOM8-CONFORMANCE"
+      ],
+      "document": "DOM8",
+      "domain": ":backend-services",
+      "effects": [
+        "http-handler",
+        "database-transaction",
+        "background-job"
+      ],
+      "evidence": {
+        "capability": "database, network, and secret authority is explicit",
+        "conformance": "route accepted fixture and schema rejection exist",
+        "job": "worker retry, timeout, and idempotency policy recorded",
+        "observability": "log, trace, and metric schema emitted",
+        "route": "handler route records method, path, and effect",
+        "schema": "request, response, error, and config schemas recorded",
+        "secret": "secret source and redaction policy recorded",
+        "taint": "external input validation boundary recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/131-dom8-backend-services-domain-specification.md",
+      "profiles": [
+        ":hosted",
+        ":distributed"
+      ],
+      "rejected_examples": [
+        "schema-less-request",
+        "ambient-secret"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full backend platform replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "typed HTTP route and worker slice"
+        ],
+        "provider_boundaries": [
+          "HTTP server",
+          "database provider",
+          "queue provider"
+        ]
+      },
+      "runtime_services": [
+        ":managed",
+        ":distributed",
+        ":capability",
+        ":observability"
+      ],
+      "schemas": [
+        "route-schema",
+        "request-schema",
+        "response-schema",
+        "config-schema"
+      ],
+      "task_id": "P09-D131"
+    },
+    "DOM9": {
+      "accepted_examples": [
+        "replayable-workflow",
+        "crdt-counter"
+      ],
+      "artifacts": [
+        "workflow-graph",
+        "event-log-schema",
+        "replay-trace",
+        "convergence-report"
+      ],
+      "backends": [
+        ":workflow-graph",
+        ":query-relational"
+      ],
+      "capabilities": [
+        "network",
+        "event-log",
+        "storage"
+      ],
+      "conformance": {
+        "accepted_fixture": "replayable-workflow.accepted",
+        "artifact_evidence": "workflow+event-log+replay+convergence",
+        "rejected_fixture": "rejected-dom9-convergence.json",
+        "validation_command": "python3 tools/validate_domain_coverage.py"
+      },
+      "dependencies": [
+        "P9",
+        "R7",
+        "B10",
+        "SAFE10",
+        "D9"
+      ],
+      "diagnostics": [
+        "DOM9-SCHEMA",
+        "DOM9-REPLAY",
+        "DOM9-IDEMPOTENCY",
+        "DOM9-RETRY",
+        "DOM9-COMPENSATION",
+        "DOM9-CAPABILITY",
+        "DOM9-MIGRATION",
+        "DOM9-CRDT",
+        "DOM9-MONOTONICITY",
+        "DOM9-COORDINATION",
+        "DOM9-CONFLICT",
+        "DOM9-SYNC",
+        "DOM9-CONVERGENCE",
+        "DOM9-CONFORMANCE"
+      ],
+      "document": "DOM9",
+      "domain": ":distributed-systems",
+      "effects": [
+        "message-send",
+        "workflow-step",
+        "event-append"
+      ],
+      "evidence": {
+        "capability": "network and storage authority recorded",
+        "compensation": "compensation path recorded for failed step",
+        "conflict": "conflict resolution semantics recorded",
+        "conformance": "workflow accepted fixture and convergence rejection exist",
+        "convergence": "convergence trace emitted",
+        "coordination": "coordination requirement is explicit",
+        "crdt": "CRDT merge law evidence recorded",
+        "idempotency": "side-effect idempotency keys recorded",
+        "migration": "event-log upgrade path recorded",
+        "monotonicity": "CALM monotonicity record emitted",
+        "replay": "nondeterminism and replay trace recorded",
+        "retry": "retry and backoff policy recorded",
+        "schema": "messages, commands, events, and state schemas recorded",
+        "sync": "local-first sync policy recorded"
+      },
+      "governing_doc": "docs/phase-09-domain-specific-computing-coverage/132-dom9-distributed-systems-domain-specification.md",
+      "profiles": [
+        ":distributed"
+      ],
+      "rejected_examples": [
+        "side-effect-without-idempotency",
+        "convergence-claim-without-proof"
+      ],
+      "replacement_scope": {
+        "claim_limits": [
+          "no full distributed runtime replacement claim"
+        ],
+        "claim_status": ":slice-supported",
+        "implemented_slices": [
+          "durable workflow and CRDT slice"
+        ],
+        "provider_boundaries": [
+          "broker",
+          "database",
+          "remote clock"
+        ]
+      },
+      "runtime_services": [
+        ":distributed",
+        ":concurrency",
+        ":capability"
+      ],
+      "schemas": [
+        "message-schema",
+        "event-log-schema",
+        "crdt-schema"
+      ],
+      "task_id": "P09-D132"
+    }
+  },
+  "domain_slice_manifest": {
+    "artifact_packet": [
+      "domain manifest",
+      "accepted fixture",
+      "rejected fixture",
+      "replacement claim record",
+      "conformance evidence"
+    ],
+    "documents": [
+      "DOM1",
+      "DOM2",
+      "DOM3",
+      "DOM4",
+      "DOM5",
+      "DOM6",
+      "DOM7",
+      "DOM8",
+      "DOM9",
+      "DOM10",
+      "DOM11",
+      "DOM12",
+      "DOM13",
+      "DOM14",
+      "DOM15",
+      "DOM16",
+      "DOM17",
+      "DOM18",
+      "DOM19",
+      "DOM20",
+      "DOM21"
+    ],
+    "incumbent_comparison": [
+      "records incumbent language or DSL family",
+      "records supported Gravity slice",
+      "records provider boundaries that remain external"
+    ],
+    "packet": "domain-slice-v1",
+    "profile_matrix": {
+      ":ai": [
+        "DOM18",
+        "DOM21"
+      ],
+      ":distributed": [
+        "DOM9",
+        "DOM11",
+        "DOM16",
+        "DOM18",
+        "DOM21"
+      ],
+      ":firmware": [
+        "DOM2",
+        "DOM4"
+      ],
+      ":formal": [
+        "DOM12",
+        "DOM15",
+        "DOM16",
+        "DOM19"
+      ],
+      ":gpu": [
+        "DOM12",
+        "DOM13",
+        "DOM14"
+      ],
+      ":hardware": [
+        "DOM1"
+      ],
+      ":hosted": [
+        "DOM6",
+        "DOM7",
+        "DOM8",
+        "DOM10",
+        "DOM11",
+        "DOM14",
+        "DOM15",
+        "DOM17",
+        "DOM20",
+        "DOM21"
+      ],
+      ":kernel": [
+        "DOM3",
+        "DOM4"
+      ],
+      ":meta": [
+        "DOM17",
+        "DOM20"
+      ],
+      ":native": [
+        "DOM5",
+        "DOM10",
+        "DOM12",
+        "DOM13",
+        "DOM14",
+        "DOM15",
+        "DOM17"
+      ]
+    },
+    "proof_gaps": [
+      "Phase 10 schema and migration generators remain dependency records until Phase 10 is implemented",
+      "Phase 16 standard library APIs remain dependency records until Phase 16 is implemented",
+      "No full language or domain replacement claim is made by this Phase 09 artifact"
+    ]
+  },
+  "input_hash": "sha256:07953128a7159dd3a61efe83f173009194f438995f0dd37e71a88efdf88be3cc",
+  "kind": "domain-coverage-artifact",
+  "module": "domain-coverage-smoke",
+  "package": "gravity.phase09.domain",
+  "phase": "09",
+  "rejected_domain_fixtures": [
+    {
+      "artifact": "diagnostic DOM1-WIDTH",
+      "document": "DOM1",
+      "evidence": "width evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom1-width.json"
+    },
+    {
+      "artifact": "diagnostic DOM2-MMIO",
+      "document": "DOM2",
+      "evidence": "MMIO evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom2-mmio.json"
+    },
+    {
+      "artifact": "diagnostic DOM3-RAW",
+      "document": "DOM3",
+      "evidence": "raw memory audit missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom3-raw.json"
+    },
+    {
+      "artifact": "diagnostic DOM4-DMA",
+      "document": "DOM4",
+      "evidence": "DMA lifetime evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom4-dma.json"
+    },
+    {
+      "artifact": "diagnostic DOM5-OPTIMIZATION",
+      "document": "DOM5",
+      "evidence": "optimization proof missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom5-optimization.json"
+    },
+    {
+      "artifact": "diagnostic DOM6-TAINT",
+      "document": "DOM6",
+      "evidence": "web taint evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom6-taint.json"
+    },
+    {
+      "artifact": "diagnostic DOM7-PERMISSION",
+      "document": "DOM7",
+      "evidence": "mobile permission missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom7-permission.json"
+    },
+    {
+      "artifact": "diagnostic DOM8-SCHEMA",
+      "document": "DOM8",
+      "evidence": "backend schemas missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom8-schema.json"
+    },
+    {
+      "artifact": "diagnostic DOM9-CONVERGENCE",
+      "document": "DOM9",
+      "evidence": "convergence evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom9-convergence.json"
+    },
+    {
+      "artifact": "diagnostic DOM10-QUERY",
+      "document": "DOM10",
+      "evidence": "prepared binding evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom10-query.json"
+    },
+    {
+      "artifact": "diagnostic DOM11-LINEAGE",
+      "document": "DOM11",
+      "evidence": "lineage evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom11-lineage.json"
+    },
+    {
+      "artifact": "diagnostic DOM12-CERTIFICATE",
+      "document": "DOM12",
+      "evidence": "certificate evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom12-certificate.json"
+    },
+    {
+      "artifact": "diagnostic DOM13-HOST-EFFECT",
+      "document": "DOM13",
+      "evidence": "host-effect rejection evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom13-host-effect.json"
+    },
+    {
+      "artifact": "diagnostic DOM14-DETERMINISM",
+      "document": "DOM14",
+      "evidence": "determinism evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom14-determinism.json"
+    },
+    {
+      "artifact": "diagnostic DOM15-BOUNDARY",
+      "document": "DOM15",
+      "evidence": "private boundary audit missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom15-boundary.json"
+    },
+    {
+      "artifact": "diagnostic DOM16-AA-PROFILE",
+      "document": "DOM16",
+      "evidence": "account abstraction profile missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom16-aa-profile.json"
+    },
+    {
+      "artifact": "diagnostic DOM17-METADATA",
+      "document": "DOM17",
+      "evidence": "metadata preservation missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom17-metadata.json"
+    },
+    {
+      "artifact": "diagnostic DOM18-TOOL",
+      "document": "DOM18",
+      "evidence": "tool policy missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom18-tool.json"
+    },
+    {
+      "artifact": "diagnostic DOM19-ZK-SETUP",
+      "document": "DOM19",
+      "evidence": "zk setup evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom19-zk-setup.json"
+    },
+    {
+      "artifact": "diagnostic DOM20-TAINT",
+      "document": "DOM20",
+      "evidence": "shell taint evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom20-taint.json"
+    },
+    {
+      "artifact": "diagnostic DOM21-EDGE",
+      "document": "DOM21",
+      "evidence": "typed edge evidence missing",
+      "fixture": "docs/artifacts/phase-09/fixtures/domain/rejected-dom21-edge.json"
+    }
+  ],
+  "replacement_claim_records": [
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM1",
+      "evidence_refs": [
+        "domains.DOM1.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "synthesis toolchain",
+        "physical timing closure"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM2",
+      "evidence_refs": [
+        "domains.DOM2.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "board vendor startup files",
+        "hardware simulator"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM3",
+      "evidence_refs": [
+        "domains.DOM3.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "bootloader",
+        "emulator"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM4",
+      "evidence_refs": [
+        "domains.DOM4.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "OS driver framework",
+        "device firmware"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM5",
+      "evidence_refs": [
+        "domains.DOM5.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "vendor math libraries",
+        "platform profiler"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM6",
+      "evidence_refs": [
+        "domains.DOM6.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "browser engine",
+        "framework runtime"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM7",
+      "evidence_refs": [
+        "domains.DOM7.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "mobile OS SDK",
+        "platform permission UI"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM8",
+      "evidence_refs": [
+        "domains.DOM8.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "HTTP server",
+        "database provider",
+        "queue provider"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM9",
+      "evidence_refs": [
+        "domains.DOM9.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "broker",
+        "database",
+        "remote clock"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM10",
+      "evidence_refs": [
+        "domains.DOM10.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "external database engine",
+        "filesystem durability provider"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM11",
+      "evidence_refs": [
+        "domains.DOM11.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "warehouse",
+        "stream broker",
+        "object store"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM12",
+      "evidence_refs": [
+        "domains.DOM12.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "BLAS/LAPACK/libm/MPFR providers",
+        "external theorem prover"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM13",
+      "evidence_refs": [
+        "domains.DOM13.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "GPU driver",
+        "vendor runtime"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM14",
+      "evidence_refs": [
+        "domains.DOM14.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "renderer",
+        "audio engine",
+        "platform SDK"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM15",
+      "evidence_refs": [
+        "domains.DOM15.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "vetted crypto library",
+        "HSM/KMS",
+        "FHE/MPC runtime",
+        "authenticator platform"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM16",
+      "evidence_refs": [
+        "domains.DOM16.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "chain validator",
+        "remote node",
+        "wallet client",
+        "bundler",
+        "paymaster"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM17",
+      "evidence_refs": [
+        "domains.DOM17.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "editor protocol",
+        "external package manager"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM18",
+      "evidence_refs": [
+        "domains.DOM18.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "model provider",
+        "retrieval provider",
+        "tool provider"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM19",
+      "evidence_refs": [
+        "domains.DOM19.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "theorem prover",
+        "zkVM",
+        "proving network"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM20",
+      "evidence_refs": [
+        "domains.DOM20.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "external command",
+        "CI platform",
+        "deployment provider"
+      ]
+    },
+    {
+      "claim_status": ":slice-supported",
+      "document": "DOM21",
+      "evidence_refs": [
+        "domains.DOM21.conformance"
+      ],
+      "excluded_provider_boundaries": [
+        "visual editor",
+        "model provider",
+        "tool provider"
+      ]
+    }
+  ]
+}

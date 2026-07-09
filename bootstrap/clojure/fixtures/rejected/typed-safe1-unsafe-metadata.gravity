@@ -1,0 +1,14 @@
+(ns safe1.unsafe-metadata
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{:memory/raw})
+  (:capabilities #{:memory/raw})
+  (:safety :audited-unsafe))
+
+(def bad
+  (safe1/unsafe-island :raw/mmio-read32
+                       nil
+                       :mmio-read
+                       nil
+                       nil
+                       #{}))

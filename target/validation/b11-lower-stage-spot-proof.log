@@ -1,0 +1,4 @@
+B11 lower-stage spot proof passed: .qst artifact source-debug-map/prepared binding spans and rejected diagnostic preserve source extension.
+artifact-id: sha256:98c4d306164783036298128c8303f2c7e0b20f918ba2efb534e008006f15ab4f
+source-debug-map-locations: bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:adapter bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:bindings bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:migration bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.qst:query 
+rejected-diagnostic: B11-DIALECT backend-b11-dialect.qst

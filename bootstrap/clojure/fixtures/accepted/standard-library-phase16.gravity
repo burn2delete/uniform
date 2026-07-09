@@ -1,0 +1,17 @@
+; P16 fixture covers standard-library artifacts across STD1-STD20.
+(ns standard.library-phase16
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read :filesystem/write :network/http
+              :database/query :workflow/replay :ai/model-call})
+  (:capabilities #{:fs/read :fs/write :network/outbound
+                   :db/query :workflow/replay :model/invoke
+                   :human/review})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {}}}))
+
+(def standard-library-phase-id 16)
+
+(defn main [] :- I64
+  standard-library-phase-id)

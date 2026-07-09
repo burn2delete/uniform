@@ -1,0 +1,6 @@
+; Rejected P09 DOM8 fixture.
+(ns domain.dom8-schema (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom8-schema}}}))
+(defn main [] :- I64 1)

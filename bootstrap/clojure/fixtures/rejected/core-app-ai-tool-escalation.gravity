@@ -1,0 +1,13 @@
+(ns core.app.ai-tool-escalation
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:injection-defenses
+                    [{:prompt-authority-partition :preserved
+                      :runtime-monitors []}]}}}))
+
+(defn main []
+  (println "bad ai tool escalation"))

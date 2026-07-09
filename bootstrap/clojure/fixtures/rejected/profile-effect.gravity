@@ -1,0 +1,9 @@
+(ns profile.bad-effect
+  (:profile :hardware)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def bad
+  (println "forbidden effect"))

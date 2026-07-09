@@ -1,0 +1,42 @@
+C18 Gravity source bridge validation
+
+Changed source:
+bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+
+SHA-256:
+52529a1a77290252567b1a7e0c7c87aede36d0e94e7ef8f2939151f1e183f4c0  bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+
+Commands:
+
+1. shasum -a 256 bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+   exit 0
+   output:
+   52529a1a77290252567b1a7e0c7c87aede36d0e94e7ef8f2939151f1e183f4c0  bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+
+2. clojure -M:gravity stage1-bootstrap-source bootstrap/gravity/src
+   exit 0
+   summary:
+   kind :gravity/stage1-bootstrap-source-artifact
+   stage :stage1-bootstrap-source
+   status :complete
+   module-count 20
+   component-count 17
+   diagnostics []
+   source files included bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+
+3. clojure -M:gravity compiler-c18-verification bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+   exit 1
+   diagnostic:
+   C2-ABBREV reader abbreviation placement is invalid at form-index 0.
+   note:
+   The same direct document-artifact command shape also rejects existing
+   stage1 Gravity source bridge modules c15_compiler_diagnostics.gravity and
+   c17_compiler_plugin_pass_api.gravity with C2-ABBREV. The accepted C18
+   fixture bootstrap/clojure/fixtures/accepted/compiler-c18-verification.gravity
+   passes the compiler-c18-verification command. No central integration files
+   were edited.
+
+4. LC_ALL=C rg -n "[^\\x00-\\x7F]" bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity
+   exit 1
+   output:
+   no non-ASCII bytes found

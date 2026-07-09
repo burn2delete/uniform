@@ -1,0 +1,9 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "release_verification": {
+      "noncanonical_payload": true
+    }
+  }
+}

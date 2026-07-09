@@ -1,0 +1,12 @@
+(ns bad.nondeterminism
+  (:profile :hosted)
+  (:target :native))
+
+(build-policy
+  :mode :hermetic)
+
+(build-grant :build/time :provider/clock "compile-clock" :build :hosted :none)
+
+(derive-code :json/User UserSchema
+  (:build-effect :build/time :provider/clock "compile-clock" "sha256:clock-value" :none)
+  (:generated-form (def UserCodec (fn [user] user)) "sha256:generated-user-codec-v1"))

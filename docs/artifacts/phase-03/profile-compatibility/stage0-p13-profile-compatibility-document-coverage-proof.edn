@@ -1,0 +1,24 @@
+{:proof-id :stage0-p13-profile-compatibility-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D058
+ :document "P13"
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-compatibility-matrix.gravity"
+ :artifact-kind :gravity/stage0-profile-compatibility-artifact
+ :accepted-edge-kinds #{:direct :facade-required :artifact-only}
+ :outputs
+ [:profile-compatibility-matrix :cross-profile-dependency-graph
+  :facade-manifest :artifact-boundary-manifest :evidence-records
+  :compatibility-conformance-results]
+ :diagnostic-fixtures
+ {"P13-DIRECT" "bootstrap/clojure/fixtures/rejected/profile-compatibility-direct.gravity"
+  "P13-FACADE" "bootstrap/clojure/fixtures/rejected/profile-compatibility-facade.gravity"
+  "P13-ARTIFACT" "bootstrap/clojure/fixtures/rejected/profile-compatibility-artifact.gravity"
+  "P13-EVIDENCE" "bootstrap/clojure/fixtures/rejected/profile-compatibility-evidence.gravity"
+  "P13-RUNTIME" "bootstrap/clojure/fixtures/rejected/profile-compatibility-runtime.gravity"
+  "P13-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-compatibility-memory.gravity"
+  "P13-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-compatibility-effect.gravity"
+  "P13-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-compatibility-capability.gravity"
+  "P13-GENERATED" "bootstrap/clojure/fixtures/rejected/profile-compatibility-generated.gravity"
+  "P13-MATRIX" "bootstrap/clojure/fixtures/rejected/profile-compatibility-matrix.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

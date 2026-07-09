@@ -1,0 +1,14 @@
+(ns core.app.package-evidence
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:artifact-manifests
+                         [{:artifact-id "artifact:bad"
+                           :kind :library
+                           :evidence {:types "type-report"}}]}}}))
+
+(defn main []
+  (println "bad package evidence"))

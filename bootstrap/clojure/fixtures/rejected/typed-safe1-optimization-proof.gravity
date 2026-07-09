@@ -1,0 +1,12 @@
+(ns safe1.optimization-proof
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized))
+
+(def bad
+  (safe1/optimization-erasure :buffer/read
+                              :bounds
+                              :proven-safe
+                              nil))

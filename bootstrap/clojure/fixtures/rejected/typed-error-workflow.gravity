@@ -1,0 +1,10 @@
+(ns typed.error.workflow
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (workflow/failure-unsafe))

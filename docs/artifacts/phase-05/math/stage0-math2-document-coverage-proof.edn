@@ -1,0 +1,39 @@
+{:phase "05"
+ :task "P05-D070"
+ :document "MATH2"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/070-math2-elementary-function-system-specification.md"
+ :artifact-kind :gravity/stage0-efir-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-efir.gravity"
+ :covered-artifact-fields
+ [:elementary-function-registry
+  :efir-semantic-anchor
+  :provider-manifest
+  :provider-eligibility-report
+  :semantic-runtime-implementation-map
+  :branch-policy-table
+  :exceptional-value-policy-table
+  :selection-decision-record
+  :equivalence-proof-table]
+ :required-diagnostic-ids
+ ["MATH2-DECLARATION" "MATH2-DOMAIN" "MATH2-BRANCH"
+  "MATH2-PROVIDER" "MATH2-NUMERIC-MODE" "MATH2-CERTIFICATE"
+  "MATH2-EQUIVALENCE" "MATH2-EFFECT" "MATH2-TARGET"]
+ :rejected-fixtures
+ [{:fixture "math-efir-declaration.gravity" :diagnostic "MATH2-DECLARATION"}
+  {:fixture "math-efir-domain.gravity" :diagnostic "MATH2-DOMAIN"}
+  {:fixture "math-efir-branch.gravity" :diagnostic "MATH2-BRANCH"}
+  {:fixture "math-efir-provider.gravity" :diagnostic "MATH2-PROVIDER"}
+  {:fixture "math-efir-numeric-mode.gravity" :diagnostic "MATH2-NUMERIC-MODE"}
+  {:fixture "math-efir-certificate.gravity" :diagnostic "MATH2-CERTIFICATE"}
+  {:fixture "math-efir-equivalence.gravity" :diagnostic "MATH2-EQUIVALENCE"}
+  {:fixture "math-efir-effect.gravity" :diagnostic "MATH2-EFFECT"}
+  {:fixture "math-efir-target.gravity" :diagnostic "MATH2-TARGET"}]
+ :capability-based-proof
+ {:elementary-declarations-complete? true
+  :domains-and-branch-policies-explicit? true
+  :numeric-mode-compatibility-checked? true
+  :providers-mode-and-certificate-checked? true
+  :effect-and-target-legality-checked? true
+  :equivalence-claims-proof-backed? true
+  :status :complete}
+ :status :complete}

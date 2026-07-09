@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/namespace/active_facets/0"
+  ],
+  "extends": "accepted-facet-system.json"
+}

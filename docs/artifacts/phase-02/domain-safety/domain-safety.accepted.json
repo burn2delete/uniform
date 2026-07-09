@@ -1,0 +1,437 @@
+{
+  "abi_protocol_records": [
+    {
+      "abi": ":c",
+      "boundary_id": "extern/strlen",
+      "operation_id": "ffi-safe-strlen",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      }
+    }
+  ],
+  "atomic_memory_order_records": [
+    {
+      "operation": "counter/inc",
+      "operation_id": "concurrency-safe-transfer",
+      "order": ":seq-cst",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      },
+      "target_supported": true
+    }
+  ],
+  "backend_memory_order_preservation_records": [
+    {
+      "operation_id": "concurrency-safe-transfer",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      },
+      "status": ":preserved",
+      "target": ":llvm"
+    }
+  ],
+  "backend_numeric_lowering_records": [
+    {
+      "mode_preserved": true,
+      "operation_id": "numeric-checked-arithmetic",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      },
+      "target": ":llvm"
+    }
+  ],
+  "blocking_cancellation_records": [
+    {
+      "blocking": true,
+      "cancellation": ":deferred",
+      "operation": "mutex/lock",
+      "operation_id": "concurrency-safe-transfer",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      }
+    }
+  ],
+  "callback_safety_records": [
+    {
+      "boundary_id": "extern/strlen",
+      "callbacks": [],
+      "operation_id": "ffi-safe-strlen",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      }
+    }
+  ],
+  "concurrency_graph": [
+    {
+      "operation_id": "concurrency-safe-transfer",
+      "shared_location": "buffer-owner-1",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      },
+      "synchronization": ":ownership-transfer",
+      "task_id": "task/process-buffer"
+    }
+  ],
+  "diagnostics": [],
+  "documents": [
+    "SAFE7",
+    "SAFE8",
+    "SAFE9",
+    "SAFE11"
+  ],
+  "elementary_function_approximation_records": [
+    {
+      "accuracy": "2^-22",
+      "domain": "[-pi,pi]",
+      "function": "sin",
+      "operation_id": "numeric-checked-arithmetic",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      }
+    }
+  ],
+  "error_translation_maps": [
+    {
+      "foreign_failure": ":none",
+      "gravity_behavior": "(Result USize FfiError)",
+      "operation_id": "ffi-safe-strlen",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      }
+    }
+  ],
+  "ffi_conformance_reports": [
+    {
+      "operation_id": "ffi-safe-strlen",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      },
+      "status": ":passed",
+      "suite": "ffi-string"
+    }
+  ],
+  "ffi_ownership_lifetime_maps": [
+    {
+      "boundary_id": "extern/strlen",
+      "lifetime": ":call-duration",
+      "operation_id": "ffi-safe-strlen",
+      "ownership": ":borrowed",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      }
+    }
+  ],
+  "floating_point_mode_records": [
+    {
+      "nan": ":propagate",
+      "operation": "sqrt-f64",
+      "operation_id": "numeric-checked-arithmetic",
+      "rounding": ":nearest-even",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      }
+    }
+  ],
+  "foreign_declaration_records": [
+    {
+      "boundary_id": "extern/strlen",
+      "foreign_source": "string.h:strlen",
+      "operation_id": "ffi-safe-strlen",
+      "provider_id": "gravity.ffi/c-provider",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      }
+    }
+  ],
+  "generated_binding_provenance": [
+    {
+      "generator": "gravity.bindgen/c-header",
+      "operation_id": "ffi-safe-strlen",
+      "source_digest": "sha256:string-h-fixture",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      }
+    }
+  ],
+  "generated_code_taint_propagation_records": [
+    {
+      "generator": "schema-decoder",
+      "operation_id": "taint-validated-user-id",
+      "preserves_taint": true,
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      }
+    }
+  ],
+  "input_hash": "sha256:5c868bc424dcddab1087796f7d5ed54910d2512228c5ff6cfa67a5af55cfd8e0",
+  "kind": "domain-safety-artifact",
+  "module": "safety.domain",
+  "numeric_check_records": [
+    {
+      "check": ":nonzero-divisor",
+      "failure_behavior": ":panic/div-zero",
+      "operation": "div-u32",
+      "operation_id": "numeric-checked-arithmetic",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      }
+    }
+  ],
+  "numeric_mode_records": [
+    {
+      "mode": ":checked",
+      "operation": "add-u32",
+      "operation_id": "numeric-checked-arithmetic",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      }
+    }
+  ],
+  "numeric_optimization_proof_records": [
+    {
+      "operation_id": "numeric-checked-arithmetic",
+      "optimization": "erase-overflow-check",
+      "proof": "range-proof-add-u32",
+      "result": ":accepted",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      }
+    }
+  ],
+  "ownership_transfer_records": [
+    {
+      "from": "parent",
+      "operation_id": "concurrency-safe-transfer",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      },
+      "to": "task/process-buffer",
+      "value": "buffer-owner-1"
+    }
+  ],
+  "package": "gravity.safety.demo",
+  "profile": ":native",
+  "range_interval_proof_records": [
+    {
+      "operation_id": "numeric-checked-arithmetic",
+      "proof": "narrow-u16-range",
+      "result": ":accepted",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      }
+    }
+  ],
+  "relaxed_numeric_mode_approvals": [
+    {
+      "operation_id": "numeric-checked-arithmetic",
+      "scope": "none",
+      "source_span": {
+        "column": 9,
+        "line": 22,
+        "source": "src/numeric_demo.gravity"
+      },
+      "status": ":not-used"
+    }
+  ],
+  "residual_constraint_records": [
+    {
+      "operation_id": "taint-validated-user-id",
+      "residual": [
+        ":uuid-format"
+      ],
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      },
+      "value": "UserId"
+    }
+  ],
+  "safe_wrapper_audit_records": [
+    {
+      "evidence": [
+        ":wrapper-null-check",
+        ":terminator-scan-test"
+      ],
+      "operation_id": "ffi-safe-strlen",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      },
+      "unsafe_island": "FFI-STRLEN",
+      "wrapper": "safe-strlen"
+    }
+  ],
+  "secret_redaction_records": [
+    {
+      "category": "Tainted/Secret",
+      "operation_id": "taint-validated-user-id",
+      "policy": ":redact-in-diagnostics",
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      }
+    }
+  ],
+  "shared_state_access_records": [
+    {
+      "access": ":atomic",
+      "location": "counter",
+      "operation_id": "concurrency-safe-transfer",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      },
+      "type": "Atomic[U64]"
+    }
+  ],
+  "sink_authorization_records": [
+    {
+      "authorization": ":parameterized",
+      "operation_id": "taint-validated-user-id",
+      "sink": "db.query.params.id",
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      }
+    }
+  ],
+  "synchronization_proof_records": [
+    {
+      "operation_id": "concurrency-safe-transfer",
+      "proof": "mutex-guard-all-paths",
+      "result": ":accepted",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      }
+    }
+  ],
+  "taint_conformance_reports": [
+    {
+      "operation_id": "taint-validated-user-id",
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      },
+      "status": ":passed",
+      "suite": "taint-user-id"
+    }
+  ],
+  "taint_flow_records": [
+    {
+      "from": "request.id",
+      "operation_id": "taint-validated-user-id",
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      },
+      "to": "db.query.params.id",
+      "validator": "validate-user-id"
+    }
+  ],
+  "taint_source_records": [
+    {
+      "category": "Tainted/UserInput",
+      "operation_id": "taint-validated-user-id",
+      "source_kind": "request-param",
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      },
+      "trust_boundary": "http-request"
+    }
+  ],
+  "target": ":llvm",
+  "task_capture_records": [
+    {
+      "capture": "Owned[Buffer]",
+      "operation_id": "concurrency-safe-transfer",
+      "source_span": {
+        "column": 5,
+        "line": 18,
+        "source": "src/concurrency_demo.gravity"
+      },
+      "status": ":moved",
+      "task_id": "task/process-buffer"
+    }
+  ],
+  "type_mapping_records": [
+    {
+      "foreign_type": "const char*",
+      "nullability": ":non-null",
+      "operation_id": "ffi-safe-strlen",
+      "source_span": {
+        "column": 3,
+        "line": 24,
+        "source": "interop/string.gravity"
+      },
+      "source_type": "CString"
+    }
+  ],
+  "validator_sanitizer_contracts": [
+    {
+      "clears": [
+        "Tainted/UserInput"
+      ],
+      "ensures": [
+        ":uuid-format"
+      ],
+      "operation_id": "taint-validated-user-id",
+      "source_span": {
+        "column": 7,
+        "line": 14,
+        "source": "src/taint_demo.gravity"
+      },
+      "validator": "validate-user-id"
+    }
+  ]
+}

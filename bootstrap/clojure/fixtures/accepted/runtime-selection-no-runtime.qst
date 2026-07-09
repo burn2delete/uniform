@@ -1,0 +1,15 @@
+; P08-T01 runtime selection fixture proves a firmware no-runtime manifest.
+(ns runtime.selection-no-runtime
+  (:profile :firmware)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/mmio})
+  (:capabilities #{:hardware/mmio})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:selection {}}}))
+
+(def mmio-base 1073741824)
+
+(defn main [] :- I64
+  mmio-base)

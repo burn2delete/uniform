@@ -1,0 +1,238 @@
+{
+  "accepted": [
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:ae92bc6fc8ec4576e61e609897d44a04245e01d2affc3d9597744aa30c988440",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "AI programming units, effects, capabilities, schemas, replay modes, generated-code pipeline, and runtime ledgers"
+      ],
+      "document": "A1",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/154-a1-ai-programming-model-specification.md",
+      "task_id": "P11-D154"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:cf8990c84fd022867016897a25ac9f4de229601a78abad18bab0ab3c64582893",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "provider id, model identity, capability, credential policy, structured output, replay, retention, budget, and failure classes"
+      ],
+      "document": "A2",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/155-a2-model-provider-specification.md",
+      "task_id": "P11-D155"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:29cb966f609349ce510ada585669d305e15c2f693e27164b5d223d200708befc",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "prompt schemas, authority partitions, taint map, visible tools, provider constraints, repair, refusal, prompt hash, and compatibility"
+      ],
+      "document": "A3",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/156-a3-prompt-and-structured-output-specification.md",
+      "task_id": "P11-D156"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:16a1d4bf78819a748bc9f5a79971984be41f4515d1d5164eae906aaf479a39d5",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "tool schemas, effects, capabilities, side-effect class, idempotency, retry, timeout, replay, redaction, and human-review policy"
+      ],
+      "document": "A4",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/157-a4-tool-definition-specification.md",
+      "task_id": "P11-D157"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:c516770a01c6d8cf86bcbb927437abfdda29355afed395545759aa03f97ad70b",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "agent dependencies, toolset, memory bindings, policies, human-review, schemas, effects, capabilities, eval gates, budgets, deployment class, and ledgers"
+      ],
+      "document": "A5",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md",
+      "task_id": "P11-D158"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:54a91b0bd1bc9c86613d85e6d4f4bdd1ae9459cf03dd8e860690ac788f1f6319",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "workflow replay mode, nodes, state and event schemas, effect/capability table, retry, compensation, human-review payload schemas, migration compatibility, and budget accounting"
+      ],
+      "document": "A6",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md",
+      "task_id": "P11-D159"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:35e0ec45f8ac1539e06f66d096cdd3cdf830ac0872a6e951b8d4d5730c6bacb6",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "memory schemas, embedding identity, dimensions, read/write capabilities, partitioning, retention, deletion, redaction, prompt policy, replay policy, and retrieval trace"
+      ],
+      "document": "A7",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/160-a7-memory-and-retrieval-specification.md",
+      "task_id": "P11-D160"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:a47badf5050b1d67fb127f430fb9c560aed4bbb17fcf327e2fddf28d2a333c76",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "policy allow/deny effects, data class rules, taint rules, human-review rules, budgets, fallback, generated-code rules, deployment promotion, and decision ledgers"
+      ],
+      "document": "A8",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/161-a8-ai-policy-and-safety-model.md",
+      "task_id": "P11-D161"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:4d74d6d45337069e79925a1696335373b4357d1aae15d50837a8e5d586ba13c9",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "evaluation subject, dataset, metrics, thresholds, provider identities, environment, safety probes, budget, variance, and release gate"
+      ],
+      "document": "A9",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/162-a9-ai-evaluation-framework-design.md",
+      "task_id": "P11-D162"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:581711f3fc6336d0b70f3fb83140a1a72edf58793f97a4225f5424ff26f3f295",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "human-review action schema, role, evidence schema, payload hash rule, expiry, denial, timeout, replay, audit, and redaction policy"
+      ],
+      "document": "A10",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/163-a10-human-in-the-loop-and-human-review-workflow-specification.md",
+      "task_id": "P11-D163"
+    },
+    {
+      "agent_id": "support-triage",
+      "artifact_hash": "sha256:6991ef8238ccb579260ae662d271faad74ba7857b75002f3cc84d77f817ba69d",
+      "artifact_kind": "ai-agentic-artifact",
+      "coverage": [
+        "authority levels, prompt partitions, taint rules, tool authorization table, policy denial fixtures, defense probes, generated-code validation, runtime monitors, and incident bundle schema"
+      ],
+      "document": "A11",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/accepted-ai-agentic.json",
+      "governing_doc": "docs/phase-11-ai-and-agentic-programming/164-a11-prompt-injection-and-tool-misuse-defense-specification.md",
+      "task_id": "P11-D164"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 11,
+    "documents": 11,
+    "rejected_diagnostics": 11,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "A9",
+    "A10",
+    "A11"
+  ],
+  "input_hash": "sha256:12a2bd956737f326d2db90c6e893d122da52e824dfd33a05d0fcba12d651a2bf",
+  "kind": "phase11-ai-document-coverage-artifact",
+  "phase": "11",
+  "rejected": [
+    {
+      "diagnostic": "AI004",
+      "document": "A1",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a1-tool-authority.json",
+      "missing_fact": "tool-authorization",
+      "task_id": "P11-D154"
+    },
+    {
+      "diagnostic": "A2001",
+      "document": "A2",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a2-provider-capability.json",
+      "missing_fact": "provider-capability",
+      "task_id": "P11-D155"
+    },
+    {
+      "diagnostic": "A3003",
+      "document": "A3",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a3-authority.json",
+      "missing_fact": "authority-partition",
+      "task_id": "P11-D156"
+    },
+    {
+      "diagnostic": "A4005",
+      "document": "A4",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a4-human-review.json",
+      "missing_fact": "human-review-policy",
+      "task_id": "P11-D157"
+    },
+    {
+      "diagnostic": "A5005",
+      "document": "A5",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a5-eval-gate.json",
+      "missing_fact": "eval-gate",
+      "task_id": "P11-D158"
+    },
+    {
+      "diagnostic": "A6001",
+      "document": "A6",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a6-replay-mode.json",
+      "missing_fact": "replay-mode",
+      "task_id": "P11-D159"
+    },
+    {
+      "diagnostic": "A7004",
+      "document": "A7",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a7-cross-tenant.json",
+      "missing_fact": "tenant-partition",
+      "task_id": "P11-D160"
+    },
+    {
+      "diagnostic": "A8004",
+      "document": "A8",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a8-taint-policy.json",
+      "missing_fact": "taint-validation",
+      "task_id": "P11-D161"
+    },
+    {
+      "diagnostic": "A9001",
+      "document": "A9",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a9-eval-gate.json",
+      "missing_fact": "eval-report",
+      "task_id": "P11-D162"
+    },
+    {
+      "diagnostic": "A10005",
+      "document": "A10",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a10-payload.json",
+      "missing_fact": "payload-hash-match",
+      "task_id": "P11-D163"
+    },
+    {
+      "diagnostic": "A11002",
+      "document": "A11",
+      "fixture": "docs/artifacts/phase-11/fixtures/ai/rejected-a11-tool-escalation.json",
+      "missing_fact": "manifest-policy-capability-review",
+      "task_id": "P11-D164"
+    }
+  ]
+}

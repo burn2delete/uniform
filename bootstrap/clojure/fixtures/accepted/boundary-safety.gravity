@@ -1,0 +1,293 @@
+(ns safety.boundary
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [ffi-declaration abi-record type-map ownership wrapper errors
+             callback host-bridge generated-ffi concurrency task-capture
+             transfer shared-state sync-proof atomic-order blocking backend
+             race numeric-mode numeric-check range-proof float-mode
+             elementary relaxed numeric-optimization numeric-backend
+             taint-source taint-flow validator residual sink parameterized
+             deserialized secret prompt generated-taint unsafe-clear
+             safe7-conformance safe8-conformance safe9-conformance
+             safe11-conformance])
+  (:effects #{:ffi/call :ffi/error :thread/spawn :sync/block
+              :safety/check-failure :io/read :network/http
+              :secrets/read :ai/tool-call})
+  (:capabilities #{:ffi/call :scheduler/task :network/client
+                   :secrets/read :ai/tool})
+  (:safety :audited-unsafe))
+
+(def ffi-declaration
+  (safe7/foreign-declaration :c/strlen
+                             :c
+                             :c-abi
+                             "strlen"
+                             "Fn[CString]->USize"
+                             #{:ffi/call}
+                             #{:ffi/call}
+                             {:arg0 :borrowed}
+                             :unsafe
+                             #{:native :hosted}
+                             :thread-affine))
+
+(def abi-record
+  (safe7/abi-record :c/strlen
+                    :c
+                    "C17"
+                    :platform
+                    :native))
+
+(def type-map
+  (safe7/type-mapping "CString"
+                      "char*"
+                      :null-terminated-u8
+                      :usize
+                      :platform
+                      :non-null
+                      :borrowed
+                      :result-error
+                      false))
+
+(def ownership
+  (safe7/ownership-lifetime :c/strlen.arg0
+                            :borrowed
+                            :call-duration
+                            :foreign-none
+                            :none
+                            :valid))
+
+(def wrapper
+  (safe7/safe-wrapper :string/safe-strlen
+                      :c/strlen
+                      #{:cstring/non-null :cstring/null-terminated}
+                      #{:null-check :terminator-scan}
+                      :result-error))
+
+(def errors
+  (safe7/error-translation :c/strlen
+                           :errno-or-signal
+                           :ffi/string-error
+                           :result-error))
+
+(def callback
+  (safe7/callback-safety :host/on-bytes
+                         #{:owned-buffer}
+                         :callback-duration
+                         :event-loop
+                         :non-reentrant
+                         :release-callback))
+
+(def host-bridge
+  (safe7/host-bridge :jvm/string
+                     :jvm
+                     "17"
+                     #{:hosted}
+                     :throws-to-result
+                     :host-rooted
+                     :jvm-thread))
+
+(def generated-ffi
+  (safe7/generated-binding :header-generator
+                           "sha256:ffi-source"
+                           #{:c/strlen}
+                           #{:string/safe-strlen}
+                           #{:ffi/string-tests}))
+
+(def concurrency
+  (safe8/concurrency-graph :request-graph
+                           #{:parent :worker}
+                           #{:queue/state}
+                           #{:mutex/state-lock}
+                           :race-free))
+
+(def task-capture
+  (safe8/task-capture :worker
+                      #{:owned-buffer}
+                      :join-scope
+                      :structured
+                      :valid))
+
+(def transfer
+  (safe8/ownership-transfer :owned-buffer
+                            :parent
+                            :worker
+                            :moved))
+
+(def shared-state
+  (safe8/shared-state-access :queue/state
+                             :read-write
+                             :mutex/state-lock
+                             :synchronized-container
+                             :ordered))
+
+(def sync-proof
+  (safe8/synchronization-proof :mutex/state-lock
+                               :proof/lock-order-1
+                               #{:sync/block}
+                               :may-block
+                               :cancellable
+                               :poison-reported))
+
+(def atomic-order
+  (safe8/atomic-order :counter/increment
+                      :seq-cst
+                      :jvm
+                      :supported
+                      :none))
+
+(def blocking
+  (safe8/blocking-cancellation :channel/recv
+                               :may-block
+                               :cancellable
+                               :closed-channel-result))
+
+(def backend
+  (safe8/backend-preservation :mutex/state-lock
+                              :jvm
+                              #{:happens-before :atomic-order}
+                              :preserved))
+
+(def race
+  (safe8/race-analysis :queue/state
+                       #{:worker-write :parent-read}
+                       :mutex/state-lock
+                       :race-free
+                       :proof/lock-order-1))
+
+(def numeric-mode
+  (safe9/numeric-mode :i64/add
+                      :i64
+                      :checked
+                      :trap-or-result
+                      :numeric-overflow-error))
+
+(def numeric-check
+  (safe9/runtime-check :overflow
+                       :i64/add
+                       :within-i64-range
+                       :numeric-overflow-error))
+
+(def range-proof
+  (safe9/range-proof :usize/index
+                     :proof/range-33
+                     #{:len-positive :idx-less-than-len}
+                     :proven-safe))
+
+(def float-mode
+  (safe9/floating-mode :f64/add
+                       :binary64
+                       :nearest-even
+                       :preserve-nan
+                       :deterministic
+                       false))
+
+(def elementary
+  (safe9/elementary-approximation :sin
+                                  :finite-real
+                                  :ulp-1
+                                  :gravity.math/efir
+                                  #{:efir-domain-proof :approx-test}))
+
+(def relaxed
+  (safe9/relaxed-approval :vector/fma
+                          :source-opt-in
+                          :approved
+                          #{:fused-only :accuracy-bound}))
+
+(def numeric-optimization
+  (safe9/optimization-proof :erase-overflow-check
+                            :proof/range-33
+                            :checked
+                            :preserved))
+
+(def numeric-backend
+  (safe9/backend-lowering :i64/add
+                          :jvm
+                          :Math.addExact
+                          :mode-preserved))
+
+(def taint-source
+  (safe11/taint-source :http/request-param
+                       :Tainted/UserInput
+                       :http-request
+                       :public-network
+                       :network/client))
+
+(def taint-flow
+  (safe11/taint-flow :user-id
+                     #{:Tainted/UserInput}
+                     :http/request-param
+                     :db/users-query
+                     #{:validate-user-id}))
+
+(def validator
+  (safe11/validator-contract :validate-user-id
+                             #{:Tainted/UserInput}
+                             #{:Tainted/UserInput}
+                             #{}
+                             #{:uuid-format}
+                             :validation-error))
+
+(def residual
+  (safe11/residual-constraint :user-id
+                              #{:uuid-format}
+                              :db/users-query
+                              :accepted))
+
+(def sink
+  (safe11/sink-authorization :db/users-query
+                             :parameterized-uuid
+                             #{:validator :parameterization}
+                             :network/client
+                             :authorized))
+
+(def parameterized
+  (safe11/parameterization :db/query
+                           :sql-template
+                           #{:user-id}
+                           :parameterized))
+
+(def deserialized
+  (safe11/deserialization :json/body
+                          :schema/User
+                          :validated
+                          #{:Tainted/UserInput}))
+
+(def secret
+  (safe11/secret-redaction :secret/api-key
+                           :diagnostic-log
+                           :redacted
+                           :names-only))
+
+(def prompt
+  (safe11/prompt-tool-policy :support-prompt
+                             :ticket/update
+                             #{:Tainted/Prompt :Tainted/AIOutput}
+                             :tool-policy-mediated
+                             :ai/tool))
+
+(def generated-taint
+  (safe11/generated-taint :schema-decoder
+                          #{:Tainted/GeneratedCode}
+                          :schema/User
+                          :decoder/User
+                          :preserved))
+
+(def unsafe-clear
+  (safe11/unsafe-clear-audit :legacy-path
+                             #{:Tainted/File}
+                             :unsafe/legacy-path-review
+                             "security-team"
+                             :review-current))
+
+(def safe7-conformance
+  (safe7/conformance :complete))
+
+(def safe8-conformance
+  (safe8/conformance :complete))
+
+(def safe9-conformance
+  (safe9/conformance :complete))
+
+(def safe11-conformance
+  (safe11/conformance :complete))

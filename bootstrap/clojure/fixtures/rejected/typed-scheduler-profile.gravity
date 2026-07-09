@@ -1,0 +1,11 @@
+(ns typed.bad.scheduler
+  (:profile :core)
+  (:target :jvm)
+  (:effects #{:thread/spawn :time/schedule})
+  (:capabilities #{:scheduler/task})
+  (:safety :safe))
+
+(def bad
+  (task/scope
+    (task/spawn
+      (fn [] true))))

@@ -1,0 +1,40 @@
+{:proof-id :stage0-p03-t05-profile-compatibility-proof
+ :date "2026-06-24"
+ :phase 3
+ :task :P03-T05
+ :status :passed
+ :capability :profile-compatibility-cross-profile-dependency-graph
+ :command "clojure -M:gravity profile-compatibility bootstrap/clojure/fixtures/accepted/profile-compatibility-matrix.gravity"
+ :artifact-kind :gravity/stage0-profile-compatibility-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-compatibility-matrix.gravity"
+ :accepted-results
+ {:consumer-profile :kernel
+  :dependency-edges 3
+  :artifact-edges 1
+  :covered-edge-kinds #{:direct :facade-required :artifact-only}
+  :facade-manifest-count 1
+  :artifact-boundary-count 1
+  :standard-library-facade-status :complete
+  :capability-proof :complete
+  :conformance-status :complete}
+ :rejected-diagnostics
+ ["P13-DIRECT" "P13-FACADE" "P13-ARTIFACT" "P13-EVIDENCE"
+  "P13-RUNTIME" "P13-MEMORY" "P13-EFFECT" "P13-CAPABILITY"
+  "P13-GENERATED" "P13-MATRIX"]
+ :sample-rejection-proof
+ {"bootstrap/clojure/fixtures/rejected/profile-compatibility-direct.gravity"
+  "P13-DIRECT"
+  "bootstrap/clojure/fixtures/rejected/profile-compatibility-artifact.gravity"
+  "P13-ARTIFACT"
+  "bootstrap/clojure/fixtures/rejected/profile-compatibility-generated.gravity"
+  "P13-GENERATED"
+  "bootstrap/clojure/fixtures/rejected/profile-compatibility-matrix.gravity"
+  "P13-MATRIX"}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 35 tests containing 1848 assertions. 0 failures, 0 errors. P13 profile compatibility artifacts, and 479 rejected fixtures"}
+  {:command "clojure -M:gravity profile-compatibility bootstrap/clojure/fixtures/accepted/profile-compatibility-matrix.gravity"
+   :output ":gravity/stage0-profile-compatibility-artifact with direct, facade-required, and artifact-only edges, complete cross-profile graph, and complete capability proof"}]
+ :limits
+ ["This proves P13 profile compatibility at the Clojure stage0 profile artifact boundary."
+  "The later P03-T06 proof completes the all-profile compliance suite; this record does not claim backend execution, runtime services, performance, package publication, or self-hosting."]}

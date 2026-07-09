@@ -1,0 +1,11 @@
+; Rejected P13 T5 fixture.
+(ns tooling.t5-diagnostic-mismatch
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t5001}}}))
+
+(defn main [] :- I64 1)

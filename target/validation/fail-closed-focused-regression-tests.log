@@ -1,0 +1,4 @@
+:test p18-self-hosted-release-artifact-proves-stage3-emission-boundary
+:test p18-executable-command-contract-runs-compiled-app
+:test p18-co-canonical-qst-and-gravity-source-extensions-have-parity
+:test rejected-fixtures-produce-stable-diagnostics

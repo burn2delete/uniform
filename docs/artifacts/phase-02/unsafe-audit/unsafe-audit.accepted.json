@@ -1,0 +1,304 @@
+{
+  "diagnostics": [],
+  "document": "SAFE6",
+  "generated_unsafe_provenance_records": [
+    {
+      "generated_origin": [
+        {
+          "artifact": "macro-expansion:simd-load",
+          "generator": "gravity.simd/vectorize",
+          "source_span": {
+            "column": 3,
+            "line": 52,
+            "source": "runtime/simd.gravity"
+          }
+        }
+      ],
+      "generator": "gravity.simd/vectorize",
+      "safe_boundary": "simd-load-checked",
+      "source_form": "(simd-load-checked bytes offset)",
+      "unsafe_island_id": "island/generated-simd-load"
+    }
+  ],
+  "input_hash": "sha256:ccd99c163aea1e724364f96b920aaddabb7a1f4fb1c3a6bc6b165d5a05b46c2a",
+  "invariant_and_proof_links": [
+    {
+      "certificate": null,
+      "evidence": [
+        ":test/alloc-release",
+        ":proof/owned-buffer"
+      ],
+      "invariants": [
+        ":non-null-on-success",
+        ":freed-by-safe-wrapper"
+      ],
+      "unsafe_island_id": "island/raw-malloc"
+    },
+    {
+      "certificate": null,
+      "evidence": [
+        ":test/simd-bounds",
+        ":proof/simd-alignment"
+      ],
+      "invariants": [
+        ":bounds-checked-before-load",
+        ":alignment-checked"
+      ],
+      "unsafe_island_id": "island/generated-simd-load"
+    }
+  ],
+  "kind": "unsafe-audit-artifact",
+  "module": "gravity.runtime.memory",
+  "package": "gravity.runtime",
+  "policy_decision_records": [
+    {
+      "decision": ":accepted",
+      "package": "gravity.runtime",
+      "policy": {
+        "dependency_unsafe": ":safe-wrapper-or-certificate",
+        "unsafe": ":domain-review"
+      },
+      "scope": "package"
+    }
+  ],
+  "profile": ":native",
+  "release_audit_report": {
+    "policy": {
+      "dependency_unsafe": ":safe-wrapper-or-certificate",
+      "unsafe": ":domain-review"
+    },
+    "safe_wrapper_count": 2,
+    "status": ":accepted",
+    "unsafe_island_count": 2
+  },
+  "review_status_records": [
+    {
+      "expires": "on-allocator-or-layout-change",
+      "policy": ":domain-review",
+      "review_date": "2026-06-24",
+      "reviewer": "memory-domain-owner",
+      "source_version": "sha256:runtime-memory-fixture",
+      "state": ":approved",
+      "unsafe_island_id": "island/raw-malloc"
+    },
+    {
+      "expires": "on-vectorizer-or-target-change",
+      "policy": ":domain-review",
+      "review_date": "2026-06-24",
+      "reviewer": "performance-safety-owner",
+      "source_version": "sha256:runtime-simd-fixture",
+      "state": ":approved",
+      "unsafe_island_id": "island/generated-simd-load"
+    }
+  ],
+  "safe_wrapper_records": [
+    {
+      "effects": [
+        ":memory/allocate"
+      ],
+      "exposes_raw_authority": false,
+      "failure_behavior": "(Result Err AllocError)",
+      "hides_capabilities": [
+        ":ffi/c",
+        ":memory/raw"
+      ],
+      "invariants_verified": [
+        ":non-null-on-success",
+        ":freed-by-buffer-drop"
+      ],
+      "name": "allocate-buffer",
+      "signature": "(Fn [USize] (Result Buffer AllocError))",
+      "unsafe_islands": [
+        "island/raw-malloc"
+      ]
+    },
+    {
+      "effects": [],
+      "exposes_raw_authority": false,
+      "failure_behavior": "(Result Err BoundsError)",
+      "hides_capabilities": [
+        ":simd/unchecked"
+      ],
+      "invariants_verified": [
+        ":bounds-checked-before-load",
+        ":alignment-checked"
+      ],
+      "name": "simd-load-checked",
+      "signature": "(Fn [(Borrow[Slice[U8]]) USize] (Result U32 BoundsError))",
+      "unsafe_islands": [
+        "island/generated-simd-load"
+      ]
+    }
+  ],
+  "target": ":generic-native",
+  "unsafe_dependency_summaries": [
+    {
+      "capabilities": [
+        ":ffi/c"
+      ],
+      "id": "gravity.memory.provider.c",
+      "operation_families": [
+        ":raw/malloc"
+      ],
+      "profiles": [
+        ":native"
+      ],
+      "review_states": [
+        ":approved"
+      ],
+      "safe_wrappers_exported": [
+        "allocate-buffer"
+      ],
+      "source_span": {
+        "column": 3,
+        "line": 8,
+        "source": "package.gravity"
+      },
+      "unsafe_island_count": 1
+    }
+  ],
+  "unsafe_island_records": [
+    {
+      "active_profile": ":native",
+      "capabilities": [
+        ":ffi/c",
+        ":memory/raw"
+      ],
+      "dependency_origin": null,
+      "effects": [
+        ":memory/raw"
+      ],
+      "evidence": [
+        ":test/alloc-release",
+        ":proof/owned-buffer"
+      ],
+      "generated_origin": [],
+      "invariants": [
+        ":non-null-on-success",
+        ":freed-by-safe-wrapper"
+      ],
+      "namespace": "gravity.runtime.memory",
+      "operation": ":raw/malloc",
+      "owner": "runtime-memory",
+      "package": "gravity.runtime",
+      "policy": ":domain-review",
+      "postconditions": [
+        ":owned-buffer-or-error"
+      ],
+      "preconditions": [
+        ":size-nonzero",
+        ":allocator-initialized"
+      ],
+      "reason": ":call-audited-c-allocator",
+      "review": {
+        "evidence": [
+          ":test/alloc-release",
+          ":proof/owned-buffer"
+        ],
+        "expired": false,
+        "expires": "on-allocator-or-layout-change",
+        "policy": ":domain-review",
+        "review_date": "2026-06-24",
+        "reviewer": "memory-domain-owner",
+        "state": ":approved"
+      },
+      "safe_boundary": "allocate-buffer",
+      "source_span": {
+        "column": 3,
+        "line": 41,
+        "source": "runtime/memory.gravity"
+      },
+      "source_version": "sha256:runtime-memory-fixture",
+      "target": ":generic-native",
+      "unsafe_island_id": "island/raw-malloc"
+    },
+    {
+      "active_profile": ":native",
+      "capabilities": [
+        ":simd/unchecked"
+      ],
+      "dependency_origin": null,
+      "effects": [
+        ":memory/raw"
+      ],
+      "evidence": [
+        ":test/simd-bounds",
+        ":proof/simd-alignment"
+      ],
+      "generated_origin": [
+        {
+          "artifact": "macro-expansion:simd-load",
+          "generator": "gravity.simd/vectorize",
+          "source_span": {
+            "column": 3,
+            "line": 52,
+            "source": "runtime/simd.gravity"
+          }
+        }
+      ],
+      "invariants": [
+        ":bounds-checked-before-load",
+        ":alignment-checked"
+      ],
+      "namespace": "gravity.runtime.simd",
+      "operation": ":unchecked-simd-load",
+      "owner": "runtime-simd",
+      "package": "gravity.runtime",
+      "policy": ":domain-review",
+      "postconditions": [
+        ":u32-value"
+      ],
+      "preconditions": [
+        ":offset-in-range",
+        ":aligned-u32-address"
+      ],
+      "reason": ":vectorized-bounds-checked-load",
+      "review": {
+        "evidence": [
+          ":test/simd-bounds",
+          ":proof/simd-alignment"
+        ],
+        "expired": false,
+        "expires": "on-vectorizer-or-target-change",
+        "policy": ":domain-review",
+        "review_date": "2026-06-24",
+        "reviewer": "performance-safety-owner",
+        "state": ":approved"
+      },
+      "safe_boundary": "simd-load-checked",
+      "source_span": {
+        "column": 7,
+        "line": 55,
+        "source": "runtime/simd.gravity"
+      },
+      "source_version": "sha256:runtime-simd-fixture",
+      "target": ":x86_64-avx2",
+      "unsafe_island_id": "island/generated-simd-load"
+    }
+  ],
+  "unsafe_operation_inventory": [
+    {
+      "active_profile": ":native",
+      "capabilities": [
+        ":ffi/c",
+        ":memory/raw"
+      ],
+      "effects": [
+        ":memory/raw"
+      ],
+      "operation": ":raw/malloc",
+      "unsafe_island_id": "island/raw-malloc"
+    },
+    {
+      "active_profile": ":native",
+      "capabilities": [
+        ":simd/unchecked"
+      ],
+      "effects": [
+        ":memory/raw"
+      ],
+      "operation": ":unchecked-simd-load",
+      "unsafe_island_id": "island/generated-simd-load"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{:artifact :gravity/stage0-r1-runtime-architecture-document-proof
+ :task "P08-D112"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r1-document bootstrap/clojure/fixtures/accepted/runtime-selection-no-runtime.gravity"
+ :artifact-kind :gravity/stage0-r1-runtime-architecture-document-artifact
+ :artifact-id "sha256:9ba93f88f918448e58cc16b635864330ac00b02c50fd04f94b3ab7b9df6e4986"
+ :input-artifact "sha256:7242d64adcdea1a655fe0f56a318d1d48f35ec49dd2813e48a31a7b7802c5cc8"
+ :input-artifact-kind :gravity/stage0-runtime-selection-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-selection-no-runtime.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r1-*.gravity"]
+ :required-diagnostic-ids
+ ["R1-SELECTION" "R1-SERVICE" "R1-FORBIDDEN" "R1-CAPABILITY"
+  "R1-HOST" "R1-REPLAY" "R1-STARTUP" "R1-FAILURE" "R1-MANIFEST"]
+ :capability-based-proof
+ {:runtime-selection-input-verified? true
+  :family-selection-covered? true
+  :service-classification-covered? true
+  :capability-enforcement-covered? true
+  :hidden-runtime-rejection-covered? true
+  :startup-and-failure-covered? true
+  :replay-and-audit-covered? true
+  :downstream-consumption-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 9
+  :test-command "clojure -M:test"
+  :test-result "97 tests, 6005 assertions, 0 failures, 0 errors, 1320 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R1 runtime architecture overview document through the runtime-selection artifact. It does not claim production runtime libraries, external runtime execution, or complete Phase 08 document coverage."}

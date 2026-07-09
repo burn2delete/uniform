@@ -1,0 +1,7 @@
+(ns l9.bad.throw-effect
+  (:profile :hosted))
+
+(def bad
+  (try
+    (throw :boom)
+    (catch :any err err)))

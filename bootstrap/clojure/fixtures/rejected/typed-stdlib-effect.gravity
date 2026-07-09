@@ -1,0 +1,9 @@
+(ns stdlib.effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/effect-missing 'gravity.fs/read-text))

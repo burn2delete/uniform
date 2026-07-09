@@ -1,0 +1,18 @@
+C17 compiler plugin/pass API Gravity source validation
+
+Source file:
+bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity
+
+SHA-256:
+ccf31cd25a79eb24667bc78385d5d82ee2eeba0cd5fa5918748bb888e57b2582  bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity
+
+Commands:
+shasum -a 256 bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity
+result: exit 0
+
+clojure -M:gravity stage1-bootstrap-source bootstrap/gravity/src
+result: exit 0
+summary: returned :status :complete with :stage1-bootstrap-source-results {:module-count 19, :component-count 17, :accepted-fixtures 1, :rejected-fixtures 6, :diagnostic-count 6, :status :complete}
+
+Notes:
+The C17 module is a source-model bridge only. It does not claim production plugin loading, production pass execution, runtime sandbox implementation, central whitelist ownership, or roadmap completion.

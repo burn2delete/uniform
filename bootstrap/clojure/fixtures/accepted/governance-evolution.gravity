@@ -1,0 +1,14 @@
+; P17 fixture covers governance and evolution artifacts across GOV1-GOV10.
+(ns governance.evolution
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {}}}))
+
+(def governance-phase-id 17)
+
+(defn main [] :- I64
+  governance-phase-id)

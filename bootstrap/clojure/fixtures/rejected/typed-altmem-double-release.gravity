@@ -1,0 +1,9 @@
+(ns altmem.double-release
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/double-release :released-twice))

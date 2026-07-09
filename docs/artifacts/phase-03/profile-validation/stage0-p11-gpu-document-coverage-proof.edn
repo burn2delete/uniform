@@ -1,0 +1,26 @@
+{:proof-id :stage0-p11-gpu-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D056
+ :document "P11"
+ :profile :gpu
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-validation-gpu.gravity"
+ :artifact-kind :gravity/stage0-constrained-profile-validation-artifact
+ :effective-effects #{:pure}
+ :effective-capabilities #{}
+ :required-artifacts
+ [:host-device-boundary-manifest :kernel-ir :device-memory-lifetime-report
+  :transfer-graph :synchronization-graph :target-feature-manifest
+  :occupancy-launch-report :math-approximation-certificates]
+ :diagnostic-fixtures
+ {"P11-HOST-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-gpu-host-effect.gravity"
+  "P11-DEVICE-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-gpu-device-memory.gravity"
+  "P11-TRANSFER" "bootstrap/clojure/fixtures/rejected/profile-gpu-transfer.gravity"
+  "P11-SYNC" "bootstrap/clojure/fixtures/rejected/profile-gpu-sync.gravity"
+  "P11-ALIAS" "bootstrap/clojure/fixtures/rejected/profile-gpu-alias.gravity"
+  "P11-TARGET-FEATURE" "bootstrap/clojure/fixtures/rejected/profile-gpu-target-feature.gravity"
+  "P11-LAUNCH" "bootstrap/clojure/fixtures/rejected/profile-gpu-launch.gravity"
+  "P11-MATH" "bootstrap/clojure/fixtures/rejected/profile-gpu-math.gravity"
+  "P11-RAW" "bootstrap/clojure/fixtures/rejected/profile-gpu-raw.gravity"
+  "P11-BOUNDARY" "bootstrap/clojure/fixtures/rejected/profile-gpu-boundary.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

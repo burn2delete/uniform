@@ -1,0 +1,76 @@
+{:artifact :gravity/stage0-concurrency-distributed-runtime-proof
+ :task "P08-T04"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-concurrency bootstrap/clojure/fixtures/accepted/runtime-concurrency-distributed.gravity"
+ :artifact-kind :gravity/stage0-concurrency-distributed-runtime-artifact
+ :artifact-id "sha256:ddf812b528edaff888298cefc7ca11aec5d4b6374f87765c4172875d287cea94"
+ :input-artifact "sha256:77e43188411edfac7a56f48d81a8e7ccbdf12f855fa814638a1d02cf51729bd6"
+ :input-artifact-kind :gravity/stage0-managed-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-concurrency-distributed.gravity"
+ :rejected-fixtures
+ ["bootstrap/clojure/fixtures/rejected/runtime-r6-scheduler.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-race.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-atomic.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-task.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-cancel.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-actor.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-blocking.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-capability.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-replay.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r6-manifest.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-topology.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-schema.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-replay.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-idempotency.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-retry.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-compensation.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-capability.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-migration.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-actor.gravity"
+  "bootstrap/clojure/fixtures/rejected/runtime-r7-manifest.gravity"]
+ :required-diagnostic-ids
+ ["R6-SCHEDULER"
+  "R6-RACE"
+  "R6-ATOMIC"
+  "R6-TASK"
+  "R6-CANCEL"
+  "R6-ACTOR"
+  "R6-BLOCKING"
+  "R6-CAPABILITY"
+  "R6-REPLAY"
+  "R6-MANIFEST"
+  "R7-TOPOLOGY"
+  "R7-SCHEMA"
+  "R7-REPLAY"
+  "R7-IDEMPOTENCY"
+  "R7-RETRY"
+  "R7-COMPENSATION"
+  "R7-CAPABILITY"
+  "R7-MIGRATION"
+  "R7-ACTOR"
+  "R7-MANIFEST"]
+ :capability-based-proof
+ {:managed-runtime-input-verified? true
+  :scheduler-and-task-lifecycle-declared? true
+  :shared-state-synchronized-or-transferred? true
+  :atomics-target-supported? true
+  :actor-channel-schemas-complete? true
+  :replay_records_prevent_repeating_nondeterminism? true
+  :distributed-schemas-complete? true
+  :idempotency-retry-compensation-complete? true
+  :capability-enforcement-deny-by-default? true
+  :schema-and-event-log-migrations-safe? true
+  :observability-audit-preserved? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 20
+  :scheduler :managed-host-thread-pool
+  :distributed-services [:actors :messages :durable-workflows :event-log
+                         :scheduler :state-store :timers :queues]
+  :test-command "clojure -M:test"
+  :test-result "94 tests, 5746 assertions, 0 failures, 0 errors, 1262 rejected fixtures"}
+ :residual-risk
+ "This proves the Clojure stage0 concurrency, distributed, and replay runtime manifest boundary. It does not claim production schedulers, external workflow providers, deployed event logs, live databases, network services, or complete Phase 08 coverage."}

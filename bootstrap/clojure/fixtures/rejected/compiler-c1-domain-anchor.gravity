@@ -1,0 +1,11 @@
+(ns compiler.c1-domain-anchor
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c1-architecture {:fail :domain-anchor}}}))
+
+(defn main []
+  true)

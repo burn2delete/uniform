@@ -1,0 +1,9 @@
+(ns profile.bad-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (println "missing capability"))

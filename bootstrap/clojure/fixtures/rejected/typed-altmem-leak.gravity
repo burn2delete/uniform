@@ -1,0 +1,9 @@
+(ns altmem.leak
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/leak :missing-release))

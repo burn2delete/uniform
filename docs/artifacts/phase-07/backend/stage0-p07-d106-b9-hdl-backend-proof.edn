@@ -1,0 +1,98 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D106
+ :date "2026-06-29"
+ :status :complete
+ :capability :b9-hdl-backend-document-coverage
+ :command "clojure -M:gravity backend-b9-hdl-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+ :artifact-kind :gravity/stage0-b9-hdl-backend-document-artifact
+ :artifact-hash "sha256:4afd7038d44f6c020c9ddeddedc724fd59a5b6bdcfa902a6a6275170f0ef0314"
+ :summary {:diagnostics 10
+           :rejected-designs 5
+           :conformance-criteria 9
+           :hdl-hash "sha256:1f7c59778761a604be1ad287c60103254fa0b45b319861533a4f77ff22e0e201"
+           :testbench-hash "sha256:4cde3076705fdca5669735b48cd9cf0ad512a80865db28f33c179f86b3b72db9"
+           :timing-hash "sha256:b728232c1b5321624afab7674b1354a430965af9de40ee155d88ea037de8edf2"
+           :hdl-structural true
+           :testbench-structural true
+           :timing-structural true
+           :external-synthesis-validation :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b9-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-width.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-clock.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-reset.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-cdc.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-unbounded.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-interface.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-timing.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b9-manifest.gravity"]
+ :diagnostics ["B9-TARGET"
+               "B9-WIDTH"
+               "B9-CLOCK"
+               "B9-RESET"
+               "B9-CDC"
+               "B9-RUNTIME"
+               "B9-UNBOUNDED"
+               "B9-INTERFACE"
+               "B9-TIMING"
+               "B9-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :hdl-target-provider-covered? true
+                :hardware-ir-handoff-covered? true
+                :fixed-widths-covered? true
+                :clock-domain-covered? true
+                :reset-domain-covered? true
+                :cdc-covered? true
+                :runtime-constructs-rejected? true
+                :finite-control-covered? true
+                :interface-schema-covered? true
+                :timing-constraints-covered? true
+                :testbench-covered? true
+                :simulation-trace-covered? true
+                :source-debug-map-preserved? true
+                :hdl-structurally-valid? true
+                :testbench-structurally-valid? true
+                :timing-structurally-valid? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :external-synthesis-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 85 tests containing 4946 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1146}
+              {:command "clojure -M:gravity backend-b9-hdl-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:4afd7038d44f6c020c9ddeddedc724fd59a5b6bdcfa902a6a6275170f0ef0314"}
+              {:command "clojure -M -e <extract B9 HDL, testbench, and timing constraints>"
+               :result {:dir "/tmp/gravity-p07-b9-hdl"
+                        :files ["gravity_stage0.sdc"
+                                "gravity_stage0_hdl.sv"
+                                "gravity_stage0_hdl_tb.sv"]
+                        :hdl-structural true
+                        :testbench-structural true
+                        :timing-structural true}}
+              {:command "sed -n '1,35p' /tmp/gravity-p07-b9-hdl/gravity_stage0_hdl.sv"
+               :result :passed}
+              {:command "sed -n '1,30p' /tmp/gravity-p07-b9-hdl/gravity_stage0_hdl_tb.sv"
+               :result :passed}
+              {:command "sed -n '1,10p' /tmp/gravity-p07-b9-hdl/gravity_stage0.sdc"
+               :result :passed}
+              {:command "verilator --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: verilator"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 15 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-D106 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D106 for deterministic Clojure stage0 coverage of the B9 HDL backend design document contract."
+                 "The emitted HDL manifest includes structural SystemVerilog, interface and port schema, clock/reset reports, fixed-width numeric records, state-machine graph, memory block manifest, CDC proof record, runtime construct rejection, timing constraints, testbench, simulation trace schema, source/debug map, hardware audit records, and stable B9 diagnostics."
+                 "The current environment does not provide verilator, so external HDL lint, synthesis, simulation, timing closure, hardware device validation, and full Phase 07 completion remain unclaimed."]}

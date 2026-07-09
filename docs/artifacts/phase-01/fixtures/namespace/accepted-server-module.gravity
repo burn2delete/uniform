@@ -1,0 +1,20 @@
+(ns app.server
+  (:profile :native)
+  (:target :llvm)
+  (:requires [[gravity.net.http :as http]
+              [app.schema :as schema]])
+  (:exports [main start stop])
+  (:effects #{:network/listen :io/write})
+  (:capabilities #{:network/listener :io/stdout})
+  (:safety :safe-optimized)
+  (:metadata {:doc "Namespace analyzer fixture"}))
+
+(defn main [request]
+  (http/respond request))
+
+(defn start []
+  (schema/load))
+
+(defn internal-helper []
+  true)
+

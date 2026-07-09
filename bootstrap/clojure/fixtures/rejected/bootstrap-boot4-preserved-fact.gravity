@@ -1,0 +1,11 @@
+; Rejected P15 BOOT4 fixture.
+(ns bootstrap.boot4-preserved-fact
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot4003}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,4 @@
+(ns compiler.verify.c18-counterexample
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:compiler {:verification {:fail :c18-counterexample}}}))

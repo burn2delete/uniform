@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "set": {
+    "/graphql_generation/hidden_resolver_effect": true
+  }
+}

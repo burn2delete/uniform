@@ -1,0 +1,11 @@
+; Rejected P16 STD12 fixture.
+(ns standard-library.std12-replay
+  (:profile :distributed)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/replay})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std12001}}}))
+
+(defn main [] :- I64 1)

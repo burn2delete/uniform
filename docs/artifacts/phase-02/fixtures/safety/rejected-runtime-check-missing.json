@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "delete": [
+    "/operations/1/runtime_check"
+  ]
+}

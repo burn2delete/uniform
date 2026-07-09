@@ -1,0 +1,11 @@
+; Rejected P16 STD17 fixture.
+(ns standard-library.std17-hardware-capability
+  (:profile :firmware)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std17001}}}))
+
+(defn main [] :- I64 1)

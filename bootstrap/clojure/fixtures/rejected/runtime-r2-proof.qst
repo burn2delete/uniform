@@ -1,0 +1,4 @@
+(ns runtime.r2-proof
+  (:profile :firmware)
+  (:target :jvm)
+  (:metadata {:runtime {:selection {:fail :r2-proof}}}))

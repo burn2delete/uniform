@@ -1,0 +1,98 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D108
+ :date "2026-06-29"
+ :status :complete
+ :capability :b11-query-relational-backend-document-coverage
+ :command "clojure -M:gravity backend-b11-query-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+ :artifact-kind :gravity/stage0-b11-query-relational-backend-document-artifact
+ :artifact-hash "sha256:e53f3ae56eea661301580c7475081dfa94830463295b9d63627941d8c874e9f3"
+ :summary {:diagnostics 11
+           :rejected-designs 5
+           :conformance-criteria 10
+           :sql-hash "sha256:0617cb50c613b88b769f17acdf0bff19deee1defb16edd9226046317a41629ee"
+           :migration-hash "sha256:7ecbc93314ef33f5a3981b54ef212a7b3d43b335112ea4f5daac1d8b7670dd60"
+           :adapter-hash "sha256:64f262bdabef73ceb126002e54704f70313c6d1675f40ab1f5b3b0b4f487fd06"
+           :sql-structural true
+           :adapter-structural true
+           :migration-compatible true
+           :external-database-validation :not-available-in-current-environment
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b11-dialect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-taint.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-parameter.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-transaction.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-null.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-migration.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-result.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-plan.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b11-manifest.gravity"]
+ :diagnostics ["B11-DIALECT"
+               "B11-SCHEMA"
+               "B11-TAINT"
+               "B11-PARAMETER"
+               "B11-CAPABILITY"
+               "B11-TRANSACTION"
+               "B11-NULL"
+               "B11-MIGRATION"
+               "B11-RESULT"
+               "B11-PLAN"
+               "B11-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :relational-ir-handoff-covered? true
+                :dialect-and-schema-mapped? true
+                :sql-statement-emitted? true
+                :sql-parameterized? true
+                :prepared-bindings-covered? true
+                :tainted-dynamic-sql-rejected? true
+                :query-plan-covered? true
+                :typed-result-adapter-covered? true
+                :transaction-and-isolation-covered? true
+                :migration-and-compatibility-covered? true
+                :capability-and-taint-covered? true
+                :null-and-type-behavior-covered? true
+                :workflow-integration-covered? true
+                :source-debug-map-preserved? true
+                :manifest-complete? true
+                :diagnostics-covered? true
+                :external-database-validation? :not-available-in-current-environment
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 87 tests containing 5133 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1167}
+              {:command "clojure -M:gravity backend-b11-query-document bootstrap/clojure/fixtures/accepted/backend-specialized-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:e53f3ae56eea661301580c7475081dfa94830463295b9d63627941d8c874e9f3"}
+              {:command "clojure -M -e <extract B11 SQL, migration, and result adapter>"
+               :result {:dir "/tmp/gravity-p07-b11-query"
+                        :files ["gravity_stage0_migration.sql"
+                                "gravity_stage0_query.sql"
+                                "gravity_stage0_result_adapter.edn"]
+                        :sql-structural true
+                        :adapter-structural true
+                        :migration-compatible true}}
+              {:command "sed -n '1,20p' /tmp/gravity-p07-b11-query/gravity_stage0_query.sql"
+               :result :passed}
+              {:command "sed -n '1,20p' /tmp/gravity-p07-b11-query/gravity_stage0_migration.sql"
+               :result :passed}
+              {:command "sed -n '1,30p' /tmp/gravity-p07-b11-query/gravity_stage0_result_adapter.edn"
+               :result :passed}
+              {:command "gravity-query-runner --version"
+               :result :not-available-in-current-environment
+               :stderr "zsh:1: command not found: gravity-query-runner"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 17 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-D100 :P07-D101 :P07-D102 :P07-D103 :P07-D104 :P07-D105 :P07-D106 :P07-D107 :P07-D108 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D108 for deterministic Clojure stage0 coverage of the B11 query/relational backend design document contract."
+                 "The emitted query manifest includes relational IR handoff, dialect and schema mapping, prepared SQL, binding manifests, query plan metadata, typed result adapters, transaction and isolation records, migration artifacts, schema compatibility reports, capability and taint reports, null/type behavior records, workflow integration, source/debug maps, and stable B11 diagnostics."
+                 "The current environment does not provide gravity-query-runner, so external database execution, live provider validation, production migration execution, and full Phase 07 completion remain unclaimed."]}

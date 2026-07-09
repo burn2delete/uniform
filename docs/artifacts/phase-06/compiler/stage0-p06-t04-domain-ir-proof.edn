@@ -1,0 +1,66 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-T04
+ :date "2026-06-25"
+ :status :complete
+ :capability :domain-ir-registry-and-artifacts
+ :command "clojure -M:gravity domain-ir bootstrap/clojure/fixtures/accepted/compiler-domain-ir.gravity"
+ :artifact-kind :gravity/stage0-domain-ir-artifact
+ :artifact-hash "sha256:34df63f8862f793d88f2d910f2b24f5cc13e5d10e12907107297848099f94dd4"
+ :summary {:domains 10
+           :registrations 10
+           :semantic-anchors 10
+           :proof-records 10
+           :lowering-records 10
+           :fallback-records 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
+                       "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                       "docs/phase-01-core-language/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-02-safety/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-03-profile-system/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-05-mathematical-and-elementary-function-system/IMPLEMENTATION-ROADMAP.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-domain-ir.gravity"]
+ :rejected-fixtures ["compiler-domain-ir-registration.gravity"
+                     "compiler-domain-ir-anchor.gravity"
+                     "compiler-domain-ir-schema.gravity"
+                     "compiler-domain-ir-facts.gravity"
+                     "compiler-domain-ir-verify.gravity"
+                     "compiler-domain-ir-proof.gravity"
+                     "compiler-domain-ir-lowering.gravity"
+                     "compiler-domain-ir-fallback.gravity"
+                     "compiler-domain-ir-plugin.gravity"]
+ :diagnostic-ids ["C12-REGISTRATION"
+                  "C12-ANCHOR"
+                  "C12-SCHEMA"
+                  "C12-FACTS"
+                  "C12-VERIFY"
+                  "C12-PROOF"
+                  "C12-LOWERING"
+                  "C12-FALLBACK"
+                  "C12-PLUGIN"]
+ :capability-based-proof {:registrations-complete? true
+                          :required-families-covered? true
+                          :semantic-anchors-linked? true
+                          :facts-preserved? true
+                          :verifiers-accepted? true
+                          :proof-evidence-present? true
+                          :lowering-or-fallback-present? true
+                          :plugin-policy-enforced? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity domain-ir bootstrap/clojure/fixtures/accepted/compiler-domain-ir.gravity"
+               :result :accepted}
+              {:command "clojure -M -e '(doseq [path (sort (map str (file-seq (clojure.java.io/file \"docs/artifacts/phase-06/compiler\"))))] (when (.endsWith path \".edn\") (read-string (slurp path))))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-T04 for the Clojure stage0 domain-IR registry and artifact boundary only."
+                 "It does not claim complete Phase 06 document coverage, backend code generation, release readiness, or self-hosting."]}

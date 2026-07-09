@@ -1,0 +1,21 @@
+{:proof-id :stage0-p3-meta-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D048
+ :document "P3"
+ :profile :meta
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-set-meta.gravity"
+ :artifact-kind :gravity/stage0-profile-set-artifact
+ :effective-effects #{:build/read-file}
+ :effective-capabilities #{:compiler/ir}
+ :diagnostic-fixtures
+ {"P3-BUILD-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-meta-build-effect.gravity"
+  "P3-HERMETIC" "bootstrap/clojure/fixtures/rejected/profile-meta-hermetic.gravity"
+  "P3-COMPILER-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-meta-compiler-capability.gravity"
+  "P3-PASS-CONTRACT" "bootstrap/clojure/fixtures/rejected/profile-meta-pass-contract.gravity"
+  "P3-FACT-INVALIDATION" "bootstrap/clojure/fixtures/rejected/profile-meta-fact-invalidation.gravity"
+  "P3-GENERATED-PROFILE" "bootstrap/clojure/fixtures/rejected/profile-meta-generated-profile.gravity"
+  "P3-GENERATED-SAFETY" "bootstrap/clojure/fixtures/rejected/profile-meta-generated-safety.gravity"
+  "P3-PHASE" "bootstrap/clojure/fixtures/rejected/profile-meta-phase.gravity"
+  "P3-SOURCE-MAP" "bootstrap/clojure/fixtures/rejected/profile-meta-source-map.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

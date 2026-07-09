@@ -1,0 +1,10 @@
+(ns typed.effect.profile
+  (:profile :hardware)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(def bad
+  (println "forbidden"))

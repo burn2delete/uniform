@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "delete": [
+    "/workflow_graph/replay_mode"
+  ]
+}

@@ -1,0 +1,13 @@
+(ns core.app.ai-eval-gate
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:evaluations
+                    [{:eval-id :support-triage-release
+                      :release-gate :missing}]}}}))
+
+(defn main []
+  (println "bad ai eval gate"))

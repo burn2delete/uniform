@@ -1,0 +1,4 @@
+(ns compiler.verify.c17-facet
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:compiler {:verification {:fail :c17-facet}}}))

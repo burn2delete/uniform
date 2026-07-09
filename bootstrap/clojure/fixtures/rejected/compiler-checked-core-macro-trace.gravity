@@ -1,0 +1,11 @@
+(ns compiler.checked-core.macro-trace
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:checked-core {:fail :macro-trace}}}))
+
+(defn ready []
+  true)

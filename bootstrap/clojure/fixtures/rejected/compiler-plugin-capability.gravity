@@ -1,0 +1,9 @@
+(ns compiler.plugin-capability
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:passes {:plugin-manifest-overrides
+                                  {:requested-scopes
+                                   #{:read-mir :write-typed-core}}}}}))

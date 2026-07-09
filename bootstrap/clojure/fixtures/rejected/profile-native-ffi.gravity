@@ -1,0 +1,8 @@
+(ns profile.bad.native-ffi
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p5/ffi))

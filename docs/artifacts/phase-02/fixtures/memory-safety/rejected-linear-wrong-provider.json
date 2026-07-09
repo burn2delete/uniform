@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/4/linear_resource/paths/0/terminal_operations/0/provider_id": "gravity.resource/socket-host"
+  }
+}

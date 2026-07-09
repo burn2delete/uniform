@@ -1,0 +1,626 @@
+{
+  "abi_layout_report": {
+    "records": [
+      {
+        "backend": "c",
+        "layout": "c-hosted-layout",
+        "source": "mir-layout-table"
+      },
+      {
+        "backend": "llvm",
+        "layout": "llvm-data-layout",
+        "source": "target-record"
+      },
+      {
+        "backend": "mobile",
+        "layout": "ios-arm64-abi",
+        "source": "platform-target"
+      }
+    ]
+  },
+  "artifact_emission": {
+    "artifact_graph": {
+      "backend": "backend-artifacts",
+      "conformance": "backend-conformance-pack",
+      "mir": "mir-hash",
+      "source": "source-hash"
+    },
+    "content_hashes": [
+      "sha256:c-source",
+      "sha256:llvm-ir",
+      "sha256:wasm-component"
+    ],
+    "evidence": {
+      "capabilities": "capability-summary",
+      "conformance": "backend-conformance-pack",
+      "effects": "effect-summary",
+      "proofs": "proof-bundle",
+      "safety": "safety-bundle",
+      "unsafe_audits": "unsafe-audit-records"
+    },
+    "reproducibility": {
+      "compiler": "compiler-build-id",
+      "environment": "environment-record",
+      "pass_pipeline": "pass-pipeline-id"
+    },
+    "source_debug_maps": [
+      "source-map",
+      "generated-origin-map"
+    ]
+  },
+  "backend_artifact_records": [
+    {
+      "backend": "c",
+      "capabilities": [],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:c-source",
+      "dependencies": [
+        "c-runtime-helper"
+      ],
+      "effects": [],
+      "kind": "c-source",
+      "profile": ":hosted",
+      "proofs": [
+        "bounds-check-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "hosted-c17"
+    },
+    {
+      "backend": "llvm",
+      "capabilities": [],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:llvm-ir",
+      "dependencies": [
+        "native-runtime-helper"
+      ],
+      "effects": [],
+      "kind": "llvm-ir",
+      "profile": ":native",
+      "proofs": [
+        "metadata-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "x86_64"
+    },
+    {
+      "backend": "wasm",
+      "capabilities": [
+        "clock.read"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:wasm-component",
+      "dependencies": [
+        "wasi-clocks"
+      ],
+      "effects": [
+        ":time/read"
+      ],
+      "kind": "wasm-component",
+      "profile": ":distributed",
+      "proofs": [
+        "abi-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "wasi-component"
+    },
+    {
+      "backend": "jvm",
+      "capabilities": [],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:jar",
+      "dependencies": [
+        "jvm-runtime"
+      ],
+      "effects": [],
+      "kind": "jar",
+      "profile": ":hosted",
+      "proofs": [
+        "nullability-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "jvm-21"
+    },
+    {
+      "backend": "js_ts",
+      "capabilities": [
+        "network.http"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:js",
+      "dependencies": [
+        "package-lock"
+      ],
+      "effects": [
+        ":network/http"
+      ],
+      "kind": "javascript",
+      "profile": ":hosted",
+      "proofs": [
+        "numeric-boundary-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "browser-esm"
+    },
+    {
+      "backend": "mlir",
+      "capabilities": [],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:mlir",
+      "dependencies": [
+        "mlir-version"
+      ],
+      "effects": [],
+      "kind": "mlir-module",
+      "profile": ":native",
+      "proofs": [
+        "dialect-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "mlir-handoff"
+    },
+    {
+      "backend": "gpu",
+      "capabilities": [
+        "gpu.launch"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:gpu",
+      "dependencies": [
+        "gpu-provider"
+      ],
+      "effects": [],
+      "kind": "kernel-module",
+      "profile": ":gpu",
+      "proofs": [
+        "sync-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "spir-v"
+    },
+    {
+      "backend": "hdl",
+      "capabilities": [
+        "hardware.port"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:hdl",
+      "dependencies": [
+        "timing-constraints"
+      ],
+      "effects": [],
+      "kind": "hdl",
+      "profile": ":hardware",
+      "proofs": [
+        "cdc-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "systemverilog"
+    },
+    {
+      "backend": "workflow_graph",
+      "capabilities": [
+        "database.read",
+        "tool.invoke"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:workflow",
+      "dependencies": [
+        "event-log"
+      ],
+      "effects": [
+        ":database/read",
+        ":tool/invoke"
+      ],
+      "kind": "workflow-graph",
+      "profile": ":distributed",
+      "proofs": [
+        "replay-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "durable-workflow"
+    },
+    {
+      "backend": "query_relational",
+      "capabilities": [
+        "database.read"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:sql",
+      "dependencies": [
+        "schema-v1"
+      ],
+      "effects": [
+        ":database/read"
+      ],
+      "kind": "sql",
+      "profile": ":distributed",
+      "proofs": [
+        "taint-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "postgresql"
+    },
+    {
+      "backend": "mobile",
+      "capabilities": [
+        "camera.capture"
+      ],
+      "compiler_provenance": "phase06-compiler-artifact",
+      "content_hash": "sha256:mobile",
+      "dependencies": [
+        "permission-manifest"
+      ],
+      "effects": [
+        ":camera/capture"
+      ],
+      "kind": "app-bundle",
+      "profile": ":hosted",
+      "proofs": [
+        "permission-proof"
+      ],
+      "safety": "safety-bundle",
+      "schema_version": 1,
+      "source_provenance": "source-map",
+      "target": "ios-arm64"
+    }
+  ],
+  "backend_conformance_report": {
+    "artifact_manifest_validation": ":passed",
+    "availability": {
+      "local_execution": "shape-and-diagnostic-validation",
+      "skips": []
+    },
+    "fixture_matrix": [
+      "canonical-mir",
+      "domain-ir",
+      "profile-negative",
+      "safety-negative",
+      "artifact-manifest"
+    ],
+    "metadata_preservation": ":passed",
+    "negative_results": [
+      {
+        "actual_diagnostic": "B2-UB",
+        "expected_diagnostic": "B2-UB",
+        "fixture": "rejected-b2-ub.json"
+      }
+    ],
+    "nondeterminism_records": [
+      "workflow-clock-record",
+      "wasm-clock-record"
+    ],
+    "target_matrix": [
+      "c",
+      "llvm",
+      "wasm",
+      "jvm",
+      "js_ts",
+      "mlir",
+      "gpu",
+      "hdl",
+      "workflow_graph",
+      "query_relational",
+      "mobile"
+    ]
+  },
+  "backend_interface": {
+    "accepts": [
+      "gravity/mir",
+      "gravity/domain-ir"
+    ],
+    "artifact_manifest": "backend-artifact-manifest",
+    "backend": "gravity.backend/interface-v1",
+    "conformance_record": "backend-conformance-pack",
+    "input_verified": true,
+    "proof_to_metadata": [
+      {
+        "assumption": "nonnull",
+        "proof": "ownership-proof-nonnull"
+      }
+    ],
+    "required_manifests": [
+      "profile",
+      "target",
+      "abi",
+      "runtime",
+      "effects",
+      "capabilities",
+      "safety",
+      "proofs",
+      "source_map"
+    ],
+    "source_debug_map": "backend-source-map",
+    "unsupported_feature_report": []
+  },
+  "concrete_backend_manifests": {
+    "c": {
+      "abi_layout_pinned": true,
+      "backend": "c",
+      "dialect": "hosted-c17",
+      "pointer_provenance": {
+        "alignment": true,
+        "lifetime": true,
+        "object_identity": true
+      },
+      "proof_to_c_assumptions": [
+        "bounds-check-elision-proof"
+      ],
+      "runtime_helpers": [
+        "panic",
+        "bounds-check",
+        "resource-cleanup"
+      ]
+    },
+    "gpu": {
+      "backend": "gpu",
+      "host_device_boundary": {
+        "kernel": "vector_add",
+        "profile": ":gpu",
+        "provider": "spir-v"
+      },
+      "launch_descriptor": {
+        "grid": [
+          64,
+          1,
+          1
+        ],
+        "workgroup": [
+          16,
+          1,
+          1
+        ]
+      },
+      "math_certificates": [
+        "strict-fp32-certificate"
+      ],
+      "sync_graph": [
+        "queue-submit",
+        "device-fence"
+      ],
+      "transfer_graph": [
+        "host-to-device",
+        "device-to-host"
+      ]
+    },
+    "hdl": {
+      "backend": "hdl",
+      "clock_domains": [
+        "clk_main"
+      ],
+      "fixed_width_layout": {
+        "state": "u3",
+        "sum": "u32"
+      },
+      "interface_schema": "ready-valid-u32",
+      "reset_domains": [
+        "rst_main"
+      ],
+      "testbench": "sample_tb.sv",
+      "timing_constraints": "sample.sdc"
+    },
+    "js_ts": {
+      "backend": "js_ts",
+      "host_global_capabilities": [
+        {
+          "capability": "network.http",
+          "effect": ":network/http",
+          "symbol": "fetch"
+        }
+      ],
+      "nullish_policy": "option-or-result",
+      "numeric_representation": "number-bigint-typed-array-map",
+      "target_record": {
+        "ecmascript": "es2022",
+        "module_format": "esm",
+        "runtime": "browser"
+      },
+      "typescript_declarations": "sample.d.ts"
+    },
+    "jvm": {
+      "backend": "jvm",
+      "exception_map": "jvm-exception-map",
+      "linear_cleanup": "deterministic-close-path",
+      "nullability_map": "jvm-nullability-map",
+      "reflection_manifest": "jvm-reflection-policy",
+      "target_record": {
+        "classfile": 65,
+        "module_system": "named",
+        "runtime": "jvm-21"
+      }
+    },
+    "llvm": {
+      "backend": "llvm",
+      "data_layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64",
+      "metadata_map": [
+        {
+          "gravity_proof": "ownership-proof-nonnull",
+          "llvm": "nonnull"
+        }
+      ],
+      "pass_pipeline": {
+        "metadata_preservation": ":passed",
+        "verifier": ":passed"
+      },
+      "target_record": {
+        "cpu": "generic",
+        "features": [],
+        "triple": "x86_64-unknown-linux-gnu"
+      }
+    },
+    "mlir": {
+      "backend": "mlir",
+      "conversion_legality": ":passed",
+      "dialect_registry": [
+        "gravity.mir",
+        "func",
+        "arith",
+        "memref",
+        "llvm",
+        "gpu"
+      ],
+      "downstream_handoff": "llvm-and-gpu-handoff",
+      "metadata_preservation": [
+        "source",
+        "proof",
+        "safety",
+        "capability",
+        "effect"
+      ],
+      "verifier": ":passed"
+    },
+    "mobile": {
+      "backend": "mobile",
+      "device_conformance": "simulator-startup-record",
+      "lifecycle_map": "ios-scene-lifecycle",
+      "permission_manifest": [
+        {
+          "capability": "camera.capture",
+          "permission": "camera",
+          "runtime_request": "declared"
+        }
+      ],
+      "platform_target": {
+        "architecture": "arm64",
+        "os_range": "18+",
+        "platform": "ios"
+      },
+      "storage_sync_schema": "mobile-store-schema-v1",
+      "threading_map": "main-actor-ui-updates"
+    },
+    "query_relational": {
+      "backend": "query_relational",
+      "dialect_schema_map": {
+        "dialect": "postgresql",
+        "schema": "app-schema-v1"
+      },
+      "migration_policy": "data-preserving",
+      "prepared_bindings": [
+        {
+          "parameter": "$1",
+          "taint": "validated",
+          "type": "uuid"
+        }
+      ],
+      "transaction_policy": "read-committed-with-retry",
+      "typed_result_adapter": "user-row-adapter"
+    },
+    "wasm": {
+      "async_component": {
+        "backpressure": "declared",
+        "cancellation": "declared",
+        "completion": "recorded",
+        "ownership": "declared",
+        "replay": "recorded"
+      },
+      "backend": "wasm",
+      "canonical_abi": {
+        "ownership": "declared",
+        "records": [
+          "string",
+          "resource",
+          "future",
+          "stream"
+        ]
+      },
+      "component_contract": {
+        "package": "gravity:sample",
+        "world": "sample-world"
+      },
+      "imports": [
+        {
+          "capability": "clock.read",
+          "effect": ":time/read",
+          "provider": "wasi-clocks",
+          "replay": "recorded",
+          "schema": "clock-now-schema",
+          "symbol": "clock.now"
+        }
+      ],
+      "target_features": {
+        "features": [
+          "simd",
+          "bulk-memory"
+        ],
+        "kind": "component",
+        "memory": "wasm32"
+      }
+    },
+    "workflow_graph": {
+      "backend": "workflow_graph",
+      "capability_manifest": [
+        "database.read",
+        "tool.invoke",
+        "ai.human_review"
+      ],
+      "human_review_policy": "destructive-write-review",
+      "idempotency_map": "idempotency-key-map",
+      "replay_policy": "event-log",
+      "retry_timeout_compensation": "retry-timeout-compensation-table",
+      "schema_bundle": "workflow-step-schemas"
+    }
+  },
+  "diagnostics": [],
+  "input_hash": "sha256:dd4f635b2a079161d06e55245c5b04e0adf67f53186ec020781e52e58a4c75a2",
+  "kind": "backend-architecture-artifact",
+  "module": "backend-architecture-smoke",
+  "package": "gravity.phase07.backend",
+  "phase": "07",
+  "target_lowering_manifest": {
+    "eligible_targets": [
+      "c",
+      "llvm",
+      "wasm",
+      "jvm",
+      "js_ts",
+      "mlir",
+      "gpu",
+      "hdl",
+      "workflow_graph",
+      "query_relational",
+      "mobile"
+    ],
+    "fallbacks": [
+      {
+        "domain": "EFIR",
+        "fallback": "verified-mir-provider-call"
+      }
+    ],
+    "lowering_requests": [
+      {
+        "artifact_manifest": "c-artifact-record",
+        "backend": "c",
+        "input_verified": true,
+        "profile": ":hosted",
+        "target_id": "hosted-c17"
+      },
+      {
+        "artifact_manifest": "wasm-artifact-record",
+        "backend": "wasm",
+        "input_verified": true,
+        "profile": ":distributed",
+        "target_id": "wasi-component"
+      }
+    ]
+  }
+}

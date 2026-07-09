@@ -1,0 +1,195 @@
+{
+  "build_effect_trace": [
+    {
+      "effect": ":build/read-file",
+      "grant_id": "grant.macro.templates",
+      "input_digest": "sha256:template-input",
+      "output_digest": "sha256:template-output",
+      "provider_id": "custom.macros/typed-expander",
+      "redaction_policy": ":public",
+      "replay_policy": ":content-digest",
+      "source_span": "app/codegen.gravity:8"
+    },
+    {
+      "effect": ":compiler/read-ir",
+      "grant_id": "grant.macro.ir",
+      "input_digest": "sha256:typed-core-input",
+      "output_digest": "sha256:ir-read-output",
+      "provider_id": "custom.macros/typed-expander",
+      "redaction_policy": ":public",
+      "replay_policy": ":content-digest",
+      "source_span": "app/codegen.gravity:9"
+    }
+  ],
+  "cache_decision": {
+    "inputs_match": true,
+    "invalidates_on": [
+      "source",
+      "provider",
+      "profile",
+      "target",
+      "facet",
+      "grant",
+      "compiler-version"
+    ],
+    "key": "sha256:macro-cache-key",
+    "reuse": true
+  },
+  "expansion_trace": {
+    "active_facets": [
+      ":gravity.facet.schema"
+    ],
+    "generated_origin_chain": [
+      {
+        "macro_symbol": "derive-json",
+        "phase": "macro-invocation",
+        "provider_id": "custom.macros/typed-expander",
+        "source": "app/codegen.gravity:8"
+      }
+    ],
+    "hygiene_operations": [
+      "fresh-identifiers",
+      "explicit-capture-check"
+    ],
+    "input_syntax_object_ids": [
+      "syntax:derive-json:input"
+    ],
+    "macro_bindings": [
+      "app.codegen/derive-json"
+    ],
+    "macro_symbol": "derive-json",
+    "output_syntax_object_ids": [
+      "syntax:derive-json:output"
+    ],
+    "phase": "macro-invocation",
+    "profile": ":native",
+    "provider_id": "custom.macros/typed-expander",
+    "provider_version": "0.2.0",
+    "source_namespace": "app.codegen"
+  },
+  "facet_dispatch": {
+    "ambiguity_diagnostics": true,
+    "uses_l14_pipeline": true
+  },
+  "generated_validation": {
+    "capabilities": true,
+    "core": true,
+    "effects": true,
+    "memory": true,
+    "profile": true,
+    "safety": true,
+    "syntax": true,
+    "typed_core": true
+  },
+  "hygiene_records": {
+    "explicit_capture_operations": [
+      {
+        "binding": "json-field",
+        "marked": true
+      }
+    ],
+    "hidden_capture": false,
+    "identifier_comparisons": [
+      "alpha-equivalent-generated-id"
+    ]
+  },
+  "kind": "alternative-macro-provider-manifest",
+  "namespace": {
+    "name": "app.codegen",
+    "profile": ":native",
+    "target": "linux-x86_64"
+  },
+  "phase_records": {
+    "phases": [
+      "read-time-syntax",
+      "namespace-resolution",
+      "macro-loading",
+      "macro-invocation",
+      "generated-syntax-validation",
+      "fixed-point-re-expansion",
+      "typed-effected-validation"
+    ],
+    "runtime_capture": false
+  },
+  "provider": {
+    "artifact_schema": ":gravity.macro/trace-v1",
+    "build_effects": [
+      ":build/read-file",
+      ":compiler/read-ir"
+    ],
+    "cache_policy": ":input-sensitive",
+    "determinism": ":deterministic-with-replay",
+    "facets": [
+      ":gravity.facet.schema"
+    ],
+    "grants": [
+      {
+        "effect": ":build/read-file",
+        "grant_id": "grant.macro.templates",
+        "replayable": true
+      },
+      {
+        "effect": ":compiler/read-ir",
+        "grant_id": "grant.macro.ir",
+        "replayable": true
+      }
+    ],
+    "hygiene_mode": ":hygienic",
+    "id": "custom.macros/typed-expander",
+    "implements": [
+      ":macro/expand",
+      ":macro/hygiene",
+      ":macro/provenance"
+    ],
+    "kind": ":macro-system",
+    "known_deviations": [],
+    "phase_model": [
+      "read-time-syntax",
+      "namespace-resolution",
+      "macro-loading",
+      "macro-invocation",
+      "generated-syntax-validation",
+      "fixed-point-re-expansion",
+      "typed-effected-validation"
+    ],
+    "profiles": [
+      ":hosted",
+      ":native",
+      ":meta"
+    ],
+    "reference_suite": ":gravity.conformance/macro-l4",
+    "syntax_object_guarantees": [
+      "kind",
+      "children",
+      "literal-values",
+      "source-span",
+      "namespace-context",
+      "lexical-context",
+      "metadata",
+      "attach-metadata",
+      "fresh-identifiers",
+      "hygiene-comparison",
+      "explicit-capture",
+      "generated-origin-chain",
+      "serialization"
+    ],
+    "targets": [
+      "linux-x86_64"
+    ],
+    "version": "0.2.0"
+  },
+  "reference_equivalence": {
+    "diagnostics_equivalent": true,
+    "l4_rule": "L4 macro expansion semantics",
+    "result": ":equivalent",
+    "structural_comparison": "alpha-renaming allowed"
+  },
+  "syntax_object_serialization": {
+    "format": "json",
+    "ids": [
+      "syntax:derive-json:input",
+      "syntax:derive-json:output"
+    ],
+    "stable": true
+  }
+}

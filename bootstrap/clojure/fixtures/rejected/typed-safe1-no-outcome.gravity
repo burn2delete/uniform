@@ -1,0 +1,13 @@
+(ns safe1.no-outcome
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (safe1/outcome :buffer/read
+                 :trusted-backend
+                 :bounds
+                 :backend-assumption
+                 :none))

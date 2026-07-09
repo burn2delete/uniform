@@ -1,0 +1,68 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-07
+ :task :P07-D099
+ :date "2026-06-29"
+ :status :complete
+ :capability :b2-c-backend-document-coverage
+ :command "clojure -M:gravity backend-b2-c-document bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+ :artifact-kind :gravity/stage0-b2-c-backend-document-artifact
+ :artifact-hash "sha256:95c3576c4e8697b6899e57612062f36fed9b66f3fe5e5d7791e16fdc24baf538"
+ :summary {:diagnostics 9
+           :rejected-designs 5
+           :positive-lowering-criteria 8
+           :c-source-hash "sha256:d252d168c93dc759d97b75afbcf44724d7db09237d11a57a4c24fbdfb09d3426"
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-07-backend-architecture/099-b2-c-backend-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/backend-b2-dialect.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-ub.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-pointer.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-ffi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-mmio.gravity"
+                     "bootstrap/clojure/fixtures/rejected/backend-b2-manifest.gravity"]
+ :diagnostics ["B2-DIALECT"
+               "B2-UB"
+               "B2-ABI"
+               "B2-POINTER"
+               "B2-NUMERIC"
+               "B2-RUNTIME"
+               "B2-FFI"
+               "B2-MMIO"
+               "B2-MANIFEST"]
+ :proof-checks {:backend-interface-input-verified? true
+                :declared-c-dialect-pinned? true
+                :safe-c-undefined-behavior-rejected? true
+                :abi-and-layout-pinned? true
+                :pointer-provenance-covered? true
+                :numeric-lowering-covered? true
+                :runtime-helpers-profile-legal? true
+                :ffi-boundary-mapped? true
+                :mmio-helper-covered? true
+                :manifest-complete? true
+                :source-debug-map-preserved? true
+                :diagnostics-covered? true
+                :requires-external-c-syntax-proof? true
+                :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 78 tests containing 4398 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 1070}
+              {:command "clojure -M:gravity backend-b2-c-document bootstrap/clojure/fixtures/accepted/backend-native-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:95c3576c4e8697b6899e57612062f36fed9b66f3fe5e5d7791e16fdc24baf538"}
+              {:command "cc -std=c11 -fno-strict-aliasing -fsyntax-only /tmp/gravity-p07-b2.c"
+               :result :passed
+               :source-hash "sha256:d252d168c93dc759d97b75afbcf44724d7db09237d11a57a4c24fbdfb09d3426"}
+              {:command "clojure -M -e <phase-07 backend proof EDN parse>"
+               :result "parsed 8 phase-07 backend EDN proof files"
+               :tasks [:P07-D098 :P07-D099 :P07-T01 :P07-T02 :P07-T03 :P07-T04 :P07-T05 :P07-T06]
+               :statuses [:complete :complete :complete :complete :complete :complete :complete :complete]}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P07-D099 for deterministic Clojure stage0 coverage of the B2 C backend design document contract."
+                 "The emitted C fixture passes C11 syntax validation with the declared flags, but this does not claim production C backend optimization, target execution, ABI certification on a real platform, or full Phase 07 completion."]}

@@ -1,0 +1,38 @@
+{
+  "accepted": [
+    {
+      "artifact_kind": "typed-effected-core-artifact",
+      "coverage": [
+        "effect environment",
+        "namespace effect summary",
+        "module effect summary",
+        "effect legality report"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/accepted-typed-effected-core.gravity"
+    }
+  ],
+  "document": "L6",
+  "kind": "l6-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L6-EFFECT-UNDECLARED",
+      "fixture": "docs/artifacts/phase-01/fixtures/typed/rejected-effect-undeclared.gravity"
+    },
+    {
+      "diagnostic": "L6-EFFECT-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l6/rejected-effect-profile.gravity"
+    },
+    {
+      "diagnostic": "L6-BUILD-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l6/rejected-build-effect.gravity"
+    },
+    {
+      "diagnostic": "L6-REPLAY-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l6/rejected-replay-effect.gravity"
+    },
+    {
+      "diagnostic": "L6-EFFECT-UNKNOWN",
+      "fixture": "docs/artifacts/phase-01/fixtures/l6/rejected-effect-unknown.gravity"
+    }
+  ]
+}

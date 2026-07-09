@@ -1,0 +1,51 @@
+(ns performance.claim
+  (:profile :native)
+  (:target :jvm)
+  (:exports [claim-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/vector-sum-native
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2 :fma}
+                :input-shape {:element-type :f32
+                              :layout :contiguous
+                              :length-range [1024 1048576]}
+                :layout {:buffer :contiguous
+                         :element :f32
+                         :alignment 32}
+                :safety-mode :safe-optimized
+                :objective {:metric :ns-per-element
+                            :direction :lower-is-better}
+                :semantic-proof #{:types-preserved
+                                  :effects-preserved
+                                  :profile-legal}
+                :safety-proof #{:bounds-preserved
+                                :ownership-preserved}
+                :benchmark {:harness :bench/vector-sum-native
+                            :samples 50
+                            :baseline :portable-loop
+                            :environment-fingerprint
+                            {:cpu :x86-64
+                             :os :linux
+                             :compiler :gravity-stage0-clojure
+                             :backend :llvm
+                             :runtime :minimal-native
+                             :features #{:avx2 :fma}}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :optimization-decisions
+               [{:pass :stage0/performance-claim
+                 :decision :accept
+                 :preserves #{:types :effects :profile :safety}}]
+               :generated-variants
+               [{:variant-id :vector-sum-avx2
+                 :guard-predicate {:requires-target-features #{:avx2 :fma}
+                                   :min-length 1024}
+                 :status :accepted}]}}))
+
+(def claim-ready true)

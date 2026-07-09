@@ -1,0 +1,11 @@
+; Rejected P15 BOOT5 fixture.
+(ns bootstrap.boot5-conformance-link
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap {:self-hosting {:fail :boot5003}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "set": {
+    "/policy_manifest/tainted_output_without_validation": true
+  }
+}

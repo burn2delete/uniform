@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-performance-model.json",
+  "set": {
+    "/pgo_records/0/status": ":stale"
+  }
+}

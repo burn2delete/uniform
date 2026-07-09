@@ -1,0 +1,6 @@
+; Rejected P08 R9 fixture.
+(ns runtime.r9-hot-reload (:profile :meta) (:target :jvm) (:exports [main])
+  (:effects #{:host/eval}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {:fail :r9-hot-reload}}}))
+(defn main [] :- I64 1)

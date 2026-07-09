@@ -1,0 +1,9 @@
+(ns compiler.c4.hygiene
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c4-macro {:fail :hygiene}}}))
+
+(def value 1)

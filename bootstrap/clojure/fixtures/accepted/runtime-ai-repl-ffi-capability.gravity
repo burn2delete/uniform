@@ -1,0 +1,17 @@
+; P08-T05 fixture covers AI, REPL, FFI, and runtime capability manifests.
+(ns runtime.ai-repl-ffi-capability
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call :ai/tool-call :ai/memory :ai/human-review
+              :build/read-file :ffi/call :runtime/observability})
+  (:capabilities #{:model/call :tool/call :ai/human-review
+                   :build/read-file :ffi/c :observability/write})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:ai-repl-ffi {}}}))
+
+(def runtime-id 5)
+
+(defn main [] :- I64
+  runtime-id)

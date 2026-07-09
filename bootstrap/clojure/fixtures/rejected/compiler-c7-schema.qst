@@ -1,0 +1,9 @@
+(ns compiler.c7.schema
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :schema}}}))
+
+(def value 1)

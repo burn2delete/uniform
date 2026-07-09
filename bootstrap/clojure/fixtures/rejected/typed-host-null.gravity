@@ -1,0 +1,9 @@
+(ns typed.bad.host-null
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (host/null))

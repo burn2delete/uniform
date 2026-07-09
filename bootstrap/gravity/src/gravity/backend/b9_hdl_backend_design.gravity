@@ -1,0 +1,502 @@
+; Stage1 Gravity-owned B9 HDL backend source-model contract.
+(ns gravity.backend.b9-hdl-backend-design
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [b9-hdl-backend-contract
+             b9-hardware-ir-handoff-contract
+             b9-fixed-width-layout-contract
+             b9-clock-reset-contract
+             b9-cdc-contract
+             b9-interface-schema-contract
+             b9-state-machine-contract
+             b9-timing-testbench-contract
+             b9-artifact-manifest-contract
+             b9-diagnostic-catalog
+             build-b9-hdl-backend-manifest
+             build-b9-hardware-ir-handoff-record
+             build-b9-signal-layout-record
+             build-b9-clock-reset-record
+             build-b9-cdc-record
+             build-b9-interface-schema-record
+             build-b9-state-machine-record
+             build-b9-timing-testbench-record
+             build-b9-artifact-record
+             verify-b9-hdl-backend-design])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :hdl-backend
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :accepted-source-extensions [".gravity" ".qst"]
+               :governing-document-ids ["B9" "B1" "D1" "D3"
+                                        "C12" "C14" "P8"
+                                        "SAFE8" "SAFE9" "SAFE10"
+                                        "SAFE15" "B13" "B14"
+                                        "R1" "R5" "PKG7"
+                                        "BOOT1" "BOOT3" "BOOT8"
+                                        "TEST13"]
+               :documents ["B9" "B1" "D1" "D3"
+                           "C12" "C14" "P8"
+                           "SAFE8" "SAFE9" "SAFE10"
+                           "SAFE15" "B13" "B14"
+                           "R1" "R5" "PKG7"
+                           "BOOT1" "BOOT3" "BOOT8"
+                           "TEST13"]
+               :implements [:hdl-backend-source-model
+                             :hardware-ir-handoff-contract
+                             :fixed-width-layout-contract
+                             :clock-reset-domain-contract
+                             :cdc-proof-contract
+                             :interface-port-schema-contract
+                             :finite-state-machine-contract
+                             :timing-testbench-trace-contract
+                             :hdl-artifact-manifest-contract
+                             :stable-b9-diagnostic-catalog]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :source-unit-identity
+                            :hardware-ir-anchor
+                            :profile-contracts :target-contracts
+                            :hardware-profile-legality
+                            :fixed-width-facts :signedness-facts
+                            :layout-facts :clock-domain-facts
+                            :reset-domain-facts :state-machine-map
+                            :memory-block-manifest
+                            :port-and-bus-schema
+                            :protocol-schema
+                            :cdc-proof-or-waiver-record
+                            :timing-constraints
+                            :testbench-links
+                            :simulation-trace-schema
+                            :generated-origin-maps
+                            :hardware-audit-records
+                            :effect-facts :capability-facts
+                            :safety-outcomes
+                            :proof-references
+                            :source-debug-map
+                            :backend-conformance-metadata}
+               :authority {:ambient #{}
+                           :declared-effects #{}
+                           :declared-capabilities #{}
+                           :denies [:filesystem :network :shell
+                                    :environment :clock :random
+                                    :model-call :tool-call :registry
+                                    :ffi :raw-memory :verilator
+                                    :yosys :quartus :vivado
+                                    :systemverilog-toolchain
+                                    :vhdl-toolchain
+                                    :firrtl-toolchain
+                                    :fpga-device
+                                    :asic-synthesis-service]}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-b9-hdl-backend-contract-subset
+                                    :clojure-b9-diagnostic-catalog]}
+               :conformance {:accepted-fixture
+                             "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+                             :accepted-source-extensions [".gravity" ".qst"]
+                             :rejected-fixtures
+                             ["backend-b9-target.gravity"
+                              "backend-b9-width.gravity"
+                              "backend-b9-clock.gravity"
+                              "backend-b9-reset.gravity"
+                              "backend-b9-cdc.gravity"
+                              "backend-b9-runtime.gravity"
+                              "backend-b9-unbounded.gravity"
+                              "backend-b9-interface.gravity"
+                              "backend-b9-timing.gravity"
+                              "backend-b9-manifest.gravity"]}}}))
+
+(def b9-hdl-backend-contract
+  {:artifact :gravity/b9-hdl-backend-contract
+   :scope :source-model-bridge
+   :production-backend-status :not-claimed
+   :extends :gravity/b1-backend-interface-contract
+   :backend :gravity.backend/hdl
+   :profile :hardware
+   :accepts [:verified-hardware-ir :hardware-anchored-domain-ir]
+   :emits [:hdl-backend-manifest
+           :hardware-ir-handoff-record
+           :hdl-artifact
+           :interface-port-schema
+           :clock-domain-report
+           :reset-domain-report
+           :state-machine-graph
+           :memory-block-manifest
+           :timing-constraint-file
+           :testbench
+           :simulation-trace-schema
+           :source-debug-map
+           :hdl-backend-diagnostics]
+   :requires [:b1-verified-backend-input
+              :c12-hardware-domain-ir
+              :c14-target-lowering-record
+              :hardware-profile
+              :fixed-width-layout
+              :clock-domains
+              :reset-domains
+              :finite-state-control
+              :interface-schemas
+              :cdc-proof-or-waiver
+              :timing-constraints
+              :source-map
+              :hardware-audit-records]
+   :rules [:hardware-is-cycle-aware-not-a-lisp-runtime
+           :all-signals-and-state-have-fixed-widths
+           :stateful-values-carry-clock-and-reset-metadata
+           :iteration-is-static-generated-finite-state-or-rejected
+           :cross-clock-communication-requires-proof-or-policy-waiver
+           :arithmetic-width-overflow-truncation-and-sign-extension-are-explicit
+           :testbenches-and-traces-link-cycle-behavior-to-source
+           :source-proof-safety-capability-and-profile-metadata-are-preserved]
+   :forbidden [:heap-allocation
+               :garbage-collection
+               :dynamic-dispatch-requiring-runtime
+               :host-io
+               :thread
+               :reflection
+               :dynamic-eval
+               :model-call
+               :tool-call
+               :unbounded-recursion
+               :unbounded-loop
+               :implicit-host-integer-width
+               :unmediated-clock-domain-crossing
+               :hdl-artifact-without-manifest]})
+
+(def b9-hardware-ir-handoff-contract
+  {:artifact :gravity/b9-hardware-ir-handoff-contract
+   :required-fields [:domain-anchor
+                     :source-artifact
+                     :accepted-by
+                     :hardware-module-id
+                     :target-hdl
+                     :profile
+                     :source-generated-origin-links]
+   :rules [:input-is-verified-hardware-ir-or-hardware-domain-ir
+           :ordinary-runtime-ir-is-not-accepted
+           :origin-links-connect-mir-domain-ir-and-hdl-artifacts]
+   :reject-when [:missing-hardware-anchor
+                 :missing-target-hdl
+                 :runtime-ir-input
+                 :missing-origin-link]})
+
+(def b9-fixed-width-layout-contract
+  {:artifact :gravity/b9-fixed-width-layout-contract
+   :required-fields [:signal
+                     :kind
+                     :width
+                     :signedness
+                     :layout
+                     :overflow
+                     :truncation
+                     :rounding
+                     :saturation-or-wrapping
+                     :pipeline-latency]
+   :rules [:silent-host-sized-arithmetic-is-rejected
+           :truncation-requires-explicit-source-intent
+           :state-elements-have-initial-state-or-audit-record]
+   :reject-when [:missing-width
+                 :missing-signedness
+                 :implicit-truncation
+                 :implicit-overflow
+                 :unrecorded-power-on-state]})
+
+(def b9-clock-reset-contract
+  {:artifact :gravity/b9-clock-reset-contract
+   :clock-fields [:domain-id
+                  :frequency-assumption
+                  :edge
+                  :generated-clock-relationship
+                  :target-constraint]
+   :reset-fields [:reset-id
+                  :style
+                  :active-level
+                  :affected-registers
+                  :reset-values
+                  :release-requirements]
+   :rules [:stateful-hardware-declares-clock-domain
+           :stateful-hardware-declares-reset-domain-when-required
+           :target-required-timing-and-reset-data-is-not-implicit]
+   :reject-when [:missing-clock-domain
+                 :invalid-clock-edge
+                 :missing-reset-behavior
+                 :invalid-reset-release
+                 :missing-target-constraint]})
+
+(def b9-cdc-contract
+  {:artifact :gravity/b9-cdc-contract
+   :required-fields [:source-domain
+                     :destination-domain
+                     :signal-shape
+                     :strategy
+                     :latency
+                     :metastability-assumption
+                     :reset-interaction
+                     :proof-or-waiver]
+   :accepted-strategies [:declared-synchronizer
+                         :async-fifo
+                         :handshake-protocol
+                         :gray-code-proof
+                         :hardware-policy-waiver]
+   :rules [:unmediated-cdc-is-rejected
+           :waivers-are-hardware-audit-records
+           :cdc-proof-links-to-source-and-generated-origin]
+   :reject-when [:missing-cdc-record
+                 :unmediated-crossing
+                 :invalid-waiver
+                 :missing-metastability-assumption]})
+
+(def b9-interface-schema-contract
+  {:artifact :gravity/b9-interface-schema-contract
+   :required-fields [:port
+                     :direction
+                     :width
+                     :layout
+                     :clock-domain
+                     :reset-domain
+                     :protocol
+                     :timing-requirements
+                     :external-capability
+                     :error-or-backpressure-behavior]
+   :protocols [:ready-valid
+               :stream
+               :memory-map
+               :axi-like
+               :fifo
+               :custom-handshake]
+   :rules [:protocol-adapters-are-generated-from-schemas-or-imported-with-provenance
+           :external-ports-require-capability-records
+           :backpressure-and-error-behavior-is-explicit]
+   :reject-when [:missing-port-direction
+                 :missing-port-width
+                 :missing-protocol
+                 :missing-capability
+                 :adapter-without-provenance]})
+
+(def b9-state-machine-contract
+  {:artifact :gravity/b9-state-machine-contract
+   :required-fields [:states
+                     :encoding
+                     :transitions
+                     :initial-state
+                     :terminal-states
+                     :bounded-iteration-proof
+                     :memory-blocks
+                     :source-state-map]
+   :rules [:unbounded-control-flow-is-rejected
+           :static-generate-forms-record-structural-expansion
+           :finite-state-transitions-preserve-source-intent]
+   :reject-when [:unbounded-recursion
+                 :unbounded-loop
+                 :missing-state-encoding
+                 :missing-initial-state
+                 :missing-boundedness-proof]})
+
+(def b9-timing-testbench-contract
+  {:artifact :gravity/b9-timing-testbench-contract
+   :timing-fields [:clocks
+                   :false-paths
+                   :multicycle-paths
+                   :input-delays
+                   :output-delays
+                   :generated-clocks
+                   :clock-groups
+                   :target-frequency
+                   :provider-constraint-format]
+   :test-fields [:testbench-artifact
+                 :simulation-trace-schema
+                 :cycle-columns
+                 :source-links
+                 :expected-cycle-behavior]
+   :rules [:timing-constraints-are-emitted-when-target-requires-them
+           :testbenches-link-cycle-level-behavior-to-gravity-source
+           :simulation-trace-schema-preserves-source-debug-map]
+   :reject-when [:missing-timing-constraint
+                 :invalid-provider-constraint-format
+                 :missing-testbench
+                 :missing-simulation-trace-schema
+                 :trace-without-source-link]})
+
+(def b9-artifact-manifest-contract
+  {:artifact :gravity/b9-artifact-manifest-contract
+   :required-fields [:hdl-backend-manifest
+                     :hardware-ir-handoff-record
+                     :hdl-artifacts
+                     :interface-port-schema
+                     :clock-domain-report
+                     :reset-domain-report
+                     :state-machine-graph
+                     :memory-block-manifest
+                     :cdc-report
+                     :timing-constraint-file
+                     :testbench
+                     :simulation-trace-schema
+                     :source-debug-map
+                     :hardware-audit-records
+                     :diagnostic-stream
+                     :provenance]
+   :rules [:artifacts-record-source-path-and-extension
+           :hdl-artifacts-record-content-hash
+           :source-debug-map-preserves-state-and-timing-origins
+           :hardware-audit-records-are-linked-to-policy]
+   :forbidden [:hdl-without-manifest
+               :timing-without-provider-format
+               :testbench-without-trace-schema
+               :debug-map-without-source-origin]})
+
+(def b9-diagnostic-catalog
+  {:artifact :gravity/b9-diagnostic-catalog
+   :ids [{:id "B9-TARGET"
+          :meaning :unsupported-hdl-synthesis-provider-or-constraint-format}
+         {:id "B9-WIDTH"
+          :meaning :missing-or-inconsistent-width-signedness-or-truncation}
+         {:id "B9-CLOCK"
+          :meaning :missing-or-invalid-clock-domain-record}
+         {:id "B9-RESET"
+          :meaning :missing-or-invalid-reset-behavior}
+         {:id "B9-CDC"
+          :meaning :unproven-cross-clock-communication}
+         {:id "B9-RUNTIME"
+          :meaning :runtime-construct-in-hardware-artifact}
+         {:id "B9-UNBOUNDED"
+          :meaning :unbounded-recursion-or-loop-not-lowerable-to-hardware}
+         {:id "B9-INTERFACE"
+          :meaning :incomplete-port-bus-protocol-or-capability-schema}
+         {:id "B9-TIMING"
+          :meaning :missing-or-failed-timing-constraints}
+         {:id "B9-MANIFEST"
+          :meaning :incomplete-hdl-artifact-set}]
+   :required-diagnostic-fields [:hardware-module
+                                :source-span
+                                :generated-origin-chain
+                                :signal-or-state-id
+                                :clock-domain
+                                :reset-domain
+                                :target-hdl
+                                :missing-proof-or-constraint
+                                :remediation]})
+
+(defn build-b9-hdl-backend-manifest
+  [target emits requires rejects]
+  {:artifact :gravity/hdl-backend-manifest
+   :backend :gravity.backend/hdl
+   :version "source-model-v1"
+   :target target
+   :emits emits
+   :requires requires
+   :rejects rejects
+   :source-model-only? true})
+
+(defn build-b9-hardware-ir-handoff-record
+  [domain-anchor source-artifact hardware-module-id target-hdl]
+  {:artifact :gravity/b9-hardware-ir-handoff-record
+   :domain-anchor domain-anchor
+   :source-artifact source-artifact
+   :hardware-module-id hardware-module-id
+   :target-hdl target-hdl
+   :required-fields (:required-fields b9-hardware-ir-handoff-contract)
+   :source-model-only? true})
+
+(defn build-b9-signal-layout-record
+  [signal kind width signedness layout numeric-policy]
+  {:artifact :gravity/b9-signal-layout-record
+   :signal signal
+   :kind kind
+   :width width
+   :signedness signedness
+   :layout layout
+   :numeric-policy numeric-policy
+   :required-fields (:required-fields b9-fixed-width-layout-contract)
+   :source-model-only? true})
+
+(defn build-b9-clock-reset-record
+  [clock-domain reset-domain affected-state timing-constraint]
+  {:artifact :gravity/b9-clock-reset-record
+   :clock-domain clock-domain
+   :reset-domain reset-domain
+   :affected-state affected-state
+   :timing-constraint timing-constraint
+   :clock-fields (:clock-fields b9-clock-reset-contract)
+   :reset-fields (:reset-fields b9-clock-reset-contract)
+   :source-model-only? true})
+
+(defn build-b9-cdc-record
+  [source-domain destination-domain strategy proof-or-waiver]
+  {:artifact :gravity/b9-cdc-record
+   :source-domain source-domain
+   :destination-domain destination-domain
+   :strategy strategy
+   :proof-or-waiver proof-or-waiver
+   :required-fields (:required-fields b9-cdc-contract)
+   :source-model-only? true})
+
+(defn build-b9-interface-schema-record
+  [ports protocols capabilities backpressure]
+  {:artifact :gravity/b9-interface-schema-record
+   :ports ports
+   :protocols protocols
+   :capabilities capabilities
+   :backpressure backpressure
+   :required-fields (:required-fields b9-interface-schema-contract)
+   :source-model-only? true})
+
+(defn build-b9-state-machine-record
+  [states transitions memory-blocks boundedness-proof]
+  {:artifact :gravity/b9-state-machine-record
+   :states states
+   :transitions transitions
+   :memory-blocks memory-blocks
+   :boundedness-proof boundedness-proof
+   :required-fields (:required-fields b9-state-machine-contract)
+   :source-model-only? true})
+
+(defn build-b9-timing-testbench-record
+  [timing-constraints testbench trace-schema source-links]
+  {:artifact :gravity/b9-timing-testbench-record
+   :timing-constraints timing-constraints
+   :testbench testbench
+   :trace-schema trace-schema
+   :source-links source-links
+   :timing-fields (:timing-fields b9-timing-testbench-contract)
+   :test-fields (:test-fields b9-timing-testbench-contract)
+   :source-model-only? true})
+
+(defn build-b9-artifact-record
+  [artifact-kind source-path source-hash manifest-id provenance]
+  {:artifact :gravity/b9-hdl-artifact-record
+   :artifact-kind artifact-kind
+   :source-path source-path
+   :source-hash source-hash
+   :manifest-id manifest-id
+   :provenance provenance
+   :required-fields (:required-fields b9-artifact-manifest-contract)
+   :source-model-only? true})
+
+(defn verify-b9-hdl-backend-design
+  [manifest]
+  {:artifact :gravity/b9-hdl-backend-verification
+   :manifest manifest
+   :backend-consumes-only-verified-hardware-ir? true
+   :hardware-profile-legality-covered? true
+   :fixed-width-layout-covered? true
+   :clock-reset-covered? true
+   :cdc-proof-covered? true
+   :runtime-constructs-rejected? true
+   :finite-control-covered? true
+   :interface-schema-covered? true
+   :timing-constraints-covered? true
+   :testbench-and-trace-covered? true
+   :artifact-provenance-required? true
+   :diagnostics-covered? true
+   :external-synthesis-validation? false
+   :hardware-execution-claimed? false
+   :production-backend-execution? false
+   :source-model-only? true})

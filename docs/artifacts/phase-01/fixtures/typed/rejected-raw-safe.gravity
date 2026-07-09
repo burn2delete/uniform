@@ -1,0 +1,7 @@
+(ns typed.bad.raw
+  (:profile :native)
+  (:effects :memory/raw)
+  (:capabilities :memory/raw))
+
+(def bad
+  (raw/deref ptr))

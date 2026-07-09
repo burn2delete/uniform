@@ -1,0 +1,13 @@
+(ns core.app.ai-policy-taint
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:ai {:compiled-gate
+                   {:policies
+                    [{:policy-id :support-agent-policy
+                      :taint {:ai-output :trusted}}]}}}))
+
+(defn main []
+  (println "bad ai policy taint"))

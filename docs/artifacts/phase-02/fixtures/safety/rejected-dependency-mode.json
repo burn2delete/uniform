@@ -1,0 +1,9 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "set": {
+    "/safety_mode": ":safe"
+  },
+  "delete": [
+    "/dependencies/1/reviewed_unsafe_records"
+  ]
+}

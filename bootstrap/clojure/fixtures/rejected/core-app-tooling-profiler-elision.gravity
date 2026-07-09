@@ -1,0 +1,15 @@
+(ns core.app.tooling-profiler-elision
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:profiler-reports
+                         [{:tool-id :gravity-profile
+                           :check-elision-report
+                           {:status :accepted
+                            :evidence []}}]}}}))
+
+(defn main []
+  (println "bad tooling profiler elision"))

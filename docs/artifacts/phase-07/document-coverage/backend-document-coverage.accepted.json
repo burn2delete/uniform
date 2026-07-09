@@ -1,0 +1,312 @@
+{
+  "accepted": [
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "verified MIR or domain IR input gate",
+        "required backend input manifests",
+        "unverified input rejection"
+      ],
+      "document": "B1",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md",
+      "task_id": "P07-D098"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "declared C dialect",
+        "pinned ABI and pointer provenance",
+        "C undefined behavior rejection"
+      ],
+      "document": "B2",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/099-b2-c-backend-design.md",
+      "task_id": "P07-D099"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "LLVM target and data-layout record",
+        "proof-gated LLVM metadata",
+        "proofless metadata rejection"
+      ],
+      "document": "B3",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md",
+      "task_id": "P07-D100"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "Wasm component contract and canonical ABI",
+        "import capability and replay metadata",
+        "ambient host import rejection"
+      ],
+      "document": "B4",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md",
+      "task_id": "P07-D101"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "JVM target and classfile record",
+        "nullability and exception maps",
+        "unchecked Java null rejection"
+      ],
+      "document": "B5",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/102-b5-jvm-backend-design.md",
+      "task_id": "P07-D102"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "JS/TS target and declaration records",
+        "host global capability manifest",
+        "ambient global access rejection"
+      ],
+      "document": "B6",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+      "task_id": "P07-D103"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "MLIR dialect registry",
+        "verifier and metadata preservation records",
+        "metadata loss rejection"
+      ],
+      "document": "B7",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/104-b7-mlir-backend-design.md",
+      "task_id": "P07-D104"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "GPU host/device boundary",
+        "transfer and synchronization graphs",
+        "host effect in kernel rejection"
+      ],
+      "document": "B8",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/105-b8-gpu-backend-design.md",
+      "task_id": "P07-D105"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "HDL fixed-width layout",
+        "clock, reset, timing, and interface records",
+        "missing width rejection"
+      ],
+      "document": "B9",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md",
+      "task_id": "P07-D106"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "workflow schemas and replay policy",
+        "idempotency, retry, compensation, and capability records",
+        "unrecorded nondeterminism rejection"
+      ],
+      "document": "B10",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/107-b10-workflow-graph-backend-design.md",
+      "task_id": "P07-D107"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "query dialect and schema mapping",
+        "prepared bindings and typed result adapter",
+        "tainted dynamic SQL rejection"
+      ],
+      "document": "B11",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md",
+      "task_id": "P07-D108"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "mobile platform target and bundle metadata",
+        "permission, lifecycle, threading, and storage records",
+        "permissionless platform API rejection"
+      ],
+      "document": "B12",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/109-b12-mobile-backend-design.md",
+      "task_id": "P07-D109"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "common backend artifact records",
+        "artifact graph, hashes, provenance, and evidence",
+        "missing artifact evidence rejection"
+      ],
+      "document": "B13",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md",
+      "task_id": "P07-D110"
+    },
+    {
+      "artifact_hash": "sha256:7b4a343f3d3da20e41edf1327fba2527d6a2bb8ce3ae123bbe757e318ef1cd1a",
+      "artifact_kind": "backend-architecture-artifact",
+      "coverage": [
+        "backend conformance target matrix",
+        "negative diagnostic and metadata preservation records",
+        "missing backend coverage rejection"
+      ],
+      "document": "B14",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/accepted-backend-architecture.json",
+      "governing_doc": "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md",
+      "task_id": "P07-D111"
+    }
+  ],
+  "coverage_summary": {
+    "accepted_artifacts": 14,
+    "documents": 14,
+    "rejected_diagnostics": 14,
+    "status": ":passed"
+  },
+  "diagnostics": [],
+  "documents": [
+    "B1",
+    "B2",
+    "B3",
+    "B4",
+    "B5",
+    "B6",
+    "B7",
+    "B8",
+    "B9",
+    "B10",
+    "B11",
+    "B12",
+    "B13",
+    "B14"
+  ],
+  "input_hash": "sha256:854db629eb7c6c321bad590cd066c63253fa4383bf9b80e6bc8b5c8e92f35004",
+  "kind": "phase07-backend-document-coverage-artifact",
+  "phase": "07",
+  "rejected": [
+    {
+      "diagnostic": "B1-INPUT",
+      "document": "B1",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b1-input.json",
+      "missing_fact": "verified-mir-or-domain-ir",
+      "task_id": "P07-D098"
+    },
+    {
+      "diagnostic": "B2-UB",
+      "document": "B2",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b2-ub.json",
+      "missing_fact": "no-c-undefined-behavior",
+      "task_id": "P07-D099"
+    },
+    {
+      "diagnostic": "B3-METADATA",
+      "document": "B3",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b3-metadata.json",
+      "missing_fact": "proof-gated-llvm-metadata",
+      "task_id": "P07-D100"
+    },
+    {
+      "diagnostic": "B4-IMPORT",
+      "document": "B4",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b4-import.json",
+      "missing_fact": "import-capability-schema",
+      "task_id": "P07-D101"
+    },
+    {
+      "diagnostic": "B5-NULL",
+      "document": "B5",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b5-null.json",
+      "missing_fact": "nullability-map",
+      "task_id": "P07-D102"
+    },
+    {
+      "diagnostic": "B6-GLOBAL",
+      "document": "B6",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b6-global.json",
+      "missing_fact": "host-global-capability",
+      "task_id": "P07-D103"
+    },
+    {
+      "diagnostic": "B7-METADATA",
+      "document": "B7",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b7-metadata.json",
+      "missing_fact": "metadata-preservation",
+      "task_id": "P07-D104"
+    },
+    {
+      "diagnostic": "B8-HOST-EFFECT",
+      "document": "B8",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b8-host-effect.json",
+      "missing_fact": "gpu-profile-effect-boundary",
+      "task_id": "P07-D105"
+    },
+    {
+      "diagnostic": "B9-WIDTH",
+      "document": "B9",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b9-width.json",
+      "missing_fact": "fixed-width-layout",
+      "task_id": "P07-D106"
+    },
+    {
+      "diagnostic": "B10-REPLAY",
+      "document": "B10",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b10-replay.json",
+      "missing_fact": "replay-event-log",
+      "task_id": "P07-D107"
+    },
+    {
+      "diagnostic": "B11-TAINT",
+      "document": "B11",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b11-taint.json",
+      "missing_fact": "prepared-binding",
+      "task_id": "P07-D108"
+    },
+    {
+      "diagnostic": "B12-PERMISSION",
+      "document": "B12",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b12-permission.json",
+      "missing_fact": "permission-capability",
+      "task_id": "P07-D109"
+    },
+    {
+      "diagnostic": "B13-EVIDENCE",
+      "document": "B13",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b13-evidence.json",
+      "missing_fact": "safety-proof-capability-effect-evidence",
+      "task_id": "P07-D110"
+    },
+    {
+      "diagnostic": "B14-COVERAGE",
+      "document": "B14",
+      "fixture": "docs/artifacts/phase-07/fixtures/backend/rejected-b14-coverage.json",
+      "missing_fact": "c",
+      "task_id": "P07-D111"
+    }
+  ]
+}

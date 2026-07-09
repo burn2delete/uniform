@@ -1,0 +1,11 @@
+(ns core.app.performance-claim
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:performance
+              {:claim {:claim-id :perf/incomplete-stage0-claim}}}))
+
+(defn main []
+  (println "missing performance claim fields"))

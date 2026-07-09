@@ -1,0 +1,10 @@
+(ns typed.build.effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:build/read-file})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (build/read-file "schema.gravity"))

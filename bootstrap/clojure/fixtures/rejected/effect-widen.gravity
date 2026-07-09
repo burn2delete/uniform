@@ -1,0 +1,8 @@
+(ns invalid.effect-widen
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{:io/stdout}))
+
+(defn main []
+  (println "undeclared effect"))

@@ -1,0 +1,23 @@
+accepted .gravity: gravity stage0 check passed: backend.native-lowering
+accepted .qst: gravity stage0 check passed: backend.native-lowering
+rejected .gravity backend-b7-alias: B7-ALIAS
+rejected .qst backend-b7-alias: B7-ALIAS
+rejected .gravity backend-b7-conversion: B7-CONVERSION
+rejected .qst backend-b7-conversion: B7-CONVERSION
+rejected .gravity backend-b7-dialect: B7-DIALECT
+rejected .qst backend-b7-dialect: B7-DIALECT
+rejected .gravity backend-b7-effect: B7-EFFECT
+rejected .qst backend-b7-effect: B7-EFFECT
+rejected .gravity backend-b7-handoff: B7-HANDOFF
+rejected .qst backend-b7-handoff: B7-HANDOFF
+rejected .gravity backend-b7-manifest: B7-MANIFEST
+rejected .qst backend-b7-manifest: B7-MANIFEST
+rejected .gravity backend-b7-metadata: B7-METADATA
+rejected .qst backend-b7-metadata: B7-METADATA
+rejected .gravity backend-b7-numeric: B7-NUMERIC
+rejected .qst backend-b7-numeric: B7-NUMERIC
+rejected .gravity backend-b7-pass: B7-PASS
+rejected .qst backend-b7-pass: B7-PASS
+rejected .gravity backend-b7-verify: B7-VERIFY
+rejected .qst backend-b7-verify: B7-VERIFY
+B7 public check bridge probes passed: accepted=2 rejected-pairs=10

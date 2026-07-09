@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/incremental_compilation/stale_proof_reuse": true
+  }
+}

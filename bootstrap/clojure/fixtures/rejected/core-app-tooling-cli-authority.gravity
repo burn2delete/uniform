@@ -1,0 +1,14 @@
+(ns core.app.tooling-cli-authority
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:cli-command-sets
+                         [{:tool-id :gravity-cli
+                           :capability-prompts
+                           {:shown-denials []}}]}}}))
+
+(defn main []
+  (println "bad tooling cli authority"))

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-unsafe-audit.json",
+  "delete": [
+    "/islands/1/generated_origin"
+  ]
+}

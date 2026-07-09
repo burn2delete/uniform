@@ -1,0 +1,11 @@
+; Rejected P16 STD4 fixture.
+(ns standard-library.std4-text-boundary
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:standard-library {:phase16 {:fail :std4002}}}))
+
+(defn main [] :- I64 1)

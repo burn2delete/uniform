@@ -1,0 +1,12 @@
+; Rejected P11 A3 fixture.
+(ns ai.a3-authority
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call})
+  (:capabilities #{:model/invoke})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a3003}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,2 @@
+(ns safety.unsafe.reject (:profile :native) (:target :jvm) (:exports [failure]) (:safety :safe))
+(def failure (safe6/generated-unsafe :unsafe))

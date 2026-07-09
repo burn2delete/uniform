@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: hosted behavior leaks into a lower profile.
+(ns runtime.r4-profile
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/error})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-profile}}}))
+
+(defn main [] :- I64
+  1)

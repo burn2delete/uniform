@@ -1,0 +1,11 @@
+(ns compiler.passes
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [compiler-passes-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:passes {}}}))
+
+(defn compiler-passes-ready []
+  true)

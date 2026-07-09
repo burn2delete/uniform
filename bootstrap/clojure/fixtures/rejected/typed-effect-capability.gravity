@@ -1,0 +1,10 @@
+(ns typed.effect.capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:network/http})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (network/strict-get "https://example.test"))

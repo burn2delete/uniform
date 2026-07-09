@@ -1,0 +1,9 @@
+(ns profile.bad.compatibility-direct
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [native.sys :as sys :profile :native])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

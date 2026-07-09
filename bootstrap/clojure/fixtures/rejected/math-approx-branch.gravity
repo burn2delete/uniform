@@ -1,0 +1,10 @@
+(ns math.approx-branch
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:approximation
+           {:certificate-overrides
+            [{:branch-compatible? false}]}}}))

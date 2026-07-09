@@ -1,0 +1,85 @@
+{:task-id :P01-D029
+ :document "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/interop-migration.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-interop-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/interop-migration.gravity"
+ :artifact-kind :gravity/stage0-typed-core-artifact
+ :capability-proof {:module 'interop.migration
+                    :conformance-status :complete
+                    :missing-families []
+                    :covered-families [:boundary-metadata
+                                       :capability-effect
+                                       :compatibility
+                                       :error-translation
+                                       :foreign-declaration
+                                       :generated-binding
+                                       :managed-host
+                                       :migration-shim
+                                       :native-abi
+                                       :network
+                                       :ownership
+                                       :parity-report
+                                       :process
+                                       :profile-rejection
+                                       :safe-wrapper
+                                       :schema
+                                       :schema-drift
+                                       :type-mapping
+                                       :versioned-reproducible]
+                    :boundary-families-covered [:managed-host
+                                                :native-abi
+                                                :network
+                                                :process
+                                                :schema]
+                    :foreign-binding-declarations 5
+                    :boundary-metadata-records 1
+                    :generated-binding-records 1
+                    :safe-wrapper-audits 1
+                    :type-mapping-records 1
+                    :ownership-lifetime-maps 1
+                    :error-translation-maps 1
+                    :capability-effect-records 1
+                    :migration-shim-records 1
+                    :parity-test-reports 1
+                    :compatibility-records 1
+                    :schema-drift-records 1
+                    :profile-rejection-records 1
+                    :capability-basis :selected-interop-boundaries-preserve-type-effect-capability-memory-safety-profile-and-provenance-contracts}
+ :rejected-diagnostics [{:fixture "typed-interop-boundary-incomplete.gravity"
+                         :diagnostic "L19-BOUNDARY-INCOMPLETE"}
+                        {:fixture "typed-interop-profile.gravity"
+                         :diagnostic "L19-PROFILE"}
+                        {:fixture "typed-interop-type-map.gravity"
+                         :diagnostic "L19-TYPE-MAP"}
+                        {:fixture "typed-interop-ownership.gravity"
+                         :diagnostic "L19-OWNERSHIP"}
+                        {:fixture "typed-interop-error-map.gravity"
+                         :diagnostic "L19-ERROR-MAP"}
+                        {:fixture "typed-interop-capability.gravity"
+                         :diagnostic "L19-CAPABILITY"}
+                        {:fixture "typed-interop-effect.gravity"
+                         :diagnostic "L19-EFFECT"}
+                        {:fixture "typed-interop-safe-wrapper.gravity"
+                         :diagnostic "L19-SAFE-WRAPPER"}
+                        {:fixture "typed-interop-schema-drift.gravity"
+                         :diagnostic "L19-SCHEMA-DRIFT"}
+                        {:fixture "typed-interop-migration-parity.gravity"
+                         :diagnostic "L19-MIGRATION-PARITY"}
+                        {:fixture "typed-interop-host-leak.gravity"
+                         :diagnostic "L19-HOST-LEAK"}]
+ :validation [{:command "clojure -M:gravity typed bootstrap/clojure/fixtures/accepted/interop-migration.gravity"
+               :result "emitted :gravity/stage0-typed-core-artifact with complete L19 interop conformance"}
+              {:command "clojure -M -e artifact-summary"
+               :result ":gravity/stage0-typed-core-artifact interop.migration :complete 5 1"}
+              {:command "clojure -M:test"
+               :result "22 tests, 974 assertions, 176 rejected fixtures"}
+              {:command "clojure -M -e rejected-diagnostic-check"
+               :result "all 11 L19 diagnostics matched expected IDs"}]
+ :residual-risks ["Stage0 records the interop and migration boundary contract but does not implement production ABI lowering, host bridge runtimes, service clients, or package interop."
+                  "Schema generators, service-client generation, incumbent compatibility suites, and release migration tooling remain downstream work."
+                  "Self-hosted interop checking remains open until Phase 15 bootstrap gates replace the Clojure seed."]}

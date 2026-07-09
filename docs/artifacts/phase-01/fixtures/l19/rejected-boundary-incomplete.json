@@ -1,0 +1,6 @@
+{
+  "delete": [
+    "/boundaries/0/type_mapping"
+  ],
+  "extends": "accepted-interop.json"
+}

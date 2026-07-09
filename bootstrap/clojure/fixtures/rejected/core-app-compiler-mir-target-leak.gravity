@@ -1,0 +1,15 @@
+(ns core.app.compiler-mir-target-leak
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:compiler {:compiled-gate
+                         {:mir-operations
+                          [{:op-id :bad-target-op
+                            :family :target-specific
+                            :opcode :jvm/invokevirtual
+                            :source-span {:source "core-app-compiler-mir-target-leak.gravity"}}]}}}))
+
+(defn main []
+  (println "bad compiler mir target leak"))

@@ -1,0 +1,8 @@
+{
+  "extends": "accepted-compiler-architecture.json",
+  "set": {
+    "/core_ast/lowering_gaps": [
+      "surface-form-without-core-or-domain-lowering"
+    ]
+  }
+}

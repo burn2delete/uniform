@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-safety-conformance.json",
+  "delete": [
+    "/fixture_families/0/positive"
+  ]
+}

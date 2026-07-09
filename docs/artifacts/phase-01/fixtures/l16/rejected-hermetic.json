@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-alternative-macro.json",
+  "set": {
+    "/build_effect_trace/0/replay_policy": ":none"
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "active_profile": ":native",
+  "alias_facts": [
+    {
+      "family": ":alloc/arena",
+      "proof_or_check": "proof:unique-borrow",
+      "region": "request-arena",
+      "violates": false
+    }
+  ],
+  "allocation_strategy": {
+    "bounded": true,
+    "can_block": false,
+    "can_fail": true,
+    "family": ":alloc/arena",
+    "hidden": false,
+    "regime": ":alloc/arena"
+  },
+  "bounds_checks": [
+    {
+      "family": ":alloc/arena",
+      "in_bounds": true,
+      "proof_or_check": "check:slice-bounds",
+      "region": "request-arena"
+    }
+  ],
+  "conformance": {
+    "status": ":passed",
+    "suite": ":gravity.conformance/memory-arena"
+  },
+  "device_sync_records": [
+    {
+      "capability_scope": {
+        "device": "gpu0"
+      },
+      "family": ":alloc/device",
+      "proof_or_check": "check:device-sync-before-host-read",
+      "region": "gpu-buffer",
+      "synchronized": true
+    }
+  ],
+  "escape_facts": [
+    {
+      "escapes": false,
+      "family": ":alloc/arena",
+      "proof_or_check": "proof:no-arena-escape",
+      "region": "request-arena"
+    }
+  ],
+  "ffi_allocator_records": [
+    {
+      "allocator": "libimage/alloc",
+      "foreign_library": "libimage",
+      "proof_or_check": "check:ffi-allocator-identity",
+      "release_provider": "libimage/alloc"
+    }
+  ],
+  "generated_origin_chain": [
+    {
+      "phase": "typed-core",
+      "source": "app/buffer.gravity:14"
+    }
+  ],
+  "initialization_facts": [
+    {
+      "family": ":alloc/arena",
+      "initialized": true,
+      "proof_or_check": "check:initialized-range",
+      "region": "request-arena"
+    }
+  ],
+  "kind": "alternative-memory-provider-manifest",
+  "layout_alignment_metadata": [
+    {
+      "alignment": 16,
+      "layout": "BufferHeader",
+      "size": 32
+    }
+  ],
+  "lifetime_facts": [
+    {
+      "family": ":alloc/arena",
+      "proof_or_check": "proof:borrow-scope",
+      "region": "request-arena",
+      "valid": true
+    }
+  ],
+  "mmio_maps": [
+    {
+      "capability_scope": {
+        "address": "0x40001000",
+        "device": "uart0"
+      },
+      "device": "uart0",
+      "proof_or_check": "check:mmio-width-ordering",
+      "valid": true
+    }
+  ],
+  "provider": {
+    "allocation": {
+      "bounded": true,
+      "hidden": false
+    },
+    "concurrency": ":single-owner",
+    "contracts": [
+      "MemorySafety",
+      "RegionSafety",
+      "OwnershipSafety",
+      "LinearResourceSafety",
+      "RawMemoryBoundary",
+      "DeviceMemorySafety",
+      "MMIOSafety",
+      "ForeignHeapSafety"
+    ],
+    "families": [
+      ":alloc/arena",
+      ":alloc/region",
+      ":alloc/device",
+      ":memory/mmio",
+      ":alloc/foreign"
+    ],
+    "id": "custom.memory/arena",
+    "implements": [
+      ":memory/arena",
+      ":memory/region",
+      ":memory/mmio",
+      ":memory/foreign"
+    ],
+    "kind": ":memory-system",
+    "profiles": [
+      ":native",
+      ":firmware"
+    ],
+    "targets": [
+      "linux-x86_64",
+      "cortex-m"
+    ],
+    "version": "0.3.0"
+  },
+  "release_evidence": [
+    {
+      "family": ":alloc/foreign",
+      "proof_or_check": "check:linear-release",
+      "region": "libimage",
+      "release_count": 1,
+      "released": true,
+      "requires_release": true
+    }
+  ],
+  "runtime_checks": [
+    {
+      "check": "bounds",
+      "failure": "BoundsError"
+    },
+    {
+      "check": "release-state",
+      "failure": "DoubleReleaseError"
+    }
+  ],
+  "safe_outcomes": [
+    ":proven-safe",
+    ":runtime-checked",
+    ":rejected",
+    ":unsafe-island"
+  ],
+  "unsafe_boundary_audits": [
+    {
+      "capability_scope": {
+        "device": "uart0"
+      },
+      "evidence": [
+        "alignment-check",
+        "device-map-check",
+        "volatile-ordering-check"
+      ],
+      "family": ":memory/mmio",
+      "invariant": "aligned-mapped-volatile-register",
+      "required_proof_or_check": "audit:mmio-safe-wrapper",
+      "unsafe_op": "unsafe/mmio-read32"
+    }
+  ]
+}

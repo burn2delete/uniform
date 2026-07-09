@@ -1,0 +1,23 @@
+(ns stage1.rejected.incomplete-source-set
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :reader
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-seed
+               :ambient-authority-denied true
+               :documents ["BOOT1" "BOOT2" "C2"]
+               :implements [:reader]
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :next-stage :stage1}}}))
+
+(defn main [] 0)

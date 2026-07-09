@@ -1,0 +1,33 @@
+{:artifact :gravity/stage0-r9-repl-runtime-document-proof
+ :task "P08-D120"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r9-document bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :artifact-kind :gravity/stage0-r9-repl-runtime-document-artifact
+ :artifact-id "sha256:601e6f9bbcd9a4df5fe4a93a5fc5c254028f0ece7633ecae876ca066742ed096"
+ :input-artifact "sha256:8b14783b42260dc2becf865b32107a6f7adc943f4d8857de77aa0a8ed258ecb9"
+ :input-artifact-kind :gravity/stage0-ai-repl-ffi-capability-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-ai-repl-ffi-capability.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r9-*.gravity"]
+ :required-diagnostic-ids
+ ["R9-PROFILE" "R9-CHECKS" "R9-CAPABILITY" "R9-SESSION"
+  "R9-HERMETICITY" "R9-HOT-RELOAD" "R9-DEBUG" "R9-AUDIT"
+  "R9-MANIFEST"]
+ :capability-based-proof
+ {:interactive-runtime-input-verified? true
+  :manifest-profile-and-target-covered? true
+  :normal-compiler-checks-covered? true
+  :session-and-audit-recorded? true
+  :inspection-snapshots-covered? true
+  :capability-decisions-covered? true
+  :hermeticity-and_hot_reload_covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 9
+  :test-command "clojure -M:test"
+  :test-result "105 tests, 6558 assertions, 0 failures, 0 errors, 1396 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R9 REPL and interactive runtime document through the P08-T05 AI/REPL/FFI/capability runtime artifact. It does not claim a live interactive REPL process, production debugger integration, hot-reload execution, editor integration, or complete Phase 08 document coverage."}

@@ -1,0 +1,15 @@
+(ns math.numeric-narrow
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:math {:numeric
+                     {:conversion-rules
+                      [{:rule-id :implicit-narrow
+                        :profile :native
+                        :target :llvm-x86-64-linux
+                        :source-family :fixed-integer
+                        :target-family :fixed-integer
+                        :conversion-mode :implicit
+                        :implicit? true}]}}}))

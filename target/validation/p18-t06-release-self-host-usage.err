@@ -1,0 +1,1 @@
+{:id "P18T04008", :message "public self-host verification command usage is invalid", :phase "P18-T04", :expected-command ["gravity" "self-host" "verify"]}

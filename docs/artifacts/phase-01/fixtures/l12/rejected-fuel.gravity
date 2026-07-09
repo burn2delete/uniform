@@ -1,0 +1,6 @@
+(ns bad.fuel
+  (:profile :hosted)
+  (:target :native))
+
+(defconst never
+  (compile-time (loop-forever)))

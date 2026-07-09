@@ -1,0 +1,6 @@
+; Rejected P09 DOM2 fixture.
+(ns domain.dom2-mmio (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom2-mmio}}}))
+(defn main [] :- I64 1)

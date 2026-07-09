@@ -1,0 +1,12 @@
+(ns typed.pattern.unvalidated
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{:network/http})
+  (:capabilities #{:network/client})
+  (:safety :safe))
+
+(def bad
+  (match (network/input)
+    {:id id} id
+    _ nil))

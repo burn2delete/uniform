@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-math-system.json",
+  "delete": [
+    "/optimization_decisions/0/candidates/1/proof"
+  ]
+}

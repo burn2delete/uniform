@@ -1,0 +1,8 @@
+(ns profile.bad.formal-unsafe
+  (:profile :formal)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p12/unsafe))

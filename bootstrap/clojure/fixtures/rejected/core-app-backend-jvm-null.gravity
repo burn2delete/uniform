@@ -1,0 +1,29 @@
+(ns core.app.backend-jvm-null
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:backend {:compiled-gate
+                        {:jvm-manifests
+                         [{:backend :gravity.backend/jvm
+                           :target :jvm
+                           :classfile 65
+                           :runtime :jvm-21
+                           :packaging :jar
+                           :module-system :named
+                           :classloader-policy :closed
+                           :reflection-policy :denied
+                           :exception-policy :gravity-error
+                           :nullability-policy :checked-boundaries
+                           :runtime-provider :stage0-clojure-jvm
+                           :artifact-kind :stage0-instruction-plan
+                           :source-debug-map :preserved
+                           :artifact-id :jvm/core-app
+                           :null-flow
+                           [{:host-symbol "java.lang.String"
+                             :target-construct :host-value
+                             :checked? false}]}]}}}))
+
+(defn main []
+  (println "bad backend jvm null"))

@@ -1,0 +1,15 @@
+(ns core.app.conformance-formal-proof
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:conformance {:compiled-gate
+                            {:formal-proof-reports
+                             [{:artifact-id "formal-proof:bad"
+                               :claims
+                               [{:claim-id :effect-preservation
+                                 :machine-checkable false}]}]}}}))
+
+(defn main []
+  (println "bad conformance formal proof"))

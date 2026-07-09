@@ -1,0 +1,14 @@
+(ns core.app.package-denied-authority
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:package {:compiled-gate
+                        {:capability-manifests
+                         [{:artifact-id "capability-manifest:bad"
+                           :capabilities {:requests #{:secret/read}
+                                          :denies #{:secret/read}}}]}}}))
+
+(defn main []
+  (println "bad package denied authority"))

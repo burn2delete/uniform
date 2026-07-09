@@ -1,0 +1,11 @@
+; Rejected P17 GOV6 fixture.
+(ns governance.gov6-rfc-owner
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:governance {:phase17 {:fail :gov6001}}}))
+
+(defn main [] :- I64 1)

@@ -1,0 +1,22 @@
+(ns l9.errors
+  (:profile :hosted)
+  (:effects :error/throw))
+
+(deferror FileError)
+
+(def handled
+  (try
+    (throw :boom)
+    (catch :any err
+      err)))
+
+(def result-data
+  (match result
+    (Ok value) value
+    (Err error) error))
+
+(def panic-record
+  (panic "fatal"))
+
+(def checked
+  (safety/check :bounds))

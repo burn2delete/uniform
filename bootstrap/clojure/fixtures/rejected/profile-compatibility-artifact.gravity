@@ -1,0 +1,14 @@
+(ns profile.bad.compatibility-artifact
+  (:profile :firmware)
+  (:target :jvm)
+  (:requires [hardware.uart :as uart
+              :profile :hardware
+              :edge :artifact-only
+              :boundary :hdl
+              :artifact :uart-hdl
+              :artifact-schema :rtl-module])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

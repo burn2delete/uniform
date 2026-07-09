@@ -1,0 +1,82 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-T02
+ :date "2026-06-25"
+ :status :complete
+ :capability :reader-through-checked-core-integration
+ :command "clojure -M:gravity checked-core bootstrap/clojure/fixtures/accepted/compiler-checked-core.gravity"
+ :artifact-kind :gravity/stage0-checked-core-pipeline-artifact
+ :artifact-hash "sha256:19ba8a51e68721a8b50d0389f53ce1fe48790a6d0750b45ee94a387fd2712cb1"
+ :summary {:stages 11
+           :stage-outputs 11
+           :syntax 6
+           :macro-steps 2
+           :bindings 5
+           :core-nodes 4
+           :type-facts 23
+           :capability-proofs 4
+           :ownership-facts 1
+           :safety-outcomes 1
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+                       "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
+                       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+                       "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+                       "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
+                       "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+                       "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+                       "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+                       "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md"
+                       "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+                       "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                       "docs/phase-01-core-language/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-02-safety/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-03-profile-system/IMPLEMENTATION-ROADMAP.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-checked-core.gravity"]
+ :rejected-fixtures ["compiler-checked-core-evidence-drop.gravity"
+                     "compiler-checked-core-reader-hash.gravity"
+                     "compiler-checked-core-syntax-origin.gravity"
+                     "compiler-checked-core-macro-trace.gravity"
+                     "compiler-checked-core-unresolved-binding.gravity"
+                     "compiler-checked-core-core-verify.gravity"
+                     "compiler-checked-core-type-verify.gravity"
+                     "compiler-checked-core-capability-proof.gravity"
+                     "compiler-checked-core-linear-flow.gravity"
+                     "compiler-checked-core-safety-outcome.gravity"]
+ :diagnostic-ids ["C1-EVIDENCE-DROP"
+                  "C2-HASH"
+                  "C3-ORIGIN"
+                  "C4-TRACE"
+                  "C5-UNRESOLVED"
+                  "C6-VERIFY"
+                  "C7-VERIFY"
+                  "C8-CAPABILITY"
+                  "C9-LINEAR-LEAK"
+                  "C10-NO-OUTCOME"]
+ :capability-based-proof {:stage-order-preserved? true
+                          :reader-hash-present? true
+                          :syntax-origins-preserved? true
+                          :macro-trace-replayable? true
+                          :name-resolution-recorded? true
+                          :core-verifier-passed? true
+                          :type-facts-complete? true
+                          :effect-capability-proof-present? true
+                          :profile-validation-before-mir? true
+                          :ownership-facts-present? true
+                          :safety-outcomes-complete? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity checked-core bootstrap/clojure/fixtures/accepted/compiler-checked-core.gravity"
+               :result :accepted}
+              {:command "clojure -M -e '(read-string (slurp \"docs/artifacts/phase-06/compiler/stage0-p06-t02-checked-core-proof.edn\"))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-T02 for the Clojure stage0 reader-through-checked-core boundary only."
+                 "It does not claim complete Phase 06 document coverage, backend code generation, release readiness, or self-hosting."]}

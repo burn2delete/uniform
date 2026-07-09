@@ -1,0 +1,98 @@
+{:task-id :P02-T05
+ :documents ["docs/phase-02-safety/039-safe10-capability-security-model.md"
+             "docs/phase-02-safety/043-safe14-supply-chain-safety.md"]
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :implementation-surface ["bootstrap/clojure/src/gravity/bootstrap.clj"
+                          "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+                          "bootstrap/clojure/fixtures/accepted/capability-supply-chain.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe10-*.gravity"
+                          "bootstrap/clojure/fixtures/rejected/typed-safe14-*.gravity"]
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/capability-supply-chain.gravity"
+ :artifact-kind :gravity/stage0-capability-supply-chain-safety-artifact
+ :capability-proof {:module safety.capability-supply-chain
+                    :profile :hosted
+                    :safety-mode :safe
+                    :pass :capability-and-supply-chain-safety
+                    :input :typed-effected-core
+                    :output :capability-supply-chain-safety-report
+                    :conformance-status :complete
+                    :document-statuses {:SAFE10 :complete
+                                        :SAFE14 :complete}
+                    :missing-families []
+                    :covered-families [:capability-requirement
+                                       :grant-intersection
+                                       :provider-selection
+                                       :scope-check
+                                       :attenuation
+                                       :revocation
+                                       :secret-redaction
+                                       :runtime-check
+                                       :usage-summary
+                                       :capability-family-coverage
+                                       :package-manifest
+                                       :lockfile
+                                       :build-effect-summary
+                                       :runtime-capability-summary
+                                       :unsafe-summary
+                                       :native-dependency
+                                       :generated-provenance
+                                       :signature-attestation
+                                       :authority-diff]
+                    :covered-capability-families [:compiler
+                                                  :environment
+                                                  :ffi
+                                                  :filesystem
+                                                  :hardware
+                                                  :memory
+                                                  :model
+                                                  :network
+                                                  :process
+                                                  :secret
+                                                  :tool]
+                    :capability-requirement-records 11
+                    :grant-intersection-records 1
+                    :provider-selection-records 1
+                    :scope-check-records 1
+                    :attenuation-records 1
+                    :revocation-records 1
+                    :secret-redaction-records 1
+                    :runtime-capability-check-records 1
+                    :capability-usage-summaries 1
+                    :package-safety-manifests 1
+                    :lockfile-records 1
+                    :build-effect-summaries 1
+                    :runtime-capability-summaries 1
+                    :unsafe-island-summaries 1
+                    :native-dependency-records 1
+                    :generated-artifact-provenance 1
+                    :signature-attestation-records 1
+                    :transitive-authority-diffs 1
+                    :capability-basis :safe10-safe14-authority-and-provenance-evidence}
+ :rejected-diagnostics ["SAFE10-MISSING"
+                        "SAFE10-DENIED"
+                        "SAFE10-SCOPE"
+                        "SAFE10-PROVIDER"
+                        "SAFE10-AMBIENT"
+                        "SAFE10-PHASE"
+                        "SAFE10-SECRET-LEAK"
+                        "SAFE10-ATTENUATION"
+                        "SAFE10-REVOCATION"
+                        "SAFE10-RUNTIME"
+                        "SAFE14-MANIFEST"
+                        "SAFE14-BUILD-EFFECT"
+                        "SAFE14-RUNTIME-CAPABILITY"
+                        "SAFE14-LOCKFILE"
+                        "SAFE14-UNSAFE-SUMMARY"
+                        "SAFE14-NATIVE-DEP"
+                        "SAFE14-GENERATED"
+                        "SAFE14-SIGNATURE"
+                        "SAFE14-AUTHORITY-DIFF"
+                        "SAFE14-POSTINSTALL"]
+ :validation [{:command "clojure -M:gravity capability-supply-chain bootstrap/clojure/fixtures/accepted/capability-supply-chain.gravity"
+               :result "emitted :gravity/stage0-capability-supply-chain-safety-artifact"}
+              {:command "clojure -M:test"
+               :result "27 tests, 1351 assertions, 300 rejected fixtures"}]
+ :residual-risks ["This is the stage0 P02-T05 authority/provenance boundary; production package resolution, registry verification, runtime provider enforcement, and transitive dependency graph solving remain later work."
+                  "SAFE12, SAFE13, SAFE15, and SAFE16 remain open and are not claimed by this proof."]}

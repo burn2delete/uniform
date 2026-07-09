@@ -1,0 +1,138 @@
+{
+  "artifact_id": "phase-00-safety-performance-rejected-gate-records",
+  "kind": "safety-performance-gate-fixture",
+  "task": "P00-T04",
+  "records": [
+    {
+      "claim_id": "erase-bounds-without-proof",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "minimal-native",
+      "safety_mode": ":safe-optimized",
+      "input_domain": {"n": ["range", 0, 1024]},
+      "layout": {"vector": "contiguous", "element": "i64"},
+      "effects": [],
+      "capabilities": [],
+      "erased_checks": [":bounds"],
+      "proof_records": [],
+      "benchmark": {
+        "harness": "perf/vector-sum",
+        "baseline": "c-o3",
+        "samples": 50,
+        "target_fingerprint": "llvm-x86_64-linux-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:bad-elision-source",
+        "optimization_manifest": "optimization-manifest-bad-elision.fixture.json"
+      },
+      "artifacts": ["optimized-mir", "benchmark-report"],
+      "safety_outcome": ":proven-safe",
+      "optimization_choice": "retain-runtime-check"
+    },
+    {
+      "claim_id": "missing-safety-classification",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "minimal-native",
+      "safety_mode": ":safe",
+      "input_domain": {"ptr": "raw-pointer"},
+      "layout": {"pointer": "raw"},
+      "effects": [":memory/raw"],
+      "capabilities": [":memory/unsafe"],
+      "erased_checks": [],
+      "proof_records": [
+        {
+          "claim": "raw pointer is assumed valid",
+          "domain": {"ptr": "raw-pointer"},
+          "assumptions": ["caller-provided"],
+          "checker": "gravity.memory/check",
+          "inputs": ["typed-core"],
+          "result": "unchecked"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/raw-load",
+        "baseline": "checked-load",
+        "samples": 10,
+        "target_fingerprint": "llvm-x86_64-linux-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:missing-safety-source",
+        "optimization_manifest": "optimization-manifest-missing-safety.fixture.json"
+      },
+      "artifacts": ["optimized-mir"],
+      "safety_outcome": ":unchecked",
+      "optimization_choice": "preserve-fact"
+    },
+    {
+      "claim_id": "certificate-missing-checker",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "minimal-native",
+      "safety_mode": ":safe-optimized",
+      "input_domain": {"x": ["range", 0, 10]},
+      "layout": {"scalar": "i64"},
+      "effects": [],
+      "capabilities": [],
+      "erased_checks": [":overflow"],
+      "proof_records": [
+        {
+          "claim": "addition cannot overflow i64 for fixture domain",
+          "domain": {"x": ["range", 0, 10]},
+          "assumptions": ["i64-range"],
+          "inputs": ["typed-core", "numeric-mode-record"],
+          "result": "accepted"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/scalar-add",
+        "baseline": "c-o3",
+        "samples": 30,
+        "target_fingerprint": "llvm-x86_64-linux-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:missing-checker-source",
+        "optimization_manifest": "optimization-manifest-missing-checker.fixture.json"
+      },
+      "artifacts": ["optimized-mir", "proof-certificate"],
+      "safety_outcome": ":proven-safe",
+      "optimization_choice": "regenerate-fact"
+    },
+    {
+      "claim_id": "implicit-fast-math",
+      "profile": ":native",
+      "target": "llvm-x86_64-linux",
+      "backend": "llvm",
+      "runtime": "minimal-native",
+      "safety_mode": ":safe-optimized",
+      "input_domain": {"x": ["range", -1, 1]},
+      "layout": {"scalar": "f32"},
+      "effects": [],
+      "capabilities": [],
+      "erased_checks": [],
+      "proof_records": [
+        {
+          "claim": "sin approximation selected",
+          "domain": {"x": ["range", -1, 1]},
+          "assumptions": ["finite-input"],
+          "checker": "gravity.math.interval/check",
+          "inputs": ["efir-graph"],
+          "result": "unchecked"
+        }
+      ],
+      "benchmark": {
+        "harness": "perf/sin-f32",
+        "baseline": "libm",
+        "samples": 30,
+        "target_fingerprint": "llvm-x86_64-linux-fixture",
+        "compiler_identity": "gravity-fixture-compiler",
+        "source_hash": "sha256:implicit-fast-math-source",
+        "optimization_manifest": "optimization-manifest-fast-math.fixture.json"
+      },
+      "artifacts": ["optimized-mir", "benchmark-report"],
+      "safety_outcome": ":proven-safe",
+      "optimization_choice": "preserve-fact",
+      "fast_math": true
+    }
+  ]
+}

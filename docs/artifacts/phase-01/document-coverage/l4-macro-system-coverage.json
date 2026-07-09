@@ -1,0 +1,50 @@
+{
+  "accepted": [
+    {
+      "artifact": "docs/artifacts/phase-01/macro/macro-expansion-trace.accepted.json",
+      "coverage": [
+        "syntax object transformation",
+        "hygiene marks",
+        "generated-origin chains",
+        "macro identity and version",
+        "input and output hashes",
+        "build effect trace field",
+        "caller profile and namespace preservation",
+        "metadata preservation"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/accepted-macro-expansion.gravity"
+    }
+  ],
+  "document": "L4",
+  "kind": "l4-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L4-BUILD-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-build-effect.gravity"
+    },
+    {
+      "diagnostic": "L4-GENERATED-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-generated-profile.gravity"
+    },
+    {
+      "diagnostic": "L4-GENERATED-UNSAFE",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-generated-unsafe.gravity"
+    },
+    {
+      "diagnostic": "L4-EXPANSION-DEPTH",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-depth.gravity"
+    },
+    {
+      "diagnostic": "L4-PROVENANCE-MISSING",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-provenance.gravity"
+    },
+    {
+      "diagnostic": "L4-MACRO-NOT-SYNTAX",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-not-syntax.gravity"
+    },
+    {
+      "diagnostic": "L4-HYGIENE-CAPTURE",
+      "fixture": "docs/artifacts/phase-01/fixtures/macro/rejected-hygiene-capture.gravity"
+    }
+  ]
+}

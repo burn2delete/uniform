@@ -1,0 +1,9 @@
+(ns stdlib.unsafe-invariant
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (stdlib/unsafe-unproven 'gravity.memory/read-u32))

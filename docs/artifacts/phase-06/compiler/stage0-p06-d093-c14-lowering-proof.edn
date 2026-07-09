@@ -1,0 +1,69 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D093
+ :date "2026-06-25"
+ :status :complete
+ :capability :c14-target-lowering-document-coverage
+ :command "clojure -M:gravity compiler-c14-lowering bootstrap/clojure/fixtures/accepted/compiler-c14-lowering.gravity"
+ :artifact-kind :gravity/stage0-c14-target-lowering-artifact
+ :artifact-hash "sha256:c641c11d84d3c059d602c365f16cf8055317a197e943d28d85b74d427a25a7b8"
+ :summary {:provider-records 3
+           :target-metadata 3
+           :target-artifacts 1
+           :unsupported-feature-records 1
+           :diagnostics 10
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"
+                       "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c14-lowering.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-lowering-input.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-profile.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-target.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-abi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-runtime.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-provider.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-proof-metadata.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-unsupported.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-lowering-manifest.gravity"]
+ :diagnostic-ids ["C14-INPUT"
+                  "C14-PROFILE"
+                  "C14-TARGET"
+                  "C14-ABI"
+                  "C14-RUNTIME"
+                  "C14-PROVIDER"
+                  "C14-PROOF-METADATA"
+                  "C14-CAPABILITY"
+                  "C14-UNSUPPORTED"
+                  "C14-MANIFEST"]
+ :capability-based-proof {:c13-optimized-mir-input-verified? true
+                          :lowering-request-verified? true
+                          :target-eligible? true
+                          :abi-manifest-complete? true
+                          :runtime-provider-recorded? true
+                          :providers-selected? true
+                          :proof-metadata-linked? true
+                          :source-proof-safety-metadata-preserved? true
+                          :capabilities-preserved? true
+                          :unsupported-fallbacks-recorded? true
+                          :manifest-complete? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 66 tests containing 3554 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c14-lowering bootstrap/clojure/fixtures/accepted/compiler-c14-lowering.gravity"
+               :result :accepted
+               :artifact-hash "sha256:c641c11d84d3c059d602c365f16cf8055317a197e943d28d85b74d427a25a7b8"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 20 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D093 for the Clojure stage0 C14 target lowering document boundary only."
+                 "It does not claim backend code generation, release readiness, or self-hosting."]}

@@ -1,0 +1,8 @@
+(ns invalid.module-missing-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{}))
+
+(defn main []
+  (println "missing namespace capability"))

@@ -1,0 +1,13 @@
+(ns core.app.compiler-pass-contract
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:compiler {:compiled-gate
+                         {:pass-contracts
+                          [{:pass :emit-instruction-plan
+                            :input :macro-expanded-core}]}}}))
+
+(defn main []
+  (println "bad compiler pass contract"))

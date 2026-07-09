@@ -1,0 +1,8 @@
+(ns profile.bad.hosted-host-capability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad (p4/host-capability))

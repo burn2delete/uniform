@@ -1,0 +1,9 @@
+(ns math.rewrite-domain
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof {:rewrite-rule-overrides
+                   [{:domain-compatible? false}]}}}))

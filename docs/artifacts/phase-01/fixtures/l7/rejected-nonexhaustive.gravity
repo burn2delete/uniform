@@ -1,0 +1,6 @@
+(ns l7.bad.nonexhaustive
+  (:profile :formal))
+
+(def bad
+  (match result
+    (Ok value) value))

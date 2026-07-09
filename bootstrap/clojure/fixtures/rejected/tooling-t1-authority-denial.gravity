@@ -1,0 +1,11 @@
+; Rejected P13 T1 fixture.
+(ns tooling.t1-authority-denial
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:filesystem/read})
+  (:capabilities #{:fs/read})
+  (:safety :safe)
+  (:metadata {:tooling {:experience {:fail :t1003}}}))
+
+(defn main [] :- I64 1)

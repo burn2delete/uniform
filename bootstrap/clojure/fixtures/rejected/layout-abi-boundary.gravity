@@ -1,0 +1,58 @@
+(ns performance.bad.layout-abi-boundary
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/layout-abi
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:type :Particle}
+                :layout {:source :array-of-structs}
+                :safety-mode :safe-optimized
+                :semantic-proof #{:field-semantics-preserved}
+                :safety-proof #{:ownership-preserved}
+                :benchmark {:harness :bench/layout-bad
+                            :environment-fingerprint {:cpu :x86-64}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :layout
+               {:suite-id :perf4/bad-abi
+                :records
+                [{:record-id :layout/abi-boundary
+                  :type :Particle
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :layout :struct-of-arrays
+                  :transformation :aos-to-soa
+                  :fields [{:name :x :type :F32 :alignment 4}]
+                  :alignment 64
+                  :abi :c
+                  :proofs #{:no-observable-address-identity
+                            :alias-proof
+                            :exclusive-ownership}
+                  :boundary {:kind :c-abi :public? true :adapter nil}
+                  :address-identity {:observable? false}
+                  :alias-proof {:proof-id :proof/alias}
+                  :ownership-proof {:proof-id :proof/ownership}
+                  :alignment-proof {:target-supported? true :access-safe? true}
+                  :packing-record {:packed? false :access-safety-facts #{}}
+                  :cache-shape {:target-fingerprint {:cpu :x86-64}
+                                :benchmark :bench/layout-bad}
+                  :device-transfer {:host-layout :struct-of-arrays
+                                    :device-layout :struct-of-arrays}
+                  :debug-source-map {:field-map {:x [:x]}}
+                  :artifacts #{:layout-manifest
+                               :alignment-proof
+                               :alias-ownership-report
+                               :address-identity-report
+                               :abi-compatibility-record
+                               :cache-shape-report
+                               :device-transfer-layout-record
+                               :debug-source-map}}]}}}))
+
+(def bad true)

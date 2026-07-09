@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-schema-interop.json",
+  "set": {
+    "/canonical_format/hash_over_noncanonical_bytes": true
+  }
+}

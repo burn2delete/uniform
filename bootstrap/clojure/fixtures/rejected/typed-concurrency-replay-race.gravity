@@ -1,0 +1,9 @@
+(ns typed.bad.concurrency.replay
+  (:profile :distributed)
+  (:target :jvm)
+  (:effects #{:workflow/event})
+  (:capabilities #{:workflow/event})
+  (:safety :safe))
+
+(def bad
+  (workflow/race :branch))

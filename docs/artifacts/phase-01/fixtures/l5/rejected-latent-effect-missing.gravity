@@ -1,0 +1,9 @@
+(ns l5.bad.latent
+  (:profile :hosted)
+  (:effects :io/write)
+  (:capabilities :io/stdout))
+
+(def bad
+  ^:erase-effects
+  (fn [message]
+    (println message)))

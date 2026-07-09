@@ -1,0 +1,1 @@
+{"extends": "accepted-standard-library.json", "network_http_library": {"missing_network_capability": true}}

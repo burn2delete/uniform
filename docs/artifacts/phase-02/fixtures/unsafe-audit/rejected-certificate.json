@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-unsafe-audit.json",
+  "set": {
+    "/islands/0/policy": ":certificate-required",
+    "/islands/0/review/policy": ":certificate-required"
+  }
+}

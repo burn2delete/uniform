@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-ai-agentic.json",
+  "set": {
+    "/human_review_manifest/payload_hash_mismatch": true
+  }
+}

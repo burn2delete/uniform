@@ -1,0 +1,9 @@
+(ns compiler.verification-evidence
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:passes {:risk-overrides
+                                  [{:pass :build-mir
+                                    :available-evidence []}]}}}))

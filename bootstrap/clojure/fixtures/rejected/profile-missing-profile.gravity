@@ -1,0 +1,7 @@
+(ns profile.missing-profile
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def value 1)

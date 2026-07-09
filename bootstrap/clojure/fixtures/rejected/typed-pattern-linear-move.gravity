@@ -1,0 +1,12 @@
+(ns typed.pattern.linear
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (match "resource"
+    (MoveLinear handle) handle
+    _ nil))

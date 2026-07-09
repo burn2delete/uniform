@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Main-Class: gravity.cli.Main
+Implementation-Title: Gravity Packaged JVM CLI
+Implementation-Version: P18-T02
+Gravity-Bootstrap-Hosted: true
+Gravity-Seedless-Release: false
+

@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-interop.json",
+  "set": {
+    "/call_checks/0/caller_effects": []
+  }
+}

@@ -1,0 +1,47 @@
+(ns performance.bad.zero-cost-evidence-missing
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/zero-cost-evidence-missing
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2}
+                :input-shape {:element-type :f32}
+                :layout {:buffer :contiguous}
+                :safety-mode :safe-optimized
+                :semantic-proof #{:types-preserved}
+                :safety-proof #{:bounds-preserved}
+                :benchmark {:harness :bench/zero-cost-bad
+                            :environment-fingerprint {:cpu :x86-64}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :zero-cost
+               {:suite-id :perf2/bad-evidence
+                :claims
+                [{:claim-id :zc/missing-before-after-evidence
+                  :optimization :abstraction-erasure
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :abstraction :protocol-dispatch
+                  :equivalent-form :direct-call
+                  :source-operation :metric/sum
+                  :expected-erased-costs #{:dynamic-dispatch}
+                  :erased-costs #{:dynamic-dispatch}
+                  :residual-costs #{}
+                  :semantic-proof #{:same-method-target}
+                  :safety-proof #{:bounds-preserved}
+                  :proof-ids [:safe15/missing-before-after-evidence]
+                  :artifacts #{:before-mir}
+                  :before-ir {:artifact-id :mir/before-evidence-missing}
+                  :after-ir {:artifact-id :mir/after-evidence-missing}
+                  :allocation-audit {:hidden-allocations #{}}
+                  :boxing-audit {:hidden-boxing #{}}
+                  :dispatch-specialization-report {:residual-dispatch #{}}
+                  :runtime-check-report {:unaccounted-checks #{}}}]}}}))
+
+(def bad true)

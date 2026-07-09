@@ -1,0 +1,68 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D095
+ :date "2026-06-25"
+ :status :complete
+ :capability :c16-incremental-compilation-document-coverage
+ :command "clojure -M:gravity compiler-c16-incremental bootstrap/clojure/fixtures/accepted/compiler-c16-incremental.gravity"
+ :artifact-kind :gravity/stage0-c16-incremental-compilation-artifact
+ :artifact-hash "sha256:a479b07d535ad8dd46edf96ec5a06ad26d8c1c722ee1805d69eddbaee17c3d99"
+ :summary {:graph-nodes 15
+           :graph-edges 10
+           :cache-keys 8
+           :cache-entries 8
+           :invalidations 19
+           :diagnostics 9
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+                       "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c16-incremental.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-verify-c16-key.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-entry.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-stale.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-proof.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-speculative.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-replay.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-policy.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-diagnostic.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-verify-c16-graph.gravity"]
+ :diagnostic-ids ["C16-KEY"
+                  "C16-ENTRY"
+                  "C16-STALE"
+                  "C16-PROOF"
+                  "C16-SPECULATIVE"
+                  "C16-REPLAY"
+                  "C16-POLICY"
+                  "C16-DIAGNOSTIC"
+                  "C16-GRAPH"]
+ :capability-based-proof {:c15-diagnostics-input-verified? true
+                          :dependency-graph-consistent? true
+                          :stage-cache-keys-complete? true
+                          :cache-entries-retain-provenance? true
+                          :invalidations-cover-semantic-policy-proof-target? true
+                          :stale-proof-rejected? true
+                          :stale-diagnostics-rejected? true
+                          :speculative-reuse-blocked-from-release? true
+                          :build-effect-replay-recorded? true
+                          :revalidation-passed? true
+                          :release-rebuild-reproducible? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 68 tests containing 3681 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c16-incremental bootstrap/clojure/fixtures/accepted/compiler-c16-incremental.gravity"
+               :result :accepted
+               :artifact-hash "sha256:a479b07d535ad8dd46edf96ec5a06ad26d8c1c722ee1805d69eddbaee17c3d99"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 22 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D095 for the Clojure stage0 C16 incremental compilation document boundary only."
+                 "It does not claim production cache persistence, release readiness, or self-hosting."]}

@@ -1,0 +1,12 @@
+; Rejected P11 A6 fixture.
+(ns ai.a6-replay-mode
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:workflow/replay :ai/tool-call})
+  (:capabilities #{:tool/execute})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a6001}}}))
+
+(defn main [] :- I64 1)

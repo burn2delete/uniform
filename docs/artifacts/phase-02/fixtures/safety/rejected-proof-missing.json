@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-safety-classification.json",
+  "delete": [
+    "/operations/0/proof",
+    "/operations/0/erased_check"
+  ]
+}

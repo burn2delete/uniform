@@ -1,0 +1,9 @@
+{
+  "extends": "accepted-memory-safety.json",
+  "set": {
+    "/operations/3/provider_contract/missing_fields": [
+      "threading",
+      "failure_behavior"
+    ]
+  }
+}

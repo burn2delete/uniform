@@ -1,0 +1,8 @@
+(ns invalid.recur-target
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main []
+  (recur 1))

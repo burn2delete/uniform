@@ -1,0 +1,13 @@
+(ns math.eml
+  (:profile :native)
+  (:target :jvm)
+  (:exports [eml-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:math {:numeric {}
+                     :efir {}
+                     :eml {}}}))
+
+(defn eml-ready []
+  true)

@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: untranslated host exception or rejected promise.
+(ns runtime.r4-exception
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/error})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-exception}}}))
+
+(defn main [] :- I64
+  1)

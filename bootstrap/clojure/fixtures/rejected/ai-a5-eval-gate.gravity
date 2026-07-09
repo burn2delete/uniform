@@ -1,0 +1,12 @@
+; Rejected P11 A5 fixture.
+(ns ai.a5-eval-gate
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:ai/model-call :ai/tool-call})
+  (:capabilities #{:model/invoke :tool/execute})
+  (:safety :safe)
+  (:metadata {:package gravity/ai-stage0
+              :ai {:agentic {:fail :a5005}}}))
+
+(defn main [] :- I64 1)

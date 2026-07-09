@@ -1,0 +1,4 @@
+(ns runtime.r5-device
+  (:profile :native)
+  (:target :jvm)
+  (:metadata {:runtime {:minimal-native {:fail :r5-device}}}))

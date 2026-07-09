@@ -1,0 +1,6 @@
+; Rejected P08 R12 fixture.
+(ns runtime.r12-sink (:profile :ai) (:target :jvm) (:exports [main])
+  (:effects #{:runtime/observability}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:observability {:fail :r12-sink}}}))
+(defn main [] :- I64 1)

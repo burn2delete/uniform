@@ -1,0 +1,63 @@
+{
+  "kind": "safe12-macro-safety-input",
+  "macro_symbol": "gravity.unsafe/load-network-template",
+  "definition_span": {
+    "source": "fixtures/safe12/macros.gravity",
+    "line": 31,
+    "column": 1
+  },
+  "call_site_span": {
+    "source": "fixtures/safe12/use-network-template.gravity",
+    "line": 9,
+    "column": 3
+  },
+  "generated_form_span": {
+    "source": "fixtures/safe12/use-network-template.gravity",
+    "line": 9,
+    "column": 3
+  },
+  "active_profile": ":native",
+  "declared_build_effects": [],
+  "granted_build_effects": [],
+  "requested_build_effects": [
+    ":build/network"
+  ],
+  "runtime_capture": false,
+  "generated_origin_chain": [
+    {
+      "generator": "gravity.unsafe/load-network-template",
+      "macro_version": "1.0.0",
+      "call_site": "fixtures/safe12/use-network-template.gravity:9:3"
+    }
+  ],
+  "hygiene_context": {
+    "captures_privileged": false,
+    "hygiene_marks": [
+      "gravity.unsafe/load-network-template:1.0.0"
+    ]
+  },
+  "safety_declaration": {
+    "generates_unsafe": false,
+    "preserves_taint": true,
+    "preserves_capabilities": true,
+    "generated_code_checked_by": [
+      "macro",
+      "type",
+      "effect",
+      "capability",
+      "memory",
+      "profile",
+      "safety"
+    ]
+  },
+  "taint_capability_propagation": {
+    "taint_preserved": true,
+    "capabilities_preserved": true
+  },
+  "facet_output": {
+    "bypasses_safety_checks": false
+  },
+  "alternative_engine": {
+    "safety_equivalent": true
+  }
+}

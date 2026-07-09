@@ -1,0 +1,9 @@
+{
+  "kind": "conformance-system-fixture-patch",
+  "base": "docs/artifacts/phase-14/fixtures/conformance/accepted-conformance-system.json",
+  "patch": {
+    "compiler_tests": {
+      "lost_preserved_fact": true
+    }
+  }
+}

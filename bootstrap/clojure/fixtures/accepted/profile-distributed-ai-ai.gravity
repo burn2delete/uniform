@@ -1,0 +1,58 @@
+(ns profile.distributed-ai.ai
+  (:profile :ai)
+  (:target :jvm)
+  (:exports [agent])
+  (:effects #{:ai/model-call :ai/tool-call :ai/embedding
+              :ai/memory-read :ai/memory-write :ai/human-review})
+  (:capabilities #{:ai/model :ai/tool :ai/memory :ai/human-review})
+  (:safety :safe)
+  (:metadata {:memory {:hidden-allocation :declared
+                       :agent-memory :bounded}
+              :runtime {:required true
+                        :providers #{:model :tool :memory :human-review}}
+              :package-allowed-effects #{:ai/model-call :ai/tool-call
+                                         :ai/embedding :ai/memory-read
+                                         :ai/memory-write :ai/human-review}
+              :provider-effect-grants #{:ai/model-call :ai/tool-call
+                                        :ai/embedding :ai/memory-read
+                                        :ai/memory-write :ai/human-review}
+              :deployment-allowed-effects #{:ai/model-call :ai/tool-call
+                                            :ai/embedding :ai/memory-read
+                                            :ai/memory-write :ai/human-review}
+              :package-capabilities #{:ai/model :ai/tool :ai/memory
+                                      :ai/human-review}
+              :provider-capability-grants #{:ai/model :ai/tool :ai/memory
+                                            :ai/human-review}
+              :deployment-capabilities #{:ai/model :ai/tool :ai/memory
+                                         :ai/human-review}
+              :profile-validation
+              {:agent-manifest {:agent :support-agent
+                                :model :support-main
+                                :tools [:search-docs :create-ticket]
+                                :policy :human-review-for-write}
+               :model-call-trace-schema {:model :support-main
+                                         :provider :local
+                                         :trace-fields [:prompt :output :policy]}
+               :prompt-provenance-record {:roles [:system :developer :user
+                                                 :tool-result]
+                                          :policy-overrides :forbidden}
+               :tool-capability-manifest {:tools {:search-docs #{:ai/tool}
+                                                  :create-ticket #{:ai/tool
+                                                                   :ai/human-review}}}
+               :tool-schema-bundle {:schemas {:search-docs 1
+                                              :create-ticket 1}
+                                    :validated true}
+               :memory-policy-record {:kind :bounded
+                                      :retention :thirty-days
+                                      :secret-policy :redacted}
+               :policy-human-review-graph {:write-tools :required
+                                           :destructive-tools :required}
+               :replay-log-schema {:mode :audit
+                                   :records [:model :tool :review]}
+               :generated-code-safety-record {:generated-code :compiler-checked
+                                              :ordinary-checks :required}
+               :ai-conformance-results {:status :complete
+                                        :fixtures [:accepted :rejected]}}}))
+
+(def agent
+  {:agent :support-agent})

@@ -1,0 +1,132 @@
+; P07-T05 artifact emission fixture covers common manifests, hashes, provenance, and release gates.
+(ns backend.artifact-emission
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [gravity.io :as io :profile :hosted :effects #{:io/write} :capabilities #{:io/stdout}]
+             [gravity.dynamic :as dynamic :profile :hosted :effects #{:runtime/dynamic-dispatch} :capabilities #{}]
+             [gravity.generic :as generic :profile :core :boundary :pure-core]
+             [gravity.protocol :as protocol :profile :hosted :effects #{:runtime/dynamic-dispatch} :capabilities #{}]
+             [gravity.schema :as schema :profile :hosted :boundary :schema]
+             [shared.core :as shared :profile :core :boundary :pure-core :refer [checksum]])
+  (:imports [java.time.Instant :as instant :profile :hosted :boundary :interop])
+  (:exports [main artifact-value dynamic-boundary checked-cast
+             generic-result protocol-result schema-runtime])
+  (:effects #{:io/write :error/throw :runtime/dynamic-dispatch :memory/raw})
+  (:capabilities #{:io/stdout :memory/raw})
+  (:safety :safe)
+  (:metadata {:package gravity/backend-stage0
+              :build-grants #{:build/read-file}
+              :compiler {:c4-macro {}
+                         :c5-resolution {}
+                         :c6-lowering {}
+                         :c7-type-check {}
+                         :c8-effect-check {}
+                         :c9-ownership-check {}
+                         :c10-safety-analysis {}
+                         :c11-mir-spec {}
+                         :c12-domain-ir {}
+                         :c13-optimization {}
+                         :c14-lowering {}
+                         :c15-diagnostics {}
+                         :c16-incremental {}
+                         :c17-plugin {}
+                         :c18-verification {}}
+              :backend {:interface {}
+                        :artifact-emission {}}}))
+
+'(reader abbreviation for p07 artifact emission)
+
+(defmacro stage0-build
+  {:version "stage0-p07.5"
+   :build-effects #{:build/read-file}
+   :required-build-capabilities #{:fs/read}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  [value]
+  (syntax-quote
+    (do (unquote value))))
+
+(defmacro stage0-capture
+  {:version "stage0-p07.5"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :explicit-capture
+   :output-contract :gravity-syntax}
+  [name & body]
+  (syntax-quote
+    (let [(unquote name) "captured"]
+      (do (splice-unquote body)))))
+
+(defmacro stage0-unsafe
+  {:version "stage0-p07.5"
+   :build-effects #{}
+   :required-build-capabilities #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax
+   :allow-unsafe true}
+  []
+  (syntax-quote
+    (unsafe {:reason "stage0 P07 artifact emission unsafe provenance conformance"
+             :owner "artifact-emission"
+             :review "P07-ARTIFACT-EMISSION-AUDIT"}
+      nil)))
+
+(defschema Packet
+  {:id I64
+   :name String})
+
+(def public-value
+  (stage0-build 7))
+
+(def captured-value
+  (stage0-capture local-name
+    local-name))
+
+(def generated-unsafe
+  (stage0-unsafe))
+
+(def dynamic-boundary
+  (dynamic/value "runtime"))
+
+(def checked-cast
+  (dynamic/cast :String dynamic-boundary))
+
+(def generic-result
+  (generic/id checked-cast))
+
+(def protocol-result
+  (protocol/value :Displayable checked-cast))
+
+(def schema-runtime
+  (schema/derive :Packet {:id 1 :name "packet"}))
+
+(defn artifact-value [id :- I64 name :- String] :- Packet
+  (let [local-score public-value
+        aliased shared/checksum
+        fully shared.core/checksum
+        writer io/write]
+    (do
+      (if true local-score public-value)
+      (match local-score
+        0 public-value
+        _ local-score)
+      (try
+        (throw "p07-error")
+        (catch String e e))
+      (loop [n 0]
+        (if (= n 0)
+          (recur 1)
+          n))
+      writer
+      id
+      name
+      fully
+      aliased
+      dynamic-boundary
+      checked-cast
+      generic-result
+      protocol-result
+      schema-runtime)))
+
+(defn main []
+  (println "p07 artifact emission"))

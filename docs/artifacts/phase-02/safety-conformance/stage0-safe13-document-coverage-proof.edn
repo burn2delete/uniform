@@ -1,0 +1,29 @@
+{:task-id :P02-D042
+ :document "docs/phase-02-safety/042-safe13-ai-tool-safety.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+ :artifact-kind :gravity/stage0-safety-conformance-artifact
+ :document-coverage {:model-call-traces 1
+                     :tool-call-traces 1
+                     :prompt-provenance-records 1
+                     :tool-schema-validation-records 1
+                     :human-review-records 1
+                     :ai-replay-records 1
+                     :model-output-taint-records 1
+                     :generated-code-safety-records 1
+                     :memory-retention-policies 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE13-MODEL-EFFECT"
+                        "SAFE13-TOOL-CAPABILITY"
+                        "SAFE13-TOOL-SCHEMA"
+                        "SAFE13-PROMPT-INJECTION"
+                        "SAFE13-HUMAN-REVIEW"
+                        "SAFE13-SECRET"
+                        "SAFE13-GENERATED-CODE"
+                        "SAFE13-REPLAY"
+                        "SAFE13-RETENTION"
+                        "SAFE13-DESTRUCTIVE-TOOL"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE13 accepted records and 10 rejected diagnostics passed"}]}

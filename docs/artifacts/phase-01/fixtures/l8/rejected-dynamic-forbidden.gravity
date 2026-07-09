@@ -1,0 +1,5 @@
+(ns l8.bad.dynamic
+  (:profile :kernel))
+
+(def bad
+  (dynamic-dispatch close file-handle))

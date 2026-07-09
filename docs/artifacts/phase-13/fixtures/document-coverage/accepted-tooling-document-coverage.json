@@ -1,0 +1,252 @@
+{
+  "kind": "phase13-tooling-document-coverage-input",
+  "documents": [
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "cli_command_set"
+        ]
+      },
+      "coverage_claims": [
+        "CLI command set includes stable exit codes, JSON output, diagnostics, artifact outputs, capability prompts, secret redaction, and golden fixtures",
+        "authority-denied commands produce stable structured diagnostics"
+      ],
+      "document": "T1",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md",
+      "rejected": {
+        "diagnostic": "T1003",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t1-authority-denial.json"
+      },
+      "task_id": "P13-D177"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "repl_session_artifact"
+        ]
+      },
+      "coverage_claims": [
+        "REPL session artifact records project and lockfile hashes, profile, target, namespace, capability grants, checked evaluations, diagnostics, and redacted transcript state",
+        "runtime effects without REPL grants are rejected"
+      ],
+      "document": "T2",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md",
+      "rejected": {
+        "diagnostic": "T2002",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t2-missing-capability.json"
+      },
+      "task_id": "P13-D178"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "formatter_fixture"
+        ]
+      },
+      "coverage_claims": [
+        "Formatter report records configuration hash, reader round-trip status, changed files, diff output, JSON report, and comment/metadata preservation",
+        "round-trip mismatches reject formatting output"
+      ],
+      "document": "T3",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md",
+      "rejected": {
+        "diagnostic": "T3002",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t3-round-trip.json"
+      },
+      "task_id": "P13-D179"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "linter_diagnostic_report"
+        ]
+      },
+      "coverage_claims": [
+        "Lint report records rule ids, diagnostics, baselines, rule metadata, compiler facts, profile/target applicability, and JSON export",
+        "auto-fixes that alter semantics without validation are rejected"
+      ],
+      "document": "T4",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md",
+      "rejected": {
+        "diagnostic": "T4003",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t4-unsafe-autofix.json"
+      },
+      "task_id": "P13-D180"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "lsp_capability_matrix"
+        ]
+      },
+      "coverage_claims": [
+        "LSP matrix records compiler state, CLI diagnostic parity, hover facts, completion constraints, code action checks, rename boundaries, and redacted trace state",
+        "editor diagnostics that conflict with compiler diagnostics are rejected"
+      ],
+      "document": "T5",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md",
+      "rejected": {
+        "diagnostic": "T5001",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t5-diagnostic-mismatch.json"
+      },
+      "task_id": "P13-D181"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "debugger_trace"
+        ]
+      },
+      "coverage_claims": [
+        "Debugger trace records artifact/profile/target identity, debug data version, breakpoints, stack frames, variable reports, policy denials, and source-map validation",
+        "redacted value inspection is rejected"
+      ],
+      "document": "T6",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md",
+      "rejected": {
+        "diagnostic": "T6004",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t6-redacted-access.json"
+      },
+      "task_id": "P13-D182"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "Documentation artifact records source hash, compiler version, package version, API signatures, effect/capability docs, schema links, example validation, structured docs, and redaction",
+        "stale generated docs are rejected"
+      ],
+      "document": "T7",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md",
+      "rejected": {
+        "diagnostic": "T7001",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t7-stale-docs.json"
+      },
+      "task_id": "P13-D183"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "Dev server session records project/profile/target/grants, incremental updates, diagnostic stream, artifact events, runtime log, and redacted bug-report bundle",
+        "hot reload that invalidates checked assumptions is rejected"
+      ],
+      "document": "T8",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md",
+      "rejected": {
+        "diagnostic": "T8003",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t8-hot-reload.json"
+      },
+      "task_id": "P13-D184"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "Registry UX record aligns human and JSON views, update diffs, verification reports, search filters, access denials, and policy compatibility reports",
+        "hidden capability diffs are rejected"
+      ],
+      "document": "T9",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md",
+      "rejected": {
+        "diagnostic": "T9001",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t9-hidden-capability-diff.json"
+      },
+      "task_id": "P13-D185"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "IR inspector bundle records stage id, compiler version, project hash, profile, target, stage views, source-span maps, pass diffs, preservation reports, and redaction",
+        "IR views that drop source origins are rejected"
+      ],
+      "document": "T10",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md",
+      "rejected": {
+        "diagnostic": "T10002",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t10-lost-origin.json"
+      },
+      "task_id": "P13-D186"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "Profiler report records profile, target, artifact, benchmark, environment, compiler, samples, comparison policy, check-elision report, and capabilities",
+        "check-elision claims without proof or analysis evidence are rejected"
+      ],
+      "document": "T11",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md",
+      "rejected": {
+        "diagnostic": "T11003",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t11-check-elision.json"
+      },
+      "task_id": "P13-D187"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "Safety audit report records unsafe index, capability graph, taint graph, FFI boundaries, AI safety, package safety, proof index, missing evidence, and redaction",
+        "known unsafe islands omitted from audit reports are rejected"
+      ],
+      "document": "T12",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md",
+      "rejected": {
+        "diagnostic": "T12001",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t12-unsafe-island.json"
+      },
+      "task_id": "P13-D188"
+    },
+    {
+      "accepted": {
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/accepted-tooling-experience.json",
+        "required_artifact_fields": [
+          "tooling_ui_data_model"
+        ]
+      },
+      "coverage_claims": [
+        "AI tooling record includes modes, plan artifact, patch artifact, generated-source provenance, prompt/model ledger, tool-call ledger, validation report, human-review record, and replay trace",
+        "generated source not checked by the compiler is rejected"
+      ],
+      "document": "T13",
+      "governing_doc": "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md",
+      "rejected": {
+        "diagnostic": "T13002",
+        "fixture": "docs/artifacts/phase-13/fixtures/tooling/rejected-t13-generated-source.json"
+      },
+      "task_id": "P13-D189"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+(ns l10.bad.bounds
+  (:profile :hosted))
+
+(def bad
+  (bounds/get buffer index))

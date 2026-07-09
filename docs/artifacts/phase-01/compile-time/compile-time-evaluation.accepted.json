@@ -1,0 +1,279 @@
+{
+  "build_effect_log": [
+    {
+      "effect": ":build/read-file",
+      "grant": {
+        "effect": ":build/read-file",
+        "lifetime": ":build",
+        "profile": ":hosted",
+        "provider": ":provider/schema-loader",
+        "replay_policy": ":content-digest",
+        "scope": "schemas/user.json"
+      },
+      "namespace": "app.compile",
+      "package": "app",
+      "profile": ":hosted",
+      "provider": ":provider/schema-loader",
+      "replay_policy": ":content-digest",
+      "result_digest": "sha256:schema-user-v1",
+      "scope": "schemas/user.json",
+      "source_span": {
+        "end_byte": 1096,
+        "end_column": 119,
+        "end_line": 27,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 980,
+        "start_column": 3,
+        "start_line": 27
+      },
+      "target": ":native"
+    },
+    {
+      "effect": ":build/env",
+      "grant": {
+        "effect": ":build/env",
+        "lifetime": ":build",
+        "profile": ":hosted",
+        "provider": ":provider/env",
+        "replay_policy": ":redacted-presence",
+        "scope": "GRAVITY_SCHEMA_MODE"
+      },
+      "namespace": "app.compile",
+      "package": "app",
+      "profile": ":hosted",
+      "provider": ":provider/env",
+      "replay_policy": ":redacted-presence",
+      "result_digest": "redacted:present",
+      "scope": "GRAVITY_SCHEMA_MODE",
+      "source_span": {
+        "end_byte": 1199,
+        "end_column": 103,
+        "end_line": 28,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 1099,
+        "start_column": 3,
+        "start_line": 28
+      },
+      "target": ":native"
+    },
+    {
+      "effect": ":build/write-artifact",
+      "grant": {
+        "effect": ":build/write-artifact",
+        "lifetime": ":build",
+        "profile": ":hosted",
+        "provider": ":provider/artifact-writer",
+        "replay_policy": ":content-digest",
+        "scope": "build/generated/user-codec.gravity"
+      },
+      "namespace": "app.compile",
+      "package": "app",
+      "profile": ":hosted",
+      "provider": ":provider/artifact-writer",
+      "replay_policy": ":content-digest",
+      "result_digest": "sha256:user-codec-v1",
+      "scope": "build/generated/user-codec.gravity",
+      "source_span": {
+        "end_byte": 1341,
+        "end_column": 142,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 1202,
+        "start_column": 3,
+        "start_line": 29
+      },
+      "target": ":native"
+    }
+  ],
+  "cache_key": "sha256:a8878b76fcf1b5f69ae2f033185220824d672d627f6b2790ea2c1aa295410ebf",
+  "cache_reuse_decision": {
+    "key": "sha256:a8878b76fcf1b5f69ae2f033185220824d672d627f6b2790ea2c1aa295410ebf",
+    "policy": "strict-hermetic",
+    "reason": "no prior trace supplied",
+    "reuse": false
+  },
+  "compiler_version": "gravity-fixture-1",
+  "constant_table": [
+    {
+      "binding_kind": "defconst",
+      "name": "page-size",
+      "representation": 4096,
+      "source_span": {
+        "end_byte": 877,
+        "end_column": 29,
+        "end_line": 21,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 829,
+        "start_column": 1,
+        "start_line": 20
+      },
+      "value_hash": "sha256:8b926d75599a618e21f1341318e66517be26e18cc7496783d2b59758c1333be8"
+    },
+    {
+      "binding_kind": "def",
+      "name": "generated-table",
+      "representation": [
+        0,
+        1,
+        4,
+        9
+      ],
+      "source_span": {
+        "end_byte": 941,
+        "end_column": 42,
+        "end_line": 24,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 879,
+        "start_column": 1,
+        "start_line": 23
+      },
+      "value_hash": "sha256:e8e05c53619ea1e8519468f142c2b23d248694557030e4dd731c35c71a3be870"
+    }
+  ],
+  "diagnostics": [],
+  "document": "L12",
+  "environment_key_reads": [
+    {
+      "digest": "redacted",
+      "key": "GRAVITY_SCHEMA_MODE",
+      "redaction_policy": "redacted-presence"
+    }
+  ],
+  "external_result_digests": [],
+  "file_input_digests": [
+    {
+      "digest": "sha256:schema-user-v1",
+      "path": "schemas/user.json"
+    }
+  ],
+  "generated_forms": [
+    {
+      "form_hash": "sha256:3fdd7ae2fa746c26d20abd91b7bd417d6621b0cafc95a6c9ba8115cf779da4e4",
+      "kind": "generated-form",
+      "origin_chain": [
+        {
+          "build_effects": [
+            ":build/read-file",
+            ":build/env",
+            ":build/write-artifact"
+          ],
+          "generator": "derive-code",
+          "input_syntax_hash": "sha256:739b3d83014f0a03dbad04492bd5bf6f3892011a889724b19f8912478d7f6d14",
+          "output_digest": "sha256:generated-user-codec-v1",
+          "package": "app",
+          "phase": "compiler-extension-execution",
+          "source_span": {
+            "end_byte": 1428,
+            "end_column": 87,
+            "end_line": 30,
+            "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+            "start_byte": 943,
+            "start_column": 1,
+            "start_line": 26
+          },
+          "version": "gravity-fixture-1"
+        }
+      ],
+      "output_digest": "sha256:generated-user-codec-v1",
+      "source_span": {
+        "end_byte": 1393,
+        "end_column": 52,
+        "end_line": 30,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 1361,
+        "start_column": 20,
+        "start_line": 30
+      }
+    }
+  ],
+  "generated_origin_chains": [
+    {
+      "build_effects": [
+        ":build/read-file",
+        ":build/env",
+        ":build/write-artifact"
+      ],
+      "generator": "derive-code",
+      "input_syntax_hash": "sha256:739b3d83014f0a03dbad04492bd5bf6f3892011a889724b19f8912478d7f6d14",
+      "output_digest": "sha256:generated-user-codec-v1",
+      "package": "app",
+      "phase": "compiler-extension-execution",
+      "source_span": {
+        "end_byte": 1428,
+        "end_column": 87,
+        "end_line": 30,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 943,
+        "start_column": 1,
+        "start_line": 26
+      },
+      "version": "gravity-fixture-1"
+    }
+  ],
+  "hermetic_mode": true,
+  "kind": "compile-time-evaluation-record",
+  "language_facets": [
+    ":core",
+    ":compile-time"
+  ],
+  "macro_expansion_events": [],
+  "namespace": "app.compile",
+  "nondeterminism_replay_records": [],
+  "ordered_compile_time_events": [
+    {
+      "binding": "page-size",
+      "event": "constant-evaluated",
+      "span": {
+        "end_byte": 877,
+        "end_column": 29,
+        "end_line": 21,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 829,
+        "start_column": 1,
+        "start_line": 20
+      },
+      "value_hash": "sha256:8b926d75599a618e21f1341318e66517be26e18cc7496783d2b59758c1333be8"
+    },
+    {
+      "binding": "generated-table",
+      "event": "constant-evaluated",
+      "span": {
+        "end_byte": 941,
+        "end_column": 42,
+        "end_line": 24,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 879,
+        "start_column": 1,
+        "start_line": 23
+      },
+      "value_hash": "sha256:e8e05c53619ea1e8519468f142c2b23d248694557030e4dd731c35c71a3be870"
+    },
+    {
+      "event": "generated-form-emitted",
+      "generator": "derive-code",
+      "output_digest": "sha256:generated-user-codec-v1",
+      "schema": "UserSchema",
+      "span": {
+        "end_byte": 1428,
+        "end_column": 87,
+        "end_line": 30,
+        "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+        "start_byte": 943,
+        "start_column": 1,
+        "start_line": 26
+      },
+      "target": ":json/User"
+    }
+  ],
+  "output_artifact_digests": [
+    {
+      "digest": "sha256:user-codec-v1",
+      "path": "build/generated/user-codec.gravity"
+    }
+  ],
+  "package": "app",
+  "profile": ":hosted",
+  "source": "docs/artifacts/phase-01/fixtures/l12/accepted-compile-time.gravity",
+  "source_hash": "sha256:6ef1ace3d23025dec2843896d0937ecc1c52c0cb8c16569f8c65c2b384da633c",
+  "target": ":native"
+}

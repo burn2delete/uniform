@@ -1,0 +1,9 @@
+(ns facet.domain-check
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (facet/domain-check :invalid-field))

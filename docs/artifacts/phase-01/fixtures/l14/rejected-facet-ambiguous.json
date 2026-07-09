@@ -1,0 +1,31 @@
+{
+  "append": {
+    "/facets": {
+      "artifact_schema_version": "schema-alt-ir-v1",
+      "artifacts": [
+        ":schema-alt/artifact"
+      ],
+      "build_effects": [],
+      "capabilities": [],
+      "id": ":pkg.facet.schema-alt",
+      "lowers_to": [
+        ":gravity.ir.schema-alt"
+      ],
+      "profiles": [
+        ":distributed"
+      ],
+      "requires_facets": [],
+      "runtime_effects": [],
+      "stability": ":experimental",
+      "surface": [
+        "schema"
+      ],
+      "version": "0.1.0"
+    },
+    "/namespace/active_facets": ":pkg.facet.schema-alt"
+  },
+  "extends": "accepted-facet-system.json",
+  "set": {
+    "/source_forms/0/facet_id": null
+  }
+}

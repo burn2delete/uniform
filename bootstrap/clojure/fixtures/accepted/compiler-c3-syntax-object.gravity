@@ -1,0 +1,20 @@
+; P06-D082 C3 syntax object model fixture keeps comments as retained trivia.
+(ns compiler.c3.syntax-object
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c3-syntax {}}}))
+
+'(reader abbreviation origin)
+
+^{:doc "Metadata must survive syntax object construction."}
+(defn inc-one [x]
+  (+ x 1))
+
+(def generated-source
+  {:profile :hosted
+   :macro compiler.c3/with-capture-demo})
+
+(def message "c3 syntax object")

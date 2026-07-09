@@ -1,0 +1,218 @@
+(ns performance.governance
+  (:profile :native)
+  (:target :jvm)
+  (:exports [governance-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/governed-vector-sum
+                :profile :native
+                :target :llvm-x86-64-linux
+                :target-features #{:avx2 :fma}
+                :input-shape {:element-type :f32
+                              :layout :contiguous
+                              :length-range [4096 1048576]}
+                :layout {:buffer :contiguous
+                         :element :f32
+                         :alignment 32}
+                :safety-mode :safe-optimized
+                :objective {:metric :ns-per-element
+                            :direction :lower-is-better}
+                :semantic-proof #{:types-preserved
+                                  :effects-preserved
+                                  :profile-legal}
+                :safety-proof #{:bounds-preserved
+                                :ownership-preserved
+                                :capabilities-preserved}
+                :benchmark {:harness :bench/governed-vector-sum
+                            :samples 100
+                            :baseline :portable-loop
+                            :environment-fingerprint
+                            {:cpu :x86-64
+                             :os :linux
+                             :compiler :gravity-stage0-clojure
+                             :backend :llvm
+                             :runtime :minimal-native
+                             :features #{:avx2 :fma}}}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}
+               :optimization-decisions
+               [{:pass :stage0/performance-claim
+                 :decision :accept
+                 :preserves #{:types :effects :profile :safety
+                              :capabilities}}]
+               :generated-variants
+               [{:variant-id :vector-sum-avx2-governed
+                 :guard-predicate {:requires-target-features #{:avx2 :fma}
+                                   :min-length 4096}
+                 :status :accepted}]
+               :governance
+               {:suite-id :perf5-7/performance-governance
+                :benchmarks
+                [{:benchmark-id :bench/vector-sum-governed
+                  :profile :native
+                  :target :llvm-x86-64-linux
+                  :workload {:dataset :fixed-1m-f32
+                             :seed :deterministic-2026-06-24}
+                  :metric :ns-per-element
+                  :warmup {:iterations 25
+                           :mode :steady-state}
+                  :units :nanoseconds
+                  :samples 100
+                  :statistics {:median 1.80
+                               :p95 2.10
+                               :variance 0.01
+                               :method :bootstrap-ci}
+                  :environment-fingerprint
+                  {:source-hash "sha256:perf5-governed-source"
+                   :typed-artifact-hash "sha256:typed-vector-sum"
+                   :mir-hash "sha256:mir-vector-sum"
+                   :compiler :gravity-stage0-clojure
+                   :compiler-version "stage0-clojure-2026-06-24"
+                   :runtime :minimal-native
+                   :target :llvm-x86-64-linux
+                   :profile :native
+                   :provider-versions {:allocator :arena-v1
+                                       :math :strict-f32-v1}}
+                  :acceptance {:min-samples 30
+                               :max-regression-percent 3.0
+                               :correctness-required true
+                               :safety-required true}
+                  :gates {:safety true
+                          :correctness true}
+                  :sample-summary {:count 100
+                                   :variance-stable? true
+                                   :noise-classification :stable}
+                  :regression-report {:classification :no-regression
+                                      :percent 0.0
+                                      :threshold 3.0}
+                  :baseline {:baseline-id :baseline/vector-sum-native
+                             :reviewed? true
+                             :history [:baseline/v1
+                                       :baseline/v2]}
+                  :baseline-registry {:registry-id :perf-baselines/native
+                                      :entry :baseline/vector-sum-native
+                                      :machine-readable? true}
+                  :baseline-update {:requested? false
+                                    :reviewed? true}
+                  :environment-drift {:classification :compatible
+                                      :compatible? true}
+                  :machine-readable-report :report/vector-sum-governed}]
+                :pgo-records
+                [{:profile-data-id :pgo/vector-sum-hot-path
+                  :profile-data-present? true
+                  :identity {:source-hash "sha256:perf5-governed-source"
+                             :typed-artifact-hash "sha256:typed-vector-sum"
+                             :mir-hash "sha256:mir-vector-sum"
+                             :compiler-version "stage0-clojure-2026-06-24"
+                             :profile :native
+                             :target :llvm-x86-64-linux
+                             :provider-versions {:allocator :arena-v1
+                                                 :math :strict-f32-v1}
+                             :workload :vector-sum-hot-path}
+                  :status :accepted
+                  :policy :reject-if-identity-differs
+                  :release-use? true
+                  :staleness {:status :fresh
+                              :fresh-for-release? true
+                              :source-match? true
+                              :mir-match? true}
+                  :privacy {:classification :aggregated
+                            :redacted? true
+                            :raw-identifiers? false
+                            :taint-free? true
+                            :retention :summary-only}
+                  :hot-cold-map {:hot [:vector/sum-loop
+                                       :vector/load-chunk]
+                                 :cold [:vector/empty-input]}
+                  :decisions
+                  [{:pass-id :pgo/inline-hot-vector-sum
+                    :profile-data-id :pgo/vector-sum-hot-path
+                    :decision-log :log/pgo-inline-vector-sum
+                    :expected-benefit {:metric :ns-per-element
+                                       :direction :lower-is-better}
+                    :preserves #{:types :effects :capabilities
+                                 :profile :safety :taint
+                                 :numeric :unsafe-audit}
+                    :reproducible? true}]
+                  :reproducibility {:replayable? true
+                                    :inputs [:profile-data
+                                             :compiler-version
+                                             :source-hash
+                                             :mir-hash]}
+                  :workload :vector-sum-hot-path
+                  :expected-workload :vector-sum-hot-path}]
+                :autotuning-records
+                [{:candidate-space
+                  {:candidate-space-id :autotune/vector-sum
+                   :objective {:metric :ns-per-element
+                               :direction :lower-is-better}
+                   :variants {:algorithm [:scalar-loop :avx2-unrolled]
+                              :unroll-factor [1 4]}
+                   :constraints {:profile :native
+                                 :target :llvm-x86-64-linux
+                                 :safety :preserved
+                                 :capabilities :unchanged}
+                   :benchmark :bench/vector-sum-governed}
+                  :candidates
+                  [{:candidate-id :variant/vector-sum-scalar
+                    :variant-id :variant/vector-sum-scalar
+                    :evidence-status :accepted
+                    :benchmarked? true
+                    :certificates #{:safe15/vector-sum-scalar}}
+                   {:candidate-id :variant/vector-sum-avx2
+                    :variant-id :variant/vector-sum-avx2
+                    :evidence-status :accepted
+                    :benchmarked? true
+                    :certificates #{:safe15/vector-sum-avx2
+                                    :math/strict-f32}}
+                   {:candidate-id :variant/vector-sum-unsafe-fast-math
+                    :variant-id :variant/vector-sum-unsafe-fast-math
+                    :evidence-status :rejected
+                    :benchmarked? false
+                    :rejection :missing-numeric-certificate}]
+                  :guard-table
+                  {:guards [{:variant-id :variant/vector-sum-avx2
+                             :predicate {:target-features #{:avx2 :fma}
+                                         :min-length 4096}}
+                            {:variant-id :variant/vector-sum-scalar
+                             :predicate {:fallback true}}]
+                   :overlap? false
+                   :fallback :variant/vector-sum-scalar}
+                  :selected {:candidate-id :variant/vector-sum-avx2
+                             :variant-id :variant/vector-sum-avx2
+                             :objective {:metric :ns-per-element
+                                         :direction :lower-is-better}
+                             :benchmark-comparison
+                             :comparison/vector-sum-avx2-vs-scalar
+                             :target-fingerprint
+                             {:source-hash "sha256:perf5-governed-source"
+                              :compiler :gravity-stage0-clojure
+                              :target :llvm-x86-64-linux
+                              :profile :native
+                              :features #{:avx2 :fma}}
+                             :guard-predicate
+                             {:target-features #{:avx2 :fma}
+                              :min-length 4096}
+                             :certificates #{:safe15/vector-sum-avx2
+                                             :math/strict-f32
+                                             :dispatch/guard-non-overlap}
+                             :reason :best-throughput-with-safe-evidence}
+                  :dispatch-overhead {:accounted? true
+                                      :model :guard-hoisted
+                                      :cost-ns 0.20}
+                  :reproducibility
+                  {:reproducible? true
+                   :candidate-space-hash "sha256:autotune-vector-sum"
+                   :inputs [:candidate-space
+                            :benchmark-samples
+                            :compiler-version
+                            :target-fingerprint]}
+                  :source-map :sourcemap/vector-sum-autotune
+                  :compatibility {:profile :native
+                                  :target :llvm-x86-64-linux}}]}}}))
+
+(def governance-ready true)

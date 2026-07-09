@@ -1,0 +1,10 @@
+(ns invalid.set-illegal
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:state/write})
+  (:capabilities #{}))
+
+(def immutable-count 0)
+
+(defn main []
+  (set! immutable-count 1))

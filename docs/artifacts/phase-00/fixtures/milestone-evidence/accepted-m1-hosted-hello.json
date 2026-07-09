@@ -1,0 +1,20 @@
+{
+  "artifact_id": "phase-00-milestone-evidence-accepted-m1-fixture",
+  "kind": "milestone-evidence-bundle",
+  "task": "P00-T02",
+  "evidence_system": "docs/artifacts/phase-00/milestone-evidence-system.json",
+  "milestone_id": "M1",
+  "release_claim_status": "fixture-only",
+  "claim": "Schema fixture for Reader, Syntax, and Hosted Hello evidence shape; no M1 release support is claimed.",
+  "governing_documents": ["D0", "D1", "D2", "D3", "L1", "L2", "L3", "L4", "C2", "C3", "C4", "T1", "TEST1"],
+  "positive_fixtures": ["hosted hello fixture has source path, profile, effects, capabilities, syntax stream, macro trace, and hosted execution artifact references"],
+  "negative_fixtures": ["malformed collection literal fixture has diagnostic golden file reference"],
+  "diagnostics": ["D2-MILESTONE-EVIDENCE", "D2-ARTIFACT-MISSING"],
+  "emitted_artifacts": ["syntax-object-stream.fixture.json", "macro-expansion-trace.fixture.json", "hosted-execution.fixture.json"],
+  "profile_matrix": {"claimed": [":hosted"], "not_claimed": [":core", ":native", ":kernel"]},
+  "capability_matrix": {"granted": [":io/stdout"], "rejected": [":host/reflection"]},
+  "safety_report": {"status": "fixture-only", "safety_outcomes": [":runtime-checked"]},
+  "reproducibility_record": {"source_hash": "fixture-sha256-source", "artifact_hashes": ["fixture-sha256-syntax", "fixture-sha256-execution"]},
+  "proof_records": ["syntax provenance fixture record", "diagnostic golden fixture record"],
+  "open_risks": ["fixture does not claim real M1 compiler support"]
+}

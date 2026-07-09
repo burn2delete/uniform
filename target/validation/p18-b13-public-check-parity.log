@@ -1,0 +1,12 @@
+PASS accepted bootstrap/clojure/fixtures/accepted/backend-artifact-emission.gravity :: gravity stage0 check passed: backend.artifact-emission
+PASS accepted bootstrap/clojure/fixtures/accepted/backend-artifact-emission.qst :: gravity stage0 check passed: backend.artifact-emission
+PASS rejected backend-b13-conformance B13-CONFORMANCE
+PASS rejected backend-b13-evidence B13-EVIDENCE
+PASS rejected backend-b13-graph B13-GRAPH
+PASS rejected backend-b13-hash B13-HASH
+PASS rejected backend-b13-provenance B13-PROVENANCE
+PASS rejected backend-b13-release B13-RELEASE
+PASS rejected backend-b13-reproducibility B13-REPRODUCIBILITY
+PASS rejected backend-b13-schema B13-SCHEMA
+PASS rejected backend-b13-sourcemap B13-SOURCEMAP
+PASS rejected backend-b13-target B13-TARGET

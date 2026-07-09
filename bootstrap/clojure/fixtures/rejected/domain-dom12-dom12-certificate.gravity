@@ -1,0 +1,6 @@
+; Rejected P09 DOM12 fixture.
+(ns domain.dom12-certificate (:profile :hosted) (:target :jvm) (:exports [main])
+  (:effects #{:domain/coverage}) (:capabilities #{:domain/validate}) (:safety :safe)
+  (:metadata {:package gravity/domain-stage0
+              :domain {:coverage {:fail :dom12-certificate}}}))
+(defn main [] :- I64 1)

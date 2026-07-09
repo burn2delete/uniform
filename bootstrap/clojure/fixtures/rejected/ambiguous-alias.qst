@@ -1,0 +1,9 @@
+(ns invalid.ambiguous-alias
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [app.one :as dup :profile :hosted]
+             [app.two :as dup :profile :hosted])
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn main [] nil)

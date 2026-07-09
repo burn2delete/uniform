@@ -1,0 +1,9 @@
+(ns compiler.c6.verify
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c6-lowering {:fail :verify}}}))
+
+(def value 1)

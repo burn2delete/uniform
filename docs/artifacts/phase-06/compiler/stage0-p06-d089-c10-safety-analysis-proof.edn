@@ -1,0 +1,75 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D089
+ :date "2026-06-25"
+ :status :complete
+ :capability :c10-safety-analysis-document-coverage
+ :command "clojure -M:gravity compiler-c10-safety-analysis bootstrap/clojure/fixtures/accepted/compiler-c10-safety-analysis.gravity"
+ :artifact-kind :gravity/stage0-c10-safety-analysis-artifact
+ :artifact-hash "sha256:88fa7c62fbbab1f2cc01e2898a5964f1466c23345ca76de39e35e89d8600d2d4"
+ :summary {:operations 12
+           :outcomes 12
+           :runtime-checks 3
+           :proof-obligations 7
+           :certificates 3
+           :unsafe-islands 2
+           :taint-records 1
+           :capability-records 1
+           :generated-records 1
+           :optimization-records 2
+           :rejected-designs 10
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+                       "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+                       "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+                       "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c10-safety-analysis.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-c10-no-outcome.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-proof.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-check.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-unsafe.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-generated.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-taint.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-capability.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-ffi.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-numeric.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c10-optimization.gravity"]
+ :diagnostic-ids ["C10-NO-OUTCOME"
+                  "C10-PROOF"
+                  "C10-CHECK"
+                  "C10-UNSAFE"
+                  "C10-GENERATED"
+                  "C10-TAINT"
+                  "C10-CAPABILITY"
+                  "C10-FFI"
+                  "C10-NUMERIC"
+                  "C10-OPTIMIZATION"]
+ :capability-based-proof {:operation-inventory-complete? true
+                          :exactly-one-outcome-per-operation? true
+                          :runtime-checks-emitted? true
+                          :proof-obligations-discharged? true
+                          :certificate-references-recorded? true
+                          :unsafe-island-audits-complete? true
+                          :taint-and-capability-reports-complete? true
+                          :generated-provenance-recorded? true
+                          :optimization-evidence-preserved? true
+                          :diagnostics-covered? true
+                          :verifier-passed? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 62 tests containing 3297 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c10-safety-analysis bootstrap/clojure/fixtures/accepted/compiler-c10-safety-analysis.gravity"
+               :result :accepted
+               :artifact-hash "sha256:88fa7c62fbbab1f2cc01e2898a5964f1466c23345ca76de39e35e89d8600d2d4"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 16 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D089 for the Clojure stage0 C10 safety analysis document boundary only."
+                 "It does not claim production safety proof coverage for the full future language, MIR construction, backend lowering, release readiness, or self-hosting."]}

@@ -1,0 +1,4 @@
+(ns runtime.r1-host
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:runtime {:selection {:fail :r1-host}}}))

@@ -1,0 +1,1131 @@
+{
+  "artifact_manifest": {
+    "artifact_id": "artifact:library-001",
+    "canonical": true,
+    "capability_summary": {
+      "requests": [
+        ":http/client",
+        ":db/query",
+        ":model/call"
+      ]
+    },
+    "compiler_id": "gravityc-seed:0.1.0",
+    "content_hash": "sha256:library-content-001",
+    "dependency_graph_hash": "sha256:deps-001",
+    "document": "PKG3",
+    "evidence": {
+      "capabilities": "capability-manifest:support-agent-001",
+      "effects": "effect-report:support-agent-001",
+      "safety": "safety-report:phase12-support-agent",
+      "tests": "test-report:phase12-support-agent"
+    },
+    "kind": ":library",
+    "lockfile_hash": "sha256:lock-001",
+    "package_id": "acme/support-agent",
+    "profile": ":hosted",
+    "project_manifest_hash": "sha256:project-001",
+    "provenance": [
+      "source-graph",
+      "typed-core",
+      "mir",
+      "artifact-emission",
+      "package-provenance"
+    ],
+    "schema_version": "GravityArtifact/v1",
+    "source_graph_hash": "sha256:source-001",
+    "target": ":jvm-21"
+  },
+  "build_graph": {
+    "artifact_id": "build-graph:acme/support-agent:0.3.0",
+    "cache_keys": {
+      "emit-library": "sha256:cache-emit-library",
+      "lower-workflow": "sha256:cache-lower-workflow",
+      "read-source": "sha256:cache-read-source"
+    },
+    "compiler_id": "gravityc-seed:0.1.0",
+    "document": "PKG2",
+    "generated_source_provenance": [
+      {
+        "generator": "gravity.schema/generate",
+        "inputs": [
+          "sha256:schema-source-001"
+        ],
+        "outputs": [
+          "sha256:generated-source-001"
+        ]
+      }
+    ],
+    "graph_id": "build-graph:phase12-support-agent",
+    "lockfile_hash": "sha256:lock-001",
+    "nodes": [
+      {
+        "cache_key": "sha256:cache-read-source",
+        "effects": [],
+        "inputs": [
+          "sha256:source-001"
+        ],
+        "node_id": "read-source",
+        "outputs": [
+          "syntax:source-001"
+        ],
+        "tool_id": "gravity.reader:0.1.0"
+      },
+      {
+        "cache_key": "sha256:cache-lower-workflow",
+        "effects": [],
+        "inputs": [
+          "mir:workflow-001"
+        ],
+        "node_id": "lower-workflow",
+        "outputs": [
+          "artifact:workflow-001"
+        ],
+        "tool_id": "gravity.workflow-lowerer:0.1.0"
+      },
+      {
+        "cache_key": "sha256:cache-sign",
+        "effects": [
+          ":build/sign"
+        ],
+        "inputs": [
+          "artifact:library-001",
+          "artifact:workflow-001",
+          "sbom:001"
+        ],
+        "node_id": "sign-release",
+        "outputs": [
+          "signature:support-agent-001"
+        ],
+        "tool_id": "gravity.signer:0.1.0"
+      }
+    ],
+    "policy_hash": "sha256:policy-001",
+    "project_manifest_hash": "sha256:project-001",
+    "release_evidence": [
+      "test-report:phase12-support-agent",
+      "safety-report:phase12-support-agent",
+      "signature:support-agent-001",
+      "sbom:support-agent-001"
+    ]
+  },
+  "capability_manifest": {
+    "artifact_id": "capability-manifest:support-agent-001",
+    "audit_event_schema": "GravityCapabilityAudit/v1",
+    "capabilities": [
+      ":http/client",
+      ":db/query",
+      ":model/call"
+    ],
+    "denied_capabilities": [
+      ":shell/exec",
+      ":secret/read",
+      ":fs/write"
+    ],
+    "denied_effects": [
+      ":shell/exec",
+      ":secrets/read",
+      ":filesystem/write"
+    ],
+    "dependency_summaries": {
+      "gravity/http": [
+        ":http/client"
+      ]
+    },
+    "deployment_grants": [
+      ":http/client",
+      ":db/query",
+      ":model/call"
+    ],
+    "document": "PKG6",
+    "effects": [
+      ":network/http",
+      ":database/read",
+      ":ai/model-call"
+    ],
+    "package_id": "acme/support-agent",
+    "per_target": {
+      ":jvm-21": [
+        ":http/client",
+        ":db/query"
+      ],
+      ":workflow-graph": [
+        ":model/call"
+      ]
+    },
+    "runtime_handles": {
+      ":db/query": "DatabaseReadCap",
+      ":http/client": "HttpClientCap",
+      ":model/call": "ModelCallCap"
+    },
+    "sbom_fields": [
+      "capabilities",
+      "privileged-effects"
+    ]
+  },
+  "coverage_summary": {
+    "artifact_id": "artifact:library-001",
+    "documents": 12,
+    "package_id": "acme/support-agent",
+    "status": ":passed",
+    "tasks": 6
+  },
+  "diagnostics": [],
+  "document_contracts": {
+    "PKG1": {
+      "artifact_id": "manifest:acme/support-agent:0.3.0",
+      "artifacts": [
+        ":library",
+        ":agent-manifest",
+        ":workflow-graph",
+        ":sbom",
+        ":signature",
+        ":provenance"
+      ],
+      "canonical_hash": "sha256:project-001",
+      "capabilities": {
+        "deny": [
+          ":shell/exec",
+          ":secret/read",
+          ":fs/write"
+        ],
+        "request": [
+          ":http/client",
+          ":db/query",
+          ":model/call"
+        ]
+      },
+      "dependencies": {
+        "gravity/ai": "1.2.0",
+        "gravity/core": "1.0.0",
+        "gravity/http": "2.1.4"
+      },
+      "document": "PKG1",
+      "edition": "2026.1",
+      "effects": {
+        "deny": [
+          ":shell/exec",
+          ":secrets/read",
+          ":filesystem/write"
+        ],
+        "request": [
+          ":network/http",
+          ":database/read",
+          ":ai/model-call"
+        ]
+      },
+      "entrypoints": {
+        "service": "support.main/serve",
+        "workflow": "support.workflow/triage"
+      },
+      "generated_source_roots": [
+        {
+          "generator": "gravity.schema/generate",
+          "hash": "sha256:generated-input-001",
+          "root": "target/generated"
+        }
+      ],
+      "lockfile_complete": true,
+      "offline_parse": true,
+      "package_id": "acme/support-agent",
+      "policy": {
+        "release": {
+          "lockfile": true,
+          "sbom": true,
+          "sign": true
+        },
+        "unsafe": "deny"
+      },
+      "profiles": [
+        ":hosted",
+        ":ai"
+      ],
+      "registries": {
+        "gravity-public": {
+          "scope": "gravity/*",
+          "signatures": "required"
+        }
+      },
+      "release_requires_lockfile": true,
+      "source_roots": [
+        "src",
+        "workflows"
+      ],
+      "targets": [
+        ":jvm-21",
+        ":workflow-graph"
+      ],
+      "version": "0.3.0"
+    },
+    "PKG10": {
+      "artifact_id": "artifact:library-001",
+      "binary_blob_ledger": [],
+      "build_recipe_hash": "sha256:recipe-001",
+      "builder_id": "gravity-builder:trusted-linux-x64",
+      "compiler_id": "gravityc-seed:0.1.0",
+      "content_hash": "sha256:library-content-001",
+      "dependency_graph_hash": "sha256:deps-001",
+      "document": "PKG10",
+      "evidence": [
+        "test-report:phase12-support-agent",
+        "safety-report:phase12-support-agent",
+        "reproducible-build:support-agent"
+      ],
+      "generated_source_ledger": [
+        {
+          "generator": "gravity.schema/generate",
+          "inputs": [
+            "sha256:schema-source-001"
+          ],
+          "outputs": [
+            "sha256:generated-source-001"
+          ]
+        }
+      ],
+      "keyless_signing": {
+        "audience": "sigstore",
+        "certificate": "sha256:fulcio-cert-001",
+        "issuer": "https://token.actions.githubusercontent.com",
+        "root_metadata": "tuf:root-001",
+        "subject": "https://github.com/acme/support/.github/workflows/release.yml@refs/heads/main",
+        "transparency_log": "rekor:entry-001"
+      },
+      "lockfile_hash": "sha256:lock-001",
+      "project_manifest_hash": "sha256:project-001",
+      "revocation_status": ":checked",
+      "sbom_link": "sbom:support-agent-001",
+      "schema_version": "GravityProvenance/v1",
+      "signing_links": [
+        "signature:support-agent-001"
+      ],
+      "source_graph_hash": "sha256:source-001"
+    },
+    "PKG11": {
+      "artifact_id": "target-matrix:support-agent-001",
+      "document": "PKG11",
+      "entries": [
+        {
+          "artifact_kinds": [
+            ":library"
+          ],
+          "backend": ":jvm",
+          "profile": ":hosted",
+          "runtime": ":managed",
+          "support": ":supported",
+          "target": ":jvm-21"
+        },
+        {
+          "artifact_kinds": [
+            ":workflow-graph",
+            ":agent-manifest"
+          ],
+          "backend": ":workflow",
+          "profile": ":ai",
+          "runtime": ":ai-runtime",
+          "support": ":supported",
+          "target": ":workflow-graph"
+        }
+      ],
+      "package_id": "acme/support-agent",
+      "per_target_artifacts": {
+        ":jvm-21": [
+          "artifact:library-001"
+        ],
+        ":workflow-graph": [
+          "artifact:workflow-001",
+          "artifact:agent-manifest-001"
+        ]
+      },
+      "per_target_capabilities": {
+        ":jvm-21": [
+          ":http/client",
+          ":db/query"
+        ],
+        ":workflow-graph": [
+          ":model/call"
+        ]
+      },
+      "per_target_conformance": {
+        ":jvm-21": "test-report:jvm-21",
+        ":workflow-graph": "test-report:workflow-graph"
+      },
+      "per_target_dependency_graph": {
+        ":jvm-21": [
+          "gravity/http:jvm"
+        ],
+        ":workflow-graph": [
+          "gravity/ai:workflow"
+        ]
+      },
+      "release_support_table": {
+        ":jvm-21": ":supported",
+        ":workflow-graph": ":supported"
+      }
+    },
+    "PKG12": {
+      "artifact_id": "artifact:library-001",
+      "attestation": {
+        "artifact_subject_hash": "sha256:library-content-001",
+        "build_platform": "linux-x64-isolated",
+        "builder": "gravity-builder:trusted-linux-x64",
+        "policy_level": ":reproducible",
+        "source_material": [
+          "sha256:source-001",
+          "sha256:generated-source-001"
+        ],
+        "verification_track": "release"
+      },
+      "document": "PKG12",
+      "keyless_identity": {
+        "audience": "sigstore",
+        "certificate": "sha256:fulcio-cert-001",
+        "issuer": "https://token.actions.githubusercontent.com",
+        "subject": "https://github.com/acme/support/.github/workflows/release.yml@refs/heads/main",
+        "validity": "2026-06-24T00:00:00Z/2026-06-24T01:00:00Z"
+      },
+      "payload": {
+        "artifact_manifest_hash": "sha256:manifest-001",
+        "canonical": true,
+        "content_hash": "sha256:library-content-001",
+        "provenance_hash": "sha256:provenance-001",
+        "safety_metadata_hash": "sha256:safety-001",
+        "sbom_hash": "sha256:sbom-001"
+      },
+      "policy_decision": {
+        "accepted": true,
+        "gate": "release"
+      },
+      "root_metadata": {
+        "ca_root": "tuf:fulcio-root-001",
+        "log_root": "tuf:rekor-root-001",
+        "status": "trusted"
+      },
+      "sbom": {
+        "artifact_dependencies": [
+          "artifact:workflow-001"
+        ],
+        "binary_blobs": [],
+        "capabilities": [
+          ":http/client",
+          ":db/query",
+          ":model/call"
+        ],
+        "dependencies": [
+          "gravity/core@1.0.0",
+          "gravity/http@2.1.4",
+          "gravity/ai@1.2.0"
+        ],
+        "generated_source": [
+          "sha256:generated-source-001"
+        ],
+        "licenses": [
+          "Apache-2.0"
+        ],
+        "provenance": "provenance:library-001",
+        "registry_source": "gravity-public",
+        "unsafe_summary": {
+          "count": 0
+        }
+      },
+      "signature": {
+        "policy_id": "gravity-release-keyless-v1",
+        "signature_id": "signature:support-agent-001",
+        "signer": "workload:github-actions-acme-support"
+      },
+      "transparency_log": {
+        "checkpoint": "rekor-checkpoint-001",
+        "entry": "rekor:entry-001",
+        "inclusion_proof": "sha256:rekor-proof-001"
+      },
+      "verification_report": {
+        "checks": [
+          "schema",
+          "signature",
+          "hash",
+          "identity",
+          "provenance",
+          "attestation",
+          "sbom",
+          "transparency-log",
+          "revocation",
+          "policy"
+        ],
+        "failed": [],
+        "status": ":accepted"
+      }
+    },
+    "PKG2": {
+      "artifact_id": "build-graph:acme/support-agent:0.3.0",
+      "cache_keys": {
+        "emit-library": "sha256:cache-emit-library",
+        "lower-workflow": "sha256:cache-lower-workflow",
+        "read-source": "sha256:cache-read-source"
+      },
+      "compiler_id": "gravityc-seed:0.1.0",
+      "document": "PKG2",
+      "generated_source_provenance": [
+        {
+          "generator": "gravity.schema/generate",
+          "inputs": [
+            "sha256:schema-source-001"
+          ],
+          "outputs": [
+            "sha256:generated-source-001"
+          ]
+        }
+      ],
+      "graph_id": "build-graph:phase12-support-agent",
+      "lockfile_hash": "sha256:lock-001",
+      "nodes": [
+        {
+          "cache_key": "sha256:cache-read-source",
+          "effects": [],
+          "inputs": [
+            "sha256:source-001"
+          ],
+          "node_id": "read-source",
+          "outputs": [
+            "syntax:source-001"
+          ],
+          "tool_id": "gravity.reader:0.1.0"
+        },
+        {
+          "cache_key": "sha256:cache-lower-workflow",
+          "effects": [],
+          "inputs": [
+            "mir:workflow-001"
+          ],
+          "node_id": "lower-workflow",
+          "outputs": [
+            "artifact:workflow-001"
+          ],
+          "tool_id": "gravity.workflow-lowerer:0.1.0"
+        },
+        {
+          "cache_key": "sha256:cache-sign",
+          "effects": [
+            ":build/sign"
+          ],
+          "inputs": [
+            "artifact:library-001",
+            "artifact:workflow-001",
+            "sbom:001"
+          ],
+          "node_id": "sign-release",
+          "outputs": [
+            "signature:support-agent-001"
+          ],
+          "tool_id": "gravity.signer:0.1.0"
+        }
+      ],
+      "policy_hash": "sha256:policy-001",
+      "project_manifest_hash": "sha256:project-001",
+      "release_evidence": [
+        "test-report:phase12-support-agent",
+        "safety-report:phase12-support-agent",
+        "signature:support-agent-001",
+        "sbom:support-agent-001"
+      ]
+    },
+    "PKG3": {
+      "artifact_id": "artifact:library-001",
+      "canonical": true,
+      "capability_summary": {
+        "requests": [
+          ":http/client",
+          ":db/query",
+          ":model/call"
+        ]
+      },
+      "compiler_id": "gravityc-seed:0.1.0",
+      "content_hash": "sha256:library-content-001",
+      "dependency_graph_hash": "sha256:deps-001",
+      "document": "PKG3",
+      "evidence": {
+        "capabilities": "capability-manifest:support-agent-001",
+        "effects": "effect-report:support-agent-001",
+        "safety": "safety-report:phase12-support-agent",
+        "tests": "test-report:phase12-support-agent"
+      },
+      "kind": ":library",
+      "lockfile_hash": "sha256:lock-001",
+      "package_id": "acme/support-agent",
+      "profile": ":hosted",
+      "project_manifest_hash": "sha256:project-001",
+      "provenance": [
+        "source-graph",
+        "typed-core",
+        "mir",
+        "artifact-emission",
+        "package-provenance"
+      ],
+      "schema_version": "GravityArtifact/v1",
+      "source_graph_hash": "sha256:source-001",
+      "target": ":jvm-21"
+    },
+    "PKG4": {
+      "artifact_id": "package-operation:add-gravity-http",
+      "capability_diff": {
+        "added": [],
+        "removed": []
+      },
+      "document": "PKG4",
+      "effects": [
+        ":build/network",
+        ":filesystem/write"
+      ],
+      "lockfile_diff": {
+        "changed": [
+          "gravity/http"
+        ],
+        "content_hash": "sha256:http-214"
+      },
+      "machine_readable": true,
+      "operation": "add",
+      "package_id": "gravity/http",
+      "package_manifest": {
+        "capabilities": [
+          ":http/client"
+        ],
+        "content_hash": "sha256:http-214",
+        "provenance": "provenance:gravity-http-214",
+        "version": "2.1.4"
+      },
+      "provenance_diff": {
+        "builder": "gravity-builder:trusted-linux-x64",
+        "status": "verified"
+      },
+      "registry": "gravity-public",
+      "safety_diff": {
+        "unsafe_delta": 0
+      },
+      "verification_report": {
+        "content_hash": "accepted",
+        "signature": "accepted"
+      },
+      "version": "2.1.4"
+    },
+    "PKG5": {
+      "artifact_id": "resolution:acme/support-agent:0.3.0",
+      "canonical_inputs": {
+        "features": {
+          "gravity/http": [
+            ":client"
+          ]
+        },
+        "profiles": [
+          ":hosted",
+          ":ai"
+        ],
+        "targets": [
+          ":jvm-21",
+          ":workflow-graph"
+        ]
+      },
+      "capability_diff": {
+        "added": [],
+        "removed": []
+      },
+      "document": "PKG5",
+      "lockfile": {
+        "complete": true,
+        "hash": "sha256:lock-001",
+        "records": [
+          {
+            "capability_summary": [
+              ":http/client"
+            ],
+            "content_hash": "sha256:http-214",
+            "package_id": "gravity/http",
+            "registry": "gravity-public",
+            "selected_features": [
+              ":client"
+            ],
+            "version": "2.1.4"
+          }
+        ]
+      },
+      "offline_resolution_proof": {
+        "cache_complete": true,
+        "network_required": false
+      },
+      "provenance_summary": {
+        "all_dependencies_verified": true
+      },
+      "report_id": "resolution-report:support-agent",
+      "selected_graph": {
+        "gravity/ai": "1.2.0",
+        "gravity/core": "1.0.0",
+        "gravity/http": "2.1.4"
+      },
+      "solver_tiebreakers": [
+        "highest-compatible-stable",
+        "registry-priority",
+        "lexicographic-package-id"
+      ],
+      "target_variant_table": {
+        ":jvm-21": [
+          "gravity/http:jvm"
+        ],
+        ":workflow-graph": [
+          "gravity/ai:workflow"
+        ]
+      }
+    },
+    "PKG6": {
+      "artifact_id": "capability-manifest:support-agent-001",
+      "audit_event_schema": "GravityCapabilityAudit/v1",
+      "capabilities": [
+        ":http/client",
+        ":db/query",
+        ":model/call"
+      ],
+      "denied_capabilities": [
+        ":shell/exec",
+        ":secret/read",
+        ":fs/write"
+      ],
+      "denied_effects": [
+        ":shell/exec",
+        ":secrets/read",
+        ":filesystem/write"
+      ],
+      "dependency_summaries": {
+        "gravity/http": [
+          ":http/client"
+        ]
+      },
+      "deployment_grants": [
+        ":http/client",
+        ":db/query",
+        ":model/call"
+      ],
+      "document": "PKG6",
+      "effects": [
+        ":network/http",
+        ":database/read",
+        ":ai/model-call"
+      ],
+      "package_id": "acme/support-agent",
+      "per_target": {
+        ":jvm-21": [
+          ":http/client",
+          ":db/query"
+        ],
+        ":workflow-graph": [
+          ":model/call"
+        ]
+      },
+      "runtime_handles": {
+        ":db/query": "DatabaseReadCap",
+        ":http/client": "HttpClientCap",
+        ":model/call": "ModelCallCap"
+      },
+      "sbom_fields": [
+        "capabilities",
+        "privileged-effects"
+      ]
+    },
+    "PKG7": {
+      "allowed_external_inputs": [],
+      "artifact_id": "recipe:support-agent-001",
+      "build_graph_hash": "sha256:build-graph-001",
+      "compiler_id": "gravityc-seed:0.1.0",
+      "document": "PKG7",
+      "environment": {
+        "filesystem_order": "sorted",
+        "locale": "C",
+        "network": "disabled-after-fetch",
+        "random_seed": "sha256:seed-001",
+        "time": "fixed"
+      },
+      "expected_artifact_ids": [
+        "artifact:library-001",
+        "artifact:workflow-001"
+      ],
+      "lockfile_hash": "sha256:lock-001",
+      "output_hashes": {
+        "artifact:library-001": "sha256:library-content-001",
+        "artifact:workflow-001": "sha256:workflow-content-001"
+      },
+      "package_id": "acme/support-agent",
+      "project_hash": "sha256:project-001",
+      "recipe_id": "reproducible-build:support-agent",
+      "reproducible": true,
+      "source_hash": "sha256:source-001",
+      "target_matrix": [
+        ":jvm-21",
+        ":workflow-graph"
+      ],
+      "verification_report": {
+        "canonical_manifest_match": true,
+        "content_hash_match": true
+      }
+    },
+    "PKG8": {
+      "artifact_id": "package-safety:support-agent-001",
+      "capabilities": [
+        ":http/client",
+        ":db/query",
+        ":model/call"
+      ],
+      "document": "PKG8",
+      "ffi_boundaries": [],
+      "package_id": "acme/support-agent",
+      "privileged_effects": [
+        ":ai/model-call"
+      ],
+      "proof_claims": [
+        {
+          "checker": "gravity.safety/package-check",
+          "proof_id": "proof:support-agent-capability-summary",
+          "state": ":accepted"
+        }
+      ],
+      "review_state": ":reviewed",
+      "safe_wrappers": [],
+      "safety_tests": [
+        "test:support-agent-policy"
+      ],
+      "schema_validated": true,
+      "taint_sinks": [
+        {
+          "data": ":prompt-input",
+          "sink": "support.workflow/model-call",
+          "validator": "schema:triage-input"
+        }
+      ],
+      "unsafe_islands": [],
+      "vulnerability_state": ":checked"
+    },
+    "PKG9": {
+      "access_policy": {
+        "publish": "release-manager",
+        "read": "public"
+      },
+      "artifact_id": "registry:gravity-public:support-agent",
+      "document": "PKG9",
+      "index_signature": {
+        "signature": "sig:gravity-public-index",
+        "verified": true
+      },
+      "latent_package_states": {
+        "acme.experimental/support-agent": ":reviewed"
+      },
+      "mirror_attestation": {
+        "mirror": "acme-mirror",
+        "signature_preserved": true
+      },
+      "publish_record": {
+        "package_id": "acme/support-agent",
+        "review_state": ":reviewed"
+      },
+      "registry_id": "gravity-public",
+      "registry_source_lock_entries": [
+        "gravity-public:gravity/http:2.1.4"
+      ],
+      "visibility": "public",
+      "yank_or_revocation_record": {
+        "history_preserved": true
+      }
+    }
+  },
+  "input_hash": "sha256:f8b9a2106f87205cebb9993c2afc41393c359cb89482741aa1ad12652c80c563",
+  "kind": "package-artifacts-artifact",
+  "lockfile": {
+    "complete": true,
+    "hash": "sha256:lock-001",
+    "records": [
+      {
+        "capability_summary": [
+          ":http/client"
+        ],
+        "content_hash": "sha256:http-214",
+        "package_id": "gravity/http",
+        "registry": "gravity-public",
+        "selected_features": [
+          ":client"
+        ],
+        "version": "2.1.4"
+      }
+    ]
+  },
+  "package": "acme/support-agent",
+  "package_manifest": {
+    "capabilities": [
+      ":http/client"
+    ],
+    "content_hash": "sha256:http-214",
+    "provenance": "provenance:gravity-http-214",
+    "version": "2.1.4"
+  },
+  "phase": "12",
+  "project_manifest": {
+    "artifact_id": "manifest:acme/support-agent:0.3.0",
+    "artifacts": [
+      ":library",
+      ":agent-manifest",
+      ":workflow-graph",
+      ":sbom",
+      ":signature",
+      ":provenance"
+    ],
+    "canonical_hash": "sha256:project-001",
+    "capabilities": {
+      "deny": [
+        ":shell/exec",
+        ":secret/read",
+        ":fs/write"
+      ],
+      "request": [
+        ":http/client",
+        ":db/query",
+        ":model/call"
+      ]
+    },
+    "dependencies": {
+      "gravity/ai": "1.2.0",
+      "gravity/core": "1.0.0",
+      "gravity/http": "2.1.4"
+    },
+    "document": "PKG1",
+    "edition": "2026.1",
+    "effects": {
+      "deny": [
+        ":shell/exec",
+        ":secrets/read",
+        ":filesystem/write"
+      ],
+      "request": [
+        ":network/http",
+        ":database/read",
+        ":ai/model-call"
+      ]
+    },
+    "entrypoints": {
+      "service": "support.main/serve",
+      "workflow": "support.workflow/triage"
+    },
+    "generated_source_roots": [
+      {
+        "generator": "gravity.schema/generate",
+        "hash": "sha256:generated-input-001",
+        "root": "target/generated"
+      }
+    ],
+    "lockfile_complete": true,
+    "offline_parse": true,
+    "package_id": "acme/support-agent",
+    "policy": {
+      "release": {
+        "lockfile": true,
+        "sbom": true,
+        "sign": true
+      },
+      "unsafe": "deny"
+    },
+    "profiles": [
+      ":hosted",
+      ":ai"
+    ],
+    "registries": {
+      "gravity-public": {
+        "scope": "gravity/*",
+        "signatures": "required"
+      }
+    },
+    "release_requires_lockfile": true,
+    "source_roots": [
+      "src",
+      "workflows"
+    ],
+    "targets": [
+      ":jvm-21",
+      ":workflow-graph"
+    ],
+    "version": "0.3.0"
+  },
+  "provenance_record": {
+    "artifact_id": "artifact:library-001",
+    "binary_blob_ledger": [],
+    "build_recipe_hash": "sha256:recipe-001",
+    "builder_id": "gravity-builder:trusted-linux-x64",
+    "compiler_id": "gravityc-seed:0.1.0",
+    "content_hash": "sha256:library-content-001",
+    "dependency_graph_hash": "sha256:deps-001",
+    "document": "PKG10",
+    "evidence": [
+      "test-report:phase12-support-agent",
+      "safety-report:phase12-support-agent",
+      "reproducible-build:support-agent"
+    ],
+    "generated_source_ledger": [
+      {
+        "generator": "gravity.schema/generate",
+        "inputs": [
+          "sha256:schema-source-001"
+        ],
+        "outputs": [
+          "sha256:generated-source-001"
+        ]
+      }
+    ],
+    "keyless_signing": {
+      "audience": "sigstore",
+      "certificate": "sha256:fulcio-cert-001",
+      "issuer": "https://token.actions.githubusercontent.com",
+      "root_metadata": "tuf:root-001",
+      "subject": "https://github.com/acme/support/.github/workflows/release.yml@refs/heads/main",
+      "transparency_log": "rekor:entry-001"
+    },
+    "lockfile_hash": "sha256:lock-001",
+    "project_manifest_hash": "sha256:project-001",
+    "revocation_status": ":checked",
+    "sbom_link": "sbom:support-agent-001",
+    "schema_version": "GravityProvenance/v1",
+    "signing_links": [
+      "signature:support-agent-001"
+    ],
+    "source_graph_hash": "sha256:source-001"
+  },
+  "reproducible_build": {
+    "allowed_external_inputs": [],
+    "artifact_id": "recipe:support-agent-001",
+    "build_graph_hash": "sha256:build-graph-001",
+    "compiler_id": "gravityc-seed:0.1.0",
+    "document": "PKG7",
+    "environment": {
+      "filesystem_order": "sorted",
+      "locale": "C",
+      "network": "disabled-after-fetch",
+      "random_seed": "sha256:seed-001",
+      "time": "fixed"
+    },
+    "expected_artifact_ids": [
+      "artifact:library-001",
+      "artifact:workflow-001"
+    ],
+    "lockfile_hash": "sha256:lock-001",
+    "output_hashes": {
+      "artifact:library-001": "sha256:library-content-001",
+      "artifact:workflow-001": "sha256:workflow-content-001"
+    },
+    "package_id": "acme/support-agent",
+    "project_hash": "sha256:project-001",
+    "recipe_id": "reproducible-build:support-agent",
+    "reproducible": true,
+    "source_hash": "sha256:source-001",
+    "target_matrix": [
+      ":jvm-21",
+      ":workflow-graph"
+    ],
+    "verification_report": {
+      "canonical_manifest_match": true,
+      "content_hash_match": true
+    }
+  },
+  "sbom": {
+    "artifact_dependencies": [
+      "artifact:workflow-001"
+    ],
+    "binary_blobs": [],
+    "capabilities": [
+      ":http/client",
+      ":db/query",
+      ":model/call"
+    ],
+    "dependencies": [
+      "gravity/core@1.0.0",
+      "gravity/http@2.1.4",
+      "gravity/ai@1.2.0"
+    ],
+    "generated_source": [
+      "sha256:generated-source-001"
+    ],
+    "licenses": [
+      "Apache-2.0"
+    ],
+    "provenance": "provenance:library-001",
+    "registry_source": "gravity-public",
+    "unsafe_summary": {
+      "count": 0
+    }
+  },
+  "signature_verification_report": {
+    "checks": [
+      "schema",
+      "signature",
+      "hash",
+      "identity",
+      "provenance",
+      "attestation",
+      "sbom",
+      "transparency-log",
+      "revocation",
+      "policy"
+    ],
+    "failed": [],
+    "status": ":accepted"
+  },
+  "target_matrix": {
+    "artifact_id": "target-matrix:support-agent-001",
+    "document": "PKG11",
+    "entries": [
+      {
+        "artifact_kinds": [
+          ":library"
+        ],
+        "backend": ":jvm",
+        "profile": ":hosted",
+        "runtime": ":managed",
+        "support": ":supported",
+        "target": ":jvm-21"
+      },
+      {
+        "artifact_kinds": [
+          ":workflow-graph",
+          ":agent-manifest"
+        ],
+        "backend": ":workflow",
+        "profile": ":ai",
+        "runtime": ":ai-runtime",
+        "support": ":supported",
+        "target": ":workflow-graph"
+      }
+    ],
+    "package_id": "acme/support-agent",
+    "per_target_artifacts": {
+      ":jvm-21": [
+        "artifact:library-001"
+      ],
+      ":workflow-graph": [
+        "artifact:workflow-001",
+        "artifact:agent-manifest-001"
+      ]
+    },
+    "per_target_capabilities": {
+      ":jvm-21": [
+        ":http/client",
+        ":db/query"
+      ],
+      ":workflow-graph": [
+        ":model/call"
+      ]
+    },
+    "per_target_conformance": {
+      ":jvm-21": "test-report:jvm-21",
+      ":workflow-graph": "test-report:workflow-graph"
+    },
+    "per_target_dependency_graph": {
+      ":jvm-21": [
+        "gravity/http:jvm"
+      ],
+      ":workflow-graph": [
+        "gravity/ai:workflow"
+      ]
+    },
+    "release_support_table": {
+      ":jvm-21": ":supported",
+      ":workflow-graph": ":supported"
+    }
+  }
+}

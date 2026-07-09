@@ -1,0 +1,13 @@
+; Rejected P08 R4 fixture: unchecked host null or undefined value.
+(ns runtime.r4-null
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:host/error})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:package gravity/runtime-stage0
+              :runtime {:managed {:fail :r4-null}}}))
+
+(defn main [] :- I64
+  1)

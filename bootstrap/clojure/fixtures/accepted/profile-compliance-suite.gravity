@@ -1,0 +1,16 @@
+(ns profile.compliance.suite
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [suite-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:profile-compliance
+              {:phase :phase-03
+               :task :P03-T06
+               :fixture-root bootstrap/clojure/fixtures
+               :requires #{:accepted-profile-fixtures
+                           :rejected-profile-diagnostics
+                           :capability-based-proof}}}))
+
+(def suite-ready true)

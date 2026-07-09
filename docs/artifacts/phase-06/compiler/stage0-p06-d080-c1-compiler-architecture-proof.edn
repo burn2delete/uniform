@@ -1,0 +1,62 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D080
+ :date "2026-06-25"
+ :status :complete
+ :capability :c1-compiler-architecture-document-coverage
+ :command "clojure -M:gravity compiler-c1-architecture bootstrap/clojure/fixtures/accepted/compiler-c1-architecture.gravity"
+ :artifact-kind :gravity/stage0-c1-compiler-architecture-artifact
+ :artifact-hash "sha256:626fda5148cf8db9ce7ab5dac84d6758cabc8abc74708b69a6cb002f5b0ad30a"
+ :summary {:pipeline-stages 19
+           :pass-contracts 19
+           :stage-artifacts 6
+           :ir-snapshots 5
+           :verifier-gates 19
+           :rejected-designs 7
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+                       "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+                       "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+                       "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+                       "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c1-architecture.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-pipeline-order.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-pass-contract.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-evidence-drop.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-unchecked-backend.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c1-domain-anchor.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-manifest-gap.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-c1-self-host.gravity"]
+ :diagnostic-ids ["C1-PIPELINE"
+                  "C1-PASS-CONTRACT"
+                  "C1-EVIDENCE-DROP"
+                  "C1-UNCHECKED-BACKEND"
+                  "C1-MANIFEST"
+                  "C1-DOMAIN-ANCHOR"
+                  "C1-SELF-HOST"]
+ :capability-based-proof {:pipeline-manifest-emitted? true
+                          :pass-contracts-complete? true
+                          :verifier-gates-executed? true
+                          :metadata-preserved? true
+                          :unchecked-backend-rejected? true
+                          :domain-anchors-linked? true
+                          :invalidation-regeneration-demonstrated? true
+                          :diagnostics-origin-linked? true
+                          :bootstrap-comparison-ready? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 56 tests containing 2952 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 791}
+              {:command "clojure -M:gravity compiler-c1-architecture bootstrap/clojure/fixtures/accepted/compiler-c1-architecture.gravity"
+               :result :accepted
+               :artifact-hash "sha256:626fda5148cf8db9ce7ab5dac84d6758cabc8abc74708b69a6cb002f5b0ad30a"}
+              {:command "clojure -M -e '(doseq [path (sort (map str (file-seq (clojure.java.io/file \"docs/artifacts/phase-06/compiler\"))))] (when (.endsWith path \".edn\") (read-string (slurp path))))'"
+               :result "parsed 10 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D080 for the Clojure stage0 C1 compiler architecture document boundary only."
+                 "It does not claim remaining Phase 06 document coverage tasks, backend code generation, release readiness, or self-hosting."]}

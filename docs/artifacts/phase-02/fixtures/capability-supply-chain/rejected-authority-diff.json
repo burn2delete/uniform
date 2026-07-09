@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-capability-supply-chain.json",
+  "set": {
+    "/package_checks/0/authority_diff_approved": false
+  }
+}

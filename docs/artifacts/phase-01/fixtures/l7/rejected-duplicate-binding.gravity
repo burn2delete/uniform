@@ -1,0 +1,7 @@
+(ns l7.bad.duplicate
+  (:profile :hosted))
+
+(def bad
+  (match pair
+    [x x] x
+    _ nil))

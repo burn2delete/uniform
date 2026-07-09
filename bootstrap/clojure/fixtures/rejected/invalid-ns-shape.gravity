@@ -1,0 +1,4 @@
+(ns invalid.shape
+  (:profile :hosted)
+  (:effects [:io/write])
+  (:capabilities #{:io/stdout}))

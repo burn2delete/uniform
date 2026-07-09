@@ -1,0 +1,74 @@
+(ns standard.library
+  (:profile :native)
+  (:target :jvm)
+  (:exports [vector-namespace vector-api fs-api profile-report
+             positive-example negative-example safe-wrapper compat-event
+             numeric-contract resource-contract])
+  (:effects #{:memory/raw :resource/open :resource/close})
+  (:capabilities #{:memory/raw :resource/file})
+  (:safety :audited-unsafe)
+  (:metadata {:standard-library true
+              :compatibility-version "0.1.0"}))
+
+(def vector-namespace
+  (stdlib/namespace 'gravity.collections.vector
+                    #{:core :hosted :native :firmware}
+                    :stable
+                    :region-or-managed
+                    "0.1.0"))
+
+(def vector-api
+  (stdlib/api 'gravity.collections.vector/conj
+              :pure
+              #{:core :hosted :native :firmware}
+              #{}
+              #{}
+              :region-or-managed
+              :none
+              :nonblocking
+              :deterministic))
+
+(def fs-api
+  (stdlib/api 'gravity.fs/read-text
+              :capability
+              #{:hosted :native}
+              #{:filesystem/read}
+              #{:filesystem/read}
+              :none
+              :result
+              :may-block
+              :replayable))
+
+(def profile-report
+  (stdlib/profile-report 'gravity.collections.vector
+                         #{:core :hosted :native :firmware}
+                         #{:hardware}))
+
+(def positive-example
+  (stdlib/example 'gravity.collections.vector :core :vector-conj false))
+
+(def negative-example
+  (stdlib/example 'gravity.fs :firmware :fs-profile-reject true))
+
+(def safe-wrapper
+  (stdlib/unsafe-wrapper 'gravity.memory/read-u32
+                         'gravity.memory.unsafe
+                         :bounds-alignment-and-lifetime
+                         #{:native :kernel}))
+
+(def compat-event
+  (stdlib/compat-event 'gravity.collections.vector
+                       :minor-addition
+                       "0.1.0"
+                       "0.2.0"
+                       :profile-added))
+
+(def numeric-contract
+  (stdlib/numeric-mode 'gravity.math.core/add-i64
+                       :i64
+                       :checked
+                       :nearest-even
+                       :deterministic))
+
+(def resource-contract
+  (stdlib/resource-api 'gravity.resource/with-open :file :may-block))

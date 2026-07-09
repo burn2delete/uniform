@@ -1,0 +1,385 @@
+{
+  "artifact_id": "phase-00-foundation-document-coverage-2026-06-24",
+  "kind": "foundation-document-coverage",
+  "task": "P00-D001-D010",
+  "documents": [
+    {
+      "id": "D0",
+      "path": "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+      "implementation_surface": "Phase 00 traceability, milestone, terminology, safety-performance, change-control, and document-coverage validators.",
+      "accepted_behavior": [
+        "Language, compiler platform, and execution ecosystem remain distinct identities connected by artifacts.",
+        "Profiles are compile-time contracts that decide legal forms, effects, capabilities, allocation, unsafe boundaries, and target lowerings before backend emission.",
+        "Safe Gravity dangerous operations use one of the four D8 outcomes and artifacts retain provenance."
+      ],
+      "rejected_behavior": [
+        "One universal runtime as the language definition.",
+        "Host-language semantics as Gravity semantics.",
+        "Unsafe behavior invisible to the artifact graph.",
+        "Self-hosting claims without reproducible stage evidence."
+      ],
+      "required_artifacts": [
+        "contract traceability index",
+        "profile manifests",
+        "safety proof records",
+        "artifact provenance graph",
+        "bootstrap equivalence evidence"
+      ],
+      "diagnostics": ["D0-PROFILE-RUNTIME", "D0-CAP-AMBIENT", "D0-UNSAFE-HIDDEN", "D0-ARTIFACT-MISSING"],
+      "dependencies": ["root-contract", "D1", "D3"],
+      "conformance_criteria": [
+        "Document sequence preserves D0 dependency order.",
+        "Every profile has positive and negative fixtures.",
+        "Every emitted artifact records profile, target, source identity, compiler identity, effects, capabilities, safety status, and provenance.",
+        "Every bootstrap stage records compiler identity, source hash, artifact hash, and equivalence evidence."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/contract-traceability.json",
+        "docs/artifacts/phase-00/change-control-workflow.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D1",
+      "path": "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+      "implementation_surface": "Contract traceability and document coverage records for canonical pipeline boundaries.",
+      "accepted_behavior": [
+        "Reader, macro expansion, semantic checks, MIR, domain IRs, optimization, lowering, emission, and provenance expose equivalent pass facts.",
+        "Domain IRs keep semantic anchors to typed core or MIR.",
+        "Runtime selection follows profile and target instead of ambient compiler defaults."
+      ],
+      "rejected_behavior": [
+        "Backend receiving unchecked source or core.",
+        "Domain IR artifact without semantic anchor.",
+        "Runtime service selected as an implicit default."
+      ],
+      "required_artifacts": [
+        "pass contract manifest",
+        "macro expansion trace",
+        "MIR module",
+        "domain IR module",
+        "runtime manifest",
+        "provenance graph"
+      ],
+      "diagnostics": ["D1-PIPELINE-ORDER", "D1-BACKEND-UNCHECKED", "D1-DOMAIN-ANCHOR", "D1-RUNTIME-AMBIENT", "D1-ARTIFACT-GAP"],
+      "dependencies": ["D0", "D3"],
+      "conformance_criteria": [
+        "Pipeline fixtures expose required facts before consuming passes.",
+        "Domain artifacts include typed-core or MIR anchors.",
+        "Runtime manifests show services selected by profile and target."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/contract-traceability.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D2",
+      "path": "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+      "implementation_surface": "Milestone evidence system and roadmap evidence ledgers.",
+      "accepted_behavior": [
+        "Every milestone compiles something real, rejects something real, emits artifacts, and records diagnostics before support is claimed.",
+        "Later work can start early only through documented interfaces without claiming release status.",
+        "Release evidence bundles name governing documents, fixtures, diagnostics, artifacts, profile and capability matrices, safety reports, reproducibility records, and open risks."
+      ],
+      "rejected_behavior": [
+        "Milestone claim without positive or negative fixtures.",
+        "Downstream feature claim before upstream contracts exist.",
+        "Safety, profile, or capability checks deferred after executable support is claimed.",
+        "Code emitted without required provenance or conformance artifacts."
+      ],
+      "required_artifacts": [
+        "milestone manifest",
+        "source fixtures",
+        "negative fixtures",
+        "diagnostic golden files",
+        "profile matrix",
+        "capability matrix",
+        "safety report",
+        "reproducibility record"
+      ],
+      "diagnostics": ["D2-MILESTONE-EVIDENCE", "D2-SEQUENCE-SKIP", "D2-SAFETY-DEFERRED", "D2-ARTIFACT-MISSING"],
+      "dependencies": ["D0", "D1", "D3"],
+      "conformance_criteria": [
+        "Hosted hello release compiles and runs only with evidence.",
+        "Typed core and effect artifacts are emitted before typed-core support is claimed.",
+        "Profile, effect, and capability illegal combinations are rejected.",
+        "Self-hosting trust is not retired without reproducible equivalence evidence."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/milestone-evidence-system.json",
+        "docs/artifacts/phase-00/change-control-workflow.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D3",
+      "path": "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+      "implementation_surface": "Diagnostic namespace registry and terminology boundary validator.",
+      "accepted_behavior": [
+        "Compiler, runtime, package, tooling, and governance artifacts use stable D3 names for profile, target, effect, capability, safety mode, and provenance.",
+        "Diagnostics report stable concepts rather than backend-specific approximations.",
+        "Domain-specific documents map concepts to source forms, typed core, MIR, domain IRs, artifacts, effects, and capabilities."
+      ],
+      "rejected_behavior": [
+        "Profile and target conflation.",
+        "Effect and capability conflation.",
+        "Runtime and backend conflation.",
+        "Artifact identity reduced to a file path.",
+        "Unsafe behavior described without audit tracking."
+      ],
+      "required_artifacts": [
+        "canonical glossary",
+        "concept graph",
+        "ambiguity rules",
+        "concept record shapes",
+        "diagnostic vocabulary",
+        "term governance policy"
+      ],
+      "diagnostics": ["D3-AMBIGUOUS-RUNTIME", "D3-PROFILE-TARGET-CONFLATION", "D3-EFFECT-CAPABILITY-CONFLATION", "D3-ARTIFACT-UNSTRUCTURED", "D3-UNSAFE-UNTRACKED"],
+      "dependencies": ["D0", "D1"],
+      "conformance_criteria": [
+        "Critical pre-implementation documents use D3 terms with D3 meanings.",
+        "Compiler diagnostics and artifact manifests use D3 concept names.",
+        "Documentation checks reject ambiguous normative terminology."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/diagnostic-namespace-registry.json",
+        "docs/artifacts/phase-00/cross-phase-ambiguity-log.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D4",
+      "path": "docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md",
+      "implementation_surface": "Document coverage records and traceability links for domain coverage claims.",
+      "accepted_behavior": [
+        "Coverage claims name domain, profile set, accepted subset, required effects and capabilities, emitted artifact family, and credible replacement slice.",
+        "Universal syntax, effects, capability requirements, diagnostics, and artifact provenance remain recognizable across domains.",
+        "Interop boundaries are typed, effect-annotated, capability-gated, profile-legal, audited if unsafe, artifacted, and fixture-covered."
+      ],
+      "rejected_behavior": [
+        "Hidden universal runtime.",
+        "Host reflection in constrained profiles.",
+        "Dynamic eval in kernel, firmware, hardware, or core profiles.",
+        "Simulated domain examples without real domain effects.",
+        "Target artifacts without provenance."
+      ],
+      "required_artifacts": [
+        "domain coverage manifest",
+        "canonical accepted fixture",
+        "canonical rejected fixture",
+        "profile/effect/capability matrix",
+        "runtime or no-runtime manifest",
+        "conformance report",
+        "interop boundary record"
+      ],
+      "diagnostics": ["D4-COVERAGE-INCOMPLETE", "D4-COVERAGE-TOY", "D4-HIDDEN-RUNTIME", "D4-INTEROP-UNTRACKED", "D4-REPLACEMENT-OVERCLAIM"],
+      "dependencies": ["D0", "D1", "D3"],
+      "conformance_criteria": [
+        "Domain documents include accepted and rejected canonical fixtures.",
+        "Domain fixtures compile through standard syntax, profile checking, type/effect checking, safety analysis, and artifact emission.",
+        "Coverage reports distinguish implemented, designed, delegated, and out-of-scope slices."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/contract-traceability.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D5",
+      "path": "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md",
+      "implementation_surface": "Document coverage records and change-control ambiguity log for replacement claim discipline.",
+      "accepted_behavior": [
+        "Replacement claims specify incumbent family, Gravity profiles, targets, supported slice, unsupported slice, interop boundaries, artifacts, tests, and performance expectations.",
+        "Interop preserves types, effects, capabilities, ownership, provenance, and safety boundaries.",
+        "Migration replaces unsafe or low-level logic only after audit records and negative fixtures exist."
+      ],
+      "rejected_behavior": [
+        "Broad replacement claim without a named slice.",
+        "Interop boundary without type, effect, capability, ownership, or provenance metadata.",
+        "Replacement record lacking behavior, safety, performance, or tooling evidence.",
+        "Generated or migrated unsafe code without unsafe island."
+      ],
+      "required_artifacts": [
+        "replacement slice record",
+        "incumbent capability inventory",
+        "interop boundary manifest",
+        "accepted and rejected fixture suites",
+        "behavior parity report",
+        "performance baseline",
+        "migration notes"
+      ],
+      "diagnostics": ["D5-OVERBROAD-CLAIM", "D5-INTEROP-HIDDEN", "D5-PARITY-MISSING", "D5-UNSUPPORTED-UNSTATED", "D5-UNSAFE-MIGRATION"],
+      "dependencies": ["D0", "D1", "D3", "D4"],
+      "conformance_criteria": [
+        "Every replacement claim has a replacement slice record.",
+        "Every interop boundary is represented as a typed artifact.",
+        "Replacement docs distinguish implemented, delegated, experimental, and unsupported behavior."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/cross-phase-ambiguity-log.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D6",
+      "path": "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+      "implementation_surface": "Safety-performance gate model and validator.",
+      "accepted_behavior": [
+        "Performance starts from safe semantics and erases only checks whose proof survives.",
+        "Performance claims name profile, target, runtime, backend, safety mode, layout, input domain, erased checks, proof obligations, and benchmark method.",
+        "Optimization either preserves a fact, regenerates a fact, retains a runtime check, or rejects the transformation."
+      ],
+      "rejected_behavior": [
+        "Optimization based on undefined behavior.",
+        "Silent fast math.",
+        "Dropping capability checks without proof and policy.",
+        "Target-specific assumptions missing from artifacts.",
+        "Benchmarks without reproducible harness and baseline."
+      ],
+      "required_artifacts": [
+        "performance claim record",
+        "optimization manifest",
+        "proof-backed check-elision certificate",
+        "benchmark report",
+        "target feature record",
+        "layout record",
+        "numeric mode record"
+      ],
+      "diagnostics": ["D6-CLAIM-INCOMPLETE", "D6-CHECK-ELISION-UNPROVED", "D6-FAST-MATH-IMPLICIT", "D6-EFFECT-REORDER", "D6-TARGET-ASSUMPTION"],
+      "dependencies": ["D0", "D1", "D3", "D8"],
+      "conformance_criteria": [
+        "Optimizer fixtures show preserved, regenerated, retained, and rejected safety facts.",
+        "Check-elision tests cover bounds, overflow, initialization, capability, taint, and replay checks.",
+        "Benchmark artifacts are reproducible from source hash, compiler identity, target fingerprint, and harness."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/safety-performance-gate-model.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D7",
+      "path": "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md",
+      "implementation_surface": "Document coverage records for extension manifest and pass-contract obligations.",
+      "accepted_behavior": [
+        "Extensions declare kind, owner, input contract, output contract, profiles, effects, capabilities, safety mode, artifact schema, fixtures, diagnostics, version, and compatibility policy.",
+        "Macros transform syntax objects and preserve provenance.",
+        "Compiler passes declare preserved, invalidated, and regenerated facts with proof obligations and artifacts."
+      ],
+      "rejected_behavior": [
+        "Compiler internal mutation outside pass contracts.",
+        "Text transformation claiming macro status.",
+        "Effects without declarations.",
+        "Authority outside grants.",
+        "Unsafe safe API without wrapper proof and audit.",
+        "Hermetic build effects without grants."
+      ],
+      "required_artifacts": [
+        "extension manifest",
+        "pass contract",
+        "provider contract",
+        "capability provider manifest",
+        "unsafe audit record",
+        "proof certificate",
+        "extension conformance report"
+      ],
+      "diagnostics": ["D7-EXTENSION-MANIFEST", "D7-MACRO-PROVENANCE", "D7-PASS-CONTRACT", "D7-CAPABILITY-BYPASS", "D7-UNSAFE-LEAK", "D7-HERMETIC-BUILD"],
+      "dependencies": ["D0", "D1", "D3", "D6", "D8"],
+      "conformance_criteria": [
+        "Each extension kind has a manifest schema.",
+        "Macro extension fixtures prove hygiene, provenance, and profile legality.",
+        "Provider fixtures prove profile support and rejected unsupported profiles.",
+        "Hermetic build fixtures reject unauthorized build effects."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/diagnostic-namespace-registry.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D8",
+      "path": "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+      "implementation_surface": "Safety-performance gate model, change-control workflow, and safety diagnostics.",
+      "accepted_behavior": [
+        "Every dangerous operation has exactly one outcome: :proven-safe, :runtime-checked, :rejected, or :unsafe-island.",
+        "Unsafe islands include reason, source span, profiles, effects, capabilities, preconditions, postconditions, invariants, safe boundary, evidence, owner, review, and re-review policy.",
+        "Optimizations preserve, regenerate, retain, or reject safety checks."
+      ],
+      "rejected_behavior": [
+        "Trust the backend safety.",
+        "Unsafe-by-default systems profiles.",
+        "Host-runtime checks as only evidence for lower profiles.",
+        "Unchecked FFI in safe code.",
+        "Optimizer check erasure without proof.",
+        "AI tool authority based on prompt text instead of grants."
+      ],
+      "required_artifacts": [
+        "safety mode record",
+        "safety analysis report",
+        "unsafe island audit record",
+        "safe-wrapper test report",
+        "proof certificate",
+        "runtime check manifest",
+        "artifact safety summary"
+      ],
+      "diagnostics": ["D8-UNCLASSIFIED-DANGER", "D8-UNSAFE-MISSING-METADATA", "D8-SAFE-WRAPPER-LEAK", "D8-CHECK-ERASED", "D8-CAPABILITY-SAFETY", "D8-GENERATED-UNSAFE"],
+      "dependencies": ["D0", "D1", "D3"],
+      "conformance_criteria": [
+        "Each safety family has positive, negative, and unsafe-island fixtures.",
+        "Safe code fixtures never require target undefined behavior.",
+        "Unsafe island extraction produces stable audit artifacts.",
+        "Optimizer fixtures demonstrate preserved proof or residual checks."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/safety-performance-gate-model.json",
+        "docs/artifacts/phase-00/change-control-workflow.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    },
+    {
+      "id": "D9",
+      "path": "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+      "implementation_surface": "Milestone evidence, safety-performance, change-control, and document coverage validators.",
+      "accepted_behavior": [
+        "Safety-critical, math-critical, optimization-critical, replay-critical, unsafe, package, and bootstrap claims produce explicit evidence.",
+        "Proof or certificate records name claim, domain, assumptions, checker, inputs, and result.",
+        "Optimization cannot erase checks or proof obligations without replacement evidence.",
+        "Bootstrap verification is reproducible from recorded inputs."
+      ],
+      "rejected_behavior": [
+        "Prose-only proof claims.",
+        "EML normalization presented as equality without proof.",
+        "Benchmark results presented as correctness evidence.",
+        "Test snapshots presented as proof certificates.",
+        "Self-hosting trust without reproducible stage comparison."
+      ],
+      "required_artifacts": [
+        "proof certificate",
+        "runtime check manifest",
+        "approximation certificate",
+        "MIR verifier report",
+        "pass correctness record",
+        "replay record",
+        "audit record",
+        "reproducible build evidence",
+        "bootstrap equivalence report"
+      ],
+      "diagnostics": ["D9-PROOF-MISSING", "D9-CERT-UNCHECKABLE", "D9-EML-EQUALITY", "D9-CHECK-ELISION-NO-PROOF", "D9-REPLAY-GAP", "D9-BOOTSTRAP-EQUIV"],
+      "dependencies": ["D0", "D1", "D3", "D6", "D8"],
+      "conformance_criteria": [
+        "Approximation fixtures include accepted and rejected certificates.",
+        "MIR verifier fixtures catch malformed control flow, missing type facts, missing effect facts, and invalid profile facts.",
+        "Optimization fixtures show preserved or regenerated proof evidence.",
+        "Bootstrap fixtures compare stage outputs and explain permitted differences."
+      ],
+      "evidence_refs": [
+        "docs/artifacts/phase-00/milestone-evidence-system.json",
+        "docs/artifacts/phase-00/safety-performance-gate-model.json",
+        "docs/artifacts/phase-00/change-control-workflow.json",
+        "docs/artifacts/phase-00/foundation-document-coverage.json"
+      ]
+    }
+  ]
+}

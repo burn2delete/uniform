@@ -1,0 +1,43 @@
+{:phase "05"
+ :task "P05-D074"
+ :document "MATH6"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/074-math6-interval-arithmetic-and-real-proof-engine.md"
+ :artifact-kind :gravity/stage0-math-proof-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-proof.gravity"
+ :covered-artifact-fields
+ [:claim-record
+  :interval-domain-map
+  :partition-tree
+  :rational-bound-ledger
+  :roundoff-ledger
+  :branch-coverage-report
+  :unresolved-cell-report
+  :checker-transcript
+  :safe15-proof-reference
+  :math-proof-conformance-results]
+ :required-diagnostic-ids
+ ["MATH6-CLAIM" "MATH6-DOMAIN" "MATH6-ROUNDING"
+  "MATH6-BRANCH" "MATH6-PARTITION" "MATH6-BOUND"
+  "MATH6-UNRESOLVED" "MATH6-PROVIDER" "MATH6-INVALIDATED"]
+ :rejected-fixtures
+ [{:fixture "math-proof-claim.gravity" :diagnostic "MATH6-CLAIM"}
+  {:fixture "math-proof-domain.gravity" :diagnostic "MATH6-DOMAIN"}
+  {:fixture "math-proof-rounding.gravity" :diagnostic "MATH6-ROUNDING"}
+  {:fixture "math-proof-branch.gravity" :diagnostic "MATH6-BRANCH"}
+  {:fixture "math-proof-partition.gravity" :diagnostic "MATH6-PARTITION"}
+  {:fixture "math-proof-bound.gravity" :diagnostic "MATH6-BOUND"}
+  {:fixture "math-proof-unresolved.gravity" :diagnostic "MATH6-UNRESOLVED"}
+  {:fixture "math-proof-provider.gravity" :diagnostic "MATH6-PROVIDER"}
+  {:fixture "math-proof-invalidated.gravity" :diagnostic "MATH6-INVALIDATED"}]
+ :capability-based-proof
+ {:claims-shaped? true
+  :exact-domains-checked? true
+  :branch-policy-checked? true
+  :outward-rounding-proven? true
+  :partition-replayable? true
+  :bounds-separated-and-sufficient? true
+  :unresolved-cells-rejected-without-residual-check? true
+  :safe15-provider-import-checked? true
+  :invalidated-artifacts-rejected? true
+  :status :complete}
+ :status :complete}

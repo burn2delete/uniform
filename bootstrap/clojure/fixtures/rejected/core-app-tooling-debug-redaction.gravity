@@ -1,0 +1,17 @@
+(ns core.app.tooling-debug-redaction
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:tooling {:compiled-gate
+                        {:debugger-traces
+                         [{:tool-id :gravity-debug
+                           :redacted-value-access? true
+                           :variable-reports
+                           [{:name "secret"
+                             :redacted true
+                             :accessed? true}]}]}}}))
+
+(defn main []
+  (println "bad tooling debug redaction"))

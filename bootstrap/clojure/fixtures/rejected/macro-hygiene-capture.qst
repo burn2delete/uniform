@@ -1,0 +1,20 @@
+(ns bad.macro.hygiene-capture
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe))
+
+(defmacro with-x
+  {:version "stage0-test.1"
+   :build-effects #{}
+   :hygiene-policy :hygienic
+   :output-contract :gravity-syntax}
+  [body]
+  (syntax-quote
+    (let [x 0]
+      (unquote body))))
+
+(defn main []
+  (let [x 1]
+    (with-x (println x))))

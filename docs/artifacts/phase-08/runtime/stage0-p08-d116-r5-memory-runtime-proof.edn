@@ -1,0 +1,34 @@
+{:artifact :gravity/stage0-r5-memory-runtime-document-proof
+ :task "P08-D116"
+ :phase "08 - Runtime Architecture"
+ :status :complete
+ :date "2026-06-29"
+ :command "clojure -M:gravity runtime-r5-document bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+ :artifact-kind :gravity/stage0-r5-memory-runtime-document-artifact
+ :artifact-id "sha256:e0b321843d83e69ea408cab9e2609c133583cae260d0222e4243ae1e38844031"
+ :input-artifact "sha256:f903f759d277bd89cb6ce6475638fc1a3be74ef6c882bb041232a87127c891e3"
+ :input-artifact-kind :gravity/stage0-minimal-native-memory-runtime-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/runtime-minimal-native-memory.gravity"
+ :rejected-fixture-globs
+ ["bootstrap/clojure/fixtures/rejected/runtime-r5-*.gravity"]
+ :required-diagnostic-ids
+ ["R5-PROVIDER" "R5-ALLOC" "R5-LIFETIME" "R5-LINEAR" "R5-RAW"
+  "R5-DEVICE" "R5-BOUNDS" "R5-PROOF" "R5-DEBUG" "R5-MANIFEST"]
+ :capability-based-proof
+ {:memory-runtime-input-verified? true
+  :provider-selection-covered? true
+  :allocation-lifetime-covered? true
+  :linear-resource-covered? true
+  :raw-memory-audited? true
+  :device-memory-covered? true
+  :runtime-checks-preserve-compiler-facts? true
+  :debug-trace-safe? true
+  :proof-elision-covered? true
+  :diagnostics-covered? true
+  :status :complete}
+ :evidence
+ {:diagnostic-count 10
+  :test-command "clojure -M:test"
+  :test-result "101 tests, 6262 assertions, 0 failures, 0 errors, 1356 rejected fixtures"}
+ :residual-risk
+ "This proves deterministic Clojure stage0 coverage of the R5 memory runtime document through the P08-T02 minimal native memory manifest. It does not claim production allocator execution, device memory execution, native object linking, hardware execution, or complete Phase 08 document coverage."}

@@ -1,0 +1,28 @@
+{:task-id :P02-D044
+ :document "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
+ :status :passed
+ :date "2026-06-24"
+ :agent "Codex"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/safety-conformance.gravity"
+ :artifact-kind :gravity/stage0-safety-conformance-artifact
+ :document-coverage {:safety-proof-records 1
+                     :safety-certificates 1
+                     :check-erasure-records 1
+                     :certificate-trust-records 1
+                     :certificate-invalidation-records 1
+                     :imported-certificate-verifications 1
+                     :proof-provider-records 1
+                     :unsafe-wrapper-audit-views 1
+                     :backend-proof-preservation-records 1
+                     :conformance-status :complete}
+ :rejected-diagnostics ["SAFE15-PROOF-MISSING"
+                        "SAFE15-CERT-SCHEMA"
+                        "SAFE15-CERT-TRUST"
+                        "SAFE15-CERT-MISMATCH"
+                        "SAFE15-INVALIDATED"
+                        "SAFE15-CHECK-ERASE"
+                        "SAFE15-PROVIDER"
+                        "SAFE15-MANUAL"
+                        "SAFE15-BACKEND"]
+ :validation [{:command "clojure -M:test"
+               :result "SAFE15 accepted records and 9 rejected diagnostics passed"}]}

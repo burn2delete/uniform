@@ -1,0 +1,6 @@
+{
+  "extends": "accepted-safety-conformance.json",
+  "set": {
+    "/fixture_results/0/actual/verdict": ":reject"
+  }
+}

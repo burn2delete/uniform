@@ -1,0 +1,4 @@
+(ns compiler.verify.c16-replay
+  (:profile :hosted)
+  (:target :jvm)
+  (:metadata {:compiler {:verification {:fail :c16-replay}}}))

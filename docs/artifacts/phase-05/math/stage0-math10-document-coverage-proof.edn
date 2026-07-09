@@ -1,0 +1,58 @@
+{:phase "05"
+ :task "P05-D078"
+ :document "MATH10"
+ :document-path "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md"
+ :artifact-kind :gravity/stage0-math-conformance-artifact
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-conformance.gravity"
+ :covered-artifact-fields
+ [:elementary-subgraph-detection-report
+  :fused-efir-graph
+  :candidate-implementation-set
+  :eml-and-rewrite-candidate-references
+  :provider-eligibility-report
+  :correct-rounding-target-manifest
+  :correctly-rounded-interval-generation-ledger
+  :synthesis-constraint-transcript
+  :provider-comparison-matrix
+  :certificate-and-proof-references
+  :autotune-or-benchmark-evidence
+  :selected-lowering-decision-record
+  :rejected-candidate-report
+  :backend-lowering-map
+  :math-conformance-results]
+ :required-diagnostic-ids
+ ["MATH10-DETECT" "MATH10-EFIR" "MATH10-CANDIDATE"
+  "MATH10-PROOF" "MATH10-CERTIFICATE" "MATH10-ROUNDING-TARGET"
+  "MATH10-ROUNDING-INTERVAL" "MATH10-SYNTHESIS"
+  "MATH10-FUSION" "MATH10-PROVIDER" "MATH10-PROVIDER-COMPARE"
+  "MATH10-SIMD" "MATH10-GPU" "MATH10-AUTOTUNE"
+  "MATH10-FALLBACK"]
+ :rejected-fixtures
+ [{:fixture "math-opt-detect.gravity" :diagnostic "MATH10-DETECT"}
+  {:fixture "math-opt-efir.gravity" :diagnostic "MATH10-EFIR"}
+  {:fixture "math-opt-candidate.gravity" :diagnostic "MATH10-CANDIDATE"}
+  {:fixture "math-opt-proof.gravity" :diagnostic "MATH10-PROOF"}
+  {:fixture "math-opt-certificate.gravity" :diagnostic "MATH10-CERTIFICATE"}
+  {:fixture "math-opt-rounding-target.gravity" :diagnostic "MATH10-ROUNDING-TARGET"}
+  {:fixture "math-opt-rounding-interval.gravity" :diagnostic "MATH10-ROUNDING-INTERVAL"}
+  {:fixture "math-opt-synthesis.gravity" :diagnostic "MATH10-SYNTHESIS"}
+  {:fixture "math-opt-fusion.gravity" :diagnostic "MATH10-FUSION"}
+  {:fixture "math-opt-provider.gravity" :diagnostic "MATH10-PROVIDER"}
+  {:fixture "math-opt-provider-compare.gravity" :diagnostic "MATH10-PROVIDER-COMPARE"}
+  {:fixture "math-opt-simd.gravity" :diagnostic "MATH10-SIMD"}
+  {:fixture "math-opt-gpu.gravity" :diagnostic "MATH10-GPU"}
+  {:fixture "math-opt-autotune.gravity" :diagnostic "MATH10-AUTOTUNE"}
+  {:fixture "math-opt-fallback.gravity" :diagnostic "MATH10-FALLBACK"}]
+ :capability-based-proof
+ {:elementary-detection-preserves-anchors? true
+  :optimization-starts-from-verified-efir? true
+  :selected-candidates-proof-and-certificate-gated? true
+  :correct-rounding-target-and-intervals-checked? true
+  :synthesis-constraints-checkable? true
+  :fusion-has-whole-expression-certificate? true
+  :provider-comparison-semantic? true
+  :simd-and-gpu-lowering-guarded? true
+  :autotune-selection-replayable? true
+  :fallback-dispatch-legal? true
+  :status :complete}
+ :status :complete}

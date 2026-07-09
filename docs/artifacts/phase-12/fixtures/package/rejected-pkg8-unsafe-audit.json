@@ -1,0 +1,12 @@
+{
+  "kind": "package-artifacts-fixture-patch",
+  "base": "docs/artifacts/phase-12/fixtures/package/accepted-package-artifacts.json",
+  "patch": {
+    "package_safety": {
+      "unsafe_islands": [
+        "ffi.raw/call"
+      ],
+      "unsafe_without_audit": true
+    }
+  }
+}

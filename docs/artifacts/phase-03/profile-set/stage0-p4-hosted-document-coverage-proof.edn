@@ -1,0 +1,22 @@
+{:proof-id :stage0-p4-hosted-document-coverage-proof
+ :date "2026-06-24"
+ :task :P03-D049
+ :document "P4"
+ :profile :hosted
+ :status :passed
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/profile-set-hosted.gravity"
+ :artifact-kind :gravity/stage0-profile-set-artifact
+ :effective-effects #{:memory/allocate :reflection/use :dynamic/eval :host/error}
+ :effective-capabilities #{:memory/allocator :reflection/use}
+ :diagnostic-fixtures
+ {"P4-HOST-EFFECT" "bootstrap/clojure/fixtures/rejected/profile-hosted-host-effect.gravity"
+  "P4-HOST-CAPABILITY" "bootstrap/clojure/fixtures/rejected/profile-hosted-host-capability.gravity"
+  "P4-REFLECTION" "bootstrap/clojure/fixtures/rejected/profile-hosted-reflection.gravity"
+  "P4-DYNAMIC" "bootstrap/clojure/fixtures/rejected/profile-hosted-dynamic.gravity"
+  "P4-HOST-OBJECT" "bootstrap/clojure/fixtures/rejected/profile-hosted-host-object.gravity"
+  "P4-EXCEPTION" "bootstrap/clojure/fixtures/rejected/profile-hosted-exception.gravity"
+  "P4-RESOURCE" "bootstrap/clojure/fixtures/rejected/profile-hosted-resource.gravity"
+  "P4-RAW-MEMORY" "bootstrap/clojure/fixtures/rejected/profile-hosted-raw-memory.gravity"
+  "P4-CROSS-IMPORT" "bootstrap/clojure/fixtures/rejected/profile-hosted-cross-import.gravity"
+  "P4-SOURCEMAP" "bootstrap/clojure/fixtures/rejected/profile-hosted-sourcemap.gravity"}
+ :validation "clojure -M:test passed 35 tests, 1848 assertions, 479 rejected fixtures"}

@@ -1,0 +1,14 @@
+(ns math.eml-complex
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:eml
+     {:complex-intermediates
+      [{:intermediate-id :complex/log-exp
+        :eml-artifact-id :eml/sigmoid-normalized
+        :introduced? true
+        :final-domain-valid? true}]}}}))

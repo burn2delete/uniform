@@ -1,0 +1,12 @@
+; Rejected P10 S6 fixture.
+(ns schema.s6-data-loss
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:schema/derive :database/write})
+  (:capabilities #{:schema/validate :db/migrate})
+  (:safety :safe)
+  (:metadata {:package gravity/schema-stage0
+              :schema {:interop {:fail :s6-data-loss}}}))
+
+(defn main [] :- I64 6)

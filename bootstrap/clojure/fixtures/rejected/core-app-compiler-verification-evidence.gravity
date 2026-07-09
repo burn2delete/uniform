@@ -1,0 +1,17 @@
+(ns core.app.compiler-verification-evidence
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:compiler {:compiled-gate
+                         {:verification-risk
+                          [{:pass :emit-instruction-plan
+                            :version "stage0-p06-s1"
+                            :risk :high
+                            :minimum-evidence #{:translation-validation
+                                                :conformance-fixtures}
+                            :available-evidence #{}}]}}}))
+
+(defn main []
+  (println "bad compiler verification evidence"))

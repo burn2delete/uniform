@@ -1,0 +1,26 @@
+(ns core.app.performance-target
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:performance
+              {:claim
+               {:claim-id :perf/missing-target-fingerprint
+                :profile :hosted
+                :target :clojure-stage0-jvm
+                :target-features #{:clojure-jvm}
+                :input-shape {:entrypoint :main
+                              :arguments 0}
+                :layout {:instruction-plan :linear-vector
+                         :values :clojure-hosted}
+                :safety-mode :safe
+                :benchmark {:harness :stage0/core-app-smoke}
+                :semantic-proof #{:source-semantics-preserved}
+                :safety-proof #{:safe1-outcomes-preserved}
+                :artifacts #{:optimized-mir
+                             :proof-index
+                             :benchmark-report}}}}))
+
+(defn main []
+  (println "missing target fingerprint"))

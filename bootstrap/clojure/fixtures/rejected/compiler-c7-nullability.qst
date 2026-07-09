@@ -1,0 +1,9 @@
+(ns compiler.c7.nullability
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:c7-type-check {:fail :nullability}}}))
+
+(def value 1)

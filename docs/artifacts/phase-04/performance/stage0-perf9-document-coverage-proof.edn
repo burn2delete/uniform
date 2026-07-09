@@ -1,0 +1,57 @@
+{:proof-id :stage0-perf9-document-coverage-proof
+ :date "2026-06-24"
+ :phase 4
+ :task :P04-D067
+ :document "PERF9"
+ :governing-document "docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md"
+ :status :passed
+ :implementation-surface
+ {:command "realtime-governance"
+  :entrypoint :gravity.bootstrap/realtime-governance-file-artifact
+  :artifact-kind :gravity/stage0-realtime-governance-artifact
+  :accepted-fixture "bootstrap/clojure/fixtures/accepted/realtime-governance.gravity"
+  :rejected-fixtures
+  ["bootstrap/clojure/fixtures/rejected/realtime-latency-budget.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-loop.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-recursion.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-alloc.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-gc.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-blocking.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-lock.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-preemption.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-evidence.gravity"
+   "bootstrap/clojure/fixtures/rejected/realtime-latency-optimization.gravity"]}
+ :accepted-behavior
+ ["latency contracts record budget, jitter, target, workload, allocation, blocking, bounds, preemption, forbidden runtime services, evidence, and failure mode"
+  "deterministic paths require bounded loops, recursion, allocation, locks, preemption, and evidence tied to target and workload fingerprints"
+  "optimizations that introduce unpredictable tail latency are rejected"]
+ :rejected-behavior
+ ["missing or exceeded latency budget"
+  "unbounded loops"
+  "unbounded recursion"
+  "forbidden or unbounded allocation"
+  "managed runtime pauses"
+  "unbounded blocking"
+  "unbounded locks"
+  "missing preemption assumptions"
+  "missing worst-case or bounded empirical evidence"
+  "optimization-induced unpredictable latency"]
+ :required-artifacts
+ [:latency-contract-manifest :bounded-loop-proof :recursion-bound-proof
+  :allocation-report :blocking-lock-report :interrupt-preemption-report
+  :worst-case-path-analysis :bounded-empirical-latency-report]
+ :diagnostics
+ ["PERF9-BUDGET" "PERF9-LOOP" "PERF9-RECURSION" "PERF9-ALLOC"
+  "PERF9-GC" "PERF9-BLOCKING" "PERF9-LOCK" "PERF9-PREEMPTION"
+  "PERF9-EVIDENCE" "PERF9-OPTIMIZATION"]
+ :conformance
+ {:latency-contract-manifest :complete
+  :loop-recursion-allocation-bounds :complete
+  :blocking-lock-preemption :complete
+  :runtime-service-rejection :complete
+  :worst-case-evidence :complete}
+ :validation
+ [{:command "clojure -M:test"
+   :output "Ran 40 tests containing 2053 assertions. 0 failures, 0 errors."}]
+ :limits
+ ["This completes PERF9 document coverage only for the Clojure stage0 artifact boundary."]}

@@ -1,0 +1,7 @@
+{
+  "extends": "accepted-alternative-memory.json",
+  "set": {
+    "/release_evidence/0/release_count": 0,
+    "/release_evidence/0/released": false
+  }
+}

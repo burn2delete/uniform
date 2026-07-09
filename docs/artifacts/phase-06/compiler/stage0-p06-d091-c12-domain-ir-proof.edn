@@ -1,0 +1,67 @@
+{:artifact :gravity/stage0-proof-record
+ :phase :phase-06
+ :task :P06-D091
+ :date "2026-06-25"
+ :status :complete
+ :capability :c12-domain-ir-architecture-document-coverage
+ :command "clojure -M:gravity compiler-c12-domain-ir bootstrap/clojure/fixtures/accepted/compiler-c12-domain-ir.gravity"
+ :artifact-kind :gravity/stage0-c12-domain-ir-architecture-artifact
+ :artifact-hash "sha256:49095f63f6003d82ae9e43826e1eaa6cdc482995b39dfd78999b359ceffb85ec"
+ :summary {:domain-registrations 10
+           :domain-artifacts 10
+           :semantic-anchors 10
+           :proof-records 10
+           :lowering-records 10
+           :fallback-records 10
+           :diagnostics 9
+           :rejected-designs 9
+           :proof :complete
+           :status :complete}
+ :governing-documents ["docs/phase-06-compiler-architecture/README.md"
+                       "docs/phase-06-compiler-architecture/IMPLEMENTATION-ROADMAP.md"
+                       "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+                       "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"]
+ :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/compiler-c12-domain-ir.gravity"]
+ :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/compiler-domain-ir-registration.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-anchor.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-schema.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-facts.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-verify.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-proof.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-lowering.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-fallback.gravity"
+                     "bootstrap/clojure/fixtures/rejected/compiler-domain-ir-plugin.gravity"]
+ :diagnostic-ids ["C12-REGISTRATION"
+                  "C12-ANCHOR"
+                  "C12-SCHEMA"
+                  "C12-FACTS"
+                  "C12-VERIFY"
+                  "C12-PROOF"
+                  "C12-LOWERING"
+                  "C12-FALLBACK"
+                  "C12-PLUGIN"]
+ :capability-based-proof {:c11-mir-input-verified? true
+                          :registrations-complete? true
+                          :required-families-covered? true
+                          :semantic-anchors-linked? true
+                          :facts-preserved? true
+                          :verifiers-accepted? true
+                          :proof-evidence-present? true
+                          :lowering-or-fallback-present? true
+                          :plugin-policy-enforced? true
+                          :diagnostics-covered? true
+                          :status :complete}
+ :validation [{:command "clojure -M:test"
+               :result "Ran 64 tests containing 3424 assertions. 0 failures, 0 errors."
+               :rejected-fixtures 869}
+              {:command "clojure -M:gravity compiler-c12-domain-ir bootstrap/clojure/fixtures/accepted/compiler-c12-domain-ir.gravity"
+               :result :accepted
+               :artifact-hash "sha256:49095f63f6003d82ae9e43826e1eaa6cdc482995b39dfd78999b359ceffb85ec"}
+              {:command "clojure -M -e <phase-06 compiler EDN parse>"
+               :result "parsed 18 phase-06 compiler EDN proof files"}
+              {:command "/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py"
+               :result "validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders"}
+              {:command "git diff --check"
+               :result :passed}]
+ :residual-risk ["This completes P06-D091 for the Clojure stage0 C12 domain IR architecture document boundary only."
+                 "It does not claim optimization, target lowering, backend code generation, release readiness, or self-hosting."]}

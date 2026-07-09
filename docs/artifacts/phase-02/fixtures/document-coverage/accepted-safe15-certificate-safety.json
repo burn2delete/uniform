@@ -1,0 +1,127 @@
+{
+  "kind": "safe15-certificate-safety-input",
+  "source_span": {
+    "source": "fixtures/safe15/check-erasure.gravity",
+    "line": 14,
+    "column": 11
+  },
+  "accepted_profiles": [
+    ":native"
+  ],
+  "accepted_targets": [
+    ":llvm"
+  ],
+  "proof_records": [
+    {
+      "id": "proof-bounds-buffer-read",
+      "claim": "bounds-safe",
+      "source_span": {
+        "source": "fixtures/safe15/check-erasure.gravity",
+        "line": 14,
+        "column": 11
+      },
+      "artifact_node": "mir/node-77",
+      "profile": ":native",
+      "target": ":llvm",
+      "assumptions": [
+        "i-in-range",
+        "len-known",
+        "no-overflow"
+      ],
+      "method": "range-analysis",
+      "provider": "gravity.compiler/range",
+      "inputs": [
+        "typed-core-22",
+        "loop-invariant-8"
+      ],
+      "invalidated_by": [
+        "loop-transform",
+        "integer-mode-change",
+        "target-width-change"
+      ],
+      "result": ":proven-safe"
+    }
+  ],
+  "certificates": [
+    {
+      "id": "cert-bounds-buffer-read",
+      "package_id": "gravity.safety.demo",
+      "compiler_id": "gravity-proof-demo",
+      "provider_id": "gravity.compiler/range",
+      "claim": "bounds-safe",
+      "source_span": {
+        "source": "fixtures/safe15/check-erasure.gravity",
+        "line": 14,
+        "column": 11
+      },
+      "artifact_node": "mir/node-77",
+      "profile": ":native",
+      "target": ":llvm",
+      "assumptions": [
+        "i-in-range",
+        "len-known",
+        "no-overflow"
+      ],
+      "method": "range-analysis",
+      "inputs": [
+        "typed-core-22",
+        "loop-invariant-8"
+      ],
+      "invalidated_by": [
+        "loop-transform",
+        "integer-mode-change",
+        "target-width-change"
+      ],
+      "trust_root": "gravity-local-demo",
+      "signature": "sha256:7aa24e1f6a6a5a970d5c97bdba2af4f4b1e20647b272c187af5f9095e8a3ef57",
+      "verification_status": ":accepted"
+    }
+  ],
+  "check_erasure_records": [
+    {
+      "operation_id": "bounds-read",
+      "erased_check": "bounds",
+      "proof_id": "proof-bounds-buffer-read",
+      "certificate_id": "cert-bounds-buffer-read",
+      "backend_preservation": ":preserved"
+    }
+  ],
+  "certificate_trust_records": [
+    {
+      "certificate_id": "cert-bounds-buffer-read",
+      "trust_root": "gravity-local-demo",
+      "status": ":accepted"
+    }
+  ],
+  "invalidation_records": [
+    {
+      "certificate_id": "cert-bounds-buffer-read",
+      "invalidated_by": [],
+      "status": ":current",
+      "certificate_used": true
+    }
+  ],
+  "imported_certificate_verification_records": [
+    {
+      "certificate_id": "cert-bounds-buffer-read",
+      "package_digest_match": true,
+      "schema_compatible": true,
+      "signature_trusted": true,
+      "status": ":accepted"
+    }
+  ],
+  "proof_provider_records": [
+    {
+      "provider": "gravity.compiler/range",
+      "version": "0.1.0",
+      "policy": ":accepted"
+    }
+  ],
+  "audit_views_for_unsafe_wrappers": [
+    {
+      "wrapper": "safe-buffer-read",
+      "certificate_id": "cert-bounds-buffer-read",
+      "invariant": "bounds-safe"
+    }
+  ]
+}

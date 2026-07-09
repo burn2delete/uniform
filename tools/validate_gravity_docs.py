@@ -8,6 +8,8 @@ import re
 import sys
 from pathlib import Path
 
+from validate_full_language_roadmap import validate_current as validate_full_language_roadmap
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
@@ -68,10 +70,12 @@ def main() -> None:
         assert_ascii(path)
 
     phase_readmes = sorted(DOCS.glob("phase-*/README.md"))
-    if len(phase_readmes) != 18:
-        fail(f"expected 18 phase README files, found {len(phase_readmes)}")
+    if len(phase_readmes) != 19:
+        fail(f"expected 19 phase README files, found {len(phase_readmes)}")
 
-    print("validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders")
+    validate_full_language_roadmap()
+
+    print("validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders")
 
 
 if __name__ == "__main__":

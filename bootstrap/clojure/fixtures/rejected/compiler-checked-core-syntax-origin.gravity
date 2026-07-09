@@ -1,0 +1,11 @@
+(ns compiler.checked-core.syntax-origin
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:compiler {:checked-core {:fail :syntax-origin}}}))
+
+(defn ready []
+  true)

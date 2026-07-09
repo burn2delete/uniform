@@ -1,0 +1,11 @@
+(ns math.rewrite-proof
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:rewrite-rule-overrides
+            [{:proof-status :candidate
+              :used-as-accepted? true}]}}}))

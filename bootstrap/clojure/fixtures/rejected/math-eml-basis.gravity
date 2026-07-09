@@ -1,0 +1,24 @@
+(ns math.eml-basis
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math
+    {:eml
+     {:eml-expressions
+      [{:ir :gravity/eml
+        :eml-artifact-id :eml/bad-basis
+        :basis :unsupported
+        :source-efir :efir/sigmoid
+        :numeric-mode :certified-approx
+        :precision {:type :F32 :absolute-error-max 1.0e-5}
+        :domain {'x {:real [-8.0 8.0]}}
+        :codomain {:real [0.0 1.0]}
+        :branch-policy {:exp :real-only}
+        :expr {:op :mystery}
+        :node-map [{:efir :exp-neg-x
+                    :eml :e-bad
+                    :span "math/eml-basis.gravity:8:1"}]
+        :runtime-representation? false}]}}}))

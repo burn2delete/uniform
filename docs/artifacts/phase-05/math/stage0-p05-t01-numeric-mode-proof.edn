@@ -1,0 +1,81 @@
+{:phase "05"
+ :task "P05-T01"
+ :documents ["MATH1" "MATH7" "MATH8"]
+ :artifact-kind :gravity/stage0-numeric-mode-artifact
+ :artifact-hash "sha256:39f30653bc3daa490a6e273844c3c56045fa5b2a113fc65169d7dac4b6fdda20"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-numeric-modes.gravity"
+ :command "clojure -M:gravity numeric-modes bootstrap/clojure/fixtures/accepted/math-numeric-modes.gravity"
+ :summary
+ {:pass :numeric-mode-validation
+  :output :numeric-mode-table
+  :conversion-rule-count 4
+  :mode-record-count 3
+  :floating-manifest-count 2
+  :required-diagnostic-count 29
+  :status :complete}
+ :capability-based-proof
+ {:numeric-families-explicit? true
+  :conversion-classes-explicit? true
+  :implicit-narrowing-rejected? true
+  :symbolic-equality-proof-backed? true
+  :mode-contracts-explicit? true
+  :provider-selection-mode-checked? true
+  :floating-manifests-complete? true
+  :target-defaults-rejected? true
+  :capability-authority-preserved? true
+  :status :complete}
+ :rejected-fixtures
+ [{:fixture "math-numeric-family.gravity" :diagnostic "MATH1-FAMILY"}
+  {:fixture "math-numeric-conversion.gravity" :diagnostic "MATH1-CONVERSION"}
+  {:fixture "math-numeric-narrow.gravity" :diagnostic "MATH1-NARROW"}
+  {:fixture "math-numeric-precision.gravity" :diagnostic "MATH1-PRECISION"}
+  {:fixture "math-numeric-rounding.gravity" :diagnostic "MATH1-ROUNDING"}
+  {:fixture "math-numeric-branch.gravity" :diagnostic "MATH1-BRANCH"}
+  {:fixture "math-numeric-allocation.gravity" :diagnostic "MATH1-ALLOCATION"}
+  {:fixture "math-numeric-equality.gravity" :diagnostic "MATH1-EQUALITY"}
+  {:fixture "math-numeric-profile.gravity" :diagnostic "MATH1-PROFILE"}
+  {:fixture "math-mode-missing.gravity" :diagnostic "MATH7-MISSING"}
+  {:fixture "math-mode-scope.gravity" :diagnostic "MATH7-SCOPE"}
+  {:fixture "math-mode-downgrade.gravity" :diagnostic "MATH7-DOWNGRADE"}
+  {:fixture "math-mode-target-default.gravity" :diagnostic "MATH7-TARGET-DEFAULT"}
+  {:fixture "math-mode-precision.gravity" :diagnostic "MATH7-PRECISION"}
+  {:fixture "math-mode-provider.gravity" :diagnostic "MATH7-PROVIDER"}
+  {:fixture "math-mode-rounding.gravity" :diagnostic "MATH7-ROUNDING"}
+  {:fixture "math-mode-exceptional.gravity" :diagnostic "MATH7-EXCEPTIONAL"}
+  {:fixture "math-mode-residual.gravity" :diagnostic "MATH7-RESIDUAL"}
+  {:fixture "math-float-manifest.gravity" :diagnostic "MATH8-MANIFEST"}
+  {:fixture "math-float-format.gravity" :diagnostic "MATH8-FORMAT"}
+  {:fixture "math-float-rounding.gravity" :diagnostic "MATH8-ROUNDING"}
+  {:fixture "math-float-nan.gravity" :diagnostic "MATH8-NAN"}
+  {:fixture "math-float-inf.gravity" :diagnostic "MATH8-INF"}
+  {:fixture "math-float-zero.gravity" :diagnostic "MATH8-ZERO"}
+  {:fixture "math-float-denormal.gravity" :diagnostic "MATH8-DENORMAL"}
+  {:fixture "math-float-fma.gravity" :diagnostic "MATH8-FMA"}
+  {:fixture "math-float-reassoc.gravity" :diagnostic "MATH8-REASSOC"}
+  {:fixture "math-float-status.gravity" :diagnostic "MATH8-STATUS"}
+  {:fixture "math-float-backend.gravity" :diagnostic "MATH8-BACKEND"}]
+ :validation
+ {:clojure-test
+  {:command "clojure -M:test"
+   :result "Ran 41 tests containing 2108 assertions. 0 failures, 0 errors."
+   :rejected-fixtures 587}
+  :artifact-summary
+  {:command "clojure -M -e '(require (quote [gravity.bootstrap :as b])) ...'"
+   :result
+   {:kind :gravity/stage0-numeric-mode-artifact
+    :pass :numeric-mode-validation
+    :output :numeric-mode-table
+    :status :complete
+    :conversions 4
+    :modes 3
+    :floating 2
+    :diagnostics 29
+    :proof :complete}}}
+ :limits
+ [:stage0-numeric-mode-table-only
+  :no-production-math-runtime-claim
+  :no-full-efir-graph-claim
+  :no-eml-normalization-claim
+  :no-certified-approximation-pipeline-claim
+  :no-backend-floating-conformance-claim
+  :no-self-hosting-claim]}

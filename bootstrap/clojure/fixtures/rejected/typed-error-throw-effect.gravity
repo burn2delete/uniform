@@ -1,0 +1,10 @@
+(ns typed.error.throw-effect
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [bad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (error/missing-throw-effect))

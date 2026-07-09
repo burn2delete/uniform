@@ -1,0 +1,46 @@
+{
+  "accepted": [
+    {
+      "artifact": "docs/artifacts/phase-01/errors/error-handling.accepted.json",
+      "coverage": [
+        "error type declarations",
+        "function thrown-error/effect records",
+        "panic lowering records",
+        "safety check failure records"
+      ],
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/accepted-error-handling.gravity"
+    }
+  ],
+  "document": "L9",
+  "kind": "l9-document-coverage",
+  "rejected": [
+    {
+      "diagnostic": "L9-THROW-EFFECT",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-throw-effect.gravity"
+    },
+    {
+      "diagnostic": "L9-UNHANDLED",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-unhandled.gravity"
+    },
+    {
+      "diagnostic": "L9-PANIC-PROFILE",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-panic-profile.gravity"
+    },
+    {
+      "diagnostic": "L9-HOST-ERROR",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-host-error.gravity"
+    },
+    {
+      "diagnostic": "L9-FFI-ERROR",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-ffi-error.gravity"
+    },
+    {
+      "diagnostic": "L9-WORKFLOW-ERROR",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-workflow-error.gravity"
+    },
+    {
+      "diagnostic": "L9-AI-ERROR",
+      "fixture": "docs/artifacts/phase-01/fixtures/l9/rejected-ai-error.gravity"
+    }
+  ]
+}

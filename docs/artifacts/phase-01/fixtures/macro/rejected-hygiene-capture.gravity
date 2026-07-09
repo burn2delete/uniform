@@ -1,0 +1,8 @@
+(ns macro.bad-hygiene
+  (:profile :hosted)
+  (:target :jvm)
+  (:safety :safe))
+
+(def value
+  (capture-bug user-value))
+

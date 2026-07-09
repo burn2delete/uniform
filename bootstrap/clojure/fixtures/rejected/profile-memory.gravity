@@ -1,0 +1,9 @@
+(ns profile.bad-memory
+  (:profile :hardware)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def bad
+  (hidden/alloc :box))

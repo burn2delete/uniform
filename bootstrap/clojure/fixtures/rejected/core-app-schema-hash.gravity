@@ -1,0 +1,17 @@
+(ns core.app.schema-hash
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata {:schema {:compiled-gate
+                       {:serializers
+                        [{:artifact :gravity/serializer
+                          :decoded-trust :untrusted
+                          :retains-taint? true
+                          :canonical {:schema-hash-included false
+                                      :hash-input-record
+                                      {:schema-hash "sha256:missing"}}}]}}}))
+
+(defn main []
+  (println "bad schema hash"))

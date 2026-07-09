@@ -1,0 +1,9 @@
+(ns altmem.lifetime
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def invalid
+  (altmem/lifetime :borrow-outlives-region))

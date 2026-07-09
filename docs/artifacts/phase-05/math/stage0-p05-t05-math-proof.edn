@@ -1,0 +1,74 @@
+{:phase "05"
+ :task "P05-T05"
+ :documents ["MATH6" "MATH9"]
+ :artifact-kind :gravity/stage0-math-proof-artifact
+ :artifact-hash "sha256:afe1fd90fa2773940290ce6a409953593c27b41897608cf956a1277926471b9d"
+ :accepted-fixture "bootstrap/clojure/fixtures/accepted/math-proof.gravity"
+ :command "clojure -M:gravity math-proof bootstrap/clojure/fixtures/accepted/math-proof.gravity"
+ :summary
+ {:pass :interval-symbolic-proof
+  :output :proof-and-rewrite-record
+  :claim-count 1
+  :partition-count 1
+  :bound-ledger-count 1
+  :rewrite-rule-count 1
+  :rewrite-trace-count 1
+  :required-diagnostic-count 19
+  :status :complete}
+ :capability-based-proof
+ {:interval-claims-complete? true
+  :exact-domains-and-branch-policy? true
+  :partition-replayable? true
+  :bounds-separated-and-sufficient? true
+  :providers-safe15-imported? true
+  :rewrite-rules-proof-gated? true
+  :rewrite-traces-replayable? true
+  :egraph-extraction-proof-backed? true
+  :tree-identity-not-equality? true
+  :status :complete}
+ :rejected-fixtures
+ [{:fixture "math-proof-claim.gravity" :diagnostic "MATH6-CLAIM"}
+  {:fixture "math-proof-domain.gravity" :diagnostic "MATH6-DOMAIN"}
+  {:fixture "math-proof-rounding.gravity" :diagnostic "MATH6-ROUNDING"}
+  {:fixture "math-proof-branch.gravity" :diagnostic "MATH6-BRANCH"}
+  {:fixture "math-proof-partition.gravity" :diagnostic "MATH6-PARTITION"}
+  {:fixture "math-proof-bound.gravity" :diagnostic "MATH6-BOUND"}
+  {:fixture "math-proof-unresolved.gravity" :diagnostic "MATH6-UNRESOLVED"}
+  {:fixture "math-proof-provider.gravity" :diagnostic "MATH6-PROVIDER"}
+  {:fixture "math-proof-invalidated.gravity" :diagnostic "MATH6-INVALIDATED"}
+  {:fixture "math-rewrite-rule-shape.gravity" :diagnostic "MATH9-RULE-SHAPE"}
+  {:fixture "math-rewrite-domain.gravity" :diagnostic "MATH9-DOMAIN"}
+  {:fixture "math-rewrite-branch.gravity" :diagnostic "MATH9-BRANCH"}
+  {:fixture "math-rewrite-side-condition.gravity" :diagnostic "MATH9-SIDE-CONDITION"}
+  {:fixture "math-rewrite-proof.gravity" :diagnostic "MATH9-PROOF"}
+  {:fixture "math-rewrite-trace.gravity" :diagnostic "MATH9-TRACE"}
+  {:fixture "math-rewrite-termination.gravity" :diagnostic "MATH9-TERMINATION"}
+  {:fixture "math-rewrite-counterexample.gravity" :diagnostic "MATH9-COUNTEREXAMPLE"}
+  {:fixture "math-rewrite-egraph.gravity" :diagnostic "MATH9-EGRAPH"}
+  {:fixture "math-rewrite-equality.gravity" :diagnostic "MATH9-EQUALITY"}]
+ :validation
+ {:clojure-test
+  {:command "clojure -M:test"
+   :result "Ran 45 tests containing 2281 assertions. 0 failures, 0 errors."
+   :rejected-fixtures 642}
+  :artifact-summary
+  {:command "clojure -M -e '(require (quote [gravity.bootstrap :as b])) ...'"
+   :result
+   {:kind :gravity/stage0-math-proof-artifact
+    :pass :interval-symbolic-proof
+    :output :proof-and-rewrite-record
+    :status :complete
+    :claims 1
+    :partitions 1
+    :bounds 1
+    :rules 1
+    :traces 1
+    :diagnostics 19
+    :proof :complete}}}
+ :limits
+ [:stage0-interval-proof-validation-only
+  :stage0-symbolic-rewrite-validation-only
+  :no-general-proof-search-claim
+  :no-production-math-optimizer-claim
+  :no-full-math-conformance-claim
+  :no-self-hosting-claim]}

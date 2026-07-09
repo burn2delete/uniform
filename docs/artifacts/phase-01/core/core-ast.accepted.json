@@ -1,0 +1,3844 @@
+{
+  "call_records": [
+    {
+      "arg_count": 1,
+      "callee": "println",
+      "effects": [],
+      "evaluation_order": [
+        "core-00004",
+        "core-00005"
+      ],
+      "node_id": "core-00006"
+    },
+    {
+      "arg_count": 1,
+      "callee": "println",
+      "effects": [],
+      "evaluation_order": [
+        "core-00013",
+        "core-00014"
+      ],
+      "node_id": "core-00015"
+    },
+    {
+      "arg_count": 1,
+      "callee": "println",
+      "effects": [],
+      "evaluation_order": [
+        "core-00036",
+        "core-00037"
+      ],
+      "node_id": "core-00038"
+    }
+  ],
+  "core_form_kind_records": [
+    {
+      "count": 3,
+      "kind": "core/call"
+    },
+    {
+      "count": 9,
+      "kind": "core/def"
+    },
+    {
+      "count": 5,
+      "kind": "core/do"
+    },
+    {
+      "count": 1,
+      "kind": "core/fn"
+    },
+    {
+      "count": 3,
+      "kind": "core/if"
+    },
+    {
+      "count": 1,
+      "kind": "core/let"
+    },
+    {
+      "count": 14,
+      "kind": "core/literal"
+    },
+    {
+      "count": 1,
+      "kind": "core/loop"
+    },
+    {
+      "count": 1,
+      "kind": "core/match"
+    },
+    {
+      "count": 1,
+      "kind": "core/quote"
+    },
+    {
+      "count": 1,
+      "kind": "core/recur"
+    },
+    {
+      "count": 1,
+      "kind": "core/set"
+    },
+    {
+      "count": 10,
+      "kind": "core/symbol-ref"
+    },
+    {
+      "count": 1,
+      "kind": "core/throw"
+    },
+    {
+      "count": 1,
+      "kind": "core/try"
+    },
+    {
+      "count": 1,
+      "kind": "core/var"
+    }
+  ],
+  "diagnostics": [],
+  "evaluation_order_records": [
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/quote",
+      "node_id": "core-00001"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00001"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00002"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00003"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00004"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00005"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00004",
+        "core-00005"
+      ],
+      "kind": "core/call",
+      "node_id": "core-00006"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00006"
+      ],
+      "kind": "core/do",
+      "node_id": "core-00007"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00007"
+      ],
+      "kind": "core/do",
+      "node_id": "core-00008"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00009"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00003",
+        "then-or-else"
+      ],
+      "kind": "core/if",
+      "node_id": "core-00010"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00010"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00011"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00012"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00013"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00014"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00013",
+        "core-00014"
+      ],
+      "kind": "core/call",
+      "node_id": "core-00015"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00015"
+      ],
+      "kind": "core/do",
+      "node_id": "core-00016"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00017"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00012",
+        "then-or-else"
+      ],
+      "kind": "core/if",
+      "node_id": "core-00018"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00018"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00019"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00020"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00021"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00022"
+    },
+    {
+      "effects": [
+        ":state/mutate"
+      ],
+      "evaluation_order": [
+        "core-00022"
+      ],
+      "kind": "core/set",
+      "node_id": "core-00023"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00024"
+    },
+    {
+      "effects": [
+        ":state/mutate"
+      ],
+      "evaluation_order": [
+        "core-00023",
+        "core-00024"
+      ],
+      "kind": "core/do",
+      "node_id": "core-00025"
+    },
+    {
+      "effects": [
+        ":state/mutate"
+      ],
+      "evaluation_order": [
+        "core-00020",
+        "core-00021",
+        "core-00025"
+      ],
+      "kind": "core/let",
+      "node_id": "core-00026"
+    },
+    {
+      "effects": [
+        ":state/mutate"
+      ],
+      "evaluation_order": [
+        "core-00026"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00027"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00028"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00029"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00030"
+    },
+    {
+      "effects": [
+        ":control/recur"
+      ],
+      "evaluation_order": [
+        "core-00030"
+      ],
+      "kind": "core/recur",
+      "node_id": "core-00031"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00032"
+    },
+    {
+      "effects": [
+        ":control/recur"
+      ],
+      "evaluation_order": [
+        "core-00029",
+        "then-or-else"
+      ],
+      "kind": "core/if",
+      "node_id": "core-00033"
+    },
+    {
+      "effects": [
+        ":control/recur"
+      ],
+      "evaluation_order": [
+        "core-00028",
+        "core-00033"
+      ],
+      "kind": "core/loop",
+      "node_id": "core-00034"
+    },
+    {
+      "effects": [
+        ":control/recur"
+      ],
+      "evaluation_order": [
+        "core-00034"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00035"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00036"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00037"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00036",
+        "core-00037"
+      ],
+      "kind": "core/call",
+      "node_id": "core-00038"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00039"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00038",
+        "core-00039"
+      ],
+      "kind": "core/do",
+      "node_id": "core-00040"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/fn",
+      "node_id": "core-00041"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00041"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00042"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/var",
+      "node_id": "core-00043"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00043"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00044"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00045"
+    },
+    {
+      "effects": [
+        ":error/throw"
+      ],
+      "evaluation_order": [
+        "core-00045"
+      ],
+      "kind": "core/throw",
+      "node_id": "core-00046"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00047"
+    },
+    {
+      "effects": [
+        ":error/throw"
+      ],
+      "evaluation_order": [
+        "core-00046",
+        "matching-catch"
+      ],
+      "kind": "core/try",
+      "node_id": "core-00048"
+    },
+    {
+      "effects": [
+        ":error/throw"
+      ],
+      "evaluation_order": [
+        "core-00048"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00049"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00050"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00051"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [],
+      "kind": "core/literal",
+      "node_id": "core-00052"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00050",
+        "one-matching-clause"
+      ],
+      "kind": "core/match",
+      "node_id": "core-00053"
+    },
+    {
+      "effects": [],
+      "evaluation_order": [
+        "core-00053"
+      ],
+      "kind": "core/def",
+      "node_id": "core-00054"
+    }
+  ],
+  "kind": "core-ast-artifact",
+  "latent_function_effects": [
+    {
+      "latent_effects": [],
+      "node_id": "core-00041",
+      "params": [
+        "x"
+      ]
+    }
+  ],
+  "macro_expansion_count": 1,
+  "macro_trace_hash": "sha256:bbad4901d2ebea51b059e317011bceb2faeb97ae04a2f34413498164ded5f044",
+  "module": "core.demo",
+  "profile": ":hosted",
+  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+  "source_map": [
+    {
+      "generated_origin_chain": [],
+      "kind": "core/quote",
+      "node_id": "core-00001",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 187,
+        "end_column": 39,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 151,
+        "start_column": 3,
+        "start_line": 7
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00002",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 188,
+        "end_column": 40,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 132,
+        "start_column": 1,
+        "start_line": 6
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/literal",
+      "node_id": "core-00003",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 224,
+        "end_column": 13,
+        "end_line": 10,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 220,
+        "start_column": 9,
+        "start_line": 10
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00004",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 247,
+        "end_column": 15,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 240,
+        "start_column": 8,
+        "start_line": 12
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/literal",
+      "node_id": "core-00005",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 262,
+        "end_column": 30,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 248,
+        "start_column": 16,
+        "start_line": 12
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/call",
+      "node_id": "core-00006",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 263,
+        "end_column": 31,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 239,
+        "start_column": 7,
+        "start_line": 12
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/do",
+      "node_id": "core-00007",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 264,
+        "end_column": 32,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 229,
+        "start_column": 5,
+        "start_line": 11
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/do",
+      "node_id": "core-00008",
+      "reader_origin": [
+        {
+          "kind": "macro-generated"
+        }
+      ],
+      "span": {
+        "end_byte": 265,
+        "end_column": 33,
+        "end_line": 12,
+        "generated": true,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 214,
+        "start_column": 3,
+        "start_line": 10
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/literal",
+      "node_id": "core-00009",
+      "reader_origin": [
+        {
+          "kind": "macro-generated"
+        }
+      ],
+      "span": {
+        "end_byte": 265,
+        "end_column": 33,
+        "end_line": 12,
+        "generated": true,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 214,
+        "start_column": 3,
+        "start_line": 10
+      }
+    },
+    {
+      "generated_origin_chain": [
+        {
+          "call_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "macro": "gravity.core/when",
+          "macro_version": "fixture-1"
+        }
+      ],
+      "kind": "core/if",
+      "node_id": "core-00010",
+      "reader_origin": [
+        {
+          "kind": "macro-generated"
+        }
+      ],
+      "span": {
+        "end_byte": 265,
+        "end_column": 33,
+        "end_line": 12,
+        "generated": true,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 214,
+        "start_column": 3,
+        "start_line": 10
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00011",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 266,
+        "end_column": 34,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 190,
+        "start_column": 1,
+        "start_line": 9
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00012",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 306,
+        "end_column": 11,
+        "end_line": 15,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 302,
+        "start_column": 7,
+        "start_line": 15
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00013",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 329,
+        "end_column": 15,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 322,
+        "start_column": 8,
+        "start_line": 17
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00014",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 344,
+        "end_column": 30,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 330,
+        "start_column": 16,
+        "start_line": 17
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/call",
+      "node_id": "core-00015",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 345,
+        "end_column": 31,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 321,
+        "start_column": 7,
+        "start_line": 17
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/do",
+      "node_id": "core-00016",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 346,
+        "end_column": 32,
+        "end_line": 17,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 311,
+        "start_column": 5,
+        "start_line": 16
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00017",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 354,
+        "end_column": 8,
+        "end_line": 18,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 351,
+        "start_column": 5,
+        "start_line": 18
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/if",
+      "node_id": "core-00018",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 355,
+        "end_column": 9,
+        "end_line": 18,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 298,
+        "start_column": 3,
+        "start_line": 15
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00019",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 356,
+        "end_column": 10,
+        "end_line": 18,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 268,
+        "start_column": 1,
+        "start_line": 14
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00020",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 406,
+        "end_column": 28,
+        "end_line": 21,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 405,
+        "start_column": 27,
+        "start_line": 21
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00021",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 427,
+        "end_column": 21,
+        "end_line": 22,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 426,
+        "start_column": 20,
+        "start_line": 22
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00022",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 467,
+        "end_column": 31,
+        "end_line": 24,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 457,
+        "start_column": 21,
+        "start_line": 24
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/set",
+      "node_id": "core-00023",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 468,
+        "end_column": 32,
+        "end_line": 24,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 443,
+        "start_column": 7,
+        "start_line": 24
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00024",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 482,
+        "end_column": 14,
+        "end_line": 25,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 475,
+        "start_column": 7,
+        "start_line": 25
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/do",
+      "node_id": "core-00025",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 483,
+        "end_column": 15,
+        "end_line": 25,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 433,
+        "start_column": 5,
+        "start_line": 23
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/let",
+      "node_id": "core-00026",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 484,
+        "end_column": 16,
+        "end_line": 25,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 381,
+        "start_column": 3,
+        "start_line": 21
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00027",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 485,
+        "end_column": 17,
+        "end_line": 25,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 358,
+        "start_column": 1,
+        "start_line": 20
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00028",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 520,
+        "end_column": 13,
+        "end_line": 28,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 519,
+        "start_column": 12,
+        "start_line": 28
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00029",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 531,
+        "end_column": 10,
+        "end_line": 29,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 530,
+        "start_column": 9,
+        "start_line": 29
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00030",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 546,
+        "end_column": 15,
+        "end_line": 30,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 545,
+        "start_column": 14,
+        "start_line": 30
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/recur",
+      "node_id": "core-00031",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 547,
+        "end_column": 16,
+        "end_line": 30,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 538,
+        "start_column": 7,
+        "start_line": 30
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00032",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 555,
+        "end_column": 8,
+        "end_line": 31,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 554,
+        "start_column": 7,
+        "start_line": 31
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/if",
+      "node_id": "core-00033",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 556,
+        "end_column": 9,
+        "end_line": 31,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 526,
+        "start_column": 5,
+        "start_line": 29
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/loop",
+      "node_id": "core-00034",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 557,
+        "end_column": 10,
+        "end_line": 31,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 510,
+        "start_column": 3,
+        "start_line": 28
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00035",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 558,
+        "end_column": 11,
+        "end_line": 31,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 487,
+        "start_column": 1,
+        "start_line": 27
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00036",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 614,
+        "end_column": 15,
+        "end_line": 36,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 607,
+        "start_column": 8,
+        "start_line": 36
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00037",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 616,
+        "end_column": 17,
+        "end_line": 36,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 615,
+        "start_column": 16,
+        "start_line": 36
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/call",
+      "node_id": "core-00038",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 617,
+        "end_column": 18,
+        "end_line": 36,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 606,
+        "start_column": 7,
+        "start_line": 36
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00039",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 625,
+        "end_column": 8,
+        "end_line": 37,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 624,
+        "start_column": 7,
+        "start_line": 37
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/do",
+      "node_id": "core-00040",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 626,
+        "end_column": 9,
+        "end_line": 37,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 596,
+        "start_column": 5,
+        "start_line": 35
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/fn",
+      "node_id": "core-00041",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 627,
+        "end_column": 10,
+        "end_line": 37,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 584,
+        "start_column": 3,
+        "start_line": 34
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00042",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 628,
+        "end_column": 11,
+        "end_line": 37,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 560,
+        "start_column": 1,
+        "start_line": 33
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/var",
+      "node_id": "core-00043",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 666,
+        "end_column": 20,
+        "end_line": 40,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 649,
+        "start_column": 3,
+        "start_line": 40
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00044",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 667,
+        "end_column": 21,
+        "end_line": 40,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 630,
+        "start_column": 1,
+        "start_line": 39
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00045",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 711,
+        "end_column": 17,
+        "end_line": 44,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 706,
+        "start_column": 12,
+        "start_line": 44
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/throw",
+      "node_id": "core-00046",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 712,
+        "end_column": 18,
+        "end_line": 44,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 699,
+        "start_column": 5,
+        "start_line": 44
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/symbol-ref",
+      "node_id": "core-00047",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 742,
+        "end_column": 10,
+        "end_line": 46,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 739,
+        "start_column": 7,
+        "start_line": 46
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/try",
+      "node_id": "core-00048",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 744,
+        "end_column": 12,
+        "end_line": 46,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 690,
+        "start_column": 3,
+        "start_line": 43
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00049",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 745,
+        "end_column": 13,
+        "end_line": 46,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 669,
+        "start_column": 1,
+        "start_line": 42
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00050",
+      "reader_origin": [
+        {
+          "kind": "symbolic"
+        }
+      ],
+      "span": {
+        "end_byte": 778,
+        "end_column": 13,
+        "end_line": 49,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 775,
+        "start_column": 10,
+        "start_line": 49
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00051",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 789,
+        "end_column": 11,
+        "end_line": 50,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 788,
+        "start_column": 10,
+        "start_line": 50
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/literal",
+      "node_id": "core-00052",
+      "reader_origin": [
+        {
+          "kind": "literal"
+        }
+      ],
+      "span": {
+        "end_byte": 798,
+        "end_column": 9,
+        "end_line": 51,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 797,
+        "start_column": 8,
+        "start_line": 51
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/match",
+      "node_id": "core-00053",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 800,
+        "end_column": 11,
+        "end_line": 51,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 768,
+        "start_column": 3,
+        "start_line": 49
+      }
+    },
+    {
+      "generated_origin_chain": [],
+      "kind": "core/def",
+      "node_id": "core-00054",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "span": {
+        "end_byte": 801,
+        "end_column": 12,
+        "end_line": 51,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 747,
+        "start_column": 1,
+        "start_line": 48
+      }
+    }
+  ],
+  "top_level": [
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [],
+      "evaluation_order": [
+        "core-00001"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00002",
+      "initializer": {
+        "capabilities": [],
+        "effects": [],
+        "evaluation_order": [],
+        "generated_origin_chain": [],
+        "id": "core-00001",
+        "kind": "core/quote",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "quoted_syntax": {
+          "kind": "map",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "collection"
+            }
+          ],
+          "span": {
+            "end_byte": 186,
+            "end_column": 38,
+            "end_line": 7,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 158,
+            "start_column": 10,
+            "start_line": 7
+          },
+          "value": [
+            {
+              "key": {
+                "kind": "keyword",
+                "metadata": [],
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "span": {
+                  "end_byte": 164,
+                  "end_column": 16,
+                  "end_line": 7,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 159,
+                  "start_column": 11,
+                  "start_line": 7
+                },
+                "value": ":kind"
+              },
+              "value": {
+                "kind": "keyword",
+                "metadata": [],
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "span": {
+                  "end_byte": 170,
+                  "end_column": 22,
+                  "end_line": 7,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 165,
+                  "start_column": 17,
+                  "start_line": 7
+                },
+                "value": ":demo"
+              }
+            },
+            {
+              "key": {
+                "kind": "keyword",
+                "metadata": [],
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "span": {
+                  "end_byte": 177,
+                  "end_column": 29,
+                  "end_line": 7,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 171,
+                  "start_column": 23,
+                  "start_line": 7
+                },
+                "value": ":items"
+              },
+              "value": {
+                "kind": "vector",
+                "metadata": [],
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "collection"
+                  }
+                ],
+                "span": {
+                  "end_byte": 185,
+                  "end_column": 37,
+                  "end_line": 7,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 178,
+                  "start_column": 30,
+                  "start_line": 7
+                },
+                "value": [
+                  {
+                    "kind": "integer",
+                    "metadata": [],
+                    "namespace_context": "core.demo",
+                    "profile_context": ":hosted",
+                    "reader_origin": [
+                      {
+                        "kind": "literal"
+                      }
+                    ],
+                    "span": {
+                      "end_byte": 180,
+                      "end_column": 32,
+                      "end_line": 7,
+                      "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                      "start_byte": 179,
+                      "start_column": 31,
+                      "start_line": 7
+                    },
+                    "value": 1
+                  },
+                  {
+                    "kind": "integer",
+                    "metadata": [],
+                    "namespace_context": "core.demo",
+                    "profile_context": ":hosted",
+                    "reader_origin": [
+                      {
+                        "kind": "literal"
+                      }
+                    ],
+                    "span": {
+                      "end_byte": 182,
+                      "end_column": 34,
+                      "end_line": 7,
+                      "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                      "start_byte": 181,
+                      "start_column": 33,
+                      "start_line": 7
+                    },
+                    "value": 2
+                  },
+                  {
+                    "kind": "integer",
+                    "metadata": [],
+                    "namespace_context": "core.demo",
+                    "profile_context": ":hosted",
+                    "reader_origin": [
+                      {
+                        "kind": "literal"
+                      }
+                    ],
+                    "span": {
+                      "end_byte": 184,
+                      "end_column": 36,
+                      "end_line": 7,
+                      "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                      "start_byte": 183,
+                      "start_column": 35,
+                      "start_line": 7
+                    },
+                    "value": 3
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 187,
+          "end_column": 39,
+          "end_line": 7,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 151,
+          "start_column": 3,
+          "start_line": 7
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "quoted-data",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 188,
+        "end_column": 40,
+        "end_line": 7,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 132,
+        "start_column": 1,
+        "start_line": 6
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [],
+      "evaluation_order": [
+        "core-00010"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00011",
+      "initializer": {
+        "capabilities": [],
+        "condition": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [],
+          "generated_origin_chain": [
+            {
+              "call_span": {
+                "end_byte": 265,
+                "end_column": 33,
+                "end_line": 12,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 214,
+                "start_column": 3,
+                "start_line": 10
+              },
+              "macro": "gravity.core/when",
+              "macro_version": "fixture-1"
+            }
+          ],
+          "id": "core-00003",
+          "kind": "core/literal",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "literal"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 224,
+            "end_column": 13,
+            "end_line": 10,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 220,
+            "start_column": 9,
+            "start_line": 10
+          },
+          "value": true,
+          "value_kind": "boolean"
+        },
+        "effects": [],
+        "else_branch": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [],
+          "generated_origin_chain": [
+            {
+              "call_span": {
+                "end_byte": 265,
+                "end_column": 33,
+                "end_line": 12,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 214,
+                "start_column": 3,
+                "start_line": 10
+              },
+              "macro": "gravity.core/when",
+              "macro_version": "fixture-1"
+            }
+          ],
+          "id": "core-00009",
+          "kind": "core/literal",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "macro-generated"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "generated": true,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          },
+          "value": null,
+          "value_kind": "nil"
+        },
+        "evaluation_order": [
+          "core-00003",
+          "then-or-else"
+        ],
+        "generated_origin_chain": [
+          {
+            "call_span": {
+              "end_byte": 265,
+              "end_column": 33,
+              "end_line": 12,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 214,
+              "start_column": 3,
+              "start_line": 10
+            },
+            "macro": "gravity.core/when",
+            "macro_version": "fixture-1"
+          }
+        ],
+        "id": "core-00010",
+        "kind": "core/if",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "macro-generated"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 265,
+          "end_column": 33,
+          "end_line": 12,
+          "generated": true,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 214,
+          "start_column": 3,
+          "start_line": 10
+        },
+        "then_branch": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [
+            "core-00007"
+          ],
+          "expressions": [
+            {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [
+                "core-00006"
+              ],
+              "expressions": [
+                {
+                  "args": [
+                    {
+                      "capabilities": [],
+                      "effects": [],
+                      "evaluation_order": [],
+                      "generated_origin_chain": [
+                        {
+                          "call_span": {
+                            "end_byte": 265,
+                            "end_column": 33,
+                            "end_line": 12,
+                            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                            "start_byte": 214,
+                            "start_column": 3,
+                            "start_line": 10
+                          },
+                          "macro": "gravity.core/when",
+                          "macro_version": "fixture-1"
+                        }
+                      ],
+                      "id": "core-00005",
+                      "kind": "core/literal",
+                      "metadata": [],
+                      "namespace_context": "core.demo",
+                      "profile_context": ":hosted",
+                      "reader_origin": [
+                        {
+                          "kind": "literal"
+                        }
+                      ],
+                      "safety_facts": {
+                        "required_by": "D8/D9 downstream safety phases",
+                        "status": ":unchecked"
+                      },
+                      "source_span": {
+                        "end_byte": 262,
+                        "end_column": 30,
+                        "end_line": 12,
+                        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                        "start_byte": 248,
+                        "start_column": 16,
+                        "start_line": 12
+                      },
+                      "value": "macro branch",
+                      "value_kind": "string"
+                    }
+                  ],
+                  "callee": {
+                    "capabilities": [],
+                    "effects": [],
+                    "evaluation_order": [],
+                    "generated_origin_chain": [
+                      {
+                        "call_span": {
+                          "end_byte": 265,
+                          "end_column": 33,
+                          "end_line": 12,
+                          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                          "start_byte": 214,
+                          "start_column": 3,
+                          "start_line": 10
+                        },
+                        "macro": "gravity.core/when",
+                        "macro_version": "fixture-1"
+                      }
+                    ],
+                    "id": "core-00004",
+                    "kind": "core/symbol-ref",
+                    "metadata": [],
+                    "name": "println",
+                    "namespace_context": "core.demo",
+                    "profile_context": ":hosted",
+                    "reader_origin": [
+                      {
+                        "kind": "symbolic"
+                      }
+                    ],
+                    "safety_facts": {
+                      "required_by": "D8/D9 downstream safety phases",
+                      "status": ":unchecked"
+                    },
+                    "source_span": {
+                      "end_byte": 247,
+                      "end_column": 15,
+                      "end_line": 12,
+                      "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                      "start_byte": 240,
+                      "start_column": 8,
+                      "start_line": 12
+                    }
+                  },
+                  "capabilities": [],
+                  "effects": [],
+                  "evaluation_order": [
+                    "core-00004",
+                    "core-00005"
+                  ],
+                  "generated_origin_chain": [
+                    {
+                      "call_span": {
+                        "end_byte": 265,
+                        "end_column": 33,
+                        "end_line": 12,
+                        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                        "start_byte": 214,
+                        "start_column": 3,
+                        "start_line": 10
+                      },
+                      "macro": "gravity.core/when",
+                      "macro_version": "fixture-1"
+                    }
+                  ],
+                  "id": "core-00006",
+                  "kind": "core/call",
+                  "metadata": [],
+                  "namespace_context": "core.demo",
+                  "profile_context": ":hosted",
+                  "reader_origin": [
+                    {
+                      "kind": "collection"
+                    }
+                  ],
+                  "safety_facts": {
+                    "required_by": "D8/D9 downstream safety phases",
+                    "status": ":unchecked"
+                  },
+                  "source_span": {
+                    "end_byte": 263,
+                    "end_column": 31,
+                    "end_line": 12,
+                    "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                    "start_byte": 239,
+                    "start_column": 7,
+                    "start_line": 12
+                  }
+                }
+              ],
+              "generated_origin_chain": [
+                {
+                  "call_span": {
+                    "end_byte": 265,
+                    "end_column": 33,
+                    "end_line": 12,
+                    "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                    "start_byte": 214,
+                    "start_column": 3,
+                    "start_line": 10
+                  },
+                  "macro": "gravity.core/when",
+                  "macro_version": "fixture-1"
+                }
+              ],
+              "id": "core-00007",
+              "kind": "core/do",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "collection"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 264,
+                "end_column": 32,
+                "end_line": 12,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 229,
+                "start_column": 5,
+                "start_line": 11
+              }
+            }
+          ],
+          "generated_origin_chain": [
+            {
+              "call_span": {
+                "end_byte": 265,
+                "end_column": 33,
+                "end_line": 12,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 214,
+                "start_column": 3,
+                "start_line": 10
+              },
+              "macro": "gravity.core/when",
+              "macro_version": "fixture-1"
+            }
+          ],
+          "id": "core-00008",
+          "kind": "core/do",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "macro-generated"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 265,
+            "end_column": 33,
+            "end_line": 12,
+            "generated": true,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 214,
+            "start_column": 3,
+            "start_line": 10
+          }
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "macro-equivalent",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 266,
+        "end_column": 34,
+        "end_line": 12,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 190,
+        "start_column": 1,
+        "start_line": 9
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [],
+      "evaluation_order": [
+        "core-00018"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00019",
+      "initializer": {
+        "capabilities": [],
+        "condition": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [],
+          "generated_origin_chain": [],
+          "id": "core-00012",
+          "kind": "core/literal",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "literal"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 306,
+            "end_column": 11,
+            "end_line": 15,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 302,
+            "start_column": 7,
+            "start_line": 15
+          },
+          "value": true,
+          "value_kind": "boolean"
+        },
+        "effects": [],
+        "else_branch": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [],
+          "generated_origin_chain": [],
+          "id": "core-00017",
+          "kind": "core/literal",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "literal"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 354,
+            "end_column": 8,
+            "end_line": 18,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 351,
+            "start_column": 5,
+            "start_line": 18
+          },
+          "value": null,
+          "value_kind": "nil"
+        },
+        "evaluation_order": [
+          "core-00012",
+          "then-or-else"
+        ],
+        "generated_origin_chain": [],
+        "id": "core-00018",
+        "kind": "core/if",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 355,
+          "end_column": 9,
+          "end_line": 18,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 298,
+          "start_column": 3,
+          "start_line": 15
+        },
+        "then_branch": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [
+            "core-00015"
+          ],
+          "expressions": [
+            {
+              "args": [
+                {
+                  "capabilities": [],
+                  "effects": [],
+                  "evaluation_order": [],
+                  "generated_origin_chain": [],
+                  "id": "core-00014",
+                  "kind": "core/literal",
+                  "metadata": [],
+                  "namespace_context": "core.demo",
+                  "profile_context": ":hosted",
+                  "reader_origin": [
+                    {
+                      "kind": "literal"
+                    }
+                  ],
+                  "safety_facts": {
+                    "required_by": "D8/D9 downstream safety phases",
+                    "status": ":unchecked"
+                  },
+                  "source_span": {
+                    "end_byte": 344,
+                    "end_column": 30,
+                    "end_line": 17,
+                    "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                    "start_byte": 330,
+                    "start_column": 16,
+                    "start_line": 17
+                  },
+                  "value": "macro branch",
+                  "value_kind": "string"
+                }
+              ],
+              "callee": {
+                "capabilities": [],
+                "effects": [],
+                "evaluation_order": [],
+                "generated_origin_chain": [],
+                "id": "core-00013",
+                "kind": "core/symbol-ref",
+                "metadata": [],
+                "name": "println",
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "safety_facts": {
+                  "required_by": "D8/D9 downstream safety phases",
+                  "status": ":unchecked"
+                },
+                "source_span": {
+                  "end_byte": 329,
+                  "end_column": 15,
+                  "end_line": 17,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 322,
+                  "start_column": 8,
+                  "start_line": 17
+                }
+              },
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [
+                "core-00013",
+                "core-00014"
+              ],
+              "generated_origin_chain": [],
+              "id": "core-00015",
+              "kind": "core/call",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "collection"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 345,
+                "end_column": 31,
+                "end_line": 17,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 321,
+                "start_column": 7,
+                "start_line": 17
+              }
+            }
+          ],
+          "generated_origin_chain": [],
+          "id": "core-00016",
+          "kind": "core/do",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "collection"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 346,
+            "end_column": 32,
+            "end_line": 17,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 311,
+            "start_column": 5,
+            "start_line": 16
+          }
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "handwritten-equivalent",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 356,
+        "end_column": 10,
+        "end_line": 18,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 268,
+        "start_column": 1,
+        "start_line": 14
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [
+        ":state/mutate"
+      ],
+      "evaluation_order": [
+        "core-00026"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00027",
+      "initializer": {
+        "bindings": [
+          {
+            "initializer": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00020",
+              "kind": "core/literal",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "literal"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 406,
+                "end_column": 28,
+                "end_line": 21,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 405,
+                "start_column": 27,
+                "start_line": 21
+              },
+              "value": 0,
+              "value_kind": "integer"
+            },
+            "mutable": true,
+            "name": "counter",
+            "source_span": {
+              "end_byte": 404,
+              "end_column": 26,
+              "end_line": 21,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 397,
+              "start_column": 19,
+              "start_line": 21
+            }
+          },
+          {
+            "initializer": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00021",
+              "kind": "core/literal",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "literal"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 427,
+                "end_column": 21,
+                "end_line": 22,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 426,
+                "start_column": 20,
+                "start_line": 22
+              },
+              "value": 1,
+              "value_kind": "integer"
+            },
+            "mutable": false,
+            "name": "next-value",
+            "source_span": {
+              "end_byte": 425,
+              "end_column": 19,
+              "end_line": 22,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 415,
+              "start_column": 9,
+              "start_line": 22
+            }
+          }
+        ],
+        "body": [
+          {
+            "capabilities": [],
+            "effects": [
+              ":state/mutate"
+            ],
+            "evaluation_order": [
+              "core-00023",
+              "core-00024"
+            ],
+            "expressions": [
+              {
+                "capabilities": [
+                  ":mutation/local"
+                ],
+                "effects": [
+                  ":state/mutate"
+                ],
+                "evaluation_order": [
+                  "core-00022"
+                ],
+                "generated_origin_chain": [],
+                "id": "core-00023",
+                "kind": "core/set",
+                "metadata": [],
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "collection"
+                  }
+                ],
+                "safety_facts": {
+                  "required_by": "D8/D9 downstream safety phases",
+                  "status": ":unchecked"
+                },
+                "source_span": {
+                  "end_byte": 468,
+                  "end_column": 32,
+                  "end_line": 24,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 443,
+                  "start_column": 7,
+                  "start_line": 24
+                },
+                "target": "counter",
+                "value": {
+                  "capabilities": [],
+                  "effects": [],
+                  "evaluation_order": [],
+                  "generated_origin_chain": [],
+                  "id": "core-00022",
+                  "kind": "core/symbol-ref",
+                  "metadata": [],
+                  "name": "next-value",
+                  "namespace_context": "core.demo",
+                  "profile_context": ":hosted",
+                  "reader_origin": [
+                    {
+                      "kind": "symbolic"
+                    }
+                  ],
+                  "safety_facts": {
+                    "required_by": "D8/D9 downstream safety phases",
+                    "status": ":unchecked"
+                  },
+                  "source_span": {
+                    "end_byte": 467,
+                    "end_column": 31,
+                    "end_line": 24,
+                    "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                    "start_byte": 457,
+                    "start_column": 21,
+                    "start_line": 24
+                  }
+                }
+              },
+              {
+                "capabilities": [],
+                "effects": [],
+                "evaluation_order": [],
+                "generated_origin_chain": [],
+                "id": "core-00024",
+                "kind": "core/symbol-ref",
+                "metadata": [],
+                "name": "counter",
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "safety_facts": {
+                  "required_by": "D8/D9 downstream safety phases",
+                  "status": ":unchecked"
+                },
+                "source_span": {
+                  "end_byte": 482,
+                  "end_column": 14,
+                  "end_line": 25,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 475,
+                  "start_column": 7,
+                  "start_line": 25
+                }
+              }
+            ],
+            "generated_origin_chain": [],
+            "id": "core-00025",
+            "kind": "core/do",
+            "metadata": [],
+            "namespace_context": "core.demo",
+            "profile_context": ":hosted",
+            "reader_origin": [
+              {
+                "kind": "collection"
+              }
+            ],
+            "safety_facts": {
+              "required_by": "D8/D9 downstream safety phases",
+              "status": ":unchecked"
+            },
+            "source_span": {
+              "end_byte": 483,
+              "end_column": 15,
+              "end_line": 25,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 433,
+              "start_column": 5,
+              "start_line": 23
+            }
+          }
+        ],
+        "capabilities": [],
+        "effects": [
+          ":state/mutate"
+        ],
+        "evaluation_order": [
+          "core-00020",
+          "core-00021",
+          "core-00025"
+        ],
+        "generated_origin_chain": [],
+        "id": "core-00026",
+        "kind": "core/let",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 484,
+          "end_column": 16,
+          "end_line": 25,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 381,
+          "start_column": 3,
+          "start_line": 21
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "mutable-example",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 485,
+        "end_column": 17,
+        "end_line": 25,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 358,
+        "start_column": 1,
+        "start_line": 20
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [
+        ":control/recur"
+      ],
+      "evaluation_order": [
+        "core-00034"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00035",
+      "initializer": {
+        "bindings": [
+          {
+            "initializer": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00028",
+              "kind": "core/literal",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "literal"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 520,
+                "end_column": 13,
+                "end_line": 28,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 519,
+                "start_column": 12,
+                "start_line": 28
+              },
+              "value": 1,
+              "value_kind": "integer"
+            },
+            "mutable": false,
+            "name": "i",
+            "source_span": {
+              "end_byte": 518,
+              "end_column": 11,
+              "end_line": 28,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 517,
+              "start_column": 10,
+              "start_line": 28
+            }
+          }
+        ],
+        "body": [
+          {
+            "capabilities": [],
+            "condition": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00029",
+              "kind": "core/symbol-ref",
+              "metadata": [],
+              "name": "i",
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "symbolic"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 531,
+                "end_column": 10,
+                "end_line": 29,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 530,
+                "start_column": 9,
+                "start_line": 29
+              }
+            },
+            "effects": [
+              ":control/recur"
+            ],
+            "else_branch": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00032",
+              "kind": "core/symbol-ref",
+              "metadata": [],
+              "name": "i",
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "symbolic"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 555,
+                "end_column": 8,
+                "end_line": 31,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 554,
+                "start_column": 7,
+                "start_line": 31
+              }
+            },
+            "evaluation_order": [
+              "core-00029",
+              "then-or-else"
+            ],
+            "generated_origin_chain": [],
+            "id": "core-00033",
+            "kind": "core/if",
+            "metadata": [],
+            "namespace_context": "core.demo",
+            "profile_context": ":hosted",
+            "reader_origin": [
+              {
+                "kind": "collection"
+              }
+            ],
+            "safety_facts": {
+              "required_by": "D8/D9 downstream safety phases",
+              "status": ":unchecked"
+            },
+            "source_span": {
+              "end_byte": 556,
+              "end_column": 9,
+              "end_line": 31,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 526,
+              "start_column": 5,
+              "start_line": 29
+            },
+            "then_branch": {
+              "args": [
+                {
+                  "capabilities": [],
+                  "effects": [],
+                  "evaluation_order": [],
+                  "generated_origin_chain": [],
+                  "id": "core-00030",
+                  "kind": "core/literal",
+                  "metadata": [],
+                  "namespace_context": "core.demo",
+                  "profile_context": ":hosted",
+                  "reader_origin": [
+                    {
+                      "kind": "literal"
+                    }
+                  ],
+                  "safety_facts": {
+                    "required_by": "D8/D9 downstream safety phases",
+                    "status": ":unchecked"
+                  },
+                  "source_span": {
+                    "end_byte": 546,
+                    "end_column": 15,
+                    "end_line": 30,
+                    "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                    "start_byte": 545,
+                    "start_column": 14,
+                    "start_line": 30
+                  },
+                  "value": 0,
+                  "value_kind": "integer"
+                }
+              ],
+              "capabilities": [],
+              "effects": [
+                ":control/recur"
+              ],
+              "evaluation_order": [
+                "core-00030"
+              ],
+              "generated_origin_chain": [],
+              "id": "core-00031",
+              "kind": "core/recur",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "collection"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 547,
+                "end_column": 16,
+                "end_line": 30,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 538,
+                "start_column": 7,
+                "start_line": 30
+              }
+            }
+          }
+        ],
+        "capabilities": [],
+        "effects": [
+          ":control/recur"
+        ],
+        "evaluation_order": [
+          "core-00028",
+          "core-00033"
+        ],
+        "generated_origin_chain": [],
+        "id": "core-00034",
+        "kind": "core/loop",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "recur_arity": 1,
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 557,
+          "end_column": 10,
+          "end_line": 31,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 510,
+          "start_column": 3,
+          "start_line": 28
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "looping-example",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 558,
+        "end_column": 11,
+        "end_line": 31,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 487,
+        "start_column": 1,
+        "start_line": 27
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [],
+      "evaluation_order": [
+        "core-00041"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00042",
+      "initializer": {
+        "body": [
+          {
+            "capabilities": [],
+            "effects": [],
+            "evaluation_order": [
+              "core-00038",
+              "core-00039"
+            ],
+            "expressions": [
+              {
+                "args": [
+                  {
+                    "capabilities": [],
+                    "effects": [],
+                    "evaluation_order": [],
+                    "generated_origin_chain": [],
+                    "id": "core-00037",
+                    "kind": "core/symbol-ref",
+                    "metadata": [],
+                    "name": "x",
+                    "namespace_context": "core.demo",
+                    "profile_context": ":hosted",
+                    "reader_origin": [
+                      {
+                        "kind": "symbolic"
+                      }
+                    ],
+                    "safety_facts": {
+                      "required_by": "D8/D9 downstream safety phases",
+                      "status": ":unchecked"
+                    },
+                    "source_span": {
+                      "end_byte": 616,
+                      "end_column": 17,
+                      "end_line": 36,
+                      "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                      "start_byte": 615,
+                      "start_column": 16,
+                      "start_line": 36
+                    }
+                  }
+                ],
+                "callee": {
+                  "capabilities": [],
+                  "effects": [],
+                  "evaluation_order": [],
+                  "generated_origin_chain": [],
+                  "id": "core-00036",
+                  "kind": "core/symbol-ref",
+                  "metadata": [],
+                  "name": "println",
+                  "namespace_context": "core.demo",
+                  "profile_context": ":hosted",
+                  "reader_origin": [
+                    {
+                      "kind": "symbolic"
+                    }
+                  ],
+                  "safety_facts": {
+                    "required_by": "D8/D9 downstream safety phases",
+                    "status": ":unchecked"
+                  },
+                  "source_span": {
+                    "end_byte": 614,
+                    "end_column": 15,
+                    "end_line": 36,
+                    "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                    "start_byte": 607,
+                    "start_column": 8,
+                    "start_line": 36
+                  }
+                },
+                "capabilities": [],
+                "effects": [],
+                "evaluation_order": [
+                  "core-00036",
+                  "core-00037"
+                ],
+                "generated_origin_chain": [],
+                "id": "core-00038",
+                "kind": "core/call",
+                "metadata": [],
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "collection"
+                  }
+                ],
+                "safety_facts": {
+                  "required_by": "D8/D9 downstream safety phases",
+                  "status": ":unchecked"
+                },
+                "source_span": {
+                  "end_byte": 617,
+                  "end_column": 18,
+                  "end_line": 36,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 606,
+                  "start_column": 7,
+                  "start_line": 36
+                }
+              },
+              {
+                "capabilities": [],
+                "effects": [],
+                "evaluation_order": [],
+                "generated_origin_chain": [],
+                "id": "core-00039",
+                "kind": "core/symbol-ref",
+                "metadata": [],
+                "name": "x",
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "safety_facts": {
+                  "required_by": "D8/D9 downstream safety phases",
+                  "status": ":unchecked"
+                },
+                "source_span": {
+                  "end_byte": 625,
+                  "end_column": 8,
+                  "end_line": 37,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 624,
+                  "start_column": 7,
+                  "start_line": 37
+                }
+              }
+            ],
+            "generated_origin_chain": [],
+            "id": "core-00040",
+            "kind": "core/do",
+            "metadata": [],
+            "namespace_context": "core.demo",
+            "profile_context": ":hosted",
+            "reader_origin": [
+              {
+                "kind": "collection"
+              }
+            ],
+            "safety_facts": {
+              "required_by": "D8/D9 downstream safety phases",
+              "status": ":unchecked"
+            },
+            "source_span": {
+              "end_byte": 626,
+              "end_column": 9,
+              "end_line": 37,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 596,
+              "start_column": 5,
+              "start_line": 35
+            }
+          }
+        ],
+        "capabilities": [],
+        "closure_captures": [],
+        "effects": [],
+        "evaluation_order": [],
+        "generated_origin_chain": [],
+        "id": "core-00041",
+        "kind": "core/fn",
+        "latent_effects": [],
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "params": [
+          {
+            "name": "x",
+            "source_span": {
+              "end_byte": 590,
+              "end_column": 9,
+              "end_line": 34,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 589,
+              "start_column": 8,
+              "start_line": 34
+            }
+          }
+        ],
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 627,
+          "end_column": 10,
+          "end_line": 37,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 584,
+          "start_column": 3,
+          "start_line": 34
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "function-example",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 628,
+        "end_column": 11,
+        "end_line": 37,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 560,
+        "start_column": 1,
+        "start_line": 33
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [],
+      "evaluation_order": [
+        "core-00043"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00044",
+      "initializer": {
+        "capabilities": [],
+        "effects": [],
+        "evaluation_order": [],
+        "generated_origin_chain": [],
+        "id": "core-00043",
+        "kind": "core/var",
+        "metadata": [],
+        "name": "quoted-data",
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 666,
+          "end_column": 20,
+          "end_line": 40,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 649,
+          "start_column": 3,
+          "start_line": 40
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "var-example",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 667,
+        "end_column": 21,
+        "end_line": 40,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 630,
+        "start_column": 1,
+        "start_line": 39
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [
+        ":error/throw"
+      ],
+      "evaluation_order": [
+        "core-00048"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00049",
+      "initializer": {
+        "capabilities": [],
+        "effects": [
+          ":error/throw"
+        ],
+        "evaluation_order": [
+          "core-00046",
+          "matching-catch"
+        ],
+        "finalizers": [],
+        "generated_origin_chain": [],
+        "handlers": [
+          {
+            "binding": "err",
+            "body": [
+              {
+                "capabilities": [],
+                "effects": [],
+                "evaluation_order": [],
+                "generated_origin_chain": [],
+                "id": "core-00047",
+                "kind": "core/symbol-ref",
+                "metadata": [],
+                "name": "err",
+                "namespace_context": "core.demo",
+                "profile_context": ":hosted",
+                "reader_origin": [
+                  {
+                    "kind": "symbolic"
+                  }
+                ],
+                "safety_facts": {
+                  "required_by": "D8/D9 downstream safety phases",
+                  "status": ":unchecked"
+                },
+                "source_span": {
+                  "end_byte": 742,
+                  "end_column": 10,
+                  "end_line": 46,
+                  "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                  "start_byte": 739,
+                  "start_column": 7,
+                  "start_line": 46
+                }
+              }
+            ],
+            "effects": [],
+            "error_pattern": {
+              "kind": "keyword",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "symbolic"
+                }
+              ],
+              "span": {
+                "end_byte": 728,
+                "end_column": 16,
+                "end_line": 45,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 724,
+                "start_column": 12,
+                "start_line": 45
+              },
+              "value": ":any"
+            }
+          }
+        ],
+        "id": "core-00048",
+        "kind": "core/try",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "protected": [
+          {
+            "capabilities": [],
+            "effects": [
+              ":error/throw"
+            ],
+            "error_value": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00045",
+              "kind": "core/literal",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "symbolic"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 711,
+                "end_column": 17,
+                "end_line": 44,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 706,
+                "start_column": 12,
+                "start_line": 44
+              },
+              "value": ":boom",
+              "value_kind": "keyword"
+            },
+            "evaluation_order": [
+              "core-00045"
+            ],
+            "generated_origin_chain": [],
+            "id": "core-00046",
+            "kind": "core/throw",
+            "metadata": [],
+            "namespace_context": "core.demo",
+            "profile_context": ":hosted",
+            "reader_origin": [
+              {
+                "kind": "collection"
+              }
+            ],
+            "safety_facts": {
+              "required_by": "D8/D9 downstream safety phases",
+              "status": ":unchecked"
+            },
+            "source_span": {
+              "end_byte": 712,
+              "end_column": 18,
+              "end_line": 44,
+              "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+              "start_byte": 699,
+              "start_column": 5,
+              "start_line": 44
+            }
+          }
+        ],
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "source_span": {
+          "end_byte": 744,
+          "end_column": 12,
+          "end_line": 46,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 690,
+          "start_column": 3,
+          "start_line": 43
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "error-example",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 745,
+        "end_column": 13,
+        "end_line": 46,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 669,
+        "start_column": 1,
+        "start_line": 42
+      }
+    },
+    {
+      "artifact_visible": true,
+      "capabilities": [],
+      "effects": [],
+      "evaluation_order": [
+        "core-00053"
+      ],
+      "generated_origin_chain": [],
+      "id": "core-00054",
+      "initializer": {
+        "capabilities": [],
+        "clauses": [
+          {
+            "body": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00051",
+              "kind": "core/literal",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "literal"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 789,
+                "end_column": 11,
+                "end_line": 50,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 788,
+                "start_column": 10,
+                "start_line": 50
+              },
+              "value": 1,
+              "value_kind": "integer"
+            },
+            "pattern": {
+              "kind": "keyword",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "symbolic"
+                }
+              ],
+              "span": {
+                "end_byte": 787,
+                "end_column": 9,
+                "end_line": 50,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 784,
+                "start_column": 6,
+                "start_line": 50
+              },
+              "value": ":ok"
+            }
+          },
+          {
+            "body": {
+              "capabilities": [],
+              "effects": [],
+              "evaluation_order": [],
+              "generated_origin_chain": [],
+              "id": "core-00052",
+              "kind": "core/literal",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "literal"
+                }
+              ],
+              "safety_facts": {
+                "required_by": "D8/D9 downstream safety phases",
+                "status": ":unchecked"
+              },
+              "source_span": {
+                "end_byte": 798,
+                "end_column": 9,
+                "end_line": 51,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 797,
+                "start_column": 8,
+                "start_line": 51
+              },
+              "value": 0,
+              "value_kind": "integer"
+            },
+            "pattern": {
+              "kind": "symbol",
+              "metadata": [],
+              "namespace_context": "core.demo",
+              "profile_context": ":hosted",
+              "reader_origin": [
+                {
+                  "kind": "symbolic"
+                }
+              ],
+              "span": {
+                "end_byte": 796,
+                "end_column": 7,
+                "end_line": 51,
+                "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+                "start_byte": 795,
+                "start_column": 6,
+                "start_line": 51
+              },
+              "value": "_"
+            }
+          }
+        ],
+        "effects": [],
+        "evaluation_order": [
+          "core-00050",
+          "one-matching-clause"
+        ],
+        "generated_origin_chain": [],
+        "id": "core-00053",
+        "kind": "core/match",
+        "metadata": [],
+        "namespace_context": "core.demo",
+        "profile_context": ":hosted",
+        "reader_origin": [
+          {
+            "kind": "collection"
+          }
+        ],
+        "safety_facts": {
+          "required_by": "D8/D9 downstream safety phases",
+          "status": ":unchecked"
+        },
+        "scrutinee": {
+          "capabilities": [],
+          "effects": [],
+          "evaluation_order": [],
+          "generated_origin_chain": [],
+          "id": "core-00050",
+          "kind": "core/literal",
+          "metadata": [],
+          "namespace_context": "core.demo",
+          "profile_context": ":hosted",
+          "reader_origin": [
+            {
+              "kind": "symbolic"
+            }
+          ],
+          "safety_facts": {
+            "required_by": "D8/D9 downstream safety phases",
+            "status": ":unchecked"
+          },
+          "source_span": {
+            "end_byte": 778,
+            "end_column": 13,
+            "end_line": 49,
+            "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+            "start_byte": 775,
+            "start_column": 10,
+            "start_line": 49
+          },
+          "value": ":ok",
+          "value_kind": "keyword"
+        },
+        "source_span": {
+          "end_byte": 800,
+          "end_column": 11,
+          "end_line": 51,
+          "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+          "start_byte": 768,
+          "start_column": 3,
+          "start_line": 49
+        }
+      },
+      "kind": "core/def",
+      "metadata": [],
+      "name": "match-example",
+      "namespace_context": "core.demo",
+      "profile_context": ":hosted",
+      "reader_origin": [
+        {
+          "kind": "collection"
+        }
+      ],
+      "safety_facts": {
+        "required_by": "D8/D9 downstream safety phases",
+        "status": ":unchecked"
+      },
+      "source_span": {
+        "end_byte": 801,
+        "end_column": 12,
+        "end_line": 51,
+        "source": "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity",
+        "start_byte": 747,
+        "start_column": 1,
+        "start_line": 48
+      }
+    }
+  ]
+}
