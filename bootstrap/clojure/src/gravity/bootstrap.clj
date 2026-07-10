@@ -73525,7 +73525,10 @@
                   [:source-unit :token-stream :form-tree
                    :syntax-seed-stream :extension-invocation-set
                    :reader-diagnostics]))
-     :status :complete}))
+     :lexical-token-stream? false
+     :nested-form-tree? false
+     :representation-status :residual-top-level-form-summaries
+     :status :partial}))
 
 (defn p15-s23-source-syntax-c2-artifact
   [source-path source-text]
@@ -73559,7 +73562,15 @@
                 :emits [:source-unit-record :token-stream :form-tree
                         :reader-source-map :incremental-reader-hashes]
                 :rejects p15-s23-source-syntax-serialization-diagnostic-ids}
+         :status :partial
          :source-unit-record source-unit
+         :representation-boundary
+         {:token-stream :one-record-per-top-level-form
+          :form-tree :flat-top-level-form-summary
+          :lexical-token-stream? false
+          :nested-form-tree? false
+          :required-next-slice :lexical-token-and-form-tree-reader
+          :status :residual}
          :token-stream token-stream
          :form-tree form-tree
          :syntax-seed-stream syntax-seeds
@@ -73574,8 +73585,10 @@
          {:source-unit-status :complete
           :source-map-status :complete
           :incremental-hash-status :complete
+          :token-stream-status :residual-top-level-form-summaries
+          :form-tree-status :residual-flat-form-summaries
           :abbreviation-fixture-status :not-required-for-p15-source-proof
-          :status :complete}
+          :status :partial}
          :diagnostics []}
         proof (p15-s23-source-syntax-c2-capability-proof artifact-base)
         artifact (assoc artifact-base :capability-based-proof proof)]
@@ -73917,8 +73930,10 @@
          :proof-contract proof-contract
          :c2-reader-artifact
          (select-keys c2-artifact
-                      [:kind :artifact-id :source-unit-record
+                      [:kind :artifact-id :status :source-unit-record
                        :reader-source-map :incremental-reader-hashes
+                       :representation-boundary
+                       :p15-s23-source-syntax-reader-results
                        :capability-based-proof])
          :c3-syntax-artifact
          (select-keys c3-artifact
@@ -100974,20 +100989,37 @@
 
 (defn source-path-policy-fail!
   [source-path]
-  (fail! "L1-SOURCE-EXTENSION"
-         "Gravity source path does not use a co-canonical source extension"
-         {:severity :error
-          :stage :read-source
-          :source-span {:source source-path}
-          :primary {:span {:source source-path}}
-          :related []
-          :origin-chain [{:kind :source-path :path source-path}]
-          :profile nil
-          :target nil
-          :facts {:actual-extension (gravity-source-extension source-path)
-                  :allowed-extensions (vec (sort co-canonical-source-extensions))}
-          :reader-state {:stage :source-unit-policy}
-          :remediation "Rename the source to .qst or .gravity; both are canonical and first-class."}))
+  (let [source-file (java.io.File. source-path)
+        bytes (when (.isFile source-file)
+                (java.nio.file.Files/readAllBytes (.toPath source-file)))
+        bytes-hash (when bytes
+                     (str "sha256:" (sha256-bytes-hex bytes)))
+        span {:source source-path :byte-start 0 :byte-end 0}]
+    (fail! "L1-SOURCE-EXTENSION"
+           "Gravity source path does not use a co-canonical source extension"
+           (cond->
+            {:severity :error
+             :stage :read-source
+             :source-span span
+             :primary (cond-> {:span span}
+                        bytes-hash (assoc :artifact bytes-hash))
+             :related []
+             :origin-chain
+             [(cond-> {:kind :source-path :path source-path}
+                bytes-hash (assoc :source-id bytes-hash))]
+             :profile nil
+             :target nil
+             :facts
+             (cond->
+              {:actual-extension (gravity-source-extension source-path)
+               :allowed-extensions
+               (vec (sort co-canonical-source-extensions))}
+               bytes-hash (assoc :bytes-hash bytes-hash
+                                 :byte-count (alength bytes)))
+             :reader-state {:stage :source-unit-policy}
+             :remediation
+             "Rename the source to .qst or .gravity; both are canonical and first-class."}
+             bytes-hash (assoc :source-id bytes-hash)))))
 
 (defn read-gravity-source-text
   [path]
@@ -101591,10 +101623,14 @@
              (str/includes? cause "Duplicate key") "C2-SET"
              :else old-id)]
     (if (contains? (set c2-reader-diagnostic-ids) id)
-      (c2-reader-fail! id source-path data
-                       {:cause-message (or (:cause-message data)
-                                           (:message data))
-                        :reader-options standard-reader-options})
+      (let [preserved-fields
+            (dissoc data :id :message :diagnostic-family :reader-options)]
+        (c2-reader-fail!
+         id source-path data
+         (assoc preserved-fields
+                :cause-message (or (:cause-message data) (:message data))
+                :remapped-from old-id
+                :reader-options standard-reader-options)))
       (throw ex))))
 
 (defn c2-reader-validate-overrides!

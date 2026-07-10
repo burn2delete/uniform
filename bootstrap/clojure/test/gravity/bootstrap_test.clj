@@ -5787,6 +5787,9 @@
          bootstrap/p15-s23-compiler-source-path)
         proof (:capability-based-proof artifact)
         serialization (:serialization-roundtrip-record artifact)
+        c2-artifact (:c2-reader-artifact artifact)
+        c2-proof (:capability-based-proof c2-artifact)
+        c2-results (:p15-s23-source-syntax-reader-results c2-artifact)
         diagnostics
         (set (map :diagnostic
                   (get-in artifact
@@ -5801,7 +5804,23 @@
     (is (= :gravity/source-unit-and-syntax-serialization-proof
            (get-in artifact [:proof-contract :artifact])))
     (is (= :gravity/stage0-c2-reader-document-artifact
-           (get-in artifact [:c2-reader-artifact :kind])))
+           (:kind c2-artifact)))
+    (is (= :partial (:status c2-artifact)))
+    (is (= :residual
+           (get-in c2-artifact [:representation-boundary :status])))
+    (is (false? (:lexical-token-stream? c2-proof)))
+    (is (false? (:nested-form-tree? c2-proof)))
+    (is (= :residual-top-level-form-summaries
+           (:representation-status c2-proof)))
+    (is (= :partial (:status c2-proof)))
+    (is (= :complete (:source-unit-status c2-results)))
+    (is (= :complete (:source-map-status c2-results)))
+    (is (= :complete (:incremental-hash-status c2-results)))
+    (is (= :residual-top-level-form-summaries
+           (:token-stream-status c2-results)))
+    (is (= :residual-flat-form-summaries
+           (:form-tree-status c2-results)))
+    (is (= :partial (:status c2-results)))
     (is (= :gravity/stage0-c3-syntax-object-artifact
            (get-in artifact [:c3-syntax-artifact :kind])))
     (is (= :gravity/source-unit
@@ -9574,12 +9593,46 @@
     (is (= #{".gravity" ".qst"}
            (set (get-in extension-diagnostic
                         [:facts :allowed-extensions]))))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (:source-id extension-diagnostic)))
+    (is (= (:source-id extension-diagnostic)
+           (get-in extension-diagnostic [:facts :bytes-hash])))
     (is (= "C2-EXTENSION" (:id c2-extension-diagnostic)))
+    (is (= "L1-SOURCE-EXTENSION"
+           (:remapped-from c2-extension-diagnostic)))
+    (is (= :c2-reader (:diagnostic-family c2-extension-diagnostic)))
+    (is (= :error (:severity c2-extension-diagnostic)))
+    (is (= :read-source (:stage c2-extension-diagnostic)))
     (is (= extension-path
            (get-in c2-extension-diagnostic [:source-span :source])))
-    (is (= true
-           (get-in c2-extension-diagnostic
-                   [:reader-options :retain-comments])))
+    (is (= 0 (get-in c2-extension-diagnostic
+                     [:source-span :byte-start])))
+    (is (= 0 (get-in c2-extension-diagnostic
+                     [:source-span :byte-end])))
+    (is (= (:source-span c2-extension-diagnostic)
+           (get-in c2-extension-diagnostic [:primary :span])))
+    (is (= (:source-id c2-extension-diagnostic)
+           (get-in c2-extension-diagnostic [:primary :artifact])))
+    (is (= (:source-id extension-diagnostic)
+           (:source-id c2-extension-diagnostic)))
+    (is (= [] (:related c2-extension-diagnostic)))
+    (is (seq (:origin-chain c2-extension-diagnostic)))
+    (is (contains? c2-extension-diagnostic :profile))
+    (is (contains? c2-extension-diagnostic :target))
+    (is (nil? (:profile c2-extension-diagnostic)))
+    (is (nil? (:target c2-extension-diagnostic)))
+    (is (= ".txt"
+           (get-in c2-extension-diagnostic [:facts :actual-extension])))
+    (is (= #{".gravity" ".qst"}
+           (set (get-in c2-extension-diagnostic
+                        [:facts :allowed-extensions]))))
+    (is (= (:source-id c2-extension-diagnostic)
+           (get-in c2-extension-diagnostic [:facts :bytes-hash])))
+    (is (= :source-unit-policy
+           (get-in c2-extension-diagnostic [:reader-state :stage])))
+    (is (string? (:remediation c2-extension-diagnostic)))
+    (is (= bootstrap/standard-reader-options
+           (:reader-options c2-extension-diagnostic)))
     (doseq [suffix [".gravity" ".qst"]]
       (let [path (java.nio.file.Files/createTempFile
                   "gravity-invalid-utf8-"
@@ -9606,10 +9659,35 @@
                                   [:facts :declared-encoding])))
             (is (re-find #"^sha256:" (:source-id diagnostic)))
             (is (= "C2-ENCODING" (:id c2-diagnostic)))
+            (is (= "L1-SOURCE-ENCODING" (:remapped-from c2-diagnostic)))
+            (is (= :c2-reader (:diagnostic-family c2-diagnostic)))
+            (is (= :error (:severity c2-diagnostic)))
+            (is (= :read-source (:stage c2-diagnostic)))
             (is (= (.toString path)
                    (get-in c2-diagnostic [:source-span :source])))
             (is (= 1 (get-in c2-diagnostic
-                             [:source-span :byte-start]))))
+                             [:source-span :byte-start])))
+            (is (= 2 (get-in c2-diagnostic
+                             [:source-span :byte-end])))
+            (is (= (:source-span c2-diagnostic)
+                   (get-in c2-diagnostic [:primary :span])))
+            (is (= (:source-id c2-diagnostic)
+                   (get-in c2-diagnostic [:primary :artifact])))
+            (is (= (:source-id diagnostic) (:source-id c2-diagnostic)))
+            (is (= [] (:related c2-diagnostic)))
+            (is (seq (:origin-chain c2-diagnostic)))
+            (is (contains? c2-diagnostic :profile))
+            (is (contains? c2-diagnostic :target))
+            (is (nil? (:profile c2-diagnostic)))
+            (is (nil? (:target c2-diagnostic)))
+            (is (= (:facts diagnostic) (:facts c2-diagnostic)))
+            (is (= :source-decoding
+                   (get-in c2-diagnostic [:reader-state :stage])))
+            (is (= :utf-8
+                   (get-in c2-diagnostic [:reader-state :encoding])))
+            (is (string? (:remediation c2-diagnostic)))
+            (is (= bootstrap/standard-reader-options
+                   (:reader-options c2-diagnostic))))
           (finally
             (java.nio.file.Files/deleteIfExists path)))))))
 
