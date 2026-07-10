@@ -10808,6 +10808,514 @@
           (is (not (str/includes? (:err rejected)
                                   "ArithmeticException"))))))))
 
+(deftest c3-and-p15-identities-are-checkout-path-neutral
+  (letfn [(identity-key? [key]
+            (and (keyword? key)
+                 (boolean (re-find #"(?i)(?:id|ids|hash|hashes)$"
+                                   (name key)))))
+          (identity-fields [value]
+            (letfn [(walk [path item]
+                      (cond
+                        (map? item)
+                        (mapcat
+                         (fn [[key child]]
+                           (let [child-path (conj path key)]
+                             (if (identity-key? key)
+                               [[child-path child]]
+                               (walk child-path child))))
+                         (sort-by (comp pr-str key) item))
+
+                        (vector? item)
+                        (mapcat (fn [idx child]
+                                  (walk (conj path idx) child))
+                                (range) item)
+
+                        (sequential? item)
+                        (mapcat (fn [idx child]
+                                  (walk (conj path idx) child))
+                                (range) item)
+
+                        :else []))]
+              (vec (walk [] value))))]
+    (doseq [suffix [".gravity" ".qst"]
+            source ["1/0" "^:a 1/0" "^{} 1/0"]]
+      (let [root-id (bootstrap/reader-canonical-hash
+                     {:project :c3-path-neutral-reader})
+            relative-path (str "src/reader" suffix)
+            path-a (str "/checkout-a/" relative-path)
+            path-b (str "/checkout-b/" relative-path)
+            context-a {:project-root-id root-id
+                       :project-root-path "/checkout-a"
+                       :project-relative-path relative-path}
+            context-b {:project-root-id root-id
+                       :project-root-path "/checkout-b"
+                       :project-relative-path relative-path}
+            c2-a (bootstrap/compiler-c2-reader-source-artifact
+                  path-a source context-a)
+            c2-b (bootstrap/compiler-c2-reader-source-artifact
+                  path-b source context-b)
+            c3-a (bootstrap/compiler-c3-syntax-source-artifact
+                  path-a source context-a)
+            c3-b (bootstrap/compiler-c3-syntax-source-artifact
+                  path-b source context-b)
+            p15-c2-a (bootstrap/p15-s23-source-syntax-c2-artifact
+                      path-a source context-a)
+            p15-c2-b (bootstrap/p15-s23-source-syntax-c2-artifact
+                      path-b source context-b)
+            p15-c3-a (bootstrap/p15-s23-source-syntax-c3-artifact
+                      path-a p15-c2-a)
+            p15-c3-b (bootstrap/p15-s23-source-syntax-c3-artifact
+                      path-b p15-c2-b)
+            roundtrip-a
+            (bootstrap/p15-s23-source-syntax-serialization-roundtrip-record
+             p15-c2-a p15-c3-a)
+            roundtrip-b
+            (bootstrap/p15-s23-source-syntax-serialization-roundtrip-record
+             p15-c2-b p15-c3-b)]
+        (is (= (:incremental-reader-hashes c2-a)
+               (:incremental-reader-hashes c2-b)))
+        (is (= (identity-fields c2-a) (identity-fields c2-b)))
+        (is (= (identity-fields c3-a) (identity-fields c3-b)))
+        (is (= (identity-fields p15-c2-a) (identity-fields p15-c2-b)))
+        (is (= (identity-fields p15-c3-a) (identity-fields p15-c3-b)))
+        (is (= (identity-fields roundtrip-a)
+               (identity-fields roundtrip-b)))
+        (is (= (:artifact-id c3-a) (:artifact-id c3-b)))
+        (is (= (:artifact-id p15-c3-a) (:artifact-id p15-c3-b)))
+        (is (= (:serialization-id roundtrip-a)
+               (:serialization-id roundtrip-b)))
+        (is (not= (get-in c3-a
+                          [:c2-reader-artifact :source-unit-record :path])
+                  (get-in c3-b
+                          [:c2-reader-artifact :source-unit-record :path])))
+        (is (= [path-a path-b]
+               [(get-in c3-a [:syntax-object-stream 0 :span :primary
+                              :source])
+                (get-in c3-b [:syntax-object-stream 0 :span :primary
+                              :source])]))
+        (is (= [(bootstrap/gravity-source-kind path-a)
+                (bootstrap/gravity-source-kind path-b)]
+               [(get-in c3-a
+                        [:c2-reader-artifact :source-unit-record
+                         :source-kind])
+                (get-in c3-b
+                        [:c2-reader-artifact :source-unit-record
+                         :source-kind])]))))))
+
+(deftest c3-rejects-forged-replayed-and-unbound-reader-products
+  (doseq [suffix [".gravity" ".qst"]]
+    (let [path (str "/p/forged" suffix)
+          genuine (bootstrap/p15-s23-source-syntax-c2-artifact path "1/0")
+          replay (bootstrap/p15-s23-source-syntax-c2-artifact path "2/0")
+          forged {:artifact :gravity/deferred-ratio-literal
+                  :kind :ratio
+                  :raw "1/0"
+                  :numerator-spelling "999"
+                  :denominator-spelling "2"
+                  :numerator 999N
+                  :denominator 2N
+                  :semantic-validation :deferred
+                  :reason :spoof}
+          coherent-products
+          (-> genuine
+              (assoc-in [:syntax-seed-stream 0 :form] forged)
+              (assoc-in [:form-tree 0 :value] forged)
+              (assoc-in [:token-stream 0 :decoded] forged))
+          coherent-literals
+          (bootstrap/c2-literal-records (:form-tree coherent-products))
+          coherent-deferred
+          (bootstrap/c2-deferred-semantic-literals
+           (:form-tree coherent-products))
+          coherent-hashes
+          (bootstrap/c2-incremental-hashes
+           (:source-unit-record coherent-products)
+           (:token-stream coherent-products)
+           (:form-tree coherent-products)
+           (:syntax-seed-stream coherent-products)
+           (:reader-extension-invocation-records coherent-products)
+           (:reader-diagnostics coherent-products))
+          coherent-integrity
+          (bootstrap/c2-reader-product-integrity-record
+           (:source-unit-record coherent-products)
+           (:top-level-form-ids coherent-products)
+           coherent-hashes coherent-literals coherent-deferred)
+          coherent-forgery
+          (-> coherent-products
+              (assoc :literal-decoding-records coherent-literals)
+              (assoc-in [:semantic-error-deferment-record
+                         :deferred-literal-records] coherent-deferred)
+              (assoc :incremental-reader-hashes coherent-hashes)
+              (assoc :reader-product-integrity coherent-integrity))
+          renamed-products
+          (-> genuine
+              (assoc-in [:token-stream 0 :token-id] :tok-999)
+              (assoc-in [:form-tree 0 :form-id] :form-999)
+              (assoc-in [:form-tree 0 :open-token] :tok-999)
+              (assoc-in [:form-tree 0 :close-token] :tok-999)
+              (assoc :top-level-form-ids [:form-999])
+              (assoc-in [:syntax-seed-stream 0 :syntax-id]
+                        "stage0-syntax-999")
+              (assoc-in [:syntax-seed-stream 0 :form-id] :form-999)
+              (assoc :reader-source-map
+                     [{:syntax-id "stage0-syntax-999"
+                       :form-id :form-999
+                       :span (get-in genuine
+                                     [:syntax-seed-stream 0 :span])}])
+              (assoc-in [:literal-decoding-records 0 :form-id] :form-999)
+              (assoc-in [:semantic-error-deferment-record
+                         :deferred-literal-records 0 :form-id]
+                        :form-999))
+          renamed-hashes
+          (bootstrap/c2-incremental-hashes
+           (:source-unit-record renamed-products)
+           (:token-stream renamed-products)
+           (:form-tree renamed-products)
+           (:syntax-seed-stream renamed-products)
+           (:reader-extension-invocation-records renamed-products)
+           (:reader-diagnostics renamed-products))
+          renamed-integrity
+          (bootstrap/c2-reader-product-integrity-record
+           (:source-unit-record renamed-products)
+           (:top-level-form-ids renamed-products)
+           renamed-hashes (:literal-decoding-records renamed-products)
+           (get-in renamed-products
+                   [:semantic-error-deferment-record
+                    :deferred-literal-records]))
+          renamed-with-integrity
+          (assoc renamed-products
+                 :incremental-reader-hashes renamed-hashes
+                 :reader-product-integrity renamed-integrity)
+          coherently-renamed
+          (assoc renamed-with-integrity :artifact-id
+                 (bootstrap/c2-reader-artifact-id renamed-with-integrity))
+          reindexed-products
+          (-> genuine
+              (assoc-in [:syntax-seed-stream 0 :span :form-index] 999)
+              (assoc-in [:reader-source-map 0 :span :form-index] 999))
+          reindexed-hashes
+          (bootstrap/c2-incremental-hashes
+           (:source-unit-record reindexed-products)
+           (:token-stream reindexed-products)
+           (:form-tree reindexed-products)
+           (:syntax-seed-stream reindexed-products)
+           (:reader-extension-invocation-records reindexed-products)
+           (:reader-diagnostics reindexed-products))
+          reindexed-integrity
+          (bootstrap/c2-reader-product-integrity-record
+           (:source-unit-record reindexed-products)
+           (:top-level-form-ids reindexed-products)
+           reindexed-hashes (:literal-decoding-records reindexed-products)
+           (get-in reindexed-products
+                   [:semantic-error-deferment-record
+                    :deferred-literal-records]))
+          reindexed-with-integrity
+          (assoc reindexed-products
+                 :incremental-reader-hashes reindexed-hashes
+                 :reader-product-integrity reindexed-integrity)
+          coherently-reindexed
+          (assoc reindexed-with-integrity :artifact-id
+                 (bootstrap/c2-reader-artifact-id reindexed-with-integrity))
+          mutations
+          [[:exact-999-2-spoof
+            (-> genuine
+                (assoc-in [:syntax-seed-stream 0 :form] forged)
+                (assoc-in [:form-tree 0 :value] forged))]
+           [:coherent-999-2-spoof coherent-forgery]
+           [:coherently-renamed-links coherently-renamed]
+           [:coherently-reindexed-seed coherently-reindexed]
+           [:spoofed-artifact-id
+            (assoc genuine :artifact-id "sha256:spoof")]
+           [:missing-integrity (dissoc genuine :reader-product-integrity)]
+           [:missing-deferment
+            (dissoc genuine :semantic-error-deferment-record)]
+           [:missing-literal (assoc genuine :literal-decoding-records [])]
+           [:wrong-top-level-id
+            (assoc genuine :top-level-form-ids [:form-999])]
+           [:wrong-token-link
+            (assoc-in genuine [:form-tree 0 :open-token] :tok-999)]
+           [:wrong-form-source
+            (assoc-in genuine [:form-tree 0 :source-id] "sha256:wrong")]
+           [:wrong-token-source
+            (assoc-in genuine [:token-stream 0 :source-id] "sha256:wrong")]
+           [:wrong-raw
+            (assoc-in genuine [:token-stream 0 :raw] "9/0")]
+           [:wrong-seed-span
+            (assoc-in genuine [:syntax-seed-stream 0 :span :byte-start] 99)]
+           [:missing-token (assoc genuine :token-stream [])]
+           [:wrong-options
+            (assoc-in genuine
+                      [:source-unit-record :reader-options :retain-comments]
+                      false)]
+           [:cross-source-seed-replay
+            (assoc-in genuine [:syntax-seed-stream 0]
+                      (get-in replay [:syntax-seed-stream 0]))]
+           [:cross-form-value-replay
+            (assoc-in genuine [:form-tree 0 :value]
+                      (get-in replay [:form-tree 0 :value]))]
+           [:self-cycle
+            (-> genuine
+                (assoc-in [:form-tree 0 :children] [:form-0])
+                (assoc-in [:form-tree 0 :parent-form-id] :form-0))]]]
+      (doseq [[name candidate] mutations]
+        (let [diagnostic
+              (diagnostic-data
+               #(bootstrap/p15-s23-source-syntax-c3-artifact path candidate))]
+          (is (= "C3-FACT-STALE" (:id diagnostic)) (str name))
+          (is (= :c3-syntax-object (:diagnostic-family diagnostic))
+              (str name))
+          (is (seq (:missing-fields diagnostic)) (str name))
+          (is (not (str/includes? (str diagnostic) "StackOverflowError"))
+              (str name))))
+      (let [replay-diagnostic
+            (diagnostic-data
+             #(bootstrap/p15-s23-source-syntax-c3-artifact
+               (str "/other/replayed" suffix) genuine))]
+        (is (= "C3-FACT-STALE" (:id replay-diagnostic)))
+        (is (some #{:source-path-binding-valid?}
+                  (:missing-fields replay-diagnostic))))
+      (let [multi
+            (bootstrap/p15-s23-source-syntax-c2-artifact path "1/0 2")
+            ratio-form (first (filter #(= "1/0" (:raw %))
+                                      (:form-tree multi)))
+            integer-form (first (filter #(= "2" (:raw %))
+                                        (:form-tree multi)))
+            reordered-forms
+            [(assoc integer-form :form-id :form-0)
+             (assoc ratio-form :form-id :form-1)]
+            reordered-seeds
+            (mapv (fn [seed]
+                    (assoc seed :form-id
+                           (if (= "1/0"
+                                  (get-in seed
+                                          [:reader-origin :raw-excerpt]))
+                             :form-1 :form-0)))
+                  (:syntax-seed-stream multi))
+            reordered-literals
+            (mapv (fn [literal]
+                    (assoc literal :form-id
+                           (if (= "1/0" (:raw literal))
+                             :form-1 :form-0)))
+                  (:literal-decoding-records multi))
+            reordered-deferred
+            (mapv #(assoc % :form-id :form-1)
+                  (get-in multi
+                          [:semantic-error-deferment-record
+                           :deferred-literal-records]))
+            reordered-base
+            (-> multi
+                (assoc :form-tree reordered-forms)
+                (assoc :top-level-form-ids [:form-1 :form-0])
+                (assoc :syntax-seed-stream reordered-seeds)
+                (assoc :reader-source-map
+                       (mapv #(select-keys % [:syntax-id :form-id :span])
+                             reordered-seeds))
+                (assoc :literal-decoding-records reordered-literals)
+                (assoc-in [:semantic-error-deferment-record
+                           :deferred-literal-records]
+                          reordered-deferred))
+            reordered-hashes
+            (bootstrap/c2-incremental-hashes
+             (:source-unit-record reordered-base)
+             (:token-stream reordered-base)
+             (:form-tree reordered-base)
+             (:syntax-seed-stream reordered-base)
+             (:reader-extension-invocation-records reordered-base)
+             (:reader-diagnostics reordered-base))
+            reordered-integrity
+            (bootstrap/c2-reader-product-integrity-record
+             (:source-unit-record reordered-base)
+             (:top-level-form-ids reordered-base)
+             reordered-hashes reordered-literals reordered-deferred)
+            reordered-with-integrity
+            (assoc reordered-base
+                   :incremental-reader-hashes reordered-hashes
+                   :reader-product-integrity reordered-integrity)
+            reordered
+            (assoc reordered-with-integrity :artifact-id
+                   (bootstrap/c2-reader-artifact-id
+                    reordered-with-integrity))
+            reordered-diagnostic
+            (diagnostic-data
+             #(bootstrap/p15-s23-source-syntax-c3-artifact
+               path reordered))]
+        (is (= "C3-FACT-STALE" (:id reordered-diagnostic)))
+        (is (some #{:stable-form-ids?}
+                  (:missing-fields reordered-diagnostic))))
+      (let [wrapped
+            (bootstrap/p15-s23-source-syntax-c2-artifact path "^:a 1/0")
+            ratio-index
+            (first (keep-indexed #(when (= :ratio (:kind %2)) %1)
+                                 (:form-tree wrapped)))
+            forged-wrapper
+            (-> wrapped
+                (assoc-in [:syntax-seed-stream 0 :form] forged)
+                (assoc-in [:syntax-seed-stream 0 :generated-origin 0
+                           :expanded-form] forged)
+                (assoc-in [:form-tree 0 :value] forged)
+                (assoc-in [:form-tree 0 :expanded-form] forged)
+                (assoc-in [:form-tree ratio-index :value] forged))
+            diagnostic
+            (diagnostic-data
+             #(bootstrap/p15-s23-source-syntax-c3-artifact
+               path forged-wrapper))]
+        (is (= "C3-FACT-STALE" (:id diagnostic)))
+        (is (seq (:missing-fields diagnostic))))
+    (let [source
+          (str "^:a {:artifact :gravity/deferred-ratio-literal "
+               ":kind :ratio :raw \"}\" :numerator-spelling \"999\" "
+               ":denominator-spelling \"2\" :numerator 999 "
+               ":denominator 2 :semantic-validation :deferred "
+               ":reason :spoof}")
+          artifact (bootstrap/compiler-c3-syntax-source-artifact
+                    (str "/p/ordinary-map" suffix) source)
+          syntax (first (:syntax-object-stream artifact))]
+      (is (= :map (get-in syntax [:form :kind])))
+      (is (= {} (:facts syntax)))
+      (is (= :passed (get-in artifact
+                             [:syntax-verification-report :status])))
+      (is (= :complete (get-in artifact
+                               [:capability-based-proof :status])))))))
+
+(deftest c3-verifier-and-capability-recompute-reader-authenticity
+  (doseq [suffix [".gravity" ".qst"]]
+    (let [artifact (bootstrap/compiler-c3-syntax-source-artifact
+                    (str "/p/post-mutation" suffix) "1/0")
+          mutated
+          (-> artifact
+              (assoc-in [:syntax-object-stream 0 :facts
+                         :reader-literal-descriptor :numerator] 999N)
+              (assoc-in [:syntax-object-stream 0 :facts
+                         :reader-literal-descriptor :reason] :spoof))
+          serialization
+          (bootstrap/c3-syntax-serialization-fixture
+           (:syntax-object-stream mutated))
+          verifier
+          (bootstrap/c3-syntax-verification-report
+           (:syntax-object-stream mutated) serialization
+           (:c2-reader-artifact mutated))
+          proof (bootstrap/c3-syntax-capability-proof mutated)
+          id-mutated
+          (assoc-in artifact [:c2-reader-artifact :artifact-id]
+                    "sha256:spoof")
+          id-serialization
+          (bootstrap/c3-syntax-serialization-fixture
+           (:syntax-object-stream id-mutated))
+          id-verifier
+          (bootstrap/c3-syntax-verification-report
+           (:syntax-object-stream id-mutated) id-serialization
+           (:c2-reader-artifact id-mutated))
+          id-proof (bootstrap/c3-syntax-capability-proof id-mutated)]
+      (is (= :failed (:status verifier)))
+      (is (false? (:reader-products-authentic? verifier)))
+      (is (= :failed (:status proof)))
+      (is (false? (:reader-products-authentic? proof)))
+      (is (false? (:syntax-verifier-current? proof)))
+      (is (false? (:syntax-verifier-passed? proof)))
+      (is (= :failed (:status id-verifier)))
+      (is (false? (:reader-products-authentic? id-verifier)))
+      (is (= :failed (:status id-proof)))
+      (is (false? (:reader-products-authentic? id-proof))))))
+
+(deftest c2-graph-depth-validation-is-iterative-and-stack-safe
+  (let [node-count 3000
+        source (apply str (repeat node-count "x"))
+        source-unit
+        (bootstrap/c2-source-unit-record
+         "/p/deep.gravity" source bootstrap/standard-reader-options
+         {:project-root-id
+          (bootstrap/reader-canonical-hash {:project :deep-reader})
+          :project-root-path "/p"
+          :project-relative-path "deep.gravity"})
+        source-id (:source-id source-unit)
+        tokens
+        (mapv (fn [idx]
+                {:token-id (keyword (str "tok-" idx))
+                 :kind :symbol
+                 :raw "x"
+                 :source-id source-id
+                 :source-path "/p/deep.gravity"
+                 :span {:source "/p/deep.gravity"
+                        :file source-id
+                        :byte-start idx :byte-end (inc idx)
+                        :start {:line 1 :column (inc idx)}
+                        :end {:line 1 :column (+ 2 idx)}}})
+              (range node-count))
+        forms
+        (mapv (fn [idx]
+                {:form-id (keyword (str "form-" idx))
+                 :kind :symbol
+                 :children
+                 (if (< idx (dec node-count))
+                   [(keyword (str "form-" (inc idx)))] [])
+                 :parent-form-id
+                 (when (pos? idx) (keyword (str "form-" (dec idx))))
+                 :open-token (keyword (str "tok-" idx))
+                 :close-token (keyword (str "tok-" idx))
+                 :raw source
+                 :source-id source-id
+                 :source-path "/p/deep.gravity"
+                 :origin {:kind :source :source-id source-id
+                          :source-path "/p/deep.gravity"}
+                 :span {:source "/p/deep.gravity" :file source-id
+                        :byte-start 0 :byte-end node-count}})
+              (range node-count))
+        validation
+        (bootstrap/c2-lexical-product-validation
+         source tokens forms [:form-0])
+        cyclic-forms
+        (-> forms
+            (assoc-in [(dec node-count) :children] [:form-0])
+            (assoc-in [0 :parent-form-id]
+                      (keyword (str "form-" (dec node-count)))))
+        cyclic-validation
+        (bootstrap/c2-lexical-product-validation
+         source tokens cyclic-forms [:form-0])]
+    (is (= node-count (:max-form-depth validation)))
+    (is (true? (:acyclic? validation)))
+    (is (true? (:all-forms-reachable? validation)))
+    (is (false? (:acyclic? cyclic-validation)))
+    (is (false? (:graph-valid? cyclic-validation)))
+    (doseq [[label candidate]
+            [[:deep forms] [:cycle cyclic-forms]]]
+      (let [diagnostic
+            (diagnostic-data
+             #(bootstrap/c2-incremental-hashes
+               source-unit tokens candidate [] [] []))]
+        (is (= "C2-HASH" (:id diagnostic)) (str label))
+        (is (not (str/includes? (str diagnostic) "StackOverflowError"))
+            (str label)))))
+  (let [nested-source
+        (str (apply str (repeat 3000 "["))
+             (apply str (repeat 3000 "]")))]
+    (doseq [suffix [".gravity" ".qst"]]
+      (let [path (str "/p/over-depth" suffix)
+            c2-diagnostic
+            (diagnostic-data
+             #(bootstrap/compiler-c2-reader-source-artifact
+               path nested-source))
+            c3-diagnostic
+            (diagnostic-data
+             #(bootstrap/compiler-c3-syntax-source-artifact
+               path nested-source))
+            p15-diagnostic
+            (diagnostic-data
+             #(bootstrap/p15-s23-source-syntax-c2-artifact
+               path nested-source))]
+        (doseq [diagnostic [c2-diagnostic c3-diagnostic p15-diagnostic]]
+          (is (= "C2-HASH" (:id diagnostic)))
+          (is (= :reader-resource-depth-limit
+                 (get-in diagnostic [:facts :failure-kind])))
+          (is (not (str/includes? (str diagnostic) "StackOverflowError"))))
+        (with-temp-source
+          suffix nested-source
+          (fn [public-path]
+            (let [result (run-thin-bin "bin/gravity"
+                                       "compiler-c3-syntax" public-path)]
+              (is (not (zero? (:exit result))))
+              (is (str/includes? (:err result) "C2-HASH"))
+              (is (not (str/includes? (:err result)
+                                      "StackOverflowError"))))))))))
+
 (deftest c2-reader-defers-syntax-valid-semantic-errors-for-both-extensions
   (let [source (str "(ns semantic.defer (:profile :unknown-profile)"
                     " (:target :not-a-real-target))\n"
