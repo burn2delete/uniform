@@ -5,6 +5,7 @@
   implementation. It is intentionally small and records unsupported behavior
   as diagnostics instead of pretending to be the final compiler."
   (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str])
   (:import [clojure.lang LineNumberingPushbackReader]
@@ -44,12 +45,30 @@
   [id message data]
   (throw (diagnostic id message data)))
 
+(defn line-terminator-char?
+  [ch]
+  (or (= \newline ch) (= \return ch)))
+
 (defn line-start-indices
   [source-text]
-  (vec (cons 0
-             (keep-indexed (fn [idx ch]
-                             (when (= \newline ch) (inc idx)))
-                           source-text))))
+  (let [source-length (count source-text)]
+    (loop [idx 0
+           starts [0]]
+      (if (>= idx source-length)
+        starts
+        (let [ch (.charAt source-text idx)]
+          (cond
+            (= \return ch)
+            (if (and (< (inc idx) source-length)
+                     (= \newline (.charAt source-text (inc idx))))
+              (recur (+ idx 2) (conj starts (+ idx 2)))
+              (recur (inc idx) (conj starts (inc idx))))
+
+            (= \newline ch)
+            (recur (inc idx) (conj starts (inc idx)))
+
+            :else
+            (recur (inc idx) starts)))))))
 
 (defn char-index-at
   [line-starts line column]
@@ -127,7 +146,8 @@
 (defn skip-line-comment!
   [^LineNumberingPushbackReader rdr]
   (loop [ch (.read rdr)]
-    (when (and (not= -1 ch) (not= \newline (char ch)))
+    (when (and (not= -1 ch)
+               (not (line-terminator-char? (char ch))))
       (recur (.read rdr)))))
 
 (defn skip-ignored!
@@ -57712,7 +57732,8 @@
    "STAGE1READER003" "stage1 reader table rejected an unclosed string"
    "STAGE1READER004" "stage1 reader table rejected unsupported dispatch syntax"
    "STAGE1READER005" "stage1 reader table rejected a map with an odd entry count"
-   "STAGE1READER006" "stage1 reader table is missing or malformed"})
+   "STAGE1READER006" "stage1 reader table is missing or malformed"
+   "STAGE1READER007" "stage1 reader rejected a malformed numeric lexeme"})
 
 (def stage1-reader-execution-diagnostic-ids
   ["STAGE1READER001" "STAGE1READER002" "STAGE1READER003"
@@ -57748,10 +57769,37 @@
                  :remediation "Keep the reader table in Gravity source, use supported stage1 reader syntax, and preserve source spans and diagnostics."}
                 data)))
 
+(defn stage1-reader-classpath-project-root
+  []
+  (when-let [resource (io/resource "gravity/bootstrap.clj")]
+    (when (= "file" (.getProtocol resource))
+      (loop [candidate (.getParentFile (.getCanonicalFile (io/file resource)))]
+        (when candidate
+          (if (.isFile (io/file candidate "deps.edn"))
+            candidate
+            (recur (.getParentFile candidate))))))))
+
+(defn stage1-reader-owned-source-file
+  [logical-path]
+  (let [classpath-root (stage1-reader-classpath-project-root)
+        candidates (if classpath-root
+                     [(io/file classpath-root logical-path)]
+                     [(io/file logical-path)])]
+    (or (some #(when (.isFile %) (.getCanonicalFile %)) candidates)
+        (stage1-reader-fail!
+         "STAGE1READER006" logical-path nil
+         {:missing-fields [:owned-reader-source]
+          :facts {:logical-path logical-path
+                  :resolution-bases
+                  (if classpath-root
+                    [:bootstrap-classpath-root]
+                    [:process-working-directory-fallback])}}))))
+
 (defn stage1-reader-table-form
   [source-path]
-  (let [forms (mapv :form (read-source-form-records source-path
-                                                     (slurp source-path)))
+  (let [source-file (stage1-reader-owned-source-file source-path)
+        forms (mapv :form (read-source-form-records source-path
+                                                     (slurp source-file)))
         table-form (first (filter #(and (seq? %)
                                         (= 'def (first %))
                                         (= 'stage1-reader-table (second %)))
@@ -57824,35 +57872,72 @@
     (re-matches #"[+-]?(?:0[xX][0-9A-Fa-f]+|0[bB][01]+|[0-9]+)" token)
     :integer
     (re-matches #"[+-]?[0-9]+/[0-9]+" token) :ratio
-    (re-matches #"[+-]?(?:(?:[0-9]+\.[0-9]*)|(?:[0-9]*\.[0-9]+)|(?:[0-9]+[eE][+-]?[0-9]+))(?:[eE][+-]?[0-9]+)?"
+    (re-matches #"[+-]?(?:(?:(?:[0-9]+\.[0-9]*)|(?:[0-9]*\.[0-9]+))(?:[eE][+-]?[0-9]+)?|(?:[0-9]+[eE][+-]?[0-9]+))"
                 token)
     :decimal
+    (re-find #"^[+-]?[0-9]" token) :malformed-number
     :else :symbol))
 
+(defn stage1-reader-malformed-numeric!
+  [source-path raw span token-id cause]
+  (stage1-reader-fail!
+   "STAGE1READER007" source-path raw
+   {:source-span span
+    :token-id token-id
+    :raw raw
+    :cause-message cause
+    :facts {:literal-kind :numeric
+            :raw-spelling raw
+            :normative-c2-mapping :unassigned
+            :catalog-gap true}}))
+
 (defn stage1-reader-decode-atom
-  [kind raw]
-  (case kind
-    :nil nil
-    :boolean (= "true" raw)
-    :keyword (keyword (subs raw 1))
-    :integer
-    (let [negative? (str/starts-with? raw "-")
-          positive? (str/starts-with? raw "+")
-          unsigned (if (or negative? positive?) (subs raw 1) raw)
-          [radix digits] (cond
-                           (re-find #"^0[xX]" unsigned)
-                           [16 (subs unsigned 2)]
-                           (re-find #"^0[bB]" unsigned)
-                           [2 (subs unsigned 2)]
-                           :else [10 unsigned])
-          value (bigint (java.math.BigInteger. digits radix))]
-      (if negative? (- value) value))
-    :ratio
-    (let [[numerator denominator] (str/split raw #"/" 2)]
-      (/ (bigint numerator) (bigint denominator)))
-    :decimal (Double/parseDouble raw)
-    :symbol (symbol raw)
-    raw))
+  [source-path kind raw span token-id]
+  (try
+    (case kind
+      :nil nil
+      :boolean (= "true" raw)
+      :keyword (keyword (subs raw 1))
+      :integer
+      (let [negative? (str/starts-with? raw "-")
+            positive? (str/starts-with? raw "+")
+            unsigned (if (or negative? positive?) (subs raw 1) raw)
+            [radix digits] (cond
+                             (re-find #"^0[xX]" unsigned)
+                             [16 (subs unsigned 2)]
+                             (re-find #"^0[bB]" unsigned)
+                             [2 (subs unsigned 2)]
+                             :else [10 unsigned])
+            value (bigint (java.math.BigInteger. digits radix))]
+        (if negative? (- value) value))
+      :ratio
+      (let [[numerator-spelling denominator-spelling] (str/split raw #"/" 2)
+            numerator (bigint numerator-spelling)
+            denominator (bigint denominator-spelling)]
+        (if (zero? denominator)
+          {:artifact :gravity/deferred-ratio-literal
+           :kind :ratio
+           :raw raw
+           :numerator-spelling numerator-spelling
+           :denominator-spelling denominator-spelling
+           :numerator numerator
+           :denominator denominator
+           :semantic-validation :deferred
+           :reason :zero-denominator}
+          (/ numerator denominator)))
+      :decimal (Double/parseDouble raw)
+      :malformed-number
+      (stage1-reader-malformed-numeric!
+       source-path raw span token-id
+       "numeric lexeme does not match a declared Gravity numeric shape")
+      :symbol (symbol raw)
+      raw)
+    (catch NumberFormatException ex
+      (stage1-reader-malformed-numeric! source-path raw span token-id
+                                        (.getMessage ex)))
+    (catch ArithmeticException ex
+      (stage1-reader-malformed-numeric! source-path raw span token-id
+                                        (.getMessage ex)))))
 
 (defn stage1-reader-decode-string
   [source-path raw span token-id]
@@ -57911,8 +57996,8 @@
                   (ignored? idx) (recur (inc idx))
                   (comment? idx) (recur (loop [j idx]
                                           (if (and (< j source-length)
-                                                   (not= \newline
-                                                         (.charAt source-text j)))
+                                                   (not (line-terminator-char?
+                                                         (.charAt source-text j))))
                                             (recur (inc j))
                                             j)))
                   :else idx)))
@@ -57934,7 +58019,8 @@
             (read-comment-token [idx token-index]
               (let [end (loop [end idx]
                           (if (and (< end source-length)
-                                   (not= \newline (.charAt source-text end)))
+                                   (not (line-terminator-char?
+                                         (.charAt source-text end))))
                             (recur (inc end))
                             end))
                     raw (subs source-text idx end)]
@@ -58009,14 +58095,17 @@
               (let [start idx
                     end (atom-end idx)
                     token (subs source-text start end)
-                    kind (stage1-reader-token-kind token)]
+                    kind (stage1-reader-token-kind token)
+                    token-id (keyword (str "tok-" token-index))
+                    span (stage1-reader-span source-path source-text
+                                             line-starts start end)]
                 [{:index token-index
                   :kind kind
                   :lexeme token
                   :raw token
-                  :decoded (stage1-reader-decode-atom kind token)
-                  :span (stage1-reader-span source-path source-text
-                                            line-starts start end)}
+                  :decoded (stage1-reader-decode-atom source-path kind token
+                                                      span token-id)
+                  :span span}
                  end]))
             (read-character-token [idx token-index]
               (let [word-start (inc idx)
@@ -58183,20 +58272,33 @@
   [source-path source-text]
   (let [line-starts (line-start-indices source-text)
         source-id (str "sha256:" (sha256-hex source-text))
-        source-length (count source-text)]
+        source-length (count source-text)
+        characters
+        (loop [char-offset 0
+               scalar-index 0
+               records []]
+          (if (>= char-offset source-length)
+            records
+            (let [codepoint (.codePointAt source-text char-offset)
+                  char-width (Character/charCount codepoint)
+                  end-offset (+ char-offset char-width)
+                  raw (subs source-text char-offset end-offset)]
+              (recur end-offset
+                     (inc scalar-index)
+                     (conj records
+                           {:index scalar-index
+                            :char raw
+                            :raw raw
+                            :codepoint codepoint
+                            :span (stage1-reader-span
+                                   source-path source-text line-starts
+                                   char-offset end-offset)})))))]
     {:kind :gravity/stage1-reader-character-stream
      :source-path source-path
      :source-id source-id
-     :character-count source-length
-     :characters
-     (mapv (fn [idx]
-             (let [ch (.charAt source-text idx)]
-               {:index idx
-                :char (str ch)
-                :codepoint (int ch)
-                :span (stage1-reader-span source-path source-text line-starts
-                                          idx (inc idx))}))
-           (range source-length))
+     :character-count (count characters)
+     :utf16-unit-count source-length
+     :characters characters
      :status :complete}))
 
 (defn stage1-reader-token-stream-from-characters
@@ -58575,10 +58677,8 @@
   [source-path source-text classifier realizer automaton character-stream]
   (let [source-id (str "sha256:" (sha256-hex source-text))
         characters (:characters character-stream)
-        table (stage1-reader-table-from-token-automaton source-path
-                                                        classifier
-                                                        realizer
-                                                        automaton)]
+        table (stage1-reader-table-from-token-automaton source-path classifier
+                                                        realizer automaton)]
     (when-not (= :gravity/stage1-reader-character-stream
                  (:kind character-stream))
       (stage1-reader-token-automaton-pipeline-fail!
@@ -58603,179 +58703,31 @@
         (stage1-reader-token-automaton-pipeline-fail!
          "STAGE1AUTO004" source-path character-stream
          {:missing-fields [:source-character-parity]}))
-      (let [line-starts (line-start-indices source-from-characters)
-            whitespace (set (:whitespace table))
-            delimiters (:delimiters table)
-            dispatch (:dispatch table)
-            comment-marker (:line-comment table)
-            string-delimiter (:string-delimiter table)
-            source-length (count characters)
-            table-id (str "sha256:" (sha256-hex (pr-str table)))
-            automaton-id (str "sha256:" (sha256-hex (pr-str automaton)))]
-        (letfn [(char-string [idx]
-                  (:char (nth characters idx)))
-                (ignored? [idx]
-                  (and (< idx source-length)
-                       (contains? whitespace (char-string idx))))
-                (comment? [idx]
-                  (and (< idx source-length)
-                       (= comment-marker (char-string idx))))
-                (skip-ignored [idx]
-                  (loop [idx idx]
-                    (cond
-                      (>= idx source-length) idx
-                      (ignored? idx) (recur (inc idx))
-                      (comment? idx) (recur (loop [j idx]
-                                              (if (and (< j source-length)
-                                                       (not= \newline
-                                                             (.charAt source-from-characters j)))
-                                                (recur (inc j))
-                                                j)))
-                      :else idx)))
-                (read-string-token [idx token-index]
-                  (let [start idx
-                        builder (StringBuilder.)]
-                    (loop [idx (inc idx)]
-                      (cond
-                        (>= idx source-length)
-                        (stage1-reader-fail!
-                         "STAGE1READER003" source-path nil
-                         {:source-span
-                          (stage1-reader-span source-path
-                                              source-from-characters
-                                              line-starts
-                                              start idx)})
-
-                        (= string-delimiter (char-string idx))
-                        (let [end (inc idx)
-                              span (stage1-reader-span
-                                    source-path source-from-characters
-                                    line-starts start end)]
-                          [{:index token-index
-                            :kind :string
-                            :lexeme (.toString builder)
-                            :raw (subs source-from-characters start end)
-                            :operation :read-string-token
-                            :automaton-state :string
-                            :span span}
-                           end])
-
-                        (= \\ (.charAt source-from-characters idx))
-                        (if (< (inc idx) source-length)
-                          (do
-                            (.append builder
-                                     (.charAt source-from-characters
-                                              (inc idx)))
-                            (recur (+ idx 2)))
-                          (stage1-reader-fail!
-                           "STAGE1READER003" source-path nil
-                           {:source-span
-                            (stage1-reader-span source-path
-                                                source-from-characters
-                                                line-starts
-                                                start idx)}))
-
-                        :else
-                        (do
-                          (.append builder
-                                   (.charAt source-from-characters idx))
-                          (recur (inc idx)))))))
-                (atom-end [idx]
-                  (loop [idx idx]
-                    (if (or (>= idx source-length)
-                            (ignored? idx)
-                            (comment? idx)
-                            (contains? delimiters (char-string idx))
-                            (contains? dispatch (char-string idx)))
-                      idx
-                      (recur (inc idx)))))
-                (read-atom-token [idx token-index]
-                  (let [start idx
-                        end (atom-end idx)
-                        token (subs source-from-characters start end)]
-                    [{:index token-index
-                      :kind (stage1-reader-token-kind token)
-                      :lexeme token
-                      :operation :read-atom-token
-                      :automaton-state :atom
-                      :span (stage1-reader-span source-path
-                                                source-from-characters
-                                                line-starts start end)}
-                     end]))
-                (read-dispatch-token [idx token-index]
-                  (let [dispatch-token (char-string idx)
-                        next-token (when (< (inc idx) source-length)
-                                     (char-string (inc idx)))
-                        dispatch-entry (get-in dispatch
-                                               [dispatch-token next-token])]
-                    (if (= :set-open (:kind dispatch-entry))
-                      (let [end (+ idx 2)]
-                        [{:index token-index
-                          :kind (:kind dispatch-entry)
-                          :lexeme (str dispatch-token next-token)
-                          :dispatch dispatch-token
-                          :close-token (:closes dispatch-entry)
-                          :operation :read-dispatch-token
-                          :automaton-state :dispatch
-                          :span (stage1-reader-span source-path
-                                                    source-from-characters
-                                                    line-starts idx end)}
-                         end])
-                      (stage1-reader-fail!
-                       "STAGE1READER004" source-path dispatch-token
-                       {:source-span
-                        (stage1-reader-span source-path
-                                            source-from-characters
-                                            line-starts
-                                            idx
-                                            (min source-length
-                                                 (+ idx 2)))}))))
-                (read-delimiter-token [idx token-index delimiter]
-                  (let [token (char-string idx)]
-                    [{:index token-index
-                      :kind (:kind delimiter)
-                      :lexeme token
-                      :close-token (:closes delimiter)
-                      :operation :read-delimiter-token
-                      :automaton-state :scan
-                      :span (stage1-reader-span source-path
-                                                source-from-characters
-                                                line-starts idx (inc idx))}
-                     (inc idx)]))]
-          (loop [idx 0
-                 token-index 0
-                 tokens []]
-            (let [idx (skip-ignored idx)]
-              (if (>= idx source-length)
-                {:kind :gravity/stage1-reader-token-stream
-                 :source-path source-path
-                 :source-id source-id
-                 :reader-table-id table-id
-                 :token-automaton-id automaton-id
-                 :token-automaton-engine (:engine automaton)
-                 :token-count (count tokens)
-                 :executed-operations (vec (distinct (map :operation tokens)))
-                 :tokens tokens
-                 :status :complete}
-                (let [token (char-string idx)
-                      delimiter (get delimiters token)
-                      [token-record next-idx]
-                      (cond
-                        (= string-delimiter token)
-                        (read-string-token idx token-index)
-
-                        (contains? dispatch token)
-                        (read-dispatch-token idx token-index)
-
-                        delimiter
-                        (read-delimiter-token idx token-index delimiter)
-
-                        :else
-                        (read-atom-token idx token-index))]
-                  (recur next-idx
-                         (inc token-index)
-                         (conj tokens token-record)))))))))))
-
+      (let [automaton-id (str "sha256:" (sha256-hex (pr-str automaton)))
+            base-stream (stage1-reader-token-stream source-path
+                                                    source-from-characters table)
+            tokens
+            (mapv (fn [token]
+                    (let [[operation state]
+                          (case (:kind token)
+                            :string [:read-string-token :string]
+                            :set-open [:read-dispatch-token :dispatch]
+                            :tag [:read-dispatch-token :dispatch]
+                            :list-open [:read-delimiter-token :scan]
+                            :vector-open [:read-delimiter-token :scan]
+                            :map-open [:read-delimiter-token :scan]
+                            :close [:read-delimiter-token :scan]
+                            [:read-atom-token :atom])]
+                      (assoc token
+                             :operation operation
+                             :automaton-state state)))
+                  (:tokens base-stream))]
+        (assoc base-stream
+               :token-automaton-id automaton-id
+               :token-automaton-engine (:engine automaton)
+               :executed-operations (vec (distinct (map :operation tokens)))
+               :tokens tokens
+               :token-count (count tokens))))))
 (defn stage1-reader-table-driven-records
   [source-path source-text table]
   (let [line-starts (line-start-indices source-text)
@@ -58800,8 +58752,8 @@
                   (ignored? idx) (recur (inc idx))
                   (comment? idx) (recur (loop [j idx]
                                           (if (and (< j source-length)
-                                                   (not= \newline
-                                                         (.charAt source-text j)))
+                                                   (not (line-terminator-char?
+                                                         (.charAt source-text j))))
                                             (recur (inc j))
                                             j)))
                   :else idx)))
@@ -60243,13 +60195,17 @@
               (parse-token-literal [token]
                 (if (contains? token :decoded)
                   (:decoded token)
-                  (stage1-reader-decode-atom (:kind token) (:lexeme token))))
+                  (stage1-reader-decode-atom
+                   source-path (:kind token) (:lexeme token) (:span token)
+                   (token-id token))))
               (literal-set-key? [node]
                 (or (contains? #{:nil :boolean :integer :ratio :decimal
                                  :string :character :symbol :keyword
                                  :tagged-literal}
                                (:kind node))
-                    (and (contains? #{:list :vector :map :set} (:kind node))
+                    (and (contains? #{:list :vector :map :set
+                                     :abbreviation :metadata-wrapper}
+                                   (:kind node))
                          (every? #(literal-set-key? (@nodes %))
                                  (:children node)))))
               (set-value [child-ids values]
@@ -60568,10 +60524,30 @@
                records []]
           (let [[idx leading-trivia] (skip-trivia idx)]
             (if (>= idx token-count)
-              {:records records
-               :form-tree (mapv @nodes @form-order)
-               :root-form-ids root-ids
-               :parsed-values (mapv :form records)}
+              (let [raw-tree (mapv @nodes @form-order)
+                    parent-by-child
+                    (reduce (fn [parents parent]
+                              (reduce #(assoc %1 %2 (:form-id parent))
+                                      parents
+                                      (:children parent)))
+                            {}
+                            raw-tree)
+                    form-tree
+                    (mapv #(assoc % :parent-form-id
+                                  (get parent-by-child (:form-id %)))
+                          raw-tree)
+                    node-by-id (into {} (map (juxt :form-id identity)
+                                             form-tree))
+                    records
+                    (mapv (fn [record]
+                            (assoc record
+                                   :kind (:kind (node-by-id (:form-id record)))
+                                   :parent-form-id nil))
+                          records)]
+                {:records records
+                 :form-tree form-tree
+                 :root-form-ids root-ids
+                 :parsed-values (mapv :form records)})
               (let [[form next-idx span form-id]
                     (read-form idx leading-trivia)]
                 (recur next-idx
@@ -73826,6 +73802,9 @@
          c2-trivia-records
          c2-incremental-hashes
          c2-reader-products
+         c2-syntax-seed-stream
+         c2-deferred-semantic-literals
+         c2-reader-remap-exception!
          c2-lexical-product-validation
          c3-syntax-diagnostic-ids
          c3-syntax-governing-document
@@ -74026,6 +74005,7 @@
      (every? true?
              (map lexical
                   [:form-ids-unique?
+                   :graph-valid?
                    :root-form-ids-resolve?
                    :form-raw-slices-exact?
                    :form-links-resolve?
@@ -74036,14 +74016,18 @@
 
 (defn p15-s23-source-syntax-c2-artifact
   [source-path source-text]
-  (let [reader-options standard-reader-options
+  (try
+    (let [reader-options standard-reader-options
         products (c2-reader-products source-path source-text reader-options)
-        reader-artifact (read-source-artifact source-path source-text)
+        forms (:parsed-values products)
+        _ (validate-ns-syntax! source-path forms)
+        module-context (reader-module-context forms)
         source-unit (:source-unit products)
         token-stream (:token-stream products)
         form-tree (:form-tree products)
         top-level-form-ids (:root-form-ids products)
-        syntax-seeds (:syntax-object-stream reader-artifact)
+        syntax-seeds (c2-syntax-seed-stream source-path products module-context)
+        deferred-literals (c2-deferred-semantic-literals form-tree)
         extension-invocations []
         diagnostics []
         lexical-validation (c2-lexical-product-validation
@@ -74060,6 +74044,7 @@
         (every? true?
                 (map lexical-validation
                      [:form-ids-unique?
+                      :graph-valid?
                       :root-form-ids-resolve?
                       :form-raw-slices-exact?
                       :form-links-resolve?
@@ -74104,6 +74089,16 @@
          :literal-decoding-records (c2-literal-records form-tree)
          :trivia-retention-records (c2-trivia-records token-stream)
          :reader-extension-invocation-records extension-invocations
+         :semantic-error-deferment-record
+         {:artifact :gravity/semantic-error-deferment
+          :forms-retained [:unknown-symbol :profile-illegal-form
+                           :zero-denominator-ratio]
+          :deferred-literal-records deferred-literals
+          :semantic-analysis-in-reader? false
+          :module-parser-invoked? false
+          :deferred? true
+          :owner-phases [:namespace-analysis :type-check :profile-validate
+                         :numeric-mode-validation]}
          :reader-diagnostics diagnostics
          :incremental-reader-hashes incremental-hashes
          :p15-s23-source-syntax-reader-results
@@ -74122,7 +74117,9 @@
              "P15S23S003" source-path lexical-validation
              {:missing-fields [:lexical-token-stream :nested-form-tree]}))
         artifact (assoc artifact-base :capability-based-proof proof)]
-    (assoc artifact :artifact-id (c1-architecture-artifact-id artifact))))
+      (assoc artifact :artifact-id (c1-architecture-artifact-id artifact)))
+    (catch clojure.lang.ExceptionInfo ex
+      (c2-reader-remap-exception! source-path ex))))
 
 (declare c2-top-level-products)
 
@@ -94871,10 +94868,30 @@
 
 (defn p15-s23-front-end-advance
   [state]
-  (let [ch (p15-s23-front-end-current-char state)]
-    (cond-> (update state :idx inc)
-      (= \newline ch) (assoc :line (inc (:line state)) :column 1)
-      (not= \newline ch) (update :column inc))))
+  (let [ch (p15-s23-front-end-current-char state)
+        previous-cr?
+        (and (= \newline ch)
+             (pos? (:idx state))
+             (= \return (.charAt ^String (:source-text state)
+                                 (dec (:idx state)))))]
+    (cond
+      (= \return ch)
+      (-> state
+          (update :idx inc)
+          (assoc :line (inc (:line state)) :column 1))
+
+      (and (= \newline ch) (not previous-cr?))
+      (-> state
+          (update :idx inc)
+          (assoc :line (inc (:line state)) :column 1))
+
+      previous-cr?
+      (update state :idx inc)
+
+      :else
+      (-> state
+          (update :idx inc)
+          (update :column inc)))))
 
 (defn p15-s23-front-end-location
   [state]
@@ -94905,6 +94922,11 @@
     (let [ch (p15-s23-front-end-current-char state)]
       (cond
         (nil? ch) state
+        (= \return ch)
+        (let [advanced (p15-s23-front-end-advance state)]
+          (if (= \newline (p15-s23-front-end-current-char advanced))
+            (p15-s23-front-end-advance advanced)
+            advanced))
         (= \newline ch) (p15-s23-front-end-advance state)
         :else (recur (p15-s23-front-end-advance state))))))
 
@@ -102120,6 +102142,7 @@
     "C2-ABBREV" "reader abbreviation placement is invalid"
     "C2-EXTENSION" "source extension is noncanonical or reader extension is unknown, disallowed, or effect-violating"
     "C2-HASH" "reader artifact identity is unstable or incomplete"
+    "STAGE1READER007" "numeric literal lexical shape is malformed; normative C2 mapping is unassigned"
     "reader document coverage failed"))
 
 (defn c2-reader-fail!
@@ -102249,7 +102272,8 @@
              :column (get-in span [:start :column])
              :token-id (:token-id data)
              :form-id (:form-id data)})]
-    (if (contains? (set c2-reader-diagnostic-ids) id)
+    (if (or (contains? (set c2-reader-diagnostic-ids) id)
+            (= "STAGE1READER007" id))
       (let [preserved-fields
             (dissoc data :id :message :diagnostic-family :reader-options)]
         (c2-reader-fail!
@@ -102577,7 +102601,7 @@
 (defn c2-semantic-form-hash-input
   [form-tree]
   (mapv #(select-keys % [:form-id :kind :collection-kind :children
-                         :abbrev :tag :value :metadata])
+                         :parent-form-id :abbrev :tag :value :metadata])
         form-tree))
 
 (defn c2-path-neutral-span
@@ -102604,6 +102628,53 @@
                               (or origins []))))))
         form-tree))
 
+(defn c2-syntax-seed-hash-input
+  [syntax-seeds]
+  (mapv (fn [seed]
+          (cond-> (update seed :span c2-path-neutral-span)
+            (contains? seed :generated-origin)
+            (update :generated-origin
+                    (fn [origins]
+                      (mapv #(cond-> %
+                               (contains? % :from)
+                               (update :from c2-path-neutral-span))
+                            origins)))))
+        syntax-seeds))
+
+(defn c2-extension-hash-input
+  [extension-invocations]
+  (mapv #(cond-> (dissoc % :source-path)
+           (contains? % :span) (update :span c2-path-neutral-span))
+        extension-invocations))
+
+(defn c2-diagnostic-hash-input
+  [diagnostics]
+  (mapv
+   (fn [diagnostic]
+     (cond-> diagnostic
+       (contains? diagnostic :source-span)
+       (update :source-span c2-path-neutral-span)
+
+       (get-in diagnostic [:primary :span])
+       (update-in [:primary :span] c2-path-neutral-span)
+
+       (contains? diagnostic :related)
+       (update :related
+               (fn [related]
+                 (mapv #(cond-> %
+                          (contains? % :span)
+                          (update :span c2-path-neutral-span))
+                       related)))
+
+       (contains? diagnostic :origin-chain)
+       (update :origin-chain
+               (fn [origins]
+                 (mapv #(cond-> (dissoc % :path)
+                          (contains? % :span)
+                          (update :span c2-path-neutral-span))
+                       origins)))))
+   diagnostics))
+
 (defn c2-incremental-hashes
   [source-unit token-stream form-tree syntax-seeds extension-invocations
    diagnostics]
@@ -102612,14 +102683,17 @@
         form-hash-input (if retain-trivia?
                           (c2-form-hash-input form-tree)
                           (c2-semantic-form-hash-input form-tree))
-        token-hash-input (c2-token-hash-input token-stream)]
+        token-hash-input (c2-token-hash-input token-stream)
+        syntax-hash-input (c2-syntax-seed-hash-input syntax-seeds)
+        extension-hash-input (c2-extension-hash-input extension-invocations)
+        diagnostic-hash-input (c2-diagnostic-hash-input diagnostics)]
     {:artifact :gravity/reader-incremental-hashes
      :source-unit (:source-id source-unit)
      :token-stream (reader-canonical-hash token-hash-input)
      :form-tree (reader-canonical-hash form-hash-input)
-     :syntax-seed-stream (reader-canonical-hash syntax-seeds)
-     :extension-invocation-set (reader-canonical-hash extension-invocations)
-     :reader-diagnostics (reader-canonical-hash diagnostics)
+     :syntax-seed-stream (reader-canonical-hash syntax-hash-input)
+     :extension-invocation-set (reader-canonical-hash extension-hash-input)
+     :reader-diagnostics (reader-canonical-hash diagnostic-hash-input)
      :retained-trivia-affects-form-tree? retain-trivia?
      :status :stable}))
 
@@ -102655,6 +102729,40 @@
                           (ex-data ex))
                    ex)))))))
 
+(defn c2-syntax-seed-stream
+  [source-path products module-context]
+  (let [forms-by-id (into {} (map (juxt :form-id identity)
+                                  (:form-tree products)))
+        seed-records
+        (mapv
+         (fn [idx record]
+           (let [node (forms-by-id (:form-id record))
+                 generated-origins
+                 (mapv (fn [origin]
+                         {:from (:from origin)
+                          :reader-abbreviation (:reason origin)
+                          :expanded-form (:value node)})
+                       (:generated-origin node))]
+             {:form (:form record)
+              :span (assoc (:span node) :form-index idx)
+              :metadata (or (:metadata node) {})
+              :reader-origin {:kind :source
+                              :raw-form-kind (:kind node)
+                              :raw-excerpt (:raw node)
+                              :abbreviation (:abbrev node)}
+              :generated-origin generated-origins}))
+         (range)
+         (:parsed-records products))]
+    (syntax-object-stream source-path seed-records module-context)))
+
+(defn c2-deferred-semantic-literals
+  [form-tree]
+  (mapv #(select-keys % [:form-id :kind :raw :value :span])
+        (filter (fn [form]
+                  (= :gravity/deferred-ratio-literal
+                     (get-in form [:value :artifact])))
+                form-tree)))
+
 (defn c2-top-level-products
   [artifact]
   (let [forms-by-id (into {} (map (juxt :form-id identity)
@@ -102681,68 +102789,253 @@
 
 (defn c2-span-encloses?
   [parent child]
-  (and (<= (:byte-start parent) (:byte-start child))
+  (and (map? parent)
+       (map? child)
+       (integer? (:byte-start parent))
+       (integer? (:byte-end parent))
+       (integer? (:byte-start child))
+       (integer? (:byte-end child))
+       (<= (:byte-start parent) (:byte-start child))
        (>= (:byte-end parent) (:byte-end child))))
+
+(defn c2-spans-source-ordered?
+  [spans]
+  (every? (fn [[left right]]
+            (and (map? left)
+                 (map? right)
+                 (integer? (:byte-end left))
+                 (integer? (:byte-start right))
+                 (<= (:byte-end left) (:byte-start right))))
+          (partition 2 1 spans)))
 
 (defn c2-lexical-product-validation
   [source-text token-stream form-tree root-form-ids]
   (let [source-bytes (.getBytes source-text
                                 java.nio.charset.StandardCharsets/UTF_8)
-        tokens-by-id (into {} (map (juxt :token-id identity) token-stream))
-        forms-by-id (into {} (map (juxt :form-id identity) form-tree))
-        root-raw (set (keep (fn [form-id]
-                              (let [form (forms-by-id form-id)]
-                                (when (or (:collection-kind form)
-                                          (seq (:children form)))
-                                  (:raw form))))
-                            root-form-ids))
+        source-byte-count (alength source-bytes)
         token-ids (mapv :token-id token-stream)
         form-ids (mapv :form-id form-tree)
-        links-resolve?
+        token-ids-unique? (= token-ids (vec (distinct token-ids)))
+        form-ids-unique? (= form-ids (vec (distinct form-ids)))
+        root-form-ids-unique?
+        (= (vec root-form-ids) (vec (distinct root-form-ids)))
+        tokens-by-id (into {} (map (juxt :token-id identity) token-stream))
+        forms-by-id (into {} (map (juxt :form-id identity) form-tree))
+        form-id-set (set form-ids)
+        root-id-set (set root-form-ids)
+        child-ids (mapcat :children form-tree)
+        child-frequency (frequencies child-ids)
+        parentless-id-set
+        (set (keep #(when (nil? (:parent-form-id %)) (:form-id %)) form-tree))
+        root-form-ids-resolve?
+        (every? #(contains? forms-by-id %) root-form-ids)
+        token-links-resolve-exactly-once?
+        (and token-ids-unique?
+             (every? (fn [form]
+                       (and (contains? tokens-by-id (:open-token form))
+                            (contains? tokens-by-id (:close-token form))))
+                     form-tree))
+        child-links-resolve-exactly-once?
+        (and form-ids-unique?
+             (every? #(contains? forms-by-id %) child-ids))
+        parent-links-resolve-exactly-once?
+        (and form-ids-unique?
+             (every? #(or (nil? (:parent-form-id %))
+                          (contains? forms-by-id (:parent-form-id %)))
+                     form-tree))
+        form-links-resolve?
+        (and token-links-resolve-exactly-once?
+             child-links-resolve-exactly-once?
+             parent-links-resolve-exactly-once?)
+        children-unique?
+        (every? #(= (count (:children %))
+                    (count (distinct (:children %))))
+                form-tree)
+        roots-parentless?
+        (and root-form-ids-resolve?
+             (every? #(nil? (:parent-form-id (forms-by-id %)))
+                     root-form-ids))
+        declared-roots-match-parentless?
+        (= root-id-set parentless-id-set)
+        non-root-single-parent?
         (every?
          (fn [form]
-           (and (contains? tokens-by-id (:open-token form))
-                (contains? tokens-by-id (:close-token form))
-                (every? #(contains? forms-by-id %) (:children form))))
+           (let [form-id (:form-id form)
+                 parent-id (:parent-form-id form)]
+             (if (contains? root-id-set form-id)
+               (and (nil? parent-id)
+                    (zero? (get child-frequency form-id 0)))
+               (let [parent (forms-by-id parent-id)]
+                 (and parent
+                      (= 1 (get child-frequency form-id 0))
+                      (= 1 (count (filter #{form-id} (:children parent)))))))))
          form-tree)
+        parent-child-bidirectional?
+        (and non-root-single-parent?
+             (every? (fn [parent]
+                       (every? #(= (:form-id parent)
+                                   (:parent-form-id (forms-by-id %)))
+                               (:children parent)))
+                     form-tree))
+        no-orphans?
+        (every? #(if (contains? root-id-set %)
+                   (zero? (get child-frequency % 0))
+                   (= 1 (get child-frequency % 0)))
+                form-ids)
+        reachable-form-ids
+        (loop [pending (vec root-form-ids)
+               seen #{}]
+          (if-let [form-id (first pending)]
+            (let [remaining (subvec pending 1)
+                  form (forms-by-id form-id)]
+              (if (or (contains? seen form-id) (nil? form))
+                (recur remaining seen)
+                (recur (into remaining (:children form))
+                       (conj seen form-id))))
+            seen))
+        all-forms-reachable? (= form-id-set reachable-form-ids)
+        cycle-found? (atom false)
+        cycle-visiting (atom #{})
+        cycle-visited (atom #{})
+        _ (letfn [(visit! [form-id]
+                   (cond
+                     (contains? @cycle-visiting form-id)
+                     (reset! cycle-found? true)
+
+                     (contains? @cycle-visited form-id)
+                     nil
+
+                     :else
+                     (do
+                       (swap! cycle-visiting conj form-id)
+                       (doseq [child-id (:children (forms-by-id form-id))
+                               :when (contains? forms-by-id child-id)]
+                         (visit! child-id))
+                       (swap! cycle-visiting disj form-id)
+                       (swap! cycle-visited conj form-id))))]
+            (doseq [form-id form-ids] (visit! form-id)))
+        acyclic? (not @cycle-found?)
+        children-source-ordered?
+        (every? (fn [form]
+                  (let [children (mapv forms-by-id (:children form))]
+                    (and (every? some? children)
+                         (c2-spans-source-ordered? (mapv :span children)))))
+                form-tree)
+        root-forms-source-ordered?
+        (let [roots (mapv forms-by-id root-form-ids)]
+          (and (every? some? roots)
+               (c2-spans-source-ordered? (mapv :span roots))))
         parent-spans-enclose?
-        (every?
-         (fn [form]
-           (and (c2-span-encloses? (:span form)
-                                   (:span (tokens-by-id (:open-token form))))
-                (c2-span-encloses? (:span form)
-                                   (:span (tokens-by-id (:close-token form))))
-                (every? #(c2-span-encloses? (:span form)
-                                            (:span (forms-by-id %)))
-                        (:children form))))
-         form-tree)
+        (and form-links-resolve?
+             (every?
+              (fn [form]
+                (and (c2-span-encloses? (:span form)
+                                        (:span (tokens-by-id
+                                                (:open-token form))))
+                     (c2-span-encloses? (:span form)
+                                        (:span (tokens-by-id
+                                                (:close-token form))))
+                     (every? #(c2-span-encloses?
+                               (:span form) (:span (forms-by-id %)))
+                             (:children form))))
+              form-tree))
+        collection-delimiters-resolve?
+        (and token-links-resolve-exactly-once?
+             (every?
+              (fn [form]
+                (if-let [collection-kind (:collection-kind form)]
+                  (let [open (tokens-by-id (:open-token form))
+                        close (tokens-by-id (:close-token form))
+                        expected-open ({:list ["(" :list-open]
+                                        :vector ["[" :vector-open]
+                                        :map ["{" :map-open]
+                                        :set ["#{" :set-open]}
+                                       collection-kind)
+                        expected-close ({:list ")" :vector "]" :map "}"
+                                         :set "}"} collection-kind)]
+                    (and expected-open
+                         (= (first expected-open) (:raw open))
+                         (= (second expected-open) (:kind open))
+                         (= expected-close (:raw close))
+                         (= :close (:kind close))))
+                  true))
+              form-tree))
+        maps-even-logical-children?
+        (every? #(if (= :map (:collection-kind %))
+                   (even? (count (:children %)))
+                   true)
+                form-tree)
         max-depth
         (letfn [(depth [form-id visiting]
-                  (if (contains? visiting form-id)
-                    0
+                  (cond
+                    (contains? visiting form-id) 0
+                    (nil? (forms-by-id form-id)) 0
+                    :else
                     (let [children (:children (forms-by-id form-id))]
                       (if (seq children)
-                        (inc (apply max (map #(depth % (conj visiting form-id))
-                                             children)))
+                        (inc (apply max
+                                    (map #(depth % (conj visiting form-id))
+                                         children)))
                         1))))]
           (if (seq root-form-ids)
             (apply max (map #(depth % #{}) root-form-ids))
-            0))]
+            0))
+        valid-byte-range?
+        (fn [span]
+          (and (map? span)
+               (integer? (:byte-start span))
+               (integer? (:byte-end span))
+               (<= 0 (:byte-start span) (:byte-end span) source-byte-count)))
+        root-raw
+        (set (keep (fn [form-id]
+                     (let [form (forms-by-id form-id)]
+                       (when (and form
+                                  (or (:collection-kind form)
+                                      (seq (:children form))))
+                         (:raw form))))
+                   root-form-ids))
+        token-raw-slices-exact?
+        (every? (fn [token]
+                  (let [span (:span token)]
+                    (and (string? (:raw token))
+                         (pos? (count (:raw token)))
+                         (valid-byte-range? span)
+                         (= (:raw token)
+                            (c2-utf8-slice source-bytes
+                                          (:byte-start span)
+                                          (:byte-end span))))))
+                token-stream)
+        form-raw-slices-exact?
+        (every? (fn [form]
+                  (let [span (:span form)]
+                    (and (string? (:raw form))
+                         (pos? (count (:raw form)))
+                         (valid-byte-range? span)
+                         (= (:raw form)
+                            (c2-utf8-slice source-bytes
+                                          (:byte-start span)
+                                          (:byte-end span))))))
+                form-tree)
+        graph-valid?
+        (every? true?
+                [token-ids-unique? form-ids-unique? root-form-ids-unique?
+                 root-form-ids-resolve? token-links-resolve-exactly-once?
+                 child-links-resolve-exactly-once?
+                 parent-links-resolve-exactly-once? children-unique?
+                 roots-parentless? declared-roots-match-parentless?
+                 non-root-single-parent? parent-child-bidirectional?
+                 no-orphans? all-forms-reachable? acyclic?
+                 children-source-ordered? root-forms-source-ordered?
+                 parent-spans-enclose? collection-delimiters-resolve?
+                 maps-even-logical-children? form-raw-slices-exact?])]
     {:artifact :gravity/c2-lexical-product-validation
-     :ordered-token-ids-unique? (= token-ids (vec (distinct token-ids)))
-     :form-ids-unique? (= form-ids (vec (distinct form-ids)))
+     :ordered-token-ids-unique? token-ids-unique?
+     :form-ids-unique? form-ids-unique?
+     :root-form-ids-unique? root-form-ids-unique?
      :token-count-exceeds-top-level-form-count?
      (> (count token-stream) (count root-form-ids))
-     :token-raw-slices-exact?
-     (every? (fn [token]
-               (let [span (:span token)]
-                 (and (string? (:raw token))
-                      (pos? (count (:raw token)))
-                      (= (:raw token)
-                         (c2-utf8-slice source-bytes
-                                       (:byte-start span)
-                                       (:byte-end span))))))
-             token-stream)
+     :token-raw-slices-exact? token-raw-slices-exact?
+     :form-raw-slices-exact? form-raw-slices-exact?
      :token-provenance-complete?
      (every? #(and (:source-id %) (:source-path %)
                    (= (:source-id %) (get-in % [:span :file]))
@@ -102755,42 +103048,29 @@
      (not-any? (fn [token]
                  (some #(str/includes? (:raw token) %) root-raw))
                token-stream)
-     :root-form-ids-resolve?
-     (every? #(contains? forms-by-id %) root-form-ids)
-     :form-raw-slices-exact?
-     (every? (fn [form]
-               (let [span (:span form)]
-                 (and (string? (:raw form))
-                      (pos? (count (:raw form)))
-                      (= (:raw form)
-                         (c2-utf8-slice source-bytes
-                                       (:byte-start span)
-                                       (:byte-end span))))))
-             form-tree)
-     :form-links-resolve? links-resolve?
+     :root-form-ids-resolve? root-form-ids-resolve?
+     :token-links-resolve-exactly-once? token-links-resolve-exactly-once?
+     :child-links-resolve-exactly-once? child-links-resolve-exactly-once?
+     :parent-links-resolve-exactly-once? parent-links-resolve-exactly-once?
+     :form-links-resolve? form-links-resolve?
+     :children-unique? children-unique?
+     :roots-parentless? roots-parentless?
+     :declared-roots-match-parentless? declared-roots-match-parentless?
+     :non-root-single-parent? non-root-single-parent?
+     :parent-child-bidirectional? parent-child-bidirectional?
+     :no-orphans? no-orphans?
+     :all-forms-reachable? all-forms-reachable?
+     :acyclic? acyclic?
+     :children-source-ordered? children-source-ordered?
+     :root-forms-source-ordered? root-forms-source-ordered?
      :parent-spans-enclose-children? parent-spans-enclose?
-     :collection-delimiters-resolve?
-     (every?
-      (fn [form]
-        (if-let [collection-kind (:collection-kind form)]
-          (let [open (tokens-by-id (:open-token form))
-                close (tokens-by-id (:close-token form))
-                expected-open ({:list "(" :vector "[" :map "{"
-                                :set "#{"} collection-kind)
-                expected-close ({:list ")" :vector "]" :map "}"
-                                 :set "}"} collection-kind)]
-            (and (= expected-open (:raw open))
-                 (= expected-close (:raw close))))
-          true))
-      form-tree)
-     :recursive-children-present?
-     (boolean (some #(seq (:children %)) form-tree))
+     :collection-delimiters-resolve? collection-delimiters-resolve?
+     :maps-even-logical-children? maps-even-logical-children?
+     :recursive-children-present? (boolean (some #(seq (:children %)) form-tree))
      :nested-depth-at-least-three? (>= max-depth 3)
      :max-form-depth max-depth
-     :status (if (and links-resolve? parent-spans-enclose?)
-               :passed
-               :failed)}))
-
+     :graph-valid? graph-valid?
+     :status (if graph-valid? :passed :failed)}))
 (defn c2-reader-capability-proof
   [artifact]
   (let [diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
@@ -102852,6 +103132,7 @@
      (every? true?
              (map lexical
                   [:form-ids-unique?
+                   :graph-valid?
                    :root-form-ids-resolve?
                    :form-raw-slices-exact?
                    :form-links-resolve?
@@ -102913,8 +103194,9 @@
           overrides (c2-reader-overrides-from-forms forms)
           _ (c2-reader-validate-overrides! source-path overrides source-unit
                                            token-stream)
-          reader-artifact (read-source-artifact source-path source-text)
-          syntax-seeds (:syntax-object-stream reader-artifact)
+          syntax-seeds (c2-syntax-seed-stream source-path products
+                                              module-context)
+          deferred-literals (c2-deferred-semantic-literals form-tree)
           extension-invocations
           [{:artifact :gravity/reader-extension-invocation
             :tag 'gravity/schema
@@ -102938,6 +103220,7 @@
           (every? true?
                   (map lexical-validation
                        [:form-ids-unique?
+                        :graph-valid?
                         :root-form-ids-resolve?
                         :form-raw-slices-exact?
                         :form-links-resolve?
@@ -103001,11 +103284,14 @@
            :reader-extension-invocation-records extension-invocations
            :semantic-error-deferment-record
            {:artifact :gravity/semantic-error-deferment
-            :forms-retained [:unknown-symbol :profile-illegal-form]
+            :forms-retained [:unknown-symbol :profile-illegal-form
+                             :zero-denominator-ratio]
+            :deferred-literal-records deferred-literals
             :semantic-analysis-in-reader? false
             :module-parser-invoked? false
             :deferred? true
-            :owner-phases [:namespace-analysis :type-check :profile-validate]}
+            :owner-phases [:namespace-analysis :type-check :profile-validate
+                           :numeric-mode-validation]}
            :reader-diagnostics diagnostics
            :incremental-reader-hashes incremental-hashes
            :rejected-design-coverage c2-reader-rejected-designs

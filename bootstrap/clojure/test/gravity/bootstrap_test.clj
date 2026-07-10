@@ -40,6 +40,17 @@
       (finally
         (java.nio.file.Files/deleteIfExists path)))))
 
+(defn- with-temp-directory
+  [prefix f]
+  (let [path (java.nio.file.Files/createTempDirectory
+              prefix
+              (make-array java.nio.file.attribute.FileAttribute 0))]
+    (try
+      (f path)
+      (finally
+        (doseq [file (reverse (file-seq (.toFile path)))]
+          (.delete file))))))
+
 (def lexical-reader-nested-source
   (str "; leading λ🙂 comment\n"
        "(ns lexical.reader (:profile :hosted) (:target :jvm))\n"
@@ -76,12 +87,14 @@
   (when (.isAlive process)
     (.destroyForcibly process)))
 
-(defn- run-process
-  [env args]
+(defn- run-process-in-directory
+  [working-directory env args]
   (let [process-builder (ProcessBuilder.
                          ^java.util.List
                          (mapv str args))
         process-env (.environment process-builder)]
+    (when working-directory
+      (.directory process-builder (java.io.File. working-directory)))
     (when env
       (doseq [[k v] env]
         (.put process-env (str k) (str v))))
@@ -109,6 +122,10 @@
           (.delete stdout-file)
           (.delete stderr-file))))))
 
+(defn- run-process
+  [env args]
+  (run-process-in-directory nil env args))
+
 (defn run-bin
   [& args]
   (run-process nil args))
@@ -120,6 +137,13 @@
 (defn run-thin-bin
   [& args]
   (apply run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "1"} args))
+
+(defn- run-thin-bin-in-directory
+  [working-directory & args]
+  (run-process-in-directory
+   working-directory
+   {"GRAVITY_BOOTSTRAP_ONLY" "1"}
+   args))
 
 (defn run-packaged-bin
   [& args]
@@ -9454,6 +9478,29 @@
         exit (.waitFor process)]
     {:exit exit :out (str/trim output)}))
 
+(defn- c2-reader-result-from-process-cwd
+  [working-directory source-path]
+  (let [java-command (str (System/getProperty "java.home")
+                          java.io.File/separator "bin"
+                          java.io.File/separator "java")
+        expression
+        (str "(require '[gravity.bootstrap :as bootstrap]) "
+             "(let [artifact (bootstrap/compiler-c2-reader-file-artifact "
+             (pr-str source-path) ")] "
+             "(prn {:source-id (get-in artifact [:source-unit-record :source-id]) "
+             ":source-path (get-in artifact [:source-unit-record :path]) "
+             ":token-ids (mapv :token-id (:token-stream artifact)) "
+             ":form-ids (mapv :form-id (:form-tree artifact)) "
+             ":incremental-reader-hashes (:incremental-reader-hashes artifact)}))")
+        result (run-process-in-directory
+                working-directory nil
+                [java-command "-cp" (absolute-test-classpath)
+                 "clojure.main" "-e" expression])
+        output-lines (remove str/blank? (str/split-lines (:out result)))]
+    (assoc result
+           :data (when (and (zero? (:exit result)) (seq output-lines))
+                   (edn/read-string (last output-lines))))))
+
 (deftest reader-source-unit-identity-preserves-path-extension-and-options
   (let [gravity-path (fixture "accepted/reader-source-unit-identity.gravity")
         qst-path (fixture "accepted/reader-source-unit-identity.qst")
@@ -9520,6 +9567,77 @@
     (is (zero? (:exit nested-result)) (:out nested-result))
     (is (re-find #"^sha256:[0-9a-f]{64}$" (:out root-result)))
     (is (= (:out root-result) (:out nested-result)))))
+
+(deftest c2-reader-table-and-public-bootstrap-routing-are-cwd-neutral
+  (let [repo-root (.getCanonicalPath (java.io.File. "."))
+        bin-path (.getCanonicalPath (java.io.File. repo-root "bin/gravity"))]
+    (with-temp-directory
+      "gravity-unrelated-cwd-"
+      (fn [working-path]
+        (let [working-directory (.toString working-path)
+              decoy-path (.resolve working-path
+                                   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")]
+          (java.nio.file.Files/createDirectories (.getParent decoy-path)
+                                                  (make-array
+                                                   java.nio.file.attribute.FileAttribute
+                                                   0))
+          (java.nio.file.Files/write
+           decoy-path
+           (.getBytes "(this is a cwd shadow and must never load"
+                      java.nio.charset.StandardCharsets/UTF_8)
+           (make-array java.nio.file.OpenOption 0))
+          (doseq [suffix [".gravity" ".qst"]]
+            (with-temp-source
+              suffix lexical-reader-nested-source
+              (fn [path]
+                (let [source-path (.getCanonicalPath (java.io.File. path))
+                      root-result
+                      (c2-reader-result-from-process-cwd repo-root source-path)
+                      unrelated-result
+                      (c2-reader-result-from-process-cwd working-directory
+                                                         source-path)
+                      public-result
+                      (run-thin-bin-in-directory
+                       working-directory bin-path "compiler-c2-reader"
+                       source-path)]
+                  (is (zero? (:exit root-result))
+                      (str (:out root-result) (:err root-result)))
+                  (is (zero? (:exit unrelated-result))
+                      (str (:out unrelated-result) (:err unrelated-result)))
+                  (is (= (:data root-result) (:data unrelated-result)))
+                  (is (= source-path (get-in unrelated-result
+                                             [:data :source-path])))
+                  (is (= (get-in root-result
+                                 [:data :incremental-reader-hashes])
+                         (get-in unrelated-result
+                                 [:data :incremental-reader-hashes])))
+                  (is (zero? (:exit public-result))
+                      (str (:out public-result) (:err public-result)))
+                  (is (str/includes? (:out public-result)
+                                     ":ordered-utf8-lexical-token-stream"))
+                  (is (not (str/includes?
+                            (str (:out unrelated-result)
+                                 (:err unrelated-result)
+                                 (:out public-result)
+                                 (:err public-result))
+                            "FileNotFoundException"))))))
+            (with-temp-source
+              suffix "1e2e3"
+              (fn [path]
+                (let [rejected
+                      (run-thin-bin-in-directory
+                       working-directory bin-path "compiler-c2-reader" path)]
+                  (is (not (zero? (:exit rejected))))
+                  (is (str/includes? (:err rejected) "STAGE1READER007"))
+                  (is (not (str/includes? (:err rejected)
+                                          "FileNotFoundException"))))))))))
+    (let [diagnostic
+          (diagnostic-data
+           #(bootstrap/stage1-reader-table-form
+             "bootstrap/gravity/src/gravity/bootstrap/missing-reader.gravity"))]
+      (is (= "STAGE1READER006" (:id diagnostic)))
+      (is (not (str/includes? (str (:cause-message diagnostic))
+                              "FileNotFoundException"))))))
 
 (deftest reader-source-id-uses-explicit-project-context
   (let [source-text "(ns identity.context (:profile :hosted))"
@@ -9785,10 +9903,14 @@
             (is (every? #(contains? tokens-by-id (:close-token %)) forms))
             (is (every? #(every? (set (keys forms-by-id)) (:children %))
                         forms))
+            (is (every? #(contains? % :parent-form-id) forms))
+            (is (every? #(nil? (:parent-form-id (forms-by-id %))) roots))
             (doseq [form forms
                     child-id (:children form)]
               (is (bootstrap/c2-span-encloses?
-                   (:span form) (:span (forms-by-id child-id)))))
+                   (:span form) (:span (forms-by-id child-id))))
+              (is (= (:form-id form)
+                     (:parent-form-id (forms-by-id child-id)))))
             (is (some #(and (= :set (:collection-kind %))
                             (= "#{" (:raw (tokens-by-id (:open-token %))))
                             (= "}" (:raw (tokens-by-id (:close-token %)))))
@@ -9804,6 +9926,14 @@
             (is (true? (:form-raw-slices-exact? validation)))
             (is (true? (:no-token-contains-top-level-form? validation)))
             (is (true? (:form-links-resolve? validation)))
+            (is (true? (:parent-links-resolve-exactly-once? validation)))
+            (is (true? (:parent-child-bidirectional? validation)))
+            (is (true? (:all-forms-reachable? validation)))
+            (is (true? (:acyclic? validation)))
+            (is (true? (:children-source-ordered? validation)))
+            (is (true? (:collection-delimiters-resolve? validation)))
+            (is (true? (:maps-even-logical-children? validation)))
+            (is (true? (:graph-valid? validation)))
             (is (true? (:parent-spans-enclose-children? validation)))
             (is (true? (:nested-depth-at-least-three? validation)))
             (is (true? (get-in artifact
@@ -9827,11 +9957,11 @@
                    (:token-stream qst))))
       (is (= (mapv #(select-keys % [:form-id :kind :collection-kind
                                     :open-token :close-token :children
-                                    :abbrev :tag :raw :value])
+                                    :parent-form-id :abbrev :tag :raw :value])
                    (:form-tree gravity))
              (mapv #(select-keys % [:form-id :kind :collection-kind
                                     :open-token :close-token :children
-                                    :abbrev :tag :raw :value])
+                                    :parent-form-id :abbrev :tag :raw :value])
                    (:form-tree qst)))))
     (let [context {:project-root-id
                    (bootstrap/reader-canonical-hash {:project :unicode-column})
@@ -9848,6 +9978,209 @@
       (is (= 4 (get-in last-token [:span :start :column])))
       (is (= :unicode-scalar
              (get-in first-token [:span :end :column-unit]))))))
+
+(deftest stage1-reader-character-stream-uses-unicode-scalars-and-exact-bytes
+  (doseq [suffix [".gravity" ".qst"]
+          source ["🙂x" "a🙂b" "x🙂" "🙂x \"a🙂b\" x🙂"]]
+    (let [path (str "/unicode-probe/source" suffix)
+          stream (bootstrap/stage1-reader-character-stream path source)
+          characters (:characters stream)
+          source-bytes (.getBytes source java.nio.charset.StandardCharsets/UTF_8)]
+      (is (= (.codePointCount source 0 (.length source))
+             (:character-count stream)))
+      (is (= (.length source) (:utf16-unit-count stream)))
+      (is (= (range (count characters)) (map :index characters)))
+      (is (every? #(= (:raw %)
+                      (bootstrap/c2-utf8-slice
+                       source-bytes
+                       (get-in % [:span :byte-start])
+                       (get-in % [:span :byte-end])))
+                  characters))
+      (is (every? #(= (.codePointAt ^String (:raw %) 0) (:codepoint %))
+                  characters))))
+  (doseq [suffix [".gravity" ".qst"]]
+    (let [stream (bootstrap/stage1-reader-character-stream
+                  (str "x" suffix) "🙂x")
+          [emoji x] (:characters stream)]
+      (is (= ["🙂" "x"] (mapv :raw (:characters stream))))
+      (is (= 128578 (:codepoint emoji)))
+      (is (= [0 4 1 2]
+             [(get-in emoji [:span :byte-start])
+              (get-in emoji [:span :byte-end])
+              (get-in emoji [:span :start :column])
+              (get-in emoji [:span :end :column])]))
+      (is (= [4 5 2 3]
+             [(get-in x [:span :byte-start])
+              (get-in x [:span :byte-end])
+              (get-in x [:span :start :column])
+              (get-in x [:span :end :column])]))))
+  (doseq [suffix [".gravity" ".qst"]]
+    (with-temp-source
+      suffix "🙂x \"a🙂b\" x🙂\n"
+      (fn [path]
+        (let [classifier
+              (bootstrap/stage1-reader-token-classifier-pipeline-file-artifact
+               path)
+              realizer
+              (bootstrap/stage1-reader-token-realizer-pipeline-file-artifact
+               path)
+              automaton
+              (bootstrap/stage1-reader-token-automaton-pipeline-file-artifact
+               path)
+              executor
+              (bootstrap/stage1-reader-executor-pipeline-file-artifact path)
+              c2 (bootstrap/compiler-c2-reader-file-artifact path)
+              expected ['🙂x "a🙂b" 'x🙂]]
+          (is (= expected
+                 (mapv :form (:stage1-reader-records classifier))))
+          (is (= expected
+                 (mapv :form (:stage1-reader-records realizer))))
+          (is (= expected
+                 (mapv :form (:stage1-reader-records automaton))))
+          (is (= expected
+                 (mapv :form (:stage1-reader-records executor))))
+          (is (= expected (:parsed-semantic-values c2)))
+          (is (every? #(= :unicode-scalar
+                          (get-in % [:span :start :column-unit]))
+                      (:token-stream c2))))))))
+
+(deftest c2-reader-treats-cr-lf-and-crlf-as-line-terminators
+  (doseq [suffix [".gravity" ".qst"]
+          newline ["\r" "\n" "\r\n"]]
+    (let [source (str "; c" newline "[🙂 1]" newline)]
+      (with-temp-source
+        suffix source
+        (fn [path]
+          (let [retained
+                (bootstrap/c2-reader-products
+                 path source bootstrap/standard-reader-options)
+                ignored
+                (bootstrap/c2-reader-products
+                 path source
+                 (assoc bootstrap/standard-reader-options
+                        :retain-comments false))
+                compiler (bootstrap/compiler-c2-reader-file-artifact path)
+                p15 (bootstrap/p15-s23-source-syntax-c2-artifact path source)
+                tokens (:token-stream retained)
+                source-bytes (.getBytes source
+                                        java.nio.charset.StandardCharsets/UTF_8)
+                comment (first (filter #(= :comment (:kind %)) tokens))
+                newline-token
+                (first (filter #(and (= :whitespace (:kind %))
+                                     (= newline (:raw %)))
+                               tokens))
+                vector-open (first (filter #(= :vector-open (:kind %))
+                                           tokens))
+                skipped
+                (bootstrap/p15-s23-front-end-skip-comment
+                 (bootstrap/p15-s23-front-end-state path source))]
+            (is (= [['🙂 1N]] (:parsed-values retained)))
+            (is (= (:parsed-values retained) (:parsed-values ignored)))
+            (is (= (:parsed-values retained)
+                   (:parsed-semantic-values compiler)))
+            (is (= (:parsed-values retained)
+                   (:parsed-semantic-values p15)))
+            (is (= "; c" (:raw comment)))
+            (is (= newline (:raw newline-token)))
+            (is (= [2 1]
+                   [(get-in vector-open [:span :start :line])
+                    (get-in vector-open [:span :start :column])]))
+            (is (= :unicode-scalar
+                   (get-in vector-open [:span :start :column-unit])))
+            (is (= \[ (bootstrap/p15-s23-front-end-current-char skipped)))
+            (is (= [2 1] [(:line skipped) (:column skipped)]))
+            (is (every? #(= (:raw %)
+                            (bootstrap/c2-utf8-slice
+                             source-bytes
+                             (get-in % [:span :byte-start])
+                             (get-in % [:span :byte-end])))
+                        tokens))
+            (is (not-any? :trivia? (:token-stream ignored)))))))))
+
+(deftest p15-stage2-front-end-preserves-crlf-inside-strings
+  (doseq [suffix [".gravity" ".qst"]
+          newline ["\r" "\n" "\r\n"]]
+    (let [path (str "/p15-line-probe/source" suffix)
+          source (str "\"a" newline "b\"")
+          [record end-state]
+          (bootstrap/p15-s23-front-end-read-form
+           path (bootstrap/p15-s23-front-end-state path source) 0)]
+      (is (= (str "a" newline "b") (:form record)))
+      (is (= (count source) (:idx end-state)))
+      (is (= [2 3] [(:line end-state) (:column end-state)]))
+      (is (= (alength (.getBytes source
+                                 java.nio.charset.StandardCharsets/UTF_8))
+             (get-in record [:span :byte-end]))))))
+
+(deftest c2-reader-form-graph-validation-rejects-adversarial-mutations
+  (let [source "[{:a [1 2] :b (3 4)} #{:x :y}]"
+        path "/graph-validation/src/tree.gravity"
+        artifact (bootstrap/compiler-c2-reader-source-artifact path source)
+        forms (:form-tree artifact)
+        roots (:top-level-form-ids artifact)
+        forms-by-id (into {} (map (juxt :form-id identity) forms))
+        root-id (first roots)
+        root (forms-by-id root-id)
+        map-form (first (filter #(= :map (:collection-kind %)) forms))
+        nested-parent
+        (first (filter #(and (:parent-form-id %) (seq (:children %))) forms))
+        target-id (first (:children root))
+        nested-target-id (first (:children nested-parent))
+        child-frequencies (frequencies (mapcat :children forms))
+        replace-form
+        (fn [form-tree form-id update-fn]
+          (mapv #(if (= form-id (:form-id %)) (update-fn %) %) form-tree))
+        mutations
+        [{:name :bad-parent
+          :forms (replace-form forms target-id
+                               #(assoc % :parent-form-id :missing-parent))}
+         {:name :orphan
+          :forms (conj forms
+                       (assoc (forms-by-id target-id)
+                              :form-id :orphan-form
+                              :parent-form-id nil))}
+         {:name :cycle
+          :forms (replace-form forms root-id
+                               #(update % :children conj root-id))}
+         {:name :duplicate-child
+          :forms (replace-form forms root-id
+                               #(update % :children conj target-id))}
+         {:name :out-of-order-child
+          :forms (replace-form forms root-id
+                               #(update % :children (comp vec reverse)))}
+         {:name :span-escape
+          :forms
+          (replace-form
+           forms nested-target-id
+           #(assoc-in % [:span :byte-end]
+                      (inc (get-in nested-parent [:span :byte-end]))))}
+         {:name :odd-map
+          :forms (replace-form forms (:form-id map-form)
+                               #(update % :children pop))}]]
+    (is (= :passed (get-in artifact [:lexical-product-validation :status])))
+    (is (true? (get-in artifact [:lexical-product-validation :graph-valid?])))
+    (is (every? #(nil? (:parent-form-id (forms-by-id %))) roots))
+    (is (every? #(if (contains? (set roots) (:form-id %))
+                   (zero? (get child-frequencies (:form-id %) 0))
+                   (= 1 (get child-frequencies (:form-id %) 0)))
+                forms))
+    (doseq [{:keys [name forms]} mutations]
+      (let [validation
+            (bootstrap/c2-lexical-product-validation
+             source (:token-stream artifact) forms roots)
+            mutated (assoc artifact
+                           :form-tree forms
+                           :lexical-product-validation validation)
+            proof (bootstrap/c2-reader-capability-proof mutated)
+            diagnostic
+            (diagnostic-data #(bootstrap/c2-reader-validate! path mutated))]
+        (is (= :failed (:status validation)) (str name))
+        (is (false? (:graph-valid? validation)) (str name))
+        (is (true? (:lexical-token-stream? proof)) (str name))
+        (is (false? (:nested-form-tree? proof)) (str name))
+        (is (= "C2-HASH" (:id diagnostic)) (str name))
+        (is (= :c2-reader (:diagnostic-family diagnostic)) (str name))
+        (is (= :read-source (:stage diagnostic)) (str name))))))
 
 (deftest c2-reader-trivia-options-control-genuine-product-hashes
   (let [base "(ns hash.reader (:profile :hosted))\n; aa\n(def value [1 2])\n"
@@ -9914,13 +10247,24 @@
                       "/checkout-b/src/hash.gravity" base
                       bootstrap/standard-reader-options context-b)
           hashes (fn [products]
-                   (bootstrap/c2-incremental-hashes
-                    (:source-unit products)
-                    (:token-stream products)
-                    (:form-tree products)
-                    [] [] []))
-          hashes-a (hashes products-a)
-          hashes-b (hashes products-b)
+                   (let [source-path (get-in products [:source-unit :path])
+                         module-context
+                         (bootstrap/reader-module-context
+                          (:parsed-values products))
+                         syntax-seeds
+                         (bootstrap/c2-syntax-seed-stream
+                          source-path products module-context)]
+                     {:syntax-seeds syntax-seeds
+                      :hashes
+                      (bootstrap/c2-incremental-hashes
+                       (:source-unit products)
+                       (:token-stream products)
+                       (:form-tree products)
+                       syntax-seeds [] [])}))
+          hash-products-a (hashes products-a)
+          hash-products-b (hashes products-b)
+          hashes-a (:hashes hash-products-a)
+          hashes-b (:hashes hash-products-b)
           diagnostic (fn [path products]
                        (let [source-unit (:source-unit products)
                              token (first (:token-stream products))]
@@ -9939,8 +10283,15 @@
              (get-in products-b [:source-unit :source-id])))
       (is (not= (get-in products-a [:source-unit :path])
                 (get-in products-b [:source-unit :path])))
-      (is (= (:token-stream hashes-a) (:token-stream hashes-b)))
-      (is (= (:form-tree hashes-a) (:form-tree hashes-b)))
+      (is (= hashes-a hashes-b))
+      (is (not= (get-in products-a [:token-stream 0 :source-path])
+                (get-in products-b [:token-stream 0 :source-path])))
+      (is (not= (get-in products-a [:form-tree 0 :span :source])
+                (get-in products-b [:form-tree 0 :span :source])))
+      (is (not= (get-in hash-products-a
+                        [:syntax-seeds 0 :span :source])
+                (get-in hash-products-b
+                        [:syntax-seeds 0 :span :source])))
       (is (= (:diagnostic-id diagnostic-a)
              (:diagnostic-id diagnostic-b)))
       (is (not= (get-in diagnostic-a [:source-span :source])
@@ -9975,6 +10326,15 @@
                {:name :duplicate-set :source "#{:dup :dup}"
                 :id "C2-SET" :token-id? true :related? true}
                {:name :duplicate-composite-set :source "#{[1] [1]}"
+                :id "C2-SET" :token-id? true :related? true}
+               {:name :duplicate-nested-set
+                :source "#{{:a [1]} {:a [1]}}"
+                :id "C2-SET" :token-id? true :related? true}
+               {:name :duplicate-quoted-set :source "#{'x 'x}"
+                :id "C2-SET" :token-id? true :related? true}
+               {:name :duplicate-metadata-set :source "#{^:a x ^:a x}"
+                :id "C2-SET" :token-id? true :related? true}
+               {:name :duplicate-deref-set :source "#{@x @x}"
                 :id "C2-SET" :token-id? true :related? true}]]
     (doseq [{:keys [name source id token-id? related? byte-start byte-end
                     remapped-from engine-diagnostic]}
@@ -10051,6 +10411,128 @@
                             [:id :severity :stage :token-id :form-id
                              :raw-spelling :facts :remapped-from
                              :reader-engine-diagnostic :reader-state])))))))
+
+(deftest c2-reader-preserves-distinct-wrapper-and-composite-set-entries
+  (doseq [suffix [".gravity" ".qst"]
+          source ["#{'x 'y}"
+                  "#{^:a x ^:b y}"
+                  "#{@x @y}"
+                  "#{{:a [1]} {:a [2]}}"]]
+    (with-temp-source
+      suffix source
+      (fn [path]
+        (let [artifact (bootstrap/compiler-c2-reader-file-artifact path)
+              value (first (:parsed-semantic-values artifact))]
+          (is (set? value))
+          (is (= 2 (count value)))
+          (is (true? (get-in artifact
+                             [:capability-based-proof
+                              :nested-form-tree?]))))))))
+
+(deftest c2-reader-contains-malformed-numbers-and-defers-zero-ratios
+  (is (not (contains? (set bootstrap/c2-reader-diagnostic-ids)
+                      "STAGE1READER007")))
+  (doseq [suffix [".gravity" ".qst"]]
+    (with-temp-source
+      suffix "1e2e3"
+      (fn [path]
+        (let [table (bootstrap/stage1-reader-table)
+              upstream
+              (diagnostic-data
+               #(bootstrap/stage1-reader-token-stream
+                 path "1e2e3" table bootstrap/standard-reader-options))
+              c2 (diagnostic-data
+                  #(bootstrap/compiler-c2-reader-file-artifact path))
+              c2-repeated
+              (diagnostic-data
+               #(bootstrap/compiler-c2-reader-file-artifact path))
+              p15 (diagnostic-data
+                   #(bootstrap/p15-s23-source-syntax-c2-artifact
+                     path "1e2e3"))]
+          (is (= "STAGE1READER007" (:id upstream)))
+          (is (= "1e2e3" (:raw upstream)))
+          (is (= :unassigned
+                 (get-in upstream [:facts :normative-c2-mapping])))
+          (is (true? (get-in upstream [:facts :catalog-gap])))
+          (is (= "STAGE1READER007" (:id c2) (:id p15)))
+          (is (= "STAGE1READER007" (:reader-engine-diagnostic c2)))
+          (is (= :unassigned
+                 (get-in c2 [:facts :normative-c2-mapping])))
+          (is (true? (get-in c2 [:facts :catalog-gap])))
+          (is (= "1e2e3" (:raw-spelling c2)))
+          (is (= path (get-in c2 [:source-span :source])))
+          (is (= [0 5]
+                 [(get-in c2 [:source-span :byte-start])
+                  (get-in c2 [:source-span :byte-end])]))
+          (is (= (:source-span c2) (get-in c2 [:primary :span])))
+          (is (= (:source-id c2) (get-in c2 [:primary :artifact])))
+          (is (= :error (:severity c2)))
+          (is (= :read-source (:stage c2)))
+          (is (= :c2-reader (:diagnostic-family c2)))
+          (is (vector? (:related c2)))
+          (is (seq (:origin-chain c2)))
+          (is (= bootstrap/standard-reader-options (:reader-options c2)))
+          (is (= :gravity/reader-state
+                 (get-in c2 [:reader-state :artifact])))
+          (is (string? (:remediation c2)))
+          (is (seq (:remediation-records c2)))
+          (is (string? (:cause-message c2)))
+          (is (= (select-keys c2
+                              [:id :diagnostic-id :severity :stage
+                               :raw-spelling :facts
+                               :reader-state :cause-message])
+                 (select-keys c2-repeated
+                              [:id :diagnostic-id :severity :stage
+                               :raw-spelling :facts
+                               :reader-state :cause-message]))))))
+    (with-temp-source
+      suffix "1/0"
+      (fn [path]
+        (let [c2 (bootstrap/compiler-c2-reader-file-artifact path)
+              c2-repeated (bootstrap/compiler-c2-reader-file-artifact path)
+              p15 (bootstrap/p15-s23-source-syntax-c2-artifact path "1/0")
+              literal (first (:parsed-semantic-values c2))
+              literal-record (first (:literal-decoding-records c2))]
+          (is (= :gravity/deferred-ratio-literal (:artifact literal)))
+          (is (= :ratio (:kind literal)))
+          (is (= "1/0" (:raw literal)))
+          (is (= 1N (:numerator literal)))
+          (is (= 0N (:denominator literal)))
+          (is (= :deferred (:semantic-validation literal)))
+          (is (= :zero-denominator (:reason literal)))
+          (is (= {:numerator-spelling "1"
+                  :denominator-spelling "0"
+                  :exact? true}
+                 (:facts literal-record)))
+          (is (= literal (:decoded literal-record)))
+          (is (= (:parsed-semantic-values c2)
+                 (:parsed-semantic-values p15)))
+          (is (= (:parsed-semantic-values c2)
+                 (:parsed-semantic-values c2-repeated)))
+          (is (= (:incremental-reader-hashes c2)
+                 (:incremental-reader-hashes c2-repeated)))
+          (is (= ["1/0"] (mapv :raw (:deferred-literal-records
+                                     (:semantic-error-deferment-record c2)))))
+          (is (true? (get-in c2 [:semantic-error-deferment-record
+                                 :deferred?])))))))
+  (doseq [suffix [".gravity" ".qst"]]
+    (with-temp-source
+      suffix "1/0"
+      (fn [path]
+        (let [accepted (run-thin-bin "bin/gravity"
+                                     "compiler-c2-reader" path)]
+          (is (zero? (:exit accepted)) (str (:out accepted) (:err accepted)))
+          (is (str/includes? (:out accepted)
+                             ":gravity/deferred-ratio-literal")))))
+    (with-temp-source
+      suffix "1e2e3"
+      (fn [path]
+        (let [rejected (run-thin-bin "bin/gravity"
+                                     "compiler-c2-reader" path)]
+          (is (not (zero? (:exit rejected))))
+          (is (str/includes? (:err rejected) "STAGE1READER007"))
+          (is (not (str/includes? (:err rejected)
+                                  "NumberFormatException"))))))))
 
 (deftest c2-reader-defers-syntax-valid-semantic-errors-for-both-extensions
   (let [source (str "(ns semantic.defer (:profile :unknown-profile)"
