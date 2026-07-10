@@ -317,21 +317,31 @@
         (range)
         form-records)))
 
+(declare l1-c2-reader-artifacts)
+
 (defn read-source-artifact
   [source-path source-text]
   (let [records (read-source-form-records source-path source-text)
         forms (mapv :form records)
         _ (validate-ns-syntax! source-path forms)
         context (reader-module-context forms)
-        syntax (syntax-object-stream source-path records context)]
-    {:kind :gravity/stage0-reader-artifact
+        syntax (syntax-object-stream source-path records context)
+        reader-options {:retain-trivia true
+                        :enabled-features #{:standard-reader}
+                        :extension-policy :gravity/standard-reader-v1}
+        reader-details (l1-c2-reader-artifacts source-path source-text records
+                                               syntax reader-options)]
+    (merge
+     {:kind :gravity/stage0-reader-artifact
      :pass {:name :reader
             :input :source-bytes
             :output :syntax-object-stream
             :preserves [:source-spans :metadata :reader-origin :profile-context]
             :rejects ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY" "L1-METADATA"
-                      "L1-NS-SHAPE" "L1-READER-EXTENSION"]}
+                      "L1-NS-SHAPE" "L1-READER-EXTENSION"
+                      "L1-SOURCE-ENCODING"]}
      :source {:path source-path
+              :extension (gravity-source-extension source-path)
               :encoding :utf-8
               :source-kind (gravity-source-kind source-path)
               :byte-count (utf8-byte-count source-text)
@@ -339,8 +349,8 @@
      :module-context (dissoc context :namespace-clause-syntax)
      :syntax-object-stream syntax
      :namespace-clause-syntax (:namespace-clause-syntax context)
-     :reader-extension-registry []
-     :diagnostics []}))
+     :diagnostics []}
+     reader-details)))
 
 (defn ns-form?
   [form]
@@ -559,6 +569,12 @@
   [text]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
                         (.getBytes text "UTF-8"))]
+    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
+
+(defn sha256-bytes-hex
+  [bytes]
+  (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
+                        bytes)]
     (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
 
 (defn assert-unique-aliases!
@@ -43525,8 +43541,9 @@
   [path]
   (b14-document-source-artifact path (slurp path)))
 
-(declare compile-file module-file-artifact core-file-artifact
-         runtime-selection-file-artifact managed-runtime-file-artifact)
+(declare compile-source compile-file module-file-artifact core-file-artifact
+         runtime-selection-file-artifact managed-runtime-file-artifact
+         compiler-c2-reader-source-artifact read-gravity-source-text)
 
 (def b14-public-check-basenames
   #{"backend-test-matrix.gravity"
@@ -43553,38 +43570,6 @@
     "backend-matrix-b14-skip.qst"
     "backend-matrix-b14-evidence.gravity"
     "backend-matrix-b14-evidence.qst"})
-
-(def public-source-module-check-basenames
-  #{"l1_c2_surface_syntax_reader.gravity"
-    "l2_core_language_semantics.gravity"
-    "c3_syntax_object_model.gravity"
-    "c4_macro_expansion_engine.gravity"
-    "c5_name_resolution_namespace_analyzer.gravity"
-    "c6_core_lowering_engine.gravity"
-    "c7_type_checker_engine.gravity"
-    "c8_effect_checker_engine.gravity"
-    "c9_ownership_checker_engine.gravity"
-    "c10_safety_analysis_pipeline.gravity"
-    "c11_mir_specification.gravity"
-    "c12_domain_ir_architecture.gravity"
-    "c13_mir_optimization_passes.gravity"
-    "c14_target_lowering_architecture.gravity"
-    "c15_compiler_diagnostics.gravity"
-    "c16_incremental_compilation_design.gravity"
-    "c17_compiler_plugin_pass_api.gravity"
-    "c18_compiler_verification_pass_correctness.gravity"
-    "b1_backend_interface_specification.gravity"
-    "b2_c_backend_design.gravity"
-    "b3_llvm_backend_design.gravity"
-    "b4_wasm_backend_design.gravity"
-    "b5_jvm_backend_design.gravity"
-    "b6_javascript_typescript_backend_design.gravity"
-    "b7_mlir_backend_design.gravity"
-    "b8_gpu_backend_design.gravity"
-    "b9_hdl_backend_design.gravity"
-    "b10_workflow_graph_backend_design.gravity"
-    "b11_query_relational_backend_design.gravity"
-    "b12_mobile_backend_design.gravity"})
 
 (def core-public-check-basenames
   #{"core-semantics.gravity"
@@ -43660,13 +43645,22 @@
 
 (defn check-file-artifact
   [path]
-  (let [basename (.getName (java.io.File. path))]
+  (let [source-text (read-gravity-source-text path)
+        reader-artifact (read-source-artifact path source-text)
+        forms (mapv :form (read-source-form-records path source-text))
+        module (when (ns-form? (first forms))
+                 (parse-module path forms))
+        bootstrap-metadata (get-in module [:metadata :bootstrap])
+        gravity-owned-module?
+        (and (= :gravity-source (:owner bootstrap-metadata))
+             (= :gravity (:source-language bootstrap-metadata)))
+        basename (.getName (java.io.File. path))]
     (cond
+      gravity-owned-module?
+      (module-source-artifact path source-text)
+
       (contains? b14-public-check-basenames basename)
       (b14-document-file-artifact path)
-
-      (contains? public-source-module-check-basenames basename)
-      (module-file-artifact path)
 
       (contains? core-public-check-basenames basename)
       (core-file-artifact path)
@@ -43678,7 +43672,7 @@
       (managed-runtime-file-artifact path)
 
       :else
-      (compile-file path))))
+      (compile-source path source-text))))
 
 (def runtime-selection-governing-documents
   ["docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
@@ -100968,13 +100962,75 @@
                         :effects (:effects module)
                         :capabilities (:capabilities module)}}))
 
+(defn source-path-policy-fail!
+  [source-path]
+  (fail! "L1-SOURCE-EXTENSION"
+         "Gravity source path does not use a co-canonical source extension"
+         {:severity :error
+          :stage :read-source
+          :source-span {:source source-path}
+          :primary {:span {:source source-path}}
+          :related []
+          :origin-chain [{:kind :source-path :path source-path}]
+          :profile nil
+          :target nil
+          :facts {:actual-extension (gravity-source-extension source-path)
+                  :allowed-extensions (vec (sort co-canonical-source-extensions))}
+          :reader-state {:stage :source-unit-policy}
+          :remediation "Rename the source to .qst or .gravity; both are canonical and first-class."}))
+
+(defn read-gravity-source-text
+  [path]
+  (when-not (qst-or-gravity-source? path)
+    (source-path-policy-fail! path))
+  (let [bytes (java.nio.file.Files/readAllBytes
+               (.toPath (java.io.File. path)))
+        decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                  (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                  (.onUnmappableCharacter
+                   java.nio.charset.CodingErrorAction/REPORT))
+        input (java.nio.ByteBuffer/wrap bytes)
+        output (java.nio.CharBuffer/allocate (max 1 (alength bytes)))
+        result (.decode decoder input output true)]
+    (when (.isError result)
+      (let [start (.position input)
+            end (+ start (max 1 (.length result)))
+            bytes-hash (str "sha256:" (sha256-bytes-hex bytes))]
+        (fail! "L1-SOURCE-ENCODING"
+               "source bytes cannot be decoded as UTF-8"
+               {:severity :error
+                :stage :read-source
+                :source-id bytes-hash
+                :source-span {:source path
+                              :byte-start start
+                              :byte-end end}
+                :primary {:span {:source path
+                                 :byte-start start
+                                 :byte-end end}
+                          :artifact bytes-hash}
+                :related []
+                :origin-chain [{:kind :source-bytes :path path}]
+                :profile nil
+                :target nil
+                :facts {:declared-encoding :utf-8
+                        :bytes-hash bytes-hash
+                        :malformed-input-length (.length result)}
+                :reader-state {:stage :source-decoding
+                               :encoding :utf-8}
+                :remediation "Save the source as valid UTF-8 without replacement decoding."})))
+    (let [flush-result (.flush decoder output)]
+      (when (.isError flush-result)
+        (.throwException flush-result)))
+    (.flip output)
+    (.toString output)))
+
 (defn compile-file
   [path]
-  (compile-source path (slurp path)))
+  (compile-source path (read-gravity-source-text path)))
 
 (defn read-file-artifact
   [path]
-  (read-source-artifact path (slurp path)))
+  (read-source-artifact path (read-gravity-source-text path)))
 
 (defn module-file-artifact
   [path]
@@ -101542,16 +101598,72 @@
                         :extension-tag (:extension-tag overrides)}
                        {:missing-fields [fail-kind]}))))
 
+(defn reader-canonical-value
+  [value]
+  (cond
+    (map? value)
+    [:map
+     (->> value
+          (map (fn [[key item]]
+                 [(reader-canonical-value key)
+                  (reader-canonical-value item)]))
+          (sort-by (fn [[key _]] (pr-str key)))
+          vec)]
+
+    (set? value)
+    [:set (->> value
+               (map reader-canonical-value)
+               (sort-by pr-str)
+               vec)]
+
+    (vector? value)
+    [:vector (mapv reader-canonical-value value)]
+
+    (seq? value)
+    [:list (mapv reader-canonical-value value)]
+
+    :else value))
+
+(defn reader-canonical-hash
+  [value]
+  (str "sha256:"
+       (sha256-hex
+        (binding [*print-length* nil
+                  *print-level* nil
+                  *print-meta* true]
+          (pr-str (reader-canonical-value value))))))
+
+(defn reader-project-root-record
+  []
+  (let [path (.getCanonicalPath (java.io.File. "."))]
+    {:path path
+     :project-root-id (reader-canonical-hash {:project-root path})}))
+
+(defn reader-source-identity-inputs
+  [source-path source-text reader-options]
+  (let [project-root (reader-project-root-record)]
+    {:path source-path
+     :extension (gravity-source-extension source-path)
+     :encoding :utf-8
+     :bytes-hash (str "sha256:" (sha256-hex source-text))
+     :project-root-id (:project-root-id project-root)
+     :reader-options reader-options
+     :enabled-features (set (:enabled-features reader-options))
+     :extension-policy (:extension-policy reader-options)
+     :source-kind (gravity-source-kind source-path)}))
+
 (defn c2-source-unit-record
   [source-path source-text reader-options]
-  {:artifact :gravity/source-unit
-   :source-id (str "sha256:" (sha256-hex source-text))
-   :path source-path
-   :encoding :utf-8
-   :bytes-hash (str "sha256:" (sha256-hex source-text))
-   :project-root "sha256:stage0-project-root"
-   :reader-options reader-options
-   :source-kind (gravity-source-kind source-path)})
+  (let [identity-inputs (reader-source-identity-inputs source-path source-text
+                                                        reader-options)
+        project-root (reader-project-root-record)]
+    (merge
+     {:artifact :gravity/source-unit
+      :source-id (reader-canonical-hash identity-inputs)
+      :project-root (:project-root-id project-root)
+      :project-root-record project-root
+      :identity-inputs identity-inputs}
+     identity-inputs)))
 
 (defn c2-token-record
   [idx record source-id]
@@ -101647,14 +101759,42 @@
   [source-unit token-stream form-tree syntax-seeds extension-invocations
    diagnostics]
   {:artifact :gravity/reader-incremental-hashes
-   :source-unit (c1-architecture-artifact-id source-unit)
-   :token-stream (c1-architecture-artifact-id token-stream)
-   :form-tree (c1-architecture-artifact-id form-tree)
-   :syntax-seed-stream (c1-architecture-artifact-id syntax-seeds)
-   :extension-invocation-set (c1-architecture-artifact-id
-                              extension-invocations)
-   :reader-diagnostics (c1-architecture-artifact-id diagnostics)
+   :source-unit (reader-canonical-hash source-unit)
+   :token-stream (reader-canonical-hash token-stream)
+   :form-tree (reader-canonical-hash form-tree)
+   :syntax-seed-stream (reader-canonical-hash syntax-seeds)
+   :extension-invocation-set (reader-canonical-hash extension-invocations)
+   :reader-diagnostics (reader-canonical-hash diagnostics)
    :status :stable})
+
+(defn l1-c2-reader-artifacts
+  [source-path source-text records syntax-seeds reader-options]
+  (let [source-unit (c2-source-unit-record source-path source-text
+                                           reader-options)
+        token-stream (mapv #(c2-token-record %1 %2 (:source-id source-unit))
+                           (range)
+                           records)
+        form-tree (mapv c2-form-record (range) records)
+        extension-invocations []
+        diagnostics []]
+    {:source-unit-record source-unit
+     :token-stream token-stream
+     :form-tree form-tree
+     :syntax-seed-stream syntax-seeds
+     :reader-source-map (mapv #(select-keys % [:syntax-id :span])
+                              syntax-seeds)
+     :literal-decoding-records (c2-literal-records records)
+     :trivia-retention-records (c2-trivia-records source-path source-text)
+     :reader-extension-registry
+     [{:tag 'inst :policy :standard-reader :build-effects #{}
+       :capabilities #{}}
+      {:tag 'uuid :policy :standard-reader :build-effects #{}
+       :capabilities #{}}]
+     :reader-options reader-options
+     :reader-extension-invocation-records extension-invocations
+     :incremental-reader-hashes
+     (c2-incremental-hashes source-unit token-stream form-tree syntax-seeds
+                            extension-invocations diagnostics)}))
 
 (defn c2-reader-capability-proof
   [artifact]
@@ -101719,16 +101859,11 @@
           overrides (c2-reader-source-overrides module)
           _ (c2-reader-validate-overrides! source-path overrides)
           reader-artifact (read-source-artifact source-path source-text)
-          reader-options {:retain-comments true
-                          :enabled-features #{:standard-reader}
-                          :extension-policy "sha256:stage0-reader-policy"}
-          source-unit (c2-source-unit-record source-path source-text
-                                             reader-options)
-          token-stream (mapv #(c2-token-record %1 %2 (:source-id source-unit))
-                             (range)
-                             records)
-          form-tree (mapv c2-form-record (range) records)
-          syntax-seeds (:syntax-object-stream reader-artifact)
+          reader-options (:reader-options reader-artifact)
+          source-unit (:source-unit-record reader-artifact)
+          token-stream (:token-stream reader-artifact)
+          form-tree (:form-tree reader-artifact)
+          syntax-seeds (:syntax-seed-stream reader-artifact)
           extension-invocations
           [{:artifact :gravity/reader-extension-invocation
             :tag 'gravity/schema
@@ -101759,6 +101894,8 @@
                           :reader-diagnostics :incremental-reader-hash]
                   :rejects c2-reader-diagnostic-ids}
            :source-overrides overrides
+           :module (select-keys module [:module :source-path :profile :target
+                                        :effects :capabilities])
            :source-unit-record source-unit
            :token-stream token-stream
            :form-tree form-tree
@@ -101811,7 +101948,7 @@
 
 (defn compiler-c2-reader-file-artifact
   [path]
-  (compiler-c2-reader-source-artifact path (slurp path)))
+  (compiler-c2-reader-source-artifact path (read-gravity-source-text path)))
 
 (def c3-syntax-diagnostic-ids
   ["C3-SHAPE"

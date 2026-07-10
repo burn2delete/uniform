@@ -1,0 +1,14 @@
+; FL-P01-T01 deterministic source-unit identity fixture.
+(ns reader.source-unit-identity
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+'reader.source-unit-identity/origin
+
+(def literal-record {:integer 42
+                     :text "reader"
+                     :keyword :reader/value
+                     :tagged #inst "2026-07-09T00:00:00.000-00:00"})

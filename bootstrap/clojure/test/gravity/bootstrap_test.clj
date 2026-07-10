@@ -9373,6 +9373,104 @@
     (is (= '(quote gravity.reader/value) (:form syntax)))
     (is (= :quote (get-in syntax [:generated-origin 0 :reader-abbreviation])))))
 
+(deftest reader-source-unit-identity-preserves-path-extension-and-options
+  (let [gravity-path (fixture "accepted/reader-source-unit-identity.gravity")
+        qst-path (fixture "accepted/reader-source-unit-identity.qst")
+        gravity-artifact (bootstrap/read-file-artifact gravity-path)
+        qst-artifact (bootstrap/read-file-artifact qst-path)
+        gravity-unit (:source-unit-record gravity-artifact)
+        qst-unit (:source-unit-record qst-artifact)
+        repeated-unit (:source-unit-record
+                       (bootstrap/read-file-artifact gravity-path))
+        changed-options (bootstrap/c2-source-unit-record
+                         gravity-path
+                         (bootstrap/read-gravity-source-text gravity-path)
+                         (assoc (:reader-options gravity-artifact)
+                                :retain-trivia false))
+        long-prefix (vec (range 300))]
+    (is (= :gravity/source-unit (:artifact gravity-unit)))
+    (is (= gravity-path (:path gravity-unit)))
+    (is (= qst-path (:path qst-unit)))
+    (is (= ".gravity" (:extension gravity-unit)))
+    (is (= ".qst" (:extension qst-unit)))
+    (is (= :gravity-branded-source (:source-kind gravity-unit)))
+    (is (= :qst-theory-source (:source-kind qst-unit)))
+    (is (= (:bytes-hash gravity-unit) (:bytes-hash qst-unit)))
+    (is (not= (:source-id gravity-unit) (:source-id qst-unit)))
+    (is (= (:source-id gravity-unit) (:source-id repeated-unit)))
+    (is (not= (:source-id gravity-unit) (:source-id changed-options)))
+    (is (re-find #"^sha256:" (:project-root gravity-unit)))
+    (is (= (:project-root gravity-unit)
+           (get-in gravity-unit
+                   [:project-root-record :project-root-id])))
+    (is (= gravity-path (get-in gravity-unit [:identity-inputs :path])))
+    (is (= ".gravity"
+           (get-in gravity-unit [:identity-inputs :extension])))
+    (is (not= (bootstrap/reader-canonical-hash
+               (conj long-prefix :suffix-a))
+              (bootstrap/reader-canonical-hash
+               (conj long-prefix :suffix-b))))))
+
+(deftest reader-file-policy-rejects-extension-and-malformed-utf8
+  (let [extension-path (fixture "rejected/reader-source-extension.txt")
+        extension-diagnostic
+        (diagnostic-data #(bootstrap/read-file-artifact extension-path))]
+    (is (= "L1-SOURCE-EXTENSION" (:id extension-diagnostic)))
+    (is (= :error (:severity extension-diagnostic)))
+    (is (= extension-path
+           (get-in extension-diagnostic [:primary :span :source])))
+    (is (= #{".gravity" ".qst"}
+           (set (get-in extension-diagnostic
+                        [:facts :allowed-extensions]))))
+    (doseq [suffix [".gravity" ".qst"]]
+      (let [path (java.nio.file.Files/createTempFile
+                  "gravity-invalid-utf8-"
+                  suffix
+                  (make-array java.nio.file.attribute.FileAttribute 0))]
+        (try
+          (java.nio.file.Files/write
+           path
+           (byte-array [(byte 40) (unchecked-byte 0xc3) (byte 40)])
+           (make-array java.nio.file.OpenOption 0))
+          (let [diagnostic
+                (diagnostic-data
+                 #(bootstrap/read-file-artifact (.toString path)))]
+            (is (= "L1-SOURCE-ENCODING" (:id diagnostic)))
+            (is (= :error (:severity diagnostic)))
+            (is (= (.toString path)
+                   (get-in diagnostic [:primary :span :source])))
+            (is (= 1 (get-in diagnostic [:primary :span :byte-start])))
+            (is (= :utf-8 (get-in diagnostic
+                                  [:facts :declared-encoding])))
+            (is (re-find #"^sha256:" (:source-id diagnostic))))
+          (finally
+            (java.nio.file.Files/deleteIfExists path)))))))
+
+(deftest public-check-routes-gravity-owned-module-by-parsed-bootstrap-metadata
+  (let [source-path
+        "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+        source-bytes
+        (java.nio.file.Files/readAllBytes
+         (java.nio.file.Paths/get source-path (make-array String 0)))]
+    (doseq [suffix [".gravity" ".qst"]]
+      (let [path (java.nio.file.Files/createTempFile
+                  "gravity-owned-module-arbitrary-"
+                  suffix
+                  (make-array java.nio.file.attribute.FileAttribute 0))]
+        (try
+          (java.nio.file.Files/write
+           path source-bytes (make-array java.nio.file.OpenOption 0))
+          (let [copied-path (.toString path)
+                artifact (bootstrap/check-file-artifact copied-path)]
+            (is (= :gravity/stage0-module-artifact (:kind artifact)))
+            (is (= 'gravity.compiler.l1-c2-surface-syntax-reader
+                   (bootstrap/check-artifact-module-name artifact)))
+            (is (= copied-path
+                   (get-in artifact [:namespace-table 0 :source-path])))
+            (is (= :meta (get-in artifact [:module-artifact :profile]))))
+          (finally
+            (java.nio.file.Files/deleteIfExists path)))))))
+
 (deftest namespace-module-artifact-preserves-l3-contract
   (let [artifact (bootstrap/module-file-artifact (fixture "accepted/namespace-module.gravity"))]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -21665,7 +21763,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:67652c2f78ba72902c5f66caa894ae9584a28a9e7920e8355eb1c02c55f34118"
+    (is (= "sha256:720f38cc3045b7299665663dd2f9d981eb3ac1c7c2166d2d20f2e41885070198"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.l1-c2-surface-syntax-reader\n"

@@ -49,7 +49,8 @@
                             :meaning :gravity-branded-source}}
    :canonical-source-extensions [".qst" ".gravity"]
    :identity-fields [:path :extension :encoding :bytes-hash
-                     :reader-options :source-kind]
+                     :project-root-id :reader-options :enabled-features
+                     :extension-policy :source-kind]
    :reader-output [:source-unit-record :token-stream :form-tree
                    :syntax-seed-stream :reader-source-map
                    :reader-diagnostics]
@@ -61,7 +62,7 @@
 (def l1-c2-reader-diagnostic-catalog
   {:l1 ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY"
         "L1-METADATA" "L1-NS-SHAPE" "L1-READER-EXTENSION"
-        "L1-SOURCE-ENCODING"]
+        "L1-SOURCE-ENCODING" "L1-SOURCE-EXTENSION"]
    :c2 ["C2-ENCODING" "C2-DELIMITER" "C2-STRING" "C2-MAP"
         "C2-SET" "C2-METADATA" "C2-ABBREV" "C2-EXTENSION"
         "C2-HASH"]
