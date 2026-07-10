@@ -9515,7 +9515,11 @@
     (is (= (:source-id unit-a) (:source-unit hashes-a)))
     (is (= (:source-unit hashes-a) (:source-unit hashes-b)))
     (doseq [invalid-relative-path ["/absolute/example.gravity"
-                                   "../escape/example.gravity"]]
+                                   "../escape/example.gravity"
+                                   "C:/absolute/example.gravity"
+                                   "C:\\absolute\\example.gravity"
+                                   "//server/share/example.gravity"
+                                   "\\\\server\\share\\example.gravity"]]
       (is (= "C2-HASH"
              (diagnostic-id
               #(bootstrap/c2-source-unit-record
@@ -9528,6 +9532,33 @@
              "/checkout-a/src/example.gravity" source-text options
              (assoc context-a
                     :project-relative-path "src/../src/example.gravity")))))))
+
+(deftest reader-source-id-rejects-nondeterministic-reader-options
+  (let [source-text "(ns identity.options (:profile :hosted))"
+        source-path "/checkout/src/options.gravity"
+        context {:project-root-id
+                 (bootstrap/reader-canonical-hash {:project :options})
+                 :project-root-path "/checkout"
+                 :project-relative-path "src/options.gravity"}
+        valid-options bootstrap/standard-reader-options
+        invalid-options
+        [nil
+         (dissoc valid-options :retain-comments)
+         (assoc valid-options :retain-comments :yes)
+         (assoc valid-options :enabled-features [:standard-reader])
+         (assoc valid-options :extension-policy
+                "sha256:not-a-policy-hash")
+         (assoc valid-options :extension-policy
+                (str "sha256:" (apply str (repeat 64 "A"))))]]
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (:extension-policy valid-options)))
+    (is (map? (bootstrap/c2-source-unit-record
+               source-path source-text valid-options context)))
+    (doseq [reader-options invalid-options]
+      (is (= "C2-HASH"
+             (diagnostic-id
+              #(bootstrap/c2-source-unit-record
+                source-path source-text reader-options context)))))))
 
 (deftest reader-file-policy-rejects-extension-and-malformed-utf8
   (let [extension-path (fixture "rejected/reader-source-extension.txt")

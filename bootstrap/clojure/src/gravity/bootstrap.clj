@@ -73531,9 +73531,7 @@
   [source-path source-text]
   (let [records (read-source-form-records source-path source-text)
         reader-artifact (read-source-artifact source-path source-text)
-        reader-options {:retain-comments true
-                        :enabled-features #{:standard-reader}
-                        :extension-policy "sha256:p15-s23-reader-policy"}
+        reader-options standard-reader-options
         source-unit (c2-source-unit-record source-path source-text
                                            reader-options)
         token-stream (mapv #(c2-token-record %1 %2 (:source-id source-unit))
@@ -101684,18 +101682,35 @@
 
 (defn reader-normalize-relative-path
   [path]
-  (let [slash-path (str/replace (str path) "\\" "/")
-        normalized (.normalize
-                    (java.nio.file.Paths/get
-                     slash-path (make-array String 0)))]
-    (str/replace (str normalized) "\\" "/")))
+  (let [slash-path (str/replace (str path) "\\" "/")]
+    (->> (str/split slash-path #"/")
+         (reduce (fn [segments segment]
+                   (cond
+                     (or (str/blank? segment) (= "." segment))
+                     segments
+
+                     (= ".." segment)
+                     (if (and (seq segments) (not= ".." (peek segments)))
+                       (pop segments)
+                       (conj segments segment))
+
+                     :else
+                     (conj segments segment)))
+                 [])
+         (str/join "/"))))
+
+(defn reader-platform-neutral-absolute-path?
+  [path]
+  (let [slash-path (str/replace (str path) "\\" "/")]
+    (or (str/starts-with? slash-path "/")
+        (boolean (re-find #"(?i)^[a-z]:" slash-path)))))
 
 (defn reader-valid-project-relative-path?
   [path]
-  (let [path-object (java.nio.file.Paths/get path (make-array String 0))]
-    (and (not (.isAbsolute path-object))
-         (not (str/blank? path))
-         (not= ".." (first (str/split path #"/"))))))
+  (let [normalized-path (reader-normalize-relative-path path)]
+    (and (not (reader-platform-neutral-absolute-path? path))
+         (not (str/blank? normalized-path))
+         (not= ".." (first (str/split normalized-path #"/"))))))
 
 (defn reader-project-context-for-source
   [source-path]
@@ -101718,7 +101733,8 @@
     (when-not (and (string? project-root-id)
                    (re-matches #"sha256:[0-9a-f]{64}" project-root-id)
                    (string? normalized-path)
-                   (reader-valid-project-relative-path? normalized-path))
+                   (reader-valid-project-relative-path?
+                    project-relative-path))
       (throw
        (ex-info
         "reader project context requires a project-root id and relative path"
@@ -101732,6 +101748,30 @@
            :project-relative-path
            normalized-path)))
 
+(defn reader-valid-options?
+  [reader-options]
+  (and (map? reader-options)
+       (boolean? (:retain-comments reader-options))
+       (set? (:enabled-features reader-options))
+       (string? (:extension-policy reader-options))
+       (boolean
+        (re-matches #"sha256:[0-9a-f]{64}"
+                    (:extension-policy reader-options)))))
+
+(defn reader-validate-options!
+  [reader-options]
+  (when-not (reader-valid-options? reader-options)
+    (throw
+     (ex-info
+      "reader options must be deterministic and content-addressed"
+      {:id "C2-HASH"
+       :reader-options reader-options
+       :required-fields
+       {:retain-comments :boolean
+        :enabled-features :set
+        :extension-policy :sha256-lowercase-hex}})))
+  reader-options)
+
 (defn reader-project-root-record
   [project-context]
   (let [context (reader-explicit-project-context project-context)]
@@ -101740,14 +101780,15 @@
 
 (defn reader-source-identity-inputs
   [source-text reader-options project-context]
-  (let [context (reader-explicit-project-context project-context)]
+  (let [context (reader-explicit-project-context project-context)
+        options (reader-validate-options! reader-options)]
     {:project-root-id (:project-root-id context)
      :project-relative-path (:project-relative-path context)
      :encoding :utf-8
      :bytes-hash (str "sha256:" (sha256-hex source-text))
-     :reader-options reader-options
-     :enabled-features (set (:enabled-features reader-options))
-     :extension-policy (:extension-policy reader-options)}))
+     :reader-options options
+     :enabled-features (:enabled-features options)
+     :extension-policy (:extension-policy options)}))
 
 (defn c2-source-unit-record
   ([source-path source-text reader-options]
@@ -107662,10 +107703,7 @@
         compile-artifact (compile-source path source-text)
         reader-artifact (read-source-artifact path source-text)
         source-unit (c2-source-unit-record
-                     path source-text
-                     {:retain-comments true
-                      :enabled-features #{:standard-reader}
-                      :extension-policy "sha256:p18-t00-reader-policy"})
+                     path source-text standard-reader-options)
         source-map (get-in reader-artifact
                            [:syntax-object-stream 0 :span :source])]
     {:source-path path
