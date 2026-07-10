@@ -101583,7 +101583,7 @@
 ;; the reviewed stage0 fallback until their runtime semantics have a closed
 ;; C lowering rule.
 (def c-backend-runtime-derived-instructions
-  #{:literal :quote :println :do})
+  #{:literal :quote :local :println :do :if :let})
 
 (declare p18-ensure-dir!)
 (declare c-backend-fail!)
@@ -101746,76 +101746,282 @@
       (keyword? value)
       (symbol? value)))
 
-(defn c-backend-runtime-instruction-supported?
-  [instruction]
+(defn c-backend-runtime-binding-names
+  [bindings]
+  (mapv :name bindings))
+
+(declare c-backend-runtime-test-expression-supported?)
+
+(defn c-backend-runtime-scalar-expression-supported?
+  "Recognize the value subset that can be represented by the runtime C
+  emitter.  This predicate is deliberately closed over lexical locals: an
+  unbound local, collection, builtin, function call, or statement in a value
+  position is rejected before any target bytes are emitted."
+  [instruction locals]
   (and (map? instruction)
-       (contains? c-backend-runtime-derived-instructions (:op instruction))
-       (cond
-         (#{:literal :quote} (:op instruction))
-         (c-backend-runtime-literal? (:value instruction))
-         (= :println (:op instruction))
-         ;; A println argument is a value position in this first slice.  Do
-         ;; not admit nested statements here: the emitter intentionally has
-         ;; no value-producing lowering for do/println expressions.
-         (every? #(and (map? %)
-                       (#{:literal :quote} (:op %))
-                       (c-backend-runtime-literal? (:value %)))
-                 (:args instruction))
-         (= :do (:op instruction))
-         (every? c-backend-runtime-instruction-supported?
-                 (:body instruction))
-         :else false)))
+       (let [op (:op instruction)]
+         (cond
+           (#{:literal :quote} op)
+           (c-backend-runtime-literal? (:value instruction))
+           (= :local op)
+           (contains? locals (:name instruction))
+           (= :if op)
+           (and (c-backend-runtime-test-expression-supported?
+                 (:test instruction) locals)
+                (c-backend-runtime-scalar-expression-supported?
+                 (:then instruction) locals)
+                (c-backend-runtime-scalar-expression-supported?
+                 (:else instruction) locals))
+           (= :let op)
+           (let [bindings (:bindings instruction)
+                 names (c-backend-runtime-binding-names bindings)
+                 next-locals (into locals names)]
+             (and (= 1 (count (:body instruction)))
+                  (every? (fn [{:keys [name expr]}]
+                            (and (symbol? name)
+                                 (or (= :literal (:op expr))
+                                     (= :quote (:op expr)))
+                                 (c-backend-runtime-literal?
+                                  (:value expr))))
+                          bindings)
+                  (c-backend-runtime-scalar-expression-supported?
+                   (first (:body instruction)) next-locals)))
+           :else false))))
+
+(defn c-backend-runtime-test-expression-supported?
+  "Tests are intentionally simple scalar values.  Nested `if`/`let` tests
+  would require a temporary tagged value ABI; rejecting them keeps this
+  bounded slice explicit and fail-closed while still allowing locals and all
+  scalar literal spellings as conditions."
+  [instruction locals]
+  (and (map? instruction)
+       (let [op (:op instruction)]
+         (cond
+           (#{:literal :quote} op)
+           (c-backend-runtime-literal? (:value instruction))
+           (= :local op)
+           (contains? locals (:name instruction))
+           :else false))))
+
+(defn c-backend-runtime-instruction-supported?
+  ([instruction] (c-backend-runtime-instruction-supported? instruction #{}))
+  ([instruction locals]
+   (and (map? instruction)
+        (contains? c-backend-runtime-derived-instructions (:op instruction))
+        (let [op (:op instruction)]
+          (cond
+            (#{:literal :quote} op)
+            (c-backend-runtime-literal? (:value instruction))
+            (= :local op)
+            (contains? locals (:name instruction))
+            (= :println op)
+            (every? #(c-backend-runtime-scalar-expression-supported?
+                       % locals)
+                    (:args instruction))
+            (= :do op)
+            (every? #(c-backend-runtime-instruction-supported? % locals)
+                    (:body instruction))
+            (= :if op)
+            (and (c-backend-runtime-test-expression-supported?
+                  (:test instruction) locals)
+                 (c-backend-runtime-instruction-supported?
+                  (:then instruction) locals)
+                 (c-backend-runtime-instruction-supported?
+                  (:else instruction) locals))
+            (= :let op)
+            (let [bindings (:bindings instruction)
+                  names (c-backend-runtime-binding-names bindings)
+                  next-locals (into locals names)]
+              (and (every? (fn [{:keys [name expr]}]
+                             (and (symbol? name)
+                                  (or (= :literal (:op expr))
+                                      (= :quote (:op expr)))
+                                  (c-backend-runtime-literal?
+                                   (:value expr))))
+                           bindings)
+                   (every? #(c-backend-runtime-instruction-supported?
+                             % next-locals)
+                           (:body instruction))))
+            :else false)))))
 
 (defn c-backend-runtime-plan-supported?
   [plan]
   (every? (fn [[_ function]]
-            (every? c-backend-runtime-instruction-supported?
+            (every? #(c-backend-runtime-instruction-supported? % #{})
                     (:instructions function)))
           (:functions plan)))
 
+(defn c-backend-runtime-reject!
+  [source-path target subject message unsupported-op missing-fact]
+  (c-backend-fail! "B2-UNSUPPORTED"
+                   message
+                   source-path target subject
+                   {:unsupported-op unsupported-op
+                    :lowering-mode :runtime-derived
+                    :missing-fact missing-fact
+                    :remediation "Use the verified stage0 fallback or restrict the source to scalar literals, locals, println, do, if, and let."}))
+
 (defn c-backend-validate-runtime-plan!
   "Fail closed before lowering when the explicitly requested runtime-derived
-  mode sees an instruction outside its closed semantic subset."
+  mode sees an instruction outside its closed scalar control-flow subset.
+
+  Validation is iterative so malformed or adversarially deep plans cannot
+  exhaust the host stack.  The lexical-local set travels with each pending
+  frame and value-position failures retain the stable parent `println`
+  diagnostic used by the earlier runtime-derived slice."
   [source-path target plan]
-  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
-    (when-let [instruction (peek pending)]
+  (loop [pending (vec (mapcat (fn [[_ function]]
+                                (map (fn [instruction]
+                                       {:kind :statement
+                                        :instruction instruction
+                                        :locals #{}})
+                                     (:instructions function)))
+                              (:functions plan)))]
+    (when-let [{:keys [kind instruction locals parent]} (peek pending)]
       (let [pending (pop pending)
-            op (:op instruction)]
+            op (when (map? instruction) (:op instruction))]
+        (when-not (map? instruction)
+          (c-backend-runtime-reject!
+           source-path target instruction
+           "runtime-derived C lowering received a malformed instruction"
+           op :instruction-record))
         (when-not (contains? c-backend-runtime-derived-instructions op)
-          (c-backend-fail! "B2-UNSUPPORTED"
-                           "runtime-derived C lowering does not implement this instruction"
-                           source-path target instruction
-                           {:unsupported-op op
-                            :lowering-mode :runtime-derived
-                            :missing-fact :runtime-c-lowering-rule
-                            :remediation "Use the verified stage0 fallback or restrict the source to literal, println, and do."}))
-        (when (and (#{:literal :quote} op)
-                   (not (c-backend-runtime-literal? (:value instruction))))
-          (c-backend-fail! "B2-UNSUPPORTED"
-                           "runtime-derived C lowering only accepts scalar literals"
-                           source-path target instruction
-                           {:unsupported-op op
-                            :lowering-mode :runtime-derived
-                            :missing-fact :scalar-literal-lowering
-                            :remediation "Keep collections and computed values on the verified stage0 fallback."}))
-        (when (and (= :println op)
-                   (some #(not (and (map? %)
-                                    (#{:literal :quote} (:op %))
-                                    (c-backend-runtime-literal?
-                                     (:value %))))
-                         (:args instruction)))
-          (c-backend-fail! "B2-UNSUPPORTED"
-                           "runtime-derived C lowering only accepts scalar println arguments"
-                           source-path target instruction
-                           {:unsupported-op :println
-                            :lowering-mode :runtime-derived
-                            :missing-fact :runtime-c-value-lowering
-                            :remediation "Use scalar literals in println arguments or the verified stage0 fallback."}))
-        (recur (into pending
-                     (case op
-                       :println (remove nil? (:args instruction))
-                       :do (remove nil? (:body instruction))
-                       []))))))
+          (c-backend-runtime-reject!
+           source-path target (or parent instruction)
+           "runtime-derived C lowering does not implement this instruction"
+           op :runtime-c-lowering-rule))
+        (case kind
+          :expression
+          (cond
+            (#{:literal :quote} op)
+            (when-not (c-backend-runtime-literal? (:value instruction))
+              (c-backend-runtime-reject!
+               source-path target (or parent instruction)
+               "runtime-derived C lowering only accepts scalar literals"
+               op (if parent :runtime-c-value-lowering
+                      :scalar-literal-lowering)))
+            (= :local op)
+            (when-not (contains? locals (:name instruction))
+              (c-backend-runtime-reject!
+               source-path target (or parent instruction)
+               "runtime-derived C lowering cannot resolve this local"
+               :local (if parent :runtime-c-value-lowering
+                          :runtime-local-binding)))
+            (= :if op)
+            (do
+              (when-not (c-backend-runtime-test-expression-supported?
+                         (:test instruction) locals)
+                (c-backend-runtime-reject!
+                 source-path target (or parent instruction)
+                 "runtime-derived C lowering requires a scalar local or literal test"
+                 :if :runtime-c-test-lowering))
+              (recur (into pending
+                           [{:kind :expression
+                             :instruction (:else instruction)
+                             :locals locals
+                             :parent parent}
+                            {:kind :expression
+                             :instruction (:then instruction)
+                             :locals locals
+                             :parent parent}
+                            {:kind :expression
+                             :instruction (:test instruction)
+                             :locals locals
+                             :parent parent}])))
+            (= :let op)
+            (let [bindings (:bindings instruction)
+                  next-locals (into locals
+                                    (c-backend-runtime-binding-names bindings))]
+              (when-not (= 1 (count (:body instruction)))
+                (c-backend-runtime-reject!
+                 source-path target (or parent instruction)
+                 "runtime-derived let value requires one scalar body expression"
+                 :let :runtime-c-value-lowering))
+              (doseq [{:keys [name expr]} bindings]
+                (when-not (and (symbol? name)
+                               (#{:literal :quote} (:op expr))
+                               (c-backend-runtime-literal? (:value expr)))
+                  (c-backend-runtime-reject!
+                   source-path target (or parent instruction)
+                   "runtime-derived let bindings must be scalar literals"
+                   :let :runtime-let-binding-lowering)))
+              (recur (conj pending {:kind :expression
+                                    :instruction (first (:body instruction))
+                                    :locals next-locals
+                                    :parent parent})))
+            :else
+            (c-backend-runtime-reject!
+             source-path target (or parent instruction)
+             "runtime-derived C lowering does not implement this value expression"
+             (or (some-> parent :op) op)
+             :runtime-c-value-lowering))
+
+          :statement
+          (case op
+            :literal nil
+            :quote nil
+            :local
+            (when-not (contains? locals (:name instruction))
+              (c-backend-runtime-reject!
+               source-path target instruction
+               "runtime-derived C lowering cannot resolve this local"
+               :local :runtime-local-binding))
+            :println
+            (recur (into pending
+                         (map (fn [arg]
+                                {:kind :expression
+                                 :instruction arg
+                                 :locals locals
+                                 :parent instruction})
+                              (:args instruction))))
+            :do
+            (recur (into pending
+                         (map (fn [child]
+                                {:kind :statement
+                                 :instruction child
+                                 :locals locals})
+                              (:body instruction))))
+            :if
+            (do
+              (when-not (c-backend-runtime-test-expression-supported?
+                         (:test instruction) locals)
+                (c-backend-runtime-reject!
+                 source-path target instruction
+                 "runtime-derived C lowering requires a scalar local or literal test"
+                 :if :runtime-c-test-lowering))
+              (recur (into pending
+                           [{:kind :statement
+                             :instruction (:else instruction)
+                             :locals locals}
+                            {:kind :statement
+                             :instruction (:then instruction)
+                             :locals locals}
+                            {:kind :expression
+                             :instruction (:test instruction)
+                             :locals locals}])) )
+            :let
+            (let [bindings (:bindings instruction)
+                  next-locals (into locals
+                                    (c-backend-runtime-binding-names bindings))]
+              (doseq [{:keys [name expr]} bindings]
+                (when-not (and (symbol? name)
+                               (#{:literal :quote} (:op expr))
+                               (c-backend-runtime-literal? (:value expr)))
+                  (c-backend-runtime-reject!
+                   source-path target instruction
+                   "runtime-derived let bindings must be scalar literals"
+                   :let :runtime-let-binding-lowering)))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:kind :statement
+                                   :instruction child
+                                   :locals next-locals})
+                                (:body instruction)))))
+            ;; A statement value is legal only for the closed scalar forms.
+            (c-backend-runtime-reject!
+             source-path target instruction
+             "runtime-derived C lowering does not implement this statement"
+             op :runtime-c-lowering-rule))))))
   :passed)
 
 (defn c-backend-runtime-bytes
@@ -101833,40 +102039,144 @@
          "  fwrite(" name ", 1, " (if (seq bytes) (str "sizeof(" name ")") "0")
          ", stdout);\n")))
 
-(defn c-backend-runtime-value-source
+(defn c-backend-runtime-value-declaration
+  "Declare a stable byte array for one scalar value and return the descriptor
+  used by local references.  The descriptor retains Clojure truthiness so a
+  runtime `if` can branch without re-evaluating the source in the host."
   [instruction counter indent]
   (let [padding (apply str (repeat indent "  "))
-        name (str "gravity_literal_" (swap! counter inc))]
-    (if (#{:literal :quote} (:op instruction))
-      (str padding
-           (c-backend-runtime-byte-array-source
-            name (c-backend-runtime-bytes (:value instruction))))
-      "")))
+        name (str "gravity_literal_" (swap! counter inc))
+        value (:value instruction)
+        bytes (c-backend-runtime-bytes value)
+        values (if (seq bytes) bytes [0])]
+    {:source (str padding
+                  "static const unsigned char " name "[] = {"
+                  (str/join "," values) "};\n")
+     :descriptor {:name name
+                  :length (count bytes)
+                  ;; Reference the declaration in local conditions so
+                  ;; -Wall/-Werror does not report an unused binding while
+                  ;; preserving Clojure truthiness for scalar values.
+                  :truth (str "(sizeof(" name ") >= 0 && "
+                              (if (or (nil? value) (false? value)) "0" "1")
+                              ")")}}))
+
+(defn c-backend-runtime-write-source
+  [descriptor indent]
+  (let [padding (apply str (repeat indent "  "))
+        name (:name descriptor)
+        length (:length descriptor)]
+    (str padding "fwrite(" name ", 1, "
+         (if (nil? length) (str "sizeof(" name ")") length)
+         ", stdout);\n")))
+
+(defn c-backend-runtime-test-source
+  [instruction env]
+  (case (:op instruction)
+    :literal (if (or (nil? (:value instruction))
+                     (false? (:value instruction))) "0" "1")
+    :quote (if (or (nil? (:value instruction))
+                   (false? (:value instruction))) "0" "1")
+    :local (get-in env [(:name instruction) :truth] "0")
+    "0"))
+
+(declare c-backend-runtime-value-source)
+(declare c-backend-runtime-instruction-source)
+
+(defn c-backend-runtime-value-source
+  [instruction counter indent env]
+  (let [padding (apply str (repeat indent "  "))
+        op (:op instruction)]
+    (cond
+      (#{:literal :quote} op)
+      (let [{:keys [source descriptor]}
+            (c-backend-runtime-value-declaration instruction counter indent)]
+        (str source (c-backend-runtime-write-source descriptor indent)))
+      (= :local op)
+      (c-backend-runtime-write-source (get env (:name instruction)) indent)
+      (= :if op)
+      (str padding "if (" (c-backend-runtime-test-source (:test instruction) env)
+           ") {\n"
+           (c-backend-runtime-value-source (:then instruction) counter
+                                           (inc indent) env)
+           padding "} else {\n"
+           (c-backend-runtime-value-source (:else instruction) counter
+                                           (inc indent) env)
+           padding "}\n")
+      (= :let op)
+      (let [binding-state
+            (reduce (fn [state {:keys [name expr]}]
+                      (let [prior-source (:source state)
+                            prior-env (:env state)
+                            {:keys [source descriptor]}
+                            (c-backend-runtime-value-declaration
+                             expr counter indent)]
+                        {:source (str prior-source
+                                      ;; Bindings evaluate to scalar literals;
+                                      ;; declaration is enough to make later
+                                      ;; local references runtime writes.
+                                      source)
+                         :env (assoc prior-env name descriptor)}))
+                    {:source "" :env env}
+                    (:bindings instruction))]
+        (str (:source binding-state)
+             (c-backend-runtime-value-source
+              (first (:body instruction)) counter indent (:env binding-state))))
+      :else "")))
 
 (defn c-backend-runtime-instruction-source
-  [instruction counter indent]
-  (let [padding (apply str (repeat indent "  "))]
-    (cond
-      (#{:literal :quote} (:op instruction)) ""
-      (= :println (:op instruction))
-      (str (apply str
-                  (map-indexed
-                   (fn [index arg]
-                     (str (when (pos? index)
-                            (c-backend-runtime-byte-array-source
-                             (str "gravity_space_" (swap! counter inc))
-                             [32]))
-                          (c-backend-runtime-value-source
-                           arg counter indent)))
-                   (:args instruction)))
-           padding
-           (c-backend-runtime-byte-array-source
-            (str "gravity_newline_" (swap! counter inc)) [10]))
-      (= :do (:op instruction))
-      (apply str
-             (map #(c-backend-runtime-instruction-source % counter indent)
-                  (:body instruction)))
-      :else "")))
+  ([instruction counter indent]
+   (c-backend-runtime-instruction-source instruction counter indent {}))
+  ([instruction counter indent env]
+   (let [padding (apply str (repeat indent "  "))
+         op (:op instruction)]
+     (cond
+       (#{:literal :quote :local} op) ""
+       (= :println op)
+       (str (apply str
+                   (map-indexed
+                    (fn [index arg]
+                      (str (when (pos? index)
+                             (c-backend-runtime-byte-array-source
+                              (str "gravity_space_" (swap! counter inc))
+                              [32]))
+                           (c-backend-runtime-value-source
+                            arg counter indent env)))
+                    (:args instruction)))
+            padding
+            (c-backend-runtime-byte-array-source
+             (str "gravity_newline_" (swap! counter inc)) [10]))
+       (= :do op)
+       (apply str
+              (map #(c-backend-runtime-instruction-source % counter indent env)
+                   (:body instruction)))
+       (= :if op)
+       (str padding "if (" (c-backend-runtime-test-source (:test instruction) env)
+            ") {\n"
+            (c-backend-runtime-instruction-source (:then instruction) counter
+                                                   (inc indent) env)
+            padding "} else {\n"
+            (c-backend-runtime-instruction-source (:else instruction) counter
+                                                   (inc indent) env)
+            padding "}\n")
+       (= :let op)
+       (let [binding-state
+             (reduce (fn [state {:keys [name expr]}]
+                       (let [prior-source (:source state)
+                             prior-env (:env state)
+                             {:keys [source descriptor]}
+                             (c-backend-runtime-value-declaration
+                              expr counter indent)]
+                         {:source (str prior-source source)
+                          :env (assoc prior-env name descriptor)}))
+                     {:source "" :env env}
+                     (:bindings instruction))]
+         (str (:source binding-state)
+              (apply str
+                     (map #(c-backend-runtime-instruction-source
+                            % counter indent (:env binding-state))
+                          (:body instruction)))))
+       :else ""))))
 
 (defn c-backend-runtime-source
   "Emit C that performs the instruction semantics at process runtime.  Each
@@ -101879,7 +102189,7 @@
     (str "#include <stdio.h>\n\n"
          "int main(void) {\n"
          (apply str
-                (map #(c-backend-runtime-instruction-source % counter 1)
+                (map #(c-backend-runtime-instruction-source % counter 1 {})
                      (:instructions main)))
          "  return 0;\n"
          "}\n")))

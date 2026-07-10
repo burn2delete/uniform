@@ -24627,6 +24627,172 @@
         (is (not= (:c-source artifact) (:c-source changed)))
         (is (not= (:c-source-hash artifact) (:c-source-hash changed)))))))
 
+(deftest hosted-c-backend-runtime-derived-control-flow-preserves-runtime-semantics
+  (with-temp-directory
+    "gravity-c-backend-runtime-control-"
+    (fn [directory]
+      (let [nul (char 0)
+            source-text (str "(ns runtime.control (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (do "
+                             "(let [truth true chosen \"yes" nul "\"] "
+                             "(if truth (println chosen) (println \"no\"))) "
+                             "(println (if false \"bad\" \"branch\")) "
+                             "(println (let [bound \"let\"] bound)) "
+                             "(println nil \"\")))\n")
+            gravity-path (.resolve directory "control.gravity")
+            qst-path (.resolve directory "control.qst")
+            gravity (bootstrap/c-backend-source-artifact
+                     (.toString gravity-path) source-text
+                     {:target :c-hosted
+                      :lowering-mode :runtime-derived
+                      :emit-dir (.toString (.resolve directory "gravity-out"))
+                      :compile? true})
+            qst (bootstrap/c-backend-source-artifact
+                 (.toString qst-path) source-text
+                 {:target :c-hosted
+                  :lowering-mode :runtime-derived
+                  :emit-dir (.toString (.resolve directory "qst-out"))
+                  :compile? true})
+            expected (str "yes" nul "\nbranch\nlet\n \n")]
+        (is (= expected (:stdout gravity)))
+        (is (= expected (:stdout qst)))
+        (is (= (:c-source gravity) (:c-source qst)))
+        (is (= (:c-source-hash gravity) (:c-source-hash qst)))
+        (is (= (:artifact-id gravity) (:artifact-id qst)))
+        (is (= (.toString gravity-path)
+               (get-in gravity [:provenance :source :path])))
+        (is (= ".gravity"
+               (get-in gravity [:provenance :source :extension])))
+        (is (= ".qst"
+               (get-in qst [:provenance :source :extension])))
+        (is (str/includes? (:c-source gravity) "if ((sizeof("))
+        (is (str/includes? (:c-source gravity) "if (0)"))
+        (is (str/includes? (:c-source gravity) "gravity_literal_"))
+        (is (not (str/includes? (:c-source gravity) "gravity_output")))
+        (is (true? (get-in gravity [:manifest :runtime-derived?])))
+        (is (true? (get-in gravity [:provenance :clojure-seed-boundary?])))
+        (is (false? (get-in gravity [:provenance :self-hosted?])))
+        (is (zero? (:exit (run-bin (:executable-path gravity)))))
+        (is (= expected (:out (run-bin (:executable-path gravity)))))
+        (is (zero? (:exit (run-bin (:executable-path qst)))))
+        (is (= expected (:out (run-bin (:executable-path qst)))))))))
+
+(deftest public-current-source-runtime-derived-control-flow-command
+  (with-temp-directory
+    "gravity-public-runtime-control-a-"
+    (fn [directory-a]
+      (with-temp-directory
+        "gravity-public-runtime-control-b-"
+        (fn [directory-b]
+          (let [source-text (str "(ns runtime.public.control (:profile :hosted) "
+                                 "(:target :jvm) (:effects #{:io/write}) "
+                                 "(:capabilities #{:io/stdout}))\n"
+                                 "(defn main [] (let [truth true value \"ok\"] "
+                                 "(if truth (println value) (println \"bad\"))))\n")
+                source-a (.resolve directory-a "control.gravity")
+                source-b (.resolve directory-b "control.qst")
+                _ (spit (.toFile source-a) source-text)
+                _ (spit (.toFile source-b) source-text)
+                nonce (str (System/nanoTime))
+                output-a (str "target/public-runtime-control-" nonce "-a")
+                output-b (str "target/public-runtime-control-" nonce "-b")]
+            (try
+              (let [result-a (run-thin-bin "bin/gravity" "compile"
+                                           (.toString source-a)
+                                           "--target" "c"
+                                           "--lowering" "runtime-derived"
+                                           "-o" output-a)
+                    result-b (run-thin-bin "bin/gravity" "compile"
+                                           (.toString source-b)
+                                           "--target" "c"
+                                           "--lowering" "runtime-derived"
+                                           "-o" output-b)
+                    artifact-a (edn/read-string (:out result-a))
+                    artifact-b (edn/read-string (:out result-b))
+                    run-a (run-bin output-a)
+                    run-b (run-bin output-b)]
+                (is (zero? (:exit result-a)) (:err result-a))
+                (is (zero? (:exit result-b)) (:err result-b))
+                (is (= :runtime-derived
+                       (get-in artifact-a [:target :lowering-mode])))
+                (is (= :runtime-derived
+                       (get-in artifact-b [:target :lowering-mode])))
+                (is (= "ok\n" (:stdout artifact-a)))
+                (is (= (:stdout artifact-a) (:stdout artifact-b)))
+                (is (= (:c-source-hash artifact-a)
+                       (:c-source-hash artifact-b)))
+                (is (= (:artifact-id artifact-a)
+                       (:artifact-id artifact-b)))
+                (is (= "ok\n" (:out run-a)))
+                (is (= "ok\n" (:out run-b)))
+                (is (true? (get-in artifact-a
+                                    [:provenance :clojure-seed-boundary?])))
+                (is (false? (get-in artifact-a
+                                    [:provenance :self-hosted?]))))
+              (finally
+                (doseq [output [output-a output-b]
+                        path [output (str output ".c")
+                              (str output ".manifest.edn")
+                              (str output ".source-map.edn")
+                              (str output ".provenance.edn")]]
+                  (java.nio.file.Files/deleteIfExists
+                   (.toPath (java.io.File. path))))))))))))
+
+(deftest hosted-c-backend-runtime-derived-control-flow-rejects-open-values
+  (let [base "(ns runtime.control.reject (:profile :hosted) (:target :jvm) (:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+        cases [(str base "(defn main [] (let [x [1 2]] (println x)))\n")
+               (str base "(defn main [] (println (if (do true) \"x\" \"y\")))\n")
+               (str base "(defn main [] (let [x (if true \"x\" \"y\")] (println x)))\n")
+               (str base "(defn helper [] \"x\") (defn main [] (println (helper)))\n")]]
+    (doseq [source-text cases]
+      (let [data (diagnostic-data
+                  #(bootstrap/c-backend-source-artifact
+                    "control-reject.gravity" source-text
+                    {:target :c
+                     :lowering-mode :runtime-derived}))]
+        (is (= "B2-UNSUPPORTED" (:id data)))
+        (is (= :runtime-derived (:lowering-mode data)))
+        (is (contains? #{:runtime-c-lowering-rule
+                         :runtime-c-value-lowering
+                         :runtime-c-test-lowering
+                         :runtime-let-binding-lowering
+                         :runtime-local-binding}
+                       (:missing-fact data)))))))
+
+(deftest hosted-c-backend-runtime-derived-control-flow-rejects-malformed-plan
+  (let [source-text (slurp "examples/hello.gravity")
+        macro-artifact (bootstrap/macro-source-artifact
+                        "examples/hello.gravity" source-text)
+        module (assoc (:module macro-artifact)
+                      :forms (:expanded-forms macro-artifact))
+        plan (bootstrap/stage0-compiled-core-plan
+              "examples/hello.gravity" source-text module)
+        malformed (assoc-in plan [:functions 'main :instructions 0]
+                            {:op :let
+                             :bindings [{:name 'x
+                                         :expr {:op :map-literal :entries []}}]
+                             :body [{:op :local :name 'x}]})
+        data (diagnostic-data
+              #(bootstrap/c-backend-validate-runtime-plan!
+                "examples/hello.gravity" :c malformed))]
+    (is (= "B2-UNSUPPORTED" (:id data)))
+    (is (= :let (:unsupported-op data)))
+    (is (= :runtime-let-binding-lowering (:missing-fact data)))))
+
+(deftest hosted-c-backend-runtime-derived-control-flow-rejects-deep-plan-without-host-stack-failure
+  (let [deep (vec (repeat 5000 {:op :do :body []}))
+        plan {:functions (sorted-map 'main {:instructions deep})}
+        result (try
+                 (bootstrap/c-backend-validate-runtime-plan!
+                  "deep-control.gravity" :c plan)
+                 :passed
+                 (catch StackOverflowError _ :stack-overflow)
+                 (catch clojure.lang.ExceptionInfo ex
+                   (:id (ex-data ex))))]
+    (is (= :passed result))))
+
 (deftest hosted-c-backend-runtime-derived-rejects-unsupported-plan
   (let [source-text (slurp "examples/hello.gravity")
         macro-artifact (bootstrap/macro-source-artifact
