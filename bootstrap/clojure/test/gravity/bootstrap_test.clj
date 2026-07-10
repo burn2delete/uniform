@@ -24586,6 +24586,146 @@
         (is (= (:stdout artifact) (:out result)))
         (is (str/includes? (:c-source artifact) "sizeof(gravity_output)"))))))
 
+(deftest public-current-source-compile-selects-c-target-for-both-extensions
+  (let [nonce (str (System/nanoTime))
+        outputs (mapv #(str "target/public-c-" nonce "-" %)
+                      ["hello-gravity" "hello-qst"
+                       "core-gravity" "core-qst"])
+        sources ["examples/hello.gravity" "examples/hello.qst"
+                 "examples/core-app.gravity" "examples/core-app.qst"]]
+    (try
+      (let [runs (mapv (fn [source output]
+                         (let [compile-runner (if (= source
+                                                    "examples/hello.gravity")
+                                                 run-bin
+                                                 run-thin-bin)
+                               compile-result
+                               (compile-runner "bin/gravity" "compile"
+                                               source "--target" "c"
+                                               "-o" output)
+                               artifact (edn/read-string (:out compile-result))
+                               executable-result (run-bin output)]
+                           (is (zero? (:exit compile-result))
+                               (:err compile-result))
+                           (is (= :gravity/c-backend-artifact
+                                  (:kind artifact)))
+                           (is (= :c (get-in artifact [:target :backend])))
+                           (is (= :explicit (:target-selection artifact)))
+                           (is (true? (:public-current-source? artifact)))
+                           (is (true? (:compiled-executable? artifact)))
+                           (is (true? (get-in artifact
+                                              [:provenance
+                                               :clojure-seed-boundary?])))
+                           (is (false? (get-in artifact
+                                               [:provenance :self-hosted?])))
+                           (is (zero? (:exit executable-result)))
+                           (is (= (:stdout artifact) (:out executable-result)))
+                           (is (str/includes? (:c-source artifact)
+                                              "#include <stdio.h>"))
+                           (is (str/includes? (:c-source artifact) "fwrite"))
+                           (is (not (str/includes? (:c-source artifact)
+                                                   "printf")))
+                           (doseq [path (vals (:emitted-files artifact))]
+                             (is (.isFile (java.io.File. path)) path))
+                           (is (.isFile (java.io.File. output)))
+                           artifact))
+                       sources outputs)
+            gravity (first runs)
+            qst (second runs)]
+        ;; Co-canonical files have identical generated content and hashes; only
+        ;; provenance retains the actual source path and extension.
+        (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                       :manifest-hash :source-map-hash :provenance-hash]]
+          (is (= (get gravity field) (get qst field)) field))
+        (is (= "examples/hello.gravity"
+               (get-in gravity [:provenance :source :path])))
+        (is (= "examples/hello.qst"
+               (get-in qst [:provenance :source :path])))
+        (is (= ".gravity"
+               (get-in gravity [:provenance :source :extension])))
+        (is (= ".qst"
+               (get-in qst [:provenance :source :extension]))))
+      (finally
+        (doseq [output outputs
+                path [output (str output ".c")
+                      (str output ".manifest.edn")
+                      (str output ".source-map.edn")
+                      (str output ".provenance.edn")]]
+          (java.nio.file.Files/deleteIfExists
+           (.toPath (java.io.File. path))))))))
+
+(deftest public-current-source-compile-preserves-jvm-default-and-c-diagnostics
+  (let [nonce (str (System/nanoTime))
+        jvm-output (str "target/public-jvm-" nonce)
+        c-output (str "target/public-c-missing-output-" nonce)
+        unsupported-output (str "target/public-unsupported-" nonce)]
+    (try
+      (let [jvm-result (run-thin-bin "bin/gravity" "compile"
+                                     "examples/hello.gravity" "-o"
+                                     jvm-output)
+            jvm-artifact (edn/read-string (:out jvm-result))
+            jvm-run (run-bin jvm-output)
+            unsupported (run-thin-bin "bin/gravity" "compile"
+                                      "examples/hello.gravity"
+                                      "--target" "llvm" "-o"
+                                      unsupported-output)
+            missing-output (run-thin-bin "bin/gravity" "compile"
+                                         "examples/hello.gravity"
+                                         "--target" "c")
+            duplicate-target (run-thin-bin "bin/gravity" "compile"
+                                           "examples/hello.gravity"
+                                           "--target" "c"
+                                           "--target" "jvm" "-o"
+                                           c-output)]
+        (is (zero? (:exit jvm-result)) (:err jvm-result))
+        (is (= :gravity/p18-t04-executable-artifact
+               (:kind jvm-artifact)))
+        (is (str/starts-with? (slurp jvm-output)
+                              "#!/usr/bin/env bash\n"))
+        (is (zero? (:exit jvm-run)))
+        (is (= "Hello Gravity\n" (:out jvm-run)))
+        (is (= 1 (:exit unsupported)))
+        (is (str/includes? (:err unsupported) "C14-TARGET"))
+        (is (= 1 (:exit missing-output)))
+        (is (str/includes? (:err missing-output) "C14-INPUT"))
+        (is (= 1 (:exit duplicate-target)))
+        (is (str/includes? (:err duplicate-target) "P18T04002")))
+      (finally
+        (doseq [path [jvm-output (str jvm-output ".gravity-artifact.edn")
+                      c-output (str c-output ".c")
+                      unsupported-output (str unsupported-output ".c")
+                      (str unsupported-output ".manifest.edn")
+                      (str unsupported-output ".source-map.edn")
+                      (str unsupported-output ".provenance.edn")]]
+          (java.nio.file.Files/deleteIfExists
+           (.toPath (java.io.File. path))))))))
+
+(deftest public-current-source-c-compile-routes-from-unrelated-cwd
+  (let [root (.getCanonicalPath (java.io.File. "."))
+        bin (str root "/bin/gravity")
+        source (str root "/examples/hello.qst")
+        nonce (str (System/nanoTime))
+        output (str "target/public-c-unrelated-cwd-" nonce)]
+    (try
+      (let [result (run-process-in-directory
+                    "/tmp"
+                    (merge (into {} (System/getenv))
+                           {"GRAVITY_BOOTSTRAP_ONLY" "1"})
+                    [bin "compile" source "--target" "c" "-o" output])
+            artifact (edn/read-string (:out result))
+            executable-result (run-bin output)]
+        (is (zero? (:exit result)) (:err result))
+        (is (= source (get-in artifact [:provenance :source :path])))
+        (is (zero? (:exit executable-result)))
+        (is (= "Hello Gravity\n" (:out executable-result))))
+      (finally
+        (doseq [path [output (str output ".c")
+                      (str output ".manifest.edn")
+                      (str output ".source-map.edn")
+                      (str output ".provenance.edn")]]
+          (java.nio.file.Files/deleteIfExists
+           (.toPath (java.io.File. path))))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]

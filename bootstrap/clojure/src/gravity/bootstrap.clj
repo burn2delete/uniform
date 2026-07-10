@@ -106546,35 +106546,88 @@
          (or (str/starts-with? output-path "target/")
              (= 1 (count segments))))))
 
-(defn p18-t04-parse-compile-output-path
+(defn p18-t04-parse-compile-request
+  "Parse the public compile command without selecting a backend implicitly.
+
+  The historical form (`compile source -o output`) remains the JVM-backed
+  bootstrap command.  A target flag makes the backend choice explicit; the C
+  target is routed through the real C backend below and all unsupported target
+  values are rejected by its structured C14 boundary before lowering."
   [args]
-  (let [[_ source-path & more] args]
+  (let [[_ source-path & options] args]
     (when-not source-path
       (p18-t04-fail! "P18T04002"
                      {:source "bin/gravity"
                       :command args
                       :missing-fields [:source-path]}))
-    (cond
-      (empty? more) nil
+    (loop [remaining (vec options)
+           target nil
+           output-path nil]
+      (if (empty? remaining)
+        {:source-path source-path
+         :target (some-> target str/lower-case keyword)
+         :target-requested? (some? target)
+         :output-path output-path}
+        (let [option (first remaining)
+              rest-options (subvec remaining 1)]
+          (cond
+            (#{"-o" "--output"} option)
+            (do
+              (when (or (empty? rest-options) output-path)
+                (p18-t04-fail! "P18T04002"
+                               {:source source-path
+                                :command args
+                                :option option
+                                :missing-fields (if (empty? rest-options)
+                                                  [:output-path]
+                                                  [:duplicate-output-option])}))
+              (let [candidate (first rest-options)]
+                (when-not (p18-t04-output-path-allowed? candidate)
+                  (p18-t04-fail! "P18T04002"
+                                 {:source source-path
+                                  :command args
+                                  :output-path candidate
+                                  :allowed-output-roots ["target/"
+                                                          "<current-directory>"]}))
+                (recur (subvec rest-options 1) target candidate)))
 
-      (and (= 2 (count more))
-           (#{"-o" "--output"} (first more)))
-      (let [output-path (second more)]
-        (when-not (p18-t04-output-path-allowed? output-path)
-          (p18-t04-fail! "P18T04002"
-                         {:source source-path
-                          :command args
-                          :output-path output-path
-                          :allowed-output-roots ["target/" "<current-directory>"]}))
-        output-path)
+            (= "--target" option)
+            (do
+              (when (or (empty? rest-options) target)
+                (p18-t04-fail! "P18T04002"
+                               {:source source-path
+                                :command args
+                                :option option
+                                :missing-fields (if (empty? rest-options)
+                                                  [:target]
+                                                  [:duplicate-target-option])}))
+              (let [candidate (first rest-options)]
+                (when (str/blank? (str candidate))
+                  (p18-t04-fail! "P18T04002"
+                                 {:source source-path
+                                  :command args
+                                  :option option
+                                  :missing-fields [:target]}))
+                (recur (subvec rest-options 1) candidate output-path)))
 
-      :else
-      (p18-t04-fail! "P18T04002"
-                     {:source source-path
-                      :command args
-                      :expected-forms [["compile" "<file.qst|file.gravity>"]
-                                       ["compile" "<file.qst|file.gravity>" "-o"
-                                        "<executable>"]]}))))
+            :else
+            (p18-t04-fail! "P18T04002"
+                           {:source source-path
+                            :command args
+                            :unsupported-option option
+                            :expected-forms [["compile"
+                                              "<file.qst|file.gravity>"]
+                                             ["compile"
+                                              "<file.qst|file.gravity>"
+                                              "-o" "<executable>"]
+                                             ["compile"
+                                              "<file.qst|file.gravity>"
+                                              "--target" "c"
+                                              "-o" "<executable>"]]})))))))
+
+(defn p18-t04-parse-compile-output-path
+  [args]
+  (:output-path (p18-t04-parse-compile-request args)))
 
 (defn p18-shell-single-quote
   [text]
@@ -106668,6 +106721,59 @@
                         :artifact-id (c4-artifact-id artifact-base))]
     (p18-t02-write-edn! sidecar-path artifact)
     artifact))
+
+(defn p18-t04-compile-c-target-file!
+  "Compile the current source unit through the real C backend boundary.
+
+  Unlike the legacy JVM command, this path writes C11 source, invokes the host
+  C compiler, and returns the backend manifest/source-map/provenance artifact.
+  The Clojure bootstrap and hosted-libc runtime remain explicit in the record;
+  this is not a seedless-release claim."
+  [source-path output-path target]
+  (let [source-text (read-gravity-source-text source-path)]
+    ;; Reject unsupported target selection before reader/macro/lowering work;
+    ;; this keeps the public boundary's C14 diagnostic deterministic.
+    (when-not (contains? c-backend-supported-targets target)
+      (c-backend-fail! "C14-TARGET"
+                       "C backend target is unsupported"
+                       source-path target nil
+                       {:supported-targets
+                        (vec (sort c-backend-supported-targets))
+                        :missing-fact :supported-target
+                        :remediation "Request :c, :c-hosted, or :c11 explicitly."}))
+    (when-not output-path
+      (c-backend-fail! "C14-INPUT"
+                       "C target compilation requires an explicit executable output"
+                       source-path target nil
+                       {:missing-fields [:output-path]
+                        :remediation "Use --target c -o <executable> for a public C compile."}))
+    (let [c-source-path (str output-path ".c")
+          manifest-path (str output-path ".manifest.edn")
+          source-map-path (str output-path ".source-map.edn")
+          provenance-path (str output-path ".provenance.edn")
+          artifact (c-backend-source-artifact
+                    source-path source-text
+                    {:target target
+                     :dialect :c11
+                     :compile? true
+                     :executable-path output-path
+                     :c-source-path c-source-path
+                     :manifest-path manifest-path
+                     :source-map-path source-map-path
+                     :provenance-path provenance-path})]
+      (assoc artifact
+             :command-boundary
+             {:compile-command ["gravity" "compile" source-path
+                                "--target" (name target) "-o" output-path]
+              :run-command [output-path]
+              :public-command "gravity"
+              :bootstrap-hosted? true
+              :clojure-seed-boundary? true
+              :self-hosted? false
+              :seedless-release? false}
+             :target-requested? true
+             :target-selection :explicit
+             :public-current-source? true))))
 
 (defn p18-t04-shell
   [& args]
@@ -110687,10 +110793,20 @@
                          (p18-t04-public-test-overclaim! args)
                          (prn (p18-t04-public-test-command-artifact!)))
                 "self-host" (p18-t04-public-self-host-verify-command! args)
-			        "compile" (if-let [output-path (p18-t04-parse-compile-output-path args)]
-                            (prn (p18-t04-compile-executable-file!
-                                  path output-path))
-                            (prn (compile-file path)))
+                "compile" (let [{:keys [target output-path target-requested?]}
+                                 (p18-t04-parse-compile-request args)]
+                             (if target-requested?
+                               (if (= :jvm target)
+                                 (if output-path
+                                   (prn (p18-t04-compile-executable-file!
+                                         path output-path))
+                                   (prn (compile-file path)))
+                                 (prn (p18-t04-compile-c-target-file!
+                                       path output-path target)))
+                               (if output-path
+                                 (prn (p18-t04-compile-executable-file!
+                                       path output-path))
+                                 (prn (compile-file path)))))
 	        "check" (let [artifact (check-file-artifact path)]
 	                  (println "gravity stage0 check passed:" (check-artifact-module-name artifact)))
         "run" (print (run-file path))

@@ -18,6 +18,15 @@ packaged_cli_selected() {
   [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]
 }
 
+current_source_compile_requested() {
+  [[ "${1:-}" == "compile" ]] || return 1
+  shift
+  for argument in "$@"; do
+    [[ "${argument}" == "--target" ]] && return 0
+  done
+  return 1
+}
+
 packaged_jar_class_major() {
   local magic1 magic2 magic3 magic4 minor1 minor2 major1 major2
 
@@ -121,6 +130,7 @@ Usage:
   gravity run <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity> -o <executable>
+  gravity compile <file.qst|file.gravity> --target c -o <executable>
   gravity test
   gravity self-host verify
   gravity <artifact-command> <file.qst|file.gravity>
@@ -200,6 +210,15 @@ case "${1:-}" in
     seedless_overclaim
     ;;
 esac
+
+if packaged_cli_selected && current_source_compile_requested "$@"; then
+  if ! command -v clojure >/dev/null 2>&1; then
+    missing_clojure_diagnostic
+    exit 1
+  fi
+  cd "${ROOT_DIR}"
+  exec clojure -M:gravity "$@"
+fi
 
 if packaged_cli_selected; then
   packaged_toolchain_ready || exit 1
