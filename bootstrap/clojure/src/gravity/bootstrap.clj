@@ -73809,6 +73809,7 @@
          c3-syntax-diagnostic-ids
          c3-syntax-governing-document
          c3-syntax-rejected-designs
+         c3-reader-artifact-view
          c3-syntax-object
          c3-generated-syntax-object
          c3-syntax-schema
@@ -74156,9 +74157,7 @@
                         :origin-chain-graph]
                 :rejects c3-syntax-diagnostic-ids}
          :c2-reader-artifact
-         (select-keys c2-artifact
-                      [:kind :artifact-id :syntax-seed-stream
-                       :reader-source-map :incremental-reader-hashes])
+         (c3-reader-artifact-view c2-artifact)
          :syntax-object-schema (c3-syntax-schema)
          :syntax-object-stream syntax-stream
          :hygiene-context-map (c3-hygiene-context-map syntax-stream)
@@ -103387,6 +103386,16 @@
   [module]
   (get-in module [:metadata :compiler :c3-syntax] {}))
 
+(defn c3-syntax-overrides-from-forms
+  [forms]
+  (let [ns-form (first forms)
+        metadata-clause
+        (when (and (seq? ns-form) (= 'ns (first ns-form)))
+          (first (filter #(and (seq? %)
+                               (= :metadata (first %)))
+                         (drop 2 ns-form))))]
+    (get-in (second metadata-clause) [:compiler :c3-syntax] {})))
+
 (defn c3-syntax-message
   [id]
   (case id
@@ -103461,9 +103470,59 @@
                         (:generated-origin seed))]
     (vec (cons source-entry generated))))
 
+(defn c3-lossless-literal-descriptor
+  [seed form-record]
+  (let [value (:form seed)
+        raw (get-in seed [:reader-origin :raw-excerpt])
+        descriptor?
+        (and (= :gravity/deferred-ratio-literal (:artifact value))
+             (= :ratio (:kind value))
+             (string? (:raw value))
+             (= :deferred (:semantic-validation value)))
+        direct-ratio?
+        (and (= :ratio (:kind form-record))
+             (= :ratio (get-in seed [:reader-origin :raw-form-kind]))
+             (= raw (:raw form-record) (:raw value)))
+        metadata-wrapped-ratio?
+        (and (= :metadata-wrapper (:kind form-record))
+             (= :metadata-wrapper
+                (get-in seed [:reader-origin :raw-form-kind]))
+             (= :metadata (:abbrev form-record))
+             (= :metadata (get-in seed [:reader-origin :abbreviation]))
+             (map? (:metadata seed))
+             (= value (:expanded-form form-record))
+             (= value (get-in seed [:generated-origin 0 :expanded-form]))
+             (= :metadata
+                (get-in seed [:generated-origin 0 :reader-abbreviation]))
+             (= raw (:raw form-record))
+             (string? (:raw value))
+             (str/ends-with? raw (:raw value)))]
+    (when (and descriptor?
+               (or direct-ratio? metadata-wrapped-ratio?))
+      value)))
+
+(defn c3-source-form-kind
+  [seed form-record]
+  (if (c3-lossless-literal-descriptor seed form-record)
+    (:kind form-record)
+    (form-kind (:form seed))))
+
+(defn c3-source-facts
+  [seed form-record]
+  (if-let [descriptor (c3-lossless-literal-descriptor seed form-record)]
+    {:reader-literal-kind (:kind descriptor)
+     :reader-literal-descriptor descriptor
+     :reader-container-kind
+     (when (= :metadata-wrapper (:kind form-record)) :metadata-wrapper)
+     :reader-literal-facts
+     (select-keys descriptor
+                  [:raw :numerator-spelling :denominator-spelling
+                   :numerator :denominator :semantic-validation :reason])}
+    {}))
+
 (defn c3-identity-input
-  [seed origin namespace-context hygiene-context]
-  {:form-kind (form-kind (:form seed))
+  [seed origin namespace-context hygiene-context source-form-kind]
+  {:form-kind source-form-kind
    :form (pr-str (:form seed))
    :span (:span seed)
    :origin origin
@@ -103491,8 +103550,9 @@
                          :macro-definition-namespace nil
                          :macro-call-site-namespace (:namespace seed)}
         origin (c3-origin-chain seed source-unit)
+        source-form-kind (c3-source-form-kind seed form-record)
         identity-input (c3-identity-input seed origin namespace-context
-                                          hygiene-context)
+                                          hygiene-context source-form-kind)
         syntax-id (c3-stable-syntax-id identity-input)]
     {:artifact :gravity/syntax-object
      :syntax/id syntax-id
@@ -103501,7 +103561,7 @@
                                   :namespace :phase :profile :metadata
                                   :hygiene :version]
                 :input-hash (str "sha256:" (sha256-hex (pr-str identity-input)))}
-     :form {:kind (form-kind (:form seed))
+     :form {:kind source-form-kind
             :value (:form seed)
             :raw (get-in seed [:reader-origin :raw-excerpt])}
      :span {:primary (:span seed)
@@ -103517,7 +103577,7 @@
      :metadata (:metadata seed)
      :hygiene hygiene-context
      :origin origin
-     :facts {}
+     :facts (c3-source-facts seed form-record)
      :version 1
      :prior-syntax-ids []
      :immutable? true}))
@@ -103634,7 +103694,10 @@
 (defn c3-metadata-ledger
   [syntax-stream]
   (let [source-metadata (vec (keep (fn [syntax]
-                                     (when (seq (:metadata syntax))
+                                     (when (and (not= :generated-form
+                                                      (get-in syntax
+                                                              [:form :kind]))
+                                                (seq (:metadata syntax)))
                                        {:syntax-id (:syntax/id syntax)
                                         :action :preserved
                                         :metadata (:metadata syntax)}))
@@ -103741,8 +103804,14 @@
 (defn c3-syntax-capability-proof
   [artifact]
   (let [syntax-stream (:syntax-object-stream artifact)
+        source-syntax (remove #(= :generated-form (get-in % [:form :kind]))
+                              syntax-stream)
         diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
         metadata-ledger (:metadata-ledger artifact)
+        expected-metadata-syntax-ids
+        (set (map :syntax/id (filter #(seq (:metadata %)) source-syntax)))
+        recorded-metadata-syntax-ids
+        (set (map :syntax-id (:source-metadata metadata-ledger)))
         fact-ledger (:fact-ledger artifact)
         serialization (:syntax-serialization-fixture artifact)
         generated-report (:generated-syntax-report artifact)
@@ -103772,7 +103841,8 @@
      :capture-rejection-covered?
      (contains? diagnostics "C3-CAPTURE")
      :metadata-preservation-and-change?
-     (boolean (and (seq (:source-metadata metadata-ledger))
+     (boolean (and (= expected-metadata-syntax-ids
+                      recorded-metadata-syntax-ids)
                    (seq (:explicit-changes metadata-ledger))))
      :fact-invalidation-recorded?
      (boolean (and (seq (:attached fact-ledger))
@@ -103801,15 +103871,21 @@
                          {:missing-fields [field]}))))
   :complete)
 
+(defn c3-reader-artifact-view
+  [c2-artifact]
+  (select-keys
+   c2-artifact
+   [:kind :artifact-id :source-unit-record :token-stream :form-tree
+    :top-level-form-ids :syntax-seed-stream :reader-source-map
+    :literal-decoding-records :semantic-error-deferment-record
+    :incremental-reader-hashes]))
+
 (defn compiler-c3-syntax-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        module (parse-module source-path forms)
-        overrides (c3-syntax-source-overrides module)
+  (let [c2-artifact (compiler-c2-reader-source-artifact source-path source-text)
+        forms (:parsed-semantic-values c2-artifact)
+        overrides (c3-syntax-overrides-from-forms forms)
         _ (c3-syntax-validate-overrides! source-path overrides)
-        c2-artifact (compiler-c2-reader-source-artifact source-path source-text)
         source-unit (:source-unit-record c2-artifact)
         top-level-products (c2-top-level-products c2-artifact)
         base-syntax (mapv (fn [seed {:keys [form-record token-record]}]
@@ -103846,9 +103922,7 @@
                               :rejects c3-syntax-diagnostic-ids}
                        :source-overrides overrides
                        :c2-reader-artifact
-                       (select-keys c2-artifact
-                                    [:kind :artifact-id :syntax-seed-stream
-                                     :reader-source-map :incremental-reader-hashes])
+                       (c3-reader-artifact-view c2-artifact)
                        :syntax-object-schema (c3-syntax-schema)
                        :syntax-object-stream syntax-stream
                        :hygiene-context-map (c3-hygiene-context-map

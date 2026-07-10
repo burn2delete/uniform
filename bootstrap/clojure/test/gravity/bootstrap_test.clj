@@ -10534,6 +10534,280 @@
           (is (not (str/includes? (:err rejected)
                                   "NumberFormatException"))))))))
 
+(deftest c3-syntax-consumes-genuine-c2-ratio-products
+  (doseq [suffix [".gravity" ".qst"]]
+    (with-temp-source
+      suffix "1/0"
+      (fn [path]
+        (let [original-reader bootstrap/read-source-form-records
+              c2 (bootstrap/compiler-c2-reader-source-artifact path "1/0")
+              c3
+              (with-redefs
+                [bootstrap/read-source-form-records
+                 (fn [candidate source]
+                   (if (= path candidate)
+                     (throw (ex-info "legacy source reader was invoked"
+                                     {:path candidate}))
+                     (original-reader candidate source)))]
+                (bootstrap/compiler-c3-syntax-source-artifact path "1/0"))
+              repeated
+              (bootstrap/compiler-c3-syntax-source-artifact path "1/0")
+              c2-view (:c2-reader-artifact c3)
+              syntax (first (:syntax-object-stream c3))
+              descriptor (get-in syntax [:form :value])
+              tokens-by-id (into {} (map (juxt :token-id identity)
+                                         (:token-stream c2-view)))
+              forms-by-id (into {} (map (juxt :form-id identity)
+                                        (:form-tree c2-view)))
+              form-record (forms-by-id (get-in syntax [:source :form-id]))
+              literal-record
+              (first (filter #(= (:form-id form-record) (:form-id %))
+                             (:literal-decoding-records c2-view)))
+              [open-id close-id] (get-in syntax [:source :token-range])
+              origin (first (:origin syntax))
+              p15-c2 (bootstrap/p15-s23-source-syntax-c2-artifact path "1/0")
+              p15-c3 (bootstrap/p15-s23-source-syntax-c3-artifact path p15-c2)
+              p15-syntax (first (:syntax-object-stream p15-c3))
+              metadata-source "^:a 1/0"
+              metadata-c3
+              (bootstrap/compiler-c3-syntax-source-artifact path metadata-source)
+              metadata-syntax (first (:syntax-object-stream metadata-c3))
+              metadata-view (:c2-reader-artifact metadata-c3)
+              metadata-forms-by-id
+              (into {} (map (juxt :form-id identity)
+                            (:form-tree metadata-view)))
+              metadata-form
+              (metadata-forms-by-id
+               (get-in metadata-syntax [:source :form-id]))
+              metadata-ratio-child
+              (metadata-forms-by-id (last (:children metadata-form)))
+              metadata-p15-c2
+              (bootstrap/p15-s23-source-syntax-c2-artifact
+               path metadata-source)
+              metadata-p15-c3
+              (bootstrap/p15-s23-source-syntax-c3-artifact
+               path metadata-p15-c2)
+              metadata-p15-syntax
+              (first (:syntax-object-stream metadata-p15-c3))
+              empty-metadata-source "^{} 1/0"
+              empty-metadata-c3
+              (bootstrap/compiler-c3-syntax-source-artifact
+               path empty-metadata-source)
+              empty-metadata-syntax
+              (first (:syntax-object-stream empty-metadata-c3))
+              empty-metadata-p15-c2
+              (bootstrap/p15-s23-source-syntax-c2-artifact
+               path empty-metadata-source)
+              empty-metadata-p15-c3
+              (bootstrap/p15-s23-source-syntax-c3-artifact
+               path empty-metadata-p15-c2)
+              empty-metadata-p15-syntax
+              (first (:syntax-object-stream empty-metadata-p15-c3))]
+          (is (= :gravity/stage0-c3-syntax-object-artifact (:kind c3)))
+          (is (= :ratio (get-in syntax [:form :kind])))
+          (is (= "1/0" (get-in syntax [:form :raw])))
+          (is (= :gravity/deferred-ratio-literal (:artifact descriptor)))
+          (is (= :ratio (:kind descriptor)))
+          (is (= "1" (:numerator-spelling descriptor)))
+          (is (= "0" (:denominator-spelling descriptor)))
+          (is (= 1N (:numerator descriptor)))
+          (is (= 0N (:denominator descriptor)))
+          (is (= :deferred (:semantic-validation descriptor)))
+          (is (= descriptor
+                 (get-in syntax [:facts :reader-literal-descriptor])))
+          (is (= :ratio (get-in syntax [:facts :reader-literal-kind])))
+          (is (= (select-keys descriptor
+                              [:raw :numerator-spelling
+                               :denominator-spelling :numerator :denominator
+                               :semantic-validation :reason])
+                 (get-in syntax [:facts :reader-literal-facts])))
+          (is (= {:numerator-spelling "1"
+                  :denominator-spelling "0"
+                  :exact? true}
+                 (:facts literal-record)))
+          (is (= (get-in c2-view [:source-unit-record :source-id])
+                 (get-in syntax [:source :source-id])))
+          (is (= path (get-in syntax [:span :primary :source])))
+          (is (= (dissoc (get-in syntax [:span :primary]) :form-index)
+                 (:span form-record)))
+          (is (= [(:open-token form-record) (:close-token form-record)]
+                 [open-id close-id]))
+          (is (= (:open-token form-record)
+                 (get-in syntax [:source :token-id])))
+          (is (= 1 (count (filter #(= (:form-id form-record) (:form-id %))
+                                  (:form-tree c2-view)))))
+          (is (= 1 (count (filter #(= open-id (:token-id %))
+                                  (:token-stream c2-view)))))
+          (is (= 1 (count (filter #(= close-id (:token-id %))
+                                  (:token-stream c2-view)))))
+          (is (= open-id (:token-id (tokens-by-id open-id))))
+          (is (= close-id (:token-id (tokens-by-id close-id))))
+          (is (= :source (:kind origin)))
+          (is (= (get-in syntax [:source :source-id]) (:source-id origin)))
+          (is (= (get-in syntax [:span :primary]) (:span origin)))
+          (is (true? (get-in c2-view
+                             [:semantic-error-deferment-record :deferred?])))
+          (is (= (:incremental-reader-hashes c2)
+                 (:incremental-reader-hashes c2-view)))
+          (is (= c3 repeated))
+          (is (= (:artifact-id c3) (:artifact-id repeated)))
+          (is (= (mapv :syntax/id (:syntax-object-stream c3))
+                 (mapv :syntax/id (:syntax-object-stream repeated))))
+          (is (= :ratio (get-in p15-syntax [:form :kind])))
+          (is (= descriptor (get-in p15-syntax
+                                    [:facts :reader-literal-descriptor])))
+          (is (= (:source-id (:source-unit-record p15-c2))
+                 (get-in p15-syntax [:source :source-id])))
+          (is (= :metadata-wrapper
+                 (get-in metadata-syntax [:form :kind])))
+          (is (= metadata-source (get-in metadata-syntax [:form :raw])))
+          (is (= descriptor (get-in metadata-syntax [:form :value])))
+          (is (= descriptor
+                 (get-in metadata-syntax
+                         [:facts :reader-literal-descriptor])))
+          (is (= :ratio
+                 (get-in metadata-syntax [:facts :reader-literal-kind])))
+          (is (= :metadata-wrapper
+                 (get-in metadata-syntax [:facts :reader-container-kind])))
+          (is (= {:a true} (:metadata metadata-syntax)))
+          (is (= :metadata-wrapper (:kind metadata-form)))
+          (is (= (:form-id metadata-form)
+                 (:parent-form-id metadata-ratio-child)))
+          (is (= :ratio (:kind metadata-ratio-child)))
+          (is (= descriptor (:value metadata-ratio-child)))
+          (is (= :metadata-wrapper
+                 (get-in metadata-p15-syntax [:form :kind])))
+          (is (= descriptor
+                 (get-in metadata-p15-syntax
+                         [:facts :reader-literal-descriptor])))
+          (is (= :metadata-wrapper
+                 (get-in empty-metadata-syntax [:form :kind])))
+          (is (= empty-metadata-source
+                 (get-in empty-metadata-syntax [:form :raw])))
+          (is (= descriptor
+                 (get-in empty-metadata-syntax
+                         [:facts :reader-literal-descriptor])))
+          (is (= :metadata-wrapper
+                 (get-in empty-metadata-syntax
+                         [:facts :reader-container-kind])))
+          (is (= {} (:metadata empty-metadata-syntax)))
+          (is (= :metadata-wrapper
+                 (get-in empty-metadata-p15-syntax [:form :kind])))
+          (is (= descriptor
+                 (get-in empty-metadata-p15-syntax
+                         [:facts :reader-literal-descriptor]))))))))
+
+(deftest c3-syntax-propagates-malformed-numeric-reader-diagnostics
+  (doseq [suffix [".gravity" ".qst"]]
+    (with-temp-source
+      suffix "1e2e3"
+      (fn [path]
+        (let [diagnostic
+              (diagnostic-data
+               #(bootstrap/compiler-c3-syntax-source-artifact path "1e2e3"))
+              repeated
+              (diagnostic-data
+               #(bootstrap/compiler-c3-syntax-source-artifact path "1e2e3"))]
+          (is (= "STAGE1READER007" (:id diagnostic)))
+          (is (= :gravity/diagnostic (:artifact diagnostic)))
+          (is (= "STAGE1READER007"
+                 (:reader-engine-diagnostic diagnostic)))
+          (is (= "1e2e3" (:raw-spelling diagnostic)))
+          (is (= path (get-in diagnostic [:source-span :source])))
+          (is (= [0 5]
+                 [(get-in diagnostic [:source-span :byte-start])
+                  (get-in diagnostic [:source-span :byte-end])]))
+          (is (= (:source-span diagnostic)
+                 (get-in diagnostic [:primary :span])))
+          (is (= :unassigned
+                 (get-in diagnostic [:facts :normative-c2-mapping])))
+          (is (true? (get-in diagnostic [:facts :catalog-gap])))
+          (is (= bootstrap/standard-reader-options
+                 (:reader-options diagnostic)))
+          (is (vector? (:related diagnostic)))
+          (is (seq (:origin-chain diagnostic)))
+          (is (string? (:cause-message diagnostic)))
+          (is (not (str/includes? (:cause-message diagnostic)
+                                  "NumberFormatException")))
+          (is (not (str/includes? (:cause-message diagnostic)
+                                  "ArithmeticException")))
+          (is (string? (:remediation diagnostic)))
+          (is (seq (:remediation-records diagnostic)))
+          (is (= (select-keys diagnostic
+                              [:id :diagnostic-id :severity :stage
+                               :raw-spelling :facts :reader-state
+                               :cause-message])
+                 (select-keys repeated
+                              [:id :diagnostic-id :severity :stage
+                               :raw-spelling :facts :reader-state
+                               :cause-message]))))))))
+
+(deftest c3-syntax-distinguishes-descriptors-and-defers-semantic-errors
+  (doseq [suffix [".gravity" ".qst"]]
+    (doseq [[source expected-kind]
+            [["{:artifact :gravity/deferred-ratio-literal :kind :ratio :raw \"ordinary-map\" :semantic-validation :deferred :numerator 1 :denominator 0}"
+              :map]
+             ["#{:x :y}" :set]
+             ["^:a x" :symbol]
+             ["'x" :list]
+             ["@x" :list]
+             ["1/2" :ratio]]]
+      (let [artifact
+            (bootstrap/compiler-c3-syntax-source-artifact
+             (str "/c3-controls/source" suffix) source)
+            syntax (first (:syntax-object-stream artifact))]
+        (is (= expected-kind (get-in syntax [:form :kind])) source)
+        (when (= :map expected-kind)
+          (is (= {} (:facts syntax)))
+          (is (= source (get-in syntax [:form :raw]))))))
+    (with-temp-source
+      suffix
+      (str "(ns semantic.defer (:profile :unknown-profile)"
+           " (:target :not-a-real-target))\n"
+           "(host/reflection unresolved-name)\n")
+      (fn [path]
+        (let [artifact (bootstrap/compiler-c3-syntax-file-artifact path)]
+          (is (= :gravity/stage0-c3-syntax-object-artifact (:kind artifact)))
+          (is (= :unknown-profile
+                 (get-in artifact [:syntax-object-stream 0 :profile])))
+          (is (true? (get-in artifact
+                             [:c2-reader-artifact
+                              :semantic-error-deferment-record :deferred?])))
+          (is (= :passed
+                 (get-in artifact [:syntax-verification-report :status]))))))
+    (let [fixture-artifact
+          (bootstrap/compiler-c3-syntax-file-artifact
+           (fixture (str "accepted/compiler-c3-syntax-object" suffix)))]
+      (is (= :complete (get-in fixture-artifact
+                               [:c3-syntax-results :status])))
+      (is (= :passed (get-in fixture-artifact
+                             [:syntax-verification-report :status]))))))
+
+(deftest bootstrap-only-public-c3-preserves-numeric-reader-boundaries
+  (doseq [suffix [".gravity" ".qst"]]
+    (with-temp-source
+      suffix "1/0"
+      (fn [path]
+        (let [accepted (run-thin-bin "bin/gravity"
+                                     "compiler-c3-syntax" path)]
+          (is (zero? (:exit accepted)) (str (:out accepted) (:err accepted)))
+          (is (str/includes? (:out accepted) ":kind :ratio"))
+          (is (str/includes? (:out accepted)
+                             ":gravity/deferred-ratio-literal"))
+          (is (not (str/includes? (str (:out accepted) (:err accepted))
+                                  "ArithmeticException"))))))
+    (with-temp-source
+      suffix "1e2e3"
+      (fn [path]
+        (let [rejected (run-thin-bin "bin/gravity"
+                                     "compiler-c3-syntax" path)]
+          (is (not (zero? (:exit rejected))))
+          (is (str/includes? (:err rejected) "STAGE1READER007"))
+          (is (not (str/includes? (:err rejected)
+                                  "NumberFormatException")))
+          (is (not (str/includes? (:err rejected)
+                                  "ArithmeticException"))))))))
+
 (deftest c2-reader-defers-syntax-valid-semantic-errors-for-both-extensions
   (let [source (str "(ns semantic.defer (:profile :unknown-profile)"
                     " (:target :not-a-real-target))\n"
