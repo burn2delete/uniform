@@ -106747,6 +106747,17 @@
                        source-path target nil
                        {:missing-fields [:output-path]
                         :remediation "Use --target c -o <executable> for a public C compile."}))
+    (let [output-file (java.io.File. output-path)
+          parent (.getParentFile output-file)]
+      (when (and parent
+                 (not (or (.isDirectory parent)
+                          (.mkdirs parent))))
+        (c-backend-fail! "C14-INPUT"
+                         "C target output directory is unavailable"
+                         source-path target nil
+                         {:output-path output-path
+                          :missing-fact :output-directory
+                          :remediation "Use a writable target output directory."})))
     (let [c-source-path (str output-path ".c")
           manifest-path (str output-path ".manifest.edn")
           source-map-path (str output-path ".source-map.edn")
