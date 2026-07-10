@@ -24638,6 +24638,11 @@
         unsupported-plan
         (assoc-in plan [:functions 'main :instructions 0]
                  {:op :function-call :function 'missing :args []})
+        nested-value-plan
+        (assoc-in plan [:functions 'main :instructions 0]
+                  {:op :println
+                   :args [{:op :do
+                           :body [{:op :literal :value "inner"}]}]})
         data (diagnostic-data
               #(bootstrap/c-backend-validate-runtime-plan!
                 "examples/hello.gravity" :c unsupported-plan))]
@@ -24645,7 +24650,13 @@
     (is (contains? #{:builtin-call :function-call}
                    (:unsupported-op data)))
     (is (= :runtime-derived (:lowering-mode data)))
-    (is (= :runtime-c-lowering-rule (:missing-fact data))))
+    (is (= :runtime-c-lowering-rule (:missing-fact data)))
+    (let [nested-data (diagnostic-data
+                       #(bootstrap/c-backend-validate-runtime-plan!
+                         "examples/hello.gravity" :c nested-value-plan))]
+      (is (= "B2-UNSUPPORTED" (:id nested-data)))
+      (is (= :println (:unsupported-op nested-data)))
+      (is (= :runtime-c-value-lowering (:missing-fact nested-data)))))
   (let [data (diagnostic-data
               #(bootstrap/c-backend-source-artifact
                 "examples/core-app.gravity"

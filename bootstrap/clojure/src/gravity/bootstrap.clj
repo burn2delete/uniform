@@ -101754,7 +101754,12 @@
          (#{:literal :quote} (:op instruction))
          (c-backend-runtime-literal? (:value instruction))
          (= :println (:op instruction))
-         (every? c-backend-runtime-instruction-supported?
+         ;; A println argument is a value position in this first slice.  Do
+         ;; not admit nested statements here: the emitter intentionally has
+         ;; no value-producing lowering for do/println expressions.
+         (every? #(and (map? %)
+                       (#{:literal :quote} (:op %))
+                       (c-backend-runtime-literal? (:value %)))
                  (:args instruction))
          (= :do (:op instruction))
          (every? c-backend-runtime-instruction-supported?
@@ -101793,6 +101798,19 @@
                             :lowering-mode :runtime-derived
                             :missing-fact :scalar-literal-lowering
                             :remediation "Keep collections and computed values on the verified stage0 fallback."}))
+        (when (and (= :println op)
+                   (some #(not (and (map? %)
+                                    (#{:literal :quote} (:op %))
+                                    (c-backend-runtime-literal?
+                                     (:value %))))
+                         (:args instruction)))
+          (c-backend-fail! "B2-UNSUPPORTED"
+                           "runtime-derived C lowering only accepts scalar println arguments"
+                           source-path target instruction
+                           {:unsupported-op :println
+                            :lowering-mode :runtime-derived
+                            :missing-fact :runtime-c-value-lowering
+                            :remediation "Use scalar literals in println arguments or the verified stage0 fallback."}))
         (recur (into pending
                      (case op
                        :println (remove nil? (:args instruction))
