@@ -24586,6 +24586,78 @@
         (is (= (:stdout artifact) (:out result)))
         (is (str/includes? (:c-source artifact) "sizeof(gravity_output)"))))))
 
+(deftest hosted-c-backend-runtime-derived-lowering-executes-instructions
+  (with-temp-directory
+    "gravity-c-backend-runtime-derived-"
+    (fn [directory]
+      (let [source-text (str "(ns runtime.derived (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (do (println \"runtïme\") "
+                             "(println \"a" (char 0) "b\")))\n")
+            source-path (.resolve directory "runtime.gravity")
+            artifact (bootstrap/c-backend-source-artifact
+                      (.toString source-path) source-text
+                      {:target :c-hosted
+                       :lowering-mode :runtime-derived
+                       :emit-dir (.toString directory)
+                       :compile? true})
+            result (run-bin (:executable-path artifact))
+            changed (bootstrap/c-backend-source-artifact
+                     (.toString source-path)
+                     (str/replace source-text "runtïme" "changed")
+                     {:target :c-hosted
+                      :lowering-mode :runtime-derived})]
+        (is (= :runtime-derived-instruction-lowering
+               (get-in artifact [:manifest :lowering-strategy])))
+        (is (true? (get-in artifact [:manifest :runtime-derived?])))
+        (is (= {:kind :clojure-stage0-execution
+                :purpose :parity-only
+                :authoritative-runtime? false}
+               (get-in artifact [:manifest :oracle])))
+        (is (true? (get-in artifact [:provenance :clojure-seed-boundary?])))
+        (is (false? (get-in artifact [:provenance :self-hosted?])))
+        (is (not (str/includes? (:c-source artifact) "gravity_output")))
+        (is (str/includes? (:c-source artifact) "fwrite"))
+        (is (str/includes? (:c-source artifact) "gravity_literal_"))
+        (is (= (str "runtïme\n" "a" (char 0) "b\n")
+               (:stdout artifact)))
+        (is (zero? (:exit result)))
+        (is (= (:stdout artifact) (:out result)))
+        (is (not= (:c-source artifact) (:c-source changed)))
+        (is (not= (:c-source-hash artifact) (:c-source-hash changed)))))))
+
+(deftest hosted-c-backend-runtime-derived-rejects-unsupported-plan
+  (let [source-text (slurp "examples/hello.gravity")
+        macro-artifact (bootstrap/macro-source-artifact
+                        "examples/hello.gravity" source-text)
+        module (assoc (:module macro-artifact)
+                      :forms (:expanded-forms macro-artifact))
+        plan (bootstrap/stage0-compiled-core-plan
+              "examples/hello.gravity" source-text module)
+        unsupported-plan
+        (assoc-in plan [:functions 'main :instructions 0]
+                 {:op :function-call :function 'missing :args []})
+        data (diagnostic-data
+              #(bootstrap/c-backend-validate-runtime-plan!
+                "examples/hello.gravity" :c unsupported-plan))]
+    (is (= "B2-UNSUPPORTED" (:id data)))
+    (is (contains? #{:builtin-call :function-call}
+                   (:unsupported-op data)))
+    (is (= :runtime-derived (:lowering-mode data)))
+    (is (= :runtime-c-lowering-rule (:missing-fact data))))
+  (let [data (diagnostic-data
+              #(bootstrap/c-backend-source-artifact
+                "examples/core-app.gravity"
+                (slurp "examples/core-app.gravity")
+                {:target :c
+                 :lowering-mode :runtime-derived}))]
+    (is (= "B2-UNSUPPORTED" (:id data)))
+    (is (contains? #{:builtin-call :function-call}
+                   (:unsupported-op data)))
+    (is (= :runtime-derived (:lowering-mode data)))
+    (is (= :runtime-c-lowering-rule (:missing-fact data)))))
+
 (deftest public-current-source-compile-selects-c-target-for-both-extensions
   (let [nonce (str (System/nanoTime))
         outputs (mapv #(str "target/public-c-" nonce "-" %)

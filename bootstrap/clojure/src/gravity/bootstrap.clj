@@ -101576,6 +101576,15 @@
   #{:literal :quote :local :println :do :if :let :builtin-call
     :function-call :vector-literal :map-literal :set-literal})
 
+;; The runtime-derived mode is intentionally narrower than the historical
+;; stage0-output fallback below.  Each instruction in this set is emitted as
+;; executable C statements; no precomputed stdout buffer is embedded in the
+;; generated translation unit.  More ambitious instructions continue to use
+;; the reviewed stage0 fallback until their runtime semantics have a closed
+;; C lowering rule.
+(def c-backend-runtime-derived-instructions
+  #{:literal :quote :println :do})
+
 (declare p18-ensure-dir!)
 (declare c-backend-fail!)
 
@@ -101723,6 +101732,140 @@
                   :else (str ch)))
               (str text))))
 
+(defn c-backend-runtime-literal?
+  "Return true when a scalar value has a stable hosted `str` spelling that
+  can be represented by a runtime fwrite operation.  Collections are kept
+  out of this first runtime-derived slice; their semantics remain on the
+  verified stage0 fallback path."
+  [value]
+  (or (nil? value)
+      (string? value)
+      (number? value)
+      (boolean? value)
+      (char? value)
+      (keyword? value)
+      (symbol? value)))
+
+(defn c-backend-runtime-instruction-supported?
+  [instruction]
+  (and (map? instruction)
+       (contains? c-backend-runtime-derived-instructions (:op instruction))
+       (cond
+         (#{:literal :quote} (:op instruction))
+         (c-backend-runtime-literal? (:value instruction))
+         (= :println (:op instruction))
+         (every? c-backend-runtime-instruction-supported?
+                 (:args instruction))
+         (= :do (:op instruction))
+         (every? c-backend-runtime-instruction-supported?
+                 (:body instruction))
+         :else false)))
+
+(defn c-backend-runtime-plan-supported?
+  [plan]
+  (every? (fn [[_ function]]
+            (every? c-backend-runtime-instruction-supported?
+                    (:instructions function)))
+          (:functions plan)))
+
+(defn c-backend-validate-runtime-plan!
+  "Fail closed before lowering when the explicitly requested runtime-derived
+  mode sees an instruction outside its closed semantic subset."
+  [source-path target plan]
+  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
+    (when-let [instruction (peek pending)]
+      (let [pending (pop pending)
+            op (:op instruction)]
+        (when-not (contains? c-backend-runtime-derived-instructions op)
+          (c-backend-fail! "B2-UNSUPPORTED"
+                           "runtime-derived C lowering does not implement this instruction"
+                           source-path target instruction
+                           {:unsupported-op op
+                            :lowering-mode :runtime-derived
+                            :missing-fact :runtime-c-lowering-rule
+                            :remediation "Use the verified stage0 fallback or restrict the source to literal, println, and do."}))
+        (when (and (#{:literal :quote} op)
+                   (not (c-backend-runtime-literal? (:value instruction))))
+          (c-backend-fail! "B2-UNSUPPORTED"
+                           "runtime-derived C lowering only accepts scalar literals"
+                           source-path target instruction
+                           {:unsupported-op op
+                            :lowering-mode :runtime-derived
+                            :missing-fact :scalar-literal-lowering
+                            :remediation "Keep collections and computed values on the verified stage0 fallback."}))
+        (recur (into pending
+                     (case op
+                       :println (remove nil? (:args instruction))
+                       :do (remove nil? (:body instruction))
+                       []))))))
+  :passed)
+
+(defn c-backend-runtime-bytes
+  [value]
+  (let [text (str value)
+        bytes (.getBytes (str text) java.nio.charset.StandardCharsets/UTF_8)]
+    (vec (map #(bit-and (int %) 0xff) bytes))))
+
+(defn c-backend-runtime-byte-array-source
+  [name bytes]
+  (let [values (if (seq bytes) bytes [0])]
+    (str "  static const unsigned char " name "[] = {"
+         (str/join "," values)
+         "};\n"
+         "  fwrite(" name ", 1, " (if (seq bytes) (str "sizeof(" name ")") "0")
+         ", stdout);\n")))
+
+(defn c-backend-runtime-value-source
+  [instruction counter indent]
+  (let [padding (apply str (repeat indent "  "))
+        name (str "gravity_literal_" (swap! counter inc))]
+    (if (#{:literal :quote} (:op instruction))
+      (str padding
+           (c-backend-runtime-byte-array-source
+            name (c-backend-runtime-bytes (:value instruction))))
+      "")))
+
+(defn c-backend-runtime-instruction-source
+  [instruction counter indent]
+  (let [padding (apply str (repeat indent "  "))]
+    (cond
+      (#{:literal :quote} (:op instruction)) ""
+      (= :println (:op instruction))
+      (str (apply str
+                  (map-indexed
+                   (fn [index arg]
+                     (str (when (pos? index)
+                            (c-backend-runtime-byte-array-source
+                             (str "gravity_space_" (swap! counter inc))
+                             [32]))
+                          (c-backend-runtime-value-source
+                           arg counter indent)))
+                   (:args instruction)))
+           padding
+           (c-backend-runtime-byte-array-source
+            (str "gravity_newline_" (swap! counter inc)) [10]))
+      (= :do (:op instruction))
+      (apply str
+             (map #(c-backend-runtime-instruction-source % counter indent)
+                  (:body instruction)))
+      :else "")))
+
+(defn c-backend-runtime-source
+  "Emit C that performs the instruction semantics at process runtime.  Each
+  scalar literal is a byte array written by an individual fwrite call, so a
+  source edit changes the generated runtime program without collapsing the
+  whole result into a compile-time stdout string."
+  [plan]
+  (let [counter (atom 0)
+        main (get-in plan [:functions (:entrypoint plan)])]
+    (str "#include <stdio.h>\n\n"
+         "int main(void) {\n"
+         (apply str
+                (map #(c-backend-runtime-instruction-source % counter 1)
+                     (:instructions main)))
+         "  return 0;\n"
+         "}\n")))
+
 (defn c-backend-source
   [stdout]
   (str "#include <stdio.h>\n\n"
@@ -101779,12 +101922,14 @@
   ([source-path source-text]
    (c-backend-source-artifact source-path source-text {}))
   ([source-path source-text {:keys [target dialect emit-dir compile?
+                                    lowering-mode runtime-derived?
                                     executable-path c-source-path
                                     manifest-path source-map-path
                                     provenance-path]
                              :or {target :c-hosted
                                   dialect :c11
-                                  compile? false}}]
+                                  compile? false
+                                  lowering-mode :verified-stage0-output}}]
    (let [target (cond
                   (keyword? target) target
                   (string? target) (keyword (str/lower-case target))
@@ -101805,6 +101950,10 @@
                          :forms (:expanded-forms macro-artifact))
            plan (stage0-compiled-core-plan source-path source-text module)
            _ (c-backend-validate-plan! source-path target plan)
+           runtime-derived? (or (= :runtime-derived lowering-mode)
+                                (= true runtime-derived?))
+           _ (when runtime-derived?
+               (c-backend-validate-runtime-plan! source-path target plan))
            stdout (try
                     (execute-stage0-compiled-plan plan)
                     (catch clojure.lang.ExceptionInfo ex
@@ -101815,7 +101964,9 @@
                                        source-path target nil
                                        {:cause-message (.getMessage ex)
                                         :missing-fact :closed-c-runtime-semantics})))
-           c-source (c-backend-source stdout)
+           c-source (if runtime-derived?
+                      (c-backend-runtime-source plan)
+                      (c-backend-source stdout))
            source-hash (str "sha256:" (sha256-hex source-text))
            plan-input (select-keys plan [:kind :entrypoint :functions
                                          :instruction-summary :effect-summary])
@@ -101859,9 +102010,16 @@
                            :stdout-hash output-hash
                            :instruction-summary (:instruction-summary plan)
                            :effect-summary (:effect-summary plan)
-                           :lowering-strategy :verified-stage0-output-lowering
+                           :lowering-strategy (if runtime-derived?
+                                                :runtime-derived-instruction-lowering
+                                                :verified-stage0-output-lowering)
                            :runtime :hosted-libc-stdout
-                           :compile-time-evaluated? true
+                           :compile-time-evaluated? (not runtime-derived?)
+                           :runtime-derived? runtime-derived?
+                           :oracle (when runtime-derived?
+                                     {:kind :clojure-stage0-execution
+                                      :purpose :parity-only
+                                      :authoritative-runtime? false})
                            :safety-mode (get-in plan [:module :safety])
                            :profile (get-in plan [:module :profile])
                            :capabilities (get-in plan [:module :capabilities])
@@ -101883,6 +102041,10 @@
                                 :dialect dialect
                                 :target target}
                        :runtime :hosted-libc-stdout
+                       :oracle (when runtime-derived?
+                                 {:kind :clojure-stage0-execution
+                                  :purpose :parity-only
+                                  :authoritative-runtime? false})
                        :source-map-hash source-map-hash
                        :manifest-hash manifest-hash
                        :clojure-seed-boundary? true
@@ -101910,10 +102072,12 @@
                                    :extension (gravity-source-extension source-path)
                                    :kind (gravity-source-kind source-path)
                                    :sha256 source-hash}
-                          :target {:backend :c
-                                   :dialect dialect
-                                   :target target
-                                   :runtime :hosted-libc-stdout}
+                          :target (cond-> {:backend :c
+                                           :dialect dialect
+                                           :target target
+                                           :runtime :hosted-libc-stdout}
+                                    runtime-derived?
+                                    (assoc :lowering-mode :runtime-derived))
                           :input-plan-id (:plan-id plan)
                           :input-plan-kind (:kind plan)
                           :input-plan-hash plan-hash
