@@ -9373,6 +9373,41 @@
     (is (= '(quote gravity.reader/value) (:form syntax)))
     (is (= :quote (get-in syntax [:generated-origin 0 :reader-abbreviation])))))
 
+(defn- absolute-test-classpath
+  []
+  (let [base (.getCanonicalFile (java.io.File. "."))]
+    (->> (str/split (System/getProperty "java.class.path")
+                    (re-pattern
+                     (java.util.regex.Pattern/quote
+                      java.io.File/pathSeparator)))
+         (map #(let [entry (java.io.File. %)]
+                 (.getCanonicalPath
+                  (if (.isAbsolute entry)
+                    entry
+                    (java.io.File. base %)))))
+         (str/join java.io.File/pathSeparator))))
+
+(defn- reader-source-id-from-process-cwd
+  [working-directory source-path]
+  (let [java-command (str (System/getProperty "java.home")
+                          java.io.File/separator "bin"
+                          java.io.File/separator "java")
+        expression
+        (str "(require '[gravity.bootstrap :as bootstrap]) "
+             "(println (:source-id (:source-unit-record "
+             "(bootstrap/read-file-artifact " (pr-str source-path) "))))")
+        process-builder
+        (doto (ProcessBuilder.
+               ^java.util.List
+               [java-command "-cp" (absolute-test-classpath)
+                "clojure.main" "-e" expression])
+          (.directory (java.io.File. working-directory))
+          (.redirectErrorStream true))
+        process (.start process-builder)
+        output (slurp (.getInputStream process))
+        exit (.waitFor process)]
+    {:exit exit :out (str/trim output)}))
+
 (deftest reader-source-unit-identity-preserves-path-extension-and-options
   (let [gravity-path (fixture "accepted/reader-source-unit-identity.gravity")
         qst-path (fixture "accepted/reader-source-unit-identity.qst")
@@ -9386,7 +9421,7 @@
                          gravity-path
                          (bootstrap/read-gravity-source-text gravity-path)
                          (assoc (:reader-options gravity-artifact)
-                                :retain-trivia false))
+                                :retain-comments false))
         long-prefix (vec (range 300))]
     (is (= :gravity/source-unit (:artifact gravity-unit)))
     (is (= gravity-path (:path gravity-unit)))
@@ -9403,18 +9438,104 @@
     (is (= (:project-root gravity-unit)
            (get-in gravity-unit
                    [:project-root-record :project-root-id])))
-    (is (= gravity-path (get-in gravity-unit [:identity-inputs :path])))
-    (is (= ".gravity"
-           (get-in gravity-unit [:identity-inputs :extension])))
+    (is (= (:project-relative-path gravity-unit)
+           (get-in gravity-unit
+                   [:identity-inputs :project-relative-path])))
+    (is (not (contains? (:identity-inputs gravity-unit) :path)))
+    (is (not (contains? (:identity-inputs gravity-unit) :extension)))
+    (is (not (contains? (:identity-inputs gravity-unit) :source-kind)))
+    (is (= true (get-in gravity-artifact
+                        [:reader-options :retain-comments])))
+    (is (re-find #"^sha256:[0-9a-f]{64}$"
+                 (get-in gravity-artifact
+                         [:reader-options :extension-policy])))
+    (is (contains? (set (get-in gravity-artifact [:pass :rejects]))
+                   "L1-SOURCE-EXTENSION"))
+    (doseq [legacy-field [:token-stream :form-tree :syntax-seed-stream
+                          :reader-source-map :literal-decoding-records
+                          :incremental-reader-hashes]]
+      (is (not (contains? gravity-artifact legacy-field)) legacy-field))
     (is (not= (bootstrap/reader-canonical-hash
                (conj long-prefix :suffix-a))
               (bootstrap/reader-canonical-hash
                (conj long-prefix :suffix-b))))))
 
+(deftest reader-source-id-is-independent-of-process-working-directory
+  (let [repo-root (.getCanonicalPath (java.io.File. "."))
+        bootstrap-directory (.getCanonicalPath
+                             (java.io.File. repo-root "bootstrap"))
+        source-path (.getCanonicalPath
+                     (java.io.File.
+                      (fixture "accepted/reader-source-unit-identity.gravity")))
+        root-result (reader-source-id-from-process-cwd repo-root source-path)
+        nested-result (reader-source-id-from-process-cwd bootstrap-directory
+                                                         source-path)]
+    (is (zero? (:exit root-result)) (:out root-result))
+    (is (zero? (:exit nested-result)) (:out nested-result))
+    (is (re-find #"^sha256:[0-9a-f]{64}$" (:out root-result)))
+    (is (= (:out root-result) (:out nested-result)))))
+
+(deftest reader-source-id-uses-explicit-project-context
+  (let [source-text "(ns identity.context (:profile :hosted))"
+        options bootstrap/standard-reader-options
+        project-root-id (bootstrap/reader-canonical-hash
+                         {:project :same-logical-project})
+        other-root-id (bootstrap/reader-canonical-hash
+                       {:project :different-logical-project})
+        context-a {:project-root-id project-root-id
+                   :project-root-path "/checkout-a"
+                   :project-relative-path "src/example.gravity"}
+        context-b {:project-root-id project-root-id
+                   :project-root-path "/checkout-b"
+                   :project-relative-path "src/example.gravity"}
+        unit-a (bootstrap/c2-source-unit-record
+                "/checkout-a/src/example.gravity" source-text options context-a)
+        unit-b (bootstrap/c2-source-unit-record
+                "/checkout-b/src/example.gravity" source-text options context-b)
+        other-root (bootstrap/c2-source-unit-record
+                    "/checkout-a/src/example.gravity" source-text options
+                    (assoc context-a :project-root-id other-root-id))
+        other-relative (bootstrap/c2-source-unit-record
+                        "/checkout-a/src/example.gravity" source-text options
+                        (assoc context-a
+                               :project-relative-path "src/other.gravity"))
+        hashes-a (bootstrap/c2-incremental-hashes
+                  unit-a [] [] [] [] [])
+        hashes-b (bootstrap/c2-incremental-hashes
+                  unit-b [] [] [] [] [])]
+    (is (= (:source-id unit-a) (:source-id unit-b)))
+    (is (not= (:source-id unit-a) (:source-id other-root)))
+    (is (not= (:source-id unit-a) (:source-id other-relative)))
+    (is (= "/checkout-a/src/example.gravity" (:path unit-a)))
+    (is (= "/checkout-b/src/example.gravity" (:path unit-b)))
+    (is (= ".gravity" (:extension unit-a)))
+    (is (= ".gravity" (:extension unit-b)))
+    (is (not (contains? (:identity-inputs unit-a) :path)))
+    (is (not (contains? (:identity-inputs unit-a) :extension)))
+    (is (= (:source-id unit-a) (:source-unit hashes-a)))
+    (is (= (:source-unit hashes-a) (:source-unit hashes-b)))
+    (doseq [invalid-relative-path ["/absolute/example.gravity"
+                                   "../escape/example.gravity"]]
+      (is (= "C2-HASH"
+             (diagnostic-id
+              #(bootstrap/c2-source-unit-record
+                "/checkout-a/src/example.gravity" source-text options
+                (assoc context-a
+                       :project-relative-path invalid-relative-path))))))
+    (is (= (:source-id unit-a)
+           (:source-id
+            (bootstrap/c2-source-unit-record
+             "/checkout-a/src/example.gravity" source-text options
+             (assoc context-a
+                    :project-relative-path "src/../src/example.gravity")))))))
+
 (deftest reader-file-policy-rejects-extension-and-malformed-utf8
   (let [extension-path (fixture "rejected/reader-source-extension.txt")
         extension-diagnostic
-        (diagnostic-data #(bootstrap/read-file-artifact extension-path))]
+        (diagnostic-data #(bootstrap/read-file-artifact extension-path))
+        c2-extension-diagnostic
+        (diagnostic-data
+         #(bootstrap/compiler-c2-reader-file-artifact extension-path))]
     (is (= "L1-SOURCE-EXTENSION" (:id extension-diagnostic)))
     (is (= :error (:severity extension-diagnostic)))
     (is (= extension-path
@@ -9422,6 +9543,12 @@
     (is (= #{".gravity" ".qst"}
            (set (get-in extension-diagnostic
                         [:facts :allowed-extensions]))))
+    (is (= "C2-EXTENSION" (:id c2-extension-diagnostic)))
+    (is (= extension-path
+           (get-in c2-extension-diagnostic [:source-span :source])))
+    (is (= true
+           (get-in c2-extension-diagnostic
+                   [:reader-options :retain-comments])))
     (doseq [suffix [".gravity" ".qst"]]
       (let [path (java.nio.file.Files/createTempFile
                   "gravity-invalid-utf8-"
@@ -9434,7 +9561,11 @@
            (make-array java.nio.file.OpenOption 0))
           (let [diagnostic
                 (diagnostic-data
-                 #(bootstrap/read-file-artifact (.toString path)))]
+                 #(bootstrap/read-file-artifact (.toString path)))
+                c2-diagnostic
+                (diagnostic-data
+                 #(bootstrap/compiler-c2-reader-file-artifact
+                   (.toString path)))]
             (is (= "L1-SOURCE-ENCODING" (:id diagnostic)))
             (is (= :error (:severity diagnostic)))
             (is (= (.toString path)
@@ -9442,7 +9573,12 @@
             (is (= 1 (get-in diagnostic [:primary :span :byte-start])))
             (is (= :utf-8 (get-in diagnostic
                                   [:facts :declared-encoding])))
-            (is (re-find #"^sha256:" (:source-id diagnostic))))
+            (is (re-find #"^sha256:" (:source-id diagnostic)))
+            (is (= "C2-ENCODING" (:id c2-diagnostic)))
+            (is (= (.toString path)
+                   (get-in c2-diagnostic [:source-span :source])))
+            (is (= 1 (get-in c2-diagnostic
+                             [:source-span :byte-start]))))
           (finally
             (java.nio.file.Files/deleteIfExists path)))))))
 
@@ -11690,19 +11826,29 @@
     (is (true? (:incremental-hashes-stable? proof)))
     (is (true? (:diagnostics-covered? proof)))
     (is (true? (:semantic-errors-deferred? proof)))
-    (is (= :complete (:status proof)))
+    (is (false? (:lexical-token-stream? proof)))
+    (is (false? (:nested-form-tree? proof)))
+    (is (= :residual-top-level-form-summaries
+           (:representation-status proof)))
+    (is (= :partial (:status proof)))
+    (is (= :residual (get-in artifact
+                             [:representation-boundary :status])))
     (is (= bootstrap/c2-reader-diagnostic-ids
            (:required-diagnostic-ids conformance)))
     (is (= :complete (:source-unit-status conformance)))
-    (is (= :complete (:span-status conformance)))
-    (is (= :complete (:abbreviation-status conformance)))
-    (is (= :complete (:literal-status conformance)))
-    (is (= :complete (:trivia-status conformance)))
-    (is (= :complete (:extension-status conformance)))
-    (is (= :complete (:incremental-hash-status conformance)))
-    (is (= :complete (:diagnostic-status conformance)))
-    (is (= :complete (:semantic-deferment-status conformance)))
-    (is (= :complete (:status conformance)))))
+    (is (= :residual-top-level-form-summaries
+           (:token-stream-status conformance)))
+    (is (= :residual-flat-form-summaries
+           (:form-tree-status conformance)))
+    (is (= :top-level-only (:span-status conformance)))
+    (is (= :partial (:abbreviation-status conformance)))
+    (is (= :partial (:literal-status conformance)))
+    (is (= :partial (:trivia-status conformance)))
+    (is (= :partial (:extension-status conformance)))
+    (is (= :partial (:incremental-hash-status conformance)))
+    (is (= :partial (:diagnostic-status conformance)))
+    (is (= :partial (:semantic-deferment-status conformance)))
+    (is (= :partial (:status conformance)))))
 
 (deftest c3-syntax-artifact-preserves-p06-d082-contract
   (let [artifact (bootstrap/compiler-c3-syntax-file-artifact
@@ -21763,7 +21909,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:720f38cc3045b7299665663dd2f9d981eb3ac1c7c2166d2d20f2e41885070198"
+    (is (= "sha256:504f73315fb68e2059d34d4979d8eb6464f77761b322ec31b6d2a6c4cccf1ee4"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.l1-c2-surface-syntax-reader\n"

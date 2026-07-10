@@ -60,7 +60,9 @@ profile validate, or call host services beyond declared source input.
 ```clojure
 {:artifact :gravity/source-unit
  :source-id source-hash
- :path "src/app.gravity"
+ :path actual-supplied-path
+ :extension ".gravity"
+ :project-relative-path "src/app.gravity"
  :encoding :utf-8
  :bytes-hash bytes-hash
  :project-root project-hash
@@ -70,9 +72,11 @@ profile validate, or call host services beyond declared source input.
  :source-kind :gravity}
 ```
 
-Source identity is based on source bytes, declared encoding, source path under
-the project root, reader options, and feature decisions. It excludes downstream
-semantic facts.
+Source identity is based on source bytes, declared encoding, the explicit
+project-root id, source path relative to that root, reader options, and feature
+decisions. The actual supplied path and extension remain provenance fields
+outside the normalized identity tuple. Source identity excludes downstream
+semantic facts and ambient process state such as the current working directory.
 
 ## Token Stream
 
@@ -191,7 +195,9 @@ Reader diagnostics use `C2` identifiers:
 - `C2-SET` for duplicate literal set entries decidable at read time.
 - `C2-METADATA` for metadata without a following form or invalid metadata shape.
 - `C2-ABBREV` for invalid reader abbreviation placement.
-- `C2-EXTENSION` for unknown, disallowed, or effect-violating reader extension.
+- `C2-EXTENSION` for a source path outside the declared source-extension
+  policy, or for an unknown, disallowed, or effect-violating reader tag
+  extension.
 - `C2-HASH` for unstable reader artifact identity.
 
 Diagnostics must include source id, exact span, token or form id when available,

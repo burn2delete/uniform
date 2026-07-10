@@ -15,6 +15,12 @@ L1 owns surface syntax only. It does not define core semantics for every form; `
 
 A Gravity source file contains zero or more top-level forms. A normal compilation unit begins with an `ns` form.
 
+The co-canonical source extensions are `.qst` and `.gravity`. Both are
+first-class source kinds. Source-unit provenance preserves the actual supplied
+path and extension, while stable source identity uses the declared project-root
+id and the source path relative to that root. Other source extensions are
+rejected before reading forms.
+
 ```clojure
 (ns example.http
   (:profile :hosted)
@@ -257,6 +263,7 @@ Syntax-valid but semantically illegal forms are not reader errors. They continue
 - `L1-NS-SHAPE`: namespace clause has invalid syntax shape.
 - `L1-READER-EXTENSION`: reader extension is unknown, disallowed, or requires ungranted build effect.
 - `L1-SOURCE-ENCODING`: source bytes cannot be decoded according to project policy.
+- `L1-SOURCE-EXTENSION`: source path does not use the co-canonical `.qst` or `.gravity` extension policy.
 
 Each diagnostic includes source span, raw text excerpt when safe, reader state, and remediation.
 

@@ -48,9 +48,10 @@
                   :gravity {:extension ".gravity"
                             :meaning :gravity-branded-source}}
    :canonical-source-extensions [".qst" ".gravity"]
-   :identity-fields [:path :extension :encoding :bytes-hash
-                     :project-root-id :reader-options :enabled-features
-                     :extension-policy :source-kind]
+   :identity-fields [:project-root-id :project-relative-path :encoding
+                     :bytes-hash :reader-options :enabled-features
+                     :extension-policy]
+   :provenance-fields [:path :extension :source-kind]
    :reader-output [:source-unit-record :token-stream :form-tree
                    :syntax-seed-stream :reader-source-map
                    :reader-diagnostics]

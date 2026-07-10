@@ -317,40 +317,45 @@
         (range)
         form-records)))
 
-(declare l1-c2-reader-artifacts)
+(declare l1-source-unit-artifacts
+         reader-project-context-for-source
+         standard-reader-options)
 
 (defn read-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
-        _ (validate-ns-syntax! source-path forms)
-        context (reader-module-context forms)
-        syntax (syntax-object-stream source-path records context)
-        reader-options {:retain-trivia true
-                        :enabled-features #{:standard-reader}
-                        :extension-policy :gravity/standard-reader-v1}
-        reader-details (l1-c2-reader-artifacts source-path source-text records
-                                               syntax reader-options)]
-    (merge
-     {:kind :gravity/stage0-reader-artifact
-     :pass {:name :reader
-            :input :source-bytes
-            :output :syntax-object-stream
-            :preserves [:source-spans :metadata :reader-origin :profile-context]
-            :rejects ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY" "L1-METADATA"
-                      "L1-NS-SHAPE" "L1-READER-EXTENSION"
-                      "L1-SOURCE-ENCODING"]}
-     :source {:path source-path
-              :extension (gravity-source-extension source-path)
-              :encoding :utf-8
-              :source-kind (gravity-source-kind source-path)
-              :byte-count (utf8-byte-count source-text)
-              :form-count (count records)}
-     :module-context (dissoc context :namespace-clause-syntax)
-     :syntax-object-stream syntax
-     :namespace-clause-syntax (:namespace-clause-syntax context)
-     :diagnostics []}
-     reader-details)))
+  ([source-path source-text]
+   (read-source-artifact source-path source-text
+                         (reader-project-context-for-source source-path)))
+  ([source-path source-text project-context]
+   (let [records (read-source-form-records source-path source-text)
+         forms (mapv :form records)
+         _ (validate-ns-syntax! source-path forms)
+         context (reader-module-context forms)
+         syntax (syntax-object-stream source-path records context)
+         reader-details (l1-source-unit-artifacts source-path source-text
+                                                  standard-reader-options
+                                                  project-context)]
+     (merge
+      {:kind :gravity/stage0-reader-artifact
+       :pass {:name :reader
+              :input :source-bytes
+              :output :syntax-object-stream
+              :preserves [:source-spans :metadata :reader-origin
+                          :profile-context :source-unit-identity]
+              :rejects ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY"
+                        "L1-METADATA" "L1-NS-SHAPE"
+                        "L1-READER-EXTENSION" "L1-SOURCE-ENCODING"
+                        "L1-SOURCE-EXTENSION"]}
+       :source {:path source-path
+                :extension (gravity-source-extension source-path)
+                :encoding :utf-8
+                :source-kind (gravity-source-kind source-path)
+                :byte-count (utf8-byte-count source-text)
+                :form-count (count records)}
+       :module-context (dissoc context :namespace-clause-syntax)
+       :syntax-object-stream syntax
+       :namespace-clause-syntax (:namespace-clause-syntax context)
+       :diagnostics []}
+      reader-details))))
 
 (defn ns-form?
   [form]
@@ -73327,6 +73332,7 @@
   (p15-s23-compiler-pipeline-manifest-source-artifact path))
 
 (declare c1-architecture-artifact-id
+         reader-canonical-hash
          c2-source-unit-record
          c2-token-record
          c2-form-record
@@ -73392,12 +73398,18 @@
    :observed value
    :remediation :repair_gravity_source_syntax_serialization_proof})
 
+(defn p15-s23-source-syntax-normalized-source-id?
+  [source-unit]
+  (and (map? (:identity-inputs source-unit))
+       (= (:source-id source-unit)
+          (reader-canonical-hash (:identity-inputs source-unit)))))
+
 (defn p15-s23-source-syntax-source-unit-stable?
   [source-path source-unit serialization]
   (and (= :gravity/source-unit (:artifact source-unit))
        (= source-path (:path source-unit))
        (re-find #"^sha256:" (str (:source-id source-unit)))
-       (= (:source-id source-unit) (:bytes-hash source-unit))
+       (p15-s23-source-syntax-normalized-source-id? source-unit)
        (true? (:source-unit-roundtrip? serialization))
        (true? (:stable-source-id? serialization))))
 
@@ -73489,7 +73501,7 @@
         hashes (:incremental-reader-hashes artifact)]
     {:source-unit-hash-stable?
      (and (= :gravity/source-unit (:artifact source-unit))
-          (= (:source-id source-unit) (:bytes-hash source-unit))
+          (p15-s23-source-syntax-normalized-source-id? source-unit)
           (re-find #"^sha256:" (str (:source-id source-unit))))
      :token-and-form-spans-present?
      (and (every? #(and (:token-id %)
@@ -73654,7 +73666,7 @@
      (= (:syntax-summary payload) (:syntax-summary roundtrip))
      :stable-source-id?
      (and (re-find #"^sha256:" (str (:source-id source-unit)))
-          (= (:source-id source-unit) (:bytes-hash source-unit)))
+          (p15-s23-source-syntax-normalized-source-id? source-unit))
      :stable-syntax-ids?
      (and (every? #(re-find #"^sha256:" (str %)) syntax-ids)
           (= (count syntax-ids) (count (set syntax-ids))))
@@ -101543,7 +101555,7 @@
     "C2-SET" "literal set contains duplicate entries decidable at read time"
     "C2-METADATA" "metadata is unattached or has invalid reader shape"
     "C2-ABBREV" "reader abbreviation placement is invalid"
-    "C2-EXTENSION" "reader extension is unknown, disallowed, or effect-violating"
+    "C2-EXTENSION" "source extension is noncanonical or reader extension is unknown, disallowed, or effect-violating"
     "C2-HASH" "reader artifact identity is unstable or incomplete"
     "reader document coverage failed"))
 
@@ -101571,6 +101583,8 @@
         old-id (:id data)
         cause (str (:cause-message data))
         id (cond
+             (= "L1-SOURCE-ENCODING" old-id) "C2-ENCODING"
+             (= "L1-SOURCE-EXTENSION" old-id) "C2-EXTENSION"
              (= "L1-DELIMITER" old-id) "C2-DELIMITER"
              (= "L1-STRING" old-id) "C2-STRING"
              (= "L1-MAP-ARITY" old-id) "C2-MAP"
@@ -101582,9 +101596,7 @@
       (c2-reader-fail! id source-path data
                        {:cause-message (or (:cause-message data)
                                            (:message data))
-                        :reader-options {:retain-comments true
-                                         :enabled-features
-                                         #{:standard-reader}}})
+                        :reader-options standard-reader-options})
       (throw ex))))
 
 (defn c2-reader-validate-overrides!
@@ -101607,7 +101619,7 @@
           (map (fn [[key item]]
                  [(reader-canonical-value key)
                   (reader-canonical-value item)]))
-          (sort-by (fn [[key _]] (pr-str key)))
+          (sort-by pr-str)
           vec)]
 
     (set? value)
@@ -101633,37 +101645,133 @@
                   *print-meta* true]
           (pr-str (reader-canonical-value value))))))
 
+(def standard-reader-policy
+  {:policy :gravity/standard-reader
+   :version 1
+   :registered-tags ['inst 'uuid]
+   :ambient-authority :denied})
+
+(def standard-reader-options
+  {:retain-comments true
+   :enabled-features #{:standard-reader}
+   :extension-policy (reader-canonical-hash standard-reader-policy)})
+
+(defn reader-project-root-path
+  [source-path]
+  (let [source-file (.getCanonicalFile (java.io.File. source-path))
+        start (if (.isDirectory source-file)
+                source-file
+                (.getParentFile source-file))]
+    (or (loop [candidate start]
+          (when candidate
+            (if (.isFile (java.io.File. candidate "deps.edn"))
+              candidate
+              (recur (.getParentFile candidate)))))
+        start
+        (.getParentFile source-file))))
+
+(defn reader-project-root-id
+  [project-root-path]
+  (let [manifest (java.io.File. project-root-path "deps.edn")]
+    (if (.isFile manifest)
+      (reader-canonical-hash
+       {:project-manifest "deps.edn"
+        :bytes-hash
+        (str "sha256:"
+             (sha256-bytes-hex
+              (java.nio.file.Files/readAllBytes (.toPath manifest))))})
+      (reader-canonical-hash {:project-root-kind :standalone-source-root}))))
+
+(defn reader-normalize-relative-path
+  [path]
+  (let [slash-path (str/replace (str path) "\\" "/")
+        normalized (.normalize
+                    (java.nio.file.Paths/get
+                     slash-path (make-array String 0)))]
+    (str/replace (str normalized) "\\" "/")))
+
+(defn reader-valid-project-relative-path?
+  [path]
+  (let [path-object (java.nio.file.Paths/get path (make-array String 0))]
+    (and (not (.isAbsolute path-object))
+         (not (str/blank? path))
+         (not= ".." (first (str/split path #"/"))))))
+
+(defn reader-project-context-for-source
+  [source-path]
+  (let [source-file (.getCanonicalFile (java.io.File. source-path))
+        project-root (.getCanonicalFile
+                      (reader-project-root-path source-path))
+        relative-path (.relativize (.toPath project-root)
+                                   (.toPath source-file))]
+    {:project-root-id (reader-project-root-id project-root)
+     :project-root-path (.getPath project-root)
+     :project-relative-path (reader-normalize-relative-path relative-path)}))
+
+(defn reader-explicit-project-context
+  [project-context]
+  (let [project-root-id (:project-root-id project-context)
+        project-relative-path (:project-relative-path project-context)
+        normalized-path (when (string? project-relative-path)
+                          (reader-normalize-relative-path
+                           project-relative-path))]
+    (when-not (and (string? project-root-id)
+                   (re-matches #"sha256:[0-9a-f]{64}" project-root-id)
+                   (string? normalized-path)
+                   (reader-valid-project-relative-path? normalized-path))
+      (throw
+       (ex-info
+        "reader project context requires a project-root id and relative path"
+        {:id "C2-HASH"
+         :project-context project-context
+         :normalized-project-relative-path normalized-path
+         :missing-fields
+         (vec (remove #(get project-context %)
+                      [:project-root-id :project-relative-path]))})))
+    (assoc project-context
+           :project-relative-path
+           normalized-path)))
+
 (defn reader-project-root-record
-  []
-  (let [path (.getCanonicalPath (java.io.File. "."))]
-    {:path path
-     :project-root-id (reader-canonical-hash {:project-root path})}))
+  [project-context]
+  (let [context (reader-explicit-project-context project-context)]
+    {:path (:project-root-path context)
+     :project-root-id (:project-root-id context)}))
 
 (defn reader-source-identity-inputs
-  [source-path source-text reader-options]
-  (let [project-root (reader-project-root-record)]
-    {:path source-path
-     :extension (gravity-source-extension source-path)
+  [source-text reader-options project-context]
+  (let [context (reader-explicit-project-context project-context)]
+    {:project-root-id (:project-root-id context)
+     :project-relative-path (:project-relative-path context)
      :encoding :utf-8
      :bytes-hash (str "sha256:" (sha256-hex source-text))
-     :project-root-id (:project-root-id project-root)
      :reader-options reader-options
      :enabled-features (set (:enabled-features reader-options))
-     :extension-policy (:extension-policy reader-options)
-     :source-kind (gravity-source-kind source-path)}))
+     :extension-policy (:extension-policy reader-options)}))
 
 (defn c2-source-unit-record
-  [source-path source-text reader-options]
-  (let [identity-inputs (reader-source-identity-inputs source-path source-text
-                                                        reader-options)
-        project-root (reader-project-root-record)]
-    (merge
-     {:artifact :gravity/source-unit
-      :source-id (reader-canonical-hash identity-inputs)
-      :project-root (:project-root-id project-root)
-      :project-root-record project-root
-      :identity-inputs identity-inputs}
-     identity-inputs)))
+  ([source-path source-text reader-options]
+   (c2-source-unit-record source-path source-text reader-options
+                          (reader-project-context-for-source source-path)))
+  ([source-path source-text reader-options project-context]
+   (let [context (reader-explicit-project-context project-context)
+         identity-inputs (reader-source-identity-inputs source-text
+                                                        reader-options
+                                                        context)
+         project-root (reader-project-root-record context)]
+     (merge
+      {:artifact :gravity/source-unit
+       :source-id (reader-canonical-hash identity-inputs)
+       :path source-path
+       :extension (gravity-source-extension source-path)
+       :source-kind (gravity-source-kind source-path)
+       :project-relative-path (:project-relative-path context)
+       :project-root (:project-root-id context)
+       :project-root-record project-root
+       :identity-inputs identity-inputs}
+      (select-keys identity-inputs
+                   [:encoding :bytes-hash :reader-options
+                    :enabled-features :extension-policy])))))
 
 (defn c2-token-record
   [idx record source-id]
@@ -101759,7 +101867,7 @@
   [source-unit token-stream form-tree syntax-seeds extension-invocations
    diagnostics]
   {:artifact :gravity/reader-incremental-hashes
-   :source-unit (reader-canonical-hash source-unit)
+   :source-unit (:source-id source-unit)
    :token-stream (reader-canonical-hash token-stream)
    :form-tree (reader-canonical-hash form-tree)
    :syntax-seed-stream (reader-canonical-hash syntax-seeds)
@@ -101767,34 +101875,12 @@
    :reader-diagnostics (reader-canonical-hash diagnostics)
    :status :stable})
 
-(defn l1-c2-reader-artifacts
-  [source-path source-text records syntax-seeds reader-options]
-  (let [source-unit (c2-source-unit-record source-path source-text
-                                           reader-options)
-        token-stream (mapv #(c2-token-record %1 %2 (:source-id source-unit))
-                           (range)
-                           records)
-        form-tree (mapv c2-form-record (range) records)
-        extension-invocations []
-        diagnostics []]
-    {:source-unit-record source-unit
-     :token-stream token-stream
-     :form-tree form-tree
-     :syntax-seed-stream syntax-seeds
-     :reader-source-map (mapv #(select-keys % [:syntax-id :span])
-                              syntax-seeds)
-     :literal-decoding-records (c2-literal-records records)
-     :trivia-retention-records (c2-trivia-records source-path source-text)
-     :reader-extension-registry
-     [{:tag 'inst :policy :standard-reader :build-effects #{}
-       :capabilities #{}}
-      {:tag 'uuid :policy :standard-reader :build-effects #{}
-       :capabilities #{}}]
-     :reader-options reader-options
-     :reader-extension-invocation-records extension-invocations
-     :incremental-reader-hashes
-     (c2-incremental-hashes source-unit token-stream form-tree syntax-seeds
-                            extension-invocations diagnostics)}))
+(defn l1-source-unit-artifacts
+  [source-path source-text reader-options project-context]
+  {:source-unit-record
+   (c2-source-unit-record source-path source-text reader-options
+                          project-context)
+   :reader-options reader-options})
 
 (defn c2-reader-capability-proof
   [artifact]
@@ -101831,7 +101917,10 @@
      (= (set c2-reader-diagnostic-ids) diagnostics)
      :semantic-errors-deferred?
      (true? (get-in artifact [:semantic-error-deferment-record :deferred?]))
-     :status :complete}))
+     :lexical-token-stream? false
+     :nested-form-tree? false
+     :representation-status :residual-top-level-form-summaries
+     :status :partial}))
 
 (defn c2-reader-validate!
   [source-path artifact]
@@ -101861,9 +101950,11 @@
           reader-artifact (read-source-artifact source-path source-text)
           reader-options (:reader-options reader-artifact)
           source-unit (:source-unit-record reader-artifact)
-          token-stream (:token-stream reader-artifact)
-          form-tree (:form-tree reader-artifact)
-          syntax-seeds (:syntax-seed-stream reader-artifact)
+          token-stream (mapv #(c2-token-record %1 %2 (:source-id source-unit))
+                             (range)
+                             records)
+          form-tree (mapv c2-form-record (range) records)
+          syntax-seeds (:syntax-object-stream reader-artifact)
           extension-invocations
           [{:artifact :gravity/reader-extension-invocation
             :tag 'gravity/schema
@@ -101897,6 +101988,13 @@
            :module (select-keys module [:module :source-path :profile :target
                                         :effects :capabilities])
            :source-unit-record source-unit
+           :representation-boundary
+           {:token-stream :one-record-per-top-level-form
+            :form-tree :flat-top-level-form-summary
+            :lexical-token-stream? false
+            :nested-form-tree? false
+            :required-next-slice :lexical-token-and-form-tree-reader
+            :status :residual}
            :token-stream token-stream
            :form-tree form-tree
            :syntax-seed-stream syntax-seeds
@@ -101930,15 +102028,18 @@
                        :task "P06-D081"
                        :required-diagnostic-ids c2-reader-diagnostic-ids
                        :source-unit-status :complete
-                       :span-status :complete
-                       :abbreviation-status :complete
-                       :literal-status :complete
-                       :trivia-status :complete
-                       :extension-status :complete
-                       :incremental-hash-status :complete
-                       :diagnostic-status :complete
-                       :semantic-deferment-status :complete
-                       :status :complete}
+                       :token-stream-status
+                       :residual-top-level-form-summaries
+                       :form-tree-status :residual-flat-form-summaries
+                       :span-status :top-level-only
+                       :abbreviation-status :partial
+                       :literal-status :partial
+                       :trivia-status :partial
+                       :extension-status :partial
+                       :incremental-hash-status :partial
+                       :diagnostic-status :partial
+                       :semantic-deferment-status :partial
+                       :status :partial}
           artifact (assoc artifact-base
                           :capability-based-proof capability-proof
                           :c2-reader-results conformance)]
@@ -101948,7 +102049,12 @@
 
 (defn compiler-c2-reader-file-artifact
   [path]
-  (compiler-c2-reader-source-artifact path (read-gravity-source-text path)))
+  (let [source-text
+        (try
+          (read-gravity-source-text path)
+          (catch clojure.lang.ExceptionInfo ex
+            (c2-reader-remap-exception! path ex)))]
+    (compiler-c2-reader-source-artifact path source-text)))
 
 (def c3-syntax-diagnostic-ids
   ["C3-SHAPE"
