@@ -24726,6 +24726,25 @@
           (java.nio.file.Files/deleteIfExists
            (.toPath (java.io.File. path))))))))
 
+(deftest public-current-source-c-compile-creates-nested-output-directory
+  (let [nonce (str (System/nanoTime))
+        root-directory (str "target/public-c-nested-" nonce)
+        output (str root-directory "/nested/hello")]
+    (try
+      (let [result (run-thin-bin "bin/gravity" "compile"
+                                 "examples/hello.gravity"
+                                 "--target" "c" "-o" output)
+            artifact (edn/read-string (:out result))
+            executable-result (run-bin output)]
+        (is (zero? (:exit result)) (:err result))
+        (is (= :gravity/c-backend-artifact (:kind artifact)))
+        (is (.isFile (java.io.File. output)))
+        (is (zero? (:exit executable-result)))
+        (is (= "Hello Gravity\n" (:out executable-result))))
+      (finally
+        (doseq [file (reverse (file-seq (java.io.File. root-directory)))]
+          (.delete ^java.io.File file))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]
