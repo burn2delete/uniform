@@ -101559,6 +101559,436 @@
         (catch Exception _
           nil)))))
 
+;; ---------------------------------------------------------------------------
+;; Hosted C target (bounded stage0 instruction-plan slice)
+;;
+;; This backend is deliberately small.  It consumes the verified stage0 plan
+;; produced above and lowers only the closed, side-effecting hosted subset to
+;; a deterministic C11 translation unit.  The subset is constant-output for
+;; now: evaluation is performed by the verified stage0 plan, then the resulting
+;; stdout is represented by a C fputs call.  This is a real executable target
+;; boundary (with optional host cc invocation), while the artifact records the
+;; seed boundary and does not claim final self-hosting.
+
+(def c-backend-supported-targets #{:c :c-hosted :c11})
+(def c-backend-supported-dialects #{:c11})
+(def c-backend-supported-instructions
+  #{:literal :quote :local :println :do :if :let :builtin-call
+    :function-call :vector-literal :map-literal :set-literal})
+
+(declare p18-ensure-dir!)
+(declare c-backend-fail!)
+
+(defn c-backend-output-path-allowed?
+  "Keep generated target artifacts inside the repository target tree or a
+  caller-owned temporary directory.  Relative one-segment paths are retained
+  for parity with the existing bootstrap command contract; absolute paths are
+  accepted only below the host temporary directory used by tests/tools."
+  [path]
+  (when (string? path)
+    (let [file (java.io.File. path)
+          segments (vec (remove str/blank?
+                               (str/split path #"/+")))
+          canonical (try (.getCanonicalPath file)
+                         (catch Exception _ nil))
+          temp-root (try (.getCanonicalPath
+                          (java.io.File. (System/getProperty "java.io.tmpdir")))
+                         (catch Exception _ nil))]
+      (and (not (str/blank? path))
+           (not-any? #{".."} segments)
+           (or (and (not (.isAbsolute file))
+                    (or (str/starts-with? path "target/")
+                        (= 1 (count segments))))
+               (and (.isAbsolute file)
+                    canonical temp-root
+                    (or (= canonical temp-root)
+                        (str/starts-with?
+                         canonical
+                         (str temp-root java.io.File/separator)))))))))
+
+(defn c-backend-validate-output-paths!
+  [source-path target paths]
+  (doseq [[kind path] paths]
+    (when (and path (not (c-backend-output-path-allowed? path)))
+      (c-backend-fail! "C14-INPUT"
+                       "C backend output path is outside the declared target roots"
+                       source-path target nil
+                       {:output-kind kind
+                        :output-path path
+                        :allowed-output-roots ["target/" "<current-directory>"
+                                               (System/getProperty "java.io.tmpdir")]
+                        :missing-fact :output-path-containment
+                        :remediation "Use target/ or a caller-owned temporary directory for C backend outputs."}))))
+
+(defn c-backend-canonical-value
+  "Canonicalize artifact inputs without allowing host map/set iteration order
+  to influence hashes or emitted manifests."
+  [value]
+  (cond
+    (map? value)
+    (into (sorted-map-by #(compare (pr-str %1) (pr-str %2)))
+          (map (fn [[k v]] [(c-backend-canonical-value k)
+                            (c-backend-canonical-value v)]))
+          value)
+    (set? value)
+    (vec (sort-by pr-str (map c-backend-canonical-value value)))
+    (vector? value)
+    (mapv c-backend-canonical-value value)
+    (seq? value)
+    (mapv c-backend-canonical-value value)
+    :else value))
+
+(defn c-backend-instruction-children
+  [instruction]
+  (case (:op instruction)
+    :println (:args instruction)
+    :do (:body instruction)
+    :if [(:test instruction) (:then instruction) (:else instruction)]
+    :let (concat (map :expr (:bindings instruction)) (:body instruction))
+    :builtin-call (:args instruction)
+    :function-call (:args instruction)
+    :vector-literal (:items instruction)
+    :set-literal (:items instruction)
+    :map-literal (mapcat (fn [{:keys [key value]}] [key value])
+                          (:entries instruction))
+    []))
+
+(defn c-backend-fail!
+  [id message source-path target subject extra]
+  (fail! id message
+         (merge {:severity :error
+                 :stage :c-backend-lowering
+                 :diagnostic-family (if (str/starts-with? id "C14")
+                                      :c14-target-lowering
+                                      :b2-c-backend)
+                 :backend :c
+                 :target target
+                 :source-span (or (:source-span subject)
+                                  (source-span source-path 0))
+                 :primary {:span (or (:source-span subject)
+                                     (source-span source-path 0))}
+                 :related []
+                 :facts {:instruction (when (map? subject) (:op subject))
+                         :dialect :c11}
+                 :remediation "Select the hosted C11 target and keep the source inside the verified stage0 instruction subset."}
+                extra)))
+
+(defn c-backend-validate-plan!
+  "Validate the actual stage0 instruction plan iteratively before lowering."
+  [source-path target plan]
+  (when-not (contains? c-backend-supported-targets target)
+    (c-backend-fail! "C14-TARGET"
+                     "hosted C backend target is unsupported"
+                     source-path target nil
+                     {:supported-targets (vec (sort c-backend-supported-targets))
+                      :missing-fact :supported-target
+                      :remediation "Request :c, :c-hosted, or :c11 explicitly."}))
+  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
+    (when-let [instruction (peek pending)]
+      (let [pending (pop pending)]
+        (when-not (map? instruction)
+          (c-backend-fail! "B2-UNSUPPORTED"
+                           "C backend received a malformed instruction"
+                           source-path target instruction
+                           {:missing-fact :instruction-record}))
+        (when-not (contains? c-backend-supported-instructions (:op instruction))
+          (c-backend-fail! "B2-UNSUPPORTED"
+                           "C backend instruction is outside the hosted subset"
+                           source-path target instruction
+                           {:unsupported-op (:op instruction)
+                            :missing-fact :c-lowering-rule}))
+        (when (and (= :builtin-call (:op instruction))
+                   (not (contains? stage0-builtin-functions
+                                  (:function instruction))))
+          (c-backend-fail! "B2-UNSUPPORTED"
+                           "C backend builtin is outside the hosted subset"
+                           source-path target instruction
+                           {:unsupported-op (:function instruction)
+                            :missing-fact :builtin-lowering-rule}))
+        (recur (into pending (remove nil?
+                                    (c-backend-instruction-children instruction)))))))
+  :passed)
+
+(defn c-backend-c-escape
+  [text]
+  (apply str
+         (map (fn [ch]
+                (cond
+                  (= ch \\) "\\\\"
+                  (= ch \") "\\\""
+                  (= ch \newline) "\\n"
+                  (= ch \return) "\\r"
+                  (= ch \tab) "\\t"
+                  (< (int ch) 32) (format "\\%03o" (int ch))
+                  :else (str ch)))
+              (str text))))
+
+(defn c-backend-source
+  [stdout]
+  (str "#include <stdio.h>\n\n"
+       "int main(void) {\n"
+       "  static const unsigned char gravity_output[] = \""
+       (c-backend-c-escape stdout) "\";\n"
+       "  fwrite(gravity_output, 1, sizeof(gravity_output) - 1, stdout);\n"
+       "  return 0;\n"
+       "}\n"))
+
+(defn c-backend-run-cc!
+  [c-source-path executable-path source-path target]
+  (let [stdout-file (java.io.File/createTempFile "gravity-c-cc-stdout-" ".txt")
+        stderr-file (java.io.File/createTempFile "gravity-c-cc-stderr-" ".txt")
+        pb (ProcessBuilder.
+            ^java.util.List
+            ["/usr/bin/cc" "-std=c11" "-Wall" "-Werror"
+             (str c-source-path) "-o" (str executable-path)])]
+    (try
+      (.redirectOutput pb stdout-file)
+      (.redirectError pb stderr-file)
+      (let [process (.start pb)]
+        (.waitFor process 60000 java.util.concurrent.TimeUnit/MILLISECONDS)
+        (let [result {:exit (.exitValue process)
+                      :out (if (.exists stdout-file) (slurp stdout-file) "")
+                      :err (if (.exists stderr-file) (slurp stderr-file) "")}]
+          (when-not (zero? (:exit result))
+            (c-backend-fail! "B2-DIALECT"
+                             "host C compiler rejected generated C11 source"
+                             source-path target nil
+                             {:compiler "/usr/bin/cc"
+                              :compile-result result
+                              :missing-fact :c11-compiler-acceptance}))
+          result))
+      (catch clojure.lang.ExceptionInfo ex
+        (throw ex))
+      (catch Exception ex
+        (c-backend-fail! "B2-DIALECT"
+                         "host C compiler is unavailable"
+                         source-path target nil
+                         {:compiler "/usr/bin/cc"
+                          :cause-message (.getMessage ex)
+                          :missing-fact :c11-compiler}))
+      (finally
+        (.delete stdout-file)
+        (.delete stderr-file)))))
+
+(defn c-backend-source-artifact
+  "Lower a source unit through the genuine stage0 plan into a C artifact.
+
+  `:compile?` is intentionally opt-in.  Without it this function performs no
+  host compiler invocation and only returns deterministic lowering artifacts.
+  `:emit-dir` writes the C source and three EDN sidecars when requested."
+  ([source-path source-text]
+   (c-backend-source-artifact source-path source-text {}))
+  ([source-path source-text {:keys [target dialect emit-dir compile?
+                                    executable-path c-source-path
+                                    manifest-path source-map-path
+                                    provenance-path]
+                             :or {target :c-hosted
+                                  dialect :c11
+                                  compile? false}}]
+   (let [target (cond
+                  (keyword? target) target
+                  (string? target) (keyword (str/lower-case target))
+                  :else target)
+         dialect (cond
+                   (keyword? dialect) dialect
+                   (string? dialect) (keyword (str/lower-case dialect))
+                   :else dialect)]
+     (when-not (contains? c-backend-supported-dialects dialect)
+       (c-backend-fail! "C14-TARGET"
+                        "C backend dialect is unsupported"
+                        source-path target nil
+                        {:dialect dialect
+                         :supported-dialects (vec (sort c-backend-supported-dialects))
+                         :missing-fact :c-dialect}))
+     (let [macro-artifact (macro-source-artifact source-path source-text)
+           module (assoc (:module macro-artifact)
+                         :forms (:expanded-forms macro-artifact))
+           plan (stage0-compiled-core-plan source-path source-text module)
+           _ (c-backend-validate-plan! source-path target plan)
+           stdout (try
+                    (execute-stage0-compiled-plan plan)
+                    (catch clojure.lang.ExceptionInfo ex
+                      (throw ex))
+                    (catch Exception ex
+                      (c-backend-fail! "B2-UNSUPPORTED"
+                                       "stage0 plan could not be represented by the C backend"
+                                       source-path target nil
+                                       {:cause-message (.getMessage ex)
+                                        :missing-fact :closed-c-runtime-semantics})))
+           c-source (c-backend-source stdout)
+           source-hash (str "sha256:" (sha256-hex source-text))
+           plan-input (select-keys plan [:kind :entrypoint :functions
+                                         :instruction-summary :effect-summary])
+           plan-hash (c4-artifact-id (c-backend-canonical-value plan-input))
+           c-source-hash (str "sha256:" (sha256-hex c-source))
+           output-hash (str "sha256:" (sha256-hex stdout))
+           source-map {:kind :gravity/c-backend-source-map
+                       :schema-version "gravity.c.source-map/v1"
+                       :entries [{:generated-line 4
+                                  :generated-column 3
+                                  :source-path source-path
+                                  :source-span (source-span source-path 0)
+                                  :origin-chain [{:kind :source-unit
+                                                  :path source-path}]}]}
+           source-map-hash
+           (str "sha256:" (sha256-hex
+                            (pr-str
+                             (c-backend-canonical-value
+                              (update source-map :entries
+                                      (fn [entries]
+                                        (mapv (fn [entry]
+                                                (-> entry
+                                                    (dissoc :source-path)
+                                                    (update :source-span
+                                                            #(when %
+                                                               (dissoc % :source)))
+                                                    (update :origin-chain
+                                                            (fn [chain]
+                                                              (mapv #(dissoc % :path)
+                                                                    chain)))))
+                                              entries)))))))
+           manifest-input {:kind :gravity/c-backend-manifest
+                           :schema-version "gravity.c.backend-manifest/v1"
+                           :backend :c
+                           :dialect dialect
+                           :target target
+                           :input-plan-kind (:kind plan)
+                           :input-plan-hash plan-hash
+                           :source-content-hash source-hash
+                           :c-source-hash c-source-hash
+                           :stdout-hash output-hash
+                           :instruction-summary (:instruction-summary plan)
+                           :effect-summary (:effect-summary plan)
+                           :lowering-strategy :verified-stage0-output-lowering
+                           :runtime :hosted-libc-stdout
+                           :compile-time-evaluated? true
+                           :safety-mode (get-in plan [:module :safety])
+                           :profile (get-in plan [:module :profile])
+                           :capabilities (get-in plan [:module :capabilities])
+                           :seedless-release? false}
+           manifest-hash (str "sha256:" (sha256-hex
+                                         (pr-str
+                                          (c-backend-canonical-value
+                                           manifest-input))))
+           provenance {:kind :gravity/c-backend-provenance
+                       :schema-version "gravity.c.provenance/v1"
+                       :source {:path source-path
+                                :extension (gravity-source-extension source-path)
+                                :kind (gravity-source-kind source-path)
+                                :sha256 source-hash}
+                       :compiler {:owner :clojure-bootstrap
+                                  :stage :stage0
+                                  :plan-hash plan-hash}
+                       :target {:backend :c
+                                :dialect dialect
+                                :target target}
+                       :runtime :hosted-libc-stdout
+                       :source-map-hash source-map-hash
+                       :manifest-hash manifest-hash
+                       :clojure-seed-boundary? true
+                       :self-hosted? false
+                       :final-release? false}
+           provenance-hash (str "sha256:" (sha256-hex
+                                            (pr-str
+                                             (c-backend-canonical-value
+                                              (dissoc provenance :source)))))
+           identity-input {:kind :gravity/c-backend-artifact
+                           :backend :c
+                           :dialect dialect
+                           :target target
+                           :input-plan-hash plan-hash
+                           :source-content-hash source-hash
+                           :c-source-hash c-source-hash
+                           :stdout-hash output-hash
+                           :manifest-hash manifest-hash
+                           :source-map-hash source-map-hash
+                           :provenance-hash provenance-hash}
+           artifact-base {:kind :gravity/c-backend-artifact
+                          :task "HOSTED-C-TARGET"
+                          :status :complete
+                          :source {:path source-path
+                                   :extension (gravity-source-extension source-path)
+                                   :kind (gravity-source-kind source-path)
+                                   :sha256 source-hash}
+                          :target {:backend :c
+                                   :dialect dialect
+                                   :target target
+                                   :runtime :hosted-libc-stdout}
+                          :input-plan-id (:plan-id plan)
+                          :input-plan-kind (:kind plan)
+                          :input-plan-hash plan-hash
+                          :instruction-summary (:instruction-summary plan)
+                          :effect-summary (:effect-summary plan)
+                          :stdout stdout
+                          :c-source c-source
+                          :c-source-hash c-source-hash
+                          :manifest (assoc manifest-input
+                                            :manifest-hash manifest-hash)
+                          :manifest-hash manifest-hash
+                          :source-map (assoc source-map
+                                              :source-map-hash source-map-hash)
+                          :source-map-hash source-map-hash
+                          :provenance (assoc provenance
+                                             :provenance-hash provenance-hash)
+                          :provenance-hash provenance-hash
+                          :safety {:mode (get-in plan [:module :safety])
+                                   :unsafe-islands []
+                                   :status :preserved}
+                          :capabilities (get-in plan [:module :capabilities])
+                          :seed-boundary {:clojure-seed-boundary? true
+                                          :self-hosted? false
+                                          :final-release? false}
+                          :diagnostics []}
+           artifact (assoc artifact-base
+                           :artifact-id (c4-artifact-id
+                                         (c-backend-canonical-value
+                                          identity-input)))
+           emit-dir (when emit-dir (str emit-dir))
+           c-source-path (or c-source-path
+                             (when emit-dir (str emit-dir "/program.c")))
+           executable-path (or executable-path
+                               (when emit-dir (str emit-dir "/program")))
+           manifest-path (or manifest-path
+                            (when emit-dir (str emit-dir "/manifest.edn")))
+           source-map-path (or source-map-path
+                              (when emit-dir (str emit-dir "/source-map.edn")))
+           provenance-path (or provenance-path
+                              (when emit-dir (str emit-dir "/provenance.edn")))]
+       (c-backend-validate-output-paths!
+        source-path target
+        [[:emit-dir emit-dir]
+         [:c-source c-source-path]
+         [:executable executable-path]
+         [:manifest manifest-path]
+         [:source-map source-map-path]
+         [:provenance provenance-path]])
+       (when emit-dir (p18-ensure-dir! emit-dir))
+       (when c-source-path (spit c-source-path c-source))
+       (when manifest-path (spit manifest-path (pr-str (:manifest artifact))))
+       (when source-map-path (spit source-map-path (pr-str (:source-map artifact))))
+       (when provenance-path (spit provenance-path (pr-str (:provenance artifact))))
+       (when compile?
+         (when-not (and c-source-path executable-path)
+           (c-backend-fail! "C14-INPUT"
+                            "C backend compilation requires explicit output paths"
+                            source-path target nil
+                            {:missing-fields [:c-source-path :executable-path]}))
+         (c-backend-run-cc! c-source-path executable-path source-path target))
+       (cond-> (assoc artifact
+                      :emitted-files (cond-> {}
+                                       c-source-path (assoc :c-source c-source-path)
+                                       manifest-path (assoc :manifest manifest-path)
+                                       source-map-path (assoc :source-map source-map-path)
+                                       provenance-path (assoc :provenance provenance-path))
+                      :compile-requested? (boolean compile?)
+                      :executable-path executable-path)
+         compile? (assoc :compiled-executable? true))))))
+
+(defn c-backend-file-artifact
+  ([path] (c-backend-file-artifact path {}))
+  ([path options]
+   (c-backend-source-artifact path (read-gravity-source-text path) options)))
+
 (defn compile-source
   [source-path source-text]
   (let [macro-artifact (macro-source-artifact source-path source-text)

@@ -24430,6 +24430,162 @@
                            (:out release-qst-check)
                            (:err release-qst-check)))))))
 
+(deftest hosted-c-backend-emits-and-runs-source-derived-core
+  (with-temp-directory
+    "gravity-c-backend-core-"
+    (fn [directory]
+      (let [source-text (slurp "examples/core-app.gravity")
+            source-path (.resolve directory "core-app.gravity")
+            artifact (bootstrap/c-backend-source-artifact
+                      (.toString source-path)
+                      source-text
+                      {:target :c-hosted
+                       :emit-dir (.toString directory)
+                       :compile? true})
+            executable-result (run-bin (:executable-path artifact))]
+        (is (= :gravity/c-backend-artifact (:kind artifact)))
+        (is (= :complete (:status artifact)))
+        (is (= :gravity/stage0-hosted-core-compiled-plan
+               (:input-plan-kind artifact)))
+        (is (= {:backend :c
+                :dialect :c11
+                :target :c-hosted
+                :runtime :hosted-libc-stdout}
+               (:target artifact)))
+        (is (= "core-app\ngravity:19:2\n(:ok 19)\n"
+               (:stdout artifact)))
+        (is (str/includes? (:c-source artifact) "#include <stdio.h>"))
+        (is (str/includes? (:c-source artifact) "fwrite"))
+        (is (true? (:compiled-executable? artifact)))
+        (is (zero? (:exit executable-result)))
+        (is (= (:stdout artifact) (:out executable-result)))
+        (is (= :verified-stage0-output-lowering
+               (get-in artifact [:manifest :lowering-strategy])))
+        (is (= :preserved (get-in artifact [:safety :status])))
+        (is (= true (get-in artifact [:provenance :clojure-seed-boundary?])))
+        (is (= false (get-in artifact [:provenance :self-hosted?])))
+        (is (= false (get-in artifact [:provenance :final-release?])))
+        (doseq [path (vals (:emitted-files artifact))]
+          (is (.isFile (java.io.File. path)) path))))))
+
+(deftest hosted-c-backend-preserves-extension-parity-and-path-neutral-identity
+  (with-temp-directory
+    "gravity-c-backend-parity-a-"
+    (fn [directory-a]
+      (with-temp-directory
+        "gravity-c-backend-parity-b-"
+        (fn [directory-b]
+          (let [source-text (slurp "examples/hello.gravity")
+                gravity-path (.resolve directory-a "hello.gravity")
+                qst-path (.resolve directory-b "hello.qst")
+                gravity-artifact
+                (bootstrap/c-backend-source-artifact
+                 (.toString gravity-path) source-text {:target :c})
+                qst-artifact
+                (bootstrap/c-backend-source-artifact
+                 (.toString qst-path) source-text {:target :c})
+                changed-artifact
+                (bootstrap/c-backend-source-artifact
+                 (.toString gravity-path)
+                 (str/replace source-text "Hello Gravity" "Hello C")
+                 {:target :c})]
+            (is (= (:c-source gravity-artifact) (:c-source qst-artifact)))
+            (is (= (:c-source-hash gravity-artifact)
+                   (:c-source-hash qst-artifact)))
+            (is (= (:input-plan-hash gravity-artifact)
+                   (:input-plan-hash qst-artifact)))
+            (is (= (:manifest-hash gravity-artifact)
+                   (:manifest-hash qst-artifact)))
+            (is (= (:source-map-hash gravity-artifact)
+                   (:source-map-hash qst-artifact)))
+            (is (= (:provenance-hash gravity-artifact)
+                   (:provenance-hash qst-artifact)))
+            (is (= (:artifact-id gravity-artifact)
+                   (:artifact-id qst-artifact)))
+            (is (= (.toString gravity-path)
+                   (get-in gravity-artifact [:provenance :source :path])))
+            (is (= ".gravity"
+                   (get-in gravity-artifact [:provenance :source :extension])))
+            (is (= ".qst"
+                   (get-in qst-artifact [:provenance :source :extension])))
+            (is (= (.toString qst-path)
+                   (get-in qst-artifact [:source-map :entries 0 :source-path])))
+            (is (not= (:c-source-hash gravity-artifact)
+                      (:c-source-hash changed-artifact)))
+            (is (not= (:artifact-id gravity-artifact)
+                      (:artifact-id changed-artifact)))
+            (is (= "Hello Gravity\n" (:stdout gravity-artifact)))
+            (is (= "Hello C\n" (:stdout changed-artifact)))))))))
+
+(deftest hosted-c-backend-rejects-unsupported-target-plan-and-arity
+  (let [source-text (slurp "examples/hello.gravity")]
+    (is (= "C14-TARGET"
+           (diagnostic-id
+            #(bootstrap/c-backend-source-artifact
+              "examples/hello.gravity" source-text {:target :llvm}))))
+    (is (= "C14-TARGET"
+           (diagnostic-id
+            #(bootstrap/c-backend-source-artifact
+              "examples/hello.gravity" source-text {:target nil}))))
+    (is (= "C14-TARGET"
+           (diagnostic-id
+            #(bootstrap/c-backend-source-artifact
+              "examples/hello.gravity" source-text {:dialect nil}))))
+    (let [macro-artifact (bootstrap/macro-source-artifact
+                          "examples/hello.gravity" source-text)
+          module (assoc (:module macro-artifact)
+                        :forms (:expanded-forms macro-artifact))
+          plan (bootstrap/stage0-compiled-core-plan
+                "examples/hello.gravity" source-text module)
+          unsupported-plan
+          (assoc-in plan [:functions 'main :instructions 0]
+                   {:op :unsupported-c-backend-op})
+          data (diagnostic-data
+                #(bootstrap/c-backend-validate-plan!
+                  "examples/hello.gravity" :c unsupported-plan))]
+      (is (= "B2-UNSUPPORTED" (:id data)))
+      (is (= :unsupported-c-backend-op (:unsupported-op data)))
+      (is (= :c-backend-lowering (:stage data))))
+    (let [bad-source
+          (str "(ns bad.arity (:profile :hosted) (:target :jvm) "
+               "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+               "(defn helper [x] x)\n"
+               "(defn main [] (println (helper)))\n")
+          data (diagnostic-data
+                #(bootstrap/c-backend-source-artifact
+                  "bad-arity.gravity" bad-source {:target :c}))]
+      (is (= "L2-FUNCTION-ARITY" (:id data)))
+      (is (= :stage0 (:bootstrap-stage data))))
+    (doseq [options [{:emit-dir "../gravity-c-backend-escape"}
+                     {:c-source-path "/etc/gravity-c-backend.c"}]]
+      (let [data (diagnostic-data
+                  #(bootstrap/c-backend-source-artifact
+                    "examples/hello.gravity" source-text options))]
+        (is (= "C14-INPUT" (:id data)))
+        (is (= :output-path-containment
+               (:missing-fact data)))))))
+
+(deftest hosted-c-backend-preserves-nul-output-with-explicit-byte-length
+  (with-temp-directory
+    "gravity-c-backend-nul-"
+    (fn [directory]
+      (let [nul (char 0)
+            source-text (str "(ns nul.app (:profile :hosted) (:target :jvm) "
+                             "(:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (println \"a" nul "b\"))\n")
+            source-path (.resolve directory "nul.gravity")
+            artifact (bootstrap/c-backend-source-artifact
+                      (.toString source-path) source-text
+                      {:target :c-hosted
+                       :emit-dir (.toString directory)
+                       :compile? true})
+            result (run-bin (:executable-path artifact))]
+        (is (zero? (:exit result)))
+        (is (= (str "a" nul "b\n") (:stdout artifact)))
+        (is (= (:stdout artifact) (:out result)))
+        (is (str/includes? (:c-source artifact) "sizeof(gravity_output)"))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]
