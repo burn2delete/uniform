@@ -24737,6 +24737,144 @@
           (java.nio.file.Files/deleteIfExists
            (.toPath (java.io.File. path))))))))
 
+(deftest public-current-source-runtime-derived-c-lowering-preserves-parity
+  (with-temp-directory
+    "gravity-public-runtime-derived-a-"
+    (fn [directory-a]
+      (with-temp-directory
+        "gravity-public-runtime-derived-b-"
+        (fn [directory-b]
+          (let [nul (char 0)
+                source-text (str "(ns runtime.public (:profile :hosted) "
+                                 "(:target :jvm) (:effects #{:io/write}) "
+                                 "(:capabilities #{:io/stdout}))\n"
+                                 "(defn main [] (do (println \"héllo λ\") "
+                                 "(println \"a" nul "b\")))\n")
+                source-a (.resolve directory-a "runtime.gravity")
+                source-b (.resolve directory-b "runtime.qst")
+                _ (spit (.toFile source-a) source-text)
+                _ (spit (.toFile source-b) source-text)
+                nonce (str (System/nanoTime))
+                output-a (str "target/public-runtime-derived-" nonce "-a")
+                output-b (str "target/public-runtime-derived-" nonce "-b")]
+            (try
+              (let [result-a (run-thin-bin "bin/gravity" "compile"
+                                           (.toString source-a)
+                                           "--target" "c"
+                                           "--lowering" "runtime-derived"
+                                           "-o" output-a)
+                    result-b (run-thin-bin "bin/gravity" "compile"
+                                           (.toString source-b)
+                                           "--target" "c"
+                                           "--lowering" "runtime-derived"
+                                           "-o" output-b)
+                    artifact-a (edn/read-string (:out result-a))
+                    artifact-b (edn/read-string (:out result-b))
+                    run-a (run-bin output-a)
+                    run-b (run-bin output-b)]
+                (is (zero? (:exit result-a)) (:err result-a))
+                (is (zero? (:exit result-b)) (:err result-b))
+                (is (= :gravity/c-backend-artifact (:kind artifact-a)))
+                (is (= :gravity/c-backend-artifact (:kind artifact-b)))
+                (is (= :runtime-derived
+                       (get-in artifact-a [:target :lowering-mode])))
+                (is (= :runtime-derived
+                       (get-in artifact-b [:target :lowering-mode])))
+                (is (true? (get-in artifact-a [:manifest :runtime-derived?])))
+                (is (true? (get-in artifact-b [:manifest :runtime-derived?])))
+                (is (= {:kind :clojure-stage0-execution
+                        :purpose :parity-only
+                        :authoritative-runtime? false}
+                       (get-in artifact-a [:manifest :oracle])))
+                (is (= {:kind :clojure-stage0-execution
+                        :purpose :parity-only
+                        :authoritative-runtime? false}
+                       (get-in artifact-b [:manifest :oracle])))
+                (is (= (str "héllo λ\n" "a" nul "b\n")
+                       (:stdout artifact-a)))
+                (is (= (:stdout artifact-a) (:stdout artifact-b)))
+                (is (zero? (:exit run-a)))
+                (is (zero? (:exit run-b)))
+                (is (= (:stdout artifact-a) (:out run-a)))
+                (is (= (:stdout artifact-b) (:out run-b)))
+                (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                               :manifest-hash :source-map-hash
+                               :provenance-hash]]
+                  (is (= (get artifact-a field) (get artifact-b field)) field))
+                (is (= (.toString source-a)
+                       (get-in artifact-a [:provenance :source :path])))
+                (is (= (.toString source-b)
+                       (get-in artifact-b [:provenance :source :path])))
+                (is (= ".gravity"
+                       (get-in artifact-a [:provenance :source :extension])))
+                (is (= ".qst"
+                       (get-in artifact-b [:provenance :source :extension])))
+                (is (true? (get-in artifact-a
+                                    [:provenance :clojure-seed-boundary?])))
+                (is (false? (get-in artifact-a [:provenance :self-hosted?]))))
+              (finally
+                (doseq [output [output-a output-b]
+                        path [output (str output ".c")
+                              (str output ".manifest.edn")
+                              (str output ".source-map.edn")
+                              (str output ".provenance.edn")]]
+                  (java.nio.file.Files/deleteIfExists
+                   (.toPath (java.io.File. path))))))))))))
+
+(deftest public-current-source-runtime-derived-c-lowering-rejects-invalid-options
+  (let [nonce (str (System/nanoTime))
+        output (str "target/public-runtime-derived-invalid-" nonce)]
+    (try
+      (let [unsupported (run-thin-bin "bin/gravity" "compile"
+                                      "examples/hello.gravity"
+                                      "--target" "c"
+                                      "--lowering" "unknown"
+                                      "-o" output)
+            missing-value (run-thin-bin "bin/gravity" "compile"
+                                        "examples/hello.gravity"
+                                        "--target" "c"
+                                        "--lowering")
+            duplicate (run-thin-bin "bin/gravity" "compile"
+                                    "examples/hello.gravity"
+                                    "--target" "c"
+                                    "--lowering" "runtime-derived"
+                                    "--lowering" "runtime-derived"
+                                    "-o" output)
+            missing-target (run-thin-bin "bin/gravity" "compile"
+                                         "examples/hello.gravity"
+                                         "--lowering" "runtime-derived"
+                                         "-o" output)
+            jvm-target (run-thin-bin "bin/gravity" "compile"
+                                     "examples/hello.gravity"
+                                     "--target" "jvm"
+                                     "--lowering" "runtime-derived"
+                                     "-o" output)
+            core-app (run-thin-bin "bin/gravity" "compile"
+                                   "examples/core-app.gravity"
+                                   "--target" "c"
+                                   "--lowering" "runtime-derived"
+                                   "-o" output)]
+        (is (= 1 (:exit unsupported)))
+        (is (str/includes? (:err unsupported) "C14-TARGET"))
+        (is (str/includes? (:err unsupported) "unsupported"))
+        (is (= 1 (:exit missing-value)))
+        (is (str/includes? (:err missing-value) "P18T04002"))
+        (is (= 1 (:exit duplicate)))
+        (is (str/includes? (:err duplicate) "P18T04002"))
+        (is (= 1 (:exit missing-target)))
+        (is (str/includes? (:err missing-target) "P18T04002"))
+        (is (= 1 (:exit jvm-target)))
+        (is (str/includes? (:err jvm-target) "P18T04002"))
+        (is (= 1 (:exit core-app)))
+        (is (str/includes? (:err core-app) "B2-UNSUPPORTED")))
+      (finally
+        (doseq [path [output (str output ".c")
+                      (str output ".manifest.edn")
+                      (str output ".source-map.edn")
+                      (str output ".provenance.edn")]]
+          (java.nio.file.Files/deleteIfExists
+           (.toPath (java.io.File. path))))))))
+
 (deftest public-current-source-compile-preserves-jvm-default-and-c-diagnostics
   (let [nonce (str (System/nanoTime))
         jvm-output (str "target/public-jvm-" nonce)
@@ -24794,10 +24932,14 @@
                     "/tmp"
                     (merge (into {} (System/getenv))
                            {"GRAVITY_BOOTSTRAP_ONLY" "1"})
-                    [bin "compile" source "--target" "c" "-o" output])
+                    [bin "compile" source "--target" "c"
+                     "--lowering" "runtime-derived" "-o" output])
             artifact (edn/read-string (:out result))
             executable-result (run-bin output)]
         (is (zero? (:exit result)) (:err result))
+        (is (= :runtime-derived
+               (get-in artifact [:target :lowering-mode])))
+        (is (true? (get-in artifact [:manifest :runtime-derived?])))
         (is (= source (get-in artifact [:provenance :source :path])))
         (is (zero? (:exit executable-result)))
         (is (= "Hello Gravity\n" (:out executable-result))))

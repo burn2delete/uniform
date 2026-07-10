@@ -22,7 +22,11 @@ current_source_compile_requested() {
   [[ "${1:-}" == "compile" ]] || return 1
   shift
   for argument in "$@"; do
-    [[ "${argument}" == "--target" ]] && return 0
+    # Explicit target or lowering requests must use the current source
+    # compiler path.  The packaged JVM CLI may be stale and must not silently
+    # consume the opt-in runtime-derived lowering flag.
+    [[ "${argument}" == "--target" ||
+       "${argument}" == "--lowering" ]] && return 0
   done
   return 1
 }
@@ -131,6 +135,7 @@ Usage:
   gravity compile <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity> -o <executable>
   gravity compile <file.qst|file.gravity> --target c -o <executable>
+  gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>
   gravity test
   gravity self-host verify
   gravity <artifact-command> <file.qst|file.gravity>

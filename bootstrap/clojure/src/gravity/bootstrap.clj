@@ -106744,12 +106744,26 @@
                       :missing-fields [:source-path]}))
     (loop [remaining (vec options)
            target nil
-           output-path nil]
+           output-path nil
+           lowering-mode nil]
       (if (empty? remaining)
-        {:source-path source-path
-         :target (some-> target str/lower-case keyword)
-         :target-requested? (some? target)
-         :output-path output-path}
+        (let [target (some-> target str/lower-case keyword)
+              lowering-mode (some-> lowering-mode str/lower-case keyword)]
+          (when (and lowering-mode (not (contains? c-backend-supported-targets
+                                                    target)))
+            (p18-t04-fail! "P18T04002"
+                           {:source source-path
+                            :command args
+                            :target target
+                            :lowering-mode lowering-mode
+                            :missing-fields [:c-target-for-lowering]
+                            :remediation "Use --target c (or another supported C target) with --lowering runtime-derived."}))
+          {:source-path source-path
+           :target target
+           :target-requested? (some? target)
+           :output-path output-path
+           :lowering-mode lowering-mode
+           :lowering-requested? (some? lowering-mode)})
         (let [option (first remaining)
               rest-options (subvec remaining 1)]
           (cond
@@ -106771,7 +106785,8 @@
                                   :output-path candidate
                                   :allowed-output-roots ["target/"
                                                           "<current-directory>"]}))
-                (recur (subvec rest-options 1) target candidate)))
+                (recur (subvec rest-options 1) target candidate
+                       lowering-mode)))
 
             (= "--target" option)
             (do
@@ -106790,7 +106805,28 @@
                                   :command args
                                   :option option
                                   :missing-fields [:target]}))
-                (recur (subvec rest-options 1) candidate output-path)))
+                (recur (subvec rest-options 1) candidate output-path
+                       lowering-mode)))
+
+            (= "--lowering" option)
+            (do
+              (when (or (empty? rest-options) lowering-mode)
+                (p18-t04-fail! "P18T04002"
+                               {:source source-path
+                                :command args
+                                :option option
+                                :missing-fields (if (empty? rest-options)
+                                                  [:lowering-mode]
+                                                  [:duplicate-lowering-option])}))
+              (let [candidate (first rest-options)]
+                (when (str/blank? (str candidate))
+                  (p18-t04-fail! "P18T04002"
+                                 {:source source-path
+                                  :command args
+                                  :option option
+                                  :missing-fields [:lowering-mode]}))
+                (recur (subvec rest-options 1) target output-path
+                       candidate)))
 
             :else
             (p18-t04-fail! "P18T04002"
@@ -106805,6 +106841,11 @@
                                              ["compile"
                                               "<file.qst|file.gravity>"
                                               "--target" "c"
+                                              "-o" "<executable>"]
+                                             ["compile"
+                                              "<file.qst|file.gravity>"
+                                              "--target" "c"
+                                              "--lowering" "runtime-derived"
                                               "-o" "<executable>"]]})))))))
 
 (defn p18-t04-parse-compile-output-path
@@ -106911,8 +106952,10 @@
   C compiler, and returns the backend manifest/source-map/provenance artifact.
   The Clojure bootstrap and hosted-libc runtime remain explicit in the record;
   this is not a seedless-release claim."
-  [source-path output-path target]
-  (let [source-text (read-gravity-source-text source-path)]
+  ([source-path output-path target]
+   (p18-t04-compile-c-target-file! source-path output-path target nil))
+  ([source-path output-path target lowering-mode]
+   (let [source-text (read-gravity-source-text source-path)]
     ;; Reject unsupported target selection before reader/macro/lowering work;
     ;; this keeps the public boundary's C14 diagnostic deterministic.
     (when-not (contains? c-backend-supported-targets target)
@@ -106923,6 +106966,15 @@
                         (vec (sort c-backend-supported-targets))
                         :missing-fact :supported-target
                         :remediation "Request :c, :c-hosted, or :c11 explicitly."}))
+    (when (and lowering-mode
+               (not= :runtime-derived lowering-mode))
+      (c-backend-fail! "C14-TARGET"
+                       "requested C lowering mode is unsupported"
+                       source-path target nil
+                       {:lowering-mode lowering-mode
+                        :supported-lowering-modes [:runtime-derived]
+                        :missing-fact :runtime-c-lowering-mode
+                        :remediation "Request --lowering runtime-derived for the opt-in runtime-derived C subset, or omit --lowering for the verified stage0 fallback."}))
     (when-not output-path
       (c-backend-fail! "C14-INPUT"
                        "C target compilation requires an explicit executable output"
@@ -106946,18 +106998,24 @@
           provenance-path (str output-path ".provenance.edn")
           artifact (c-backend-source-artifact
                     source-path source-text
-                    {:target target
-                     :dialect :c11
-                     :compile? true
-                     :executable-path output-path
-                     :c-source-path c-source-path
-                     :manifest-path manifest-path
-                     :source-map-path source-map-path
-                     :provenance-path provenance-path})]
+                    (cond-> {:target target
+                             :dialect :c11
+                             :compile? true
+                             :executable-path output-path
+                             :c-source-path c-source-path
+                             :manifest-path manifest-path
+                             :source-map-path source-map-path
+                             :provenance-path provenance-path}
+                      lowering-mode
+                      (assoc :lowering-mode lowering-mode)))]
       (assoc artifact
              :command-boundary
-             {:compile-command ["gravity" "compile" source-path
-                                "--target" (name target) "-o" output-path]
+             {:compile-command (cond-> ["gravity" "compile" source-path
+                                        "--target" (name target)]
+                                 lowering-mode
+                                 (into ["--lowering" (name lowering-mode)])
+                                 true
+                                 (into ["-o" output-path]))
               :run-command [output-path]
               :public-command "gravity"
               :bootstrap-hosted? true
@@ -106966,7 +107024,9 @@
               :seedless-release? false}
              :target-requested? true
              :target-selection :explicit
-             :public-current-source? true))))
+             :public-current-source? true
+             :lowering-mode lowering-mode
+             :lowering-requested? (some? lowering-mode))))))
 
 (defn p18-t04-shell
   [& args]
@@ -110986,16 +111046,28 @@
                          (p18-t04-public-test-overclaim! args)
                          (prn (p18-t04-public-test-command-artifact!)))
                 "self-host" (p18-t04-public-self-host-verify-command! args)
-                "compile" (let [{:keys [target output-path target-requested?]}
+                "compile" (let [{:keys [target output-path target-requested?
+                                          lowering-mode]}
                                  (p18-t04-parse-compile-request args)]
                              (if target-requested?
                                (if (= :jvm target)
+                                 (if lowering-mode
+                                   (p18-t04-fail!
+                                    "P18T04002"
+                                    {:source path
+                                     :command args
+                                     :target target
+                                     :lowering-mode lowering-mode
+                                     :missing-fields [:c-target-for-lowering]
+                                     :remediation "Use --target c with --lowering runtime-derived."})
                                  (if output-path
                                    (prn (p18-t04-compile-executable-file!
                                          path output-path))
                                    (prn (compile-file path)))
+                                 )
                                  (prn (p18-t04-compile-c-target-file!
-                                       path output-path target)))
+                                       path output-path target
+                                       lowering-mode)))
                                (if output-path
                                  (prn (p18-t04-compile-executable-file!
                                        path output-path))
