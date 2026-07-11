@@ -25067,6 +25067,137 @@
                   (java.nio.file.Files/deleteIfExists
                    (.toPath (java.io.File. path))))))))))))
 
+(deftest hosted-c-backend-runtime-derived-str-builtin-writes-byte-strings
+  (with-temp-directory
+    "gravity-c-backend-runtime-str-"
+    (fn [directory]
+      (let [nul (char 0)
+            source-text (str "(ns runtime.str (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (do "
+                             "(println (str \"a\" \"\" \"bc\")) "
+                             "(let [left \"héllo\" right (quote \"λ\")] "
+                             "(println (str left right))) "
+                             "(println (str \"a" nul "b\"))))\n")
+            gravity-path (.resolve directory "strings.gravity")
+            qst-path (.resolve directory "strings.qst")
+            _ (spit (.toFile gravity-path) source-text)
+            _ (spit (.toFile qst-path) source-text)
+            gravity (bootstrap/c-backend-source-artifact
+                     (.toString gravity-path) source-text
+                     {:target :c
+                      :lowering-mode :runtime-derived
+                      :emit-dir (.toString (.resolve directory "gravity-out"))
+                      :compile? true})
+            qst (bootstrap/c-backend-source-artifact
+                 (.toString qst-path) source-text
+                 {:target :c
+                  :lowering-mode :runtime-derived
+                  :emit-dir (.toString (.resolve directory "qst-out"))
+                  :compile? true})
+            expected (str "abc\n" "hélloλ\n" "a" nul "b\n")]
+        (is (= expected (:stdout gravity)))
+        (is (= expected (:stdout qst)))
+        (is (= expected (:out (run-bin (:executable-path gravity)))))
+        (is (= expected (:out (run-bin (:executable-path qst)))))
+        (is (= (:c-source gravity) (:c-source qst)))
+        (is (= (:c-source-hash gravity) (:c-source-hash qst)))
+        (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                       :manifest-hash :source-map-hash :provenance-hash]]
+          (is (= (get gravity field) (get qst field)) field))
+        (is (not (str/includes? (:c-source gravity) "gravity_output")))
+        (is (str/includes? (:c-source gravity) "fwrite"))
+        (is (true? (get-in gravity [:manifest :runtime-derived?])))
+        (is (true? (get-in gravity [:provenance :clojure-seed-boundary?])))
+        (is (false? (get-in gravity [:provenance :self-hosted?])))
+        (is (= (.toString gravity-path)
+               (get-in gravity [:provenance :source :path])))
+        (is (= (.toString qst-path)
+               (get-in qst [:provenance :source :path])))))))
+
+(deftest hosted-c-backend-runtime-derived-str-builtin-rejects-open-operands
+  (let [base "(ns runtime.str.reject (:profile :hosted) (:target :jvm) (:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+        cases [(str base "(defn main [] (println (str 1)))\n")
+               (str base "(defn main [] (println (str [1])))\n")
+               (str base "(defn helper [] \"x\") (defn main [] (println (str (helper))))\n")
+               (str base "(defn main [] (println (str (if true \"x\" \"y\"))))\n")
+               (str base "(defn main [] (println (if true (str \"x\") \"y\")))\n")
+               (str base "(defn main [] (do (str \"x\")))\n")
+               (str base "(defn main [] (let [n 1] (println (str n))))\n")]]
+    (doseq [source-text cases]
+      (let [data (diagnostic-data
+                  #(bootstrap/c-backend-source-artifact
+                    "runtime-str-reject.gravity" source-text
+                    {:target :c
+                     :lowering-mode :runtime-derived}))]
+        (is (= "B2-UNSUPPORTED" (:id data)))
+        (is (= :runtime-derived (:lowering-mode data)))
+        (is (contains? #{:runtime-str-operand-lowering
+                         :runtime-c-value-lowering
+                         :runtime-c-lowering-rule}
+                       (:missing-fact data)))))))
+
+(deftest public-current-source-runtime-derived-str-builtin-routes-both-extensions
+  (with-temp-directory
+    "gravity-public-runtime-str-a-"
+    (fn [directory-a]
+      (with-temp-directory
+        "gravity-public-runtime-str-b-"
+        (fn [directory-b]
+          (let [source-text (str "(ns runtime.public.str (:profile :hosted) "
+                                 "(:target :jvm) (:effects #{:io/write}) "
+                                 "(:capabilities #{:io/stdout}))\n"
+                                 "(defn main [] (let [prefix \"hé\" "
+                                 "suffix \"llo\"] (println (str prefix suffix))))\n")
+                source-a (.resolve directory-a "str.gravity")
+                source-b (.resolve directory-b "str.qst")
+                _ (spit (.toFile source-a) source-text)
+                _ (spit (.toFile source-b) source-text)
+                nonce (str (System/nanoTime))
+                output-a (str "target/public-runtime-str-" nonce "-a")
+                output-b (str "target/public-runtime-str-" nonce "-b")]
+            (try
+              (let [result-a (run-thin-bin "bin/gravity" "compile"
+                                           (.toString source-a)
+                                           "--target" "c"
+                                           "--lowering" "runtime-derived"
+                                           "-o" output-a)
+                    result-b (run-thin-bin "bin/gravity" "compile"
+                                           (.toString source-b)
+                                           "--target" "c"
+                                           "--lowering" "runtime-derived"
+                                           "-o" output-b)
+                    artifact-a (edn/read-string (:out result-a))
+                    artifact-b (edn/read-string (:out result-b))
+                    run-a (run-bin output-a)
+                    run-b (run-bin output-b)]
+                (is (zero? (:exit result-a)) (:err result-a))
+                (is (zero? (:exit result-b)) (:err result-b))
+                (is (= "héllo\n" (:stdout artifact-a)))
+                (is (= (:stdout artifact-a) (:stdout artifact-b)))
+                (is (= "héllo\n" (:out run-a)))
+                (is (= "héllo\n" (:out run-b)))
+                (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                               :manifest-hash :source-map-hash
+                               :provenance-hash]]
+                  (is (= (get artifact-a field) (get artifact-b field)) field))
+                (is (= :runtime-derived
+                       (get-in artifact-a [:target :lowering-mode])))
+                (is (true? (get-in artifact-a [:manifest :runtime-derived?])))
+                (is (true? (get-in artifact-a
+                                    [:provenance :clojure-seed-boundary?])))
+                (is (false? (get-in artifact-a
+                                    [:provenance :self-hosted?]))))
+              (finally
+                (doseq [output [output-a output-b]
+                        path [output (str output ".c")
+                              (str output ".manifest.edn")
+                              (str output ".source-map.edn")
+                              (str output ".provenance.edn")]]
+                  (java.nio.file.Files/deleteIfExists
+                   (.toPath (java.io.File. path))))))))))))
+
 (deftest public-current-source-runtime-derived-c-lowering-rejects-invalid-options
   (let [nonce (str (System/nanoTime))
         output (str "target/public-runtime-derived-invalid-" nonce)]
