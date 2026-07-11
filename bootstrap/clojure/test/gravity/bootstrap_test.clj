@@ -25342,6 +25342,117 @@
           (is (= (.toString qst-path)
                  (get-in qst [:provenance :source :path]))))))))
 
+(deftest hosted-c-backend-runtime-derived-routes-two-argument-println-through-gravity
+  (with-temp-directory
+    "gravity-c-backend-runtime-println-two-"
+    (fn [directory]
+      (let [source-text (str "(ns runtime.println.two (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (println \"left\" \"right\"))\n")
+            gravity-path (.resolve directory "println-two.gravity")
+            qst-path (.resolve directory "println-two.qst")
+            gravity-out (.resolve directory "gravity-out")
+            qst-out (.resolve directory "qst-out")
+            calls (atom [])
+            original @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke]
+        (spit (.toFile gravity-path) source-text)
+        (spit (.toFile qst-path) source-text)
+        (let [gravity
+              (with-redefs
+                [bootstrap/p15-s23-stage2-runtime-artifact-invoke
+                 (fn [runtime function args]
+                   (swap! calls conj [function args])
+                   (original runtime function args))]
+                (bootstrap/c-backend-source-artifact
+                 (.toString gravity-path) source-text
+                 {:target :c
+                  :lowering-mode :runtime-derived
+                  :emit-dir (.toString gravity-out)
+                  :compile? true}))
+              qst
+              (bootstrap/c-backend-source-artifact
+               (.toString qst-path) source-text
+               {:target :c
+                :lowering-mode :runtime-derived
+                :emit-dir (.toString qst-out)
+                :compile? true})]
+          (is (some #(= ['p15-s23-runtime-println-two ["left" "right"]]
+                         %)
+                    @calls))
+          (is (= "left right\n" (:stdout gravity)))
+          (is (= (:stdout gravity) (:stdout qst)))
+          (is (= 'p15-s23-runtime-println-two
+                 (:runtime-artifact-println-two-function gravity)))
+          (is (= 'p15-s23-runtime-println-two
+                 (get-in gravity
+                         [:manifest :oracle
+                          :runtime-artifact-println-two-function])))
+          (is (= 'p15-s23-runtime-println-two
+                 (get-in gravity
+                         [:provenance :oracle
+                          :runtime-artifact-println-two-function])))
+          (is (= :host-compatibility
+                 (:runtime-artifact-println-over-two-boundary gravity)))
+          (is (= :host-compatibility
+                 (get-in gravity
+                         [:manifest :oracle
+                          :runtime-artifact-println-over-two-boundary])))
+          (is (= (:runtime-artifact-hash gravity)
+                 (:runtime-artifact-hash qst)))
+          (is (= (:artifact-id gravity) (:artifact-id qst)))
+          (is (= "left right\n"
+                 (:out (run-bin (:executable-path gravity)))))
+          (is (= "left right\n"
+                 (:out (run-bin (:executable-path qst))))))))))
+
+(deftest hosted-c-backend-runtime-derived-keeps-three-argument-println-host-bound
+  (let [source-text (str "(ns runtime.println.three (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"one\" \"two\" \"three\"))\n")
+        calls (atom [])
+        original @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke
+        artifact
+        (with-redefs
+          [bootstrap/p15-s23-stage2-runtime-artifact-invoke
+           (fn [runtime function args]
+             (swap! calls conj [function args])
+             (original runtime function args))]
+          (bootstrap/c-backend-source-artifact
+           "runtime-println-three.gravity" source-text
+           {:target :c :lowering-mode :runtime-derived}))]
+    (is (= "one two three\n" (:stdout artifact)))
+    (is (not-any? #(= 'p15-s23-runtime-println-two (first %)) @calls))
+    (is (= 3 (count (filter #(= 'p15-s23-runtime-format-value (first %))
+                             @calls))))))
+
+(deftest hosted-c-backend-runtime-derived-rejects-tampered-two-argument-println-shape
+  (let [source-text (str "(ns runtime.println.tamper (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"left\" \"right\"))\n")
+        original @#'bootstrap/p15-s23-stage2-plan-emitter-compile-source
+        data (diagnostic-data
+              #(with-redefs
+                 [bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                  (fn [emitter path text]
+                    (let [plan (original emitter path text)]
+                      (if (str/ends-with? path "bootstrap/gravity/p15_s23/runtime.gravity")
+                        (update-in plan
+                                   [:functions
+                                    'p15-s23-runtime-println-two
+                                    :instructions]
+                                   (fn [instructions]
+                                     (assoc-in instructions [0 :args]
+                                               [{:op :local :name 'left}])))
+                        plan)))]
+                (bootstrap/c-backend-source-artifact
+                 "runtime-println-tamper.gravity" source-text
+                 {:target :c :lowering-mode :runtime-derived})))]
+    (is (= "P15S23X002" (:id data)))
+    (is (= :runtime-artifact-function-set (:missing-fact data)))))
+
 (deftest hosted-c-backend-runtime-derived-binds-stage2-compiler-driver
   (with-temp-directory
     "gravity-c-backend-stage2-driver-binding-"
@@ -26015,7 +26126,7 @@
         (is (true? (:runtime-artifact-generic-bridge-residual?
                     artifact)))))))
 
-(deftest hosted-c-backend-runtime-derived-preserves-multi-arg-println-host-path
+(deftest hosted-c-backend-runtime-derived-preserves-two-arg-println-gravity-path
   (let [source-text (str "(ns runtime.stage2.artifact.println-many (:profile :hosted) "
                         "(:target :jvm) (:effects #{:io/write}) "
                         "(:capabilities #{:io/stdout}))\n"
@@ -26034,11 +26145,8 @@
         (is (= "left right\n" (:stdout artifact)))
         (is (not-any? #(= 'p15-s23-runtime-println-value (:function %))
                       @calls))
-        (is (some #(and (= 'p15-s23-runtime-format-value (:function %))
-                        (= ["left"] (:args %)))
-                  @calls))
-        (is (some #(and (= 'p15-s23-runtime-format-value (:function %))
-                        (= ["right"] (:args %)))
+        (is (some #(and (= 'p15-s23-runtime-println-two (:function %))
+                        (= ["left" "right"] (:args %)))
                   @calls))))))
 
 (deftest hosted-c-backend-runtime-derived-binds-gravity-authored-runtime-artifact

@@ -23,11 +23,19 @@
 ; Single-argument println is an effectful runtime operation.  Keep the
 ; newline-producing primitive in the Gravity-authored runtime plan so the
 ; generic bridge invokes a declared function rather than formatting in the
-; bootstrap executor.  Multi-argument println remains the legacy host-facing
-; path until its variadic effect contract is authored and validated.
+; bootstrap executor.  Println with more than two arguments remains the legacy
+; host-facing path until its variadic effect contract is authored and validated.
 (defn p15-s23-runtime-println-value
   [value]
   (println (str value)))
+
+; Exactly two println arguments are owned by this dedicated Gravity runtime
+; entrypoint.  Preserve the language's single-space separator and trailing
+; newline while keeping the >2-argument compatibility path explicit in the
+; bootstrap executor until a variadic effect contract is authored.
+(defn p15-s23-runtime-println-two
+  [left right]
+  (println (str left " " right)))
 
 (defn main
   []
