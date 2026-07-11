@@ -557,6 +557,24 @@
     (coll? form) (mapcat collect-symbols form)
     :else []))
 
+(defn collect-code-symbols
+  "Collect symbols in executable positions while treating quote payloads as data.
+
+  Reader abbreviations are expanded to `(quote ...)` before this collector is
+  called.  The quote operator itself remains part of the executable shape, but
+  its payload is deliberately not traversed: symbols in quoted data are not
+  namespace references and must not participate in alias resolution.  Other
+  forms recurse through every nested collection so an unresolved qualified
+  symbol in an executable branch still produces the owning L3 diagnostic."
+  [form]
+  (cond
+    (symbol? form) [form]
+    (seq? form) (if (= 'quote (first form))
+                  (if (symbol? (first form)) [(first form)] [])
+                  (mapcat collect-code-symbols form))
+    (coll? form) (mapcat collect-code-symbols form)
+    :else []))
+
 (declare uses-println?)
 
 (defn infer-effects
@@ -632,7 +650,7 @@
   [source-path forms module dependencies]
   (let [aliases (set (map str (keep :alias dependencies)))
         allowed-qualified (conj aliases (str (:module module)))
-        unknown (first (for [sym (mapcat collect-symbols forms)
+        unknown (first (for [sym (mapcat collect-code-symbols forms)
                              :let [ns-part (namespace sym)]
                              :when (and ns-part
                                         (not (contains? allowed-qualified ns-part))
@@ -2360,7 +2378,7 @@
                                  dependency-map locals syntax idx sym)))
        (mapcat (fn [syntax]
                  (map (fn [sym] [syntax sym])
-                      (collect-symbols (:form syntax))))
+                      (collect-code-symbols (:form syntax))))
                (remove #(ns-form? (:form %)) expanded-stream))))
      :namespace-bindings namespace-bindings
      :local-bindings locals

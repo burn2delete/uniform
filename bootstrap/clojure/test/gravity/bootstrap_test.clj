@@ -63,6 +63,28 @@
        "   :syntax `(outer ~value ~@items)\n"
        "   :deref @state})\n"))
 
+(def ^:private qualified-symbol-quote-source
+  (str "(ns quote.analysis (:profile :hosted) (:target :jvm)\n"
+       "  (:metadata {:bootstrap {:owner :gravity-source\n"
+       "                         :source-language :gravity}}))\n"
+       "(defn main []\n"
+       "  (do\n"
+       "    (quote p15-s23/source-syntax-roundtrip)\n"
+       "    (if true\n"
+       "      (do (quote nested/unknown) (quote deeper/unknown))\n"
+       "      (quote branch/unknown))))\n"))
+
+(def ^:private qualified-symbol-unquoted-source
+  (str "(ns quote.analysis (:profile :hosted) (:target :jvm)\n"
+       "  (:metadata {:bootstrap {:owner :gravity-source\n"
+       "                         :source-language :gravity}}))\n"
+       "(defn main []\n"
+       "  (do\n"
+       "    (quote p15-s23/source-syntax-roundtrip)\n"
+       "    (if true\n"
+       "      (do missing/call)\n"
+       "      (quote branch/unknown))))\n"))
+
 (def ^:private run-bin-timeout-ms 120000)
 
 (defn- read-process-output
@@ -20876,6 +20898,54 @@
   (testing "typed core rejects dropped facet privacy boundaries"
     (is (= "L14-PRIVACY-BOUNDARY"
            (diagnostic-id #(bootstrap/typed-file-artifact (fixture "rejected/typed-facet-privacy-boundary.gravity")))))))
+
+(deftest qualified-symbol-analysis-skips-quoted-data-and-recurses-executable-forms
+  (let [compiler-check (run-thin-bin "bin/gravity" "check"
+                                     "bootstrap/gravity/p15_s23/compiler.gravity")]
+    (is (= 0 (:exit compiler-check)))
+    (is (str/includes? (:out compiler-check)
+                       "gravity stage0 check passed: gravity.bootstrap.p15-s23.compiler")))
+  (doseq [suffix [".gravity" ".qst"]]
+    (testing (str "quoted qualified data is accepted for " suffix)
+      (with-temp-source
+        suffix
+        qualified-symbol-quote-source
+        (fn [path]
+          (let [module-artifact (bootstrap/module-file-artifact path)
+                compiled-artifact (bootstrap/compile-file path)
+                public-result (run-thin-bin "bin/gravity" "check" path)]
+            (is (= :gravity/stage0-module-artifact (:kind module-artifact)))
+            (is (= :gravity/stage0-hosted-artifact (:kind compiled-artifact)))
+            (is (= 0 (:exit public-result)))
+            (is (str/includes? (:out public-result)
+                               "gravity stage0 check passed: quote.analysis"))
+            (is (empty? (get-in module-artifact [:diagnostics])))))))))
+
+(deftest qualified-symbol-analysis-rejects-unquoted-unknown-alias-deterministically
+  (doseq [suffix [".gravity" ".qst"]]
+    (testing (str "unquoted qualified data is rejected for " suffix)
+      (with-temp-source
+        suffix
+        qualified-symbol-unquoted-source
+        (fn [path]
+          (let [direct-results
+                (repeatedly
+                 2
+                 #(diagnostic-data
+                   (fn [] (bootstrap/module-file-artifact path))))
+                direct-fields (map #(select-keys % [:id :message :symbol :alias
+                                                     :remediation :source-span])
+                                   direct-results)
+                public-results
+                (repeatedly 2 #(run-thin-bin "bin/gravity" "check" path))]
+            (is (every? #(= "L3-UNKNOWN-ALIAS" (:id %)) direct-results))
+            (is (= 1 (count (set direct-fields))))
+            (is (= (first direct-fields) (second direct-fields)))
+            (is (every? #(= 1 (:exit %)) public-results))
+            (is (every? #(str/includes? (:err %) "L3-UNKNOWN-ALIAS")
+                        public-results))
+            (is (= (:err (first public-results))
+                   (:err (second public-results))))))))))
 
 (deftest p18-thin-cli-wrapper-proves-bootstrap-hosted-command-boundary
   (let [artifact (bootstrap/p18-t01-thin-cli-wrapper-artifact)
