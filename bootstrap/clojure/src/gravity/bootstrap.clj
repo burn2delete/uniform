@@ -105461,6 +105461,1092 @@
    (js-ts-backend-source-artifact
     path (read-gravity-source-text path) options)))
 
+;; ---------------------------------------------------------------------------
+;; Hosted JVM target (Java 21 class files and modular executable JAR)
+;;
+;; This is an opt-in target over the same authenticated stage2 packet as the
+;; runtime-derived C and Node targets.  The generated Java executes the closed
+;; scalar/control-flow plan; it does not embed stage2 stdout.  javac remains an
+;; external target tool and the compiler remains inside the Clojure seed
+;; boundary, so this slice deliberately does not claim full B5 conformance.
+
+(def jvm-backend-target :jvm)
+(def jvm-backend-target-release 21)
+(def jvm-backend-required-classfile-major 65)
+(def jvm-backend-module-name "gravity.stage")
+(def jvm-backend-main-class "gravity.stage2.Program")
+(def ^:dynamic *jvm-backend-javac-command* "javac")
+(def ^:dynamic *jvm-backend-java-command* "java")
+
+(defn jvm-backend-fail!
+  [id message source-path subject extra]
+  (fail! id message
+         (merge {:severity :error
+                 :stage :jvm-backend-lowering
+                 :diagnostic-family
+                 (cond
+                   (str/starts-with? id "B5") :b5-jvm-backend
+                   (str/starts-with? id "B13") :b13-artifact-emission
+                   (str/starts-with? id "B14") :b14-backend-conformance
+                   :else :c14-target-lowering)
+                 :backend :gravity.backend/jvm
+                 :target jvm-backend-target
+                 :source-span (or (:source-span subject)
+                                  (source-span source-path 0))
+                 :primary {:span (or (:source-span subject)
+                                     (source-span source-path 0))}
+                 :fallback-status :rejected
+                 :remediation
+                 "Use --target jvm --lowering runtime-derived with the closed Java 21 hosted subset."}
+                extra)))
+
+(defn jvm-backend-validate-plan!
+  [source-path plan]
+  (try
+    ;; Reuse the shared iterative scalar/control-flow validator, but remap its
+    ;; historical C diagnostic at this concrete backend boundary.
+    (c-backend-validate-runtime-plan! source-path jvm-backend-target plan)
+    (catch clojure.lang.ExceptionInfo ex
+      (if (= "B2-UNSUPPORTED" (:id (ex-data ex)))
+        (jvm-backend-fail!
+         "C14-UNSUPPORTED"
+         "JVM backend cannot lower this stage2 instruction plan"
+         source-path plan
+         {:unsupported-op (:unsupported-op (ex-data ex))
+          :missing-fact :jvm-stage2-lowering-rule})
+        (throw ex))))
+  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
+    (when-let [instruction (peek pending)]
+      (let [pending (pop pending)]
+        (when (and (= :println (:op instruction))
+                   (> (count (:args instruction)) 2))
+          (jvm-backend-fail!
+           "C14-UNSUPPORTED"
+           "JVM runtime-derived lowering does not implement this println arity"
+           source-path instruction
+           {:unsupported-op :println
+            :observed-arity (count (:args instruction))
+            :supported-arities [0 1 2]
+            :missing-fact :gravity-runtime-println-arity}))
+        (recur (into pending
+                     (remove nil?
+                             (c-backend-instruction-children instruction)))))))
+  :passed)
+
+(defn jvm-backend-validate-packet!
+  [source-path packet trusted-emitter-rule trusted-driver-rule
+   trusted-runtime-rule trusted-plan]
+  (let [emitter-hash (get-in packet
+                             [:stage2-plan-emitter-rule :source-rule-hash])
+        trusted-emitter-hash (:source-rule-hash trusted-emitter-rule)
+        driver-hash (get-in packet
+                            [:stage2-compiler-driver-rule :driver-rule-hash])
+        trusted-driver-hash (:driver-rule-hash trusted-driver-rule)
+        runtime-hash (get-in packet
+                             [:stage2-runtime-rule :runtime-rule-hash])
+        trusted-runtime-hash (:runtime-rule-hash trusted-runtime-rule)
+        runtime-artifact-hash
+        (get-in packet [:stage2-runtime-rule :runtime-artifact-hash])
+        trusted-runtime-artifact-hash
+        (:runtime-artifact-hash trusted-runtime-rule)
+        compiler-record (:stage2-compiler-artifact-record packet)
+        packet-plan (:plan packet)
+        driver-plan (:stage2-plan (:stage2-compiler-driver-record packet))
+        plan-shape-keys
+        [:kind :entrypoint :functions :binding-table
+         :instruction-summary :effect-summary]
+        plan-compiler (get-in packet [:plan :compiler])
+        runtime-record (:stage2-runtime-execution-record packet)
+        driver-record (:stage2-compiler-driver-record packet)]
+    (when-not
+     (and (= :gravity/target-neutral-stage2-runtime-packet (:kind packet))
+          (= :complete (:status packet))
+          (= :jvm (:requested-target packet))
+          (= {:status :accepted
+              :source-declared-target :jvm
+              :requested-target :jvm
+              :selection :source-and-request-agree}
+             (:target-eligibility packet))
+          (map? packet-plan)
+          (= (c-backend-canonical-value
+              (select-keys trusted-plan plan-shape-keys))
+             (c-backend-canonical-value
+              (select-keys packet-plan plan-shape-keys)))
+          (= (c-backend-canonical-value
+              (select-keys trusted-plan plan-shape-keys))
+             (c-backend-canonical-value
+              (select-keys driver-plan plan-shape-keys)))
+          (= (:plan-id trusted-plan) (:plan-id packet-plan))
+          (= (:plan-id driver-plan) (:plan-id runtime-record))
+          (= :complete (:status runtime-record))
+          (= :complete (:status driver-record))
+          (true? (:accepted-output-equivalent? driver-record))
+          (= (:reference-output packet) (:stdout runtime-record))
+          (string? emitter-hash)
+          (boolean (re-matches #"sha256:[0-9a-f]{64}" emitter-hash))
+          (= trusted-emitter-hash emitter-hash)
+          (= trusted-driver-hash driver-hash)
+          (= trusted-runtime-hash runtime-hash)
+          (= trusted-runtime-artifact-hash runtime-artifact-hash)
+          (= (:artifact-hash compiler-record)
+             (:expression-lowering-artifact-hash plan-compiler))
+          (= (:source-content-hash compiler-record)
+             (:expression-lowering-source-content-hash plan-compiler))
+          (= (:semantic-hash compiler-record)
+             (:expression-lowering-semantic-hash plan-compiler))
+          (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+             (:semantic-hash compiler-record))
+          (true? (:invoked? compiler-record))
+          (true? (:generic-bridge-residual? compiler-record)))
+      (jvm-backend-fail!
+       "C14-INPUT" "JVM backend received an unauthenticated stage2 packet"
+       source-path (:plan packet)
+       {:observed-packet-kind (:kind packet)
+        :observed-packet-status (:status packet)
+        :observed-plan-id (:plan-id packet-plan)
+        :expected-plan-id (:plan-id trusted-plan)
+        :observed-emitter-source-rule-hash emitter-hash
+        :expected-emitter-source-rule-hash trusted-emitter-hash
+        :observed-driver-rule-hash driver-hash
+        :expected-driver-rule-hash trusted-driver-hash
+        :observed-runtime-rule-hash runtime-hash
+        :expected-runtime-rule-hash trusted-runtime-hash
+        :observed-runtime-artifact-hash runtime-artifact-hash
+        :expected-runtime-artifact-hash trusted-runtime-artifact-hash
+        :missing-fact :authenticated-target-neutral-stage2-packet})))
+  :passed)
+
+(defn jvm-backend-byte-array-source
+  [name bytes indent]
+  (let [padding (apply str (repeat indent "  "))]
+    (str padding "byte[] " name " = new byte[]{"
+         (str/join "," (map #(str "(byte)" %) bytes)) "};\n")))
+
+(defn jvm-backend-value-declaration
+  [instruction counter indent]
+  (let [name (str "gravityValue" (swap! counter inc))
+        value (:value instruction)]
+    {:source (jvm-backend-byte-array-source
+              name (c-backend-runtime-bytes value) indent)
+     :descriptor {:name name
+                  :truth (not (or (nil? value) (false? value)))}}))
+
+(defn jvm-backend-write-source
+  [descriptor indent]
+  (let [padding (apply str (repeat indent "  "))
+        name (:name descriptor)]
+    (str padding "System.out.write(" name ", 0, " name ".length);\n")))
+
+(defn jvm-backend-test-source
+  [instruction env]
+  (case (:op instruction)
+    :literal (if (or (nil? (:value instruction))
+                     (false? (:value instruction))) "false" "true")
+    :quote (if (or (nil? (:value instruction))
+                   (false? (:value instruction))) "false" "true")
+    :local (if (get-in env [(:name instruction) :truth]) "true" "false")
+    "false"))
+
+(declare jvm-backend-value-source)
+(declare jvm-backend-instruction-source)
+
+(defn jvm-backend-value-source
+  [instruction counter indent env]
+  (let [padding (apply str (repeat indent "  "))
+        op (:op instruction)]
+    (cond
+      (#{:literal :quote} op)
+      (let [{:keys [source descriptor]}
+            (jvm-backend-value-declaration instruction counter indent)]
+        (str source (jvm-backend-write-source descriptor indent)))
+
+      (= :local op)
+      (jvm-backend-write-source (get env (:name instruction)) indent)
+
+      (= :builtin-call op)
+      (apply str
+             (map #(jvm-backend-value-source % counter indent env)
+                  (:args instruction)))
+
+      (= :if op)
+      (str padding "if ("
+           (jvm-backend-test-source (:test instruction) env)
+           ") {\n"
+           (jvm-backend-value-source (:then instruction) counter
+                                     (inc indent) env)
+           padding "} else {\n"
+           (jvm-backend-value-source (:else instruction) counter
+                                     (inc indent) env)
+           padding "}\n")
+
+      (= :let op)
+      (let [binding-state
+            (reduce (fn [state {:keys [name expr]}]
+                      (let [{:keys [source descriptor]}
+                            (jvm-backend-value-declaration
+                             expr counter indent)]
+                        {:source (str (:source state) source)
+                         :env (assoc (:env state) name descriptor)}))
+                    {:source "" :env env}
+                    (:bindings instruction))]
+        (str (:source binding-state)
+             (jvm-backend-value-source
+              (first (:body instruction)) counter indent
+              (:env binding-state))))
+
+      :else "")))
+
+(defn jvm-backend-instruction-source
+  ([instruction counter indent]
+   (jvm-backend-instruction-source instruction counter indent {}))
+  ([instruction counter indent env]
+   (let [padding (apply str (repeat indent "  "))
+         op (:op instruction)]
+     (cond
+       (#{:literal :quote :local} op) ""
+
+       (= :println op)
+       (str (apply str
+                   (map-indexed
+                    (fn [index argument]
+                      (str (when (pos? index)
+                             (let [name (str "gravitySpace"
+                                             (swap! counter inc))]
+                               (str (jvm-backend-byte-array-source
+                                     name [32] indent)
+                                    (jvm-backend-write-source
+                                     {:name name} indent))))
+                           (jvm-backend-value-source
+                            argument counter indent env)))
+                    (:args instruction)))
+            (let [name (str "gravityNewline" (swap! counter inc))]
+              (str (jvm-backend-byte-array-source name [10] indent)
+                   (jvm-backend-write-source {:name name} indent))))
+
+       (= :do op)
+       (apply str
+              (map #(jvm-backend-instruction-source % counter indent env)
+                   (:body instruction)))
+
+       (= :if op)
+       (str padding "if ("
+            (jvm-backend-test-source (:test instruction) env)
+            ") {\n"
+            (jvm-backend-instruction-source (:then instruction) counter
+                                            (inc indent) env)
+            padding "} else {\n"
+            (jvm-backend-instruction-source (:else instruction) counter
+                                            (inc indent) env)
+            padding "}\n")
+
+       (= :let op)
+       (let [binding-state
+             (reduce (fn [state {:keys [name expr]}]
+                       (let [{:keys [source descriptor]}
+                             (jvm-backend-value-declaration
+                              expr counter indent)]
+                         {:source (str (:source state) source)
+                          :env (assoc (:env state) name descriptor)}))
+                     {:source "" :env env}
+                     (:bindings instruction))]
+         (str (:source binding-state)
+              (apply str
+                     (map #(jvm-backend-instruction-source
+                            % counter indent (:env binding-state))
+                          (:body instruction)))))
+
+       :else ""))))
+
+(defn jvm-backend-java-source
+  [plan]
+  (let [counter (atom 0)
+        main (get-in plan [:functions (:entrypoint plan)])]
+    (str "package gravity.stage2;\n\n"
+         "public final class Program {\n"
+         "  private Program() {}\n\n"
+         "  public static void main(String[] args) {\n"
+         (apply str
+                (map #(jvm-backend-instruction-source % counter 2 {})
+                     (:instructions main)))
+         "  }\n"
+         "}\n")))
+
+(def jvm-backend-module-source
+  (str "module " jvm-backend-module-name " {\n"
+       "  exports gravity.stage2;\n"
+       "}\n"))
+
+(defn jvm-backend-source-map
+  [source-text java-source]
+  {:artifact :gravity/jvm-source-map
+   :schema-version 1
+   :source {:kind :co-canonical-gravity-source
+            :content-hash (str "sha256:" (sha256-hex source-text))
+            :content source-text}
+   :generated {:file "sources/gravity/stage2/Program.java"
+               :line-count (count (str/split-lines java-source))}
+   :origin-chain [:source-unit :c2-reader :stage2-source-front-end
+                  :stage2-plan-emitter :stage2-compiler-driver
+                  :jvm-lowering]
+   :coverage :source-unit-only
+   :per-form-origin-preserved? false
+   :status :partial})
+
+(defn jvm-backend-output-paths
+  [output-path]
+  {:java-source (str output-path "/sources/gravity/stage2/Program.java")
+   :module-source (str output-path "/sources/module-info.java")
+   :class-file (str output-path "/classes/gravity/stage2/Program.class")
+   :module-class (str output-path "/classes/module-info.class")
+   :jar (str output-path "/program.jar")
+   :source-map (str output-path "/source-map.edn")
+   :manifest (str output-path "/manifest.edn")
+   :provenance (str output-path "/provenance.edn")})
+
+(defn jvm-backend-run-process!
+  [command source-path diagnostic-id message]
+  (let [stdout-file (java.io.File/createTempFile "gravity-jvm-out-" ".bin")
+        stderr-file (java.io.File/createTempFile "gravity-jvm-err-" ".txt")]
+    (try
+      (let [pb (ProcessBuilder. ^java.util.List (vec command))]
+        (.redirectOutput pb stdout-file)
+        (.redirectError pb stderr-file)
+        (let [process (.start pb)
+              finished? (.waitFor process 60000
+                                  java.util.concurrent.TimeUnit/MILLISECONDS)]
+          (when-not finished?
+            (.destroyForcibly process)
+            (jvm-backend-fail!
+             diagnostic-id message source-path nil
+             {:command (vec command)
+              :missing-fact :jvm-target-process-completion}))
+          (let [result
+                {:exit (.exitValue process)
+                 :stdout-bytes
+                 (vec (map #(bit-and (int %) 0xff)
+                           (java.nio.file.Files/readAllBytes
+                            (.toPath stdout-file))))
+                 :stderr (if (.exists stderr-file) (slurp stderr-file) "")}]
+            (when-not (zero? (:exit result))
+              (jvm-backend-fail!
+               diagnostic-id message source-path nil
+               {:command (vec command)
+                :process-result result
+                :missing-fact :jvm-target-tool-acceptance}))
+            result)))
+      (catch clojure.lang.ExceptionInfo ex
+        (throw ex))
+      (catch Exception ex
+        (jvm-backend-fail!
+         "B5-TARGET" "JVM target tool is unavailable"
+         source-path nil
+         {:command (vec command)
+          :cause-message (.getMessage ex)
+          :missing-fact :java21-target-toolchain}))
+      (finally
+        (.delete stdout-file)
+        (.delete stderr-file)))))
+
+(defn jvm-backend-tool-version!
+  [command source-path]
+  (let [result (jvm-backend-run-process!
+                [command "-version"] source-path "B5-TARGET"
+                "JVM target tool version check failed")
+        stdout (String. (byte-array (map byte (:stdout-bytes result)))
+                        java.nio.charset.StandardCharsets/UTF_8)
+        output (str/trim (str stdout "\n" (:stderr result)))
+        major (some-> (re-find #"(?:version )?\"?([0-9]+)" output)
+                      second Long/parseLong)]
+    (when-not (and major (>= major jvm-backend-target-release))
+      (jvm-backend-fail!
+       "B5-TARGET" "JVM target tool cannot produce or run Java 21 artifacts"
+       source-path nil
+       {:command command
+        :observed-version output
+        :required-major jvm-backend-target-release
+        :missing-fact :java21-target-toolchain}))
+    {:command command :version output :major major}))
+
+(defn jvm-backend-write-file!
+  [path content]
+  (java.nio.file.Files/createDirectories (.getParent path)
+                                          (make-array
+                                           java.nio.file.attribute.FileAttribute
+                                           0))
+  (java.nio.file.Files/write
+   path (.getBytes (str content) java.nio.charset.StandardCharsets/UTF_8)
+   (into-array java.nio.file.OpenOption
+               [java.nio.file.StandardOpenOption/CREATE_NEW
+                java.nio.file.StandardOpenOption/WRITE])))
+
+(defn jvm-backend-stored-jar-entry!
+  [jar-output entry-name bytes]
+  (let [crc (java.util.zip.CRC32.)
+        entry (java.util.jar.JarEntry. entry-name)]
+    (.update crc bytes)
+    (.setTime entry 0)
+    (.setMethod entry java.util.zip.ZipEntry/STORED)
+    (.setSize entry (alength bytes))
+    (.setCompressedSize entry (alength bytes))
+    (.setCrc entry (.getValue crc))
+    (.putNextEntry jar-output entry)
+    (.write jar-output bytes 0 (alength bytes))
+    (.closeEntry jar-output)))
+
+(defn jvm-backend-write-deterministic-jar!
+  [jar-path class-directory]
+  (let [manifest-bytes
+        (.getBytes
+         (str "Manifest-Version: 1.0\r\n"
+              "Main-Class: " jvm-backend-main-class "\r\n\r\n")
+         java.nio.charset.StandardCharsets/UTF_8)
+        entries
+        [["META-INF/MANIFEST.MF" manifest-bytes]
+         ["gravity/stage2/Program.class"
+          (java.nio.file.Files/readAllBytes
+           (.resolve class-directory "gravity/stage2/Program.class"))]
+         ["module-info.class"
+          (java.nio.file.Files/readAllBytes
+           (.resolve class-directory "module-info.class"))]]]
+    (with-open [output
+                (java.util.jar.JarOutputStream.
+                 (java.nio.file.Files/newOutputStream
+                  jar-path
+                  (into-array java.nio.file.OpenOption
+                              [java.nio.file.StandardOpenOption/CREATE_NEW
+                               java.nio.file.StandardOpenOption/WRITE])))]
+      (doseq [[entry-name bytes] entries]
+        (jvm-backend-stored-jar-entry! output entry-name bytes)))))
+
+(defn jvm-backend-classfile-major
+  [path]
+  (let [bytes (java.nio.file.Files/readAllBytes path)]
+    (when (and (>= (alength bytes) 8)
+               (= [202 254 186 190]
+                  (mapv #(bit-and (int (aget bytes %)) 0xff) (range 4))))
+      (+ (bit-shift-left (bit-and (int (aget bytes 6)) 0xff) 8)
+         (bit-and (int (aget bytes 7)) 0xff)))))
+
+(defn jvm-backend-jar-record
+  [jar-path]
+  (with-open [jar (java.util.jar.JarFile. (.toFile jar-path))]
+    (let [module-entry (.getJarEntry jar "module-info.class")
+          module-name
+          (when module-entry
+            (with-open [input (.getInputStream jar module-entry)]
+              (.name (java.lang.module.ModuleDescriptor/read input))))]
+      {:entries (->> (enumeration-seq (.entries jar))
+                     (map #(.getName ^java.util.jar.JarEntry %))
+                     sort vec)
+       :main-class (some-> jar .getManifest .getMainAttributes
+                           (.getValue
+                            java.util.jar.Attributes$Name/MAIN_CLASS))
+       :module-name module-name})))
+
+(defn jvm-backend-validate-content-hashes!
+  [source-path manifest paths]
+  (doseq [[kind expected] (:content-hashes manifest)]
+    (let [path (get paths kind)
+          actual
+          (when (and path (.isFile (java.io.File. path)))
+            (str "sha256:"
+                 (sha256-bytes-hex
+                  (java.nio.file.Files/readAllBytes
+                   (.toPath (java.io.File. path))))))]
+      (when-not (= expected actual)
+        (jvm-backend-fail!
+         "B13-HASH" "JVM emitted artifact content hash is stale or mismatched"
+         source-path nil
+         {:artifact-kind kind :artifact-path path
+          :expected-content-hash expected :actual-content-hash actual
+          :missing-fact :content-hash-integrity}))))
+  :passed)
+
+(defn jvm-backend-validate-manifest!
+  ([source-path manifest]
+   (jvm-backend-validate-manifest! source-path manifest nil))
+  ([source-path manifest expected-context]
+   (let [required
+        [:artifact :schema-version :backend :profile :target :module :emits
+         :content-hashes :input :effects :capabilities :safety
+         :managed-runtime :host-boundaries :toolchain :conformance
+         :clojure-seed-boundary? :self-hosted? :release-grade? :diagnostics]
+        missing (vec (remove #(contains? manifest %) required))
+        hashes (:content-hashes manifest)
+        input (:input manifest)
+        inferred-effects (get-in manifest [:effects :inferred] #{})
+        println-count (get-in input [:instruction-summary :println] 0)
+        writes-stdout? (and (set? inferred-effects)
+                            (contains? inferred-effects :io/write))
+        eligibility (:target-eligibility input)
+        digest? #(and (string? %)
+                      (boolean
+                       (re-matches #"sha256:[0-9a-f]{64}" %)))
+        required-input-keys
+        #{:source-content-hash :source-declared-target
+          :requested-backend-target :target-eligibility
+          :stage2-plan-hash :instruction-summary
+          :expression-lowering-artifact-hash
+          :expression-lowering-source-content-hash
+          :expression-lowering-semantic-hash
+          :expression-lowering-invoked?
+          :expression-lowering-generic-bridge-residual?
+          :plan-emitter-source-rule-hash
+          :compiler-driver-rule-hash :runtime-rule-hash
+          :runtime-artifact-hash}
+        input-valid?
+        (and (= required-input-keys (set (keys input)))
+             (every? digest?
+                     [(:source-content-hash input)
+                      (:stage2-plan-hash input)
+                      (:expression-lowering-artifact-hash input)
+                      (:expression-lowering-source-content-hash input)
+                      (:expression-lowering-semantic-hash input)
+                      (:plan-emitter-source-rule-hash input)
+                      (:compiler-driver-rule-hash input)
+                      (:runtime-rule-hash input)
+                      (:runtime-artifact-hash input)])
+             (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                (:expression-lowering-semantic-hash input))
+             (true? (:expression-lowering-invoked? input))
+             (true? (:expression-lowering-generic-bridge-residual? input))
+             (= :jvm (:requested-backend-target input))
+             (= :jvm (:source-declared-target input))
+             (= {:status :accepted
+                 :source-declared-target :jvm
+                 :requested-target :jvm
+                 :selection :source-and-request-agree}
+                eligibility)
+             (map? (:instruction-summary input))
+             (integer? println-count)
+             (not (neg? println-count))
+             (= writes-stdout?
+                (pos? println-count)))
+        managed-runtime
+        {:family :managed :host :jvm-21
+         :delegated #{:startup :gc :classloading}
+         :generated #{:entrypoint :byte-array-values}
+         :linked #{}
+         :forbidden #{:reflection :dynamic-loading :native-access
+                      :threads :monitors}}
+         manifest-hash-valid?
+         (and (contains? manifest :manifest-hash)
+              (= (:manifest-hash manifest)
+                 (str "sha256:"
+                      (sha256-hex
+                       (pr-str
+                        (c-backend-canonical-value
+                         (dissoc manifest :manifest-hash)))))))
+         expected-context-valid?
+         (or (nil? expected-context)
+             (and (= (:input expected-context) input)
+                  (= (:effects expected-context) (:effects manifest))
+                  (= (:capabilities expected-context)
+                     (:capabilities manifest))
+                  (= (:content-hashes expected-context)
+                     (:content-hashes manifest))))]
+    (when-not
+     (and (empty? missing)
+          (= :gravity/jvm-backend-manifest (:artifact manifest))
+          (= 1 (:schema-version manifest))
+          (= :gravity.backend/jvm (:backend manifest))
+          (= :hosted (:profile manifest))
+          (= {:classfile 65 :runtime :jvm-21 :module-system :named
+              :packaging :modular-executable-jar}
+             (:target manifest))
+          (= {:name jvm-backend-module-name
+              :main-class jvm-backend-main-class
+              :side-effects writes-stdout?}
+             (:module manifest))
+          (= #{:java-sources :class-files :modular-executable-jar
+               :source-map :manifest :provenance}
+             (set (:emits manifest)))
+          (= #{:java-source :module-source :class-file :module-class
+               :jar :source-map}
+             (set (keys hashes)))
+          (every? #(boolean
+                    (re-matches #"sha256:[0-9a-f]{64}" (str %)))
+                  (vals hashes))
+          input-valid?
+          (= #{:declared :inferred :capabilities}
+             (set (keys (:effects manifest))))
+          (set? inferred-effects)
+          (set? (get-in manifest [:effects :declared]))
+          (set? (get-in manifest [:effects :capabilities]))
+          (set? (:capabilities manifest))
+          (set/subset? (get-in manifest [:effects :declared]) #{:io/write})
+          (set/subset? inferred-effects #{:io/write})
+          (set/subset? inferred-effects
+                       (get-in manifest [:effects :declared] #{}))
+          (set/subset? (get-in manifest [:effects :capabilities])
+                       #{:io/stdout})
+          (set/subset? (:capabilities manifest) #{:io/stdout})
+          (= (set (:capabilities manifest))
+             (set (get-in manifest [:effects :capabilities])))
+          (or (not writes-stdout?)
+              (and (contains? (get-in manifest [:effects :declared] #{})
+                              :io/write)
+                   (contains? (get-in manifest [:effects :inferred] #{})
+                              :io/write)
+                   (contains? (set (:capabilities manifest)) :io/stdout)))
+          (= (if writes-stdout?
+               [{:class "java.lang.System" :member "out"
+                 :operation :write-byte-array
+                 :effect :io/write :capability :io/stdout
+                 :representation :byte-array}]
+               [])
+             (:host-boundaries manifest))
+          (= managed-runtime (:managed-runtime manifest))
+          manifest-hash-valid?
+          expected-context-valid?
+          (= {:mode :safe :unsafe-islands [] :status :preserved}
+             (:safety manifest))
+          (= {:target-release 21 :encoding :utf8
+              :debug [:source :lines] :annotation-processing :disabled}
+             (:toolchain manifest))
+          (= {:classfile-major :passed :jar-entries :passed
+              :main-class :passed :stage2-differential :passed
+              :stdout-byte-exact? true :source-map :partial
+              :source-map-coverage :source-unit-only
+              :per-form-origin-preserved? false :b5-conforming? false
+              :verified-mir-input? false}
+             (:conformance manifest))
+          (true? (:clojure-seed-boundary? manifest))
+          (false? (:self-hosted? manifest))
+          (false? (:release-grade? manifest))
+          (= [] (:diagnostics manifest)))
+      (jvm-backend-fail!
+       "B5-MANIFEST" "JVM artifact manifest is incomplete or contradictory"
+       source-path manifest
+        {:missing-fields missing
+        :input-valid? input-valid?
+        :manifest-hash-valid? manifest-hash-valid?
+        :expected-context-valid? expected-context-valid?
+        :missing-fact :complete-jvm-manifest})))
+   :passed))
+
+(defn jvm-backend-preflight-output!
+  [output-path source-path]
+  (when-not (c-backend-output-path-allowed? output-path)
+    (jvm-backend-fail!
+     "C14-INPUT" "JVM artifact directory is outside declared roots"
+     source-path nil
+     {:output-path output-path :missing-fact :output-path-containment}))
+  (let [output (java.io.File. output-path)
+        parent (or (.getParentFile output) (java.io.File. "."))]
+    (when (.exists output)
+      (jvm-backend-fail!
+       "C14-INPUT" "JVM backend requires a fresh artifact directory"
+       source-path nil
+       {:output-path output-path :missing-fact :fresh-output-path}))
+    (when (and (.exists parent) (not (.isDirectory parent)))
+      (jvm-backend-fail!
+       "C14-INPUT" "JVM artifact parent is not a directory"
+       source-path nil
+       {:output-path output-path :output-parent (.getPath parent)
+        :missing-fact :output-parent-directory}))
+    (when (and (not (.exists parent)) (not (.mkdirs parent)))
+      (jvm-backend-fail!
+       "C14-INPUT" "JVM artifact parent directory is unavailable"
+       source-path nil
+       {:output-path output-path :output-parent (.getPath parent)
+        :missing-fact :output-parent-directory}))
+    {:output output :parent parent}))
+
+(defn jvm-backend-source-artifact
+  ([source-path source-text]
+   (jvm-backend-source-artifact source-path source-text {}))
+  ([source-path source-text {:keys [output-path emit?]
+                             :or {emit? false}}]
+   (when (and emit? (str/blank? (str output-path)))
+     (jvm-backend-fail!
+      "C14-INPUT" "JVM target compilation requires an output directory"
+      source-path nil {:missing-fields [:output-path]}))
+   (let [{:keys [output parent]}
+         (when emit? (jvm-backend-preflight-output! (str output-path)
+                                                    source-path))
+         javac-version (jvm-backend-tool-version!
+                        *jvm-backend-javac-command* source-path)
+         java-version (jvm-backend-tool-version!
+                       *jvm-backend-java-command* source-path)
+         packet (stage2-runtime-derived-packet source-path source-text
+                                               jvm-backend-target)
+         trusted-emitter-rule
+         (c-backend-stage2-plan-emitter-source-rule!
+          source-path jvm-backend-target)
+         trusted-driver-rule
+         (c-backend-stage2-compiler-driver-source-rule!
+          source-path jvm-backend-target)
+         trusted-runtime-rule
+         (c-backend-stage2-runtime-source-rule!
+          source-path jvm-backend-target)
+         trusted-plan
+         (p15-s23-stage2-plan-emitter-compile-source
+          (:emitter trusted-emitter-rule) source-path source-text)
+         _ (jvm-backend-validate-packet!
+            source-path packet trusted-emitter-rule trusted-driver-rule
+            trusted-runtime-rule trusted-plan)
+         plan (:plan packet)
+         _ (when-not (= :hosted (get-in plan [:module :profile]))
+             (jvm-backend-fail!
+              "C14-PROFILE" "JVM target requires the hosted profile"
+              source-path plan
+              {:observed-profile (get-in plan [:module :profile])
+               :missing-fact :hosted-jvm-profile}))
+         _ (when-not (= :safe (get-in plan [:module :safety]))
+             (jvm-backend-fail!
+              "C14-PROFILE" "bounded JVM target does not lower unsafe modules"
+              source-path plan
+              {:observed-safety-mode (get-in plan [:module :safety])
+               :missing-fact :safe-jvm-module}))
+         _ (jvm-backend-validate-plan! source-path plan)
+         writes-stdout? (pos? (get-in plan [:instruction-summary :println] 0))
+         _ (when (and writes-stdout?
+                      (not (and
+                            (contains? (get-in plan
+                                               [:effect-summary :declared] #{})
+                                       :io/write)
+                            (contains? (get-in plan
+                                               [:effect-summary :inferred] #{})
+                                       :io/write)
+                            (contains? (set (get-in plan
+                                                    [:module :capabilities]))
+                                       :io/stdout))))
+             (jvm-backend-fail!
+              "B5-INTEROP" "JVM stdout lowering lacks effect or capability authority"
+              source-path plan
+              {:missing-fact :stdout-effect-capability-adapter}))
+         java-source (jvm-backend-java-source plan)
+         module-source jvm-backend-module-source
+         source-map (jvm-backend-source-map source-text java-source)
+         plan-hash (c4-artifact-id
+                    (c-backend-canonical-value
+                     (select-keys plan [:kind :entrypoint :functions
+                                        :instruction-summary :effect-summary])))
+         source-hash (str "sha256:" (sha256-hex source-text))
+         compiler-record (:stage2-compiler-artifact-record packet)
+         stage-directory
+         (if emit?
+           (try
+             (java.nio.file.Files/createTempDirectory
+              (.toPath parent) ".gravity-jvm-stage-"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+             (catch Exception ex
+               (jvm-backend-fail!
+                "C14-INPUT" "JVM staging directory could not be created"
+                source-path nil
+                {:cause-message (.getMessage ex)
+                 :missing-fact :output-staging-directory})))
+           (java.nio.file.Files/createTempDirectory
+            "gravity-jvm-validate-"
+            (make-array java.nio.file.attribute.FileAttribute 0)))
+         staged-paths (jvm-backend-output-paths (.toString stage-directory))]
+     (try
+       (jvm-backend-write-file!
+        (.toPath (java.io.File. (:java-source staged-paths))) java-source)
+       (jvm-backend-write-file!
+        (.toPath (java.io.File. (:module-source staged-paths))) module-source)
+       (java.nio.file.Files/createDirectories
+        (.toPath (java.io.File. (str stage-directory "/classes")))
+        (make-array java.nio.file.attribute.FileAttribute 0))
+       (jvm-backend-run-process!
+        [*jvm-backend-javac-command* "--release" "21"
+         "-encoding" "UTF-8" "-g:source,lines" "-proc:none"
+         "-implicit:none" "-Werror" "-d"
+         (str stage-directory "/classes")
+         (:module-source staged-paths) (:java-source staged-paths)]
+        source-path "B5-TARGET" "javac rejected generated Java 21 source")
+       (let [class-path (.toPath (java.io.File. (:class-file staged-paths)))
+             module-class-path
+             (.toPath (java.io.File. (:module-class staged-paths)))
+             class-major (jvm-backend-classfile-major class-path)]
+         (when-not (and (= jvm-backend-required-classfile-major class-major)
+                        (= jvm-backend-required-classfile-major
+                           (jvm-backend-classfile-major module-class-path)))
+           (jvm-backend-fail!
+            "B5-MANIFEST" "generated JVM classfile version is invalid"
+            source-path nil
+            {:observed-classfile-major class-major
+             :required-classfile-major jvm-backend-required-classfile-major
+             :missing-fact :classfile-major-65}))
+         (jvm-backend-write-deterministic-jar!
+          (.toPath (java.io.File. (:jar staged-paths)))
+          (.toPath (java.io.File. (str stage-directory "/classes"))))
+         (let [jar-record
+               (jvm-backend-jar-record
+                (.toPath (java.io.File. (:jar staged-paths))))
+               expected-entries
+               ["META-INF/MANIFEST.MF" "gravity/stage2/Program.class"
+                "module-info.class"]]
+           (when-not (and (= expected-entries (:entries jar-record))
+                          (= jvm-backend-main-class (:main-class jar-record))
+                          (= jvm-backend-module-name
+                             (:module-name jar-record)))
+             (jvm-backend-fail!
+              "B5-MANIFEST" "generated JVM JAR structure is invalid"
+              source-path nil
+              {:observed-jar jar-record
+               :expected-entries expected-entries
+               :missing-fact :modular-executable-jar}))
+           (let [execution
+                 (jvm-backend-run-process!
+                  [*jvm-backend-java-command* "-jar" (:jar staged-paths)]
+                  source-path "B14-DIFFERENTIAL"
+                  "generated JVM artifact execution failed")
+                 expected-output
+                 (get-in packet [:stage2-runtime-execution-record :stdout])
+                 expected-bytes (c-backend-runtime-bytes expected-output)]
+             (when-not (= expected-bytes (:stdout-bytes execution))
+               (jvm-backend-fail!
+                "B14-DIFFERENTIAL"
+                "JVM execution differs from the authoritative stage2 runtime"
+                source-path nil
+                {:expected-stdout-hash
+                 (str "sha256:" (sha256-hex expected-output))
+                 :actual-stdout-hash
+                 (str "sha256:"
+                      (sha256-bytes-hex
+                       (byte-array (map byte (:stdout-bytes execution)))))
+                 :missing-fact :stage2-jvm-execution-equivalence}))
+             (let [source-map-text
+                   (pr-str (c-backend-canonical-value source-map))
+                   _ (jvm-backend-write-file!
+                      (.toPath (java.io.File. (:source-map staged-paths)))
+                      source-map-text)
+                   content-hashes
+                   (into {}
+                         (map (fn [[kind path]]
+                                [kind
+                                 (str "sha256:"
+                                      (sha256-bytes-hex
+                                       (java.nio.file.Files/readAllBytes
+                                        (.toPath (java.io.File. path)))))]))
+                         (select-keys staged-paths
+                                      [:java-source :module-source :class-file
+                                       :module-class :jar :source-map]))
+                   expected-input
+                   {:source-content-hash source-hash
+                    :source-declared-target
+                    (get-in packet [:target-eligibility
+                                    :source-declared-target])
+                    :requested-backend-target :jvm
+                    :target-eligibility (:target-eligibility packet)
+                    :stage2-plan-hash plan-hash
+                    :instruction-summary (:instruction-summary plan)
+                    :expression-lowering-artifact-hash
+                    (:artifact-hash compiler-record)
+                    :expression-lowering-source-content-hash
+                    (:source-content-hash compiler-record)
+                    :expression-lowering-semantic-hash
+                    (:semantic-hash compiler-record)
+                    :expression-lowering-invoked? (:invoked? compiler-record)
+                    :expression-lowering-generic-bridge-residual?
+                    (:generic-bridge-residual? compiler-record)
+                    :plan-emitter-source-rule-hash
+                    (get-in packet
+                            [:stage2-plan-emitter-rule :source-rule-hash])
+                    :compiler-driver-rule-hash
+                    (get-in packet
+                            [:stage2-compiler-driver-rule :driver-rule-hash])
+                    :runtime-rule-hash
+                    (get-in packet [:stage2-runtime-rule :runtime-rule-hash])
+                    :runtime-artifact-hash
+                    (get-in packet
+                            [:stage2-runtime-rule :runtime-artifact-hash])}
+                   expected-effects (:effect-summary plan)
+                   expected-capabilities (get-in plan [:module :capabilities])
+                   manifest-input
+                   {:artifact :gravity/jvm-backend-manifest
+                    :schema-version 1
+                    :backend :gravity.backend/jvm
+                    :profile :hosted
+                    :target {:classfile 65 :runtime :jvm-21
+                             :module-system :named
+                             :packaging :modular-executable-jar}
+                    :module {:name jvm-backend-module-name
+                             :main-class jvm-backend-main-class
+                             :side-effects writes-stdout?}
+                    :emits [:java-sources :class-files
+                            :modular-executable-jar :source-map
+                            :manifest :provenance]
+                    :content-hashes content-hashes
+                    :input expected-input
+                    :effects expected-effects
+                    :capabilities expected-capabilities
+                    :safety {:mode :safe :unsafe-islands []
+                             :status :preserved}
+                    :managed-runtime
+                    {:family :managed :host :jvm-21
+                     :delegated #{:startup :gc :classloading}
+                     :generated #{:entrypoint :byte-array-values}
+                     :linked #{}
+                     :forbidden #{:reflection :dynamic-loading :native-access
+                                  :threads :monitors}}
+                    :host-boundaries
+                    (if writes-stdout?
+                      [{:class "java.lang.System" :member "out"
+                        :operation :write-byte-array
+                        :effect :io/write :capability :io/stdout
+                        :representation :byte-array}]
+                      [])
+                    :toolchain {:target-release 21 :encoding :utf8
+                                :debug [:source :lines]
+                                :annotation-processing :disabled}
+                    :conformance
+                    {:classfile-major :passed :jar-entries :passed
+                     :main-class :passed :stage2-differential :passed
+                     :stdout-byte-exact? true :source-map :partial
+                     :source-map-coverage :source-unit-only
+                     :per-form-origin-preserved? false
+                     :b5-conforming? false :verified-mir-input? false}
+                    :clojure-seed-boundary? true
+                    :self-hosted? false :release-grade? false
+                    :diagnostics []}
+                   manifest-hash
+                   (str "sha256:"
+                        (sha256-hex
+                         (pr-str (c-backend-canonical-value manifest-input))))
+                   manifest (assoc manifest-input
+                                   :manifest-hash manifest-hash)
+                   validation-context
+                   {:input expected-input
+                    :effects expected-effects
+                    :capabilities expected-capabilities
+                    :content-hashes content-hashes}
+                   _ (jvm-backend-validate-manifest!
+                      source-path manifest validation-context)
+                   _ (jvm-backend-validate-content-hashes!
+                      source-path manifest staged-paths)
+                   provenance-input
+                   {:artifact :gravity/jvm-provenance
+                    :schema-version 1 :backend :gravity.backend/jvm
+                    :source-content-hash source-hash
+                    :stage2-plan-hash plan-hash
+                    :stage2-expression-lowering-artifact compiler-record
+                    :target-eligibility (:target-eligibility packet)
+                    :stage2-plan-emitter-source-rule-hash
+                    (get-in packet
+                            [:stage2-plan-emitter-rule :source-rule-hash])
+                    :compiler-driver-rule-hash
+                    (get-in packet
+                            [:stage2-compiler-driver-rule :driver-rule-hash])
+                    :runtime-rule-hash
+                    (get-in packet [:stage2-runtime-rule :runtime-rule-hash])
+                    :manifest-hash manifest-hash
+                    :pass-history [:c2-reader :stage2-source-front-end
+                                   :stage2-plan-emitter
+                                   :stage2-compiler-driver
+                                   :stage2-runtime-executor :jvm-lowering
+                                   :javac-21 :deterministic-jar]
+                    :seed-boundary {:clojure-seed-boundary? true
+                                    :self-hosted? false}}
+                   provenance-hash
+                   (str "sha256:"
+                        (sha256-hex
+                         (pr-str
+                          (c-backend-canonical-value provenance-input))))
+                   final-paths (when emit?
+                                 (jvm-backend-output-paths (str output-path)))
+                   provenance
+                   (assoc provenance-input
+                          :provenance-hash provenance-hash
+                          :actual-paths
+                          {:source source-path :outputs final-paths
+                           :stage2-expression-lowering-source
+                           (get-in packet
+                                   [:provenance :actual-paths
+                                    :stage2-expression-lowering-source])
+                           :validation-toolchain
+                           {:javac javac-version :java java-version}})
+                   _ (jvm-backend-write-file!
+                      (.toPath (java.io.File. (:manifest staged-paths)))
+                      (pr-str manifest))
+                   _ (jvm-backend-write-file!
+                      (.toPath (java.io.File. (:provenance staged-paths)))
+                      (pr-str provenance))
+                   identity
+                   {:kind :gravity/jvm-backend-artifact
+                    :source-content-hash source-hash
+                    :stage2-plan-hash plan-hash
+                    :expression-lowering-artifact-hash
+                    (:artifact-hash compiler-record)
+                    :plan-emitter-source-rule-hash
+                    (get-in packet
+                            [:stage2-plan-emitter-rule :source-rule-hash])
+                    :content-hashes content-hashes
+                    :manifest-hash manifest-hash
+                    :provenance-hash provenance-hash}
+                   artifact
+                   {:kind :gravity/jvm-backend-artifact
+                    :task "HOSTED-JVM-TARGET"
+                    :status :complete-for-slice
+                    :artifact-id
+                    (c4-artifact-id
+                     (c-backend-canonical-value identity))
+                    :source {:kind :co-canonical-gravity-source
+                             :sha256 source-hash}
+                    :target (:target manifest)
+                    :input-plan-id (:plan-id plan)
+                    :input-plan-hash plan-hash
+                    :target-eligibility (:target-eligibility packet)
+                    :stage2-expression-lowering-artifact compiler-record
+                    :plan-emitter-source-rule-hash
+                    (get-in packet
+                            [:stage2-plan-emitter-rule :source-rule-hash])
+                    :instruction-summary (:instruction-summary plan)
+                    :effect-summary (:effect-summary plan)
+                    :capabilities (get-in plan [:module :capabilities])
+                    :java-source java-source
+                    :module-source module-source
+                    :source-map source-map
+                    :manifest manifest :manifest-hash manifest-hash
+                    :manifest-validation-context validation-context
+                    :provenance provenance :provenance-hash provenance-hash
+                    :classfile-major class-major
+                    :jar-record jar-record
+                    :stage2-compiler-driver-record
+                    (:stage2-compiler-driver-record packet)
+                    :stage2-runtime-execution-record
+                    (:stage2-runtime-execution-record packet)
+                    :compiled-execution-output expected-output
+                    :compiled-execution-output-bytes (:stdout-bytes execution)
+                    :seed-boundary {:clojure-seed-boundary? true
+                                    :self-hosted? false
+                                    :final-release? false}
+                    :emitted-files final-paths
+                    :diagnostics []}]
+               (when emit?
+                 (try
+                   (java.nio.file.Files/move
+                    stage-directory (.toPath output)
+                    (into-array java.nio.file.CopyOption
+                                [java.nio.file.StandardCopyOption/ATOMIC_MOVE]))
+                   (catch Exception ex
+                     (jvm-backend-fail!
+                      "B5-MANIFEST"
+                      "JVM artifact directory could not be atomically committed"
+                      source-path nil
+                      {:cause-message (.getMessage ex)
+                       :missing-fact :atomic-artifact-directory-commit}))))
+               artifact))))
+       (catch clojure.lang.ExceptionInfo ex
+         (throw ex))
+       (catch Exception ex
+         (jvm-backend-fail!
+          "B5-MANIFEST" "JVM artifact construction failed closed"
+          source-path nil
+          {:cause-message (.getMessage ex)
+           :missing-fact :transactional-jvm-artifact}))
+       (finally
+         (when (.exists (.toFile stage-directory))
+           (js-ts-backend-delete-tree! stage-directory)))))))
+
+(defn jvm-backend-file-artifact
+  ([path] (jvm-backend-file-artifact path {}))
+  ([path options]
+   (jvm-backend-source-artifact
+    path (read-gravity-source-text path) options)))
+
 (defn compile-source
   [source-path source-text]
   (let [macro-artifact (macro-source-artifact source-path source-text)
@@ -110042,14 +111128,15 @@
               lowering-mode (some-> lowering-mode str/lower-case keyword)]
           (when (and lowering-mode
                      (not (or (contains? c-backend-supported-targets target)
-                              (= js-ts-backend-target target))))
+                              (= js-ts-backend-target target)
+                              (= jvm-backend-target target))))
             (p18-t04-fail! "P18T04002"
                            {:source source-path
                             :command args
                             :target target
                             :lowering-mode lowering-mode
-                            :missing-fields [:c-target-for-lowering]
-                            :remediation "Use --target c, js, or js-ts with --lowering runtime-derived."}))
+                            :missing-fields [:runtime-derived-target]
+                            :remediation "Use --target c, jvm, js, or js-ts with --lowering runtime-derived."}))
           {:source-path source-path
            :target target
            :target-requested? (some? target)
@@ -110377,6 +111464,56 @@
              :lowering-mode :runtime-derived
              :lowering-requested? (some? lowering-mode)
              :compiled-executable? true))))
+
+(defn p18-t04-compile-jvm-target-file!
+  "Compile a current source unit to the bounded Java 21 modular JAR target.
+
+  This entrypoint is intentionally reachable only for the explicit
+  runtime-derived lowering mode.  The historical JVM compile behavior remains
+  the default seed/release compatibility route."
+  [source-path output-path target lowering-mode]
+  (when-not (= jvm-backend-target target)
+    (jvm-backend-fail!
+     "B5-TARGET" "public JVM target is unsupported"
+     source-path nil
+     {:requested-target target :supported-targets [:jvm]
+      :missing-fact :supported-target}))
+  (when-not (= :runtime-derived lowering-mode)
+    (jvm-backend-fail!
+     "B5-TARGET" "new JVM backend requires the runtime-derived lowering mode"
+     source-path nil
+     {:lowering-mode lowering-mode
+      :supported-lowering-modes [:runtime-derived]
+      :missing-fact :jvm-lowering-mode}))
+  (when-not output-path
+    (jvm-backend-fail!
+     "C14-INPUT" "JVM target compilation requires an explicit output"
+     source-path nil
+     {:missing-fields [:output-path]
+      :remediation
+      "Use --target jvm --lowering runtime-derived -o <artifact-directory>."}))
+  (let [artifact
+        (jvm-backend-file-artifact
+         source-path {:output-path output-path :emit? true})]
+    (assoc artifact
+           :command-boundary
+           {:compile-command
+            ["gravity" "compile" source-path "--target" "jvm"
+             "--lowering" "runtime-derived" "-o" output-path]
+            :run-command
+            ["java" "-jar"
+             (get-in artifact [:provenance :actual-paths :outputs :jar])]
+            :public-command "gravity"
+            :bootstrap-hosted? true
+            :clojure-seed-boundary? true
+            :self-hosted? false
+            :seedless-release? false}
+           :target-requested? true
+           :target-selection :explicit
+           :public-current-source? true
+           :lowering-mode :runtime-derived
+           :lowering-requested? true
+           :compiled-executable? true)))
 
 (defn p18-t04-shell
   [& args]
@@ -114403,14 +115540,9 @@
                                (cond
                                  (= :jvm target)
                                  (if lowering-mode
-                                   (p18-t04-fail!
-                                    "P18T04002"
-                                    {:source path
-                                     :command args
-                                     :target target
-                                     :lowering-mode lowering-mode
-                                     :missing-fields [:runtime-derived-target]
-                                     :remediation "Use --target c, js, or js-ts with --lowering runtime-derived."})
+                                   (prn (p18-t04-compile-jvm-target-file!
+                                         path output-path target
+                                         lowering-mode))
                                    (if output-path
                                      (prn (p18-t04-compile-executable-file!
                                            path output-path))

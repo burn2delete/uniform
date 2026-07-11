@@ -27044,6 +27044,409 @@
                   (.delete (java.io.File. qst-output))
                   (.delete (java.io.File. one-segment-output)))))))))))
 
+(deftest hosted-jvm-backend-emits-genuine-deterministic-java21-artifact
+  (let [source-text
+        (str "(ns jvm.target.bytes (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main []\n"
+             "  (do\n"
+             "    (println \"λ\\u0000🙂\")\n"
+             "    (let [left \"left\"]\n"
+             "      (if true\n"
+             "        (println (str left \"-right\"))\n"
+             "        (println \"unreachable\")))\n"
+             "    (println (quote done))))\n")
+        expected (str "λ" \u0000 "🙂\nleft-right\ndone\n")
+        gravity (bootstrap/jvm-backend-source-artifact
+                 "/fake/root-a/program.gravity" source-text)
+        qst (bootstrap/jvm-backend-source-artifact
+             "/other/root/program.qst" source-text)]
+    (is (= :gravity/jvm-backend-artifact (:kind gravity)))
+    (is (= :complete-for-slice (:status gravity)))
+    (doseq [field [:artifact-id :input-plan-hash :manifest-hash
+                   :provenance-hash]]
+      (is (= (get gravity field) (get qst field)) field))
+    (is (= expected (:compiled-execution-output gravity)))
+    (is (= (bootstrap/c-backend-runtime-bytes expected)
+           (:compiled-execution-output-bytes gravity)))
+    (is (= 65 (:classfile-major gravity)))
+    (is (= ["META-INF/MANIFEST.MF"
+            "gravity/stage2/Program.class" "module-info.class"]
+           (get-in gravity [:jar-record :entries])))
+    (is (= "gravity.stage2.Program"
+           (get-in gravity [:jar-record :main-class])))
+    (is (= "gravity.stage"
+           (get-in gravity [:jar-record :module-name])))
+    (is (true? (get-in gravity
+                        [:manifest :input
+                         :expression-lowering-invoked?])))
+    (is (= bootstrap/p15-s23-stage2-compiler-artifact-expected-semantic-hash
+           (get-in gravity
+                   [:manifest :input
+                    :expression-lowering-semantic-hash])))
+    (is (false? (get-in gravity [:manifest :conformance :b5-conforming?])))
+    (is (false? (get-in gravity
+                         [:manifest :conformance :verified-mir-input?])))
+    (is (true? (get-in gravity [:seed-boundary :clojure-seed-boundary?])))
+    (is (not (str/includes? (:java-source gravity) expected)))
+    (is (str/includes? (:java-source gravity) "System.out.write"))
+    (is (str/includes? (:java-source gravity) "new byte[]"))
+    (with-temp-directory
+      "gravity-jvm-emission-"
+      (fn [directory]
+        (let [left-output (.toString (.resolve directory "left"))
+              right-output (.toString (.resolve directory "renamed"))
+              left (bootstrap/jvm-backend-source-artifact
+                    "virtual.gravity" source-text
+                    {:output-path left-output :emit? true})
+              right (bootstrap/jvm-backend-source-artifact
+                     "virtual.qst" source-text
+                     {:output-path right-output :emit? true})
+              paths (:emitted-files left)
+              execution (run-bin "java" "-jar" (:jar paths))]
+          (is (= (:artifact-id left) (:artifact-id right)))
+          (is (= (:manifest-hash left) (:manifest-hash right)))
+          (is (= (:provenance-hash left) (:provenance-hash right)))
+          (is (= 8 (count paths)))
+          (doseq [path (vals paths)]
+            (is (.isFile (java.io.File. path))))
+          (is (zero? (:exit execution)) (:err execution))
+          (is (= expected (:out execution)))
+          (is (= 65
+                 (bootstrap/jvm-backend-classfile-major
+                  (.toPath (java.io.File. (:class-file paths))))))
+          (is (= (:manifest left)
+                 (edn/read-string (slurp (:manifest paths)))))
+          (is (= (:provenance left)
+                 (edn/read-string (slurp (:provenance paths)))))
+          (doseq [[kind path]
+                  (select-keys paths
+                               [:java-source :module-source :class-file
+                                :module-class :jar :source-map])]
+            (is (= (get-in left [:manifest :content-hashes kind])
+                   (str "sha256:"
+                        (bootstrap/sha256-bytes-hex
+                         (java.nio.file.Files/readAllBytes
+                          (.toPath (java.io.File. path))))))))
+          (spit (:class-file paths) "tampered")
+          (is (= "B13-HASH"
+                 (diagnostic-id
+                  #(bootstrap/jvm-backend-validate-content-hashes!
+                    "tampered.gravity" (:manifest left) paths)))))))))
+
+(deftest hosted-jvm-backend-preserves-empty-authority-and-fails-closed
+  (let [empty-source
+        (str "(ns jvm.target.empty (:profile :hosted) (:target :jvm) "
+             "(:effects #{}) (:capabilities #{}))\n"
+             "(defn main [] (do))\n")
+        empty-artifact
+        (bootstrap/jvm-backend-source-artifact "empty.gravity" empty-source)
+        three-source
+        (str "(ns jvm.target.three (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"a\" \"b\" \"c\"))\n")
+        unsafe-source
+        (str "(ns jvm.target.unsafe (:profile :hosted) (:target :jvm) "
+             "(:effects #{}) (:capabilities #{}) (:safety :unsafe))\n"
+             "(defn main [] (do))\n")
+        incompatible-source
+        (str "(ns jvm.target.incompatible (:profile :hosted) (:target :js-ts) "
+             "(:effects #{}) (:capabilities #{}))\n"
+             "(defn main [] (do))\n")]
+    (is (= "" (:compiled-execution-output empty-artifact)))
+    (is (= [] (:compiled-execution-output-bytes empty-artifact)))
+    (is (= [] (get-in empty-artifact [:manifest :host-boundaries])))
+    (is (not (str/includes? (:java-source empty-artifact) "System.out")))
+    (is (= "C14-UNSUPPORTED"
+           (diagnostic-id
+            #(bootstrap/jvm-backend-source-artifact
+              "three.gravity" three-source))))
+    (is (= "C14-PROFILE"
+           (diagnostic-id
+            #(bootstrap/jvm-backend-source-artifact
+              "unsafe.gravity" unsafe-source))))
+    (is (= "C14-PROFILE"
+           (diagnostic-id
+            #(bootstrap/jvm-backend-source-artifact
+              "incompatible.gravity" incompatible-source))))
+    (is (= "B5-TARGET"
+           (diagnostic-id
+            #(binding [bootstrap/*jvm-backend-javac-command*
+                       "missing-gravity-javac"]
+               (bootstrap/jvm-backend-source-artifact
+                "missing-tool.gravity" empty-source)))))
+    (let [manifest (dissoc (:manifest empty-artifact) :manifest-hash)]
+      (doseq [mutation
+              [(dissoc manifest :managed-runtime)
+               (assoc manifest :managed-runtime {})
+               (assoc-in manifest [:target :classfile] 66)
+               (assoc-in manifest [:conformance :b5-conforming?] true)
+               (assoc-in manifest
+                         [:input :expression-lowering-invoked?] false)
+               (assoc-in manifest [:input :stage2-plan-hash] nil)
+               (assoc-in manifest [:input :instruction-summary :println]
+                         "not-a-count")
+               (assoc-in manifest [:effects :inferred] [:io/write])
+               (assoc manifest :content-hashes {})]]
+        (is (= "B5-MANIFEST"
+               (diagnostic-id
+                #(bootstrap/jvm-backend-validate-manifest!
+                  "tampered.gravity" mutation)))))
+      (is (= "B5-MANIFEST"
+             (diagnostic-id
+              #(bootstrap/jvm-backend-validate-manifest!
+                "tampered-hash.gravity"
+                (assoc (:manifest empty-artifact)
+                       :manifest-hash
+                       (str "sha256:" (apply str (repeat 64 "0"))))))))
+      (let [context (:manifest-validation-context empty-artifact)
+            rehash
+            (fn [candidate]
+              (let [base (dissoc candidate :manifest-hash)]
+                (assoc base :manifest-hash
+                       (str "sha256:"
+                            (bootstrap/sha256-hex
+                             (pr-str
+                              (bootstrap/c-backend-canonical-value
+                               base)))))))
+            arbitrary-hashes
+            (-> (:manifest empty-artifact)
+                (assoc-in [:input :source-content-hash]
+                          (str "sha256:" (apply str (repeat 64 "a"))))
+                (assoc-in [:input :stage2-plan-hash]
+                          (str "sha256:" (apply str (repeat 64 "b"))))
+                rehash)
+            forged-emitter-hash
+            (-> (:manifest empty-artifact)
+                (assoc-in [:input :plan-emitter-source-rule-hash]
+                          (str "sha256:" (apply str (repeat 64 "c"))))
+                rehash)
+            widened-effect
+            (-> (:manifest empty-artifact)
+                (assoc-in [:effects :declared] #{:network/http})
+                rehash)
+            widened-capability
+            (-> (:manifest empty-artifact)
+                (assoc :capabilities #{:network/http})
+                (assoc-in [:effects :capabilities] #{:network/http})
+                rehash)]
+        (is (= :passed
+               (bootstrap/jvm-backend-validate-manifest!
+                "valid.gravity" (:manifest empty-artifact) context)))
+        (is (= "B5-MANIFEST"
+               (diagnostic-id
+                #(bootstrap/jvm-backend-validate-manifest!
+                  "arbitrary-hashes.gravity" arbitrary-hashes context))))
+        (is (= "B5-MANIFEST"
+               (diagnostic-id
+                #(bootstrap/jvm-backend-validate-manifest!
+                  "forged-emitter-hash.gravity" forged-emitter-hash
+                  context))))
+        (is (= "B5-MANIFEST"
+               (diagnostic-id
+                #(bootstrap/jvm-backend-validate-manifest!
+                  "widened-effect.gravity" widened-effect context))))
+        (is (= "B5-MANIFEST"
+               (diagnostic-id
+                #(bootstrap/jvm-backend-validate-manifest!
+                  "widened-capability.gravity" widened-capability
+                  context))))))
+
+    ))
+
+(deftest hosted-jvm-backend-transactional-output-rejects-collisions
+  (let [source-text
+        (str "(ns jvm.target.transaction (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"transaction\"))\n")]
+    (with-temp-directory
+      "gravity-jvm-transaction-"
+      (fn [directory]
+        (let [collision (.resolve directory "collision")
+              _ (.mkdirs (.toFile collision))
+              marker (.resolve collision "caller-owned")
+              _ (spit (.toFile marker) "preserved")
+              collision-data
+              (diagnostic-data
+               #(bootstrap/jvm-backend-source-artifact
+                 "collision.gravity" source-text
+                 {:output-path (.toString collision) :emit? true}))
+              blocked-parent (.resolve directory "blocked-parent")
+              _ (spit (.toFile blocked-parent) "not-a-directory")
+              blocked-output (.resolve blocked-parent "artifact")
+              blocked-data
+              (diagnostic-data
+               #(bootstrap/jvm-backend-source-artifact
+                 "blocked.gravity" source-text
+                 {:output-path (.toString blocked-output) :emit? true}))
+              missing-output (.resolve directory "missing-tool-output")
+              missing-data
+              (diagnostic-data
+               #(binding [bootstrap/*jvm-backend-javac-command*
+                          "missing-gravity-javac"]
+                  (bootstrap/jvm-backend-source-artifact
+                   "missing.gravity" source-text
+                   {:output-path (.toString missing-output) :emit? true})))]
+          (is (= "C14-INPUT" (:id collision-data)))
+          (is (= :fresh-output-path (:missing-fact collision-data)))
+          (is (= "preserved" (slurp (.toFile marker))))
+          (is (= "C14-INPUT" (:id blocked-data)))
+          (is (= :output-parent-directory (:missing-fact blocked-data)))
+          (is (= "not-a-directory" (slurp (.toFile blocked-parent))))
+          (is (= "B5-TARGET" (:id missing-data)))
+          (is (not (.exists (.toFile missing-output)))))))))
+
+(deftest hosted-jvm-backend-propagates-stage2-authenticity-failures
+  (let [source-text
+        (str "(ns jvm.target.integrity (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"integrity\"))\n")
+        missing-runtime
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/c-backend-stage2-runtime-artifact-source-path
+             (fn [_] "missing-stage2-runtime.gravity")]
+            (bootstrap/jvm-backend-source-artifact
+             "integrity.gravity" source-text)))
+        original-driver @#'bootstrap/p15-s23-stage2-compiler-driver-run-source
+        original-packet @#'bootstrap/stage2-runtime-derived-packet
+        forge-packet
+        (fn [source mutate]
+          (diagnostic-data
+           #(with-redefs
+              [bootstrap/stage2-runtime-derived-packet
+               (fn [& args] (mutate (apply original-packet args)))]
+              (bootstrap/jvm-backend-source-artifact source source-text))))
+        tampered-driver
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/p15-s23-stage2-compiler-driver-run-source
+             (fn [& args]
+               (assoc (apply original-driver args)
+                      :accepted-output-equivalent? false))]
+            (bootstrap/jvm-backend-source-artifact
+             "integrity.qst" source-text)))
+        forged-packet
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/stage2-runtime-derived-packet
+             (fn [& args]
+               (assoc (apply original-packet args)
+                      :kind :gravity/forged-stage2-packet))]
+            (bootstrap/jvm-backend-source-artifact
+             "forged-packet.gravity" source-text)))
+        forged-emitter
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/stage2-runtime-derived-packet
+             (fn [& args]
+               (assoc-in
+                (apply original-packet args)
+                [:stage2-plan-emitter-rule :source-rule-hash]
+                (str "sha256:" (apply str (repeat 64 "f")))))]
+            (bootstrap/jvm-backend-source-artifact
+             "forged-emitter.qst" source-text)))
+        forged-compiler-artifact
+        (forge-packet
+         "forged-compiler-artifact.gravity"
+         #(assoc-in % [:stage2-compiler-artifact-record :artifact-hash]
+                    (str "sha256:" (apply str (repeat 64 "1")))))
+        forged-driver-rule
+        (forge-packet
+         "forged-driver-rule.qst"
+         #(assoc-in % [:stage2-compiler-driver-rule :driver-rule-hash]
+                    (str "sha256:" (apply str (repeat 64 "2")))))
+        forged-runtime-rule
+        (forge-packet
+         "forged-runtime-rule.gravity"
+         #(assoc-in % [:stage2-runtime-rule :runtime-rule-hash]
+                    (str "sha256:" (apply str (repeat 64 "3")))))
+        forged-runtime-artifact
+        (forge-packet
+         "forged-runtime-artifact.qst"
+         #(assoc-in % [:stage2-runtime-rule :runtime-artifact-hash]
+                    (str "sha256:" (apply str (repeat 64 "4")))))
+        injected-plan
+        (forge-packet
+         "injected-plan.gravity"
+         (fn [packet]
+           (update-in
+            packet
+            [:plan :functions (get-in packet [:plan :entrypoint])
+             :instructions]
+            conj {:op :literal :value "ignored-injected-value"})))]
+    (is (= "P15S23X001" (:id missing-runtime)))
+    (is (= :runtime-artifact-source (:missing-fact missing-runtime)))
+    (is (= "P15S23Y003" (:id tampered-driver)))
+    (is (= :p15-s23-stage2-compiler-driver
+           (:diagnostic-family tampered-driver)))
+    (doseq [data [forged-packet forged-emitter forged-compiler-artifact
+                        forged-driver-rule forged-runtime-rule
+                        forged-runtime-artifact injected-plan]]
+      (is (= "C14-INPUT" (:id data)))
+      (is (= :authenticated-target-neutral-stage2-packet
+             (:missing-fact data))))))
+
+(deftest public-current-source-jvm-runtime-derived-routes-from-unrelated-cwd
+  (let [source-text
+        (str "(ns jvm.target.public (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"public-jvm\"))\n")
+        bin (.getCanonicalPath (java.io.File. "bin/gravity"))
+        env {"GRAVITY_BOOTSTRAP_ONLY" "1"
+             "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
+                         (System/getenv "PATH"))}]
+    (with-temp-source
+      ".gravity" source-text
+      (fn [gravity-path]
+        (with-temp-source
+          ".qst" source-text
+          (fn [qst-path]
+            (with-temp-directory
+              "gravity-jvm-public-cwd-"
+              (fn [directory]
+                (let [gravity-output "target/jvm-gravity"
+                      qst-output "target/jvm-qst"
+                      gravity-result
+                      (run-process-in-directory
+                       (.toString directory) env
+                       [bin "compile" gravity-path "--target" "jvm"
+                        "--lowering" "runtime-derived" "-o"
+                        gravity-output])
+                      qst-result
+                      (run-process-in-directory
+                       (.toString directory) env
+                       [bin "compile" qst-path "--target" "jvm"
+                        "--lowering" "runtime-derived" "-o" qst-output])
+                      gravity-artifact
+                      (when (zero? (:exit gravity-result))
+                        (edn/read-string (:out gravity-result)))
+                      qst-artifact
+                      (when (zero? (:exit qst-result))
+                        (edn/read-string (:out qst-result)))
+                      gravity-jar (get-in gravity-artifact
+                                          [:emitted-files :jar])
+                      qst-jar (get-in qst-artifact [:emitted-files :jar])]
+                  (is (zero? (:exit gravity-result)) (:err gravity-result))
+                  (is (zero? (:exit qst-result)) (:err qst-result))
+                  (is (= :gravity/jvm-backend-artifact
+                         (:kind gravity-artifact)))
+                  (is (= (:artifact-id gravity-artifact)
+                         (:artifact-id qst-artifact)))
+                  (is (= "public-jvm\n"
+                         (:out (run-bin "java" "-jar" gravity-jar))))
+                  (is (= "public-jvm\n"
+                         (:out (run-bin "java" "-jar" qst-jar))))
+                  (is (= {:target :jvm :lowering-mode nil}
+                         (select-keys
+                          (bootstrap/p18-t04-parse-compile-request
+                           ["compile" gravity-path "--target" "jvm"])
+                          [:target :lowering-mode])))
+                  (bootstrap/js-ts-backend-delete-tree!
+                   (.toPath (java.io.File. gravity-output)))
+                  (bootstrap/js-ts-backend-delete-tree!
+                   (.toPath (java.io.File. qst-output))))))))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]
