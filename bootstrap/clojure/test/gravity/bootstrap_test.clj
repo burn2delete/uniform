@@ -28304,6 +28304,992 @@
               (is (= :runtime-artifact-function-set
                      (:missing-fact data))))))))))
 
+;; P15-S23-PURE-CHECKED-CORE-TESTS
+
+(def ^:private closed-pure-checked-core-source
+  (str
+   "(ns checked.pure (:profile :hosted) (:target :jvm) "
+   "(:effects #{}) (:capabilities #{}) (:exports [main]))\r\n"
+   "(defn main []\r\n"
+   "  (let [prefix \"λ\\u0000🙂\" empty \"\" "
+   "duplicate \"same\" copy prefix]\r\n"
+   "    (do\r\n"
+   "      'hello\r\n"
+   "      (quote hello)\r\n"
+   "      (do)\r\n"
+   "      (let [])\r\n"
+   "      (if true prefix :keyword)\r\n"
+   "      (let [prefix prefix] (do prefix duplicate \"same\"))\r\n"
+   "      (if false \"implicit-else\")\r\n"
+   "      (if true (if false \"left\" :middle) false))))\r\n"))
+
+(defn- closed-pure-source-with-main
+  ([body]
+   (closed-pure-source-with-main body {}))
+  ([body {:keys [effects capabilities profile target safety exports]
+          :or {effects #{}
+               capabilities #{}
+               profile :hosted
+               target :jvm
+               safety :safe
+               exports []}}]
+   (str
+    "(ns checked.small (:profile " (pr-str profile) ") "
+    "(:target " (pr-str target) ") "
+    "(:safety " (pr-str safety) ") "
+    "(:effects " (pr-str effects) ") "
+    "(:capabilities " (pr-str capabilities) ") "
+    "(:exports " (pr-str exports) "))\n"
+    "(defn main [] " body ")\n")))
+
+(defn- closed-pure-rehash
+  [artifact]
+  (assoc artifact
+         :artifact-id
+         (bootstrap/p15-s23-closed-core-digest
+          (bootstrap/p15-s23-closed-core-semantic-input artifact))))
+
+(defn- closed-pure-rederive
+  [artifact]
+  (let [nodes
+        (mapv
+         (fn [node]
+           (if (= :proven-safe (get-in node [:safety :outcome]))
+             (assoc-in
+              node [:safety :proof]
+              (bootstrap/p15-s23-closed-core-pure-safety-proof
+               (:source-content-hash artifact)
+               (:path node)
+               (:source-operation node)
+               (:source node)
+               (:profile node)
+               (:type node)
+               (:effects node)
+               (:capabilities node)
+               (:ownership node)
+               (get-in node [:safety :basis])))
+             node))
+         (:core-nodes artifact))
+        artifact (assoc artifact :core-nodes nodes)
+        artifact
+        (merge artifact
+               (bootstrap/p15-s23-closed-core-fact-tables
+                nodes
+                (get-in artifact [:source-core-input :module])
+                (get-in artifact [:source-core-input :plan-id])))]
+    (closed-pure-rehash artifact)))
+
+(deftest stage2-pure-front-end-propagates-genuine-c3-id-and-export
+  (let [path "pure-front-end.gravity"
+        rule (bootstrap/c-backend-stage2-compiler-driver-source-rule!
+              path :c)
+        record
+        (bootstrap/p15-s23-stage2-front-end-source-module-record
+         (:front-end rule) path closed-pure-checked-core-source)
+        source-id (get-in record [:records 1 :c3-syntax-object :syntax/id])
+        expanded-id
+        (get-in record
+                [:expanded-syntax-object-stream 1
+                 :c3-syntax-object :syntax/id])
+        artifact
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         path closed-pure-checked-core-source :c)]
+    (is (string? source-id))
+    (is (= source-id expanded-id
+           (get-in record [:macro-expansion-trace 0 :input-syntax-id])))
+    (is (= '[main]
+           (get-in artifact [:source-core-input :declared-exports])))
+    (is (= :public
+           (get-in artifact [:authenticated-input :entrypoint-visibility])))))
+
+(deftest pure-checked-core-is-path-neutral-and-fact-complete
+  (with-temp-directory
+    "gravity-pure-core-a-"
+    (fn [left-directory]
+      (with-temp-directory
+        "gravity-pure-core-b-"
+        (fn [right-directory]
+          (let [left-path (.toString (.resolve left-directory
+                                               "program.gravity"))
+                right-path (.toString (.resolve right-directory
+                                                "program.gravity"))
+                qst-path (.toString (.resolve right-directory "renamed.qst"))
+                c-artifact
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 left-path closed-pure-checked-core-source :c)
+                js-artifact
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 left-path closed-pure-checked-core-source :js-ts)
+                jvm-artifact
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 left-path closed-pure-checked-core-source :jvm)
+                right-artifact
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 right-path closed-pure-checked-core-source :c)
+                qst-artifact
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 qst-path closed-pure-checked-core-source :c)
+                context
+                (bootstrap/p15-s23-stage2-closed-checked-core-context
+                 left-path closed-pure-checked-core-source :c)
+                nodes (:core-nodes c-artifact)
+                node-ids (set (map :node-id nodes))
+                by-operation (group-by :source-operation nodes)
+                function-node (first (get by-operation :function))
+                quote-nodes (get by-operation :quote)
+                quote-origins
+                (mapv #(get (:source-origin-table c-artifact)
+                            (get-in % [:source :origin-id]))
+                      quote-nodes)
+                abbreviated-origin
+                (first (filter #(= :abbreviation (:form-kind %))
+                               quote-origins))
+                explicit-origin
+                (first (filter #(= :list (:form-kind %)) quote-origins))
+                unicode-node
+                (first (filter #(= (str "λ" \u0000 "🙂")
+                                   (get-in % [:attributes :value]))
+                               nodes))
+                unicode-raw
+                (get (:origin-closure c-artifact)
+                     (get-in unicode-node [:source :origin-id]))
+                unicode-span (:c2-span unicode-raw)
+                bindings (:lexical-binding-records c-artifact)
+                prefix-bindings (filterv #(= 'prefix (:name %)) bindings)
+                [outer-prefix inner-prefix] prefix-bindings
+                prefix-locals
+                (filterv #(= 'prefix (get-in % [:attributes :name]))
+                         (get by-operation :local))
+                duplicate-literals
+                (filterv #(= "same" (get-in % [:attributes :value])) nodes)
+                generated-roles
+                (set (keep :generated-role
+                           (vals (:source-origin-table c-artifact))))
+                semantic-ids (mapv :artifact-id
+                                   [c-artifact js-artifact jvm-artifact
+                                    right-artifact qst-artifact])]
+            (is (= :gravity/p15-s23-stage2-closed-checked-core-artifact
+                   (:kind c-artifact)))
+            (is (= :complete-for-pure-closed-slice (:status c-artifact)))
+            (is (= :hosted (:profile c-artifact)))
+            (is (= :jvm (:source-target c-artifact)))
+            (is (= [] (:diagnostics c-artifact)))
+            (is (false? (:mir-derived? c-artifact)))
+            (is (false? (:whole-language? c-artifact)))
+            (is (true? (:clojure-seed-boundary? c-artifact)))
+            (is (false? (:self-hosted? c-artifact)))
+            (is (apply = semantic-ids))
+            (is (apply = (map :mapping-id
+                              [c-artifact js-artifact jvm-artifact
+                               right-artifact qst-artifact])))
+            (is (apply = (map :provenance-binding-id
+                              [c-artifact js-artifact jvm-artifact
+                               right-artifact qst-artifact])))
+            (is (not= (:actual-path-binding-id c-artifact)
+                      (:actual-path-binding-id right-artifact)))
+            (is (not= (:actual-path-binding-id c-artifact)
+                      (:actual-path-binding-id qst-artifact)))
+            (is (= #{:c :js-ts :jvm}
+                   (set (map #(get-in % [:target-request-metadata
+                                         :requested-target])
+                             [c-artifact js-artifact jvm-artifact]))))
+            (is (= :passed
+                   (bootstrap/p15-s23-stage2-closed-checked-core-verify!
+                    c-artifact context)))
+            (is (bootstrap/p15-s23-stage2-closed-checked-core-authentic?
+                 c-artifact context))
+            (is (not
+                 (bootstrap/p15-s23-stage2-closed-checked-core-authentic?
+                  c-artifact)))
+            (is (= #{:literal :quote :local :do :if :let}
+                   (get-in c-artifact [:source-core-input :operation-set])))
+            (is (true? (get-in c-artifact
+                               [:source-core-input
+                                :effectful-runtime-branches-unreachable?])))
+            (is (= :seed-comparison-oracle
+                   (get-in c-artifact [:source-core-input :packet-role])))
+            (is (= :not-claimed
+                   (get-in c-artifact
+                           [:source-core-input
+                            :runtime-module-c8-conformance])))
+            (is (= :public (get-in function-node [:attributes :visibility])))
+            (is (= 2 (count quote-nodes)))
+            (is (seq (:reader-generated-origin abbreviated-origin)))
+            (is (empty? (:reader-generated-origin explicit-origin)))
+            (is (= :reader-abbreviation
+                   (get-in abbreviated-origin
+                           [:reader-generated-origin 0 :producer])))
+            (is (= (str "λ" \u0000 "🙂")
+                   (get-in unicode-node [:attributes :value])))
+            (is (str/includes? closed-pure-checked-core-source "\\u0000"))
+            (is (= left-path (:actual-source-path unicode-raw)))
+            (is (> (- (:byte-end unicode-span) (:byte-start unicode-span))
+                   (- (get-in unicode-span [:end :char])
+                      (get-in unicode-span [:start :char]))))
+            (is (= 2 (count prefix-bindings)))
+            (is (= (:binding-node-id outer-prefix)
+                   (:shadowed-binding inner-prefix)))
+            (is (<= 2 (count (filter #(= (:binding-node-id outer-prefix)
+                                         (get-in %
+                                                 [:attributes
+                                                  :resolved-binding]))
+                                    prefix-locals))))
+            (is (some #(= (:binding-node-id inner-prefix)
+                          (get-in % [:attributes :resolved-binding]))
+                      prefix-locals))
+            (is (= 2 (count duplicate-literals)))
+            (is (= 2 (count (set (map :node-id duplicate-literals)))))
+            (is (set/subset?
+                 #{:defn-expansion :implicit-do-nil :implicit-let-nil
+                   :implicit-if-else :truthiness-normalization}
+                 generated-roles))
+            (is (true? (get-in c-artifact
+                               [:dependency-order-graph
+                                :all-dependencies-precede-consumers?])))
+            (is (true? (get-in c-artifact
+                               [:dependency-order-graph
+                                :all-lexical-bindings-resolve?])))
+            (doseq [field [:type-facts :effect-facts :capability-facts
+                           :ownership-facts :safety-facts :profile-facts]]
+              (is (= node-ids (set (keys (get c-artifact field)))) field))
+            (is (= #{:artifact :module :core-input :types :locals
+                     :functions :constraints :dynamic-boundaries :casts
+                     :layout-facts :diagnostics}
+                   (set (keys (:typed-core c-artifact)))))
+            (is (= :gravity/typed-core
+                   (get-in c-artifact [:typed-core :artifact])))
+            (is (= node-ids
+                   (set (keys (get-in c-artifact [:typed-core :types])))))
+            (is (every? string?
+                        (vals (get-in c-artifact [:typed-core :types]))))
+            (is (contains?
+                 (first (vals (get-in c-artifact
+                                      [:typed-core :functions])))
+                 :return))
+            (is (= #{:artifact :module :nodes :functions :namespace
+                     :build-effects :replay-required :diagnostics}
+                   (set (keys (:effect-graph c-artifact)))))
+            (is (= :gravity/effect-graph
+                   (get-in c-artifact [:effect-graph :artifact])))
+            (is (every? #(= #{:direct :latent :transitive :ordering
+                              :source}
+                            (set (keys %)))
+                        (vals (get-in c-artifact [:effect-graph :nodes]))))
+            (is (= [] (:capability-proof-records c-artifact)))
+            (is (= :gravity/p15-s23-pure-capability-closure
+                   (get-in c-artifact
+                           [:pure-capability-closure :artifact])))
+            (is (= #{:artifact :module :owners :moves :borrows :regions
+                     :arenas :linear :transfers :diagnostics}
+                   (set (keys (:ownership-analysis c-artifact)))))
+            (is (= node-ids
+                   (set (keys (get-in c-artifact
+                                     [:ownership-analysis :owners])))))
+            (is (= [] (get-in c-artifact [:ownership-analysis :moves])))
+            (is (= {} (get-in c-artifact [:ownership-analysis :regions])))
+            (is (every? #(and (= #{} (:effects %))
+                              (= #{} (:capabilities %))
+                              (= :persistent-immutable-value
+                                 (get-in % [:ownership :model]))
+                              (= :proven-safe
+                                 (get-in % [:safety :outcome]))
+                              (= #{:outcome :basis :proof}
+                                 (set (keys (:safety %)))))
+                        nodes))
+            (is (every? #(and (= #{} (:direct %))
+                              (= #{} (:latent %))
+                              (= #{} (:transitive %))
+                              (= #{} (:residual %)))
+                        (vals (:effect-facts c-artifact))))
+            (is (every? #(and (= #{} (:required %))
+                              (= #{} (:granted %))
+                              (= [] (:grant-ids %))
+                              (= :none-required (:authority-source %))
+                              (nil? (:authority-id %)))
+                        (vals (:capability-facts c-artifact))))
+            (is (= 1 (count (set (map :owner-id
+                                      (vals (:ownership-facts c-artifact)))))))
+            (is (every?
+                 #(and (= :gravity/safety-outcome
+                          (:artifact %))
+                       (string? (:proof %))
+                       (= :not-applicable (:runtime-check %))
+                       (= :not-applicable (:failure-behavior %))
+                       (= #{:type :effects :ownership}
+                          (set (keys (:facts %)))))
+                 (vals (:safety-facts c-artifact))))))))))
+
+(defn- pure-diagnostic-has-honest-identity?
+  [data]
+  (and (contains? data :syntax-id)
+       (contains? data :c2-form-id)
+       (contains? data :core-node-id)
+       (contains? data :boundary-identity-reason)
+       (not (str/includes? (pr-str data) ":fixture/"))))
+
+(deftest pure-checked-core-rejects-effectful-and-type-invalid-before-packet
+  (let [source
+        (fn [body effects capabilities]
+          (closed-pure-source-with-main
+           body {:effects effects :capabilities capabilities}))
+        quote-actual-types
+        {:quote-explicit-list :gravity/list
+         :quote-abbrev-list :gravity/list
+         :quote-explicit-vector :gravity/vector
+         :quote-abbrev-vector :gravity/vector
+         :quote-explicit-map :gravity/map
+         :quote-abbrev-map :gravity/map
+         :quote-explicit-set :gravity/set
+         :quote-abbrev-set :gravity/set
+         :quote-explicit-decimal :gravity/noninteger-number
+         :quote-abbrev-decimal :gravity/noninteger-number
+         :quote-explicit-ratio :gravity/ratio
+         :quote-abbrev-ratio :gravity/ratio
+         :quote-explicit-deferred-ratio :gravity/deferred-ratio
+         :quote-abbrev-deferred-ratio :gravity/deferred-ratio
+         :quote-terminal-missing-data :gravity/list
+         :quote-terminal-extra-data :gravity/list
+         :mixed-quote-before-numeric :gravity/vector}
+        accepted-quote-cases
+        [[:quote-scalar-explicit-nil "(quote nil)" :gravity/nil]
+         [:quote-scalar-abbrev-nil "'nil" :gravity/nil]
+         [:quote-scalar-explicit-string "(quote \"ok\")" :gravity/string]
+         [:quote-scalar-abbrev-string "'\"ok\"" :gravity/string]
+         [:quote-scalar-explicit-bool "(quote true)" :gravity/bool]
+         [:quote-scalar-abbrev-bool "'true" :gravity/bool]
+         [:quote-scalar-explicit-integer "(quote 42)" :gravity/integer]
+         [:quote-scalar-abbrev-integer "'42" :gravity/integer]
+         [:quote-scalar-explicit-char "(quote \\a)" :gravity/char]
+         [:quote-scalar-abbrev-char "'\\a" :gravity/char]
+         [:quote-scalar-explicit-keyword "(quote :ok)" :gravity/keyword]
+         [:quote-scalar-abbrev-keyword "':ok" :gravity/keyword]
+         [:quote-scalar-explicit-symbol "(quote hello)" :gravity/symbol]
+         [:quote-scalar-abbrev-symbol "'hello" :gravity/symbol]]
+        cases
+        [[:str-runtime
+          (source "(str \"x\")"
+                  #{:memory/allocate} #{:memory/allocator})
+          "C8-RUNTIME" :runtime-module-conformance-residual]
+         [:println-runtime
+          (source "(println \"x\")" #{:io/write} #{:io/stdout})
+          "C8-RUNTIME" :runtime-module-conformance-residual]
+         [:missing-effect
+          (source "(str \"x\")" #{} #{:memory/allocator})
+          "C8-UNDECLARED" :required-effect-declaration]
+         [:missing-capability
+          (source "(str \"x\")" #{:memory/allocate} #{})
+          "C8-CAPABILITY" :required-capability-declaration]
+         [:str-type
+          (source "(str 42)" #{:memory/allocate} #{:memory/allocator})
+          "C7-TYPE-MISMATCH" :closed-str-printable-operand]
+         [:quote-explicit-list
+          (source "(quote (1 2))" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-list
+          (source "'(1 2)" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-explicit-vector
+          (source "(quote [1])" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-vector
+          (source "'[1]" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-explicit-map
+          (source "(quote {:a 1})" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-map
+          (source "'{:a 1}" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-explicit-set
+          (source "(quote #{1})" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-set
+          (source "'#{1}" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-explicit-decimal
+          (source "(quote 1.5)" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-decimal
+          (source "'1.5" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-explicit-ratio
+          (source "(quote 1/2)" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-ratio
+          (source "'1/2" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-explicit-deferred-ratio
+          (source "(quote 1/0)" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-abbrev-deferred-ratio
+          (source "'1/0" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-terminal-missing-data
+          (source "(quote (quote))" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:quote-terminal-extra-data
+          (source "(quote (quote a b))" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:mixed-numeric-before-quote
+          (source "(do 1/2 (quote [1]))" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-integer-numeric-scalar]
+         [:mixed-quote-before-numeric
+          (source "(do (quote [1]) 1/2)" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-quoted-scalar]
+         [:mixed-str-arity-before-numeric
+          (source "(do (str) 1/2)"
+                  #{:memory/allocate} #{:memory/allocator})
+          "C7-TYPE-MISMATCH" :closed-str-arity]
+         [:mixed-numeric-before-str-arity
+          (source "(do 1/2 (str))"
+                  #{:memory/allocate} #{:memory/allocator})
+          "C7-TYPE-MISMATCH" :pure-closed-integer-numeric-scalar]
+         [:unreachable-effect
+          (source "(if false (println \"x\") nil)"
+                  #{:io/write} #{:io/stdout})
+          "C8-RUNTIME" :runtime-module-conformance-residual]
+         [:registered-effect-only
+          (source "nil" #{:filesystem/read} #{})
+          "C8-RUNTIME" :runtime-module-conformance-residual]
+         [:registered-capability-only
+          (source "nil" #{} #{:filesystem/read})
+          "C8-RUNTIME" :runtime-module-conformance-residual]
+         [:unknown-effect
+          (source "nil" #{:mystery/effect} #{})
+          "C8-UNKNOWN" :recognized-pure-slice-effect-label]
+         [:unknown-capability
+          (source "nil" #{} #{:mystery/capability})
+          "C8-CAPABILITY" :recognized-pure-slice-capability-label]
+         [:str-zero-arity
+          (source "(str)" #{:memory/allocate} #{:memory/allocator})
+          "C7-TYPE-MISMATCH" :closed-str-arity]
+         [:str-three-arity
+          (source "(str \"a\" \"b\" \"c\")"
+                  #{:memory/allocate} #{:memory/allocator})
+          "C7-TYPE-MISMATCH" :closed-str-arity]
+         [:decimal
+          (source "1.5" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-integer-numeric-scalar]
+         [:ratio
+          (source "1/2" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-integer-numeric-scalar]
+         [:deferred-ratio
+          (source "1/0" #{} #{})
+          "C7-TYPE-MISMATCH" :pure-closed-integer-numeric-scalar]
+         [:shadowed-str
+          (source "(let [str \"shadow\"] (str \"x\"))"
+                  #{:memory/allocate} #{:memory/allocator})
+          "C6-LOWERING-GAP" :resolved-shadowed-builtin-call-lowering]]
+        original bootstrap/stage2-runtime-derived-packet
+        packet-calls (atom 0)]
+    (with-redefs [bootstrap/stage2-runtime-derived-packet
+                  (fn [& args]
+                    (swap! packet-calls inc)
+                    (apply original args))]
+      (doseq [[label source-text expected-id expected-missing] cases]
+        (let [path (str (name label) ".gravity")
+              before @packet-calls
+              data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 path source-text :c))]
+          (is (= expected-id (:id data)) [label data])
+          (is (= expected-missing (:missing-fact data)) [label data])
+          (is (zero? (- @packet-calls before)) [label data])
+          (is (pure-diagnostic-has-honest-identity? data) [label data])
+          (is (not (str/starts-with? (:id data) "C11")) [label data])
+          (is (= :jvm (:source-target data)) [label data])
+          (is (= :c (:requested-target data)) [label data])
+          (when-let [expected-actual-type (get quote-actual-types label)]
+            (let [c2
+                  (bootstrap/compiler-c2-reader-source-artifact
+                   path source-text)
+                  c3
+                  (bootstrap/compiler-c3-syntax-source-artifact
+                   path source-text)
+                  form-by-id (into {} (map (juxt :form-id identity))
+                                   (:form-tree c2))
+                  function-root-id (second (:top-level-form-ids c2))
+                  function-root (get form-by-id function-root-id)
+                  body-root-id (first (drop 3 (:children function-root)))
+                  outer-quote-id
+                  (if (= :mixed-quote-before-numeric label)
+                    (first (rest (:children (get form-by-id body-root-id))))
+                    body-root-id)
+                  outer-quote (get form-by-id outer-quote-id)]
+              (is (not= :pure-quote-source-arity (:missing-fact data))
+                  [label data])
+              (is (= bootstrap/p15-s23-closed-core-quoted-scalar-type
+                     (:expected-type data))
+                  [label data])
+              (is (= expected-actual-type (:actual-type data))
+                  [label data])
+              (is (= outer-quote-id (:c2-form-id data)) [label data])
+              (is (= (:span outer-quote) (:source-span data)) [label data])
+              (is (= (:origin outer-quote)
+                     (:offending-reader-origin data))
+                  [label data])
+              (is (= (vec (or (:generated-origin outer-quote) []))
+                     (:offending-generated-origin data))
+                  [label data])
+              (is (str/starts-with? (:syntax-id data) "sha256:")
+                  [label data])
+              (is (= (get-in c3 [:syntax-object-stream 1 :syntax/id])
+                     (:syntax-id data))
+                  [label data])
+              (is (= (get-in c3
+                             [:syntax-object-stream 1 :identity :input-hash])
+                     (:syntax-id data))
+                  [label data])
+              (is (not= (get-in c2 [:syntax-seed-stream 1 :syntax-id])
+                        (:syntax-id data))
+                  [label data])
+              (is (= (:core-node-id data) (:operation-id data))
+                  [label data])))
+          (when (contains? #{"C7-TYPE-MISMATCH" "C8-RUNTIME"
+                             "C8-UNDECLARED" "C8-CAPABILITY"
+                             "C8-UNKNOWN"}
+                           expected-id)
+            (is (string? (:syntax-id data)) [label data])
+            (is (string? (:core-node-id data)) [label data]))
+          (when (= "C8-RUNTIME" expected-id)
+            (is (= 'runtime.gravity (:runtime-module data)))
+            (is (= :none-selected (:provider data)))
+            (is (= :none-selected (:grant data)))
+            (is (string? (:runtime-artifact-hash data))))))
+      (doseq [[label body expected-type] accepted-quote-cases]
+        (let [artifact
+              (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+               (str (name label) ".gravity") (source body #{} #{}) :c)
+              quote-node
+              (first (filter #(= :quote (:source-operation %))
+                             (:core-nodes artifact)))]
+          (is (= :complete-for-pure-closed-slice (:status artifact))
+              [label artifact])
+          (is (= expected-type (:type quote-node)) [label quote-node])
+          (is (= :proven-safe (get-in quote-node [:safety :outcome]))
+              [label quote-node]))))))
+
+(deftest pure-checked-core-source-and-module-gaps-use-canonical-c6
+  (let [requires-source
+        (str
+         "(ns checked.requires (:profile :hosted) (:target :jvm) "
+         "(:effects #{}) (:capabilities #{}) "
+         "(:requires [other.module :as other]))\n"
+         "(defn main [] nil)\n")
+        metadata-source
+        (str
+         "(ns checked.metadata (:profile :hosted) (:target :jvm) "
+         "(:effects #{}) (:capabilities #{}))\n"
+         "(defn ^:fixture main [] nil)\n")
+        extra-function-source
+        (str (closed-pure-source-with-main "nil")
+             "(defn extra [] nil)\n")
+        missing-profile-source
+        (str
+         "(ns checked.missing-profile (:target :jvm) "
+         "(:effects #{}) (:capabilities #{}))\n"
+         "(defn main [] nil)\n")
+        duplicate-profile-source
+        (str
+         "(ns checked.duplicate-profile (:profile :hosted) "
+         "(:profile :hosted) (:target :jvm) "
+         "(:effects #{}) (:capabilities #{}))\n"
+         "(defn main [] nil)\n")
+        duplicate-target-source
+        (str
+         "(ns checked.duplicate-target (:profile :hosted) "
+         "(:target :jvm) (:target :c) "
+         "(:effects #{}) (:capabilities #{}))\n"
+         "(defn main [] nil)\n")
+        malformed-dependency-source
+        (str
+         "(ns checked.malformed-dependency (:profile :hosted) "
+         "(:target :jvm) (:effects #{}) (:capabilities #{}) "
+         "(:requires [other.module :as]))\n"
+         "(defn main [] nil)\n")
+        missing-ns-source "(defn main [] nil)\n"
+        cases
+        [[:vector (closed-pure-source-with-main "[1]")
+          "C6-LOWERING-GAP" :pure-closed-source-expression-kind]
+         [:unknown-call (closed-pure-source-with-main "(mystery 1)")
+          "C6-LOWERING-GAP" :pure-closed-source-operation]
+         [:requires requires-source
+          "C6-LOWERING-GAP" :closed-slice-module-dependency-closure]
+         [:metadata metadata-source
+          "C6-LOWERING-GAP" :metadata-preserving-pure-core-lowering]
+         [:source-target
+          (closed-pure-source-with-main "nil" {:target :c})
+          "C6-LOWERING-GAP" :pure-closed-slice-jvm-source-target]
+         [:unsupported-source-target
+          (closed-pure-source-with-main
+           "nil" {:target :mystery-target})
+          "C6-LOWERING-GAP" :pure-closed-slice-jvm-source-target]
+         [:profile
+          (closed-pure-source-with-main "nil" {:profile :native})
+          "C6-LOWERING-GAP" :pure-closed-slice-hosted-profile]
+         [:safety
+          (closed-pure-source-with-main "nil" {:safety :unsafe})
+          "C6-LOWERING-GAP" :pure-closed-slice-safe-mode]
+         [:exports
+          (closed-pure-source-with-main "nil" {:exports ['other]})
+          "C6-CORE-SHAPE" :exact-closed-slice-entrypoint-export]
+         [:extra-function extra-function-source
+          "C6-LOWERING-GAP"
+          :exact-ns-and-single-zero-arity-main-source-shape]
+         [:missing-profile missing-profile-source
+          "C6-CORE-SHAPE" :pure-closed-module-source-shape]
+         [:duplicate-profile duplicate-profile-source
+          "C6-CORE-SHAPE" :pure-closed-module-source-shape]
+         [:duplicate-target duplicate-target-source
+          "C6-CORE-SHAPE" :pure-closed-module-source-shape]
+         [:malformed-dependency malformed-dependency-source
+          "C6-CORE-SHAPE" :pure-closed-module-source-shape]
+         [:missing-ns missing-ns-source
+          "C6-CORE-SHAPE" :pure-closed-module-source-shape]
+         [:duplicate-binding
+          (closed-pure-source-with-main "(let [x 1 x 2] x)")
+          "C6-LOWERING-GAP" :pure-let-binding-source-shape]
+         [:quote-missing (closed-pure-source-with-main "(quote)")
+          "C6-LOWERING-GAP" :pure-quote-source-arity]
+         [:quote-extra (closed-pure-source-with-main "(quote a b)")
+          "C6-LOWERING-GAP" :pure-quote-source-arity]
+         [:quote-duplicate
+          (closed-pure-source-with-main
+           "(do (quote) (quote a b))")
+          "C6-LOWERING-GAP" :pure-quote-source-arity]]]
+    (doseq [[label source expected-id expected-missing] cases]
+      (let [path (str "source-gap-" (name label) ".gravity")
+            data
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+               path source :c))]
+        (is (= expected-id (:id data)) [label data])
+        (is (= expected-missing (:missing-fact data)) [label data])
+        (is (pure-diagnostic-has-honest-identity? data) [label data])
+        (is (string? (:syntax-id data)) [label data])
+        (is (keyword? (:c2-form-id data)) [label data])
+        (is (= :genuine-source-or-core-identity
+               (:boundary-identity-reason data)) [label data])
+        (when (= :pure-closed-module-source-shape expected-missing)
+          (is (contains? data :observed-legacy-module-reason)
+              [label data]))
+        (when (= :unsupported-source-target label)
+          (is (str/starts-with? (:syntax-id data) "sha256:") data)
+          (is (not= "stage0-syntax-0" (:syntax-id data)) data)
+          (is (= :mystery-target (:observed-source-target data)) data))
+        (when (contains? #{:quote-missing :quote-extra
+                           :quote-duplicate} label)
+          (let [c2 (bootstrap/compiler-c2-reader-source-artifact path source)
+                form-by-id (into {} (map (juxt :form-id identity))
+                                 (:form-tree c2))
+                function-root-id (second (:top-level-form-ids c2))
+                function-root (get form-by-id function-root-id)
+                body-root-id (first (drop 3 (:children function-root)))
+                expected-form-id
+                (if (= :quote-duplicate label)
+                  (first (rest (:children (get form-by-id body-root-id))))
+                  body-root-id)
+                expected-form (get form-by-id expected-form-id)
+                packet-calls (atom 0)
+                packet-data
+                (with-redefs
+                  [bootstrap/stage2-runtime-derived-packet
+                   (fn [& _]
+                     (swap! packet-calls inc)
+                     (throw (ex-info "packet must remain unforced" {})))]
+                  (diagnostic-data
+                   #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                     path source :c)))]
+            (is (= (if (contains? #{:quote-missing :quote-duplicate}
+                                   label)
+                     0
+                     2)
+                   (:observed-arity data))
+                [label data])
+            (is (= expected-form-id (:c2-form-id data)) [label data])
+            (is (= (:span expected-form) (:source-span data)) [label data])
+            (is (not= function-root-id (:c2-form-id data)) [label data])
+            (is (not= (:span function-root) (:source-span data)) [label data])
+            (is (= (:origin expected-form)
+                   (:offending-reader-origin data))
+                [label data])
+            (is (= (vec (or (:generated-origin expected-form) []))
+                   (:offending-generated-origin data))
+                [label data])
+            (is (= data packet-data) [label packet-data])
+            (is (zero? @packet-calls) [label @packet-calls])))
+        (is (not (str/starts-with? (:id data) "C11")))))))
+
+(deftest pure-checked-core-opaque-fourth-argument-is-never-consumed
+  (let [path "opaque-authority.gravity"
+        source (closed-pure-source-with-main "(let [x \"ok\"] x)")
+        values [false 0 [] (Object.) (iterate inc 0)]
+        original bootstrap/stage2-runtime-derived-packet
+        packet-calls (atom 0)
+        rows
+        (with-redefs [bootstrap/stage2-runtime-derived-packet
+                      (fn [& args]
+                        (swap! packet-calls inc)
+                        (apply original args))]
+          (mapv
+           (fn [value]
+             (let [before @packet-calls
+                   data
+                   (diagnostic-data
+                    #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                      path source :c value))]
+               {:packet-delta (- @packet-calls before)
+                :data data}))
+           values))
+        diagnostics (mapv :data rows)
+        context-data
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-closed-checked-core-context
+           path source :c (Object.)))
+        three-arg
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         path source :c)
+        explicit-nil
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         path source :c nil)
+        context
+        (bootstrap/p15-s23-stage2-closed-checked-core-context
+         path source :c)]
+    (is (every? #(zero? (:packet-delta %)) rows))
+    (is (apply = diagnostics))
+    (is (= "C8-CAPABILITY" (:id (first diagnostics))))
+    (is (= :authority-context-not-consumed-by-pure-slice
+           (:missing-fact (first diagnostics))))
+    (is (true? (:authority-present? (first diagnostics))))
+    (is (false? (:authority-inspected? (first diagnostics))))
+    (is (false? (:authority-stored? (first diagnostics))))
+    (is (= (first diagnostics) context-data))
+    (is (= three-arg explicit-nil))
+    (is (= context
+           (bootstrap/p15-s23-stage2-closed-checked-core-context
+            path source :c nil)))
+    (is (= #{:source-path :source-text :source-content-hash
+             :requested-target}
+           (set (keys context))))
+    (is (not (str/includes? (pr-str (first diagnostics))
+                            "unsupported-authority-present")))))
+
+(deftest pure-checked-core-local-families-and-fresh-origin-fail-closed
+  (let [path "pure-family-tamper.gravity"
+        source closed-pure-checked-core-source
+        context
+        (bootstrap/p15-s23-stage2-closed-checked-core-context
+         path source :c)
+        artifact
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         path source :c)
+        nodes (:core-nodes artifact)
+        literal-index
+        (first (keep-indexed
+                #(when (= :literal (:source-operation %2)) %1)
+                nodes))
+        literal-id (get-in nodes [literal-index :node-id])
+        c6-attribute
+        (-> artifact
+            (assoc-in [:core-nodes literal-index :attributes :tampered?]
+                      true)
+            closed-pure-rehash)
+        c6-diagnostics (assoc artifact :diagnostics [{:forged true}])
+        c7-type
+        (-> artifact
+            (assoc-in [:core-nodes literal-index :type] :gravity/keyword)
+            closed-pure-rederive)
+        c8-effect
+        (-> artifact
+            (assoc-in [:core-nodes literal-index :effects] #{:io/write})
+            closed-pure-rederive)
+        c9-alias
+        (-> artifact
+            (assoc-in [:core-nodes literal-index :ownership :alias-policy]
+                      :mutable-aliasing)
+            closed-pure-rederive)
+        c9-transfer
+        (-> artifact
+            (assoc-in [:core-nodes literal-index :ownership :role]
+                      :forged-forwarding)
+            closed-pure-rederive)
+        c10-proof
+        (-> artifact
+            (assoc-in [:core-nodes literal-index :safety :basis]
+                      :forged-safe-basis)
+            closed-pure-rederive)
+        candidates
+        [[c6-attribute "C6-CORE-SHAPE"
+          :exact-pure-operation-attribute-and-operand-shape]
+         [c6-diagnostics "C6-CORE-SHAPE"
+          :closed-core-root-scope-pass-and-boundary-contract]
+         [c7-type "C7-VERIFY" :operation-specific-reconstructed-type]
+         [c8-effect "C8-VERIFY"
+          :pure-admission-effect-and-concrete-operation-closure]
+         [c9-alias "C9-MUT-ALIAS"
+          :persistent-immutable-alias-and-mutation-policy]
+         [c9-transfer "C9-TRANSFER"
+          :persistent-value-forwarding-and-result-disposition]
+         [c10-proof "C10-PROOF"
+          :content-addressed-pure-safety-proof]]]
+    (doseq [[candidate expected-id expected-missing] candidates]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-closed-checked-core-verify!
+               candidate context))]
+        (is (= expected-id (:id data)) data)
+        (is (= expected-missing (:missing-fact data)) data)
+        (is (pure-diagnostic-has-honest-identity? data) data)
+        (when (str/starts-with? expected-id "C9-")
+          (is (= (get-in candidate
+                         [:ownership-facts (:core-node-id data) :owner-id])
+                 (:owner-id data))
+              data))
+        (is (not (str/starts-with? (:id data) "C11")) data)))
+    (let [genuine-owner-id
+          (get-in artifact [:ownership-facts literal-id :owner-id])
+          forged-owner-id
+          (bootstrap/p15-s23-closed-core-digest
+           {:attacker-controlled-owner-domain true})
+          forged-owner-candidate
+          (-> c9-alias
+              (assoc-in [:ownership-facts literal-id :owner-id]
+                        forged-owner-id)
+              closed-pure-rehash)
+          data
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-closed-checked-core-verify!
+             forged-owner-candidate context))]
+      (is (= "C9-MUT-ALIAS" (:id data)) data)
+      (is (= :persistent-immutable-alias-and-mutation-policy
+             (:missing-fact data))
+          data)
+      (is (= genuine-owner-id (:owner-id data)) data)
+      (is (not= forged-owner-id (:owner-id data)) data))
+    (let [duplicate-nodes
+          (filterv #(= "same" (get-in % [:attributes :value])) nodes)
+          [left-origin-id right-origin-id]
+          (mapv #(get-in % [:source :origin-id]) duplicate-nodes)
+          left-raw (get-in artifact [:origin-closure left-origin-id])
+          right-raw (get-in artifact [:origin-closure right-origin-id])
+          retarget
+          (fn [raw origin-id]
+            (bootstrap/p15-s23-closed-core-bind-raw-provenance
+             (assoc (dissoc raw :provenance-binding-hash
+                                :actual-path-binding-hash)
+                    :origin-id origin-id)))
+          swapped
+          (-> artifact
+              (assoc :origin-closure
+                     (-> (:origin-closure artifact)
+                         (assoc left-origin-id
+                                (retarget right-raw left-origin-id))
+                         (assoc right-origin-id
+                                (retarget left-raw right-origin-id)))))
+          swapped
+          (assoc swapped :provenance-binding-id
+                 (bootstrap/p15-s23-closed-core-recomputed-provenance-binding-id
+                  swapped))
+          swapped
+          (assoc swapped :actual-path-binding-id
+                 (bootstrap/p15-s23-closed-core-recomputed-actual-path-binding-id
+                  swapped))
+          swapped
+          (assoc swapped :instruction-origin-sidecar
+                 (bootstrap/p15-s23-closed-core-instruction-origin-sidecar
+                  swapped))
+          swapped (closed-pure-rehash swapped)
+          data
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-closed-checked-core-verify!
+             swapped context))]
+      (is (= 2 (count duplicate-nodes)))
+      (is (= :passed
+             (bootstrap/p15-s23-closed-core-validate-structure!
+              path swapped)))
+      (is (= "C6-ORIGIN" (:id data)) data)
+      (is (= :fresh-c2-c3-origin-closure-parity
+             (:missing-fact data)) data)
+      (is (string? (:syntax-id data)))
+      (is (= literal-id (get-in nodes [literal-index :node-id]))))))
+
+(deftest pure-checked-core-bounds-and-hostile-values-fail-closed
+  (let [nested-source
+        (fn [wrappers]
+          (str
+           "(ns checked.bound (:profile :hosted) (:target :jvm) "
+           "(:effects #{}) (:capabilities #{}))\n"
+           "(defn main [] "
+           (apply str (repeat wrappers "(do "))
+           "nil"
+           (apply str (repeat wrappers ")"))
+           ")\n"))
+        accepted-source (nested-source 127)
+        rejected-source (nested-source 128)
+        accepted
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         "bound-128.gravity" accepted-source :c)
+        context
+        (bootstrap/p15-s23-stage2-closed-checked-core-context
+         "bound-128.gravity" accepted-source :c)
+        rejected
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+           "bound-129.gravity" rejected-source :c))
+        wide
+        (vec (repeat
+              (inc bootstrap/p15-s23-closed-core-max-serialized-values)
+              nil))
+        oversized-scalar
+        (.repeat "x"
+                 (inc
+                  bootstrap/p15-s23-closed-core-max-artifact-scalar-bytes))
+        oversized-integer
+        (.shiftLeft java.math.BigInteger/ONE
+                    bootstrap/p15-s23-closed-core-max-integer-bits)
+        lone-surrogate (char 0xD800)
+        candidates
+        [[(assoc accepted :diagnostics wide)
+          :bounded-container-expansion]
+         [(assoc accepted :diagnostics [oversized-scalar])
+          :bounded-canonical-string-scalar]
+         [(assoc accepted :diagnostics [oversized-integer])
+          :bounded-closed-core-integer]
+         [(assoc accepted :diagnostics [lone-surrogate])
+          :unicode-scalar-character]
+         [(assoc accepted :diagnostics [(Object.)])
+          :closed-artifact-canonical-scalar-domain]
+         [(assoc accepted :diagnostics [(iterate inc 0)])
+          :closed-artifact-canonical-scalar-domain]
+         [(assoc accepted :core-nodes 42)
+          :typed-closed-core-node-vector]]]
+    (is (= :complete-for-pure-closed-slice (:status accepted)))
+    (is (= 128 (get-in accepted [:bounds :observed-plan-nodes])))
+    (is (= 128 (get-in accepted [:bounds :observed-plan-depth])))
+    (is (= "C6-VERIFY" (:id rejected)) rejected)
+    (is (= :bounded-pure-source-form-surface
+           (:missing-fact rejected)) rejected)
+    (is (= 129 (:observed-source-forms rejected)))
+    (doseq [[candidate expected-missing] candidates]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-closed-checked-core-verify!
+               candidate context))]
+        (is (= "C6-VERIFY" (:id data)) data)
+        (is (= expected-missing (:missing-fact data)) data)
+        (is (not (str/includes? (pr-str data) ":fixture/")) data)))
+    (let [oversized-source
+          (.repeat "a"
+                   (inc bootstrap/p15-s23-closed-core-max-source-bytes))
+          data
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-closed-checked-core-context
+             "oversized.gravity" oversized-source :c))]
+      (is (= "C6-VERIFY" (:id data)) data)
+      (is (= :bounded-closed-core-source-bytes
+             (:missing-fact data)) data))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]

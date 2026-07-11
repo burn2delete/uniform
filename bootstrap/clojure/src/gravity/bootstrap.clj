@@ -92986,13 +92986,26 @@
            :plan-id
            (c4-artifact-id (c-backend-canonical-value identity-base)))))
 
+(declare p15-s23-stage2-c2-c3-front-end-products)
+
 (defn p15-s23-stage2-plan-emitter-compile-source
   [emitter source-path source-text]
   (let [_ (validate-stage0-source-profile! source-path source-text)
         _ (validate-stage0-source-safety! source-path source-text)
         macro-artifact (macro-source-artifact source-path source-text)
-        module (assoc (:module macro-artifact)
-                      :forms (:expanded-forms macro-artifact))]
+        authoritative-products
+        (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+        authoritative-module
+        (parse-module source-path (:forms authoritative-products))
+        ;; Export visibility is semantic.  The historical macro artifact does
+        ;; not retain the ns export clause, while the C2/C3 stage2 front end
+        ;; does.  Restore only that authoritative field at this narrow direct
+        ;; emitter boundary so driver/direct plans agree without normalizing a
+        ;; real public/private distinction away.
+        module (cond-> (assoc (:module macro-artifact)
+                              :forms (:expanded-forms macro-artifact))
+                 (seq (:exports authoritative-module))
+                 (assoc :exports (:exports authoritative-module)))]
     (p15-s23-stage2-emitted-core-plan emitter source-path source-text module)))
 
 (defn p15-s23-stage2-plan-emitter-accepted-record
@@ -95862,7 +95875,13 @@
                             :caller-namespace (:module module)
                             :caller-profile (:profile module)
                             :call-span (:span syn)
-                            :input-syntax-id (:syntax-id syn)
+                            ;; The stage2 ingress record embeds the genuine C3
+                            ;; syntax object.  C3 identity is namespaced; the
+                            ;; old unqualified lookup silently recorded nil and
+                            ;; broke generated-origin closure for downstream
+                            ;; checked-core/MIR consumers.
+                            :input-syntax-id
+                            (get-in syn [:c3-syntax-object :syntax/id])
                             :generated-origin (:generated-origin syn)
                             :hygiene-policy :hygienic
                             :diagnostics []})))]
@@ -104406,6 +104425,4862 @@
                     (false? (:self-hosted? execution))
                     (true? (:clojure-seed-boundary? invocation))
                     (false? (:self-hosted? invocation))))))))
+     (catch Throwable _ false))))
+
+;; ---------------------------------------------------------------------------
+;; P15-S23 closed checked-core ingress (C6-C10 bounded migration slice)
+;;
+;; This is deliberately not MIR yet.  It authenticates the exact target-neutral
+;; stage2 packet against trusted source bytes, rebuilds the authoritative C2/C3
+;; products from those bytes, and emits a content-addressed checked-core/fact
+;; sidecar for the entrypoint-only closed runtime language.  Raw C2/C3 ids and
+;; actual paths are provenance, never semantic identity inputs.
+
+(def p15-s23-closed-core-max-plan-nodes 128)
+(def p15-s23-closed-core-max-plan-depth 128)
+(def p15-s23-closed-core-max-derived-nodes 384)
+(def p15-s23-closed-core-max-source-bytes (* 1024 1024))
+(def p15-s23-closed-core-max-artifact-scalar-bytes (* 8 1024 1024))
+(def p15-s23-closed-core-max-integer-bits 256)
+(def p15-s23-closed-core-max-serialized-values
+  (* p15-s23-closed-core-max-derived-nodes
+     (inc p15-s23-closed-core-max-plan-depth)
+     8))
+
+(defn p15-s23-closed-core-bounded-utf8-count
+  [^String value maximum-bytes]
+  (let [length (.length value)]
+    (if (> length maximum-bytes)
+      {:status :over-limit :bytes (inc maximum-bytes)}
+      (loop [idx 0
+             bytes 0]
+        (if (< idx length)
+          (let [code (int (.charAt value idx))]
+            (cond
+              (<= 0xD800 code 0xDBFF)
+              (if (and (< (inc idx) length)
+                       (let [low (int (.charAt value (inc idx)))]
+                         (<= 0xDC00 low 0xDFFF)))
+                (let [next-bytes (+ bytes 4)]
+                  (if (> next-bytes maximum-bytes)
+                    {:status :over-limit :bytes next-bytes}
+                    (recur (+ idx 2) next-bytes)))
+                {:status :invalid-surrogate :index idx :bytes bytes})
+
+              (<= 0xDC00 code 0xDFFF)
+              {:status :invalid-surrogate :index idx :bytes bytes}
+
+              :else
+              (let [width (cond
+                            (<= code 0x7F) 1
+                            (<= code 0x7FF) 2
+                            :else 3)
+                    next-bytes (+ bytes width)]
+                (if (> next-bytes maximum-bytes)
+                  {:status :over-limit :bytes next-bytes}
+                  (recur (inc idx) next-bytes)))))
+          {:status :valid :bytes bytes})))))
+
+(def p15-s23-closed-core-allowed-operations
+  #{:literal :quote :local :do :if :let})
+
+(def p15-s23-closed-core-recognized-plan-operations
+  (conj p15-s23-closed-core-allowed-operations :builtin-call :println))
+
+(def p15-s23-closed-core-allowed-safety-outcomes
+  #{:proven-safe})
+
+(def p15-s23-closed-core-known-effects
+  #{:io/write :memory/allocate})
+
+(def p15-s23-closed-core-known-capabilities
+  #{:io/stdout :memory/allocator})
+
+(declare p15-s23-closed-core-fail!)
+
+(def p15-s23-closed-core-registered-effects
+  ;; Registration and inference are separate.  The global L6 registry is the
+  ;; recognition boundary, with the canon-confirmed legacy-only panic label
+  ;; removed; this slice infers only the two labels above.
+  (disj (set (keys effect-registry)) :panic/fail))
+
+(def p15-s23-closed-core-registered-capabilities
+  (set/union (set (keys provider-specs))
+             (set (vals c8-effect-capability))
+             p15-s23-closed-core-known-capabilities))
+
+(defn p15-s23-closed-core-observed-plan-operations
+  "Return the operations reachable in one concrete closed plan.
+
+  This is deliberately distinct from the generic runtime validator's
+  supported-operation inventory: an accepted pure artifact may use the
+  runtime only as a seed-comparison oracle and must not imply that latent
+  effectful executor branches conform to C8."
+  [plan]
+  (loop [pending
+         (vec (mapcat :instructions (vals (:functions plan))))
+         operations #{}
+         visited 0]
+    (if-let [instruction (peek pending)]
+      (let [pending (pop pending)
+            visited (inc visited)]
+        (when-not (and (map? instruction)
+                       (keyword? (:op instruction))
+                       (<= visited p15-s23-closed-core-max-plan-nodes))
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" (or (get-in plan [:source :path]) "<closed-plan>")
+           instruction
+           {:missing-fact :bounded-concrete-plan-operation-inventory
+            :observed-plan-nodes visited
+            :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes}))
+        (recur (into pending (c-backend-instruction-children instruction))
+               (conj operations (:op instruction))
+               visited))
+      operations)))
+
+(defn p15-s23-closed-core-preflight-effect-requirements
+  "Infer the recognized C8 residual requirements from a concrete plan
+  without executing it or loading the runtime module."
+  [plan]
+  (loop [pending (vec (mapcat :instructions (vals (:functions plan))))
+         effects #{}
+         capabilities #{}
+         visited 0]
+    (if-let [instruction (peek pending)]
+      (let [pending (pop pending)
+            visited (inc visited)
+            operation (:op instruction)
+            str-call? (and (= :builtin-call operation)
+                           (= 'str (:function instruction)))
+            effects (cond-> effects
+                      str-call? (conj :memory/allocate)
+                      (= :println operation) (conj :io/write))
+            capabilities (cond-> capabilities
+                           str-call? (conj :memory/allocator)
+                           (= :println operation) (conj :io/stdout))]
+        (when-not (and (map? instruction)
+                       (keyword? operation)
+                       (<= visited p15-s23-closed-core-max-plan-nodes))
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" (or (get-in plan [:source :path]) "<closed-plan>")
+           instruction
+           {:missing-fact :bounded-preflight-effect-requirement-inventory
+            :observed-plan-nodes visited
+            :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes}))
+        (recur (into pending (c-backend-instruction-children instruction))
+               effects capabilities visited))
+      {:required-effects effects
+       :required-capabilities capabilities})))
+
+(defn p15-s23-closed-core-scope-contract
+  []
+  {:accepted-pure-operations
+   (vec (sort p15-s23-closed-core-allowed-operations))
+   :structural-node-kinds [:binding :function :truthiness]
+   :recognized-but-rejected-pending-runtime-module [:println :str]
+   :module {:profile :hosted
+            :safety :safe
+            :source-target :jvm
+            :top-level-shape [:ns :single-zero-arity-main]
+            :exports [#{} #{'main}]
+            :requires :empty
+            :imports :empty
+            :providers :empty
+            :metadata {}
+            :doc nil}
+   :literal-and-quote-types
+   [:nil :string :bool :integer :char :keyword :symbol]
+   :required-effects #{}
+   :required-capabilities #{}
+   :recognized-effectful-residual-labels
+   p15-s23-closed-core-known-effects
+   :recognized-but-uncredited-capabilities
+   p15-s23-closed-core-known-capabilities
+   :bounds {:maximum-plan-nodes p15-s23-closed-core-max-plan-nodes
+            :maximum-plan-depth p15-s23-closed-core-max-plan-depth
+            :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes
+            :maximum-source-bytes p15-s23-closed-core-max-source-bytes
+            :maximum-artifact-scalar-bytes
+            p15-s23-closed-core-max-artifact-scalar-bytes
+            :maximum-integer-bits p15-s23-closed-core-max-integer-bits
+            :maximum-serialized-values
+            p15-s23-closed-core-max-serialized-values}
+   :entrypoint-only? true
+   :complete-for-pure-closed-slice? true
+   :whole-language? false
+   :mir-derived? false
+   :c11-claimed? false
+   :target-lowering-credit? false
+   :release-credit? false
+   :self-hosted? false})
+
+(defn p15-s23-closed-core-executable-form-records
+  "Return the single checked-core C2 executable preorder.
+
+  Function bodies and each operation's evaluated children are visited
+  left-to-right.  Quote itself is executable but its payload is data, so quote
+  records are terminal."
+  [form-tree top-level-form-ids]
+  (let [limit (inc p15-s23-closed-core-max-plan-nodes)
+        form-by-id (into {} (map (juxt :form-id identity)) form-tree)
+        function-root (get form-by-id (second top-level-form-ids))
+        body-form-ids
+        (if (and (seq? (:value function-root))
+                 (= 'defn (first (:value function-root))))
+          (vec (take limit (drop 3 (:children function-root))))
+          [])]
+    (loop [pending (vec (reverse body-form-ids))
+           ordered []
+           seen #{}]
+      (if-let [form-id (peek pending)]
+        (let [pending (pop pending)
+              record (get form-by-id form-id)]
+          (if (or (nil? record) (contains? seen form-id))
+            (recur pending ordered seen)
+            (let [value (:value record)
+                  operator (when (seq? value) (first value))
+                  child-ids
+                  (if (seq? value)
+                    (case operator
+                      quote []
+                      (do if str println) (rest (:children record))
+                      let
+                      (let [binding-record
+                            (get form-by-id (second (:children record)))]
+                        (if (vector? (:value binding-record))
+                          (concat
+                           (take-nth 2 (rest (:children binding-record)))
+                           (drop 2 (:children record)))
+                          []))
+                      [])
+                    [])
+                  next-ordered (conj ordered record)
+                  remaining-capacity (- limit (count next-ordered))]
+              (if (zero? remaining-capacity)
+                next-ordered
+                (recur
+                 (into pending
+                       (reverse (vec (take remaining-capacity child-ids))))
+                 next-ordered
+                 (conj seen form-id))))))
+        ordered))))
+
+(defn p15-s23-closed-core-source-surface-validation
+  [forms executable-form-records]
+  (let [namespace-form (first forms)
+        function-form (second forms)
+        top-level-valid?
+        (and (= 2 (count forms))
+             (seq? namespace-form)
+             (= 'ns (first namespace-form))
+             (seq? function-form)
+             (= 'defn (first function-form))
+             (= 'main (second function-form))
+             (vector? (nth function-form 2 nil))
+             (empty? (nth function-form 2 nil)))]
+    (if-not top-level-valid?
+      {:status :unsupported
+       :missing-fact :exact-ns-and-single-zero-arity-main-source-shape}
+      (loop [records executable-form-records
+             visited 0]
+        (if-let [record (first records)]
+          (let [form (:value record)
+                operator (when (seq? form) (first form))
+                visited (inc visited)
+                base {:operator operator
+                      :observed-form form
+                      :offending-form-id (:form-id record)}]
+            (cond
+              (> visited p15-s23-closed-core-max-plan-nodes)
+              {:status :over-limit
+               :missing-fact :bounded-pure-source-form-surface
+               :observed-source-forms visited
+               :offending-form-id (:form-id record)}
+
+              (or (nil? form) (string? form) (boolean? form)
+                  (number? form) (char? form) (keyword? form)
+                  (symbol? form)
+                  (and (map? form)
+                       (= :gravity/deferred-ratio-literal
+                          (:artifact form))))
+              (recur (next records) visited)
+
+              (seq? form)
+              (cond
+                (= 'quote operator)
+                (if (= 2 (count form))
+                  (recur (next records) visited)
+                  (merge base
+                         {:status :unsupported
+                          :missing-fact :pure-quote-source-arity
+                          :observed-arity (dec (count form))}))
+
+                (= 'let operator)
+                (let [bindings (second form)]
+                  (if (and (vector? bindings)
+                           (even? (count bindings))
+                           (every? symbol? (take-nth 2 bindings))
+                           (= (count (take-nth 2 bindings))
+                              (count (set (take-nth 2 bindings)))))
+                    (recur (next records) visited)
+                    (merge base
+                           {:status :unsupported
+                            :missing-fact :pure-let-binding-source-shape})))
+
+                (contains? #{'do 'if 'str 'println} operator)
+                (recur (next records) visited)
+
+                :else
+                (merge base
+                       {:status :unsupported
+                        :missing-fact :pure-closed-source-operation}))
+
+              :else
+              (merge base
+                     {:status :unsupported
+                      :missing-fact :pure-closed-source-expression-kind
+                      :observed-class (some-> form class .getName)})))
+          {:status :passed :observed-source-forms visited})))))
+
+(def p15-s23-closed-core-node-keys
+  #{:node-id :path :kind :source-operation :plan-node? :plan-depth
+    :operands :attributes :type :effects :capabilities :ownership :safety
+    :profile :source})
+
+(def p15-s23-closed-core-artifact-keys
+  #{:kind :artifact-id :mapping-id :status :scope :source-content-hash
+    :source-core-input :entrypoint :profile :source-target
+    :target-request-metadata :core-nodes :root-node-ids :type-facts
+    :effect-facts :capability-facts :ownership-facts :safety-facts
+    :profile-facts :typed-core :effect-graph :capability-proof-records
+    :pure-capability-closure :ownership-analysis
+    :dependency-order-graph :lexical-binding-records
+    :source-origin-table :origin-closure :pass-history
+    :authenticated-input :bounds :provenance :diagnostics
+    :provenance-binding-id :actual-path-binding-id
+    :instruction-origin-sidecar
+    :mir-derived? :whole-language? :clojure-seed-boundary? :self-hosted?})
+
+(def p15-s23-closed-core-origin-closure-keys
+  #{:origin-id :actual-source-path :c2-source-id :c2-form-id
+    :c2-open-token-id :c2-close-token-id :c2-span :c2-surface-span
+    :c2-form-kind :c2-abbrev :c2-reader-generated-origin
+    :c3-syntax-id :c3-source :c3-origin :expanded-generated-origin
+    :generated-role :input-origin-id :provenance-binding-hash
+    :actual-path-binding-hash})
+
+
+(declare reader-canonical-hash)
+(declare p15-s23-closed-core-enriched-node-subject)
+(declare compiler-c2-reader-source-artifact c3-syntax-object)
+
+(defn p15-s23-closed-core-fail!
+  [id source-path subject extra]
+  (let [subject-map (if (map? subject) subject {})
+        facts
+        (merge {:closed-slice :pure-literal-quote-local-do-if-let
+                :whole-language? false
+                :pre-mir? true
+                ;; A C2 form id is not a C3 syntax identity.  Callers that
+                ;; have a genuine C3 object supply its id explicitly and keep
+                ;; the C2 edge in :c2-form-id.
+                :syntax-id (or (:syntax-id subject-map) :not-applicable)
+                :c2-form-id (or (:c2-form-id subject-map)
+                                (:form-id subject-map)
+                                :not-applicable)
+                :core-node-id (or (:core-node-id subject-map)
+                                  (:node-id subject-map)
+                                  :not-applicable)
+                :generated-origin-chain
+                (let [origin (or (:generated-origin subject-map)
+                                 (get-in subject-map
+                                         [:source :generated-origin]))]
+                  (if (vector? origin) origin []))
+                :lowering-rule (or (:lowering-rule subject-map)
+                                   :p15-s23-pure-closed-core)
+                :active-profile (or (:profile subject-map) :hosted)
+                :profile (or (:profile subject-map) :hosted)
+                :source-target (or (:source-target subject-map) :jvm)
+                :requested-target
+                (or (:requested-target subject-map)
+                    (:target subject-map)
+                    :jvm)
+                :target (or (:target subject-map)
+                            (:requested-target subject-map)
+                            :jvm)
+                :target-request (or (:requested-target subject-map)
+                                    :target-neutral-bootstrap)
+                :namespace (or (:namespace subject-map)
+                               (:module subject-map)
+                               :not-applicable)
+                :function (or (:function subject-map) 'main)
+                :value-id (or (:value-id subject-map)
+                              (:node-id subject-map)
+                              :not-applicable)
+                :owner-id (or (:owner-id subject-map)
+                              (:node-id subject-map)
+                              :not-applicable)
+                :borrow-id (or (:borrow-id subject-map) :not-applicable)
+                :region-id (or (:region-id subject-map) :not-applicable)
+                :arena-generation (or (:arena-generation subject-map)
+                                      :not-applicable)
+                :resource-id (or (:resource-id subject-map)
+                                 :not-applicable)
+                :control-path (or (:control-path subject-map)
+                                  (:path subject-map)
+                                  :not-applicable)
+                :operation-id (or (:operation-id subject-map)
+                                  (:node-id subject-map)
+                                  (:form-id subject-map)
+                                  :not-applicable)
+                :relevant-binding-id
+                (or (:relevant-binding-id subject-map)
+                    (:binding-ref subject-map)
+                    (:binding-id subject-map)
+                    :not-applicable)
+                :expected-type (or (:expected-type subject-map)
+                                   :typed-pure-closed-core)
+                :actual-type (or (:actual-type subject-map)
+                                 (:type subject-map)
+                                 :not-applicable)
+                :provider (or (:provider subject-map) :not-applicable)
+                :grant (or (:grant subject-map) :not-applicable)
+                :specialized-safe-rule
+                (or (:specialized-safe-rule subject-map)
+                    :persistent-immutable-pure-closed-operation)
+                :safety-mode (or (:safety-mode subject-map) :safe)
+                :proof-id (or (:proof-id subject-map) :not-applicable)
+                :runtime-check (or (:runtime-check subject-map)
+                                   :not-applicable)
+                :unsafe-audit (or (:unsafe-audit subject-map)
+                                  :not-applicable)
+                :boundary-identity-reason
+                (if (some #(and (string? %) (not (str/blank? %)))
+                          [(:syntax-id subject-map)
+                           (:node-id subject-map)
+                           (:core-node-id subject-map)])
+                  :genuine-source-or-core-identity
+                  :identity-unavailable-at-raw-verifier-boundary)}
+               extra)]
+    (cond
+      (contains? (set c6-lowering-diagnostic-ids) id)
+      (c6-lowering-fail! id source-path subject facts)
+
+      (contains? (set c7-type-diagnostic-ids) id)
+      (c7-type-fail! id source-path subject facts)
+
+      (contains? (set c8-effect-diagnostic-ids) id)
+      (c8-effect-fail! id source-path subject facts)
+
+      (contains? (set c9-ownership-diagnostic-ids) id)
+      (c9-ownership-fail! id source-path subject facts)
+
+      (contains? (set c10-safety-diagnostic-ids) id)
+      (c10-safety-fail! id source-path subject facts)
+
+      :else
+      (c6-lowering-fail!
+       "C6-VERIFY" source-path subject
+       (assoc facts :unrecognized-pre-mir-diagnostic id)))))
+
+(defn p15-s23-closed-core-source-request-bounds!
+  [source-path source-text requested-target]
+  (when-not (and (string? source-path)
+                 (string? source-text)
+                 (keyword? requested-target))
+    (p15-s23-closed-core-fail!
+     "C6-CORE-SHAPE" (if (string? source-path)
+                        source-path
+                        "<closed-core>")
+     {:source-path (when (string? source-path) source-path)
+      :requested-target (when (keyword? requested-target)
+                          requested-target)}
+     {:missing-fact :typed-closed-core-source-request}))
+  (let [observation
+        (p15-s23-closed-core-bounded-utf8-count
+         source-text p15-s23-closed-core-max-source-bytes)]
+    (when-not (= :valid (:status observation))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path (source-span source-path 0)
+       {:missing-fact :bounded-closed-core-source-bytes
+        :observed-source-bytes (:bytes observation)
+        :encoding-status (:status observation)
+        :maximum-source-bytes p15-s23-closed-core-max-source-bytes}))
+    (:bytes observation)))
+
+(defn p15-s23-closed-core-path-neutral-span
+  [span]
+  (when (map? span)
+    (dissoc span :source :file)))
+
+(defn p15-s23-closed-core-path-neutral-generated-origin
+  [origin]
+  (cond-> (dissoc origin :source-id :source-path :path :inputs)
+    (contains? origin :span)
+    (update :span p15-s23-closed-core-path-neutral-span)
+    (contains? origin :source-span)
+    (update :source-span p15-s23-closed-core-path-neutral-span)
+    (contains? origin :from)
+    (update :from p15-s23-closed-core-path-neutral-span)
+    (contains? origin :generated-span)
+    (update :generated-span
+            #(if (map? %)
+               (p15-s23-closed-core-path-neutral-span %)
+               %))))
+
+(defn p15-s23-closed-core-digest
+  [value]
+  (reader-canonical-hash (c-backend-canonical-value value)))
+
+(defn p15-s23-closed-core-pure-admission-record
+  [source-path source-content-hash plan-id module requirements
+   authority-present? product]
+  (let [declared-effects (:effects module)
+        declared-capabilities (:capabilities module)
+        required-effects (:required-effects requirements)
+        required-capabilities (:required-capabilities requirements)
+        nodes (:nodes product)
+        function-node (or (first (filter #(= :function (:kind %)) nodes))
+                          (last nodes))
+        subject-for
+        (fn [effect capability]
+          (let [node (or (first
+                          (filter
+                           #(or (and effect
+                                     (contains? (:effects %) effect))
+                                (and capability
+                                     (contains? (:capabilities %)
+                                                capability)))
+                           nodes))
+                         function-node)]
+            (p15-s23-closed-core-enriched-node-subject
+             product node module
+             {:effect (or effect :not-applicable)
+              :capability (or capability :not-applicable)
+              :provider :none-selected
+              :grant :none-selected})))]
+    (when-let [unknown-effect
+               (first (sort-by pr-str
+                               (set/difference declared-effects
+                                               p15-s23-closed-core-registered-effects)))]
+      (p15-s23-closed-core-fail!
+       "C8-UNKNOWN" source-path (subject-for unknown-effect nil)
+       {:missing-fact :recognized-pure-slice-effect-label
+        :effect unknown-effect
+        :registered-effect-count
+        (count p15-s23-closed-core-registered-effects)}))
+    (when-let [unknown-capability
+               (first (sort-by pr-str
+                               (set/difference declared-capabilities
+                                               p15-s23-closed-core-registered-capabilities)))]
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path
+       (subject-for nil unknown-capability)
+       {:missing-fact :recognized-pure-slice-capability-label
+        :capability unknown-capability
+        :registered-capability-count
+        (count p15-s23-closed-core-registered-capabilities)}))
+    (when-let [undeclared-effect
+               (first (sort-by pr-str
+                               (set/difference required-effects
+                                               declared-effects)))]
+      (p15-s23-closed-core-fail!
+       "C8-UNDECLARED" source-path
+       (subject-for undeclared-effect nil)
+       {:missing-fact :required-effect-declaration
+        :effect undeclared-effect
+        :declared-effects declared-effects
+        :required-effects required-effects}))
+    (when-let [undeclared-capability
+               (first (sort-by pr-str
+                               (set/difference required-capabilities
+                                               declared-capabilities)))]
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path
+       (subject-for nil undeclared-capability)
+       {:missing-fact :required-capability-declaration
+        :capability undeclared-capability
+        :declared-capabilities declared-capabilities
+        :required-capabilities required-capabilities}))
+    (when (or (seq required-effects) (seq required-capabilities)
+              (seq declared-effects) (seq declared-capabilities))
+      (p15-s23-closed-core-fail!
+       "C8-RUNTIME" source-path
+       (subject-for
+        (first (sort-by pr-str
+                        (set/union required-effects declared-effects)))
+        (first (sort-by pr-str
+                        (set/union required-capabilities
+                                   declared-capabilities))))
+       {:missing-fact :runtime-module-conformance-residual
+        :required-effects required-effects
+        :required-capabilities required-capabilities
+        :declared-effects declared-effects
+        :declared-capabilities declared-capabilities
+        :deferred-failure-obligation :profile-defined-panic-or-error
+        :runtime-module 'runtime.gravity
+        :runtime-artifact-source-content-hash
+        p15-s23-stage2-runtime-artifact-expected-source-content-hash
+        :runtime-artifact-hash
+        p15-s23-stage2-runtime-artifact-expected-artifact-hash
+        :provider :none-selected
+        :grant :none-selected
+        :runtime-module-fix-owned-by-follow-on-slice true
+        :authority-present? (boolean authority-present?)
+        :authority-inspected? false
+        :authority-can-rescue? false}))
+    (when authority-present?
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path (subject-for nil nil)
+       {:missing-fact :authority-context-not-consumed-by-pure-slice
+        :authority-present? true
+        :pure-slice? true
+        :authority-inspected? false
+        :authority-stored? false}))
+    (let [base
+          {:kind :gravity/p15-s23-pure-closed-admission-record
+           :plan-id plan-id
+           :source-content-hash source-content-hash
+           :module (:module module)
+           :profile (:profile module)
+           :source-target (:target module)
+           :declared-effects #{}
+           :declared-capabilities #{}
+           :required-effects #{}
+           :required-capabilities #{}
+           :authority-required? false
+           :authority-consumed? false
+           :effectful-runtime-module-status :rejected-before-packet
+           :decision :accepted-pure-only
+           :status :complete-for-pure-closed-slice
+           :target-lowering-credit? false
+           :release-credit? false
+           :self-hosted? false}]
+      (assoc base :admission-id (p15-s23-closed-core-digest base)))))
+
+(defn p15-s23-closed-core-pure-admission-valid?
+  [record]
+  (and
+   (map? record)
+   (= #{:kind :plan-id :source-content-hash :module :profile
+        :source-target :declared-effects :declared-capabilities
+        :required-effects :required-capabilities :authority-required?
+        :authority-consumed? :effectful-runtime-module-status :decision
+        :status :target-lowering-credit? :release-credit? :self-hosted?
+        :admission-id}
+      (set (keys record)))
+   (= :gravity/p15-s23-pure-closed-admission-record (:kind record))
+   (= :accepted-pure-only (:decision record))
+   (= :complete-for-pure-closed-slice (:status record))
+   (= #{} (:declared-effects record)
+          (:declared-capabilities record)
+          (:required-effects record)
+          (:required-capabilities record))
+   (false? (:authority-required? record))
+   (false? (:authority-consumed? record))
+   (= :rejected-before-packet (:effectful-runtime-module-status record))
+   (false? (:target-lowering-credit? record))
+   (false? (:release-credit? record))
+   (false? (:self-hosted? record))
+   (= (:admission-id record)
+      (p15-s23-closed-core-digest (dissoc record :admission-id)))))
+
+
+(defn p15-s23-closed-core-raw-provenance-binding-input
+  [raw]
+  {:origin-id (:origin-id raw)
+   :c2-form-id (:c2-form-id raw)
+   :c2-open-token-id (:c2-open-token-id raw)
+   :c2-close-token-id (:c2-close-token-id raw)
+   :c2-span (p15-s23-closed-core-path-neutral-span (:c2-span raw))
+   :c2-surface-span
+   (p15-s23-closed-core-path-neutral-span (:c2-surface-span raw))
+   :c2-form-kind (:c2-form-kind raw)
+   :c2-abbrev (:c2-abbrev raw)
+   :c2-reader-generated-origin
+   (mapv p15-s23-closed-core-path-neutral-generated-origin
+         (:c2-reader-generated-origin raw))
+   :c3-source (select-keys (:c3-source raw)
+                           [:form-id :token-range :token-id])
+   :c3-origin
+   (mapv p15-s23-closed-core-path-neutral-generated-origin
+         (:c3-origin raw))
+   :expanded-generated-origin
+   (mapv p15-s23-closed-core-path-neutral-generated-origin
+         (:expanded-generated-origin raw))
+   :generated-role (:generated-role raw)
+   :input-origin-id (:input-origin-id raw)})
+
+(defn p15-s23-closed-core-raw-actual-path-binding-input
+  [raw]
+  ;; The actual-path layer commits to the complete raw record.  Only its own
+  ;; self hash is excluded; the separately normalized provenance hash remains
+  ;; in the input and anchors this exact record to the path-neutral layer.
+  (dissoc raw :actual-path-binding-hash))
+
+(defn p15-s23-closed-core-bind-raw-provenance
+  [raw]
+  (let [raw
+        (assoc raw :provenance-binding-hash
+               (p15-s23-closed-core-digest
+                (p15-s23-closed-core-raw-provenance-binding-input raw)))]
+    (assoc raw :actual-path-binding-hash
+           (p15-s23-closed-core-digest
+            (p15-s23-closed-core-raw-actual-path-binding-input raw)))))
+
+(defn p15-s23-closed-core-raw-provenance-binding-valid?
+  [raw]
+  (and (map? raw)
+       (= p15-s23-closed-core-origin-closure-keys (set (keys raw)))
+       (= (:provenance-binding-hash raw)
+          (p15-s23-closed-core-digest
+           (p15-s23-closed-core-raw-provenance-binding-input raw)))
+       (= (:actual-path-binding-hash raw)
+          (p15-s23-closed-core-digest
+           (p15-s23-closed-core-raw-actual-path-binding-input raw)))))
+
+(defn p15-s23-closed-core-form-indexes
+  [source-path form-tree root-form-ids]
+  (when-not (and (vector? form-tree)
+                 (vector? root-form-ids)
+                 (<= (count form-tree) 2048))
+    (p15-s23-closed-core-fail!
+     "C6-VERIFY" source-path {:missing-fact :bounded-c2-form-tree}
+     {:observed-form-count (when (vector? form-tree) (count form-tree))
+      :maximum-form-count 2048}))
+  (let [form-by-id (into {} (map (juxt :form-id identity)) form-tree)
+        ordinal-by-id (into {} (map-indexed (fn [idx form]
+                                             [(:form-id form) idx]))
+                            form-tree)]
+    (loop [pending (vec (map-indexed (fn [idx form-id]
+                                      {:form-id form-id
+                                       :structural-path [idx]})
+                                    root-form-ids))
+           structural-path-by-id {}
+           parent-by-id {}
+           visited #{}]
+      (if-let [{:keys [form-id structural-path parent-form-id]}
+               (peek pending)]
+        (let [pending (pop pending)
+              form (get form-by-id form-id)]
+          (when (or (nil? form) (contains? visited form-id))
+            (p15-s23-closed-core-fail!
+             "C6-ORIGIN" source-path form
+             {:missing-fact :c2-structural-form-closure
+              :form-id form-id}))
+          (let [children (:children form)
+                frames (map-indexed
+                        (fn [idx child-id]
+                          {:form-id child-id
+                           :parent-form-id form-id
+                           :structural-path (conj structural-path idx)})
+                        children)]
+            (recur (into pending (reverse frames))
+                   (assoc structural-path-by-id form-id structural-path)
+                   (cond-> parent-by-id
+                     parent-form-id (assoc form-id parent-form-id))
+                   (conj visited form-id))))
+        {:form-by-id form-by-id
+         :ordinal-by-id ordinal-by-id
+         :structural-path-by-id structural-path-by-id
+         :parent-by-id parent-by-id}))))
+
+(defn p15-s23-closed-core-top-level-form-id
+  [form-id parent-by-id]
+  (loop [current form-id
+         seen #{}]
+    (let [parent (get parent-by-id current)]
+      (cond
+        (nil? parent) current
+        (contains? seen current) nil
+        :else (recur parent (conj seen current))))))
+
+(defn p15-s23-closed-core-function-form?
+  [entrypoint value]
+  (and (seq? value)
+       (= 'defn (first value))
+       (= entrypoint (second value))))
+
+(defn p15-s23-closed-core-function-source-shape
+  [source-path entrypoint form-by-id root-record]
+  (let [value (:value root-record)
+        children (:children root-record)]
+    (cond
+      (and (seq? value) (= 'defn (first value)))
+      (let [params-form (get form-by-id (nth children 2 nil))]
+        (when-not (and (= entrypoint (second value))
+                       (vector? (:value params-form))
+                       (empty? (:value params-form)))
+          (p15-s23-closed-core-fail!
+           "C6-CORE-SHAPE" source-path root-record
+           {:missing-fact :closed-entrypoint-source-shape}))
+        {:root-form-id (:form-id root-record)
+         :body-form-ids (vec (drop 3 children))
+         :params-form-id (:form-id params-form)})
+
+      :else
+      (p15-s23-closed-core-fail!
+       "C6-CORE-SHAPE" source-path root-record
+       {:missing-fact :closed-entrypoint-defn-source-form
+        :excluded-source-forms [:def-fn :def :defmacro]}))))
+
+(defn p15-s23-closed-core-syntax-semantic-input
+  [syntax]
+  {:form-kind (get-in syntax [:form :kind])
+   :form-hash
+   (p15-s23-closed-core-digest (get-in syntax [:form :value]))
+   :span (p15-s23-closed-core-path-neutral-span
+          (get-in syntax [:span :primary]))
+   :namespace (:namespace syntax)
+   :phase (:phase syntax)
+   :profile (:profile syntax)
+   :metadata (:metadata syntax)
+   :hygiene (:hygiene syntax)
+   :origin (mapv p15-s23-closed-core-path-neutral-generated-origin
+                 (:origin syntax))
+   :version (:version syntax)})
+
+(defn p15-s23-closed-core-c2-semantic-input
+  [front-end]
+  {:source-content-hash (:source-id front-end)
+   :tokens
+   (mapv (fn [token]
+           {:token-id (:token-id token)
+            :kind (:kind token)
+            :raw (:raw token)
+            :span (p15-s23-closed-core-path-neutral-span (:span token))
+            :trivia? (:trivia? token)})
+         (:token-stream front-end))
+   :forms
+   (mapv (fn [form]
+           {:form-id (:form-id form)
+            :kind (:kind form)
+            :collection-kind (:collection-kind form)
+            :children (:children form)
+            :parent-form-id (:parent-form-id form)
+            :abbrev (:abbrev form)
+            :tag (:tag form)
+            :raw-hash (str "sha256:" (sha256-hex (:raw form)))
+            :value (:value form)
+            :metadata (:metadata form)
+            :span (p15-s23-closed-core-path-neutral-span (:span form))
+            :surface-span
+            (p15-s23-closed-core-path-neutral-span (:surface-span form))})
+         (:form-tree front-end))
+   :top-level-form-ids (:top-level-form-ids front-end)
+   :syntax-seeds
+   (mapv (fn [seed]
+           {:syntax-id (:syntax-id seed)
+            :form-id (:form-id seed)
+            :span (p15-s23-closed-core-path-neutral-span (:span seed))
+            :metadata (:metadata seed)
+            :reader-origin (:reader-origin seed)
+            :generated-origin
+            (mapv p15-s23-closed-core-path-neutral-generated-origin
+                  (:generated-origin seed))})
+         (:syntax-seed-stream front-end))})
+
+(defn p15-s23-closed-core-c3-semantic-input
+  [front-end]
+  (mapv p15-s23-closed-core-syntax-semantic-input
+        (:c3-syntax-object-stream front-end)))
+
+(defn p15-s23-closed-core-origin-products
+  [source-path source-content-hash plan-path form-record syntax
+   expanded-syntax indexes token-ordinal-by-id generated-role]
+  (let [top-level-form-id
+        (when (map? form-record)
+          (p15-s23-closed-core-top-level-form-id
+           (:form-id form-record) (:parent-by-id indexes)))]
+  (when-not (and (map? form-record)
+                 (map? syntax)
+                 (string? (get syntax :syntax/id))
+                 (= top-level-form-id (get-in syntax [:source :form-id])))
+    (p15-s23-closed-core-fail!
+     "C6-ORIGIN" source-path form-record
+     {:missing-fact :genuine-c2-c3-origin-closure
+      :plan-path plan-path}))
+  (when (seq (:metadata form-record))
+    (p15-s23-closed-core-fail!
+     "C6-LOWERING-GAP" source-path
+     (assoc form-record
+            :syntax-id (get syntax :syntax/id)
+            :c2-form-id (:form-id form-record)
+            :source-span (:span form-record)
+            :generated-origin
+            (vec (concat (or (:origin syntax) [])
+                         (or (:generated-origin form-record) [])
+                         (or (:generated-origin expanded-syntax) [])))
+            :lowering-rule :pure-closed-core-metadata-exclusion
+            :profile :hosted
+            :target :jvm)
+     {:missing-fact :metadata-preserving-pure-core-lowering
+      :plan-path plan-path
+      :active-profile :hosted
+      :target :jvm
+      :target-neutral-request? true}))
+  (let [form-id (:form-id form-record)
+        form-ordinal (get-in indexes [:ordinal-by-id form-id])
+        structural-path (get-in indexes [:structural-path-by-id form-id])
+        syntax-input (p15-s23-closed-core-syntax-semantic-input syntax)
+        semantic-syntax-id (p15-s23-closed-core-digest syntax-input)
+        reader-generated-origin
+        (mapv p15-s23-closed-core-path-neutral-generated-origin
+              (:generated-origin form-record))
+        enclosing-c3-origin
+        (mapv p15-s23-closed-core-path-neutral-generated-origin
+              (:origin syntax))
+        enclosing-generated-origin
+        (mapv p15-s23-closed-core-path-neutral-generated-origin
+              (:generated-origin expanded-syntax))
+        semantic-base
+        {:source-content-hash source-content-hash
+         :plan-path plan-path
+         :form-ordinal form-ordinal
+         :form-structural-path structural-path
+         :form-kind (:kind form-record)
+         :form-raw-hash (str "sha256:" (sha256-hex (:raw form-record)))
+         :span (p15-s23-closed-core-path-neutral-span (:span form-record))
+         :token-window
+         [(get token-ordinal-by-id (:open-token form-record))
+          (get token-ordinal-by-id (:close-token form-record))]
+         :enclosing-syntax-origin-id semantic-syntax-id
+         :generated-role generated-role
+         ;; Reader desugaring and enclosing C3/macro provenance are distinct
+         ;; producers.  Keeping their chains separate prevents abbreviated
+         ;; quote/metadata forms from collapsing into an explicit surface form
+         ;; that happens to have the same runtime value.
+         :reader-generated-origin reader-generated-origin
+         :enclosing-c3-origin enclosing-c3-origin
+         :enclosing-generated-origin enclosing-generated-origin}
+        origin-id (p15-s23-closed-core-digest semantic-base)
+        semantic (assoc semantic-base :origin-id origin-id)
+        raw
+        (p15-s23-closed-core-bind-raw-provenance
+         {:origin-id origin-id
+          :actual-source-path source-path
+          :c2-source-id (:source-id form-record)
+          :c2-form-id form-id
+          :c2-open-token-id (:open-token form-record)
+          :c2-close-token-id (:close-token form-record)
+          :c2-span (:span form-record)
+          :c2-surface-span (:surface-span form-record)
+          :c2-form-kind (:kind form-record)
+          :c2-abbrev (:abbrev form-record)
+          :c2-reader-generated-origin
+          (vec (or (:generated-origin form-record) []))
+          :c3-syntax-id (:syntax/id syntax)
+          :c3-source (:source syntax)
+          :c3-origin (:origin syntax)
+          :expanded-generated-origin (:generated-origin expanded-syntax)
+          :generated-role generated-role
+          :input-origin-id nil})]
+    {:semantic semantic
+     :raw raw
+     :source {:origin-id origin-id
+              :span (:span semantic)
+              :enclosing-syntax-origin-id semantic-syntax-id
+              :generated? (boolean (or generated-role
+                                       (seq reader-generated-origin)
+                                       (seq enclosing-c3-origin)
+                                       (seq enclosing-generated-origin)))}})))
+
+(defn p15-s23-closed-core-generated-origin-products
+  [source-path source-content-hash plan-path base-products generated-role]
+  (let [base-semantic (:semantic base-products)
+        semantic-base
+        {:source-content-hash source-content-hash
+         :plan-path plan-path
+         :form-ordinal (:form-ordinal base-semantic)
+         :form-structural-path (:form-structural-path base-semantic)
+         :form-kind :compiler-generated
+         :form-raw-hash (:form-raw-hash base-semantic)
+         :span (:span base-semantic)
+         :token-window (:token-window base-semantic)
+         :enclosing-syntax-origin-id
+         (:enclosing-syntax-origin-id base-semantic)
+         :generated-role generated-role
+         :generated-origin
+         [{:kind :generated
+           :producer {:kind :compiler-pass
+                      :name 'gravity.compiler/c6-closed-core-lowering
+                      :version "p15-s23-closed-v1"}
+           :inputs [(:origin-id base-semantic)]
+           :reason generated-role
+           :build-effects []}]}
+        origin-id (p15-s23-closed-core-digest semantic-base)
+        semantic (assoc semantic-base :origin-id origin-id)
+        raw
+        (p15-s23-closed-core-bind-raw-provenance
+         (assoc (dissoc (:raw base-products)
+                        :provenance-binding-hash
+                        :actual-path-binding-hash)
+                :origin-id origin-id
+                :generated-role generated-role
+                :input-origin-id (:origin-id base-semantic)))]
+    {:semantic semantic
+     :raw raw
+     :source {:origin-id origin-id
+              :span (:span semantic)
+              :enclosing-syntax-origin-id
+              (:enclosing-syntax-origin-id semantic)
+              :generated? true}}))
+
+(defn p15-s23-closed-core-scalar-literal-type
+  [value]
+  (cond
+    (nil? value) :gravity/nil
+    (string? value) :gravity/string
+    (boolean? value) :gravity/bool
+    (integer? value) :gravity/integer
+    (char? value) :gravity/char
+    (keyword? value) :gravity/keyword
+    (symbol? value) :gravity/symbol
+    :else nil))
+
+(def p15-s23-closed-core-quoted-scalar-type
+  {:kind :gravity/union
+   :members [:gravity/bool :gravity/char :gravity/integer :gravity/keyword
+             :gravity/nil :gravity/string :gravity/symbol]})
+
+(defn p15-s23-closed-core-quoted-value-type
+  [value]
+  (or
+   (p15-s23-closed-core-scalar-literal-type value)
+   (cond
+     (and (map? value)
+          (= :gravity/deferred-ratio-literal (:artifact value)))
+     :gravity/deferred-ratio
+     (ratio? value) :gravity/ratio
+     (number? value) :gravity/noninteger-number
+     (seq? value) :gravity/list
+     (vector? value) :gravity/vector
+     (map? value) :gravity/map
+     (set? value) :gravity/set
+     :else :gravity/unsupported-quoted-value)))
+
+(defn p15-s23-closed-core-first-c7-source-violation
+  [executable-form-records]
+  (first
+   (keep
+    (fn [record]
+      (let [value (:value record)
+            operator (when (seq? value) (first value))]
+        (cond
+          (and (= 'quote operator)
+               (= 2 (count value))
+               (nil? (p15-s23-closed-core-scalar-literal-type
+                      (second value))))
+          {:kind :quoted-value :record record}
+
+          (or (and (number? value) (not (integer? value)))
+              (and (map? value)
+                   (= :gravity/deferred-ratio-literal (:artifact value))))
+          {:kind :numeric-literal :record record}
+
+          (and (= 'str operator)
+               (not (contains? #{2 3} (count value))))
+          {:kind :str-arity :record record}
+
+          :else nil)))
+    executable-form-records)))
+
+(defn p15-s23-closed-core-literal-type
+  ([source-path value]
+   (p15-s23-closed-core-literal-type
+    source-path value {:missing-fact :closed-scalar-literal-type}))
+  ([source-path value subject]
+   (or
+    (p15-s23-closed-core-scalar-literal-type value)
+    (p15-s23-closed-core-fail!
+     "C7-TYPE-MISMATCH" source-path subject
+     {:missing-fact :closed-scalar-literal-type
+      :observed-value value
+      :observed-class (some-> value class .getName)
+      :expected-type :closed-scalar-literal
+      :actual-type (or (some-> value class .getName) :nil)
+      :relevant-binding-id :not-applicable
+      :excluded-values [:non-integer-number :collection
+                        :opaque-host-value]}))))
+
+(defn p15-s23-closed-core-type-join
+  [left right]
+  (let [members (vec (sort-by
+                      pr-str
+                      (set (concat
+                            (if (and (map? left)
+                                     (= :gravity/union (:kind left)))
+                              (:members left)
+                              [left])
+                            (if (and (map? right)
+                                     (= :gravity/union (:kind right)))
+                              (:members right)
+                              [right])))))]
+    (if (= 1 (count members))
+      (first members)
+      {:kind :gravity/union :members members})))
+
+(defn p15-s23-closed-core-recomputed-node-type
+  [node node-by-id]
+  (let [operand-node #(get node-by-id %)
+        operand-type #(some-> % operand-node :type)]
+    (case (:source-operation node)
+      :implicit-nil :gravity/nil
+      :literal (p15-s23-closed-core-scalar-literal-type
+                (get-in node [:attributes :value]))
+      :quote (p15-s23-closed-core-scalar-literal-type
+              (get-in node [:attributes :value]))
+      :local (operand-type (first (:operands node)))
+      :let-binding (operand-type (first (:operands node)))
+      :truthy :gravity/bool
+      :if (p15-s23-closed-core-type-join
+           (operand-type (second (:operands node)))
+           (operand-type (nth (:operands node) 2 nil)))
+      :do (operand-type (last (:operands node)))
+      :let (operand-type (last (:operands node)))
+      :function
+      {:params []
+       :return (operand-type (last (:operands node)))
+       :latent-effects #{}
+       :capabilities #{}
+       :throws #{}
+       :ownership-constraints #{:persistent-immutable-shareable}
+       :profile-constraints #{:hosted}}
+      ;; These are recognized only so C7 can diagnose them before the C8
+      ;; runtime residual.  No accepted artifact may contain them.
+      :str :gravity/string
+      :println :gravity/nil
+      nil)))
+
+(defn p15-s23-closed-core-printable-type?
+  [type]
+  (if (and (map? type) (= :gravity/union (:kind type)))
+    (let [members (:members type)]
+      (and (vector? members)
+           (seq members)
+           (= members (vec (sort-by pr-str (set members))))
+           (every? p15-s23-closed-core-printable-type? members)))
+    (contains? #{:gravity/nil :gravity/string :gravity/bool :gravity/char
+                 :gravity/keyword :gravity/symbol}
+               type)))
+
+(defn p15-s23-closed-core-managed-allocation-check
+  [source-content-hash path source]
+  (let [input {:kind :managed-allocation-result
+               :source-content-hash source-content-hash
+               :path path
+               :origin-id (:origin-id source)
+               :effect :memory/allocate
+               :capability :memory/allocator
+               :provider :managed-host-allocator
+               :failure :gravity/allocation-error}]
+    (assoc input
+           :artifact :gravity/runtime-check
+           :check-id (p15-s23-closed-core-digest input)
+           :status :required)))
+
+(defn p15-s23-closed-core-fact-union
+  [& values]
+  (apply set/union #{} (map set values)))
+
+(defn p15-s23-closed-core-persistent-ownership
+  [role extra]
+  (merge
+   {:model :persistent-immutable-value
+    :role role
+    :shareability :shared
+    :alias-policy :immutable-sharing
+    :mutation :forbidden
+    :managed-reachability :value-and-program-reachability
+    :cleanup-policy :no-explicit-cleanup
+    :provider-requirement :not-required
+    :allocator-requirement :not-required
+    :escape-policy :safe-persistent-value
+    :derived? true}
+   extra))
+
+(defn p15-s23-closed-core-intrinsic-effects
+  [source-operation]
+  (case source-operation
+    :str #{:memory/allocate}
+    :println #{:io/write}
+    #{}))
+
+(defn p15-s23-closed-core-intrinsic-capabilities
+  [source-operation]
+  (case source-operation
+    :str #{:memory/allocator}
+    :println #{:io/stdout}
+    #{}))
+
+(defn p15-s23-closed-core-safety-basis
+  [source-operation]
+  (case source-operation
+    :implicit-nil :compiler-generated-nil
+    :literal :closed-scalar-literal
+    :quote :closed-quote
+    :local :resolved-lexical-local
+    :let-binding :sequential-let-binding
+    :truthy :gravity-truthiness
+    :if :closed-conditional
+    :do :ordered-sequence
+    :let :sequential-lexical-scope
+    :function :authenticated-closed-function
+    :not-applicable))
+
+(defn p15-s23-closed-core-pure-safety-proof
+  [source-content-hash path source-operation source profile type effects
+   capabilities ownership basis]
+  (let [base
+        {:artifact :gravity/p15-s23-pure-safety-proof
+         :rule-version "p15-s23-pure-safety-v1"
+         :source-content-hash source-content-hash
+         :plan-path path
+         :source-operation source-operation
+         :basis basis
+         :source-origin {:origin-id (:origin-id source)
+                         :span (:span source)
+                         :plan-path path}
+         :profile profile
+         :source-target :jvm
+         :type type
+         :effects (set effects)
+         :capabilities (set capabilities)
+         :ownership-model (:model ownership)
+         :ownership-digest (p15-s23-closed-core-digest ownership)
+         :specialized-safe-rule
+         :persistent-immutable-pure-closed-operation
+         :effect-requirements #{}
+         :capability-requirements #{}
+         :invalidation-conditions
+         [:source-origin-change :type-change :effect-change
+          :capability-change :ownership-change :profile-change
+          :source-target-change :rule-version-change]
+         :status :proved-for-pure-closed-slice}]
+    (assoc base :proof-id (p15-s23-closed-core-digest base))))
+
+(defn p15-s23-closed-core-pure-safety-proof-valid?
+  [proof]
+  (and (map? proof)
+       (= (:proof-id proof)
+          (p15-s23-closed-core-digest (dissoc proof :proof-id)))
+       (= :gravity/p15-s23-pure-safety-proof (:artifact proof))
+       (= :proved-for-pure-closed-slice (:status proof))
+       (= #{} (:effect-requirements proof))
+       (= #{} (:capability-requirements proof))))
+
+(defn p15-s23-closed-core-node
+  [source-content-hash path kind source-operation plan-node? plan-depth
+   operands attributes type effects capabilities ownership safety profile
+   source]
+  (let [node-id
+        (p15-s23-closed-core-digest
+         {:source-content-hash source-content-hash
+          :path path
+          :kind kind
+          :source-operation source-operation
+          :origin-id (:origin-id source)})
+        safety-record
+        (if (= :proven-safe (:outcome safety))
+          (assoc safety
+                 :proof
+                 (p15-s23-closed-core-pure-safety-proof
+                  source-content-hash path source-operation source profile
+                  type effects capabilities ownership (:basis safety)))
+          safety)]
+    {:node-id node-id
+     :path path
+     :kind kind
+     :source-operation source-operation
+     :plan-node? plan-node?
+     :plan-depth plan-depth
+     :operands (vec operands)
+     :attributes (assoc attributes
+                        :intrinsic-effects
+                        (p15-s23-closed-core-intrinsic-effects
+                         source-operation)
+                        :intrinsic-capabilities
+                        (p15-s23-closed-core-intrinsic-capabilities
+                         source-operation)
+                        :aggregate-effects (set effects)
+                        :aggregate-capabilities (set capabilities))
+     :type type
+     :effects (set effects)
+     :capabilities (set capabilities)
+     :ownership ownership
+     :safety safety-record
+     :profile profile
+     :source source}))
+
+(defn p15-s23-closed-core-shared-owner-domain-id
+  [nodes]
+  (when-let [function-node (first (filter #(= :function (:kind %)) nodes))]
+    (p15-s23-closed-core-digest
+     {:kind :gravity/persistent-shared-owner-domain
+      :function-node-id (:node-id function-node)})))
+
+(defn p15-s23-closed-core-canonical-owner-id
+  [product node]
+  (or (p15-s23-closed-core-shared-owner-domain-id
+       (or (:core-nodes product) (:nodes product)))
+      ;; Stored fact tables are verifier inputs, not an authority.  They are a
+      ;; fallback only for prospective subjects that do not carry the core
+      ;; node set needed for independent owner-domain reconstruction.
+      (get-in product [:ownership-facts (:node-id node) :owner-id])
+      :not-applicable))
+
+(defn p15-s23-closed-core-enriched-node-subject
+  "Attach genuine C2/C3 provenance and pass identities to a diagnostic node."
+  [product node module extra]
+  (let [origin-id (get-in node [:source :origin-id])
+        raw (get (:origin-closure product) origin-id)
+        requested-target (or (:requested-target module) (:target module))
+        generated-origin
+        (vec (concat (or (:c2-reader-generated-origin raw) [])
+                     (or (:c3-origin raw) [])
+                     (or (:expanded-generated-origin raw) [])))]
+    (merge
+     node
+     {:core-node-id (or (:node-id node) :not-applicable)
+      :operation-id (or (:node-id node) :not-applicable)
+      :value-id (or (:node-id node) :not-applicable)
+      :owner-id (p15-s23-closed-core-canonical-owner-id product node)
+      :control-path (or (:path node) :not-applicable)
+      :syntax-id (or (:c3-syntax-id raw) :not-applicable)
+      :c2-form-id (or (:c2-form-id raw) :not-applicable)
+      :source-span (or (:c2-span raw) (get-in node [:source :span]))
+      :generated-origin generated-origin
+      :namespace (:module module)
+      :function 'main
+      :profile (:profile module)
+      :source-target (:target module)
+      :requested-target requested-target
+      :target requested-target
+      :borrow-id :not-applicable
+      :region-id :not-applicable
+      :arena-generation :not-applicable
+      :resource-id :not-applicable
+      :provider :not-applicable
+      :grant :not-applicable
+      :specialized-safe-rule
+      :persistent-immutable-pure-closed-operation
+     :safety-mode (:safety module)}
+     extra)))
+
+(defn p15-s23-closed-core-prospective-node-subject
+  [ctx path kind source-operation origin-products extra]
+  (let [source (:source origin-products)
+        node-id
+        (p15-s23-closed-core-digest
+         {:source-content-hash (:source-content-hash ctx)
+          :path path
+          :kind kind
+          :source-operation source-operation
+          :origin-id (:origin-id source)})]
+    (p15-s23-closed-core-enriched-node-subject
+     {:origin-closure
+      {(:origin-id source) (:raw origin-products)}}
+     {:node-id node-id
+      :path path
+      :kind kind
+      :source-operation source-operation
+      :source source
+      :profile (:profile ctx)}
+     {:module (:module ctx)
+      :profile (:profile ctx)
+      :target (:source-target ctx)
+      :requested-target (:requested-target ctx)
+      :safety (:safety ctx)}
+     extra)))
+
+(defn p15-s23-closed-core-source-record-subject
+  [record module requested-target lowering-rule extra]
+  (let [form-record (:c2-form-record record)
+        syntax (:c3-syntax-object record)]
+    (merge
+     (or form-record {})
+     {:syntax-id (or (get syntax :syntax/id) :not-applicable)
+      :c2-form-id (or (:form-id form-record) :not-applicable)
+      :source-span (or (:span form-record)
+                       (:span record)
+                       :not-applicable)
+      :generated-origin
+      (vec (concat (or (:generated-origin form-record) [])
+                   (or (:origin syntax) [])
+                   (or (:generated-origin record) [])))
+      :lowering-rule lowering-rule
+      :namespace (:module module)
+      :function 'main
+      :profile (:profile module)
+      :source-target (:target module)
+      :requested-target requested-target
+      :target requested-target}
+     extra)))
+
+(defn p15-s23-closed-core-module-scalar-clause
+  [ns-form key default-value]
+  (let [clauses
+        (filter #(and (seq? %) (= key (first %))) (drop 2 ns-form))]
+    (cond
+      (empty? clauses) default-value
+      (and (= 1 (count clauses)) (= 2 (count (first clauses))))
+      (second (first clauses))
+      :else ::invalid-module-clause)))
+
+(defn p15-s23-closed-core-module-parse-attempt
+  "Parse a C2-validated namespace without allowing legacy target policy to
+  escape this C6 admission boundary.  Invalid semantic module shapes are
+  returned as data so the caller can diagnose them canonically after genuine
+  C3 ingress."
+  [source-path forms]
+  (let [ns-form (first forms)
+        target
+        (if (ns-form? ns-form)
+          (p15-s23-closed-core-module-scalar-clause ns-form :target :jvm)
+          ::invalid-module-clause)]
+    (if (or (= ::invalid-module-clause target) (not (keyword? target)))
+      {:status :invalid
+       :legacy-diagnostic-id :module-target-clause-shape}
+      (try
+        {:status :valid
+         :module
+         (binding [*additional-bootstrap-targets*
+                   (conj *additional-bootstrap-targets* target)]
+           (parse-module source-path forms))}
+        (catch clojure.lang.ExceptionInfo ex
+          {:status :invalid
+           :legacy-diagnostic-id (or (:id (ex-data ex))
+                                     :legacy-module-parse-failure)})))))
+
+(defn p15-s23-closed-core-early-module-products
+  "Build only the C2 artifact and one genuine C3 namespace syntax object.
+
+  This target-neutral preflight exists so an out-of-slice source target is
+  diagnosed by the checked-core C6 boundary before the older stage0 backend
+  target gate can emit a B1 diagnostic."
+  [source-path source-text requested-target]
+  (let [c2-artifact
+        (compiler-c2-reader-source-artifact source-path source-text)
+        form-by-id (into {} (map (juxt :form-id identity))
+                         (:form-tree c2-artifact))
+        token-by-id (into {} (map (juxt :token-id identity))
+                          (:token-stream c2-artifact))
+        root-form-ids (:top-level-form-ids c2-artifact)
+        forms (mapv #(get-in form-by-id [% :value]) root-form-ids)
+        ns-form (first forms)
+        module-attempt
+        (p15-s23-closed-core-module-parse-attempt source-path forms)
+        module
+        (or (:module module-attempt)
+            {:module (if (and (ns-form? ns-form)
+                              (symbol? (second ns-form)))
+                       (second ns-form)
+                       :not-applicable)
+             :source-path source-path
+             :profile
+             (if (ns-form? ns-form)
+               (let [value
+                     (p15-s23-closed-core-module-scalar-clause
+                      ns-form :profile :not-applicable)]
+                 (if (= ::invalid-module-clause value)
+                   :not-applicable
+                   value))
+               :not-applicable)
+             :target
+             (if (ns-form? ns-form)
+               (let [value
+                     (p15-s23-closed-core-module-scalar-clause
+                      ns-form :target :jvm)]
+                 (if (= ::invalid-module-clause value)
+                   :not-applicable
+                   value))
+               :not-applicable)
+             :safety
+             (if (ns-form? ns-form)
+               (let [value
+                     (p15-s23-closed-core-module-scalar-clause
+                      ns-form :safety :safe)]
+                 (if (= ::invalid-module-clause value)
+                   :not-applicable
+                   value))
+               :not-applicable)})
+        namespace-form-id (first root-form-ids)
+        form-record (get form-by-id namespace-form-id)
+        seed (first (filter #(= namespace-form-id (:form-id %))
+                            (:syntax-seed-stream c2-artifact)))
+        token-record (get token-by-id (:open-token form-record))
+        syntax
+        (when (and seed form-record token-record)
+          (c3-syntax-object
+           seed form-record token-record (:source-unit-record c2-artifact)
+           c2-artifact (:reader-product-integrity c2-artifact)))
+        record {:form (first forms)
+                :span (:span form-record)
+                :form-id namespace-form-id
+                :c2-form-record form-record
+                :c3-syntax-object syntax}]
+    {:module module
+     :module-attempt module-attempt
+     :subject
+     (p15-s23-closed-core-source-record-subject
+      record module requested-target :pure-closed-module-admission {})}))
+
+(defn p15-s23-closed-core-empty-product
+  []
+  {:nodes []
+   :origin-table {}
+   :origin-closure {}
+   :binding-records []
+   :result-node-id nil
+   :type :gravity/nil
+   :effects #{}
+   :capabilities #{}
+   :maximum-plan-depth 0
+   :plan-node-count 0})
+
+(defn p15-s23-closed-core-single-node-product
+  [node origin-products]
+  {:nodes [node]
+   :origin-table {(:origin-id (:semantic origin-products))
+                  (:semantic origin-products)}
+   :origin-closure {(:origin-id (:raw origin-products))
+                    (:raw origin-products)}
+   :binding-records []
+   :result-node-id (:node-id node)
+   :type (:type node)
+   :effects (:effects node)
+   :capabilities (:capabilities node)
+   :maximum-plan-depth (if (:plan-node? node) (:plan-depth node) 0)
+   :plan-node-count (if (:plan-node? node) 1 0)})
+
+(defn p15-s23-closed-core-merge-products
+  [products]
+  (reduce
+   (fn [acc product]
+     (-> acc
+         (update :nodes into (:nodes product))
+         (update :origin-table merge (:origin-table product))
+         (update :origin-closure merge (:origin-closure product))
+         (update :binding-records into (:binding-records product))
+         (assoc :result-node-id (:result-node-id product)
+                :type (:type product))
+         (update :effects set/union (:effects product))
+         (update :capabilities set/union (:capabilities product))
+         (update :maximum-plan-depth max
+                 (:maximum-plan-depth product))
+         (update :plan-node-count + (:plan-node-count product))))
+   (p15-s23-closed-core-empty-product)
+   products))
+
+(defn p15-s23-closed-core-add-node
+  [product node origin-products]
+  (-> product
+      (update :nodes conj node)
+      (assoc-in [:origin-table (:origin-id (:semantic origin-products))]
+                (:semantic origin-products))
+      (assoc-in [:origin-closure (:origin-id (:raw origin-products))]
+                (:raw origin-products))
+      (assoc :result-node-id (:node-id node)
+             :type (:type node))
+      (update :effects set/union (:effects node))
+      (update :capabilities set/union (:capabilities node))
+      (update :maximum-plan-depth max
+              (if (:plan-node? node) (:plan-depth node) 0))
+      (update :plan-node-count + (if (:plan-node? node) 1 0))))
+
+(defn p15-s23-closed-core-form-operator
+  [form-record]
+  (let [value (:value form-record)]
+    (when (seq? value) (first value))))
+
+(defn p15-s23-closed-core-assert-plan-form!
+  [source-path plan-path instruction form-record generated-role
+   origin-products]
+  (let [op (:op instruction)
+        value (:value form-record)
+        operator (p15-s23-closed-core-form-operator form-record)
+        matches?
+        (if generated-role
+          (and (= :literal op) (nil? (:value instruction)))
+          (case op
+            :literal (= (:value instruction) value)
+            :quote
+            (and (= (:value instruction) (second value))
+                 (= 2 (count value))
+                 (or
+                  (and (= :list (:kind form-record))
+                       (= 'quote operator)
+                       (= 2 (count (:children form-record))))
+                  (and (= :abbreviation (:kind form-record))
+                       (= :quote (:abbrev form-record))
+                       (= 1 (count (:children form-record)))
+                       (some #(= :reader-abbreviation (:producer %))
+                             (:generated-origin form-record)))))
+            :local (and (symbol? value)
+                        (= (:name instruction) value))
+            :builtin-call
+            (and (= 'str (:function instruction))
+                 (= 'str operator)
+                 (= (count (:args instruction)) (dec (count value))))
+            :println
+            (and (= 'println operator)
+                 (= (count (:args instruction)) (dec (count value))))
+            :do (and (= 'do operator)
+                     (= (count (:body instruction)) (dec (count value))))
+            :if (and (= 'if operator)
+                     (contains? #{3 4} (count value)))
+            :let (and (= 'let operator)
+                      (vector? (second value)))
+            false))]
+    (when-not (and (map? instruction)
+                   (contains? p15-s23-closed-core-recognized-plan-operations
+                              op)
+                   matches?)
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path
+       (if (map? form-record)
+         (assoc form-record
+                :syntax-id (get-in origin-products [:raw :c3-syntax-id])
+                :c2-form-id (get-in origin-products [:raw :c2-form-id])
+                :source-span (get-in origin-products [:raw :c2-span])
+                :generated-origin
+                (vec
+                 (concat
+                  (or (get-in origin-products
+                              [:raw :c2-reader-generated-origin]) [])
+                  (or (get-in origin-products [:raw :c3-origin]) [])
+                  (or (get-in origin-products
+                              [:raw :expanded-generated-origin]) []))))
+         instruction)
+       {:missing-fact :lockstep-plan-c2-form-mapping
+        :plan-path plan-path
+        :plan-operation op
+        :source-form-kind (:kind form-record)
+        :source-form-operator operator
+        :generated-role generated-role}))))
+
+(defn p15-s23-closed-core-child-path
+  [path field idx]
+  (conj (conj path field) idx))
+
+(declare p15-s23-closed-core-map-instruction)
+
+(defn p15-s23-closed-core-implicit-nil-product
+  [ctx path depth base-origin-products generated-role]
+  (let [origin-products
+        (p15-s23-closed-core-generated-origin-products
+         (:source-path ctx) (:source-content-hash ctx) path
+         base-origin-products generated-role)
+        node
+        (p15-s23-closed-core-node
+         (:source-content-hash ctx) path :literal :implicit-nil false depth
+         [] {:value nil :generated-role generated-role} :gravity/nil #{} #{}
+         (p15-s23-closed-core-persistent-ownership
+          :compiler-generated-value
+          {:storage :static-value})
+         {:outcome :proven-safe :basis :compiler-generated-nil}
+         (:profile ctx) (:source origin-products))]
+    (p15-s23-closed-core-single-node-product node origin-products)))
+
+(defn p15-s23-closed-core-map-sequence
+  [ctx instructions form-ids path field env depth base-origin-products
+   empty-role]
+  (when-not (= (count instructions) (count form-ids))
+    (p15-s23-closed-core-fail!
+     "C6-ORIGIN" (:source-path ctx) {:missing-fact :sequence-source-arity}
+     {:plan-path path
+      :field field
+      :instruction-count (count instructions)
+      :form-count (count form-ids)}))
+  (if (empty? instructions)
+    (p15-s23-closed-core-implicit-nil-product
+     ctx (conj path empty-role) (inc depth) base-origin-products empty-role)
+    (p15-s23-closed-core-merge-products
+     (mapv (fn [idx instruction form-id]
+             (p15-s23-closed-core-map-instruction
+              ctx instruction form-id
+              (p15-s23-closed-core-child-path path field idx)
+              env (inc depth) nil base-origin-products))
+           (range (count instructions)) instructions form-ids))))
+
+(defn p15-s23-closed-core-map-arguments
+  [ctx instruction form-record path env depth origin-products]
+  (let [children (vec (rest (:children form-record)))
+        args (:args instruction)]
+    (when-not (= (count args) (count children))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" (:source-path ctx) form-record
+       {:missing-fact :argument-source-arity
+        :plan-path path
+        :argument-count (count args)
+        :form-child-count (count children)}))
+    (p15-s23-closed-core-merge-products
+     (mapv (fn [idx child form-id]
+             (p15-s23-closed-core-map-instruction
+              ctx child form-id
+              (p15-s23-closed-core-child-path path :args idx)
+              env (inc depth) nil origin-products))
+           (range (count args)) args children))))
+
+(defn p15-s23-closed-core-binding-node
+  [ctx path depth name name-form value-product origin-products shadowed]
+  (let [node
+        (p15-s23-closed-core-node
+         (:source-content-hash ctx) path :binding :let-binding false depth
+         [(:result-node-id value-product)]
+         {:name name
+          :shadowed-binding (:node-id shadowed)
+          :source-form-id (:form-id name-form)}
+         (:type value-product) (:effects value-product)
+         (:capabilities value-product)
+         (p15-s23-closed-core-persistent-ownership
+          :lexical-binding
+          {:storage :forwarded-persistent-value
+           :value-node-id (:result-node-id value-product)})
+         {:outcome :proven-safe :basis :sequential-let-binding}
+         (:profile ctx) (:source origin-products))]
+    (-> (p15-s23-closed-core-single-node-product node origin-products)
+        (assoc :binding-records
+               [{:binding-node-id (:node-id node)
+                 :name name
+                 :path path
+                 :value-node-id (:result-node-id value-product)
+                 :shadowed-binding (:node-id shadowed)
+                 :source-form-id (:form-id name-form)}]))))
+
+(defn p15-s23-closed-core-map-let
+  [ctx instruction form-record path env depth origin-products]
+  (let [form-by-id (get-in ctx [:indexes :form-by-id])
+        children (:children form-record)
+        binding-vector (get form-by-id (second children))
+        binding-form-ids (:children binding-vector)
+        bindings (:bindings instruction)
+        body-form-ids (vec (drop 2 children))]
+    (when-not (and (map? binding-vector)
+                   (= :vector (:kind binding-vector))
+                   (= (* 2 (count bindings)) (count binding-form-ids)))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" (:source-path ctx) form-record
+       {:missing-fact :let-binding-source-shape
+        :plan-path path}))
+    (loop [idx 0
+           env env
+           local-names #{}
+           products []]
+      (if (< idx (count bindings))
+        (let [binding (nth bindings idx)
+              name (:name binding)
+              name-form (get form-by-id (nth binding-form-ids (* 2 idx)))
+              expr-form-id (nth binding-form-ids (inc (* 2 idx)))
+              expr-path (conj (p15-s23-closed-core-child-path
+                               path :bindings idx)
+                              :expr)]
+          (when (or (not= name (:value name-form))
+                    (contains? local-names name))
+            (p15-s23-closed-core-fail!
+             "C6-VERIFY" (:source-path ctx) name-form
+             {:missing-fact :sequential-unique-let-binding
+              :plan-path path
+              :binding name}))
+          (let [value-product
+                (p15-s23-closed-core-map-instruction
+                 ctx (:expr binding) expr-form-id expr-path env
+                 (inc depth) nil origin-products)
+                binder-path (conj (p15-s23-closed-core-child-path
+                                   path :bindings idx)
+                                  :binder)
+                binder-origin
+                (p15-s23-closed-core-origin-products
+                 (:source-path ctx) (:source-content-hash ctx) binder-path
+                 name-form (:root-syntax ctx) (:expanded-root-syntax ctx)
+                 (:indexes ctx) (:token-ordinal-by-id ctx) nil)
+                binder-product
+                (p15-s23-closed-core-binding-node
+                 ctx binder-path (inc depth) name name-form value-product
+                 binder-origin (get env name))]
+            (recur (inc idx)
+                   (assoc env name
+                          {:node-id (:result-node-id binder-product)
+                           :type (:type binder-product)})
+                   (conj local-names name)
+                   (conj products
+                         (p15-s23-closed-core-merge-products
+                          [value-product binder-product])))))
+        (let [binding-products (p15-s23-closed-core-merge-products products)
+              body-product
+              (p15-s23-closed-core-map-sequence
+               ctx (:body instruction) body-form-ids path :body env depth
+               origin-products :implicit-let-nil)
+              children-product
+              (p15-s23-closed-core-merge-products
+               [binding-products body-product])
+              binding-node-ids
+              (mapv :binding-node-id (:binding-records binding-products))
+              body-node-by-path
+              (into {} (map (juxt :path identity)) (:nodes body-product))
+              body-node-ids
+              (if (empty? (:body instruction))
+                [(:result-node-id body-product)]
+                (mapv #(get-in body-node-by-path
+                               [(p15-s23-closed-core-child-path
+                                 path :body %)
+                                :node-id])
+                      (range (count (:body instruction)))))
+              node
+              (p15-s23-closed-core-node
+               (:source-content-hash ctx) path :let :let true depth
+               (vec (concat binding-node-ids body-node-ids))
+               {:binding-count (count bindings)} (:type body-product)
+               (:effects children-product) (:capabilities children-product)
+               (p15-s23-closed-core-persistent-ownership
+                :lexical-scope-result
+                {:storage :forwarded-persistent-value
+                 :result-node-id (:result-node-id body-product)})
+               {:outcome :proven-safe :basis :sequential-lexical-scope}
+               (:profile ctx) (:source origin-products))]
+          (p15-s23-closed-core-add-node
+           children-product node origin-products))))))
+
+(defn p15-s23-closed-core-map-if
+  [ctx instruction form-record path env depth origin-products]
+  (let [children (:children form-record)
+        test-form-id (second children)
+        then-form-id (nth children 2 nil)
+        else-form-id (nth children 3 nil)
+        test-product
+        (p15-s23-closed-core-map-instruction
+         ctx (:test instruction) test-form-id (conj path :test) env
+         (inc depth) nil origin-products)
+        then-product
+        (p15-s23-closed-core-map-instruction
+         ctx (:then instruction) then-form-id (conj path :then) env
+         (inc depth) nil origin-products)
+        else-product
+        (p15-s23-closed-core-map-instruction
+         ctx (:else instruction) else-form-id (conj path :else) env
+         (inc depth) (when-not else-form-id :implicit-if-else)
+         origin-products)
+        truthy-path (conj path :truthy)
+        truthy-origin
+        (p15-s23-closed-core-generated-origin-products
+         (:source-path ctx) (:source-content-hash ctx) truthy-path
+         origin-products :truthiness-normalization)
+        truthy-node
+        (p15-s23-closed-core-node
+         (:source-content-hash ctx) truthy-path :truthiness :truthy false
+         (inc depth) [(:result-node-id test-product)]
+         {:false-values [nil false] :result-type :gravity/bool}
+         :gravity/bool (:effects test-product) (:capabilities test-product)
+         (p15-s23-closed-core-persistent-ownership
+          :truthiness-value {:storage :static-value})
+         {:outcome :proven-safe :basis :gravity-truthiness}
+         (:profile ctx) (:source truthy-origin))
+        truthy-product
+        (p15-s23-closed-core-single-node-product truthy-node truthy-origin)
+        children-product
+        (p15-s23-closed-core-merge-products
+         [test-product truthy-product then-product else-product])
+        node
+        (p15-s23-closed-core-node
+         (:source-content-hash ctx) path :conditional :if true depth
+         [(:node-id truthy-node) (:result-node-id then-product)
+          (:result-node-id else-product)]
+         {:truthiness :nil-and-false-only}
+         (p15-s23-closed-core-type-join (:type then-product)
+                                        (:type else-product))
+         (:effects children-product) (:capabilities children-product)
+         (p15-s23-closed-core-persistent-ownership
+          :conditional-result
+          {:storage :forwarded-persistent-value
+           :incoming-node-ids [(:result-node-id then-product)
+                               (:result-node-id else-product)]})
+         {:outcome :proven-safe :basis :closed-conditional}
+         (:profile ctx) (:source origin-products))]
+    (p15-s23-closed-core-add-node children-product node origin-products)))
+
+(defn p15-s23-closed-core-map-instruction
+  [ctx instruction form-id path env depth generated-role
+   base-origin-products]
+  (when (> depth p15-s23-closed-core-max-plan-depth)
+    (p15-s23-closed-core-fail!
+     "C6-VERIFY" (:source-path ctx) instruction
+     {:missing-fact :closed-core-plan-depth-bound
+      :observed-depth depth
+      :maximum-depth p15-s23-closed-core-max-plan-depth
+      :plan-path path}))
+  (let [form-record (get-in ctx [:indexes :form-by-id form-id])
+        origin-products
+        (if generated-role
+          (p15-s23-closed-core-generated-origin-products
+           (:source-path ctx) (:source-content-hash ctx) path
+           base-origin-products generated-role)
+          (p15-s23-closed-core-origin-products
+           (:source-path ctx) (:source-content-hash ctx) path form-record
+           (:root-syntax ctx) (:expanded-root-syntax ctx) (:indexes ctx)
+           (:token-ordinal-by-id ctx) nil))
+        _ (p15-s23-closed-core-assert-plan-form!
+           (:source-path ctx) path instruction form-record generated-role
+           origin-products)
+        op (:op instruction)]
+    (when-let [shadowed-builtin
+               (cond
+                 (and (= :builtin-call op)
+                      (contains? env (:function instruction)))
+                 (:function instruction)
+
+                 (and (= :println op) (contains? env 'println))
+                 'println
+
+                 :else nil)]
+      (p15-s23-closed-core-fail!
+       "C6-LOWERING-GAP" (:source-path ctx)
+       (assoc form-record
+              :syntax-id (get-in origin-products [:raw :c3-syntax-id])
+              :c2-form-id (get-in origin-products [:raw :c2-form-id])
+              :source-span (get-in origin-products [:raw :c2-span])
+              :generated-origin
+              (vec
+               (concat
+                (or (get-in origin-products
+                            [:raw :c2-reader-generated-origin]) [])
+                (or (get-in origin-products [:raw :c3-origin]) [])
+                (or (get-in origin-products
+                            [:raw :expanded-generated-origin]) [])))
+              :lowering-rule :lexical-binding-precedes-builtin
+              :profile (:profile ctx)
+              :source-target (:source-target ctx)
+              :requested-target (:requested-target ctx)
+              :target (:requested-target ctx))
+       {:missing-fact :resolved-shadowed-builtin-call-lowering
+        :plan-path path
+        :binding shadowed-builtin
+        :active-profile (:profile ctx)
+        :source-target (:source-target ctx)
+        :requested-target (:requested-target ctx)
+        :target (:requested-target ctx)
+        :target-neutral-request? true}))
+    (case op
+      :literal
+      (let [type (p15-s23-closed-core-literal-type
+                  (:source-path ctx) (:value instruction)
+                  (p15-s23-closed-core-prospective-node-subject
+                   ctx path :literal :literal origin-products
+                   {:expected-type :closed-scalar-literal
+                    :actual-type
+                    (or (some-> (:value instruction) class .getName)
+                        :nil)
+                    :relevant-binding-id :not-applicable}))
+            node
+            (p15-s23-closed-core-node
+             (:source-content-hash ctx) path :literal :literal true depth []
+             {:value (:value instruction)} type #{} #{}
+             (p15-s23-closed-core-persistent-ownership
+              :literal-value {:storage :static-or-managed-value})
+             {:outcome :proven-safe :basis :closed-scalar-literal}
+             (:profile ctx) (:source origin-products))]
+        (p15-s23-closed-core-single-node-product node origin-products))
+
+      :quote
+      (let [type (p15-s23-closed-core-literal-type
+                  (:source-path ctx) (:value instruction)
+                  (p15-s23-closed-core-prospective-node-subject
+                   ctx path :quote :quote origin-products
+                   {:expected-type :closed-scalar-literal
+                    :actual-type
+                    (or (some-> (:value instruction) class .getName)
+                        :nil)
+                    :relevant-binding-id :not-applicable}))
+            node
+            (p15-s23-closed-core-node
+             (:source-content-hash ctx) path :quote :quote true depth []
+             {:value (:value instruction)} type #{} #{}
+             (p15-s23-closed-core-persistent-ownership
+              :quoted-value {:storage :static-or-managed-value})
+             {:outcome :proven-safe :basis :closed-quote}
+             (:profile ctx) (:source origin-products))]
+        (p15-s23-closed-core-single-node-product node origin-products))
+
+      :local
+      (let [binding (get env (:name instruction))
+            binding-node-id (:node-id binding)]
+        (when-not (string? binding-node-id)
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" (:source-path ctx) form-record
+           {:missing-fact :resolved-lexical-binding
+            :plan-path path
+            :local (:name instruction)}))
+        (let [type (:type binding)
+              node
+              (p15-s23-closed-core-node
+               (:source-content-hash ctx) path :local :local true depth
+               [binding-node-id]
+               {:name (:name instruction)
+                :resolved-binding binding-node-id}
+               type #{} #{}
+               (p15-s23-closed-core-persistent-ownership
+                :local-reference
+                {:storage :shared-persistent-reference
+                 :binding-node-id binding-node-id})
+               {:outcome :proven-safe :basis :resolved-lexical-local}
+               (:profile ctx) (:source origin-products))]
+          (p15-s23-closed-core-single-node-product node origin-products)))
+
+      :builtin-call
+      (let [args-product
+            (p15-s23-closed-core-map-arguments
+             ctx instruction form-record path env depth origin-products)
+            _ (when-not (contains? #{1 2} (count (:args instruction)))
+                (p15-s23-closed-core-fail!
+                 "C7-TYPE-MISMATCH" (:source-path ctx)
+                 (p15-s23-closed-core-prospective-node-subject
+                  ctx path :call :str origin-products
+                  {:expected-type {:kind :arity :allowed #{1 2}}
+                   :actual-type {:kind :arity
+                                 :value (count (:args instruction))}
+                   :relevant-binding-id :not-applicable})
+                 {:missing-fact :closed-str-arity
+                  :plan-path path
+                  :expected-type {:kind :arity :allowed #{1 2}}
+                  :actual-type {:kind :arity
+                                :value (count (:args instruction))}
+                  :relevant-binding-id :not-applicable}))
+            ;; The ordered argument result ids are the final result of each
+            ;; direct child product.  Recover them from the child root paths,
+            ;; not from map iteration order.
+            arg-paths (mapv #(p15-s23-closed-core-child-path path :args %)
+                            (range (count (:args instruction))))
+            node-by-path (into {} (map (juxt :path identity))
+                               (:nodes args-product))
+            arg-root-nodes (mapv #(get node-by-path %) arg-paths)
+            _ (when-not (every? #(p15-s23-closed-core-printable-type?
+                                  (:type %))
+                                arg-root-nodes)
+                (p15-s23-closed-core-fail!
+                 "C7-TYPE-MISMATCH" (:source-path ctx)
+                 (p15-s23-closed-core-prospective-node-subject
+                  ctx path :call :str origin-products
+                  {:expected-type
+                   {:kind :closed-printable-scalar
+                    :members
+                    [:gravity/nil :gravity/string :gravity/bool
+                     :gravity/char :gravity/keyword :gravity/symbol]}
+                   :actual-type (mapv :type arg-root-nodes)
+                   :relevant-binding-id
+                   (or (some #(get-in % [:attributes :resolved-binding])
+                             arg-root-nodes)
+                       :not-applicable)})
+                 {:missing-fact :closed-str-printable-operand
+                  :plan-path path
+                  :operand-types (mapv :type arg-root-nodes)
+                  :expected-type
+                  {:kind :closed-printable-scalar
+                   :members
+                   [:gravity/nil :gravity/string :gravity/bool
+                    :gravity/char :gravity/keyword :gravity/symbol]}
+                  :actual-type (mapv :type arg-root-nodes)
+                  :relevant-binding-id
+                  (or (some #(get-in % [:attributes :resolved-binding])
+                            arg-root-nodes)
+                      :not-applicable)
+                  :excluded-types [:integer :non-integer-number
+                                   :collection :opaque]}))
+            allocation-check
+            (p15-s23-closed-core-managed-allocation-check
+             (:source-content-hash ctx) path (:source origin-products))
+            node
+            (p15-s23-closed-core-node
+             (:source-content-hash ctx) path :call :str true depth
+             (mapv :node-id arg-root-nodes)
+             {:function 'str :arity (count (:args instruction))
+              :runtime-check-id (:check-id allocation-check)}
+             :gravity/string
+             (conj (:effects args-product) :memory/allocate)
+             (conj (:capabilities args-product) :memory/allocator)
+             (p15-s23-closed-core-persistent-ownership
+              :managed-string-result
+              {:storage :host-managed-string
+               :provider-id :unresolved-runtime-module-provider
+               :lifetime :managed-reachability})
+             {:outcome :runtime-checked
+              :check allocation-check
+              :basis :closed-str-allocation}
+             (:profile ctx) (:source origin-products))]
+        (p15-s23-closed-core-add-node args-product node origin-products))
+
+      :println
+      (let [args-product
+            (p15-s23-closed-core-map-arguments
+             ctx instruction form-record path env depth origin-products)
+            arg-paths (mapv #(p15-s23-closed-core-child-path path :args %)
+                            (range (count (:args instruction))))
+            node-by-path (into {} (map (juxt :path identity))
+                               (:nodes args-product))
+            arg-root-nodes (mapv #(get node-by-path %) arg-paths)
+            _ (when-not (every? #(p15-s23-closed-core-printable-type?
+                                  (:type %))
+                                arg-root-nodes)
+                (p15-s23-closed-core-fail!
+                 "C7-TYPE-MISMATCH" (:source-path ctx)
+                 (p15-s23-closed-core-prospective-node-subject
+                  ctx path :effect :println origin-products
+                  {:expected-type
+                   {:kind :closed-printable-scalar
+                    :members
+                    [:gravity/nil :gravity/string :gravity/bool
+                     :gravity/char :gravity/keyword :gravity/symbol]}
+                   :actual-type (mapv :type arg-root-nodes)
+                   :relevant-binding-id
+                   (or (some #(get-in % [:attributes :resolved-binding])
+                             arg-root-nodes)
+                       :not-applicable)})
+                 {:missing-fact :closed-println-printable-operand
+                  :plan-path path
+                  :operand-types (mapv :type arg-root-nodes)
+                  :expected-type
+                  {:kind :closed-printable-scalar
+                   :members
+                   [:gravity/nil :gravity/string :gravity/bool
+                    :gravity/char :gravity/keyword :gravity/symbol]}
+                  :actual-type (mapv :type arg-root-nodes)
+                  :relevant-binding-id
+                  (or (some #(get-in % [:attributes :resolved-binding])
+                            arg-root-nodes)
+                      :not-applicable)
+                  :excluded-types [:integer :non-integer-number
+                                   :collection :opaque]}))
+            node
+            (p15-s23-closed-core-node
+             (:source-content-hash ctx) path :effect :println true depth
+             (mapv :node-id arg-root-nodes)
+             {:arity (count (:args instruction))
+              :ordering :source-sequence}
+             :gravity/nil
+             (conj (:effects args-product) :io/write)
+             (conj (:capabilities args-product) :io/stdout)
+             (p15-s23-closed-core-persistent-ownership
+              :stdout-result {:storage :static-nil})
+             {:outcome :proven-safe :basis :capability-checked-stdout}
+             (:profile ctx) (:source origin-products))]
+        (p15-s23-closed-core-add-node args-product node origin-products))
+
+      :do
+      (let [body-form-ids (vec (rest (:children form-record)))
+            body-product
+            (p15-s23-closed-core-map-sequence
+             ctx (:body instruction) body-form-ids path :body env depth
+             origin-products :implicit-do-nil)
+            body-node-by-path
+            (into {} (map (juxt :path identity)) (:nodes body-product))
+            body-node-ids
+            (if (empty? (:body instruction))
+              [(:result-node-id body-product)]
+              (mapv #(get-in body-node-by-path
+                             [(p15-s23-closed-core-child-path path :body %)
+                              :node-id])
+                    (range (count (:body instruction)))))
+            node
+            (p15-s23-closed-core-node
+             (:source-content-hash ctx) path :sequence :do true depth
+             body-node-ids
+             {:body-count (count (:body instruction))}
+             (:type body-product) (:effects body-product)
+             (:capabilities body-product)
+             (p15-s23-closed-core-persistent-ownership
+              :sequence-result
+              {:storage :forwarded-persistent-value
+               :result-node-id (:result-node-id body-product)})
+             {:outcome :proven-safe :basis :ordered-sequence}
+             (:profile ctx) (:source origin-products))]
+        (p15-s23-closed-core-add-node body-product node origin-products))
+
+      :if
+      (p15-s23-closed-core-map-if
+       ctx instruction form-record path env depth origin-products)
+
+      :let
+      (p15-s23-closed-core-map-let
+       ctx instruction form-record path env depth origin-products))))
+
+(defn p15-s23-closed-core-pass-history
+  []
+  [{:pass :c6-closed-core-lowering
+    :owner-document "C6"
+    :input :pre-execution-validated-stage2-plan-and-fresh-c2-c3
+    :output :closed-core-nodes
+    :requires [:validated-preflight-plan :fresh-c2-c3
+               :lockstep-origin-map]
+    :preserves [:source-spans :generated-origin :profile :diagnostics]
+    :emits [:core-nodes :dependency-order-graph]
+    :status :complete-for-pure-closed-slice}
+   {:pass :c7-closed-type-derivation
+    :owner-document "C7"
+    :input :closed-core-nodes
+    :output :closed-type-facts
+    :requires [:resolved-lexical-bindings]
+    :preserves [:source-origin :profile]
+    :emits [:type-facts]
+    :status :complete-for-pure-closed-slice}
+   {:pass :c8-pure-effect-capability-closure
+    :owner-document "C8"
+    :input :typed-closed-core
+    :output :effected-closed-core
+    :requires [:empty-declared-effects :empty-declared-capabilities
+               :runtime-module-effectful-residual-rejected]
+    :preserves [:types :source-origin :profile]
+    :emits [:effect-facts :capability-facts]
+    :status :complete-for-pure-closed-slice}
+   {:pass :c9-persistent-immutable-value-derivation
+    :owner-document "C9"
+    :input :effected-closed-core
+    :output :ownership-checked-closed-core
+    :requires [:lexical-binding-records
+               :persistent-immutable-value-semantics]
+    :not-applicable [:allocation-ownership :borrows :moves :transfers]
+    :preserves [:types :effects :capabilities :source-origin :profile]
+    :emits [:ownership-facts]
+    :status :complete-for-pure-closed-slice}
+   {:pass :c10-pure-safety-proof-derivation
+    :owner-document "C10"
+    :input :ownership-checked-closed-core
+    :output :safety-checked-closed-core
+    :requires [:profile-facts :ownership-facts
+               :empty-effect-and-capability-facts]
+    :not-applicable [:runtime-checks :unsafe-islands :effectful-providers]
+    :preserves [:types :effects :capabilities :ownership :source-origin
+                :profile]
+    :emits [:safety-facts]
+    :status :complete-for-pure-closed-slice}])
+
+(defn p15-s23-closed-core-type-producer-rule
+  [source-operation]
+  (case source-operation
+    :implicit-nil :compiler-generated-nil
+    :literal :literal-type
+    :quote :quoted-scalar-type
+    :local :resolved-binding-type
+    :let-binding :initializer-type
+    :truthy :truthiness-bool
+    :if :branch-type-join
+    :do :sequence-result-type
+    :let :lexical-scope-result-type
+    :function :closed-function-type
+    :not-applicable))
+
+(defn p15-s23-closed-core-canonical-pass-envelopes
+  [nodes module plan-id]
+  (let [node-by-id (into {} (map (juxt :node-id identity)) nodes)
+        type-id-by-node
+        (into (sorted-map)
+              (map (fn [node]
+                     [(:node-id node)
+                      (p15-s23-closed-core-digest
+                       {:kind :gravity/type-descriptor
+                        :type (p15-s23-closed-core-recomputed-node-type
+                               node node-by-id)})]))
+              nodes)
+        function-node (first (filter #(= :function (:kind %)) nodes))
+        function-id (:node-id function-node)
+        return-node-id (last (:operands function-node))
+        typed-core
+        {:artifact :gravity/typed-core
+         :module module
+         :core-input
+         (p15-s23-closed-core-digest
+          {:plan-id plan-id
+           :core-node-keys (mapv :node-id nodes)})
+         :types type-id-by-node
+         :locals
+         (into (sorted-map)
+               (map (fn [node]
+                      [(:node-id node)
+                       {:type (get type-id-by-node (:node-id node))
+                        :mutability :immutable
+                        :ownership :persistent-shared}]))
+               (filter #(= :let-binding (:source-operation %)) nodes))
+         :functions
+         {function-id
+          {:params []
+           :return (get type-id-by-node return-node-id)
+           :latent-effects #{}
+           :capabilities #{}
+           :throws #{}}}
+         :constraints []
+         :dynamic-boundaries []
+         :casts []
+         :layout-facts :not-applicable
+         :diagnostics []}
+        effect-graph
+        {:artifact :gravity/effect-graph
+         :module module
+         :nodes
+         (into (sorted-map)
+               (map (fn [node]
+                      [(:node-id node)
+                       {:direct #{}
+                        :latent #{}
+                        :transitive #{}
+                        :ordering :none
+                        :source (get-in node [:source :span])}]))
+               nodes)
+         :functions
+         {function-id {:declared #{}
+                       :inferred #{}
+                       :latent #{}
+                       :throws #{}}}
+         :namespace {:declared #{} :inferred #{}}
+         :build-effects []
+         :replay-required #{}
+         :diagnostics []}
+        owner-domain-id
+        (p15-s23-closed-core-digest
+         {:kind :gravity/persistent-shared-owner-domain
+          :function-node-id function-id})
+        ownership-analysis
+        {:artifact :gravity/ownership-analysis
+         :module module
+         :owners
+         (into (sorted-map)
+               (map (fn [node]
+                      [(:node-id node)
+                       owner-domain-id]))
+               nodes)
+         :moves []
+         :borrows []
+         :regions {}
+         :arenas {}
+         :linear {}
+         :transfers []
+         :diagnostics []}
+        typed-core-key (p15-s23-closed-core-digest typed-core)
+        effect-graph-key (p15-s23-closed-core-digest effect-graph)
+        ownership-analysis-key
+        (p15-s23-closed-core-digest ownership-analysis)]
+    {:typed-core typed-core
+     :typed-core-key typed-core-key
+     :effect-graph effect-graph
+     :effect-graph-key effect-graph-key
+     :capability-proof-records []
+     :pure-capability-closure
+     {:artifact :gravity/p15-s23-pure-capability-closure
+      :module module
+      :required #{}
+      :granted #{}
+      :provider-bindings {}
+      :status :not-required}
+     :ownership-analysis ownership-analysis
+     :ownership-analysis-key ownership-analysis-key}))
+
+(defn p15-s23-closed-core-fact-tables
+  ([nodes]
+   (p15-s23-closed-core-fact-tables nodes :not-applicable
+                                    :not-applicable))
+  ([nodes module plan-id]
+  (let [node-by-id (into {} (map (juxt :node-id identity)) nodes)
+        function-node (first (filter #(= :function (:kind %)) nodes))
+        canonical
+        (p15-s23-closed-core-canonical-pass-envelopes
+         nodes module plan-id)
+        shared-owner-id
+        (p15-s23-closed-core-shared-owner-domain-id nodes)
+        fact-link-id
+        (fn [family artifact-key node-id]
+          (p15-s23-closed-core-digest
+           {:family family
+            :artifact-key artifact-key
+            :core-node-key node-id}))
+        source-value-ids
+        (fn [node]
+          (case (:source-operation node)
+            :local [(first (:operands node))]
+            :let-binding [(first (:operands node))]
+            :truthy [(first (:operands node))]
+            :if (vec (rest (:operands node)))
+            :do [(last (:operands node))]
+            :let [(last (:operands node))]
+            :function [(last (:operands node))]
+            []))
+        forwarding-kind
+        (fn [node]
+          (case (:source-operation node)
+            :local :from-lexical-binding
+            :let-binding :from-initializer
+            :truthy :derived-from-test
+            :if :from-conditional-incoming-values
+            :do :from-sequence-result
+            :let :from-lexical-scope-result
+            :function :from-entrypoint-result
+            :not-applicable))]
+    {:typed-core (:typed-core canonical)
+     :effect-graph (:effect-graph canonical)
+     :capability-proof-records (:capability-proof-records canonical)
+     :pure-capability-closure (:pure-capability-closure canonical)
+     :ownership-analysis (:ownership-analysis canonical)
+     :type-facts
+     (into
+      (sorted-map)
+      (map
+       (fn [node]
+         (let [node-id (:node-id node)
+               reconstructed-type
+               (p15-s23-closed-core-recomputed-node-type node node-by-id)
+               base
+               {:core-node-id node-id
+                :type-id (get-in canonical
+                                 [:typed-core :types node-id])
+                :fact-id
+                (fact-link-id :type (:typed-core-key canonical) node-id)
+                :type reconstructed-type
+                :producer-rule
+                (p15-s23-closed-core-type-producer-rule
+                 (:source-operation node))
+                :dependencies (:operands node)
+                :source-origin-id (get-in node [:source :origin-id])
+                :profile (:profile node)
+                :source-target :jvm
+                :constraints []
+                :derived? true}]
+           [node-id
+            (cond-> base
+              (= :function (:kind node))
+              (assoc
+               :params []
+               :return (:return reconstructed-type)
+               :latent-effects #{}
+               :capabilities #{}
+               :throws #{}
+               :ownership-constraints #{:persistent-immutable-shareable}
+               :profile-constraints #{:hosted}))]))
+       nodes))
+     :effect-facts
+     (into
+      (sorted-map)
+      (map
+       (fn [node]
+         (let [node-id (:node-id node)
+               base
+               {:core-node-id node-id
+                :fact-id
+                (fact-link-id :effects
+                              (:effect-graph-key canonical) node-id)
+                :direct #{}
+                :latent #{}
+                :transitive #{}
+                :residual #{}
+                :ordering :none
+                :source-origin-id (get-in node [:source :origin-id])
+                :profile (:profile node)
+                :source-target :jvm
+                :derived? true}]
+           [node-id
+            (cond-> base
+              (= :function (:kind node))
+              (assoc :function-summary
+                     {:declared #{}
+                      :inferred #{}
+                      :latent #{}
+                      :throws #{}}))]))
+       nodes))
+     :capability-facts
+     (into
+      (sorted-map)
+      (map
+       (fn [node]
+         (let [node-id (:node-id node)]
+           [node-id
+           {:core-node-id node-id
+             :required #{}
+             :granted #{}
+             :provider-bindings {}
+             :grant-ids []
+             :authority-id nil
+             :authority-source :none-required
+             :capability-proof
+             {:status :not-required
+              :basis :empty-capability-requirements}
+             :source-origin-id (get-in node [:source :origin-id])
+             :profile (:profile node)
+             :source-target :jvm
+             :derived? true}]))
+       nodes))
+     :ownership-facts
+     (into
+      (sorted-map)
+      (map
+       (fn [node]
+         (let [node-id (:node-id node)
+               ownership (:ownership node)]
+           [node-id
+            {:core-node-id node-id
+             :fact-id
+             (fact-link-id :ownership
+                           (:ownership-analysis-key canonical) node-id)
+             :value-id node-id
+             :owner-id shared-owner-id
+             :source-value-ids (source-value-ids node)
+             :forwarding (forwarding-kind node)
+             :model (:model ownership)
+             :role (:role ownership)
+             :storage (:storage ownership)
+             :shareability (:shareability ownership)
+             :alias-policy (:alias-policy ownership)
+             :mutation (:mutation ownership)
+             :managed-reachability (:managed-reachability ownership)
+             :cleanup-policy (:cleanup-policy ownership)
+             :provider-requirement (:provider-requirement ownership)
+             :allocator-requirement (:allocator-requirement ownership)
+             :escape-policy (:escape-policy ownership)
+             :result-disposition
+             (or (:result-disposition ownership) :not-applicable)
+             :source-origin-id (get-in node [:source :origin-id])
+             :profile (:profile node)
+             :source-target :jvm
+             :borrow :not-applicable
+             :move :not-applicable
+             :consume :not-applicable
+             :region :not-applicable
+             :arena :not-applicable
+             :linear-resource :not-applicable
+             :transfer :not-applicable
+             :runtime-check :not-applicable
+             :unsafe-audit :not-applicable
+             :derived? true}]))
+       nodes))
+     :safety-facts
+     (into
+      (sorted-map)
+      (map
+       (fn [node]
+         (let [node-id (:node-id node)
+               proof (get-in node [:safety :proof])]
+           [node-id
+            {:artifact :gravity/safety-outcome
+             :operation node-id
+             :kind (:source-operation node)
+             :source
+             {:core-node node-id
+              :span (get-in node [:source :span])
+              :origin-chain [(get-in node [:source :origin-id])]}
+             :profile (:profile node)
+             :target :jvm
+             :facts
+             {:type (fact-link-id :type
+                                  (:typed-core-key canonical) node-id)
+              :effects (fact-link-id :effects
+                                     (:effect-graph-key canonical) node-id)
+              :ownership
+              (fact-link-id :ownership
+                            (:ownership-analysis-key canonical) node-id)}
+             :outcome (get-in node [:safety :outcome])
+             :condition :always
+             :proof (:proof-id proof)
+             :runtime-check :not-applicable
+             :unsafe-audit :not-applicable
+             :failure-behavior :not-applicable}]))
+       nodes))
+     :profile-facts
+     (into
+      (sorted-map)
+      (map (fn [node]
+             [(:node-id node)
+              {:profile (:profile node)
+               :operation (:source-operation node)
+               :legal? true
+               :scope :pure-closed-hosted-jvm-slice}]))
+      nodes)})))
+
+(defn p15-s23-closed-core-dependency-edge-kind
+  [node operand-index operand-count]
+  (case (:source-operation node)
+    :local :binding-use
+    :let-binding :initializer
+    :str :argument-value
+    :println :argument-value
+    :truthy :control
+    :if (if (zero? operand-index) :control :conditional-incoming)
+    :do (if (= operand-index (dec operand-count)) :result :sequence)
+    :function (if (= operand-index (dec operand-count)) :result :sequence)
+    :let (let [binding-count (get-in node [:attributes :binding-count])]
+           (cond
+             (< operand-index binding-count) :initializer
+             (= operand-index (dec operand-count)) :result
+             :else :sequence))
+    :argument-value))
+
+(defn p15-s23-closed-core-dependency-order-graph
+  [nodes]
+  (let [index-by-id (into {} (map-indexed (fn [idx node]
+                                            [(:node-id node) idx]))
+                         nodes)
+        node-by-id (into {} (map (juxt :node-id identity)) nodes)
+        edges
+        (mapv
+         (fn [[node operand-index operand]]
+           (let [dependency-index (get index-by-id operand)
+                 consumer-index (get index-by-id (:node-id node))]
+             {:dependency operand
+              :consumer (:node-id node)
+              :dependency-index dependency-index
+              :consumer-index consumer-index
+              :edge-kind
+              (p15-s23-closed-core-dependency-edge-kind
+               node operand-index (count (:operands node)))
+              :dependency-precedes-consumer?
+              (and (integer? dependency-index)
+                   (integer? consumer-index)
+                   (< dependency-index consumer-index))}))
+         (mapcat (fn [node]
+                   (map-indexed (fn [operand-index operand]
+                                  [node operand-index operand])
+                                (:operands node)))
+                 nodes))
+        dependencies-resolve?
+        (every? :dependency-precedes-consumer? edges)
+        lexical-bindings-resolve?
+        (every?
+         (fn [node]
+           (if (= :local (:source-operation node))
+             (let [binding-id (first (:operands node))
+                   binding-node (get node-by-id binding-id)]
+               (and (= 1 (count (:operands node)))
+                    (= binding-id
+                       (get-in node [:attributes :resolved-binding]))
+                    (= :binding (:kind binding-node))))
+             true))
+         nodes)]
+    {:artifact :gravity/p15-s23-closed-dependency-order-graph
+     :edges edges
+     :all-dependencies-precede-consumers? dependencies-resolve?
+     :all-lexical-bindings-resolve? lexical-bindings-resolve?
+     :status (if (and dependencies-resolve? lexical-bindings-resolve?)
+               :passed
+               :failed)}))
+
+(defn p15-s23-closed-core-recomputed-binding-records
+  [nodes]
+  (mapv
+   (fn [node]
+     {:binding-node-id (:node-id node)
+      :name (get-in node [:attributes :name])
+      :path (:path node)
+      :value-node-id (first (:operands node))
+      :shadowed-binding (get-in node [:attributes :shadowed-binding])
+      :source-form-id (get-in node [:attributes :source-form-id])})
+   (filterv #(= :let-binding (:source-operation %)) nodes)))
+
+(defn p15-s23-closed-core-binding-shadow-links-valid?
+  [nodes binding-records]
+  (let [index-by-id (into {} (map-indexed (fn [idx node]
+                                            [(:node-id node) idx])
+                                          nodes))
+        binding-by-id (into {} (map (juxt :binding-node-id identity))
+                            binding-records)]
+    (every?
+     (fn [record]
+       (let [shadow-id (:shadowed-binding record)]
+         (or (nil? shadow-id)
+             (let [shadow (get binding-by-id shadow-id)]
+               (and shadow
+                    (= (:name record) (:name shadow))
+                    (< (get index-by-id shadow-id Long/MAX_VALUE)
+                       (get index-by-id (:binding-node-id record)
+                            Long/MIN_VALUE)))))))
+     binding-records)))
+
+(defn p15-s23-closed-core-semantic-input
+  [artifact]
+  (select-keys
+   artifact
+   [:kind :status :scope :source-content-hash :source-core-input
+    :entrypoint :profile :source-target :core-nodes :root-node-ids
+    :type-facts :effect-facts :capability-facts :ownership-facts
+    :safety-facts :profile-facts :typed-core :effect-graph
+    :capability-proof-records :pure-capability-closure :ownership-analysis
+    :dependency-order-graph
+    :lexical-binding-records :source-origin-table :pass-history
+    :authenticated-input :bounds :mir-derived? :whole-language?
+    :clojure-seed-boundary? :self-hosted?]))
+
+(defn p15-s23-closed-core-node-id-valid?
+  [source-content-hash node]
+  (= (:node-id node)
+     (p15-s23-closed-core-digest
+      {:source-content-hash source-content-hash
+       :path (:path node)
+       :kind (:kind node)
+       :source-operation (:source-operation node)
+       :origin-id (get-in node [:source :origin-id])})))
+
+(defn p15-s23-closed-core-origin-id-valid?
+  [origin]
+  (= (:origin-id origin)
+     (p15-s23-closed-core-digest (dissoc origin :origin-id))))
+
+(defn p15-s23-closed-core-runtime-check-valid?
+  [check]
+  (and (= :gravity/runtime-check (:artifact check))
+       (= :required (:status check))
+       (= (:check-id check)
+          (p15-s23-closed-core-digest
+           (dissoc check :artifact :check-id :status)))))
+
+(defn p15-s23-closed-core-node-aggregate-facts
+  [node node-by-id]
+  (let [intrinsic-effects
+        (p15-s23-closed-core-intrinsic-effects (:source-operation node))
+        intrinsic-capabilities
+        (p15-s23-closed-core-intrinsic-capabilities
+         (:source-operation node))
+        aggregate? (contains? #{:str :println :do :if :let :function
+                                :let-binding :truthy}
+                              (:source-operation node))
+        operand-nodes (keep node-by-id (:operands node))
+        effects (if aggregate?
+                  (apply set/union intrinsic-effects
+                         (map :effects operand-nodes))
+                  intrinsic-effects)
+        capabilities (if aggregate?
+                       (apply set/union intrinsic-capabilities
+                              (map :capabilities operand-nodes))
+                       intrinsic-capabilities)]
+    {:intrinsic-effects intrinsic-effects
+     :intrinsic-capabilities intrinsic-capabilities
+     :aggregate-effects effects
+     :aggregate-capabilities capabilities}))
+
+(defn p15-s23-closed-core-persistent-aliasing-valid?
+  [node]
+  (let [ownership (:ownership node)
+        operands (:operands node)]
+    (and (= :persistent-immutable-value (:model ownership))
+         (= :shared (:shareability ownership))
+         (= :immutable-sharing (:alias-policy ownership))
+         (= :forbidden (:mutation ownership)))))
+
+(def p15-s23-closed-core-persistent-ownership-common-keys
+  #{:model :role :storage :shareability :alias-policy :mutation
+    :managed-reachability :cleanup-policy :provider-requirement
+    :allocator-requirement :escape-policy :derived?})
+
+(defn p15-s23-closed-core-persistent-ownership-expected-keys
+  [source-operation]
+  (let [extras
+        (case source-operation
+          :local #{:binding-node-id}
+          :let-binding #{:value-node-id}
+          :if #{:incoming-node-ids}
+          :do #{:result-node-id}
+          :let #{:result-node-id}
+          :function #{:result-node-id :result-disposition}
+          #{})]
+    (set/union p15-s23-closed-core-persistent-ownership-common-keys
+               extras)))
+
+(defn p15-s23-closed-core-persistent-ownership-schema-valid?
+  [node]
+  (= (p15-s23-closed-core-persistent-ownership-expected-keys
+      (:source-operation node))
+     (set (keys (:ownership node)))))
+
+(defn p15-s23-closed-core-operation-shape-valid?
+  [node node-by-id]
+  (let [attributes (:attributes node)
+        operands (:operands node)
+        common-keys
+        #{:intrinsic-effects :intrinsic-capabilities
+          :aggregate-effects :aggregate-capabilities}
+        exact-attributes?
+        (fn [extras]
+          (= (set/union common-keys extras) (set (keys attributes))))
+        common-facts?
+        (and (= #{} (:intrinsic-effects attributes))
+             (= #{} (:intrinsic-capabilities attributes))
+             (= #{} (:aggregate-effects attributes))
+             (= #{} (:aggregate-capabilities attributes)))]
+    (and
+     common-facts?
+     (case (:source-operation node)
+       :implicit-nil
+       (and (= :literal (:kind node))
+            (false? (:plan-node? node))
+            (exact-attributes? #{:value :generated-role})
+            (nil? (:value attributes))
+            (contains? #{:implicit-do-nil :implicit-let-nil
+                         :implicit-if-else :implicit-main-nil}
+                       (:generated-role attributes))
+            (= (last (:path node)) (:generated-role attributes))
+            (empty? operands))
+
+       :literal
+       (and (= :literal (:kind node))
+            (true? (:plan-node? node))
+            (exact-attributes? #{:value})
+            (some? (p15-s23-closed-core-scalar-literal-type
+                    (:value attributes)))
+            (empty? operands))
+
+       :quote
+       (and (= :quote (:kind node))
+            (true? (:plan-node? node))
+            (exact-attributes? #{:value})
+            (some? (p15-s23-closed-core-scalar-literal-type
+                    (:value attributes)))
+            (empty? operands))
+
+       :local
+       (and (= :local (:kind node))
+            (true? (:plan-node? node))
+            (exact-attributes? #{:name :resolved-binding})
+            (symbol? (:name attributes))
+            (= 1 (count operands))
+            (= (first operands) (:resolved-binding attributes))
+            (= :binding (:kind (get node-by-id (first operands)))))
+
+       :let-binding
+       (and (= :binding (:kind node))
+            (false? (:plan-node? node))
+            (exact-attributes?
+             #{:name :shadowed-binding :source-form-id})
+            (symbol? (:name attributes))
+            (keyword? (:source-form-id attributes))
+            (= 1 (count operands)))
+
+       :truthy
+       (and (= :truthiness (:kind node))
+            (false? (:plan-node? node))
+            (exact-attributes? #{:false-values :result-type})
+            (= [nil false] (:false-values attributes))
+            (= :gravity/bool (:result-type attributes))
+            (= 1 (count operands)))
+
+       :if
+       (let [truthy-node (get node-by-id (first operands))]
+         (and (= :conditional (:kind node))
+              (true? (:plan-node? node))
+              (exact-attributes? #{:truthiness})
+              (= :nil-and-false-only (:truthiness attributes))
+              (= 3 (count operands))
+              (= :truthy (:source-operation truthy-node))
+              (= 1 (count (:operands truthy-node)))
+              (every? node-by-id operands)))
+
+       :do
+       (let [body-count (:body-count attributes)]
+         (and (= :sequence (:kind node))
+              (true? (:plan-node? node))
+              (exact-attributes? #{:body-count})
+              (integer? body-count)
+              (not (neg? body-count))
+              (= (max 1 body-count) (count operands))
+              (every? node-by-id operands)))
+
+       :let
+       (let [binding-count (:binding-count attributes)]
+         (and (= :let (:kind node))
+              (true? (:plan-node? node))
+              (exact-attributes? #{:binding-count})
+              (integer? binding-count)
+              (not (neg? binding-count))
+              (< binding-count (count operands))
+              (every? node-by-id operands)
+              (every? #(= :binding (:kind (get node-by-id %)))
+                      (take binding-count operands))))
+
+       :function
+       (and (= :function (:kind node))
+            (false? (:plan-node? node))
+            (exact-attributes? #{:name :params :arity :visibility})
+            (= 'main (:name attributes))
+            (= [] (:params attributes))
+            (zero? (:arity attributes))
+            (contains? #{:public :private :stage2-local}
+                       (:visibility attributes))
+            (seq operands)
+            (every? node-by-id operands))
+
+       false))))
+
+(defn p15-s23-closed-core-persistent-forwarding-valid?
+  [node node-by-id]
+  (let [ownership (:ownership node)
+        operands (:operands node)
+        common-keys p15-s23-closed-core-persistent-ownership-common-keys
+        exact-keys?
+        (fn [extras]
+          (= (set/union common-keys extras) (set (keys ownership))))]
+    (and
+     (= :value-and-program-reachability
+        (:managed-reachability ownership))
+     (= :no-explicit-cleanup (:cleanup-policy ownership))
+     (= :not-required (:provider-requirement ownership))
+     (= :not-required (:allocator-requirement ownership))
+     (= :safe-persistent-value (:escape-policy ownership))
+     (true? (:derived? ownership))
+     (case (:source-operation node)
+       :implicit-nil
+       (and (exact-keys? #{})
+            (= :compiler-generated-value (:role ownership))
+            (= :static-value (:storage ownership))
+            (empty? operands))
+
+       :literal
+       (and (exact-keys? #{})
+            (= :literal-value (:role ownership))
+            (= :static-or-managed-value (:storage ownership))
+            (empty? operands))
+
+       :quote
+       (and (exact-keys? #{})
+            (= :quoted-value (:role ownership))
+            (= :static-or-managed-value (:storage ownership))
+            (empty? operands))
+
+       :local
+       (and (exact-keys? #{:binding-node-id})
+            (= :local-reference (:role ownership))
+            (= :shared-persistent-reference (:storage ownership))
+            (= 1 (count operands))
+            (= (first operands) (:binding-node-id ownership))
+            (= :binding (:kind (get node-by-id (first operands)))))
+
+       :let-binding
+       (and (exact-keys? #{:value-node-id})
+            (= :lexical-binding (:role ownership))
+            (= :forwarded-persistent-value (:storage ownership))
+            (= 1 (count operands))
+            (= (first operands) (:value-node-id ownership)))
+
+       :truthy
+       (and (exact-keys? #{})
+            (= :truthiness-value (:role ownership))
+            (= :static-value (:storage ownership))
+            (= 1 (count operands)))
+
+       :if
+       (and (exact-keys? #{:incoming-node-ids})
+            (= :conditional-result (:role ownership))
+            (= :forwarded-persistent-value (:storage ownership))
+            (= 3 (count operands))
+            (= (vec (rest operands)) (:incoming-node-ids ownership)))
+
+       :do
+       (and (exact-keys? #{:result-node-id})
+            (= :sequence-result (:role ownership))
+            (= :forwarded-persistent-value (:storage ownership))
+            (seq operands)
+            (= (last operands) (:result-node-id ownership)))
+
+       :let
+       (let [binding-count (get-in node [:attributes :binding-count])
+             binding-operands (take binding-count operands)]
+         (and (exact-keys? #{:result-node-id})
+              (= :lexical-scope-result (:role ownership))
+              (= :forwarded-persistent-value (:storage ownership))
+              (integer? binding-count)
+              (<= 0 binding-count)
+              (< binding-count (count operands))
+              (every? #(= :binding (:kind (get node-by-id %)))
+                      binding-operands)
+              (= (last operands) (:result-node-id ownership))))
+
+       :function
+       (and (exact-keys? #{:result-node-id :result-disposition})
+            (= :entrypoint-function-result (:role ownership))
+            (= :forwarded-persistent-value (:storage ownership))
+            (seq operands)
+            (= (last operands) (:result-node-id ownership))
+            (= :shared-persistent-value-return
+               (:result-disposition ownership)))
+
+       false))))
+
+(defn p15-s23-closed-core-recomputed-mapping-id
+  [artifact]
+  (p15-s23-closed-core-digest
+   {:source-content-hash (:source-content-hash artifact)
+    :plan-id (get-in artifact [:source-core-input :plan-id])
+    :nodes (mapv #(select-keys % [:node-id :path :source])
+                 (:core-nodes artifact))
+    :source-origin-table (:source-origin-table artifact)}))
+
+(defn p15-s23-closed-core-recomputed-provenance-binding-id
+  [artifact]
+  (p15-s23-closed-core-digest
+   {:kind :gravity/p15-s23-closed-origin-provenance-binding
+    :source-content-hash (:source-content-hash artifact)
+    :plan-id (get-in artifact [:source-core-input :plan-id])
+    :bindings
+    (mapv (fn [[origin-id raw]]
+            {:origin-id origin-id
+             :binding-hash (:provenance-binding-hash raw)})
+          (sort-by key (:origin-closure artifact)))}))
+
+(defn p15-s23-closed-core-recomputed-actual-path-binding-id
+  [artifact]
+  (p15-s23-closed-core-digest
+   {:kind :gravity/p15-s23-closed-origin-actual-path-binding
+    :provenance-binding-id (:provenance-binding-id artifact)
+    :bindings
+    (mapv (fn [[origin-id raw]]
+            {:origin-id origin-id
+             :actual-path-binding-hash (:actual-path-binding-hash raw)})
+          (sort-by key (:origin-closure artifact)))}))
+
+(defn p15-s23-closed-core-instruction-origin-sidecar
+  [artifact]
+  (let [nodes (:core-nodes artifact)
+        plan-entry-count (count (filter :plan-node? nodes))]
+    {:artifact :gravity/p15-s23-instruction-origin-sidecar
+     :plan-id (get-in artifact [:source-core-input :plan-id])
+     :mapping-id (:mapping-id artifact)
+     :provenance-binding-id (:provenance-binding-id artifact)
+     :actual-path-binding-id (:actual-path-binding-id artifact)
+     :plan-entry-count plan-entry-count
+     :derived-entry-count (- (count nodes) plan-entry-count)
+     :semantic-entry-count (count nodes)
+     :origin-entry-count (count (:source-origin-table artifact))
+     :semantic-entries
+     (mapv
+      (fn [node]
+        (let [origin-id (get-in node [:source :origin-id])
+              origin (get (:source-origin-table artifact) origin-id)]
+          (merge
+           {:node-id (:node-id node)
+            :plan-path (:path node)
+            :source-operation (:source-operation node)
+            :plan-node? (:plan-node? node)
+            :origin-id origin-id}
+           (select-keys origin
+                        [:form-structural-path :form-kind
+                         :generated-role]))))
+      (sort-by (comp pr-str :path) nodes))
+     :semantic-table-field :source-origin-table
+     :raw-table-field :origin-closure
+     :status :authenticated}))
+
+(defn p15-s23-closed-core-bounded-value!
+  [source-path value]
+  (loop [pending [{:value value :depth 0}]
+         visited 0
+         scalar-bytes 0]
+    (if-let [{current :value depth :depth} (peek pending)]
+      (let [pending (pop pending)
+            visited (inc visited)
+            scalar-byte-count
+            (cond
+              (nil? current) 0
+              (boolean? current) (if current 4 5)
+              (string? current)
+              (let [observation
+                    (p15-s23-closed-core-bounded-utf8-count
+                     current
+                     (max 0 (- p15-s23-closed-core-max-artifact-scalar-bytes
+                               scalar-bytes)))]
+                (when-not (= :valid (:status observation))
+                  (p15-s23-closed-core-fail!
+                   "C6-VERIFY" source-path
+                   {:observed-string-length (.length ^String current)}
+                   {:missing-fact :bounded-canonical-string-scalar
+                    :encoding-status (:status observation)
+                    :maximum-scalar-bytes
+                    p15-s23-closed-core-max-artifact-scalar-bytes}))
+                (:bytes observation))
+              (char? current)
+              (let [code (int current)]
+                (cond
+                  (<= 0xD800 code 0xDFFF)
+                  (p15-s23-closed-core-fail!
+                   "C6-VERIFY" source-path current
+                   {:missing-fact :unicode-scalar-character})
+                  (<= code 0x7F) 1
+                  (<= code 0x7FF) 2
+                  :else 3))
+              (or (keyword? current) (symbol? current))
+              (let [namespace-part (namespace current)
+                    name-part (name current)
+                    prefix-bytes (if (keyword? current) 1 0)
+                    separator-bytes (if namespace-part 1 0)
+                    remaining
+                    (max 0 (- p15-s23-closed-core-max-artifact-scalar-bytes
+                              scalar-bytes prefix-bytes separator-bytes))
+                    namespace-observation
+                    (when namespace-part
+                      (p15-s23-closed-core-bounded-utf8-count
+                       namespace-part remaining))
+                    namespace-bytes (or (:bytes namespace-observation) 0)
+                    name-observation
+                    (p15-s23-closed-core-bounded-utf8-count
+                     name-part (max 0 (- remaining namespace-bytes)))]
+                (when-not (and (or (nil? namespace-observation)
+                                   (= :valid (:status namespace-observation)))
+                               (= :valid (:status name-observation)))
+                  (p15-s23-closed-core-fail!
+                   "C6-VERIFY" source-path
+                   {:scalar-kind (if (keyword? current) :keyword :symbol)}
+                   {:missing-fact :bounded-canonical-named-scalar
+                    :maximum-scalar-bytes
+                    p15-s23-closed-core-max-artifact-scalar-bytes}))
+                (+ prefix-bytes separator-bytes namespace-bytes
+                   (:bytes name-observation)))
+              (integer? current)
+              (let [bits (.bitLength (.abs (biginteger current)))]
+                (when (> bits p15-s23-closed-core-max-integer-bits)
+                  (p15-s23-closed-core-fail!
+                   "C6-VERIFY" source-path current
+                   {:missing-fact :bounded-closed-core-integer
+                    :observed-integer-bits bits
+                    :maximum-integer-bits
+                    p15-s23-closed-core-max-integer-bits}))
+                ;; At 256 bits this rendering is bounded to fewer than 80
+                ;; characters, so converting only after the bit guard cannot
+                ;; create an attacker-sized allocation.
+                (count (str current)))
+              (or (and (map? current) (not (record? current)))
+                  (vector? current) (set? current))
+              0
+              :else
+              (p15-s23-closed-core-fail!
+               "C6-VERIFY" source-path
+               {:observed-class (some-> current class .getName)}
+               {:missing-fact :closed-artifact-canonical-scalar-domain}))
+            scalar-bytes (+ scalar-bytes scalar-byte-count)]
+        (when (or (> depth p15-s23-closed-core-max-plan-depth)
+                  (> visited p15-s23-closed-core-max-serialized-values)
+                  (> scalar-bytes
+                     p15-s23-closed-core-max-artifact-scalar-bytes))
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" source-path current
+           {:missing-fact :bounded-checked-core-value-graph
+            :observed-depth depth
+            :observed-values visited
+            :observed-scalar-bytes scalar-bytes
+            :maximum-depth p15-s23-closed-core-max-plan-depth
+            :maximum-values
+            p15-s23-closed-core-max-serialized-values
+            :maximum-scalar-bytes
+            p15-s23-closed-core-max-artifact-scalar-bytes}))
+        (let [child-count
+              (cond
+                (and (map? current) (not (record? current)))
+                (* 2 (count current))
+
+                (or (vector? current) (set? current))
+                (count current)
+
+                ;; No lazy/host sequence is part of the closed artifact
+                ;; schema.  Reject it without realizing any element.
+                (seq? current)
+                (p15-s23-closed-core-fail!
+                 "C6-VERIFY" source-path current
+                 {:missing-fact :closed-artifact-eager-value})
+
+                :else 0)
+              projected-values (+ visited (count pending) child-count)
+              _ (when (> projected-values
+                         p15-s23-closed-core-max-serialized-values)
+                  (p15-s23-closed-core-fail!
+                   "C6-VERIFY" source-path
+                   {:container-kind
+                    (cond
+                      (map? current) :map
+                      (vector? current) :vector
+                      (set? current) :set
+                      :else :scalar)
+                    :container-count child-count}
+                   {:missing-fact :bounded-container-expansion
+                    :observed-values visited
+                    :pending-values (count pending)
+                    :projected-values projected-values
+                    :maximum-values
+                    p15-s23-closed-core-max-serialized-values}))
+              children
+              (cond
+                (and (map? current) (not (record? current)))
+                (mapcat identity current)
+                (vector? current) current
+                (set? current) current
+                :else [])]
+          (recur (into pending
+                       (map (fn [child]
+                              {:value child :depth (inc depth)})
+                            children))
+                 visited scalar-bytes)))
+      {:status :passed
+       :observed-values visited
+       :observed-scalar-bytes scalar-bytes})))
+
+(defn p15-s23-closed-core-validate-input-shape!
+  [source-path artifact]
+  (when-not (and (map? artifact)
+                 (= p15-s23-closed-core-artifact-keys
+                    (set (keys artifact)))
+                 (= :gravity/p15-s23-stage2-closed-checked-core-artifact
+                    (:kind artifact))
+                 (= :complete-for-pure-closed-slice (:status artifact)))
+    (p15-s23-closed-core-fail!
+     "C6-CORE-SHAPE" source-path {:missing-fact :closed-core-artifact-schema}
+     {:missing-fact :exact-closed-core-artifact-schema}))
+  (let [nodes (:core-nodes artifact)]
+    (when-not (vector? nodes)
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path {:missing-fact :closed-core-node-vector}
+       {:missing-fact :typed-closed-core-node-vector}))
+    (when-not (every? #(and (map? %)
+                            (= p15-s23-closed-core-node-keys
+                               (set (keys %))))
+                      nodes)
+      (p15-s23-closed-core-fail!
+       "C6-CORE-SHAPE" source-path {:missing-fact :closed-core-node-schema}
+       {:missing-fact :exact-closed-core-node-schema}))
+    (when-not
+     (every?
+      (fn [node]
+        (and (string? (:node-id node))
+             (vector? (:path node))
+             (keyword? (:kind node))
+             (keyword? (:source-operation node))
+             (boolean? (:plan-node? node))
+             (integer? (:plan-depth node))
+             (not (neg? (:plan-depth node)))
+             (vector? (:operands node))
+             (every? string? (:operands node))
+             (map? (:attributes node))
+             (map? (:ownership node))
+             (map? (:safety node))
+             (keyword? (:profile node))))
+      nodes)
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path {:missing-fact :typed-core-node-fields}
+       {:missing-fact :typed-bounded-closed-core-node-fields}))
+    (when-not (every? #(set? (:effects %)) nodes)
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path {:missing-fact :typed-node-effects}
+       {:missing-fact :closed-core-node-effect-set}))
+    (when-not (every? #(set? (:capabilities %)) nodes)
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path {:missing-fact :typed-node-capabilities}
+       {:missing-fact :closed-core-node-capability-set}))
+    (when-not (every? #(and (map? (:source %))
+                            (string? (get-in % [:source :origin-id])))
+                      nodes)
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path {:missing-fact :typed-node-source-origin}
+       {:missing-fact :closed-core-node-origin-record})))
+  (when-not
+   (and (string? (:artifact-id artifact))
+        (string? (:mapping-id artifact))
+        (string? (:provenance-binding-id artifact))
+        (string? (:actual-path-binding-id artifact))
+        (string? (:source-content-hash artifact))
+        (map? (:scope artifact))
+        (map? (:source-core-input artifact))
+        (map? (:target-request-metadata artifact))
+        (vector? (:root-node-ids artifact))
+        (every? string? (:root-node-ids artifact))
+        (every? map? (map artifact
+                          [:type-facts :effect-facts :capability-facts
+                           :ownership-facts :safety-facts :profile-facts
+                           :dependency-order-graph :source-origin-table
+                           :origin-closure :authenticated-input :bounds
+                           :provenance :instruction-origin-sidecar
+                           :typed-core :effect-graph
+                           :pure-capability-closure
+                           :ownership-analysis]))
+        (vector? (:capability-proof-records artifact))
+        (vector? (:lexical-binding-records artifact))
+        (vector? (:pass-history artifact))
+        (vector? (:diagnostics artifact))
+        (set? (get-in artifact [:source-core-input :declared-effects]))
+        (set? (get-in artifact
+                      [:source-core-input :declared-capabilities]))
+        (vector? (get-in artifact [:source-core-input :declared-exports]))
+        (every? symbol?
+                (get-in artifact [:source-core-input :declared-exports]))
+        (contains? #{:public :private :stage2-local}
+                   (get-in artifact
+                           [:source-core-input :entrypoint-visibility])))
+    (p15-s23-closed-core-fail!
+     "C6-VERIFY" source-path {:missing-fact :typed-artifact-fields}
+     {:missing-fact :typed-closed-core-artifact-fields}))
+  (let [bounds (:bounds artifact)
+        bounded-fields
+        [:maximum-plan-nodes :maximum-plan-depth :maximum-derived-nodes
+         :maximum-source-bytes :maximum-artifact-scalar-bytes
+         :maximum-integer-bits :observed-source-bytes
+         :observed-plan-nodes :observed-plan-depth :observed-derived-nodes]]
+    (when-not (every? #(let [value (get bounds %)]
+                         (and (integer? value) (not (neg? value))))
+                      bounded-fields)
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path {:missing-fact :typed-artifact-bounds}
+       {:missing-fact :nonnegative-integer-closed-core-bounds})))
+  :passed)
+
+(defn p15-s23-closed-core-validate-structure!
+  [source-path artifact]
+  (p15-s23-closed-core-bounded-value! source-path artifact)
+  (p15-s23-closed-core-validate-input-shape! source-path artifact)
+  (let [nodes (:core-nodes artifact)
+        plan-nodes (filterv :plan-node? nodes)
+        node-ids (mapv :node-id nodes)
+        paths (mapv :path nodes)
+        node-origin-ids (set (map #(get-in % [:source :origin-id]) nodes))
+        origin-table (:source-origin-table artifact)
+        origin-closure (:origin-closure artifact)
+        declared-effects (get-in artifact [:source-core-input
+                                           :declared-effects])
+        declared-capabilities (get-in artifact [:source-core-input
+                                                :declared-capabilities])
+        declared-exports (get-in artifact [:source-core-input
+                                           :declared-exports])
+        observed-operation-set
+        (set (map :source-operation plan-nodes))
+        entrypoint-visibility
+        (get-in artifact [:source-core-input :entrypoint-visibility])
+        node-by-id (into {} (map (juxt :node-id identity)) nodes)
+        recomputed-facts
+        (p15-s23-closed-core-fact-tables
+         nodes
+         (get-in artifact [:source-core-input :module])
+         (get-in artifact [:source-core-input :plan-id]))
+        function-nodes (filterv #(= :function (:kind %)) nodes)
+        diagnostic-module
+        {:module (get-in artifact [:source-core-input :module])
+         :profile (:profile artifact)
+         :target (:source-target artifact)
+         :requested-target
+         (get-in artifact [:target-request-metadata :requested-target])
+         :safety (get-in artifact [:source-core-input :declared-safety])}
+        enriched-subject
+        (fn [node extra]
+          (p15-s23-closed-core-enriched-node-subject
+           artifact node diagnostic-module extra))]
+    (when-not (and (<= (count nodes)
+                       p15-s23-closed-core-max-derived-nodes)
+                   (<= (count plan-nodes)
+                       p15-s23-closed-core-max-plan-nodes)
+                   (every? #(<= (:plan-depth %)
+                                p15-s23-closed-core-max-plan-depth)
+                           nodes))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path artifact
+       {:missing-fact :bounded-closed-core-artifact
+        :observed-derived-nodes (when (vector? nodes) (count nodes))
+        :observed-plan-nodes (when (vector? nodes) (count plan-nodes))
+        :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes
+        :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes
+        :maximum-plan-depth p15-s23-closed-core-max-plan-depth}))
+    (when-not (and (= (count node-ids) (count (set node-ids)))
+                   (= (count paths) (count (set paths)))
+                   (every? #(= p15-s23-closed-core-node-keys
+                               (set (keys %)))
+                           nodes))
+      (p15-s23-closed-core-fail!
+       "C6-CORE-SHAPE" source-path artifact
+       {:missing-fact :exact-unique-core-node-schema}))
+    (when-let [node
+               (first
+                (remove
+                 #(p15-s23-closed-core-operation-shape-valid?
+                   % node-by-id)
+                 nodes))]
+      (p15-s23-closed-core-fail!
+       "C6-CORE-SHAPE" source-path
+       (enriched-subject
+        node {:missing-fact :exact-pure-operation-attribute-and-operand-shape})
+       {:missing-fact :exact-pure-operation-attribute-and-operand-shape}))
+    (when-not
+     (and (= (p15-s23-closed-core-scope-contract)
+             (:scope artifact))
+          (= (p15-s23-closed-core-pass-history) (:pass-history artifact))
+          (= 1 (count function-nodes))
+          (= [(:node-id (first function-nodes))] (:root-node-ids artifact))
+          (= (:entrypoint artifact)
+             (get-in (first function-nodes) [:attributes :name]))
+          (= declared-exports
+             (get-in artifact [:authenticated-input :declared-exports]))
+          (= entrypoint-visibility
+             (get-in artifact
+                     [:authenticated-input :entrypoint-visibility])
+             (get-in (first function-nodes) [:attributes :visibility]))
+          (= entrypoint-visibility
+             (if (seq declared-exports)
+               (if (contains? (set declared-exports) (:entrypoint artifact))
+                 :public
+                 :private)
+               :stage2-local))
+          (= (count plan-nodes)
+             (get-in artifact [:bounds :observed-plan-nodes])
+             (get-in artifact [:source-core-input :plan-node-count])
+             (get-in artifact [:authenticated-input
+                               :closed-plan-validation-node-count]))
+          (= (count nodes)
+             (get-in artifact [:bounds :observed-derived-nodes]))
+          (= p15-s23-closed-core-max-plan-nodes
+             (get-in artifact [:bounds :maximum-plan-nodes]))
+          (= p15-s23-closed-core-max-plan-depth
+             (get-in artifact [:bounds :maximum-plan-depth]))
+          (= p15-s23-closed-core-max-derived-nodes
+             (get-in artifact [:bounds :maximum-derived-nodes]))
+          (= p15-s23-closed-core-max-source-bytes
+             (get-in artifact [:bounds :maximum-source-bytes]))
+          (= p15-s23-closed-core-max-artifact-scalar-bytes
+             (get-in artifact [:bounds :maximum-artifact-scalar-bytes]))
+          (= p15-s23-closed-core-max-integer-bits
+             (get-in artifact [:bounds :maximum-integer-bits]))
+          (= (apply max 0 (map :plan-depth plan-nodes))
+             (get-in artifact [:bounds :observed-plan-depth]))
+          (true? (get-in artifact [:authenticated-input
+                                   :packet-context-bound?]))
+          (= (:source-content-hash artifact)
+             (get-in artifact [:source-core-input :source-content-hash])
+             (get-in artifact [:authenticated-input :source-content-hash]))
+          (= (:profile artifact)
+             (get-in artifact [:source-core-input :declared-profile]))
+          (= :hosted (:profile artifact))
+          (every? #(= :hosted (:profile %)) nodes)
+          (= :safe (get-in artifact
+                            [:source-core-input :declared-safety]))
+          (= :safe (get-in artifact
+                            [:authenticated-input :declared-safety]))
+          (= (:source-target artifact)
+             (get-in artifact [:source-core-input :declared-target])
+             (get-in artifact
+                     [:source-core-input :pure-admission-record
+                      :source-target])
+             (get-in artifact [:authenticated-input :source-target])
+             (get-in artifact [:scope :module :source-target]))
+          (= :jvm (:source-target artifact))
+          (false? (:mir-derived? artifact))
+          (false? (:whole-language? artifact))
+          (true? (:clojure-seed-boundary? artifact))
+          (false? (:self-hosted? artifact))
+          (= [] (:diagnostics artifact)))
+      (p15-s23-closed-core-fail!
+       "C6-CORE-SHAPE" source-path artifact
+       {:missing-fact :closed-core-root-scope-pass-and-boundary-contract}))
+    ;; C8 owns pure admission and the concrete-operation proof that makes the
+    ;; generic seed runtime's latent str/println branches unreachable.  Keep
+    ;; these facts out of the C6 root-shape conjunction so effect tampering is
+    ;; never misreported as a lowering failure.
+    (when-not
+     (and
+      (p15-s23-closed-core-pure-admission-valid?
+       (get-in artifact [:source-core-input :pure-admission-record]))
+      (= (get-in artifact
+                 [:source-core-input :pure-admission-record :admission-id])
+         (get-in artifact [:authenticated-input :pure-admission-id]))
+      (true? (get-in artifact
+                     [:authenticated-input :pre-execution-pure-admitted?]))
+      (= #{} declared-effects declared-capabilities)
+      (every? #(and (empty? (:effects %))
+                    (empty? (:capabilities %)))
+              nodes)
+      (= observed-operation-set
+         (get-in artifact [:source-core-input :operation-set])
+         (get-in artifact [:authenticated-input :operation-set]))
+      (set/subset? observed-operation-set
+                   p15-s23-closed-core-allowed-operations)
+      (true? (get-in artifact
+                     [:source-core-input
+                      :effectful-runtime-branches-unreachable?]))
+      (true? (get-in artifact
+                     [:authenticated-input
+                      :effectful-runtime-branches-unreachable?]))
+      (= :seed-comparison-oracle
+         (get-in artifact [:source-core-input :packet-role])
+         (get-in artifact [:authenticated-input :packet-role]))
+      (= :not-claimed
+         (get-in artifact
+                 [:source-core-input :runtime-module-c8-conformance])
+         (get-in artifact
+                 [:authenticated-input :runtime-module-c8-conformance])))
+     (p15-s23-closed-core-fail!
+      "C8-VERIFY" source-path artifact
+      {:missing-fact
+       :pure-admission-effect-and-concrete-operation-closure
+       :observed-operation-set observed-operation-set
+       :declared-effects declared-effects
+       :declared-capabilities declared-capabilities}))
+    (let [graph (p15-s23-closed-core-dependency-order-graph nodes)]
+      (when-not (= graph (:dependency-order-graph artifact))
+        (p15-s23-closed-core-fail!
+         "C6-EVAL-ORDER" source-path
+         (enriched-subject
+          (or (first nodes) {})
+          {:missing-fact
+           :independently-recomputed-dependency-order-graph})
+         {:missing-fact :independently-recomputed-dependency-order-graph})))
+    (let [recomputed-bindings
+          (p15-s23-closed-core-recomputed-binding-records nodes)]
+      (when-not (and (= recomputed-bindings
+                        (:lexical-binding-records artifact))
+                     (p15-s23-closed-core-binding-shadow-links-valid?
+                      nodes recomputed-bindings))
+        (let [node (or (first (filter #(= :let-binding
+                                         (:source-operation %))
+                                     nodes))
+                       (first nodes))]
+          (p15-s23-closed-core-fail!
+           "C6-EVAL-ORDER" source-path
+           (enriched-subject
+            node {:missing-fact
+                  :recomputed-sequential-lexical-binding-closure})
+           {:missing-fact
+            :recomputed-sequential-lexical-binding-closure}))))
+    (when-not (and (= node-origin-ids
+                        (set (keys origin-table))
+                        (set (keys origin-closure)))
+                   (every? p15-s23-closed-core-origin-id-valid?
+                           (vals origin-table))
+                   (every? #(contains? origin-table
+                                       (get-in % [:source :origin-id]))
+                           nodes)
+                   (every? (fn [node]
+                             (= (:path node)
+                                (:plan-path
+                                 (get origin-table
+                                      (get-in node
+                                              [:source :origin-id])))))
+                           nodes)
+                   (every?
+                    (fn [[origin-id raw]]
+                      (and (= origin-id (:origin-id raw))
+                           (string? (:actual-source-path raw))
+                           (= source-path (:actual-source-path raw))
+                           (string? (:c2-source-id raw))
+                           (keyword? (:c2-form-id raw))
+                           (or (nil? (:c2-open-token-id raw))
+                               (keyword? (:c2-open-token-id raw)))
+                           (or (nil? (:c2-close-token-id raw))
+                               (keyword? (:c2-close-token-id raw)))
+                           (map? (:c2-span raw))
+                           (or (nil? (:c2-surface-span raw))
+                               (map? (:c2-surface-span raw)))
+                           (vector? (:c2-reader-generated-origin raw))
+                           (string? (:c3-syntax-id raw))
+                           (map? (:c3-source raw))
+                           (vector? (:c3-origin raw))
+                           (vector? (:expanded-generated-origin raw))
+                           (or (nil? (:input-origin-id raw))
+                               (contains? origin-table
+                                          (:input-origin-id raw)))
+                           (p15-s23-closed-core-raw-provenance-binding-valid?
+                            raw)))
+                    origin-closure))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path artifact
+       {:missing-fact :complete-semantic-and-raw-origin-closure}))
+    (let [generated-records
+          (mapcat
+           (fn [origin]
+             (mapcat #(get origin % [])
+                     [:reader-generated-origin :enclosing-c3-origin
+                      :enclosing-generated-origin :generated-origin]))
+           (vals origin-table))]
+      (when-not
+       (every? (fn [record]
+                 (if (contains? record :inputs)
+                   (and (vector? (:inputs record))
+                        (every? #(contains? origin-table %)
+                                (:inputs record)))
+                   true))
+               generated-records)
+        (p15-s23-closed-core-fail!
+         "C6-ORIGIN" source-path artifact
+         {:missing-fact :generated-semantic-origin-input-closure})))
+    (when-not (= (:provenance-binding-id artifact)
+                 (p15-s23-closed-core-recomputed-provenance-binding-id
+                  artifact))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path artifact
+       {:missing-fact :content-addressed-raw-origin-provenance-binding}))
+    (when-not (= (:actual-path-binding-id artifact)
+                 (p15-s23-closed-core-recomputed-actual-path-binding-id
+                  artifact))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path artifact
+       {:missing-fact :content-addressed-actual-path-origin-binding}))
+    (when-not (= (:instruction-origin-sidecar artifact)
+                 (p15-s23-closed-core-instruction-origin-sidecar artifact))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path artifact
+       {:missing-fact :authenticated-instruction-origin-sidecar}))
+    (when-not (= (:typed-core artifact) (:typed-core recomputed-facts))
+      (p15-s23-closed-core-fail!
+       "C7-VERIFY" source-path
+       (enriched-subject
+        (or (first nodes) {})
+        {:missing-fact :canonical-typed-core-envelope
+         :expected-type :recomputed-canonical-typed-core
+         :actual-type :stored-canonical-typed-core
+         :relevant-binding-id :not-applicable})
+       {:missing-fact :canonical-typed-core-envelope}))
+    (when-not
+     (and (= (:effect-graph artifact) (:effect-graph recomputed-facts))
+          (= (:capability-proof-records artifact)
+             (:capability-proof-records recomputed-facts))
+          (= (:pure-capability-closure artifact)
+             (:pure-capability-closure recomputed-facts)))
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path
+       (enriched-subject
+        (or (first nodes) {})
+        {:missing-fact
+         :canonical-effect-and-capability-envelope-closure})
+       {:missing-fact
+        :canonical-effect-and-capability-envelope-closure}))
+    (when-not (= (:ownership-analysis artifact)
+                 (:ownership-analysis recomputed-facts))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path
+       (enriched-subject
+        (or (first nodes) {})
+        {:missing-fact :canonical-ownership-analysis-envelope})
+       {:missing-fact :canonical-ownership-analysis-envelope}))
+    (when-not (every? #(some? (:type %)) nodes)
+      (p15-s23-closed-core-fail!
+       "C7-VERIFY" source-path artifact
+       {:missing-fact :closed-core-node-type
+        :expected-type :resolved-gravity-type
+        :actual-type :missing
+        :relevant-binding-id :not-applicable}))
+    (when-let [node
+               (first
+                (filter
+                 #(not= (:type %)
+                        (p15-s23-closed-core-recomputed-node-type
+                         % node-by-id))
+                 nodes))]
+      (let [expected-type
+            (p15-s23-closed-core-recomputed-node-type node node-by-id)]
+        (p15-s23-closed-core-fail!
+         "C7-VERIFY" source-path
+         (enriched-subject
+          node
+          {:missing-fact :operation-specific-reconstructed-type
+           :expected-type expected-type
+           :actual-type (:type node)
+           :relevant-binding-id
+           (or (get-in node [:attributes :resolved-binding])
+               :not-applicable)})
+         {:missing-fact :operation-specific-reconstructed-type
+          :expected-type expected-type
+          :actual-type (:type node)
+          :relevant-binding-id
+          (or (get-in node [:attributes :resolved-binding])
+              :not-applicable)})))
+    (when-not (= (:type-facts artifact) (:type-facts recomputed-facts))
+      (let [node
+            (or (first
+                 (filter
+                  #(not= (get (:type-facts artifact) (:node-id %))
+                         (get (:type-facts recomputed-facts)
+                              (:node-id %)))
+                  nodes))
+                (first nodes))]
+        (p15-s23-closed-core-fail!
+         "C7-VERIFY" source-path
+         (enriched-subject
+          node
+          {:missing-fact :independently-recomputed-type-facts
+           :expected-type
+           (get-in recomputed-facts [:type-facts (:node-id node) :type])
+           :actual-type
+           (get-in artifact [:type-facts (:node-id node) :type])
+           :relevant-binding-id
+           (or (get-in node [:attributes :resolved-binding])
+               :not-applicable)})
+         {:missing-fact :independently-recomputed-type-facts})))
+    (when-not (and
+               (every? #(set/subset? (:effects %) declared-effects) nodes)
+               (every? (fn [node]
+                         (if (= :str (:source-operation node))
+                           (contains? (:effects node) :memory/allocate)
+                           true))
+                       nodes)
+               (every? (fn [node]
+                         (if (= :println (:source-operation node))
+                           (contains? (:effects node) :io/write)
+                           true))
+                       nodes))
+      (p15-s23-closed-core-fail!
+       "C8-UNDECLARED" source-path artifact
+       {:missing-fact :closed-effect-capability-declaration
+        :declared-effects declared-effects
+        :declared-capabilities declared-capabilities}))
+    (when-not (and
+               (every? #(set/subset? (:capabilities %)
+                                     declared-capabilities)
+                       nodes)
+               (every? (fn [node]
+                         (if (= :str (:source-operation node))
+                           (contains? (:capabilities node)
+                                      :memory/allocator)
+                           true))
+                       nodes)
+               (every? (fn [node]
+                         (if (= :println (:source-operation node))
+                           (contains? (:capabilities node) :io/stdout)
+                           true))
+                       nodes))
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path artifact
+       {:missing-fact :closed-capability-authority
+        :declared-capabilities declared-capabilities}))
+    (when-not
+     (every?
+      (fn [node]
+        (let [expected (p15-s23-closed-core-node-aggregate-facts
+                        node node-by-id)]
+          (and (= (:effects node) (:aggregate-effects expected))
+               (= (select-keys (:attributes node)
+                               [:intrinsic-effects :aggregate-effects])
+                  (select-keys expected
+                               [:intrinsic-effects :aggregate-effects])))))
+      nodes)
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path artifact
+       {:missing-fact :independently-recomputed-intrinsic-and-aggregate-effects}))
+    (when-not
+     (every?
+      (fn [node]
+        (let [expected (p15-s23-closed-core-node-aggregate-facts
+                        node node-by-id)]
+          (and (= (:capabilities node)
+                  (:aggregate-capabilities expected))
+               (= (select-keys (:attributes node)
+                               [:intrinsic-capabilities
+                                :aggregate-capabilities])
+                  (select-keys expected
+                               [:intrinsic-capabilities
+                                :aggregate-capabilities])))))
+      nodes)
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path artifact
+       {:missing-fact
+        :independently-recomputed-intrinsic-and-aggregate-capabilities}))
+    (when-let [node
+               (first
+                (remove
+                 p15-s23-closed-core-persistent-ownership-schema-valid?
+                 nodes))]
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path
+       (enriched-subject
+        node {:missing-fact :exact-persistent-ownership-record-schema})
+       {:missing-fact :exact-persistent-ownership-record-schema}))
+    (when-let [node (first
+                     (remove
+                      p15-s23-closed-core-persistent-aliasing-valid?
+                      nodes))]
+      (p15-s23-closed-core-fail!
+       "C9-MUT-ALIAS" source-path
+       (p15-s23-closed-core-enriched-node-subject
+        artifact node
+        {:module (get-in artifact [:source-core-input :module])
+         :profile (:profile artifact)
+         :target (:source-target artifact)
+         :requested-target
+         (get-in artifact [:target-request-metadata :requested-target])
+         :safety (get-in artifact [:source-core-input :declared-safety])}
+        {:missing-fact :persistent-immutable-alias-and-mutation-policy})
+       {:missing-fact :persistent-immutable-alias-and-mutation-policy}))
+    (when-let [node (first
+                     (remove
+                      #(p15-s23-closed-core-persistent-forwarding-valid?
+                        % node-by-id)
+                      nodes))]
+      (p15-s23-closed-core-fail!
+       "C9-TRANSFER" source-path
+       (p15-s23-closed-core-enriched-node-subject
+        artifact node
+        {:module (get-in artifact [:source-core-input :module])
+         :profile (:profile artifact)
+         :target (:source-target artifact)
+         :requested-target
+         (get-in artifact [:target-request-metadata :requested-target])
+         :safety (get-in artifact [:source-core-input :declared-safety])}
+        {:missing-fact
+         :persistent-value-forwarding-and-result-disposition})
+       {:missing-fact
+        :persistent-value-forwarding-and-result-disposition}))
+    (when-let [node
+               (first
+                (remove
+                 #(contains? p15-s23-closed-core-allowed-safety-outcomes
+                             (get-in % [:safety :outcome]))
+                 nodes))]
+      (p15-s23-closed-core-fail!
+       "C10-NO-OUTCOME" source-path
+       (p15-s23-closed-core-enriched-node-subject
+        artifact node
+        {:module (get-in artifact [:source-core-input :module])
+         :profile (:profile artifact)
+         :target (:source-target artifact)
+         :requested-target
+         (get-in artifact [:target-request-metadata :requested-target])
+         :safety (get-in artifact [:source-core-input :declared-safety])}
+        {:missing-fact :closed-safety-outcome
+         :proof-id (get-in node [:safety :proof :proof-id])})
+       {:missing-fact :closed-safety-outcome
+        :observed-outcome (get-in node [:safety :outcome])}))
+    (when-let
+     [node
+      (first
+       (remove
+        (fn [node]
+          (let [proof (get-in node [:safety :proof])
+                expected
+                (p15-s23-closed-core-pure-safety-proof
+                 (:source-content-hash artifact) (:path node)
+                 (:source-operation node) (:source node) (:profile node)
+                 (:type node) (:effects node) (:capabilities node)
+                 (:ownership node)
+                 (p15-s23-closed-core-safety-basis
+                  (:source-operation node)))]
+            (and (= #{:outcome :basis :proof}
+                    (set (keys (:safety node))))
+                 (= :proven-safe (get-in node [:safety :outcome]))
+                 (= (p15-s23-closed-core-safety-basis
+                     (:source-operation node))
+                    (get-in node [:safety :basis]))
+                 (p15-s23-closed-core-pure-safety-proof-valid? proof)
+                 (= expected proof))))
+        nodes))]
+      (p15-s23-closed-core-fail!
+       "C10-PROOF" source-path
+       (p15-s23-closed-core-enriched-node-subject
+        artifact node
+        {:module (get-in artifact [:source-core-input :module])
+         :profile (:profile artifact)
+         :target (:source-target artifact)
+         :requested-target
+         (get-in artifact [:target-request-metadata :requested-target])
+         :safety (get-in artifact [:source-core-input :declared-safety])}
+        {:missing-fact :content-addressed-pure-safety-proof
+         :proof-id (get-in node [:safety :proof :proof-id])})
+       {:missing-fact :content-addressed-pure-safety-proof
+        :proof-id (get-in node [:safety :proof :proof-id])}))
+    (when-not (= (:effect-facts artifact)
+                 (:effect-facts recomputed-facts))
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path artifact
+       {:missing-fact :independently-recomputed-effect-facts}))
+    (when-not (= (:capability-facts artifact)
+                 (:capability-facts recomputed-facts))
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path artifact
+       {:missing-fact :independently-recomputed-capability-facts}))
+    (when-not (= (:safety-facts artifact)
+                 (:safety-facts recomputed-facts))
+      (let [node
+            (or (first
+                 (filter
+                  #(not= (get (:safety-facts artifact) (:node-id %))
+                         (get (:safety-facts recomputed-facts)
+                              (:node-id %)))
+                  nodes))
+                (first nodes))]
+        (p15-s23-closed-core-fail!
+         "C10-PROOF" source-path
+         (p15-s23-closed-core-enriched-node-subject
+          artifact node
+          {:module (get-in artifact [:source-core-input :module])
+           :profile (:profile artifact)
+           :target (:source-target artifact)
+           :requested-target
+           (get-in artifact [:target-request-metadata :requested-target])
+           :safety (get-in artifact [:source-core-input :declared-safety])}
+          {:missing-fact :independently-recomputed-safety-facts
+           :proof-id (get-in node [:safety :proof :proof-id])})
+         {:missing-fact :independently-recomputed-safety-facts})))
+    (when-not (= (:ownership-facts artifact)
+                 (:ownership-facts recomputed-facts))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path artifact
+       {:missing-fact :independently-recomputed-ownership-facts}))
+    ;; Node identity binds structural source mapping only.  Family-owned fact
+    ;; checks and the artifact id separately cover type/effect/ownership/safety
+    ;; records, and must diagnose those mutations before this structural guard.
+    (when-not (every? #(p15-s23-closed-core-node-id-valid?
+                        (:source-content-hash artifact) %)
+                      nodes)
+      (p15-s23-closed-core-fail!
+       "C6-CORE-SHAPE" source-path artifact
+       {:missing-fact :content-addressed-core-node-identity}))
+    (when-not (= (:profile-facts artifact) (:profile-facts recomputed-facts))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path artifact
+       {:missing-fact :independently-recomputed-profile-facts}))
+    (when-not (= (:mapping-id artifact)
+                 (p15-s23-closed-core-recomputed-mapping-id artifact))
+      (p15-s23-closed-core-fail!
+       "C6-ORIGIN" source-path artifact
+       {:missing-fact :independently-recomputed-origin-mapping-id}))
+    (when-not (= (:artifact-id artifact)
+                 (p15-s23-closed-core-digest
+                  (p15-s23-closed-core-semantic-input artifact)))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path artifact
+       {:missing-fact :independently-recomputed-checked-core-artifact-id}))
+    :passed))
+
+(defn p15-s23-stage2-closed-checked-core-source-artifact*
+  [source-path source-text requested-target authority-record]
+  (try
+    (let [source-byte-count
+          (p15-s23-closed-core-source-request-bounds!
+           source-path source-text requested-target)
+          source-content-hash (str "sha256:" (sha256-hex source-text))
+          early-module-products
+          (p15-s23-closed-core-early-module-products
+           source-path source-text requested-target)
+          module-attempt (:module-attempt early-module-products)
+          _ (when-not (= :valid (:status module-attempt))
+              (p15-s23-closed-core-fail!
+               "C6-CORE-SHAPE" source-path
+               (:subject early-module-products)
+               {:missing-fact :pure-closed-module-source-shape
+                :observed-legacy-module-reason
+                (:legacy-diagnostic-id module-attempt)}))
+          early-module (:module module-attempt)
+          _ (when-not (= :jvm (:target early-module))
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path
+               (:subject early-module-products)
+               {:missing-fact :pure-closed-slice-jvm-source-target
+                :observed-source-target (:target early-module)
+                :accepted-source-target :jvm
+                :requested-target requested-target}))
+          authoritative-front-end
+          (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+          ;; The checked-core preflight has already accepted the exact module
+          ;; contract.  Reusing that validated value prevents a second legacy
+          ;; parse from reacquiring diagnostic ownership before C6-C10.
+          authoritative-module early-module
+          authoritative-records (:records authoritative-front-end)
+          namespace-record (first authoritative-records)
+          function-record (second authoritative-records)
+          namespace-subject
+          (p15-s23-closed-core-source-record-subject
+           namespace-record authoritative-module requested-target
+           :pure-closed-module-admission {})
+          function-subject
+          (p15-s23-closed-core-source-record-subject
+           function-record authoritative-module requested-target
+           :pure-closed-source-surface {})
+          executable-form-records
+          (p15-s23-closed-core-executable-form-records
+           (:form-tree authoritative-front-end)
+           (:top-level-form-ids authoritative-front-end))
+          executable-form-by-id
+          (into {} (map (juxt :form-id identity)) executable-form-records)
+          source-surface-validation
+          (p15-s23-closed-core-source-surface-validation
+           (:forms authoritative-front-end) executable-form-records)
+          malformed-quote-record
+          (when (= :pure-quote-source-arity
+                   (:missing-fact source-surface-validation))
+            (get executable-form-by-id
+                 (:offending-form-id source-surface-validation)))
+          source-surface-subject
+          (if malformed-quote-record
+            (merge
+             function-subject
+             malformed-quote-record
+             {:syntax-id (:syntax-id function-subject)
+              :c2-form-id (:form-id malformed-quote-record)
+              :source-span (:span malformed-quote-record)
+              :generated-origin
+              (vec
+               (concat (:generated-origin function-subject)
+                       (or (:generated-origin malformed-quote-record) [])))
+              :lowering-rule :pure-quote-source-arity})
+            function-subject)
+          _ (when-not (= :passed (:status source-surface-validation))
+              (p15-s23-closed-core-fail!
+               (if (= :over-limit (:status source-surface-validation))
+                 "C6-VERIFY"
+                 "C6-LOWERING-GAP")
+               source-path source-surface-subject
+               (merge
+                source-surface-validation
+                {:requested-target requested-target}
+                (when malformed-quote-record
+                  {:offending-reader-origin (:origin malformed-quote-record)
+                   :offending-generated-origin
+                   (vec (or (:generated-origin malformed-quote-record) []))}))))
+          _ (when-not (= :hosted (:profile authoritative-module))
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path namespace-subject
+               {:missing-fact :pure-closed-slice-hosted-profile
+                :observed-profile (:profile authoritative-module)
+                :accepted-profile :hosted}))
+          _ (when-not (= :safe (:safety authoritative-module))
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path namespace-subject
+               {:missing-fact :pure-closed-slice-safe-mode
+                :observed-safety (:safety authoritative-module)
+                :accepted-safety :safe}))
+          _ (when-not (= :jvm (:target authoritative-module))
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path namespace-subject
+               {:missing-fact :pure-closed-slice-jvm-source-target
+                :observed-source-target (:target authoritative-module)
+                :accepted-source-target :jvm
+                :requested-target requested-target}))
+          _ (when-not (and (empty? (:requires authoritative-module))
+                           (empty? (:imports authoritative-module))
+                           (empty? (:providers authoritative-module))
+                           (= {} (:metadata authoritative-module))
+                           (nil? (:doc authoritative-module)))
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path namespace-subject
+               {:missing-fact :closed-slice-module-dependency-closure
+                :excluded-nonempty-fields
+                [:requires :imports :providers :metadata :doc]}))
+          _ (when-not (contains? #{[] ['main]}
+                                 (:exports authoritative-module))
+              (p15-s23-closed-core-fail!
+               "C6-CORE-SHAPE" source-path namespace-subject
+               {:missing-fact :exact-closed-slice-entrypoint-export
+                :allowed-exports [[] ['main]]
+                :observed-exports (:exports authoritative-module)}))
+          early-metadata-bearing-form
+          (first (filter #(seq (:metadata %))
+                         (:form-tree authoritative-front-end)))
+          _ (when early-metadata-bearing-form
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path
+               (merge function-subject
+                      early-metadata-bearing-form
+                      {:c2-form-id (:form-id early-metadata-bearing-form)
+                       :source-span (:span early-metadata-bearing-form)
+                       :generated-origin
+                       (vec
+                        (concat
+                         (:generated-origin function-subject)
+                         (or (:generated-origin early-metadata-bearing-form)
+                             [])))
+                       :lowering-rule
+                       :pure-closed-core-metadata-exclusion})
+               {:missing-fact :metadata-preserving-pure-core-lowering
+                :active-profile :hosted
+                :source-target :jvm
+                :requested-target requested-target}))
+          c7-source-violation
+          (p15-s23-closed-core-first-c7-source-violation
+           executable-form-records)
+          unsupported-quote-literal-form
+          (when (= :quoted-value (:kind c7-source-violation))
+            (:record c7-source-violation))
+          _ (when unsupported-quote-literal-form
+              (let [value (:value unsupported-quote-literal-form)
+                    quoted-value (second value)
+                    actual-type
+                    (p15-s23-closed-core-quoted-value-type quoted-value)
+                    prospective-node-id
+                    (p15-s23-closed-core-digest
+                     {:source-content-hash source-content-hash
+                      :c2-form-id (:form-id unsupported-quote-literal-form)
+                      :prospective-operation :quote
+                      :pass :c7-pure-quoted-scalar-classification})]
+                (p15-s23-closed-core-fail!
+                 "C7-TYPE-MISMATCH" source-path
+                 (merge
+                  function-subject unsupported-quote-literal-form
+                  {:syntax-id (:syntax-id function-subject)
+                   :c2-form-id (:form-id unsupported-quote-literal-form)
+                   :source-span (:span unsupported-quote-literal-form)
+                   :generated-origin
+                   (vec
+                    (concat
+                     (:generated-origin function-subject)
+                     (or (:generated-origin unsupported-quote-literal-form)
+                         [])))
+                   :core-node-id prospective-node-id
+                   :operation-id prospective-node-id
+                   :prospective-core-node-id? true
+                   :expected-type p15-s23-closed-core-quoted-scalar-type
+                   :actual-type actual-type
+                   :relevant-binding-id :not-applicable})
+                 {:missing-fact :pure-closed-quoted-scalar
+                  :expected-type p15-s23-closed-core-quoted-scalar-type
+                  :actual-type actual-type
+                  :offending-reader-origin
+                  (:origin unsupported-quote-literal-form)
+                  :offending-generated-origin
+                  (vec (or (:generated-origin unsupported-quote-literal-form)
+                           []))
+                  :relevant-binding-id :not-applicable})))
+          unsupported-numeric-form
+          (when (= :numeric-literal (:kind c7-source-violation))
+            (:record c7-source-violation))
+          _ (when unsupported-numeric-form
+              (let [value (:value unsupported-numeric-form)
+                    prospective-node-id
+                    (p15-s23-closed-core-digest
+                     {:source-content-hash source-content-hash
+                      :c2-form-id (:form-id unsupported-numeric-form)
+                      :prospective-operation :literal
+                      :pass :c7-pure-scalar-classification})]
+                (p15-s23-closed-core-fail!
+                 "C7-TYPE-MISMATCH" source-path
+                 (merge
+                  function-subject unsupported-numeric-form
+                  {:syntax-id (:syntax-id function-subject)
+                   :c2-form-id (:form-id unsupported-numeric-form)
+                   :source-span (:span unsupported-numeric-form)
+                   :core-node-id prospective-node-id
+                   :operation-id prospective-node-id
+                   :prospective-core-node-id? true
+                   :expected-type :gravity/integer
+                   :actual-type
+                   (cond
+                     (and (map? value)
+                          (= :gravity/deferred-ratio-literal
+                             (:artifact value)))
+                     :gravity/deferred-ratio
+                     (ratio? value) :gravity/ratio
+                     :else :gravity/noninteger-number)
+                   :relevant-binding-id :not-applicable})
+                 {:missing-fact :pure-closed-integer-numeric-scalar
+                  :expected-type :gravity/integer
+                  :actual-type
+                  (cond
+                    (and (map? value)
+                         (= :gravity/deferred-ratio-literal
+                            (:artifact value)))
+                    :gravity/deferred-ratio
+                    (ratio? value) :gravity/ratio
+                    :else :gravity/noninteger-number)
+                  :relevant-binding-id :not-applicable})))
+          invalid-str-arity-form
+          (when (= :str-arity (:kind c7-source-violation))
+            (:record c7-source-violation))
+          _ (when invalid-str-arity-form
+              (let [value (:value invalid-str-arity-form)
+                    actual-arity (dec (count value))
+                    prospective-node-id
+                    (p15-s23-closed-core-digest
+                     {:source-content-hash source-content-hash
+                      :c2-form-id (:form-id invalid-str-arity-form)
+                      :prospective-operation :str
+                      :pass :c7-pure-str-arity})]
+                (p15-s23-closed-core-fail!
+                 "C7-TYPE-MISMATCH" source-path
+                 (merge
+                  function-subject invalid-str-arity-form
+                  {:syntax-id (:syntax-id function-subject)
+                   :c2-form-id (:form-id invalid-str-arity-form)
+                   :source-span (:span invalid-str-arity-form)
+                   :core-node-id prospective-node-id
+                   :operation-id prospective-node-id
+                   :prospective-core-node-id? true
+                   :expected-type {:kind :arity :allowed #{1 2}}
+                   :actual-type {:kind :arity :value actual-arity}
+                   :relevant-binding-id :not-applicable})
+                 {:missing-fact :closed-str-arity
+                  :expected-type {:kind :arity :allowed #{1 2}}
+                  :actual-type {:kind :arity :value actual-arity}
+                  :relevant-binding-id :not-applicable})))
+          preflight-stage2-rule
+          (c-backend-stage2-plan-emitter-source-rule!
+           source-path requested-target)
+          preflight-driver-rule
+          (c-backend-stage2-compiler-driver-source-rule!
+           source-path requested-target)
+          preflight-plan
+          (binding [*additional-bootstrap-targets*
+                    stage2-runtime-derived-source-targets]
+            (p15-s23-stage2-plan-emitter-compile-source
+             (:emitter preflight-stage2-rule) source-path source-text))
+          preflight-plan-validation
+          (p15-s23-closed-runtime-plan-validation!
+           source-path requested-target preflight-plan)
+          packet-delay
+          (delay (stage2-runtime-derived-packet
+                  source-path source-text requested-target))
+          front-end (:front-end preflight-driver-rule)
+          fresh-front-end
+          (p15-s23-stage2-front-end-source-module-record
+           front-end source-path source-text)
+          top-level-forms (:forms fresh-front-end)
+          _ (when-not (and (= 2 (count top-level-forms))
+                           (seq? (first top-level-forms))
+                           (= 'ns (ffirst top-level-forms))
+                           (p15-s23-closed-core-function-form?
+                            (:entrypoint preflight-plan)
+                            (second top-level-forms)))
+              (p15-s23-closed-core-fail!
+               "C6-CORE-SHAPE" source-path fresh-front-end
+               {:missing-fact :closed-slice-exhaustive-top-level-lowering
+                :required-top-level-shape [:ns :single-entrypoint-defn]
+                :observed-top-level-count (count top-level-forms)}))
+          reader-products (:reader-products fresh-front-end)
+          c2-artifact (:c2-reader-artifact reader-products)
+          form-tree (:form-tree fresh-front-end)
+          root-form-ids (:top-level-form-ids fresh-front-end)
+          indexes (p15-s23-closed-core-form-indexes
+                   source-path form-tree root-form-ids)
+          token-stream (:token-stream fresh-front-end)
+          token-ordinal-by-id
+          (into {} (map-indexed (fn [idx token]
+                                 [(:token-id token) idx]))
+                token-stream)
+          plan preflight-plan
+          preflight-effect-requirements
+          (p15-s23-closed-core-preflight-effect-requirements plan)
+          entrypoint (:entrypoint plan)
+          functions (:functions plan)
+          definition (get functions entrypoint)
+          declared-exports (vec (or (get-in plan [:module :exports]) []))
+          entrypoint-binding
+          (first (filter #(= entrypoint (:name %))
+                         (:binding-table plan)))
+          entrypoint-visibility (:visibility entrypoint-binding)
+          _ (when-not (and (= #{entrypoint} (set (keys functions)))
+                           (map? definition)
+                           (zero? (:arity definition))
+                           (empty? (:params definition))
+                           (map? entrypoint-binding)
+                           (= declared-exports
+                              (:exports authoritative-module))
+                           (= entrypoint-visibility
+                              (if (seq declared-exports)
+                                (if (contains? (set declared-exports)
+                                               entrypoint)
+                                  :public
+                                  :private)
+                                :stage2-local)))
+              (p15-s23-closed-core-fail!
+               "C6-CORE-SHAPE" source-path plan
+               {:missing-fact :single-closed-entrypoint-function
+                :observed-functions (vec (sort-by str (keys functions)))}))
+          source-function-records
+          (filterv #(p15-s23-closed-core-function-form?
+                     entrypoint (:form %))
+                   (:records fresh-front-end))
+          all-source-functions
+          (filterv #(let [form (:form %)]
+                      (or (and (seq? form) (= 'defn (first form)))
+                          (and (seq? form) (= 'def (first form))
+                               (seq? (nth form 2 nil))
+                               (= 'fn (first (nth form 2 nil))))))
+                   (:records fresh-front-end))
+          _ (when-not (and (= 1 (count source-function-records))
+                           (= 1 (count all-source-functions)))
+              (p15-s23-closed-core-fail!
+               "C6-CORE-SHAPE" source-path fresh-front-end
+               {:missing-fact :single-source-entrypoint-function
+                :observed-function-count (count all-source-functions)}))
+          root-record-wrapper (first source-function-records)
+          root-form-id (:form-id root-record-wrapper)
+          root-record (get-in indexes [:form-by-id root-form-id])
+          metadata-bearing-form
+          (first
+           (filter
+            #(and (= root-form-id
+                     (p15-s23-closed-core-top-level-form-id
+                      (:form-id %) (:parent-by-id indexes)))
+                  (seq (:metadata %)))
+            form-tree))
+          _ (when metadata-bearing-form
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path
+               (assoc metadata-bearing-form
+                      :syntax-id
+                      (get-in root-record-wrapper
+                              [:c3-syntax-object :syntax/id])
+                      :c2-form-id (:form-id metadata-bearing-form)
+                      :source-span (:span metadata-bearing-form)
+                      :generated-origin
+                      (vec
+                       (concat
+                        (or (get-in root-record-wrapper
+                                    [:c3-syntax-object :origin]) [])
+                        (or (:generated-origin metadata-bearing-form) [])))
+                      :lowering-rule
+                      :pure-closed-core-metadata-exclusion
+                      :profile :hosted
+                      :target :jvm)
+               {:missing-fact :metadata-preserving-pure-core-lowering
+                :active-profile :hosted
+                :target :jvm
+                :target-neutral-request? true}))
+          root-syntax (:c3-syntax-object root-record-wrapper)
+          expanded-root-syntax
+          (first (filter #(= root-form-id (:form-id %))
+                         (:expanded-syntax-object-stream fresh-front-end)))
+          _ (when-not (and (= (get root-syntax :syntax/id)
+                              (get-in expanded-root-syntax
+                                      [:c3-syntax-object :syntax/id]))
+                           (= (get root-syntax :syntax/id)
+                              (get-in fresh-front-end
+                                      [:macro-expansion-trace 0
+                                       :input-syntax-id])))
+              (p15-s23-closed-core-fail!
+               "C6-ORIGIN" source-path root-record
+               {:missing-fact :generated-origin-input-syntax-closure}))
+          function-shape
+          (p15-s23-closed-core-function-source-shape
+           source-path entrypoint (:form-by-id indexes) root-record)
+          instructions (:instructions definition)
+          body-form-ids (:body-form-ids function-shape)
+          _ (when-not (= (count instructions) (count body-form-ids))
+              (p15-s23-closed-core-fail!
+               "C6-ORIGIN" source-path root-record
+               {:missing-fact :entrypoint-body-lockstep
+                :instruction-count (count instructions)
+                :body-form-count (count body-form-ids)}))
+          validation preflight-plan-validation
+          _ (when-not (and (= :complete (:status validation))
+                           (<= (:node-count validation)
+                               p15-s23-closed-core-max-plan-nodes))
+              (p15-s23-closed-core-fail!
+               "C6-VERIFY" source-path validation
+               {:missing-fact :closed-plan-source-node-bound}))
+          observed-operation-set
+          (p15-s23-closed-core-observed-plan-operations plan)
+          ctx {:source-path source-path
+               :source-content-hash source-content-hash
+               :module (get-in plan [:module :module])
+               :profile (get-in plan [:module :profile])
+               :safety (get-in plan [:module :safety])
+               :source-target (get-in plan [:module :target])
+               :requested-target requested-target
+               :indexes indexes
+               :token-ordinal-by-id token-ordinal-by-id
+               :root-syntax root-syntax
+               :expanded-root-syntax expanded-root-syntax}
+          function-path [:functions entrypoint]
+          function-origin
+          (p15-s23-closed-core-origin-products
+           source-path source-content-hash function-path root-record root-syntax
+           expanded-root-syntax indexes token-ordinal-by-id :defn-expansion)
+          body-product
+          (p15-s23-closed-core-map-sequence
+           ctx instructions body-form-ids function-path :instructions {}
+           0 function-origin :implicit-main-nil)
+          body-node-by-path
+          (into {} (map (juxt :path identity)) (:nodes body-product))
+          body-node-ids
+          (if (empty? instructions)
+            [(:result-node-id body-product)]
+            (mapv #(get-in body-node-by-path
+                           [(p15-s23-closed-core-child-path
+                             function-path :instructions %)
+                            :node-id])
+                  (range (count instructions))))
+          function-node
+          (p15-s23-closed-core-node
+           source-content-hash function-path :function :function false 0
+           body-node-ids
+           {:name entrypoint :params [] :arity 0
+            :visibility entrypoint-visibility}
+           {:params []
+            :return (:type body-product)
+            :latent-effects #{}
+            :capabilities #{}
+            :throws #{}
+            :ownership-constraints #{:persistent-immutable-shareable}
+            :profile-constraints #{:hosted}}
+           (:effects body-product) (:capabilities body-product)
+           (p15-s23-closed-core-persistent-ownership
+            :entrypoint-function-result
+            {:storage :forwarded-persistent-value
+             :result-node-id (:result-node-id body-product)
+             :result-disposition :shared-persistent-value-return})
+           {:outcome :proven-safe :basis :authenticated-closed-function}
+           (:profile ctx) (:source function-origin))
+          product
+          (p15-s23-closed-core-add-node
+           body-product function-node function-origin)
+          nodes (:nodes product)
+          _ (when-not (= (:node-count validation)
+                         (:plan-node-count product))
+              (p15-s23-closed-core-fail!
+               "C6-VERIFY" source-path product
+               {:missing-fact :plan-to-core-node-bijection
+                :plan-node-count (:node-count validation)
+                :core-plan-node-count (:plan-node-count product)}))
+          derived-effect-requirements
+          {:required-effects (:effects product)
+           :required-capabilities (:capabilities product)}
+          _ (when-not (= preflight-effect-requirements
+                         derived-effect-requirements)
+              (p15-s23-closed-core-fail!
+               "C8-VERIFY" source-path product
+               {:missing-fact :resolved-whole-plan-effect-preflight-parity
+                :plan-preflight preflight-effect-requirements
+                :derived-core derived-effect-requirements}))
+          pure-admission
+          (p15-s23-closed-core-pure-admission-record
+           source-path source-content-hash (:plan-id plan)
+           (assoc authoritative-module :requested-target requested-target)
+           derived-effect-requirements
+           (some? authority-record) product)
+          _ (when-not
+              (set/subset? observed-operation-set
+                           p15-s23-closed-core-allowed-operations)
+              (p15-s23-closed-core-fail!
+               "C8-VERIFY" source-path product
+               {:missing-fact
+                :pure-admission-concrete-operation-set-closure
+                :observed-operation-set observed-operation-set
+                :accepted-pure-operations
+                p15-s23-closed-core-allowed-operations}))
+          packet @packet-delay
+          packet-observed-operation-set
+          (p15-s23-closed-core-observed-plan-operations (:plan packet))
+          packet-context (p15-s23-closed-runtime-packet-context
+                          source-path source-text requested-target)
+          _ (when-not (p15-s23-closed-runtime-packet-authentic?
+                       packet packet-context)
+              (p15-s23-closed-core-fail!
+               "C6-VERIFY" source-path packet
+               {:missing-fact :authenticated-stage2-packet-context}))
+          _ (when-not (and (= (:plan-id plan)
+                              (get-in packet [:plan :plan-id]))
+                           (= validation
+                              (:closed-plan-validation-record packet))
+                           (= observed-operation-set
+                              packet-observed-operation-set))
+              (p15-s23-closed-core-fail!
+               "C6-VERIFY" source-path packet
+               {:missing-fact :pre-execution-plan-packet-identity
+                :preflight-operation-set observed-operation-set
+                :packet-operation-set packet-observed-operation-set}))
+          facts
+          (p15-s23-closed-core-fact-tables
+           nodes (get-in plan [:module :module]) (:plan-id plan))
+          dependency-order
+          (p15-s23-closed-core-dependency-order-graph nodes)
+          _ (when-not
+              (and (:all-dependencies-precede-consumers? dependency-order)
+                   (:all-lexical-bindings-resolve? dependency-order))
+              (p15-s23-closed-core-fail!
+               "C6-EVAL-ORDER" source-path dependency-order
+               {:missing-fact
+                :all-dependencies-and-lexical-bindings-resolve}))
+          declared-effects (get-in plan [:module :effects])
+          declared-capabilities (get-in plan [:module :capabilities])
+          c2-semantic-input
+          (p15-s23-closed-core-c2-semantic-input fresh-front-end)
+          c3-semantic-input
+          (p15-s23-closed-core-c3-semantic-input fresh-front-end)
+          source-core-input
+          {:kind :gravity/p15-s23-authenticated-closed-plan-input
+           :plan-id (:plan-id plan)
+           :source-content-hash source-content-hash
+           :module (get-in plan [:module :module])
+           :declared-profile (get-in plan [:module :profile])
+           :declared-target (get-in plan [:module :target])
+           :declared-safety (get-in plan [:module :safety])
+           :declared-effects declared-effects
+           :declared-capabilities declared-capabilities
+           :declared-exports declared-exports
+           :entrypoint-visibility entrypoint-visibility
+           :pure-admission-record pure-admission
+           :operation-set observed-operation-set
+           :effectful-runtime-branches-unreachable? true
+           :packet-role :seed-comparison-oracle
+           :runtime-module-c8-conformance :not-claimed
+           :plan-node-count (:node-count validation)
+           :c2-semantic-product-hash
+           (p15-s23-closed-core-digest c2-semantic-input)
+           :c2-semantic-incremental-hash
+           (p15-s23-closed-core-digest
+            (select-keys c2-semantic-input
+                         [:tokens :forms :syntax-seeds
+                          :top-level-form-ids]))
+           :c3-semantic-syntax-hash
+           (p15-s23-closed-core-digest c3-semantic-input)}
+          authenticated-input
+          {:packet-kind (:kind packet)
+           :plan-id (:plan-id plan)
+           :source-content-hash source-content-hash
+           :module (get-in plan [:module :module])
+           :source-target (get-in plan [:module :target])
+           :declared-safety (get-in plan [:module :safety])
+           :declared-exports declared-exports
+           :entrypoint-visibility entrypoint-visibility
+           :pure-admission-id (:admission-id pure-admission)
+           :pre-execution-pure-admitted?
+           (= :accepted-pure-only (:decision pure-admission))
+           :operation-set observed-operation-set
+           :effectful-runtime-branches-unreachable? true
+           :packet-role :seed-comparison-oracle
+           :runtime-module-c8-conformance :not-claimed
+           :c2-semantic-product-hash
+           (p15-s23-closed-core-digest c2-semantic-input)
+           :c2-semantic-incremental-hash
+           (p15-s23-closed-core-digest
+            (select-keys c2-semantic-input
+                         [:tokens :forms :syntax-seeds
+                          :top-level-form-ids]))
+           :c3-semantic-syntax-hash
+           (p15-s23-closed-core-digest c3-semantic-input)
+           :compiler-artifact-hash
+           (get-in packet [:stage2-compiler-artifact-record :artifact-hash])
+           :runtime-artifact-hash
+           (get-in packet [:stage2-runtime-rule :runtime-artifact-hash])
+           :closed-plan-validation-node-count (:node-count validation)
+           :packet-context-bound? true}
+          mapping-id
+          (p15-s23-closed-core-digest
+           {:source-content-hash source-content-hash
+            :plan-id (:plan-id plan)
+            :nodes (mapv #(select-keys % [:node-id :path :source]) nodes)
+            :source-origin-table (:origin-table product)})
+          provenance-binding-id
+          (p15-s23-closed-core-recomputed-provenance-binding-id
+           {:source-content-hash source-content-hash
+            :source-core-input source-core-input
+            :origin-closure (:origin-closure product)})
+          actual-path-binding-id
+          (p15-s23-closed-core-recomputed-actual-path-binding-id
+           {:provenance-binding-id provenance-binding-id
+            :origin-closure (:origin-closure product)})
+          instruction-origin-sidecar
+          (p15-s23-closed-core-instruction-origin-sidecar
+           {:source-core-input source-core-input
+            :mapping-id mapping-id
+            :provenance-binding-id provenance-binding-id
+            :actual-path-binding-id actual-path-binding-id
+            :core-nodes nodes
+            :source-origin-table (:origin-table product)})
+          artifact-base
+          (merge
+           {:kind :gravity/p15-s23-stage2-closed-checked-core-artifact
+            :mapping-id mapping-id
+            :provenance-binding-id provenance-binding-id
+            :actual-path-binding-id actual-path-binding-id
+            :instruction-origin-sidecar instruction-origin-sidecar
+            :status :complete-for-pure-closed-slice
+            :scope (p15-s23-closed-core-scope-contract)
+            :source-content-hash source-content-hash
+            :source-core-input source-core-input
+            :entrypoint entrypoint
+            :profile (get-in plan [:module :profile])
+            :source-target (get-in plan [:module :target])
+            :target-request-metadata
+            {:requested-target requested-target
+             :identity-bearing? false
+             :packet-target-eligibility (:target-eligibility packet)}
+            :core-nodes nodes
+            :root-node-ids [(:node-id function-node)]
+            :dependency-order-graph dependency-order
+            :lexical-binding-records (:binding-records product)
+            :source-origin-table (:origin-table product)
+            :origin-closure (:origin-closure product)
+            :pass-history (p15-s23-closed-core-pass-history)
+            :authenticated-input authenticated-input
+            :bounds {:maximum-plan-nodes
+                     p15-s23-closed-core-max-plan-nodes
+                     :maximum-plan-depth
+                     p15-s23-closed-core-max-plan-depth
+                     :maximum-derived-nodes
+                     p15-s23-closed-core-max-derived-nodes
+                     :maximum-source-bytes
+                     p15-s23-closed-core-max-source-bytes
+                     :maximum-artifact-scalar-bytes
+                     p15-s23-closed-core-max-artifact-scalar-bytes
+                     :maximum-integer-bits
+                     p15-s23-closed-core-max-integer-bits
+                     :observed-source-bytes source-byte-count
+                     :observed-plan-nodes (:plan-node-count product)
+                     :observed-plan-depth
+                     (:maximum-plan-depth product)
+                     :observed-derived-nodes (count nodes)}
+            :provenance
+            {:actual-paths
+             {:source source-path
+              :stage2-expression-lowering-source
+              (get-in packet [:provenance :actual-paths
+                              :stage2-expression-lowering-source])
+              :stage2-runtime-artifact-source
+              (get-in packet [:provenance :actual-paths
+                              :stage2-runtime-artifact-source])}
+             :requested-target requested-target
+             :c2-source-unit-id (get-in c2-artifact
+                                        [:source-unit-record :source-id])
+             :c2-artifact-id (:artifact-id c2-artifact)
+             :c2-incremental-reader-hashes
+             (:incremental-reader-hashes fresh-front-end)
+             :c2-reader-product-integrity
+             (:reader-product-integrity fresh-front-end)
+             :c3-artifact-id (:c3-artifact-id fresh-front-end)
+             :entrypoint-c3-syntax-id (get root-syntax :syntax/id)}
+            :diagnostics []
+            :mir-derived? false
+            :whole-language? false
+            :clojure-seed-boundary? true
+            :self-hosted? false}
+           facts)
+          _ (p15-s23-closed-core-bounded-value! source-path artifact-base)
+          artifact-id
+          (p15-s23-closed-core-digest
+           (p15-s23-closed-core-semantic-input artifact-base))
+          artifact (assoc artifact-base :artifact-id artifact-id)]
+      (p15-s23-closed-core-validate-structure! source-path artifact)
+      artifact)
+    (catch StackOverflowError error
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path {:missing-fact :host-stack-containment}
+       {:contained-host-error (.getName (class error))
+        :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes
+        :maximum-plan-depth p15-s23-closed-core-max-plan-depth}))
+    (catch clojure.lang.ExceptionInfo ex
+      (throw ex))
+    (catch Throwable error
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" source-path {:missing-fact :contained-host-failure}
+       {:contained-host-error (.getName (class error))
+        :cause-message (.getMessage error)}))))
+
+(defn p15-s23-stage2-closed-checked-core-source-artifact
+  ([source-path source-text requested-target]
+   (p15-s23-stage2-closed-checked-core-source-artifact*
+    source-path source-text requested-target nil))
+  ([source-path source-text requested-target authority-record]
+   (p15-s23-stage2-closed-checked-core-source-artifact*
+    source-path source-text requested-target authority-record)))
+
+(defn p15-s23-stage2-closed-checked-core-context
+  ([source-path source-text requested-target]
+   (p15-s23-closed-core-source-request-bounds!
+    source-path source-text requested-target)
+   (p15-s23-stage2-closed-checked-core-context
+    source-path source-text requested-target nil))
+  ([source-path source-text requested-target authority-record]
+   (p15-s23-closed-core-source-request-bounds!
+    source-path source-text requested-target)
+   (if (some? authority-record)
+     ;; Route through the same pre-packet pipeline so C6/C7/C8 precedence is
+     ;; identical to artifact construction.  This call cannot return for a
+     ;; nonnil fourth argument and never inspects or stores that value.
+     (p15-s23-stage2-closed-checked-core-source-artifact*
+      source-path source-text requested-target authority-record)
+     (p15-s23-closed-runtime-packet-context
+      source-path source-text requested-target))))
+
+(defn p15-s23-stage2-closed-checked-core-rebuild
+  [context]
+  (when (map? context)
+    (p15-s23-closed-core-source-request-bounds!
+     (:source-path context) (:source-text context)
+     (:requested-target context)))
+  (when-not (and (map? context)
+                 (= #{:source-path :source-text :source-content-hash
+                      :requested-target}
+                    (set (keys context)))
+                 (string? (:source-path context))
+                 (string? (:source-text context))
+                 (keyword? (:requested-target context))
+                 (= (:source-content-hash context)
+                    (str "sha256:" (sha256-hex (:source-text context)))))
+    (p15-s23-closed-core-fail!
+     "C6-CORE-SHAPE" (or (:source-path context) "<closed-core-context>")
+     context {:missing-fact :trusted-closed-core-source-context}))
+  (p15-s23-stage2-closed-checked-core-source-artifact*
+   (:source-path context) (:source-text context) (:requested-target context)
+   nil))
+
+(defn p15-s23-stage2-closed-checked-core-verify!*
+  [artifact context]
+  (let [source-path (or (:source-path context)
+                        (get-in artifact [:provenance :actual-paths :source])
+                        "<closed-core>")]
+    ;; Structural bounds and independent local fact reconstruction happen
+    ;; before any whole-artifact canonical comparison.
+    (p15-s23-closed-core-validate-structure! source-path artifact)
+    (let [fresh (p15-s23-stage2-closed-checked-core-rebuild context)
+          nodes (:core-nodes artifact)
+          fresh-nodes (:core-nodes fresh)
+          node-projection
+          (fn [records fields]
+            (mapv #(select-keys % fields) records))
+          diagnostic-module
+          {:module (get-in artifact [:source-core-input :module])
+           :profile (:profile artifact)
+           :target (:source-target artifact)
+           :requested-target
+           (get-in artifact [:target-request-metadata :requested-target])
+           :safety (get-in artifact [:source-core-input :declared-safety])}
+          first-node (or (first nodes) {})
+          enriched
+          (fn [node extra]
+            (p15-s23-closed-core-enriched-node-subject
+             artifact node diagnostic-module extra))
+          first-mismatch
+          (fn [fields]
+            (or (first
+                 (map first
+                      (filter
+                       (fn [[left right]]
+                         (not= (select-keys left fields)
+                               (select-keys right fields)))
+                       (map vector nodes fresh-nodes))))
+                first-node))]
+      (when-not
+       (= (select-keys artifact
+                       [:kind :status :scope :source-content-hash
+                        :source-core-input :entrypoint :profile
+                        :source-target :target-request-metadata
+                        :root-node-ids :pass-history
+                        :authenticated-input :bounds :mir-derived?
+                        :whole-language? :clojure-seed-boundary?
+                        :self-hosted? :provenance])
+          (select-keys fresh
+                       [:kind :status :scope :source-content-hash
+                        :source-core-input :entrypoint :profile
+                        :source-target :target-request-metadata
+                        :root-node-ids :pass-history
+                        :authenticated-input :bounds :mir-derived?
+                        :whole-language? :clojure-seed-boundary?
+                        :self-hosted? :provenance]))
+        (p15-s23-closed-core-fail!
+         "C6-CORE-SHAPE" source-path
+         (enriched first-node
+                   {:missing-fact
+                    :fresh-source-packet-front-end-core-binding})
+         {:missing-fact :fresh-source-packet-front-end-core-binding}))
+      (when-not
+       (= (node-projection nodes
+                           [:node-id :path :kind :source-operation
+                            :plan-node? :plan-depth :operands :attributes])
+          (node-projection fresh-nodes
+                           [:node-id :path :kind :source-operation
+                            :plan-node? :plan-depth :operands :attributes]))
+        (p15-s23-closed-core-fail!
+         "C6-VERIFY" source-path
+         (enriched
+          (first-mismatch
+           [:node-id :path :kind :source-operation :plan-node?
+            :plan-depth :operands :attributes])
+          {:missing-fact :fresh-structural-and-dependency-order-parity})
+         {:missing-fact :fresh-structural-and-dependency-order-parity}))
+      (when-not (= (node-projection nodes [:node-id :type])
+                   (node-projection fresh-nodes [:node-id :type]))
+        (p15-s23-closed-core-fail!
+         "C7-VERIFY" source-path
+         (let [node (first-mismatch [:node-id :type])]
+           (enriched
+            node {:missing-fact :fresh-type-parity
+                  :expected-type
+                  (:type (first (filter #(= (:node-id node) (:node-id %))
+                                        fresh-nodes)))
+                  :actual-type (:type node)
+                  :relevant-binding-id
+                  (or (get-in node [:attributes :resolved-binding])
+                      :not-applicable)}))
+         {:missing-fact :fresh-type-parity}))
+      (when-not (= (node-projection nodes [:node-id :effects])
+                   (node-projection fresh-nodes [:node-id :effects]))
+        (p15-s23-closed-core-fail!
+         "C8-VERIFY" source-path
+         (enriched (first-mismatch [:node-id :effects])
+                   {:missing-fact :fresh-effect-parity})
+         {:missing-fact :fresh-effect-parity}))
+      (when-not (= (node-projection nodes [:node-id :capabilities])
+                   (node-projection fresh-nodes [:node-id :capabilities]))
+        (p15-s23-closed-core-fail!
+         "C8-VERIFY" source-path
+         (enriched (first-mismatch [:node-id :capabilities])
+                   {:missing-fact :fresh-capability-parity})
+         {:missing-fact :fresh-capability-parity}))
+      (when-not (= (node-projection nodes [:node-id :safety])
+                   (node-projection fresh-nodes [:node-id :safety]))
+        (p15-s23-closed-core-fail!
+         "C10-PROOF" source-path
+         (enriched (first-mismatch [:node-id :safety])
+                   {:missing-fact :fresh-safety-parity})
+         {:missing-fact :fresh-safety-parity}))
+      (when-not
+       (= (node-projection nodes [:node-id :ownership :profile])
+          (node-projection fresh-nodes [:node-id :ownership :profile]))
+        (p15-s23-closed-core-fail!
+         "C6-VERIFY" source-path
+         (enriched (first-mismatch [:node-id :ownership :profile])
+                   {:missing-fact :fresh-ownership-profile-parity})
+         {:missing-fact :fresh-ownership-profile-parity}))
+      (when-not
+       (= (node-projection nodes [:node-id :source])
+          (node-projection fresh-nodes [:node-id :source]))
+        (p15-s23-closed-core-fail!
+         "C6-ORIGIN" source-path
+         (enriched (first-mismatch [:node-id :source])
+                   {:missing-fact :fresh-node-origin-parity})
+         {:missing-fact :fresh-node-origin-parity}))
+      (when-not
+       (= (select-keys artifact
+                       [:mapping-id :source-origin-table :origin-closure])
+          (select-keys fresh
+                       [:mapping-id :source-origin-table :origin-closure]))
+        (p15-s23-closed-core-fail!
+         "C6-ORIGIN" source-path
+         (enriched first-node
+                   {:missing-fact :fresh-c2-c3-origin-closure-parity})
+         {:missing-fact :fresh-c2-c3-origin-closure-parity}))
+      (when-not
+       (= (select-keys artifact
+                       [:type-facts :effect-facts :capability-facts
+                        :ownership-facts :safety-facts :profile-facts
+                        :typed-core :effect-graph
+                        :capability-proof-records
+                        :pure-capability-closure :ownership-analysis
+                        :dependency-order-graph :lexical-binding-records])
+          (select-keys fresh
+                       [:type-facts :effect-facts :capability-facts
+                        :ownership-facts :safety-facts :profile-facts
+                        :typed-core :effect-graph
+                        :capability-proof-records
+                        :pure-capability-closure :ownership-analysis
+                        :dependency-order-graph :lexical-binding-records]))
+        (p15-s23-closed-core-fail!
+         "C6-VERIFY" source-path
+         (enriched first-node
+                   {:missing-fact :fresh-c6-c10-fact-bundle-parity})
+         {:missing-fact :fresh-c6-c10-fact-bundle-parity}))
+      (when-not (= (:artifact-id artifact) (:artifact-id fresh))
+        (p15-s23-closed-core-fail!
+         "C6-VERIFY" source-path
+         (enriched first-node
+                   {:missing-fact :fresh-semantic-artifact-id-parity})
+         {:missing-fact :fresh-semantic-artifact-id-parity}))
+      :passed)))
+
+(defn p15-s23-stage2-closed-checked-core-verify!
+  [artifact context]
+  (let [source-path
+        (or (when (map? context) (:source-path context))
+            (when (map? artifact)
+              (get-in artifact [:provenance :actual-paths :source]))
+            "<closed-core>")]
+    (try
+      (p15-s23-stage2-closed-checked-core-verify!* artifact context)
+      (catch clojure.lang.ExceptionInfo ex
+        (throw ex))
+      (catch StackOverflowError error
+        (p15-s23-closed-core-fail!
+         "C6-VERIFY" source-path {:missing-fact :host-stack-containment}
+         {:missing-fact :contained-public-verifier-host-failure
+          :contained-host-error (.getName (class error))}))
+      (catch Throwable error
+        (p15-s23-closed-core-fail!
+         "C6-VERIFY" source-path {:missing-fact :host-failure-containment}
+         {:missing-fact :contained-public-verifier-host-failure
+          :contained-host-error (.getName (class error))
+          :cause-message (.getMessage error)})))))
+
+(defn p15-s23-stage2-closed-checked-core-authentic?
+  ([artifact]
+   false)
+  ([artifact context]
+   (try
+     (= :passed
+        (p15-s23-stage2-closed-checked-core-verify! artifact context))
      (catch Throwable _ false))))
 
 (defn p15-s23-closed-runtime-target-record
