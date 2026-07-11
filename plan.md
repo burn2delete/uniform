@@ -37,7 +37,7 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 
 ## Baseline snapshot (2026-07-11)
 
-- Main: `df26050` (`Build authenticated pure checked core`).
+- Integrated implementation baseline: `df26050` (`Build authenticated pure checked core`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.

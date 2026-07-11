@@ -2,7 +2,7 @@
 
 - Goal: full self-hosting and compilation to every documented target.
 - Phase: iterative target/self-hosting expansion.
-- Main branch baseline: `df26050` (`Build authenticated pure checked core`).
+- Integrated implementation baseline: `df26050` (`Build authenticated pure checked core`).
 - Current public proof: core app check/run pass for `.gravity` and `.qst` through the bootstrap-only wrapper; full self-hosting is not proven.
 - Known blocker: runtime formatting, expression lowering, plan assembly, bounded closed-plan execution, `str`, and variadic `println` are Gravity-authored, and bounded C, Node ESM, and Java 21 JVM targets execute. Clojure still seed-compiles and generically runs/verifies those Gravity artifacts. The pinned runtime module's allocation/failure/effect/capability/provider declaration is not yet C8/R11-conformant, no genuine MIR boundary exists yet, LLVM/Wasm and other documented target paths remain incomplete, and final seed retirement is not proven.
 - Active slice: repair and authenticate the pinned runtime's allocation/output effects, capabilities, managed providers, runtime grants and deny-by-default decisions, principal/audit records, startup order, and host failure translation before admitting `str` or `println` into checked core. MIR and LLVM remain closed.
