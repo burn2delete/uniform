@@ -28,12 +28,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Move production stage2 collection/let/expression/function lowering behind a pinned Gravity-authored `:meta` emitter artifact, retaining Clojure only as the explicit seed compiler/runner boundary.
 - [completed] Add an opt-in Java 21 modular executable JAR target with classfile-65, deterministic packaging, authenticated packet/manifest closure, and real `java -jar` differential execution.
 - [completed] Move authoritative stage2 function/binding/summary/entrypoint plan assembly into the pinned Gravity emitter artifact with bounded-depth traversal and cross-target authenticity.
-- [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
-- [pending] Add the next real executable target or retire the next high-leverage Clojure seed boundary while preserving target-neutral packet evidence.
+- [completed] Execute the bounded closed stage2 plan through a pinned Gravity-authored runtime function, with trusted-source replay, variadic println, bounded validation, and authenticated C/Node/JVM target records.
+- [pending] Build and independently verify a genuine C11 MIR artifact from the authenticated closed plan, preserving semantic facts and source/origin links.
+- [pending] Consume only that verified MIR in an internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution.
+- [pending] Retire the next high-leverage Clojure seed boundary while preserving target-neutral evidence and honest non-self-hosted claims.
 
-## Baseline snapshot (2026-07-10)
+## Baseline snapshot (2026-07-11)
 
-- Main: `482a9bb` (`Move stage2 plan assembly into Gravity`).
+- Main: `970be8e` (`Execute closed stage2 plans in Gravity`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -53,20 +55,21 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - The public runtime-derived C route now loads and validates the Gravity-authored stage2 compiler-driver contract, runs the declared driver pipeline, compares driver-emitted plans and runtime records against the bound products, emits deterministic driver hashes/provenance, and fails closed on missing, malformed, mismatched, or incomplete driver results. The stage2 driver still executes through Clojure-hosted implementations and is not self-hosted.
 - A Gravity-authored `bootstrap/gravity/p15_s23/runtime.gravity` artifact now supplies the runtime value-formatting function used by runtime-derived `println`; it is compiled through the stage2 plan emitter, invoked through a generic host bridge whose residual boundary is explicit, and protected by pinned function-shape, source/hash, cross-root, and semantic-tamper checks. This is one runtime capability, not a self-hosted runtime.
 - Two-argument `str` now routes through a second Gravity-authored runtime function with pinned shape and explicit arity rejection for unsupported forms; the generic bridge remains recorded as residual and the broader Clojure runtime executor is still trusted.
-- Single-argument `println` now routes through a Gravity-authored effectful runtime function with exact `:io/write`/`:io/stdout` validation and pinned shape; multi-argument printing remains explicitly host-bound until a variadic effect contract is authored.
-- Two-argument `println` now routes through a Gravity-authored effectful runtime function and preserves `left right\n` in both the stage2 oracle and compiled C; only arities above two remain host-compatible.
+- Single- and two-argument named `println` helpers remain pinned Gravity-authored functions with exact `:io/write`/`:io/stdout` validation; the newer authenticated closed-plan executor owns bounded variadic printing without changing the legacy helper-boundary record.
+- Variadic `println` now executes through the Gravity closed-plan output accumulator and preserves exact ordered spaces/newlines in C, Node, and JVM products under the shared 128-node/depth bound.
 - Public `--target js` and `--target js-ts` now compile the bounded stage2 subset to executable Node 20 ES2022 ESM. The JS and runtime-derived C routes share an authenticated target-neutral stage2 packet; Node execution is byte-compared with the authoritative stage2 runtime and executed C behavior. Emission is an atomic artifact directory containing `program.mjs`, declarations, source map, package metadata, manifest, and provenance with explicit UTF-8 digest proof.
 - The JS slice remains non-release and non-conforming for full B6: its input is the bounded stage2 packet rather than verified MIR/domain IR, source maps are source-unit-only, the TypeScript API is empty and unverified by `tsc`, and the Clojure seed boundary remains true.
 - Production stage2 collection, let, expression, and function lowering now invoke `bootstrap/gravity/p15_s23/emitter.gravity`. Exact source, public function shape, and canonical semantic-plan hashes are pinned; missing or tampered artifacts fail before C/JS output. The prior Clojure lowering functions remain only as seed helpers used to compile and verify the artifact, and the generic Clojure runner remains an explicit residual.
 - Opt-in `--target jvm --lowering runtime-derived` now emits Java 21 sources, classfile-major-65 named-module classes, and a deterministic modular executable JAR, then proves byte-exact output with `java -jar` before atomic publication. The authenticated JVM manifest binds source, plan, emitter, compiler, driver, runtime, effects, and capabilities; the legacy/default JVM route remains unchanged.
 - The Gravity emitter now owns authoritative function compilation orchestration, ordered binding products, instruction/effect summaries, main validation, and plan products. Traversal is divide-and-conquer for large functions, bodies, maps, and lets; 2,049 functions and 4,096 flat forms pass without host-stack failure. C, Node, and JVM authenticate the derived compiler-artifact identity against pinned source and semantic hashes before lowering.
+- `bootstrap/gravity/p15_s23/runtime.gravity` now owns the bounded closed-plan interpreter for literal/quote/local/`str`/`println`/`do`/`if`/`let`. Consumers independently recompile trusted source, reload pinned emitter/driver/runtime rules, replay the Gravity executor, and bind finalized target manifests to plan/entrypoint/stdout context. Validation is iterative and capped at 128 nodes/depth; authoritative execution and consumer verification replay are recorded separately. The Clojure seed still compiles and generically runs the Gravity functions, MIR remains absent, and self-host/release claims remain false.
 
 ## Active slice
 
-- Owner: closed-plan runtime executor worker.
-- Scope: move bounded instruction dispatch, lexical environments, branching, sequencing, and output accumulation into the Gravity runtime artifact shared by C, Node, and JVM.
-- Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
-- Next gate: implement and review a Gravity-authored closed target-packet executor while keeping IO authority, generic runner primitives, stage0 differential evidence, and the remaining Clojure seed explicit.
+- Owner: master coordinator; implementation writer will receive an exact four-file ownership envelope after scope freeze.
+- Scope: authenticated stage2 closed plan to genuine verified C11 MIR, followed only after that gate by an internal executable LLVM consumer.
+- Completed proof: Gravity closed-plan execution; trusted-source/rule replay; coherent tamper rejection; bounded validation; variadic exact output; `.qst`/`.gravity` parity; C, Node, and JVM execution; finalized manifest integrity; public unrelated-CWD routing; independent review; repository validators.
+- Next gate: author and pin `bootstrap/gravity/p15_s23/mir.gravity`, authenticate the necessary C2/C3 semantic/origin closure, and prove real operands/results/CFG/definitions/uses plus rejected verifier mutations before any LLVM lowering begins.
 
 ## Completion gates
 
