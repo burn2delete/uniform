@@ -5,8 +5,8 @@
 (ns gravity.bootstrap.p15-s23.runtime
   (:profile :hosted)
   (:target :jvm)
-  (:effects #{})
-  (:capabilities #{}))
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout}))
 
 (defn p15-s23-runtime-format-value
   [value]
@@ -19,6 +19,15 @@
 (defn p15-s23-runtime-concat
   [left right]
   (str left right))
+
+; Single-argument println is an effectful runtime operation.  Keep the
+; newline-producing primitive in the Gravity-authored runtime plan so the
+; generic bridge invokes a declared function rather than formatting in the
+; bootstrap executor.  Multi-argument println remains the legacy host-facing
+; path until its variadic effect contract is authored and validated.
+(defn p15-s23-runtime-println-value
+  [value]
+  (println (str value)))
 
 (defn main
   []

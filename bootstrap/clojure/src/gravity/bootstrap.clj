@@ -93314,6 +93314,7 @@
 (declare p15-s23-stage2-runtime-artifact-invoke)
 (declare p15-s23-stage2-runtime-artifact-function)
 (declare p15-s23-stage2-runtime-artifact-concat-function)
+(declare p15-s23-stage2-runtime-artifact-println-function)
 
 (defn p15-s23-stage2-runtime-execute-instructions
   [runtime plan env instructions]
@@ -93357,15 +93358,23 @@
                        runtime plan env %)
                      (:args instruction))]
       (validate-module-effects! module)
-      (println
-       (clojure.string/join
-        " "
-        (map (fn [value]
-               (if (:runtime-artifact-plan runtime)
-                 (p15-s23-stage2-runtime-artifact-invoke
-                  runtime p15-s23-stage2-runtime-artifact-function [value])
-                 (str value)))
-             args))))
+      (if (and (= 1 (count args))
+               (:runtime-artifact-plan runtime))
+        ;; The single-argument effect is owned by the Gravity-authored
+        ;; runtime function.  Its :println instruction still crosses the
+        ;; explicitly recorded generic host bridge, but formatting and the
+        ;; newline effect no longer live in this executor branch.
+        (p15-s23-stage2-runtime-artifact-invoke
+         runtime p15-s23-stage2-runtime-artifact-println-function args)
+        (println
+         (clojure.string/join
+          " "
+          (map (fn [value]
+                 (if (:runtime-artifact-plan runtime)
+                   (p15-s23-stage2-runtime-artifact-invoke
+                    runtime p15-s23-stage2-runtime-artifact-function [value])
+                   (str value)))
+               args)))))
     :do
     (p15-s23-stage2-runtime-execute-instructions
      runtime plan env (:body instruction))
@@ -102436,6 +102445,15 @@
 (def p15-s23-stage2-runtime-artifact-concat-function
   'p15-s23-runtime-concat)
 
+(def p15-s23-stage2-runtime-artifact-println-function
+  'p15-s23-runtime-println-value)
+
+(def p15-s23-stage2-runtime-artifact-required-effects
+  #{:io/write})
+
+(def p15-s23-stage2-runtime-artifact-required-capabilities
+  #{:io/stdout})
+
 (def p15-s23-stage2-runtime-artifact-required-function-shape
   {:arity 1
    :params ['value]
@@ -102450,6 +102468,16 @@
                    :function 'str
                    :args [{:op :local :name 'left}
                           {:op :local :name 'right}]}]})
+
+(def p15-s23-stage2-runtime-artifact-required-println-function-shape
+  {:arity 1
+   :params ['value]
+   :instructions [{:op :println
+                   :effect :io/write
+                   :capability :io/stdout
+                   :args [{:op :builtin-call
+                           :function 'str
+                           :args [{:op :local :name 'value}]}]}]})
 
 (defn c-backend-stage2-runtime-artifact-source-path
   [compiler-source]
@@ -102613,24 +102641,40 @@
               (get-in runtime-artifact-plan
                       [:functions
                        p15-s23-stage2-runtime-artifact-concat-function])
+              runtime-artifact-println-function
+              (get-in runtime-artifact-plan
+                      [:functions
+                       p15-s23-stage2-runtime-artifact-println-function])
               runtime-artifact-functions
               {p15-s23-stage2-runtime-artifact-function
                runtime-artifact-function
                p15-s23-stage2-runtime-artifact-concat-function
-               runtime-artifact-concat-function}
+               runtime-artifact-concat-function
+               p15-s23-stage2-runtime-artifact-println-function
+               runtime-artifact-println-function}
               runtime-artifact-valid?
               (and (map? runtime-artifact-plan)
                    (= :gravity/stage2-hosted-core-compiled-plan
                       (:kind runtime-artifact-plan))
+                   (= p15-s23-stage2-runtime-artifact-required-effects
+                      (get-in runtime-artifact-plan [:module :effects]))
+                   (= p15-s23-stage2-runtime-artifact-required-capabilities
+                      (get-in runtime-artifact-plan
+                              [:module :capabilities]))
                    (map? runtime-artifact-function)
                    (map? runtime-artifact-concat-function)
+                   (map? runtime-artifact-println-function)
                    (seq (:instructions runtime-artifact-function))
                    (seq (:instructions runtime-artifact-concat-function))
+                   (seq (:instructions runtime-artifact-println-function))
                    (= p15-s23-stage2-runtime-artifact-required-function-shape
                       (select-keys runtime-artifact-function
                                    [:arity :params :instructions]))
                    (= p15-s23-stage2-runtime-artifact-required-concat-function-shape
                       (select-keys runtime-artifact-concat-function
+                                   [:arity :params :instructions]))
+                   (= p15-s23-stage2-runtime-artifact-required-println-function-shape
+                      (select-keys runtime-artifact-println-function
                                    [:arity :params :instructions])))
               _ (when-not runtime-artifact-valid?
                   (p15-s23-stage2-runtime-executor-fail!
@@ -102678,13 +102722,20 @@
            :runtime-artifact-source-content-hash
            (str "sha256:" (sha256-hex runtime-artifact-text))
            :runtime-artifact-plan runtime-artifact-plan
+           :runtime-artifact-effects
+           (get-in runtime-artifact-plan [:module :effects])
+           :runtime-artifact-capabilities
+           (get-in runtime-artifact-plan [:module :capabilities])
            :runtime-artifact-function p15-s23-stage2-runtime-artifact-function
            :runtime-artifact-concat-function
            p15-s23-stage2-runtime-artifact-concat-function
+           :runtime-artifact-println-function
+           p15-s23-stage2-runtime-artifact-println-function
            :runtime-artifact-functions
            (select-keys runtime-artifact-functions
                         [p15-s23-stage2-runtime-artifact-function
-                         p15-s23-stage2-runtime-artifact-concat-function])
+                         p15-s23-stage2-runtime-artifact-concat-function
+                         p15-s23-stage2-runtime-artifact-println-function])
            :runtime-artifact-generic-bridge-residual?
            true
            :runtime-artifact-hash runtime-artifact-hash
@@ -102698,6 +102749,7 @@
              :artifact-hash runtime-artifact-hash
              :function p15-s23-stage2-runtime-artifact-function
              :concat-function p15-s23-stage2-runtime-artifact-concat-function
+             :println-function p15-s23-stage2-runtime-artifact-println-function
              :generic-bridge-residual? true}}})))))
 
 (defn c-backend-stage2-compiler-driver-source-rule!
@@ -103399,6 +103451,9 @@
                                :runtime-artifact-concat-function
                                (:runtime-artifact-concat-function
                                 stage2-runtime-rule)
+                               :runtime-artifact-println-function
+                               (:runtime-artifact-println-function
+                                stage2-runtime-rule)
                                :runtime-artifact-generic-bridge-residual?
                                (:runtime-artifact-generic-bridge-residual?
                                 stage2-runtime-rule)
@@ -103460,6 +103515,12 @@
                     (:runtime-artifact-function stage2-runtime-rule)
                     :runtime-artifact-concat-function
                     (:runtime-artifact-concat-function stage2-runtime-rule)
+                    :runtime-artifact-println-function
+                    (:runtime-artifact-println-function stage2-runtime-rule)
+                    :runtime-artifact-effects
+                    (:runtime-artifact-effects stage2-runtime-rule)
+                    :runtime-artifact-capabilities
+                    (:runtime-artifact-capabilities stage2-runtime-rule)
                     :runtime-artifact-generic-bridge-residual?
                     (:runtime-artifact-generic-bridge-residual?
                      stage2-runtime-rule)
@@ -103471,7 +103532,11 @@
                      :artifact-hash
                      (:runtime-artifact-hash stage2-runtime-rule)
                      :function
-                     (:runtime-artifact-function stage2-runtime-rule)}
+                     (:runtime-artifact-function stage2-runtime-rule)
+                     :concat-function
+                     (:runtime-artifact-concat-function stage2-runtime-rule)
+                     :println-function
+                     (:runtime-artifact-println-function stage2-runtime-rule)}
                     :runtime-artifact-host-runner
                     :gravity-stage2-runtime-artifact-host-runner))
            manifest-hash (str "sha256:" (sha256-hex
@@ -103512,6 +103577,9 @@
                                (:runtime-artifact-function stage2-runtime-rule)
                                :runtime-artifact-concat-function
                                (:runtime-artifact-concat-function
+                                stage2-runtime-rule)
+                               :runtime-artifact-println-function
+                               (:runtime-artifact-println-function
                                 stage2-runtime-rule)
                                :runtime-artifact-generic-bridge-residual?
                                (:runtime-artifact-generic-bridge-residual?
@@ -103575,6 +103643,12 @@
                     (:runtime-artifact-function stage2-runtime-rule)
                     :runtime-artifact-concat-function
                     (:runtime-artifact-concat-function stage2-runtime-rule)
+                    :runtime-artifact-println-function
+                    (:runtime-artifact-println-function stage2-runtime-rule)
+                    :runtime-artifact-effects
+                    (:runtime-artifact-effects stage2-runtime-rule)
+                    :runtime-artifact-capabilities
+                    (:runtime-artifact-capabilities stage2-runtime-rule)
                     :runtime-artifact-generic-bridge-residual?
                     (:runtime-artifact-generic-bridge-residual?
                      stage2-runtime-rule)
@@ -103586,7 +103660,11 @@
                      :artifact-hash
                      (:runtime-artifact-hash stage2-runtime-rule)
                      :function
-                     (:runtime-artifact-function stage2-runtime-rule)}
+                     (:runtime-artifact-function stage2-runtime-rule)
+                     :concat-function
+                     (:runtime-artifact-concat-function stage2-runtime-rule)
+                     :println-function
+                     (:runtime-artifact-println-function stage2-runtime-rule)}
                     :runtime-artifact-host-runner
                     :gravity-stage2-runtime-artifact-host-runner
                     :runtime-rule-source
@@ -103665,6 +103743,19 @@
                           (when runtime-derived?
                             (:runtime-artifact-concat-function
                              stage2-runtime-rule))
+                          :runtime-artifact-println-function
+                          (when runtime-derived?
+                            (:runtime-artifact-println-function
+                             stage2-runtime-rule))
+                          :runtime-artifact-effects
+                          (when runtime-derived?
+                            (get-in stage2-runtime-rule
+                                    [:runtime-artifact-plan :module :effects]))
+                          :runtime-artifact-capabilities
+                          (when runtime-derived?
+                            (get-in stage2-runtime-rule
+                                    [:runtime-artifact-plan
+                                     :module :capabilities]))
                           :runtime-artifact-generic-bridge-residual?
                           (when runtime-derived?
                             (:runtime-artifact-generic-bridge-residual?
@@ -103684,6 +103775,9 @@
                              (:runtime-artifact-function stage2-runtime-rule)
                              :concat-function
                              (:runtime-artifact-concat-function
+                              stage2-runtime-rule)
+                             :println-function
+                             (:runtime-artifact-println-function
                               stage2-runtime-rule)
                              :generic-bridge-residual?
                              (:runtime-artifact-generic-bridge-residual?
