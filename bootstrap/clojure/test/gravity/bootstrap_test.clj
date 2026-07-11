@@ -25067,6 +25067,123 @@
                   (java.nio.file.Files/deleteIfExists
                    (.toPath (java.io.File. path))))))))))))
 
+(deftest hosted-c-backend-runtime-derived-binds-gravity-stage2-plan-emitter
+  (with-temp-directory
+    "gravity-c-backend-stage2-binding-"
+    (fn [directory]
+      (let [source-text (str "(ns runtime.stage2 (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (do (println \"stage2\") "
+                             "(println (str \"hé\" \"llo\"))))\n")
+            gravity-path (.resolve directory "stage2.gravity")
+            qst-path (.resolve directory "stage2.qst")
+            gravity-out (.resolve directory "gravity-out")
+            qst-out (.resolve directory "qst-out")]
+        (spit (.toFile gravity-path) source-text)
+        (spit (.toFile qst-path) source-text)
+        (let [gravity (bootstrap/c-backend-source-artifact
+                       (.toString gravity-path) source-text
+                       {:target :c
+                        :lowering-mode :runtime-derived
+                        :emit-dir (.toString gravity-out)
+                        :compile? true})
+              qst (bootstrap/c-backend-source-artifact
+                   (.toString qst-path) source-text
+                   {:target :c
+                    :lowering-mode :runtime-derived
+                    :emit-dir (.toString qst-out)
+                    :compile? true})]
+          (is (= :gravity/stage2-hosted-core-compiled-plan
+                 (:input-plan-kind gravity)))
+          (is (= :gravity/stage2-hosted-core-compiled-plan
+                 (:input-plan-kind qst)))
+          (is (= :gravity-stage2-plan-emitter-rules-v1
+                 (get-in gravity [:manifest :compiler-engine])))
+          (is (= :p15-s23-stage2-plan-emitter
+                 (get-in gravity [:manifest :compiler-stage])))
+          (is (= :p15-s23-stage2-plan-emitter
+                 (get-in gravity [:provenance :compiler-stage])))
+          (is (string? (get-in gravity
+                               [:manifest :compiler-source-rule-hash])))
+          (is (= (get-in gravity [:manifest :compiler-source-rule-hash])
+                 (get-in qst [:manifest :compiler-source-rule-hash])))
+          (is (= (get-in gravity [:manifest :compiler-source-rule-hash])
+                 (get-in gravity [:provenance :compiler-source-rule-hash])))
+          (is (= :stage2 (get-in gravity [:provenance :compiler :stage])))
+          (is (= (:stdout gravity) (:stdout qst)))
+          (is (= "stage2\nhéllo\n" (:stdout gravity)))
+          (is (= (:c-source gravity) (:c-source qst)))
+          (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                         :manifest-hash :source-map-hash :provenance-hash]]
+            (is (= (get gravity field) (get qst field)) field))
+          (is (true? (get-in gravity [:provenance :clojure-seed-boundary?])))
+          (is (false? (get-in gravity [:provenance :self-hosted?])))
+          (is (= "stage2\nhéllo\n"
+                 (:out (run-bin (:executable-path gravity)))))
+          (is (= "stage2\nhéllo\n"
+                 (:out (run-bin (:executable-path qst))))))))))
+
+(deftest hosted-c-backend-runtime-derived-fails-closed-on-stage2-rule-gaps
+  (let [source-text (str "(ns runtime.stage2.reject (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"ok\"))\n")]
+    (let [missing (diagnostic-data
+                   #(with-redefs
+                      [bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                       (fn [] "target/missing-stage2-compiler.gravity")]
+                      (bootstrap/c-backend-source-artifact
+                       "runtime-stage2-missing.gravity"
+                       source-text
+                       {:target :c
+                        :lowering-mode :runtime-derived})))]
+      (is (= "P15S23Q001" (:id missing)))
+      (is (= :stage2-plan-emitter-source (:missing-fact missing))))
+    (let [mismatch (diagnostic-data
+                    #(with-redefs
+                       [bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                        (fn [& _] {:kind :gravity/stage0-hosted-core-compiled-plan
+                                   :compiler {:rule-source :stage0}
+                                   :functions {}
+                                   :entrypoint 'main})]
+                       (bootstrap/c-backend-source-artifact
+                        "runtime-stage2-mismatch.gravity"
+                        source-text
+                        {:target :c
+                         :lowering-mode :runtime-derived})))]
+      (is (= "B2-UNSUPPORTED" (:id mismatch)))
+      (is (= "P15S23Q003" (:p15-diagnostic mismatch)))
+      (is (= :stage2-plan-integrity (:missing-fact mismatch))))
+    (let [malformed (diagnostic-data
+                     #(with-redefs
+                        [bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                         (fn [& _] {:kind :gravity/stage2-hosted-core-compiled-plan
+                                    :compiler {:rule-source
+                                               :p15-s23-stage2-plan-emitter}
+                                    :functions {}
+                                    :entrypoint 'main})]
+                        (bootstrap/c-backend-source-artifact
+                         "runtime-stage2-malformed.gravity"
+                         source-text
+                         {:target :c
+                          :lowering-mode :runtime-derived})))]
+      (is (= "B2-UNSUPPORTED" (:id malformed)))
+      (is (= "P15S23Q003" (:p15-diagnostic malformed)))
+      (is (= :stage2-plan-integrity (:missing-fact malformed))))))
+
+(deftest hosted-c-backend-default-c-lowering-remains-stage0-bound
+  (let [source-text (slurp "examples/hello.gravity")
+        artifact (bootstrap/c-backend-source-artifact
+                  "examples/hello.gravity" source-text {:target :c})]
+    (is (= :gravity/stage0-hosted-core-compiled-plan
+           (:input-plan-kind artifact)))
+    (is (= :verified-stage0-output-lowering
+           (get-in artifact [:manifest :lowering-strategy])))
+    (is (nil? (get-in artifact [:manifest :compiler-stage])))
+    (is (= :stage0 (get-in artifact [:provenance :compiler :stage])))
+    (is (nil? (get-in artifact [:provenance :compiler-source-rule-hash])))))
+
 (deftest hosted-c-backend-runtime-derived-str-builtin-writes-byte-strings
   (with-temp-directory
     "gravity-c-backend-runtime-str-"
@@ -25316,6 +25433,14 @@
         (is (zero? (:exit result)) (:err result))
         (is (= :runtime-derived
                (get-in artifact [:target :lowering-mode])))
+        (is (= :gravity/stage2-hosted-core-compiled-plan
+               (:input-plan-kind artifact)))
+        (is (= :p15-s23-stage2-plan-emitter
+               (get-in artifact [:manifest :compiler-stage])))
+        (is (string? (get-in artifact
+                             [:manifest :compiler-source-rule-hash])))
+        (is (= (get-in artifact [:manifest :compiler-source-rule-hash])
+               (get-in artifact [:provenance :compiler-source-rule-hash])))
         (is (true? (get-in artifact [:manifest :runtime-derived?])))
         (is (= source (get-in artifact [:provenance :source :path])))
         (is (zero? (:exit executable-result)))

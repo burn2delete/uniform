@@ -102144,6 +102144,105 @@
              op :runtime-c-lowering-rule))))))
   :passed)
 
+(defn c-backend-resolve-p15-s23-compiler-source-path
+  "Resolve the repository-owned P15-S23 source even when a direct caller is
+  running from an unrelated working directory."
+  []
+  (let [relative p15-s23-compiler-source-path
+        classpath-roots
+        (keep (fn [entry]
+                (let [file (java.io.File. entry)]
+                  (when (.isDirectory file) file)))
+              (str/split (System/getProperty "java.class.path" "")
+                         (re-pattern (java.io.File/pathSeparator))))
+        roots (distinct (cons (java.io.File.
+                               (System/getProperty "user.dir"))
+                              classpath-roots))]
+    (or (some (fn [root]
+                (loop [directory root]
+                  (let [candidate (java.io.File. directory relative)]
+                    (cond
+                      (.isFile candidate) (.getPath candidate)
+                      (.getParentFile directory)
+                      (recur (.getParentFile directory))
+                      :else nil))))
+              roots)
+        relative)))
+
+(defn c-backend-stage2-plan-emitter-source-rule!
+  "Load and validate the Gravity-authored P15-S23 stage2 plan-emitter rule.
+
+  Runtime-derived C lowering is deliberately bound to this source rule rather
+  than silently reusing the Clojure stage0 plan emitter.  The returned rule
+  hash is path-neutral and is carried into manifests/provenance so the exact
+  Gravity rule set used for lowering is auditable."
+  [source-path target]
+  (let [compiler-source (c-backend-resolve-p15-s23-compiler-source-path)]
+    (when-not (.isFile (java.io.File. compiler-source))
+      (p15-s23-stage2-plan-emitter-fail!
+       "P15S23Q001"
+       compiler-source
+       nil
+       {:missing-fields [:compiler-source]
+        :requested-source source-path
+        :target target
+        :missing-fact :stage2-plan-emitter-source}))
+    (let [source-data
+          (try
+            (p15-s23-compiler-source-form-record compiler-source)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-plan-emitter-fail!
+               "P15S23Q001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-plan-emitter-source
+                :cause-message (.getMessage ex)})))
+          emitter
+          (try
+            (p15-s23-compiler-def-value compiler-source
+                                         (:forms source-data)
+                                         'p15-s23-stage2-plan-emitter)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-plan-emitter-fail!
+               "P15S23Q001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-plan-emitter-definition
+                :cause-message (.getMessage ex)})))]
+      (when-not (map? emitter)
+        (p15-s23-stage2-plan-emitter-fail!
+         "P15S23Q001"
+         compiler-source
+         emitter
+         {:requested-source source-path
+          :target target
+          :missing-fields [:stage2-plan-emitter]
+          :missing-fact :stage2-plan-emitter-definition}))
+      (let [rule-record (p15-s23-stage2-plan-emitter-rule-record emitter)]
+        (when-not (= :complete (:status rule-record))
+          (p15-s23-stage2-plan-emitter-fail!
+           "P15S23Q002"
+           compiler-source
+           rule-record
+           {:requested-source source-path
+            :target target
+            :missing-fact :stage2-plan-emitter-rule-set}))
+        {:emitter emitter
+         :source-path compiler-source
+         :rule-record rule-record
+         :source-rule-hash
+         (str "sha256:"
+              (sha256-hex
+               (pr-str (c-backend-canonical-value emitter))))}))))
+
 (defn c-backend-runtime-bytes
   [value]
   (let [text (str value)
@@ -102405,10 +102504,51 @@
      (let [macro-artifact (macro-source-artifact source-path source-text)
            module (assoc (:module macro-artifact)
                          :forms (:expanded-forms macro-artifact))
-           plan (stage0-compiled-core-plan source-path source-text module)
-           _ (c-backend-validate-plan! source-path target plan)
            runtime-derived? (or (= :runtime-derived lowering-mode)
                                 (= true runtime-derived?))
+           stage2-rule
+           (when runtime-derived?
+             (c-backend-stage2-plan-emitter-source-rule!
+              source-path target))
+           plan
+           (if runtime-derived?
+             (try
+               (p15-s23-stage2-plan-emitter-compile-source
+                (:emitter stage2-rule) source-path source-text)
+               (catch clojure.lang.ExceptionInfo ex
+                 (throw ex))
+               (catch Exception ex
+                 (c-backend-fail!
+                  "B2-UNSUPPORTED"
+                  "Gravity stage2 plan emitter could not compile the source"
+                  source-path target nil
+                  {:compiler-stage :p15-s23-stage2-plan-emitter
+                   :source-rule-hash (:source-rule-hash stage2-rule)
+                   :cause-message (.getMessage ex)
+                   :missing-fact :stage2-plan-emission})))
+             (stage0-compiled-core-plan source-path source-text module))
+           _ (when runtime-derived?
+               (when-not (and (= :gravity/stage2-hosted-core-compiled-plan
+                                  (:kind plan))
+                              (= :p15-s23-stage2-plan-emitter
+                                 (get-in plan [:compiler :rule-source]))
+                              (map? (:functions plan))
+                              (symbol? (:entrypoint plan))
+                              (contains? (:functions plan) (:entrypoint plan))
+                              (vector? (get-in plan
+                                               [:functions (:entrypoint plan)
+                                                :instructions])))
+                 (c-backend-fail!
+                  "B2-UNSUPPORTED"
+                  "Gravity stage2 plan emitter returned a mismatched plan"
+                  source-path target plan
+                  {:compiler-stage :p15-s23-stage2-plan-emitter
+                   :source-rule-hash (:source-rule-hash stage2-rule)
+                   :observed-plan-kind (:kind plan)
+                   :observed-rule-source (get-in plan [:compiler :rule-source])
+                   :p15-diagnostic "P15S23Q003"
+                   :missing-fact :stage2-plan-integrity})))
+           _ (c-backend-validate-plan! source-path target plan)
            _ (when runtime-derived?
                (c-backend-validate-runtime-plan! source-path target plan))
            stdout (try
@@ -102455,58 +102595,76 @@
                                                               (mapv #(dissoc % :path)
                                                                     chain)))))
                                               entries)))))))
-           manifest-input {:kind :gravity/c-backend-manifest
-                           :schema-version "gravity.c.backend-manifest/v1"
-                           :backend :c
-                           :dialect dialect
-                           :target target
-                           :input-plan-kind (:kind plan)
-                           :input-plan-hash plan-hash
-                           :source-content-hash source-hash
-                           :c-source-hash c-source-hash
-                           :stdout-hash output-hash
-                           :instruction-summary (:instruction-summary plan)
-                           :effect-summary (:effect-summary plan)
-                           :lowering-strategy (if runtime-derived?
-                                                :runtime-derived-instruction-lowering
-                                                :verified-stage0-output-lowering)
-                           :runtime :hosted-libc-stdout
-                           :compile-time-evaluated? (not runtime-derived?)
-                           :runtime-derived? runtime-derived?
-                           :oracle (when runtime-derived?
-                                     {:kind :clojure-stage0-execution
-                                      :purpose :parity-only
-                                      :authoritative-runtime? false})
-                           :safety-mode (get-in plan [:module :safety])
-                           :profile (get-in plan [:module :profile])
-                           :capabilities (get-in plan [:module :capabilities])
-                           :seedless-release? false}
+           manifest-input
+           (cond-> {:kind :gravity/c-backend-manifest
+                    :schema-version "gravity.c.backend-manifest/v1"
+                    :backend :c
+                    :dialect dialect
+                    :target target
+                    :input-plan-kind (:kind plan)
+                    :input-plan-hash plan-hash
+                    :source-content-hash source-hash
+                    :c-source-hash c-source-hash
+                    :stdout-hash output-hash
+                    :instruction-summary (:instruction-summary plan)
+                    :effect-summary (:effect-summary plan)
+                    :lowering-strategy (if runtime-derived?
+                                         :runtime-derived-instruction-lowering
+                                         :verified-stage0-output-lowering)
+                    :runtime :hosted-libc-stdout
+                    :compile-time-evaluated? (not runtime-derived?)
+                    :runtime-derived? runtime-derived?
+                    :oracle (when runtime-derived?
+                              {:kind :clojure-stage0-execution
+                               :purpose :parity-only
+                               :authoritative-runtime? false})
+                    :safety-mode (get-in plan [:module :safety])
+                    :profile (get-in plan [:module :profile])
+                    :capabilities (get-in plan [:module :capabilities])
+                    :seedless-release? false}
+             runtime-derived?
+             (assoc :compiler-stage :p15-s23-stage2-plan-emitter
+                    :compiler-engine (get-in plan [:compiler :rule-engine])
+                    :compiler-source-rule-hash
+                    (:source-rule-hash stage2-rule)))
            manifest-hash (str "sha256:" (sha256-hex
                                          (pr-str
                                           (c-backend-canonical-value
                                            manifest-input))))
-           provenance {:kind :gravity/c-backend-provenance
-                       :schema-version "gravity.c.provenance/v1"
-                       :source {:path source-path
-                                :extension (gravity-source-extension source-path)
-                                :kind (gravity-source-kind source-path)
-                                :sha256 source-hash}
-                       :compiler {:owner :clojure-bootstrap
-                                  :stage :stage0
-                                  :plan-hash plan-hash}
-                       :target {:backend :c
-                                :dialect dialect
-                                :target target}
-                       :runtime :hosted-libc-stdout
-                       :oracle (when runtime-derived?
-                                 {:kind :clojure-stage0-execution
-                                  :purpose :parity-only
-                                  :authoritative-runtime? false})
-                       :source-map-hash source-map-hash
-                       :manifest-hash manifest-hash
-                       :clojure-seed-boundary? true
-                       :self-hosted? false
-                       :final-release? false}
+           provenance
+           (cond-> {:kind :gravity/c-backend-provenance
+                    :schema-version "gravity.c.provenance/v1"
+                    :source {:path source-path
+                             :extension (gravity-source-extension source-path)
+                             :kind (gravity-source-kind source-path)
+                             :sha256 source-hash}
+                    :compiler {:owner :clojure-bootstrap
+                               :stage :stage0
+                               :plan-hash plan-hash}
+                    :target {:backend :c
+                             :dialect dialect
+                             :target target}
+                    :runtime :hosted-libc-stdout
+                    :oracle (when runtime-derived?
+                              {:kind :clojure-stage0-execution
+                               :purpose :parity-only
+                               :authoritative-runtime? false})
+                    :source-map-hash source-map-hash
+                    :manifest-hash manifest-hash
+                    :clojure-seed-boundary? true
+                    :self-hosted? false
+                    :final-release? false}
+             runtime-derived?
+             (assoc :compiler-stage :p15-s23-stage2-plan-emitter
+                    :compiler-engine (get-in plan [:compiler :rule-engine])
+                    :compiler-source-rule-hash
+                    (:source-rule-hash stage2-rule)
+                    :compiler {:owner :clojure-bootstrap
+                               :stage :stage2
+                               :compiler-stage :p15-s23-stage2-plan-emitter
+                               :plan-hash plan-hash
+                               :source-rule-hash
+                               (:source-rule-hash stage2-rule)}))
            provenance-hash (str "sha256:" (sha256-hex
                                             (pr-str
                                              (c-backend-canonical-value
