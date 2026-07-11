@@ -16,12 +16,13 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Expand runtime-derived C lowering to scalar locals, conditionals, and lexical lets with fail-closed validation.
 - [completed] Correct executable-symbol analysis so quoted data no longer blocks the Gravity-authored P15 compiler source.
 - [completed] Add fail-closed runtime-derived `str` concatenation for direct println byte-string values.
+- [completed] Bind runtime-derived C lowering to the Gravity-authored P15-S23 stage2 plan-emitter rules.
 - [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
 - [pending] Replace the stage0 plan-emitter boundary with a Gravity-authored stage2 compiler step after the newly accepted P15 source can pass its front-end gates.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `6537643` (`Add runtime-derived string concatenation`).
+- Main: `e76c3f6` (`Bind runtime C lowering to Gravity stage2 rules`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` is not yet accepted by the current public check (`L3-UNKNOWN-ALIAS`).
@@ -35,6 +36,7 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Runtime-derived control flow now executes scalar locals, `if`, and `let` in generated C, including zero-length values; malformed, deep, collection, call, and unsupported value forms reject with structured B2 diagnostics.
 - Qualified-symbol analysis now skips quoted payloads while preserving executable alias rejection; `GRAVITY_BOOTSTRAP_ONLY=1 bin/gravity check bootstrap/gravity/p15_s23/compiler.gravity` passes, but the whole-language self-hosting gate remains partial.
 - Runtime-derived C now supports direct `str` concatenation over byte-string literals, quotes, and proven string locals, preserving empty/NUL/UTF-8 bytes; numeric, collection, nested, and general-value uses reject closed with B2 diagnostics.
+- Runtime-derived C plans now come from the Gravity-authored `p15-s23-stage2-plan-emitter` rule set, with path-neutral rule hashes and compiler-stage/engine provenance; the Clojure instruction runner remains an explicit oracle and seed boundary.
 
 ## Active slice
 
@@ -42,6 +44,7 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Scope: widen the reviewed runtime-derived mode to the next documented instruction/builtin subset, preserving fail-closed unsupported values and keeping the Clojure evaluator non-authoritative.
 - Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
 - Next self-hosting gate: use the now-accepted P15 compiler source to replace one stage0 plan-emitter boundary with a Gravity-authored stage2 artifact, with explicit equivalence and rejection proof before any seed claim changes.
+- Next self-hosting gate: bind execution to the Gravity-authored stage2 runtime kernel/executor after stage2 plan emission, retaining Clojure fallback only as recorded comparison evidence.
 
 ## Completion gates
 
