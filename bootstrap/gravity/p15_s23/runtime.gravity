@@ -23,19 +23,141 @@
 ; Single-argument println is an effectful runtime operation.  Keep the
 ; newline-producing primitive in the Gravity-authored runtime plan so the
 ; generic bridge invokes a declared function rather than formatting in the
-; bootstrap executor.  Println with more than two arguments remains the legacy
-; host-facing path until its variadic effect contract is authored and validated.
+; bootstrap executor.  The legacy named-helper path still treats larger arities
+; as host compatibility; the authenticated closed-plan entrypoint below now
+; owns bounded variadic println through its recursive output accumulator.
 (defn p15-s23-runtime-println-value
   [value]
   (println (str value)))
 
 ; Exactly two println arguments are owned by this dedicated Gravity runtime
 ; entrypoint.  Preserve the language's single-space separator and trailing
-; newline while keeping the >2-argument compatibility path explicit in the
-; bootstrap executor until a variadic effect contract is authored.
+; newline while keeping the legacy named-helper compatibility path explicit.
 (defn p15-s23-runtime-println-two
   [left right]
   (println (str left " " right)))
+
+; The closed-plan executor keeps its state as [value output].  Output is a
+; Gravity string accumulator rather than a host writer, which preserves empty
+; strings, embedded NULs, and Unicode bytes until a target adapter performs the
+; declared :io/write operation.
+(defn p15-s23-runtime-evaluate-arguments
+  [arguments environment output values]
+  (if (= (count arguments) 0)
+    [values output]
+    (let [head-result
+          (p15-s23-runtime-evaluate-closed-instruction
+           (first arguments) environment output)]
+      (p15-s23-runtime-evaluate-arguments
+       (rest arguments)
+       environment
+       (second head-result)
+       (conj values (first head-result))))))
+
+(defn p15-s23-runtime-println-output
+  [values output]
+  (if (= (count values) 0)
+    (str output "\n")
+    (if (= (count values) 1)
+      (str output (str (first values)) "\n")
+      (p15-s23-runtime-println-output
+       (rest values)
+       (str output (str (first values)) " ")))))
+
+(defn p15-s23-runtime-evaluate-bindings
+  [bindings environment output]
+  (if (= (count bindings) 0)
+    [environment output]
+    (let [binding (first bindings)
+          value-result
+          (p15-s23-runtime-evaluate-closed-instruction
+           (get binding :expr) environment output)]
+      (p15-s23-runtime-evaluate-bindings
+       (rest bindings)
+       (assoc environment (get binding :name) (first value-result))
+       (second value-result)))))
+
+(defn p15-s23-runtime-evaluate-sequence
+  [instructions environment output]
+  (if (= (count instructions) 0)
+    [nil output]
+    (let [head-result
+          (p15-s23-runtime-evaluate-closed-instruction
+           (first instructions) environment output)]
+      (if (= (count instructions) 1)
+        head-result
+        (p15-s23-runtime-evaluate-sequence
+         (rest instructions) environment (second head-result))))))
+
+(defn p15-s23-runtime-evaluate-closed-instruction
+  [instruction environment output]
+  (let [operation (get instruction :op)]
+    (if (= operation :literal)
+      [(get instruction :value) output]
+      (if (= operation :quote)
+        [(get instruction :value) output]
+        (if (= operation :local)
+          [(get environment (get instruction :name)) output]
+          (if (= operation :builtin-call)
+            (let [arguments-result
+                  (p15-s23-runtime-evaluate-arguments
+                   (get instruction :args) environment output [])
+                  values (first arguments-result)]
+              [(if (= (count values) 1)
+                 (str (first values))
+                 (str (first values) (second values)))
+               (second arguments-result)])
+            (if (= operation :println)
+              (let [arguments-result
+                    (p15-s23-runtime-evaluate-arguments
+                     (get instruction :args) environment output [])]
+                [nil
+                 (p15-s23-runtime-println-output
+                  (first arguments-result) (second arguments-result))])
+              (if (= operation :do)
+                (p15-s23-runtime-evaluate-sequence
+                 (get instruction :body) environment output)
+                (if (= operation :if)
+                  (let [test-result
+                        (p15-s23-runtime-evaluate-closed-instruction
+                         (get instruction :test) environment output)]
+                    (if (first test-result)
+                      (p15-s23-runtime-evaluate-closed-instruction
+                       (get instruction :then)
+                       environment
+                       (second test-result))
+                      (p15-s23-runtime-evaluate-closed-instruction
+                       (get instruction :else)
+                       environment
+                       (second test-result))))
+                  (let [binding-result
+                        (p15-s23-runtime-evaluate-bindings
+                         (get instruction :bindings) environment output)]
+                    (p15-s23-runtime-evaluate-sequence
+                     (get instruction :body)
+                     (first binding-result)
+                     (second binding-result))))))))))))
+
+; Pinned public entrypoint for the authenticated closed hosted-core plan.  The
+; Clojure seed invokes this Gravity function once for the authoritative packet
+; execution.  Each target consumer separately replays the pinned function to
+; authenticate the packet; that verification replay is recorded outside the
+; authoritative invocation count.  The result is also compared with the
+; preceding stage2 executor and stage0 oracle while the seed boundary remains.
+(defn p15-s23-runtime-execute-closed-plan
+  [plan]
+  (let [entrypoint (get plan :entrypoint)
+        function (get (get plan :functions) entrypoint)
+        result
+        (p15-s23-runtime-evaluate-sequence
+         (get function :instructions) {} "")]
+    {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record
+     :entrypoint entrypoint
+     :entrypoint-result (first result)
+     :stdout (second result)
+     :status :complete
+     :clojure-seed-boundary? true
+     :self-hosted? false}))
 
 (defn main
   []

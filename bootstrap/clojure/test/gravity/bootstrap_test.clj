@@ -25406,26 +25406,24 @@
           (is (= "left right\n"
                  (:out (run-bin (:executable-path qst))))))))))
 
-(deftest hosted-c-backend-runtime-derived-keeps-three-argument-println-host-bound
+(deftest hosted-c-backend-runtime-derived-preserves-variadic-println
   (let [source-text (str "(ns runtime.println.three (:profile :hosted) "
                         "(:target :jvm) (:effects #{:io/write}) "
                         "(:capabilities #{:io/stdout}))\n"
                         "(defn main [] (println \"one\" \"two\" \"three\"))\n")
-        calls (atom [])
-        original @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke
         artifact
-        (with-redefs
-          [bootstrap/p15-s23-stage2-runtime-artifact-invoke
-           (fn [runtime function args]
-             (swap! calls conj [function args])
-             (original runtime function args))]
-          (bootstrap/c-backend-source-artifact
-           "runtime-println-three.gravity" source-text
-           {:target :c :lowering-mode :runtime-derived}))]
+        (bootstrap/c-backend-source-artifact
+         "runtime-println-three.gravity" source-text
+         {:target :c :lowering-mode :runtime-derived})]
     (is (= "one two three\n" (:stdout artifact)))
-    (is (not-any? #(= 'p15-s23-runtime-println-two (first %)) @calls))
-    (is (= 3 (count (filter #(= 'p15-s23-runtime-format-value (first %))
-                             @calls))))))
+    (is (true?
+         (get-in artifact
+                 [:closed-plan-runtime-target-record :migration-comparison
+                  :closed-plan-variadic-println?])))
+    (is (= 1
+           (get-in artifact
+                   [:closed-plan-runtime-target-record
+                    :verification-replay :replay-count])))))
 
 (deftest hosted-c-backend-runtime-derived-rejects-tampered-two-argument-println-shape
   (let [source-text (str "(ns runtime.println.tamper (:profile :hosted) "
@@ -26016,7 +26014,8 @@
         bin (str root "/bin/gravity")
         source (str root "/examples/hello.qst")
         nonce (str (System/nanoTime))
-        output (str "target/public-c-unrelated-cwd-" nonce)]
+        output (str "target/public-c-unrelated-cwd-" nonce)
+        actual-output (str root "/" output)]
     (try
       (let [result (run-process-in-directory
                     "/tmp"
@@ -26025,7 +26024,7 @@
                     [bin "compile" source "--target" "c"
                      "--lowering" "runtime-derived" "-o" output])
             artifact (edn/read-string (:out result))
-            executable-result (run-bin output)]
+            executable-result (run-bin actual-output)]
         (is (zero? (:exit result)) (:err result))
         (is (= :runtime-derived
                (get-in artifact [:target :lowering-mode])))
@@ -26049,10 +26048,10 @@
         (is (zero? (:exit executable-result)))
         (is (= "Hello Gravity\n" (:out executable-result))))
       (finally
-        (doseq [path [output (str output ".c")
-                      (str output ".manifest.edn")
-                      (str output ".source-map.edn")
-                      (str output ".provenance.edn")]]
+        (doseq [path [actual-output (str actual-output ".c")
+                      (str actual-output ".manifest.edn")
+                      (str actual-output ".source-map.edn")
+                      (str actual-output ".provenance.edn")]]
           (java.nio.file.Files/deleteIfExists
            (.toPath (java.io.File. path))))))))
 
@@ -26947,7 +26946,8 @@
                     "effect-tamper.gravity"
                     (-> (:manifest left)
                         (dissoc :manifest-hash)
-                        (assoc-in [:effects :declared] #{}))))))
+                        (assoc-in [:effects :declared] #{}))
+                    (:closed-runtime-validation-context left)))))
           (is (= "B6-MANIFEST"
                  (diagnostic-id
                   #(bootstrap/js-ts-backend-validate-manifest!
@@ -26955,14 +26955,16 @@
                     (-> (:manifest left)
                         (dissoc :manifest-hash)
                         (assoc-in [:module :side-effects] false)
-                        (assoc :host-globals []))))))
+                        (assoc :host-globals []))
+                    (:closed-runtime-validation-context left)))))
           (is (= "B6-MANIFEST"
                  (diagnostic-id
                   #(bootstrap/js-ts-backend-validate-manifest!
                     "safety-tamper.gravity"
                     (-> (:manifest left)
                         (dissoc :manifest-hash)
-                        (assoc-in [:safety :mode] :unsafe))))))
+                        (assoc-in [:safety :mode] :unsafe))
+                    (:closed-runtime-validation-context left)))))
           (is (= (:manifest left)
                  (edn/read-string (slurp (:manifest paths)))))
           (is (= (:provenance left)
@@ -27024,7 +27026,8 @@
         (is (= "B6-MANIFEST"
                (diagnostic-id
                 #(bootstrap/js-ts-backend-validate-manifest!
-                  "tampered-manifest.gravity" mutated))))))))
+                  "tampered-manifest.gravity" mutated
+                  (:closed-runtime-validation-context artifact)))))))))
 
 (deftest hosted-js-ts-backend-rejects-unsupported-surface-before-output
   (let [three-argument-source
@@ -27047,10 +27050,9 @@
       "gravity-js-ts-rejected-"
       (fn [directory]
         (let [output (.toString (.resolve directory "program"))
-              three (diagnostic-data
-                     #(bootstrap/js-ts-backend-source-artifact
-                       "reject.gravity" three-argument-source
-                       {:target :js :output-path output :emit? true}))
+              three-artifact
+              (bootstrap/js-ts-backend-source-artifact
+               "variadic.gravity" three-argument-source {:target :js})
               bad-str (diagnostic-data
                        #(bootstrap/js-ts-backend-source-artifact
                          "reject.qst" bad-str-source
@@ -27066,8 +27068,11 @@
                  "unsafe.gravity" unsafe-source
                  {:target :js-ts :output-path output :emit? true}))
               paths (bootstrap/js-ts-backend-output-paths output)]
-          (is (= "C14-UNSUPPORTED" (:id three)))
-          (is (= :gravity-runtime-println-arity (:missing-fact three)))
+          (is (= "a b c\n" (:compiled-execution-output three-artifact)))
+          (is (= 1
+                 (get-in three-artifact
+                         [:closed-plan-runtime-target-record
+                          :verification-replay :replay-count])))
           (is (= "L2-BUILTIN-ARITY" (:id bad-str)))
           (is (= 3 (:actual-arity bad-str)))
           (is (= "C14-PROFILE" (:id incompatible)))
@@ -27121,7 +27126,8 @@
              "manifest.gravity"
              {:artifact :gravity/js-ts-backend-manifest}))]
       (is (= "B6-MANIFEST" (:id manifest-data)))
-      (is (= :complete-js-ts-manifest (:missing-fact manifest-data))))))
+      (is (= :closed-runtime-validation-context
+             (:missing-fact manifest-data))))))
 
 (deftest hosted-js-ts-backend-propagates-stage2-runtime-and-driver-failures
   (let [source-text
@@ -27379,6 +27385,8 @@
         (str "(ns jvm.target.three (:profile :hosted) (:target :jvm) "
              "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
              "(defn main [] (println \"a\" \"b\" \"c\"))\n")
+        three-artifact
+        (bootstrap/jvm-backend-source-artifact "three.gravity" three-source)
         unsafe-source
         (str "(ns jvm.target.unsafe (:profile :hosted) (:target :jvm) "
              "(:effects #{}) (:capabilities #{}) (:safety :unsafe))\n"
@@ -27391,10 +27399,7 @@
     (is (= [] (:compiled-execution-output-bytes empty-artifact)))
     (is (= [] (get-in empty-artifact [:manifest :host-boundaries])))
     (is (not (str/includes? (:java-source empty-artifact) "System.out")))
-    (is (= "C14-UNSUPPORTED"
-           (diagnostic-id
-            #(bootstrap/jvm-backend-source-artifact
-              "three.gravity" three-source))))
+    (is (= "a b c\n" (:compiled-execution-output three-artifact)))
     (is (= "C14-PROFILE"
            (diagnostic-id
             #(bootstrap/jvm-backend-source-artifact
@@ -27409,7 +27414,8 @@
                        "missing-gravity-javac"]
                (bootstrap/jvm-backend-source-artifact
                 "missing-tool.gravity" empty-source)))))
-    (let [manifest (dissoc (:manifest empty-artifact) :manifest-hash)]
+    (let [manifest (dissoc (:manifest empty-artifact) :manifest-hash)
+          context (:manifest-validation-context empty-artifact)]
       (doseq [mutation
               [(dissoc manifest :managed-runtime)
                (assoc manifest :managed-runtime {})
@@ -27425,16 +27431,16 @@
         (is (= "B5-MANIFEST"
                (diagnostic-id
                 #(bootstrap/jvm-backend-validate-manifest!
-                  "tampered.gravity" mutation)))))
+                  "tampered.gravity" mutation context)))))
       (is (= "B5-MANIFEST"
              (diagnostic-id
               #(bootstrap/jvm-backend-validate-manifest!
                 "tampered-hash.gravity"
                 (assoc (:manifest empty-artifact)
                        :manifest-hash
-                       (str "sha256:" (apply str (repeat 64 "0"))))))))
-      (let [context (:manifest-validation-context empty-artifact)
-            rehash
+                       (str "sha256:" (apply str (repeat 64 "0"))))
+                context))))
+      (let [rehash
             (fn [candidate]
               (let [base (dissoc candidate :manifest-hash)]
                 (assoc base :manifest-hash
@@ -27680,6 +27686,623 @@
                    (.toPath (java.io.File. gravity-output)))
                   (bootstrap/js-ts-backend-delete-tree!
                    (.toPath (java.io.File. qst-output))))))))))))
+
+(def ^:private closed-runtime-public-source
+  (str "(ns runtime.closed.public (:profile :hosted) (:target :jvm) "
+       "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+       "(defn main []\n"
+       "  (let [prefix \"λ\\u0000\" empty \"\"]\n"
+       "    (do\n"
+       "      (println)\n"
+       "      (println empty)\n"
+       "      (if true\n"
+       "        (println (str prefix \"🙂\"))\n"
+       "        (println \"unreachable\"))\n"
+       "      (println (quote hello))\n"
+       "      (println prefix \"tail\"))))\n"))
+
+(defn- closed-runtime-rehash-target-record
+  [record]
+  (assoc record :record-hash
+         (str "sha256:"
+              (bootstrap/sha256-hex
+               (pr-str
+                (bootstrap/c-backend-canonical-value
+                 (dissoc record :record-hash)))))))
+
+(defn- closed-runtime-rehash-validation
+  [record]
+  (-> record
+      (assoc :validation-hash
+             (str "sha256:"
+                  (bootstrap/sha256-hex
+                   (pr-str
+                    (bootstrap/c-backend-canonical-value
+                     (:validation record))))))
+      closed-runtime-rehash-target-record))
+
+(defn- closed-runtime-rehash-manifest
+  [manifest]
+  (assoc manifest :manifest-hash
+         (str "sha256:"
+              (bootstrap/sha256-hex
+               (pr-str
+                (bootstrap/c-backend-canonical-value
+                 (dissoc manifest :manifest-hash)))))))
+
+(deftest gravity-closed-plan-runtime-records-authoritative-execution-and-replay
+  (let [calls (atom [])
+        original @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke
+        expected (str "\n\nλ" \u0000 "🙂\nhello\nλ" \u0000 " tail\n")
+        packet
+        (with-redefs
+          [bootstrap/p15-s23-stage2-runtime-artifact-invoke
+           (fn [runtime function args]
+             (swap! calls conj function)
+             (original runtime function args))]
+          (bootstrap/stage2-runtime-derived-packet
+           "closed-runtime.gravity" closed-runtime-public-source :c))
+        packet-context
+        (bootstrap/p15-s23-closed-runtime-packet-context
+         "closed-runtime.gravity" closed-runtime-public-source :c)
+        packet-authentic?
+        (bootstrap/p15-s23-closed-runtime-packet-authentic?
+         packet packet-context)
+        execution (:closed-plan-execution-record packet)
+        invocation (:closed-plan-invocation-record packet)
+        target-record
+        (bootstrap/p15-s23-closed-runtime-target-record packet)]
+    (is (= expected (:stdout execution)))
+    (is (= expected
+           (get-in packet [:stage2-runtime-execution-record :stdout])))
+    (is (= expected (:reference-output packet)))
+    (is (= 1
+           (count
+            (filter
+             #{bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function}
+             @calls))))
+    (is (= 1 (:invocation-count invocation)))
+    (is (= :authoritative-packet-construction
+           (:invocation-count-scope invocation)))
+    (is (true? (:verification-replays-excluded? invocation)))
+    (is packet-authentic?)
+    (is (false?
+         (bootstrap/p15-s23-closed-runtime-packet-authentic? packet)))
+    (is (= :complete
+           (get-in packet [:closed-plan-validation-record :status])))
+    (is (= bootstrap/p15-s23-stage2-runtime-artifact-expected-source-content-hash
+           (:runtime-artifact-source-content-hash target-record)))
+    (is (= bootstrap/p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+           (:helper-function-hashes target-record)))
+    (is (= {:artifact
+            :gravity/p15-s23-runtime-closed-plan-verification-replay-record
+            :function
+            bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function
+            :replay-count 1
+            :count-scope :consumer-packet-authentication
+            :included-in-authoritative-invocation-count? false
+            :status :passed}
+           (:verification-replay target-record)))
+    (is (= {:kind :clojure-seed-pure-builtin-implementation
+            :primitives '#{= assoc conj count first get rest second str}
+            :effects #{}
+            :capabilities #{}}
+           (:primitive-boundary target-record)))
+    (is (false? (:mir-derived? target-record)))
+    (is (true? (:clojure-seed-boundary? target-record)))
+    (is (false? (:self-hosted? target-record)))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (:record-hash target-record)))))
+
+(deftest gravity-closed-plan-runtime-propagates-through-c-js-and-jvm-products
+  (with-temp-source
+    ".gravity" closed-runtime-public-source
+    (fn [gravity-path]
+      (with-temp-source
+        ".qst" closed-runtime-public-source
+        (fn [qst-path]
+          (let [compile-all
+                (fn [path]
+                  {:c (bootstrap/c-backend-source-artifact
+                       path closed-runtime-public-source
+                       {:target :c :lowering-mode :runtime-derived})
+                   :js (bootstrap/js-ts-backend-source-artifact
+                        path closed-runtime-public-source {:target :js-ts})
+                   :jvm (bootstrap/jvm-backend-source-artifact
+                         path closed-runtime-public-source)})
+                gravity (compile-all gravity-path)
+                qst (compile-all qst-path)]
+            (doseq [target [:c :js :jvm]]
+              (let [left (get gravity target)
+                    right (get qst target)
+                    record (or (:closed-plan-runtime-target-record left)
+                               (get-in left
+                                       [:manifest :closed-plan-runtime]))
+                    context
+                    (or (:closed-runtime-validation-context left)
+                        (get-in left
+                                [:manifest-validation-context
+                                 :closed-runtime-context]))
+                    forged-plan-id
+                    (str "sha256:" (apply str (repeat 64 "a")))
+                    forged-stdout-hash
+                    (str "sha256:" (apply str (repeat 64 "b")))]
+                (is (= (:artifact-id left) (:artifact-id right)) target)
+                (is (= (get-in left [:manifest :closed-plan-runtime])
+                       (get-in right [:manifest :closed-plan-runtime]))
+                    target)
+                (is (= :gravity/p15-s23-runtime-closed-plan-target-record
+                       (:artifact record)) target)
+                (is (= 1 (get-in record [:invocation :invocation-count]))
+                    target)
+                (is (= :complete (get-in record [:execution :status]))
+                    target)
+                (is (true? (:clojure-seed-boundary? record)) target)
+                (is (false? (:self-hosted? record)) target)
+                (is (bootstrap/p15-s23-closed-runtime-target-record-authentic?
+                     record context) target)
+                (is (false?
+                     (bootstrap/p15-s23-closed-runtime-target-record-authentic?
+                      record))
+                    target)
+                (doseq [malformed [nil 42 "bad"]]
+                  (is (false?
+                       (bootstrap/p15-s23-closed-runtime-target-record-authentic?
+                        malformed))
+                      target))
+                (doseq [coherent
+                        [(closed-runtime-rehash-target-record
+                          (assoc-in record
+                                    [:execution :entrypoint-result]
+                                    :tampered))
+                         (closed-runtime-rehash-target-record
+                          (assoc-in record
+                                    [:invocation :execution-hash]
+                                    (str "sha256:"
+                                         (apply str (repeat 64 "a")))))
+                         (closed-runtime-rehash-validation
+                          (assoc-in record
+                                    [:validation :node-count]
+                                    999))
+                         (-> record
+                             (assoc-in [:validation :plan-id]
+                                       forged-plan-id)
+                             (assoc-in [:invocation :plan-id]
+                                       forged-plan-id)
+                             (assoc-in [:execution :plan-id]
+                                       forged-plan-id)
+                             (assoc-in [:invocation :stdout-hash]
+                                       forged-stdout-hash)
+                             (assoc-in [:execution :stdout-hash]
+                                       forged-stdout-hash)
+                             closed-runtime-rehash-validation)]]
+                  (is (not
+                      (bootstrap/p15-s23-closed-runtime-target-record-authentic?
+                        coherent context))
+                      target))))
+            (let [js-manifest (:manifest (:js gravity))
+                  js-context
+                  (:closed-runtime-validation-context (:js gravity))
+                  coherent-record
+                  (closed-runtime-rehash-validation
+                   (assoc-in (:closed-plan-runtime js-manifest)
+                             [:validation :node-count]
+                             999))
+                  stale-js
+                  (closed-runtime-rehash-manifest
+                   (assoc js-manifest
+                          :closed-plan-runtime coherent-record))
+                  jvm-manifest (:manifest (:jvm gravity))
+                  jvm-context
+                  (:manifest-validation-context (:jvm gravity))
+                  stale-jvm0
+                  (assoc jvm-manifest
+                         :closed-plan-runtime coherent-record)
+                  stale-jvm (closed-runtime-rehash-manifest stale-jvm0)
+                  malformed-js
+                  (closed-runtime-rehash-manifest
+                   (assoc js-manifest :closed-plan-runtime 42))
+                  malformed-jvm
+                  (closed-runtime-rehash-manifest
+                   (assoc jvm-manifest :closed-plan-runtime "bad"))
+                  tampered-js-hash
+                  (assoc js-manifest :manifest-hash
+                         (str "sha256:" (apply str (repeat 64 "c"))))]
+              (is (= :passed
+                     (bootstrap/js-ts-backend-validate-manifest!
+                      "valid.gravity" js-manifest js-context)))
+              (is (= "B6-MANIFEST"
+                     (diagnostic-id
+                      #(bootstrap/js-ts-backend-validate-manifest!
+                        "tampered-hash.gravity" tampered-js-hash
+                        js-context))))
+              (is (= "B6-MANIFEST"
+                     (diagnostic-id
+                      #(bootstrap/js-ts-backend-validate-manifest!
+                        "stale.gravity" stale-js js-context))))
+              (is (= "B5-MANIFEST"
+                     (diagnostic-id
+                      #(bootstrap/jvm-backend-validate-manifest!
+                        "stale.gravity" stale-jvm jvm-context))))
+              (is (= "B6-MANIFEST"
+                     (diagnostic-id
+                      #(bootstrap/js-ts-backend-validate-manifest!
+                        "malformed.gravity" malformed-js js-context))))
+              (is (= "B5-MANIFEST"
+                     (diagnostic-id
+                      #(bootstrap/jvm-backend-validate-manifest!
+                        "malformed.gravity" malformed-jvm jvm-context)))))
+            (doseq [target [:c :js :jvm]]
+              (is (string?
+                   (get-in (get gravity target)
+                           [:provenance :actual-paths
+                            :stage2-runtime-artifact-source]))))))))))
+
+(deftest gravity-closed-plan-runtime-rejects-before-invocation-and-detects-tamper
+  (let [calls (atom 0)
+        original @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke
+        unsupported
+        (str "(ns runtime.closed.reject (:profile :hosted) (:target :jvm) "
+             "(:effects #{}) (:capabilities #{}))\n"
+             "(defn helper [] nil)\n"
+             "(defn main [] (helper))\n")
+        str-zero
+        (str "(ns runtime.closed.str-zero (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println (str)))\n")
+        str-three
+        (str "(ns runtime.closed.str-three (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println (str \"a\" \"b\" \"c\")))\n")
+        deep-expression
+        (str (apply str (repeat 130 "(if true "))
+             "\"ok\""
+             (apply str (repeat 130 " \"bad\")")))
+        deep-source
+        (str "(ns runtime.closed.deep (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println " deep-expression "))\n")
+        wide-source
+        (str "(ns runtime.closed.wide (:profile :hosted) (:target :jvm) "
+             "(:effects #{}) (:capabilities #{}))\n"
+             "(defn main [] (do "
+             (apply str (interpose " " (repeat 512 "nil")))
+             "))\n")]
+    (with-redefs
+      [bootstrap/p15-s23-stage2-runtime-artifact-invoke
+       (fn [runtime function args]
+         (when (= bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function
+                  function)
+           (swap! calls inc))
+         (original runtime function args))]
+      (doseq [[source expected-id expected-fact]
+              [[unsupported "P15S23X002" :closed-plan-operation]
+               [deep-source "P15S23X002" :closed-plan-bounds]
+               [wide-source "P15S23X002" :closed-plan-bounds]
+               [str-zero "L2-BUILTIN-ARITY" nil]
+               [str-three "L2-BUILTIN-ARITY" nil]]]
+        (let [data (diagnostic-data
+                    #(bootstrap/stage2-runtime-derived-packet
+                      "closed-reject.gravity" source :c))]
+          (is (= expected-id (:id data)))
+          (when expected-fact
+            (is (= expected-fact (:missing-fact data)))))))
+    (is (zero? @calls))
+    (let [stack-data
+          (diagnostic-data
+           #(with-redefs
+              [bootstrap/p15-s23-stage2-runtime-artifact-invoke
+               (fn [runtime function args]
+                 (if (= bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function
+                        function)
+                   (throw (StackOverflowError. "constrained-stack"))
+                   (original runtime function args)))]
+              (bootstrap/stage2-runtime-derived-packet
+               "closed-stack.gravity"
+               (str "(ns runtime.closed.stack (:profile :hosted) "
+                    "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
+                    "(defn main [] nil)\n")
+               :c)))]
+      (is (= "P15S23X002" (:id stack-data)))
+      (is (= :closed-plan-bounds (:missing-fact stack-data))))
+    (let [compile-source
+          (str "(ns runtime.closed.upstream-stack (:profile :hosted) "
+               "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
+               "(defn main [] nil)\n")
+          original-compile
+          @#'bootstrap/p15-s23-stage2-plan-emitter-compile-source
+          compile-stack-data
+          (diagnostic-data
+           #(with-redefs
+              [bootstrap/p15-s23-stage2-plan-emitter-compile-source
+               (fn [emitter path text]
+                 (if (= "upstream-stack.gravity" path)
+                   (throw (StackOverflowError. "constrained-upstream-stack"))
+                   (original-compile emitter path text)))]
+              (bootstrap/stage2-runtime-derived-packet
+               "upstream-stack.gravity" compile-source :c)))]
+      (is (= "P15S23X002" (:id compile-stack-data)))
+      (is (= :closed-plan-bounds
+             (:missing-fact compile-stack-data)))
+      (is (= :source-to-stage2-plan
+             (:boundary compile-stack-data))))
+    (let [packet
+          (bootstrap/stage2-runtime-derived-packet
+           "closed-auth.gravity" closed-runtime-public-source :c)
+          packet-context
+          (bootstrap/p15-s23-closed-runtime-packet-context
+           "closed-auth.gravity" closed-runtime-public-source :c)]
+      (let [plan (:plan packet)
+            entrypoint (:entrypoint plan)
+            malformed
+            [(update-in plan [:functions entrypoint] dissoc :arity)
+             (assoc-in plan [:functions entrypoint :arity] "zero")
+             (assoc-in plan [:functions entrypoint :params] 42)
+             (assoc-in plan
+                       [:functions entrypoint :instructions 0]
+                       {:op :builtin-call :function 'str :args 42})
+             (assoc-in plan
+                       [:functions entrypoint :instructions 0]
+                       {:op :println :effect :io/write
+                        :capability :io/stdout :args 42})
+             (assoc-in plan
+                       [:functions entrypoint :instructions 0]
+                       {:op :builtin-call :function 'str
+                        :args (repeat {:op :literal :value nil})})
+             (assoc-in plan
+                       [:functions entrypoint :instructions 0]
+                       {:op :println :effect :io/write
+                        :capability :io/stdout
+                        :args (repeat {:op :literal :value nil})})
+             (assoc-in plan
+                       [:functions entrypoint :instructions 0]
+                       {:op :literal :value (repeat nil)})]]
+        (doseq [candidate malformed]
+          (let [data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-closed-runtime-plan-validation!
+                   "malformed-closed-plan.gravity" :c candidate))]
+            (is (= "P15S23X002" (:id data)))
+            (is (contains? #{:closed-plan-entrypoint-shape
+                             :closed-plan-builtin
+                             :closed-plan-println-contract
+                             :closed-plan-literal}
+                           (:missing-fact data))))))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet
+                      [:closed-plan-execution-record :stdout]
+                      "tampered")
+            packet-context)))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet
+                      [:closed-plan-invocation-record :invocation-count]
+                      2)
+            packet-context)))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet
+                      [:closed-plan-validation-record :node-count]
+                      1)
+            packet-context)))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc packet :status :tampered)
+            packet-context)))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet [:stage2-runtime-rule :runtime-rule-hash]
+                      (str "sha256:" (apply str (repeat 64 "d"))))
+            packet-context)))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet [:stage2-runtime-execution-record :status]
+                      :tampered)
+            packet-context)))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet
+                      [:provenance :actual-paths
+                       :stage2-runtime-artifact-source]
+                      "/tmp/forged-runtime.gravity")
+            packet-context)))
+      (let [changed-execution
+            (assoc (:closed-plan-execution-record packet)
+                   :entrypoint 'evil)
+            changed-hash
+            (str "sha256:"
+                 (bootstrap/sha256-hex
+                  (pr-str
+                   (bootstrap/c-backend-canonical-value
+                    changed-execution))))
+            coherent-entrypoint
+            (-> packet
+                (assoc :closed-plan-execution-record changed-execution)
+                (assoc-in [:closed-plan-invocation-record :execution-hash]
+                          changed-hash))]
+        (is (not
+             (bootstrap/p15-s23-closed-runtime-packet-authentic?
+              coherent-entrypoint packet-context))))
+      (let [changed-execution
+            (assoc (:closed-plan-execution-record packet)
+                   :attacker true)
+            changed-hash
+            (str "sha256:"
+                 (bootstrap/sha256-hex
+                  (pr-str
+                   (bootstrap/c-backend-canonical-value
+                    changed-execution))))
+            coherent-extra
+            (-> packet
+                (assoc :closed-plan-execution-record changed-execution)
+                (assoc-in [:closed-plan-invocation-record :execution-hash]
+                          changed-hash))]
+        (is (not
+             (bootstrap/p15-s23-closed-runtime-packet-authentic?
+              coherent-extra packet-context))))
+      (is (not
+           (bootstrap/p15-s23-closed-runtime-packet-authentic?
+            (assoc-in packet
+                      [:closed-plan-invocation-record :attacker]
+                      true)
+            packet-context)))
+      (doseq [malformed
+              [(assoc-in packet [:plan :source] 42)
+               (assoc packet :closed-plan-execution-record nil)
+               (assoc packet :closed-plan-invocation-record "bad")]]
+        (is (false?
+             (bootstrap/p15-s23-closed-runtime-packet-authentic?
+              malformed packet-context))))
+      (doseq [[source mutate]
+              [[(str "(ns runtime.closed.literal-auth (:profile :hosted) "
+                     "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
+                     "(defn main [] nil)\n")
+                #(assoc-in % [:plan :functions 'main
+                              :instructions 0 :value]
+                           "evil")]
+               [(str "(ns runtime.closed.quote-auth (:profile :hosted) "
+                     "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
+                     "(defn main [] (quote hello))\n")
+                #(assoc-in % [:plan :functions 'main
+                              :instructions 0 :value]
+                           'evil)]
+               [(str "(ns runtime.closed.control-auth (:profile :hosted) "
+                     "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
+                     "(defn main [] (if true nil nil))\n")
+                #(assoc-in % [:plan :functions 'main
+                              :instructions 0 :test :value]
+                           false)]]]
+        (let [candidate
+              (bootstrap/stage2-runtime-derived-packet
+               "semantic-auth.gravity" source :c)
+              candidate-context
+              (bootstrap/p15-s23-closed-runtime-packet-context
+               "semantic-auth.gravity" source :c)]
+          (is (bootstrap/p15-s23-closed-runtime-packet-authentic?
+               candidate candidate-context))
+          (is (not
+               (bootstrap/p15-s23-closed-runtime-packet-authentic?
+                (mutate candidate) candidate-context)))))
+      (let [source
+            (str "(ns runtime.closed.coherent-auth (:profile :hosted) "
+                 "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
+                 "(defn main [] nil)\n")
+            candidate
+            (bootstrap/stage2-runtime-derived-packet
+             "coherent-semantic-auth.gravity" source :c)
+            candidate-context
+            (bootstrap/p15-s23-closed-runtime-packet-context
+             "coherent-semantic-auth.gravity" source :c)
+            changed-plan0
+            (assoc-in (:plan candidate)
+                      [:functions 'main :instructions 0 :value]
+                      "evil")
+            plan-identity-base
+            (-> changed-plan0
+                (dissoc :plan-id)
+                (update :source dissoc :path)
+                (update :module dissoc :source-path))
+            changed-plan
+            (assoc changed-plan0 :plan-id
+                   (bootstrap/c4-artifact-id
+                    (bootstrap/c-backend-canonical-value
+                     plan-identity-base)))
+            validation
+            (bootstrap/p15-s23-closed-runtime-plan-validation!
+             "coherent-semantic-auth.gravity" :c changed-plan)
+            execution
+            (bootstrap/p15-s23-stage2-runtime-artifact-invoke
+             (:stage2-runtime-rule candidate)
+             bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function
+             [changed-plan])
+            execution-hash
+            (str "sha256:"
+                 (bootstrap/sha256-hex
+                  (pr-str
+                   (bootstrap/c-backend-canonical-value execution))))
+            stdout-hash
+            (str "sha256:" (bootstrap/sha256-hex (:stdout execution)))
+            coherent-rewrite
+            (-> candidate
+                (assoc :plan changed-plan)
+                (assoc :closed-plan-validation-record validation)
+                (assoc :closed-plan-execution-record execution)
+                (assoc-in [:closed-plan-invocation-record :plan-id]
+                          (:plan-id changed-plan))
+                (assoc-in [:closed-plan-invocation-record :execution-hash]
+                          execution-hash)
+                (assoc-in [:closed-plan-invocation-record :stdout-hash]
+                          stdout-hash)
+                (assoc-in [:stage2-compiler-driver-record :stage2-plan]
+                          changed-plan)
+                (assoc-in [:stage2-compiler-driver-record :stage2-plan-id]
+                          (:plan-id changed-plan))
+                (assoc-in [:stage2-compiler-driver-record
+                           :stage2-runtime-execution-record :plan-id]
+                          (:plan-id changed-plan))
+                (assoc-in [:stage2-compiler-driver-record
+                           :stage2-runtime-execution-record :stdout]
+                          (:stdout execution))
+                (assoc-in [:stage2-compiler-driver-record
+                           :stage2-driver-output]
+                          (:stdout execution))
+                (assoc-in [:stage2-compiler-driver-record
+                           :stage0-reference-output]
+                          (:stdout execution))
+                (assoc-in [:stage2-compiler-driver-record :expected-stdout]
+                          (:stdout execution))
+                (assoc-in [:stage2-runtime-execution-record :plan-id]
+                          (:plan-id changed-plan))
+                (assoc-in [:stage2-runtime-execution-record :stdout]
+                          (:stdout execution))
+                (assoc :reference-output (:stdout execution)))]
+        ;; Every embedded plan and execution record is coherent and the pinned
+        ;; Gravity executor reproduces the changed result.  Authenticity still
+        ;; fails because trusted source replay recompiles the original plan.
+        (is (not
+             (bootstrap/p15-s23-closed-runtime-packet-authentic?
+              coherent-rewrite candidate-context))))
+      (let [forged-hash (str "sha256:" (apply str (repeat 64 "a")))
+            coherent
+            (-> packet
+                (assoc-in [:stage2-runtime-rule :runtime-artifact-hash]
+                          forged-hash)
+                (assoc-in [:closed-plan-invocation-record
+                           :runtime-artifact-hash]
+                          forged-hash))]
+        (is (not
+             (bootstrap/p15-s23-closed-runtime-packet-authentic?
+              coherent packet-context)))))))
+
+(deftest gravity-closed-plan-runtime-source-and-function-contracts-are-pinned
+  (let [runtime-text (slurp "bootstrap/gravity/p15_s23/runtime.gravity")]
+    (doseq [mutate
+            [#(str "; source-only tamper\n" %)
+             #(str/replace-first
+               %
+               "[plan]\n  (let [entrypoint"
+               "[plan extra]\n  (let [entrypoint")
+             #(str/replace-first
+               %
+               ":status :complete\n     :clojure-seed-boundary?"
+               ":status :tampered\n     :clojure-seed-boundary?")]]
+      (with-temp-directory
+        "gravity-closed-runtime-tamper-"
+        (fn [directory]
+          (let [path (.resolve directory "runtime.gravity")]
+            (spit (.toFile path) (mutate runtime-text))
+            (let [data
+                  (diagnostic-data
+                   #(with-redefs
+                      [bootstrap/c-backend-stage2-runtime-artifact-source-path
+                       (fn [_] (.toString path))]
+                      (bootstrap/stage2-runtime-derived-packet
+                       "closed-runtime-tamper.gravity"
+                       closed-runtime-public-source :c)))]
+              (is (= "P15S23X002" (:id data)))
+              (is (= :runtime-artifact-function-set
+                     (:missing-fact data))))))))))
 
 (defn -main
   [& _]

@@ -89296,10 +89296,14 @@
           :map-literal (mapcat (fn [{:keys [key value]}] [key value])
                                 (:entries instruction))
           [])]
-    (merge {(:op instruction) 1}
-           (apply merge-with +
-                  (map stage0-instruction-summary
-                       (remove nil? children))))))
+    ;; A parent and child may share an opcode (for example nested builtin
+    ;; calls).  Add the parent fact instead of letting `merge` overwrite it;
+    ;; this makes the stage0 comparison describe every concrete instruction.
+    (merge-with +
+                {(:op instruction) 1}
+                (apply merge-with +
+                       (map stage0-instruction-summary
+                            (remove nil? children))))))
 
 (defn stage0-compiled-core-plan
   [source-path source-text module]
@@ -92547,7 +92551,7 @@
 ;; compiled below.  This is intentionally pinned rather than merely recorded:
 ;; a changed compiler function cannot silently become production lowering.
 (def p15-s23-stage2-compiler-artifact-expected-semantic-hash
-  "sha256:ad9ad8101ff547a216a9a128a0cbd9f12e87527a88b481e0c8918fa49c992778")
+  "sha256:5743c5415a9d35c13fc45baf85323c943f9dc6d156eb194de63b1bbdacc75446")
 
 (def p15-s23-stage2-compiler-artifact-expected-source-content-hash
   "sha256:3543311198f6bfe43fc2c9d33b9ccddf575789e286df4576cf31fb77836130e7")
@@ -92926,6 +92930,9 @@
           (p15-s23-stage2-assemble-plan-products
            emitter module ordered-definitions))
         functions (:functions assembled-products)
+        ;; The Gravity artifact owns the authoritative plan summary.  Stage0
+        ;; independently recomputes the same additive tree facts below as
+        ;; migration evidence; it is not the product source.
         instruction-summary (:instruction-summary assembled-products)
         plan-base {:kind (get-in emitter
                                  [:plan-shape :kind]
@@ -102964,6 +102971,36 @@
 (def p15-s23-stage2-runtime-artifact-println-two-function
   'p15-s23-runtime-println-two)
 
+(def p15-s23-stage2-runtime-artifact-closed-plan-function
+  'p15-s23-runtime-execute-closed-plan)
+
+(def p15-s23-stage2-runtime-artifact-closed-plan-helper-functions
+  '#{p15-s23-runtime-evaluate-arguments
+     p15-s23-runtime-println-output
+     p15-s23-runtime-evaluate-bindings
+     p15-s23-runtime-evaluate-sequence
+     p15-s23-runtime-evaluate-closed-instruction})
+
+(def p15-s23-stage2-runtime-artifact-expected-source-content-hash
+  "sha256:835b1050f8286183c3834dd235dd6f7541db4e2953ab0f28703dbbfbe5f33998")
+
+(def p15-s23-stage2-runtime-artifact-expected-artifact-hash
+  "sha256:8c332213794f01bffb9f68ab50494e6d4faa079e19f545eb8ee8c4755625da0c")
+
+(def p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+  {'p15-s23-runtime-evaluate-arguments
+   "sha256:462652c55c0fef78d045f01c60502c37f9c26038469c05102bbf265b17d3bc94"
+   'p15-s23-runtime-println-output
+   "sha256:b680821f5b5b26fa15ada288f49104c5b9ce29f1e34a0df96133ad744cbb2144"
+   'p15-s23-runtime-evaluate-bindings
+   "sha256:5c520b294277ecb0dfe7d4ef32aab43d132506ae388c5f751ba231cb79b8efc5"
+   'p15-s23-runtime-evaluate-sequence
+   "sha256:24029a3eb0e3e235170208c9d2cef0948224b191b34609b3a01d0ed670a9521c"
+   'p15-s23-runtime-evaluate-closed-instruction
+   "sha256:74268eb3eb681e6c4ebb9ca9e2940facab66f2eabb4aeeed4894c590eeeaee49"
+   'p15-s23-runtime-execute-closed-plan
+   "sha256:c4fa3df78d5d90b0d3301c592c10018a449ba1dace51dfa7af3f9c3299fadc0e"})
+
 (def p15-s23-stage2-runtime-artifact-println-over-two-boundary
   :host-compatibility)
 
@@ -102972,6 +103009,9 @@
 
 (def p15-s23-stage2-runtime-artifact-required-capabilities
   #{:io/stdout})
+
+(declare p15-s23-closed-runtime-max-depth
+         p15-s23-closed-runtime-max-nodes)
 
 (def p15-s23-stage2-runtime-artifact-required-function-shape
   {:arity 1
@@ -103031,6 +103071,14 @@
    :functions (c-backend-canonical-value (:functions plan))
    :instruction-summary (:instruction-summary plan)
    :effect-summary (:effect-summary plan)})
+
+(defn p15-s23-stage2-runtime-artifact-function-semantic-hash
+  [definition]
+  (str "sha256:"
+       (sha256-hex
+        (pr-str
+         (c-backend-canonical-value
+          (select-keys definition [:arity :params :instructions]))))))
 
 (defn c-backend-stage2-runtime-source-rule!
   "Load the Gravity-authored P15-S23 runtime executor and kernel rules.
@@ -103156,6 +103204,18 @@
                      runtime-artifact-text))
                   (catch clojure.lang.ExceptionInfo ex
                     (throw ex))
+                  (catch StackOverflowError ex
+                    (p15-s23-stage2-runtime-executor-fail!
+                     "P15S23X002"
+                     runtime-artifact-source
+                     nil
+                     {:requested-source source-path
+                      :target target
+                      :cause-message (.getMessage ex)
+                      :missing-fact :closed-plan-bounds
+                      :boundary :runtime-artifact-plan-construction
+                      :maximum-depth p15-s23-closed-runtime-max-depth
+                      :maximum-nodes p15-s23-closed-runtime-max-nodes}))
                   (catch Exception ex
                     (p15-s23-stage2-runtime-executor-fail!
                      "P15S23X002"
@@ -103180,6 +103240,25 @@
               (get-in runtime-artifact-plan
                       [:functions
                        p15-s23-stage2-runtime-artifact-println-two-function])
+              runtime-artifact-closed-plan-function
+              (get-in runtime-artifact-plan
+                      [:functions
+                       p15-s23-stage2-runtime-artifact-closed-plan-function])
+              runtime-artifact-closed-functions
+              (select-keys
+               (:functions runtime-artifact-plan)
+               (conj p15-s23-stage2-runtime-artifact-closed-plan-helper-functions
+                     p15-s23-stage2-runtime-artifact-closed-plan-function))
+              runtime-artifact-closed-function-hashes
+              (into (sorted-map)
+                    (map (fn [[name definition]]
+                           [name
+                            (p15-s23-stage2-runtime-artifact-function-semantic-hash
+                             definition)]))
+                    runtime-artifact-closed-functions)
+              runtime-artifact-source-content-hash
+              (when runtime-artifact-text
+                (str "sha256:" (sha256-hex runtime-artifact-text)))
               runtime-artifact-functions
               {p15-s23-stage2-runtime-artifact-function
                runtime-artifact-function
@@ -103188,7 +103267,9 @@
                p15-s23-stage2-runtime-artifact-println-function
                runtime-artifact-println-function
                p15-s23-stage2-runtime-artifact-println-two-function
-               runtime-artifact-println-two-function}
+               runtime-artifact-println-two-function
+               p15-s23-stage2-runtime-artifact-closed-plan-function
+               runtime-artifact-closed-plan-function}
               runtime-artifact-valid?
               (and (map? runtime-artifact-plan)
                    (= :gravity/stage2-hosted-core-compiled-plan
@@ -103202,6 +103283,15 @@
                    (map? runtime-artifact-concat-function)
                    (map? runtime-artifact-println-function)
                    (map? runtime-artifact-println-two-function)
+                   (map? runtime-artifact-closed-plan-function)
+                   (= (conj
+                       p15-s23-stage2-runtime-artifact-closed-plan-helper-functions
+                       p15-s23-stage2-runtime-artifact-closed-plan-function)
+                      (set (keys runtime-artifact-closed-functions)))
+                   (= p15-s23-stage2-runtime-artifact-expected-source-content-hash
+                      runtime-artifact-source-content-hash)
+                   (= p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+                      runtime-artifact-closed-function-hashes)
                    (seq (:instructions runtime-artifact-function))
                    (seq (:instructions runtime-artifact-concat-function))
                    (seq (:instructions runtime-artifact-println-function))
@@ -103262,7 +103352,7 @@
            :runtime-source-content-hash source-content-hash
            :runtime-artifact-source-path runtime-artifact-source
            :runtime-artifact-source-content-hash
-           (str "sha256:" (sha256-hex runtime-artifact-text))
+           runtime-artifact-source-content-hash
            :runtime-artifact-plan runtime-artifact-plan
            :runtime-artifact-effects
            (get-in runtime-artifact-plan [:module :effects])
@@ -103275,6 +103365,15 @@
            p15-s23-stage2-runtime-artifact-println-function
            :runtime-artifact-println-two-function
            p15-s23-stage2-runtime-artifact-println-two-function
+           :runtime-artifact-closed-plan-function
+           p15-s23-stage2-runtime-artifact-closed-plan-function
+           :runtime-artifact-closed-plan-function-hash
+           (get runtime-artifact-closed-function-hashes
+                p15-s23-stage2-runtime-artifact-closed-plan-function)
+           :runtime-artifact-closed-plan-helper-functions
+           p15-s23-stage2-runtime-artifact-closed-plan-helper-functions
+           :runtime-artifact-closed-function-hashes
+           runtime-artifact-closed-function-hashes
            :runtime-artifact-println-over-two-boundary
            p15-s23-stage2-runtime-artifact-println-over-two-boundary
            :runtime-artifact-functions
@@ -103282,7 +103381,8 @@
                         [p15-s23-stage2-runtime-artifact-function
                          p15-s23-stage2-runtime-artifact-concat-function
                          p15-s23-stage2-runtime-artifact-println-function
-                         p15-s23-stage2-runtime-artifact-println-two-function])
+                         p15-s23-stage2-runtime-artifact-println-two-function
+                         p15-s23-stage2-runtime-artifact-closed-plan-function])
            :runtime-artifact-generic-bridge-residual?
            true
            :runtime-artifact-hash runtime-artifact-hash
@@ -103292,13 +103392,22 @@
             :runtime-rule-hash runtime-rule-hash
             :runtime-kernel-rule-hash kernel-rule-hash
             :runtime-artifact-source
-            {:sha256 (str "sha256:" (sha256-hex runtime-artifact-text))
+            {:sha256 runtime-artifact-source-content-hash
              :artifact-hash runtime-artifact-hash
              :function p15-s23-stage2-runtime-artifact-function
              :concat-function p15-s23-stage2-runtime-artifact-concat-function
              :println-function p15-s23-stage2-runtime-artifact-println-function
              :println-two-function
              p15-s23-stage2-runtime-artifact-println-two-function
+             :closed-plan-function
+             p15-s23-stage2-runtime-artifact-closed-plan-function
+             :closed-plan-function-hash
+             (get runtime-artifact-closed-function-hashes
+                  p15-s23-stage2-runtime-artifact-closed-plan-function)
+             :closed-plan-helper-functions
+             p15-s23-stage2-runtime-artifact-closed-plan-helper-functions
+             :closed-function-hashes
+             runtime-artifact-closed-function-hashes
              :println-over-two-boundary
              p15-s23-stage2-runtime-artifact-println-over-two-boundary
              :generic-bridge-residual? true}}})))))
@@ -103466,6 +103575,217 @@
 (def stage2-runtime-derived-source-targets
   #{:jvm :c :c-hosted :c11 :js :js-ts})
 
+(def p15-s23-closed-runtime-operations
+  #{:literal :quote :local :builtin-call :println :do :if :let})
+
+(def p15-s23-closed-runtime-max-depth 128)
+(def p15-s23-closed-runtime-max-nodes 128)
+
+(defn p15-s23-closed-runtime-plan-validation!
+  "Validate the exact public closed-plan subset before the Gravity executor is
+  invoked.  The walk is iterative, bounded, and carries lexical bindings, so a
+  hostile plan cannot reach recursive Gravity evaluation or fail through the
+  host stack."
+  [source-path requested-target plan]
+  (let [entrypoint (:entrypoint plan)
+        definition (get-in plan [:functions entrypoint])]
+    (when-not (and (symbol? entrypoint)
+                   (map? definition)
+                   (integer? (:arity definition))
+                   (zero? (:arity definition))
+                   (vector? (:params definition))
+                   (empty? (:params definition))
+                   (vector? (:instructions definition)))
+      (p15-s23-stage2-runtime-executor-fail!
+       "P15S23X002" source-path definition
+       {:target requested-target
+        :missing-fact :closed-plan-entrypoint-shape}))
+    (loop [pending (vec (map (fn [instruction]
+                               {:instruction instruction
+                                :locals #{}
+                                :depth 1})
+                             (:instructions definition)))
+           visited 0]
+      (if-let [{:keys [instruction locals depth]} (peek pending)]
+        (let [pending (pop pending)
+              visited (inc visited)
+              op (when (map? instruction) (:op instruction))]
+          (when (or (> depth p15-s23-closed-runtime-max-depth)
+                    (> visited p15-s23-closed-runtime-max-nodes))
+            (p15-s23-stage2-runtime-executor-fail!
+             "P15S23X002" source-path instruction
+             {:target requested-target
+              :missing-fact :closed-plan-bounds
+              :maximum-depth p15-s23-closed-runtime-max-depth
+              :maximum-nodes p15-s23-closed-runtime-max-nodes
+              :observed-depth depth
+              :observed-nodes visited}))
+          (when-not (and (map? instruction)
+                         (contains? p15-s23-closed-runtime-operations op))
+            (p15-s23-stage2-runtime-executor-fail!
+             "P15S23X002" source-path instruction
+             {:target requested-target
+              :missing-fact :closed-plan-operation
+              :unsupported-operation op}))
+          (case op
+            :literal
+            (do
+              (when-not (c-backend-runtime-literal? (:value instruction))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-literal}))
+              (recur pending visited))
+            :quote
+            (do
+              (when-not (c-backend-runtime-literal? (:value instruction))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-literal}))
+              (recur pending visited))
+            :local
+            (do
+              (when-not (and (symbol? (:name instruction))
+                             (contains? locals (:name instruction)))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-local-binding
+                  :local (:name instruction)}))
+              (recur pending visited))
+            :builtin-call
+            (let [args (:args instruction)
+                  observed-arity (when (vector? args) (count args))]
+              (when-not (and (= 'str (:function instruction))
+                             (vector? args))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-builtin
+                  :function (:function instruction)
+                  :actual-arity observed-arity}))
+              (when-not (contains? #{1 2} observed-arity)
+                (p15-s23-stage2-runtime-fail-call-arity!
+                 "L2-BUILTIN-ARITY" plan (:function instruction)
+                 (if (coll? args) args []) "1 or 2"))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:instruction child
+                                   :locals locals
+                                   :depth (inc depth)})
+                                args))
+                     visited))
+            :println
+            (let [args (:args instruction)
+                  observed-arity (when (vector? args) (count args))]
+              (when-not (and (vector? args)
+                             (<= observed-arity
+                                 p15-s23-closed-runtime-max-nodes)
+                             (= :io/write (:effect instruction))
+                             (= :io/stdout (:capability instruction)))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-println-contract
+                  :actual-arity observed-arity}))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:instruction child
+                                   :locals locals
+                                   :depth (inc depth)})
+                                args))
+                     visited))
+            :do
+            (do
+              (when-not (vector? (:body instruction))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-do-shape}))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:instruction child
+                                   :locals locals
+                                   :depth (inc depth)})
+                                (:body instruction)))
+                     visited))
+            :if
+            (do
+              (when-not (and (map? (:test instruction))
+                             (map? (:then instruction))
+                             (map? (:else instruction)))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-if-shape}))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:instruction child
+                                   :locals locals
+                                   :depth (inc depth)})
+                                [(:test instruction)
+                                 (:then instruction)
+                                 (:else instruction)]))
+                     visited))
+            :let
+            (let [bindings (:bindings instruction)
+                  body (:body instruction)]
+              (when-not (and (vector? bindings)
+                             (vector? body)
+                             (every? #(and (map? %)
+                                           (symbol? (:name %))
+                                           (map? (:expr %)))
+                                     bindings))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact :closed-plan-let-shape}))
+              (let [binding-names (mapv :name bindings)
+                    duplicate (first (for [name binding-names
+                                           :when (> (count
+                                                     (filter #{name}
+                                                             binding-names))
+                                                    1)]
+                                       name))
+                    next-locals (into locals binding-names)]
+                (when duplicate
+                  (p15-s23-stage2-runtime-executor-fail!
+                   "P15S23X002" source-path instruction
+                   {:target requested-target
+                    :missing-fact :closed-plan-let-binding
+                    :duplicate-local duplicate}))
+                ;; Binding expressions are evaluated left-to-right.  Carry the
+                ;; preceding names into each validation frame, matching the
+                ;; lexical environment used by the Gravity implementation.
+                (let [binding-frames
+                      (:frames
+                       (reduce
+                        (fn [{:keys [frames scope]} binding]
+                          {:frames
+                           (conj frames
+                                 {:instruction (:expr binding)
+                                  :locals scope
+                                  :depth (inc depth)})
+                           :scope (conj scope (:name binding))})
+                        {:frames [] :scope locals}
+                        bindings))
+                      body-frames
+                      (map (fn [child]
+                             {:instruction child
+                              :locals next-locals
+                              :depth (inc depth)})
+                           body)]
+                  (recur (into pending (concat binding-frames body-frames))
+                         visited))))))
+        {:artifact :gravity/p15-s23-runtime-closed-plan-validation-record
+         :status :complete
+         :entrypoint entrypoint
+         :operation-set p15-s23-closed-runtime-operations
+         :node-count visited
+         :maximum-depth p15-s23-closed-runtime-max-depth
+         :maximum-nodes p15-s23-closed-runtime-max-nodes}))))
+
 (defn stage2-runtime-derived-packet
   "Build the target-neutral, verified stage2 packet shared by executable
   backends.  The packet owns source/front-end/plan/runtime authenticity and
@@ -103496,6 +103816,15 @@
              (:emitter stage2-rule) source-path source-text)
             (catch clojure.lang.ExceptionInfo ex
               (throw ex))
+            (catch StackOverflowError ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X002" source-path nil
+               {:target requested-target
+                :cause-message (.getMessage ex)
+                :missing-fact :closed-plan-bounds
+                :boundary :source-to-stage2-plan
+                :maximum-depth p15-s23-closed-runtime-max-depth
+                :maximum-nodes p15-s23-closed-runtime-max-nodes}))
             (catch Exception ex
               (stage2-runtime-derived-packet-fail!
                "C14-UNSUPPORTED"
@@ -103555,6 +103884,9 @@
              {:source-declared-target source-declared-target
               :requested-target requested-target
               :missing-fact :target-constraint-compatibility}))
+          closed-plan-validation
+          (p15-s23-closed-runtime-plan-validation!
+           source-path requested-target plan)
           compiler-artifact-record
           {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
            :source-content-hash
@@ -103615,6 +103947,15 @@
              source-path source-text)
             (catch clojure.lang.ExceptionInfo ex
               (throw ex))
+            (catch StackOverflowError ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X002" source-path nil
+               {:target requested-target
+                :cause-message (.getMessage ex)
+                :missing-fact :closed-plan-bounds
+                :boundary :stage2-driver-execution
+                :maximum-depth p15-s23-closed-runtime-max-depth
+                :maximum-nodes p15-s23-closed-runtime-max-nodes}))
             (catch Exception ex
               (p15-s23-stage2-compiler-driver-fail!
                "P15S23Y003" source-path nil
@@ -103659,6 +104000,64 @@
                 :driver-engine (:driver-engine stage2-driver-rule)
                 :driver-rule-hash (:driver-rule-hash stage2-driver-rule)
                 :missing-fact :stage2-driver-plan-equivalence}))
+          closed-plan-execution
+          (try
+            (p15-s23-stage2-runtime-artifact-invoke
+             stage2-runtime-rule
+             p15-s23-stage2-runtime-artifact-closed-plan-function
+             [plan])
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch StackOverflowError ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X002" source-path nil
+               {:target requested-target
+                :cause-message (.getMessage ex)
+                :missing-fact :closed-plan-bounds
+                :maximum-depth p15-s23-closed-runtime-max-depth
+                :maximum-nodes p15-s23-closed-runtime-max-nodes}))
+            (catch Exception ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X003" source-path nil
+               {:target requested-target
+                :cause-message (.getMessage ex)
+                :missing-fact :gravity-closed-plan-execution})))
+          _ (when-not
+              (and
+               (= :gravity/p15-s23-runtime-closed-plan-execution-record
+                  (:artifact closed-plan-execution))
+               (= (:entrypoint plan) (:entrypoint closed-plan-execution))
+               (string? (:stdout closed-plan-execution))
+               (= :complete (:status closed-plan-execution))
+               (true? (:clojure-seed-boundary? closed-plan-execution))
+               (false? (:self-hosted? closed-plan-execution)))
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X003" source-path closed-plan-execution
+               {:target requested-target
+                :missing-fact :gravity-closed-plan-execution-record}))
+          closed-plan-execution-hash
+          (str "sha256:"
+               (sha256-hex
+                (pr-str
+                 (c-backend-canonical-value closed-plan-execution))))
+          closed-plan-invocation
+          {:artifact :gravity/p15-s23-runtime-closed-plan-invocation-record
+           :function p15-s23-stage2-runtime-artifact-closed-plan-function
+           :function-hash
+           (:runtime-artifact-closed-plan-function-hash
+            stage2-runtime-rule)
+           :runtime-artifact-hash
+           (:runtime-artifact-hash stage2-runtime-rule)
+           :plan-id (:plan-id plan)
+           :execution-hash closed-plan-execution-hash
+           :stdout-hash
+           (str "sha256:" (sha256-hex (:stdout closed-plan-execution)))
+           :invocation-count 1
+           :invocation-count-scope :authoritative-packet-construction
+           :verification-replays-excluded? true
+           :status :complete
+           :clojure-seed-boundary? true
+           :self-hosted? false}
           stage2-runtime-execution
           (:stage2-runtime-execution-record stage2-driver-run)
           reference-output
@@ -103666,6 +104065,15 @@
             (execute-stage0-compiled-plan plan)
             (catch clojure.lang.ExceptionInfo ex
               (throw ex))
+            (catch StackOverflowError ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X002" source-path nil
+               {:target requested-target
+                :cause-message (.getMessage ex)
+                :missing-fact :closed-plan-bounds
+                :boundary :stage0-oracle-execution
+                :maximum-depth p15-s23-closed-runtime-max-depth
+                :maximum-nodes p15-s23-closed-runtime-max-nodes}))
             (catch Exception ex
               (stage2-runtime-derived-packet-fail!
                "C14-UNSUPPORTED"
@@ -103683,7 +104091,19 @@
                 :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
                 :stage2-runtime-output (:stdout stage2-runtime-execution)
                 :stage0-reference-output reference-output
-                :missing-fact :stage2-stage0-output-equivalence}))]
+                :missing-fact :stage2-stage0-output-equivalence}))
+          _ (when-not (and (= (:stdout closed-plan-execution)
+                              (:stdout stage2-runtime-execution))
+                           (= (:stdout closed-plan-execution)
+                              reference-output))
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X003" source-path closed-plan-execution
+               {:requested-source source-path
+                :target requested-target
+                :gravity-closed-plan-output (:stdout closed-plan-execution)
+                :clojure-stage2-output (:stdout stage2-runtime-execution)
+                :stage0-reference-output reference-output
+                :missing-fact :closed-plan-three-way-output-equivalence}))]
       {:kind :gravity/target-neutral-stage2-runtime-packet
        :status :complete
        :requested-target requested-target
@@ -103693,13 +104113,490 @@
        :provenance
        {:actual-paths
         {:stage2-expression-lowering-source
-         (p15-s23-stage2-compiler-artifact-source-path)}}
+         (p15-s23-stage2-compiler-artifact-source-path)
+         :stage2-runtime-artifact-source
+         (:runtime-artifact-source-path stage2-runtime-rule)}}
        :stage2-plan-emitter-rule stage2-rule
        :stage2-runtime-rule stage2-runtime-rule
+       :closed-plan-validation-record closed-plan-validation
+       :closed-plan-execution-record closed-plan-execution
+       :closed-plan-invocation-record closed-plan-invocation
        :stage2-compiler-driver-rule stage2-driver-rule
        :stage2-compiler-driver-record stage2-driver-run
        :stage2-runtime-execution-record stage2-runtime-execution
        :reference-output reference-output}))))
+
+(defn p15-s23-closed-runtime-packet-context
+  [source-path source-text requested-target]
+  {:source-path source-path
+   :source-text source-text
+   :source-content-hash (str "sha256:" (sha256-hex source-text))
+   :requested-target requested-target})
+
+(defn p15-s23-closed-runtime-packet-authentic?
+  "Authenticate a packet against source bytes supplied by its trusted caller.
+
+  Packet-local hashes only prove internal consistency, so the one-argument
+  form fails closed.  The context form independently recompiles the trusted
+  source with the pinned Gravity emitter and reloads the pinned Gravity runtime
+  before it validates identities or performs the verification replay."
+  ([packet]
+   false)
+  ([packet context]
+   (try
+     (let [context-valid?
+           (and (map? context)
+                (= #{:source-path :source-text :source-content-hash
+                     :requested-target}
+                   (set (keys context)))
+                (string? (:source-path context))
+                (string? (:source-text context))
+                (keyword? (:requested-target context))
+                (= (:source-content-hash context)
+                   (str "sha256:" (sha256-hex (:source-text context)))))
+           packet-plan (:plan packet)
+           derived-validation
+           (when context-valid?
+             (try
+               (p15-s23-closed-runtime-plan-validation!
+                (:source-path context)
+                (:requested-target context)
+                packet-plan)
+               (catch Throwable _ nil)))
+           trusted-stage2-rule
+           (when derived-validation
+             (try
+               (c-backend-stage2-plan-emitter-source-rule!
+                (:source-path context) (:requested-target context))
+               (catch Throwable _ nil)))
+           trusted-plan
+           (when trusted-stage2-rule
+             (try
+               (binding [*additional-bootstrap-targets*
+                         stage2-runtime-derived-source-targets]
+                 (p15-s23-stage2-plan-emitter-compile-source
+                  (:emitter trusted-stage2-rule)
+                  (:source-path context)
+                  (:source-text context)))
+               (catch Throwable _ nil)))
+           trusted-driver-rule
+           (when trusted-plan
+             (try
+               (c-backend-stage2-compiler-driver-source-rule!
+                (:source-path context) (:requested-target context))
+               (catch Throwable _ nil)))
+           trusted-runtime-rule
+           (when trusted-driver-rule
+             (try
+               (c-backend-stage2-runtime-source-rule!
+                (:source-path context) (:requested-target context))
+               (catch Throwable _ nil)))
+           trusted-driver-record
+           (when trusted-runtime-rule
+             (try
+               (binding [*additional-bootstrap-targets*
+                         stage2-runtime-derived-source-targets]
+                 (p15-s23-stage2-compiler-driver-run-source
+                  (:driver trusted-driver-rule)
+                  (:front-end trusted-driver-rule)
+                  (:emitter trusted-stage2-rule)
+                  (assoc (:runtime trusted-runtime-rule)
+                         :runtime-artifact-plan
+                         (:runtime-artifact-plan trusted-runtime-rule)
+                         :runtime-artifact-source-path
+                         (:runtime-artifact-source-path trusted-runtime-rule)
+                         :runtime-artifact-hash
+                         (:runtime-artifact-hash trusted-runtime-rule))
+                  (:source-path context)
+                  (:source-text context)))
+               (catch Throwable _ nil)))]
+       (if-not (and derived-validation trusted-plan trusted-driver-rule
+                    trusted-runtime-rule trusted-driver-record)
+         false
+         (let [validation (:closed-plan-validation-record packet)
+               execution (:closed-plan-execution-record packet)
+               invocation (:closed-plan-invocation-record packet)
+               runtime-rule (:stage2-runtime-rule packet)
+               emitter-rule (:stage2-plan-emitter-rule packet)
+               driver-rule (:stage2-compiler-driver-rule packet)
+               driver-record (:stage2-compiler-driver-record packet)
+               driver-plan (:stage2-plan driver-record)
+               normalize-plan
+               (fn [plan]
+                 (-> plan
+                     (dissoc :plan-id)
+                     (update :source dissoc :path)
+                     (update :module dissoc :source-path)))
+               packet-plan-base (normalize-plan packet-plan)
+               trusted-plan-base (normalize-plan trusted-plan)
+               driver-plan-base (normalize-plan driver-plan)
+               normalize-comparison
+               (fn [plan-base]
+                 ;; The stage2 source front end materializes an empty export
+                 ;; vector while the direct emitter omits it.  Both encode the
+                 ;; same module contract; normalize only for cross-path
+                 ;; comparison, never for the canonical plan id.
+                 (update-in plan-base [:module :exports]
+                            #(vec (or % []))))
+               normalize-emitter-rule #(dissoc % :source-path)
+               normalize-driver-rule #(dissoc % :driver-source-path)
+               normalize-runtime-rule
+               #(dissoc % :runtime-artifact-source-path :runtime-source-path)
+               raw-source-target (get-in trusted-plan [:module :target])
+               source-target (if (= :js raw-source-target)
+                               :js-ts
+                               raw-source-target)
+               expected-target-eligibility
+               (cond
+                 (= source-target (:requested-target context))
+                 (cond-> {:status :accepted
+                          :source-declared-target source-target
+                          :requested-target (:requested-target context)
+                          :selection :source-and-request-agree}
+                   (not= raw-source-target source-target)
+                   (assoc :raw-source-declared-target raw-source-target
+                          :source-target-alias-canonicalized? true))
+
+                 (= :jvm source-target)
+                 {:status :accepted
+                  :source-declared-target :jvm
+                  :requested-target (:requested-target context)
+                  :selection :explicit-bootstrap-seed-target-override
+                  :bootstrap-seed-target? true}
+
+                 :else nil)]
+           ;; Establish source/runtime trust before canonical hashing.  This
+           ;; both rejects coherent packet-local rewrites and prevents hostile
+           ;; unbounded values from reaching canonical printers.
+           (if-not
+            (and (= #{:kind :status :requested-target :target-eligibility
+                      :plan :stage2-compiler-artifact-record :provenance
+                      :stage2-plan-emitter-rule :stage2-runtime-rule
+                      :closed-plan-validation-record
+                      :closed-plan-execution-record
+                      :closed-plan-invocation-record
+                      :stage2-compiler-driver-rule
+                      :stage2-compiler-driver-record
+                      :stage2-runtime-execution-record :reference-output}
+                    (set (keys packet)))
+                 (= :gravity/target-neutral-stage2-runtime-packet
+                    (:kind packet))
+                 (= :complete (:status packet))
+                 (= expected-target-eligibility (:target-eligibility packet))
+                 (= (normalize-emitter-rule emitter-rule)
+                    (normalize-emitter-rule trusted-stage2-rule))
+                 (= (normalize-driver-rule driver-rule)
+                    (normalize-driver-rule trusted-driver-rule))
+                 (= (normalize-runtime-rule runtime-rule)
+                    (normalize-runtime-rule trusted-runtime-rule))
+                 (= driver-record trusted-driver-record)
+                 (= {:actual-paths
+                     {:stage2-expression-lowering-source
+                      (p15-s23-stage2-compiler-artifact-source-path)
+                      :stage2-runtime-artifact-source
+                      (:runtime-artifact-source-path trusted-runtime-rule)}}
+                    (:provenance packet))
+                 (= (normalize-comparison packet-plan-base)
+                    (normalize-comparison trusted-plan-base)
+                    (normalize-comparison driver-plan-base))
+                 (p15-s23-stage2-compiler-artifact-record-authentic?
+                  (:stage2-compiler-artifact-record packet))
+                 (p15-s23-stage2-compiler-artifact-record-matches-plan?
+                  (:stage2-compiler-artifact-record packet) trusted-plan))
+             false
+             (let [derived-plan-id
+                   (c4-artifact-id
+                    (c-backend-canonical-value packet-plan-base))
+                   derived-driver-plan-id
+                   (c4-artifact-id
+                    (c-backend-canonical-value driver-plan-base))
+                   runtime-artifact-plan
+                   (:runtime-artifact-plan runtime-rule)
+                   derived-runtime-artifact-hash
+                   (str "sha256:"
+                        (sha256-hex
+                         (pr-str
+                          (c-backend-stage2-runtime-artifact-hash-input
+                           runtime-artifact-plan))))
+                   derived-execution
+                   (try
+                     (p15-s23-stage2-runtime-artifact-invoke
+                      trusted-runtime-rule
+                      p15-s23-stage2-runtime-artifact-closed-plan-function
+                      [trusted-plan])
+                     (catch Throwable _ nil))
+                   execution-hash
+                   (str "sha256:"
+                        (sha256-hex
+                         (pr-str (c-backend-canonical-value execution))))
+                   stdout-hash
+                   (str "sha256:" (sha256-hex (:stdout execution)))]
+               (and (= (:requested-target context) (:requested-target packet))
+                    (= (:source-path context)
+                       (get-in packet-plan [:source :path]))
+                    (= (:source-content-hash context)
+                       (get-in packet-plan [:source :sha256]))
+                    (= (:source-content-hash context) (:source-id driver-record))
+                    (= (:source-path context) (:fixture driver-record))
+                    (= derived-driver-plan-id (:plan-id driver-plan))
+                    (= derived-driver-plan-id
+                       (:stage2-plan-id driver-record))
+                    (= (:stage2-runtime-execution-record packet)
+                       (:stage2-runtime-execution-record
+                        trusted-driver-record))
+                    (= (:reference-output packet)
+                       (:stage0-reference-output trusted-driver-record))
+                    (= :complete (:status validation))
+                    (= #{:artifact :status :entrypoint :operation-set
+                         :node-count :maximum-depth :maximum-nodes}
+                       (set (keys validation)))
+                    (= #{:artifact :entrypoint :entrypoint-result :stdout
+                         :status :clojure-seed-boundary? :self-hosted?}
+                       (set (keys execution)))
+                    (= #{:artifact :function :function-hash
+                         :runtime-artifact-hash :plan-id :execution-hash
+                         :stdout-hash :invocation-count
+                         :invocation-count-scope
+                         :verification-replays-excluded? :status
+                         :clojure-seed-boundary? :self-hosted?}
+                       (set (keys invocation)))
+                    (= (c-backend-canonical-value derived-validation)
+                       (c-backend-canonical-value validation))
+                    (= (c-backend-canonical-value derived-execution)
+                       (c-backend-canonical-value execution))
+                    (= (:entrypoint packet-plan) (:entrypoint validation))
+                    (= (:entrypoint packet-plan) (:entrypoint execution))
+                    (= derived-plan-id (:plan-id packet-plan))
+                    (= :gravity/p15-s23-runtime-closed-plan-execution-record
+                       (:artifact execution))
+                    (= :complete (:status execution))
+                    (= :gravity/p15-s23-runtime-closed-plan-invocation-record
+                       (:artifact invocation))
+                    (= :complete (:status invocation))
+                    (= p15-s23-stage2-runtime-artifact-expected-source-content-hash
+                       (:runtime-artifact-source-content-hash runtime-rule))
+                    (= p15-s23-stage2-runtime-artifact-expected-artifact-hash
+                       (:runtime-artifact-hash runtime-rule))
+                    (= derived-runtime-artifact-hash
+                       (:runtime-artifact-hash runtime-rule))
+                    (= p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+                       (:runtime-artifact-closed-function-hashes runtime-rule))
+                    (= (get
+                        p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+                        p15-s23-stage2-runtime-artifact-closed-plan-function)
+                       (:runtime-artifact-closed-plan-function-hash runtime-rule))
+                    (= 1 (:invocation-count invocation))
+                    (= :authoritative-packet-construction
+                       (:invocation-count-scope invocation))
+                    (true? (:verification-replays-excluded? invocation))
+                    (= p15-s23-stage2-runtime-artifact-closed-plan-function
+                       (:function invocation))
+                    (= (:runtime-artifact-closed-plan-function-hash runtime-rule)
+                       (:function-hash invocation))
+                    (= (:runtime-artifact-hash runtime-rule)
+                       (:runtime-artifact-hash invocation))
+                    (= (:plan-id packet-plan) (:plan-id invocation))
+                    (= execution-hash (:execution-hash invocation))
+                    (= stdout-hash (:stdout-hash invocation))
+                    (= (:stdout execution)
+                       (get-in packet [:stage2-runtime-execution-record
+                                       :stdout]))
+                    (= (:stdout execution) (:reference-output packet))
+                    (true? (:clojure-seed-boundary? execution))
+                    (false? (:self-hosted? execution))
+                    (true? (:clojure-seed-boundary? invocation))
+                    (false? (:self-hosted? invocation))))))))
+     (catch Throwable _ false))))
+
+(defn p15-s23-closed-runtime-target-record
+  "Build target evidence after the consumer has authenticated the packet once.
+  The replay record is distinct from the packet's authoritative invocation."
+  [packet]
+  (let [runtime-rule (:stage2-runtime-rule packet)
+        validation (:closed-plan-validation-record packet)
+        execution (:closed-plan-execution-record packet)
+        invocation (:closed-plan-invocation-record packet)
+        validation-product
+        (assoc (select-keys validation
+                            [:artifact :status :entrypoint :operation-set
+                             :maximum-depth :maximum-nodes])
+               :plan-id (:plan-id invocation))
+        validation-hash
+        (str "sha256:"
+             (sha256-hex
+              (pr-str
+               (c-backend-canonical-value validation-product))))
+        record
+        {:artifact :gravity/p15-s23-runtime-closed-plan-target-record
+         :runtime-artifact-source-content-hash
+         (:runtime-artifact-source-content-hash runtime-rule)
+         :runtime-artifact-hash (:runtime-artifact-hash runtime-rule)
+         :executor-function
+         (:runtime-artifact-closed-plan-function runtime-rule)
+         :executor-function-hash
+         (:runtime-artifact-closed-plan-function-hash runtime-rule)
+         :helper-function-hashes
+         (:runtime-artifact-closed-function-hashes runtime-rule)
+         :validation validation-product
+         :validation-hash validation-hash
+         :invocation
+         (select-keys invocation
+                      [:artifact :function :function-hash
+                       :runtime-artifact-hash :plan-id
+                       :stdout-hash :invocation-count
+                       :invocation-count-scope
+                       :verification-replays-excluded? :status])
+         :verification-replay
+         {:artifact
+          :gravity/p15-s23-runtime-closed-plan-verification-replay-record
+          :function p15-s23-stage2-runtime-artifact-closed-plan-function
+          :replay-count 1
+          :count-scope :consumer-packet-authentication
+          :included-in-authoritative-invocation-count? false
+          :status :passed}
+         :execution
+         {:artifact (:artifact execution)
+          :entrypoint (:entrypoint execution)
+          :plan-id (:plan-id invocation)
+          :stdout-hash (:stdout-hash invocation)
+          :status (:status execution)}
+         :primitive-boundary
+         {:kind :clojure-seed-pure-builtin-implementation
+          :primitives '#{= assoc conj count first get rest second str}
+          :effects #{}
+          :capabilities #{}}
+         :migration-comparison
+         {:clojure-stage2-executor? true
+          :stage0-oracle? true
+          :three-way-output-equivalent? true
+          :closed-plan-variadic-println? true}
+         :mir-derived? false
+         :clojure-seed-boundary? true
+         :self-hosted? false}]
+    (assoc record
+           :record-hash
+           (str "sha256:"
+                (sha256-hex
+                 (pr-str (c-backend-canonical-value record)))))))
+
+(defn p15-s23-closed-runtime-target-context
+  [packet]
+  {:plan-id (get-in packet [:plan :plan-id])
+   :entrypoint (get-in packet [:plan :entrypoint])
+   :stdout-hash
+   (str "sha256:"
+        (sha256-hex
+         (get-in packet [:closed-plan-execution-record :stdout])))})
+
+(defn p15-s23-closed-runtime-target-record-authentic?
+  ([record]
+   false)
+  ([record context]
+  (try
+   (let [digest? #(and (string? %)
+                      (boolean
+                       (re-matches #"sha256:[0-9a-f]{64}" %)))
+        expected-record-hash
+        (str "sha256:"
+             (sha256-hex
+              (pr-str
+               (c-backend-canonical-value
+                (dissoc record :record-hash)))))
+        validation (:validation record)
+        invocation (:invocation record)
+        verification-replay (:verification-replay record)
+        execution (:execution record)
+        expected-validation-hash
+        (str "sha256:"
+             (sha256-hex
+              (pr-str (c-backend-canonical-value validation))))]
+    (and (= #{:plan-id :entrypoint :stdout-hash}
+            (set (keys context)))
+         (= :gravity/p15-s23-runtime-closed-plan-target-record
+            (:artifact record))
+         (= #{:artifact :runtime-artifact-source-content-hash
+              :runtime-artifact-hash :executor-function
+              :executor-function-hash :helper-function-hashes
+              :validation :validation-hash :invocation :execution
+              :verification-replay
+              :primitive-boundary :migration-comparison :mir-derived?
+              :clojure-seed-boundary? :self-hosted? :record-hash}
+            (set (keys record)))
+         (= expected-record-hash (:record-hash record))
+         (= p15-s23-stage2-runtime-artifact-expected-source-content-hash
+            (:runtime-artifact-source-content-hash record))
+         (= p15-s23-stage2-runtime-artifact-expected-artifact-hash
+            (:runtime-artifact-hash record))
+         (= p15-s23-stage2-runtime-artifact-closed-plan-function
+            (:executor-function record))
+         (= (get
+             p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+             p15-s23-stage2-runtime-artifact-closed-plan-function)
+            (:executor-function-hash record))
+         (= p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
+            (:helper-function-hashes record))
+         (= :gravity/p15-s23-runtime-closed-plan-validation-record
+            (:artifact validation))
+         (= #{:artifact :status :entrypoint :operation-set
+              :maximum-depth :maximum-nodes :plan-id}
+            (set (keys validation)))
+         (= :complete (:status validation))
+         (= expected-validation-hash (:validation-hash record))
+         (= p15-s23-closed-runtime-operations (:operation-set validation))
+         (= p15-s23-closed-runtime-max-depth (:maximum-depth validation))
+         (= p15-s23-closed-runtime-max-nodes (:maximum-nodes validation))
+         (= :gravity/p15-s23-runtime-closed-plan-invocation-record
+            (:artifact invocation))
+         (= #{:artifact :function :function-hash :runtime-artifact-hash
+              :plan-id :stdout-hash :invocation-count
+              :invocation-count-scope :verification-replays-excluded?
+              :status}
+            (set (keys invocation)))
+         (= 1 (:invocation-count invocation))
+         (= :authoritative-packet-construction
+            (:invocation-count-scope invocation))
+         (true? (:verification-replays-excluded? invocation))
+         (= :complete (:status invocation))
+         (= (:executor-function record) (:function invocation))
+         (= (:executor-function-hash record) (:function-hash invocation))
+         (= (:runtime-artifact-hash record)
+            (:runtime-artifact-hash invocation))
+         (every? digest?
+                 [(:plan-id invocation) (:stdout-hash invocation)])
+         (= :gravity/p15-s23-runtime-closed-plan-execution-record
+            (:artifact execution))
+         (= #{:artifact :entrypoint :plan-id :stdout-hash :status}
+            (set (keys execution)))
+         (= :complete (:status execution))
+         (= (:plan-id validation) (:plan-id invocation))
+         (= (:plan-id execution) (:plan-id invocation))
+         (= (:entrypoint validation) (:entrypoint execution))
+         (= (:stdout-hash invocation) (:stdout-hash execution))
+         (= {:artifact
+             :gravity/p15-s23-runtime-closed-plan-verification-replay-record
+             :function p15-s23-stage2-runtime-artifact-closed-plan-function
+             :replay-count 1
+             :count-scope :consumer-packet-authentication
+             :included-in-authoritative-invocation-count? false
+             :status :passed}
+            verification-replay)
+         (= (:plan-id context) (:plan-id invocation))
+         (= (:entrypoint context) (:entrypoint execution))
+         (= (:stdout-hash context) (:stdout-hash execution))
+         (= {:kind :clojure-seed-pure-builtin-implementation
+             :primitives '#{= assoc conj count first get rest second str}
+             :effects #{}
+             :capabilities #{}}
+            (:primitive-boundary record))
+         (= {:clojure-stage2-executor? true
+             :stage0-oracle? true
+             :three-way-output-equivalent? true
+             :closed-plan-variadic-println? true}
+            (:migration-comparison record))
+         (false? (:mir-derived? record))
+         (true? (:clojure-seed-boundary? record))
+         (false? (:self-hosted? record))))
+   (catch Throwable _ false))))
 
 (defn c-backend-runtime-bytes
   [value]
@@ -104065,6 +104962,17 @@
                     :stage2-expression-lowering-source])
            stage2-runtime-rule (:stage2-runtime-rule shared-packet)
            stage2-driver-rule (:stage2-compiler-driver-rule shared-packet)
+           _ (when (and runtime-derived?
+                        (not
+                         (p15-s23-closed-runtime-packet-authentic?
+                          shared-packet
+                          (p15-s23-closed-runtime-packet-context
+                           source-path source-text target))))
+               (c-backend-fail!
+                "C14-INPUT"
+                "C backend received an unauthenticated closed runtime execution"
+                source-path target shared-packet
+                {:missing-fact :authenticated-closed-runtime-execution}))
            plan (if runtime-derived?
                   (:plan shared-packet)
                   (stage0-compiled-core-plan source-path source-text module))
@@ -104084,6 +104992,26 @@
            (:stage2-compiler-driver-record shared-packet)
            stage2-runtime-execution
            (:stage2-runtime-execution-record shared-packet)
+           closed-plan-validation
+           (:closed-plan-validation-record shared-packet)
+           closed-plan-execution
+           (:closed-plan-execution-record shared-packet)
+           closed-plan-invocation
+           (:closed-plan-invocation-record shared-packet)
+           closed-plan-target-record
+           (when runtime-derived?
+             (p15-s23-closed-runtime-target-record shared-packet))
+           _ (when (and runtime-derived?
+                        (not
+                         (p15-s23-closed-runtime-target-record-authentic?
+                          closed-plan-target-record
+                          (p15-s23-closed-runtime-target-context
+                           shared-packet))))
+               (c-backend-fail!
+                "C14-INPUT"
+                "C backend received an unauthenticated closed runtime target record"
+                source-path target closed-plan-target-record
+                {:missing-fact :authenticated-closed-runtime-target-record}))
            clojure-stage0-output
            (if runtime-derived?
              (:reference-output shared-packet)
@@ -104285,6 +105213,16 @@
                     (:runtime-artifact-println-function stage2-runtime-rule)
                     :runtime-artifact-println-two-function
                     (:runtime-artifact-println-two-function stage2-runtime-rule)
+                    :runtime-artifact-closed-plan-function
+                    (:runtime-artifact-closed-plan-function stage2-runtime-rule)
+                    :runtime-artifact-closed-plan-function-hash
+                    (:runtime-artifact-closed-plan-function-hash
+                     stage2-runtime-rule)
+                    :closed-plan-validation-record closed-plan-validation
+                    :closed-plan-execution-record closed-plan-execution
+                    :closed-plan-invocation-record closed-plan-invocation
+                    :closed-plan-runtime-target-record
+                    closed-plan-target-record
                     :runtime-artifact-println-over-two-boundary
                     (:runtime-artifact-println-over-two-boundary
                      stage2-runtime-rule)
@@ -104431,6 +105369,16 @@
                     (:runtime-artifact-println-function stage2-runtime-rule)
                     :runtime-artifact-println-two-function
                     (:runtime-artifact-println-two-function stage2-runtime-rule)
+                    :runtime-artifact-closed-plan-function
+                    (:runtime-artifact-closed-plan-function stage2-runtime-rule)
+                    :runtime-artifact-closed-plan-function-hash
+                    (:runtime-artifact-closed-plan-function-hash
+                     stage2-runtime-rule)
+                    :closed-plan-validation-record closed-plan-validation
+                    :closed-plan-execution-record closed-plan-execution
+                    :closed-plan-invocation-record closed-plan-invocation
+                    :closed-plan-runtime-target-record
+                    closed-plan-target-record
                     :runtime-artifact-println-over-two-boundary
                     (:runtime-artifact-println-over-two-boundary
                      stage2-runtime-rule)
@@ -104501,7 +105449,13 @@
                                     (:plan-assembly-artifact-hash
                                      stage2-compiler-artifact-record)
                                     :runtime-artifact-hash
-                                    (:runtime-artifact-hash stage2-runtime-rule)))
+                                    (:runtime-artifact-hash stage2-runtime-rule)
+                                    :closed-plan-execution-hash
+                                    (:execution-hash closed-plan-invocation)
+                                    :closed-plan-function-hash
+                                    (:function-hash closed-plan-invocation)
+                                    :closed-plan-target-record-hash
+                                    (:record-hash closed-plan-target-record)))
            artifact-base {:kind :gravity/c-backend-artifact
                           :task "HOSTED-C-TARGET"
                           :status :complete
@@ -104551,6 +105505,26 @@
                           (when runtime-derived?
                             (:runtime-artifact-println-two-function
                              stage2-runtime-rule))
+                          :runtime-artifact-closed-plan-function
+                          (when runtime-derived?
+                            (:runtime-artifact-closed-plan-function
+                             stage2-runtime-rule))
+                          :runtime-artifact-closed-plan-function-hash
+                          (when runtime-derived?
+                            (:runtime-artifact-closed-plan-function-hash
+                             stage2-runtime-rule))
+                          :closed-plan-validation-record
+                          (when runtime-derived? closed-plan-validation)
+                          :closed-plan-execution-record
+                          (when runtime-derived? closed-plan-execution)
+                          :closed-plan-invocation-record
+                          (when runtime-derived? closed-plan-invocation)
+                          :closed-plan-runtime-target-record
+                          (when runtime-derived? closed-plan-target-record)
+                          :closed-runtime-validation-context
+                          (when runtime-derived?
+                            (p15-s23-closed-runtime-target-context
+                             shared-packet))
                           :runtime-artifact-println-over-two-boundary
                           (when runtime-derived?
                             (:runtime-artifact-println-over-two-boundary
@@ -104648,7 +105622,10 @@
                             runtime-derived?
                             (assoc :actual-paths
                                    {:stage2-expression-lowering-source
-                                    stage2-compiler-artifact-source-path}))
+                                    stage2-compiler-artifact-source-path
+                                    :stage2-runtime-artifact-source
+                                    (:runtime-artifact-source-path
+                                     stage2-runtime-rule)}))
                           :provenance-hash provenance-hash
                           :safety {:mode (get-in plan [:module :safety])
                                    :unsafe-islands []
@@ -104780,27 +105757,15 @@
 
 (defn js-ts-backend-validate-plan!
   "Apply the JS/TS-specific closed-surface rules after the shared stage2/C
-  packet has validated instruction shape.  The current Gravity runtime artifact
-  owns println arities zero through two; larger arities remain an explicit host
-  compatibility boundary and are rejected for this target."
+  packet has validated instruction shape.  Variadic println remains bounded by
+  the shared closed-plan node limit and lowers to ordered byte writes."
   [source-path plan]
-  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
-    (when-let [instruction (peek pending)]
-      (let [pending (pop pending)
-            op (:op instruction)]
-        (when (and (= :println op) (> (count (:args instruction)) 2))
-          (js-ts-backend-fail!
-           "C14-UNSUPPORTED"
-           "JS/TS runtime-derived lowering does not implement this println arity"
-           source-path instruction
-           {:unsupported-op :println
-            :observed-arity (count (:args instruction))
-            :supported-arities [0 1 2]
-            :missing-fact :gravity-runtime-println-arity
-            :fallback-status :rejected}))
-        (recur (into pending
-                     (remove nil?
-                             (c-backend-instruction-children instruction)))))))
+  ;; Source-path and plan remain explicit arguments so future target-specific
+  ;; representation checks can fail at this boundary without changing callers.
+  (when-not (and (string? source-path) (map? plan))
+    (js-ts-backend-fail!
+     "C14-INPUT" "JS/TS backend requires a source-bound stage2 plan"
+     source-path plan {:missing-fact :source-bound-stage2-plan}))
   :passed)
 
 (defn js-ts-backend-bytes-source
@@ -105017,12 +105982,20 @@
        ",\"engines\":{\"node\":\">=20 <21\"}}\n"))
 
 (defn js-ts-backend-validate-manifest!
-  [source-path manifest]
+  ([source-path manifest]
+   (js-ts-backend-fail!
+    "B6-MANIFEST"
+    "JS/TS manifest validation requires trusted runtime context"
+    source-path manifest
+    {:missing-fact :closed-runtime-validation-context}))
+  ([source-path manifest closed-runtime-context]
   (let [required-top-level
         [:artifact :schema-version :backend :profile :target :module :emits
          :content-hashes :input :effects :capabilities :safety :host-globals
          :numeric-representation :nullish-policy :exception-policy
-         :typescript-compiler :conformance :clojure-seed-boundary?
+         :typescript-compiler :conformance :closed-plan-runtime
+         :manifest-hash
+         :clojure-seed-boundary?
          :self-hosted? :release-grade? :diagnostics]
         missing (vec (remove #(contains? manifest %) required-top-level))
         runtime-version (get-in manifest [:target :runtime-version])
@@ -105042,6 +106015,14 @@
                            (boolean
                             (re-matches #"sha256:[0-9a-f]{64}" %)))
                      (vals (:content-hashes manifest))))
+        manifest-hash-valid?
+        (and (string? (:manifest-hash manifest))
+             (= (:manifest-hash manifest)
+                (str "sha256:"
+                     (sha256-hex
+                      (pr-str
+                       (c-backend-canonical-value
+                        (dissoc manifest :manifest-hash)))))))
         writes-stdout? (true? (get-in manifest [:module :side-effects]))
         stdout-authorized?
         (contains? (set (:capabilities manifest)) :io/stdout)
@@ -105055,6 +106036,7 @@
              [])
            (:host-globals manifest))
         input (:input manifest)
+        closed-plan-runtime (:closed-plan-runtime manifest)
         eligibility (:target-eligibility input)
         source-declared-target (:source-declared-target input)
         valid-input?
@@ -105147,6 +106129,7 @@
                    (or (not writes-stdout?) stdout-authorized?)
                    host-global-valid?
                    valid-hashes?
+                   manifest-hash-valid?
                    (= {:mode :hosted-scalar-spelling
                        :bytes :utf8
                        :lossy-number-lowering? false}
@@ -105165,6 +106148,20 @@
                        :per-form-origin-preserved? false
                        :b6-conforming? false}
                       (:conformance manifest))
+                   (p15-s23-closed-runtime-target-record-authentic?
+                    closed-plan-runtime closed-runtime-context)
+                   (= :complete
+                      (get-in closed-plan-runtime [:validation :status]))
+                   (= 1
+                      (get-in closed-plan-runtime
+                              [:invocation :invocation-count]))
+                   (= :complete
+                      (get-in closed-plan-runtime [:execution :status]))
+                   (boolean
+                    (re-matches #"sha256:[0-9a-f]{64}"
+                                (str (:record-hash closed-plan-runtime))))
+                   (true? (:clojure-seed-boundary? closed-plan-runtime))
+                   (false? (:self-hosted? closed-plan-runtime))
                    (= {:mode :safe :unsafe-islands [] :status :preserved}
                       (:safety manifest))
                    (true? (:clojure-seed-boundary? manifest))
@@ -105178,8 +106175,9 @@
         :target-valid? valid-target?
         :input-valid? valid-input?
         :content-hashes-valid? valid-hashes?
+        :manifest-hash-valid? manifest-hash-valid?
         :missing-fact :complete-js-ts-manifest})))
-  :passed)
+  :passed))
 
 (defn js-ts-backend-run-node-process!
   [arguments source-path diagnostic-id message]
@@ -105377,7 +106375,11 @@
         source-path nil {:missing-fields [:output-path]}))
      (let [node-version (js-ts-backend-node-version! source-path)
            packet (stage2-runtime-derived-packet
-                   source-path source-text target)
+                   source-path source-text target
+                   {:validate-plan!
+                    (fn [candidate-plan]
+                      (js-ts-backend-validate-plan!
+                       source-path candidate-plan))})
            compiler-artifact-record
            (:stage2-compiler-artifact-record packet)
            _ (when-not
@@ -105389,6 +106391,16 @@
                 source-path compiler-artifact-record
                 {:missing-fact
                  :authenticated-stage2-compiler-artifact-record}))
+           _ (when-not
+              (p15-s23-closed-runtime-packet-authentic?
+               packet
+               (p15-s23-closed-runtime-packet-context
+                source-path source-text target))
+               (js-ts-backend-fail!
+                "C14-INPUT"
+                "JS/TS backend received an unauthenticated closed runtime execution"
+                source-path packet
+                {:missing-fact :authenticated-closed-runtime-execution}))
            compiler-artifact-source-path
            (get-in packet
                    [:provenance :actual-paths
@@ -105397,6 +106409,19 @@
            runtime-record (:stage2-runtime-execution-record packet)
            runtime-rule (:stage2-runtime-rule packet)
            driver-rule (:stage2-compiler-driver-rule packet)
+           closed-plan-runtime
+           (p15-s23-closed-runtime-target-record packet)
+           closed-runtime-context
+           (p15-s23-closed-runtime-target-context packet)
+           _ (when-not
+              (p15-s23-closed-runtime-target-record-authentic?
+               closed-plan-runtime
+               closed-runtime-context)
+               (js-ts-backend-fail!
+                "C14-INPUT"
+                "JS/TS backend received an unauthenticated closed runtime target record"
+                source-path closed-plan-runtime
+                {:missing-fact :authenticated-closed-runtime-target-record}))
            plan (:plan packet)
            _ (when-not
               (p15-s23-stage2-compiler-artifact-record-matches-plan?
@@ -105557,17 +106582,18 @@
                           :source-map-coverage :source-unit-only
                           :per-form-origin-preserved? false
                           :b6-conforming? false}
+            :closed-plan-runtime closed-plan-runtime
             :release-grade? false
             :clojure-seed-boundary? true
             :self-hosted? false
             :diagnostics []}
            manifest-hash
-           (do
-             (js-ts-backend-validate-manifest! source-path manifest-input)
            (str "sha256:"
                 (sha256-hex
-                 (pr-str (c-backend-canonical-value manifest-input)))))
+                 (pr-str (c-backend-canonical-value manifest-input))))
            manifest (assoc manifest-input :manifest-hash manifest-hash)
+           _ (js-ts-backend-validate-manifest!
+              source-path manifest closed-runtime-context)
            provenance-input
            {:artifact :gravity/js-ts-provenance
             :schema-version 1
@@ -105581,6 +106607,7 @@
             :stage2-runtime-rule-hash (:runtime-rule-hash runtime-rule)
             :stage2-runtime-artifact-hash
             (:runtime-artifact-hash runtime-rule)
+            :closed-plan-runtime closed-plan-runtime
             :backend :gravity.backend/js-ts
             :backend-version 1
             :target js-ts-backend-target
@@ -105603,7 +106630,9 @@
                   {:source source-path
                    :outputs paths
                    :stage2-expression-lowering-source
-                   compiler-artifact-source-path})
+                   compiler-artifact-source-path
+                   :stage2-runtime-artifact-source
+                   (:runtime-artifact-source-path runtime-rule)})
            identity-input
            {:kind :gravity/js-ts-backend-artifact
             :source-content-hash source-hash
@@ -105615,7 +106644,9 @@
             :source-map-hash source-map-hash
             :package-hash package-hash
             :manifest-hash manifest-hash
-            :provenance-hash provenance-hash}
+            :provenance-hash provenance-hash
+            :closed-plan-target-record-hash
+            (:record-hash closed-plan-runtime)}
            artifact
            {:kind :gravity/js-ts-backend-artifact
             :task "HOSTED-JS-TS-TARGET"
@@ -105645,6 +106676,8 @@
             :stage2-compiler-driver-record driver-record
             :stage2-runtime-execution-record
             runtime-record
+            :closed-plan-runtime-target-record closed-plan-runtime
+            :closed-runtime-validation-context closed-runtime-context
             :compiled-execution-output-bytes (:stdout-bytes execution)
             :compiled-execution-output expected-output
             :seed-boundary {:clojure-seed-boundary? true
@@ -105723,27 +106756,11 @@
          {:unsupported-op (:unsupported-op (ex-data ex))
           :missing-fact :jvm-stage2-lowering-rule})
         (throw ex))))
-  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
-    (when-let [instruction (peek pending)]
-      (let [pending (pop pending)]
-        (when (and (= :println (:op instruction))
-                   (> (count (:args instruction)) 2))
-          (jvm-backend-fail!
-           "C14-UNSUPPORTED"
-           "JVM runtime-derived lowering does not implement this println arity"
-           source-path instruction
-           {:unsupported-op :println
-            :observed-arity (count (:args instruction))
-            :supported-arities [0 1 2]
-            :missing-fact :gravity-runtime-println-arity}))
-        (recur (into pending
-                     (remove nil?
-                             (c-backend-instruction-children instruction)))))))
   :passed)
 
 (defn jvm-backend-validate-packet!
   [source-path packet trusted-emitter-rule trusted-driver-rule
-   trusted-runtime-rule trusted-plan]
+   trusted-runtime-rule trusted-plan packet-context]
   (let [emitter-hash (get-in packet
                              [:stage2-plan-emitter-rule :source-rule-hash])
         trusted-emitter-hash (:source-rule-hash trusted-emitter-rule)
@@ -105796,6 +106813,7 @@
           (= trusted-driver-hash driver-hash)
           (= trusted-runtime-hash runtime-hash)
           (= trusted-runtime-artifact-hash runtime-artifact-hash)
+          (p15-s23-closed-runtime-packet-authentic? packet packet-context)
           (p15-s23-stage2-compiler-artifact-record-authentic?
            compiler-record)
           (p15-s23-stage2-compiler-artifact-record-matches-plan?
@@ -106184,16 +107202,22 @@
 
 (defn jvm-backend-validate-manifest!
   ([source-path manifest]
-   (jvm-backend-validate-manifest! source-path manifest nil))
+   (jvm-backend-fail!
+    "B5-MANIFEST"
+    "JVM manifest validation requires trusted artifact context"
+    source-path manifest
+    {:missing-fact :jvm-manifest-validation-context}))
   ([source-path manifest expected-context]
    (let [required
         [:artifact :schema-version :backend :profile :target :module :emits
          :content-hashes :input :effects :capabilities :safety
          :managed-runtime :host-boundaries :toolchain :conformance
+         :closed-plan-runtime
          :clojure-seed-boundary? :self-hosted? :release-grade? :diagnostics]
         missing (vec (remove #(contains? manifest %) required))
         hashes (:content-hashes manifest)
         input (:input manifest)
+        closed-plan-runtime (:closed-plan-runtime manifest)
         inferred-effects (get-in manifest [:effects :inferred] #{})
         println-count (get-in input [:instruction-summary :println] 0)
         writes-stdout? (and (set? inferred-effects)
@@ -106275,13 +107299,16 @@
                         (c-backend-canonical-value
                          (dissoc manifest :manifest-hash)))))))
          expected-context-valid?
-         (or (nil? expected-context)
-             (and (= (:input expected-context) input)
-                  (= (:effects expected-context) (:effects manifest))
-                  (= (:capabilities expected-context)
-                     (:capabilities manifest))
-                  (= (:content-hashes expected-context)
-                     (:content-hashes manifest))))]
+         (and (map? expected-context)
+              (= #{:input :effects :capabilities :content-hashes
+                   :closed-runtime-context}
+                 (set (keys expected-context)))
+              (= (:input expected-context) input)
+              (= (:effects expected-context) (:effects manifest))
+              (= (:capabilities expected-context)
+                 (:capabilities manifest))
+              (= (:content-hashes expected-context)
+                 (:content-hashes manifest)))]
     (when-not
      (and (empty? missing)
           (= :gravity/jvm-backend-manifest (:artifact manifest))
@@ -106348,6 +107375,15 @@
               :per-form-origin-preserved? false :b5-conforming? false
               :verified-mir-input? false}
              (:conformance manifest))
+          (p15-s23-closed-runtime-target-record-authentic?
+           closed-plan-runtime
+           (:closed-runtime-context expected-context))
+          (= :complete (get-in closed-plan-runtime [:validation :status]))
+          (= 1 (get-in closed-plan-runtime [:invocation :invocation-count]))
+          (= :complete (get-in closed-plan-runtime [:execution :status]))
+          (digest? (:record-hash closed-plan-runtime))
+          (true? (:clojure-seed-boundary? closed-plan-runtime))
+          (false? (:self-hosted? closed-plan-runtime))
           (true? (:clojure-seed-boundary? manifest))
           (false? (:self-hosted? manifest))
           (false? (:release-grade? manifest))
@@ -106406,8 +107442,12 @@
                         *jvm-backend-javac-command* source-path)
          java-version (jvm-backend-tool-version!
                        *jvm-backend-java-command* source-path)
-         packet (stage2-runtime-derived-packet source-path source-text
-                                               jvm-backend-target)
+         packet (stage2-runtime-derived-packet
+                 source-path source-text jvm-backend-target
+                 {:validate-plan!
+                  (fn [candidate-plan]
+                    (jvm-backend-validate-plan!
+                     source-path candidate-plan))})
          trusted-emitter-rule
          (c-backend-stage2-plan-emitter-source-rule!
           source-path jvm-backend-target)
@@ -106422,7 +107462,9 @@
           (:emitter trusted-emitter-rule) source-path source-text)
          _ (jvm-backend-validate-packet!
             source-path packet trusted-emitter-rule trusted-driver-rule
-            trusted-runtime-rule trusted-plan)
+            trusted-runtime-rule trusted-plan
+            (p15-s23-closed-runtime-packet-context
+             source-path source-text jvm-backend-target))
          plan (:plan packet)
          _ (when-not (= :hosted (get-in plan [:module :profile]))
              (jvm-backend-fail!
@@ -106462,6 +107504,17 @@
                                         :instruction-summary :effect-summary])))
          source-hash (str "sha256:" (sha256-hex source-text))
          compiler-record (:stage2-compiler-artifact-record packet)
+         closed-plan-runtime
+         (p15-s23-closed-runtime-target-record packet)
+         _ (when-not
+            (p15-s23-closed-runtime-target-record-authentic?
+             closed-plan-runtime
+             (p15-s23-closed-runtime-target-context packet))
+             (jvm-backend-fail!
+              "C14-INPUT"
+              "JVM backend received an unauthenticated closed runtime target record"
+              source-path closed-plan-runtime
+              {:missing-fact :authenticated-closed-runtime-target-record}))
          stage-directory
          (if emit?
            (try
@@ -106649,6 +107702,7 @@
                      :source-map-coverage :source-unit-only
                      :per-form-origin-preserved? false
                      :b5-conforming? false :verified-mir-input? false}
+                    :closed-plan-runtime closed-plan-runtime
                     :clojure-seed-boundary? true
                     :self-hosted? false :release-grade? false
                     :diagnostics []}
@@ -106662,7 +107716,9 @@
                    {:input expected-input
                     :effects expected-effects
                     :capabilities expected-capabilities
-                    :content-hashes content-hashes}
+                    :content-hashes content-hashes
+                    :closed-runtime-context
+                    (p15-s23-closed-runtime-target-context packet)}
                    _ (jvm-backend-validate-manifest!
                       source-path manifest validation-context)
                    _ (jvm-backend-validate-content-hashes!
@@ -106682,6 +107738,7 @@
                             [:stage2-compiler-driver-rule :driver-rule-hash])
                     :runtime-rule-hash
                     (get-in packet [:stage2-runtime-rule :runtime-rule-hash])
+                    :closed-plan-runtime closed-plan-runtime
                     :manifest-hash manifest-hash
                     :pass-history [:c2-reader :stage2-source-front-end
                                    :stage2-plan-emitter
@@ -106706,6 +107763,10 @@
                            (get-in packet
                                    [:provenance :actual-paths
                                     :stage2-expression-lowering-source])
+                           :stage2-runtime-artifact-source
+                           (get-in packet
+                                   [:provenance :actual-paths
+                                    :stage2-runtime-artifact-source])
                            :validation-toolchain
                            {:javac javac-version :java java-version}})
                    _ (jvm-backend-write-file!
@@ -106725,7 +107786,9 @@
                             [:stage2-plan-emitter-rule :source-rule-hash])
                     :content-hashes content-hashes
                     :manifest-hash manifest-hash
-                    :provenance-hash provenance-hash}
+                    :provenance-hash provenance-hash
+                    :closed-plan-target-record-hash
+                    (:record-hash closed-plan-runtime)}
                    artifact
                    {:kind :gravity/jvm-backend-artifact
                     :task "HOSTED-JVM-TARGET"
@@ -106758,6 +107821,7 @@
                     (:stage2-compiler-driver-record packet)
                     :stage2-runtime-execution-record
                     (:stage2-runtime-execution-record packet)
+                    :closed-plan-runtime-target-record closed-plan-runtime
                     :compiled-execution-output expected-output
                     :compiled-execution-output-bytes (:stdout-bytes execution)
                     :seed-boundary {:clojure-seed-boundary? true
