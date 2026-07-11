@@ -24,12 +24,13 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Route two-argument `str` through the Gravity-authored runtime artifact, with explicit arity rejection and residual bridge provenance.
 - [completed] Route single-argument `println` through the Gravity-authored runtime artifact, preserving the multi-argument host boundary and IO capability contract.
 - [completed] Route two-argument `println` through the Gravity-authored runtime artifact, preserving exact space/newline semantics and a host boundary only above two arguments.
+- [completed] Add a public Node 20 ES2022 ESM target over the authenticated target-neutral stage2 packet, with byte-exact C/runtime differential execution and transactional artifacts.
 - [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
-- [pending] Add the next real executable target through the stage2 driver while continuing to retire the generic Clojure runtime bridge.
+- [pending] Add the next real executable target or retire the next high-leverage Clojure seed boundary while preserving target-neutral packet evidence.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `89d5e4b` (`Route two-argument println through Gravity runtime`).
+- Main: `aa1776c` (`Add executable Node ESM target slice`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -51,13 +52,15 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Two-argument `str` now routes through a second Gravity-authored runtime function with pinned shape and explicit arity rejection for unsupported forms; the generic bridge remains recorded as residual and the broader Clojure runtime executor is still trusted.
 - Single-argument `println` now routes through a Gravity-authored effectful runtime function with exact `:io/write`/`:io/stdout` validation and pinned shape; multi-argument printing remains explicitly host-bound until a variadic effect contract is authored.
 - Two-argument `println` now routes through a Gravity-authored effectful runtime function and preserves `left right\n` in both the stage2 oracle and compiled C; only arities above two remain host-compatible.
+- Public `--target js` and `--target js-ts` now compile the bounded stage2 subset to executable Node 20 ES2022 ESM. The JS and runtime-derived C routes share an authenticated target-neutral stage2 packet; Node execution is byte-compared with the authoritative stage2 runtime and executed C behavior. Emission is an atomic artifact directory containing `program.mjs`, declarations, source map, package metadata, manifest, and provenance with explicit UTF-8 digest proof.
+- The JS slice remains non-release and non-conforming for full B6: its input is the bounded stage2 packet rather than verified MIR/domain IR, source maps are source-unit-only, the TypeScript API is empty and unverified by `tsc`, and the Clojure seed boundary remains true.
 
 ## Active slice
 
-- Owner: next runtime-derived semantic expansion worker.
-- Scope: select and implement the next executable backend target through the stage2 driver for the already-proven runtime subset, preserving accepted/rejected behavior, deterministic provenance, and explicit seed boundaries.
+- Owner: next target/self-hosting expansion worker.
+- Scope: select the next highest-leverage slice between JVM target breadth and retiring a Clojure-hosted stage2/runtime boundary, preserving accepted/rejected behavior, deterministic provenance, and explicit seed boundaries.
 - Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
-- Next gate: add a second real public executable backend (prefer the documented JS/TS hosted target if the contract inventory confirms it) and prove parity with the C route before expanding further runtime semantics.
+- Next gate: use the refreshed target/seed-boundary inventory to choose either a genuine JVM artifact route or the next Gravity-authored compiler/runtime replacement; do not claim full B6 or self-hosting from the bounded Node slice.
 
 ## Completion gates
 
