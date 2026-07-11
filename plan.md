@@ -29,13 +29,15 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Add an opt-in Java 21 modular executable JAR target with classfile-65, deterministic packaging, authenticated packet/manifest closure, and real `java -jar` differential execution.
 - [completed] Move authoritative stage2 function/binding/summary/entrypoint plan assembly into the pinned Gravity emitter artifact with bounded-depth traversal and cross-target authenticity.
 - [completed] Execute the bounded closed stage2 plan through a pinned Gravity-authored runtime function, with trusted-source replay, variadic println, bounded validation, and authenticated C/Node/JVM target records.
-- [pending] Build and independently verify a genuine C11 MIR artifact from the authenticated closed plan, preserving semantic facts and source/origin links.
+- [completed] Build and independently verify an authenticated pure closed checked-core artifact for literal, quote, local, do, if, and let, with canonical C6-C10 pass artifacts and an exact plan-to-C2/C3 origin sidecar.
+- [pending] Repair the pinned Gravity runtime module's allocation, failure, effect, capability, and provider contract, then extend checked-core admission to `str` and `println` only after the C8/R11 gates pass.
+- [pending] Consume only the resulting verified checked-core artifact in a pinned Gravity-authored C11 MIR builder, preserving real operands/results/CFG/definitions/uses and recomputing verifier facts.
 - [pending] Consume only that verified MIR in an internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution.
 - [pending] Retire the next high-leverage Clojure seed boundary while preserving target-neutral evidence and honest non-self-hosted claims.
 
 ## Baseline snapshot (2026-07-11)
 
-- Main: `970be8e` (`Execute closed stage2 plans in Gravity`).
+- Main: `df26050` (`Build authenticated pure checked core`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -63,13 +65,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Opt-in `--target jvm --lowering runtime-derived` now emits Java 21 sources, classfile-major-65 named-module classes, and a deterministic modular executable JAR, then proves byte-exact output with `java -jar` before atomic publication. The authenticated JVM manifest binds source, plan, emitter, compiler, driver, runtime, effects, and capabilities; the legacy/default JVM route remains unchanged.
 - The Gravity emitter now owns authoritative function compilation orchestration, ordered binding products, instruction/effect summaries, main validation, and plan products. Traversal is divide-and-conquer for large functions, bodies, maps, and lets; 2,049 functions and 4,096 flat forms pass without host-stack failure. C, Node, and JVM authenticate the derived compiler-artifact identity against pinned source and semantic hashes before lowering.
 - `bootstrap/gravity/p15_s23/runtime.gravity` now owns the bounded closed-plan interpreter for literal/quote/local/`str`/`println`/`do`/`if`/`let`. Consumers independently recompile trusted source, reload pinned emitter/driver/runtime rules, replay the Gravity executor, and bind finalized target manifests to plan/entrypoint/stdout context. Validation is iterative and capped at 128 nodes/depth; authoritative execution and consumer verification replay are recorded separately. The Clojure seed still compiles and generically runs the Gravity functions, MIR remains absent, and self-host/release claims remain false.
+- An authenticated pure checked-core boundary now consumes genuine C2/C3 products for literal, quote, local, `do`, `if`, and `let`; emits canonical C6-C10 envelopes, fact tables, proofs, ownership, and exact origin sidecars; separates path-neutral semantic identity from actual-path provenance; and fails closed on malformed modules, quoted-value/type gaps, effects, capabilities, hostile bounds, opaque authority, and coherent tampering before packet execution. Independent final-hash reviews and the focused, historical, hostile, routing, compatibility, and repository-validator gates pass. This is pre-MIR and does not credit effectful core, target lowering, whole-language support, self-hosting, or release readiness.
 
 ## Active slice
 
-- Owner: master coordinator; implementation writer will receive an exact four-file ownership envelope after scope freeze.
-- Scope: authenticated stage2 closed plan to genuine verified C11 MIR, followed only after that gate by an internal executable LLVM consumer.
-- Completed proof: Gravity closed-plan execution; trusted-source/rule replay; coherent tamper rejection; bounded validation; variadic exact output; `.qst`/`.gravity` parity; C, Node, and JVM execution; finalized manifest integrity; public unrelated-CWD routing; independent review; repository validators.
-- Next gate: author and pin `bootstrap/gravity/p15_s23/mir.gravity`, authenticate the necessary C2/C3 semantic/origin closure, and prove real operands/results/CFG/definitions/uses plus rejected verifier mutations before any LLVM lowering begins.
+- Owner: master coordinator; writer ownership for the runtime repair will be frozen before edits.
+- Scope: repair the pinned Gravity runtime module and artifact boundary so allocation and output effects, capabilities, managed-memory/stdout providers, runtime grants and deny-by-default decisions, principal/audit records, startup ordering, and host failure translation are authenticated under C8, L15, R1, R4, R5, and R11.
+- Completed proof: the pure literal/quote/local/`do`/`if`/`let` checked-core is independently reconstructed and verified through C6-C10 with exact C2/C3 origin closure, path-neutral identity, actual-path provenance, bounded validation, adversarial tamper rejection, dual final-hash review, historical regression gates, and repository validators.
+- Next gate: prove the repaired runtime contract and only then admit `str` and `println` into checked core with exact C8 provider/grant/failure records. Whole-language, MIR, backend, self-hosting, and release claims remain false at this gate.
 
 ## Completion gates
 
