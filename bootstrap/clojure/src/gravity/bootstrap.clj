@@ -93311,6 +93311,8 @@
 
 (declare p15-s23-stage2-runtime-execute-instruction)
 (declare p15-s23-stage2-runtime-execute-function)
+(declare p15-s23-stage2-runtime-artifact-invoke)
+(declare p15-s23-stage2-runtime-artifact-function)
 
 (defn p15-s23-stage2-runtime-execute-instructions
   [runtime plan env instructions]
@@ -93354,7 +93356,15 @@
                        runtime plan env %)
                      (:args instruction))]
       (validate-module-effects! module)
-      (println (clojure.string/join " " (map str args))))
+      (println
+       (clojure.string/join
+        " "
+        (map (fn [value]
+               (if (:runtime-artifact-plan runtime)
+                 (p15-s23-stage2-runtime-artifact-invoke
+                  runtime p15-s23-stage2-runtime-artifact-function [value])
+                 (str value)))
+             args))))
     :do
     (p15-s23-stage2-runtime-execute-instructions
      runtime plan env (:body instruction))
@@ -93408,6 +93418,40 @@
        "L2-FUNCTION-ARITY" plan callee args (count params)))
     (p15-s23-stage2-runtime-execute-instructions
      runtime plan (zipmap params args) (:instructions definition))))
+
+(defn p15-s23-stage2-runtime-artifact-invoke
+  "Generic host runner for a Gravity-authored runtime function plan.
+
+  The runner performs only plan lookup, arity validation, and invocation.  It
+  deliberately records the remaining Clojure interpreter boundary in the
+  caller's manifest; runtime semantics (the formatting function itself) come
+  from the compiled Gravity source artifact."
+  [runtime function args]
+  (let [artifact-plan (:runtime-artifact-plan runtime)
+        definition (get-in artifact-plan [:functions function])]
+    (when-not (and (map? artifact-plan) (map? definition))
+      (p15-s23-stage2-runtime-executor-fail!
+       "P15S23X002"
+       (:runtime-artifact-source-path runtime)
+       artifact-plan
+       {:missing-fact :runtime-artifact-function
+        :function function}))
+    (when-not (= (:arity definition) (count args))
+      (p15-s23-stage2-runtime-executor-fail!
+       "P15S23X002"
+       (:runtime-artifact-source-path runtime)
+       definition
+       {:missing-fact :runtime-artifact-function-arity
+        :function function
+        :expected-arity (:arity definition)
+        :actual-arity (count args)}))
+    (p15-s23-stage2-runtime-execute-function
+     ;; Disable nested artifact formatting while running the pure runtime
+     ;; function set.  Its body may use normal stage2 builtins such as `str`.
+     (dissoc runtime :runtime-artifact-plan)
+     artifact-plan
+     function
+     args)))
 
 (defn p15-s23-stage2-runtime-execute-plan
   [runtime plan]
@@ -102364,6 +102408,41 @@
               (sha256-hex
                (pr-str (c-backend-canonical-value emitter))))}))))
 
+(def p15-s23-stage2-runtime-artifact-source-relative-path
+  "bootstrap/gravity/p15_s23/runtime.gravity")
+
+(def p15-s23-stage2-runtime-artifact-function
+  'p15-s23-runtime-format-value)
+
+(def p15-s23-stage2-runtime-artifact-required-function-shape
+  {:arity 1
+   :params ['value]
+   :instructions [{:op :builtin-call
+                   :function 'str
+                   :args [{:op :local :name 'value}]}]})
+
+(defn c-backend-stage2-runtime-artifact-source-path
+  [compiler-source]
+  (let [compiler-file (java.io.File. compiler-source)
+        sibling (java.io.File.
+                 (or (.getParentFile compiler-file)
+                     (java.io.File. "."))
+                 "runtime.gravity")]
+    (if (.isFile sibling)
+      (.getPath sibling)
+      p15-s23-stage2-runtime-artifact-source-relative-path)))
+
+(defn c-backend-stage2-runtime-artifact-hash-input
+  [plan]
+  {:kind :gravity/p15-s23-stage2-runtime-artifact
+   :entrypoint (:entrypoint plan)
+   :module (select-keys (:module plan)
+                        [:module :profile :target :effects :capabilities
+                         :exports :safety])
+   :functions (c-backend-canonical-value (:functions plan))
+   :instruction-summary (:instruction-summary plan)
+   :effect-summary (:effect-summary plan)})
+
 (defn c-backend-stage2-runtime-source-rule!
   "Load the Gravity-authored P15-S23 runtime executor and kernel rules.
 
@@ -102471,7 +102550,68 @@
             :runtime-rule-record runtime-rule-record
             :kernel-rule-record kernel-rule-record
             :linked-kernel? linked-kernel?}))
-        (let [source-content-hash
+        (let [runtime-artifact-source
+              (c-backend-stage2-runtime-artifact-source-path compiler-source)
+              runtime-artifact-text
+              (when (.isFile (java.io.File. runtime-artifact-source))
+                (slurp runtime-artifact-source))
+              runtime-artifact-plan
+              (when runtime-artifact-text
+                (try
+                  (let [plan-emitter-rule
+                        (c-backend-stage2-plan-emitter-source-rule!
+                         source-path target)]
+                    (p15-s23-stage2-plan-emitter-compile-source
+                     (:emitter plan-emitter-rule)
+                     runtime-artifact-source
+                     runtime-artifact-text))
+                  (catch clojure.lang.ExceptionInfo ex
+                    (throw ex))
+                  (catch Exception ex
+                    (p15-s23-stage2-runtime-executor-fail!
+                     "P15S23X002"
+                     runtime-artifact-source
+                     nil
+                     {:requested-source source-path
+                      :target target
+                      :missing-fact :runtime-artifact-plan
+                      :cause-message (.getMessage ex)}))))
+              runtime-artifact-function
+              (get-in runtime-artifact-plan
+                      [:functions p15-s23-stage2-runtime-artifact-function])
+              runtime-artifact-valid?
+              (and (map? runtime-artifact-plan)
+                   (= :gravity/stage2-hosted-core-compiled-plan
+                      (:kind runtime-artifact-plan))
+                   (map? runtime-artifact-function)
+                   (= 1 (:arity runtime-artifact-function))
+                   (seq (:instructions runtime-artifact-function))
+                   (= p15-s23-stage2-runtime-artifact-required-function-shape
+                      (select-keys runtime-artifact-function
+                                   [:arity :params :instructions])))
+              _ (when-not runtime-artifact-valid?
+                  (p15-s23-stage2-runtime-executor-fail!
+                   (if runtime-artifact-text "P15S23X002" "P15S23X001")
+                   runtime-artifact-source
+                   runtime-artifact-plan
+                   {:requested-source source-path
+                    :target target
+                    :missing-fields
+                    (if runtime-artifact-text
+                      [:runtime-artifact-function
+                       :runtime-artifact-plan-kind]
+                      [:runtime-artifact-source])
+                    :missing-fact
+                    (if runtime-artifact-text
+                      :runtime-artifact-function-set
+                      :runtime-artifact-source)}))
+              runtime-artifact-hash
+              (str "sha256:"
+                   (sha256-hex
+                    (pr-str
+                     (c-backend-stage2-runtime-artifact-hash-input
+                      runtime-artifact-plan))))
+              source-content-hash
               (str "sha256:" (sha256-hex (:source-text source-data)))
               runtime-rule-hash
               (str "sha256:"
@@ -102491,11 +102631,21 @@
            :runtime-kernel-rule-hash kernel-rule-hash
            :runtime-source-path compiler-source
            :runtime-source-content-hash source-content-hash
+           :runtime-artifact-source-path runtime-artifact-source
+           :runtime-artifact-source-content-hash
+           (str "sha256:" (sha256-hex runtime-artifact-text))
+           :runtime-artifact-plan runtime-artifact-plan
+           :runtime-artifact-function p15-s23-stage2-runtime-artifact-function
+           :runtime-artifact-hash runtime-artifact-hash
            :runtime-rule-source
            {:kind :gravity-source
             :sha256 source-content-hash
             :runtime-rule-hash runtime-rule-hash
-            :runtime-kernel-rule-hash kernel-rule-hash}})))))
+            :runtime-kernel-rule-hash kernel-rule-hash
+            :runtime-artifact-source
+            {:sha256 (str "sha256:" (sha256-hex runtime-artifact-text))
+             :artifact-hash runtime-artifact-hash
+             :function p15-s23-stage2-runtime-artifact-function}}})))))
 
 (defn c-backend-stage2-compiler-driver-source-rule!
   "Load and validate the Gravity-authored P15-S23 stage2 compiler driver.
@@ -103012,7 +103162,13 @@
                 (:driver stage2-driver-rule)
                 (:front-end stage2-driver-rule)
                 (:emitter stage2-rule)
-                (:runtime stage2-runtime-rule)
+                (assoc (:runtime stage2-runtime-rule)
+                       :runtime-artifact-plan
+                       (:runtime-artifact-plan stage2-runtime-rule)
+                       :runtime-artifact-source-path
+                       (:runtime-artifact-source-path stage2-runtime-rule)
+                       :runtime-artifact-hash
+                       (:runtime-artifact-hash stage2-runtime-rule))
                 source-path source-text)
                (catch clojure.lang.ExceptionInfo ex
                  (throw ex))
@@ -103183,6 +103339,12 @@
                                (:runtime-rule-hash stage2-runtime-rule)
                                :runtime-kernel-rule-hash
                                (:runtime-kernel-rule-hash stage2-runtime-rule)
+                               :runtime-artifact-hash
+                               (:runtime-artifact-hash stage2-runtime-rule)
+                               :runtime-artifact-function
+                               (:runtime-artifact-function stage2-runtime-rule)
+                               :runtime-artifact-host-runner
+                               :gravity-stage2-runtime-artifact-host-runner
                                :purpose :parity-only
                                :authoritative-runtime? false
                                :clojure-instruction-runner-comparison
@@ -103232,7 +103394,22 @@
                     :runtime-rule-hash
                     (:runtime-rule-hash stage2-runtime-rule)
                     :runtime-kernel-rule-hash
-                    (:runtime-kernel-rule-hash stage2-runtime-rule)))
+                    (:runtime-kernel-rule-hash stage2-runtime-rule)
+                    :runtime-artifact-hash
+                    (:runtime-artifact-hash stage2-runtime-rule)
+                    :runtime-artifact-function
+                    (:runtime-artifact-function stage2-runtime-rule)
+                    :runtime-artifact-source
+                    {:kind :gravity-source
+                     :sha256
+                     (:runtime-artifact-source-content-hash
+                      stage2-runtime-rule)
+                     :artifact-hash
+                     (:runtime-artifact-hash stage2-runtime-rule)
+                     :function
+                     (:runtime-artifact-function stage2-runtime-rule)}
+                    :runtime-artifact-host-runner
+                    :gravity-stage2-runtime-artifact-host-runner))
            manifest-hash (str "sha256:" (sha256-hex
                                          (pr-str
                                           (c-backend-canonical-value
@@ -103265,6 +103442,12 @@
                                (:runtime-rule-hash stage2-runtime-rule)
                                :runtime-kernel-rule-hash
                                (:runtime-kernel-rule-hash stage2-runtime-rule)
+                               :runtime-artifact-hash
+                               (:runtime-artifact-hash stage2-runtime-rule)
+                               :runtime-artifact-function
+                               (:runtime-artifact-function stage2-runtime-rule)
+                               :runtime-artifact-host-runner
+                               :gravity-stage2-runtime-artifact-host-runner
                                :purpose :parity-only
                                :authoritative-runtime? false
                                :clojure-instruction-runner-comparison
@@ -103316,6 +103499,21 @@
                     (:runtime-rule-hash stage2-runtime-rule)
                     :runtime-kernel-rule-hash
                     (:runtime-kernel-rule-hash stage2-runtime-rule)
+                    :runtime-artifact-hash
+                    (:runtime-artifact-hash stage2-runtime-rule)
+                    :runtime-artifact-function
+                    (:runtime-artifact-function stage2-runtime-rule)
+                    :runtime-artifact-source
+                    {:kind :gravity-source
+                     :sha256
+                     (:runtime-artifact-source-content-hash
+                      stage2-runtime-rule)
+                     :artifact-hash
+                     (:runtime-artifact-hash stage2-runtime-rule)
+                     :function
+                     (:runtime-artifact-function stage2-runtime-rule)}
+                    :runtime-artifact-host-runner
+                    :gravity-stage2-runtime-artifact-host-runner
                     :runtime-rule-source
                     (:runtime-rule-source stage2-runtime-rule)
                     :compiler {:owner :clojure-bootstrap
@@ -103348,7 +103546,9 @@
                              runtime-derived?
                              (assoc :compiler-driver-rule-hash
                                     (:driver-rule-hash
-                                     stage2-driver-rule)))
+                                     stage2-driver-rule)
+                                    :runtime-artifact-hash
+                                    (:runtime-artifact-hash stage2-runtime-rule)))
            artifact-base {:kind :gravity/c-backend-artifact
                           :task "HOSTED-C-TARGET"
                           :status :complete
@@ -103380,6 +103580,28 @@
                           :runtime-kernel-rule-hash
                           (when runtime-derived?
                             (:runtime-kernel-rule-hash stage2-runtime-rule))
+                          :runtime-artifact-hash
+                          (when runtime-derived?
+                            (:runtime-artifact-hash stage2-runtime-rule))
+                          :runtime-artifact-function
+                          (when runtime-derived?
+                            (:runtime-artifact-function stage2-runtime-rule))
+                          :runtime-artifact-source-path
+                          (when runtime-derived?
+                            (:runtime-artifact-source-path stage2-runtime-rule))
+                          :runtime-artifact-source
+                          (when runtime-derived?
+                            {:kind :gravity-source
+                             :sha256
+                             (:runtime-artifact-source-content-hash
+                              stage2-runtime-rule)
+                             :artifact-hash
+                             (:runtime-artifact-hash stage2-runtime-rule)
+                             :function
+                             (:runtime-artifact-function stage2-runtime-rule)})
+                          :runtime-artifact-host-runner
+                          (when runtime-derived?
+                            :gravity-stage2-runtime-artifact-host-runner)
                           :compiler-stage
                           (when runtime-derived?
                             :p15-s23-stage2-compiler-driver)

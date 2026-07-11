@@ -1,0 +1,17 @@
+; Gravity-authored stage2 runtime function set for the accepted hosted-core
+; subset.  The Clojure bootstrap supplies only the generic plan runner and
+; declared host primitive boundary; runtime value formatting is sourced from
+; this module and compiled through the stage2 plan emitter.
+(ns gravity.bootstrap.p15-s23.runtime
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{}))
+
+(defn p15-s23-runtime-format-value
+  [value]
+  (str value))
+
+(defn main
+  []
+  (p15-s23-runtime-format-value "gravity-stage2-runtime"))

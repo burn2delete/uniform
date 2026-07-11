@@ -25942,6 +25942,120 @@
         (doseq [file (reverse (file-seq (java.io.File. root-directory)))]
           (.delete ^java.io.File file))))))
 
+(deftest hosted-c-backend-runtime-derived-binds-gravity-authored-runtime-artifact
+  (with-temp-directory
+    "gravity-stage2-runtime-artifact-"
+    (fn [directory]
+      (let [source-text (str "(ns runtime.stage2.artifact (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (println (str \"artifact\" "
+                             " \"-bound\")))\n")
+            gravity-path (.resolve directory "artifact.gravity")
+            qst-path (.resolve directory "artifact.qst")]
+        (spit (.toFile gravity-path) source-text)
+        (spit (.toFile qst-path) source-text)
+        (let [gravity (bootstrap/c-backend-source-artifact
+                       (.toString gravity-path) source-text
+                       {:target :c :lowering-mode :runtime-derived})
+              qst (bootstrap/c-backend-source-artifact
+                   (.toString qst-path) source-text
+                   {:target :c :lowering-mode :runtime-derived})]
+          (doseq [artifact [gravity qst]]
+            (is (re-find #"^sha256:" (:runtime-artifact-hash artifact)))
+            (is (= 'p15-s23-runtime-format-value
+                   (:runtime-artifact-function artifact)))
+            (is (= :gravity-stage2-runtime-artifact-host-runner
+                   (:runtime-artifact-host-runner artifact)))
+            (is (.isFile (java.io.File.
+                          (:runtime-artifact-source-path artifact))))
+            (is (= (:runtime-artifact-hash artifact)
+                   (get-in artifact [:manifest :runtime-artifact-hash])))
+            (is (= (:runtime-artifact-hash artifact)
+                   (get-in artifact [:provenance :runtime-artifact-hash])))
+            (is (= :gravity-stage2-runtime-artifact-host-runner
+                   (get-in artifact
+                           [:manifest :runtime-artifact-host-runner])))
+            (is (= (:stdout artifact)
+                   (get-in artifact
+                           [:stage2-runtime-execution-record :stdout])))
+            (is (= "artifact-bound\n" (:stdout artifact))))
+          (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                         :manifest-hash :source-map-hash :provenance-hash
+                         :runtime-artifact-hash]]
+            (is (= (get gravity field) (get qst field)) field)))
+        (let [root-a (bootstrap/c-backend-source-artifact
+                      "/fake/root-a/artifact.gravity"
+                      source-text
+                      {:target :c :lowering-mode :runtime-derived})
+              root-b (bootstrap/c-backend-source-artifact
+                      "/fake/root-b/artifact.gravity"
+                      source-text
+                      {:target :c :lowering-mode :runtime-derived})]
+          (doseq [field [:artifact-id :manifest-hash :provenance-hash
+                         :runtime-artifact-hash]]
+            (is (= (get root-a field) (get root-b field)) field)))))))
+
+(deftest hosted-c-backend-runtime-derived-runtime-artifact-fails-closed
+  (let [source-text (str "(ns runtime.stage2.artifact.reject (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"ok\"))\n")]
+    (let [missing (diagnostic-data
+                   #(with-redefs
+                      [bootstrap/c-backend-stage2-runtime-artifact-source-path
+                       (fn [_] "target/missing-runtime-artifact.gravity")]
+                      (bootstrap/c-backend-source-artifact
+                       "runtime-artifact-missing.gravity"
+                       source-text
+                       {:target :c :lowering-mode :runtime-derived})))]
+      (is (= "P15S23X001" (:id missing)))
+      (is (= :runtime-artifact-source (:missing-fact missing))))
+    (with-temp-directory
+      "gravity-stage2-runtime-artifact-malformed-"
+      (fn [directory]
+        (let [path (.resolve directory "runtime.gravity")
+              malformed-text (str "(ns runtime.stage2.artifact.bad "
+                                  "(:profile :hosted) (:target :jvm) "
+                                  "(:effects #{}) (:capabilities #{}))\n"
+                                  "(defn main [] 1)\n")]
+          (spit (.toFile path) malformed-text)
+          (let [malformed (diagnostic-data
+                           #(with-redefs
+                              [bootstrap/c-backend-stage2-runtime-artifact-source-path
+                               (fn [_] (.toString path))]
+                              (bootstrap/c-backend-source-artifact
+                               "runtime-artifact-malformed.gravity"
+                               source-text
+                               {:target :c :lowering-mode :runtime-derived})))]
+            (is (= "P15S23X002" (:id malformed)))
+            (is (= :runtime-artifact-function-set
+                   (:missing-fact malformed)))))))
+    (with-temp-directory
+      "gravity-stage2-runtime-artifact-tampered-"
+      (fn [directory]
+        (let [path (.resolve directory "runtime.gravity")
+              tampered-text (str "(ns runtime.stage2.artifact.tampered "
+                                 "(:profile :hosted) (:target :jvm) "
+                                 "(:effects #{}) (:capabilities #{}))\n"
+                                 "(defn p15-s23-runtime-format-value "
+                                 "[value] (str \"tampered:\" value))\n"
+                                 "(defn main [] 1)\n")]
+          (spit (.toFile path) tampered-text)
+          (let [tampered (diagnostic-data
+                          #(with-redefs
+                             [bootstrap/c-backend-stage2-runtime-artifact-source-path
+                              (fn [_] (.toString path))]
+                             (bootstrap/c-backend-source-artifact
+                              "runtime-artifact-tampered.gravity"
+                              source-text
+                              {:target :c :lowering-mode :runtime-derived})))]
+            (is (#{"P15S23Y003" "P15S23X003" "P15S23X002"} (:id tampered)))
+            (is (#{:stage2-driver-execution-equivalence
+                   :stage2-stage0-output-equivalence
+                   :runtime-artifact-function-set}
+                 (:missing-fact tampered)))))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]
