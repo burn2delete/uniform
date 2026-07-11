@@ -13,11 +13,12 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Route the explicit C target through the public compile boundary.
 - [completed] Add an opt-in runtime-derived C lowering subset with fail-closed value semantics.
 - [completed] Expose runtime-derived lowering through the public compile boundary with parity and fail-closed option proof.
-- [pending] Expand the runtime-derived semantic subset beyond scalar instruction lowering, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
+- [completed] Expand runtime-derived C lowering to scalar locals, conditionals, and lexical lets with fail-closed validation.
+- [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `f6988f0` (`Expose runtime-derived C lowering publicly`).
+- Main: `b7c88d0` (`Extend runtime-derived C control flow`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` is not yet accepted by the current public check (`L3-UNKNOWN-ALIAS`).
@@ -28,6 +29,7 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Explicit `gravity compile --target c -o ...` now routes to that backend; the default packaged/JVM compile path remains unchanged.
 - Runtime-derived C lowering is now an explicit public option (`--target c --lowering runtime-derived`); scalar literal/quote/println/do semantics execute in generated C, while unsupported value positions fail closed. The Clojure evaluator remains a non-authoritative parity oracle.
 - The public runtime-derived slice proves both co-canonical extensions, deterministic identity, UTF-8/NUL output, unrelated-CWD routing, option diagnostics, and preserved default/JVM behavior. The seed boundary remains explicit.
+- Runtime-derived control flow now executes scalar locals, `if`, and `let` in generated C, including zero-length values; malformed, deep, collection, call, and unsupported value forms reject with structured B2 diagnostics.
 
 ## Active slice
 
