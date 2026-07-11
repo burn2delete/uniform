@@ -102243,6 +102243,139 @@
               (sha256-hex
                (pr-str (c-backend-canonical-value emitter))))}))))
 
+(defn c-backend-stage2-runtime-source-rule!
+  "Load the Gravity-authored P15-S23 runtime executor and kernel rules.
+
+  Runtime-derived lowering is only authoritative for this slice when the
+  emitted stage2 plan is executed through the source-defined runtime rule
+  record.  Keep the source rule hashes path-neutral; the resolved source path
+  remains a provenance field on the returned binding for auditability."
+  [source-path target]
+  (let [compiler-source (c-backend-resolve-p15-s23-compiler-source-path)]
+    (when-not (.isFile (java.io.File. compiler-source))
+      (p15-s23-stage2-runtime-executor-fail!
+       "P15S23X001"
+       compiler-source
+       nil
+       {:requested-source source-path
+        :target target
+        :missing-fields [:compiler-source]
+        :missing-fact :stage2-runtime-executor-source}))
+    (let [source-data
+          (try
+            (p15-s23-compiler-source-form-record compiler-source)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-runtime-executor-source
+                :cause-message (.getMessage ex)})))
+          forms (:forms source-data)
+          runtime
+          (try
+            (p15-s23-compiler-def-value
+             compiler-source forms 'p15-s23-stage2-runtime-executor)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-runtime-executor-definition
+                :cause-message (.getMessage ex)})))
+          kernel
+          (try
+            (p15-s23-compiler-def-value
+             compiler-source forms 'p15-s23-stage2-runtime-kernel)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-runtime-kernel-definition
+                :cause-message (.getMessage ex)})))]
+      (when-not (map? runtime)
+        (p15-s23-stage2-runtime-executor-fail!
+         "P15S23X001"
+         compiler-source
+         runtime
+         {:requested-source source-path
+          :target target
+          :missing-fields [:p15-s23-stage2-runtime-executor]
+          :missing-fact :stage2-runtime-executor-definition}))
+      (when-not (map? kernel)
+        (p15-s23-stage2-runtime-executor-fail!
+         "P15S23X001"
+         compiler-source
+         kernel
+         {:requested-source source-path
+          :target target
+          :missing-fields [:p15-s23-stage2-runtime-kernel]
+          :missing-fact :stage2-runtime-kernel-definition}))
+      (let [runtime-rule-record
+            (p15-s23-stage2-runtime-executor-rule-record runtime)
+            kernel-rule-record
+            (p15-s23-stage2-runtime-kernel-rule-record kernel)
+            linked-kernel?
+            (and (= :p15-s23-stage2-runtime-kernel
+                    (:runtime-kernel runtime))
+                 (= :gravity-stage2-runtime-kernel
+                    (:executed-by runtime))
+                 (= :gravity-stage2-runtime-kernel-v1
+                    (:engine kernel)))]
+        (when-not (and (= :complete (:status runtime-rule-record))
+                       (= :complete (:status kernel-rule-record))
+                       linked-kernel?)
+          (p15-s23-stage2-runtime-executor-fail!
+           "P15S23X002"
+           compiler-source
+           {:runtime runtime-rule-record
+            :kernel kernel-rule-record
+            :linked-kernel? linked-kernel?}
+           {:requested-source source-path
+            :target target
+            :missing-fact :stage2-runtime-rule-set
+            :runtime-rule-record runtime-rule-record
+            :kernel-rule-record kernel-rule-record
+            :linked-kernel? linked-kernel?}))
+        (let [source-content-hash
+              (str "sha256:" (sha256-hex (:source-text source-data)))
+              runtime-rule-hash
+              (str "sha256:"
+                   (sha256-hex
+                    (pr-str (c-backend-canonical-value runtime))))
+              kernel-rule-hash
+              (str "sha256:"
+                   (sha256-hex
+                    (pr-str (c-backend-canonical-value kernel))))]
+          {:runtime runtime
+           :kernel kernel
+           :runtime-rule-record runtime-rule-record
+           :kernel-rule-record kernel-rule-record
+           :runtime-engine (:engine runtime)
+           :runtime-kernel-engine (:engine kernel)
+           :runtime-rule-hash runtime-rule-hash
+           :runtime-kernel-rule-hash kernel-rule-hash
+           :runtime-source-path compiler-source
+           :runtime-source-content-hash source-content-hash
+           :runtime-rule-source
+           {:kind :gravity-source
+            :sha256 source-content-hash
+            :runtime-rule-hash runtime-rule-hash
+            :runtime-kernel-rule-hash kernel-rule-hash}})))))
+
 (defn c-backend-runtime-bytes
   [value]
   (let [text (str value)
@@ -102433,7 +102566,9 @@
        "}\n"))
 
 (defn c-backend-run-cc!
-  [c-source-path executable-path source-path target]
+  ([c-source-path executable-path source-path target]
+   (c-backend-run-cc! c-source-path executable-path source-path target false))
+  ([c-source-path executable-path source-path target execute?]
   (let [stdout-file (java.io.File/createTempFile "gravity-c-cc-stdout-" ".txt")
         stderr-file (java.io.File/createTempFile "gravity-c-cc-stderr-" ".txt")
         pb (ProcessBuilder.
@@ -102455,7 +102590,48 @@
                              {:compiler "/usr/bin/cc"
                               :compile-result result
                               :missing-fact :c11-compiler-acceptance}))
-          result))
+          ;; The compiler process itself normally writes no stdout.  Runtime-
+          ;; derived lowering opts into executing the emitted program here so
+          ;; callers can compare its result with the stage2 runtime record.
+          (if-not execute?
+            result
+            (let [run-stdout-file
+                (java.io.File/createTempFile
+                 "gravity-c-runtime-stdout-" ".txt")
+                run-stderr-file
+                (java.io.File/createTempFile
+                 "gravity-c-runtime-stderr-" ".txt")
+                run-pb (ProcessBuilder. [(str executable-path)])]
+            (try
+              (.redirectOutput run-pb run-stdout-file)
+              (.redirectError run-pb run-stderr-file)
+              (let [run-process (.start run-pb)]
+                (.waitFor run-process 60000
+                          java.util.concurrent.TimeUnit/MILLISECONDS)
+                (let [run-result {:exit (.exitValue run-process)
+                                  :out (if (.exists run-stdout-file)
+                                         (slurp run-stdout-file)
+                                         "")
+                                  :err (if (.exists run-stderr-file)
+                                         (slurp run-stderr-file)
+                                         "")}]
+                  (when-not (zero? (:exit run-result))
+                    (c-backend-fail!
+                     "B2-DIALECT"
+                     "generated C executable failed at runtime"
+                     source-path target nil
+                     {:compiler "/usr/bin/cc"
+                      :runtime-result run-result
+                      :missing-fact :c-runtime-execution}))
+                  (assoc result
+                         :compile-out (:out result)
+                         :compile-err (:err result)
+                         :runtime-out (:out run-result)
+                         :runtime-err (:err run-result)
+                         :runtime-exit (:exit run-result))))
+              (finally
+                (.delete run-stdout-file)
+                (.delete run-stderr-file)))))))
       (catch clojure.lang.ExceptionInfo ex
         (throw ex))
       (catch Exception ex
@@ -102467,7 +102643,7 @@
                           :missing-fact :c11-compiler}))
       (finally
         (.delete stdout-file)
-        (.delete stderr-file)))))
+        (.delete stderr-file))))))
 
 (defn c-backend-source-artifact
   "Lower a source unit through the genuine stage0 plan into a C artifact.
@@ -102510,6 +102686,10 @@
            (when runtime-derived?
              (c-backend-stage2-plan-emitter-source-rule!
               source-path target))
+           stage2-runtime-rule
+           (when runtime-derived?
+             (c-backend-stage2-runtime-source-rule!
+              source-path target))
            plan
            (if runtime-derived?
              (try
@@ -102551,16 +102731,52 @@
            _ (c-backend-validate-plan! source-path target plan)
            _ (when runtime-derived?
                (c-backend-validate-runtime-plan! source-path target plan))
-           stdout (try
-                    (execute-stage0-compiled-plan plan)
-                    (catch clojure.lang.ExceptionInfo ex
-                      (throw ex))
-                    (catch Exception ex
-                      (c-backend-fail! "B2-UNSUPPORTED"
-                                       "stage0 plan could not be represented by the C backend"
-                                       source-path target nil
-                                       {:cause-message (.getMessage ex)
-                                        :missing-fact :closed-c-runtime-semantics})))
+           stage2-runtime-execution
+           (when runtime-derived?
+             (try
+               (p15-s23-stage2-runtime-execute-plan
+                (:runtime stage2-runtime-rule) plan)
+               (catch clojure.lang.ExceptionInfo ex
+                 (throw ex))
+               (catch Exception ex
+                 (c-backend-fail!
+                  "B2-UNSUPPORTED"
+                  "Gravity stage2 runtime executor could not execute the plan"
+                  source-path target nil
+                  {:compiler-stage :p15-s23-stage2-runtime-executor
+                   :runtime-engine (:runtime-engine stage2-runtime-rule)
+                   :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
+                   :p15-diagnostic "P15S23X003"
+                   :cause-message (.getMessage ex)
+                   :missing-fact :stage2-runtime-execution}))))
+           clojure-stage0-output
+           (try
+             (execute-stage0-compiled-plan plan)
+             (catch clojure.lang.ExceptionInfo ex
+               (throw ex))
+             (catch Exception ex
+               (c-backend-fail! "B2-UNSUPPORTED"
+                                "stage0 plan could not be represented by the C backend"
+                                source-path target nil
+                                {:cause-message (.getMessage ex)
+                                 :missing-fact :closed-c-runtime-semantics})))
+           stdout (if runtime-derived?
+                    (:stdout stage2-runtime-execution)
+                    clojure-stage0-output)
+           _ (when runtime-derived?
+               (when-not (= stdout clojure-stage0-output)
+                 (p15-s23-stage2-runtime-executor-fail!
+                  "P15S23X003"
+                  source-path
+                  stage2-runtime-execution
+                  {:requested-source source-path
+                   :target target
+                   :runtime-engine (:runtime-engine stage2-runtime-rule)
+                   :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
+                   :stage2-runtime-output stdout
+                   :clojure-stage0-instruction-runner-output
+                   clojure-stage0-output
+                   :missing-fact :stage2-stage0-output-equivalence})))
            c-source (if runtime-derived?
                       (c-backend-runtime-source plan)
                       (c-backend-source stdout))
@@ -102568,6 +102784,12 @@
            plan-input (select-keys plan [:kind :entrypoint :functions
                                          :instruction-summary :effect-summary])
            plan-hash (c4-artifact-id (c-backend-canonical-value plan-input))
+           stage2-runtime-execution-record
+           (when runtime-derived?
+             ;; The executor record's native plan id retains source-path
+             ;; provenance.  Artifacts use the already path-neutral plan hash
+             ;; for deterministic cross-root identity.
+             (assoc stage2-runtime-execution :plan-id plan-hash))
            c-source-hash (str "sha256:" (sha256-hex c-source))
            output-hash (str "sha256:" (sha256-hex stdout))
            source-map {:kind :gravity/c-backend-source-map
@@ -102615,9 +102837,29 @@
                     :compile-time-evaluated? (not runtime-derived?)
                     :runtime-derived? runtime-derived?
                     :oracle (when runtime-derived?
-                              {:kind :clojure-stage0-execution
+                              {:kind :gravity-stage2-runtime-execution
+                               :runtime-engine
+                               (:runtime-engine stage2-runtime-rule)
+                               :runtime-kernel-engine
+                               (:runtime-kernel-engine stage2-runtime-rule)
+                               :runtime-rule-hash
+                               (:runtime-rule-hash stage2-runtime-rule)
+                               :runtime-kernel-rule-hash
+                               (:runtime-kernel-rule-hash stage2-runtime-rule)
                                :purpose :parity-only
-                               :authoritative-runtime? false})
+                               :authoritative-runtime? false
+                               :clojure-instruction-runner-comparison
+                               {:boundary :comparison-only
+                                :authoritative-runtime? false}})
+                    :stage2-runtime-execution-record
+                    (when runtime-derived?
+                      {:artifact
+                       :gravity/p15-s23-stage2-runtime-execution-record
+                       :runtime-engine
+                       (:runtime-engine stage2-runtime-rule)
+                       :plan-id (:plan-id stage2-runtime-execution-record)
+                       :stdout-hash output-hash
+                       :status (:status stage2-runtime-execution-record)})
                     :safety-mode (get-in plan [:module :safety])
                     :profile (get-in plan [:module :profile])
                     :capabilities (get-in plan [:module :capabilities])
@@ -102626,7 +102868,14 @@
              (assoc :compiler-stage :p15-s23-stage2-plan-emitter
                     :compiler-engine (get-in plan [:compiler :rule-engine])
                     :compiler-source-rule-hash
-                    (:source-rule-hash stage2-rule)))
+                    (:source-rule-hash stage2-rule)
+                    :runtime-engine (:runtime-engine stage2-runtime-rule)
+                    :runtime-kernel-engine
+                    (:runtime-kernel-engine stage2-runtime-rule)
+                    :runtime-rule-hash
+                    (:runtime-rule-hash stage2-runtime-rule)
+                    :runtime-kernel-rule-hash
+                    (:runtime-kernel-rule-hash stage2-runtime-rule)))
            manifest-hash (str "sha256:" (sha256-hex
                                          (pr-str
                                           (c-backend-canonical-value
@@ -102646,9 +102895,29 @@
                              :target target}
                     :runtime :hosted-libc-stdout
                     :oracle (when runtime-derived?
-                              {:kind :clojure-stage0-execution
+                              {:kind :gravity-stage2-runtime-execution
+                               :runtime-engine
+                               (:runtime-engine stage2-runtime-rule)
+                               :runtime-kernel-engine
+                               (:runtime-kernel-engine stage2-runtime-rule)
+                               :runtime-rule-hash
+                               (:runtime-rule-hash stage2-runtime-rule)
+                               :runtime-kernel-rule-hash
+                               (:runtime-kernel-rule-hash stage2-runtime-rule)
                                :purpose :parity-only
-                               :authoritative-runtime? false})
+                               :authoritative-runtime? false
+                               :clojure-instruction-runner-comparison
+                               {:boundary :comparison-only
+                                :authoritative-runtime? false}})
+                    :stage2-runtime-execution-record
+                    (when runtime-derived?
+                      {:artifact
+                       :gravity/p15-s23-stage2-runtime-execution-record
+                       :runtime-engine
+                       (:runtime-engine stage2-runtime-rule)
+                       :plan-id (:plan-id stage2-runtime-execution-record)
+                       :stdout-hash output-hash
+                       :status (:status stage2-runtime-execution-record)})
                     :source-map-hash source-map-hash
                     :manifest-hash manifest-hash
                     :clojure-seed-boundary? true
@@ -102659,12 +102928,25 @@
                     :compiler-engine (get-in plan [:compiler :rule-engine])
                     :compiler-source-rule-hash
                     (:source-rule-hash stage2-rule)
+                    :runtime-engine (:runtime-engine stage2-runtime-rule)
+                    :runtime-kernel-engine
+                    (:runtime-kernel-engine stage2-runtime-rule)
+                    :runtime-rule-hash
+                    (:runtime-rule-hash stage2-runtime-rule)
+                    :runtime-kernel-rule-hash
+                    (:runtime-kernel-rule-hash stage2-runtime-rule)
+                    :runtime-rule-source
+                    (:runtime-rule-source stage2-runtime-rule)
                     :compiler {:owner :clojure-bootstrap
                                :stage :stage2
                                :compiler-stage :p15-s23-stage2-plan-emitter
                                :plan-hash plan-hash
                                :source-rule-hash
-                               (:source-rule-hash stage2-rule)}))
+                               (:source-rule-hash stage2-rule)
+                               :runtime-engine
+                               (:runtime-engine stage2-runtime-rule)
+                               :runtime-rule-hash
+                               (:runtime-rule-hash stage2-runtime-rule)}))
            provenance-hash (str "sha256:" (sha256-hex
                                             (pr-str
                                              (c-backend-canonical-value
@@ -102699,6 +102981,33 @@
                           :instruction-summary (:instruction-summary plan)
                           :effect-summary (:effect-summary plan)
                           :stdout stdout
+                          :runtime-engine
+                          (when runtime-derived?
+                            (:runtime-engine stage2-runtime-rule))
+                          :runtime-kernel-engine
+                          (when runtime-derived?
+                            (:runtime-kernel-engine stage2-runtime-rule))
+                          :runtime-rule-hash
+                          (when runtime-derived?
+                            (:runtime-rule-hash stage2-runtime-rule))
+                          :runtime-kernel-rule-hash
+                          (when runtime-derived?
+                            (:runtime-kernel-rule-hash stage2-runtime-rule))
+                          :runtime-rule-source-path
+                          (when runtime-derived?
+                            (:runtime-source-path stage2-runtime-rule))
+                          :runtime-rule-source
+                          (when runtime-derived?
+                            (:runtime-rule-source stage2-runtime-rule))
+                          :stage2-runtime-execution-record
+                          (when runtime-derived?
+                            stage2-runtime-execution-record)
+                          :clojure-instruction-runner-comparison
+                          {:boundary (if runtime-derived?
+                                       :comparison-only
+                                       :not-used)
+                           :authoritative-runtime? false
+                           :stdout clojure-stage0-output}
                           :c-source c-source
                           :c-source-hash c-source-hash
                           :manifest (assoc manifest-input
@@ -102746,22 +103055,43 @@
        (when manifest-path (spit manifest-path (pr-str (:manifest artifact))))
        (when source-map-path (spit source-map-path (pr-str (:source-map artifact))))
        (when provenance-path (spit provenance-path (pr-str (:provenance artifact))))
-       (when compile?
-         (when-not (and c-source-path executable-path)
-           (c-backend-fail! "C14-INPUT"
-                            "C backend compilation requires explicit output paths"
-                            source-path target nil
-                            {:missing-fields [:c-source-path :executable-path]}))
-         (c-backend-run-cc! c-source-path executable-path source-path target))
-       (cond-> (assoc artifact
-                      :emitted-files (cond-> {}
-                                       c-source-path (assoc :c-source c-source-path)
-                                       manifest-path (assoc :manifest manifest-path)
-                                       source-map-path (assoc :source-map source-map-path)
-                                       provenance-path (assoc :provenance provenance-path))
-                      :compile-requested? (boolean compile?)
-                      :executable-path executable-path)
-         compile? (assoc :compiled-executable? true))))))
+       (let [compile-result
+             (when compile?
+               (when-not (and c-source-path executable-path)
+                 (c-backend-fail! "C14-INPUT"
+                                  "C backend compilation requires explicit output paths"
+                                  source-path target nil
+                                  {:missing-fields [:c-source-path :executable-path]}))
+               (c-backend-run-cc! c-source-path executable-path source-path
+                                   target runtime-derived?))]
+         (when (and runtime-derived?
+                    compile?
+                    (not= (:runtime-out compile-result)
+                          (:stdout stage2-runtime-execution)))
+           (p15-s23-stage2-runtime-executor-fail!
+            "P15S23X003"
+            source-path
+            compile-result
+            {:requested-source source-path
+             :target target
+             :runtime-engine (:runtime-engine stage2-runtime-rule)
+             :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
+             :stage2-runtime-output (:stdout stage2-runtime-execution)
+             :c-executable-output (:runtime-out compile-result)
+             :p15-diagnostic "P15S23X003"
+             :missing-fact :c-runtime-execution-equivalence}))
+         (cond-> (assoc artifact
+                        :emitted-files (cond-> {}
+                                         c-source-path (assoc :c-source c-source-path)
+                                         manifest-path (assoc :manifest manifest-path)
+                                         source-map-path (assoc :source-map source-map-path)
+                                         provenance-path (assoc :provenance provenance-path))
+                        :compile-requested? (boolean compile?)
+                        :executable-path executable-path)
+           compile? (assoc :compiled-executable? true)
+           (and compile? runtime-derived?)
+           (assoc :compiled-execution-output
+                  (:runtime-out compile-result))))))))
 
 (defn c-backend-file-artifact
   ([path] (c-backend-file-artifact path {}))

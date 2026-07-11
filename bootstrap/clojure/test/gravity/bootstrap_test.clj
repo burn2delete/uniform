@@ -24681,10 +24681,17 @@
         (is (= :runtime-derived-instruction-lowering
                (get-in artifact [:manifest :lowering-strategy])))
         (is (true? (get-in artifact [:manifest :runtime-derived?])))
-        (is (= {:kind :clojure-stage0-execution
-                :purpose :parity-only
-                :authoritative-runtime? false}
-               (get-in artifact [:manifest :oracle])))
+        (is (= :gravity-stage2-runtime-execution
+               (get-in artifact [:manifest :oracle :kind])))
+        (is (= :comparison-only
+               (get-in artifact
+                       [:manifest :oracle
+                        :clojure-instruction-runner-comparison
+                        :boundary])))
+        (is (false? (get-in artifact
+                            [:manifest :oracle
+                             :clojure-instruction-runner-comparison
+                             :authoritative-runtime?])))
         (is (true? (get-in artifact [:provenance :clojure-seed-boundary?])))
         (is (false? (get-in artifact [:provenance :self-hosted?])))
         (is (not (str/includes? (:c-source artifact) "gravity_output")))
@@ -25028,14 +25035,20 @@
                        (get-in artifact-b [:target :lowering-mode])))
                 (is (true? (get-in artifact-a [:manifest :runtime-derived?])))
                 (is (true? (get-in artifact-b [:manifest :runtime-derived?])))
-                (is (= {:kind :clojure-stage0-execution
-                        :purpose :parity-only
-                        :authoritative-runtime? false}
-                       (get-in artifact-a [:manifest :oracle])))
-                (is (= {:kind :clojure-stage0-execution
-                        :purpose :parity-only
-                        :authoritative-runtime? false}
-                       (get-in artifact-b [:manifest :oracle])))
+                (is (= :gravity-stage2-runtime-execution
+                       (get-in artifact-a [:manifest :oracle :kind])))
+                (is (= :gravity-stage2-runtime-execution
+                       (get-in artifact-b [:manifest :oracle :kind])))
+                (is (= :comparison-only
+                       (get-in artifact-a
+                               [:manifest :oracle
+                                :clojure-instruction-runner-comparison
+                                :boundary])))
+                (is (= :comparison-only
+                       (get-in artifact-b
+                               [:manifest :oracle
+                                :clojure-instruction-runner-comparison
+                                :boundary])))
                 (is (= (str "héllo λ\n" "a" nul "b\n")
                        (:stdout artifact-a)))
                 (is (= (:stdout artifact-a) (:stdout artifact-b)))
@@ -25123,6 +25136,134 @@
                  (:out (run-bin (:executable-path gravity)))))
           (is (= "stage2\nhéllo\n"
                  (:out (run-bin (:executable-path qst))))))))))
+
+(deftest hosted-c-backend-runtime-derived-binds-stage2-runtime-executor-and-kernel
+  (with-temp-directory
+    "gravity-c-backend-stage2-runtime-binding-"
+    (fn [directory]
+      (let [source-text (str "(ns runtime.stage2.runtime (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (do (println \"stage2\") "
+                             "(println (str \"hé\" \"llo\"))))\n")
+            gravity-path (.resolve directory "stage2.gravity")
+            qst-path (.resolve directory "stage2.qst")
+            gravity-out (.resolve directory "gravity-out")
+            qst-out (.resolve directory "qst-out")]
+        (spit (.toFile gravity-path) source-text)
+        (spit (.toFile qst-path) source-text)
+        (let [gravity (bootstrap/c-backend-source-artifact
+                       (.toString gravity-path) source-text
+                       {:target :c
+                        :lowering-mode :runtime-derived
+                        :emit-dir (.toString gravity-out)
+                        :compile? true})
+              qst (bootstrap/c-backend-source-artifact
+                   (.toString qst-path) source-text
+                   {:target :c
+                    :lowering-mode :runtime-derived
+                    :emit-dir (.toString qst-out)
+                    :compile? true})]
+          (doseq [artifact [gravity qst]]
+            (is (= :gravity-stage2-runtime-executor-rules-v1
+                   (:runtime-engine artifact)))
+            (is (= :gravity-stage2-runtime-kernel-v1
+                   (:runtime-kernel-engine artifact)))
+            (is (re-find #"^sha256:" (:runtime-rule-hash artifact)))
+            (is (re-find #"^sha256:" (:runtime-kernel-rule-hash artifact)))
+            (is (.isFile (java.io.File.
+                          (:runtime-rule-source-path artifact))))
+            (is (= (:stdout artifact)
+                   (get-in artifact
+                           [:stage2-runtime-execution-record :stdout])))
+            (is (= (:stdout artifact)
+                   (:compiled-execution-output artifact)))
+            (is (= :gravity-stage2-runtime-execution
+                   (get-in artifact [:manifest :oracle :kind])))
+            (is (= (:runtime-engine artifact)
+                   (get-in artifact [:manifest :oracle :runtime-engine])))
+            (is (= (:runtime-rule-hash artifact)
+                   (get-in artifact [:manifest :oracle :runtime-rule-hash])))
+            (is (= :comparison-only
+                   (get-in artifact
+                           [:clojure-instruction-runner-comparison
+                            :boundary])))
+            (is (false? (get-in artifact
+                                [:clojure-instruction-runner-comparison
+                                 :authoritative-runtime?])))
+            (is (true? (get-in artifact
+                               [:provenance :clojure-seed-boundary?])))
+            (is (false? (get-in artifact [:provenance :self-hosted?]))))
+          (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                         :manifest-hash :source-map-hash :provenance-hash
+                         :runtime-rule-hash :runtime-kernel-rule-hash]]
+            (is (= (get gravity field) (get qst field)) field))
+          (is (= (:stdout gravity) (:stdout qst)))
+          (is (= (.toString gravity-path)
+                 (get-in gravity [:provenance :source :path])))
+          (is (= (.toString qst-path)
+                 (get-in qst [:provenance :source :path]))))))))
+
+(deftest hosted-c-backend-runtime-derived-fails-closed-on-stage2-runtime-binding-gaps
+  (let [source-text (str "(ns runtime.stage2.runtime.reject (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"ok\"))\n")]
+    (let [missing (diagnostic-data
+                   #(with-redefs
+                      [bootstrap/c-backend-stage2-runtime-source-rule!
+                       (fn [source-path target]
+                         (bootstrap/p15-s23-stage2-runtime-executor-fail!
+                          "P15S23X001" source-path nil
+                          {:target target
+                           :missing-fact :stage2-runtime-executor-source}))]
+                      (bootstrap/c-backend-source-artifact
+                       "runtime-stage2-runtime-missing.gravity"
+                       source-text
+                       {:target :c
+                        :lowering-mode :runtime-derived})))]
+      (is (= "P15S23X001" (:id missing)))
+      (is (= :stage2-runtime-executor-source
+             (:missing-fact missing))))
+    (let [malformed (diagnostic-data
+                     #(let [original bootstrap/p15-s23-compiler-def-value]
+                        (with-redefs
+                          [bootstrap/p15-s23-compiler-def-value
+                           (fn [source-path forms symbol-name]
+                             (if (= symbol-name
+                                    'p15-s23-stage2-runtime-executor)
+                               {:artifact :gravity/stage2-runtime-executor}
+                               (original source-path forms symbol-name)))]
+                          (bootstrap/c-backend-source-artifact
+                           "runtime-stage2-runtime-malformed.gravity"
+                           source-text
+                           {:target :c
+                            :lowering-mode :runtime-derived}))))]
+      (is (= "P15S23X002" (:id malformed)))
+      (is (= :stage2-runtime-rule-set
+             (:missing-fact malformed))))
+    (with-temp-directory
+      "gravity-stage2-runtime-mismatch-"
+      (fn [directory]
+        (let [output (.resolve directory "mismatch")
+              mismatch (diagnostic-data
+                        #(with-redefs
+                           [bootstrap/c-backend-run-cc!
+                            (fn [& _] {:exit 0
+                                        :out ""
+                                        :err ""
+                                        :runtime-out "wrong\n"})]
+                           (bootstrap/c-backend-source-artifact
+                            "runtime-stage2-runtime-mismatch.gravity"
+                            source-text
+                            {:target :c
+                             :lowering-mode :runtime-derived
+                             :emit-dir (.toString output)
+                             :compile? true})))]
+          (is (= "P15S23X003" (:id mismatch)))
+          (is (= :c-runtime-execution-equivalence
+                 (:missing-fact mismatch)))
+          (is (= "P15S23X003" (:p15-diagnostic mismatch))))))))
 
 (deftest hosted-c-backend-runtime-derived-fails-closed-on-stage2-rule-gaps
   (let [source-text (str "(ns runtime.stage2.reject (:profile :hosted) "
