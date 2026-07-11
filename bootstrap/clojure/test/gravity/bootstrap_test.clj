@@ -25239,12 +25239,22 @@
                  (:input-plan-kind gravity)))
           (is (= :gravity/stage2-hosted-core-compiled-plan
                  (:input-plan-kind qst)))
-          (is (= :gravity-stage2-plan-emitter-rules-v1
+          (is (= :gravity-stage2-compiler-driver-rules-v1
                  (get-in gravity [:manifest :compiler-engine])))
-          (is (= :p15-s23-stage2-plan-emitter
+          (is (= :p15-s23-stage2-compiler-driver
                  (get-in gravity [:manifest :compiler-stage])))
-          (is (= :p15-s23-stage2-plan-emitter
+          (is (= :p15-s23-stage2-compiler-driver
                  (get-in gravity [:provenance :compiler-stage])))
+          (is (= :p15-s23-stage2-plan-emitter
+                 (get-in gravity [:manifest :plan-emitter-stage])))
+          (is (true? (get-in gravity
+                              [:manifest :stage2-compiler-driver-used?])))
+          (is (re-find #"^sha256:"
+                       (get-in gravity
+                               [:manifest :compiler-driver-rule-hash])))
+          (is (= :complete
+                 (get-in gravity
+                         [:manifest :stage2-compiler-driver-record :status])))
           (is (string? (get-in gravity
                                [:manifest :compiler-source-rule-hash])))
           (is (= (get-in gravity [:manifest :compiler-source-rule-hash])
@@ -25331,6 +25341,190 @@
                  (get-in gravity [:provenance :source :path])))
           (is (= (.toString qst-path)
                  (get-in qst [:provenance :source :path]))))))))
+
+(deftest hosted-c-backend-runtime-derived-binds-stage2-compiler-driver
+  (with-temp-directory
+    "gravity-c-backend-stage2-driver-binding-"
+    (fn [directory]
+      (let [source-text (str "(ns runtime.stage2.driver (:profile :hosted) "
+                             "(:target :jvm) (:effects #{:io/write}) "
+                             "(:capabilities #{:io/stdout}))\n"
+                             "(defn main [] (println (str \"driver\" "
+                             " \"-bound\")))\n")
+            gravity-path (.resolve directory "driver.gravity")
+            qst-path (.resolve directory "driver.qst")]
+        (spit (.toFile gravity-path) source-text)
+        (spit (.toFile qst-path) source-text)
+        (let [gravity (bootstrap/c-backend-source-artifact
+                       (.toString gravity-path) source-text
+                       {:target :c :lowering-mode :runtime-derived})
+              qst (bootstrap/c-backend-source-artifact
+                   (.toString qst-path) source-text
+                   {:target :c :lowering-mode :runtime-derived})]
+          (doseq [artifact [gravity qst]]
+            (is (= :p15-s23-stage2-compiler-driver
+                   (get-in artifact [:manifest :compiler-stage])))
+            (is (= :gravity-stage2-compiler-driver-rules-v1
+                   (get-in artifact [:manifest :compiler-engine])))
+            (is (= :p15-s23-stage2-plan-emitter
+                   (get-in artifact [:manifest :plan-emitter-stage])))
+            (is (true? (get-in artifact
+                                [:manifest :stage2-compiler-driver-used?])))
+            (is (= :complete
+                   (get-in artifact
+                           [:manifest :stage2-compiler-driver-record :status])))
+            (is (re-find #"^sha256:"
+                         (get-in artifact
+                                 [:manifest :compiler-driver-rule-hash])))
+            (is (= (get-in artifact
+                           [:manifest :compiler-driver-rule-hash])
+                   (get-in artifact
+                           [:provenance :compiler-driver-rule-hash])))
+            (is (= :p15-s23-stage2-compiler-driver
+                   (get-in artifact [:provenance :compiler-stage])))
+            (is (true? (get-in artifact [:provenance
+                                         :clojure-seed-boundary?])))
+            (is (false? (get-in artifact [:provenance :self-hosted?]))))
+          (is (= (:stdout gravity) "driver-bound\n"))
+          (is (= (:stdout gravity) (:stdout qst)))
+          (doseq [field [:artifact-id :input-plan-hash :c-source-hash
+                         :manifest-hash :source-map-hash :provenance-hash
+                         :compiler-driver-rule-hash]]
+            (is (= (get gravity field) (get qst field)) field)))))))
+
+(deftest hosted-c-backend-runtime-derived-driver-fails-closed-on-contract-gaps
+  (let [source-text (str "(ns runtime.stage2.driver.reject (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"ok\"))\n")
+        original bootstrap/p15-s23-compiler-def-value]
+    (let [missing (diagnostic-data
+                   #(with-redefs
+                      [bootstrap/p15-s23-compiler-def-value
+                       (fn [source-path forms symbol-name]
+                         (if (= symbol-name
+                                'p15-s23-stage2-compiler-driver)
+                           nil
+                           (original source-path forms symbol-name)))]
+                      (bootstrap/c-backend-source-artifact
+                       "driver-stage2-missing.gravity"
+                       source-text
+                       {:target :c :lowering-mode :runtime-derived})))]
+      (is (= "P15S23Y001" (:id missing)))
+      (is (= :stage2-compiler-driver-definition
+             (:missing-fact missing))))
+    (let [malformed (diagnostic-data
+                     #(with-redefs
+                        [bootstrap/p15-s23-compiler-def-value
+                         (fn [source-path forms symbol-name]
+                           (if (= symbol-name
+                                  'p15-s23-stage2-compiler-driver)
+                             {:artifact :gravity/stage2-compiler-driver}
+                             (original source-path forms symbol-name)))]
+                        (bootstrap/c-backend-source-artifact
+                         "driver-stage2-malformed.gravity"
+                         source-text
+                         {:target :c :lowering-mode :runtime-derived})))]
+      (is (= "P15S23Y002" (:id malformed)))
+      (is (= :stage2-compiler-driver-rule-set
+             (:missing-fact malformed))))
+    (let [mismatch (diagnostic-data
+                    #(with-redefs
+                       [bootstrap/p15-s23-compiler-def-value
+                        (fn [source-path forms symbol-name]
+                          (let [value (original source-path forms symbol-name)]
+                            (if (= symbol-name
+                                   'p15-s23-stage2-compiler-driver)
+                              (assoc value :runtime-kernel :spoof)
+                              value)))]
+                       (bootstrap/c-backend-source-artifact
+                        "driver-stage2-mismatch.gravity"
+                        source-text
+                        {:target :c :lowering-mode :runtime-derived})))]
+      (is (= "P15S23Y002" (:id mismatch)))
+      (is (= :stage2-compiler-driver-rule-set
+             (:missing-fact mismatch))))
+    (let [equivalence (diagnostic-data
+                       #(with-redefs
+                          [bootstrap/p15-s23-stage2-compiler-driver-run-source
+                           (fn [& _]
+                             {:stage2-plan {:kind :spoof}
+                              :status :complete
+                              :accepted-output-equivalent? true
+                              :stage2-runtime-executed? true
+                              :stage2-runtime-execution-record
+                              {:status :complete :stdout "ok\n"}})]
+                          (bootstrap/c-backend-source-artifact
+                           "driver-stage2-equivalence.gravity"
+                           source-text
+                           {:target :c :lowering-mode :runtime-derived})))]
+      (is (= "P15S23Y003" (:id equivalence)))
+      (is (= :stage2-driver-plan-equivalence
+             (:missing-fact equivalence))))
+    (let [failed-run (diagnostic-data
+                      #(with-redefs
+                         [bootstrap/p15-s23-stage2-compiler-driver-run-source
+                          (fn [& _]
+                            {:status :failed
+                             :accepted-output-equivalent? false})]
+                         (bootstrap/c-backend-source-artifact
+                          "driver-stage2-failed.gravity"
+                          source-text
+                          {:target :c :lowering-mode :runtime-derived})))]
+      (is (= "P15S23Y003" (:id failed-run)))
+      (is (= :stage2-driver-execution-equivalence
+             (:missing-fact failed-run))))
+    (let [runtime-failed (diagnostic-data
+                          #(let [original
+                                 bootstrap/p15-s23-stage2-compiler-driver-run-source]
+                             (with-redefs
+                               [bootstrap/p15-s23-stage2-compiler-driver-run-source
+                                (fn [& args]
+                                  (assoc-in
+                                   (apply original args)
+                                   [:stage2-runtime-execution-record :status]
+                                   :failed))]
+                               (bootstrap/c-backend-source-artifact
+                                "driver-stage2-runtime-failed.gravity"
+                                source-text
+                                {:target :c
+                                 :lowering-mode :runtime-derived}))))]
+      (is (= "P15S23Y003" (:id runtime-failed)))
+      (is (= :stage2-driver-execution-equivalence
+             (:missing-fact runtime-failed))))))
+
+(deftest public-current-source-runtime-derived-driver-binding-routes-both-extensions
+  (let [root (.getCanonicalPath (java.io.File. "."))
+        bin (str root "/bin/gravity")
+        nonce (str (System/nanoTime))]
+    (doseq [extension ["gravity" "qst"]]
+      (let [output (str "target/public-stage2-driver-" nonce "-" extension)
+            source (str root "/examples/hello." extension)]
+        (try
+          (let [result (run-process-in-directory
+                        "/tmp"
+                        (merge (into {} (System/getenv))
+                               {"GRAVITY_BOOTSTRAP_ONLY" "1"})
+                        [bin "compile" source "--target" "c"
+                         "--lowering" "runtime-derived" "-o" output])
+                artifact (edn/read-string (:out result))]
+            (is (zero? (:exit result)) (:err result))
+            (is (= :p15-s23-stage2-compiler-driver
+                   (get-in artifact [:manifest :compiler-stage])))
+            (is (= :gravity-stage2-compiler-driver-rules-v1
+                   (get-in artifact [:manifest :compiler-engine])))
+            (is (true? (get-in artifact
+                                [:manifest :stage2-compiler-driver-used?])))
+            (is (string? (get-in artifact
+                                  [:manifest :compiler-driver-rule-hash])))
+            (is (= source (get-in artifact [:provenance :source :path]))))
+          (finally
+            (doseq [path [output (str output ".c")
+                          (str output ".manifest.edn")
+                          (str output ".source-map.edn")
+                          (str output ".provenance.edn")]]
+              (java.nio.file.Files/deleteIfExists
+               (.toPath (java.io.File. path))))))))))
 
 (deftest hosted-c-backend-runtime-derived-fails-closed-on-stage2-runtime-binding-gaps
   (let [source-text (str "(ns runtime.stage2.runtime.reject (:profile :hosted) "
@@ -25704,8 +25898,15 @@
                (get-in artifact [:target :lowering-mode])))
         (is (= :gravity/stage2-hosted-core-compiled-plan
                (:input-plan-kind artifact)))
-        (is (= :p15-s23-stage2-plan-emitter
+        (is (= :p15-s23-stage2-compiler-driver
                (get-in artifact [:manifest :compiler-stage])))
+        (is (= :gravity-stage2-compiler-driver-rules-v1
+               (get-in artifact [:manifest :compiler-engine])))
+        (is (true? (get-in artifact
+                            [:manifest :stage2-compiler-driver-used?])))
+        (is (re-find #"^sha256:"
+                     (get-in artifact
+                             [:manifest :compiler-driver-rule-hash])))
         (is (string? (get-in artifact
                              [:manifest :compiler-source-rule-hash])))
         (is (= (get-in artifact [:manifest :compiler-source-rule-hash])

@@ -96869,8 +96869,16 @@
         (p15-s23-stage2-runtime-execute-plan runtime stage2-plan)
         stage0-plan (stage0-compiled-core-plan source-path source-text module)
         stage0-output (execute-stage0-compiled-plan stage0-plan)
-        expected-stdout (get-in driver [:accepted-scope
-                                        :expected-stdout])
+        ;; The declared accepted-scope stdout is normative for the canonical
+        ;; core-app fixture only.  The public stage2 driver may also be used
+        ;; for another accepted source unit; in that case the stage0 result is
+        ;; the comparison oracle while the contract still governs the driver
+        ;; steps and boundaries.
+        expected-stdout (if (= (str source-path)
+                               (str p15-s23-accepted-app-source-path))
+                          (get-in driver [:accepted-scope
+                                          :expected-stdout])
+                          stage0-output)
         normalized-stage2-bindings
         (mapv #(assoc % :visibility :local)
               (:binding-table stage2-plan))
@@ -96907,6 +96915,10 @@
      :driver-steps (:driver-steps driver)
      :source-id (str "sha256:" (sha256-hex source-text))
      :stage2-plan-id (:plan-id stage2-plan)
+     ;; Keep the actual products available to downstream target lowerers.  The
+     ;; driver remains the owner of plan emission and runtime execution; these
+     ;; fields are intentionally not included in the identity hash.
+     :stage2-plan stage2-plan
      :stage0-plan-id (:plan-id stage0-plan)
      :stage2-plan-kind (:kind stage2-plan)
      :stage0-plan-kind (:kind stage0-plan)
@@ -102485,6 +102497,151 @@
             :runtime-rule-hash runtime-rule-hash
             :runtime-kernel-rule-hash kernel-rule-hash}})))))
 
+(defn c-backend-stage2-compiler-driver-source-rule!
+  "Load and validate the Gravity-authored P15-S23 stage2 compiler driver.
+
+  The public runtime-derived route is allowed to use the stage2 emitter and
+  runtime only through this declared driver contract.  Keep the driver hash
+  independent of the checkout path while retaining the resolved source path
+  as provenance."
+  [source-path target]
+  (let [compiler-source (c-backend-resolve-p15-s23-compiler-source-path)]
+    (when-not (.isFile (java.io.File. compiler-source))
+      (p15-s23-stage2-compiler-driver-fail!
+       "P15S23Y001"
+       compiler-source
+       nil
+       {:requested-source source-path
+        :target target
+        :missing-fields [:compiler-source]
+        :missing-fact :stage2-compiler-driver-source}))
+    (let [source-data
+          (try
+            (p15-s23-compiler-source-form-record compiler-source)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-compiler-driver-fail!
+               "P15S23Y001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-compiler-driver-source
+                :cause-message (.getMessage ex)})))
+          forms (:forms source-data)
+          driver
+          (try
+            (p15-s23-compiler-def-value
+             compiler-source forms 'p15-s23-stage2-compiler-driver)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-compiler-driver-fail!
+               "P15S23Y001"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-compiler-driver-definition
+                :cause-message (.getMessage ex)})))
+          front-end
+          (try
+            (p15-s23-compiler-def-value
+             compiler-source forms 'p15-s23-stage2-source-front-end)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-compiler-driver-fail!
+               "P15S23Y002"
+               compiler-source
+               nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-source-front-end-definition
+                :cause-message (.getMessage ex)})))]
+      (when-not (map? driver)
+        (p15-s23-stage2-compiler-driver-fail!
+         "P15S23Y001"
+         compiler-source
+         driver
+         {:requested-source source-path
+          :target target
+          :missing-fields [:p15-s23-stage2-compiler-driver]
+          :missing-fact :stage2-compiler-driver-definition}))
+      (when-not (map? front-end)
+        (p15-s23-stage2-compiler-driver-fail!
+         "P15S23Y002"
+         compiler-source
+         front-end
+         {:requested-source source-path
+          :target target
+          :missing-fields [:p15-s23-stage2-source-front-end]
+          :missing-fact :stage2-source-front-end-definition}))
+      (let [rule-record (p15-s23-stage2-compiler-driver-rule-record driver)
+            required-links
+            {:nucleus :p15-s23-stage2-compiler-nucleus
+             :plan-emitter :p15-s23-stage2-plan-emitter
+             :runtime-executor :p15-s23-stage2-runtime-executor
+             :runtime-kernel :p15-s23-stage2-runtime-kernel
+             :front-end-executor :p15-s23-stage2-front-end-executor
+             :source-front-end :p15-s23-stage2-source-front-end}
+            observed-links (select-keys driver (keys required-links))
+            missing-links
+            (set (for [[field expected] required-links
+                       :when (not= expected (get observed-links field))]
+                   field))
+            execution-contract (:execution-contract driver)
+            execution-ok?
+            (and (= :stage0-compiled-core-plan
+                    (:compare-against execution-contract))
+                 (true? (:accepted-output-must-match-expected?
+                         execution-contract))
+                 (= :gravity-source-bytes (:input driver))
+                 (= :stage2-driver-run-record (:output driver))
+                 (= :hosted-core-source-to-stage2-runtime-execution
+                    (:module-responsibility driver)))]
+        (when-not (and (= :complete (:status rule-record))
+                       (empty? missing-links)
+                       execution-ok?
+                       (= :gravity/stage2-compiler-driver
+                          (:artifact driver))
+                       (= :p15-s23-stage2-compiler-driver
+                          (:stage driver))
+                       (= :p15-s23-compiler-stage
+                          (:compiler-stage driver)))
+          (p15-s23-stage2-compiler-driver-fail!
+           "P15S23Y002"
+           compiler-source
+           {:driver driver
+            :rule-record rule-record
+            :missing-links (p15-s23-stage2-sort-values missing-links)
+            :execution-contract execution-contract}
+           {:requested-source source-path
+            :target target
+            :missing-fact :stage2-compiler-driver-rule-set
+            :missing-links (p15-s23-stage2-sort-values missing-links)
+            :execution-contract-valid? execution-ok?
+            :rule-record rule-record}))
+        (let [driver-rule-hash
+              (str "sha256:"
+                   (sha256-hex
+                    (pr-str (c-backend-canonical-value driver))))
+              source-content-hash
+              (str "sha256:" (sha256-hex (:source-text source-data)))]
+          {:driver driver
+           :front-end front-end
+           :rule-record rule-record
+           :driver-engine (:engine driver)
+           :driver-rule-hash driver-rule-hash
+           :driver-source-path compiler-source
+           :driver-source-content-hash source-content-hash
+           :driver-rule-source
+           {:kind :gravity-source
+            :sha256 source-content-hash
+            :driver-rule-hash driver-rule-hash
+            :stage :p15-s23-stage2-compiler-driver}})))))
+
 (defn c-backend-runtime-bytes
   [value]
   (let [text (str value)
@@ -102799,6 +102956,14 @@
            (when runtime-derived?
              (c-backend-stage2-runtime-source-rule!
               source-path target))
+           stage2-driver-rule
+           (when runtime-derived?
+             ;; Resolve the compiler driver after the lower-level bindings so
+             ;; legacy missing-source diagnostics remain stable, while every
+             ;; successful runtime-derived route is still gated by the driver
+             ;; contract before it can emit C.
+             (c-backend-stage2-compiler-driver-source-rule!
+              source-path target))
            plan
            (if runtime-derived?
              (try
@@ -102840,24 +103005,83 @@
            _ (c-backend-validate-plan! source-path target plan)
            _ (when runtime-derived?
                (c-backend-validate-runtime-plan! source-path target plan))
-           stage2-runtime-execution
+           stage2-driver-run
            (when runtime-derived?
              (try
-               (p15-s23-stage2-runtime-execute-plan
-                (:runtime stage2-runtime-rule) plan)
+               (p15-s23-stage2-compiler-driver-run-source
+                (:driver stage2-driver-rule)
+                (:front-end stage2-driver-rule)
+                (:emitter stage2-rule)
+                (:runtime stage2-runtime-rule)
+                source-path source-text)
                (catch clojure.lang.ExceptionInfo ex
                  (throw ex))
                (catch Exception ex
-                 (c-backend-fail!
-                  "B2-UNSUPPORTED"
-                  "Gravity stage2 runtime executor could not execute the plan"
-                  source-path target nil
-                  {:compiler-stage :p15-s23-stage2-runtime-executor
-                   :runtime-engine (:runtime-engine stage2-runtime-rule)
-                   :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
-                   :p15-diagnostic "P15S23X003"
+                 (p15-s23-stage2-compiler-driver-fail!
+                  "P15S23Y003"
+                  source-path
+                  nil
+                  {:target target
+                   :driver-engine (:driver-engine stage2-driver-rule)
+                   :driver-rule-hash
+                   (:driver-rule-hash stage2-driver-rule)
                    :cause-message (.getMessage ex)
-                   :missing-fact :stage2-runtime-execution}))))
+                   :missing-fact :stage2-driver-execution}))))
+           _ (when runtime-derived?
+               (when-not (and (map? stage2-driver-run)
+                              (= :complete (:status stage2-driver-run))
+                              (true? (:accepted-output-equivalent?
+                                      stage2-driver-run))
+                              (map? (:stage2-plan stage2-driver-run))
+                              (map? (:stage2-runtime-execution-record
+                                     stage2-driver-run))
+                              (= :complete
+                                 (get-in stage2-driver-run
+                                         [:stage2-runtime-execution-record
+                                          :status]))
+                              (true? (:stage2-runtime-executed?
+                                      stage2-driver-run)))
+                 (p15-s23-stage2-compiler-driver-fail!
+                  "P15S23Y003"
+                  source-path
+                  stage2-driver-run
+                  {:requested-source source-path
+                   :target target
+                   :driver-engine (:driver-engine stage2-driver-rule)
+                   :driver-rule-hash
+                   (:driver-rule-hash stage2-driver-rule)
+                   :missing-fact :stage2-driver-execution-equivalence
+                   :driver-status (:status stage2-driver-run)
+                   :accepted-output-equivalent?
+                   (:accepted-output-equivalent? stage2-driver-run)})))
+           _ (when runtime-derived?
+               (let [driver-plan (:stage2-plan stage2-driver-run)
+                     plan-shape
+                     (select-keys plan
+                                  [:kind :entrypoint :functions
+                                   :binding-table :instruction-summary
+                                   :effect-summary])
+                     driver-plan-shape
+                     (select-keys driver-plan
+                                  [:kind :entrypoint :functions
+                                   :binding-table :instruction-summary
+                                   :effect-summary])]
+                 (when-not (= (c-backend-canonical-value plan-shape)
+                              (c-backend-canonical-value driver-plan-shape))
+                   (p15-s23-stage2-compiler-driver-fail!
+                    "P15S23Y003"
+                    source-path
+                    {:stage2-plan plan-shape
+                     :driver-plan driver-plan-shape}
+                    {:requested-source source-path
+                     :target target
+                     :driver-engine (:driver-engine stage2-driver-rule)
+                     :driver-rule-hash
+                     (:driver-rule-hash stage2-driver-rule)
+                     :missing-fact :stage2-driver-plan-equivalence}))))
+           stage2-runtime-execution
+           (when runtime-derived?
+             (:stage2-runtime-execution-record stage2-driver-run))
            clojure-stage0-output
            (try
              (execute-stage0-compiled-plan plan)
@@ -102947,6 +103171,10 @@
                     :runtime-derived? runtime-derived?
                     :oracle (when runtime-derived?
                               {:kind :gravity-stage2-runtime-execution
+                               :compiler-driver-engine
+                               (:driver-engine stage2-driver-rule)
+                               :compiler-driver-rule-hash
+                               (:driver-rule-hash stage2-driver-rule)
                                :runtime-engine
                                (:runtime-engine stage2-runtime-rule)
                                :runtime-kernel-engine
@@ -102969,15 +103197,35 @@
                        :plan-id (:plan-id stage2-runtime-execution-record)
                        :stdout-hash output-hash
                        :status (:status stage2-runtime-execution-record)})
+                    :stage2-compiler-driver-record
+                    (when runtime-derived?
+                      {:artifact
+                       :gravity/p15-s23-stage2-compiler-driver-run-record
+                       :driver-engine (:driver-engine stage2-driver-rule)
+                       :driver-rule-hash (:driver-rule-hash stage2-driver-rule)
+                       :plan-id plan-hash
+                       :runtime-execution-status
+                       (get-in stage2-driver-run
+                               [:stage2-runtime-execution-record :status])
+                       :accepted-output-equivalent?
+                       (:accepted-output-equivalent? stage2-driver-run)
+                       :status (:status stage2-driver-run)})
                     :safety-mode (get-in plan [:module :safety])
                     :profile (get-in plan [:module :profile])
                     :capabilities (get-in plan [:module :capabilities])
                     :seedless-release? false}
              runtime-derived?
-             (assoc :compiler-stage :p15-s23-stage2-plan-emitter
-                    :compiler-engine (get-in plan [:compiler :rule-engine])
+             (assoc :compiler-stage :p15-s23-stage2-compiler-driver
+                    :compiler-engine (:driver-engine stage2-driver-rule)
+                    :plan-emitter-stage :p15-s23-stage2-plan-emitter
+                    :plan-emitter-engine (get-in plan [:compiler :rule-engine])
                     :compiler-source-rule-hash
                     (:source-rule-hash stage2-rule)
+                    :compiler-driver-rule-hash
+                    (:driver-rule-hash stage2-driver-rule)
+                    :compiler-driver-rule-source
+                    (:driver-rule-source stage2-driver-rule)
+                    :stage2-compiler-driver-used? true
                     :runtime-engine (:runtime-engine stage2-runtime-rule)
                     :runtime-kernel-engine
                     (:runtime-kernel-engine stage2-runtime-rule)
@@ -103005,6 +103253,10 @@
                     :runtime :hosted-libc-stdout
                     :oracle (when runtime-derived?
                               {:kind :gravity-stage2-runtime-execution
+                               :compiler-driver-engine
+                               (:driver-engine stage2-driver-rule)
+                               :compiler-driver-rule-hash
+                               (:driver-rule-hash stage2-driver-rule)
                                :runtime-engine
                                (:runtime-engine stage2-runtime-rule)
                                :runtime-kernel-engine
@@ -103027,16 +103279,36 @@
                        :plan-id (:plan-id stage2-runtime-execution-record)
                        :stdout-hash output-hash
                        :status (:status stage2-runtime-execution-record)})
+                    :stage2-compiler-driver-record
+                    (when runtime-derived?
+                      {:artifact
+                       :gravity/p15-s23-stage2-compiler-driver-run-record
+                       :driver-engine (:driver-engine stage2-driver-rule)
+                       :driver-rule-hash (:driver-rule-hash stage2-driver-rule)
+                       :plan-id plan-hash
+                       :runtime-execution-status
+                       (get-in stage2-driver-run
+                               [:stage2-runtime-execution-record :status])
+                       :accepted-output-equivalent?
+                       (:accepted-output-equivalent? stage2-driver-run)
+                       :status (:status stage2-driver-run)})
                     :source-map-hash source-map-hash
                     :manifest-hash manifest-hash
                     :clojure-seed-boundary? true
                     :self-hosted? false
                     :final-release? false}
              runtime-derived?
-             (assoc :compiler-stage :p15-s23-stage2-plan-emitter
-                    :compiler-engine (get-in plan [:compiler :rule-engine])
+             (assoc :compiler-stage :p15-s23-stage2-compiler-driver
+                    :compiler-engine (:driver-engine stage2-driver-rule)
+                    :plan-emitter-stage :p15-s23-stage2-plan-emitter
+                    :plan-emitter-engine (get-in plan [:compiler :rule-engine])
                     :compiler-source-rule-hash
                     (:source-rule-hash stage2-rule)
+                    :compiler-driver-rule-hash
+                    (:driver-rule-hash stage2-driver-rule)
+                    :compiler-driver-rule-source
+                    (:driver-rule-source stage2-driver-rule)
+                    :stage2-compiler-driver-used? true
                     :runtime-engine (:runtime-engine stage2-runtime-rule)
                     :runtime-kernel-engine
                     (:runtime-kernel-engine stage2-runtime-rule)
@@ -103048,10 +103320,12 @@
                     (:runtime-rule-source stage2-runtime-rule)
                     :compiler {:owner :clojure-bootstrap
                                :stage :stage2
-                               :compiler-stage :p15-s23-stage2-plan-emitter
+                               :compiler-stage :p15-s23-stage2-compiler-driver
                                :plan-hash plan-hash
                                :source-rule-hash
                                (:source-rule-hash stage2-rule)
+                               :compiler-driver-rule-hash
+                               (:driver-rule-hash stage2-driver-rule)
                                :runtime-engine
                                (:runtime-engine stage2-runtime-rule)
                                :runtime-rule-hash
@@ -103060,17 +103334,21 @@
                                             (pr-str
                                              (c-backend-canonical-value
                                               (dissoc provenance :source)))))
-           identity-input {:kind :gravity/c-backend-artifact
-                           :backend :c
-                           :dialect dialect
-                           :target target
-                           :input-plan-hash plan-hash
-                           :source-content-hash source-hash
-                           :c-source-hash c-source-hash
-                           :stdout-hash output-hash
-                           :manifest-hash manifest-hash
-                           :source-map-hash source-map-hash
-                           :provenance-hash provenance-hash}
+           identity-input (cond-> {:kind :gravity/c-backend-artifact
+                                   :backend :c
+                                   :dialect dialect
+                                   :target target
+                                   :input-plan-hash plan-hash
+                                   :source-content-hash source-hash
+                                   :c-source-hash c-source-hash
+                                   :stdout-hash output-hash
+                                   :manifest-hash manifest-hash
+                                   :source-map-hash source-map-hash
+                                   :provenance-hash provenance-hash}
+                             runtime-derived?
+                             (assoc :compiler-driver-rule-hash
+                                    (:driver-rule-hash
+                                     stage2-driver-rule)))
            artifact-base {:kind :gravity/c-backend-artifact
                           :task "HOSTED-C-TARGET"
                           :status :complete
@@ -103102,6 +103380,22 @@
                           :runtime-kernel-rule-hash
                           (when runtime-derived?
                             (:runtime-kernel-rule-hash stage2-runtime-rule))
+                          :compiler-stage
+                          (when runtime-derived?
+                            :p15-s23-stage2-compiler-driver)
+                          :compiler-engine
+                          (when runtime-derived?
+                            (:driver-engine stage2-driver-rule))
+                          :compiler-driver-rule-hash
+                          (when runtime-derived?
+                            (:driver-rule-hash stage2-driver-rule))
+                          :compiler-driver-rule-source
+                          (when runtime-derived?
+                            (:driver-rule-source stage2-driver-rule))
+                          :stage2-compiler-driver-used?
+                          (when runtime-derived? true)
+                          :stage2-compiler-driver-record
+                          (when runtime-derived? stage2-driver-run)
                           :runtime-rule-source-path
                           (when runtime-derived?
                             (:runtime-source-path stage2-runtime-rule))
