@@ -12,6 +12,14 @@
   [value]
   (str value))
 
+; Two-argument concatenation is intentionally a separate runtime entrypoint.
+; The stage2 runtime routes supported `str` calls through this Gravity-authored
+; function; the host bridge remains only the explicitly recorded invocation
+; boundary for loading/executing this source-defined function plan.
+(defn p15-s23-runtime-concat
+  [left right]
+  (str left right))
+
 (defn main
   []
   (p15-s23-runtime-format-value "gravity-stage2-runtime"))

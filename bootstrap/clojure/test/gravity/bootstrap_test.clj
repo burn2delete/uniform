@@ -25604,33 +25604,43 @@
       (is (= "P15S23Q001" (:id missing)))
       (is (= :stage2-plan-emitter-source (:missing-fact missing))))
     (let [mismatch (diagnostic-data
-                    #(with-redefs
-                       [bootstrap/p15-s23-stage2-plan-emitter-compile-source
-                        (fn [& _] {:kind :gravity/stage0-hosted-core-compiled-plan
-                                   :compiler {:rule-source :stage0}
-                                   :functions {}
-                                   :entrypoint 'main})]
+                    #(let [original
+                           @#'bootstrap/p15-s23-stage2-plan-emitter-compile-source]
+                       (with-redefs
+                         [bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                          (fn [emitter path text]
+                            (if (= path "runtime-stage2-mismatch.gravity")
+                              {:kind :gravity/stage0-hosted-core-compiled-plan
+                               :compiler {:rule-source :stage0}
+                               :functions {}
+                               :entrypoint 'main}
+                              (original emitter path text)))]
                        (bootstrap/c-backend-source-artifact
                         "runtime-stage2-mismatch.gravity"
                         source-text
                         {:target :c
-                         :lowering-mode :runtime-derived})))]
+                         :lowering-mode :runtime-derived}))))]
       (is (= "B2-UNSUPPORTED" (:id mismatch)))
       (is (= "P15S23Q003" (:p15-diagnostic mismatch)))
       (is (= :stage2-plan-integrity (:missing-fact mismatch))))
     (let [malformed (diagnostic-data
-                     #(with-redefs
-                        [bootstrap/p15-s23-stage2-plan-emitter-compile-source
-                         (fn [& _] {:kind :gravity/stage2-hosted-core-compiled-plan
-                                    :compiler {:rule-source
-                                               :p15-s23-stage2-plan-emitter}
-                                    :functions {}
-                                    :entrypoint 'main})]
+                     #(let [original
+                            @#'bootstrap/p15-s23-stage2-plan-emitter-compile-source]
+                        (with-redefs
+                          [bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                           (fn [emitter path text]
+                             (if (= path "runtime-stage2-malformed.gravity")
+                               {:kind :gravity/stage2-hosted-core-compiled-plan
+                                :compiler {:rule-source
+                                           :p15-s23-stage2-plan-emitter}
+                                :functions {}
+                                :entrypoint 'main}
+                               (original emitter path text)))]
                         (bootstrap/c-backend-source-artifact
                          "runtime-stage2-malformed.gravity"
                          source-text
                          {:target :c
-                          :lowering-mode :runtime-derived})))]
+                          :lowering-mode :runtime-derived}))))]
       (is (= "B2-UNSUPPORTED" (:id malformed)))
       (is (= "P15S23Q003" (:p15-diagnostic malformed)))
       (is (= :stage2-plan-integrity (:missing-fact malformed))))))
@@ -25656,7 +25666,7 @@
                              "(:target :jvm) (:effects #{:io/write}) "
                              "(:capabilities #{:io/stdout}))\n"
                              "(defn main [] (do "
-                             "(println (str \"a\" \"\" \"bc\")) "
+                             "(println (str \"a\" \"bc\")) "
                              "(let [left \"héllo\" right (quote \"λ\")] "
                              "(println (str left right))) "
                              "(println (str \"a" nul "b\"))))\n")
@@ -25699,6 +25709,7 @@
 (deftest hosted-c-backend-runtime-derived-str-builtin-rejects-open-operands
   (let [base "(ns runtime.str.reject (:profile :hosted) (:target :jvm) (:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
         cases [(str base "(defn main [] (println (str 1)))\n")
+               (str base "(defn main [] (println (str \"a\" \"b\" \"c\")))\n")
                (str base "(defn main [] (println (str [1])))\n")
                (str base "(defn helper [] \"x\") (defn main [] (println (str (helper))))\n")
                (str base "(defn main [] (println (str (if true \"x\" \"y\"))))\n")
@@ -25714,6 +25725,7 @@
         (is (= "B2-UNSUPPORTED" (:id data)))
         (is (= :runtime-derived (:lowering-mode data)))
         (is (contains? #{:runtime-str-operand-lowering
+                         :runtime-str-arity-lowering
                          :runtime-c-value-lowering
                          :runtime-c-lowering-rule}
                        (:missing-fact data)))))))
@@ -25942,6 +25954,34 @@
         (doseq [file (reverse (file-seq (java.io.File. root-directory)))]
           (.delete ^java.io.File file))))))
 
+(deftest hosted-c-backend-runtime-derived-routes-two-arg-str-through-gravity-artifact
+  (let [source-text (str "(ns runtime.stage2.artifact.concat (:profile :hosted) "
+                        "(:target :jvm) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println (str \"left\" \"right\")))\n")
+        calls (atom [])
+        original @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke]
+    (with-redefs
+      [bootstrap/p15-s23-stage2-runtime-artifact-invoke
+       (fn [runtime function args]
+         (swap! calls conj {:function function :args args})
+         (original runtime function args))]
+      (let [artifact (bootstrap/c-backend-source-artifact
+                      "runtime-artifact-concat.gravity"
+                      source-text
+                      {:target :c :lowering-mode :runtime-derived})]
+        (is (= "leftright\n" (:stdout artifact)))
+        (is (some #(and (= 'p15-s23-runtime-concat (:function %))
+                        (= ["left" "right"] (:args %)))
+                  @calls))
+        (is (some #(and (= 'p15-s23-runtime-format-value (:function %))
+                        (= ["leftright"] (:args %)))
+                  @calls))
+        (is (= 'p15-s23-runtime-concat
+               (:runtime-artifact-concat-function artifact)))
+        (is (true? (:runtime-artifact-generic-bridge-residual?
+                    artifact)))))))
+
 (deftest hosted-c-backend-runtime-derived-binds-gravity-authored-runtime-artifact
   (with-temp-directory
     "gravity-stage2-runtime-artifact-"
@@ -25965,6 +26005,10 @@
             (is (re-find #"^sha256:" (:runtime-artifact-hash artifact)))
             (is (= 'p15-s23-runtime-format-value
                    (:runtime-artifact-function artifact)))
+            (is (= 'p15-s23-runtime-concat
+                   (:runtime-artifact-concat-function artifact)))
+            (is (true? (:runtime-artifact-generic-bridge-residual?
+                        artifact)))
             (is (= :gravity-stage2-runtime-artifact-host-runner
                    (:runtime-artifact-host-runner artifact)))
             (is (.isFile (java.io.File.
@@ -25973,6 +26017,12 @@
                    (get-in artifact [:manifest :runtime-artifact-hash])))
             (is (= (:runtime-artifact-hash artifact)
                    (get-in artifact [:provenance :runtime-artifact-hash])))
+            (is (= 'p15-s23-runtime-concat
+                   (get-in artifact
+                           [:manifest :runtime-artifact-concat-function])))
+            (is (true? (get-in artifact
+                                [:manifest
+                                 :runtime-artifact-generic-bridge-residual?])))
             (is (= :gravity-stage2-runtime-artifact-host-runner
                    (get-in artifact
                            [:manifest :runtime-artifact-host-runner])))
