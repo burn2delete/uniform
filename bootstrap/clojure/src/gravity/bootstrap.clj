@@ -92513,8 +92513,12 @@
 (def p15-s23-stage2-compiler-artifact-let-function
   'p15-s23-compile-let)
 
+(def p15-s23-stage2-compiler-artifact-plan-assembly-function
+  'p15-s23-assemble-plan-products)
+
 (def p15-s23-stage2-compiler-artifact-builtins
-  '#{symbol? seq? vector? map? set? contains? even? set sort-by-pr-str})
+  '#{symbol? seq? vector? map? set? contains? even? set sort-by-pr-str
+     vec quot subvec})
 
 (def p15-s23-stage2-compiler-artifact-required-functions
   {'p15-s23-compile-collection
@@ -92524,22 +92528,91 @@
    'p15-s23-compile-expr
    {:arity 4 :params ['emitter 'module 'locals 'form]}
    'p15-s23-compile-function
-   {:arity 3 :params ['emitter 'module 'definition]}})
+   {:arity 3 :params ['emitter 'module 'definition]}
+   'p15-s23-summary-instructions
+   {:arity 2 :params ['instructions 'summary]}
+   'p15-s23-summary-map-entries
+   {:arity 2 :params ['entries 'summary]}
+   'p15-s23-summary-let-bindings
+   {:arity 2 :params ['bindings 'summary]}
+   'p15-s23-summary-instruction
+   {:arity 2 :params ['instruction 'summary]}
+   'p15-s23-assemble-functions
+   {:arity 6 :params ['emitter 'module 'definitions 'functions
+                      'bindings 'summary]}
+   'p15-s23-assemble-plan-products
+   {:arity 3 :params ['emitter 'module 'definitions]}})
 
 ;; Filled with the canonical semantic function-plan hash after the source is
 ;; compiled below.  This is intentionally pinned rather than merely recorded:
 ;; a changed compiler function cannot silently become production lowering.
 (def p15-s23-stage2-compiler-artifact-expected-semantic-hash
-  "sha256:cc9c58b51a480a7479d06348aa64b87745f6dada7c805783978416e5123008e3")
+  "sha256:ad9ad8101ff547a216a9a128a0cbd9f12e87527a88b481e0c8918fa49c992778")
 
 (def p15-s23-stage2-compiler-artifact-expected-source-content-hash
-  "sha256:575659c4455e8699e3914a95b7f9b6a2d3dbf46630925696ccdfeb0871ed441b")
+  "sha256:3543311198f6bfe43fc2c9d33b9ccddf575789e286df4576cf31fb77836130e7")
 
 (def ^:dynamic *p15-s23-stage2-compiler-artifact-binding* nil)
 
 (declare p15-s23-stage2-runtime-execute-function)
 (declare c-backend-resolve-p15-s23-compiler-source-path)
 (declare c-backend-canonical-value)
+
+(defn p15-s23-stage2-compiler-artifact-expected-artifact-hash
+  []
+  (str "sha256:"
+       (sha256-hex
+        (pr-str
+         (c-backend-canonical-value
+          {:source-content-hash
+           p15-s23-stage2-compiler-artifact-expected-source-content-hash
+           :semantic-hash
+           p15-s23-stage2-compiler-artifact-expected-semantic-hash})))))
+
+(defn p15-s23-stage2-compiler-artifact-record-authentic?
+  [record]
+  (and (= :gravity/p15-s23-stage2-expression-lowering-binding
+          (:artifact record))
+       (= p15-s23-stage2-compiler-artifact-required-functions
+          (:functions record))
+       (= p15-s23-stage2-compiler-artifact-expected-source-content-hash
+          (:source-content-hash record))
+       (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+          (:semantic-hash record))
+       (= (p15-s23-stage2-compiler-artifact-expected-artifact-hash)
+          (:artifact-hash record))
+       (true? (:invoked? record))
+       (true? (:generic-bridge-residual? record))
+       (= p15-s23-stage2-compiler-artifact-plan-assembly-function
+          (:plan-assembly-function record))
+       (= (:artifact-hash record) (:plan-assembly-artifact-hash record))
+       (= (:source-content-hash record)
+          (:plan-assembly-source-content-hash record))
+       (= (:semantic-hash record) (:plan-assembly-semantic-hash record))
+       (true? (:plan-assembly-invoked? record))
+       (true? (:plan-assembly-generic-bridge-residual? record))))
+
+(defn p15-s23-stage2-compiler-artifact-record-matches-plan?
+  [record plan]
+  (let [compiler (:compiler plan)]
+    (and (= (:artifact-hash record)
+            (:expression-lowering-artifact-hash compiler))
+         (= (:source-content-hash record)
+            (:expression-lowering-source-content-hash compiler))
+         (= (:semantic-hash record)
+            (:expression-lowering-semantic-hash compiler))
+         (= (select-keys
+             record
+             [:plan-assembly-function :plan-assembly-artifact-hash
+              :plan-assembly-source-content-hash
+              :plan-assembly-semantic-hash :plan-assembly-invoked?
+              :plan-assembly-generic-bridge-residual?])
+            (select-keys
+             compiler
+             [:plan-assembly-function :plan-assembly-artifact-hash
+              :plan-assembly-source-content-hash
+              :plan-assembly-semantic-hash :plan-assembly-invoked?
+              :plan-assembly-generic-bridge-residual?])))))
 
 (defn p15-s23-stage2-compiler-artifact-source-path
   []
@@ -92742,6 +92815,16 @@
     (let [id (:diagnostic result)
           facts (:facts result)]
       (case id
+        "L3-UNKNOWN-ALIAS"
+        (fail! id "stage2 executable requires a main function"
+               {:source-span {:source (:source-path module)}
+                :entrypoint (:entrypoint facts)
+                :remediation "Add (defn main [] ...)."})
+        "L2-MAIN-ARITY"
+        (fail! id "stage2 main must take no arguments"
+               {:source-span {:source (:source-path module)}
+                :params (:params facts)
+                :remediation "Use (defn main [] ...)."})
         "L2-UNKNOWN-SYMBOL"
         (fail! id "stage2 plan emitter cannot resolve symbol"
                {:source-span {:source (:source-path module)}
@@ -92800,6 +92883,14 @@
     p15-s23-stage2-compiler-artifact-function
     [emitter module definition])))
 
+(defn p15-s23-stage2-assemble-plan-products
+  [emitter module ordered-definitions]
+  (p15-s23-stage2-compiler-result!
+   module
+   (p15-s23-stage2-compiler-artifact-invoke
+    p15-s23-stage2-compiler-artifact-plan-assembly-function
+    [emitter module ordered-definitions])))
+
 (defn p15-s23-stage2-emitted-core-plan
   [emitter source-path source-text module]
   (let [function-table (stage0-function-table module)
@@ -92823,31 +92914,19 @@
         (or *p15-s23-stage2-compiler-artifact-binding*
             (p15-s23-stage2-compiler-artifact-binding!
              emitter source-path (:target module)))
-        functions
+        ;; A source map is not an ordering contract.  Give the Gravity
+        ;; assembler an explicitly stable function sequence so binding-table
+        ;; order and recursive summary traversal are root/runtime neutral.
+        ordered-definitions (mapv (fn [[name definition]]
+                                    [name definition])
+                                  (sort-by key function-table))
+        assembled-products
         (binding [*p15-s23-stage2-compiler-artifact-binding*
                   compiler-artifact-binding]
-          (into (sorted-map)
-                (map (fn [[name definition]]
-                       [name (p15-s23-stage2-compile-function
-                              emitter module definition)]))
-                function-table))
-        main-function (get functions 'main)
-        _ (when-not main-function
-            (fail! "L3-UNKNOWN-ALIAS"
-                   "stage2 executable requires a main function"
-                   {:source-span {:source source-path}
-                    :remediation "Add (defn main [] ...)."}))
-        _ (when-not (empty? (:params main-function))
-            (fail! "L2-MAIN-ARITY"
-                   "stage2 main must take no arguments"
-                   {:source-span {:source source-path}
-                    :params (:params main-function)
-                    :remediation "Use (defn main [] ...)."}))
-        instruction-summary (apply merge-with +
-                                   (mapcat (fn [[_ function]]
-                                             (map stage0-instruction-summary
-                                                  (:instructions function)))
-                                           functions))
+          (p15-s23-stage2-assemble-plan-products
+           emitter module ordered-definitions))
+        functions (:functions assembled-products)
+        instruction-summary (:instruction-summary assembled-products)
         plan-base {:kind (get-in emitter
                                  [:plan-shape :kind]
                                  :gravity/stage2-hosted-core-compiled-plan)
@@ -92870,28 +92949,35 @@
                                :expression-lowering-invoked? true
                                :expression-lowering-generic-bridge-residual?
                                true
+                               :plan-assembly-owner :gravity-source
+                               :plan-assembly-function
+                               p15-s23-stage2-compiler-artifact-plan-assembly-function
+                               :plan-assembly-artifact-hash
+                               (:artifact-hash compiler-artifact-binding)
+                               :plan-assembly-source-content-hash
+                               (:source-content-hash compiler-artifact-binding)
+                               :plan-assembly-semantic-hash
+                               (:semantic-hash compiler-artifact-binding)
+                               :plan-assembly-invoked? true
+                               :plan-assembly-generic-bridge-residual? true
                                :retirement-objective
                                :retire-clojure-seed})
                    :module (select-keys module
                                         [:module :source-path :profile :target
                                          :effects :capabilities :exports
                                          :safety])
-                   :binding-table (mapv (fn [[name function]]
-                                           (assoc (:binding function)
-                                                  :arity (:arity function)))
-                                         (sort-by key functions))
+                   :binding-table (:binding-table assembled-products)
                    :functions functions
                    :instruction-summary instruction-summary
-                   :effect-summary {:declared (:effects module)
-                                    :inferred (if (pos? (get instruction-summary
-                                                             :println
-                                                             0))
-                                                #{:io/write}
-                                                #{})
-                                    :capabilities (:capabilities module)}
-                   :diagnostics []}]
+                   :effect-summary (:effect-summary assembled-products)
+                   :diagnostics []}
+        identity-base
+        (-> plan-base
+            (update :source dissoc :path)
+            (update :module dissoc :source-path))]
     (assoc plan-base
-           :plan-id (str "sha256:" (sha256-hex (pr-str plan-base))))))
+           :plan-id
+           (c4-artifact-id (c-backend-canonical-value identity-base)))))
 
 (defn p15-s23-stage2-plan-emitter-compile-source
   [emitter source-path source-text]
@@ -93695,7 +93781,28 @@
                        (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                          (throw (IllegalArgumentException.
                                  "compiler-only ordering primitive outside compiler artifact")))
-                       (sort-by pr-str (first args))))
+                       (sort-by pr-str (first args)))
+      vec (do
+            (p15-s23-stage2-runtime-assert-exact-arity!
+             plan callee args 1)
+            (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+              (throw (IllegalArgumentException.
+                      "compiler-only vectorization primitive outside compiler artifact")))
+            (vec (first args)))
+      quot (do
+             (p15-s23-stage2-runtime-assert-exact-arity!
+              plan callee args 2)
+             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw (IllegalArgumentException.
+                       "compiler-only arithmetic primitive outside compiler artifact")))
+             (quot (first args) (second args)))
+      subvec (do
+               (p15-s23-stage2-runtime-assert-exact-arity!
+                plan callee args 3)
+               (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                 (throw (IllegalArgumentException.
+                         "compiler-only slicing primitive outside compiler artifact")))
+               (subvec (first args) (second args) (nth args 2))))
     (catch clojure.lang.ExceptionInfo ex
       (throw ex))
     (catch Exception ex
@@ -103465,15 +103572,28 @@
            (true? (get-in plan
                           [:compiler
                            :expression-lowering-generic-bridge-residual?]))
+           :plan-assembly-function
+           (get-in plan [:compiler :plan-assembly-function])
+           :plan-assembly-source-content-hash
+           (get-in plan [:compiler :plan-assembly-source-content-hash])
+           :plan-assembly-semantic-hash
+           (get-in plan [:compiler :plan-assembly-semantic-hash])
+           :plan-assembly-artifact-hash
+           (get-in plan [:compiler :plan-assembly-artifact-hash])
+           :plan-assembly-invoked?
+           (true? (get-in plan [:compiler :plan-assembly-invoked?]))
+           :plan-assembly-generic-bridge-residual?
+           (true? (get-in plan
+                          [:compiler
+                           :plan-assembly-generic-bridge-residual?]))
            :clojure-seed-boundary? true
            :self-hosted? false}
-          _ (when-not (and (:source-content-hash compiler-artifact-record)
-                           (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
-                              (:semantic-hash compiler-artifact-record))
-                           (:artifact-hash compiler-artifact-record)
-                           (:invoked? compiler-artifact-record)
-                           (:generic-bridge-residual?
-                            compiler-artifact-record))
+          _ (when-not
+              (and
+               (p15-s23-stage2-compiler-artifact-record-authentic?
+                compiler-artifact-record)
+               (p15-s23-stage2-compiler-artifact-record-matches-plan?
+                compiler-artifact-record plan))
               (p15-s23-stage2-plan-emitter-fail!
                "P15S23Q002" source-path compiler-artifact-record
                {:target requested-target
@@ -103929,6 +104049,16 @@
            (:stage2-plan-emitter-rule shared-packet)
            stage2-compiler-artifact-record
            (:stage2-compiler-artifact-record shared-packet)
+           _ (when runtime-derived?
+               (when-not
+                (p15-s23-stage2-compiler-artifact-record-authentic?
+                 stage2-compiler-artifact-record)
+                 (c-backend-fail!
+                  "C14-INPUT"
+                  "C backend received inconsistent stage2 compiler artifact metadata"
+                  source-path target stage2-compiler-artifact-record
+                  {:missing-fact
+                   :authenticated-stage2-compiler-artifact-record})))
            stage2-compiler-artifact-source-path
            (get-in shared-packet
                    [:provenance :actual-paths
@@ -103938,6 +104068,16 @@
            plan (if runtime-derived?
                   (:plan shared-packet)
                   (stage0-compiled-core-plan source-path source-text module))
+           _ (when (and runtime-derived?
+                        (not
+                         (p15-s23-stage2-compiler-artifact-record-matches-plan?
+                          stage2-compiler-artifact-record plan)))
+               (c-backend-fail!
+                "C14-INPUT"
+                "C backend received a stage2 compiler record that does not match its plan"
+                source-path target stage2-compiler-artifact-record
+                {:missing-fact
+                 :authenticated-stage2-compiler-artifact-record}))
            _ (when-not runtime-derived?
                (c-backend-validate-plan! source-path target plan))
            stage2-driver-run
@@ -104101,6 +104241,22 @@
                     (:invoked? stage2-compiler-artifact-record)
                     :expression-lowering-generic-bridge-residual?
                     (:generic-bridge-residual?
+                     stage2-compiler-artifact-record)
+                    :plan-assembly-function
+                    (:plan-assembly-function stage2-compiler-artifact-record)
+                    :plan-assembly-artifact-hash
+                    (:plan-assembly-artifact-hash
+                     stage2-compiler-artifact-record)
+                    :plan-assembly-source-content-hash
+                    (:plan-assembly-source-content-hash
+                     stage2-compiler-artifact-record)
+                    :plan-assembly-semantic-hash
+                    (:plan-assembly-semantic-hash
+                     stage2-compiler-artifact-record)
+                    :plan-assembly-invoked?
+                    (:plan-assembly-invoked? stage2-compiler-artifact-record)
+                    :plan-assembly-generic-bridge-residual?
+                    (:plan-assembly-generic-bridge-residual?
                      stage2-compiler-artifact-record)
                     :compiler-engine (:driver-engine stage2-driver-rule)
                     :plan-emitter-stage :p15-s23-stage2-plan-emitter
@@ -104340,6 +104496,9 @@
                                      stage2-driver-rule)
                                     :expression-lowering-artifact-hash
                                     (:artifact-hash
+                                     stage2-compiler-artifact-record)
+                                    :plan-assembly-artifact-hash
+                                    (:plan-assembly-artifact-hash
                                      stage2-compiler-artifact-record)
                                     :runtime-artifact-hash
                                     (:runtime-artifact-hash stage2-runtime-rule)))
@@ -104907,7 +105066,11 @@
                   :expression-lowering-source-content-hash
                   :expression-lowering-semantic-hash
                   :expression-lowering-invoked?
-                  :expression-lowering-generic-bridge-residual?}
+                  :expression-lowering-generic-bridge-residual?
+                  :plan-assembly-function :plan-assembly-artifact-hash
+                  :plan-assembly-source-content-hash
+                  :plan-assembly-semantic-hash :plan-assembly-invoked?
+                  :plan-assembly-generic-bridge-residual?}
                 (set (keys input)))
              (every? #(boolean
                        (re-matches #"sha256:[0-9a-f]{64}" (str %)))
@@ -104916,11 +105079,24 @@
                       (:expression-lowering-artifact-hash input)
                       (:expression-lowering-source-content-hash input)
                       (:expression-lowering-semantic-hash input)
+                      (:plan-assembly-artifact-hash input)
+                      (:plan-assembly-source-content-hash input)
+                      (:plan-assembly-semantic-hash input)
                       (:compiler-driver-rule-hash input)
                       (:runtime-rule-hash input)
                       (:runtime-artifact-hash input)])
              (true? (:expression-lowering-invoked? input))
              (true? (:expression-lowering-generic-bridge-residual? input))
+             (= p15-s23-stage2-compiler-artifact-plan-assembly-function
+                (:plan-assembly-function input))
+             (= (:expression-lowering-artifact-hash input)
+                (:plan-assembly-artifact-hash input))
+             (= (:expression-lowering-source-content-hash input)
+                (:plan-assembly-source-content-hash input))
+             (= (:expression-lowering-semantic-hash input)
+                (:plan-assembly-semantic-hash input))
+             (true? (:plan-assembly-invoked? input))
+             (true? (:plan-assembly-generic-bridge-residual? input))
              (= js-ts-backend-target (:requested-backend-target input))
              (= :accepted (:status eligibility))
              (= source-declared-target
@@ -105204,6 +105380,15 @@
                    source-path source-text target)
            compiler-artifact-record
            (:stage2-compiler-artifact-record packet)
+           _ (when-not
+              (p15-s23-stage2-compiler-artifact-record-authentic?
+               compiler-artifact-record)
+               (js-ts-backend-fail!
+                "C14-INPUT"
+                "JS/TS backend received inconsistent stage2 compiler artifact metadata"
+                source-path compiler-artifact-record
+                {:missing-fact
+                 :authenticated-stage2-compiler-artifact-record}))
            compiler-artifact-source-path
            (get-in packet
                    [:provenance :actual-paths
@@ -105213,6 +105398,15 @@
            runtime-rule (:stage2-runtime-rule packet)
            driver-rule (:stage2-compiler-driver-rule packet)
            plan (:plan packet)
+           _ (when-not
+              (p15-s23-stage2-compiler-artifact-record-matches-plan?
+               compiler-artifact-record plan)
+               (js-ts-backend-fail!
+                "C14-INPUT"
+                "JS/TS backend received a stage2 compiler record that does not match its plan"
+                source-path compiler-artifact-record
+                {:missing-fact
+                 :authenticated-stage2-compiler-artifact-record}))
            _ (when-not (= :safe (get-in plan [:module :safety]))
                (js-ts-backend-fail!
                 "C14-PROFILE"
@@ -105317,6 +105511,20 @@
                     (:invoked? compiler-artifact-record)
                     :expression-lowering-generic-bridge-residual?
                     (:generic-bridge-residual? compiler-artifact-record)
+                    :plan-assembly-function
+                    (:plan-assembly-function compiler-artifact-record)
+                    :plan-assembly-artifact-hash
+                    (:plan-assembly-artifact-hash compiler-artifact-record)
+                    :plan-assembly-source-content-hash
+                    (:plan-assembly-source-content-hash
+                     compiler-artifact-record)
+                    :plan-assembly-semantic-hash
+                    (:plan-assembly-semantic-hash compiler-artifact-record)
+                    :plan-assembly-invoked?
+                    (:plan-assembly-invoked? compiler-artifact-record)
+                    :plan-assembly-generic-bridge-residual?
+                    (:plan-assembly-generic-bridge-residual?
+                     compiler-artifact-record)
                     :compiler-driver-rule-hash
                     (:driver-rule-hash driver-rule)
                     :runtime-rule-hash (:runtime-rule-hash runtime-rule)
@@ -105588,16 +105796,28 @@
           (= trusted-driver-hash driver-hash)
           (= trusted-runtime-hash runtime-hash)
           (= trusted-runtime-artifact-hash runtime-artifact-hash)
+          (p15-s23-stage2-compiler-artifact-record-authentic?
+           compiler-record)
+          (p15-s23-stage2-compiler-artifact-record-matches-plan?
+           compiler-record packet-plan)
           (= (:artifact-hash compiler-record)
              (:expression-lowering-artifact-hash plan-compiler))
           (= (:source-content-hash compiler-record)
              (:expression-lowering-source-content-hash plan-compiler))
           (= (:semantic-hash compiler-record)
              (:expression-lowering-semantic-hash plan-compiler))
-          (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
-             (:semantic-hash compiler-record))
-          (true? (:invoked? compiler-record))
-          (true? (:generic-bridge-residual? compiler-record)))
+          (= (select-keys
+              compiler-record
+              [:plan-assembly-function :plan-assembly-artifact-hash
+               :plan-assembly-source-content-hash
+               :plan-assembly-semantic-hash :plan-assembly-invoked?
+               :plan-assembly-generic-bridge-residual?])
+             (select-keys
+              plan-compiler
+              [:plan-assembly-function :plan-assembly-artifact-hash
+               :plan-assembly-source-content-hash
+               :plan-assembly-semantic-hash :plan-assembly-invoked?
+               :plan-assembly-generic-bridge-residual?])))
       (jvm-backend-fail!
        "C14-INPUT" "JVM backend received an unauthenticated stage2 packet"
        source-path (:plan packet)
@@ -105991,6 +106211,10 @@
           :expression-lowering-semantic-hash
           :expression-lowering-invoked?
           :expression-lowering-generic-bridge-residual?
+          :plan-assembly-function :plan-assembly-artifact-hash
+          :plan-assembly-source-content-hash :plan-assembly-semantic-hash
+          :plan-assembly-invoked?
+          :plan-assembly-generic-bridge-residual?
           :plan-emitter-source-rule-hash
           :compiler-driver-rule-hash :runtime-rule-hash
           :runtime-artifact-hash}
@@ -106002,6 +106226,9 @@
                       (:expression-lowering-artifact-hash input)
                       (:expression-lowering-source-content-hash input)
                       (:expression-lowering-semantic-hash input)
+                      (:plan-assembly-artifact-hash input)
+                      (:plan-assembly-source-content-hash input)
+                      (:plan-assembly-semantic-hash input)
                       (:plan-emitter-source-rule-hash input)
                       (:compiler-driver-rule-hash input)
                       (:runtime-rule-hash input)
@@ -106010,6 +106237,16 @@
                 (:expression-lowering-semantic-hash input))
              (true? (:expression-lowering-invoked? input))
              (true? (:expression-lowering-generic-bridge-residual? input))
+             (= p15-s23-stage2-compiler-artifact-plan-assembly-function
+                (:plan-assembly-function input))
+             (= (:expression-lowering-artifact-hash input)
+                (:plan-assembly-artifact-hash input))
+             (= (:expression-lowering-source-content-hash input)
+                (:plan-assembly-source-content-hash input))
+             (= (:expression-lowering-semantic-hash input)
+                (:plan-assembly-semantic-hash input))
+             (true? (:plan-assembly-invoked? input))
+             (true? (:plan-assembly-generic-bridge-residual? input))
              (= :jvm (:requested-backend-target input))
              (= :jvm (:source-declared-target input))
              (= {:status :accepted
@@ -106342,6 +106579,19 @@
                     :expression-lowering-invoked? (:invoked? compiler-record)
                     :expression-lowering-generic-bridge-residual?
                     (:generic-bridge-residual? compiler-record)
+                    :plan-assembly-function
+                    (:plan-assembly-function compiler-record)
+                    :plan-assembly-artifact-hash
+                    (:plan-assembly-artifact-hash compiler-record)
+                    :plan-assembly-source-content-hash
+                    (:plan-assembly-source-content-hash compiler-record)
+                    :plan-assembly-semantic-hash
+                    (:plan-assembly-semantic-hash compiler-record)
+                    :plan-assembly-invoked?
+                    (:plan-assembly-invoked? compiler-record)
+                    :plan-assembly-generic-bridge-residual?
+                    (:plan-assembly-generic-bridge-residual?
+                     compiler-record)
                     :plan-emitter-source-rule-hash
                     (get-in packet
                             [:stage2-plan-emitter-rule :source-rule-hash])

@@ -26398,6 +26398,18 @@
        "    (do (println left \"right\")\n"
        "        (if true (println \"ok\") (println \"bad\")))))\n"))
 
+(def ^:private stage2-gravity-plan-assembly-source
+  (str "(ns compiler.assembly.proof (:profile :hosted) (:target :jvm) "
+       "(:effects #{:io/write}) (:capabilities #{:io/stdout}) "
+       "(:safety :safe))\n"
+       "(defn beta [value]\n"
+       "  (do [1 {:b 2 :a 1} #{:z :a}] (println value)))\n"
+       "(defn alpha [value]\n"
+       "  (if true (beta value) (println \"bad\")))\n"
+       "(defn main []\n"
+       "  (let [message \"ok\"]\n"
+       "    (do (alpha message) (println \"done\"))))\n"))
+
 (deftest stage2-expression-lowering-is-gravity-authored-and-target-neutral
   (with-temp-source
     ".gravity" stage2-gravity-compiler-artifact-source
@@ -26423,13 +26435,66 @@
                 (bootstrap/js-ts-backend-source-artifact
                  gravity-path stage2-gravity-compiler-artifact-source
                  {:target :js-ts})
+                gravity-jvm
+                (bootstrap/jvm-backend-source-artifact
+                 gravity-path stage2-gravity-compiler-artifact-source)
                 compiler-record
-                (:stage2-compiler-artifact-record gravity-packet)]
+                (:stage2-compiler-artifact-record gravity-packet)
+                original-packet @#'bootstrap/stage2-runtime-derived-packet
+                inconsistent-c
+                (diagnostic-data
+                 #(with-redefs
+                    [bootstrap/stage2-runtime-derived-packet
+                     (fn [& arguments]
+                       (assoc-in
+                        (apply original-packet arguments)
+                        [:stage2-compiler-artifact-record
+                         :plan-assembly-artifact-hash]
+                        (str "sha256:" (apply str (repeat 64 "f")))))]
+                    (bootstrap/c-backend-source-artifact
+                     gravity-path stage2-gravity-compiler-artifact-source
+                     {:target :c :lowering-mode :runtime-derived})))
+                paired-packet
+                (fn [& arguments]
+                  (let [forged-hash
+                        (str "sha256:" (apply str (repeat 64 "e")))]
+                    (-> (apply original-packet arguments)
+                        (assoc-in [:stage2-compiler-artifact-record
+                                   :artifact-hash]
+                                  forged-hash)
+                        (assoc-in [:stage2-compiler-artifact-record
+                                   :plan-assembly-artifact-hash]
+                                  forged-hash))))
+                paired-c
+                (diagnostic-data
+                 #(with-redefs
+                    [bootstrap/stage2-runtime-derived-packet paired-packet]
+                    (bootstrap/c-backend-source-artifact
+                     gravity-path stage2-gravity-compiler-artifact-source
+                     {:target :c :lowering-mode :runtime-derived})))
+                paired-js
+                (diagnostic-data
+                 #(with-redefs
+                    [bootstrap/stage2-runtime-derived-packet paired-packet]
+                    (bootstrap/js-ts-backend-source-artifact
+                     gravity-path stage2-gravity-compiler-artifact-source
+                     {:target :js-ts})))]
             (is (= :gravity/p15-s23-stage2-expression-lowering-binding
                    (:artifact compiler-record)))
             (is (= :complete (:status gravity-packet)))
             (is (true? (:invoked? compiler-record)))
             (is (true? (:generic-bridge-residual? compiler-record)))
+            (is (= bootstrap/p15-s23-stage2-compiler-artifact-plan-assembly-function
+                   (:plan-assembly-function compiler-record)))
+            (is (true? (:plan-assembly-invoked? compiler-record)))
+            (is (true?
+                 (:plan-assembly-generic-bridge-residual? compiler-record)))
+            (is (= (:artifact-hash compiler-record)
+                   (:plan-assembly-artifact-hash compiler-record)))
+            (is (= (:source-content-hash compiler-record)
+                   (:plan-assembly-source-content-hash compiler-record)))
+            (is (= (:semantic-hash compiler-record)
+                   (:plan-assembly-semantic-hash compiler-record)))
             (is (true? (:clojure-seed-boundary? compiler-record)))
             (is (false? (:self-hosted? compiler-record)))
             (is (not (contains? compiler-record :source-path)))
@@ -26448,6 +26513,22 @@
                    (get-in gravity-js
                            [:manifest :input
                             :expression-lowering-artifact-hash])))
+            (doseq [artifact [gravity-js gravity-jvm]
+                    [field record-field]
+                    [[[:plan-assembly-artifact-hash]
+                      :plan-assembly-artifact-hash]
+                     [[:plan-assembly-source-content-hash]
+                      :plan-assembly-source-content-hash]
+                     [[:plan-assembly-semantic-hash]
+                      :plan-assembly-semantic-hash]]]
+              (is (= (get compiler-record record-field)
+                     (get-in artifact
+                             (into [:manifest :input] field)))))
+            (is (= (:plan-assembly-artifact-hash compiler-record)
+                   (get-in gravity-c
+                           [:manifest :plan-assembly-artifact-hash])))
+            (is (= (:plan-id (:plan gravity-packet))
+                   (:plan-id (:plan qst-packet))))
             (is (= (:artifact-hash compiler-record)
                    (get-in qst-packet
                            [:stage2-compiler-artifact-record
@@ -26461,7 +26542,145 @@
                            [:expression-lowering-artifact
                             :artifact-hash])))
             (is (= gravity-path
-                   (get-in gravity-c [:provenance :source :path])))))))))
+                   (get-in gravity-c [:provenance :source :path])))
+            (is (= "C14-INPUT" (:id inconsistent-c)))
+            (is (= :authenticated-stage2-compiler-artifact-record
+                   (:missing-fact inconsistent-c)))
+            (doseq [data [paired-c paired-js]]
+              (is (= "C14-INPUT" (:id data)))
+              (is (= :authenticated-stage2-compiler-artifact-record
+                     (:missing-fact data))))))))))
+
+(deftest stage2-plan-assembly-is-gravity-authored-and-seed-equivalent
+  (let [source-path "compiler-plan-assembly.gravity"
+        source-text stage2-gravity-plan-assembly-source
+        emitter
+        (:emitter
+         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+          source-path :c))
+        macro-artifact (bootstrap/macro-source-artifact source-path source-text)
+        module0 (assoc (:module macro-artifact)
+                       :forms (:expanded-forms macro-artifact))
+        function-table (bootstrap/stage0-function-table module0)
+        module (assoc module0 :function-table function-table)
+        artifact-binding
+        (bootstrap/p15-s23-stage2-compiler-artifact-binding!
+         emitter source-path :c)
+        ordered-definitions (mapv identity (sort-by key function-table))
+        seed-functions
+        (into (sorted-map)
+              (map (fn [[name definition]]
+                     [name (bootstrap/p15-s23-stage2-seed-compile-function
+                            emitter module definition)]))
+              ordered-definitions)
+        seed-summary
+        (apply merge-with +
+               (mapcat (fn [[_ function]]
+                         (map bootstrap/stage0-instruction-summary
+                              (:instructions function)))
+                       seed-functions))
+        seed-bindings
+        (mapv (fn [[_ function]]
+                (assoc (:binding function) :arity (:arity function)))
+              seed-functions)
+        invocation-count (atom 0)
+        original-invoke @#'bootstrap/p15-s23-stage2-compiler-artifact-invoke
+        plan
+        (with-redefs
+          [bootstrap/p15-s23-stage2-compiler-artifact-invoke
+           (fn [function arguments]
+             (when (= bootstrap/p15-s23-stage2-compiler-artifact-plan-assembly-function
+                      function)
+               (swap! invocation-count inc))
+             (original-invoke function arguments))]
+          (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+           emitter source-path source-text))
+        other-path-plan
+        (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+         emitter "other-root/compiler-plan-assembly.qst" source-text)]
+    (is (= 1 @invocation-count))
+    (is (= seed-functions (:functions plan)))
+    (is (= seed-bindings (:binding-table plan)))
+    (is (= seed-summary (:instruction-summary plan)))
+    (is (= #{:io/write} (get-in plan [:effect-summary :inferred])))
+    (is (= ['alpha 'beta 'main]
+           (mapv :name (:binding-table plan))))
+    (is (= :gravity-source (get-in plan [:compiler :plan-assembly-owner])))
+    (is (true? (get-in plan [:compiler :plan-assembly-invoked?])))
+    (is (true?
+         (get-in plan
+                 [:compiler :plan-assembly-generic-bridge-residual?])))
+    (is (= (:artifact-hash artifact-binding)
+           (get-in plan [:compiler :plan-assembly-artifact-hash])))
+    (is (= (:plan-id plan) (:plan-id other-path-plan)))
+    (is (not= (get-in plan [:source :path])
+              (get-in other-path-plan [:source :path])))
+    (is (= "L3-UNKNOWN-ALIAS"
+           (diagnostic-id
+            #(bootstrap/p15-s23-stage2-plan-emitter-compile-source
+              emitter "missing-main.gravity"
+              (str "(ns compiler.assembly.missing "
+                   "(:profile :hosted) (:target :jvm) "
+                   "(:effects #{}) (:capabilities #{}) (:safety :safe))\n"
+                   "(defn helper [] (do))\n")))))
+    (is (= "L2-MAIN-ARITY"
+           (diagnostic-id
+            #(bootstrap/p15-s23-stage2-plan-emitter-compile-source
+              emitter "main-arity.gravity"
+              (str/replace source-text "(defn main []"
+                           "(defn main [argument]")))))))
+
+(deftest stage2-plan-assembly-handles-a-bounded-many-function-product
+  (let [definitions
+        (apply str
+               (map #(format "(defn f%03d [] (do))\n" %) (range 512)))
+        source-text
+        (str "(ns compiler.assembly.many (:profile :hosted) "
+             "(:target :jvm) (:effects #{}) (:capabilities #{}) "
+             "(:safety :safe))\n"
+             definitions
+             "(defn main [] (do))\n")
+        emitter
+        (:emitter
+         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+          "many-functions.gravity" :c))
+        plan
+        (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+         emitter "many-functions.gravity" source-text)
+        header
+        (str "(ns compiler.assembly.scale (:profile :hosted) "
+             "(:target :jvm) (:effects #{}) (:capabilities #{}) "
+             "(:safety :safe))\n")
+        flat-plan
+        (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+         emitter "flat-body.gravity"
+         (str header "(defn main []"
+              (apply str (repeat 2048 " nil")) ")\n"))
+        bindings
+        (str/join " " (map #(str "x" % " " %) (range 512)))
+        let-plan
+        (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+         emitter "many-bindings.gravity"
+         (str header "(defn main [] (let [" bindings "] x511))\n"))
+        entries
+        (str/join " " (map #(str ":k" % " " %) (range 512)))
+        map-plan
+        (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+         emitter "many-map-entries.gravity"
+         (str header "(defn main [] {" entries "})\n"))]
+    (is (= 513 (count (:functions plan))))
+    (is (= 513 (count (:binding-table plan))))
+    (is (= (vec (sort-by str (keys (:functions plan))))
+           (mapv :name (:binding-table plan))))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:plan-id plan)))
+    (is (= 2048
+           (count (get-in flat-plan [:functions 'main :instructions]))))
+    (is (= 512
+           (count (get-in let-plan
+                          [:functions 'main :instructions 0 :bindings]))))
+    (is (= 512
+           (count (get-in map-plan
+                          [:functions 'main :instructions 0 :entries]))))))
 
 (deftest stage2-expression-lowering-preserves-seed-plan-and-diagnostics
   (let [source-path "compiler-artifact-plan.gravity"
@@ -26495,6 +26714,9 @@
                  (pr-str form)))))
     (doseq [[body expected]
             [["(unknown-call 1)" "L2-UNKNOWN-CORE-FORM"]
+             ["(quot 4 2)" "L2-UNKNOWN-CORE-FORM"]
+             ["(subvec [1 2] 0 1)" "L2-UNKNOWN-CORE-FORM"]
+             ["(vec [1 2])" "L2-UNKNOWN-CORE-FORM"]
              ["(host-reflect String)" "P4-HOST-REFLECTION"]
              ["(let [1 2] 3)" "L2-LET-BINDING"]]]
       (let [invalid-source
@@ -26519,10 +26741,22 @@
                        "[emitter module]")
               "P15S23Q002"
               :stage2-expression-lowering-function-shape]
+             [:assembly-shape #(str/replace-first
+                                %
+                                "[emitter module definitions]"
+                                "[emitter module]")
+              "P15S23Q002"
+              :stage2-expression-lowering-function-shape]
              [:semantic #(str/replace-first
                           %
                           ":status :ready"
                           ":status :tampered")
+              "P15S23Q002"
+              :stage2-expression-lowering-semantic-hash]
+             [:assembly-semantic #(str/replace-first
+                                   %
+                                   ":effect-summary"
+                                   ":effect-summary-tampered")
               "P15S23Q002"
               :stage2-expression-lowering-semantic-hash]
              [:source-only #(str "; source identity tamper\n" %)
