@@ -101882,11 +101882,6 @@
             (c-backend-runtime-literal? (:value instruction))
             (= :local op)
             (c-backend-runtime-local-present? locals (:name instruction))
-            (= :builtin-call op)
-            (and (= 'str (:function instruction))
-                 (every? #(c-backend-runtime-string-expression-supported?
-                            % locals)
-                         (:args instruction)))
             (= :println op)
             (every? #(c-backend-runtime-scalar-expression-supported?
                        % locals)
