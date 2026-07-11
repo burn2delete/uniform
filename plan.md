@@ -21,12 +21,13 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Bind the P15-S23 stage2 source-front-end ingress to authoritative C2/C3 reader products, preserving rich reader identity and diagnostics.
 - [completed] Bind the public runtime-derived C route through the Gravity-authored P15-S23 stage2 compiler-driver contract with fail-closed execution-equivalence checks.
 - [completed] Bind a Gravity-authored stage2 runtime artifact for value formatting, with pinned function shape, path-neutral identity, and fail-closed tamper handling.
+- [completed] Route two-argument `str` through the Gravity-authored runtime artifact, with explicit arity rejection and residual bridge provenance.
 - [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
-- [pending] Expand the Gravity-authored runtime artifact from formatting to instruction/effect execution, then retire the generic Clojure runtime bridge one capability at a time.
+- [pending] Move another runtime instruction/effect capability behind Gravity-authored functions, then retire the generic Clojure runtime bridge one capability at a time.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `e5cf905` (`Bind a Gravity-authored stage2 runtime artifact`).
+- Main: `af50315` (`Route two-argument str through Gravity runtime`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -45,13 +46,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Stage2 source-front-end ingress now consumes the authoritative C3-to-C2 reader products rather than the legacy simplified P15 parser, preserving token/form IDs, parent graphs, Unicode/line-ending spans, metadata/abbreviations/deref/tagged literals, deferred ratios, and structured reader diagnostics for both co-canonical extensions. The Clojure verifier/compiler seed remains explicit.
 - The public runtime-derived C route now loads and validates the Gravity-authored stage2 compiler-driver contract, runs the declared driver pipeline, compares driver-emitted plans and runtime records against the bound products, emits deterministic driver hashes/provenance, and fails closed on missing, malformed, mismatched, or incomplete driver results. The stage2 driver still executes through Clojure-hosted implementations and is not self-hosted.
 - A Gravity-authored `bootstrap/gravity/p15_s23/runtime.gravity` artifact now supplies the runtime value-formatting function used by runtime-derived `println`; it is compiled through the stage2 plan emitter, invoked through a generic host bridge whose residual boundary is explicit, and protected by pinned function-shape, source/hash, cross-root, and semantic-tamper checks. This is one runtime capability, not a self-hosted runtime.
+- Two-argument `str` now routes through a second Gravity-authored runtime function with pinned shape and explicit arity rejection for unsupported forms; the generic bridge remains recorded as residual and the broader Clojure runtime executor is still trusted.
 
 ## Active slice
 
 - Owner: next runtime-derived semantic expansion worker.
-- Scope: expand the Gravity-authored runtime artifact to cover one additional instruction/effect capability while preserving a small explicit generic host runner only as comparison evidence; then remove that bridge for the covered capability.
+- Scope: move another runtime instruction/effect capability behind Gravity-authored functions while preserving a small explicit generic host runner only as comparison evidence; then remove that bridge for the covered capability.
 - Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
-- Next self-hosting gate: execute one additional runtime instruction/effect through Gravity-authored functions without the generic Clojure bridge, with output/diagnostic equivalence and a reduced residual seed boundary.
+- Next self-hosting gate: execute one additional runtime instruction/effect through Gravity-authored functions and reduce the generic bridge surface, with output/diagnostic equivalence and an explicitly smaller residual seed boundary.
 
 ## Completion gates
 
