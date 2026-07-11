@@ -101929,26 +101929,34 @@
                              :locals locals
                              :parent parent}])))
             (= :let op)
-            (let [bindings (:bindings instruction)
-                  next-locals (into locals
-                                    (c-backend-runtime-binding-names bindings))]
-              (when-not (= 1 (count (:body instruction)))
+            (let [bindings (:bindings instruction)]
+              (when-not (and (vector? bindings)
+                             (vector? (:body instruction)))
                 (c-backend-runtime-reject!
                  source-path target (or parent instruction)
-                 "runtime-derived let value requires one scalar body expression"
-                 :let :runtime-c-value-lowering))
-              (doseq [{:keys [name expr]} bindings]
-                (when-not (and (symbol? name)
-                               (#{:literal :quote} (:op expr))
-                               (c-backend-runtime-literal? (:value expr)))
+                 "runtime-derived let has a malformed binding or body shape"
+                 :let :runtime-let-shape))
+              (let [next-locals (into locals
+                                       (c-backend-runtime-binding-names
+                                        bindings))]
+                (when-not (= 1 (count (:body instruction)))
                   (c-backend-runtime-reject!
                    source-path target (or parent instruction)
-                   "runtime-derived let bindings must be scalar literals"
-                   :let :runtime-let-binding-lowering)))
-              (recur (conj pending {:kind :expression
-                                    :instruction (first (:body instruction))
-                                    :locals next-locals
-                                    :parent parent})))
+                   "runtime-derived let value requires one scalar body expression"
+                   :let :runtime-c-value-lowering))
+                (doseq [{:keys [name expr]} bindings]
+                  (when-not (and (symbol? name)
+                                 (#{:literal :quote} (:op expr))
+                                 (c-backend-runtime-literal?
+                                  (:value expr)))
+                    (c-backend-runtime-reject!
+                     source-path target (or parent instruction)
+                     "runtime-derived let bindings must be scalar literals"
+                     :let :runtime-let-binding-lowering)))
+                (recur (conj pending {:kind :expression
+                                      :instruction (first (:body instruction))
+                                      :locals next-locals
+                                      :parent parent}))))
             :else
             (c-backend-runtime-reject!
              source-path target (or parent instruction)
@@ -101967,20 +101975,32 @@
                "runtime-derived C lowering cannot resolve this local"
                :local :runtime-local-binding))
             :println
-            (recur (into pending
-                         (map (fn [arg]
-                                {:kind :expression
-                                 :instruction arg
-                                 :locals locals
-                                 :parent instruction})
-                              (:args instruction))))
+            (do
+              (when-not (vector? (:args instruction))
+                (c-backend-runtime-reject!
+                 source-path target instruction
+                 "runtime-derived println has a malformed argument shape"
+                 :println :runtime-c-value-lowering))
+              (recur (into pending
+                           (map (fn [arg]
+                                  {:kind :expression
+                                   :instruction arg
+                                   :locals locals
+                                   :parent instruction})
+                                (:args instruction)))))
             :do
-            (recur (into pending
-                         (map (fn [child]
-                                {:kind :statement
-                                 :instruction child
-                                 :locals locals})
-                              (:body instruction))))
+            (do
+              (when-not (vector? (:body instruction))
+                (c-backend-runtime-reject!
+                 source-path target instruction
+                 "runtime-derived do has a malformed body shape"
+                 :do :runtime-c-lowering-rule))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:kind :statement
+                                   :instruction child
+                                   :locals locals})
+                                (:body instruction)))))
             :if
             (do
               (when-not (c-backend-runtime-test-expression-supported?
@@ -102000,23 +102020,31 @@
                              :instruction (:test instruction)
                              :locals locals}])) )
             :let
-            (let [bindings (:bindings instruction)
-                  next-locals (into locals
-                                    (c-backend-runtime-binding-names bindings))]
-              (doseq [{:keys [name expr]} bindings]
-                (when-not (and (symbol? name)
-                               (#{:literal :quote} (:op expr))
-                               (c-backend-runtime-literal? (:value expr)))
-                  (c-backend-runtime-reject!
-                   source-path target instruction
-                   "runtime-derived let bindings must be scalar literals"
-                   :let :runtime-let-binding-lowering)))
-              (recur (into pending
-                           (map (fn [child]
-                                  {:kind :statement
-                                   :instruction child
-                                   :locals next-locals})
-                                (:body instruction)))))
+            (let [bindings (:bindings instruction)]
+              (when-not (and (vector? bindings)
+                             (vector? (:body instruction)))
+                (c-backend-runtime-reject!
+                 source-path target instruction
+                 "runtime-derived let has a malformed binding or body shape"
+                 :let :runtime-let-shape))
+              (let [next-locals (into locals
+                                       (c-backend-runtime-binding-names
+                                        bindings))]
+                (doseq [{:keys [name expr]} bindings]
+                  (when-not (and (symbol? name)
+                                 (#{:literal :quote} (:op expr))
+                                 (c-backend-runtime-literal?
+                                  (:value expr)))
+                    (c-backend-runtime-reject!
+                     source-path target instruction
+                     "runtime-derived let bindings must be scalar literals"
+                     :let :runtime-let-binding-lowering)))
+                (recur (into pending
+                             (map (fn [child]
+                                    {:kind :statement
+                                     :instruction child
+                                     :locals next-locals})
+                                  (:body instruction))))))
             ;; A statement value is legal only for the closed scalar forms.
             (c-backend-runtime-reject!
              source-path target instruction

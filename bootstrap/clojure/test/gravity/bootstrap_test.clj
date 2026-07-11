@@ -24774,12 +24774,22 @@
                              :bindings [{:name 'x
                                          :expr {:op :map-literal :entries []}}]
                              :body [{:op :local :name 'x}]})
+        malformed-shape (assoc-in plan [:functions 'main :instructions 0]
+                                   {:op :let
+                                    :bindings 42
+                                    :body []})
         data (diagnostic-data
               #(bootstrap/c-backend-validate-runtime-plan!
                 "examples/hello.gravity" :c malformed))]
     (is (= "B2-UNSUPPORTED" (:id data)))
     (is (= :let (:unsupported-op data)))
-    (is (= :runtime-let-binding-lowering (:missing-fact data)))))
+    (is (= :runtime-let-binding-lowering (:missing-fact data)))
+    (let [shape-data (diagnostic-data
+                      #(bootstrap/c-backend-validate-runtime-plan!
+                        "examples/hello.gravity" :c malformed-shape))]
+      (is (= "B2-UNSUPPORTED" (:id shape-data)))
+      (is (= :let (:unsupported-op shape-data)))
+      (is (= :runtime-let-shape (:missing-fact shape-data))))))
 
 (deftest hosted-c-backend-runtime-derived-control-flow-rejects-deep-plan-without-host-stack-failure
   (let [deep (vec (repeat 5000 {:op :do :body []}))
