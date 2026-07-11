@@ -17,15 +17,16 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Correct executable-symbol analysis so quoted data no longer blocks the Gravity-authored P15 compiler source.
 - [completed] Add fail-closed runtime-derived `str` concatenation for direct println byte-string values.
 - [completed] Bind runtime-derived C lowering to the Gravity-authored P15-S23 stage2 plan-emitter rules.
+- [completed] Bind runtime-derived C execution to the Gravity-authored P15-S23 stage2 runtime executor/kernel contracts with fail-closed parity checks.
 - [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
-- [pending] Replace the stage0 plan-emitter boundary with a Gravity-authored stage2 compiler step after the newly accepted P15 source can pass its front-end gates.
+- [pending] Replace the Clojure stage2 runtime implementation with a Gravity-authored runtime step, then expand the accepted instruction/builtin subset.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `e76c3f6` (`Bind runtime C lowering to Gravity stage2 rules`).
+- Main: `ade2ed7` (`Bind runtime C execution to Gravity stage2 runtime`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
-- `bootstrap/gravity/p15_s23/compiler.gravity` is not yet accepted by the current public check (`L3-UNKNOWN-ALIAS`).
+- `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
 - The public wrapper and packaged/release artifacts remain bootstrap-hosted; final seed proof is incomplete and seed boundary remains true.
 - Roadmap audit records 74/181 accepted fixtures passing public `check`, 107 failing, and 1,054 rejected fixtures collapsing to generic `P18T06004`.
 - Host Java is OpenJDK 26.0.1; system `clojure` is absent, so baseline probes use the bundled temporary launcher at `/tmp/gravity-clojure-runtime/bin`.
@@ -37,14 +38,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Qualified-symbol analysis now skips quoted payloads while preserving executable alias rejection; `GRAVITY_BOOTSTRAP_ONLY=1 bin/gravity check bootstrap/gravity/p15_s23/compiler.gravity` passes, but the whole-language self-hosting gate remains partial.
 - Runtime-derived C now supports direct `str` concatenation over byte-string literals, quotes, and proven string locals, preserving empty/NUL/UTF-8 bytes; numeric, collection, nested, and general-value uses reject closed with B2 diagnostics.
 - Runtime-derived C plans now come from the Gravity-authored `p15-s23-stage2-plan-emitter` rule set, with path-neutral rule hashes and compiler-stage/engine provenance; the Clojure instruction runner remains an explicit oracle and seed boundary.
+- Runtime-derived C execution now binds to the Gravity-authored `p15-s23-stage2-runtime-executor` and `p15-s23-stage2-runtime-kernel` contracts, compares stage2 output with the Clojure stage0 runner and generated C executable, and fails closed on missing, malformed, or mismatched runtime bindings. The executor implementation is still the Clojure seed and is explicitly marked comparison-only; no self-hosting claim is made.
 
 ## Active slice
 
 - Owner: next runtime-derived semantic expansion worker.
-- Scope: widen the reviewed runtime-derived mode to the next documented instruction/builtin subset, preserving fail-closed unsupported values and keeping the Clojure evaluator non-authoritative.
+- Scope: replace one Clojure stage2 runtime boundary with a Gravity-authored runtime implementation, then widen the reviewed runtime-derived mode to the next documented instruction/builtin subset while preserving fail-closed unsupported values.
 - Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
-- Next self-hosting gate: use the now-accepted P15 compiler source to replace one stage0 plan-emitter boundary with a Gravity-authored stage2 artifact, with explicit equivalence and rejection proof before any seed claim changes.
-- Next self-hosting gate: bind execution to the Gravity-authored stage2 runtime kernel/executor after stage2 plan emission, retaining Clojure fallback only as recorded comparison evidence.
+- Next self-hosting gate: replace the Clojure implementation behind the bound stage2 runtime executor/kernel with a Gravity-authored runtime artifact, retaining the Clojure path only as recorded comparison evidence.
 
 ## Completion gates
 
