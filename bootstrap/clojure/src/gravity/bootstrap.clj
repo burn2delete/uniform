@@ -15,6 +15,12 @@
                              :distributed :ai :meta :gpu :formal})
 (def supported-profiles #{:hosted})
 (def supported-targets #{:jvm})
+(def ^:dynamic *additional-bootstrap-targets* #{})
+
+(defn bootstrap-target-supported?
+  [target]
+  (contains? (set/union supported-targets *additional-bootstrap-targets*)
+             target))
 (def max-macro-expansion-depth 16)
 (def max-reader-form-depth 512)
 (def co-canonical-source-extensions #{".qst" ".gravity"})
@@ -743,13 +749,14 @@
               :known known-source-profiles
               :supported supported-profiles
               :remediation "Use a known source profile such as :hosted, :core, or :kernel."}))
-    (when-not (supported-targets target)
+    (when-not (bootstrap-target-supported? target)
       (fail! "B1-TARGET-UNSUPPORTED"
-             "stage0 bootstrap supports only the JVM target"
+             "stage0 bootstrap does not support this requested target"
              {:source-span (source-span source-path 0)
               :target target
-              :supported supported-targets
-              :remediation "Use (:target :jvm) or omit :target for the Clojure bootstrap."}))
+              :supported (set/union supported-targets
+                                    *additional-bootstrap-targets*)
+              :remediation "Use a target enabled by the selected bootstrap backend."}))
     {:module module-name
      :source-path source-path
      :profile profile
@@ -102944,6 +102951,210 @@
             :driver-rule-hash driver-rule-hash
             :stage :p15-s23-stage2-compiler-driver}})))))
 
+(defn stage2-runtime-derived-packet-fail!
+  [id message source-path requested-target subject extra]
+  (fail! id message
+         (merge {:severity :error
+                 :stage :stage2-runtime-derived-packet
+                 :diagnostic-family :c14-target-lowering
+                 :backend :target-neutral-stage2
+                 :target requested-target
+                 :source-span (or (:source-span subject)
+                                  (source-span source-path 0))
+                 :primary {:span (or (:source-span subject)
+                                     (source-span source-path 0))}
+                 :fallback-status :rejected}
+                extra)))
+
+(def stage2-runtime-derived-source-targets
+  #{:jvm :c :c-hosted :c11 :js :js-ts})
+
+(defn stage2-runtime-derived-packet
+  "Build the target-neutral, verified stage2 packet shared by executable
+  backends.  The packet owns source/front-end/plan/runtime authenticity and
+  differential execution; concrete backends only validate and emit their
+  target instruction subset.
+
+  `:jvm` remains the bootstrap seed target and may be explicitly overridden by
+  a backend lowering request.  A non-seed source target is a real constraint
+  and must equal the requested target.  The eligibility decision is carried as
+  evidence rather than erased or relabelled."
+  ([source-path source-text requested-target]
+   (stage2-runtime-derived-packet source-path source-text requested-target {}))
+  ([source-path source-text requested-target {:keys [validate-plan!]}]
+   (binding [*additional-bootstrap-targets*
+             stage2-runtime-derived-source-targets]
+    (let [stage2-rule
+          (c-backend-stage2-plan-emitter-source-rule!
+           source-path requested-target)
+          stage2-runtime-rule
+          (c-backend-stage2-runtime-source-rule!
+           source-path requested-target)
+          stage2-driver-rule
+          (c-backend-stage2-compiler-driver-source-rule!
+           source-path requested-target)
+          plan
+          (try
+            (p15-s23-stage2-plan-emitter-compile-source
+             (:emitter stage2-rule) source-path source-text)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (stage2-runtime-derived-packet-fail!
+               "C14-UNSUPPORTED"
+               "stage2 plan emitter could not compile the source"
+               source-path requested-target nil
+               {:cause-message (.getMessage ex)
+                :missing-fact :stage2-plan-emission})))
+          ;; Give a concrete backend its historical input boundary before the
+          ;; shared packet applies a generic integrity diagnostic or executes
+          ;; the stage2 runtime.
+          _ (when validate-plan! (validate-plan! plan))
+          _ (when-not (and (= :gravity/stage2-hosted-core-compiled-plan
+                               (:kind plan))
+                           (= :p15-s23-stage2-plan-emitter
+                              (get-in plan [:compiler :rule-source]))
+                           (map? (:functions plan))
+                           (symbol? (:entrypoint plan))
+                           (contains? (:functions plan) (:entrypoint plan))
+                           (vector? (get-in plan
+                                            [:functions (:entrypoint plan)
+                                             :instructions])))
+              (stage2-runtime-derived-packet-fail!
+               "C14-INPUT" "stage2 plan integrity validation failed"
+               source-path requested-target plan
+               {:observed-plan-kind (:kind plan)
+                :observed-rule-source (get-in plan [:compiler :rule-source])
+                :missing-fact :stage2-plan-integrity}))
+          raw-source-declared-target (get-in plan [:module :target])
+          source-declared-target
+          (if (= :js raw-source-declared-target)
+            :js-ts
+            raw-source-declared-target)
+          target-eligibility
+          (cond
+            (= source-declared-target requested-target)
+            (cond-> {:status :accepted
+                     :source-declared-target source-declared-target
+                     :requested-target requested-target
+                     :selection :source-and-request-agree}
+              (not= raw-source-declared-target source-declared-target)
+              (assoc :raw-source-declared-target
+                     raw-source-declared-target
+                     :source-target-alias-canonicalized? true))
+
+            (= :jvm source-declared-target)
+            {:status :accepted
+             :source-declared-target :jvm
+             :requested-target requested-target
+             :selection :explicit-bootstrap-seed-target-override
+             :bootstrap-seed-target? true}
+
+            :else
+            (stage2-runtime-derived-packet-fail!
+             "C14-PROFILE"
+             "source target constraint is incompatible with requested target"
+             source-path requested-target plan
+             {:source-declared-target source-declared-target
+              :requested-target requested-target
+              :missing-fact :target-constraint-compatibility}))
+          stage2-driver-run
+          (try
+            (p15-s23-stage2-compiler-driver-run-source
+             (:driver stage2-driver-rule)
+             (:front-end stage2-driver-rule)
+             (:emitter stage2-rule)
+             (assoc (:runtime stage2-runtime-rule)
+                    :runtime-artifact-plan
+                    (:runtime-artifact-plan stage2-runtime-rule)
+                    :runtime-artifact-source-path
+                    (:runtime-artifact-source-path stage2-runtime-rule)
+                    :runtime-artifact-hash
+                    (:runtime-artifact-hash stage2-runtime-rule))
+             source-path source-text)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (p15-s23-stage2-compiler-driver-fail!
+               "P15S23Y003" source-path nil
+               {:target requested-target
+                :driver-engine (:driver-engine stage2-driver-rule)
+                :driver-rule-hash (:driver-rule-hash stage2-driver-rule)
+                :cause-message (.getMessage ex)
+                :missing-fact :stage2-driver-execution})))
+          _ (when-not (and (map? stage2-driver-run)
+                           (= :complete (:status stage2-driver-run))
+                           (true? (:accepted-output-equivalent?
+                                   stage2-driver-run))
+                           (map? (:stage2-plan stage2-driver-run))
+                           (= :complete
+                              (get-in stage2-driver-run
+                                      [:stage2-runtime-execution-record
+                                       :status]))
+                           (true? (:stage2-runtime-executed?
+                                   stage2-driver-run)))
+              (p15-s23-stage2-compiler-driver-fail!
+               "P15S23Y003" source-path stage2-driver-run
+               {:requested-source source-path
+                :target requested-target
+                :driver-engine (:driver-engine stage2-driver-rule)
+                :driver-rule-hash (:driver-rule-hash stage2-driver-rule)
+                :missing-fact :stage2-driver-execution-equivalence}))
+          driver-plan (:stage2-plan stage2-driver-run)
+          plan-shape (select-keys plan
+                                  [:kind :entrypoint :functions :binding-table
+                                   :instruction-summary :effect-summary])
+          driver-plan-shape
+          (select-keys driver-plan
+                       [:kind :entrypoint :functions :binding-table
+                        :instruction-summary :effect-summary])
+          _ (when-not (= (c-backend-canonical-value plan-shape)
+                         (c-backend-canonical-value driver-plan-shape))
+              (p15-s23-stage2-compiler-driver-fail!
+               "P15S23Y003" source-path
+               {:stage2-plan plan-shape :driver-plan driver-plan-shape}
+               {:requested-source source-path
+                :target requested-target
+                :driver-engine (:driver-engine stage2-driver-rule)
+                :driver-rule-hash (:driver-rule-hash stage2-driver-rule)
+                :missing-fact :stage2-driver-plan-equivalence}))
+          stage2-runtime-execution
+          (:stage2-runtime-execution-record stage2-driver-run)
+          reference-output
+          (try
+            (execute-stage0-compiled-plan plan)
+            (catch clojure.lang.ExceptionInfo ex
+              (throw ex))
+            (catch Exception ex
+              (stage2-runtime-derived-packet-fail!
+               "C14-UNSUPPORTED"
+               "stage2 plan lacks closed hosted runtime semantics"
+               source-path requested-target nil
+               {:cause-message (.getMessage ex)
+                :missing-fact :closed-stage2-runtime-semantics})))
+          _ (when-not (= (:stdout stage2-runtime-execution)
+                         reference-output)
+              (p15-s23-stage2-runtime-executor-fail!
+               "P15S23X003" source-path stage2-runtime-execution
+               {:requested-source source-path
+                :target requested-target
+                :runtime-engine (:runtime-engine stage2-runtime-rule)
+                :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
+                :stage2-runtime-output (:stdout stage2-runtime-execution)
+                :stage0-reference-output reference-output
+                :missing-fact :stage2-stage0-output-equivalence}))]
+      {:kind :gravity/target-neutral-stage2-runtime-packet
+       :status :complete
+       :requested-target requested-target
+       :target-eligibility target-eligibility
+       :plan plan
+       :stage2-plan-emitter-rule stage2-rule
+       :stage2-runtime-rule stage2-runtime-rule
+       :stage2-compiler-driver-rule stage2-driver-rule
+       :stage2-compiler-driver-record stage2-driver-run
+       :stage2-runtime-execution-record stage2-runtime-execution
+       :reference-output reference-output}))))
+
 (defn c-backend-runtime-bytes
   [value]
   (let [text (str value)
@@ -103245,179 +103456,79 @@
                         {:dialect dialect
                          :supported-dialects (vec (sort c-backend-supported-dialects))
                          :missing-fact :c-dialect}))
-     (let [macro-artifact (macro-source-artifact source-path source-text)
-           module (assoc (:module macro-artifact)
-                         :forms (:expanded-forms macro-artifact))
-           runtime-derived? (or (= :runtime-derived lowering-mode)
+     (let [runtime-derived? (or (= :runtime-derived lowering-mode)
                                 (= true runtime-derived?))
+           shared-packet
+           (when runtime-derived?
+             (stage2-runtime-derived-packet
+              source-path source-text target
+              {:validate-plan!
+               (fn [candidate-plan]
+                 (when-not
+                  (and (= :gravity/stage2-hosted-core-compiled-plan
+                          (:kind candidate-plan))
+                       (= :p15-s23-stage2-plan-emitter
+                          (get-in candidate-plan
+                                  [:compiler :rule-source]))
+                       (map? (:functions candidate-plan))
+                       (symbol? (:entrypoint candidate-plan))
+                       (contains? (:functions candidate-plan)
+                                  (:entrypoint candidate-plan))
+                       (vector?
+                        (get-in candidate-plan
+                                [:functions (:entrypoint candidate-plan)
+                                 :instructions])))
+                   (c-backend-fail!
+                    "B2-UNSUPPORTED"
+                    "Gravity stage2 plan emitter returned a mismatched plan"
+                    source-path target candidate-plan
+                    {:compiler-stage :p15-s23-stage2-plan-emitter
+                     :observed-plan-kind (:kind candidate-plan)
+                     :observed-rule-source
+                     (get-in candidate-plan [:compiler :rule-source])
+                     :p15-diagnostic "P15S23Q003"
+                     :missing-fact :stage2-plan-integrity}))
+                 (c-backend-validate-plan!
+                  source-path target candidate-plan)
+                 (c-backend-validate-runtime-plan!
+                  source-path target candidate-plan))}))
+           macro-artifact
+           (when-not runtime-derived?
+             (macro-source-artifact source-path source-text))
+           module
+           (when-not runtime-derived?
+             (assoc (:module macro-artifact)
+                    :forms (:expanded-forms macro-artifact)))
            stage2-rule
-           (when runtime-derived?
-             (c-backend-stage2-plan-emitter-source-rule!
-              source-path target))
-           stage2-runtime-rule
-           (when runtime-derived?
-             (c-backend-stage2-runtime-source-rule!
-              source-path target))
-           stage2-driver-rule
-           (when runtime-derived?
-             ;; Resolve the compiler driver after the lower-level bindings so
-             ;; legacy missing-source diagnostics remain stable, while every
-             ;; successful runtime-derived route is still gated by the driver
-             ;; contract before it can emit C.
-             (c-backend-stage2-compiler-driver-source-rule!
-              source-path target))
-           plan
-           (if runtime-derived?
-             (try
-               (p15-s23-stage2-plan-emitter-compile-source
-                (:emitter stage2-rule) source-path source-text)
-               (catch clojure.lang.ExceptionInfo ex
-                 (throw ex))
-               (catch Exception ex
-                 (c-backend-fail!
-                  "B2-UNSUPPORTED"
-                  "Gravity stage2 plan emitter could not compile the source"
-                  source-path target nil
-                  {:compiler-stage :p15-s23-stage2-plan-emitter
-                   :source-rule-hash (:source-rule-hash stage2-rule)
-                   :cause-message (.getMessage ex)
-                   :missing-fact :stage2-plan-emission})))
-             (stage0-compiled-core-plan source-path source-text module))
-           _ (when runtime-derived?
-               (when-not (and (= :gravity/stage2-hosted-core-compiled-plan
-                                  (:kind plan))
-                              (= :p15-s23-stage2-plan-emitter
-                                 (get-in plan [:compiler :rule-source]))
-                              (map? (:functions plan))
-                              (symbol? (:entrypoint plan))
-                              (contains? (:functions plan) (:entrypoint plan))
-                              (vector? (get-in plan
-                                               [:functions (:entrypoint plan)
-                                                :instructions])))
-                 (c-backend-fail!
-                  "B2-UNSUPPORTED"
-                  "Gravity stage2 plan emitter returned a mismatched plan"
-                  source-path target plan
-                  {:compiler-stage :p15-s23-stage2-plan-emitter
-                   :source-rule-hash (:source-rule-hash stage2-rule)
-                   :observed-plan-kind (:kind plan)
-                   :observed-rule-source (get-in plan [:compiler :rule-source])
-                   :p15-diagnostic "P15S23Q003"
-                   :missing-fact :stage2-plan-integrity})))
-           _ (c-backend-validate-plan! source-path target plan)
-           _ (when runtime-derived?
-               (c-backend-validate-runtime-plan! source-path target plan))
+           (:stage2-plan-emitter-rule shared-packet)
+           stage2-runtime-rule (:stage2-runtime-rule shared-packet)
+           stage2-driver-rule (:stage2-compiler-driver-rule shared-packet)
+           plan (if runtime-derived?
+                  (:plan shared-packet)
+                  (stage0-compiled-core-plan source-path source-text module))
+           _ (when-not runtime-derived?
+               (c-backend-validate-plan! source-path target plan))
            stage2-driver-run
-           (when runtime-derived?
+           (:stage2-compiler-driver-record shared-packet)
+           stage2-runtime-execution
+           (:stage2-runtime-execution-record shared-packet)
+           clojure-stage0-output
+           (if runtime-derived?
+             (:reference-output shared-packet)
              (try
-               (p15-s23-stage2-compiler-driver-run-source
-                (:driver stage2-driver-rule)
-                (:front-end stage2-driver-rule)
-                (:emitter stage2-rule)
-                (assoc (:runtime stage2-runtime-rule)
-                       :runtime-artifact-plan
-                       (:runtime-artifact-plan stage2-runtime-rule)
-                       :runtime-artifact-source-path
-                       (:runtime-artifact-source-path stage2-runtime-rule)
-                       :runtime-artifact-hash
-                       (:runtime-artifact-hash stage2-runtime-rule))
-                source-path source-text)
+               (execute-stage0-compiled-plan plan)
                (catch clojure.lang.ExceptionInfo ex
                  (throw ex))
                (catch Exception ex
-                 (p15-s23-stage2-compiler-driver-fail!
-                  "P15S23Y003"
-                  source-path
-                  nil
-                  {:target target
-                   :driver-engine (:driver-engine stage2-driver-rule)
-                   :driver-rule-hash
-                   (:driver-rule-hash stage2-driver-rule)
-                   :cause-message (.getMessage ex)
-                   :missing-fact :stage2-driver-execution}))))
-           _ (when runtime-derived?
-               (when-not (and (map? stage2-driver-run)
-                              (= :complete (:status stage2-driver-run))
-                              (true? (:accepted-output-equivalent?
-                                      stage2-driver-run))
-                              (map? (:stage2-plan stage2-driver-run))
-                              (map? (:stage2-runtime-execution-record
-                                     stage2-driver-run))
-                              (= :complete
-                                 (get-in stage2-driver-run
-                                         [:stage2-runtime-execution-record
-                                          :status]))
-                              (true? (:stage2-runtime-executed?
-                                      stage2-driver-run)))
-                 (p15-s23-stage2-compiler-driver-fail!
-                  "P15S23Y003"
-                  source-path
-                  stage2-driver-run
-                  {:requested-source source-path
-                   :target target
-                   :driver-engine (:driver-engine stage2-driver-rule)
-                   :driver-rule-hash
-                   (:driver-rule-hash stage2-driver-rule)
-                   :missing-fact :stage2-driver-execution-equivalence
-                   :driver-status (:status stage2-driver-run)
-                   :accepted-output-equivalent?
-                   (:accepted-output-equivalent? stage2-driver-run)})))
-           _ (when runtime-derived?
-               (let [driver-plan (:stage2-plan stage2-driver-run)
-                     plan-shape
-                     (select-keys plan
-                                  [:kind :entrypoint :functions
-                                   :binding-table :instruction-summary
-                                   :effect-summary])
-                     driver-plan-shape
-                     (select-keys driver-plan
-                                  [:kind :entrypoint :functions
-                                   :binding-table :instruction-summary
-                                   :effect-summary])]
-                 (when-not (= (c-backend-canonical-value plan-shape)
-                              (c-backend-canonical-value driver-plan-shape))
-                   (p15-s23-stage2-compiler-driver-fail!
-                    "P15S23Y003"
-                    source-path
-                    {:stage2-plan plan-shape
-                     :driver-plan driver-plan-shape}
-                    {:requested-source source-path
-                     :target target
-                     :driver-engine (:driver-engine stage2-driver-rule)
-                     :driver-rule-hash
-                     (:driver-rule-hash stage2-driver-rule)
-                     :missing-fact :stage2-driver-plan-equivalence}))))
-           stage2-runtime-execution
-           (when runtime-derived?
-             (:stage2-runtime-execution-record stage2-driver-run))
-           clojure-stage0-output
-           (try
-             (execute-stage0-compiled-plan plan)
-             (catch clojure.lang.ExceptionInfo ex
-               (throw ex))
-             (catch Exception ex
-               (c-backend-fail! "B2-UNSUPPORTED"
-                                "stage0 plan could not be represented by the C backend"
-                                source-path target nil
-                                {:cause-message (.getMessage ex)
-                                 :missing-fact :closed-c-runtime-semantics})))
+                 (c-backend-fail!
+                  "B2-UNSUPPORTED"
+                  "stage0 plan could not be represented by the C backend"
+                  source-path target nil
+                  {:cause-message (.getMessage ex)
+                   :missing-fact :closed-c-runtime-semantics}))))
            stdout (if runtime-derived?
                     (:stdout stage2-runtime-execution)
                     clojure-stage0-output)
-           _ (when runtime-derived?
-               (when-not (= stdout clojure-stage0-output)
-                 (p15-s23-stage2-runtime-executor-fail!
-                  "P15S23X003"
-                  source-path
-                  stage2-runtime-execution
-                  {:requested-source source-path
-                   :target target
-                   :runtime-engine (:runtime-engine stage2-runtime-rule)
-                   :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
-                   :stage2-runtime-output stdout
-                   :clojure-stage0-instruction-runner-output
-                   clojure-stage0-output
-                   :missing-fact :stage2-stage0-output-equivalence})))
            c-source (if runtime-derived?
                       (c-backend-runtime-source plan)
                       (c-backend-source stdout))
@@ -103477,6 +103588,9 @@
                     :runtime :hosted-libc-stdout
                     :compile-time-evaluated? (not runtime-derived?)
                     :runtime-derived? runtime-derived?
+                    :target-eligibility
+                    (when runtime-derived?
+                      (:target-eligibility shared-packet))
                     :oracle (when runtime-derived?
                               {:kind :gravity-stage2-runtime-execution
                                :compiler-driver-engine
@@ -103998,6 +104112,861 @@
   ([path] (c-backend-file-artifact path {}))
   ([path options]
    (c-backend-source-artifact path (read-gravity-source-text path) options)))
+
+;; ---------------------------------------------------------------------------
+;; Hosted JavaScript / TypeScript target (Node 20, ES2022 ESM)
+;;
+;; This target deliberately shares the authoritative stage2 compiler-driver,
+;; plan-emitter, and Gravity-authored runtime packet used by runtime-derived C.
+;; The C artifact is used only as a validated packet carrier: the JavaScript
+;; emitter consumes its genuine stage2 instruction plan and emits executable
+;; ESM statements.  Target bytes never contain checkout or output paths.
+
+(def js-ts-backend-target :js-ts)
+(def js-ts-backend-target-aliases #{:js :js-ts})
+(def js-ts-backend-runtime :node20)
+(def js-ts-backend-ecmascript :es2022)
+(def js-ts-backend-module-format :esm)
+
+(defn js-ts-backend-canonical-target
+  [target]
+  (let [target (cond
+                 (keyword? target) target
+                 (string? target) (keyword (str/lower-case target))
+                 :else target)]
+    (if (contains? js-ts-backend-target-aliases target)
+      js-ts-backend-target
+      target)))
+
+(defn js-ts-backend-fail!
+  [id message source-path subject extra]
+  (fail! id message
+         (merge {:severity :error
+                 :stage :js-ts-backend-lowering
+                 :diagnostic-family
+                 (cond
+                   (str/starts-with? id "B6") :b6-js-ts-backend
+                   (str/starts-with? id "B14") :b14-backend-conformance
+                   :else :c14-target-lowering)
+                 :backend :gravity.backend/js-ts
+                 :target js-ts-backend-target
+                 :source-span (or (:source-span subject)
+                                  (source-span source-path 0))
+                 :primary {:span (or (:source-span subject)
+                                     (source-span source-path 0))}
+                 :facts {:instruction (when (map? subject) (:op subject))
+                         :runtime js-ts-backend-runtime
+                         :ecmascript js-ts-backend-ecmascript
+                         :module-format js-ts-backend-module-format}
+                 :remediation
+                 "Use --target js or --target js-ts with the closed Node 20 ES2022 ESM hosted subset."}
+                extra)))
+
+(defn js-ts-backend-validate-plan!
+  "Apply the JS/TS-specific closed-surface rules after the shared stage2/C
+  packet has validated instruction shape.  The current Gravity runtime artifact
+  owns println arities zero through two; larger arities remain an explicit host
+  compatibility boundary and are rejected for this target."
+  [source-path plan]
+  (loop [pending (vec (mapcat (comp :instructions val) (:functions plan)))]
+    (when-let [instruction (peek pending)]
+      (let [pending (pop pending)
+            op (:op instruction)]
+        (when (and (= :println op) (> (count (:args instruction)) 2))
+          (js-ts-backend-fail!
+           "C14-UNSUPPORTED"
+           "JS/TS runtime-derived lowering does not implement this println arity"
+           source-path instruction
+           {:unsupported-op :println
+            :observed-arity (count (:args instruction))
+            :supported-arities [0 1 2]
+            :missing-fact :gravity-runtime-println-arity
+            :fallback-status :rejected}))
+        (recur (into pending
+                     (remove nil?
+                             (c-backend-instruction-children instruction)))))))
+  :passed)
+
+(defn js-ts-backend-bytes-source
+  [name bytes indent]
+  (let [padding (apply str (repeat indent "  "))]
+    (str padding "const " name " = new Uint8Array(["
+         (str/join "," bytes) "]);\n")))
+
+(defn js-ts-backend-value-declaration
+  [instruction counter indent]
+  (let [name (str "gravityValue" (swap! counter inc))
+        value (:value instruction)
+        bytes (c-backend-runtime-bytes value)]
+    {:source (js-ts-backend-bytes-source name bytes indent)
+     :descriptor {:name name
+                  :truth (not (or (nil? value) (false? value)))}}))
+
+(defn js-ts-backend-write-source
+  [descriptor indent]
+  (let [padding (apply str (repeat indent "  "))]
+    (str padding "stdout.write(" (:name descriptor) ");\n")))
+
+(defn js-ts-backend-test-source
+  [instruction env]
+  (case (:op instruction)
+    :literal (if (or (nil? (:value instruction))
+                     (false? (:value instruction))) "false" "true")
+    :quote (if (or (nil? (:value instruction))
+                   (false? (:value instruction))) "false" "true")
+    :local (if (get-in env [(:name instruction) :truth]) "true" "false")
+    "false"))
+
+(declare js-ts-backend-value-source)
+(declare js-ts-backend-instruction-source)
+
+(defn js-ts-backend-value-source
+  [instruction counter indent env]
+  (let [padding (apply str (repeat indent "  "))
+        op (:op instruction)]
+    (cond
+      (#{:literal :quote} op)
+      (let [{:keys [source descriptor]}
+            (js-ts-backend-value-declaration instruction counter indent)]
+        (str source (js-ts-backend-write-source descriptor indent)))
+
+      (= :local op)
+      (js-ts-backend-write-source (get env (:name instruction)) indent)
+
+      (= :builtin-call op)
+      (apply str
+             (map #(js-ts-backend-value-source % counter indent env)
+                  (:args instruction)))
+
+      (= :if op)
+      (str padding "if ("
+           (js-ts-backend-test-source (:test instruction) env)
+           ") {\n"
+           (js-ts-backend-value-source (:then instruction) counter
+                                       (inc indent) env)
+           padding "} else {\n"
+           (js-ts-backend-value-source (:else instruction) counter
+                                       (inc indent) env)
+           padding "}\n")
+
+      (= :let op)
+      (let [binding-state
+            (reduce (fn [state {:keys [name expr]}]
+                      (let [{:keys [source descriptor]}
+                            (js-ts-backend-value-declaration expr counter indent)]
+                        {:source (str (:source state) source)
+                         :env (assoc (:env state) name descriptor)}))
+                    {:source "" :env env}
+                    (:bindings instruction))]
+        (str (:source binding-state)
+             (js-ts-backend-value-source
+              (first (:body instruction)) counter indent
+              (:env binding-state))))
+
+      :else "")))
+
+(defn js-ts-backend-instruction-source
+  ([instruction counter indent]
+   (js-ts-backend-instruction-source instruction counter indent {}))
+  ([instruction counter indent env]
+   (let [padding (apply str (repeat indent "  "))
+         op (:op instruction)]
+     (cond
+       (#{:literal :quote :local} op) ""
+
+       (= :println op)
+       (str (apply str
+                   (map-indexed
+                    (fn [index argument]
+                      (str (when (pos? index)
+                             (let [name (str "gravitySpace"
+                                             (swap! counter inc))]
+                               (str (js-ts-backend-bytes-source
+                                     name [32] indent)
+                                    padding "stdout.write(" name ");\n")))
+                           (js-ts-backend-value-source
+                            argument counter indent env)))
+                    (:args instruction)))
+            (let [name (str "gravityNewline" (swap! counter inc))]
+              (str (js-ts-backend-bytes-source name [10] indent)
+                   padding "stdout.write(" name ");\n")))
+
+       (= :do op)
+       (apply str
+              (map #(js-ts-backend-instruction-source % counter indent env)
+                   (:body instruction)))
+
+       (= :if op)
+       (str padding "if ("
+            (js-ts-backend-test-source (:test instruction) env)
+            ") {\n"
+            (js-ts-backend-instruction-source (:then instruction) counter
+                                              (inc indent) env)
+            padding "} else {\n"
+            (js-ts-backend-instruction-source (:else instruction) counter
+                                              (inc indent) env)
+            padding "}\n")
+
+       (= :let op)
+       (let [binding-state
+             (reduce (fn [state {:keys [name expr]}]
+                       (let [{:keys [source descriptor]}
+                             (js-ts-backend-value-declaration
+                              expr counter indent)]
+                         {:source (str (:source state) source)
+                          :env (assoc (:env state) name descriptor)}))
+                     {:source "" :env env}
+                     (:bindings instruction))]
+         (str (:source binding-state)
+              (apply str
+                     (map #(js-ts-backend-instruction-source
+                            % counter indent (:env binding-state))
+                          (:body instruction)))))
+
+       :else ""))))
+
+(defn js-ts-backend-source
+  [plan]
+  (let [counter (atom 0)
+        main (get-in plan [:functions (:entrypoint plan)])
+        writes-stdout? (pos? (get-in plan [:instruction-summary :println] 0))]
+    (str "#!/usr/bin/env node\n"
+         (when writes-stdout?
+           "import { stdout } from \"node:process\";\n")
+         "\n"
+         (apply str
+                (map #(js-ts-backend-instruction-source % counter 0 {})
+                     (:instructions main)))
+         "//# sourceMappingURL=program.mjs.map\n")))
+
+(def js-ts-backend-declaration-source
+  "// Generated Gravity hosted entrypoint; no exported API in this slice.\nexport {};\n")
+
+(defn js-ts-backend-json-string
+  [value]
+  (str "\""
+       (apply str
+              (map (fn [ch]
+                     (case ch
+                       \" "\\\""
+                       \\ "\\\\"
+                       \backspace "\\b"
+                       \formfeed "\\f"
+                       \newline "\\n"
+                       \return "\\r"
+                       \tab "\\t"
+                       (if (< (int ch) 32)
+                         (format "\\u%04x" (int ch))
+                         (str ch))))
+                   (str value)))
+       "\""))
+
+(defn js-ts-backend-source-map-source
+  "Emit a deterministic v3 source map.  Generated lines are conservatively
+  anchored at the beginning of the source unit, while the Gravity extension
+  records the path-neutral content identity and explicit stage2 origin chain.
+  The source text itself is embedded so consumers can recover exact line and
+  Unicode content without consulting a checkout path."
+  [javascript source-text]
+  (let [generated-lines (max 1 (count (str/split javascript #"\n" -1)))
+        mappings (str/join ";" (repeat generated-lines "AAAA"))
+        source-hash (str "sha256:" (sha256-hex source-text))
+        entries
+        (str/join
+         ","
+         (map (fn [line]
+                (str "{\"generatedLine\":" line
+                     ",\"generatedColumn\":0,\"sourceLine\":1"
+                     ",\"sourceColumn\":0,\"originChain\":["
+                     "\"source-unit\",\"stage2-plan-emitter\","
+                     "\"stage2-compiler-driver\",\"js-ts-lowering\"]}"))
+              (range 1 (inc generated-lines))))]
+    (str "{\"version\":3,\"file\":\"program.mjs\","
+         "\"sources\":[\"gravity-source\"],\"sourcesContent\":["
+         (js-ts-backend-json-string source-text)
+         "],\"names\":[],\"mappings\":"
+         (js-ts-backend-json-string mappings)
+         ",\"x_gravity\":{\"sourceContentHash\":"
+         (js-ts-backend-json-string source-hash)
+         ",\"sourceKind\":\"co-canonical-gravity-source\","
+         "\"coverage\":\"source-unit-only\","
+         "\"perFormOriginPreserved\":false,"
+         "\"generatedOrigins\":[" entries "]}}\n")))
+
+(defn js-ts-backend-package-source
+  [writes-stdout?]
+  (str "{\"name\":\"gravity-js-ts-artifact\",\"private\":true,"
+       "\"type\":\"module\",\"sideEffects\":"
+       (if writes-stdout? "true" "false")
+       ",\"engines\":{\"node\":\">=20 <21\"}}\n"))
+
+(defn js-ts-backend-validate-manifest!
+  [source-path manifest]
+  (let [required-top-level
+        [:artifact :schema-version :backend :profile :target :module :emits
+         :content-hashes :input :effects :capabilities :safety :host-globals
+         :numeric-representation :nullish-policy :exception-policy
+         :typescript-compiler :conformance :clojure-seed-boundary?
+         :self-hosted? :release-grade? :diagnostics]
+        missing (vec (remove #(contains? manifest %) required-top-level))
+        runtime-version (get-in manifest [:target :runtime-version])
+        valid-target?
+        (and (string? runtime-version)
+             (boolean (re-matches #"v20(?:\.[0-9]+){1,2}" runtime-version))
+             (= {:runtime js-ts-backend-runtime
+                 :runtime-version runtime-version
+                 :ecmascript js-ts-backend-ecmascript
+                 :module-format js-ts-backend-module-format}
+                (:target manifest)))
+        valid-hashes?
+        (and (= #{:javascript :typescript-declarations :source-map
+                  :package-metadata}
+                (set (keys (:content-hashes manifest))))
+             (every? #(and (string? %)
+                           (boolean
+                            (re-matches #"sha256:[0-9a-f]{64}" %)))
+                     (vals (:content-hashes manifest))))
+        writes-stdout? (true? (get-in manifest [:module :side-effects]))
+        stdout-authorized?
+        (contains? (set (:capabilities manifest)) :io/stdout)
+        host-global-valid?
+        (= (if writes-stdout?
+             [{:module "node:process"
+               :symbol :stdout
+               :effect :io/write
+               :capability :io/stdout
+               :representation :uint8array-bytes}]
+             [])
+           (:host-globals manifest))
+        input (:input manifest)
+        eligibility (:target-eligibility input)
+        source-declared-target (:source-declared-target input)
+        valid-input?
+        (and (= #{:source-content-hash :source-declared-target
+                  :requested-backend-target :target-eligibility
+                  :stage2-plan-hash :compiler-driver-rule-hash
+                  :runtime-rule-hash :runtime-artifact-hash}
+                (set (keys input)))
+             (every? #(boolean
+                       (re-matches #"sha256:[0-9a-f]{64}" (str %)))
+                     [(:source-content-hash input)
+                      (:stage2-plan-hash input)
+                      (:compiler-driver-rule-hash input)
+                      (:runtime-rule-hash input)
+                      (:runtime-artifact-hash input)])
+             (= js-ts-backend-target (:requested-backend-target input))
+             (= :accepted (:status eligibility))
+             (= source-declared-target
+                (:source-declared-target eligibility))
+             (= js-ts-backend-target (:requested-target eligibility))
+             (or (and (= js-ts-backend-target source-declared-target)
+                      (= :source-and-request-agree (:selection eligibility)))
+                 (and (= :jvm source-declared-target)
+                      (= :explicit-bootstrap-seed-target-override
+                         (:selection eligibility))
+                      (true? (:bootstrap-seed-target? eligibility)))))]
+    (when-not (and (empty? missing)
+                   (= :gravity/js-ts-backend-manifest (:artifact manifest))
+                   (= 1 (:schema-version manifest))
+                   (= :gravity.backend/js-ts (:backend manifest))
+                   (= :hosted (:profile manifest))
+                   valid-target?
+                   (= {:side-effects writes-stdout?
+                       :package-boundary :standalone}
+                      (:module manifest))
+                   (= #{:javascript :typescript-declarations :source-map
+                        :package-metadata :manifest :provenance}
+                      (set (:emits manifest)))
+                   (= 6 (count (:emits manifest)))
+                   valid-input?
+                   (= #{:declared :inferred :capabilities}
+                      (set (keys (:effects manifest))))
+                   (set/subset? (get-in manifest [:effects :declared] #{})
+                                #{:io/write})
+                   (set/subset? (get-in manifest [:effects :inferred] #{})
+                                #{:io/write})
+                   (set/subset? (get-in manifest [:effects :inferred] #{})
+                                (get-in manifest [:effects :declared] #{}))
+                   (= writes-stdout?
+                      (contains? (get-in manifest [:effects :inferred] #{})
+                                 :io/write))
+                   (set/subset? (set (:capabilities manifest))
+                                #{:io/stdout})
+                   (= (set (:capabilities manifest))
+                      (set (get-in manifest [:effects :capabilities])))
+                   (or (not writes-stdout?)
+                       (and (contains? (get-in manifest
+                                               [:effects :declared] #{})
+                                       :io/write)
+                            (contains? (get-in manifest
+                                               [:effects :inferred] #{})
+                                       :io/write)))
+                   (or (not writes-stdout?) stdout-authorized?)
+                   host-global-valid?
+                   valid-hashes?
+                   (= {:mode :hosted-scalar-spelling
+                       :bytes :utf8
+                       :lossy-number-lowering? false}
+                      (:numeric-representation manifest))
+                   (= :no-host-nullish-inputs (:nullish-policy manifest))
+                   (= :no-host-exception-boundary-in-slice
+                      (:exception-policy manifest))
+                   (= {:available? false :required? false
+                       :reason :tsc-not-installed}
+                      (:typescript-compiler manifest))
+                   (= {:node-check :passed
+                       :stage2-differential :passed
+                       :stdout-byte-exact? true
+                       :source-map :partial
+                       :source-map-coverage :source-unit-only
+                       :per-form-origin-preserved? false
+                       :b6-conforming? false}
+                      (:conformance manifest))
+                   (= {:mode :safe :unsafe-islands [] :status :preserved}
+                      (:safety manifest))
+                   (true? (:clojure-seed-boundary? manifest))
+                   (false? (:self-hosted? manifest))
+                   (false? (:release-grade? manifest))
+                   (= [] (:diagnostics manifest)))
+      (js-ts-backend-fail!
+       "B6-MANIFEST" "JS/TS artifact manifest is incomplete or contradictory"
+       source-path manifest
+       {:missing-fields missing
+        :target-valid? valid-target?
+        :input-valid? valid-input?
+        :content-hashes-valid? valid-hashes?
+        :missing-fact :complete-js-ts-manifest})))
+  :passed)
+
+(defn js-ts-backend-run-node-process!
+  [arguments source-path diagnostic-id message]
+  (let [stdout-file (java.io.File/createTempFile "gravity-js-node-out-" ".bin")
+        stderr-file (java.io.File/createTempFile "gravity-js-node-err-" ".txt")
+        pb (ProcessBuilder. ^java.util.List (into ["node"] arguments))]
+    (try
+      (.redirectOutput pb stdout-file)
+      (.redirectError pb stderr-file)
+      (let [process (.start pb)
+            finished? (.waitFor process 60000
+                                java.util.concurrent.TimeUnit/MILLISECONDS)]
+        (when-not finished?
+          (.destroyForcibly process)
+          (js-ts-backend-fail!
+           diagnostic-id message source-path nil
+           {:node-command (into ["node"] arguments)
+            :missing-fact :node-process-completion}))
+        (let [result {:exit (.exitValue process)
+                      :stdout-bytes
+                      (vec (map #(bit-and (int %) 0xff)
+                                (java.nio.file.Files/readAllBytes
+                                 (.toPath stdout-file))))
+                      :stderr (if (.exists stderr-file)
+                                (slurp stderr-file) "")}]
+          (when-not (zero? (:exit result))
+            (js-ts-backend-fail!
+             diagnostic-id message source-path nil
+             {:node-command (into ["node"] arguments)
+              :node-result result
+              :missing-fact :node20-esm-acceptance}))
+          result))
+      (catch clojure.lang.ExceptionInfo ex
+        (throw ex))
+      (catch Exception ex
+        (js-ts-backend-fail!
+         "B6-TARGET" "Node 20 runtime is unavailable"
+         source-path nil
+         {:runtime js-ts-backend-runtime
+          :cause-message (.getMessage ex)
+          :missing-fact :node20-runtime}))
+      (finally
+        (.delete stdout-file)
+        (.delete stderr-file)))))
+
+(defn js-ts-backend-node-version!
+  [source-path]
+  (let [result (js-ts-backend-run-node-process!
+                ["--version"] source-path "B6-TARGET"
+                "Node runtime version check failed")
+        version (str/trim
+                 (String. (byte-array (map byte (:stdout-bytes result)))
+                          java.nio.charset.StandardCharsets/UTF_8))]
+    (when-not (re-matches #"v20(?:\..*)?" version)
+      (js-ts-backend-fail!
+       "B6-TARGET" "JS/TS backend requires Node 20"
+       source-path nil
+       {:observed-node-version version
+        :required-node-version "20.x"
+        :missing-fact :node20-runtime}))
+    version))
+
+(defn js-ts-backend-output-paths
+  [output-path]
+  ;; `-o` names an artifact directory for the multi-file JS/TS target.  Fixed
+  ;; logical filenames keep sourceMappingURL and every emitted byte independent
+  ;; of the checkout and caller-selected output path.
+  {:javascript (str output-path "/program.mjs")
+   :typescript-declarations (str output-path "/program.d.ts")
+   :source-map (str output-path "/program.mjs.map")
+   :package-metadata (str output-path "/package.json")
+   :manifest (str output-path "/manifest.edn")
+   :provenance (str output-path "/provenance.edn")})
+
+(defn js-ts-backend-delete-tree!
+  [path]
+  (when (and path (.exists (.toFile path)))
+    (doseq [file (reverse (file-seq (.toFile path)))]
+      (.delete file))))
+
+(defn js-ts-backend-stage-files!
+  [output-path paths contents source-path]
+  (when-not (c-backend-output-path-allowed? output-path)
+    (js-ts-backend-fail!
+     "C14-INPUT" "JS/TS artifact directory is outside declared roots"
+     source-path nil
+     {:output-path output-path
+      :missing-fact :output-path-containment}))
+  (let [output-directory (java.io.File. output-path)
+        expected-parent (.getCanonicalPath output-directory)]
+    (when (.exists output-directory)
+      (js-ts-backend-fail!
+       "C14-INPUT" "JS/TS backend requires a fresh artifact directory"
+       source-path nil
+       {:output-path output-path
+        :missing-fact :fresh-output-path}))
+    (doseq [[kind path] paths]
+      (when-not (= expected-parent
+                   (.getCanonicalPath (.getParentFile (java.io.File. path))))
+        (js-ts-backend-fail!
+         "C14-INPUT" "JS/TS sidecar escaped its artifact directory"
+         source-path nil
+         {:output-kind kind :output-path path
+          :missing-fact :artifact-directory-containment})))
+    (let [parent-file (or (.getParentFile output-directory)
+                          (java.io.File. "."))]
+      (when (and (.exists parent-file) (not (.isDirectory parent-file)))
+        (js-ts-backend-fail!
+         "C14-INPUT" "JS/TS artifact parent is not a directory"
+         source-path nil
+         {:output-path output-path
+          :output-parent (.getPath parent-file)
+          :missing-fact :output-parent-directory}))
+      (when (and (not (.exists parent-file))
+                 (not (.mkdirs parent-file)))
+        (js-ts-backend-fail!
+         "C14-INPUT" "JS/TS artifact parent directory is unavailable"
+         source-path nil
+         {:output-path output-path
+          :output-parent (.getPath parent-file)
+          :missing-fact :output-parent-directory}))
+      (let [stage-directory
+            (try
+              (java.nio.file.Files/createTempDirectory
+               (.toPath parent-file)
+               ".gravity-js-ts-stage-"
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              (catch Exception ex
+                (js-ts-backend-fail!
+                 "C14-INPUT"
+                 "JS/TS staging directory could not be created"
+                 source-path nil
+                 {:output-path output-path
+                  :output-parent (.getPath parent-file)
+                  :cause-message (.getMessage ex)
+                  :missing-fact :output-staging-directory})))]
+        (try
+        (doseq [[kind value] contents]
+          (let [target-name (.getName (java.io.File. (get paths kind)))
+                staged-path (.resolve stage-directory target-name)]
+            (java.nio.file.Files/write
+             staged-path
+             (.getBytes (str value)
+                        java.nio.charset.StandardCharsets/UTF_8)
+             (into-array java.nio.file.OpenOption
+                          [java.nio.file.StandardOpenOption/CREATE_NEW
+                           java.nio.file.StandardOpenOption/WRITE]))))
+        (let [staged-javascript
+              (.toFile
+               (.resolve stage-directory
+                         (.getName (java.io.File. (:javascript paths)))))]
+          (when-not (.setExecutable staged-javascript true false)
+            (js-ts-backend-fail!
+             "B6-MANIFEST"
+             "staged JS/TS entrypoint could not be made executable"
+             source-path nil
+             {:missing-fact :executable-module-permission})))
+        (try
+          (java.nio.file.Files/move
+           stage-directory
+           (.toPath output-directory)
+           (into-array java.nio.file.CopyOption
+                       [java.nio.file.StandardCopyOption/ATOMIC_MOVE]))
+          (catch Exception ex
+            (js-ts-backend-fail!
+             "B6-MANIFEST"
+             "JS/TS artifact directory could not be atomically committed"
+             source-path nil
+             {:cause-message (.getMessage ex)
+              :missing-fact :atomic-artifact-directory-commit})))
+          (finally
+            (js-ts-backend-delete-tree! stage-directory)))))))
+
+(defn js-ts-backend-source-artifact
+  "Emit and execute the bounded Node 20 ES2022 ESM target from the genuine
+  stage2 compiler-driver packet.  All validation and differential execution
+  completes in a temporary directory before caller-visible files are moved
+  into place."
+  ([source-path source-text]
+   (js-ts-backend-source-artifact source-path source-text {}))
+  ([source-path source-text {:keys [target output-path emit?]
+                             :or {target js-ts-backend-target
+                                  emit? false}}]
+   (let [target (js-ts-backend-canonical-target target)]
+     (when-not (= js-ts-backend-target target)
+       (js-ts-backend-fail!
+        "B6-TARGET" "JS/TS backend target is unsupported"
+        source-path nil
+        {:requested-target target
+         :supported-targets (vec (sort js-ts-backend-target-aliases))
+         :missing-fact :supported-target}))
+     (when (and emit? (str/blank? (str output-path)))
+       (js-ts-backend-fail!
+        "C14-INPUT" "JS/TS target compilation requires an output path"
+        source-path nil {:missing-fields [:output-path]}))
+     (let [node-version (js-ts-backend-node-version! source-path)
+           packet (stage2-runtime-derived-packet
+                   source-path source-text target)
+           driver-record (:stage2-compiler-driver-record packet)
+           runtime-record (:stage2-runtime-execution-record packet)
+           runtime-rule (:stage2-runtime-rule packet)
+           driver-rule (:stage2-compiler-driver-rule packet)
+           plan (:plan packet)
+           _ (when-not (= :safe (get-in plan [:module :safety]))
+               (js-ts-backend-fail!
+                "C14-PROFILE"
+                "bounded JS/TS target does not lower unsafe modules"
+                source-path plan
+                {:observed-safety-mode (get-in plan [:module :safety])
+                 :supported-safety-modes [:safe]
+                 :missing-fact :safe-js-ts-module}))
+           _ (when-not (c-backend-runtime-plan-supported? plan)
+               (js-ts-backend-fail!
+                "C14-UNSUPPORTED"
+                "JS/TS backend cannot lower this stage2 instruction plan"
+                source-path plan
+                {:missing-fact :js-ts-lowering-rule
+                 :fallback-status :rejected}))
+           _ (js-ts-backend-validate-plan! source-path plan)
+           plan-hash
+           (c4-artifact-id
+            (c-backend-canonical-value
+             (select-keys plan [:kind :entrypoint :functions
+                                :instruction-summary :effect-summary])))
+           javascript (js-ts-backend-source plan)
+           writes-stdout?
+           (pos? (get-in plan [:instruction-summary :println] 0))
+           source-map (js-ts-backend-source-map-source
+                       javascript source-text)
+           package-metadata (js-ts-backend-package-source writes-stdout?)
+           js-hash (str "sha256:" (sha256-hex javascript))
+           declaration-hash
+           (str "sha256:" (sha256-hex js-ts-backend-declaration-source))
+           source-map-hash
+           (str "sha256:" (sha256-hex source-map))
+           package-hash
+           (str "sha256:" (sha256-hex package-metadata))
+           source-hash (str "sha256:" (sha256-hex source-text))
+           expected-output (:stdout runtime-record)
+           expected-bytes (c-backend-runtime-bytes expected-output)
+           temp-directory
+           (java.nio.file.Files/createTempDirectory
+            "gravity-js-ts-validate-"
+            (make-array java.nio.file.attribute.FileAttribute 0))
+           temp-module (.resolve temp-directory "program.mjs")
+           _ (java.nio.file.Files/write
+              temp-module
+              (.getBytes javascript java.nio.charset.StandardCharsets/UTF_8)
+              (into-array java.nio.file.OpenOption
+                          [java.nio.file.StandardOpenOption/CREATE_NEW
+                           java.nio.file.StandardOpenOption/WRITE]))
+           _ (js-ts-backend-run-node-process!
+              ["--check" (.toString temp-module)] source-path "B6-TARGET"
+              "Node rejected generated ES2022 ESM")
+           execution (js-ts-backend-run-node-process!
+                      [(.toString temp-module)] source-path
+                      "B14-DIFFERENTIAL"
+                      "generated JS/TS execution failed")
+           _ (java.nio.file.Files/deleteIfExists temp-module)
+           _ (java.nio.file.Files/deleteIfExists temp-directory)
+           _ (when-not (= expected-bytes (:stdout-bytes execution))
+               (js-ts-backend-fail!
+                "B14-DIFFERENTIAL"
+                "JS/TS execution differs from the authoritative stage2 runtime"
+                source-path nil
+                {:expected-stdout-hash
+                 (str "sha256:" (sha256-hex expected-output))
+                 :actual-stdout-hash
+                 (str "sha256:"
+                      (sha256-bytes-hex
+                       (byte-array (map byte (:stdout-bytes execution)))))
+                 :missing-fact :stage2-js-execution-equivalence}))
+           manifest-input
+           {:artifact :gravity/js-ts-backend-manifest
+            :schema-version 1
+            :backend :gravity.backend/js-ts
+            :profile :hosted
+            :target {:runtime js-ts-backend-runtime
+                     :runtime-version node-version
+                     :ecmascript js-ts-backend-ecmascript
+                     :module-format js-ts-backend-module-format}
+            :module {:side-effects writes-stdout?
+                     :package-boundary :standalone}
+            :emits [:javascript :typescript-declarations :source-map
+                    :package-metadata :manifest :provenance]
+            :content-hashes
+            {:javascript js-hash
+             :typescript-declarations declaration-hash
+             :source-map source-map-hash
+             :package-metadata package-hash}
+            :input {:source-content-hash source-hash
+                    :source-declared-target
+                    (get-in packet [:target-eligibility
+                                    :source-declared-target])
+                    :requested-backend-target target
+                    :target-eligibility (:target-eligibility packet)
+                    :stage2-plan-hash plan-hash
+                    :compiler-driver-rule-hash
+                    (:driver-rule-hash driver-rule)
+                    :runtime-rule-hash (:runtime-rule-hash runtime-rule)
+                    :runtime-artifact-hash
+                    (:runtime-artifact-hash runtime-rule)}
+            :effects (:effect-summary plan)
+            :capabilities (get-in plan [:module :capabilities])
+            :safety {:mode (get-in plan [:module :safety])
+                     :unsafe-islands [] :status :preserved}
+            :host-globals
+            (if writes-stdout?
+              [{:module "node:process"
+                :symbol :stdout
+                :effect :io/write
+                :capability :io/stdout
+                :representation :uint8array-bytes}]
+              [])
+            :numeric-representation {:mode :hosted-scalar-spelling
+                                     :bytes :utf8
+                                     :lossy-number-lowering? false}
+            :nullish-policy :no-host-nullish-inputs
+            :exception-policy :no-host-exception-boundary-in-slice
+            :typescript-compiler {:available? false
+                                  :required? false
+                                  :reason :tsc-not-installed}
+            :conformance {:node-check :passed
+                          :stage2-differential :passed
+                          :stdout-byte-exact? true
+                          :source-map :partial
+                          :source-map-coverage :source-unit-only
+                          :per-form-origin-preserved? false
+                          :b6-conforming? false}
+            :release-grade? false
+            :clojure-seed-boundary? true
+            :self-hosted? false
+            :diagnostics []}
+           manifest-hash
+           (do
+             (js-ts-backend-validate-manifest! source-path manifest-input)
+           (str "sha256:"
+                (sha256-hex
+                 (pr-str (c-backend-canonical-value manifest-input)))))
+           manifest (assoc manifest-input :manifest-hash manifest-hash)
+           provenance-input
+           {:artifact :gravity/js-ts-provenance
+            :schema-version 1
+            :source-content-hash source-hash
+            :stage2-plan-hash plan-hash
+            :target-eligibility (:target-eligibility packet)
+            :stage2-compiler-driver-rule-hash
+            (:driver-rule-hash driver-rule)
+            :stage2-runtime-rule-hash (:runtime-rule-hash runtime-rule)
+            :stage2-runtime-artifact-hash
+            (:runtime-artifact-hash runtime-rule)
+            :backend :gravity.backend/js-ts
+            :backend-version 1
+            :target js-ts-backend-target
+            :manifest-hash manifest-hash
+            :pass-history [:c2-reader :stage2-source-front-end
+                           :stage2-plan-emitter :stage2-compiler-driver
+                           :stage2-runtime-executor :js-ts-lowering]
+            :seed-boundary {:clojure-seed-boundary? true
+                            :self-hosted? false}}
+           provenance-hash
+           (str "sha256:"
+                (sha256-hex
+                 (pr-str (c-backend-canonical-value provenance-input))))
+           paths (when output-path
+                   (js-ts-backend-output-paths (str output-path)))
+           provenance
+           (assoc provenance-input
+                  :provenance-hash provenance-hash
+                  :actual-paths {:source source-path :outputs paths})
+           identity-input
+           {:kind :gravity/js-ts-backend-artifact
+            :source-content-hash source-hash
+            :stage2-plan-hash plan-hash
+            :javascript-hash js-hash
+            :declaration-hash declaration-hash
+            :source-map-hash source-map-hash
+            :package-hash package-hash
+            :manifest-hash manifest-hash
+            :provenance-hash provenance-hash}
+           artifact
+           {:kind :gravity/js-ts-backend-artifact
+            :task "HOSTED-JS-TS-TARGET"
+            :status :complete-for-slice
+            :artifact-id
+            (c4-artifact-id
+             (c-backend-canonical-value identity-input))
+            :source {:kind :co-canonical-gravity-source
+                     :sha256 source-hash}
+            :target (:target manifest)
+            :input-plan-id (:plan-id plan)
+            :input-plan-hash plan-hash
+            :target-eligibility (:target-eligibility packet)
+            :instruction-summary (:instruction-summary plan)
+            :effect-summary (:effect-summary plan)
+            :capabilities (get-in plan [:module :capabilities])
+            :javascript-source javascript
+            :typescript-declarations js-ts-backend-declaration-source
+            :source-map source-map
+            :package-metadata package-metadata
+            :manifest manifest
+            :manifest-hash manifest-hash
+            :provenance provenance
+            :provenance-hash provenance-hash
+            :stage2-compiler-driver-record driver-record
+            :stage2-runtime-execution-record
+            runtime-record
+            :compiled-execution-output-bytes (:stdout-bytes execution)
+            :compiled-execution-output expected-output
+            :seed-boundary {:clojure-seed-boundary? true
+                            :self-hosted? false
+                            :final-release? false}
+            :diagnostics []}]
+       (when emit?
+         (js-ts-backend-stage-files!
+          (str output-path) paths
+          {:javascript javascript
+           :typescript-declarations js-ts-backend-declaration-source
+           :source-map source-map
+           :package-metadata package-metadata
+           :manifest (pr-str manifest)
+           :provenance (pr-str provenance)}
+          source-path))
+       artifact))))
+
+(defn js-ts-backend-file-artifact
+  ([path] (js-ts-backend-file-artifact path {}))
+  ([path options]
+   (js-ts-backend-source-artifact
+    path (read-gravity-source-text path) options)))
 
 (defn compile-source
   [source-path source-text]
@@ -108575,17 +109544,19 @@
            output-path nil
            lowering-mode nil]
       (if (empty? remaining)
-        (let [target (some-> target str/lower-case keyword)
+        (let [target (some-> target str/lower-case keyword
+                             js-ts-backend-canonical-target)
               lowering-mode (some-> lowering-mode str/lower-case keyword)]
-          (when (and lowering-mode (not (contains? c-backend-supported-targets
-                                                    target)))
+          (when (and lowering-mode
+                     (not (or (contains? c-backend-supported-targets target)
+                              (= js-ts-backend-target target))))
             (p18-t04-fail! "P18T04002"
                            {:source source-path
                             :command args
                             :target target
                             :lowering-mode lowering-mode
                             :missing-fields [:c-target-for-lowering]
-                            :remediation "Use --target c (or another supported C target) with --lowering runtime-derived."}))
+                            :remediation "Use --target c, js, or js-ts with --lowering runtime-derived."}))
           {:source-path source-path
            :target target
            :target-requested? (some? target)
@@ -108855,6 +109826,64 @@
              :public-current-source? true
              :lowering-mode lowering-mode
              :lowering-requested? (some? lowering-mode))))))
+
+(defn p18-t04-compile-js-ts-target-file!
+  "Compile a current source unit to the bounded Node 20 ES2022 ESM target.
+
+  Both public aliases are canonicalized before this boundary.  The emitted
+  JavaScript, declarations, source map, package metadata, manifest, and
+  provenance are validated and differentially executed before becoming
+  caller-visible."
+  [source-path output-path target lowering-mode]
+  (let [target (js-ts-backend-canonical-target target)]
+    (when-not (= js-ts-backend-target target)
+      (js-ts-backend-fail!
+       "B6-TARGET" "public JS/TS target is unsupported"
+       source-path nil
+       {:requested-target target
+        :supported-targets (vec (sort js-ts-backend-target-aliases))
+        :missing-fact :supported-target}))
+    (when (and lowering-mode (not= :runtime-derived lowering-mode))
+      (js-ts-backend-fail!
+       "B6-TARGET" "requested JS/TS lowering mode is unsupported"
+       source-path nil
+       {:lowering-mode lowering-mode
+        :supported-lowering-modes [:runtime-derived]
+        :missing-fact :js-ts-lowering-mode}))
+    (when-not output-path
+      (js-ts-backend-fail!
+       "C14-INPUT" "JS/TS target compilation requires an explicit output"
+       source-path nil
+       {:missing-fields [:output-path]
+        :remediation "Use --target js -o <module-base>."}))
+    (let [artifact
+          (js-ts-backend-file-artifact
+           source-path
+           {:target target :output-path output-path :emit? true})]
+      (assoc artifact
+             :command-boundary
+             {:compile-command
+              (cond-> ["gravity" "compile" source-path
+                       "--target" (name target)]
+                lowering-mode
+                (into ["--lowering" (name lowering-mode)])
+                true
+                (into ["-o" output-path]))
+              :run-command ["node"
+                            (get-in artifact
+                                    [:provenance :actual-paths :outputs
+                                     :javascript])]
+              :public-command "gravity"
+              :bootstrap-hosted? true
+              :clojure-seed-boundary? true
+              :self-hosted? false
+              :seedless-release? false}
+             :target-requested? true
+             :target-selection :explicit
+             :public-current-source? true
+             :lowering-mode :runtime-derived
+             :lowering-requested? (some? lowering-mode)
+             :compiled-executable? true))))
 
 (defn p18-t04-shell
   [& args]
@@ -112878,7 +113907,8 @@
                                           lowering-mode]}
                                  (p18-t04-parse-compile-request args)]
                              (if target-requested?
-                               (if (= :jvm target)
+                               (cond
+                                 (= :jvm target)
                                  (if lowering-mode
                                    (p18-t04-fail!
                                     "P18T04002"
@@ -112886,16 +113916,39 @@
                                      :command args
                                      :target target
                                      :lowering-mode lowering-mode
-                                     :missing-fields [:c-target-for-lowering]
-                                     :remediation "Use --target c with --lowering runtime-derived."})
-                                 (if output-path
-                                   (prn (p18-t04-compile-executable-file!
-                                         path output-path))
-                                   (prn (compile-file path)))
-                                 )
+                                     :missing-fields [:runtime-derived-target]
+                                     :remediation "Use --target c, js, or js-ts with --lowering runtime-derived."})
+                                   (if output-path
+                                     (prn (p18-t04-compile-executable-file!
+                                           path output-path))
+                                     (prn (compile-file path))))
+
+                                 (= js-ts-backend-target target)
+                                 (prn (p18-t04-compile-js-ts-target-file!
+                                       path output-path target
+                                       lowering-mode))
+
+                                 (contains? c-backend-supported-targets target)
                                  (prn (p18-t04-compile-c-target-file!
                                        path output-path target
-                                       lowering-mode)))
+                                       lowering-mode))
+
+                                 :else
+                                 (fail!
+                                  "C14-TARGET"
+                                  "requested compile target is unsupported"
+                                  {:severity :error
+                                   :stage :target-selection
+                                   :diagnostic-family :c14-target-lowering
+                                   :source-span (source-span path 0)
+                                   :primary {:span (source-span path 0)}
+                                   :target target
+                                   :backend nil
+                                   :supported-targets
+                                   [:jvm :c :c-hosted :c11 :js :js-ts]
+                                   :missing-fact :supported-target
+                                   :remediation
+                                   "Select jvm, c, js, or js-ts; other documented targets remain unimplemented."}))
                                (if output-path
                                  (prn (p18-t04-compile-executable-file!
                                        path output-path))

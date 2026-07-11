@@ -26304,6 +26304,483 @@
             (is (= :runtime-artifact-function-set
                    (:missing-fact tampered)))))))))
 
+(deftest hosted-js-ts-backend-emits-genuine-stage2-node-runtime
+  (let [source-text
+        (str "(ns js.target.bytes (:profile :hosted) (:target :js-ts) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main []\n"
+             "  (do\n"
+             "    (println \"λ\\u0000🙂\")\n"
+             "    (let [left \"left\"]\n"
+             "      (if true\n"
+             "        (println (str left \"-right\"))\n"
+             "        (println \"unreachable\")))\n"
+             "    (println (quote done))))\n")
+        expected (str "λ" \u0000 "🙂\nleft-right\ndone\n")]
+    (with-temp-source
+      ".gravity" source-text
+      (fn [gravity-path]
+        (with-temp-source
+          ".qst" source-text
+          (fn [qst-path]
+            (let [gravity
+                  (bootstrap/js-ts-backend-source-artifact
+                   gravity-path source-text {:target :js})
+                  qst
+                  (bootstrap/js-ts-backend-source-artifact
+                   qst-path source-text {:target :js-ts})
+                  alias-artifact
+                  (bootstrap/js-ts-backend-source-artifact
+                   "source-alias.gravity"
+                   (str/replace-first source-text ":target :js-ts"
+                                      ":target :js")
+                   {:target :js})]
+              (is (= :gravity/js-ts-backend-artifact (:kind gravity)))
+              (is (= :complete-for-slice (:status gravity)))
+              (is (= (:artifact-id gravity) (:artifact-id qst)))
+              (is (= (:input-plan-hash gravity) (:input-plan-hash qst)))
+              (is (= (:manifest-hash gravity) (:manifest-hash qst)))
+              (is (= (:provenance-hash gravity) (:provenance-hash qst)))
+              (is (= expected (:compiled-execution-output gravity)))
+              (is (= (bootstrap/c-backend-runtime-bytes expected)
+                     (:compiled-execution-output-bytes gravity)))
+              (is (str/includes? (:javascript-source gravity)
+                                 "from \"node:process\""))
+              (is (str/includes? (:javascript-source gravity)
+                                 "new Uint8Array"))
+              (is (not (str/includes? (:javascript-source gravity) expected)))
+              (is (= {:runtime :node20
+                      :runtime-version "v20.9.0"
+                      :ecmascript :es2022
+                      :module-format :esm}
+                     (:target gravity)))
+              (is (= :passed
+                     (get-in gravity [:manifest :conformance
+                                      :stage2-differential])))
+              (is (= false
+                     (get-in gravity [:manifest :typescript-compiler
+                                      :available?])))
+              (is (true? (get-in gravity
+                                 [:seed-boundary
+                                  :clojure-seed-boundary?])))
+              (is (false? (get-in gravity [:seed-boundary :self-hosted?])))
+              (is (= :complete
+                     (get-in gravity
+                             [:stage2-compiler-driver-record :status])))
+              (is (= :complete
+                     (get-in gravity
+                             [:stage2-runtime-execution-record :status])))
+              (is (= :js
+                     (get-in alias-artifact
+                             [:target-eligibility
+                              :raw-source-declared-target])))
+              (is (true?
+                   (get-in alias-artifact
+                           [:target-eligibility
+                            :source-target-alias-canonicalized?]))))))))))
+
+(deftest hosted-js-ts-backend-emits-deterministic-sidecars-and-executable
+  (let [source-text
+        (str "(ns js.target.emit (:profile :hosted) (:target :jvm) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"emitted\"))\n")]
+    (with-temp-directory
+      "gravity-js-ts-emission-"
+      (fn [directory]
+        (let [left-output (.toString (.resolve directory "left/program"))
+              right-output (.toString (.resolve directory "right/renamed"))
+              left (bootstrap/js-ts-backend-source-artifact
+                    "virtual-a.gravity" source-text
+                    {:target :js :output-path left-output :emit? true})
+              right (bootstrap/js-ts-backend-source-artifact
+                     "virtual-b.qst" source-text
+                     {:target :js-ts :output-path right-output :emit? true})
+              c-output (.toString (.resolve directory "program-c"))
+              c-artifact
+              (bootstrap/c-backend-source-artifact
+               "virtual-c.gravity" source-text
+               {:target :c
+                :lowering-mode :runtime-derived
+                :compile? true
+                :c-source-path (str c-output ".c")
+                :executable-path c-output
+                :manifest-path (str c-output ".manifest.edn")
+                :source-map-path (str c-output ".source-map.edn")
+                :provenance-path (str c-output ".provenance.edn")})
+              paths (get-in left [:provenance :actual-paths :outputs])
+              execution (run-bin "node" (:javascript paths))]
+          (is (= (:artifact-id left) (:artifact-id right)))
+          (is (= (:manifest-hash left) (:manifest-hash right)))
+          (is (= (:provenance-hash left) (:provenance-hash right)))
+          (is (= 6 (count paths)))
+          (doseq [path (vals paths)]
+            (is (.isFile (java.io.File. path))))
+          (doseq [[kind path]
+                  (select-keys paths
+                               [:javascript :typescript-declarations
+                                :source-map :package-metadata])]
+            (is (= (get-in left [:manifest :content-hashes kind])
+                   (str "sha256:"
+                        (bootstrap/sha256-bytes-hex
+                         (java.nio.file.Files/readAllBytes
+                          (.toPath (java.io.File. path))))))))
+          (is (.canExecute (java.io.File. (:javascript paths))))
+          (is (zero? (:exit execution)))
+          (is (= "emitted\n" (:out execution)))
+          (is (= (:compiled-execution-output left)
+                 (:compiled-execution-output c-artifact)))
+          (is (str/includes? (slurp (:javascript paths))
+                             "//# sourceMappingURL=program.mjs.map"))
+          (is (str/includes? (slurp (:typescript-declarations paths))
+                             "export {};"))
+          (is (str/includes? (slurp (:source-map paths))
+                             "\"version\":3"))
+          (is (not (str/includes? (slurp (:source-map paths))
+                                  "\"mappings\":\"\"")))
+          (is (str/includes? (slurp (:source-map paths))
+                             "\"generatedOrigins\""))
+          (is (str/includes? (slurp (:source-map paths))
+                             "(defn main"))
+          (let [generated-lines
+                (count (str/split (:javascript-source left) #"\n" -1))
+                origin-count
+                (count (re-seq #"\"generatedLine\"" (:source-map left)))
+                mapping-value
+                (second (re-find #"\"mappings\":\"([^\"]+)\""
+                                 (:source-map left)))]
+            (is (= generated-lines origin-count))
+            (is (= generated-lines
+                   (count (str/split mapping-value #";" -1)))))
+          (is (str/includes? (slurp (:package-metadata paths))
+                             "\"type\":\"module\""))
+          (is (str/includes? (slurp (:package-metadata paths))
+                             "\"sideEffects\":true"))
+          (is (true? (get-in left [:manifest :module :side-effects])))
+          (is (= "B6-MANIFEST"
+                 (diagnostic-id
+                  #(bootstrap/js-ts-backend-validate-manifest!
+                    "effect-tamper.gravity"
+                    (-> (:manifest left)
+                        (dissoc :manifest-hash)
+                        (assoc-in [:effects :declared] #{}))))))
+          (is (= "B6-MANIFEST"
+                 (diagnostic-id
+                  #(bootstrap/js-ts-backend-validate-manifest!
+                    "coordinated-effect-tamper.gravity"
+                    (-> (:manifest left)
+                        (dissoc :manifest-hash)
+                        (assoc-in [:module :side-effects] false)
+                        (assoc :host-globals []))))))
+          (is (= "B6-MANIFEST"
+                 (diagnostic-id
+                  #(bootstrap/js-ts-backend-validate-manifest!
+                    "safety-tamper.gravity"
+                    (-> (:manifest left)
+                        (dissoc :manifest-hash)
+                        (assoc-in [:safety :mode] :unsafe))))))
+          (is (= (:manifest left)
+                 (edn/read-string (slurp (:manifest paths)))))
+          (is (= (:provenance left)
+                 (edn/read-string (slurp (:provenance paths)))))
+          (is (= (:source (:provenance left))
+                 nil)))))))
+
+(deftest hosted-js-ts-backend-preserves-empty-stdout-without-host-authority
+  (let [source-text
+        (str "(ns js.target.empty (:profile :hosted) (:target :js-ts) "
+             "(:effects #{}) (:capabilities #{}))\n"
+             "(defn main [] (do))\n")
+        artifact (bootstrap/js-ts-backend-source-artifact
+                  "empty.gravity" source-text {:target :js})
+        overdeclared-text
+        (str "(ns js.target.empty-authorized (:profile :hosted) "
+             "(:target :js-ts) (:effects #{:io/write}) "
+             "(:capabilities #{:io/stdout}))\n"
+             "(defn main [] (do))\n")
+        overdeclared
+        (bootstrap/js-ts-backend-source-artifact
+         "empty-authorized.qst" overdeclared-text {:target :js-ts})]
+    (is (= "" (:compiled-execution-output artifact)))
+    (is (= [] (:compiled-execution-output-bytes artifact)))
+    (is (= [] (get-in artifact [:manifest :host-globals])))
+    (is (= #{} (get-in artifact [:manifest :effects :declared])))
+    (is (= #{} (set (get-in artifact [:manifest :capabilities]))))
+    (is (not (str/includes? (:javascript-source artifact)
+                            "node:process")))
+    (is (false? (get-in artifact [:manifest :module :side-effects])))
+    (is (str/includes? (:package-metadata artifact)
+                       "\"sideEffects\":false"))
+    (is (not (str/includes? (:source-map artifact)
+                            "\"mappings\":\"\"")))
+    (is (str/includes? (:source-map artifact)
+                       "\"generatedOrigins\""))
+    (is (= :passed
+           (get-in artifact [:manifest :conformance :node-check])))
+    (is (= :passed
+           (get-in artifact [:manifest :conformance
+                             :stage2-differential])))
+    (is (= "" (:compiled-execution-output overdeclared)))
+    (is (= [] (get-in overdeclared [:manifest :host-globals])))
+    (is (false? (get-in overdeclared
+                        [:manifest :module :side-effects])))
+    (is (= #{:io/stdout}
+           (set (get-in overdeclared [:manifest :capabilities]))))
+    (let [manifest (dissoc (:manifest artifact) :manifest-hash)
+          mutations
+          [(assoc-in manifest [:target :runtime-version] nil)
+           (assoc manifest :content-hashes {})
+           (assoc-in manifest [:content-hashes :javascript]
+                     "sha256:not-a-digest")
+           (assoc-in manifest [:module :package-boundary] :ambient)
+           (assoc manifest :nullish-policy :unchecked)
+           (assoc-in manifest [:input :target-eligibility :status]
+                     :rejected)]]
+      (doseq [mutated mutations]
+        (is (= "B6-MANIFEST"
+               (diagnostic-id
+                #(bootstrap/js-ts-backend-validate-manifest!
+                  "tampered-manifest.gravity" mutated))))))))
+
+(deftest hosted-js-ts-backend-rejects-unsupported-surface-before-output
+  (let [three-argument-source
+        (str "(ns js.target.reject (:profile :hosted) (:target :js-ts) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"a\" \"b\" \"c\"))\n")
+        bad-str-source
+        (str "(ns js.target.reject-str (:profile :hosted) (:target :js-ts) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println (str \"a\" \"b\" \"c\")))\n")
+        incompatible-source
+        (str "(ns js.target.incompatible (:profile :hosted) (:target :c) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"wrong-target\"))\n")
+        unsafe-source
+        (str "(ns js.target.unsafe (:profile :hosted) (:target :js-ts) "
+             "(:effects #{}) (:capabilities #{}) (:safety :unsafe))\n"
+             "(defn main [] (do))\n")]
+    (with-temp-directory
+      "gravity-js-ts-rejected-"
+      (fn [directory]
+        (let [output (.toString (.resolve directory "program"))
+              three (diagnostic-data
+                     #(bootstrap/js-ts-backend-source-artifact
+                       "reject.gravity" three-argument-source
+                       {:target :js :output-path output :emit? true}))
+              bad-str (diagnostic-data
+                       #(bootstrap/js-ts-backend-source-artifact
+                         "reject.qst" bad-str-source
+                         {:target :js-ts :output-path output :emit? true}))
+              incompatible
+              (diagnostic-data
+               #(bootstrap/js-ts-backend-source-artifact
+                 "incompatible.gravity" incompatible-source
+                 {:target :js-ts :output-path output :emit? true}))
+              unsafe-artifact
+              (diagnostic-data
+               #(bootstrap/js-ts-backend-source-artifact
+                 "unsafe.gravity" unsafe-source
+                 {:target :js-ts :output-path output :emit? true}))
+              paths (bootstrap/js-ts-backend-output-paths output)]
+          (is (= "C14-UNSUPPORTED" (:id three)))
+          (is (= :gravity-runtime-println-arity (:missing-fact three)))
+          (is (= "L2-BUILTIN-ARITY" (:id bad-str)))
+          (is (= 3 (:actual-arity bad-str)))
+          (is (= "C14-PROFILE" (:id incompatible)))
+          (is (= :target-constraint-compatibility
+                 (:missing-fact incompatible)))
+          (is (= "C14-PROFILE" (:id unsafe-artifact)))
+          (is (= :safe-js-ts-module (:missing-fact unsafe-artifact)))
+          (doseq [path (vals paths)]
+            (is (not (.exists (java.io.File. path)))))
+          (.mkdirs (java.io.File. output))
+          (spit (:javascript paths) "caller-owned")
+          (let [collision
+                (diagnostic-data
+                 #(bootstrap/js-ts-backend-source-artifact
+                   "collision.gravity"
+                   (str "(ns js.target.collision (:profile :hosted) "
+                        "(:target :js-ts) (:effects #{:io/write}) "
+                        "(:capabilities #{:io/stdout}))\n"
+                        "(defn main [] (println \"ok\"))\n")
+                   {:target :js :output-path output :emit? true}))]
+            (is (= "C14-INPUT" (:id collision)))
+            (is (= :fresh-output-path (:missing-fact collision)))
+            (is (= "caller-owned" (slurp (:javascript paths))))
+            (doseq [[kind path] (dissoc paths :javascript)]
+              (is (not (.exists (java.io.File. path))) (name kind))))
+          (let [blocked-parent (.resolve directory "blocked-parent")
+                blocked-output (.toString
+                                (.resolve blocked-parent "artifact"))
+                valid-source
+                (str "(ns js.target.blocked-parent (:profile :hosted) "
+                     "(:target :js-ts) (:effects #{:io/write}) "
+                     "(:capabilities #{:io/stdout}))\n"
+                     "(defn main [] (println \"ok\"))\n")]
+            (spit (.toFile blocked-parent) "not-a-directory")
+            (let [blocked
+                  (diagnostic-data
+                   #(bootstrap/js-ts-backend-source-artifact
+                     "blocked-parent.gravity" valid-source
+                     {:target :js-ts :output-path blocked-output
+                      :emit? true}))]
+              (is (= "C14-INPUT" (:id blocked)))
+              (is (= :output-parent-directory (:missing-fact blocked)))
+              (is (= "not-a-directory" (slurp (.toFile blocked-parent))))
+              (doseq [path
+                      (vals (bootstrap/js-ts-backend-output-paths
+                             blocked-output))]
+                (is (not (.exists (java.io.File. path))))))))))
+    (let [manifest-data
+          (diagnostic-data
+           #(bootstrap/js-ts-backend-validate-manifest!
+             "manifest.gravity"
+             {:artifact :gravity/js-ts-backend-manifest}))]
+      (is (= "B6-MANIFEST" (:id manifest-data)))
+      (is (= :complete-js-ts-manifest (:missing-fact manifest-data))))))
+
+(deftest hosted-js-ts-backend-propagates-stage2-runtime-and-driver-failures
+  (let [source-text
+        (str "(ns js.target.integrity (:profile :hosted) (:target :js-ts) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"integrity\"))\n")
+        missing-runtime
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/c-backend-stage2-runtime-artifact-source-path
+             (fn [_] "missing-stage2-runtime.gravity")]
+            (bootstrap/js-ts-backend-source-artifact
+             "integrity.gravity" source-text {:target :js})))
+        original-driver @#'bootstrap/p15-s23-stage2-compiler-driver-run-source
+        tampered-driver
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/p15-s23-stage2-compiler-driver-run-source
+             (fn [& args]
+               (assoc (apply original-driver args)
+                      :accepted-output-equivalent? false))]
+            (bootstrap/js-ts-backend-source-artifact
+             "integrity.qst" source-text {:target :js-ts})))]
+    (is (= "P15S23X001" (:id missing-runtime)))
+    (is (= :runtime-artifact-source (:missing-fact missing-runtime)))
+    (is (= "P15S23Y003" (:id tampered-driver)))
+    (is (= :p15-s23-stage2-compiler-driver
+           (:diagnostic-family tampered-driver)))))
+
+(deftest public-current-source-js-ts-target-routes-aliases-from-unrelated-cwd
+  (let [source-text
+        (str "(ns js.target.public (:profile :hosted) (:target :js-ts) "
+             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
+             "(defn main [] (println \"public-js\"))\n")
+        bin (.getCanonicalPath (java.io.File. "bin/gravity"))]
+    (is (= :js-ts
+           (:target (bootstrap/p18-t04-parse-compile-request
+                     ["compile" "x.gravity" "--target" "js"
+                      "-o" "target/x"]))))
+    (is (= :js-ts
+           (:target (bootstrap/p18-t04-parse-compile-request
+                     ["compile" "x.qst" "--target" "js-ts"
+                      "-o" "target/x"]))))
+    (is (= :c
+           (:target (bootstrap/p18-t04-parse-compile-request
+                     ["compile" "x.gravity" "--target" "c"
+                      "-o" "target/x"]))))
+    (is (= :jvm
+           (:target (bootstrap/p18-t04-parse-compile-request
+                     ["compile" "x.gravity" "--target" "jvm"
+                      "-o" "target/x"]))))
+    (with-temp-source
+      ".gravity" source-text
+      (fn [gravity-path]
+        (with-temp-source
+          ".qst" source-text
+          (fn [qst-path]
+            (with-temp-directory
+              "gravity-js-ts-public-cwd-"
+              (fn [directory]
+                (let [nonce (str (System/nanoTime))
+                      gravity-output (str "target/public-js-ts-" nonce
+                                          "-gravity")
+                      qst-output (str "target/public-js-ts-" nonce "-qst")
+                      one-segment-output (str "jsout-" nonce)
+                      gravity-result
+                      (run-process-in-directory
+                       (.toString directory)
+                       {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                        "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
+                                    (System/getenv "PATH"))}
+                       [bin "compile" gravity-path
+                        "--target" "js" "--lowering" "runtime-derived"
+                        "-o" gravity-output])
+                      qst-result
+                      (run-process-in-directory
+                       (.toString directory)
+                       {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                        "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
+                                    (System/getenv "PATH"))}
+                       [bin "compile" qst-path
+                        "--target" "js-ts" "-o" qst-output])
+                      one-segment-result
+                      (run-process-in-directory
+                       (.toString directory)
+                       {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                        "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
+                                    (System/getenv "PATH"))}
+                       [bin "compile" gravity-path
+                        "--target" "js" "-o" one-segment-output])
+                      gravity-artifact (when (zero? (:exit gravity-result))
+                                         (edn/read-string
+                                          (:out gravity-result)))
+                      qst-artifact (when (zero? (:exit qst-result))
+                                     (edn/read-string (:out qst-result)))
+                      one-segment-artifact
+                      (when (zero? (:exit one-segment-result))
+                        (edn/read-string (:out one-segment-result)))
+                      gravity-module
+                      (.getCanonicalPath
+                       (java.io.File.
+                        (:javascript
+                         (bootstrap/js-ts-backend-output-paths
+                          gravity-output))))
+                      qst-module
+                      (.getCanonicalPath
+                       (java.io.File.
+                        (:javascript
+                         (bootstrap/js-ts-backend-output-paths qst-output))))
+                      one-segment-module
+                      (.getCanonicalPath
+                       (java.io.File.
+                        (:javascript
+                         (bootstrap/js-ts-backend-output-paths
+                          one-segment-output))))]
+                  (is (zero? (:exit gravity-result)) (:err gravity-result))
+                  (is (zero? (:exit qst-result)) (:err qst-result))
+                  (is (zero? (:exit one-segment-result))
+                      (:err one-segment-result))
+                  (is (= :gravity/js-ts-backend-artifact
+                         (:kind gravity-artifact)))
+                  (is (= (:artifact-id gravity-artifact)
+                         (:artifact-id qst-artifact)))
+                  (is (= :js-ts
+                         (bootstrap/js-ts-backend-canonical-target :js)))
+                  (is (= "public-js\n"
+                         (:out (run-bin "node" gravity-module))))
+                  (is (= "public-js\n"
+                         (:out (run-bin "node" qst-module))))
+                  (is (= "public-js\n"
+                         (:out (run-bin "node" one-segment-module))))
+                  (doseq [path
+                          (concat
+                           (vals (get-in gravity-artifact
+                                         [:provenance :actual-paths :outputs]))
+                           (vals (get-in qst-artifact
+                                         [:provenance :actual-paths :outputs]))
+                           (vals (get-in one-segment-artifact
+                                         [:provenance :actual-paths :outputs])))]
+                    (.delete (java.io.File. path)))
+                  (.delete (java.io.File. gravity-output))
+                  (.delete (java.io.File. qst-output))
+                  (.delete (java.io.File. one-segment-output)))))))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]
