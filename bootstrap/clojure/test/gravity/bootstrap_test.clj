@@ -8302,8 +8302,136 @@
 	    (is (false?
 	         (get-in proof
 	                 [:limitations :clojure-host-primitive-boundary?])))
-	    (is (= :implement_whole_language_compiler_stage_without_clojure_seed
-	           (get-in proof [:limitations :next-required-capability])))))
+    (is (= :implement_whole_language_compiler_stage_without_clojure_seed
+           (get-in proof [:limitations :next-required-capability])))))
+
+(deftest p15-s23-stage2-source-front-end-ingress-preserves-c2-c3-products
+  (let [source
+        (str "(ns ingress.probe (:profile :hosted) (:target :jvm))\n"
+             "^{:doc \"héllo 🙂\"} (defn keep [x] x)\n"
+             "(quote (nested [β #{:a :b}])) @state \\λ #inst \"2020-01-01\" 1/0")
+        compiler-source
+        (bootstrap/p15-s23-compiler-source-form-record
+         bootstrap/p15-s23-compiler-source-path)
+        front-end
+        (bootstrap/p15-s23-compiler-def-value
+         bootstrap/p15-s23-compiler-source-path
+         (:forms compiler-source)
+         'p15-s23-stage2-source-front-end)]
+    (let [observed-forms (atom {})]
+    (doseq [suffix [".gravity" ".qst"]]
+      (with-temp-source
+        suffix source
+        (fn [path]
+          (let [products
+                (bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                 path source)
+                records (:records products)
+                c2 (:c2-reader-artifact products)
+                source-unit (:source-unit-record products)
+                roots (:top-level-form-ids products)
+                forms-by-id (into {} (map (juxt :form-id identity)
+                                           (:form-tree products)))
+                ratio (last records)
+                module-record
+                (bootstrap/p15-s23-stage2-front-end-source-module-record
+                 front-end path source)
+                same-root-a
+                (bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                 "/root-a/probe.gravity" source)
+                same-root-b
+                (bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                 "/root-b/probe.gravity" source)]
+            (swap! observed-forms assoc suffix (:forms products))
+            (is (= :complete (:status products)))
+            (is (= path (:source-path products)))
+            (is (= path (:path source-unit)))
+            (is (= roots (mapv :form-id records)))
+            (is (= roots (mapv #(get-in % [:c3-syntax-object :source :form-id])
+                               records)))
+            (is (= (count (:token-stream c2))
+                   (count (:token-stream products))))
+            (is (= (count (:form-tree c2))
+                   (count (:form-tree products))))
+            (is (every? #(contains? % :parent-form-id)
+                        (:form-tree products)))
+            (is (some #(= :unicode-scalar
+                          (get-in % [:span :start :column-unit]))
+                      (:token-stream products)))
+            (is (some #(= "héllo 🙂"
+                          (get-in % [:metadata :doc]))
+                      (:form-tree products)))
+            (is (= :ratio (get-in ratio [:form :kind])))
+            (is (= :deferred
+                   (get-in ratio [:form :semantic-validation])))
+            (is (re-matches #"sha256:[0-9a-f]{64}"
+                            (:c3-artifact-id products)))
+            (is (true? (get-in products
+                               [:c3-capability-proof
+                                :reader-products-authentic?])))
+            (is (= (:c3-artifact-id same-root-a)
+                   (:c3-artifact-id same-root-b)))
+            (is (= :complete (:status module-record)))
+            (is (= (:form-tree products)
+                   (:form-tree (:reader-products module-record))))
+            (is (= (:token-stream products)
+                   (:token-stream (:reader-products module-record))))
+            (is (= (:c3-artifact-id products)
+                   (:c3-artifact-id module-record)))
+            (is (every? #(contains? forms-by-id %) roots))))))
+      (is (= (get @observed-forms ".gravity")
+             (get @observed-forms ".qst"))))))
+
+(deftest p15-s23-stage2-source-front-end-ingress-preserves-rejections
+  (doseq [suffix [".gravity" ".qst"]
+          [source expected] [["1e2e3" "STAGE1READER007"]
+                             ["#{:dup :dup}" "C2-SET"]
+                             ["{:a 1 :b}" "C2-MAP"]]]
+    (with-temp-source
+      suffix source
+      (fn [path]
+        (let [diagnostic
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                 path source))]
+          (is (= expected (:id diagnostic)))
+          (is (= path (get-in diagnostic [:source-span :source])))
+          (is (map? (:facts diagnostic)))
+          (is (string? (:diagnostic-id diagnostic)))
+          (is (seq (:origin-chain diagnostic))))))))
+
+(deftest p15-s23-stage2-source-front-end-ingress-preserves-line-endings
+  (doseq [suffix [".gravity" ".qst"]
+          newline ["\r" "\n" "\r\n"]]
+    (let [source (str "(ns ingress.lines (:profile :hosted))"
+                      newline
+                      "1/0")]
+      (with-temp-source
+        suffix source
+        (fn [path]
+          (let [products
+                (bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                 path source)
+                ratio (last (:records products))
+                ratio-token (last (filter #(= :ratio (:kind %))
+                                          (:token-stream products)))]
+            (is (= :complete (:status products)))
+            (is (= 2 (get-in ratio [:span :start :line])))
+            (is (= 1 (get-in ratio [:span :start :column])))
+            (is (= :unicode-scalar
+                   (get-in ratio-token [:span :start :column-unit])))
+            (is (= "1/0" (:raw ratio-token)))
+            (is (= :deferred
+                   (get-in ratio [:form :semantic-validation])))))))))
+
+(deftest p15-s23-stage2-source-front-end-ingress-fails-closed-on-reader-rule-gap
+  (let [diagnostic
+        (diagnostic-id
+         #(bootstrap/p15-s23-stage2-front-end-source-module-record
+           {:reader-rules {:engine :missing}}
+           "/reader-gap.gravity"
+           "(ns ingress.gap (:profile :hosted)) 1/0"))]
+    (is (= "P15S23F002" diagnostic))))
 
 (deftest p15-s23-stage2-source-front-end-rejects-gaps-and-overclaim
   (let [artifact

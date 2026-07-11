@@ -95179,15 +95179,92 @@
                                      :policy :hygienic}))))
       (assoc syntax :phase :macro-expanded))))
 
+(defn p15-s23-stage2-c2-c3-front-end-products
+  "Build the stage2 source-front-end view from the authoritative C2/C3
+  reader products.  The old P15 parser remains available for its direct
+  compatibility probes, but stage2 source ingress must not re-read source
+  through that simplified parser."
+  [source-path source-text]
+  (let [c3-artifact (compiler-c3-syntax-source-artifact
+                     source-path source-text)
+        c2-artifact (:c2-reader-artifact c3-artifact)
+        root-form-ids (:top-level-form-ids c2-artifact)
+        form-by-id (into {} (map (juxt :form-id identity)
+                                 (:form-tree c2-artifact)))
+        token-by-id (into {} (map (juxt :token-id identity)
+                                  (:token-stream c2-artifact)))
+        rich-syntax (vec (take (count root-form-ids)
+                               (:syntax-object-stream c3-artifact)))
+        records
+        (mapv
+         (fn [syntax]
+           (let [form-id (get-in syntax [:source :form-id])
+                 token-id (get-in syntax [:source :token-id])
+                 form-record (get form-by-id form-id)
+                 token-record (get token-by-id token-id)]
+             {:form (get-in syntax [:form :value])
+              :span (get-in syntax [:span :primary])
+              :origin :source
+              :metadata (or (:metadata syntax) {})
+              :reader-origin
+              {:kind :stage2-source-front-end
+               :engine :gravity-stage2-c2-c3-ingress
+               :c3-origin (:origin syntax)}
+              :source-origin (vec (or (:origin syntax) []))
+              :generated-origin []
+              :form-id form-id
+              :token-id token-id
+              :source-id (get-in syntax [:source :source-id])
+              :c2-form-record form-record
+              :c2-token-record token-record
+              :c3-syntax-object syntax}))
+         rich-syntax)
+        forms (mapv :form records)]
+    {:artifact :gravity/p15-s23-stage2-c2-c3-front-end-products
+     :source-path source-path
+     :source-text source-text
+     :source-unit-record (:source-unit-record c2-artifact)
+     :source-unit-id (get-in c2-artifact [:source-unit-record :source-id])
+     :token-stream (:token-stream c2-artifact)
+     :form-tree (:form-tree c2-artifact)
+     :top-level-form-ids root-form-ids
+     :syntax-seed-stream (:syntax-seed-stream c2-artifact)
+     :reader-source-map (:reader-source-map c2-artifact)
+     :literal-decoding-records (:literal-decoding-records c2-artifact)
+     :semantic-error-deferment-record
+     (:semantic-error-deferment-record c2-artifact)
+     :reader-extension-invocation-records
+     (:reader-extension-invocation-records c2-artifact)
+     :reader-diagnostics (:reader-diagnostics c2-artifact)
+     :incremental-reader-hashes (:incremental-reader-hashes c2-artifact)
+     :reader-product-integrity (:reader-product-integrity c2-artifact)
+     :c2-reader-artifact (:c2-reader-artifact c3-artifact)
+     :c3-artifact-id (:artifact-id c3-artifact)
+     :c3-syntax-object-stream rich-syntax
+     :c3-capability-proof (:capability-based-proof c3-artifact)
+     :records records
+     :forms forms
+     :status :complete}))
+
 (defn p15-s23-stage2-front-end-source-module-record
   [front-end source-path source-text]
-  (let [records
-        (p15-s23-stage2-front-end-read-source-form-records
-         front-end source-path source-text)
-        forms (mapv :form records)
+  (when-not (= :gravity-stage2-reader-rules-v1
+               (get-in front-end [:reader-rules :engine]))
+    (p15-s23-stage2-source-front-end-fail!
+     "P15S23F002" source-path front-end
+     {:missing-fields [:reader-rules :engine]}))
+  (let [reader-products
+        (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+        records (:records reader-products)
+        forms (:forms reader-products)
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
-        syntax (syntax-object-stream source-path records module)
+        syntax (mapv #(assoc %
+                             :namespace (:module module)
+                             :profile (:profile module)
+                             :phase :read
+                             :hygiene [])
+                     records)
         expanded-syntax
         (mapv #(p15-s23-stage2-front-end-expand-form front-end %) syntax)
         body-syntax (subvec expanded-syntax 1)
@@ -95210,7 +95287,23 @@
      :records records
      :forms forms
      :module (assoc module :forms expanded-forms)
+     :reader-products reader-products
+     :source-unit-record (:source-unit-record reader-products)
+     :token-stream (:token-stream reader-products)
+     :form-tree (:form-tree reader-products)
+     :top-level-form-ids (:top-level-form-ids reader-products)
+     :syntax-seed-stream (:syntax-seed-stream reader-products)
+     :reader-source-map (:reader-source-map reader-products)
+     :literal-decoding-records (:literal-decoding-records reader-products)
+     :semantic-error-deferment-record
+     (:semantic-error-deferment-record reader-products)
+     :reader-diagnostics (:reader-diagnostics reader-products)
+     :incremental-reader-hashes (:incremental-reader-hashes reader-products)
+     :reader-product-integrity (:reader-product-integrity reader-products)
+     :c3-artifact-id (:c3-artifact-id reader-products)
+     :c3-capability-proof (:c3-capability-proof reader-products)
      :syntax-object-stream syntax
+     :c3-syntax-object-stream (:c3-syntax-object-stream reader-products)
      :expanded-syntax-object-stream expanded-syntax
      :expanded-forms expanded-forms
      :macro-expansion-trace trace
@@ -95348,7 +95441,23 @@
      :accepted-output-equivalent? output-equivalent?
      :stage2-front-end-record
      (select-keys front-end-record
-                  [:artifact :source-path :source-id :status])
+                  [:artifact :source-path :source-id :status
+                   :source-unit-record :token-stream :form-tree
+                   :top-level-form-ids :syntax-seed-stream
+                   :reader-source-map :literal-decoding-records
+                   :semantic-error-deferment-record :reader-diagnostics
+                   :incremental-reader-hashes :reader-product-integrity
+                   :c3-artifact-id :c3-capability-proof
+                   :c3-syntax-object-stream])
+     :stage2-reader-products
+     (select-keys front-end-record
+                  [:reader-products :source-unit-record :token-stream
+                   :form-tree :top-level-form-ids :syntax-seed-stream
+                   :reader-source-map :literal-decoding-records
+                   :semantic-error-deferment-record
+                   :reader-extension-invocation-records
+                   :reader-diagnostics :incremental-reader-hashes
+                   :reader-product-integrity :c3-artifact-id])
      :status (if complete? :complete :failed)}))
 
 (defn p15-s23-stage2-front-end-executor-rejected-records
