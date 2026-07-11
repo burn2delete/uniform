@@ -23,12 +23,13 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Bind a Gravity-authored stage2 runtime artifact for value formatting, with pinned function shape, path-neutral identity, and fail-closed tamper handling.
 - [completed] Route two-argument `str` through the Gravity-authored runtime artifact, with explicit arity rejection and residual bridge provenance.
 - [completed] Route single-argument `println` through the Gravity-authored runtime artifact, preserving the multi-argument host boundary and IO capability contract.
+- [completed] Route two-argument `println` through the Gravity-authored runtime artifact, preserving exact space/newline semantics and a host boundary only above two arguments.
 - [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
-- [pending] Move the next runtime instruction/effect capability behind Gravity-authored functions, then retire the generic Clojure runtime bridge one capability at a time.
+- [pending] Add the next real executable target through the stage2 driver while continuing to retire the generic Clojure runtime bridge.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `abbf743` (`Route single-argument println through Gravity runtime`).
+- Main: `89d5e4b` (`Route two-argument println through Gravity runtime`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -49,13 +50,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - A Gravity-authored `bootstrap/gravity/p15_s23/runtime.gravity` artifact now supplies the runtime value-formatting function used by runtime-derived `println`; it is compiled through the stage2 plan emitter, invoked through a generic host bridge whose residual boundary is explicit, and protected by pinned function-shape, source/hash, cross-root, and semantic-tamper checks. This is one runtime capability, not a self-hosted runtime.
 - Two-argument `str` now routes through a second Gravity-authored runtime function with pinned shape and explicit arity rejection for unsupported forms; the generic bridge remains recorded as residual and the broader Clojure runtime executor is still trusted.
 - Single-argument `println` now routes through a Gravity-authored effectful runtime function with exact `:io/write`/`:io/stdout` validation and pinned shape; multi-argument printing remains explicitly host-bound until a variadic effect contract is authored.
+- Two-argument `println` now routes through a Gravity-authored effectful runtime function and preserves `left right\n` in both the stage2 oracle and compiled C; only arities above two remain host-compatible.
 
 ## Active slice
 
 - Owner: next runtime-derived semantic expansion worker.
-- Scope: move the next runtime instruction/effect capability behind Gravity-authored functions while preserving a small explicit generic host runner only as comparison evidence; then remove that bridge for the covered capability.
+- Scope: select and implement the next executable backend target through the stage2 driver for the already-proven runtime subset, preserving accepted/rejected behavior, deterministic provenance, and explicit seed boundaries.
 - Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
-- Next self-hosting gate: execute one additional runtime instruction/effect through Gravity-authored functions and reduce the generic bridge surface, with output/diagnostic equivalence and an explicitly smaller residual seed boundary.
+- Next gate: add a second real public executable backend (prefer the documented JS/TS hosted target if the contract inventory confirms it) and prove parity with the C route before expanding further runtime semantics.
 
 ## Completion gates
 
