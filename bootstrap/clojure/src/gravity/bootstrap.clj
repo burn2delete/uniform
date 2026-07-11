@@ -92337,36 +92337,36 @@
                :complete
                :failed)}))
 
-(declare p15-s23-stage2-compile-expr)
+(declare p15-s23-stage2-seed-compile-expr)
 
-(defn p15-s23-stage2-compile-collection
+(defn p15-s23-stage2-seed-compile-collection
   [emitter module locals form]
   (let [collection-rules (:collection-rules emitter)]
     (cond
       (vector? form)
       {:op (get-in collection-rules [:vector :op] :vector-literal)
-       :items (mapv #(p15-s23-stage2-compile-expr emitter module locals %)
+       :items (mapv #(p15-s23-stage2-seed-compile-expr emitter module locals %)
                     form)}
 
       (map? form)
       {:op (get-in collection-rules [:map :op] :map-literal)
        :entries (mapv (fn [[k v]]
-                        {:key (p15-s23-stage2-compile-expr
+                        {:key (p15-s23-stage2-seed-compile-expr
                                emitter module locals k)
-                         :value (p15-s23-stage2-compile-expr
+                         :value (p15-s23-stage2-seed-compile-expr
                                  emitter module locals v)})
                       (sort-by (fn [[k v]] (pr-str [k v])) form))}
 
       (set? form)
       {:op (get-in collection-rules [:set :op] :set-literal)
-       :items (mapv #(p15-s23-stage2-compile-expr emitter module locals %)
+       :items (mapv #(p15-s23-stage2-seed-compile-expr emitter module locals %)
                     (sort-by pr-str form))}
 
       :else
       {:op (get-in collection-rules [:literal :op] :literal)
        :value form})))
 
-(defn p15-s23-stage2-compile-let
+(defn p15-s23-stage2-seed-compile-let
   [emitter module locals bindings body]
   (when-not (and (vector? bindings) (even? (count bindings)))
     (fail! "L2-LET-BINDING"
@@ -92388,16 +92388,16 @@
         (recur (conj scope name)
                (conj compiled
                      {:name name
-                      :expr (p15-s23-stage2-compile-expr
+                      :expr (p15-s23-stage2-seed-compile-expr
                              emitter module scope expr)})
                (rest pairs)))
       {:op (get-in emitter [:special-form-rules 'let :op] :let)
        :bindings compiled
-       :body (mapv #(p15-s23-stage2-compile-expr
+       :body (mapv #(p15-s23-stage2-seed-compile-expr
                      emitter module scope %)
                    body)})))
 
-(defn p15-s23-stage2-compile-expr
+(defn p15-s23-stage2-seed-compile-expr
   [emitter module locals form]
   (cond
     (symbol? form)
@@ -92419,26 +92419,26 @@
         {:op (:op special-rule)
          :effect (:effect special-rule)
          :capability (:capability special-rule)
-         :args (mapv #(p15-s23-stage2-compile-expr
+         :args (mapv #(p15-s23-stage2-seed-compile-expr
                        emitter module locals %)
                      (rest form))}
 
         (= callee 'do)
         {:op (:op special-rule)
-         :body (mapv #(p15-s23-stage2-compile-expr
+         :body (mapv #(p15-s23-stage2-seed-compile-expr
                        emitter module locals %)
                      (rest form))}
 
         (= callee 'if)
         (let [[_ test then else] form]
           {:op (:op special-rule)
-           :test (p15-s23-stage2-compile-expr emitter module locals test)
-           :then (p15-s23-stage2-compile-expr emitter module locals then)
-           :else (p15-s23-stage2-compile-expr emitter module locals else)})
+           :test (p15-s23-stage2-seed-compile-expr emitter module locals test)
+           :then (p15-s23-stage2-seed-compile-expr emitter module locals then)
+           :else (p15-s23-stage2-seed-compile-expr emitter module locals else)})
 
         (= callee 'let)
         (let [[_ bindings & body] form]
-          (p15-s23-stage2-compile-let emitter module locals bindings body))
+          (p15-s23-stage2-seed-compile-let emitter module locals bindings body))
 
         (= callee 'quote)
         {:op (:op special-rule) :value (second form)}
@@ -92452,14 +92452,14 @@
         (contains? builtin-functions callee)
         {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
          :function callee
-         :args (mapv #(p15-s23-stage2-compile-expr
+         :args (mapv #(p15-s23-stage2-seed-compile-expr
                        emitter module locals %)
                      (rest form))}
 
         (contains? (:function-table module) callee)
         {:op (get-in emitter [:call-rules :function-op] :function-call)
          :function callee
-         :args (mapv #(p15-s23-stage2-compile-expr
+         :args (mapv #(p15-s23-stage2-seed-compile-expr
                        emitter module locals %)
                      (rest form))}
 
@@ -92473,13 +92473,13 @@
                 :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage2 hosted-core subset."})))
 
     (or (vector? form) (map? form) (set? form))
-    (p15-s23-stage2-compile-collection emitter module locals form)
+    (p15-s23-stage2-seed-compile-collection emitter module locals form)
 
     :else
     {:op (get-in emitter [:collection-rules :literal :op] :literal)
      :value form}))
 
-(defn p15-s23-stage2-compile-function
+(defn p15-s23-stage2-seed-compile-function
   [emitter module {:keys [name params body] :as definition}]
   (assoc definition
          :binding {:name name
@@ -92494,9 +92494,311 @@
                                  :stage2-local)
                    :effects (:effects module)
                    :capabilities (:capabilities module)}
-         :instructions (mapv #(p15-s23-stage2-compile-expr
+         :instructions (mapv #(p15-s23-stage2-seed-compile-expr
                                emitter module (set params) %)
                              body)))
+
+(def p15-s23-stage2-compiler-artifact-source-relative-path
+  "bootstrap/gravity/p15_s23/emitter.gravity")
+
+(def p15-s23-stage2-compiler-artifact-function
+  'p15-s23-compile-function)
+
+(def p15-s23-stage2-compiler-artifact-expression-function
+  'p15-s23-compile-expr)
+
+(def p15-s23-stage2-compiler-artifact-collection-function
+  'p15-s23-compile-collection)
+
+(def p15-s23-stage2-compiler-artifact-let-function
+  'p15-s23-compile-let)
+
+(def p15-s23-stage2-compiler-artifact-builtins
+  '#{symbol? seq? vector? map? set? contains? even? set sort-by-pr-str})
+
+(def p15-s23-stage2-compiler-artifact-required-functions
+  {'p15-s23-compile-collection
+   {:arity 4 :params ['emitter 'module 'locals 'form]}
+   'p15-s23-compile-let
+   {:arity 5 :params ['emitter 'module 'locals 'bindings 'body]}
+   'p15-s23-compile-expr
+   {:arity 4 :params ['emitter 'module 'locals 'form]}
+   'p15-s23-compile-function
+   {:arity 3 :params ['emitter 'module 'definition]}})
+
+;; Filled with the canonical semantic function-plan hash after the source is
+;; compiled below.  This is intentionally pinned rather than merely recorded:
+;; a changed compiler function cannot silently become production lowering.
+(def p15-s23-stage2-compiler-artifact-expected-semantic-hash
+  "sha256:cc9c58b51a480a7479d06348aa64b87745f6dada7c805783978416e5123008e3")
+
+(def p15-s23-stage2-compiler-artifact-expected-source-content-hash
+  "sha256:575659c4455e8699e3914a95b7f9b6a2d3dbf46630925696ccdfeb0871ed441b")
+
+(def ^:dynamic *p15-s23-stage2-compiler-artifact-binding* nil)
+
+(declare p15-s23-stage2-runtime-execute-function)
+(declare c-backend-resolve-p15-s23-compiler-source-path)
+(declare c-backend-canonical-value)
+
+(defn p15-s23-stage2-compiler-artifact-source-path
+  []
+  (let [compiler-source (c-backend-resolve-p15-s23-compiler-source-path)
+        compiler-file (java.io.File. compiler-source)
+        sibling (java.io.File.
+                 (or (.getParentFile compiler-file)
+                     (java.io.File. "."))
+                 "emitter.gravity")]
+    (if (.isFile compiler-file)
+      (.getPath sibling)
+      p15-s23-stage2-compiler-artifact-source-relative-path)))
+
+(defn p15-s23-stage2-compiler-artifact-augmented-emitter
+  [emitter]
+  (update-in emitter [:call-rules :builtin-functions]
+             (fn [functions]
+               (vec (sort-by str
+                             (set/union (set functions)
+                                        p15-s23-stage2-compiler-artifact-builtins))))))
+
+(defn p15-s23-stage2-compiler-artifact-plan
+  [emitter artifact-source artifact-text]
+  (let [macro-artifact (macro-source-artifact artifact-source artifact-text)
+        module (assoc (:module macro-artifact)
+                      :forms (:expanded-forms macro-artifact))
+        function-table (stage0-function-table module)
+        module (assoc module :function-table function-table)
+        artifact-emitter
+        (p15-s23-stage2-compiler-artifact-augmented-emitter emitter)
+        functions
+        (into (sorted-map)
+              (map (fn [[name definition]]
+                     [name (p15-s23-stage2-seed-compile-function
+                            artifact-emitter module definition)]))
+              function-table)
+        instruction-summary
+        (apply merge-with +
+               (mapcat (fn [[_ function]]
+                         (map stage0-instruction-summary
+                              (:instructions function)))
+                       functions))
+        plan-base
+        {:kind :gravity/stage2-compiler-artifact-plan
+         :compiler-artifact-plan? true
+         :entrypoint 'main
+         :source {:sha256 (str "sha256:" (sha256-hex artifact-text))}
+         :compiler {:owner :gravity-source
+                    :stage :p15-s23-stage2-expression-lowering
+                    :compiled-by :clojure-stage0-seed
+                    :generic-bridge-residual? true}
+         :module (select-keys module
+                              [:module :profile :target :effects
+                               :capabilities :exports :safety])
+         :functions functions
+         :instruction-summary instruction-summary
+         :effect-summary {:declared (:effects module)
+                          :inferred #{}
+                          :capabilities (:capabilities module)}}]
+    (assoc plan-base
+           :plan-id (str "sha256:"
+                         (sha256-hex
+                          (pr-str (c-backend-canonical-value plan-base)))))))
+
+(defn p15-s23-stage2-compiler-artifact-semantic-input
+  [plan]
+  {:kind :gravity/p15-s23-stage2-expression-lowering-artifact
+   :module (select-keys (:module plan)
+                        [:module :profile :target :effects
+                         :capabilities :exports :safety])
+   :functions (c-backend-canonical-value (:functions plan))
+   :instruction-summary (:instruction-summary plan)
+   :effect-summary (:effect-summary plan)})
+
+(defn p15-s23-stage2-compiler-artifact-binding!
+  [emitter source-path target]
+  (let [artifact-source (p15-s23-stage2-compiler-artifact-source-path)]
+    (when-not (.isFile (java.io.File. artifact-source))
+      (p15-s23-stage2-plan-emitter-fail!
+       "P15S23Q001" artifact-source nil
+       {:requested-source source-path
+        :target target
+        :missing-fields [:compiler-artifact-source]
+        :missing-fact :stage2-expression-lowering-artifact}))
+    (let [artifact-text (slurp artifact-source)
+          plan
+          (try
+            (p15-s23-stage2-compiler-artifact-plan
+             emitter artifact-source artifact-text)
+            (catch clojure.lang.ExceptionInfo ex
+              (let [data (ex-data ex)]
+                (if (str/starts-with? (str (:id data)) "P15S23Q")
+                  (throw ex)
+                  (p15-s23-stage2-plan-emitter-fail!
+                   "P15S23Q002" artifact-source nil
+                   {:requested-source source-path
+                    :target target
+                    :missing-fact
+                    :stage2-expression-lowering-function-shape
+                    :cause-diagnostic (:id data)}))))
+            (catch Exception ex
+              (p15-s23-stage2-plan-emitter-fail!
+               "P15S23Q002" artifact-source nil
+               {:requested-source source-path
+                :target target
+                :missing-fact :stage2-expression-lowering-compilation
+                :cause-message (.getMessage ex)})))
+          functions (:functions plan)
+          observed-arities
+          (into {}
+                (map (fn [[name _]]
+                       [name (select-keys (get functions name)
+                                          [:arity :params])]))
+                p15-s23-stage2-compiler-artifact-required-functions)
+          missing-functions
+          (set (for [[name shape]
+                     p15-s23-stage2-compiler-artifact-required-functions
+                     :when (not= shape (get observed-arities name))]
+                 name))
+          semantic-hash
+          (str "sha256:"
+               (sha256-hex
+                (pr-str
+                 (c-backend-canonical-value
+                  (p15-s23-stage2-compiler-artifact-semantic-input plan)))))]
+      (when (seq missing-functions)
+        (p15-s23-stage2-plan-emitter-fail!
+         "P15S23Q002" artifact-source observed-arities
+         {:requested-source source-path
+          :target target
+          :missing-fact :stage2-expression-lowering-function-shape
+          :missing-functions (vec (sort-by str missing-functions))}))
+      (when-not (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                   semantic-hash)
+        (p15-s23-stage2-plan-emitter-fail!
+         "P15S23Q002" artifact-source semantic-hash
+         {:requested-source source-path
+          :target target
+          :missing-fact :stage2-expression-lowering-semantic-hash
+          :expected-semantic-hash
+          p15-s23-stage2-compiler-artifact-expected-semantic-hash
+          :actual-semantic-hash semantic-hash}))
+      (let [source-content-hash
+            (str "sha256:" (sha256-hex artifact-text))]
+        (when-not (= p15-s23-stage2-compiler-artifact-expected-source-content-hash
+                     source-content-hash)
+          (p15-s23-stage2-plan-emitter-fail!
+           "P15S23Q002" artifact-source source-content-hash
+           {:requested-source source-path
+            :target target
+            :missing-fact
+            :stage2-expression-lowering-source-content-hash
+            :expected-source-content-hash
+            p15-s23-stage2-compiler-artifact-expected-source-content-hash
+            :actual-source-content-hash source-content-hash})))
+      {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
+       :status :complete
+       :source-path artifact-source
+       :source-content-hash
+       p15-s23-stage2-compiler-artifact-expected-source-content-hash
+       :semantic-hash semantic-hash
+       :artifact-hash (str "sha256:"
+                           (sha256-hex
+                            (pr-str
+                             (c-backend-canonical-value
+                              {:source-content-hash
+                               (str "sha256:" (sha256-hex artifact-text))
+                               :semantic-hash semantic-hash}))))
+       :functions observed-arities
+       :plan plan
+       :invoked? true
+       :generic-bridge-residual? true
+       :clojure-seed-boundary? true
+       :self-hosted? false})))
+
+(defn p15-s23-stage2-compiler-artifact-invoke
+  [function args]
+  (let [binding *p15-s23-stage2-compiler-artifact-binding*
+        plan (:plan binding)
+        definition (get-in plan [:functions function])]
+    (when-not (and (= :complete (:status binding))
+                   (map? plan)
+                   (map? definition)
+                   (= (:arity definition) (count args)))
+      (p15-s23-stage2-plan-emitter-fail!
+       "P15S23Q002" (:source-path binding) definition
+       {:missing-fact :stage2-expression-lowering-invocation
+        :function function
+        :expected-arity (:arity definition)
+        :actual-arity (count args)}))
+    (p15-s23-stage2-runtime-execute-function
+     {:engine :gravity-stage2-compiler-artifact-host-runner
+      :compiler-artifact-plan? true}
+     plan function args)))
+
+(defn p15-s23-stage2-compiler-result!
+  [module result]
+  (if (= :complete (:status result))
+    (:value result)
+    (let [id (:diagnostic result)
+          facts (:facts result)]
+      (case id
+        "L2-UNKNOWN-SYMBOL"
+        (fail! id "stage2 plan emitter cannot resolve symbol"
+               {:source-span {:source (:source-path module)}
+                :symbol (:symbol facts)
+                :remediation "Define the symbol or stay within the stage2 hosted-core subset."})
+        "L2-LET-BINDING"
+        (fail! id
+               (if (contains? facts :binding)
+                 "let binding name must be a symbol"
+                 "let requires an even binding vector")
+               (merge {:source-span {:source (:source-path module)}
+                       :remediation
+                       (if (contains? facts :binding)
+                         "Bind symbols in stage2 let forms."
+                         "Use pairs of local names and expressions in let.")}
+                      facts))
+        "P4-HOST-REFLECTION"
+        (fail! id "host reflection is not implemented in stage2 plan emission"
+               {:source-span {:source (:source-path module)}
+                :remediation "Remove host reflection from the stage2 executable subset."})
+        (fail! (or id "L2-UNKNOWN-CORE-FORM")
+               "stage2 plan emitter cannot compile this form"
+               {:source-span {:source (:source-path module)}
+                :operator (:operator facts)
+                :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage2 hosted-core subset."})))))
+
+(defn p15-s23-stage2-compile-collection
+  [emitter module locals form]
+  (p15-s23-stage2-compiler-result!
+   module
+   (p15-s23-stage2-compiler-artifact-invoke
+    p15-s23-stage2-compiler-artifact-collection-function
+    [emitter module locals form])))
+
+(defn p15-s23-stage2-compile-let
+  [emitter module locals bindings body]
+  (p15-s23-stage2-compiler-result!
+   module
+   (p15-s23-stage2-compiler-artifact-invoke
+    p15-s23-stage2-compiler-artifact-let-function
+    [emitter module locals bindings body])))
+
+(defn p15-s23-stage2-compile-expr
+  [emitter module locals form]
+  (p15-s23-stage2-compiler-result!
+   module
+   (p15-s23-stage2-compiler-artifact-invoke
+    p15-s23-stage2-compiler-artifact-expression-function
+    [emitter module locals form])))
+
+(defn p15-s23-stage2-compile-function
+  [emitter module definition]
+  (p15-s23-stage2-compiler-result!
+   module
+   (p15-s23-stage2-compiler-artifact-invoke
+    p15-s23-stage2-compiler-artifact-function
+    [emitter module definition])))
 
 (defn p15-s23-stage2-emitted-core-plan
   [emitter source-path source-text module]
@@ -92517,11 +92819,18 @@
         _ (validate-stage0-compiled-package! module)
         _ (validate-stage0-compiled-tooling! module)
         _ (validate-stage0-compiled-conformance! module)
-        functions (into (sorted-map)
-                        (map (fn [[name definition]]
-                               [name (p15-s23-stage2-compile-function
-                                      emitter module definition)]))
-                        function-table)
+        compiler-artifact-binding
+        (or *p15-s23-stage2-compiler-artifact-binding*
+            (p15-s23-stage2-compiler-artifact-binding!
+             emitter source-path (:target module)))
+        functions
+        (binding [*p15-s23-stage2-compiler-artifact-binding*
+                  compiler-artifact-binding]
+          (into (sorted-map)
+                (map (fn [[name definition]]
+                       [name (p15-s23-stage2-compile-function
+                              emitter module definition)]))
+                function-table))
         main-function (get functions 'main)
         _ (when-not main-function
             (fail! "L3-UNKNOWN-ALIAS"
@@ -92551,6 +92860,16 @@
                               (get-in emitter [:plan-shape :compiler])
                               {:rule-engine (:engine emitter)
                                :rule-source :p15-s23-stage2-plan-emitter
+                               :expression-lowering-owner :gravity-source
+                               :expression-lowering-artifact-hash
+                               (:artifact-hash compiler-artifact-binding)
+                               :expression-lowering-source-content-hash
+                               (:source-content-hash compiler-artifact-binding)
+                               :expression-lowering-semantic-hash
+                               (:semantic-hash compiler-artifact-binding)
+                               :expression-lowering-invoked? true
+                               :expression-lowering-generic-bridge-residual?
+                               true
                                :retirement-objective
                                :retire-clojure-seed})
                    :module (select-keys module
@@ -93246,6 +93565,14 @@
     (p15-s23-stage2-runtime-fail-call-arity!
      "L2-BUILTIN-ARITY" plan callee args "an even number of arguments")))
 
+(defn p15-s23-stage2-compiler-artifact-plan-context?
+  [plan]
+  (and (true? (:compiler-artifact-plan? plan))
+       (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+       (= :meta (get-in plan [:module :profile]))
+       (= :p15-s23-stage2-expression-lowering
+          (get-in plan [:compiler :stage]))))
+
 (defn p15-s23-stage2-runtime-invoke-builtin
   [plan callee args]
   (try
@@ -93305,7 +93632,70 @@
                (rest (first args)))
       count (do (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
-                (count (first args))))
+                (count (first args)))
+      symbol? (do
+                (p15-s23-stage2-runtime-assert-exact-arity!
+                 plan callee args 1)
+                (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw (IllegalArgumentException.
+                          "compiler-only predicate outside compiler artifact")))
+                (symbol? (first args)))
+      seq? (do
+             (p15-s23-stage2-runtime-assert-exact-arity!
+              plan callee args 1)
+             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw (IllegalArgumentException.
+                       "compiler-only predicate outside compiler artifact")))
+             (seq? (first args)))
+      vector? (do
+                (p15-s23-stage2-runtime-assert-exact-arity!
+                 plan callee args 1)
+                (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw (IllegalArgumentException.
+                          "compiler-only predicate outside compiler artifact")))
+                (vector? (first args)))
+      map? (do
+             (p15-s23-stage2-runtime-assert-exact-arity!
+              plan callee args 1)
+             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw (IllegalArgumentException.
+                       "compiler-only predicate outside compiler artifact")))
+             (map? (first args)))
+      set? (do
+             (p15-s23-stage2-runtime-assert-exact-arity!
+              plan callee args 1)
+             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+               (throw (IllegalArgumentException.
+                       "compiler-only predicate outside compiler artifact")))
+             (set? (first args)))
+      contains? (do
+                  (p15-s23-stage2-runtime-assert-exact-arity!
+                   plan callee args 2)
+                  (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                    (throw (IllegalArgumentException.
+                            "compiler-only predicate outside compiler artifact")))
+                  (contains? (first args) (second args)))
+      even? (do
+              (p15-s23-stage2-runtime-assert-exact-arity!
+               plan callee args 1)
+              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                (throw (IllegalArgumentException.
+                        "compiler-only predicate outside compiler artifact")))
+              (even? (first args)))
+      set (do
+            (p15-s23-stage2-runtime-assert-exact-arity!
+             plan callee args 1)
+            (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+              (throw (IllegalArgumentException.
+                      "compiler-only collection primitive outside compiler artifact")))
+            (set (first args)))
+      sort-by-pr-str (do
+                       (p15-s23-stage2-runtime-assert-exact-arity!
+                        plan callee args 1)
+                       (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                         (throw (IllegalArgumentException.
+                                 "compiler-only ordering primitive outside compiler artifact")))
+                       (sort-by pr-str (first args))))
     (catch clojure.lang.ExceptionInfo ex
       (throw ex))
     (catch Exception ex
@@ -103058,6 +103448,37 @@
              {:source-declared-target source-declared-target
               :requested-target requested-target
               :missing-fact :target-constraint-compatibility}))
+          compiler-artifact-record
+          {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
+           :source-content-hash
+           (get-in plan
+                   [:compiler :expression-lowering-source-content-hash])
+           :semantic-hash
+           (get-in plan [:compiler :expression-lowering-semantic-hash])
+           :artifact-hash
+           (get-in plan [:compiler :expression-lowering-artifact-hash])
+           :functions p15-s23-stage2-compiler-artifact-required-functions
+           :invoked?
+           (true? (get-in plan
+                          [:compiler :expression-lowering-invoked?]))
+           :generic-bridge-residual?
+           (true? (get-in plan
+                          [:compiler
+                           :expression-lowering-generic-bridge-residual?]))
+           :clojure-seed-boundary? true
+           :self-hosted? false}
+          _ (when-not (and (:source-content-hash compiler-artifact-record)
+                           (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                              (:semantic-hash compiler-artifact-record))
+                           (:artifact-hash compiler-artifact-record)
+                           (:invoked? compiler-artifact-record)
+                           (:generic-bridge-residual?
+                            compiler-artifact-record))
+              (p15-s23-stage2-plan-emitter-fail!
+               "P15S23Q002" source-path compiler-artifact-record
+               {:target requested-target
+                :missing-fact
+                :stage2-expression-lowering-packet-binding}))
           stage2-driver-run
           (try
             (p15-s23-stage2-compiler-driver-run-source
@@ -103148,6 +103569,11 @@
        :requested-target requested-target
        :target-eligibility target-eligibility
        :plan plan
+       :stage2-compiler-artifact-record compiler-artifact-record
+       :provenance
+       {:actual-paths
+        {:stage2-expression-lowering-source
+         (p15-s23-stage2-compiler-artifact-source-path)}}
        :stage2-plan-emitter-rule stage2-rule
        :stage2-runtime-rule stage2-runtime-rule
        :stage2-compiler-driver-rule stage2-driver-rule
@@ -103501,6 +103927,12 @@
                     :forms (:expanded-forms macro-artifact)))
            stage2-rule
            (:stage2-plan-emitter-rule shared-packet)
+           stage2-compiler-artifact-record
+           (:stage2-compiler-artifact-record shared-packet)
+           stage2-compiler-artifact-source-path
+           (get-in shared-packet
+                   [:provenance :actual-paths
+                    :stage2-expression-lowering-source])
            stage2-runtime-rule (:stage2-runtime-rule shared-packet)
            stage2-driver-rule (:stage2-compiler-driver-rule shared-packet)
            plan (if runtime-derived?
@@ -103659,6 +104091,17 @@
                     :seedless-release? false}
              runtime-derived?
              (assoc :compiler-stage :p15-s23-stage2-compiler-driver
+                    :expression-lowering-artifact-hash
+                    (:artifact-hash stage2-compiler-artifact-record)
+                    :expression-lowering-source-content-hash
+                    (:source-content-hash stage2-compiler-artifact-record)
+                    :expression-lowering-semantic-hash
+                    (:semantic-hash stage2-compiler-artifact-record)
+                    :expression-lowering-invoked?
+                    (:invoked? stage2-compiler-artifact-record)
+                    :expression-lowering-generic-bridge-residual?
+                    (:generic-bridge-residual?
+                     stage2-compiler-artifact-record)
                     :compiler-engine (:driver-engine stage2-driver-rule)
                     :plan-emitter-stage :p15-s23-stage2-plan-emitter
                     :plan-emitter-engine (get-in plan [:compiler :rule-engine])
@@ -103803,6 +104246,8 @@
                     :final-release? false}
              runtime-derived?
              (assoc :compiler-stage :p15-s23-stage2-compiler-driver
+                    :expression-lowering-artifact
+                    (dissoc stage2-compiler-artifact-record :source-path)
                     :compiler-engine (:driver-engine stage2-driver-rule)
                     :plan-emitter-stage :p15-s23-stage2-plan-emitter
                     :plan-emitter-engine (get-in plan [:compiler :rule-engine])
@@ -103893,6 +104338,9 @@
                              (assoc :compiler-driver-rule-hash
                                     (:driver-rule-hash
                                      stage2-driver-rule)
+                                    :expression-lowering-artifact-hash
+                                    (:artifact-hash
+                                     stage2-compiler-artifact-record)
                                     :runtime-artifact-hash
                                     (:runtime-artifact-hash stage2-runtime-rule)))
            artifact-base {:kind :gravity/c-backend-artifact
@@ -103995,6 +104443,10 @@
                           :compiler-stage
                           (when runtime-derived?
                             :p15-s23-stage2-compiler-driver)
+                          :expression-lowering-artifact
+                          (when runtime-derived?
+                            (dissoc stage2-compiler-artifact-record
+                                    :source-path))
                           :compiler-engine
                           (when runtime-derived?
                             (:driver-engine stage2-driver-rule))
@@ -104031,8 +104483,13 @@
                           :source-map (assoc source-map
                                               :source-map-hash source-map-hash)
                           :source-map-hash source-map-hash
-                          :provenance (assoc provenance
-                                             :provenance-hash provenance-hash)
+                          :provenance
+                          (cond-> (assoc provenance
+                                         :provenance-hash provenance-hash)
+                            runtime-derived?
+                            (assoc :actual-paths
+                                   {:stage2-expression-lowering-source
+                                    stage2-compiler-artifact-source-path}))
                           :provenance-hash provenance-hash
                           :safety {:mode (get-in plan [:module :safety])
                                    :unsafe-islands []
@@ -104445,15 +104902,25 @@
         (and (= #{:source-content-hash :source-declared-target
                   :requested-backend-target :target-eligibility
                   :stage2-plan-hash :compiler-driver-rule-hash
-                  :runtime-rule-hash :runtime-artifact-hash}
+                  :runtime-rule-hash :runtime-artifact-hash
+                  :expression-lowering-artifact-hash
+                  :expression-lowering-source-content-hash
+                  :expression-lowering-semantic-hash
+                  :expression-lowering-invoked?
+                  :expression-lowering-generic-bridge-residual?}
                 (set (keys input)))
              (every? #(boolean
                        (re-matches #"sha256:[0-9a-f]{64}" (str %)))
                      [(:source-content-hash input)
                       (:stage2-plan-hash input)
+                      (:expression-lowering-artifact-hash input)
+                      (:expression-lowering-source-content-hash input)
+                      (:expression-lowering-semantic-hash input)
                       (:compiler-driver-rule-hash input)
                       (:runtime-rule-hash input)
                       (:runtime-artifact-hash input)])
+             (true? (:expression-lowering-invoked? input))
+             (true? (:expression-lowering-generic-bridge-residual? input))
              (= js-ts-backend-target (:requested-backend-target input))
              (= :accepted (:status eligibility))
              (= source-declared-target
@@ -104735,6 +105202,12 @@
      (let [node-version (js-ts-backend-node-version! source-path)
            packet (stage2-runtime-derived-packet
                    source-path source-text target)
+           compiler-artifact-record
+           (:stage2-compiler-artifact-record packet)
+           compiler-artifact-source-path
+           (get-in packet
+                   [:provenance :actual-paths
+                    :stage2-expression-lowering-source])
            driver-record (:stage2-compiler-driver-record packet)
            runtime-record (:stage2-runtime-execution-record packet)
            runtime-rule (:stage2-runtime-rule packet)
@@ -104834,6 +105307,16 @@
                     :requested-backend-target target
                     :target-eligibility (:target-eligibility packet)
                     :stage2-plan-hash plan-hash
+                    :expression-lowering-artifact-hash
+                    (:artifact-hash compiler-artifact-record)
+                    :expression-lowering-source-content-hash
+                    (:source-content-hash compiler-artifact-record)
+                    :expression-lowering-semantic-hash
+                    (:semantic-hash compiler-artifact-record)
+                    :expression-lowering-invoked?
+                    (:invoked? compiler-artifact-record)
+                    :expression-lowering-generic-bridge-residual?
+                    (:generic-bridge-residual? compiler-artifact-record)
                     :compiler-driver-rule-hash
                     (:driver-rule-hash driver-rule)
                     :runtime-rule-hash (:runtime-rule-hash runtime-rule)
@@ -104882,6 +105365,8 @@
             :schema-version 1
             :source-content-hash source-hash
             :stage2-plan-hash plan-hash
+            :stage2-expression-lowering-artifact
+            (dissoc compiler-artifact-record :source-path)
             :target-eligibility (:target-eligibility packet)
             :stage2-compiler-driver-rule-hash
             (:driver-rule-hash driver-rule)
@@ -104906,11 +105391,17 @@
            provenance
            (assoc provenance-input
                   :provenance-hash provenance-hash
-                  :actual-paths {:source source-path :outputs paths})
+                  :actual-paths
+                  {:source source-path
+                   :outputs paths
+                   :stage2-expression-lowering-source
+                   compiler-artifact-source-path})
            identity-input
            {:kind :gravity/js-ts-backend-artifact
             :source-content-hash source-hash
             :stage2-plan-hash plan-hash
+            :expression-lowering-artifact-hash
+            (:artifact-hash compiler-artifact-record)
             :javascript-hash js-hash
             :declaration-hash declaration-hash
             :source-map-hash source-map-hash
@@ -104930,6 +105421,8 @@
             :input-plan-id (:plan-id plan)
             :input-plan-hash plan-hash
             :target-eligibility (:target-eligibility packet)
+            :stage2-expression-lowering-artifact
+            (dissoc compiler-artifact-record :source-path)
             :instruction-summary (:instruction-summary plan)
             :effect-summary (:effect-summary plan)
             :capabilities (get-in plan [:module :capabilities])

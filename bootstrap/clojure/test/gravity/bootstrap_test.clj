@@ -25628,6 +25628,16 @@
                                 [:manifest :stage2-compiler-driver-used?])))
             (is (string? (get-in artifact
                                   [:manifest :compiler-driver-rule-hash])))
+            (is (true? (get-in artifact
+                               [:manifest
+                                :expression-lowering-invoked?])))
+            (is (true? (get-in artifact
+                               [:manifest
+                                :expression-lowering-generic-bridge-residual?])))
+            (is (= bootstrap/p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                   (get-in artifact
+                           [:manifest
+                            :expression-lowering-semantic-hash])))
             (is (= source (get-in artifact [:provenance :source :path]))))
           (finally
             (doseq [path [output (str output ".c")
@@ -26379,6 +26389,247 @@
                            [:target-eligibility
                             :source-target-alias-canonicalized?]))))))))))
 
+(def ^:private stage2-gravity-compiler-artifact-source
+  (str "(ns compiler.artifact.proof (:profile :hosted) (:target :jvm) "
+       "(:effects #{:io/write}) (:capabilities #{:io/stdout}) "
+       "(:safety :safe))\n"
+       "(defn main []\n"
+       "  (let [left \"left\"]\n"
+       "    (do (println left \"right\")\n"
+       "        (if true (println \"ok\") (println \"bad\")))))\n"))
+
+(deftest stage2-expression-lowering-is-gravity-authored-and-target-neutral
+  (with-temp-source
+    ".gravity" stage2-gravity-compiler-artifact-source
+    (fn [gravity-path]
+      (with-temp-source
+        ".qst" stage2-gravity-compiler-artifact-source
+        (fn [qst-path]
+          (let [gravity-packet
+                (bootstrap/stage2-runtime-derived-packet
+                 gravity-path stage2-gravity-compiler-artifact-source :c)
+                qst-packet
+                (bootstrap/stage2-runtime-derived-packet
+                 qst-path stage2-gravity-compiler-artifact-source :c)
+                gravity-c
+                (bootstrap/c-backend-source-artifact
+                 gravity-path stage2-gravity-compiler-artifact-source
+                 {:target :c :lowering-mode :runtime-derived})
+                qst-c
+                (bootstrap/c-backend-source-artifact
+                 qst-path stage2-gravity-compiler-artifact-source
+                 {:target :c :lowering-mode :runtime-derived})
+                gravity-js
+                (bootstrap/js-ts-backend-source-artifact
+                 gravity-path stage2-gravity-compiler-artifact-source
+                 {:target :js-ts})
+                compiler-record
+                (:stage2-compiler-artifact-record gravity-packet)]
+            (is (= :gravity/p15-s23-stage2-expression-lowering-binding
+                   (:artifact compiler-record)))
+            (is (= :complete (:status gravity-packet)))
+            (is (true? (:invoked? compiler-record)))
+            (is (true? (:generic-bridge-residual? compiler-record)))
+            (is (true? (:clojure-seed-boundary? compiler-record)))
+            (is (false? (:self-hosted? compiler-record)))
+            (is (not (contains? compiler-record :source-path)))
+            (is (string?
+                 (get-in gravity-packet
+                         [:provenance :actual-paths
+                          :stage2-expression-lowering-source])))
+            (is (= bootstrap/p15-s23-stage2-compiler-artifact-required-functions
+                   (:functions compiler-record)))
+            (is (= bootstrap/p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                   (:semantic-hash compiler-record)))
+            (is (= (:artifact-hash compiler-record)
+                   (get-in gravity-c
+                           [:manifest :expression-lowering-artifact-hash])))
+            (is (= (:artifact-hash compiler-record)
+                   (get-in gravity-js
+                           [:manifest :input
+                            :expression-lowering-artifact-hash])))
+            (is (= (:artifact-hash compiler-record)
+                   (get-in qst-packet
+                           [:stage2-compiler-artifact-record
+                            :artifact-hash])))
+            (is (= (:artifact-id gravity-c) (:artifact-id qst-c)))
+            (is (= "left right\nok\n" (:stdout gravity-c)))
+            (is (= (:stdout gravity-c)
+                   (:compiled-execution-output gravity-js)))
+            (is (= (:artifact-hash compiler-record)
+                   (get-in gravity-c
+                           [:expression-lowering-artifact
+                            :artifact-hash])))
+            (is (= gravity-path
+                   (get-in gravity-c [:provenance :source :path])))))))))
+
+(deftest stage2-expression-lowering-preserves-seed-plan-and-diagnostics
+  (let [source-path "compiler-artifact-plan.gravity"
+        source-text stage2-gravity-compiler-artifact-source
+        emitter
+        (:emitter
+         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+          source-path :c))
+        macro-artifact (bootstrap/macro-source-artifact source-path source-text)
+        module0 (assoc (:module macro-artifact)
+                       :forms (:expanded-forms macro-artifact))
+        function-table (bootstrap/stage0-function-table module0)
+        module (assoc module0 :function-table function-table)
+        artifact-binding
+        (bootstrap/p15-s23-stage2-compiler-artifact-binding!
+         emitter source-path :c)]
+    (clojure.core/binding
+      [bootstrap/*p15-s23-stage2-compiler-artifact-binding* artifact-binding]
+      (doseq [[name definition] function-table]
+        (is (= (bootstrap/p15-s23-stage2-seed-compile-function
+                emitter module definition)
+               (bootstrap/p15-s23-stage2-compile-function
+                emitter module definition))
+            (str "Gravity lowering must preserve the seed plan for " name)))
+      (doseq [form [[1 "two"] {:b 2 :a 1} #{:z :a}]]
+        (is (= (bootstrap/p15-s23-stage2-seed-compile-expr
+                emitter module #{} form)
+               (bootstrap/p15-s23-stage2-compile-expr
+                emitter module #{} form))
+            (str "Gravity lowering must preserve collection plan "
+                 (pr-str form)))))
+    (doseq [[body expected]
+            [["(unknown-call 1)" "L2-UNKNOWN-CORE-FORM"]
+             ["(host-reflect String)" "P4-HOST-REFLECTION"]
+             ["(let [1 2] 3)" "L2-LET-BINDING"]]]
+      (let [invalid-source
+            (str "(ns compiler.artifact.reject (:profile :hosted) "
+                 "(:target :jvm) (:effects #{}) (:capabilities #{}) "
+                 "(:safety :safe))\n(defn main [] " body ")\n")]
+        (is (= expected
+               (diagnostic-id
+                #(bootstrap/stage2-runtime-derived-packet
+                  "compiler-artifact-reject.gravity" invalid-source :c))))))))
+
+(deftest stage2-expression-lowering-fails-closed-on-source-tamper
+  (let [compiler-text (slurp "bootstrap/gravity/p15_s23/compiler.gravity")
+        runtime-text (slurp "bootstrap/gravity/p15_s23/runtime.gravity")
+        emitter-text (slurp "bootstrap/gravity/p15_s23/emitter.gravity")]
+    (doseq [[case-name mutate expected-id expected-fact]
+            [[:missing (constantly nil) "P15S23Q001"
+              :stage2-expression-lowering-artifact]
+             [:shape #(str/replace-first
+                       %
+                       "[emitter module definition]"
+                       "[emitter module]")
+              "P15S23Q002"
+              :stage2-expression-lowering-function-shape]
+             [:semantic #(str/replace-first
+                          %
+                          ":status :ready"
+                          ":status :tampered")
+              "P15S23Q002"
+              :stage2-expression-lowering-semantic-hash]
+             [:source-only #(str "; source identity tamper\n" %)
+              "P15S23Q002"
+              :stage2-expression-lowering-source-content-hash]]]
+      (with-temp-directory
+        (str "gravity-compiler-artifact-" (name case-name) "-")
+        (fn [root]
+          (let [compiler-path (.resolve root "compiler.gravity")
+                runtime-path (.resolve root "runtime.gravity")
+                emitter-path (.resolve root "emitter.gravity")
+                output-path (.resolve root "output")]
+            (spit (.toFile compiler-path) compiler-text)
+            (spit (.toFile runtime-path) runtime-text)
+            (when-let [tampered (mutate emitter-text)]
+              (spit (.toFile emitter-path) tampered))
+            (let [diagnostic
+                  (diagnostic-data
+                   #(with-redefs
+                      [bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                       (constantly (.toString compiler-path))]
+                      (bootstrap/js-ts-backend-source-artifact
+                       "compiler-artifact-tamper.gravity"
+                       stage2-gravity-compiler-artifact-source
+                       {:target :js-ts
+                        :output-path (.toString output-path)
+                        :emit? true})))]
+              (is (= expected-id (:id diagnostic)))
+              (is (= expected-fact (:missing-fact diagnostic)))
+              (is (not (.exists (.toFile output-path)))))))))))
+
+(deftest stage2-expression-lowering-identity-is-cross-root-neutral
+  (let [compiler-text (slurp "bootstrap/gravity/p15_s23/compiler.gravity")
+        runtime-text (slurp "bootstrap/gravity/p15_s23/runtime.gravity")
+        emitter-text (slurp "bootstrap/gravity/p15_s23/emitter.gravity")]
+    (with-temp-directory
+      "gravity-compiler-artifact-left-"
+      (fn [left]
+        (with-temp-directory
+          "gravity-compiler-artifact-right-"
+          (fn [right]
+            (let [write-root
+                  (fn [root]
+                    (let [compiler (.resolve root "compiler.gravity")]
+                      (spit (.toFile compiler) compiler-text)
+                      (spit (.toFile (.resolve root "runtime.gravity"))
+                            runtime-text)
+                      (spit (.toFile (.resolve root "emitter.gravity"))
+                            emitter-text)
+                      compiler))
+                  left-compiler (write-root left)
+                  right-compiler (write-root right)
+                  compile-at
+                  (fn [compiler]
+                    (with-redefs
+                      [bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                       (constantly (.toString compiler))]
+                      (bootstrap/c-backend-source-artifact
+                       "compiler-artifact-root-neutral.gravity"
+                       stage2-gravity-compiler-artifact-source
+                       {:target :c :lowering-mode :runtime-derived})))
+                  compile-js-at
+                  (fn [compiler]
+                    (with-redefs
+                      [bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                       (constantly (.toString compiler))]
+                      (bootstrap/js-ts-backend-source-artifact
+                       "compiler-artifact-root-neutral.gravity"
+                       stage2-gravity-compiler-artifact-source
+                       {:target :js-ts})))
+                  left-artifact (compile-at left-compiler)
+                  right-artifact (compile-at right-compiler)
+                  left-js (compile-js-at left-compiler)
+                  right-js (compile-js-at right-compiler)]
+              (is (= (:artifact-id left-artifact)
+                     (:artifact-id right-artifact)))
+              (is (= (:manifest-hash left-artifact)
+                     (:manifest-hash right-artifact)))
+              (is (= (:provenance-hash left-artifact)
+                     (:provenance-hash right-artifact)))
+              (is (= (get-in left-artifact
+                             [:expression-lowering-artifact :artifact-hash])
+                     (get-in right-artifact
+                             [:expression-lowering-artifact :artifact-hash])))
+              (is (= (:artifact-id left-js) (:artifact-id right-js)))
+              (is (= (:manifest-hash left-js) (:manifest-hash right-js)))
+              (is (= (:provenance-hash left-js)
+                     (:provenance-hash right-js)))
+              (is (= (:expression-lowering-artifact left-artifact)
+                     (:expression-lowering-artifact right-artifact)))
+              (is (not=
+                   (get-in left-artifact
+                           [:provenance :actual-paths
+                            :stage2-expression-lowering-source])
+                   (get-in right-artifact
+                           [:provenance :actual-paths
+                            :stage2-expression-lowering-source])))
+              (is (= (:stage2-expression-lowering-artifact left-js)
+                     (:stage2-expression-lowering-artifact right-js)))
+              (is (not=
+                   (get-in left-js
+                           [:provenance :actual-paths
+                            :stage2-expression-lowering-source])
+                   (get-in right-js
+                           [:provenance :actual-paths
+                            :stage2-expression-lowering-source]))))))))))
+
 (deftest hosted-js-ts-backend-emits-deterministic-sidecars-and-executable
   (let [source-text
         (str "(ns js.target.emit (:profile :hosted) (:target :jvm) "
@@ -26760,6 +27011,18 @@
                          (:kind gravity-artifact)))
                   (is (= (:artifact-id gravity-artifact)
                          (:artifact-id qst-artifact)))
+                  (is (true?
+                       (get-in gravity-artifact
+                               [:manifest :input
+                                :expression-lowering-invoked?])))
+                  (is (true?
+                       (get-in gravity-artifact
+                               [:manifest :input
+                                :expression-lowering-generic-bridge-residual?])))
+                  (is (= bootstrap/p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                         (get-in gravity-artifact
+                                 [:manifest :input
+                                  :expression-lowering-semantic-hash])))
                   (is (= :js-ts
                          (bootstrap/js-ts-backend-canonical-target :js)))
                   (is (= "public-js\n"

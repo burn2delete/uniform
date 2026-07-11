@@ -1,0 +1,255 @@
+; Gravity-authored stage2 expression lowering for the current closed compiler
+; subset.  The Clojure seed still parses and compiles this module and provides
+; a generic function-plan runner plus explicitly enumerated pure collection
+; predicates.  Lowering decisions and diagnostic selection live here.
+(ns gravity.bootstrap.p15-s23.emitter
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn p15-s23-compiler-result
+  [value]
+  (hash-map :status :complete :value value))
+
+(defn p15-s23-compiler-error
+  [diagnostic facts]
+  (hash-map :status :rejected :diagnostic diagnostic :facts facts))
+
+(defn p15-s23-compiler-complete?
+  [result]
+  (= :complete (get result :status)))
+
+(defn p15-s23-compile-forms
+  [emitter module locals forms compiled]
+  (if (= 0 (count forms))
+    (p15-s23-compiler-result compiled)
+    (let [compiled-form
+          (p15-s23-compile-expr emitter module locals (first forms))]
+      (if (p15-s23-compiler-complete? compiled-form)
+        (p15-s23-compile-forms
+         emitter module locals (rest forms)
+         (conj compiled (get compiled-form :value)))
+        compiled-form))))
+
+(defn p15-s23-compile-map-entries
+  [emitter module locals entries compiled]
+  (if (= 0 (count entries))
+    (p15-s23-compiler-result compiled)
+    (let [entry (first entries)
+          compiled-key
+          (p15-s23-compile-expr emitter module locals (first entry))]
+      (if (p15-s23-compiler-complete? compiled-key)
+        (let [compiled-value
+              (p15-s23-compile-expr emitter module locals (second entry))]
+          (if (p15-s23-compiler-complete? compiled-value)
+            (p15-s23-compile-map-entries
+             emitter module locals (rest entries)
+             (conj compiled
+                   (hash-map :key (get compiled-key :value)
+                             :value (get compiled-value :value))))
+            compiled-value))
+        compiled-key))))
+
+(defn p15-s23-compile-collection
+  [emitter module locals form]
+  (let [collection-rules (get emitter :collection-rules)]
+    (if (vector? form)
+      (let [items
+            (p15-s23-compile-forms emitter module locals form [])]
+        (if (p15-s23-compiler-complete? items)
+          (p15-s23-compiler-result
+           (hash-map :op (get (get collection-rules :vector) :op)
+                     :items (get items :value)))
+          items))
+      (if (map? form)
+        (let [entries
+              (p15-s23-compile-map-entries
+               emitter module locals (sort-by-pr-str form) [])]
+          (if (p15-s23-compiler-complete? entries)
+            (p15-s23-compiler-result
+             (hash-map :op (get (get collection-rules :map) :op)
+                       :entries (get entries :value)))
+            entries))
+        (if (set? form)
+          (let [items
+                (p15-s23-compile-forms
+                 emitter module locals (sort-by-pr-str form) [])]
+            (if (p15-s23-compiler-complete? items)
+              (p15-s23-compiler-result
+               (hash-map :op (get (get collection-rules :set) :op)
+                         :items (get items :value)))
+              items))
+          (p15-s23-compiler-result
+           (hash-map :op (get (get collection-rules :literal) :op)
+                     :value form)))))))
+
+(defn p15-s23-compile-let-bindings
+  [emitter module scope bindings compiled]
+  (if (= 0 (count bindings))
+    (p15-s23-compiler-result
+     (hash-map :scope scope :bindings compiled))
+    (let [name (first bindings)
+          expression (second bindings)]
+      (if (symbol? name)
+        (let [compiled-expression
+              (p15-s23-compile-expr emitter module scope expression)]
+          (if (p15-s23-compiler-complete? compiled-expression)
+            (p15-s23-compile-let-bindings
+             emitter module (conj scope name) (rest (rest bindings))
+             (conj compiled
+                   (hash-map :name name
+                             :expr (get compiled-expression :value))))
+            compiled-expression))
+        (p15-s23-compiler-error
+         "L2-LET-BINDING" (hash-map :binding name))))))
+
+(defn p15-s23-compile-let
+  [emitter module locals bindings body]
+  (if (if (vector? bindings) (even? (count bindings)) false)
+    (let [compiled-bindings
+          (p15-s23-compile-let-bindings emitter module locals bindings [])]
+      (if (p15-s23-compiler-complete? compiled-bindings)
+        (let [binding-value (get compiled-bindings :value)
+              compiled-body
+              (p15-s23-compile-forms
+               emitter module (get binding-value :scope) body [])]
+          (if (p15-s23-compiler-complete? compiled-body)
+            (p15-s23-compiler-result
+             (hash-map
+              :op (get (get (get emitter :special-form-rules) (quote let)) :op)
+              :bindings (get binding-value :bindings)
+              :body (get compiled-body :value)))
+            compiled-body))
+        compiled-bindings))
+    (p15-s23-compiler-error
+     "L2-LET-BINDING" (hash-map :bindings bindings))))
+
+(defn p15-s23-compile-call
+  [emitter module locals form]
+  (let [callee (first form)
+        arguments (rest form)
+        special-rules (get emitter :special-form-rules)
+        special-rule (get special-rules callee)
+        call-rules (get emitter :call-rules)
+        builtin-functions (set (get call-rules :builtin-functions))]
+    (if (= callee (quote println))
+      (let [args (p15-s23-compile-forms emitter module locals arguments [])]
+        (if (p15-s23-compiler-complete? args)
+          (p15-s23-compiler-result
+           (hash-map :op (get special-rule :op)
+                     :effect (get special-rule :effect)
+                     :capability (get special-rule :capability)
+                     :args (get args :value)))
+          args))
+      (if (= callee (quote do))
+        (let [body (p15-s23-compile-forms emitter module locals arguments [])]
+          (if (p15-s23-compiler-complete? body)
+            (p15-s23-compiler-result
+             (hash-map :op (get special-rule :op)
+                       :body (get body :value)))
+            body))
+        (if (= callee (quote if))
+          (let [test-result
+                (p15-s23-compile-expr emitter module locals (second form))]
+            (if (p15-s23-compiler-complete? test-result)
+              (let [then-result
+                    (p15-s23-compile-expr
+                     emitter module locals (first (rest (rest form))))]
+                (if (p15-s23-compiler-complete? then-result)
+                  (let [else-result
+                        (p15-s23-compile-expr
+                         emitter module locals
+                         (first (rest (rest (rest form)))))]
+                    (if (p15-s23-compiler-complete? else-result)
+                      (p15-s23-compiler-result
+                       (hash-map :op (get special-rule :op)
+                                 :test (get test-result :value)
+                                 :then (get then-result :value)
+                                 :else (get else-result :value)))
+                      else-result))
+                  then-result))
+              test-result))
+          (if (= callee (quote let))
+            (p15-s23-compile-let
+             emitter module locals (second form) (rest (rest form)))
+            (if (= callee (quote quote))
+              (p15-s23-compiler-result
+               (hash-map :op (get special-rule :op) :value (second form)))
+              (if (= callee (quote host-reflect))
+                (p15-s23-compiler-error
+                 (get special-rule :diagnostic)
+                 (hash-map :operator callee))
+                (if (contains? builtin-functions callee)
+                  (let [args
+                        (p15-s23-compile-forms
+                         emitter module locals arguments [])]
+                    (if (p15-s23-compiler-complete? args)
+                      (p15-s23-compiler-result
+                       (hash-map :op (get call-rules :builtin-op)
+                                 :function callee
+                                 :args (get args :value)))
+                      args))
+                  (if (contains? (get module :function-table) callee)
+                    (let [args
+                          (p15-s23-compile-forms
+                           emitter module locals arguments [])]
+                      (if (p15-s23-compiler-complete? args)
+                        (p15-s23-compiler-result
+                         (hash-map :op (get call-rules :function-op)
+                                   :function callee
+                                   :args (get args :value)))
+                        args))
+                    (p15-s23-compiler-error
+                     (get call-rules :unknown-callee-diagnostic)
+                     (hash-map :operator callee))))))))))))
+
+(defn p15-s23-compile-expr
+  [emitter module locals form]
+  (if (symbol? form)
+    (if (contains? locals form)
+      (p15-s23-compiler-result (hash-map :op :local :name form))
+      (p15-s23-compiler-error
+       "L2-UNKNOWN-SYMBOL" (hash-map :symbol form)))
+    (if (seq? form)
+      (p15-s23-compile-call emitter module locals form)
+      (if (if (vector? form) true (if (map? form) true (set? form)))
+        (p15-s23-compile-collection emitter module locals form)
+        (p15-s23-compiler-result
+         (hash-map
+          :op (get (get (get emitter :collection-rules) :literal) :op)
+          :value form))))))
+
+(defn p15-s23-compile-function
+  [emitter module definition]
+  (let [name (get definition :name)
+        params (get definition :params)
+        body (get definition :body)
+        compiled-body
+        (p15-s23-compile-forms emitter module (set params) body [])]
+    (if (p15-s23-compiler-complete? compiled-body)
+      (let [exports (get module :exports)
+            visibility
+            (if (> (count exports) 0)
+              (if (contains? (set exports) name) :public :private)
+              :stage2-local)
+            binding
+            (hash-map :name name
+                      :kind :function
+                      :namespace (get module :module)
+                      :profile (get module :profile)
+                      :target (get module :target)
+                      :visibility visibility
+                      :effects (get module :effects)
+                      :capabilities (get module :capabilities))]
+        (p15-s23-compiler-result
+         (assoc definition
+                :binding binding
+                :instructions (get compiled-body :value))))
+      compiled-body)))
+
+(defn main
+  []
+  (hash-map :artifact :gravity/stage2-expression-lowering
+            :status :ready))
