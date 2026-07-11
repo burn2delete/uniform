@@ -26,12 +26,13 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Route two-argument `println` through the Gravity-authored runtime artifact, preserving exact space/newline semantics and a host boundary only above two arguments.
 - [completed] Add a public Node 20 ES2022 ESM target over the authenticated target-neutral stage2 packet, with byte-exact C/runtime differential execution and transactional artifacts.
 - [completed] Move production stage2 collection/let/expression/function lowering behind a pinned Gravity-authored `:meta` emitter artifact, retaining Clojure only as the explicit seed compiler/runner boundary.
+- [completed] Add an opt-in Java 21 modular executable JAR target with classfile-65, deterministic packaging, authenticated packet/manifest closure, and real `java -jar` differential execution.
 - [pending] Add the next closed semantic/runtime subset, then begin replacing the Clojure seed oracle with Gravity-authored compiler stages.
 - [pending] Add the next real executable target or retire the next high-leverage Clojure seed boundary while preserving target-neutral packet evidence.
 
 ## Baseline snapshot (2026-07-10)
 
-- Main: `1214c7d` (`Bind stage2 lowering to Gravity emitter`).
+- Main: `192cae8` (`Add executable Java 21 JVM target`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -56,13 +57,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - Public `--target js` and `--target js-ts` now compile the bounded stage2 subset to executable Node 20 ES2022 ESM. The JS and runtime-derived C routes share an authenticated target-neutral stage2 packet; Node execution is byte-compared with the authoritative stage2 runtime and executed C behavior. Emission is an atomic artifact directory containing `program.mjs`, declarations, source map, package metadata, manifest, and provenance with explicit UTF-8 digest proof.
 - The JS slice remains non-release and non-conforming for full B6: its input is the bounded stage2 packet rather than verified MIR/domain IR, source maps are source-unit-only, the TypeScript API is empty and unverified by `tsc`, and the Clojure seed boundary remains true.
 - Production stage2 collection, let, expression, and function lowering now invoke `bootstrap/gravity/p15_s23/emitter.gravity`. Exact source, public function shape, and canonical semantic-plan hashes are pinned; missing or tampered artifacts fail before C/JS output. The prior Clojure lowering functions remain only as seed helpers used to compile and verify the artifact, and the generic Clojure runner remains an explicit residual.
+- Opt-in `--target jvm --lowering runtime-derived` now emits Java 21 sources, classfile-major-65 named-module classes, and a deterministic modular executable JAR, then proves byte-exact output with `java -jar` before atomic publication. The authenticated JVM manifest binds source, plan, emitter, compiler, driver, runtime, effects, and capabilities; the legacy/default JVM route remains unchanged.
 
 ## Active slice
 
-- Owner: Java 21 JVM target worker.
-- Scope: add an opt-in genuine modular executable JAR target over the authenticated stage2 packet and Gravity-authored emitter boundary, preserving the legacy/default JVM route.
+- Owner: next seed/target expansion worker.
+- Scope: inventory the remaining documented target families and Clojure seed boundaries, then select the next vertical that best advances both portability and trusted-seed reduction.
 - Completed proof: public accepted/rejected behavior, `.qst`/`.gravity` parity, deterministic hashes, actual `/usr/bin/cc` execution, stable unsupported diagnostics, NUL-safe output, output-path containment, unrelated-CWD routing, option validation, and explicit seed-boundary honesty.
-- Next gate: implement and execute a deterministic Java 21 modular JAR for the bounded stage2 subset, while preserving explicit B5 and seed-boundary residuals.
+- Next gate: choose between the next feasible documented target (LLVM/Wasm prerequisites permitting) and replacing the next high-leverage Clojure plan/runtime/verifier boundary; preserve explicit target-conformance and seed residuals.
 
 ## Completion gates
 
