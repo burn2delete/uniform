@@ -3,6 +3,7 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [c11-mir-contract
+             c11-build-mir-pass-contract
              c11-mir-module-contract
              c11-mir-function-contract
              c11-mir-block-contract
@@ -19,7 +20,8 @@
              build-c11-mir-instruction
              build-c11-mir-value
              build-c11-mir-source-map
-             verify-c11-mir-module])
+             verify-c11-mir-module
+             c11-build-target-independent-mir])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -37,20 +39,35 @@
                            "P1" "PERF10" "BOOT1" "BOOT2"
                            "BOOT3" "BOOT4" "BOOT5" "BOOT6"
                            "BOOT7" "BOOT8" "TEST2" "TEST13"]
-               :implements [:mir-module-contract
-                             :mir-function-contract
-                             :mir-block-contract
-                             :mir-terminator-contract
-                             :mir-instruction-contract
-                             :mir-value-contract
-                             :mir-source-map-contract
-                             :mir-control-flow-graph
-                             :mir-data-flow-graph
-                             :mir-dominance-use-def-rules
-                             :mir-type-effect-safety-fact-tables
-                             :mir-domain-anchor-table
-                             :mir-verifier-entrypoint
-                             :mir-diagnostic-catalog]
+               :declares [:mir-module-contract
+                          :mir-function-contract
+                          :mir-block-contract
+                          :mir-terminator-contract
+                          :mir-instruction-contract
+                          :mir-value-contract
+                          :mir-source-map-contract
+                          :mir-control-flow-graph
+                          :mir-data-flow-graph
+                          :mir-dominance-use-def-rules
+                          :mir-type-effect-safety-fact-tables
+                          :mir-domain-anchor-table
+                          :mir-verifier-entrypoint
+                          :mir-diagnostic-catalog]
+               :bounded-executable-implements
+               [:authenticated-checked-core-input
+                :single-function-mir-module
+                :linear-or-single-conditional-cfg
+                :typed-operation-and-terminator-use-def
+                :runtime-check-token-and-guard-edge
+                :id-referenced-fact-and-proof-tables
+                :checked-core-origin-preservation
+                :independent-seed-verifier-handoff]
+               :bounded-executable-limits
+               {:maximum-conditionals 1
+                :maximum-module-carrier-nodes 16384
+                :maximum-final-artifact-carrier-nodes 32768
+                :maximum-carrier-depth 256
+                :whole-c11 false}
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
                             :checked-core-identity
@@ -87,6 +104,48 @@
                               "compiler-mir-domain.gravity"
                               "compiler-mir-target-leak.gravity"
                               "compiler-mir-verify.gravity"]}}}))
+
+(defn c11-build-mir-pass-contract
+  []
+  {:artifact :gravity/compiler-pass-contract
+   :pass-id :c11-build-mir-bounded-slice
+   :owner :gravity-source
+   :input :gravity/safety-checked-core
+   :output :gravity/mir-module
+   :requires [:authenticated-checked-core-artifact
+              :canonical-core-node-order
+              :type-facts :effect-facts :effect-order-graph
+              :capability-facts :capability-proofs
+              :ownership-facts :safety-outcomes
+              :runtime-check-records :profile-facts
+              :complete-origin-closure]
+   :preserves [:checked-core-artifact-id :core-node-identity
+               :source-spans :origin-ids :generated-origin-chains
+               :types :effects :effect-order :capabilities
+               :ownership :safety :runtime-check-failure-behavior
+               :profile :source-target :target-request]
+   :invalidates [:core-control-shape]
+   :regenerates [:mir-block-placement :control-flow-graph
+                 :typed-data-flow-graph :mir-value-use-def
+                 :runtime-check-token-guards :mir-source-map]
+   :effects #{}
+   :capabilities #{}
+   :profiles [:hosted]
+   :source-targets [:jvm]
+   :target-independent-output? true
+   :emits [:mir-module :pending-build-mir-pass-execution-record
+           :c11-diagnostic]
+   :postcondition-verifier :clojure-stage0-independent-c11-verifier
+   :risk :bootstrap-seed-tcb
+   :scope {:operation-set
+           [:literal :implicit-nil :quote :local :let-binding :truthy
+            :do :if :let :str :println :function :runtime-check]
+           :maximum-conditionals 1
+           :maximum-module-carrier-nodes 16384
+           :maximum-final-artifact-carrier-nodes 32768
+           :maximum-carrier-depth 256
+           :whole-c11? false
+           :self-hosted? false}})
 
 (def c11-mir-contract
   {:artifact :gravity/c11-mir-contract
@@ -136,8 +195,10 @@
                      :profile :target-request
                      :functions :globals
                      :type-table :effect-table
-                     :ownership-table :capability-proof-table
+                     :ownership-table :capability-table
+                     :capability-proof-table
                      :safety-table :runtime-check-table
+                     :profile-target-table
                      :proof-certificate-table
                      :source-map :domain-anchors
                      :diagnostics :provenance]
@@ -285,9 +346,12 @@
                         :proof-reference]
    :fact-fields [:type-fact-id
                  :effect-fact-id
-                 :capability-proof-id
+                 :capability-fact-id
+                 :capability-proof-ids
                  :ownership-fact-id
                  :safety-outcome-id
+                 :safety-proof-id
+                 :profile-target-fact-id
                  :runtime-check-id
                  :proof-certificate-ids]
    :rules [:result-type-matches-operation-schema
@@ -432,9 +496,11 @@
           :type-table (:type-table tables)
           :effect-table (:effect-table tables)
           :ownership-table (:ownership-table tables)
+          :capability-table (:capability-table tables)
           :capability-proof-table (:capability-proof-table tables)
           :safety-table (:safety-table tables)
           :runtime-check-table (:runtime-check-table tables)
+          :profile-target-table (:profile-target-table tables)
           :proof-certificate-table (:proof-certificate-table tables)
           :source-map (:source-map tables)
           :domain-anchors (:domain-anchors tables)
@@ -570,3 +636,1160 @@
                       :domain-anchor-links
                       :target-independence
                       :artifact-provenance]}))
+
+; This is the first executable C11 construction slice.  The bootstrap seed
+; authenticates the checked-core artifact before this function is invoked;
+; this module owns all checked-core-to-MIR classification and graph assembly.
+; The slice deliberately accepts at most one conditional.  That gives the
+; current literal/quote/local/do/if/let/str/println core a genuine
+; entry/then/else/join CFG without pretending that arbitrary nested control
+; flow or the full C11 operation-family matrix is already implemented.
+
+(defn c11-vector-contains?
+  [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (c11-vector-contains? (rest values) value))))
+
+(defn c11-conj-unique
+  [values value]
+  (if (c11-vector-contains? values value)
+    values
+    (conj values value)))
+
+(defn c11-path-prefix?
+  [prefix path]
+  (if (= (count prefix) 0)
+    true
+    (if (= (count path) 0)
+      false
+      (if (= (first prefix) (first path))
+        (c11-path-prefix? (rest prefix) (rest path))
+        false))))
+
+(defn c11-nodes-under-prefix
+  [nodes prefix result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (c11-nodes-under-prefix
+       (rest nodes)
+       prefix
+       (if (c11-path-prefix? prefix (get node :path))
+         (conj result node)
+         result)))))
+
+(defn c11-nodes-outside-prefixes
+  [nodes left-prefix right-prefix result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          path (get node :path)]
+      (c11-nodes-outside-prefixes
+       (rest nodes)
+       left-prefix
+       right-prefix
+       (if (c11-path-prefix? left-prefix path)
+         result
+         (if (c11-path-prefix? right-prefix path)
+           result
+           (conj result node)))))))
+
+(defn c11-if-count
+  [nodes count]
+  (if (= (count nodes) 0)
+    count
+    (c11-if-count
+     (rest nodes)
+     (if (= (get (first nodes) :source-operation) :if)
+       (+ count 1)
+       count))))
+
+(defn c11-find-if-node
+  [nodes]
+  (if (= (count nodes) 0)
+    nil
+    (if (= (get (first nodes) :source-operation) :if)
+      (first nodes)
+      (c11-find-if-node (rest nodes)))))
+
+(defn c11-node-depends-on-any?
+  [operands ids]
+  (if (= (count operands) 0)
+    false
+    (if (c11-vector-contains? ids (first operands))
+      true
+      (c11-node-depends-on-any? (rest operands) ids))))
+
+(defn c11-expand-downstream-once
+  [nodes ids result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          node-id (get node :node-id)]
+      (c11-expand-downstream-once
+       (rest nodes)
+       ids
+       (if (c11-node-depends-on-any? (get node :operands) ids)
+         (c11-conj-unique result node-id)
+         result)))))
+
+(defn c11-downstream-closure
+  [nodes ids]
+  (let [expanded (c11-expand-downstream-once nodes ids ids)]
+    (if (= (count expanded) (count ids))
+      ids
+      (c11-downstream-closure nodes expanded))))
+
+(defn c11-filter-node-ids
+  [nodes ids include? result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          present? (c11-vector-contains? ids (get node :node-id))]
+      (c11-filter-node-ids
+       (rest nodes)
+       ids
+       include?
+       (if (= present? include?)
+         (conj result node)
+         result)))))
+
+(defn c11-nodes-before-id
+  [nodes node-id result]
+  (if (= (count nodes) 0)
+    result
+    (if (= (get (first nodes) :node-id) node-id)
+      result
+      (c11-nodes-before-id
+       (rest nodes) node-id (conj result (first nodes))))))
+
+(defn c11-nodes-from-id
+  [nodes node-id]
+  (if (= (count nodes) 0)
+    []
+    (if (= (get (first nodes) :node-id) node-id)
+      nodes
+      (c11-nodes-from-id (rest nodes) node-id))))
+
+(defn c11-node-ids
+  [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (c11-node-ids (rest nodes)
+                  (conj result (get (first nodes) :node-id)))))
+
+(defn c11-find-node-by-id
+  [nodes node-id]
+  (if (= (count nodes) 0)
+    nil
+    (if (= (get (first nodes) :node-id) node-id)
+      (first nodes)
+      (c11-find-node-by-id (rest nodes) node-id))))
+
+(defn c11-last-value
+  [values]
+  (if (= (count values) 1)
+    (first values)
+    (c11-last-value (rest values))))
+
+(defn c11-opcode
+  [node]
+  (let [operation (get node :source-operation)]
+    (if (= operation :literal)
+      :constant
+      (if (= operation :implicit-nil)
+        :constant
+        (if (= operation :quote)
+          :constant
+          (if (= operation :local)
+            :local
+            (if (= operation :let-binding)
+              :local-binding
+              (if (= operation :truthy)
+                :truthiness
+                (if (= operation :do)
+                  :sequence
+                  (if (= operation :if)
+                    :conditional-join
+                    (if (= operation :let)
+                      :lexical-scope
+                      (if (= operation :str)
+                        :call
+                        (if (= operation :println)
+                          :call
+                          (if (= operation :function)
+                            :function-boundary
+                            :unsupported-checked-core-operation))))))))))))))
+
+(defn c11-operation-result
+  [node]
+  ; Gravity `println` returns nil.  Model that nil as an explicit SSA value so
+  ; a resultless effect at function tail never creates an undefined return.
+  (get node :node-id))
+
+(defn c11-operation-ordering
+  [node]
+  (if (= (count (get (get node :attributes) :intrinsic-effects)) 0)
+    :none
+    :sequence))
+
+(defn c11-copy-vector
+  [values result]
+  (if (= (count values) 0)
+    result
+    (c11-copy-vector (rest values) (conj result (first values)))))
+
+(defn c11-runtime-check-operation-id
+  [check]
+  (str (get check :check-id) ":mir:runtime-check"))
+
+(defn c11-runtime-check-token-id
+  [check]
+  (str (get check :check-id) ":mir:token"))
+
+(defn c11-runtime-check-fact-id
+  [check fact-kind]
+  (let [check-id (get check :check-id)]
+    (if (= fact-kind :type)
+      (str check-id ":mir:type-fact")
+      (if (= fact-kind :effect)
+        (str check-id ":mir:effect-fact")
+        (if (= fact-kind :capability)
+          (str check-id ":mir:capability-fact")
+          (if (= fact-kind :ownership)
+            (str check-id ":mir:ownership-fact")
+            (if (= fact-kind :safety)
+              (str check-id ":mir:safety-outcome")
+              (str check-id ":mir:profile-target-fact"))))))))
+
+(defn c11-capability-fact-id
+  [node-id]
+  (str node-id ":capability-fact"))
+
+(defn c11-safety-outcome-id
+  [node-id]
+  (str node-id ":safety-outcome"))
+
+(defn c11-profile-target-fact-id
+  [node-id]
+  (str node-id ":profile-target-fact"))
+
+(defn c11-operation-operands
+  [node]
+  (let [check (get (get node :safety) :check)]
+    (if (= check nil)
+      (get node :operands)
+      (c11-copy-vector
+       (get node :operands)
+       [(c11-runtime-check-token-id check)]))))
+
+(defn c11-operation-proof-certificate-ids
+  [checked-core node]
+  (let [node-id (get node :node-id)
+        capability
+        (get (get checked-core :capability-facts) node-id)
+        capability-proof
+        (get capability :capability-proof)
+        capability-proof-ids (get capability-proof :proof-ids)
+        safety-proof (get (get node :safety) :proof)
+        safety-proof-id (get safety-proof :proof-id)
+        result
+        (if (= capability-proof-ids nil) [] capability-proof-ids)]
+    (if (= safety-proof-id nil)
+      result
+      (conj result safety-proof-id))))
+
+(defn c11-operation-facts
+  [checked-core node]
+  (let [node-id (get node :node-id)
+        type-fact (get (get checked-core :type-facts) node-id)
+        effect-fact (get (get checked-core :effect-facts) node-id)
+        ownership-fact (get (get checked-core :ownership-facts) node-id)
+        capability-fact (get (get checked-core :capability-facts) node-id)
+        safety (get node :safety)
+        runtime-check (get safety :check)
+        capability-proof (get capability-fact :capability-proof)
+        safety-proof (get safety :proof)]
+    {:type-fact-id (get type-fact :fact-id)
+     :effect-fact-id (get effect-fact :fact-id)
+     :capability-fact-id (c11-capability-fact-id node-id)
+     :capability-proof-ids
+     (if (= (get capability-proof :proof-ids) nil)
+       []
+       (get capability-proof :proof-ids))
+     :ownership-fact-id (get ownership-fact :fact-id)
+     :safety-outcome-id (c11-safety-outcome-id node-id)
+     :safety-proof-id
+     (if (= (get safety-proof :proof-id) nil)
+       :not-applicable
+       (get safety-proof :proof-id))
+     :profile-target-fact-id (c11-profile-target-fact-id node-id)
+     :runtime-check-id
+     (if (= runtime-check nil)
+       :not-applicable
+       (get runtime-check :check-id))
+     :proof-certificate-ids
+     (c11-operation-proof-certificate-ids checked-core node)
+     :failure-behavior
+     (if (= runtime-check nil)
+       :not-applicable
+       (get runtime-check :failure))
+     :source-origin-id (get (get node :source) :origin-id)}))
+
+(defn c11-build-runtime-check-table
+  [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          check (get (get node :safety) :check)]
+      (c11-build-runtime-check-table
+       (rest nodes)
+       (if (= check nil)
+         result
+         (let [check-id (get check :check-id)]
+           (assoc
+            result check-id
+            (assoc
+             (assoc
+              (assoc check :guarded-operation-id (get node :node-id))
+              :check-operation-id (c11-runtime-check-operation-id check))
+             :token-value-id (c11-runtime-check-token-id check)))))))))
+
+(defn c11-build-fact-table-by-id
+  [nodes source-table id-field generated-suffix result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          node-id (get node :node-id)
+          record (get source-table node-id)
+          existing-id (get record id-field)
+          fact-id
+          (if (= existing-id nil)
+            (str node-id generated-suffix)
+            existing-id)]
+      (c11-build-fact-table-by-id
+       (rest nodes) source-table id-field generated-suffix
+       (assoc result fact-id (assoc record id-field fact-id))))))
+
+(defn c11-runtime-check-fact-record
+  [checked-core node fact-kind]
+  (let [node-id (get node :node-id)
+        check (get (get node :safety) :check)
+        fact-id (c11-runtime-check-fact-id check fact-kind)
+        check-op-id (c11-runtime-check-operation-id check)
+        token-id (c11-runtime-check-token-id check)
+        origin-id (get (get node :source) :origin-id)
+        profile (get node :profile)]
+    (if (= fact-kind :type)
+      {:fact-id fact-id
+       :core-node-id node-id
+       :mir-operation-id check-op-id
+       :type-id :gravity/runtime-check-token
+       :type :gravity/runtime-check-token
+       :producer-rule :runtime-check-token
+       :dependencies []
+       :source-origin-id origin-id
+       :profile profile
+       :source-target (get checked-core :source-target)
+       :constraints []
+       :derived? true}
+      (if (= fact-kind :effect)
+        {:fact-id fact-id
+         :core-node-id node-id
+         :mir-operation-id check-op-id
+         :direct #{}
+         :latent #{}
+         :transitive #{}
+         :residual #{}
+         :ordering :sequence
+         :non-dce? true
+         :source-origin-id origin-id
+         :profile profile
+         :source-target (get checked-core :source-target)
+         :derived? true}
+        (if (= fact-kind :capability)
+          {:fact-id fact-id
+           :core-node-id node-id
+           :mir-operation-id check-op-id
+           :required #{}
+           :granted #{}
+           :capability-proof-ids [(get check :capability-proof-id)]
+           :authority-id (get check :authority-record-id)
+           :source-origin-id origin-id
+           :profile profile
+           :source-target (get checked-core :source-target)
+           :derived? true}
+          (if (= fact-kind :ownership)
+            {:fact-id fact-id
+             :core-node-id node-id
+             :mir-operation-id check-op-id
+             :value-id token-id
+             :role :runtime-check-token
+             :storage :compiler-generated-token
+             :model :non-resource-control-token
+             :shareability :single-guard-use
+             :mutation :forbidden
+             :source-origin-id origin-id
+             :profile profile
+             :source-target (get checked-core :source-target)
+             :derived? true}
+            (if (= fact-kind :safety)
+              {:outcome-id fact-id
+               :artifact :gravity/safety-outcome
+               :operation check-op-id
+               :guarded-operation-id node-id
+               :kind :runtime-check
+               :profile profile
+               :target (get checked-core :source-target)
+               :outcome :runtime-checked
+               :runtime-check (get check :check-id)
+               :proof :not-applicable
+               :failure-behavior (get check :failure)
+               :source-origin-id origin-id
+               :derived? true}
+              {:fact-id fact-id
+               :core-node-id node-id
+               :mir-operation-id check-op-id
+               :profile-fact (get (get checked-core :profile-facts) node-id)
+               :profile profile
+               :source-target (get checked-core :source-target)
+               :target-request
+               (get (get checked-core :target-request-metadata)
+                    :requested-target)
+               :derived? true})))))))
+
+(defn c11-add-runtime-check-facts
+  [checked-core nodes fact-kind result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          check (get (get node :safety) :check)]
+      (c11-add-runtime-check-facts
+       checked-core
+       (rest nodes)
+       fact-kind
+       (if (= check nil)
+         result
+         (assoc
+          result
+          (c11-runtime-check-fact-id check fact-kind)
+          (c11-runtime-check-fact-record
+           checked-core node fact-kind)))))))
+
+(defn c11-build-profile-target-table
+  [checked-core nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          node-id (get node :node-id)
+          fact-id (c11-profile-target-fact-id node-id)]
+      (c11-build-profile-target-table
+       checked-core
+       (rest nodes)
+       (assoc
+        result fact-id
+        {:fact-id fact-id
+         :core-node-id node-id
+         :profile-fact (get (get checked-core :profile-facts) node-id)
+         :profile (get node :profile)
+         :source-target (get checked-core :source-target)
+         :target-request
+         (get (get checked-core :target-request-metadata)
+              :requested-target)})))))
+
+(defn c11-build-capability-proof-table
+  [proofs result]
+  (if (= (count proofs) 0)
+    result
+    (let [proof (first proofs)]
+      (c11-build-capability-proof-table
+       (rest proofs)
+       (assoc result (get proof :proof-id) proof)))))
+
+(defn c11-build-safety-proof-table
+  [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          proof (get (get node :safety) :proof)
+          proof-id (get proof :proof-id)]
+      (c11-build-safety-proof-table
+       (rest nodes)
+       (if (= proof-id nil)
+         result
+         (assoc result proof-id proof))))))
+
+(defn c11-runtime-check-source
+  [node check]
+  (let [source (get node :source)]
+    {:origin-id (get source :origin-id)
+     :span (get source :span)
+     :enclosing-syntax-origin-id
+     (get source :enclosing-syntax-origin-id)
+     :generated? true
+     :generated-origin
+     [{:role :runtime-check-generated
+       :producer-operation-id (get node :node-id)
+       :runtime-check-id (get check :check-id)}]}))
+
+(defn c11-build-runtime-check-operation
+  [checked-core node block-id]
+  (let [node-id (get node :node-id)
+        check (get (get node :safety) :check)
+        check-id (get check :check-id)]
+    {:artifact :gravity/mir-operation
+     :op-id (c11-runtime-check-operation-id check)
+     :opcode :runtime-check
+     :source-operation :runtime-check
+     :operands []
+     :result (c11-runtime-check-token-id check)
+     :result-kind :runtime-check-token
+     :type :gravity/runtime-check-token
+     :effects #{}
+     :capabilities #{}
+     :ordering :sequence
+     :source (c11-runtime-check-source node check)
+     :profile (get node :profile)
+     :facts
+     {:type-fact-id (c11-runtime-check-fact-id check :type)
+      :effect-fact-id (c11-runtime-check-fact-id check :effect)
+      :capability-fact-id
+      (c11-runtime-check-fact-id check :capability)
+      :capability-proof-ids [(get check :capability-proof-id)]
+      :ownership-fact-id
+      (c11-runtime-check-fact-id check :ownership)
+      :safety-outcome-id (c11-runtime-check-fact-id check :safety)
+      :safety-proof-id :not-applicable
+      :profile-target-fact-id
+      (c11-runtime-check-fact-id check :profile-target)
+      :runtime-check-id check-id
+      :proof-certificate-ids [(get check :capability-proof-id)]
+      :guarded-operation-id node-id
+      :failure-behavior (get check :failure)
+      :source-origin-id (get (get node :source) :origin-id)}
+     :domain-anchor nil
+     :block-id block-id
+     :verifier-status :pending}))
+
+(defn c11-build-operation
+  [checked-core node block-id]
+  (let [attributes (get node :attributes)]
+    {:artifact :gravity/mir-operation
+     :op-id (get node :node-id)
+     :opcode (c11-opcode node)
+     :source-operation (get node :source-operation)
+     :operands (c11-operation-operands node)
+     :result (c11-operation-result node)
+     :result-kind (if (= (get node :type) :gravity/nil) :unit :value)
+     :type (get node :type)
+     ; Containers carry aggregate child summaries in checked core.  MIR direct
+     ; effects/capabilities come only from the intrinsic operation; the full
+     ; aggregate records remain linked through :facts.
+     :effects (get attributes :intrinsic-effects)
+     :capabilities (get attributes :intrinsic-capabilities)
+     :ordering (c11-operation-ordering node)
+     :source (get node :source)
+     :profile (get node :profile)
+     :facts (c11-operation-facts checked-core node)
+     :domain-anchor nil
+     :block-id block-id
+     :verifier-status :pending}))
+
+(defn c11-build-operations
+  [checked-core nodes block-id result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          check (get (get node :safety) :check)
+          with-check
+          (if (= check nil)
+            result
+            (conj result
+                  (c11-build-runtime-check-operation
+                   checked-core node block-id)))]
+      (c11-build-operations
+       checked-core
+       (rest nodes)
+       block-id
+       (conj with-check
+             (c11-build-operation checked-core node block-id))))))
+
+(defn c11-build-data-flow-for-operands
+  [operands consumer consumer-block operand-index result]
+  (if (= (count operands) 0)
+    result
+    (c11-build-data-flow-for-operands
+     (rest operands)
+     consumer
+     consumer-block
+     (+ operand-index 1)
+     (conj result
+           {:from (first operands)
+            :consumer-kind :operation
+            :consumer-id consumer
+            :consumer-block consumer-block
+            :operand-index operand-index
+            :edge-kind :operand}))))
+
+(defn c11-build-data-flow-for-node
+  [node consumer-block result]
+  (let [check (get (get node :safety) :check)
+        node-id (get node :node-id)]
+    (if (= check nil)
+      (c11-build-data-flow-for-operands
+       (get node :operands) node-id consumer-block 0 result)
+      (c11-build-data-flow-for-operands
+       (get node :operands)
+       node-id
+       consumer-block
+       1
+       (conj
+        result
+        {:from (c11-runtime-check-token-id check)
+         :consumer-kind :operation
+         :consumer-id node-id
+         :consumer-block consumer-block
+         :operand-index 0
+         :edge-kind :runtime-check-guard})))))
+
+(defn c11-node-block-id
+  [node if-id then-ids else-ids downstream-ids
+   entry-id then-id else-id join-id]
+  (let [node-id (get node :node-id)]
+    (if (c11-vector-contains? then-ids node-id)
+      then-id
+      (if (c11-vector-contains? else-ids node-id)
+        else-id
+        (if (= node-id if-id)
+          join-id
+          (if (c11-vector-contains? downstream-ids node-id)
+            join-id
+            entry-id))))))
+
+(defn c11-build-data-flow
+  [nodes if-id then-ids else-ids downstream-ids
+   entry-id then-id else-id join-id result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          block-id
+          (c11-node-block-id
+           node if-id then-ids else-ids downstream-ids
+           entry-id then-id else-id join-id)]
+      (c11-build-data-flow
+       (rest nodes) if-id then-ids else-ids downstream-ids
+       entry-id then-id else-id join-id
+       (c11-build-data-flow-for-node node block-id result)))))
+
+(defn c11-build-definitions
+  [nodes if-id then-ids else-ids downstream-ids
+   entry-id then-id else-id join-id result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          node-id (get node :node-id)
+          block-id
+          (c11-node-block-id
+           node if-id then-ids else-ids downstream-ids
+           entry-id then-id else-id join-id)]
+      (let [check (get (get node :safety) :check)
+            with-check
+            (if (= check nil)
+              result
+              (assoc
+               result
+               (c11-runtime-check-token-id check)
+               {:value-id (c11-runtime-check-token-id check)
+                :operation-id (c11-runtime-check-operation-id check)
+                :block-id block-id}))]
+       (c11-build-definitions
+       (rest nodes) if-id then-ids else-ids downstream-ids
+       entry-id then-id else-id join-id
+       (if (= (c11-operation-result node) nil)
+         with-check
+         (assoc with-check node-id
+                {:value-id node-id
+                 :operation-id node-id
+                 :block-id block-id})))))))
+
+(defn c11-uses-for-value
+  [edges value-id result]
+  (if (= (count edges) 0)
+    result
+    (let [edge (first edges)]
+      (c11-uses-for-value
+       (rest edges)
+       value-id
+       (if (= (get edge :from) value-id)
+         (conj result
+               {:use-kind :instruction
+                :consumer-kind (get edge :consumer-kind)
+                :consumer-id (get edge :consumer-id)
+                :consumer-block (get edge :consumer-block)
+                :operand-index (get edge :operand-index)
+                :edge-kind (get edge :edge-kind)})
+         result)))))
+
+(defn c11-terminator-uses-for-value
+  [uses value-id result]
+  (if (= (count uses) 0)
+    result
+    (let [use (first uses)]
+      (c11-terminator-uses-for-value
+       (rest uses)
+       value-id
+       (if (= (get use :value-id) value-id)
+         (conj result
+               {:use-kind :terminator
+                :consumer-kind (get use :consumer-kind)
+                :consumer-id (get use :consumer-id)
+                :consumer-block (get use :consumer-block)
+                :operand-index (get use :operand-index)
+                :edge-kind (get use :edge-kind)})
+         result)))))
+
+(defn c11-append-uses
+  [left right]
+  (if (= (count right) 0)
+    left
+    (c11-append-uses (conj left (first right)) (rest right))))
+
+(defn c11-build-values
+  [nodes data-flow definitions terminator-uses result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          value-id (get node :node-id)]
+      (let [check (get (get node :safety) :check)
+            token-id
+            (if (= check nil) nil (c11-runtime-check-token-id check))
+            with-check
+            (if (= check nil)
+              result
+              (assoc
+               result token-id
+               {:artifact :gravity/mir-value
+                :value-id token-id
+                :kind :runtime-check-token
+                :type :gravity/runtime-check-token
+                :defined-by (get definitions token-id)
+                :uses (c11-uses-for-value data-flow token-id [])
+                :source (c11-runtime-check-source node check)
+                :ownership :not-applicable
+                :effects #{}
+                :safety
+                {:outcome :runtime-check-token
+                 :runtime-check-id (get check :check-id)
+                 :guarded-operation-id (get node :node-id)}}))]
+       (c11-build-values
+       (rest nodes)
+       data-flow
+       definitions
+       terminator-uses
+       (if (= (c11-operation-result node) nil)
+         with-check
+         (assoc with-check value-id
+                {:artifact :gravity/mir-value
+                 :value-id value-id
+                 :kind :instruction-result
+                 :type (get node :type)
+                 :defined-by (get definitions value-id)
+                 :uses
+                 (c11-append-uses
+                  (c11-uses-for-value data-flow value-id [])
+                  (c11-terminator-uses-for-value
+                   terminator-uses value-id []))
+                 :source (get node :source)
+                 :ownership (get node :ownership)
+                 :effects (get node :effects)
+                 :safety (get node :safety)})))))))
+
+(defn c11-build-source-map
+  [nodes result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (let [check (get (get node :safety) :check)
+            with-check
+            (if (= check nil)
+              result
+              (assoc
+               result
+               (c11-runtime-check-operation-id check)
+               (c11-runtime-check-source node check)))]
+        (c11-build-source-map
+         (rest nodes)
+         (assoc with-check (get node :node-id) (get node :source)))))))
+
+(defn c11-build-terminator
+  [terminator-id kind operands successors effects source profile facts]
+  {:artifact :gravity/mir-terminator
+   :terminator-id terminator-id
+   :kind kind
+   :operands operands
+   :successors successors
+   :effects effects
+   :ordering (if (= (count effects) 0) :none :sequence)
+   :source source
+   :profile profile
+   :facts facts
+   :verifier-status :pending})
+
+(defn c11-build-block
+  [block-id arguments instructions terminator predecessors successors
+   dominators source]
+  {:artifact :gravity/mir-block
+   :block-id block-id
+   :arguments arguments
+   :instructions instructions
+   :terminator terminator
+   :predecessors predecessors
+   :successors successors
+   :dominators dominators
+   :data-flow {:module-data-flow-graph-reference true}
+   :source source})
+
+(defn c11-build-linear-mir
+  [checked-core nodes return-value-id]
+  (let [artifact-id (get checked-core :artifact-id)
+        entry-id (str artifact-id ":mir:entry")
+        operations (c11-build-operations checked-core nodes entry-id [])
+        data-flow
+        (c11-build-data-flow
+         nodes nil [] [] [] entry-id entry-id entry-id entry-id [])
+        definitions
+        (c11-build-definitions
+         nodes nil [] [] [] entry-id entry-id entry-id entry-id {})
+        terminator-id (str entry-id ":return")
+        terminator-uses
+        [{:value-id return-value-id
+          :consumer-kind :terminator
+          :consumer-id terminator-id
+          :consumer-block entry-id
+          :operand-index 0
+          :edge-kind :return-value}]
+        source (get (first nodes) :source)
+        terminator
+        (c11-build-terminator
+         terminator-id :return [return-value-id] [] #{}
+         source (get checked-core :profile)
+         {:returned-value return-value-id})
+        block
+        (c11-build-block entry-id [] operations terminator [] [] [entry-id]
+                         source)]
+    {:entry entry-id
+     :blocks {entry-id block}
+     :edges []
+     :dominance {entry-id [entry-id]}
+     :data-flow data-flow
+     :definitions definitions
+     :terminator-uses terminator-uses
+     :values
+     (c11-build-values nodes data-flow definitions terminator-uses {})
+     :source-map (c11-build-source-map nodes {})
+     :conditional-count 0}))
+
+(defn c11-build-conditional-mir
+  [checked-core nodes if-node return-value-id]
+  (let [artifact-id (get checked-core :artifact-id)
+        if-id (get if-node :node-id)
+        if-path (get if-node :path)
+        then-prefix (conj if-path :then)
+        else-prefix (conj if-path :else)
+        then-nodes (c11-nodes-under-prefix nodes then-prefix [])
+        else-nodes (c11-nodes-under-prefix nodes else-prefix [])
+        outside-nodes
+        (c11-nodes-outside-prefixes nodes then-prefix else-prefix [])
+        ; Checked core is already in authenticated canonical execution order.
+        ; Branch-prefix nodes remain branch-local; outside nodes before the if
+        ; execute in entry, while the if and every outside continuation node
+        ; after it remain in join.  Dependency reachability alone cannot hoist
+        ; an effectful continuation before its controlling conditional.
+        entry-nodes (c11-nodes-before-id outside-nodes if-id [])
+        downstream-nodes (c11-nodes-from-id outside-nodes if-id)
+        downstream-ids (c11-node-ids downstream-nodes [])
+        entry-id (str artifact-id ":mir:entry")
+        then-id (str artifact-id ":mir:then")
+        else-id (str artifact-id ":mir:else")
+        join-id (str artifact-id ":mir:join")
+        if-operands (get if-node :operands)
+        condition-id (first if-operands)
+        then-result-id (second if-operands)
+        else-result-id (first (rest (rest if-operands)))
+        entry-operations
+        (c11-build-operations checked-core entry-nodes entry-id [])
+        then-operations
+        (c11-build-operations checked-core then-nodes then-id [])
+        else-operations
+        (c11-build-operations checked-core else-nodes else-id [])
+        join-operations
+        (c11-build-operations checked-core downstream-nodes join-id [])
+        source (get if-node :source)
+        entry-terminator
+        (c11-build-terminator
+         (str entry-id ":conditional") :conditional-branch [condition-id]
+         ; Branch selection itself is pure.  The checked-core `if` carries an
+         ; aggregate child-effect summary, which remains available through the
+         ; linked fact tables instead of being duplicated as a terminator
+         ; effect/order obligation.
+         [then-id else-id] #{} source
+         (get checked-core :profile)
+         {:condition condition-id :join join-id})
+        then-terminator
+        (c11-build-terminator
+         (str then-id ":branch") :branch [then-result-id] [join-id] #{}
+         source (get checked-core :profile)
+         {:incoming-value then-result-id})
+        else-terminator
+        (c11-build-terminator
+         (str else-id ":branch") :branch [else-result-id] [join-id] #{}
+         source (get checked-core :profile)
+         {:incoming-value else-result-id})
+        join-terminator
+        (c11-build-terminator
+         (str join-id ":return") :return [return-value-id] [] #{}
+         source (get checked-core :profile)
+         {:returned-value return-value-id})
+        terminator-uses
+        [{:value-id condition-id
+          :consumer-kind :terminator
+          :consumer-id (str entry-id ":conditional")
+          :consumer-block entry-id
+          :operand-index 0
+          :edge-kind :condition}
+         {:value-id then-result-id
+          :consumer-kind :terminator
+          :consumer-id (str then-id ":branch")
+          :consumer-block then-id
+          :operand-index 0
+          :edge-kind :branch-value}
+         {:value-id else-result-id
+          :consumer-kind :terminator
+          :consumer-id (str else-id ":branch")
+          :consumer-block else-id
+          :operand-index 0
+          :edge-kind :branch-value}
+         {:value-id return-value-id
+          :consumer-kind :terminator
+          :consumer-id (str join-id ":return")
+          :consumer-block join-id
+          :operand-index 0
+          :edge-kind :return-value}]
+        blocks
+        {entry-id
+         (c11-build-block entry-id [] entry-operations entry-terminator []
+                          [then-id else-id] [entry-id] source)
+         then-id
+         (c11-build-block then-id [] then-operations then-terminator [entry-id]
+                          [join-id] [entry-id then-id] source)
+         else-id
+         (c11-build-block else-id [] else-operations else-terminator [entry-id]
+                          [join-id] [entry-id else-id] source)
+        join-id
+        (c11-build-block
+          ; The explicit :conditional-join operation is the sole SSA
+          ; definition for `if-id`.  Incoming predecessor/value pairing stays
+          ; in CFG :join metadata, avoiding a second block-argument/phi
+          ; definition of the same value.
+          join-id []
+          join-operations join-terminator [then-id else-id] []
+          [entry-id join-id] source)}
+        then-ids
+        (c11-node-ids then-nodes [])
+        else-ids
+        (c11-node-ids else-nodes [])
+        data-flow
+        (c11-build-data-flow
+         nodes if-id then-ids else-ids downstream-ids
+         entry-id then-id else-id join-id [])
+        definitions
+        (c11-build-definitions
+         nodes if-id then-ids else-ids downstream-ids
+         entry-id then-id else-id join-id {})]
+    {:entry entry-id
+     :blocks blocks
+     :edges [{:from entry-id :to then-id :kind :true}
+             {:from entry-id :to else-id :kind :false}
+             {:from then-id :to join-id :kind :join}
+             {:from else-id :to join-id :kind :join}]
+     :dominance {entry-id [entry-id]
+                 then-id [entry-id then-id]
+                 else-id [entry-id else-id]
+                 join-id [entry-id join-id]}
+     :data-flow data-flow
+     :definitions definitions
+     :terminator-uses terminator-uses
+     :values
+     (c11-build-values nodes data-flow definitions terminator-uses {})
+     :source-map (c11-build-source-map nodes {})
+     :conditional-count 1
+     :join {:block-id join-id
+            :value-id if-id
+            :incoming
+            [{:predecessor then-id :value then-result-id}
+             {:predecessor else-id :value else-result-id}]}}))
+
+(defn c11-build-target-independent-mir
+  [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        root-node-id (first (get checked-core :root-node-ids))
+        root-node (c11-find-node-by-id nodes root-node-id)
+        return-value-id (c11-last-value (get root-node :operands))
+        return-node (c11-find-node-by-id nodes return-value-id)
+        conditional-count (c11-if-count nodes 0)
+        graph
+        (if (= conditional-count 0)
+          (c11-build-linear-mir checked-core nodes return-value-id)
+          (if (= conditional-count 1)
+            (c11-build-conditional-mir
+             checked-core nodes (c11-find-if-node nodes) return-value-id)
+            {:status :rejected
+             :diagnostic "C11-BLOCK"
+             :missing-fact :bounded-single-conditional-cfg
+             :conditional-count conditional-count}))]
+    (if (= (get graph :status) :rejected)
+      graph
+      {:artifact :gravity/mir-module
+       :schema-version 1
+       :source-core (get checked-core :artifact-id)
+       :module-id (get (get checked-core :source-core-input) :module)
+       :profile (get checked-core :profile)
+       :source-target (get checked-core :source-target)
+       :target-request
+       (get (get checked-core :target-request-metadata) :requested-target)
+       :target-request-metadata (get checked-core :target-request-metadata)
+       :functions
+       {(get checked-core :entrypoint)
+        {:artifact :gravity/mir-function
+         :fn-id root-node-id
+         :name (get checked-core :entrypoint)
+         :params []
+         :returns (get return-node :type)
+         :latent-effects
+         (get (get checked-core :source-core-input) :declared-effects)
+         :capabilities
+         (get (get checked-core :source-core-input) :declared-capabilities)
+         :blocks (get graph :blocks)
+         :entry (get graph :entry)
+         :source
+         (get (get graph :source-map) root-node-id)
+         :facts
+         {:type-fact-id
+          (get (get (get checked-core :type-facts) root-node-id) :fact-id)
+          :effect-fact-id
+          (get (get (get checked-core :effect-facts) root-node-id) :fact-id)
+          :ownership-fact-id
+          (get (get (get checked-core :ownership-facts) root-node-id)
+               :fact-id)
+          :safety-outcome-id (c11-safety-outcome-id root-node-id)
+          :profile-target-fact-id
+          (c11-profile-target-fact-id root-node-id)}
+         :provenance
+         {:checked-core-artifact-id (get checked-core :artifact-id)
+          :core-node-id root-node-id}}}
+       :globals {}
+       :control-flow-graph
+       {:entry (get graph :entry)
+        :edges (get graph :edges)
+        :dominance (get graph :dominance)
+        :join (get graph :join)}
+       :data-flow-graph
+       {:edges (get graph :data-flow)
+        :terminator-uses (get graph :terminator-uses)
+        :definitions (get graph :definitions)
+        :values (get graph :values)}
+       :type-table
+       (c11-add-runtime-check-facts
+        checked-core nodes :type
+        (c11-build-fact-table-by-id
+         nodes (get checked-core :type-facts) :fact-id ":type-fact" {}))
+       :effect-table
+       (c11-add-runtime-check-facts
+        checked-core nodes :effect
+        (c11-build-fact-table-by-id
+         nodes (get checked-core :effect-facts) :fact-id ":effect-fact" {}))
+       :effect-order-graph (get checked-core :effect-graph)
+       :ownership-table
+       (c11-add-runtime-check-facts
+        checked-core nodes :ownership
+        (c11-build-fact-table-by-id
+         nodes (get checked-core :ownership-facts)
+         :fact-id ":ownership-fact" {}))
+       :capability-table
+       (c11-add-runtime-check-facts
+        checked-core nodes :capability
+        (c11-build-fact-table-by-id
+         nodes (get checked-core :capability-facts)
+         :fact-id ":capability-fact" {}))
+       :capability-proof-table
+       (c11-build-capability-proof-table
+        (get checked-core :capability-proof-records) {})
+       :safety-table
+       (c11-add-runtime-check-facts
+        checked-core nodes :safety
+        (c11-build-fact-table-by-id
+         nodes (get checked-core :safety-facts)
+         :outcome-id ":safety-outcome" {}))
+       :profile-target-table
+       (c11-add-runtime-check-facts
+        checked-core nodes :profile-target
+        (c11-build-profile-target-table checked-core nodes {}))
+       :runtime-check-table (c11-build-runtime-check-table nodes {})
+       :proof-certificate-table
+       {:capability-proof-table-reference :capability-proof-table
+        :safety-proofs (c11-build-safety-proof-table nodes {})}
+       :source-map (get graph :source-map)
+       :domain-anchors {}
+       :diagnostics []
+       :provenance
+       {:checked-core-artifact-id (get checked-core :artifact-id)
+        :checked-core-mapping-id (get checked-core :mapping-id)
+       :checked-core-provenance-binding-id
+        (get checked-core :provenance-binding-id)
+        :checked-core-origin-closure-binding-id
+        (get checked-core :provenance-binding-id)}
+       :construction
+       {:owner :gravity-source
+        :function :c11-build-target-independent-mir
+        :status :constructed}
+       :pass-contract (c11-build-mir-pass-contract)
+       :pass-execution-record
+       {:artifact :gravity/build-mir-pass-execution-record
+        :pass-id :c11-build-mir-bounded-slice
+        :pass-contract-hash :pending-source-binding
+        :input-artifact-id (get checked-core :artifact-id)
+        :output-content-id :pending-independent-verifier
+        :verifier-report-id :pending-independent-verifier
+        :verifier-report-hash :pending-independent-verifier
+        :diagnostics []
+        :status :constructed-unverified
+        :record-id :pending-independent-verifier}
+       :verification-status :pending
+       :target-independent? true
+       :b1-preflight
+       {:input-kind :gravity/mir
+        :requires-verifier-status :passed
+        :status :pending-c11-verifier
+        :backend-credit? false}
+       :scope
+       {:operation-set
+        [:literal :implicit-nil :quote :local :let-binding :truthy
+         :do :if :let :str :println :function :runtime-check]
+        :maximum-conditionals 1
+        :maximum-module-carrier-nodes 16384
+        :maximum-final-artifact-carrier-nodes 32768
+        :maximum-carrier-depth 256
+        :whole-c11? false
+        :domain-ir-credit? false
+        :optimization-credit? false
+        :target-lowering-credit? false
+        :backend-credit? false
+        :llvm-credit? false
+        :release-credit? false
+        :whole-language? false
+        :self-hosted? false}
+       :clojure-seed-boundary? true
+       :self-hosted? false})))

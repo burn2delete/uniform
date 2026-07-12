@@ -24077,7 +24077,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:742d2123c887e9a4c4ed1ffedade3feff06e50bfc39ada67619ab06c25960bf4"
+    (is (= "sha256:1f08cbf50f5a6664e93efd44c82bff2fb654f503a93a8dc080c1b02b834ee7d2"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c11-mir-specification\n"
@@ -30404,6 +30404,1006 @@
              :unexpected
              (catch AssertionError _ :propagated))))))
 
+;; FL-P06-T03 authenticated checked-core -> genuine Gravity C11 MIR tests.
+
+(def ^:private c11-authenticated-pure-source
+  (closed-pure-source-with-main
+   "(let [x \"a\"] (if true (do x) (quote \"z\")))"
+   {:exports '[main]}))
+
+(def ^:private c11-authenticated-effectful-source
+  (closed-pure-source-with-main
+   (str "(do (if false (println \"hidden\") nil) "
+        "(println (str \"a\" \"b\")) (str \"x\"))")
+   {:effects #{:memory/allocate :io/write}
+    :capabilities #{:memory/allocator :io/stdout}
+    :exports '[main]}))
+
+(defn- c11-test-rehash
+  [artifact checked-core context]
+  (let [module (:mir-module artifact)
+        verifier (:verification-report artifact)
+        scope (:scope artifact)
+        with-pass
+        (assoc module :pass-execution-record
+               (bootstrap/p15-s23-c11-mir-pass-execution-record
+                module checked-core verifier))
+        with-b1
+        (assoc with-pass :b1-preflight
+               (bootstrap/p15-s23-c11-b1-candidate-record
+                with-pass checked-core verifier scope))
+        artifact (assoc artifact
+                        :mir-module with-b1
+                        :b1-preflight (:b1-preflight with-b1))
+        with-mir-id
+        (assoc artifact :mir-id
+               (bootstrap/p15-s23-c11-mir-recomputed-id artifact))
+        with-artifact-id
+        (assoc with-mir-id :artifact-id
+               (bootstrap/p15-s23-c11-mir-digest
+                {:kind (:kind with-mir-id)
+                 :schema-version (:schema-version with-mir-id)
+                 :mir-id (:mir-id with-mir-id)}))]
+    (assoc with-artifact-id :actual-path-binding-id
+           (bootstrap/p15-s23-c11-mir-recomputed-actual-path-binding-id
+            with-artifact-id checked-core context))))
+
+(defn- c11-final-diagnostic
+  [artifact checked-core context]
+  (diagnostic-data
+   #(bootstrap/p15-s23-c11-mir-validate-final-artifact!
+     artifact checked-core context)))
+
+(defn- c11-raw-diagnostic
+  [module checked-core context]
+  (diagnostic-data
+   #(bootstrap/p15-s23-c11-mir-validate-constructed!
+     (:source-path context) checked-core
+     (bootstrap/p15-s23-c11-mir-pending-view module))))
+
+(defn- c11-operation-location
+  [module operation-id]
+  (let [entrypoint (first (keys (:functions module)))]
+    (first
+     (for [[block-id block] (get-in module [:functions entrypoint :blocks])
+           [index operation] (map-indexed vector (:instructions block))
+           :when (= operation-id (:op-id operation))]
+       {:block-id block-id
+        :index index
+        :path [:functions entrypoint :blocks block-id :instructions index]
+        :operation operation}))))
+
+(defn- c11-update-operation
+  [module operation-id transform]
+  (if-let [path (:path (c11-operation-location module operation-id))]
+    (update-in module path transform)
+    module))
+
+(deftest authenticated-c11-mir-is-path-neutral-verified-and-fail-closed
+  (with-temp-directory
+    "gravity-c11-left-"
+    (fn [left-directory]
+      (with-temp-directory
+        "gravity-c11-right-"
+        (fn [right-directory]
+          (let [left-path (.toString (.resolve left-directory "program.gravity"))
+                right-path (.toString (.resolve right-directory "program.qst"))
+                _ (spit left-path c11-authenticated-pure-source)
+                _ (spit right-path c11-authenticated-pure-source)
+                left-core
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 left-path c11-authenticated-pure-source :c)
+                right-core
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 right-path c11-authenticated-pure-source :c)
+                left-context
+                (bootstrap/p15-s23-stage2-closed-checked-core-context
+                 left-path c11-authenticated-pure-source :c)
+                right-context
+                (bootstrap/p15-s23-stage2-closed-checked-core-context
+                 right-path c11-authenticated-pure-source :c)
+                left (bootstrap/p15-s23-stage2-c11-mir-artifact
+                      left-core left-context)
+                right (bootstrap/p15-s23-stage2-c11-mir-artifact
+                       right-core right-context)
+                report
+                (bootstrap/p15-s23-stage2-c11-mir-verification-report
+                 left left-core left-context)
+                module (:mir-module left)
+                scope (:scope left)
+                entrypoint (:entrypoint left-core)
+                blocks (get-in module [:functions entrypoint :blocks])
+                operations
+                (bootstrap/p15-s23-c11-mir-operation-sequence module)
+                edges (get-in module [:data-flow-graph :edges])
+                terminator-uses
+                (get-in module [:data-flow-graph :terminator-uses])
+                first-op-id (:op-id (first operations))]
+            (testing "genuine bounded pure MIR and honest seed boundary"
+              (is (= :gravity/p15-s23-c11-authenticated-mir-artifact
+                     (:kind left)))
+              (is (= :gravity/mir-module (:artifact module)))
+              (is (= :passed (:verification-status module)))
+              (is (= 4 (count blocks)))
+              (is (= 10 (count operations)))
+              (is (empty? (:runtime-check-table module)))
+              (is (not-any? #(= :runtime-check (:opcode %)) operations))
+              (is (every? empty? (map :effects operations)))
+              (is (= :c (:target-request module)))
+              (is (true? (:target-independent? module)))
+              (is (= {:semantic-constructor
+                      {:owner :gravity-source
+                       :function
+                       bootstrap/p15-s23-c11-mir-builder-function
+                       :builder-semantic-hash
+                       bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash}
+                      :execution-tcb
+                      {:runner :clojure-stage0-rule-runner
+                       :compiled-by :clojure-stage0-seed
+                       :seed-boundary? true}
+                      :semantic-replay-parity :public-verifier-required
+                      :invocation-audit :not-available
+                      :execution-count :not-claimed
+                      :live-invocation-claim? false
+                      :self-hosted? false}
+                     (:construction-record left)))
+              (is (= :passed (:status report)))
+              (is (= :passed (:semantic-replay-parity report)))
+              (is (= :not-available (:invocation-audit report)))
+              (is (= :not-claimed (:execution-count report)))
+              (is (false? (:live-invocation-claim? report)))
+              (is (false? (:self-hosted? left))))
+            (testing "identity is semantic while physical provenance is retained"
+              (is (= (:mir-id left) (:mir-id right)))
+              (is (= (:artifact-id left) (:artifact-id right)))
+              (is (not= (:actual-path-binding-id left)
+                        (:actual-path-binding-id right)))
+              (is (= (bootstrap/p15-s23-c11-mir-path-neutral-value
+                      (:mir-module left))
+                     (bootstrap/p15-s23-c11-mir-path-neutral-value
+                      (:mir-module right))))
+              (is (= left-path
+                     (get-in left [:provenance :actual-paths :source])))
+              (is (= right-path
+                     (get-in right [:provenance :actual-paths :source])))
+              (is (not= (get-in left
+                                [:provenance :checked-core-origin-closure])
+                        (get-in right
+                                [:provenance :checked-core-origin-closure]))))
+            (testing "pass execution and B1 candidate are content-bound"
+              (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
+                     (:maximum-module-carrier-nodes scope)))
+              (is (=
+                   bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+                   (:maximum-final-artifact-carrier-nodes scope)))
+              (is (= bootstrap/p15-s23-c11-mir-max-carrier-depth
+                     (:maximum-carrier-depth scope)))
+              (is (= (bootstrap/p15-s23-c11-mir-pass-execution-record
+                      module left-core (:verification-report left))
+                     (:pass-execution-record module)))
+              (is (= (bootstrap/p15-s23-c11-b1-candidate-record
+                      module left-core (:verification-report left) scope)
+                     (:b1-preflight left)))
+              (is (= :gravity/verified-mir-candidate-for-b1
+                     (get-in left [:b1-preflight :artifact])))
+              (is (= :verified-mir-candidate-for-b1
+                     (get-in left [:b1-preflight :status])))
+              (is (= (:record-id (:pass-execution-record module))
+                     (get-in left
+                             [:b1-preflight :binding
+                              :pass-execution-record-id])))
+              (is (every? false?
+                          (map #(get-in left [:b1-preflight %])
+                               [:target-lowering-credit?
+                                :backend-credit? :llvm-credit?]))))
+            (testing "facts and use-def links are ID-resolved and reciprocal"
+              (let [if-node
+                    (first
+                     (filter #(= :if (:source-operation %))
+                             (:core-nodes left-core)))
+                    [_ then-value-id else-value-id] (:operands if-node)
+                    source-core (:artifact-id left-core)]
+                (is (= [{:predecessor (str source-core ":mir:then")
+                         :value then-value-id}
+                        {:predecessor (str source-core ":mir:else")
+                         :value else-value-id}]
+                       (get-in module
+                               [:control-flow-graph :join :incoming]))))
+              (is (= (bootstrap/p15-s23-c11-mir-expected-terminator-uses
+                      left-core)
+                     terminator-uses))
+              (doseq [operation operations
+                      [fact-key table-key]
+                      [[:type-fact-id :type-table]
+                       [:effect-fact-id :effect-table]
+                       [:capability-fact-id :capability-table]
+                       [:ownership-fact-id :ownership-table]
+                       [:safety-outcome-id :safety-table]
+                       [:profile-target-fact-id :profile-target-table]]]
+                (is (contains? (get module table-key)
+                               (get-in operation [:facts fact-key]))
+                    [(:op-id operation) fact-key]))
+              (doseq [edge edges]
+                (is
+                 (some
+                  #{(assoc (select-keys edge
+                                       [:consumer-kind :consumer-id
+                                        :consumer-block :operand-index
+                                        :edge-kind])
+                           :use-kind :instruction)}
+                  (get-in module
+                          [:data-flow-graph :values (:from edge) :uses]))
+                 edge))
+              (doseq [use terminator-uses]
+                (is
+                 (some
+                  #{(assoc (dissoc use :value-id)
+                           :use-kind :terminator)}
+                  (get-in module
+                          [:data-flow-graph :values (:value-id use) :uses]))
+                 use)))
+            (testing "raw and finalized mutations fail closed"
+              (doseq [[candidate expected-id expected-fact]
+                       [[(c11-update-operation
+                         module first-op-id
+                         #(assoc-in % [:facts :type-fact-id]
+                                    "sha256:forged-type-fact"))
+                        "C11-SAFETY"
+                        :linked-c6-c10-id-references]
+                       [(update-in module [:data-flow-graph :edges]
+                                   #(vec (rest %)))
+                        "C11-DOMINANCE" :exact-checked-core-data-flow]
+                       [(c11-update-operation
+                         module first-op-id #(assoc % :opcode :llvm/load))
+                        "C11-TARGET-LEAK" :checked-core-operation-parity]
+                       [(update-in module
+                                   [:data-flow-graph :terminator-uses]
+                                   #(vec (rest %)))
+                        "C11-DOMINANCE" :exact-terminator-use-sites]
+                       [(assoc-in module
+                                  [:control-flow-graph :join
+                                   :incoming 0 :value]
+                                  "sha256:forged-join-value")
+                        "C11-BLOCK"
+                        :canonical-single-conditional-c11-cfg]
+                       [(assoc-in module
+                                  [:control-flow-graph :join
+                                   :incoming 0 :predecessor]
+                                  "sha256:forged-predecessor")
+                        "C11-BLOCK"
+                        :canonical-single-conditional-c11-cfg]]]
+                (let [data (c11-raw-diagnostic
+                            candidate left-core left-context)]
+                  (is (= expected-id (:id data)) data)
+                  (is (= expected-fact (:missing-fact data)) data)
+                  (is (= :c11-authenticated-mir (:stage data)))
+                  (is (= :c (:target data)))
+                  (is (vector? (:remediation data)))))
+              (doseq [[candidate expected-fact]
+                      [[(-> left
+                            (assoc-in [:b1-preflight :status] :forged)
+                            (assoc-in [:mir-module :b1-preflight :status]
+                                      :forged))
+                        :verified-mir-candidate-for-b1]
+                       [(assoc-in
+                         left
+                         [:mir-module :pass-execution-record :status]
+                         :forged)
+                        :content-bound-build-mir-pass-contract-and-execution]]]
+                (let [data (c11-final-diagnostic
+                            candidate left-core left-context)]
+                  (is (= "C11-VERIFY" (:id data)) data)
+                  (is (= expected-fact (:missing-fact data)) data))))
+            (testing "content rehashing cannot authenticate a semantic forgery"
+              (let [mutated-module
+                    (c11-update-operation
+                     module first-op-id
+                     #(assoc-in % [:facts :safety-outcome-id]
+                                "sha256:forged-safety-outcome"))
+                    coherent
+                    (c11-test-rehash
+                     (assoc left :mir-module mutated-module)
+                     left-core left-context)
+                    data
+                    (c11-final-diagnostic coherent left-core left-context)]
+                (is (= "C11-SAFETY" (:id data)) data)
+                (is (= :linked-c6-c10-id-references
+                       (:missing-fact data)) data)))
+            (testing "complete C15 diagnostics survive nested containment"
+              (let [broken
+                    (c11-update-operation
+                     module first-op-id
+                     #(assoc-in % [:facts :type-fact-id]
+                                "sha256:forged-type-fact"))
+                    complete
+                    (c11-raw-diagnostic broken left-core left-context)
+                    nested-once
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-c11-mir-contain-exception!
+                       left-path :nested-c11
+                       (ex-info "must-not-escape-one"
+                                (assoc complete
+                                       :hostile-extra "secret-one"
+                                       :message "must-not-escape-one"))))
+                    nested-twice
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-c11-mir-contain-exception!
+                       left-path :nested-c11
+                       (ex-info "must-not-escape-two"
+                                (assoc nested-once
+                                       :hostile-extra "secret-two"
+                                       :message "must-not-escape-two"))))]
+                (is (= (:diagnostic-id complete)
+                       (:diagnostic-id nested-once)
+                       (:diagnostic-id nested-twice)))
+                (is (= (:ordering-key complete)
+                       (:ordering-key nested-once)
+                       (:ordering-key nested-twice)))
+                (is (= (:facts complete)
+                       (:facts nested-once)
+                       (:facts nested-twice)))
+                (is (every? (set (keys nested-twice))
+                            bootstrap/c15-diagnostic-required-fields))
+                (is (= :gravity/diagnostic (:artifact nested-twice)))
+                (is (= :active (:lifecycle nested-twice)))
+                (is (vector? (:remediation nested-twice)))
+                (is (vector? (:redactions nested-twice)))
+                (is (not (str/includes? (pr-str nested-twice)
+                                        "must-not-escape")))
+                (is (not (str/includes? (pr-str nested-twice)
+                                        "secret-")))))
+            (testing "raw and public-final carrier bounds are distinct"
+              (let [raw-node-carrier
+                    (vec (repeat 4096 [nil nil nil]))
+                    final-node-carrier
+                    (vec
+                     (repeat 4096
+                             [nil nil nil nil nil nil nil]))
+                    deep-carrier
+                    (nth (iterate vector nil)
+                         (inc bootstrap/p15-s23-c11-mir-max-carrier-depth))
+                    cyclic-carrier (java.util.ArrayList.)
+                    _ (.add cyclic-carrier cyclic-carrier)
+                    raw-data
+                    (c11-raw-diagnostic
+                     (assoc module :hostile-carrier raw-node-carrier)
+                     left-core left-context)
+                    depth-data
+                    (c11-raw-diagnostic
+                     (assoc module :hostile-carrier deep-carrier)
+                     left-core left-context)
+                    cycle-data
+                    (c11-raw-diagnostic
+                     (assoc module :hostile-carrier cyclic-carrier)
+                     left-core left-context)
+                    final-data
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-stage2-c11-mir-verification-report
+                       final-node-carrier left-core left-context))]
+                (is (= "C11-VERIFY" (:id raw-data)) raw-data)
+                (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
+                       (get-in raw-data [:facts :maximum-nodes])))
+                (is (= :error (:severity raw-data)))
+                (is (= "C11-VERIFY" (:id depth-data)) depth-data)
+                (is (= bootstrap/p15-s23-c11-mir-max-carrier-depth
+                       (get-in depth-data [:facts :maximum-depth])))
+                (is (= "C11-VERIFY" (:id cycle-data)) cycle-data)
+                (is (= :bounded-c11-carrier
+                       (:missing-fact cycle-data)))
+                (is (= "C11-VERIFY" (:id final-data)) final-data)
+                (is (=
+                     bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+                     (get-in final-data [:facts :maximum-nodes])))
+                (is (= :error (:severity final-data)))
+                (is (not (str/includes?
+                          (pr-str [raw-data depth-data cycle-data final-data])
+                          "StackOverflowError")))))
+            (testing "only genuinely owned upstream diagnostics retain C6"
+              (let [forged
+                    (ex-info
+                     "forged upstream"
+                     {:id "C8-CAPABILITY"
+                      :bootstrap-stage :stage0
+                      :stage :effect-check
+                      :diagnostic-family :c8-effect-checker
+                      :document-id "C8"
+                      :expected-document
+                      bootstrap/c8-effect-governing-document
+                      :source-span {:source left-path}
+                      :profile :hosted :target :c
+                      :missing-fact :forged
+                      :generated-origin-chain []
+                      :remediation "forged"})
+                    forged-data
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-c11-mir-contain-checked-core-exception!
+                       left-path :forged-upstream forged))
+                    genuine-data
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-stage2-c11-mir-artifact
+                       (assoc left-core :artifact-id "sha256:forged")
+                       left-context))]
+                (is (= "C11-VERIFY" (:id forged-data)) forged-data)
+                (is (= :internal-error (:severity forged-data)))
+                (is (= "C6-VERIFY" (:id genuine-data)) genuine-data)
+                (is (= :core-lowering (:stage genuine-data)))
+                (is (= :c (:target genuine-data)))
+                (is (= :jvm (get-in genuine-data
+                                    [:facts :source-target])))))
+            (testing "unexpected host failures are redacted internal errors"
+              (let [data
+                    (diagnostic-data
+                     #(with-redefs
+                        [bootstrap/p15-s23-c11-mir-source-binding!
+                         (fn [& _]
+                           (throw
+                            (RuntimeException.
+                             "c11-host-secret-must-not-escape")))]
+                        (bootstrap/p15-s23-stage2-c11-mir-artifact
+                         left-core left-context)))]
+                (is (= "C11-VERIFY" (:id data)) data)
+                (is (= :internal-error (:severity data)))
+                (is (not (str/includes?
+                          (pr-str data)
+                          "c11-host-secret-must-not-escape")))))
+            (is (false?
+                 (bootstrap/p15-s23-stage2-c11-mir-authentic? left)))
+            (is (bootstrap/p15-s23-stage2-c11-mir-authentic?
+                 left left-core left-context))))))))
+
+(deftest authenticated-c11-mir-models-effectful-unit-result-directly
+  (with-temp-source
+    ".gravity"
+    c11-authenticated-effectful-source
+    (fn [path]
+      (let [authority
+            (bootstrap/p15-s23-stage2-closed-checked-core-authority-binding
+             path c11-authenticated-effectful-source :jvm
+             bootstrap/p15-s23-checked-core-reference-policy-selector)
+            checked-core
+            (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+             path c11-authenticated-effectful-source :jvm authority)
+            context
+            (bootstrap/p15-s23-stage2-closed-checked-core-context
+             path c11-authenticated-effectful-source :jvm authority)
+            artifact (bootstrap/p15-s23-stage2-c11-mir-artifact
+                      checked-core context)
+            public-report
+            (bootstrap/p15-s23-stage2-c11-mir-verification-report
+             artifact checked-core context)
+            module (:mir-module artifact)
+            pending (bootstrap/p15-s23-c11-mir-pending-view module)
+            operations
+            (bootstrap/p15-s23-c11-mir-operation-sequence pending)
+            operation-by-id (into {} (map (juxt :op-id identity)) operations)
+            function (get-in pending
+                             [:functions (:entrypoint checked-core)])
+            blocks (:blocks function)
+            return-block (get blocks
+                              (last
+                               (bootstrap/p15-s23-c11-mir-canonical-block-order
+                                pending)))
+            return-value-id
+            (first (get-in return-block [:terminator :operands]))
+            operation-products
+            (bootstrap/p15-s23-c11-mir-validate-operations!
+             path checked-core pending)
+            runtime-table (:runtime-check-table pending)
+            checks (vec (vals runtime-table))
+            guard-edges
+            (filterv #(= :runtime-check-guard (:edge-kind %))
+                     (get-in pending [:data-flow-graph :edges]))
+            if-node (first (filter #(= :if (:source-operation %))
+                                   (:core-nodes checked-core)))
+            then-prefix (conj (:path if-node) :then)
+            else-prefix (conj (:path if-node) :else)
+            branch-println
+            (first
+             (filter
+              #(and (= :println (:source-operation %))
+                    (bootstrap/p15-s23-c11-mir-path-prefix?
+                     then-prefix (:path %)))
+              (:core-nodes checked-core)))
+            post-println
+            (first
+             (filter
+              #(and (= :println (:source-operation %))
+                    (not
+                     (or
+                      (bootstrap/p15-s23-c11-mir-path-prefix?
+                       then-prefix (:path %))
+                      (bootstrap/p15-s23-c11-mir-path-prefix?
+                       else-prefix (:path %)))))
+              (:core-nodes checked-core)))]
+        (testing "runtime checks are explicit typed operations and guard tokens"
+          (is (= :passed (:status public-report)))
+          (is (= :passed (:semantic-replay-parity public-report)))
+          (is (= 14 (count (:core-nodes checked-core))))
+          (is (= 18 (count operations)))
+          (is (= 4 (count blocks)))
+          (is (= 4 (count checks)))
+          (is (= 4 (count guard-edges)))
+          (is (= :jvm (:source-target module)))
+          (is (= :jvm (:target-request module)))
+          (is (= (:returns function)
+                 (get-in pending
+                         [:data-flow-graph :values
+                          return-value-id :type])))
+          (is (= :gravity/string (:returns function)))
+          (is (= (:effect-graph checked-core)
+                 (:effect-order-graph module)))
+          (is (false? (get-in module
+                              [:effect-order-graph
+                               :exclusive-branch-total-order?])))
+          (is (false? (get-in module
+                              [:effect-order-graph
+                               :runtime-sequence-claimed?])))
+          (is (str/ends-with?
+               (:block-id (get operation-by-id (:node-id branch-println)))
+               ":mir:then"))
+          (is (str/ends-with?
+               (:block-id (get operation-by-id (:node-id post-println)))
+               ":mir:join"))
+          (doseq [check checks]
+            (let [check-id (:check-id check)
+                  guarded-id (:guarded-operation-id check)
+                  check-op-id (:check-operation-id check)
+                  token-id (:token-value-id check)
+                  check-op (get operation-by-id check-op-id)
+                  guarded-op (get operation-by-id guarded-id)
+                  check-location
+                  (c11-operation-location pending check-op-id)
+                  guarded-location
+                  (c11-operation-location pending guarded-id)
+                  facts (:facts check-op)
+                  guard-edge
+                  (first
+                   (filter #(and (= token-id (:from %))
+                                 (= guarded-id (:consumer-id %)))
+                           guard-edges))
+                  token-value
+                  (get-in pending [:data-flow-graph :values token-id])]
+              (is (= :runtime-check (:opcode check-op)))
+              (is (= :runtime-check (:source-operation check-op)))
+              (is (= :gravity/runtime-check-token (:type check-op)))
+              (is (= token-id (:result check-op)))
+              (is (keyword? (:provider check)))
+              (is (keyword? (:capability check)))
+              (is (some? (:failure check)))
+              (is (= check-op-id (:check-operation-id check)))
+              (is (= token-id (:token-value-id check)))
+              (is (= (:block-id check-location)
+                     (:block-id guarded-location)))
+              (is (= (inc (:index check-location))
+                     (:index guarded-location)))
+              (is (= token-id (first (:operands guarded-op))))
+              (is (= 0 (:operand-index guard-edge)))
+              (is (= :runtime-check-guard (:edge-kind guard-edge)))
+              (is (= check-op-id
+                     (get-in token-value [:defined-by :operation-id])))
+              (is (some
+                   #{(assoc (dissoc guard-edge :from)
+                            :use-kind :instruction)}
+                   (:uses token-value)))
+              (is (= guarded-id
+                     (get-in pending
+                             [:source-map check-op-id
+                              :generated-origin 0
+                              :producer-operation-id])))
+              (is (= check-id (get-in facts [:runtime-check-id])))
+              (doseq [[fact-key table-key]
+                      [[:type-fact-id :type-table]
+                       [:effect-fact-id :effect-table]
+                       [:capability-fact-id :capability-table]
+                       [:ownership-fact-id :ownership-table]
+                       [:safety-outcome-id :safety-table]
+                       [:profile-target-fact-id :profile-target-table]]]
+                (let [fact-record
+                      (get (get pending table-key) (get facts fact-key))]
+                  (is (map? fact-record) [check-id fact-key])
+                  (is (true? (:derived? fact-record))
+                      [check-id fact-key])))
+              (doseq [proof-id
+                      (concat (:capability-proof-ids facts)
+                              (:proof-certificate-ids facts))]
+                (is (contains? (:capability-proof-table pending)
+                               proof-id))))))
+        (testing "direct verifier mutations reject every runtime-check link"
+          (let [check (first checks)
+                check-id (:check-id check)
+                check-op-id (:check-operation-id check)
+                guarded-id (:guarded-operation-id check)
+                location (c11-operation-location pending check-op-id)
+                block-path
+                [:functions (:entrypoint checked-core) :blocks
+                 (:block-id location) :instructions]
+                runtime-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-runtime-checks!
+                   path checked-core
+                   (update pending :runtime-check-table dissoc check-id)
+                   operation-products))
+                reordered
+                (update-in
+                 pending block-path
+                 (fn [instructions]
+                   (let [instructions (vec instructions)
+                         index (:index location)]
+                     (assoc instructions
+                            index (nth instructions (inc index))
+                            (inc index) (nth instructions index)))))
+                reordered-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-operations!
+                   path checked-core reordered))
+                guard-index
+                (first
+                 (keep-indexed
+                  (fn [index edge]
+                    (when (and (= :runtime-check-guard (:edge-kind edge))
+                               (= guarded-id (:consumer-id edge)))
+                      index))
+                  (get-in pending [:data-flow-graph :edges])))
+                no-guard
+                (update-in pending [:data-flow-graph :edges]
+                           #(vec (concat (subvec % 0 guard-index)
+                                         (subvec % (inc guard-index)))))
+                no-guard-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core no-guard operation-products))
+                retagged
+                (assoc-in pending
+                          [:data-flow-graph :edges guard-index :edge-kind]
+                          :operand)
+                retagged-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core retagged operation-products))
+                wrong-guard-index-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core
+                   (assoc-in pending
+                             [:data-flow-graph :edges
+                              guard-index :operand-index]
+                             1)
+                   operation-products))
+                wrong-guard-consumer-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core
+                   (assoc-in pending
+                             [:data-flow-graph :edges
+                              guard-index :consumer-id]
+                             check-op-id)
+                   operation-products))
+                bad-fact
+                (c11-update-operation
+                 pending check-op-id
+                 #(assoc-in % [:facts :type-fact-id]
+                            "sha256:forged-runtime-check-fact"))
+                bad-fact-data
+                (binding
+                 [bootstrap/*p15-s23-c11-mir-diagnostic-context*
+                  (bootstrap/p15-s23-c11-mir-diagnostic-context
+                   checked-core context pending)]
+                 (diagnostic-data
+                  #(bootstrap/p15-s23-c11-mir-validate-operations!
+                    path checked-core bad-fact)))
+                bad-effect-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-fact-tables!
+                   path checked-core
+                   (assoc-in pending
+                             [:effect-order-graph :event-edges]
+                             [])))
+                check-facts (:facts (get operation-by-id check-op-id))
+                type-fact-id (:type-fact-id check-facts)
+                proof-id (first (:capability-proof-ids check-facts))
+                bad-derived-fact-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-fact-tables!
+                   path checked-core
+                   (assoc-in pending
+                             [:type-table type-fact-id :type]
+                             :gravity/forged-runtime-token)))
+                bad-proof-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-fact-tables!
+                   path checked-core
+                   (update pending :capability-proof-table
+                           dissoc proof-id)))
+                bad-source-map-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core
+                   (assoc-in pending
+                             [:source-map check-op-id
+                              :generated-origin 0
+                              :producer-operation-id]
+                             "sha256:forged-producer")
+                   operation-products))
+                terminator-uses
+                (get-in pending [:data-flow-graph :terminator-uses])
+                bad-terminator-use-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core
+                   (assoc-in pending
+                             [:data-flow-graph :terminator-uses
+                              0 :value-id]
+                             (:value-id (second terminator-uses)))
+                   operation-products))
+                value-ids
+                (vec (take 2 (keys (get-in pending
+                                           [:data-flow-graph :values]))))
+                bad-value-table-data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-c11-mir-validate-data-flow!
+                   path checked-core
+                   (assoc-in pending
+                             [:data-flow-graph :values (first value-ids)]
+                             (get-in pending
+                                     [:data-flow-graph :values
+                                      (second value-ids)]))
+                   operation-products))]
+            (is (= ["C11-SAFETY" :canonical-runtime-check-table]
+                   [(:id runtime-data) (:missing-fact runtime-data)])
+                runtime-data)
+            (is (= ["C11-DOMINANCE"
+                    :canonical-checked-core-instruction-order-and-placement]
+                   [(:id reordered-data)
+                    (:missing-fact reordered-data)])
+                reordered-data)
+            (is (= ["C11-DOMINANCE" :exact-checked-core-data-flow]
+                   [(:id no-guard-data) (:missing-fact no-guard-data)])
+                no-guard-data)
+            (is (= ["C11-DOMINANCE" :exact-checked-core-data-flow]
+                   [(:id retagged-data) (:missing-fact retagged-data)])
+                retagged-data)
+            (is (= ["C11-DOMINANCE" :exact-checked-core-data-flow]
+                   [(:id wrong-guard-index-data)
+                    (:missing-fact wrong-guard-index-data)])
+                wrong-guard-index-data)
+            (is (= ["C11-DOMINANCE" :exact-checked-core-data-flow]
+                   [(:id wrong-guard-consumer-data)
+                    (:missing-fact wrong-guard-consumer-data)])
+                wrong-guard-consumer-data)
+            (is (= ["C11-SAFETY"
+                    :derived-runtime-check-operation-facts-and-guard]
+                   [(:id bad-fact-data) (:missing-fact bad-fact-data)])
+                bad-fact-data)
+            (is (= :generated-by
+                   (get-in bad-fact-data [:related 0 :role])))
+            (is (= guarded-id
+                   (get-in bad-fact-data
+                           [:related 0 :mir-operation-id])))
+            (is (some #{(:artifact-id checked-core)}
+                      (:involved-artifacts bad-fact-data)))
+            (is (= ["C11-EFFECT"
+                    :authenticated-partial-effect-order-graph]
+                   [(:id bad-effect-data) (:missing-fact bad-effect-data)])
+                bad-effect-data)
+            (is (= ["C11-TYPE" :id-indexed-c7-type-facts]
+                   [(:id bad-derived-fact-data)
+                    (:missing-fact bad-derived-fact-data)])
+                bad-derived-fact-data)
+            (is (= ["C11-EFFECT" :id-indexed-capability-proofs]
+                   [(:id bad-proof-data) (:missing-fact bad-proof-data)])
+                bad-proof-data)
+            (is (= ["C11-ORIGIN" :exact-checked-core-source-map]
+                   [(:id bad-source-map-data)
+                    (:missing-fact bad-source-map-data)])
+                bad-source-map-data)
+            (is (= ["C11-DOMINANCE" :exact-terminator-use-sites]
+                   [(:id bad-terminator-use-data)
+                    (:missing-fact bad-terminator-use-data)])
+                bad-terminator-use-data)
+            (is (= ["C11-TYPE" :exact-ssa-value-table]
+                   [(:id bad-value-table-data)
+                    (:missing-fact bad-value-table-data)])
+                bad-value-table-data)
+            (doseq [candidate
+                    [(assoc-in pending
+                               [:runtime-check-table check-id :provider]
+                               :forged/provider)
+                     (assoc-in pending
+                               [:runtime-check-table check-id :capability]
+                               :forged/capability)
+                     (assoc-in pending
+                               [:runtime-check-table check-id :failure]
+                               :forged/failure)
+                     (assoc-in pending
+                               [:runtime-check-table check-id
+                                :check-operation-id]
+                               "sha256:forged-check-operation")
+                     (assoc-in pending
+                               [:runtime-check-table check-id
+                                :token-value-id]
+                               "sha256:forged-check-token")
+                     (assoc-in pending
+                               [:runtime-check-table
+                                "sha256:forged-added-check"]
+                               (get runtime-table check-id))
+                     (assoc-in pending
+                               [:runtime-check-table check-id]
+                               (second checks))]]
+              (let [data
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-c11-mir-validate-runtime-checks!
+                       path checked-core candidate operation-products))]
+                (is (= ["C11-SAFETY" :canonical-runtime-check-table]
+                       [(:id data) (:missing-fact data)])
+                    data)))))))))
+
+(deftest authenticated-c11-mir-rejects-a-second-conditional
+  (let [source
+        (closed-pure-source-with-main
+         "(do (if true 1 2) (if false 3 4))"
+         {:exports '[main]})]
+    (with-temp-source
+      ".qst" source
+      (fn [path]
+        (let [checked-core
+              (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+               path source :c)
+              context
+              (bootstrap/p15-s23-stage2-closed-checked-core-context
+               path source :c)
+              data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-c11-mir-artifact
+                 checked-core context))]
+          (is (= "C11-BLOCK" (:id data)) data)
+          (is (= :bounded-single-conditional-cfg
+                 (:missing-fact data)))
+          (is (= 2 (get-in data [:facts :conditional-count])))
+          (is (= :c11-authenticated-mir (:stage data)))
+          (is (= :c (:target data)))
+          (is (= path (get-in data [:primary :span :source])))
+          (is (= :gravity/diagnostic (:artifact data)))
+          (is (= :error (:severity data)))
+          (is (= :active (:lifecycle data)))
+          (is (every? (set (keys data))
+                      bootstrap/c15-diagnostic-required-fields))
+          (is (= ["C11-BLOCK" :c11-authenticated-mir
+                  (get-in data [:primary :artifact])
+                  (:diagnostic-id data)]
+                 (:ordering-key data)))
+          (is (vector? (:remediation data)))
+          (is (seq (:remediation data)))
+          (is (vector? (:redactions data)))
+          (is (seq (:involved-artifacts data))))))))
+
+(deftest gravity-c11-source-and-builder-identities-are-pinned
+  (let [binding
+        (bootstrap/p15-s23-c11-mir-source-binding!
+         "c11-pin-probe.gravity" :jvm)]
+    (is (= {"origin"
+            {:origin-id "sha256:semantic-origin"
+             :provenance-binding-hash "sha256:semantic-binding"}}
+           (bootstrap/p15-s23-c11-mir-path-neutral-value
+            (sorted-map
+             "origin"
+             {:origin-id "sha256:semantic-origin"
+              :provenance-binding-hash "sha256:semantic-binding"
+              :actual-path-binding-hash "sha256:physical-binding"
+              :actual-source-path "/checkout/physical/path"}))))
+    (is (= 67382 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:1f08cbf50f5a6664e93efd44c82bff2fb654f503a93a8dc080c1b02b834ee7d2"
+           bootstrap/p15-s23-c11-mir-expected-source-content-hash))
+    (is (= "sha256:b2811b29e76331aea22ab04635a54d7bf39975c78d7cea1120c3843b9776b2b3"
+           bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
+    (is (= "sha256:50f8e40298b8b8d5a5f11961154c5cc60a11cf0e6f3d61608763ba4ed5296495"
+           bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
+    (is (= "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e"
+           bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
+    (is (= bootstrap/p15-s23-c11-mir-source-byte-count
+           (:source-byte-count binding)))
+    (is (= bootstrap/p15-s23-c11-mir-expected-source-content-hash
+           (:source-content-hash binding)))
+    (is (= bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash
+           (:plan-semantic-hash binding)))
+    (is (= bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash
+           (:functions-semantic-hash binding)))
+    (is (= bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash
+           (:builder-semantic-hash binding)))
+    (is (= bootstrap/p15-s23-c11-mir-required-functions
+           (:function-shapes binding)))
+    (is (= 64 (count (get-in binding [:plan :functions]))))
+    (with-temp-directory
+      "gravity-c11-unrelated-cwd-"
+      (fn [directory]
+        (let [root (.getCanonicalFile (java.io.File. "."))
+              classpath
+              (str/join
+               java.io.File/pathSeparator
+               (map (fn [entry]
+                      (.getCanonicalPath
+                       (if (.isAbsolute (java.io.File. entry))
+                         (java.io.File. entry)
+                         (java.io.File. root entry))))
+                    (str/split (System/getProperty "java.class.path")
+                               (re-pattern java.io.File/pathSeparator))))
+              java-bin
+              (str (System/getProperty "java.home") "/bin/java")
+              expression
+              (str
+               "(require 'gravity.bootstrap) "
+               "(let [b (gravity.bootstrap/"
+               "p15-s23-c11-mir-source-binding! "
+               "\"unrelated/program.qst\" :c)] "
+               "(prn (select-keys b [:source-path "
+               ":source-content-hash :functions-semantic-hash "
+               ":builder-semantic-hash])))")
+              result
+              (run-process-in-directory
+               (.toString directory) nil
+               [java-bin "-cp" classpath "clojure.main" "-e" expression])
+              unrelated (when (zero? (:exit result))
+                          (edn/read-string (:out result)))]
+          (is (zero? (:exit result)) (:err result))
+          (is (= (:source-content-hash binding)
+                 (:source-content-hash unrelated)))
+          (is (= (:functions-semantic-hash binding)
+                 (:functions-semantic-hash unrelated)))
+          (is (= (:builder-semantic-hash binding)
+                 (:builder-semantic-hash unrelated)))
+          (is (.isAbsolute (java.io.File. (:source-path unrelated))))
+          (is (.isFile (java.io.File. (:source-path unrelated)))))))
+    (with-temp-directory
+      "gravity-c11-source-tamper-"
+      (fn [directory]
+        (let [canonical
+              (slurp bootstrap/p15-s23-c11-mir-source-relative-path)
+              oversized-path
+              (.resolve directory "c11_mir_oversized.gravity")
+              same-size-path
+              (.resolve directory "c11_mir_same_size.gravity")
+              same-size
+              (str (if (= \; (first canonical)) \space \;)
+                   (subs canonical 1))
+              _ (spit (.toFile oversized-path)
+                      (str "; tampered\n" canonical))
+              _ (spit (.toFile same-size-path) same-size)
+              oversized-data
+              (diagnostic-data
+               #(with-redefs
+                  [bootstrap/p15-s23-c11-mir-resolve-source-path
+                   (fn [] (.toString oversized-path))]
+                  (bootstrap/p15-s23-c11-mir-source-binding!
+                   "source-size-tamper.qst" :c)))
+              same-size-data
+              (diagnostic-data
+               #(with-redefs
+                  [bootstrap/p15-s23-c11-mir-resolve-source-path
+                   (fn [] (.toString same-size-path))]
+                  (bootstrap/p15-s23-c11-mir-source-binding!
+                   "source-hash-tamper.qst" :c)))]
+          (is (= (count (.getBytes canonical
+                                   java.nio.charset.StandardCharsets/UTF_8))
+                 (count (.getBytes same-size
+                                   java.nio.charset.StandardCharsets/UTF_8))))
+          (is (= "C11-VERIFY" (:id oversized-data)) oversized-data)
+          (is (= :pinned-gravity-c11-source-byte-size
+                 (:missing-fact oversized-data)))
+          (is (= bootstrap/p15-s23-c11-mir-source-byte-count
+                 (get-in oversized-data
+                         [:facts :expected-source-bytes])))
+          (is (not=
+               (get-in oversized-data [:facts :expected-source-bytes])
+               (get-in oversized-data [:facts :observed-source-bytes])))
+          (is (= "C11-VERIFY" (:id same-size-data)) same-size-data)
+          (is (= :pinned-gravity-c11-source-identity
+                 (:missing-fact same-size-data)))
+          (is (= (get-in same-size-data [:facts :expected-source-bytes])
+                 (get-in same-size-data [:facts :observed-source-bytes])))
+          (is (not=
+               (get-in same-size-data
+                       [:facts :expected-source-content-hash])
+               (get-in same-size-data
+                       [:facts :observed-source-content-hash]))))))))
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]

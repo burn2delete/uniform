@@ -30,14 +30,14 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 - [completed] Move authoritative stage2 function/binding/summary/entrypoint plan assembly into the pinned Gravity emitter artifact with bounded-depth traversal and cross-target authenticity.
 - [completed] Execute the bounded closed stage2 plan through a pinned Gravity-authored runtime function, with trusted-source replay, variadic println, bounded validation, and authenticated C/Node/JVM target records.
 - [completed] Build and independently verify an authenticated pure closed checked-core artifact for literal, quote, local, do, if, and let, with canonical C6-C10 pass artifacts and an exact plan-to-C2/C3 origin sidecar.
-- [pending] Repair the pinned Gravity runtime module's allocation, failure, effect, capability, and provider contract, then extend checked-core admission to `str` and `println` only after the C8/R11 gates pass.
-- [pending] Consume only the resulting verified checked-core artifact in a pinned Gravity-authored C11 MIR builder, preserving real operands/results/CFG/definitions/uses and recomputing verifier facts.
+- [completed] Repair the pinned Gravity runtime module's allocation, failure, effect, capability, and provider contract, then extend checked-core admission to `str` and `println` only after the C8/R11 gates pass.
+- [completed] Consume only the resulting verified checked-core artifact in a pinned Gravity-authored C11 MIR builder, preserving real operands/results/CFG/definitions/uses and recomputing verifier facts.
 - [pending] Consume only that verified MIR in an internal executable LLVM slice through the pinned ARM64 macOS target and real Clang execution.
 - [pending] Retire the next high-leverage Clojure seed boundary while preserving target-neutral evidence and honest non-self-hosted claims.
 
-## Baseline snapshot (2026-07-11)
+## Baseline snapshot (2026-07-12)
 
-- Integrated implementation baseline: `df26050` (`Build authenticated pure checked core`).
+- Parent implementation baseline for the authenticated C11 candidate: `6410068` (`Authenticate checked-core reference runtime replay`).
 - Current code proves a genuine lexical/C2/C3/P15 reader slice; C2/C3/P15 remain partial and FL-P01-T01 remains unchecked.
 - `GRAVITY_BOOTSTRAP_ONLY=1` checks and runs `examples/core-app.gravity` and `.qst` with equivalent output.
 - `bootstrap/gravity/p15_s23/compiler.gravity` passes the bootstrap-only public check after executable-symbol analysis was corrected; whole-language self-hosting remains partial.
@@ -69,10 +69,10 @@ Iterate from the current bounded reader slice to a feature-complete, self-hosted
 
 ## Active slice
 
-- Owner: master coordinator; writer ownership for the runtime repair will be frozen before edits.
-- Scope: repair the pinned Gravity runtime module and artifact boundary so allocation and output effects, capabilities, managed-memory/stdout providers, runtime grants and deny-by-default decisions, principal/audit records, startup ordering, and host failure translation are authenticated under C8, L15, R1, R4, R5, and R11.
-- Completed proof: the pure literal/quote/local/`do`/`if`/`let` checked-core is independently reconstructed and verified through C6-C10 with exact C2/C3 origin closure, path-neutral identity, actual-path provenance, bounded validation, adversarial tamper rejection, dual final-hash review, historical regression gates, and repository validators.
-- Next gate: prove the repaired runtime contract and only then admit `str` and `println` into checked core with exact C8 provider/grant/failure records. Whole-language, MIR, backend, self-hosting, and release claims remain false at this gate.
+- Owner: master coordinator; writer ownership will be frozen to the smallest verified-MIR/LLVM surface before edits.
+- Completed proof: the repaired runtime contract authenticates allocation and output effects, capabilities, providers, grants, failures, principals, audit records, and checked-core authority. The bounded Gravity-authored C11 builder consumes only that authenticated product and emits independently reconstructed MIR/CFG/SSA/use-def/effect/check/fact/proof/source-map/pass/B1 artifacts. Focused, historical, hostile, routing, compatibility, predecessor, public, validator, diff, and adversarial-review gates pass.
+- Honest boundary: C11 supports one function, at most one conditional, and the currently authenticated literal/implicit-nil/quote/local/let-binding/truthy/`do`/`if`/`let`/`str`/`println`/function operation set plus derived runtime checks. Clojure stage0 remains the compiler/runner/verifier TCB; whole C11, backend, LLVM, target-lowering, release, whole-language, and self-hosting claims remain false.
+- Next gate: consume only verified MIR in an internal ARM64 macOS LLVM slice, preserve the authenticated B1/pass/fact/proof closure, execute a real Clang-produced binary, and reject unsupported MIR or target leakage before backend execution.
 
 ## Completion gates
 
