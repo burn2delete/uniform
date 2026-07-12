@@ -27855,6 +27855,24 @@
            (:runtime-artifact-source-content-hash target-record)))
     (is (= bootstrap/p15-s23-stage2-runtime-artifact-expected-closed-function-hashes
            (:helper-function-hashes target-record)))
+    (is (= 22
+           (get-in target-record
+                   [:runtime-contract-binding :validation
+                    :contract-definition-count])))
+    (is (= {:reference-runtime? true
+            :deployment-runtime? false
+            :checked-core-str-println-admission? true
+            :checked-core-admission-scope
+            :authenticated-hosted-jvm-reference-interpreter
+            :typed-fourth-authority
+            :gravity/p15-s23-checked-core-authority-binding-v1
+            :typed-fourth-authority-consumed-by-this-packet? false
+            :verification-replay-policy-id
+            bootstrap/p15-s23-checked-core-verification-replay-policy-id
+            :target-lowering-credit? false
+            :release-credit? false
+            :c11-credit? false}
+           (:credit-boundary target-record)))
     (is (= {:artifact
             :gravity/p15-s23-runtime-closed-plan-verification-replay-record
             :function
@@ -28603,6 +28621,9 @@
                 qst-artifact
                 (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
                  qst-path closed-pure-checked-core-source :c)
+                explicit-nil-artifact
+                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 left-path closed-pure-checked-core-source :c nil)
                 context
                 (bootstrap/p15-s23-stage2-closed-checked-core-context
                  left-path closed-pure-checked-core-source :c)
@@ -28653,6 +28674,20 @@
             (is (true? (:clojure-seed-boundary? c-artifact)))
             (is (false? (:self-hosted? c-artifact)))
             (is (apply = semantic-ids))
+            (is (= c-artifact explicit-nil-artifact))
+            (let [projection
+                  (update
+                   (bootstrap/p15-s23-closed-core-semantic-input c-artifact)
+                   :authenticated-input dissoc :runtime-artifact-hash)]
+              (is (= "sha256:758a8aa3d00f986356d0561471517f81fca095884ca0e40a39be7e92a2cb9e8f"
+                     (bootstrap/p15-s23-closed-core-digest projection))))
+            (is (= bootstrap/p15-s23-stage2-runtime-artifact-expected-artifact-hash
+                   (get-in c-artifact
+                           [:authenticated-input :runtime-artifact-hash])))
+            (is (not= "sha256:f405cc207525fcb718c40831add1ae95ba1db44597a119130c52058c102eef31"
+                      (get-in c-artifact
+                              [:authenticated-input
+                               :runtime-artifact-hash])))
             (is (apply = (map :mapping-id
                               [c-artifact js-artifact jvm-artifact
                                right-artifact qst-artifact])))
@@ -28843,10 +28878,10 @@
         [[:str-runtime
           (source "(str \"x\")"
                   #{:memory/allocate} #{:memory/allocator})
-          "C8-RUNTIME" :runtime-module-conformance-residual]
+          "C8-CAPABILITY" :bounded-typed-fourth-authority-record]
          [:println-runtime
           (source "(println \"x\")" #{:io/write} #{:io/stdout})
-          "C8-RUNTIME" :runtime-module-conformance-residual]
+          "C8-CAPABILITY" :bounded-typed-fourth-authority-record]
          [:missing-effect
           (source "(str \"x\")" #{} #{:memory/allocator})
           "C8-UNDECLARED" :required-effect-declaration]
@@ -28921,7 +28956,7 @@
          [:unreachable-effect
           (source "(if false (println \"x\") nil)"
                   #{:io/write} #{:io/stdout})
-          "C8-RUNTIME" :runtime-module-conformance-residual]
+          "C8-CAPABILITY" :bounded-typed-fourth-authority-record]
          [:registered-effect-only
           (source "nil" #{:filesystem/read} #{})
           "C8-RUNTIME" :runtime-module-conformance-residual]
@@ -28966,14 +29001,14 @@
               data
               (diagnostic-data
                #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
-                 path source-text :c))]
+                 path source-text :jvm))]
           (is (= expected-id (:id data)) [label data])
           (is (= expected-missing (:missing-fact data)) [label data])
           (is (zero? (- @packet-calls before)) [label data])
           (is (pure-diagnostic-has-honest-identity? data) [label data])
           (is (not (str/starts-with? (:id data) "C11")) [label data])
           (is (= :jvm (:source-target data)) [label data])
-          (is (= :c (:requested-target data)) [label data])
+          (is (= :jvm (:requested-target data)) [label data])
           (when-let [expected-actual-type (get quote-actual-types label)]
             (let [c2
                   (bootstrap/compiler-c2-reader-source-artifact
@@ -29249,6 +29284,590 @@
     (is (not (str/includes? (pr-str (first diagnostics))
                             "unsupported-authority-present")))))
 
+(deftest authenticated-checked-core-str-println-replay-is-exact-and-fail-closed
+  (let [source
+        (closed-pure-source-with-main
+         (str "(do (if false (println \"hidden\") nil) "
+              "(println (str \"a\" \"b\")) "
+              "(str \"x\"))")
+         {:effects #{:memory/allocate :io/write}
+          :capabilities #{:memory/allocator :io/stdout}
+          :exports '[main]})
+        original-adapter
+        @#'bootstrap/p15-s23-reference-runtime-adapter-invoke
+        original-runtime
+        @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke]
+    (with-temp-directory
+      "gravity-checked-core-authority-a-"
+      (fn [left-directory]
+        (with-temp-directory
+          "gravity-checked-core-authority-b-"
+          (fn [right-directory]
+            (let [left-path
+                  (.toString (.resolve left-directory "program.gravity"))
+                  right-path
+                  (.toString (.resolve right-directory "program.qst"))
+                  left-authority
+                  (bootstrap/p15-s23-stage2-closed-checked-core-authority-binding
+                   left-path source :jvm
+                   bootstrap/p15-s23-checked-core-reference-policy-selector)
+                  right-authority
+                  (bootstrap/p15-s23-stage2-closed-checked-core-authority-binding
+                   right-path source :jvm
+                   bootstrap/p15-s23-checked-core-reference-policy-selector)
+                  construction-adapter-calls (atom 0)
+                  [left-artifact right-artifact]
+                  (with-redefs
+                    [bootstrap/p15-s23-reference-runtime-adapter-invoke
+                     (fn [& args]
+                       (swap! construction-adapter-calls inc)
+                       (apply original-adapter args))]
+                    [(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                      left-path source :jvm left-authority)
+                     (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                      right-path source :jvm right-authority)])
+                  context-adapter-calls (atom 0)
+                  context
+                  (with-redefs
+                    [bootstrap/p15-s23-reference-runtime-adapter-invoke
+                     (fn [& args]
+                       (swap! context-adapter-calls inc)
+                       (apply original-adapter args))]
+                    (bootstrap/p15-s23-stage2-closed-checked-core-context
+                     left-path source :jvm left-authority))
+                  evidence
+                  (get-in left-artifact
+                          [:authenticated-input
+                           :reference-execution-evidence])
+                  str-nodes
+                  (filterv #(= :str (:source-operation %))
+                           (:core-nodes left-artifact))
+                  println-nodes
+                  (filterv #(= :println (:source-operation %))
+                           (:core-nodes left-artifact))
+                  function-node
+                  (first (filter #(= :function (:kind %))
+                                 (:core-nodes left-artifact)))
+                  report-adapter-calls (atom 0)
+                  report-runtime-calls (atom 0)
+                  report
+                  (with-redefs
+                    [bootstrap/p15-s23-reference-runtime-adapter-invoke
+                     (fn [& args]
+                       (swap! report-adapter-calls inc)
+                       (apply original-adapter args))
+                     bootstrap/p15-s23-stage2-runtime-artifact-invoke
+                     (fn [& args]
+                       (swap! report-runtime-calls inc)
+                       (apply original-runtime args))]
+                    (bootstrap/p15-s23-stage2-closed-checked-core-verification-report
+                     left-artifact context))
+                  replay (:verification-replay-record report)
+                  emitter-rule
+                  (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                   left-path :jvm)
+                  plan
+                  (binding
+                    [bootstrap/*additional-bootstrap-targets*
+                     bootstrap/stage2-runtime-derived-source-targets]
+                    (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                     (:emitter emitter-rule) left-path source))
+                  validation
+                  (bootstrap/p15-s23-closed-runtime-plan-validation!
+                   left-path :jvm plan)
+                  runtime-rule
+                  (bootstrap/c-backend-stage2-runtime-source-rule!
+                   left-path :jvm)
+                  replay-policy
+                  (get (:runtime-contract-definitions runtime-rule)
+                       'p15-s23-checked-core-verification-replay-policy)
+                  replay-audit-policy
+                  (get (:runtime-contract-definitions runtime-rule)
+                       'p15-s23-checked-core-verification-replay-audit-policy)
+                  replay-authority
+                  (bootstrap/p15-s23-checked-core-verification-replay-authority-record
+                   left-artifact context plan validation runtime-rule
+                   replay-policy replay-audit-policy)
+                  pre-call-audit
+                  (bootstrap/p15-s23-checked-core-verification-replay-audit-records
+                   replay-authority false :pre-call)]
+              (is (= left-authority right-authority))
+              (is (bootstrap/p15-s23-checked-core-authority-record-valid?
+                   left-authority))
+              (is (= #{:str :println}
+                     (:structural-operation-set left-authority)))
+              (is (= #{:memory/allocate :io/write}
+                     (:required-effects left-authority)))
+              (is (= #{:memory/allocator :io/stdout}
+                     (:required-capabilities left-authority)))
+              (is (= 2 (count (:program-provider-records left-authority))))
+              (is (= 2 (count (:program-grant-records left-authority))))
+              (is (= #{:memory/allocator :io/stdout}
+                     (set (map :capability
+                               (:program-provider-records left-authority)))))
+              (is (= #{:memory/allocator :io/stdout}
+                     (set (map :capability
+                               (:program-grant-records left-authority)))))
+              (is (= 2 @construction-adapter-calls))
+              (is (zero? @context-adapter-calls))
+              (is (= :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+                     (:status left-artifact)
+                     (:status right-artifact)))
+              (is (= (:artifact-id left-artifact)
+                     (:artifact-id right-artifact)))
+              (is (= (:mapping-id left-artifact)
+                     (:mapping-id right-artifact)))
+              (is (= (:provenance-binding-id left-artifact)
+                     (:provenance-binding-id right-artifact)))
+              (is (not= (:actual-path-binding-id left-artifact)
+                        (:actual-path-binding-id right-artifact)))
+              (is (= left-path
+                     (get-in left-artifact
+                             [:provenance :actual-paths :source])))
+              (is (= right-path
+                     (get-in right-artifact
+                             [:provenance :actual-paths :source])))
+              (is (= #{:do :if :literal :println :str}
+                     (get-in left-artifact
+                             [:source-core-input :operation-set])))
+              (is (= #{:memory/allocate :io/write}
+                     (get-in left-artifact [:scope :required-effects])
+                     (get-in left-artifact
+                             [:scope :accepted-reference-effects])))
+              (is (= #{:memory/allocator :io/stdout}
+                     (get-in left-artifact
+                             [:scope :required-capabilities])
+                     (get-in left-artifact
+                             [:scope :accepted-reference-capabilities])))
+              (is (= [:println :str]
+                     (get-in left-artifact
+                             [:scope :accepted-reference-operations])))
+              (is (true?
+                   (get-in left-artifact
+                           [:scope
+                            :single-authoritative-construction-invocation?])))
+              (is (true?
+                   (get-in left-artifact
+                           [:scope
+                            :complete-for-pinned-r1-r11-verification-replay-slice?])))
+              (doseq [field [:r1-whole-conformance?
+                             :r11-whole-conformance?
+                             :target-lowering-credit?
+                             :release-credit?
+                             :self-hosted?]]
+                (is (false? (get-in left-artifact [:scope field])) field))
+              (is (= "x" (:entrypoint-result evidence)))
+              (is (= "ab\n" (:transcript evidence)))
+              (is (= 1 (:invocation-count evidence)))
+              (is (= 3 (count (:decision-record-ids evidence))))
+              (is (= 2 (count (:action-record-ids evidence))))
+              (is (= :committed (:capture-action-status evidence)))
+              (is (= 2 (count str-nodes)))
+              (is (= 2 (count println-nodes)))
+              (doseq [node str-nodes]
+                (is (= :gravity/string (:type node)))
+                (is (= #{:memory/allocate} (:effects node)))
+                (is (= #{:memory/allocator} (:capabilities node)))
+                (is (= :runtime-checked (get-in node [:safety :outcome])))
+                (is (= :managed-allocation-result
+                       (get-in node [:safety :check :kind]))))
+              (doseq [node println-nodes]
+                (is (= :gravity/nil (:type node)))
+                (is (contains? (:effects node) :io/write))
+                (is (contains? (:capabilities node) :io/stdout))
+                (is (= :runtime-checked (get-in node [:safety :outcome])))
+                (is (= :reference-transcript-delivery
+                       (get-in node [:safety :check :kind]))))
+              (is (= #{:memory/allocate :io/write}
+                     (get-in function-node [:type :latent-effects])
+                     (:effects function-node)))
+              (is (= #{:memory/allocator :io/stdout}
+                     (get-in function-node [:type :capabilities])
+                     (:capabilities function-node)))
+              (is (= #{:source-path :source-text :source-content-hash
+                       :requested-target :authority-record}
+                     (set (keys context))))
+              (is (zero? @report-adapter-calls))
+              (is (= 1 @report-runtime-calls))
+              (is (= :passed (:status report)
+                     (:status replay)))
+              (is (= :effectful-reference (:mode report)))
+              (is (= 4 (count (:provider-selection-record-ids replay))))
+              (is (= 5 (count (:grant-record-ids replay))))
+              (is (= 5 (count (:decision-records replay))))
+              (is (= 5 (count (:action-records replay))))
+              (is (= (mapv :decision-id (:decision-records replay))
+                     (:pre-call-decision-record-ids replay)))
+              (is (every? #(= :committed (:action-status %))
+                          (:action-records replay)))
+              (is (= 1 (count (filter :output-committed?
+                                      (:action-records replay)))))
+              (is (= 1 (:replay-count replay)
+                     (:runtime-evaluation-count replay)
+                     (:verification-replay-gate-invocation-count replay)))
+              (is (zero? (:authoritative-adapter-invocation-count replay)))
+              (is (true? (:verification-authority-consumed? replay)))
+              (doseq [field [:program-authority-consumed?
+                             :program-authorizing?
+                             :authoritative-invocation?
+                             :live-external-io?
+                             :deployment-runtime?
+                             :self-hosted?]]
+                (is (false? (get replay field)) field))
+              (is (true? (:result-producing? replay)))
+              (is (= {:source-path left-path
+                      :runtime-artifact-source-path
+                      (get-in report
+                              [:actual-path-context
+                               :runtime-artifact-source-path])
+                      :identity-bearing? false}
+                     (:actual-path-context report)))
+
+              (is (= 5 (count (:decision-records pre-call-audit))))
+              (is (empty? (:action-records pre-call-audit)))
+              (is (bootstrap/p15-s23-checked-core-verification-replay-audit-records-valid?
+                   replay-authority pre-call-audit false :pre-call))
+              (let [failure-fields
+                    (:failure-record-fields
+                     bootstrap/p15-s23-checked-core-expected-verification-replay-audit-policy)
+                    decision-fields
+                    (:decision-record-fields
+                     bootstrap/p15-s23-checked-core-expected-verification-replay-audit-policy)
+                    action-fields
+                    (:action-record-fields
+                     bootstrap/p15-s23-checked-core-expected-verification-replay-audit-policy)
+                    invoke-gate
+                    (fn [authority runtime-implementation]
+                      (let [adapter-calls (atom 0)
+                            runtime-calls (atom 0)
+                            data
+                            (with-redefs
+                              [bootstrap/p15-s23-reference-runtime-adapter-invoke
+                               (fn [& args]
+                                 (swap! adapter-calls inc)
+                                 (apply original-adapter args))
+                               bootstrap/p15-s23-stage2-runtime-artifact-invoke
+                               (fn [& args]
+                                 (swap! runtime-calls inc)
+                                 (apply runtime-implementation args))]
+                              (diagnostic-data
+                               #(bootstrap/p15-s23-checked-core-verification-replay-gate-invoke
+                                 left-artifact context plan validation
+                                 runtime-rule authority)))]
+                        {:data data
+                         :adapter-calls @adapter-calls
+                         :runtime-calls @runtime-calls}))
+                    malformed-result
+                    {:artifact
+                     :gravity/p15-s23-runtime-closed-plan-execution-record
+                     :entrypoint 'main
+                     :entrypoint-result "x"
+                     :stdout "ab\n"
+                     :clojure-seed-boundary? true
+                     :self-hosted? false}
+                    malformed
+                    (invoke-gate replay-authority
+                                 (fn [& _] malformed-result))
+                    unstructured
+                    (invoke-gate
+                     replay-authority
+                     (fn [& _]
+                       (throw
+                        (ex-info "secret unstructured host message"
+                                 {:raw "must-not-escape"
+                                  :secret-token "must-not-escape"}))))
+                    structured
+                    (invoke-gate
+                     replay-authority
+                     (fn [& _]
+                       (throw
+                        (ex-info
+                         "structured host carrier"
+                         {:id "P15S23X002"
+                          :message "bounded structured runtime rejection"
+                          :bootstrap-stage :stage0
+                          :stage :p15-s23-stage2-runtime-executor
+                          :diagnostic-family
+                          :p15-s23-stage2-runtime-executor
+                          :source-span {:source left-path
+                                        :start 1 :end 2
+                                        :line 1 :column 1}
+                          :remediation :repair_runtime_contract
+                          :missing-fact :runtime-contract-value-bounds
+                          :operator 'str
+                          :expected-arity 1
+                          :actual-arity 3
+                          :expected-type :gravity/string
+                          :actual-type :gravity/integer
+                          :raw "must-not-escape"}))))
+                    tampered-authority-base
+                    (-> replay-authority
+                        (update :grant-records pop)
+                        (dissoc :authority-record-id))
+                    tampered-authority
+                    (assoc tampered-authority-base :authority-record-id
+                           (bootstrap/p15-s23-reference-runtime-hash
+                            tampered-authority-base))
+                    tampered
+                    (invoke-gate
+                     tampered-authority
+                     (fn [& _]
+                       (throw (ex-info "runtime must remain uncalled" {}))))]
+                (doseq [{:keys [data adapter-calls runtime-calls]}
+                        [malformed unstructured structured]]
+                  (is (= 1 runtime-calls) data)
+                  (is (zero? adapter-calls) data)
+                  (is (set/subset? failure-fields (set (keys data))) data)
+                  (is (= decision-fields
+                         (set (keys (:decision-record data)))) data)
+                  (is (= action-fields
+                         (set (keys (:action-record data)))) data)
+                  (is (true? (get-in data
+                                     [:action-record :action-started?])) data)
+                  (is (= :failed-before-commit
+                         (get-in data
+                                 [:action-record :action-status])) data)
+                  (is (false? (:result-committed? data)) data)
+                  (is (false? (:output-committed? data)) data)
+                  (is (= (:failure-record-id data)
+                         (bootstrap/p15-s23-reference-runtime-hash
+                          (dissoc (select-keys data failure-fields)
+                                  :failure-record-id))) data))
+                (let [data (:data malformed)]
+                  (is (= "R4-EXCEPTION" (:id data)) data)
+                  (is (= :exact-checked-core-reference-result-envelope
+                         (:missing-fact data)) data)
+                  (is (= :none (:redaction data)))
+                  (is (= :not-required (:redaction-status data))))
+                (let [data (:data unstructured)
+                      rendered (pr-str data)]
+                  (is (= "R4-EXCEPTION" (:id data)) data)
+                  (is (= :untranslated-verification-runtime-exception
+                         (:missing-fact data)) data)
+                  (is (map? (:redaction data)))
+                  (is (re-matches #"sha256:[0-9a-f]{64}"
+                                  (get-in data
+                                          [:redaction
+                                           :cause-class-hash])))
+                  (is (re-matches #"sha256:[0-9a-f]{64}"
+                                  (get-in data
+                                          [:redaction
+                                           :cause-message-hash])))
+                  (is (not (str/includes?
+                            rendered "secret unstructured host message")))
+                  (is (not (str/includes? rendered "must-not-escape"))))
+                (let [data (:data structured)
+                      projection (:runtime-diagnostic-projection data)]
+                  (is (= "P15S23X002" (:id data)
+                         (:id projection)) data)
+                  (is (= :runtime-contract-value-bounds
+                         (:missing-fact data)
+                         (:missing-fact projection)))
+                  (is (= {:start 1 :end 2 :line 1 :column 1}
+                         (:source-span projection)))
+                  (is (= {:operator 'str
+                          :expected-arity 1
+                          :actual-arity 3
+                          :expected-type :gravity/string
+                          :actual-type :gravity/integer}
+                         (:details projection)))
+                  (is (re-matches #"sha256:[0-9a-f]{64}"
+                                  (:message-hash projection)))
+                  (is (= (:artifact-id left-artifact)
+                         (get-in projection
+                                 [:artifact-edge
+                                  :checked-core-artifact-id])))
+                  (is (not (str/includes? (pr-str data)
+                                          "must-not-escape"))))
+                (let [data (:data tampered)]
+                  (is (= "R11-GRANT" (:id data)) data)
+                  (is (= :exact-pinned-verification-replay-authority
+                         (:missing-fact data)) data)
+                  (is (zero? (:runtime-calls tampered)))
+                  (is (zero? (:adapter-calls tampered)))
+                  (is (set/subset? failure-fields (set (keys data))) data)
+                  (is (= :deny (get-in data
+                                       [:decision-record :decision])))
+                  (is (false? (get-in data
+                                      [:action-record :action-started?])))
+                  (is (= :rejected-before-start
+                         (get-in data
+                                 [:action-record :action-status])))
+                  (is (false? (:result-committed? data)))
+                  (is (false? (:output-committed? data)))))
+
+              (let [adapter-calls (atom 0)
+                    data
+                    (with-redefs
+                      [bootstrap/p15-s23-reference-runtime-adapter-invoke
+                       (fn [& args]
+                         (swap! adapter-calls inc)
+                         (apply original-adapter args))]
+                      (diagnostic-data
+                       #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                         left-path source :jvm
+                         (assoc left-authority :lifetime :forever))))]
+                (is (= "C8-CAPABILITY" (:id data)) data)
+                (is (= :integral-typed-fourth-authority-record
+                       (:missing-fact data)) data)
+                (is (zero? @adapter-calls)))
+
+              (let [data
+                    (diagnostic-data
+                     #(bootstrap/p15-s23-stage2-closed-checked-core-rebuild
+                       context))]
+                (is (= "C8-CAPABILITY" (:id data)) data)
+                (is (= :effectful-static-rebuild-is-private-to-authenticating-verifier
+                       (:missing-fact data)) data))
+              (doseq [symbol
+                      '[p15-s23-stage2-closed-checked-core-source-artifact-internal
+                        p15-s23-stage2-closed-checked-core-rebuild-internal
+                        static-rebuild-token]]
+                (is (nil? (ns-resolve 'gravity.bootstrap symbol)) symbol))
+
+              (let [sanitized
+                    (with-redefs
+                      [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                       (fn [& _]
+                         (throw
+                          (ex-info
+                           "secret issuer message"
+                           {:id "C6-VERIFY"
+                            :raw "must-not-escape"
+                            :secret-token "must-not-escape"})))]
+                      (diagnostic-data
+                       #(bootstrap/p15-s23-stage2-closed-checked-core-authority-binding
+                         left-path source :jvm
+                         bootstrap/p15-s23-checked-core-reference-policy-selector)))]
+                (is (= "C6-VERIFY" (:id sanitized)) sanitized)
+                (is (map? (:redaction sanitized)))
+                (is (not (contains? sanitized :raw)))
+                (is (not (contains? sanitized :secret-token)))
+                (is (not (str/includes? (pr-str sanitized)
+                                        "must-not-escape"))))
+
+              (doseq [data
+                      [(diagnostic-data
+                        #(bootstrap/p15-s23-checked-core-verification-replay-instance-record
+                          :provider-selection :fixture {} {} {} {}))
+                       (diagnostic-data
+                        #(bootstrap/p15-s23-checked-core-verification-replay-instance-record
+                          :provider-selection :managed-allocation
+                          {} {} {} {:phase :attacker}))]]
+                (is (= "C8-CAPABILITY" (:id data)) data)
+                (is (= :exact-verification-provider-grant-instance-role-and-fields
+                       (:missing-fact data)) data))
+
+              (let [forged-evidence-base
+                    (-> evidence
+                        (assoc :entrypoint-result "forged"
+                               :entrypoint-result-hash
+                               (bootstrap/p15-s23-closed-core-digest
+                                "forged"))
+                        (dissoc :evidence-id))
+                    forged-evidence
+                    (assoc forged-evidence-base :evidence-id
+                           (bootstrap/p15-s23-closed-core-digest
+                            forged-evidence-base))
+                    authority-evidence
+                    (get-in left-artifact
+                            [:source-core-input :authority-evidence])
+                    forged-facts
+                    (-> (bootstrap/p15-s23-closed-core-fact-tables
+                         (:core-nodes left-artifact)
+                         (get-in left-artifact
+                                 [:source-core-input :module])
+                         (get-in left-artifact
+                                 [:source-core-input :plan-id])
+                         :effectful-reference authority-evidence)
+                        (bootstrap/p15-s23-checked-core-bind-execution-audit-to-facts
+                         (:core-nodes left-artifact) forged-evidence))
+                    forged-artifact
+                    (-> left-artifact
+                        (assoc-in
+                         [:authenticated-input
+                          :reference-execution-evidence]
+                         forged-evidence)
+                        (merge forged-facts)
+                        closed-pure-rehash)
+                    adapter-calls (atom 0)
+                    runtime-calls (atom 0)
+                    data
+                    (with-redefs
+                      [bootstrap/p15-s23-reference-runtime-adapter-invoke
+                       (fn [& args]
+                         (swap! adapter-calls inc)
+                         (apply original-adapter args))
+                       bootstrap/p15-s23-stage2-runtime-artifact-invoke
+                       (fn [& args]
+                         (swap! runtime-calls inc)
+                         (apply original-runtime args))]
+                      (diagnostic-data
+                       #(bootstrap/p15-s23-stage2-closed-checked-core-verification-report
+                         forged-artifact context)))]
+                (is (= :passed
+                       (bootstrap/p15-s23-closed-core-validate-structure!
+                        left-path forged-artifact :effectful-reference
+                        authority-evidence)))
+                (is (= "C10-CHECK" (:id data)) data)
+                (is (= :verification-replay-exact-execution-evidence-parity
+                       (:missing-fact data)) data)
+                (is (false? (:result-committed? data)))
+                (is (false? (:output-committed? data)))
+                (is (zero? @adapter-calls))
+                (is (= 1 @runtime-calls))))))))))
+
+(deftest effectful-checked-core-c-target-seam-rejects-before-runtime
+  (let [source
+        (closed-pure-source-with-main
+         "(str \"x\")"
+         {:effects #{:memory/allocate}
+          :capabilities #{:memory/allocator}
+          :exports '[main]})
+        path "effectful-target-seam.gravity"
+        runtime-rule-calls (atom 0)
+        runtime-invoke-calls (atom 0)
+        adapter-calls (atom 0)
+        original-runtime-rule
+        @#'bootstrap/c-backend-stage2-runtime-source-rule!
+        original-runtime-invoke
+        @#'bootstrap/p15-s23-stage2-runtime-artifact-invoke
+        original-adapter
+        @#'bootstrap/p15-s23-reference-runtime-adapter-invoke
+        [constructor-data issuer-data]
+        (with-redefs
+          [bootstrap/c-backend-stage2-runtime-source-rule!
+           (fn [& args]
+             (swap! runtime-rule-calls inc)
+             (apply original-runtime-rule args))
+           bootstrap/p15-s23-stage2-runtime-artifact-invoke
+           (fn [& args]
+             (swap! runtime-invoke-calls inc)
+             (apply original-runtime-invoke args))
+           bootstrap/p15-s23-reference-runtime-adapter-invoke
+           (fn [& args]
+             (swap! adapter-calls inc)
+             (apply original-adapter args))]
+          [(diagnostic-data
+            #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+              path source :c))
+           (diagnostic-data
+            #(bootstrap/p15-s23-stage2-closed-checked-core-authority-binding
+              path source :c
+              bootstrap/p15-s23-checked-core-reference-policy-selector))])]
+    (is (= "C6-LOWERING-GAP" (:id constructor-data)) constructor-data)
+    (is (= :effectful-reference-interpreter-requested-jvm-target
+           (:missing-fact constructor-data)) constructor-data)
+    (is (= :c (:requested-target constructor-data)))
+    (is (string? (:syntax-id constructor-data)))
+    (is (string? (:core-node-id constructor-data)))
+    (is (= "C8-CAPABILITY" (:id issuer-data)) issuer-data)
+    (is (= :exact-effectful-checked-core-module-authority-contract
+           (:missing-fact issuer-data)) issuer-data)
+    (is (zero? @runtime-rule-calls))
+    (is (zero? @runtime-invoke-calls))
+    (is (zero? @adapter-calls))))
+
 (deftest pure-checked-core-local-families-and-fresh-origin-fail-closed
   (let [path "pure-family-tamper.gravity"
         source closed-pure-checked-core-source
@@ -29276,8 +29895,8 @@
             closed-pure-rederive)
         c8-effect
         (-> artifact
-            (assoc-in [:core-nodes literal-index :effects] #{:io/write})
-            closed-pure-rederive)
+            (assoc-in [:effect-facts literal-id :transitive] #{:io/write})
+            closed-pure-rehash)
         c9-alias
         (-> artifact
             (assoc-in [:core-nodes literal-index :ownership :alias-policy]
@@ -29300,13 +29919,13 @@
           :closed-core-root-scope-pass-and-boundary-contract]
          [c7-type "C7-VERIFY" :operation-specific-reconstructed-type]
          [c8-effect "C8-VERIFY"
-          :pure-admission-effect-and-concrete-operation-closure]
+          :independently-recomputed-effect-facts]
          [c9-alias "C9-MUT-ALIAS"
           :persistent-immutable-alias-and-mutation-policy]
          [c9-transfer "C9-TRANSFER"
           :persistent-value-forwarding-and-result-disposition]
          [c10-proof "C10-PROOF"
-          :content-addressed-pure-safety-proof]]]
+          :content-addressed-outcome-specific-safety-proof]]]
     (doseq [[candidate expected-id expected-missing] candidates]
       (let [data
             (diagnostic-data
@@ -29469,7 +30088,17 @@
               "runtime-contract-probe.gravity" :jvm)
         validation (:runtime-contract-validation-record rule)]
     (is (bootstrap/p15-s23-reference-runtime-rule-authentic? rule))
-    (is (= 19 (count (:runtime-contract-definitions rule))))
+    (is (= 22
+           (count bootstrap/p15-s23-reference-runtime-contract-definition-names)
+           (count (:runtime-contract-definitions rule))
+           (:contract-definition-count validation)))
+    (is (= bootstrap/p15-s23-reference-runtime-contract-definition-names
+           (set (keys (:runtime-contract-definitions rule)))))
+    (is (set/subset?
+         '#{p15-s23-checked-core-program-authority-policy
+            p15-s23-checked-core-verification-replay-policy
+            p15-s23-checked-core-verification-replay-audit-policy}
+         (set (keys (:runtime-contract-definitions rule)))))
     (is (= 11 (count (get-in rule [:runtime-artifact-plan :functions]))))
     (is (= 11 (count (:runtime-artifact-function-hashes rule))))
     (is (= 289 (:operation-count validation)))

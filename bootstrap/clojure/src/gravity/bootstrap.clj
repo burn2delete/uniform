@@ -7,7 +7,8 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.walk :as walk])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
 
@@ -103039,6 +103040,9 @@
 
 (def p15-s23-reference-runtime-contract-definition-names
   '#{p15-s23-reference-runtime-contract
+     p15-s23-checked-core-program-authority-policy
+     p15-s23-checked-core-verification-replay-policy
+     p15-s23-checked-core-verification-replay-audit-policy
      p15-s23-reference-runtime-function-graph
      p15-s23-reference-runtime-function-effects
      p15-s23-reference-runtime-effect-graph
@@ -103059,13 +103063,13 @@
      p15-s23-reference-runtime-grant-records})
 
 (def p15-s23-stage2-runtime-artifact-expected-source-content-hash
-  "sha256:5616c28fc3d7b740a425edec0d0084e6dc3a7996b0af094e1f93dcb37612d065")
+  "sha256:f2cd0103695fa6a9e715f01f2b4d8226aa7c54cfce238a65a051512f36b5e574")
 
 (def p15-s23-stage2-compiler-expected-source-content-hash
   "sha256:f0c5f30518dc8ddb9979bea3344b6b29c512a9a325e6c496bbe6be29ef55a673")
 
 (def p15-s23-stage2-compiler-expected-source-byte-count 116505)
-(def p15-s23-stage2-runtime-artifact-expected-source-byte-count 63354)
+(def p15-s23-stage2-runtime-artifact-expected-source-byte-count 75272)
 
 (defn p15-s23-stage2-compiler-pinned-source!
   "Read and authenticate compiler.gravity before any of its bytes are parsed,
@@ -103120,10 +103124,10 @@
      :module module}))
 
 (def p15-s23-stage2-runtime-artifact-expected-artifact-hash
-  "sha256:f405cc207525fcb718c40831add1ae95ba1db44597a119130c52058c102eef31")
+  "sha256:2ab31e08db4fdf131ee0541badb2aa1535ff18997a906836c6c88a5915aab5ab")
 
 (def p15-s23-reference-runtime-expected-contract-definition-hash
-  "sha256:28638384a7a9cf1e48f1b1b84f43e19e260ba80d62fb5775fa5ef82fc7d50d06")
+  "sha256:8c5d6dcefdaea9682c7f327799bc42b4cef9a0bc9ed38a9a811ff2e0fc60a521")
 
 (def p15-s23-reference-runtime-expected-derived-facts-hash
   "sha256:97e31633983459de11765473298c5db4951a53a45208f79468477270fe215bb1")
@@ -103260,6 +103264,301 @@
     :target :jvm
     :phase :runtime
     :mode :pinned-reference}])
+
+(def p15-s23-checked-core-program-authority-policy-id
+  :gravity.reference/checked-core-program-authority-policy)
+
+(def p15-s23-checked-core-verification-replay-policy-id
+  :gravity.reference/checked-core-verification-replay-policy)
+
+(def p15-s23-checked-core-verification-replay-audit-policy-id
+  :gravity.reference/checked-core-verification-replay-audit-policy)
+
+(def p15-s23-checked-core-reference-policy-selector
+  {:kind :gravity/p15-s23-checked-core-authority-request
+   :schema-version 1
+   :policy-id p15-s23-checked-core-program-authority-policy-id
+   :mode :closed-plan-reference
+   :reference-harness :gravity.bootstrap/reference-harness
+   :single-invocation? true
+   :deployment-runtime? false
+   :live-external-io? false})
+
+(def p15-s23-checked-core-reference-policy-selector-keys
+  #{:kind :schema-version :policy-id :mode :reference-harness
+    :single-invocation? :deployment-runtime? :live-external-io?})
+
+(def p15-s23-checked-core-program-authority-policy-keys
+  #{:artifact :schema-version :policy-id :audit-policy-id :status
+    :profile :target
+    :program-principal-source :source-declaration-is-grant?
+    :operation-contracts :runtime-principal :handler-principal
+    :allowed-runtime-provider-ids :allowed-runtime-grant-ids
+    :allowed-handler-provider-ids :allowed-handler-grant-ids
+    :phase :lifetime :reference-invocation :package
+    :deployment :single-invocation? :reference-interpreter?
+    :transcript-only? :deployment-runtime? :live-external-io? :delegation
+    :authority-widening? :program-grants-in-adapter-authority?})
+
+(def p15-s23-checked-core-program-operation-contracts
+  {'str {:source-operation :str
+         :effect :memory/allocate
+         :capability :memory/allocator
+         :provider-id :gravity.reference/jvm-managed-allocator
+         :program-grant-template-id
+         :gravity.reference/program-grant-managed-allocation
+         :scope :pinned-runtime-plan
+         :safety-outcome :runtime-checked
+         :result-type :gravity/string}
+   'println {:source-operation :println
+             :effect :io/write
+             :capability :io/stdout
+             :provider-id :gravity.reference/transcript-capture
+             :program-grant-template-id
+             :gravity.reference/program-grant-reference-stdout
+             :scope :checked-core-program-transcript
+             :safety-outcome :runtime-checked
+             :result-type :gravity/nil
+             :delivery :in-memory-reference-transcript}})
+
+(def p15-s23-checked-core-expected-program-authority-policy
+  {:artifact :gravity/p15-s23-checked-core-program-authority-policy
+   :schema-version 1
+   :policy-id p15-s23-checked-core-program-authority-policy-id
+   :audit-policy-id :gravity.reference/runtime-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :profile :hosted
+   :target :jvm
+   :program-principal-source :compiled-module
+   :source-declaration-is-grant? false
+   :operation-contracts
+   p15-s23-checked-core-program-operation-contracts
+   :runtime-principal 'gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/reference-harness
+   :allowed-runtime-provider-ids
+   #{:gravity.reference/jvm-managed-allocator
+     :gravity.reference/transcript-capture}
+   :allowed-runtime-grant-ids
+   #{:gravity.reference/grant-managed-allocation
+     :gravity.reference/grant-reference-stdout}
+   :allowed-handler-provider-ids #{:gravity.reference/transcript-capture}
+   :allowed-handler-grant-ids #{:gravity.reference/grant-test-fixture}
+   :phase :runtime
+   :lifetime :single-reference-execution
+   :reference-invocation :single-reference-execution
+   :package :gravity/bootstrap
+   :deployment :reference-harness-only
+   :single-invocation? true
+   :reference-interpreter? true
+   :transcript-only? true
+   :deployment-runtime? false
+   :live-external-io? false
+   :delegation :none
+   :authority-widening? false
+   :program-grants-in-adapter-authority? false})
+
+(def p15-s23-checked-core-verification-replay-policy-keys
+  #{:artifact :schema-version :policy-id :audit-policy-id :status
+    :profile :target :verifier-principal :runtime-principal
+    :handler-principal :invocation-contract
+    :provider-contracts :grant-contracts :binding-inputs
+    :plan-requirement-source :host-service-boundary :deny-by-default?
+    :redaction-policy :audit-record-contract
+    :phase :lifetime :reference-invocation
+    :package :deployment :single-replay? :authoritative-invocation?
+    :excluded-from-authoritative-invocation-count? :result-producing?
+    :external-io-delivery :live-external-io?
+    :program-authority-consumed? :program-grants-consumed? :delegation
+    :authority-widening?})
+
+(def p15-s23-checked-core-expected-verification-replay-policy
+  {:artifact :gravity/p15-s23-checked-core-verification-replay-policy
+   :schema-version 1
+   :policy-id p15-s23-checked-core-verification-replay-policy-id
+   :audit-policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :profile :hosted
+   :target :jvm
+   :verifier-principal :gravity.bootstrap/checked-core-verifier
+   :runtime-principal 'gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/verification-transcript-harness
+   :invocation-contract
+   {:caller-principal :gravity.bootstrap/checked-core-verifier
+    :callee-principal 'gravity.bootstrap.p15-s23.runtime
+    :invocation-handle-id
+    :gravity.reference/checked-core-verification-runtime-handle
+    :authorization-source :exact-verifier-provider-grants
+    :scope :pinned-checked-core-artifact-replay
+    :authority-transfer? false}
+   :provider-contracts
+   {:verifier-managed-allocation
+    {:provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :required-when :every-verification-replay}
+    :verifier-transcript-fixture
+    {:provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :required-when :structural-println-present}
+    :managed-allocation
+    {:provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :required-when :every-verification-replay}
+    :transcript-capture
+    {:provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :io/stdout
+     :handler-capability :test/fixture
+     :required-when :structural-println-present}}
+   :grant-contracts
+   {:verifier-managed-allocation
+    {:grant-id
+     :gravity.reference/verification-grant-verifier-managed-allocation
+     :principal :gravity.bootstrap/checked-core-verifier
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :scope :pinned-checked-core-artifact-replay}
+    :verifier-transcript-fixture
+    {:grant-id
+     :gravity.reference/verification-grant-verifier-test-fixture
+     :principal :gravity.bootstrap/checked-core-verifier
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :scope :verification-transcript}
+    :managed-allocation
+    {:grant-id
+     :gravity.reference/verification-grant-managed-allocation
+     :principal 'gravity.bootstrap.p15-s23.runtime
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :scope :pinned-verification-runtime-plan}
+    :transcript-capture
+    {:grant-id
+     :gravity.reference/verification-grant-transcript-capture
+     :principal 'gravity.bootstrap.p15-s23.runtime
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :io/stdout
+     :scope :verification-transcript}
+    :fixture
+    {:grant-id :gravity.reference/verification-grant-test-fixture
+     :principal :gravity.bootstrap/verification-transcript-harness
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :scope :verification-transcript}}
+   :binding-inputs
+   #{:checked-core-artifact-id :mapping-id :provenance-binding-id
+     :source-content-hash :plan-id :module
+     :runtime-source-content-hash :runtime-artifact-hash
+     :runtime-contract-definition-hash :runtime-derived-facts-hash
+     :runtime-function :runtime-function-hash :verification-policy-id
+     :verification-policy-hash :verification-audit-policy-hash
+     :structural-operation-set :concrete-core-operation-set
+     :reissued-program-authority-record-id
+     :reissued-program-authority-evidence-id}
+   :plan-requirement-source :authenticated-structural-operation-set
+   :host-service-boundary :typed-r1-delegated-adapters
+   :deny-by-default? true
+   :redaction-policy :hash-host-class-and-message
+   :audit-record-contract
+   {:invocation-decision :required-before-runtime-call
+    :provider-decisions :exactly-required-structural-services
+    :pre-call-actions :none-before-runtime-invocation
+    :action-records :exactly-invoked-or-structurally-not-invoked
+    :failure-diagnostics
+    {:gate-owned #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+     :preserved-runtime-projection
+     :bounded-authenticated-runtime-diagnostic-projection}
+    :raw-host-message? false}
+   :phase :verification
+   :lifetime :single-verification-replay
+   :reference-invocation :single-verification-replay
+   :package :gravity/bootstrap
+   :deployment :verification-harness-only
+   :single-replay? true
+   :authoritative-invocation? false
+   :excluded-from-authoritative-invocation-count? true
+   :result-producing? true
+   :external-io-delivery :in-memory-reference-transcript
+   :live-external-io? false
+   :program-authority-consumed? false
+   :program-grants-consumed? false
+   :delegation :none
+   :authority-widening? false})
+
+(def p15-s23-checked-core-verification-replay-audit-policy-keys
+  #{:artifact :schema-version :policy-id :status :principals
+    :decision-record-fields :action-record-fields :failure-record-fields
+    :failure-diagnostics :redaction-policy :raw-host-message?
+    :deny-by-default? :phase :lifetime :package :deployment
+    :live-external-io? :delegation :authority-widening?})
+
+(def p15-s23-checked-core-expected-verification-replay-audit-policy
+  {:artifact
+   :gravity/p15-s23-checked-core-verification-replay-audit-policy
+   :schema-version 1
+   :policy-id p15-s23-checked-core-verification-replay-audit-policy-id
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :principals
+   {:verifier :gravity.bootstrap/checked-core-verifier
+    :runtime 'gravity.bootstrap.p15-s23.runtime
+    :handler :gravity.bootstrap/verification-transcript-harness}
+   :decision-record-fields
+   #{:decision-id :kind :action-id :principal-id :effect :capability
+     :provider-id :provider-selection-record-id :grant-id :grant-record-id
+     :replay-authority-record-id :phase :lifetime :policy-id
+     :verification-policy-hash :audit-policy-id
+     :verification-audit-policy-hash :runtime-contract-definition-hash
+     :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+     :scope :plan-id :source-content-hash :checked-core-artifact-id
+     :runtime-artifact-hash :profile :target :runtime-family :service-id
+     :module :package :deployment :source-span :generated-origin-edge
+     :delegated-handle-id :decision :result :reason :redaction
+     :redaction-policy :redaction-status :audit-status
+     :diagnostic :missing-fact}
+   :action-record-fields
+   #{:record-id :kind :action-id :principal-id :effect :capability
+     :provider-id :provider-selection-record-id :grant-id :grant-record-id
+     :replay-authority-record-id :phase :lifetime :policy-id
+     :verification-policy-hash :audit-policy-id
+     :verification-audit-policy-hash :runtime-contract-definition-hash
+     :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+     :scope :plan-id :source-content-hash :checked-core-artifact-id
+     :runtime-artifact-hash :action-started? :action-status
+     :result-committed? :output-committed? :diagnostic :redaction
+     :profile :target :runtime-family :service-id :module :package
+     :deployment :source-span :generated-origin-edge :delegated-handle-id
+     :redaction-policy :redaction-status :audit-status
+     :missing-fact :reason}
+   :failure-record-fields
+   #{:failure-record-id :diagnostic :missing-fact :decision-record :action-record
+     :result-committed? :output-committed? :redaction :redaction-policy
+     :redaction-status :audit-status :remediation :profile :target
+     :runtime-family :service-id :effect :capability :provider-id
+     :runtime-function :module :package :delegated-handle-id
+     :host-runtime :host-symbol :host-package :gravity-type :adapter-id
+     :missing-policy :runtime-diagnostic-projection}
+   :failure-diagnostics
+   {:gate-owned #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+    :preserved-runtime-projection
+    :bounded-authenticated-runtime-diagnostic-projection}
+   :redaction-policy :hash-host-class-and-message
+   :raw-host-message? false
+   :deny-by-default? true
+   :phase :verification
+   :lifetime :single-verification-replay
+   :package :gravity/bootstrap
+   :deployment :verification-harness-only
+   :live-external-io? false
+   :delegation :none
+   :authority-widening? false})
 
 (def p15-s23-reference-runtime-max-contract-nodes 16384)
 (def p15-s23-reference-runtime-max-instruction-depth 256)
@@ -104210,6 +104509,14 @@
   [source-path target definitions authoritative-module derived]
   (let [contract
         (get definitions 'p15-s23-reference-runtime-contract)
+        checked-core-program-policy
+        (get definitions 'p15-s23-checked-core-program-authority-policy)
+        checked-core-verification-replay-policy
+        (get definitions
+             'p15-s23-checked-core-verification-replay-policy)
+        checked-core-verification-replay-audit-policy
+        (get definitions
+             'p15-s23-checked-core-verification-replay-audit-policy)
         function-graph
         (get definitions 'p15-s23-reference-runtime-function-graph)
         function-effects
@@ -104300,6 +104607,34 @@
      (select-keys contract
                   [:source-module :profile :target :declared-effects
                    :declared-capabilities]))
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-program-authority-policy
+     p15-s23-checked-core-expected-program-authority-policy
+     checked-core-program-policy)
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-program-authority-policy-schema
+     p15-s23-checked-core-program-authority-policy-keys
+     (set (keys checked-core-program-policy)))
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-verification-replay-policy
+     p15-s23-checked-core-expected-verification-replay-policy
+     checked-core-verification-replay-policy)
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-verification-replay-policy-schema
+     p15-s23-checked-core-verification-replay-policy-keys
+     (set (keys checked-core-verification-replay-policy)))
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-verification-replay-audit-policy
+     p15-s23-checked-core-expected-verification-replay-audit-policy
+     checked-core-verification-replay-audit-policy)
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-verification-replay-audit-policy-schema
+     p15-s23-checked-core-verification-replay-audit-policy-keys
+     (set (keys checked-core-verification-replay-audit-policy)))
+    (p15-s23-reference-runtime-ensure!
+     source-path target :checked-core-verification-replay-policy-audit-link
+     (:policy-id checked-core-verification-replay-audit-policy)
+     (:audit-policy-id checked-core-verification-replay-policy))
     (p15-s23-reference-runtime-ensure!
      source-path target :runtime-contract-cross-links expected-links
      (select-keys contract (keys expected-links)))
@@ -104578,10 +104913,21 @@
        3 (count (set service-ids))))
     (p15-s23-reference-runtime-ensure!
      source-path target :runtime-contract-no-credit
-     {:checked-core-str-println-admission? false
-      :checked-core-str-println-admission-status :unresolved
-      :typed-fourth-authority :absent
-      :typed-fourth-authority-consumed? false
+     {:checked-core-str-println-admission? true
+      :checked-core-str-println-admission-status
+      :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+      :checked-core-program-authority-policy-id
+      p15-s23-checked-core-program-authority-policy-id
+      :checked-core-verification-replay-policy-id
+      p15-s23-checked-core-verification-replay-policy-id
+      :checked-core-verification-replay-audit-policy-id
+      p15-s23-checked-core-verification-replay-audit-policy-id
+      :checked-core-authority-record-schema-version 1
+      :checked-core-verification-replay-authority-schema-version 1
+      :checked-core-reference-only? true
+      :typed-fourth-authority
+      :gravity/p15-s23-checked-core-authority-binding-v1
+      :typed-fourth-authority-consumed? true
       :target-lowering-credit? false
       :release-credit? false
       :c11-credit? false
@@ -104592,6 +104938,12 @@
      (select-keys contract
                   [:checked-core-str-println-admission?
                    :checked-core-str-println-admission-status
+                   :checked-core-program-authority-policy-id
+                   :checked-core-verification-replay-policy-id
+                   :checked-core-verification-replay-audit-policy-id
+                   :checked-core-authority-record-schema-version
+                   :checked-core-verification-replay-authority-schema-version
+                   :checked-core-reference-only?
                    :typed-fourth-authority
                    :typed-fourth-authority-consumed?
                    :target-lowering-credit? :release-credit? :c11-credit?
@@ -104607,7 +104959,12 @@
                   [:status :provider-selection :grant
                    :closed-plan-interpreter-excluded?]))
     (doseq [[name value] definitions]
-      (when (and (not= name 'p15-s23-reference-stdout-deployment-requirement)
+      (when (and (not (contains?
+                       '#{p15-s23-reference-stdout-deployment-requirement
+                          p15-s23-checked-core-program-authority-policy
+                          p15-s23-checked-core-verification-replay-policy
+                          p15-s23-checked-core-verification-replay-audit-policy}
+                       name))
                  (contains? value :status))
         (p15-s23-reference-runtime-ensure!
          source-path target :runtime-contract-definition-status
@@ -105190,10 +105547,10 @@
     :requires :effects :safety :target :doc :metadata :profile :forms})
 
 (def p15-s23-reference-runtime-expected-plan-id
-  "sha256:001261c2c3382e4102a7ee73c9b1bc50af347075bbdb3eb351ad6a424bb3b6be")
+  "sha256:717fe799d311abfa0251732c7aea70f3cdbf5c4b197aee5d5bdc50d7ea678c34")
 
 (def p15-s23-reference-runtime-expected-authoritative-module-hash
-  "sha256:df87ece3f83ec84abf39a1b9b5a5652f193699e8f189abbd33b70dc1595d0d43")
+  "sha256:dba7fa068a7e035ef90139a669e7b1953eab11c43b315311e5cc8f47431c86d1")
 
 (defn p15-s23-reference-runtime-pinned-file-binding
   [path expected-byte-count expected-content-hash]
@@ -105788,6 +106145,46 @@
          (contains? allowed-source-paths source)
          (contains? data :remediation))))
 
+(def p15-s23-checked-core-reference-result-keys
+  #{:artifact :entrypoint :entrypoint-result :stdout :status
+    :clojure-seed-boundary? :self-hosted?})
+
+(defn p15-s23-checked-core-reference-result-valid?
+  [result plan]
+  (try
+    (and
+     (map? result)
+     (contains?
+      p15-s23-reference-runtime-supported-collection-class-names
+      (some-> result class .getName))
+     (<= (count result) 7)
+     (do
+       (p15-s23-reference-runtime-bounded-value!
+        "checked-core-reference-result" :jvm
+        :checked-core-reference-result result
+        p15-s23-reference-runtime-max-contract-nodes
+        p15-s23-reference-runtime-max-contract-depth)
+       true)
+     (= p15-s23-checked-core-reference-result-keys
+        (set (keys result)))
+     (= :gravity/p15-s23-runtime-closed-plan-execution-record
+        (:artifact result))
+     (= (:entrypoint plan) (:entrypoint result))
+     (symbol? (:entrypoint result))
+     (or (nil? (:entrypoint-result result))
+         (string? (:entrypoint-result result))
+         (boolean? (:entrypoint-result result))
+         (integer? (:entrypoint-result result))
+         (char? (:entrypoint-result result))
+         (keyword? (:entrypoint-result result))
+         (symbol? (:entrypoint-result result)))
+     (string? (:stdout result))
+     (= :complete (:status result))
+     (true? (:clojure-seed-boundary? result))
+     (false? (:self-hosted? result)))
+    (catch StackOverflowError _ false)
+    (catch Exception _ false)))
+
 (defn p15-s23-reference-runtime-adapter-validated-invoke
   [runtime-rule function args authority target-plan plan-id source-id
    closed-plan-validation]
@@ -106233,8 +106630,17 @@
                    :failure-cause redaction}))))
     (let [result
           (try
-            (p15-s23-stage2-runtime-artifact-invoke
-             runtime-rule function args)
+            (let [candidate
+                  (p15-s23-stage2-runtime-artifact-invoke
+                   runtime-rule function args)]
+              (when-not
+               (p15-s23-checked-core-reference-result-valid?
+                candidate target-plan)
+                (throw
+                 (ex-info "invalid checked-core reference result envelope"
+                          {:missing-fact
+                           :exact-checked-core-reference-result-envelope})))
+              candidate)
             (catch clojure.lang.ExceptionInfo ex
               (if (p15-s23-reference-runtime-structured-diagnostic?
                    ex #{(:runtime-artifact-source-path runtime-rule)
@@ -107576,8 +107982,11 @@
 (def p15-s23-closed-core-recognized-plan-operations
   (conj p15-s23-closed-core-allowed-operations :builtin-call :println))
 
+(def p15-s23-closed-core-recognized-core-operations
+  (conj p15-s23-closed-core-allowed-operations :str :println))
+
 (def p15-s23-closed-core-allowed-safety-outcomes
-  #{:proven-safe})
+  #{:proven-safe :runtime-checked})
 
 (def p15-s23-closed-core-known-effects
   #{:io/write :memory/allocate})
@@ -107662,7 +108071,7 @@
        :required-capabilities capabilities})))
 
 (defn p15-s23-closed-core-scope-contract
-  []
+  ([]
   {:accepted-pure-operations
    (vec (sort p15-s23-closed-core-allowed-operations))
    :structural-node-kinds [:binding :function :truthiness]
@@ -107702,6 +108111,31 @@
    :target-lowering-credit? false
    :release-credit? false
    :self-hosted? false})
+  ([mode]
+   (p15-s23-closed-core-scope-contract
+    mode {:required-effects #{} :required-capabilities #{}}))
+  ([mode {:keys [required-effects required-capabilities]}]
+   (if (= :effectful-reference mode)
+     (-> (p15-s23-closed-core-scope-contract)
+         (dissoc :recognized-but-uncredited-capabilities)
+         (assoc :recognized-but-rejected-pending-runtime-module []
+                :required-effects required-effects
+                :required-capabilities required-capabilities
+                :accepted-reference-effects
+                p15-s23-closed-core-known-effects
+                :accepted-reference-capabilities
+                p15-s23-closed-core-known-capabilities
+                :complete-for-pure-closed-slice? false
+                :accepted-reference-operations [:println :str]
+                :reference-interpreter? true
+                :single-authoritative-construction-invocation? true
+                :verification-replay-is-separate-runtime-evaluation? true
+                :complete-for-pinned-r1-r11-verification-replay-slice? true
+                :r1-whole-conformance? false
+                :r11-whole-conformance? false
+                :deployment-runtime? false
+                :live-external-io? false))
+     (p15-s23-closed-core-scope-contract))))
 
 (defn p15-s23-closed-core-executable-form-records
   "Return the single checked-core C2 executable preorder.
@@ -108020,6 +108454,1133 @@
 (defn p15-s23-closed-core-digest
   [value]
   (reader-canonical-hash (c-backend-canonical-value value)))
+
+(def p15-s23-checked-core-authority-record-keys
+  #{:kind :schema-version :source-content-hash :plan-id :module :profile
+    :source-target :runtime-source-content-hash
+    :runtime-contract-definition-hash
+    :runtime-contract-derived-facts-hash :runtime-artifact-hash
+    :runtime-function :runtime-function-hash
+    :program-authority-policy-id :program-authority-policy-hash
+    :structural-operation-set :required-effects :required-capabilities
+    :program-principal :runtime-principal :handler-principal
+    :program-provider-records :program-grant-records
+    :runtime-provider-ids :runtime-grant-ids
+    :handler-provider-ids :handler-grant-ids
+    :scope :phase :lifetime :single-invocation?
+    :reference-interpreter? :deployment-runtime? :live-external-io?
+    :adapter-authority :authority-record-id})
+
+(def p15-s23-checked-core-program-provider-record-keys
+  #{:artifact :schema-version :provider-selection-id :principal-id
+    :effect :capability :provider-id :profile :target :phase :scope
+    :source-binding :lifetime :policy-id :policy-hash :selection-source
+    :provider-provenance
+    :source-declaration-is-grant? :deployment :live-external-authority?
+    :status})
+
+(def p15-s23-checked-core-program-grant-record-keys
+  #{:artifact :schema-version :grant-id :principal-id :effect :capability
+    :provider-selection-id :provider-id :scope :source-binding :profile
+    :target :phase :lifetime :policy-id :policy-hash :audit-policy-id
+    :program-grant-template-id :reference-invocation :package :deployment
+    :authority-source :provider-provenance :source-declaration-is-grant?
+    :live-external-authority? :status})
+
+(defn p15-s23-checked-core-authority-structural-operations
+  [requirements]
+  (cond-> #{}
+    (or (contains? (:required-effects requirements) :memory/allocate)
+        (contains? (:required-capabilities requirements) :memory/allocator))
+    (conj :str)
+
+    (or (contains? (:required-effects requirements) :io/write)
+        (contains? (:required-capabilities requirements) :io/stdout))
+    (conj :println)))
+
+(defn p15-s23-checked-core-authority-source-binding
+  [source-content-hash plan-id module structural-operation-set]
+  {:source-content-hash source-content-hash
+   :plan-id plan-id
+   :module module
+   :structural-operation-set structural-operation-set})
+
+(defn p15-s23-checked-core-program-provider-record
+  [source-binding program-principal operation-contract policy-hash]
+  (let [base
+        {:artifact :gravity/p15-s23-program-provider-selection
+         :schema-version 1
+         :principal-id program-principal
+         :effect (:effect operation-contract)
+         :capability (:capability operation-contract)
+         :provider-id (:provider-id operation-contract)
+         :profile :hosted
+         :target :jvm
+         :phase :runtime
+         :scope (:scope operation-contract)
+         :source-binding source-binding
+         :lifetime :single-reference-execution
+         :policy-id p15-s23-checked-core-program-authority-policy-id
+         :policy-hash policy-hash
+         :selection-source :pinned-runtime-contract-policy
+         :provider-provenance :authenticated-runtime-contract-operation
+         :source-declaration-is-grant? false
+         :deployment :reference-harness-only
+         :live-external-authority? false
+         :status :selected-for-single-reference-execution}]
+    (assoc base :provider-selection-id
+           (p15-s23-closed-core-digest base))))
+
+(defn p15-s23-checked-core-program-grant-record
+  [source-binding program-principal provider-record operation-contract
+   policy]
+  (let [base
+        {:artifact :gravity/p15-s23-program-capability-grant
+         :schema-version 1
+         :principal-id program-principal
+         :effect (:effect provider-record)
+         :capability (:capability provider-record)
+         :provider-selection-id (:provider-selection-id provider-record)
+         :provider-id (:provider-id provider-record)
+         :scope (:scope provider-record)
+         :source-binding source-binding
+         :profile :hosted
+         :target :jvm
+         :phase :runtime
+         :lifetime :single-reference-execution
+         :policy-id p15-s23-checked-core-program-authority-policy-id
+         :policy-hash (:policy-hash provider-record)
+         :audit-policy-id (:audit-policy-id policy)
+         :program-grant-template-id
+         (:program-grant-template-id operation-contract)
+         :reference-invocation :single-reference-execution
+         :package :gravity/bootstrap
+         :deployment :reference-harness-only
+         :authority-source :pinned-runtime-contract-policy
+         :provider-provenance (:provider-provenance provider-record)
+         :source-declaration-is-grant? false
+         :live-external-authority? false
+         :status :granted-for-single-reference-execution}]
+    (assoc base :grant-id (p15-s23-closed-core-digest base))))
+
+(defn p15-s23-checked-core-program-authority-records
+  [source-binding program-principal structural-operation-set policy]
+  (let [contracts (:operation-contracts policy)
+        policy-hash (p15-s23-closed-core-digest policy)
+        selected-contracts
+        (mapv (fn [operation]
+                (or (get contracts (case operation
+                                     :str 'str
+                                     :println 'println))
+                    (p15-s23-closed-core-fail!
+                     "C8-CAPABILITY" "<checked-core-authority>"
+                     {:source-operation operation}
+                     {:missing-fact
+                      :pinned-program-authority-operation-contract})))
+              (sort-by pr-str structural-operation-set))
+        providers
+        (mapv #(p15-s23-checked-core-program-provider-record
+                source-binding program-principal % policy-hash)
+              selected-contracts)
+        grants
+        (mapv (fn [provider operation-contract]
+                (p15-s23-checked-core-program-grant-record
+                 source-binding program-principal provider
+                 operation-contract policy))
+              providers selected-contracts)]
+    {:provider-records providers :grant-records grants}))
+
+(defn p15-s23-checked-core-authority-record
+  [source-content-hash plan module requirements runtime-rule policy]
+  (let [structural-operation-set
+        (p15-s23-checked-core-authority-structural-operations requirements)
+        program-principal (:module module)
+        runtime-principal (:runtime-principal policy)
+        handler-principal (:handler-principal policy)
+        _ (when-not (and (symbol? program-principal)
+                         (symbol? runtime-principal)
+                         (keyword? handler-principal)
+                         (= 3 (count (set [program-principal
+                                           runtime-principal
+                                           handler-principal]))))
+            (p15-s23-closed-core-fail!
+             "C8-CAPABILITY" "<checked-core-authority>"
+             {:program-principal program-principal
+              :runtime-principal runtime-principal
+              :handler-principal handler-principal}
+             {:missing-fact :typed-distinct-authority-principals}))
+        source-binding
+        (p15-s23-checked-core-authority-source-binding
+         source-content-hash (:plan-id plan) program-principal
+         structural-operation-set)
+        program-records
+        (p15-s23-checked-core-program-authority-records
+         source-binding program-principal structural-operation-set policy)
+        writes-stdout? (contains? structural-operation-set :println)
+        runtime-provider-ids
+        (cond-> #{:gravity.reference/jvm-managed-allocator}
+          writes-stdout? (conj :gravity.reference/transcript-capture))
+        runtime-grant-ids
+        (cond-> #{:gravity.reference/grant-managed-allocation}
+          writes-stdout? (conj :gravity.reference/grant-reference-stdout))
+        handler-provider-ids
+        (if writes-stdout?
+          #{:gravity.reference/transcript-capture}
+          #{})
+        handler-grant-ids
+        (if writes-stdout?
+          #{:gravity.reference/grant-test-fixture}
+          #{})
+        adapter-authority
+        (p15-s23-reference-runtime-authority
+         nil {:observed-operation-set
+              (if writes-stdout? #{:println} #{})})
+        base
+        {:kind :gravity/p15-s23-checked-core-authority-binding-v1
+         :schema-version 1
+         :source-content-hash source-content-hash
+         :plan-id (:plan-id plan)
+         :module program-principal
+         :profile (:profile module)
+         :source-target (:target module)
+         :runtime-source-content-hash
+         (:runtime-source-content-hash runtime-rule)
+         :runtime-contract-definition-hash
+         (:runtime-contract-definition-hash runtime-rule)
+         :runtime-contract-derived-facts-hash
+         (:runtime-contract-derived-facts-hash runtime-rule)
+         :runtime-artifact-hash (:runtime-artifact-hash runtime-rule)
+         :runtime-function
+         p15-s23-stage2-runtime-artifact-closed-plan-function
+         :runtime-function-hash
+         (get (:runtime-artifact-function-hashes runtime-rule)
+              p15-s23-stage2-runtime-artifact-closed-plan-function)
+         :program-authority-policy-id (:policy-id policy)
+         :program-authority-policy-hash
+         (p15-s23-closed-core-digest policy)
+         :structural-operation-set structural-operation-set
+         :required-effects (:required-effects requirements)
+         :required-capabilities (:required-capabilities requirements)
+         :program-principal program-principal
+         :runtime-principal runtime-principal
+         :handler-principal handler-principal
+         :program-provider-records (:provider-records program-records)
+         :program-grant-records (:grant-records program-records)
+         :runtime-provider-ids runtime-provider-ids
+         :runtime-grant-ids runtime-grant-ids
+         :handler-provider-ids handler-provider-ids
+         :handler-grant-ids handler-grant-ids
+         :scope :authenticated-checked-core-reference-interpreter
+         :phase :runtime
+         :lifetime :single-reference-execution
+         :single-invocation? true
+         :reference-interpreter? true
+         :deployment-runtime? false
+         :live-external-io? false
+         :adapter-authority adapter-authority}]
+    (assoc base :authority-record-id
+           (p15-s23-closed-core-digest base))))
+
+(defn- p15-s23-checked-core-program-provider-record-valid?
+  [record]
+  (and
+   (map? record)
+   (= p15-s23-checked-core-program-provider-record-keys
+      (set (keys record)))
+   (= :gravity/p15-s23-program-provider-selection (:artifact record))
+   (= 1 (:schema-version record))
+   (= (p15-s23-closed-core-digest
+       p15-s23-checked-core-expected-program-authority-policy)
+      (:policy-hash record))
+   (= :authenticated-runtime-contract-operation
+      (:provider-provenance record))
+   (false? (:source-declaration-is-grant? record))
+   (false? (:live-external-authority? record))
+   (= (:provider-selection-id record)
+      (p15-s23-closed-core-digest
+       (dissoc record :provider-selection-id)))))
+
+(defn- p15-s23-checked-core-program-grant-record-valid?
+  [record]
+  (and
+   (map? record)
+   (= p15-s23-checked-core-program-grant-record-keys
+      (set (keys record)))
+   (= :gravity/p15-s23-program-capability-grant (:artifact record))
+   (= 1 (:schema-version record))
+   (= (p15-s23-closed-core-digest
+       p15-s23-checked-core-expected-program-authority-policy)
+      (:policy-hash record))
+   (= :gravity.reference/runtime-audit-policy (:audit-policy-id record))
+   (= :authenticated-runtime-contract-operation
+      (:provider-provenance record))
+   (false? (:source-declaration-is-grant? record))
+   (false? (:live-external-authority? record))
+   (= (:grant-id record)
+      (p15-s23-closed-core-digest (dissoc record :grant-id)))))
+
+(defn p15-s23-checked-core-authority-record-valid?
+  [record]
+  (try
+   (p15-s23-reference-runtime-bounded-value!
+    "p15-s23-checked-core-authority" :jvm
+    :checked-core-authority-record record
+    p15-s23-reference-runtime-max-contract-nodes
+    p15-s23-reference-runtime-max-contract-depth)
+   (let [structural-operation-set (:structural-operation-set record)
+         writes-stdout? (contains? structural-operation-set :println)
+         expected-effects
+         (cond-> #{}
+           (contains? structural-operation-set :str)
+           (conj :memory/allocate)
+           writes-stdout? (conj :io/write))
+         expected-capabilities
+         (cond-> #{}
+           (contains? structural-operation-set :str)
+           (conj :memory/allocator)
+           writes-stdout? (conj :io/stdout))
+         expected-source-binding
+         (p15-s23-checked-core-authority-source-binding
+          (:source-content-hash record) (:plan-id record) (:module record)
+          structural-operation-set)
+         expected-program-records
+         (p15-s23-checked-core-program-authority-records
+          expected-source-binding (:program-principal record)
+          structural-operation-set
+          p15-s23-checked-core-expected-program-authority-policy)
+         expected-runtime-providers
+         (cond-> #{:gravity.reference/jvm-managed-allocator}
+           writes-stdout? (conj :gravity.reference/transcript-capture))
+         expected-runtime-grants
+         (cond-> #{:gravity.reference/grant-managed-allocation}
+           writes-stdout?
+           (conj :gravity.reference/grant-reference-stdout))
+         expected-handler-providers
+         (if writes-stdout?
+           #{:gravity.reference/transcript-capture} #{})
+         expected-handler-grants
+         (if writes-stdout?
+           #{:gravity.reference/grant-test-fixture} #{})
+         expected-adapter
+         (p15-s23-reference-runtime-authority
+          nil {:observed-operation-set
+               (if writes-stdout? #{:println} #{})})]
+   (and
+   (map? record)
+   (= p15-s23-checked-core-authority-record-keys (set (keys record)))
+   (= :gravity/p15-s23-checked-core-authority-binding-v1 (:kind record))
+   (= 1 (:schema-version record))
+   (set? (:structural-operation-set record))
+   (seq (:structural-operation-set record))
+   (set/subset? (:structural-operation-set record) #{:str :println})
+   (set? (:required-effects record))
+   (set? (:required-capabilities record))
+   (= expected-effects (:required-effects record))
+   (= expected-capabilities (:required-capabilities record))
+   (= :hosted (:profile record))
+   (= :jvm (:source-target record))
+   (= (:module record) (:program-principal record))
+   (symbol? (:program-principal record))
+   (symbol? (:runtime-principal record))
+   (keyword? (:handler-principal record))
+   (= 3 (count (set [(:program-principal record)
+                      (:runtime-principal record)
+                      (:handler-principal record)])))
+   (= p15-s23-checked-core-program-authority-policy-id
+      (:program-authority-policy-id record))
+   (= (p15-s23-closed-core-digest
+      p15-s23-checked-core-expected-program-authority-policy)
+      (:program-authority-policy-hash record))
+   (= p15-s23-stage2-runtime-artifact-expected-source-content-hash
+      (:runtime-source-content-hash record))
+   (= p15-s23-reference-runtime-expected-contract-definition-hash
+      (:runtime-contract-definition-hash record))
+   (= p15-s23-reference-runtime-expected-derived-facts-hash
+      (:runtime-contract-derived-facts-hash record))
+   (= p15-s23-stage2-runtime-artifact-expected-artifact-hash
+      (:runtime-artifact-hash record))
+   (= p15-s23-stage2-runtime-artifact-closed-plan-function
+      (:runtime-function record))
+   (= (get p15-s23-reference-runtime-expected-function-hashes
+           p15-s23-stage2-runtime-artifact-closed-plan-function)
+      (:runtime-function-hash record))
+   (= :authenticated-checked-core-reference-interpreter (:scope record))
+   (= :runtime (:phase record))
+   (= :single-reference-execution (:lifetime record))
+   (= 'gravity.bootstrap.p15-s23.runtime (:runtime-principal record))
+   (= :gravity.bootstrap/reference-harness (:handler-principal record))
+   (vector? (:program-provider-records record))
+   (vector? (:program-grant-records record))
+   (= (count (:program-provider-records record))
+      (count (:program-grant-records record)))
+   (every? p15-s23-checked-core-program-provider-record-valid?
+           (:program-provider-records record))
+   (every? p15-s23-checked-core-program-grant-record-valid?
+           (:program-grant-records record))
+   (= (:provider-records expected-program-records)
+      (:program-provider-records record))
+   (= (:grant-records expected-program-records)
+      (:program-grant-records record))
+   (every?
+    (fn [[provider grant]]
+      (and (= (:provider-selection-id provider)
+              (:provider-selection-id grant))
+           (= (select-keys provider
+                           [:principal-id :effect :capability :provider-id
+                            :profile :target :phase :scope :source-binding
+                            :lifetime :policy-id])
+              (select-keys grant
+                           [:principal-id :effect :capability :provider-id
+                            :profile :target :phase :scope :source-binding
+                            :lifetime :policy-id]))))
+    (map vector (:program-provider-records record)
+         (:program-grant-records record)))
+   (= (:program-principal record)
+      (get-in record [:program-provider-records 0 :principal-id]
+              (:program-principal record)))
+   (every? #(= (:program-principal record) (:principal-id %))
+           (:program-provider-records record))
+   (every? #(= (:program-principal record) (:principal-id %))
+           (:program-grant-records record))
+   (every? set? (map record
+                     [:runtime-provider-ids :runtime-grant-ids
+                      :handler-provider-ids :handler-grant-ids]))
+   (= expected-runtime-providers (:runtime-provider-ids record))
+   (= expected-runtime-grants (:runtime-grant-ids record))
+   (= expected-handler-providers (:handler-provider-ids record))
+   (= expected-handler-grants (:handler-grant-ids record))
+   (map? (:adapter-authority record))
+   (= p15-s23-reference-runtime-authority-keys
+      (set (keys (:adapter-authority record))))
+   (= (:runtime-principal record)
+      (get-in record [:adapter-authority :source-principal]))
+   (= (:handler-principal record)
+      (get-in record [:adapter-authority :handler-principal]))
+   (= (set/union (:runtime-provider-ids record)
+                 (:handler-provider-ids record))
+      (get-in record [:adapter-authority :providers]))
+   (= (set/union (:runtime-grant-ids record)
+                 (:handler-grant-ids record))
+      (get-in record [:adapter-authority :grants]))
+   (= expected-adapter (:adapter-authority record))
+   (= :closed-plan-reference
+      (get-in record [:adapter-authority :mode]))
+   (nil? (get-in record [:adapter-authority :failure-injection]))
+   (false? (get-in record [:adapter-authority :deployment-stdout?]))
+   (true? (:single-invocation? record))
+   (true? (:reference-interpreter? record))
+   (false? (:deployment-runtime? record))
+   (false? (:live-external-io? record))
+   (= (:authority-record-id record)
+      (p15-s23-closed-core-digest (dissoc record :authority-record-id)))))
+   (catch StackOverflowError _ false)
+   (catch Exception _ false)))
+
+(def p15-s23-checked-core-authority-evidence-keys
+  #{:kind :authority-record-id :source-content-hash :plan-id :module
+    :structural-operation-set :required-effects :required-capabilities
+    :program-authority-policy-id
+    :program-authority-policy-hash :program-principal :runtime-principal
+    :handler-principal :provider-bindings :grant-bindings
+    :runtime-provider-ids :runtime-grant-ids :handler-provider-ids
+    :handler-grant-ids :adapter-authority-hash
+    :runtime-source-content-hash :runtime-contract-definition-hash
+    :runtime-contract-derived-facts-hash :runtime-artifact-hash
+    :runtime-function :runtime-function-hash :scope :phase :lifetime
+    :single-invocation? :reference-interpreter? :deployment-runtime?
+    :live-external-io? :active-authority? :non-authorizing-projection?
+    :status :evidence-id})
+
+(defn p15-s23-checked-core-authority-evidence
+  [authority-record]
+  (let [providers
+        (into
+         (sorted-map)
+         (map (fn [record]
+                [(:capability record)
+                 (select-keys record
+                              [:provider-selection-id :effect :capability
+                               :provider-id :scope :policy-id :policy-hash
+                               :provider-provenance])]))
+         (:program-provider-records authority-record))
+        grants
+        (into
+         (sorted-map)
+         (map (fn [record]
+                [(:capability record)
+                 (select-keys record
+                              [:grant-id :provider-selection-id :effect
+                               :capability :provider-id :scope :policy-id
+                               :policy-hash :audit-policy-id
+                               :program-grant-template-id
+                               :provider-provenance])]))
+         (:program-grant-records authority-record))
+        base
+        {:kind :gravity/p15-s23-checked-core-authority-evidence
+         :authority-record-id (:authority-record-id authority-record)
+         :source-content-hash (:source-content-hash authority-record)
+         :plan-id (:plan-id authority-record)
+         :module (:module authority-record)
+         :structural-operation-set
+         (:structural-operation-set authority-record)
+         :required-effects (:required-effects authority-record)
+         :required-capabilities (:required-capabilities authority-record)
+         :program-authority-policy-id
+         (:program-authority-policy-id authority-record)
+         :program-authority-policy-hash
+         (:program-authority-policy-hash authority-record)
+         :program-principal (:program-principal authority-record)
+         :runtime-principal (:runtime-principal authority-record)
+         :handler-principal (:handler-principal authority-record)
+         :provider-bindings providers
+         :grant-bindings grants
+         :runtime-provider-ids (:runtime-provider-ids authority-record)
+         :runtime-grant-ids (:runtime-grant-ids authority-record)
+         :handler-provider-ids (:handler-provider-ids authority-record)
+         :handler-grant-ids (:handler-grant-ids authority-record)
+         :adapter-authority-hash
+         (p15-s23-closed-core-digest (:adapter-authority authority-record))
+         :runtime-source-content-hash
+         (:runtime-source-content-hash authority-record)
+         :runtime-contract-definition-hash
+         (:runtime-contract-definition-hash authority-record)
+         :runtime-contract-derived-facts-hash
+         (:runtime-contract-derived-facts-hash authority-record)
+         :runtime-artifact-hash (:runtime-artifact-hash authority-record)
+         :runtime-function (:runtime-function authority-record)
+         :runtime-function-hash (:runtime-function-hash authority-record)
+         :scope (:scope authority-record)
+         :phase (:phase authority-record)
+         :lifetime (:lifetime authority-record)
+         :single-invocation? (:single-invocation? authority-record)
+         :reference-interpreter? (:reference-interpreter? authority-record)
+         :deployment-runtime? (:deployment-runtime? authority-record)
+         :live-external-io? (:live-external-io? authority-record)
+         :active-authority? false
+         :non-authorizing-projection? true
+         :status :authenticated-and-consumed}]
+    (assoc base :evidence-id (p15-s23-closed-core-digest base))))
+
+(defn p15-s23-checked-core-authority-evidence-valid?
+  [evidence]
+  (and
+   (map? evidence)
+   (= p15-s23-checked-core-authority-evidence-keys
+      (set (keys evidence)))
+   (= :gravity/p15-s23-checked-core-authority-evidence (:kind evidence))
+   (= :authenticated-and-consumed (:status evidence))
+   (string? (:source-content-hash evidence))
+   (string? (:plan-id evidence))
+   (symbol? (:module evidence))
+   (set? (:structural-operation-set evidence))
+   (set? (:required-effects evidence))
+   (set? (:required-capabilities evidence))
+   (map? (:provider-bindings evidence))
+   (map? (:grant-bindings evidence))
+   (= (set (keys (:provider-bindings evidence)))
+      (set (keys (:grant-bindings evidence))))
+   (= (:required-capabilities evidence)
+      (set (keys (:provider-bindings evidence)))
+      (set (keys (:grant-bindings evidence))))
+   (every? set? (map evidence
+                     [:runtime-provider-ids :runtime-grant-ids
+                      :handler-provider-ids :handler-grant-ids]))
+   (true? (:single-invocation? evidence))
+   (true? (:reference-interpreter? evidence))
+   (false? (:deployment-runtime? evidence))
+   (false? (:live-external-io? evidence))
+   (false? (:active-authority? evidence))
+   (true? (:non-authorizing-projection? evidence))
+   (= (:evidence-id evidence)
+      (p15-s23-closed-core-digest (dissoc evidence :evidence-id)))))
+
+(def p15-s23-checked-core-reference-execution-evidence-keys
+  #{:kind :authority-record-id :authority-evidence-id :plan-id
+    :runtime-artifact-hash :runtime-function :runtime-function-hash
+    :adapter-record-hash :decision-record-ids :action-record-ids
+    :entrypoint :entrypoint-result :entrypoint-result-hash
+    :transcript :transcript-hash :transcript-mode :capture-action-status
+    :invocation-count :invocation-count-scope
+    :verification-replays-excluded? :reference-interpreter?
+    :deployment-runtime? :live-external-io? :clojure-seed-boundary?
+    :self-hosted? :status :evidence-id})
+
+(defn p15-s23-checked-core-reference-execution-evidence
+  [authority-evidence adapter-output]
+  (let [result (:result adapter-output)
+        adapter-record (:adapter-record adapter-output)
+        transcript (:stdout result)
+        capture-action
+        (first
+         (filter #(= :gravity.reference/action-transcript-capture
+                     (:action-id %))
+                 (:action-records adapter-record)))
+        base
+        {:kind :gravity/p15-s23-checked-core-reference-execution-evidence
+         :authority-record-id (:authority-record-id authority-evidence)
+         :authority-evidence-id (:evidence-id authority-evidence)
+         :plan-id (:plan-id adapter-record)
+         :runtime-artifact-hash (:runtime-artifact-hash adapter-record)
+         :runtime-function (:function adapter-record)
+         :runtime-function-hash (:function-hash adapter-record)
+         :adapter-record-hash (:record-hash adapter-record)
+         :decision-record-ids
+         (mapv :decision-id (:decision-records adapter-record))
+         :action-record-ids (mapv :record-id (:action-records adapter-record))
+         :entrypoint (:entrypoint result)
+         :entrypoint-result (:entrypoint-result result)
+         :entrypoint-result-hash
+         (p15-s23-closed-core-digest (:entrypoint-result result))
+         :transcript transcript
+         :transcript-hash (str "sha256:" (sha256-hex transcript))
+         :transcript-mode :in-memory-reference-only
+         :capture-action-status
+         (if capture-action (:action-status capture-action) :not-applicable)
+         :invocation-count 1
+         :invocation-count-scope :authoritative-artifact-construction
+         :verification-replays-excluded? true
+         :reference-interpreter? true
+         :deployment-runtime? false
+         :live-external-io? false
+         :clojure-seed-boundary? true
+         :self-hosted? false
+         :status :complete}]
+    (assoc base :evidence-id (p15-s23-closed-core-digest base))))
+
+(defn p15-s23-checked-core-reference-execution-evidence-valid?
+  [evidence authority-evidence]
+  (and
+   (map? evidence)
+   (= p15-s23-checked-core-reference-execution-evidence-keys
+      (set (keys evidence)))
+   (= :gravity/p15-s23-checked-core-reference-execution-evidence
+      (:kind evidence))
+   (= (:authority-record-id authority-evidence)
+      (:authority-record-id evidence))
+   (= (:evidence-id authority-evidence)
+      (:authority-evidence-id evidence))
+   (= p15-s23-stage2-runtime-artifact-expected-artifact-hash
+      (:runtime-artifact-hash evidence))
+   (= p15-s23-stage2-runtime-artifact-closed-plan-function
+      (:runtime-function evidence))
+   (= (get p15-s23-reference-runtime-expected-function-hashes
+           p15-s23-stage2-runtime-artifact-closed-plan-function)
+      (:runtime-function-hash evidence))
+   (string? (:transcript evidence))
+   (= (:transcript-hash evidence)
+      (str "sha256:" (sha256-hex (:transcript evidence))))
+   (= (:entrypoint-result-hash evidence)
+      (p15-s23-closed-core-digest (:entrypoint-result evidence)))
+   (vector? (:decision-record-ids evidence))
+   (every? string? (:decision-record-ids evidence))
+   (vector? (:action-record-ids evidence))
+   (every? string? (:action-record-ids evidence))
+   (contains? #{:committed :not-invoked :not-applicable}
+              (:capture-action-status evidence))
+   (= 1 (:invocation-count evidence))
+   (= :authoritative-artifact-construction
+      (:invocation-count-scope evidence))
+   (true? (:verification-replays-excluded? evidence))
+   (true? (:reference-interpreter? evidence))
+   (false? (:deployment-runtime? evidence))
+   (false? (:live-external-io? evidence))
+   (true? (:clojure-seed-boundary? evidence))
+   (false? (:self-hosted? evidence))
+   (= :complete (:status evidence))
+   (= (:evidence-id evidence)
+      (p15-s23-closed-core-digest (dissoc evidence :evidence-id)))))
+
+(defn p15-s23-checked-core-expected-reference-execution-evidence
+  [authority-evidence execution-evidence]
+  (let [writes-stdout?
+        (contains? (:structural-operation-set authority-evidence) :println)
+        transcript (:transcript execution-evidence)
+        result
+        {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record
+         :clojure-seed-boundary? true
+         :entrypoint (:entrypoint execution-evidence)
+         :entrypoint-result (:entrypoint-result execution-evidence)
+         :self-hosted? false
+         :status :complete
+         :stdout transcript}
+        adapter-record
+        (p15-s23-reference-runtime-success-adapter-record
+         (:plan-id authority-evidence)
+         (:source-content-hash authority-evidence)
+         writes-stdout? (boolean (seq transcript)))]
+    (p15-s23-checked-core-reference-execution-evidence
+     authority-evidence {:result result :adapter-record adapter-record})))
+
+(defn p15-s23-checked-core-bind-execution-audit-to-facts
+  [facts nodes execution-evidence]
+  (if-not (map? execution-evidence)
+    facts
+    (let [decision-ids (:decision-record-ids execution-evidence)
+          action-ids (:action-record-ids execution-evidence)]
+      (update
+       facts :safety-facts
+       (fn [safety-facts]
+         (reduce
+          (fn [records node]
+            (if (= :runtime-checked (get-in node [:safety :outcome]))
+              (let [println? (= :println (:source-operation node))
+                    capture-status (:capture-action-status execution-evidence)
+                    check (get-in node [:safety :check])
+                    audit-base
+                    {:authority-record-id
+                     (:authority-record-id execution-evidence)
+                     :authority-evidence-id
+                     (:authority-evidence-id execution-evidence)
+                     :adapter-record-hash
+                     (:adapter-record-hash execution-evidence)
+                     :execution-evidence-id (:evidence-id execution-evidence)
+                     :runtime-check-id (:check-id check)
+                     :capability-proof-id (:capability-proof-id check)
+                     :program-provider-selection-id
+                     (:program-provider-selection-id check)
+                     :program-provider-id (:program-provider-id check)
+                     :program-grant-id (:program-grant-id check)
+                     :runtime-provider-id (:runtime-provider-id check)
+                     :runtime-grant-id (:runtime-grant-id check)
+                     :runtime-handler-provider-id
+                     (:runtime-handler-provider-id check)
+                     :runtime-handler-grant-id
+                     (:runtime-handler-grant-id check)
+                     :aggregate-decision-count (count decision-ids)
+                     :aggregate-action-count (count action-ids)
+                     :structural-operation (:source-operation node)
+                     :audit-scope :invocation-aggregate
+                     :node-invocation-state :unknown-or-not-observed
+                     :aggregate-action-status
+                     (if println?
+                       capture-status
+                       :managed-allocator-authority-committed)
+                     :transcript-hash (:transcript-hash execution-evidence)
+                     :live-external-io? false
+                     :status :bound-to-single-reference-execution}
+                    audit
+                    (assoc audit-base :audit-id
+                           (p15-s23-closed-core-digest audit-base))]
+                (assoc-in records [(:node-id node) :runtime-check-audit]
+                          audit))
+              records))
+          safety-facts nodes))))))
+
+(defn p15-s23-checked-core-capability-proof-records
+  [nodes authority-evidence]
+  (if-not (p15-s23-checked-core-authority-evidence-valid?
+           authority-evidence)
+    []
+    (mapv
+     (fn [[node capability]]
+       (let [provider (get-in authority-evidence
+                              [:provider-bindings capability])
+             grant (get-in authority-evidence [:grant-bindings capability])
+             effect (:effect provider)
+             base
+             {:artifact :gravity/p15-s23-checked-core-capability-proof
+              :core-node-id (:node-id node)
+              :effect effect
+              :capability capability
+              :program-principal (:program-principal authority-evidence)
+              :provider-selection-id (:provider-selection-id provider)
+              :provider-id (:provider-id provider)
+              :grant-id (:grant-id grant)
+              :authority-record-id (:authority-record-id authority-evidence)
+              :authority-evidence-id (:evidence-id authority-evidence)
+              :program-authority-policy-id
+              (:program-authority-policy-id authority-evidence)
+              :program-authority-policy-hash
+              (:program-authority-policy-hash authority-evidence)
+              :provider-policy-id (:policy-id provider)
+              :provider-policy-hash (:policy-hash provider)
+              :provider-provenance (:provider-provenance provider)
+              :grant-policy-id (:policy-id grant)
+              :grant-policy-hash (:policy-hash grant)
+              :audit-policy-id (:audit-policy-id grant)
+              :program-grant-template-id
+              (:program-grant-template-id grant)
+              :runtime-contract-definition-hash
+              (:runtime-contract-definition-hash authority-evidence)
+              :runtime-contract-derived-facts-hash
+              (:runtime-contract-derived-facts-hash authority-evidence)
+              :runtime-artifact-hash
+              (:runtime-artifact-hash authority-evidence)
+              :scope (:scope provider)
+              :phase :runtime
+              :lifetime :single-reference-execution
+              :status :proved-for-authenticated-reference-interpreter}]
+         (assoc base :proof-id (p15-s23-closed-core-digest base))))
+     (sort-by
+      (fn [[node capability]] [(:path node) (pr-str capability)])
+      (for [node nodes
+            capability (:capabilities node)]
+        [node capability])))))
+
+(def p15-s23-checked-core-capability-proof-record-keys
+  #{:artifact :proof-id :core-node-id :effect :capability
+    :program-principal :provider-selection-id :provider-id :grant-id
+    :authority-record-id :authority-evidence-id
+    :program-authority-policy-id :program-authority-policy-hash
+    :provider-policy-id :provider-policy-hash :provider-provenance
+    :grant-policy-id :grant-policy-hash :audit-policy-id
+    :program-grant-template-id :runtime-contract-definition-hash
+    :runtime-contract-derived-facts-hash :runtime-artifact-hash
+    :scope :phase :lifetime :status})
+
+(defn p15-s23-checked-core-capability-proof-record-valid?
+  [record authority-evidence]
+  (let [capability (:capability record)
+        provider (get-in authority-evidence [:provider-bindings capability])
+        grant (get-in authority-evidence [:grant-bindings capability])]
+    (and
+     (map? record)
+     (= p15-s23-checked-core-capability-proof-record-keys
+        (set (keys record)))
+     (map? provider)
+     (map? grant)
+     (= :gravity/p15-s23-checked-core-capability-proof (:artifact record))
+     (= :proved-for-authenticated-reference-interpreter (:status record))
+     (= (:program-principal authority-evidence)
+        (:program-principal record))
+     (= (:authority-record-id authority-evidence)
+        (:authority-record-id record))
+     (= (:evidence-id authority-evidence)
+        (:authority-evidence-id record))
+     (= (:program-authority-policy-id authority-evidence)
+        (:program-authority-policy-id record)
+        (:policy-id provider)
+        (:policy-id grant)
+        (:provider-policy-id record)
+        (:grant-policy-id record))
+     (= (:program-authority-policy-hash authority-evidence)
+        (:program-authority-policy-hash record)
+        (:policy-hash provider)
+        (:policy-hash grant)
+        (:provider-policy-hash record)
+        (:grant-policy-hash record))
+     (= (:effect provider) (:effect grant) (:effect record))
+     (= (:capability provider) (:capability grant) capability)
+     (= (:scope provider) (:scope grant) (:scope record))
+     (= (:provider-selection-id provider)
+        (:provider-selection-id grant)
+        (:provider-selection-id record))
+     (= (:provider-id provider) (:provider-id grant)
+        (:provider-id record))
+     (= (:grant-id grant) (:grant-id record))
+     (= (:provider-provenance provider)
+        (:provider-provenance grant)
+        (:provider-provenance record))
+     (= (:audit-policy-id grant) (:audit-policy-id record)
+        :gravity.reference/runtime-audit-policy)
+     (= (:program-grant-template-id grant)
+        (:program-grant-template-id record))
+     (= (:runtime-contract-definition-hash authority-evidence)
+        (:runtime-contract-definition-hash record))
+     (= (:runtime-contract-derived-facts-hash authority-evidence)
+        (:runtime-contract-derived-facts-hash record))
+     (= (:runtime-artifact-hash authority-evidence)
+        (:runtime-artifact-hash record))
+     (= :runtime (:phase record))
+     (= :single-reference-execution (:lifetime record))
+     (= (:proof-id record)
+        (p15-s23-closed-core-digest (dissoc record :proof-id))))))
+
+(declare p15-s23-closed-core-intrinsic-effects
+         p15-s23-closed-core-intrinsic-capabilities)
+
+(defn p15-s23-checked-core-bind-runtime-check-authority
+  [nodes authority-evidence]
+  (let [proofs
+        (into {}
+              (map (fn [proof]
+                     [[(:core-node-id proof) (:capability proof)] proof]))
+              (p15-s23-checked-core-capability-proof-records
+               nodes authority-evidence))]
+    (mapv
+     (fn [node]
+       (if (= :runtime-checked (get-in node [:safety :outcome]))
+         (let [capability
+               (first
+                (p15-s23-closed-core-intrinsic-capabilities
+                 (:source-operation node)))
+               provider (get-in authority-evidence
+                                [:provider-bindings capability])
+               grant (get-in authority-evidence [:grant-bindings capability])
+               proof (get proofs [(:node-id node) capability])
+               check (get-in node [:safety :check])
+               check-base
+               (merge
+                (dissoc check :artifact :check-id :status)
+                {:program-provider-selection-id
+                 (:provider-selection-id provider)
+                 :program-provider-id (:provider-id provider)
+                 :program-grant-id (:grant-id grant)
+                 :authority-record-id
+                 (:authority-record-id authority-evidence)
+                 :authority-evidence-id (:evidence-id authority-evidence)
+                 :capability-proof-id (:proof-id proof)
+                 :runtime-provider-id
+                 (case capability
+                   :memory/allocator
+                   :gravity.reference/jvm-managed-allocator
+                   :io/stdout :gravity.reference/transcript-capture)
+                 :runtime-grant-id
+                 (case capability
+                   :memory/allocator
+                   :gravity.reference/grant-managed-allocation
+                   :io/stdout :gravity.reference/grant-reference-stdout)
+                 :runtime-handler-provider-id
+                 (if (= :io/stdout capability)
+                   :gravity.reference/transcript-capture
+                   :not-applicable)
+                 :runtime-handler-grant-id
+                 (if (= :io/stdout capability)
+                   :gravity.reference/grant-test-fixture
+                   :not-applicable)
+                 :structural-invocation-state
+                 :pre-execution-authority-bound})
+               bound-check
+               (assoc check-base
+                      :artifact :gravity/runtime-check
+                      :check-id (p15-s23-closed-core-digest check-base)
+                      :status :required)]
+           (-> node
+               (assoc-in [:safety :check] bound-check)
+               (assoc-in [:attributes :runtime-check-id]
+                         (:check-id bound-check))))
+         node))
+     nodes)))
+
+(defn p15-s23-checked-core-authority-safe-source-path?
+  [source-path]
+  (and (string? source-path)
+       (<= (count source-path) 4096)
+       (= :valid
+          (:status
+           (p15-s23-closed-core-bounded-utf8-count source-path 16384)))))
+
+(defn p15-s23-checked-core-authority-small-map?
+  [value maximum-count]
+  (and (map? value)
+       (contains? p15-s23-reference-runtime-supported-collection-class-names
+                  (some-> value class .getName))
+       (<= (count value) maximum-count)))
+
+(defn p15-s23-checked-core-sanitized-exception-data
+  [exception]
+  (let [data (if (map? (ex-data exception)) (ex-data exception) {})
+        id (:id data)
+        allowed-ids
+        (set
+         (concat c6-lowering-diagnostic-ids
+                 c7-type-diagnostic-ids
+                 c8-effect-diagnostic-ids
+                 c15-diagnostics-diagnostic-ids
+                 stage1-reader-execution-diagnostic-ids
+                 ["STAGE1READER007"]
+                 p15-s23-reference-runtime-preserved-diagnostic-ids))
+        bounded-keyword?
+        (fn [value]
+          (and (keyword? value)
+               (<= (count (or (namespace value) "")) 128)
+               (<= (count (name value)) 128)))
+        source-span (:source-span data)
+        safe-source
+        (when (and (p15-s23-checked-core-authority-small-map?
+                    source-span 8)
+                   (string? (:source source-span))
+                   (<= (count (:source source-span)) 4096)
+                   (= :valid
+                      (:status
+                       (p15-s23-closed-core-bounded-utf8-count
+                        (:source source-span) 16384))))
+          (:source source-span))
+        safe-span
+        (when (p15-s23-checked-core-authority-small-map? source-span 8)
+          (let [numeric
+                (into {}
+                      (filter
+                       (fn [[_ value]]
+                         (and (integer? value)
+                              (<= 0 value Integer/MAX_VALUE))))
+                      (select-keys source-span [:start :end :line :column]))]
+            (cond-> numeric safe-source (assoc :source safe-source))))
+        projection-base
+        (cond->
+         {:message "Checked-core authority issuance rejected"
+          :redaction
+          {:cause-class-hash
+           (str "sha256:" (sha256-hex (.getName (class exception))))
+           :cause-message-hash
+           (str "sha256:"
+                (sha256-hex (or (.getMessage exception) "")))}}
+          (contains? allowed-ids id)
+          (assoc :id id)
+          (bounded-keyword? (:bootstrap-stage data))
+          (assoc :bootstrap-stage (:bootstrap-stage data))
+          (bounded-keyword? (:stage data))
+          (assoc :stage (:stage data))
+          (bounded-keyword? (:diagnostic-family data))
+          (assoc :diagnostic-family (:diagnostic-family data))
+          (bounded-keyword? (:missing-fact data))
+          (assoc :missing-fact (:missing-fact data))
+          (bounded-keyword? (:remediation data))
+          (assoc :remediation (:remediation data))
+          (seq safe-span) (assoc :source-span safe-span))
+        projection-valid?
+        (try
+          (p15-s23-reference-runtime-bounded-value!
+           "p15-s23-checked-core-authority" :jvm
+           :authority-issuer-sanitized-exception-projection
+           projection-base 64 8)
+          true
+          (catch StackOverflowError _ false)
+          (catch Exception _ false))]
+    (if projection-valid?
+      projection-base
+      (select-keys projection-base [:message :redaction]))))
+
+(defn p15-s23-stage2-closed-checked-core-authority-binding
+  "Compile and authenticate one effectful checked-core source unit, then issue
+  its exact single-reference-execution authority without executing the plan."
+  [source-path source-text requested-target policy-selector]
+  (try
+    (when-not (p15-s23-checked-core-authority-safe-source-path? source-path)
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" "<checked-core-authority>"
+       {:requested-target (when (keyword? requested-target)
+                            requested-target)}
+       {:missing-fact :bounded-checked-core-authority-source-path}))
+    (p15-s23-closed-core-source-request-bounds!
+     source-path source-text requested-target)
+    (when-not (p15-s23-checked-core-authority-small-map? policy-selector 8)
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path {:requested-target requested-target}
+       {:missing-fact :bounded-checked-core-reference-policy-selector}))
+    (try
+      (p15-s23-reference-runtime-bounded-value!
+       source-path :jvm :checked-core-reference-policy-selector
+       policy-selector 32 8)
+      (catch Exception _
+        (p15-s23-closed-core-fail!
+         "C8-CAPABILITY" source-path {:requested-target requested-target}
+         {:missing-fact
+          :bounded-checked-core-reference-policy-selector})))
+    (when-not (= p15-s23-checked-core-reference-policy-selector-keys
+                 (set (keys policy-selector)))
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path {:requested-target requested-target}
+       {:missing-fact :exact-checked-core-reference-policy-selector}))
+    (when-not (= p15-s23-checked-core-reference-policy-selector
+                 policy-selector)
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path {:requested-target requested-target}
+       {:missing-fact :pinned-checked-core-reference-policy-selector}))
+    (let [source-content-hash (str "sha256:" (sha256-hex source-text))
+          bounded-front-end
+          (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+          executable-form-records
+          (p15-s23-closed-core-executable-form-records
+           (:form-tree bounded-front-end)
+           (:top-level-form-ids bounded-front-end))
+          source-surface-validation
+          (p15-s23-closed-core-source-surface-validation
+           (:forms bounded-front-end) executable-form-records)
+          _ (when-not (= :passed (:status source-surface-validation))
+              (p15-s23-closed-core-fail!
+               (if (= :over-limit (:status source-surface-validation))
+                 "C6-VERIFY" "C6-LOWERING-GAP")
+               source-path (or (first executable-form-records) {})
+               (assoc source-surface-validation
+                      :missing-fact
+                      (if (= :over-limit
+                             (:status source-surface-validation))
+                        :bounded-authority-source-before-plan-hash
+                        (:missing-fact source-surface-validation)))))
+          emitter-rule
+          (c-backend-stage2-plan-emitter-source-rule!
+           source-path requested-target)
+          plan
+          (binding [*additional-bootstrap-targets*
+                    stage2-runtime-derived-source-targets]
+            (p15-s23-stage2-plan-emitter-compile-source
+             (:emitter emitter-rule) source-path source-text))
+          _ (p15-s23-closed-runtime-plan-validation!
+             source-path requested-target plan)
+          module (:module plan)
+          requirements
+          (p15-s23-closed-core-preflight-effect-requirements plan)
+          structural-operation-set
+          (p15-s23-checked-core-authority-structural-operations requirements)
+          _ (when-not (seq structural-operation-set)
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path module
+               {:missing-fact :effectful-checked-core-authority-request
+                :required-effects (:required-effects requirements)
+                :required-capabilities (:required-capabilities requirements)}))
+          _ (when-not (and (= :hosted (:profile module))
+                           (= :safe (:safety module))
+                           (= :jvm (:target module))
+                           (= :jvm requested-target)
+                           (= (:effects module)
+                              (:required-effects requirements))
+                           (= (:capabilities module)
+                              (:required-capabilities requirements)))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path module
+               {:missing-fact
+                :exact-effectful-checked-core-module-authority-contract
+                :required-effects (:required-effects requirements)
+                :required-capabilities (:required-capabilities requirements)}))
+          runtime-rule
+          (c-backend-stage2-runtime-source-rule!
+           source-path requested-target)
+          _ (when-not (p15-s23-reference-runtime-rule-authentic? runtime-rule)
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path runtime-rule
+               {:missing-fact :authenticated-pinned-reference-runtime-policy}))
+          policy
+          (get (:runtime-contract-definitions runtime-rule)
+               'p15-s23-checked-core-program-authority-policy)
+          _ (when-not (= p15-s23-checked-core-expected-program-authority-policy
+                         policy)
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path policy
+               {:missing-fact :authenticated-program-authority-policy}))
+          record
+          (p15-s23-checked-core-authority-record
+           source-content-hash plan module requirements runtime-rule policy)]
+      (when-not (p15-s23-checked-core-authority-record-valid? record)
+        (p15-s23-closed-core-fail!
+         "C8-CAPABILITY" source-path record
+         {:missing-fact :independently-valid-checked-core-authority-record}))
+      record)
+    (catch StackOverflowError error
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY"
+       (if (p15-s23-checked-core-authority-safe-source-path? source-path)
+         source-path
+         "<checked-core-authority>")
+       {:requested-target (when (keyword? requested-target)
+                            requested-target)}
+       {:missing-fact :contained-authority-issuer-host-stack-failure
+        :redaction
+        {:cause-class-hash
+         (str "sha256:" (sha256-hex (.getName (class error))))}}))
+    (catch clojure.lang.ExceptionInfo ex
+      (throw
+       (ex-info "Checked-core authority issuance rejected"
+                (p15-s23-checked-core-sanitized-exception-data ex))))
+    (catch Exception error
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path {:requested-target requested-target}
+       {:missing-fact :contained-authority-issuer-host-failure
+        :redaction
+        {:cause-class-hash
+         (str "sha256:" (sha256-hex (.getName (class error))))
+         :cause-message-hash
+         (str "sha256:" (sha256-hex (or (.getMessage error) "")))}}))))
 
 (defn p15-s23-closed-core-pure-admission-record
   [source-path source-content-hash plan-id module requirements
@@ -108630,8 +110191,8 @@
       :function
       {:params []
        :return (operand-type (last (:operands node)))
-       :latent-effects #{}
-       :capabilities #{}
+       :latent-effects (:effects node)
+       :capabilities (:capabilities node)
        :throws #{}
        :ownership-constraints #{:persistent-immutable-shareable}
        :profile-constraints #{:hosted}}
@@ -108661,8 +110222,26 @@
                :origin-id (:origin-id source)
                :effect :memory/allocate
                :capability :memory/allocator
-               :provider :managed-host-allocator
+               :provider :gravity.reference/jvm-managed-allocator
                :failure :gravity/allocation-error}]
+    (assoc input
+           :artifact :gravity/runtime-check
+           :check-id (p15-s23-closed-core-digest input)
+           :status :required)))
+
+(defn p15-s23-closed-core-transcript-delivery-check
+  [source-content-hash path source]
+  (let [input {:kind :reference-transcript-delivery
+               :source-content-hash source-content-hash
+               :path path
+               :origin-id (:origin-id source)
+               :effect :io/write
+               :capability :io/stdout
+               :provider :gravity.reference/transcript-capture
+               :handler :gravity.bootstrap/reference-harness
+               :delivery :in-memory-reference-transcript
+               :live-external-io? false
+               :failure :gravity/transcript-capture-error}]
     (assoc input
            :artifact :gravity/runtime-check
            :check-id (p15-s23-closed-core-digest input)
@@ -108715,6 +110294,8 @@
     :do :ordered-sequence
     :let :sequential-lexical-scope
     :function :authenticated-closed-function
+    :str :closed-str-managed-allocation
+    :println :closed-println-reference-transcript
     :not-applicable))
 
 (defn p15-s23-closed-core-pure-safety-proof
@@ -108758,6 +110339,54 @@
        (= #{} (:effect-requirements proof))
        (= #{} (:capability-requirements proof))))
 
+(defn p15-s23-closed-core-structural-safety-proof
+  [source-content-hash path source-operation source profile type effects
+   capabilities ownership basis child-obligations]
+  (let [base
+        {:artifact :gravity/p15-s23-structural-safety-proof
+         :rule-version "p15-s23-structural-safety-v1"
+         :source-content-hash source-content-hash
+         :plan-path path
+         :source-operation source-operation
+         :basis basis
+         :source-origin {:origin-id (:origin-id source)
+                         :span (:span source)
+                         :plan-path path}
+         :profile profile
+         :source-target :jvm
+         :type type
+         :effects (set effects)
+         :capabilities (set capabilities)
+         :ownership-model (:model ownership)
+         :ownership-digest (p15-s23-closed-core-digest ownership)
+         :child-obligations (vec child-obligations)
+         :effect-requirements (set effects)
+         :capability-requirements (set capabilities)
+         :proof-condition
+         :authenticated-child-runtime-check-and-capability-obligations
+         :invalidation-conditions
+         [:source-origin-change :operand-change :type-change :effect-change
+          :capability-change :ownership-change :profile-change
+          :source-target-change :rule-version-change]
+         :status
+         :proved-conditional-on-authenticated-child-obligations}]
+    (assoc base :proof-id (p15-s23-closed-core-digest base))))
+
+(defn p15-s23-closed-core-structural-safety-proof-valid?
+  [proof node expected-child-obligations]
+  (and
+   (map? proof)
+   (= :gravity/p15-s23-structural-safety-proof (:artifact proof))
+   (= :proved-conditional-on-authenticated-child-obligations
+      (:status proof))
+   (= (vec expected-child-obligations) (:child-obligations proof))
+   (= (:effects node) (:effects proof) (:effect-requirements proof))
+   (= (:capabilities node)
+      (:capabilities proof)
+      (:capability-requirements proof))
+   (= (:proof-id proof)
+      (p15-s23-closed-core-digest (dissoc proof :proof-id)))))
+
 (defn p15-s23-closed-core-node
   [source-content-hash path kind source-operation plan-node? plan-depth
    operands attributes type effects capabilities ownership safety profile
@@ -108771,11 +110400,16 @@
           :origin-id (:origin-id source)})
         safety-record
         (if (= :proven-safe (:outcome safety))
-          (assoc safety
-                 :proof
-                 (p15-s23-closed-core-pure-safety-proof
-                  source-content-hash path source-operation source profile
-                  type effects capabilities ownership (:basis safety)))
+          (assoc
+           safety :proof
+           (if (and (empty? effects) (empty? capabilities))
+             (p15-s23-closed-core-pure-safety-proof
+              source-content-hash path source-operation source profile
+              type effects capabilities ownership (:basis safety))
+             (p15-s23-closed-core-structural-safety-proof
+              source-content-hash path source-operation source profile
+              type effects capabilities ownership (:basis safety)
+              (mapv (fn [node-id] {:node-id node-id}) operands))))
           safety)]
     {:node-id node-id
      :path path
@@ -108800,6 +110434,100 @@
      :safety safety-record
      :profile profile
      :source source}))
+
+(defn p15-s23-closed-core-forwarded-value-node-ids
+  [node]
+  (case (:source-operation node)
+    :local [(first (:operands node))]
+    :let-binding [(first (:operands node))]
+    :if (vec (rest (:operands node)))
+    :do [(last (:operands node))]
+    :let [(last (:operands node))]
+    :function [(last (:operands node))]
+    []))
+
+(defn p15-s23-closed-core-propagate-managed-ownership
+  [nodes]
+  (loop [remaining nodes
+         normalized []
+         node-by-id {}]
+    (if-let [node (first remaining)]
+      (let [source-node-ids
+            (p15-s23-closed-core-forwarded-value-node-ids node)
+            managed-forwarding?
+            (some
+             #(= :gravity.reference/jvm-managed-allocator
+                 (get-in node-by-id [% :ownership :provider-id]))
+             source-node-ids)
+            node
+            (if managed-forwarding?
+              (update node :ownership
+                      assoc
+                      :provider-requirement
+                      :gravity.reference/jvm-managed-allocator
+                      :allocator-requirement :memory/allocator
+                      :provider-id :gravity.reference/jvm-managed-allocator
+                      :lifetime :managed-reachability)
+              node)]
+        (recur (next remaining) (conj normalized node)
+               (assoc node-by-id (:node-id node) node)))
+      normalized)))
+
+(defn p15-s23-closed-core-child-obligation-refs
+  [node node-by-id capability-proof-by-node-capability]
+  (mapv
+   (fn [node-id]
+     (let [child (get node-by-id node-id)
+           outcome (get-in child [:safety :outcome])]
+       {:node-id node-id
+        :outcome outcome
+        :safety-proof-id
+        (or (get-in child [:safety :proof :proof-id]) :not-applicable)
+        :runtime-check-id
+        (or (get-in child [:safety :check :check-id]) :not-applicable)
+        :capability-proof-ids
+        (mapv #(get-in capability-proof-by-node-capability
+                       [[node-id %] :proof-id])
+              (sort-by pr-str (:capabilities child)))}))
+   (:operands node)))
+
+(defn p15-s23-closed-core-rederive-proven-safety
+  [source-content-hash nodes authority-evidence]
+  (let [capability-proof-by-node-capability
+        (into {}
+              (map (fn [proof]
+                     [[(:core-node-id proof) (:capability proof)] proof]))
+              (p15-s23-checked-core-capability-proof-records
+               nodes authority-evidence))]
+    (loop [remaining nodes
+           normalized []
+           final-node-by-id {}]
+      (if-let [node (first remaining)]
+        (let [node
+              (if (= :proven-safe (get-in node [:safety :outcome]))
+                (let [proof
+                      (if (and (empty? (:effects node))
+                               (empty? (:capabilities node)))
+                        (p15-s23-closed-core-pure-safety-proof
+                         source-content-hash (:path node)
+                         (:source-operation node) (:source node)
+                         (:profile node) (:type node) (:effects node)
+                         (:capabilities node) (:ownership node)
+                         (get-in node [:safety :basis]))
+                        (p15-s23-closed-core-structural-safety-proof
+                         source-content-hash (:path node)
+                         (:source-operation node) (:source node)
+                         (:profile node) (:type node) (:effects node)
+                         (:capabilities node) (:ownership node)
+                         (get-in node [:safety :basis])
+                         (p15-s23-closed-core-child-obligation-refs
+                          node final-node-by-id
+                          capability-proof-by-node-capability)))]
+                  (assoc-in node [:safety :proof] proof))
+                node)]
+          (recur (next remaining) (conj normalized node)
+                 (assoc final-node-by-id (:node-id node) node)))
+        normalized))))
 
 (defn p15-s23-closed-core-shared-owner-domain-id
   [nodes]
@@ -109588,11 +111316,14 @@
              (p15-s23-closed-core-persistent-ownership
               :managed-string-result
               {:storage :host-managed-string
-               :provider-id :unresolved-runtime-module-provider
+               :provider-requirement
+               :gravity.reference/jvm-managed-allocator
+               :allocator-requirement :memory/allocator
+               :provider-id :gravity.reference/jvm-managed-allocator
                :lifetime :managed-reachability})
              {:outcome :runtime-checked
               :check allocation-check
-              :basis :closed-str-allocation}
+              :basis :closed-str-managed-allocation}
              (:profile ctx) (:source origin-products))]
         (p15-s23-closed-core-add-node args-product node origin-products))
 
@@ -109637,18 +111368,24 @@
                       :not-applicable)
                   :excluded-types [:integer :non-integer-number
                                    :collection :opaque]}))
+            transcript-check
+            (p15-s23-closed-core-transcript-delivery-check
+             (:source-content-hash ctx) path (:source origin-products))
             node
             (p15-s23-closed-core-node
              (:source-content-hash ctx) path :effect :println true depth
              (mapv :node-id arg-root-nodes)
              {:arity (count (:args instruction))
-              :ordering :source-sequence}
+              :ordering :source-sequence
+              :runtime-check-id (:check-id transcript-check)}
              :gravity/nil
              (conj (:effects args-product) :io/write)
              (conj (:capabilities args-product) :io/stdout)
              (p15-s23-closed-core-persistent-ownership
               :stdout-result {:storage :static-nil})
-             {:outcome :proven-safe :basis :capability-checked-stdout}
+             {:outcome :runtime-checked
+              :check transcript-check
+              :basis :closed-println-reference-transcript}
              (:profile ctx) (:source origin-products))]
         (p15-s23-closed-core-add-node args-product node origin-products))
 
@@ -109740,6 +111477,34 @@
     :emits [:safety-facts]
     :status :complete-for-pure-closed-slice}])
 
+(defn p15-s23-closed-core-pass-history-for-mode
+  [mode]
+  (if (= :effectful-reference mode)
+    (mapv
+     (fn [record]
+       (-> record
+           (assoc :status
+                  :complete-for-authenticated-hosted-jvm-reference-interpreter-slice)
+           (cond-> (= :c8-pure-effect-capability-closure (:pass record))
+             (assoc :pass :c8-authenticated-program-authority-closure
+                    :requires
+                    [:declared-effects :declared-capabilities
+                     :authenticated-program-provider-selections
+                     :authenticated-program-grants]
+                    :emits
+                    [:effect-facts :capability-facts
+                     :capability-proof-records]))
+           (cond-> (= :c10-pure-safety-proof-derivation (:pass record))
+             (assoc :pass :c10-reference-runtime-check-derivation
+                    :requires
+                    [:profile-facts :ownership-facts
+                     :managed-allocation-check
+                     :reference-transcript-delivery-check]
+                    :not-applicable [:unsafe-islands]
+                    :emits [:safety-facts :runtime-check-evidence]))))
+     (p15-s23-closed-core-pass-history))
+    (p15-s23-closed-core-pass-history)))
+
 (defn p15-s23-closed-core-type-producer-rule
   [source-operation]
   (case source-operation
@@ -109753,11 +111518,117 @@
     :do :sequence-result-type
     :let :lexical-scope-result-type
     :function :closed-function-type
+    :str :managed-str-string-result-type
+    :println :println-nil-result-type
     :not-applicable))
 
+(defn p15-s23-closed-core-effect-event-ordering
+  [nodes]
+  (let [direct-event?
+        #(seq (p15-s23-closed-core-intrinsic-effects
+               (:source-operation %)))
+        ordering-vertices (mapv :node-id nodes)
+        ordering-index
+        (into (sorted-map)
+              (map-indexed (fn [index node-id] [node-id index]))
+              ordering-vertices)
+        event-order (mapv :node-id (filterv direct-event? nodes))
+        event-index
+        (into (sorted-map)
+              (map-indexed (fn [index node-id] [node-id index]))
+              event-order)
+        entry-vertex-by-node
+        (reduce
+         (fn [entries node]
+           (assoc entries (:node-id node)
+                  (if-let [first-operand (first (:operands node))]
+                    (get entries first-operand first-operand)
+                    (:node-id node))))
+         (sorted-map) nodes)
+        edges
+        (reduce
+         (fn [all node]
+           (let [operands (:operands node)
+                 dependency-edges
+                 (set
+                  (map-indexed
+                   (fn [index operand]
+                     {:before operand
+                      :after (:node-id node)
+                      :reason :operand-before-consumer
+                      :operand-index index
+                      :control-node-id (:node-id node)})
+                   operands))
+                 sequence-operation?
+                 (contains? #{:do :let :function :str :println}
+                            (:source-operation node))
+                 sequence-edges
+                 (if sequence-operation?
+                   (set
+                    (map-indexed
+                     (fn [index [left right]]
+                       {:before left
+                        :after (get entry-vertex-by-node right right)
+                        :reason :adjacent-source-sequence
+                        :operand-index index
+                        :control-node-id (:node-id node)})
+                     (partition 2 1 operands)))
+                   #{})
+                 guard-edges
+                 (if (= :if (:source-operation node))
+                   (let [test-node (first operands)]
+                     (set
+                      (map-indexed
+                       (fn [index branch-node]
+                         {:before test-node
+                          :after (get entry-vertex-by-node
+                                      branch-node branch-node)
+                          :reason :guard-before-exclusive-branch
+                          :operand-index (inc index)
+                          :control-node-id (:node-id node)})
+                       (rest operands))))
+                   #{})]
+             (set/union all dependency-edges sequence-edges guard-edges)))
+         #{} nodes)
+        event-edges (vec (sort-by pr-str edges))
+        maximum-edge-count (* 6 (count nodes))
+        edges-bounded? (<= (count event-edges) maximum-edge-count)
+        edges-monotone?
+        (every? #(< (get ordering-index (:before %))
+                     (get ordering-index (:after %)))
+                event-edges)]
+    {:ordering-vertices ordering-vertices
+     :ordering-index ordering-index
+     :entry-vertex-by-node entry-vertex-by-node
+     :event-order event-order
+     :event-index event-index
+     :event-edges event-edges
+     :event-order-kind
+     :topological-core-order-with-guarded-control-flow-partial-order
+     :exclusive-branch-total-order? false
+     :runtime-sequence-claimed? false
+     :maximum-edge-count maximum-edge-count
+     :edge-count (count event-edges)
+     :edge-count-bounded? edges-bounded?
+     :all-edges-monotone? edges-monotone?
+     :status (if (and edges-monotone? edges-bounded?)
+               :complete :failed)}))
+
 (defn p15-s23-closed-core-canonical-pass-envelopes
-  [nodes module plan-id]
-  (let [node-by-id (into {} (map (juxt :node-id identity)) nodes)
+  ([nodes module plan-id]
+   (p15-s23-closed-core-canonical-pass-envelopes
+    nodes module plan-id :pure nil))
+  ([nodes module plan-id mode authority-evidence]
+  (let [effectful? (= :effectful-reference mode)
+        _ (when (and effectful?
+                     (not
+                      (p15-s23-checked-core-authority-evidence-valid?
+                       authority-evidence)))
+            (p15-s23-closed-core-fail!
+             "C8-CAPABILITY" "<checked-core-facts>" authority-evidence
+             {:missing-fact
+              :trusted-mode-authenticated-authority-evidence}))
+        node-by-id (into {} (map (juxt :node-id identity)) nodes)
         type-id-by-node
         (into (sorted-map)
               (map (fn [node]
@@ -109770,6 +111641,9 @@
         function-node (first (filter #(= :function (:kind %)) nodes))
         function-id (:node-id function-node)
         return-node-id (last (:operands function-node))
+        effect-event-ordering
+        (when effectful?
+          (p15-s23-closed-core-effect-event-ordering nodes))
         typed-core
         {:artifact :gravity/typed-core
          :module module
@@ -109790,8 +111664,8 @@
          {function-id
           {:params []
            :return (get type-id-by-node return-node-id)
-           :latent-effects #{}
-           :capabilities #{}
+           :latent-effects (if effectful? (:effects function-node) #{})
+           :capabilities (if effectful? (:capabilities function-node) #{})
            :throws #{}}}
          :constraints []
          :dynamic-boundaries []
@@ -109799,27 +111673,45 @@
          :layout-facts :not-applicable
          :diagnostics []}
         effect-graph
+        (cond->
         {:artifact :gravity/effect-graph
          :module module
          :nodes
          (into (sorted-map)
                (map (fn [node]
                       [(:node-id node)
-                       {:direct #{}
-                        :latent #{}
-                        :transitive #{}
-                        :ordering :none
+                       {:direct (if effectful?
+                                  (p15-s23-closed-core-intrinsic-effects
+                                   (:source-operation node))
+                                  #{})
+                        :latent (if (and effectful?
+                                          (= :function (:kind node)))
+                                  (:effects node)
+                                  #{})
+                        :transitive (if effectful? (:effects node) #{})
+                        :ordering (if (and effectful?
+                                           (seq (:effects node)))
+                                    :source-order
+                                    :none)
                         :source (get-in node [:source :span])}]))
                nodes)
          :functions
-         {function-id {:declared #{}
-                       :inferred #{}
-                       :latent #{}
+         {function-id {:declared (if effectful?
+                                   (:effects function-node) #{})
+                       :inferred (if effectful?
+                                   (:effects function-node) #{})
+                       :latent (if effectful?
+                                 (:effects function-node) #{})
                        :throws #{}}}
-         :namespace {:declared #{} :inferred #{}}
+         :namespace {:declared (if effectful?
+                                 (:effects function-node) #{})
+                     :inferred (if effectful?
+                                 (:effects function-node) #{})}
          :build-effects []
          :replay-required #{}
          :diagnostics []}
+          effectful?
+          (merge effect-event-ordering))
         owner-domain-id
         (p15-s23-closed-core-digest
          {:kind :gravity/persistent-shared-owner-domain
@@ -109848,27 +111740,81 @@
      :typed-core-key typed-core-key
      :effect-graph effect-graph
      :effect-graph-key effect-graph-key
-     :capability-proof-records []
+     :capability-proof-records
+     (p15-s23-checked-core-capability-proof-records
+      nodes authority-evidence)
      :pure-capability-closure
-     {:artifact :gravity/p15-s23-pure-capability-closure
-      :module module
-      :required #{}
-      :granted #{}
-      :provider-bindings {}
-      :status :not-required}
+     (if effectful?
+       {:artifact :gravity/p15-s23-checked-core-capability-closure
+        :module module
+        :required (:capabilities function-node)
+        :granted (set (keys (:grant-bindings authority-evidence)))
+        :provider-bindings
+        (into (sorted-map)
+              (map (fn [[capability provider]]
+                     [capability (:provider-selection-id provider)]))
+              (:provider-bindings authority-evidence))
+        :grant-bindings
+        (into (sorted-map)
+              (map (fn [[capability grant]]
+                     [capability (:grant-id grant)]))
+              (:grant-bindings authority-evidence))
+        :authority-record-id (:authority-record-id authority-evidence)
+        :authority-evidence-id (:evidence-id authority-evidence)
+        :status :granted-for-authenticated-reference-interpreter}
+       {:artifact :gravity/p15-s23-pure-capability-closure
+        :module module
+        :required #{}
+        :granted #{}
+        :provider-bindings {}
+        :status :not-required})
      :ownership-analysis ownership-analysis
-     :ownership-analysis-key ownership-analysis-key}))
+     :ownership-analysis-key ownership-analysis-key})))
 
 (defn p15-s23-closed-core-fact-tables
   ([nodes]
    (p15-s23-closed-core-fact-tables nodes :not-applicable
                                     :not-applicable))
   ([nodes module plan-id]
-  (let [node-by-id (into {} (map (juxt :node-id identity)) nodes)
+   (p15-s23-closed-core-fact-tables nodes module plan-id :pure nil))
+  ([nodes module plan-id mode authority-evidence]
+  (let [effectful? (= :effectful-reference mode)
+        node-by-id (into {} (map (juxt :node-id identity)) nodes)
         function-node (first (filter #(= :function (:kind %)) nodes))
         canonical
         (p15-s23-closed-core-canonical-pass-envelopes
-         nodes module plan-id)
+         nodes module plan-id mode authority-evidence)
+        capability-proof-by-node-capability
+        (into {}
+              (map (fn [record]
+                     [[(:core-node-id record) (:capability record)]
+                      record]))
+              (:capability-proof-records canonical))
+        expected-capability-proof-pairs
+        (set (for [node nodes
+                   capability (:capabilities node)]
+               [(:node-id node) capability]))
+        observed-capability-proof-pairs
+        (set (map (juxt :core-node-id :capability)
+                  (:capability-proof-records canonical)))
+        _ (when (and effectful?
+                     (not
+                      (and
+                       (= expected-capability-proof-pairs
+                          observed-capability-proof-pairs)
+                       (= (count expected-capability-proof-pairs)
+                          (count (:capability-proof-records canonical))
+                          (count (set (map :proof-id
+                                          (:capability-proof-records
+                                           canonical)))))
+                       (every?
+                        #(p15-s23-checked-core-capability-proof-record-valid?
+                          % authority-evidence)
+                        (:capability-proof-records canonical)))))
+            (p15-s23-closed-core-fail!
+             "C8-CAPABILITY" "<checked-core-facts>" authority-evidence
+             {:missing-fact
+              :exact-unique-node-capability-proof-coverage}))
         shared-owner-id
         (p15-s23-closed-core-shared-owner-domain-id nodes)
         fact-link-id
@@ -109934,8 +111880,8 @@
               (assoc
                :params []
                :return (:return reconstructed-type)
-               :latent-effects #{}
-               :capabilities #{}
+               :latent-effects (:latent-effects reconstructed-type)
+               :capabilities (:capabilities reconstructed-type)
                :throws #{}
                :ownership-constraints #{:persistent-immutable-shareable}
                :profile-constraints #{:hosted}))]))
@@ -109951,22 +111897,37 @@
                 :fact-id
                 (fact-link-id :effects
                               (:effect-graph-key canonical) node-id)
-                :direct #{}
-                :latent #{}
-                :transitive #{}
+                :direct (if effectful?
+                          (p15-s23-closed-core-intrinsic-effects
+                           (:source-operation node))
+                          #{})
+                :latent (if (and effectful?
+                                  (= :function (:kind node)))
+                          (:effects node)
+                          #{})
+                :transitive (if effectful? (:effects node) #{})
                 :residual #{}
-                :ordering :none
+                :ordering (if (and effectful? (seq (:effects node)))
+                            :source-order
+                            :none)
                 :source-origin-id (get-in node [:source :origin-id])
-                :profile (:profile node)
-                :source-target :jvm
-                :derived? true}]
+               :profile (:profile node)
+               :source-target :jvm
+                :derived? true}
+               base
+               (cond-> base
+                 effectful?
+                 (assoc :event-index
+                        (get-in canonical
+                                [:effect-graph :event-index node-id]
+                                :not-an-effect-event)))]
            [node-id
             (cond-> base
               (= :function (:kind node))
               (assoc :function-summary
-                     {:declared #{}
-                      :inferred #{}
-                      :latent #{}
+                     {:declared (if effectful? (:effects node) #{})
+                      :inferred (if effectful? (:effects node) #{})
+                      :latent (if effectful? (:effects node) #{})
                       :throws #{}}))]))
        nodes))
      :capability-facts
@@ -109974,22 +111935,52 @@
       (sorted-map)
       (map
        (fn [node]
-         (let [node-id (:node-id node)]
+         (let [node-id (:node-id node)
+               required (if effectful? (:capabilities node) #{})
+               proofs
+               (mapv #(get capability-proof-by-node-capability
+                            [node-id %])
+                     (sort-by pr-str required))]
            [node-id
-           {:core-node-id node-id
-             :required #{}
-             :granted #{}
-             :provider-bindings {}
-             :grant-ids []
-             :authority-id nil
-             :authority-source :none-required
-             :capability-proof
-             {:status :not-required
-              :basis :empty-capability-requirements}
-             :source-origin-id (get-in node [:source :origin-id])
-             :profile (:profile node)
-             :source-target :jvm
-             :derived? true}]))
+            (if effectful?
+              {:core-node-id node-id
+               :required required
+               :granted required
+               :provider-bindings
+               (into (sorted-map)
+                     (map (fn [capability]
+                            [capability
+                             (get-in authority-evidence
+                                     [:provider-bindings capability
+                                      :provider-selection-id])]))
+                     required)
+               :grant-ids (mapv :grant-id proofs)
+               :authority-id (:authority-record-id authority-evidence)
+               :authority-source :pinned-runtime-contract-policy
+               :capability-proof
+               {:status (if (seq required) :proved :not-required)
+                :basis (if (seq required)
+                         :authenticated-program-provider-and-grant-records
+                         :empty-capability-requirements)
+                :proof-ids (mapv :proof-id proofs)}
+               :source-origin-id (get-in node [:source :origin-id])
+               :profile (:profile node)
+               :source-target :jvm
+               :derived? true}
+              {:core-node-id node-id
+               :required #{}
+               :granted #{}
+               :provider-bindings {}
+               :grant-ids []
+               :authority-id nil
+               :authority-source :none-required
+               :capability-proof
+               {:status :not-required
+                :basis :empty-capability-requirements}
+               :source-origin-id (get-in node [:source :origin-id])
+               :profile (:profile node)
+               :source-target :jvm
+               :derived? true})]))
        nodes))
      :ownership-facts
      (into
@@ -109999,6 +111990,7 @@
          (let [node-id (:node-id node)
                ownership (:ownership node)]
            [node-id
+            (cond->
             {:core-node-id node-id
              :fact-id
              (fact-link-id :ownership
@@ -110032,7 +112024,10 @@
              :transfer :not-applicable
              :runtime-check :not-applicable
              :unsafe-audit :not-applicable
-             :derived? true}]))
+             :derived? true}
+              (contains? ownership :provider-id)
+              (assoc :provider-id (:provider-id ownership)
+                     :lifetime (:lifetime ownership)))]))
        nodes))
      :safety-facts
      (into
@@ -110040,7 +112035,13 @@
       (map
        (fn [node]
          (let [node-id (:node-id node)
-               proof (get-in node [:safety :proof])]
+               proof (get-in node [:safety :proof])
+               runtime-check (get-in node [:safety :check])
+               runtime-checked?
+               (= :runtime-checked (get-in node [:safety :outcome]))
+               structural-proof?
+               (= :gravity/p15-s23-structural-safety-proof
+                  (:artifact proof))]
            [node-id
             {:artifact :gravity/safety-outcome
              :operation node-id
@@ -110060,11 +112061,21 @@
               (fact-link-id :ownership
                             (:ownership-analysis-key canonical) node-id)}
              :outcome (get-in node [:safety :outcome])
-             :condition :always
-             :proof (:proof-id proof)
-             :runtime-check :not-applicable
+             :condition (cond
+                          runtime-checked? (get runtime-check :kind)
+                          structural-proof? (:proof-condition proof)
+                          :else :always)
+             :proof (if runtime-checked?
+                      :not-applicable
+                      (:proof-id proof))
+             :runtime-check (if runtime-checked?
+                              (:check-id runtime-check)
+                              :not-applicable)
              :unsafe-audit :not-applicable
-             :failure-behavior :not-applicable}]))
+             :failure-behavior
+             (if runtime-checked?
+               (:failure runtime-check)
+               :not-applicable)}]))
        nodes))
      :profile-facts
      (into
@@ -110074,7 +112085,9 @@
               {:profile (:profile node)
                :operation (:source-operation node)
                :legal? true
-               :scope :pure-closed-hosted-jvm-slice}]))
+               :scope (if effectful?
+                        :authenticated-hosted-jvm-reference-interpreter-slice
+                        :pure-closed-hosted-jvm-slice)}]))
       nodes)})))
 
 (defn p15-s23-closed-core-dependency-edge-kind
@@ -110204,13 +112217,89 @@
   (= (:origin-id origin)
      (p15-s23-closed-core-digest (dissoc origin :origin-id))))
 
+(def p15-s23-closed-core-runtime-check-bound-keys
+  #{:program-provider-selection-id :program-provider-id :program-grant-id
+    :authority-record-id :authority-evidence-id :capability-proof-id
+    :runtime-provider-id :runtime-grant-id
+    :runtime-handler-provider-id :runtime-handler-grant-id
+    :structural-invocation-state})
+
 (defn p15-s23-closed-core-runtime-check-valid?
-  [check]
-  (and (= :gravity/runtime-check (:artifact check))
-       (= :required (:status check))
-       (= (:check-id check)
-          (p15-s23-closed-core-digest
-           (dissoc check :artifact :check-id :status)))))
+  ([check]
+   (and (map? check)
+        (= :gravity/runtime-check (:artifact check))
+        (= :required (:status check))
+        (= (:check-id check)
+           (p15-s23-closed-core-digest
+            (dissoc check :artifact :check-id :status)))))
+  ([check node authority-evidence capability-proof]
+   (let [operation (:source-operation node)
+         capability (:capability check)
+         provider (get-in authority-evidence
+                          [:provider-bindings capability])
+         grant (get-in authority-evidence [:grant-bindings capability])
+         base-keys
+         (case operation
+           :str #{:kind :source-content-hash :path :origin-id :effect
+                  :capability :provider :failure}
+           :println #{:kind :source-content-hash :path :origin-id :effect
+                      :capability :provider :handler :delivery
+                      :live-external-io? :failure}
+           #{})
+         expected-keys
+         (set/union base-keys p15-s23-closed-core-runtime-check-bound-keys
+                    #{:artifact :check-id :status})]
+     (and
+      (p15-s23-closed-core-runtime-check-valid? check)
+      (= expected-keys (set (keys check)))
+      (= (:check-id check) (get-in node [:attributes :runtime-check-id]))
+      (= (:origin-id check) (get-in node [:source :origin-id]))
+      (= (:path check) (:path node))
+      (= (:effect check)
+         (first (p15-s23-closed-core-intrinsic-effects operation)))
+      (= capability
+         (first (p15-s23-closed-core-intrinsic-capabilities operation)))
+      (map? provider)
+      (map? grant)
+      (map? capability-proof)
+      (= (:provider-selection-id provider)
+         (:program-provider-selection-id check))
+      (= (:provider-id provider) (:program-provider-id check))
+      (= (:grant-id grant) (:program-grant-id check))
+      (= (:authority-record-id authority-evidence)
+         (:authority-record-id check))
+      (= (:evidence-id authority-evidence) (:authority-evidence-id check))
+      (= (:proof-id capability-proof) (:capability-proof-id check))
+      (= :pre-execution-authority-bound
+         (:structural-invocation-state check))
+      (case operation
+        :str
+        (and (= :managed-allocation-result (:kind check))
+             (= :gravity.reference/jvm-managed-allocator (:provider check))
+             (= :gravity.reference/jvm-managed-allocator
+                (:runtime-provider-id check))
+             (= :gravity.reference/grant-managed-allocation
+                (:runtime-grant-id check))
+             (= :not-applicable (:runtime-handler-provider-id check))
+             (= :not-applicable (:runtime-handler-grant-id check))
+             (= :gravity/allocation-error (:failure check)))
+
+        :println
+        (and (= :reference-transcript-delivery (:kind check))
+             (= :gravity.reference/transcript-capture (:provider check))
+             (= :gravity.bootstrap/reference-harness (:handler check))
+             (= :in-memory-reference-transcript (:delivery check))
+             (false? (:live-external-io? check))
+             (= :gravity.reference/transcript-capture
+                (:runtime-provider-id check)
+                (:runtime-handler-provider-id check))
+             (= :gravity.reference/grant-reference-stdout
+                (:runtime-grant-id check))
+             (= :gravity.reference/grant-test-fixture
+                (:runtime-handler-grant-id check))
+             (= :gravity/transcript-capture-error (:failure check)))
+
+        false)))))
 
 (defn p15-s23-closed-core-node-aggregate-facts
   [node node-by-id]
@@ -110251,24 +112340,44 @@
     :allocator-requirement :escape-policy :derived?})
 
 (defn p15-s23-closed-core-persistent-ownership-expected-keys
-  [source-operation]
-  (let [extras
-        (case source-operation
+  [node managed?]
+  (let [ownership (:ownership node)
+        extras
+        (case (:source-operation node)
           :local #{:binding-node-id}
           :let-binding #{:value-node-id}
           :if #{:incoming-node-ids}
           :do #{:result-node-id}
           :let #{:result-node-id}
           :function #{:result-node-id :result-disposition}
-          #{})]
+          :str #{:provider-id :lifetime}
+          #{})
+        extras
+        (if managed?
+          (set/union extras #{:provider-id :lifetime})
+          extras)]
     (set/union p15-s23-closed-core-persistent-ownership-common-keys
                extras)))
 
 (defn p15-s23-closed-core-persistent-ownership-schema-valid?
-  [node]
-  (= (p15-s23-closed-core-persistent-ownership-expected-keys
-      (:source-operation node))
-     (set (keys (:ownership node)))))
+  ([node]
+   (p15-s23-closed-core-persistent-ownership-schema-valid?
+    node (= :str (:source-operation node))))
+  ([node managed?]
+   (= (p15-s23-closed-core-persistent-ownership-expected-keys
+       node managed?)
+      (set (keys (:ownership node))))))
+
+(defn p15-s23-closed-core-expected-managed-node-ids
+  [nodes]
+  (reduce
+   (fn [managed node]
+     (let [managed?
+           (or (= :str (:source-operation node))
+               (some managed
+                     (p15-s23-closed-core-forwarded-value-node-ids node)))]
+       (cond-> managed managed? (conj (:node-id node)))))
+   #{} nodes))
 
 (defn p15-s23-closed-core-operation-shape-valid?
   [node node-by-id]
@@ -110280,11 +112389,11 @@
         exact-attributes?
         (fn [extras]
           (= (set/union common-keys extras) (set (keys attributes))))
+        aggregate
+        (p15-s23-closed-core-node-aggregate-facts node node-by-id)
         common-facts?
-        (and (= #{} (:intrinsic-effects attributes))
-             (= #{} (:intrinsic-capabilities attributes))
-             (= #{} (:aggregate-effects attributes))
-             (= #{} (:aggregate-capabilities attributes)))]
+        (= (select-keys attributes common-keys)
+           aggregate)]
     (and
      common-facts?
      (case (:source-operation node)
@@ -110386,22 +112495,56 @@
             (seq operands)
             (every? node-by-id operands))
 
+       :str
+       (and (= :call (:kind node))
+            (true? (:plan-node? node))
+            (exact-attributes? #{:function :arity :runtime-check-id})
+            (= 'str (:function attributes))
+            (contains? #{1 2} (:arity attributes))
+            (= (:arity attributes) (count operands))
+            (string? (:runtime-check-id attributes))
+            (every? node-by-id operands))
+
+       :println
+       (and (= :effect (:kind node))
+            (true? (:plan-node? node))
+            (exact-attributes? #{:arity :ordering :runtime-check-id})
+            (integer? (:arity attributes))
+            (not (neg? (:arity attributes)))
+            (= (:arity attributes) (count operands))
+            (= :source-sequence (:ordering attributes))
+            (string? (:runtime-check-id attributes))
+            (every? node-by-id operands))
+
        false))))
 
 (defn p15-s23-closed-core-persistent-forwarding-valid?
-  [node node-by-id]
+  ([node node-by-id]
+   (p15-s23-closed-core-persistent-forwarding-valid?
+    node node-by-id (= :str (:source-operation node))))
+  ([node node-by-id expected-managed?]
   (let [ownership (:ownership node)
         operands (:operands node)
         common-keys p15-s23-closed-core-persistent-ownership-common-keys
         exact-keys?
         (fn [extras]
-          (= (set/union common-keys extras) (set (keys ownership))))]
+          (= (set/union common-keys extras
+                        (if expected-managed?
+                          #{:provider-id :lifetime} #{}))
+             (set (keys ownership))))]
     (and
      (= :value-and-program-reachability
         (:managed-reachability ownership))
      (= :no-explicit-cleanup (:cleanup-policy ownership))
-     (= :not-required (:provider-requirement ownership))
-     (= :not-required (:allocator-requirement ownership))
+     (if expected-managed?
+       (and (= :gravity.reference/jvm-managed-allocator
+               (:provider-requirement ownership))
+            (= :memory/allocator (:allocator-requirement ownership))
+            (= :gravity.reference/jvm-managed-allocator
+               (:provider-id ownership))
+            (= :managed-reachability (:lifetime ownership)))
+       (and (= :not-required (:provider-requirement ownership))
+            (= :not-required (:allocator-requirement ownership))))
      (= :safe-persistent-value (:escape-policy ownership))
      (true? (:derived? ownership))
      (case (:source-operation node)
@@ -110480,7 +112623,23 @@
             (= :shared-persistent-value-return
                (:result-disposition ownership)))
 
-       false))))
+       :str
+       (and (exact-keys? #{})
+            (= :managed-string-result (:role ownership))
+            (= :host-managed-string (:storage ownership))
+            (= :gravity.reference/jvm-managed-allocator
+               (:provider-id ownership))
+            (= :managed-reachability (:lifetime ownership))
+            (contains? #{1 2} (count operands))
+            (every? node-by-id operands))
+
+       :println
+       (and (exact-keys? #{})
+            (= :stdout-result (:role ownership))
+            (= :static-nil (:storage ownership))
+            (every? node-by-id operands))
+
+       false)))))
 
 (defn p15-s23-closed-core-recomputed-mapping-id
   [artifact]
@@ -110698,13 +112857,23 @@
        :observed-scalar-bytes scalar-bytes})))
 
 (defn p15-s23-closed-core-validate-input-shape!
-  [source-path artifact]
+  ([source-path artifact]
+   (p15-s23-closed-core-validate-input-shape! source-path artifact :pure))
+  ([source-path artifact mode]
+  (let [expected-status
+        (if (= :effectful-reference mode)
+          :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+          :complete-for-pure-closed-slice)]
   (when-not (and (map? artifact)
                  (= p15-s23-closed-core-artifact-keys
                     (set (keys artifact)))
                  (= :gravity/p15-s23-stage2-closed-checked-core-artifact
                     (:kind artifact))
-                 (= :complete-for-pure-closed-slice (:status artifact)))
+                 (= expected-status (:status artifact))
+                 (if (= :effectful-reference mode)
+                   (= :effectful-reference
+                      (get-in artifact [:source-core-input :mode]))
+                   (not (contains? (:source-core-input artifact) :mode))))
     (p15-s23-closed-core-fail!
      "C6-CORE-SHAPE" source-path {:missing-fact :closed-core-artifact-schema}
      {:missing-fact :exact-closed-core-artifact-schema}))
@@ -110802,13 +112971,24 @@
       (p15-s23-closed-core-fail!
        "C6-VERIFY" source-path {:missing-fact :typed-artifact-bounds}
        {:missing-fact :nonnegative-integer-closed-core-bounds})))
-  :passed)
+  :passed)))
 
 (defn p15-s23-closed-core-validate-structure!
-  [source-path artifact]
+  ([source-path artifact]
+   (p15-s23-closed-core-validate-structure!
+    source-path artifact :pure nil))
+  ([source-path artifact mode expected-authority-evidence]
   (p15-s23-closed-core-bounded-value! source-path artifact)
-  (p15-s23-closed-core-validate-input-shape! source-path artifact)
-  (let [nodes (:core-nodes artifact)
+  (p15-s23-closed-core-validate-input-shape! source-path artifact mode)
+  (let [effectful? (= :effectful-reference mode)
+        authority-evidence
+        (when effectful?
+          (get-in artifact [:source-core-input :authority-evidence]))
+        execution-evidence
+        (when effectful?
+          (get-in artifact
+                  [:authenticated-input :reference-execution-evidence]))
+        nodes (:core-nodes artifact)
         plan-nodes (filterv :plan-node? nodes)
         node-ids (mapv :node-id nodes)
         paths (mapv :path nodes)
@@ -110823,14 +113003,47 @@
                                            :declared-exports])
         observed-operation-set
         (set (map :source-operation plan-nodes))
+        recomputed-effect-requirements
+        {:required-effects
+         (reduce set/union #{} (map :effects nodes))
+         :required-capabilities
+         (reduce set/union #{} (map :capabilities nodes))}
         entrypoint-visibility
         (get-in artifact [:source-core-input :entrypoint-visibility])
         node-by-id (into {} (map (juxt :node-id identity)) nodes)
+        expected-managed-node-ids
+        (p15-s23-closed-core-expected-managed-node-ids nodes)
+        capability-proof-by-node-capability
+        (into {}
+              (map (fn [proof]
+                     [[(:core-node-id proof) (:capability proof)] proof]))
+              (:capability-proof-records artifact))
+        dependency-graph
+        (p15-s23-closed-core-dependency-order-graph nodes)
+        _ (when-not (and (= dependency-graph
+                            (:dependency-order-graph artifact))
+                         (= :passed (:status dependency-graph))
+                         (true?
+                          (:all-dependencies-precede-consumers?
+                           dependency-graph))
+                         (true?
+                          (:all-lexical-bindings-resolve?
+                           dependency-graph)))
+            (p15-s23-closed-core-fail!
+             "C6-EVAL-ORDER" source-path artifact
+             {:missing-fact
+              :pre-fact-proven-topological-dependency-closure}))
         recomputed-facts
-        (p15-s23-closed-core-fact-tables
-         nodes
-         (get-in artifact [:source-core-input :module])
-         (get-in artifact [:source-core-input :plan-id]))
+        (let [pre-execution
+              (p15-s23-closed-core-fact-tables
+               nodes
+               (get-in artifact [:source-core-input :module])
+               (get-in artifact [:source-core-input :plan-id])
+               mode authority-evidence)]
+          (if effectful?
+            (p15-s23-checked-core-bind-execution-audit-to-facts
+             pre-execution nodes execution-evidence)
+            pre-execution))
         function-nodes (filterv #(= :function (:kind %)) nodes)
         diagnostic-module
         {:module (get-in artifact [:source-core-input :module])
@@ -110843,6 +113056,12 @@
         (fn [node extra]
           (p15-s23-closed-core-enriched-node-subject
            artifact node diagnostic-module extra))]
+    (when (and effectful?
+               (not= expected-authority-evidence authority-evidence))
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path artifact
+       {:missing-fact
+        :trusted-mode-exact-authority-evidence-reissue-parity}))
     (when-not (and (<= (count nodes)
                        p15-s23-closed-core-max-derived-nodes)
                    (<= (count plan-nodes)
@@ -110878,9 +113097,13 @@
         node {:missing-fact :exact-pure-operation-attribute-and-operand-shape})
        {:missing-fact :exact-pure-operation-attribute-and-operand-shape}))
     (when-not
-     (and (= (p15-s23-closed-core-scope-contract)
+     (and (= (if effectful?
+               (p15-s23-closed-core-scope-contract
+                :effectful-reference recomputed-effect-requirements)
+               (p15-s23-closed-core-scope-contract))
              (:scope artifact))
-          (= (p15-s23-closed-core-pass-history) (:pass-history artifact))
+          (= (p15-s23-closed-core-pass-history-for-mode mode)
+             (:pass-history artifact))
           (= 1 (count function-nodes))
           (= [(:node-id (first function-nodes))] (:root-node-ids artifact))
           (= (:entrypoint artifact)
@@ -110918,8 +113141,13 @@
              (get-in artifact [:bounds :maximum-integer-bits]))
           (= (apply max 0 (map :plan-depth plan-nodes))
              (get-in artifact [:bounds :observed-plan-depth]))
-          (true? (get-in artifact [:authenticated-input
-                                   :packet-context-bound?]))
+          (= (not effectful?)
+             (get-in artifact [:authenticated-input
+                               :packet-context-bound?]))
+          (if effectful?
+            (true? (get-in artifact
+                           [:authenticated-input :runtime-policy-bound?]))
+            true)
           (= (:source-content-hash artifact)
              (get-in artifact [:source-core-input :source-content-hash])
              (get-in artifact [:authenticated-input :source-content-hash]))
@@ -110933,11 +113161,14 @@
                             [:authenticated-input :declared-safety]))
           (= (:source-target artifact)
              (get-in artifact [:source-core-input :declared-target])
-             (get-in artifact
-                     [:source-core-input :pure-admission-record
-                      :source-target])
              (get-in artifact [:authenticated-input :source-target])
              (get-in artifact [:scope :module :source-target]))
+          (if effectful?
+            true
+            (= (:source-target artifact)
+               (get-in artifact
+                       [:source-core-input :pure-admission-record
+                        :source-target])))
           (= :jvm (:source-target artifact))
           (false? (:mir-derived? artifact))
           (false? (:whole-language? artifact))
@@ -110952,46 +113183,117 @@
     ;; these facts out of the C6 root-shape conjunction so effect tampering is
     ;; never misreported as a lowering failure.
     (when-not
-     (and
-      (p15-s23-closed-core-pure-admission-valid?
-       (get-in artifact [:source-core-input :pure-admission-record]))
-      (= (get-in artifact
-                 [:source-core-input :pure-admission-record :admission-id])
-         (get-in artifact [:authenticated-input :pure-admission-id]))
-      (true? (get-in artifact
-                     [:authenticated-input :pre-execution-pure-admitted?]))
-      (= #{} declared-effects declared-capabilities)
-      (every? #(and (empty? (:effects %))
-                    (empty? (:capabilities %)))
-              nodes)
-      (= observed-operation-set
-         (get-in artifact [:source-core-input :operation-set])
-         (get-in artifact [:authenticated-input :operation-set]))
-      (set/subset? observed-operation-set
-                   p15-s23-closed-core-allowed-operations)
-      (true? (get-in artifact
-                     [:source-core-input
-                      :effectful-runtime-branches-unreachable?]))
-      (true? (get-in artifact
+     (if effectful?
+       (let [function-node (first function-nodes)
+             closure (:pure-capability-closure artifact)
+             provider-capabilities
+             (set (keys (:provider-bindings authority-evidence)))
+             grant-capabilities
+             (set (keys (:grant-bindings authority-evidence)))]
+         (and
+          (not (contains? (:source-core-input artifact)
+                          :pure-admission-record))
+          (not (contains? (:authenticated-input artifact)
+                          :pure-admission-id))
+          (not (contains? (:authenticated-input artifact)
+                          :pre-execution-pure-admitted?))
+          (p15-s23-checked-core-authority-evidence-valid?
+           authority-evidence)
+          (= expected-authority-evidence authority-evidence)
+          (= (:evidence-id authority-evidence)
+             (get-in artifact [:authenticated-input
+                               :authority-evidence-id]))
+          (= (:authority-record-id authority-evidence)
+             (get-in artifact [:authenticated-input
+                               :authority-record-id]))
+          (p15-s23-checked-core-reference-execution-evidence-valid?
+           execution-evidence authority-evidence)
+          (= execution-evidence
+             (p15-s23-checked-core-expected-reference-execution-evidence
+              authority-evidence execution-evidence))
+          (= declared-effects (:effects function-node)
+             (get-in artifact [:effect-graph :functions
+                               (:node-id function-node) :declared])
+             (get-in artifact [:effect-graph :functions
+                               (:node-id function-node) :inferred])
+             (get-in artifact [:effect-graph :functions
+                               (:node-id function-node) :latent])
+             (get-in artifact [:effect-graph :namespace :declared])
+             (get-in artifact [:effect-graph :namespace :inferred]))
+          (= declared-capabilities (:capabilities function-node)
+             (get-in artifact [:typed-core :functions
+                               (:node-id function-node) :capabilities])
+             (:required closure) (:granted closure)
+             provider-capabilities grant-capabilities)
+          (= observed-operation-set
+             (get-in artifact [:source-core-input :operation-set])
+             (get-in artifact [:authenticated-input :operation-set]))
+          (set/subset? observed-operation-set
+                       p15-s23-closed-core-recognized-core-operations)
+          (false? (get-in artifact
+                          [:source-core-input
+                           :effectful-runtime-branches-unreachable?]))
+          (false? (get-in artifact
+                          [:authenticated-input
+                           :effectful-runtime-branches-unreachable?]))
+          (= :authenticated-reference-interpreter
+             (get-in artifact [:source-core-input :packet-role])
+             (get-in artifact [:authenticated-input :packet-role]))
+          (= :authenticated-and-consumed
+             (get-in artifact
+                     [:source-core-input :runtime-module-c8-conformance])
+             (get-in artifact
                      [:authenticated-input
-                      :effectful-runtime-branches-unreachable?]))
-      (= :seed-comparison-oracle
-         (get-in artifact [:source-core-input :packet-role])
-         (get-in artifact [:authenticated-input :packet-role]))
-      (= :not-claimed
-         (get-in artifact
-                 [:source-core-input :runtime-module-c8-conformance])
-         (get-in artifact
-                 [:authenticated-input :runtime-module-c8-conformance])))
+                      :runtime-module-c8-conformance]))))
+       (and
+        (not (contains? (:source-core-input artifact)
+                        :authority-evidence))
+        (not (contains? (:authenticated-input artifact)
+                        :reference-execution-evidence))
+        (p15-s23-closed-core-pure-admission-valid?
+         (get-in artifact [:source-core-input :pure-admission-record]))
+        (= (get-in artifact
+                   [:source-core-input :pure-admission-record :admission-id])
+           (get-in artifact [:authenticated-input :pure-admission-id]))
+        (true? (get-in artifact
+                       [:authenticated-input :pre-execution-pure-admitted?]))
+        (= #{} declared-effects declared-capabilities)
+        (every? #(and (empty? (:effects %))
+                      (empty? (:capabilities %)))
+                nodes)
+        (= observed-operation-set
+           (get-in artifact [:source-core-input :operation-set])
+           (get-in artifact [:authenticated-input :operation-set]))
+        (set/subset? observed-operation-set
+                     p15-s23-closed-core-allowed-operations)
+        (true? (get-in artifact
+                       [:source-core-input
+                        :effectful-runtime-branches-unreachable?]))
+        (true? (get-in artifact
+                       [:authenticated-input
+                        :effectful-runtime-branches-unreachable?]))
+        (= :seed-comparison-oracle
+           (get-in artifact [:source-core-input :packet-role])
+           (get-in artifact [:authenticated-input :packet-role]))
+        (= :not-claimed
+           (get-in artifact
+                   [:source-core-input :runtime-module-c8-conformance])
+           (get-in artifact
+                   [:authenticated-input :runtime-module-c8-conformance]))))
      (p15-s23-closed-core-fail!
       "C8-VERIFY" source-path artifact
       {:missing-fact
-       :pure-admission-effect-and-concrete-operation-closure
+       (if effectful?
+         :effectful-reference-authority-declaration-and-execution-closure
+         :pure-admission-effect-and-concrete-operation-closure)
        :observed-operation-set observed-operation-set
        :declared-effects declared-effects
        :declared-capabilities declared-capabilities}))
     (let [graph (p15-s23-closed-core-dependency-order-graph nodes)]
-      (when-not (= graph (:dependency-order-graph artifact))
+      (when-not (and (= graph (:dependency-order-graph artifact))
+                     (= :passed (:status graph))
+                     (true? (:all-dependencies-precede-consumers? graph))
+                     (true? (:all-lexical-bindings-resolve? graph)))
         (p15-s23-closed-core-fail!
          "C6-EVAL-ORDER" source-path
          (enriched-subject
@@ -111116,8 +113418,48 @@
         (or (first nodes) {})
         {:missing-fact
          :canonical-effect-and-capability-envelope-closure})
-       {:missing-fact
+      {:missing-fact
         :canonical-effect-and-capability-envelope-closure}))
+    (when (and effectful?
+               (let [graph (:effect-graph artifact)
+                     proofs (:capability-proof-records artifact)
+                     expected-pairs
+                     (set (for [node nodes
+                                capability (:capabilities node)]
+                            [(:node-id node) capability]))
+                     observed-pairs
+                     (set (map (juxt :core-node-id :capability) proofs))
+                     direct-event-ids
+                     (mapv :node-id
+                           (filterv #(seq
+                                     (p15-s23-closed-core-intrinsic-effects
+                                      (:source-operation %)))
+                                    nodes))]
+                 (not
+                  (and
+                   (= :complete (:status graph))
+                   (true? (:all-edges-monotone? graph))
+                   (true? (:edge-count-bounded? graph))
+                   (false? (:exclusive-branch-total-order? graph))
+                   (false? (:runtime-sequence-claimed? graph))
+                   (= (mapv :node-id nodes) (:ordering-vertices graph))
+                   (= direct-event-ids (:event-order graph))
+                   (= (count (:event-order graph))
+                      (count (set (:event-order graph))))
+                   (every? #(and (contains? node-by-id (:before %))
+                                 (contains? node-by-id (:after %)))
+                           (:event-edges graph))
+                   (= expected-pairs observed-pairs)
+                   (= (count expected-pairs) (count proofs)
+                      (count (set (map :proof-id proofs))))
+                   (every?
+                    #(p15-s23-checked-core-capability-proof-record-valid?
+                      % authority-evidence)
+                    proofs)))))
+      (p15-s23-closed-core-fail!
+       "C8-VERIFY" source-path artifact
+       {:missing-fact
+        :bounded-topological-effect-order-and-capability-proof-closure}))
     (when-not (= (:ownership-analysis artifact)
                  (:ownership-analysis recomputed-facts))
       (p15-s23-closed-core-fail!
@@ -111251,7 +113593,8 @@
     (when-let [node
                (first
                 (remove
-                 p15-s23-closed-core-persistent-ownership-schema-valid?
+                 #(p15-s23-closed-core-persistent-ownership-schema-valid?
+                   % (contains? expected-managed-node-ids (:node-id %)))
                  nodes))]
       (p15-s23-closed-core-fail!
        "C6-VERIFY" source-path
@@ -111277,7 +113620,8 @@
     (when-let [node (first
                      (remove
                       #(p15-s23-closed-core-persistent-forwarding-valid?
-                        % node-by-id)
+                        % node-by-id
+                        (contains? expected-managed-node-ids (:node-id %)))
                       nodes))]
       (p15-s23-closed-core-fail!
        "C9-TRANSFER" source-path
@@ -111318,23 +113662,56 @@
       (first
        (remove
         (fn [node]
-          (let [proof (get-in node [:safety :proof])
-                expected
-                (p15-s23-closed-core-pure-safety-proof
-                 (:source-content-hash artifact) (:path node)
-                 (:source-operation node) (:source node) (:profile node)
-                 (:type node) (:effects node) (:capabilities node)
-                 (:ownership node)
-                 (p15-s23-closed-core-safety-basis
-                  (:source-operation node)))]
-            (and (= #{:outcome :basis :proof}
+          (let [outcome (get-in node [:safety :outcome])
+                basis (p15-s23-closed-core-safety-basis
+                       (:source-operation node))]
+            (case outcome
+              :proven-safe
+              (let [proof (get-in node [:safety :proof])]
+                (and
+                 (= #{:outcome :basis :proof}
                     (set (keys (:safety node))))
-                 (= :proven-safe (get-in node [:safety :outcome]))
-                 (= (p15-s23-closed-core-safety-basis
-                     (:source-operation node))
-                    (get-in node [:safety :basis]))
-                 (p15-s23-closed-core-pure-safety-proof-valid? proof)
-                 (= expected proof))))
+                 (= basis (get-in node [:safety :basis]))
+                 (if (and (empty? (:effects node))
+                          (empty? (:capabilities node)))
+                   (= (p15-s23-closed-core-pure-safety-proof
+                       (:source-content-hash artifact) (:path node)
+                       (:source-operation node) (:source node)
+                       (:profile node) (:type node) (:effects node)
+                       (:capabilities node) (:ownership node) basis)
+                      proof)
+                   (let [child-obligations
+                         (p15-s23-closed-core-child-obligation-refs
+                          node node-by-id
+                          capability-proof-by-node-capability)]
+                     (and
+                      (p15-s23-closed-core-structural-safety-proof-valid?
+                       proof node child-obligations)
+                      (= (p15-s23-closed-core-structural-safety-proof
+                          (:source-content-hash artifact) (:path node)
+                          (:source-operation node) (:source node)
+                          (:profile node) (:type node) (:effects node)
+                          (:capabilities node) (:ownership node) basis
+                          child-obligations)
+                         proof))))))
+
+              :runtime-checked
+              (let [check (get-in node [:safety :check])
+                    capability (:capability check)
+                    capability-proof
+                    (get capability-proof-by-node-capability
+                         [(:node-id node) capability])]
+                (and
+                 effectful?
+                 (= #{:outcome :basis :check}
+                    (set (keys (:safety node))))
+                 (= basis (get-in node [:safety :basis]))
+                 (p15-s23-closed-core-runtime-check-valid?
+                  check node authority-evidence capability-proof)
+                 (p15-s23-checked-core-capability-proof-record-valid?
+                  capability-proof authority-evidence)))
+
+              false)))
         nodes))]
       (p15-s23-closed-core-fail!
        "C10-PROOF" source-path
@@ -111346,9 +113723,9 @@
          :requested-target
          (get-in artifact [:target-request-metadata :requested-target])
          :safety (get-in artifact [:source-core-input :declared-safety])}
-        {:missing-fact :content-addressed-pure-safety-proof
+        {:missing-fact :content-addressed-outcome-specific-safety-proof
          :proof-id (get-in node [:safety :proof :proof-id])})
-       {:missing-fact :content-addressed-pure-safety-proof
+       {:missing-fact :content-addressed-outcome-specific-safety-proof
         :proof-id (get-in node [:safety :proof :proof-id])}))
     (when-not (= (:effect-facts artifact)
                  (:effect-facts recomputed-facts))
@@ -111412,10 +113789,63 @@
       (p15-s23-closed-core-fail!
        "C6-VERIFY" source-path artifact
        {:missing-fact :independently-recomputed-checked-core-artifact-id}))
-    :passed))
+    :passed)))
 
-(defn p15-s23-stage2-closed-checked-core-source-artifact*
-  [source-path source-text requested-target authority-record]
+(defn p15-s23-checked-core-bounded-ingress!
+  [diagnostic-id definition-name value maximum-nodes maximum-depth]
+  (try
+    (p15-s23-reference-runtime-bounded-value!
+     "checked-core-bounded-ingress" :jvm definition-name value
+     maximum-nodes maximum-depth)
+    value
+    (catch StackOverflowError _
+      (p15-s23-closed-core-fail!
+       diagnostic-id "<checked-core-ingress>" {}
+       {:missing-fact :bounded-checked-core-ingress-host-stack
+        :ingress-definition definition-name}))
+    (catch Exception exception
+      (p15-s23-closed-core-fail!
+       diagnostic-id "<checked-core-ingress>" {}
+       {:missing-fact :bounded-checked-core-ingress
+        :ingress-definition definition-name
+        :cause-class-hash
+        (str "sha256:"
+             (sha256-hex (.getName (class exception))))}))))
+
+(defn p15-s23-checked-core-bounded-context!
+  [context]
+  (when-not
+   (and (map? context)
+        (contains?
+         p15-s23-reference-runtime-supported-collection-class-names
+         (some-> context class .getName))
+        (<= (count context) 5))
+    (p15-s23-closed-core-fail!
+     "C6-CORE-SHAPE" "<checked-core-context>" {}
+     {:missing-fact :bounded-supported-checked-core-context}))
+  (p15-s23-checked-core-bounded-ingress!
+   "C6-CORE-SHAPE" :checked-core-context context
+   p15-s23-reference-runtime-max-contract-nodes
+   p15-s23-reference-runtime-max-contract-depth))
+
+(let [static-rebuild-token (Object.)]
+  (letfn
+   [(p15-s23-stage2-closed-checked-core-source-artifact-internal
+      [source-path source-text requested-target authority-record
+       construction-mode static-execution-evidence
+       static-rebuild-token-candidate]
+  (when-not
+       (or (and (= :authoritative-artifact-construction construction-mode)
+            (nil? static-execution-evidence)
+            (nil? static-rebuild-token-candidate))
+       (and (= :static-verification-rebuild construction-mode)
+            (map? static-execution-evidence)
+            (identical? static-rebuild-token
+                        static-rebuild-token-candidate)))
+    (p15-s23-closed-core-fail!
+     "C8-CAPABILITY" source-path {:requested-target requested-target}
+     {:missing-fact
+      :opaque-successful-verification-replay-static-rebuild-token}))
   (try
     (let [source-byte-count
           (p15-s23-closed-core-source-request-bounds!
@@ -111869,8 +114299,8 @@
             :visibility entrypoint-visibility}
            {:params []
             :return (:type body-product)
-            :latent-effects #{}
-            :capabilities #{}
+            :latent-effects (:effects body-product)
+            :capabilities (:capabilities body-product)
             :throws #{}
             :ownership-constraints #{:persistent-immutable-shareable}
             :profile-constraints #{:hosted}}
@@ -111885,7 +114315,16 @@
           product
           (p15-s23-closed-core-add-node
            body-product function-node function-origin)
-          nodes (:nodes product)
+          effectful-diagnostic-subject
+          (p15-s23-closed-core-enriched-node-subject
+           product function-node
+           {:module (:module authoritative-module)
+            :profile (:profile authoritative-module)
+            :target (:target authoritative-module)
+            :requested-target requested-target
+            :safety (:safety authoritative-module)}
+           {})
+          pre-authority-nodes (:nodes product)
           _ (when-not (= (:node-count validation)
                          (:plan-node-count product))
               (p15-s23-closed-core-fail!
@@ -111903,15 +114342,59 @@
                {:missing-fact :resolved-whole-plan-effect-preflight-parity
                 :plan-preflight preflight-effect-requirements
                 :derived-core derived-effect-requirements}))
+          effectful-reference?
+          (boolean
+           (seq (set/union (:required-effects derived-effect-requirements)
+                           (:required-capabilities
+                            derived-effect-requirements))))
+          _ (when (and effectful-reference? (not= :jvm requested-target))
+              (p15-s23-closed-core-fail!
+               "C6-LOWERING-GAP" source-path effectful-diagnostic-subject
+               {:missing-fact
+                :effectful-reference-interpreter-requested-jvm-target
+                :requested-target requested-target}))
+          _ (when (and effectful-reference?
+                       (not= (:effects authoritative-module)
+                             (:required-effects
+                              derived-effect-requirements)))
+              (p15-s23-closed-core-fail!
+               "C8-UNDECLARED" source-path effectful-diagnostic-subject
+               {:missing-fact :required-effect-declaration
+                :declared-effects (:effects authoritative-module)
+                :required-effects
+                (:required-effects derived-effect-requirements)}))
+          _ (when (and effectful-reference?
+                       (not= (:capabilities authoritative-module)
+                             (:required-capabilities
+                              derived-effect-requirements)))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path effectful-diagnostic-subject
+               {:missing-fact
+                :required-capability-declaration
+                :declared-capabilities (:capabilities authoritative-module)
+                :required-capabilities
+                (:required-capabilities derived-effect-requirements)}))
+          _ (when (and effectful-reference?
+                       (not
+                        (set/subset?
+                         observed-operation-set
+                         p15-s23-closed-core-recognized-plan-operations)))
+              (p15-s23-closed-core-fail!
+               "C8-VERIFY" source-path effectful-diagnostic-subject
+               {:missing-fact
+                :effectful-reference-concrete-operation-set-closure
+                :observed-operation-set observed-operation-set}))
           pure-admission
-          (p15-s23-closed-core-pure-admission-record
-           source-path source-content-hash (:plan-id plan)
-           (assoc authoritative-module :requested-target requested-target)
-           derived-effect-requirements
-           (some? authority-record) product)
-          _ (when-not
-              (set/subset? observed-operation-set
-                           p15-s23-closed-core-allowed-operations)
+          (when-not effectful-reference?
+            (p15-s23-closed-core-pure-admission-record
+             source-path source-content-hash (:plan-id plan)
+             (assoc authoritative-module :requested-target requested-target)
+             derived-effect-requirements
+             (some? authority-record) product))
+          _ (when (and (not effectful-reference?)
+                       (not
+                        (set/subset? observed-operation-set
+                                     p15-s23-closed-core-allowed-operations)))
               (p15-s23-closed-core-fail!
                "C8-VERIFY" source-path product
                {:missing-fact
@@ -111919,30 +114402,116 @@
                 :observed-operation-set observed-operation-set
                 :accepted-pure-operations
                 p15-s23-closed-core-allowed-operations}))
-          packet @packet-delay
+          _ (when (and effectful-reference?
+                       (not
+                        (p15-s23-checked-core-authority-small-map?
+                         authority-record 36)))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path effectful-diagnostic-subject
+               {:missing-fact :bounded-typed-fourth-authority-record}))
+          _ (when effectful-reference?
+              (try
+                (p15-s23-reference-runtime-bounded-value!
+                 source-path :jvm :checked-core-fourth-authority-record
+                 authority-record
+                 p15-s23-reference-runtime-max-contract-nodes
+                 p15-s23-reference-runtime-max-contract-depth)
+                (catch Exception _
+                  (p15-s23-closed-core-fail!
+                   "C8-CAPABILITY" source-path effectful-diagnostic-subject
+                   {:missing-fact
+                    :bounded-typed-fourth-authority-record}))))
+          runtime-rule
+          (when effectful-reference?
+            (c-backend-stage2-runtime-source-rule!
+             source-path requested-target))
+          _ (when (and effectful-reference?
+                       (not
+                        (p15-s23-reference-runtime-rule-authentic?
+                         runtime-rule)))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path effectful-diagnostic-subject
+               {:missing-fact :authenticated-pinned-reference-runtime-policy}))
+          authority-policy
+          (when effectful-reference?
+            (get (:runtime-contract-definitions runtime-rule)
+                 'p15-s23-checked-core-program-authority-policy))
+          _ (when (and effectful-reference?
+                       (not= p15-s23-checked-core-expected-program-authority-policy
+                             authority-policy))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path effectful-diagnostic-subject
+               {:missing-fact :authenticated-program-authority-policy}))
+          expected-authority-record
+          (when effectful-reference?
+            (p15-s23-checked-core-authority-record
+             source-content-hash plan authoritative-module
+             derived-effect-requirements runtime-rule authority-policy))
+          _ (when (and effectful-reference?
+                       (not
+                        (p15-s23-checked-core-authority-record-valid?
+                         authority-record)))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path effectful-diagnostic-subject
+               {:missing-fact :integral-typed-fourth-authority-record}))
+          _ (when (and effectful-reference?
+                       (not= expected-authority-record authority-record))
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path effectful-diagnostic-subject
+               {:missing-fact
+                :independently-reissued-typed-fourth-authority-record
+                :expected-authority-record-id
+                (:authority-record-id expected-authority-record)
+                :observed-authority-record-id
+                (:authority-record-id authority-record)}))
+          authority-evidence
+          (when effectful-reference?
+            (p15-s23-checked-core-authority-evidence authority-record))
+          ownership-normalized-nodes
+          (p15-s23-closed-core-propagate-managed-ownership
+           pre-authority-nodes)
+          nodes
+          (p15-s23-closed-core-rederive-proven-safety
+           source-content-hash
+           (if effectful-reference?
+             (p15-s23-checked-core-bind-runtime-check-authority
+              ownership-normalized-nodes authority-evidence)
+             ownership-normalized-nodes)
+           authority-evidence)
+          core-operation-set
+          (set (map :source-operation (filter :plan-node? nodes)))
+          packet (when-not effectful-reference? @packet-delay)
           packet-observed-operation-set
-          (p15-s23-closed-core-observed-plan-operations (:plan packet))
-          packet-context (p15-s23-closed-runtime-packet-context
-                          source-path source-text requested-target)
-          _ (when-not (p15-s23-closed-runtime-packet-authentic?
-                       packet packet-context)
+          (when packet
+            (p15-s23-closed-core-observed-plan-operations (:plan packet)))
+          packet-context
+          (when packet
+            (p15-s23-closed-runtime-packet-context
+             source-path source-text requested-target))
+          _ (when (and packet
+                       (not
+                        (p15-s23-closed-runtime-packet-authentic?
+                         packet packet-context)))
               (p15-s23-closed-core-fail!
                "C6-VERIFY" source-path packet
                {:missing-fact :authenticated-stage2-packet-context}))
-          _ (when-not (and (= (:plan-id plan)
-                              (get-in packet [:plan :plan-id]))
-                           (= validation
-                              (:closed-plan-validation-record packet))
-                           (= observed-operation-set
-                              packet-observed-operation-set))
+          _ (when (and packet
+                       (not (and (= (:plan-id plan)
+                                    (get-in packet [:plan :plan-id]))
+                                 (= validation
+                                    (:closed-plan-validation-record packet))
+                                 (= observed-operation-set
+                                    packet-observed-operation-set))))
               (p15-s23-closed-core-fail!
                "C6-VERIFY" source-path packet
                {:missing-fact :pre-execution-plan-packet-identity
                 :preflight-operation-set observed-operation-set
                 :packet-operation-set packet-observed-operation-set}))
-          facts
+          pre-execution-facts
           (p15-s23-closed-core-fact-tables
-           nodes (get-in plan [:module :module]) (:plan-id plan))
+           nodes (get-in plan [:module :module]) (:plan-id plan)
+           (if effectful-reference? :effectful-reference :pure)
+           authority-evidence)
           dependency-order
           (p15-s23-closed-core-dependency-order-graph nodes)
           _ (when-not
@@ -111958,7 +114527,44 @@
           (p15-s23-closed-core-c2-semantic-input fresh-front-end)
           c3-semantic-input
           (p15-s23-closed-core-c3-semantic-input fresh-front-end)
+          adapter-output
+          (when (and effectful-reference?
+                     (= :authoritative-artifact-construction
+                        construction-mode))
+            (p15-s23-reference-runtime-adapter-invoke
+             runtime-rule
+             p15-s23-stage2-runtime-artifact-closed-plan-function
+             [plan]
+             (:adapter-authority authority-record)))
+          reference-execution-evidence
+          (when effectful-reference?
+            (case construction-mode
+              :authoritative-artifact-construction
+              (p15-s23-checked-core-reference-execution-evidence
+               authority-evidence adapter-output)
+
+              :static-verification-rebuild
+              static-execution-evidence
+
+              (p15-s23-closed-core-fail!
+               "C8-CAPABILITY" source-path product
+               {:missing-fact :supported-checked-core-construction-mode})))
+          _ (when (and effectful-reference?
+                       (not
+                        (p15-s23-checked-core-reference-execution-evidence-valid?
+                         reference-execution-evidence
+                         authority-evidence)))
+              (p15-s23-closed-core-fail!
+               "C10-CHECK" source-path product
+               {:missing-fact
+                :authenticated-reference-execution-evidence}))
+          facts
+          (if effectful-reference?
+            (p15-s23-checked-core-bind-execution-audit-to-facts
+             pre-execution-facts nodes reference-execution-evidence)
+            pre-execution-facts)
           source-core-input
+          (cond->
           {:kind :gravity/p15-s23-authenticated-closed-plan-input
            :plan-id (:plan-id plan)
            :source-content-hash source-content-hash
@@ -111970,11 +114576,9 @@
            :declared-capabilities declared-capabilities
            :declared-exports declared-exports
            :entrypoint-visibility entrypoint-visibility
-           :pure-admission-record pure-admission
-           :operation-set observed-operation-set
-           :effectful-runtime-branches-unreachable? true
-           :packet-role :seed-comparison-oracle
-           :runtime-module-c8-conformance :not-claimed
+           :operation-set (if effectful-reference?
+                            core-operation-set
+                            observed-operation-set)
            :plan-node-count (:node-count validation)
            :c2-semantic-product-hash
            (p15-s23-closed-core-digest c2-semantic-input)
@@ -111985,8 +114589,23 @@
                           :top-level-form-ids]))
            :c3-semantic-syntax-hash
            (p15-s23-closed-core-digest c3-semantic-input)}
+            (not effectful-reference?)
+            (assoc :pure-admission-record pure-admission
+                   :effectful-runtime-branches-unreachable? true
+                   :packet-role :seed-comparison-oracle
+                   :runtime-module-c8-conformance :not-claimed)
+            effectful-reference?
+            (assoc :mode :effectful-reference
+                   :authority-evidence authority-evidence
+                   :effectful-runtime-branches-unreachable? false
+                   :packet-role :authenticated-reference-interpreter
+                   :runtime-module-c8-conformance
+                   :authenticated-and-consumed))
           authenticated-input
-          {:packet-kind (:kind packet)
+          (cond->
+          {:packet-kind (if packet
+                          (:kind packet)
+                          :compile-only-authenticated-reference)
            :plan-id (:plan-id plan)
            :source-content-hash source-content-hash
            :module (get-in plan [:module :module])
@@ -111994,13 +114613,9 @@
            :declared-safety (get-in plan [:module :safety])
            :declared-exports declared-exports
            :entrypoint-visibility entrypoint-visibility
-           :pure-admission-id (:admission-id pure-admission)
-           :pre-execution-pure-admitted?
-           (= :accepted-pure-only (:decision pure-admission))
-           :operation-set observed-operation-set
-           :effectful-runtime-branches-unreachable? true
-           :packet-role :seed-comparison-oracle
-           :runtime-module-c8-conformance :not-claimed
+           :operation-set (if effectful-reference?
+                            core-operation-set
+                            observed-operation-set)
            :c2-semantic-product-hash
            (p15-s23-closed-core-digest c2-semantic-input)
            :c2-semantic-incremental-hash
@@ -112010,12 +114625,35 @@
                           :top-level-form-ids]))
            :c3-semantic-syntax-hash
            (p15-s23-closed-core-digest c3-semantic-input)
-           :compiler-artifact-hash
-           (get-in packet [:stage2-compiler-artifact-record :artifact-hash])
            :runtime-artifact-hash
-           (get-in packet [:stage2-runtime-rule :runtime-artifact-hash])
+           (if packet
+             (get-in packet [:stage2-runtime-rule :runtime-artifact-hash])
+             (:runtime-artifact-hash runtime-rule))
            :closed-plan-validation-node-count (:node-count validation)
-           :packet-context-bound? true}
+           :packet-context-bound? (boolean packet)}
+            (not effectful-reference?)
+            (assoc :pure-admission-id (:admission-id pure-admission)
+                   :pre-execution-pure-admitted?
+                   (= :accepted-pure-only (:decision pure-admission))
+                   :effectful-runtime-branches-unreachable? true
+                   :packet-role :seed-comparison-oracle
+                   :runtime-module-c8-conformance :not-claimed
+                   :compiler-artifact-hash
+                   (get-in packet
+                           [:stage2-compiler-artifact-record :artifact-hash]))
+            effectful-reference?
+            (assoc :authority-evidence-id (:evidence-id authority-evidence)
+                   :authority-record-id
+                   (:authority-record-id authority-evidence)
+                   :reference-execution-evidence
+                   reference-execution-evidence
+                   :effectful-runtime-branches-unreachable? false
+                   :packet-role :authenticated-reference-interpreter
+                   :runtime-module-c8-conformance
+                   :authenticated-and-consumed
+                   :plan-emitter-source-rule-hash
+                   (:source-rule-hash preflight-stage2-rule)
+                   :runtime-policy-bound? true))
           mapping-id
           (p15-s23-closed-core-digest
            {:source-content-hash source-content-hash
@@ -112046,8 +114684,15 @@
             :provenance-binding-id provenance-binding-id
             :actual-path-binding-id actual-path-binding-id
             :instruction-origin-sidecar instruction-origin-sidecar
-            :status :complete-for-pure-closed-slice
-            :scope (p15-s23-closed-core-scope-contract)
+            :status
+            (if effectful-reference?
+              :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+              :complete-for-pure-closed-slice)
+            :scope
+            (if effectful-reference?
+              (p15-s23-closed-core-scope-contract
+               :effectful-reference derived-effect-requirements)
+              (p15-s23-closed-core-scope-contract))
             :source-content-hash source-content-hash
             :source-core-input source-core-input
             :entrypoint entrypoint
@@ -112056,14 +114701,19 @@
             :target-request-metadata
             {:requested-target requested-target
              :identity-bearing? false
-             :packet-target-eligibility (:target-eligibility packet)}
+             :packet-target-eligibility
+             (if packet
+               (:target-eligibility packet)
+               :jvm-reference-interpreter-only)}
             :core-nodes nodes
             :root-node-ids [(:node-id function-node)]
             :dependency-order-graph dependency-order
             :lexical-binding-records (:binding-records product)
             :source-origin-table (:origin-table product)
             :origin-closure (:origin-closure product)
-            :pass-history (p15-s23-closed-core-pass-history)
+            :pass-history
+            (p15-s23-closed-core-pass-history-for-mode
+             (if effectful-reference? :effectful-reference :pure))
             :authenticated-input authenticated-input
             :bounds {:maximum-plan-nodes
                      p15-s23-closed-core-max-plan-nodes
@@ -112086,11 +114736,15 @@
             {:actual-paths
              {:source source-path
               :stage2-expression-lowering-source
-              (get-in packet [:provenance :actual-paths
-                              :stage2-expression-lowering-source])
+              (if packet
+                (get-in packet [:provenance :actual-paths
+                                :stage2-expression-lowering-source])
+                (:source-path preflight-stage2-rule))
               :stage2-runtime-artifact-source
-              (get-in packet [:provenance :actual-paths
-                              :stage2-runtime-artifact-source])}
+              (if packet
+                (get-in packet [:provenance :actual-paths
+                                :stage2-runtime-artifact-source])
+                (:runtime-artifact-source-path runtime-rule))}
              :requested-target requested-target
              :c2-source-unit-id (get-in c2-artifact
                                         [:source-unit-record :source-id])
@@ -112112,7 +114766,10 @@
           (p15-s23-closed-core-digest
            (p15-s23-closed-core-semantic-input artifact-base))
           artifact (assoc artifact-base :artifact-id artifact-id)]
-      (p15-s23-closed-core-validate-structure! source-path artifact)
+      (p15-s23-closed-core-validate-structure!
+       source-path artifact
+       (if effectful-reference? :effectful-reference :pure)
+       authority-evidence)
       artifact)
     (catch StackOverflowError error
       (p15-s23-closed-core-fail!
@@ -112125,16 +114782,20 @@
     (catch Exception error
       (p15-s23-closed-core-fail!
        "C6-VERIFY" source-path {:missing-fact :contained-host-failure}
-       {:contained-host-error (.getName (class error))
-        :cause-message (.getMessage error)}))))
+       {:contained-host-error
+        (str "sha256:" (sha256-hex (.getName (class error))))
+        :cause-message-hash
+        (str "sha256:" (sha256-hex (or (.getMessage error) "")))}))))]
 
 (defn p15-s23-stage2-closed-checked-core-source-artifact
   ([source-path source-text requested-target]
-   (p15-s23-stage2-closed-checked-core-source-artifact*
-    source-path source-text requested-target nil))
+   (p15-s23-stage2-closed-checked-core-source-artifact-internal
+    source-path source-text requested-target nil
+    :authoritative-artifact-construction nil nil))
   ([source-path source-text requested-target authority-record]
-   (p15-s23-stage2-closed-checked-core-source-artifact*
-    source-path source-text requested-target authority-record)))
+   (p15-s23-stage2-closed-checked-core-source-artifact-internal
+    source-path source-text requested-target authority-record
+    :authoritative-artifact-construction nil nil)))
 
 (defn p15-s23-stage2-closed-checked-core-context
   ([source-path source-text requested-target]
@@ -112146,45 +114807,1346 @@
    (p15-s23-closed-core-source-request-bounds!
     source-path source-text requested-target)
    (if (some? authority-record)
-     ;; Route through the same pre-packet pipeline so C6/C7/C8 precedence is
-     ;; identical to artifact construction.  This call cannot return for a
-     ;; nonnil fourth argument and never inspects or stores that value.
-     (p15-s23-stage2-closed-checked-core-source-artifact*
-      source-path source-text requested-target authority-record)
+     (do
+       ;; A fourth value is out of band for a genuinely pure source unit.  Do
+       ;; not inspect or bound that value before the pure admission boundary;
+       ;; ask the same authoritative constructor to emit the canonical C8
+       ;; rejection.  Nonempty declarations continue into the typed effectful
+       ;; authority path below, where the value is bounded before use.
+       (let [early-module-products
+             (p15-s23-closed-core-early-module-products
+              source-path source-text requested-target)
+             module-attempt (:module-attempt early-module-products)
+             module (:module module-attempt)]
+         (when (and (= :valid (:status module-attempt))
+                    (empty? (:effects module))
+                    (empty? (:capabilities module)))
+           (p15-s23-stage2-closed-checked-core-source-artifact
+            source-path source-text requested-target authority-record)
+           (p15-s23-closed-core-fail!
+            "C8-CAPABILITY" source-path {}
+            {:missing-fact
+             :pure-fourth-authority-rejection-must-not-return})))
+       (when-not (p15-s23-checked-core-authority-small-map?
+                  authority-record 36)
+         (p15-s23-closed-core-fail!
+          "C8-CAPABILITY" source-path {:requested-target requested-target}
+          {:missing-fact :bounded-typed-fourth-authority-context}))
+       (try
+         (p15-s23-reference-runtime-bounded-value!
+          source-path :jvm :checked-core-context-authority
+          authority-record p15-s23-reference-runtime-max-contract-nodes
+          p15-s23-reference-runtime-max-contract-depth)
+         (catch Exception _
+           (p15-s23-closed-core-fail!
+            "C8-CAPABILITY" source-path {:requested-target requested-target}
+            {:missing-fact :bounded-typed-fourth-authority-context})))
+       (let [expected
+             (p15-s23-stage2-closed-checked-core-authority-binding
+              source-path source-text requested-target
+              p15-s23-checked-core-reference-policy-selector)]
+         (when-not (= expected authority-record)
+           (p15-s23-closed-core-fail!
+            "C8-CAPABILITY" source-path {:requested-target requested-target}
+            {:missing-fact :independently-reissued-authority-context
+             :expected-authority-record-id (:authority-record-id expected)
+             :observed-authority-record-id
+             (:authority-record-id authority-record)}))
+         {:source-path source-path
+          :source-text source-text
+          :source-content-hash (str "sha256:" (sha256-hex source-text))
+          :requested-target requested-target
+          :authority-record authority-record}))
      (p15-s23-closed-runtime-packet-context
       source-path source-text requested-target))))
 
+(letfn
+ [(p15-s23-stage2-closed-checked-core-rebuild-internal
+   [context execution-evidence]
+   (p15-s23-checked-core-bounded-context! context)
+   (let [supported-context?
+         (and (map? context)
+              (contains?
+               p15-s23-reference-runtime-supported-collection-class-names
+               (some-> context class .getName))
+              (<= (count context) 5))]
+     (when-not supported-context?
+       (p15-s23-closed-core-fail!
+        "C6-CORE-SHAPE" "<closed-core-context>" {}
+        {:missing-fact :bounded-closed-core-source-context}))
+     (try
+       (p15-s23-reference-runtime-bounded-value!
+        "p15-s23-closed-core-context" :jvm :checked-core-context
+        context p15-s23-reference-runtime-max-contract-nodes
+        p15-s23-reference-runtime-max-contract-depth)
+       (catch Exception _
+         (p15-s23-closed-core-fail!
+          "C6-CORE-SHAPE" "<closed-core-context>" {}
+          {:missing-fact :bounded-closed-core-source-context})))
+     (p15-s23-closed-core-source-request-bounds!
+      (:source-path context) (:source-text context)
+      (:requested-target context))
+     (let [pure-keys
+           #{:source-path :source-text :source-content-hash
+             :requested-target}
+           effectful-keys (conj pure-keys :authority-record)
+           context-keys (set (keys context))
+           effectful? (= effectful-keys context-keys)]
+       (when-not (and (contains? #{pure-keys effectful-keys} context-keys)
+                      (string? (:source-path context))
+                      (string? (:source-text context))
+                      (keyword? (:requested-target context))
+                      (= (:source-content-hash context)
+                         (str "sha256:"
+                              (sha256-hex (:source-text context))))
+                      (if effectful?
+                        (and
+                         (p15-s23-checked-core-authority-record-valid?
+                          (:authority-record context))
+                         (map? execution-evidence))
+                        (nil? execution-evidence)))
+         (p15-s23-closed-core-fail!
+          (if effectful? "C8-CAPABILITY" "C6-CORE-SHAPE")
+          (:source-path context) context
+          {:missing-fact
+           (if effectful?
+             :trusted-effectful-closed-core-context-and-execution-evidence
+             :trusted-pure-closed-core-source-context)}))
+       (if effectful?
+         (p15-s23-stage2-closed-checked-core-source-artifact-internal
+          (:source-path context) (:source-text context)
+          (:requested-target context) (:authority-record context)
+          :static-verification-rebuild execution-evidence
+          static-rebuild-token)
+         (p15-s23-stage2-closed-checked-core-source-artifact-internal
+          (:source-path context) (:source-text context)
+          (:requested-target context) nil
+          :authoritative-artifact-construction nil nil)))))]
+
 (defn p15-s23-stage2-closed-checked-core-rebuild
   [context]
-  (when (map? context)
-    (p15-s23-closed-core-source-request-bounds!
-     (:source-path context) (:source-text context)
-     (:requested-target context)))
-  (when-not (and (map? context)
-                 (= #{:source-path :source-text :source-content-hash
-                      :requested-target}
-                    (set (keys context)))
-                 (string? (:source-path context))
-                 (string? (:source-text context))
-                 (keyword? (:requested-target context))
-                 (= (:source-content-hash context)
-                    (str "sha256:" (sha256-hex (:source-text context)))))
+  (p15-s23-checked-core-bounded-context! context)
+  (when (and (map? context) (contains? context :authority-record))
     (p15-s23-closed-core-fail!
-     "C6-CORE-SHAPE" (or (:source-path context) "<closed-core-context>")
-     context {:missing-fact :trusted-closed-core-source-context}))
-  (p15-s23-stage2-closed-checked-core-source-artifact*
-   (:source-path context) (:source-text context) (:requested-target context)
-   nil))
+     "C8-CAPABILITY" (or (:source-path context) "<closed-core-context>")
+     context
+     {:missing-fact
+      :effectful-static-rebuild-is-private-to-authenticating-verifier}))
+  (p15-s23-stage2-closed-checked-core-rebuild-internal context nil))
+
+(defn p15-s23-stage2-closed-checked-core-context-mode
+  [context]
+  (try
+    (when-not (and (map? context)
+                   (contains?
+                    p15-s23-reference-runtime-supported-collection-class-names
+                    (some-> context class .getName))
+                   (<= (count context) 5))
+      (throw (ex-info "unsupported context" {})))
+    (p15-s23-reference-runtime-bounded-value!
+     "p15-s23-closed-core-context" :jvm :checked-core-context-mode
+     context p15-s23-reference-runtime-max-contract-nodes
+     p15-s23-reference-runtime-max-contract-depth)
+    (let [pure-keys #{:source-path :source-text :source-content-hash
+                      :requested-target}
+          effectful-keys (conj pure-keys :authority-record)
+          keys (set (keys context))]
+      (cond
+        (= pure-keys keys) :pure
+        (= effectful-keys keys) :effectful-reference
+        :else :invalid))
+    (catch StackOverflowError _ :invalid)
+    (catch Exception _ :invalid)))
+
+(def p15-s23-checked-core-verification-replay-authority-keys
+  #{:kind :schema-version :policy-id :policy-hash :audit-policy-id
+    :audit-policy-hash :binding :verifier-principal :runtime-principal
+    :handler-principal :invocation-contract :provider-selection-records
+    :grant-records :required-effects :required-capabilities :phase :lifetime
+    :reference-invocation :package :deployment :deny-by-default?
+    :host-service-boundary :authoritative-invocation?
+    :excluded-from-authoritative-invocation-count?
+    :program-authority-consumed? :program-grants-consumed?
+    :live-external-io? :delegation :authority-widening?
+    :authority-record-id})
+
+(defn p15-s23-checked-core-verification-replay-instance-record
+  [kind role binding policy audit-policy attributes]
+  (let [provider-roles
+        #{:verifier-managed-allocation :verifier-transcript-fixture
+          :managed-allocation :transcript-capture}
+        grant-roles (conj provider-roles :fixture)
+        reserved-keys
+        #{:kind :role :phase :lifetime :policy-id :policy-hash
+          :audit-policy-id :audit-policy-hash :profile :target
+          :runtime-family :service-id :delegated-handle-id :package
+          :deployment :source-declaration-is-grant? :live-external-io?
+          :delegation :authority-widening? :binding
+          :provider-selection-record-id :grant-record-id}]
+  (when-not
+   (and (contains? #{:provider-selection :grant} kind)
+        (contains? (if (= :provider-selection kind)
+                     provider-roles grant-roles)
+                   role)
+        (map? attributes)
+        (empty? (set/intersection reserved-keys (set (keys attributes)))))
+    (p15-s23-closed-core-fail!
+     "C8-CAPABILITY" "<verification-instance>" {}
+     {:missing-fact
+      :exact-verification-provider-grant-instance-role-and-fields})))
+  (doseq [[definition value]
+          [[:verification-instance-binding binding]
+           [:verification-instance-policy policy]
+           [:verification-instance-audit-policy audit-policy]
+           [:verification-instance-attributes attributes]]]
+    (p15-s23-checked-core-bounded-ingress!
+     "C8-CAPABILITY" definition value
+     p15-s23-reference-runtime-max-contract-nodes
+     p15-s23-reference-runtime-max-contract-depth))
+  (let [id-key (if (= :provider-selection kind)
+                 :provider-selection-record-id
+                 :grant-record-id)
+        record
+        (merge
+         {:kind
+          (if (= :provider-selection kind)
+            :gravity/p15-s23-verification-provider-selection-record
+            :gravity/p15-s23-verification-grant-record)
+          :role role
+          :phase :verification
+          :lifetime :single-verification-replay
+          :policy-id (:policy-id policy)
+          :policy-hash (p15-s23-reference-runtime-hash policy)
+          :audit-policy-id (:policy-id audit-policy)
+          :audit-policy-hash
+          (p15-s23-reference-runtime-hash audit-policy)
+          :profile :hosted
+          :target :jvm
+          :runtime-family :managed
+          :service-id
+          :gravity.reference/checked-core-verification-runtime-service
+          :delegated-handle-id
+          :gravity.reference/checked-core-verification-runtime-handle
+          :package :gravity/bootstrap
+          :deployment :verification-harness-only
+          :source-declaration-is-grant? false
+          :live-external-io? false
+          :delegation :none
+          :authority-widening? false
+          :binding binding}
+         attributes)]
+    (assoc record id-key
+           (p15-s23-reference-runtime-hash record))))
+
+(defn p15-s23-checked-core-verification-replay-authority-record
+  [artifact context plan validation runtime-rule policy audit-policy]
+  (p15-s23-checked-core-bounded-context! context)
+  (doseq [[definition value maximum-nodes maximum-depth]
+          [[:verification-authority-artifact artifact
+            p15-s23-reference-runtime-max-packet-nodes
+            p15-s23-reference-runtime-max-closed-plan-carrier-depth]
+           [:verification-authority-plan plan
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-closed-plan-carrier-depth]
+           [:verification-authority-validation validation
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-contract-depth]
+           [:verification-authority-runtime-rule runtime-rule
+            p15-s23-reference-runtime-max-rule-nodes
+            p15-s23-reference-runtime-max-closed-plan-carrier-depth]
+           [:verification-authority-policy policy
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-contract-depth]
+           [:verification-authority-audit-policy audit-policy
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-contract-depth]]]
+    (p15-s23-checked-core-bounded-ingress!
+     "C8-CAPABILITY" definition value maximum-nodes maximum-depth))
+  (let [authority-record (:authority-record context)
+        authority-evidence
+        (p15-s23-checked-core-authority-evidence authority-record)
+        structural-operation-set
+        (:structural-operation-set authority-evidence)
+        concrete-core-operation-set
+        (get-in artifact [:source-core-input :operation-set])
+        writes-stdout? (contains? structural-operation-set :println)
+        policy-hash (p15-s23-reference-runtime-hash policy)
+        audit-policy-hash (p15-s23-reference-runtime-hash audit-policy)
+        function p15-s23-stage2-runtime-artifact-closed-plan-function
+        function-hash
+        (get p15-s23-reference-runtime-expected-function-hashes function)
+        binding
+        {:checked-core-artifact-id (:artifact-id artifact)
+         :mapping-id (:mapping-id artifact)
+         :provenance-binding-id (:provenance-binding-id artifact)
+         :source-content-hash (:source-content-hash artifact)
+         :plan-id (:plan-id plan)
+         :module (:module authority-evidence)
+         :runtime-source-content-hash
+         (:runtime-artifact-source-content-hash runtime-rule)
+         :runtime-artifact-hash (:runtime-artifact-hash runtime-rule)
+         :runtime-contract-definition-hash
+         (:runtime-contract-definition-hash runtime-rule)
+         :runtime-derived-facts-hash
+         (:runtime-contract-derived-facts-hash runtime-rule)
+         :runtime-function function
+         :runtime-function-hash function-hash
+         :verification-policy-id (:policy-id policy)
+         :verification-policy-hash policy-hash
+         :verification-audit-policy-hash audit-policy-hash
+         :structural-operation-set structural-operation-set
+         :concrete-core-operation-set concrete-core-operation-set
+         :reissued-program-authority-record-id
+         (:authority-record-id authority-record)
+         :reissued-program-authority-evidence-id
+         (:evidence-id authority-evidence)}
+        instance
+        (fn [kind role attributes]
+          (p15-s23-checked-core-verification-replay-instance-record
+           kind role binding policy audit-policy attributes))
+        verifier-allocation-provider
+        (instance
+         :provider-selection :verifier-managed-allocation
+         {:provider-id :gravity.reference/jvm-managed-allocator
+          :principal :gravity.bootstrap/checked-core-verifier
+          :callee-principal 'gravity.bootstrap.p15-s23.runtime
+          :effect :memory/allocate
+          :capability :memory/allocator
+          :scope :pinned-checked-core-artifact-replay
+          :service-handle
+          :gravity.reference/checked-core-verification-runtime-handle
+          :classification :typed-r1-delegated-adapter})
+        verifier-fixture-provider
+        (when writes-stdout?
+          (instance
+           :provider-selection :verifier-transcript-fixture
+           {:provider-id :gravity.reference/transcript-capture
+            :principal :gravity.bootstrap/checked-core-verifier
+            :callee-principal 'gravity.bootstrap.p15-s23.runtime
+            :handler-principal
+            :gravity.bootstrap/verification-transcript-harness
+            :effect :io/write
+            :capability :test/fixture
+            :scope :verification-transcript
+            :service-handle
+            :gravity.reference/checked-core-verification-runtime-handle
+            :classification :typed-r1-delegated-adapter}))
+        allocation-provider
+        (instance
+         :provider-selection :managed-allocation
+         {:provider-id :gravity.reference/jvm-managed-allocator
+          :principal 'gravity.bootstrap.p15-s23.runtime
+          :effect :memory/allocate
+          :capability :memory/allocator
+          :scope :pinned-verification-runtime-plan
+          :classification :typed-r1-delegated-adapter})
+        capture-provider
+        (when writes-stdout?
+          (instance
+           :provider-selection :transcript-capture
+           {:provider-id :gravity.reference/transcript-capture
+            :principal 'gravity.bootstrap.p15-s23.runtime
+            :handler-principal
+            :gravity.bootstrap/verification-transcript-harness
+            :effect :io/write
+            :capability :io/stdout
+            :handler-capability :test/fixture
+            :scope :verification-transcript
+            :classification :typed-r1-delegated-adapter}))
+        verifier-allocation-grant
+        (instance
+         :grant :verifier-managed-allocation
+         {:grant-template-id
+          :gravity.reference/verification-grant-verifier-managed-allocation
+          :principal :gravity.bootstrap/checked-core-verifier
+          :callee-principal 'gravity.bootstrap.p15-s23.runtime
+          :provider-id :gravity.reference/jvm-managed-allocator
+          :effect :memory/allocate
+          :capability :memory/allocator
+          :scope :pinned-checked-core-artifact-replay
+          :authority-transfer? false})
+        verifier-fixture-grant
+        (when writes-stdout?
+          (instance
+           :grant :verifier-transcript-fixture
+           {:grant-template-id
+            :gravity.reference/verification-grant-verifier-test-fixture
+            :principal :gravity.bootstrap/checked-core-verifier
+            :callee-principal 'gravity.bootstrap.p15-s23.runtime
+            :handler-principal
+            :gravity.bootstrap/verification-transcript-harness
+            :provider-id :gravity.reference/transcript-capture
+            :effect :io/write
+            :capability :test/fixture
+            :scope :verification-transcript
+            :authority-transfer? false}))
+        allocation-grant
+        (instance
+         :grant :managed-allocation
+         {:grant-template-id
+          :gravity.reference/verification-grant-managed-allocation
+          :principal 'gravity.bootstrap.p15-s23.runtime
+          :provider-id :gravity.reference/jvm-managed-allocator
+          :effect :memory/allocate
+          :capability :memory/allocator
+          :scope :pinned-verification-runtime-plan})
+        transcript-grant
+        (when writes-stdout?
+          (instance
+           :grant :transcript-capture
+           {:grant-template-id
+            :gravity.reference/verification-grant-transcript-capture
+            :principal 'gravity.bootstrap.p15-s23.runtime
+            :provider-id :gravity.reference/transcript-capture
+            :effect :io/write
+            :capability :io/stdout
+            :scope :verification-transcript}))
+        fixture-grant
+        (when writes-stdout?
+          (instance
+           :grant :fixture
+           {:grant-template-id
+            :gravity.reference/verification-grant-test-fixture
+            :principal :gravity.bootstrap/verification-transcript-harness
+            :source-principal 'gravity.bootstrap.p15-s23.runtime
+            :provider-id :gravity.reference/transcript-capture
+            :effect :io/write
+            :capability :test/fixture
+            :scope :verification-transcript}))
+        provider-records
+        (cond-> [verifier-allocation-provider allocation-provider]
+          writes-stdout?
+          (conj verifier-fixture-provider capture-provider))
+        grant-records
+        (cond-> [verifier-allocation-grant allocation-grant]
+          writes-stdout?
+          (conj verifier-fixture-grant transcript-grant fixture-grant))
+        base
+        {:kind :gravity/p15-s23-checked-core-verification-replay-authority
+         :schema-version 1
+         :policy-id (:policy-id policy)
+         :policy-hash policy-hash
+         :audit-policy-id (:policy-id audit-policy)
+         :audit-policy-hash audit-policy-hash
+         :binding binding
+         :verifier-principal (:verifier-principal policy)
+         :runtime-principal (:runtime-principal policy)
+         :handler-principal (:handler-principal policy)
+         :invocation-contract (:invocation-contract policy)
+         :provider-selection-records provider-records
+         :grant-records grant-records
+         :required-effects
+         (cond-> #{:memory/allocate}
+           writes-stdout? (conj :io/write))
+         :required-capabilities
+         (cond-> #{:memory/allocator}
+           writes-stdout? (conj :io/stdout :test/fixture))
+         :phase :verification
+         :lifetime :single-verification-replay
+         :reference-invocation :single-verification-replay
+         :package :gravity/bootstrap
+         :deployment :verification-harness-only
+         :deny-by-default? true
+         :host-service-boundary :typed-r1-delegated-adapters
+         :authoritative-invocation? false
+         :excluded-from-authoritative-invocation-count? true
+         :program-authority-consumed? false
+         :program-grants-consumed? false
+         :live-external-io? false
+         :delegation :none
+         :authority-widening? false}]
+    (when-not (= (:observed-operation-set validation)
+                 (p15-s23-closed-core-observed-plan-operations plan))
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" (:source-path context) artifact
+       {:missing-fact
+        :verification-replay-authenticated-structural-operation-set}))
+    (assoc base :authority-record-id
+           (p15-s23-reference-runtime-hash base))))
+
+(def p15-s23-checked-core-verification-replay-binding-keys
+  #{:checked-core-artifact-id :mapping-id :provenance-binding-id
+    :source-content-hash :plan-id :module :runtime-source-content-hash
+    :runtime-artifact-hash :runtime-contract-definition-hash
+    :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+    :verification-policy-id :verification-policy-hash
+    :verification-audit-policy-hash :structural-operation-set
+    :concrete-core-operation-set :reissued-program-authority-record-id
+    :reissued-program-authority-evidence-id})
+
+(defn p15-s23-checked-core-verification-replay-authority-structurally-valid?
+  [authority]
+  (try
+    (and
+     (map? authority)
+     (contains?
+      p15-s23-reference-runtime-supported-collection-class-names
+      (some-> authority class .getName))
+     (<= (count authority) 32)
+     (do
+       (p15-s23-reference-runtime-bounded-value!
+        "checked-core-verification-replay-authority" :jvm
+        :verification-replay-authority authority
+        p15-s23-reference-runtime-max-contract-nodes
+        p15-s23-reference-runtime-max-contract-depth)
+       true)
+     (= p15-s23-checked-core-verification-replay-authority-keys
+        (set (keys authority)))
+     (= p15-s23-checked-core-verification-replay-policy-id
+        (:policy-id authority))
+     (= (p15-s23-reference-runtime-hash
+         p15-s23-checked-core-expected-verification-replay-policy)
+        (:policy-hash authority))
+     (= p15-s23-checked-core-verification-replay-audit-policy-id
+        (:audit-policy-id authority))
+     (= (p15-s23-reference-runtime-hash
+         p15-s23-checked-core-expected-verification-replay-audit-policy)
+        (:audit-policy-hash authority))
+     (= p15-s23-checked-core-verification-replay-binding-keys
+        (set (keys (:binding authority))))
+     (= p15-s23-stage2-runtime-artifact-expected-source-content-hash
+        (get-in authority [:binding :runtime-source-content-hash]))
+     (= p15-s23-stage2-runtime-artifact-expected-artifact-hash
+        (get-in authority [:binding :runtime-artifact-hash]))
+     (= p15-s23-reference-runtime-expected-contract-definition-hash
+        (get-in authority [:binding :runtime-contract-definition-hash]))
+     (= p15-s23-reference-runtime-expected-derived-facts-hash
+        (get-in authority [:binding :runtime-derived-facts-hash]))
+     (= p15-s23-stage2-runtime-artifact-closed-plan-function
+        (get-in authority [:binding :runtime-function]))
+     (= (get p15-s23-reference-runtime-expected-function-hashes
+             p15-s23-stage2-runtime-artifact-closed-plan-function)
+        (get-in authority [:binding :runtime-function-hash]))
+     (= p15-s23-checked-core-verification-replay-policy-id
+        (get-in authority [:binding :verification-policy-id]))
+     (set? (get-in authority [:binding :structural-operation-set]))
+     (set/subset? (get-in authority [:binding :structural-operation-set])
+                  #{:str :println})
+     (set? (get-in authority [:binding :concrete-core-operation-set]))
+     (vector? (:provider-selection-records authority))
+     (vector? (:grant-records authority))
+     (= (:authority-record-id authority)
+        (p15-s23-reference-runtime-hash
+         (dissoc authority :authority-record-id)))
+     (every?
+      (fn [record]
+        (= (:provider-selection-record-id record)
+           (p15-s23-reference-runtime-hash
+            (dissoc record :provider-selection-record-id))))
+      (:provider-selection-records authority))
+     (every?
+      (fn [record]
+        (= (:grant-record-id record)
+           (p15-s23-reference-runtime-hash
+            (dissoc record :grant-record-id))))
+      (:grant-records authority)))
+    (catch StackOverflowError _ false)
+    (catch Exception _ false)))
+
+(defn p15-s23-checked-core-verification-replay-provider-preflight!
+  [authority]
+  (let [writes-stdout?
+        (contains? (get-in authority [:binding :structural-operation-set])
+                   :println)
+        expected-providers
+        (cond-> #{:verifier-managed-allocation :managed-allocation}
+          writes-stdout?
+          (conj :verifier-transcript-fixture :transcript-capture))
+        expected-grants
+        (cond-> #{:verifier-managed-allocation :managed-allocation}
+          writes-stdout?
+          (conj :verifier-transcript-fixture
+                :transcript-capture :fixture))]
+    (when-not
+     (and (p15-s23-checked-core-verification-replay-authority-structurally-valid?
+           authority)
+          (= (set (map :role (:provider-selection-records authority)))
+             expected-providers)
+          (= (set (map :role (:grant-records authority)))
+             expected-grants))
+      (throw (ex-info "verification replay provider preflight rejected"
+                      {:missing-fact
+                       :exact-verification-replay-provider-grant-closure}))))
+  :passed)
+
+(defn p15-s23-checked-core-verification-replay-audit-records
+  ([authority capture-invoked?]
+   (p15-s23-checked-core-verification-replay-audit-records
+    authority capture-invoked? :post-call))
+  ([authority capture-invoked? audit-phase]
+  (when-not (and (contains? #{:pre-call :post-call} audit-phase)
+                 (boolean? capture-invoked?))
+    (p15-s23-closed-core-fail!
+     "C8-CAPABILITY" "<verification-replay-audit>" {}
+     {:missing-fact :exact-verification-replay-audit-phase}))
+  (p15-s23-checked-core-bounded-ingress!
+   "C8-CAPABILITY" :verification-replay-audit-authority authority
+   p15-s23-reference-runtime-max-contract-nodes
+   p15-s23-reference-runtime-max-contract-depth)
+  (let [binding (:binding authority)
+        policy-hash (:policy-hash authority)
+        audit-policy-hash (:audit-policy-hash authority)
+        providers (into {} (map (juxt :role identity))
+                        (:provider-selection-records authority))
+        grants (into {} (map (juxt :role identity))
+                     (:grant-records authority))
+        common
+        {:replay-authority-record-id (:authority-record-id authority)
+         :phase :verification
+         :lifetime :single-verification-replay
+         :policy-id (:policy-id authority)
+         :verification-policy-hash policy-hash
+         :audit-policy-id (:audit-policy-id authority)
+         :verification-audit-policy-hash audit-policy-hash
+         :plan-id (:plan-id binding)
+         :source-content-hash (:source-content-hash binding)
+         :checked-core-artifact-id (:checked-core-artifact-id binding)
+         :runtime-artifact-hash (:runtime-artifact-hash binding)
+         :runtime-contract-definition-hash
+         (:runtime-contract-definition-hash binding)
+         :runtime-derived-facts-hash (:runtime-derived-facts-hash binding)
+         :runtime-function (:runtime-function binding)
+         :runtime-function-hash (:runtime-function-hash binding)
+         :profile :hosted
+         :target :jvm
+         :runtime-family :managed
+         :service-id
+         :gravity.reference/checked-core-verification-runtime-service
+         :module (:module binding)
+         :package :gravity/bootstrap
+         :deployment :verification-harness-only
+         :source-span
+         {:source-content-hash (:source-content-hash binding)
+          :mapping-id (:mapping-id binding)}
+         :generated-origin-edge
+         {:mapping-id (:mapping-id binding)
+          :provenance-binding-id (:provenance-binding-id binding)}
+         :delegated-handle-id
+         :gravity.reference/checked-core-verification-runtime-handle
+         :redaction :none
+         :redaction-policy :hash-host-class-and-message
+         :redaction-status :not-required
+         :audit-status :recorded
+         :diagnostic nil
+         :missing-fact :not-applicable
+         :reason :authorized-by-pinned-verification-policy}
+        decision
+        (fn [role action-id reason]
+          (let [provider-role (if (= :fixture role)
+                                :transcript-capture role)
+                provider (get providers provider-role)
+                grant (get grants role)
+                record
+                (merge
+                 common
+                 {:kind :gravity/p15-s23-verification-capability-decision
+                  :action-id action-id
+                  :principal-id (:principal grant)
+                  :effect (:effect grant)
+                  :capability (:capability grant)
+                  :provider-id (:provider-id provider)
+                  :provider-selection-record-id
+                  (:provider-selection-record-id provider)
+                  :grant-id (:grant-template-id grant)
+                  :grant-record-id (:grant-record-id grant)
+                  :scope (:scope grant)
+                  :decision :grant
+                  :result :grant
+                  :reason reason})]
+            (assoc record :decision-id
+                   (p15-s23-reference-runtime-hash record))))
+        action
+        (fn [role action-id started? result-committed? output-committed?]
+          (let [provider-role (if (= :fixture role)
+                                :transcript-capture role)
+                provider (get providers provider-role)
+                grant (get grants role)
+                record
+                (merge
+                 common
+                 {:kind :gravity/p15-s23-verification-action-record
+                  :action-id action-id
+                  :principal-id (:principal grant)
+                  :effect (:effect grant)
+                  :capability (:capability grant)
+                  :provider-id (:provider-id provider)
+                  :provider-selection-record-id
+                  (:provider-selection-record-id provider)
+                  :grant-id (:grant-template-id grant)
+                  :grant-record-id (:grant-record-id grant)
+                  :scope (:scope grant)
+                  :action-started? started?
+                  :action-status (if started? :committed :not-invoked)
+                  :result-committed? result-committed?
+                  :output-committed? output-committed?
+                  :diagnostic nil})]
+            (assoc record :record-id
+                   (p15-s23-reference-runtime-hash record))))
+        writes-stdout?
+        (contains? (:structural-operation-set binding) :println)]
+    {:decision-records
+     (cond->
+      [(decision :verifier-managed-allocation
+                 :gravity.reference/action-verification-runtime-invoke
+                 :explicit-verifier-managed-allocation-grant)
+       (decision :managed-allocation
+                 :gravity.reference/action-verification-managed-allocation
+                 :explicit-verification-runtime-grant)]
+       writes-stdout?
+       (conj
+        (decision :verifier-transcript-fixture
+                  :gravity.reference/action-verification-transcript-mediation
+                  :explicit-verifier-fixture-grant)
+        (decision :transcript-capture
+                  :gravity.reference/action-verification-transcript-authority
+                  :explicit-verification-runtime-grant)
+        (decision :fixture
+                  :gravity.reference/action-verification-transcript-capture
+                  :explicit-verification-handler-grant)))
+     :action-records
+     (if (= :pre-call audit-phase)
+       []
+       (cond->
+        [(action :verifier-managed-allocation
+                 :gravity.reference/action-verification-runtime-invoke
+                 true true false)
+         (action :managed-allocation
+                 :gravity.reference/action-verification-managed-allocation
+                 true true false)]
+         writes-stdout?
+         (conj
+          (action :verifier-transcript-fixture
+                  :gravity.reference/action-verification-transcript-mediation
+                  true true false)
+          (action :transcript-capture
+                  :gravity.reference/action-verification-transcript-authority
+                  capture-invoked? capture-invoked? false)
+          (action :fixture
+                  :gravity.reference/action-verification-transcript-capture
+                  capture-invoked? capture-invoked? capture-invoked?))))})))
+
+(defn p15-s23-checked-core-verification-replay-audit-records-valid?
+  ([authority audit capture-invoked?]
+   (p15-s23-checked-core-verification-replay-audit-records-valid?
+    authority audit capture-invoked? :post-call))
+  ([authority audit capture-invoked? audit-phase]
+  (try
+    (when-not (boolean? capture-invoked?)
+      (throw (ex-info "non-boolean capture state" {})))
+    (p15-s23-checked-core-bounded-ingress!
+     "C8-CAPABILITY" :verification-replay-audit-candidate audit
+     p15-s23-reference-runtime-max-contract-nodes
+     p15-s23-reference-runtime-max-contract-depth)
+    (let [decisions (:decision-records audit)
+          actions (:action-records audit)
+          decision-keys
+          (:decision-record-fields
+           p15-s23-checked-core-expected-verification-replay-audit-policy)
+          action-keys
+          (:action-record-fields
+           p15-s23-checked-core-expected-verification-replay-audit-policy)]
+      (and
+       (map? audit)
+       (= #{:decision-records :action-records} (set (keys audit)))
+       (= audit
+          (p15-s23-checked-core-verification-replay-audit-records
+           authority capture-invoked? audit-phase))
+       (vector? decisions)
+       (vector? actions)
+       (every? #(= decision-keys (set (keys %))) decisions)
+       (every? #(= action-keys (set (keys %))) actions)
+       (every? #(= (:decision-id %)
+                   (p15-s23-reference-runtime-hash
+                    (dissoc % :decision-id)))
+               decisions)
+       (every? #(= (:record-id %)
+                   (p15-s23-reference-runtime-hash
+                    (dissoc % :record-id)))
+               actions)
+       (= (count decisions) (count (set (map :decision-id decisions))))
+       (= (count actions) (count (set (map :record-id actions))))))
+    (catch StackOverflowError _ false)
+    (catch Exception _ false))))
+
+(defn p15-s23-checked-core-verification-replay-gate-fail!
+  [diagnostic source-path authority missing-fact exception started?]
+  (let [safe-source-path
+        (if (p15-s23-checked-core-authority-safe-source-path? source-path)
+          source-path
+          "<verification-replay-gate>")
+        bounded-keyword?
+        (fn [value]
+          (and (keyword? value)
+               (<= (count (or (namespace value) "")) 128)
+               (<= (count (name value)) 128)))
+        allowed-diagnostic?
+        (or (contains? #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+                       diagnostic)
+            (contains? p15-s23-reference-runtime-preserved-diagnostic-ids
+                       diagnostic))
+        _ (when-not (and allowed-diagnostic?
+                         (bounded-keyword? missing-fact)
+                         (boolean? started?))
+            (p15-s23-closed-core-fail!
+             "C8-CAPABILITY" safe-source-path {}
+             {:missing-fact :bounded-verification-gate-failure-input}))
+        _ (p15-s23-checked-core-bounded-ingress!
+           "C8-CAPABILITY" :verification-gate-failure-authority
+           authority p15-s23-reference-runtime-max-contract-nodes
+           p15-s23-reference-runtime-max-contract-depth)
+        cause-message
+        (when exception (.getMessage exception))
+        bounded-cause-message
+        (if (and (string? cause-message)
+                 (= :valid
+                    (:status
+                     (p15-s23-closed-core-bounded-utf8-count
+                      cause-message 4096))))
+          cause-message
+          "unbounded-cause-redacted")
+        redaction
+        (if exception
+          {:cause-class-hash
+           (str "sha256:" (sha256-hex (.getName (class exception))))
+           :cause-message-hash
+           (str "sha256:" (sha256-hex bounded-cause-message))}
+          :none)
+        redaction-status (if exception :applied :not-required)
+        candidate-exception-data
+        (when (instance? clojure.lang.ExceptionInfo exception)
+          (ex-data exception))
+        exception-data
+        (when
+         (and (map? candidate-exception-data)
+              (try
+                (p15-s23-reference-runtime-bounded-value!
+                 "verification-replay-structured-diagnostic" :jvm
+                 :structured-runtime-diagnostic candidate-exception-data 256 16)
+                true
+                (catch StackOverflowError _ false)
+                (catch Exception _ false)))
+          candidate-exception-data)
+        source-span-data (:source-span exception-data)
+        safe-source-span
+        (when (map? source-span-data)
+          (into {}
+                (filter
+                 (fn [[_ value]]
+                   (and (integer? value)
+                        (<= 0 value Integer/MAX_VALUE))))
+                (select-keys source-span-data
+                             [:start :end :line :column])))
+        projection-keyword?
+        (fn [value]
+          (and (keyword? value)
+               (<= (count (or (namespace value) "")) 128)
+               (<= (count (name value)) 128)))
+        safe-details
+        (into {}
+              (filter
+               (fn [[key value]]
+                 (case key
+                   :operator (and (symbol? value)
+                                  (<= (count (str value)) 256))
+                   (:expected-arity :actual-arity)
+                   (and (integer? value)
+                        (<= 0 value Integer/MAX_VALUE))
+                   (:expected-type :actual-type)
+                   (projection-keyword? value)
+                   false)))
+              (select-keys exception-data
+                           [:operator :expected-arity :actual-arity
+                            :expected-type :actual-type]))
+        diagnostic-message (:message exception-data)
+        bounded-diagnostic-message
+        (if (and (string? diagnostic-message)
+                 (= :valid
+                    (:status
+                     (p15-s23-closed-core-bounded-utf8-count
+                      diagnostic-message 4096))))
+          diagnostic-message
+          "unbounded-diagnostic-message-redacted")
+        runtime-diagnostic-projection-candidate
+        (when (and (map? exception-data)
+                   (contains?
+                    p15-s23-reference-runtime-preserved-diagnostic-ids
+                    (:id exception-data)))
+          {:id (:id exception-data)
+           :stage (when (projection-keyword? (:stage exception-data))
+                    (:stage exception-data))
+           :diagnostic-family
+           (when (projection-keyword? (:diagnostic-family exception-data))
+             (:diagnostic-family exception-data))
+           :source-span safe-source-span
+           :remediation
+           (when (projection-keyword? (:remediation exception-data))
+             (:remediation exception-data))
+           :missing-fact
+           (when (projection-keyword? (:missing-fact exception-data))
+             (:missing-fact exception-data))
+           :details safe-details
+           :message-hash
+           (str "sha256:"
+                (sha256-hex bounded-diagnostic-message))
+           :artifact-edge
+           {:checked-core-artifact-id
+            (get-in authority [:binding :checked-core-artifact-id])
+            :mapping-id (get-in authority [:binding :mapping-id])
+            :provenance-binding-id
+            (get-in authority [:binding :provenance-binding-id])}})
+        runtime-diagnostic-projection
+        (when (and runtime-diagnostic-projection-candidate
+                   (try
+                     (p15-s23-reference-runtime-bounded-value!
+                      "verification-replay-structured-projection" :jvm
+                      :structured-runtime-diagnostic-projection
+                      runtime-diagnostic-projection-candidate 128 12)
+                     true
+                     (catch StackOverflowError _ false)
+                     (catch Exception _ false)))
+          runtime-diagnostic-projection-candidate)
+        success-audit
+        (p15-s23-checked-core-verification-replay-audit-records
+         authority false)
+        decision-base (dissoc (first (:decision-records success-audit))
+                              :decision-id)
+        decision-record
+        (if started?
+          (first (:decision-records success-audit))
+          (-> decision-base
+              (assoc :decision :deny
+                     :result :deny
+                     :reason missing-fact
+                     :diagnostic diagnostic
+                     :missing-fact missing-fact
+                     :redaction redaction
+                     :redaction-status redaction-status
+                     :audit-status :denied)
+              (#(assoc % :decision-id
+                       (p15-s23-reference-runtime-hash %)))))
+        action-base (dissoc (first (:action-records success-audit))
+                            :record-id)
+        action-record
+        (-> action-base
+            (assoc :action-started? started?
+                   :action-status
+                   (if started? :failed-before-commit
+                       :rejected-before-start)
+                   :result-committed? false
+                   :output-committed? false
+                   :diagnostic diagnostic
+                   :missing-fact missing-fact
+                   :reason missing-fact
+                   :redaction redaction
+                   :redaction-status redaction-status
+                   :audit-status (if started? :failed :denied))
+            (#(assoc % :record-id
+                     (p15-s23-reference-runtime-hash %))))
+        failure-record-base
+        {:diagnostic diagnostic
+         :missing-fact missing-fact
+         :decision-record decision-record
+         :action-record action-record
+         :result-committed? false
+         :output-committed? false
+         :redaction redaction
+         :redaction-policy :hash-host-class-and-message
+         :redaction-status redaction-status
+         :audit-status (if started? :failed :denied)
+         :remediation :restore_pinned_verification_replay_authority
+         :profile :hosted
+         :target :jvm
+         :runtime-family :managed
+         :service-id
+         :gravity.reference/checked-core-verification-runtime-service
+         :effect (:effect decision-record)
+         :capability (:capability decision-record)
+         :provider-id (:provider-id decision-record)
+         :runtime-function (:runtime-function decision-record)
+         :module (:module decision-record)
+         :package (:package decision-record)
+         :delegated-handle-id (:delegated-handle-id decision-record)
+         :host-runtime :jvm
+         :host-symbol (:runtime-function decision-record)
+         :host-package :gravity/bootstrap
+         :gravity-type :gravity/checked-core-reference-runtime-boundary
+         :adapter-id
+         :gravity.reference/checked-core-verification-runtime-service
+         :missing-policy
+         (if (= "R4-EXCEPTION" diagnostic)
+           :host-exception-translation
+           :not-applicable)
+         :runtime-diagnostic-projection runtime-diagnostic-projection}
+        failure-record
+        (assoc failure-record-base :failure-record-id
+               (p15-s23-reference-runtime-hash failure-record-base))]
+    (when-not
+     (and (or (contains?
+               #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+               diagnostic)
+              (and runtime-diagnostic-projection
+                   (= diagnostic (:id runtime-diagnostic-projection))))
+          (= (:failure-record-fields
+              p15-s23-checked-core-expected-verification-replay-audit-policy)
+             (set (keys failure-record)))
+          (= (:decision-record-fields
+              p15-s23-checked-core-expected-verification-replay-audit-policy)
+             (set (keys decision-record)))
+          (= (:action-record-fields
+              p15-s23-checked-core-expected-verification-replay-audit-policy)
+             (set (keys action-record)))
+          (= (:failure-record-id failure-record)
+             (p15-s23-reference-runtime-hash
+              (dissoc failure-record :failure-record-id))))
+      (p15-s23-closed-core-fail!
+       "C10-CHECK" safe-source-path authority
+       {:missing-fact :exact-verification-replay-failure-audit-schema}))
+    (fail!
+     diagnostic
+     "Checked-core verification replay gate rejected execution"
+     (merge
+      {:source-span {:source safe-source-path}
+       :stage :p15-s23-checked-core-verification-replay-gate
+       :diagnostic-family :p15-s23-checked-core-verification-replay}
+      failure-record))))
+
+(defn p15-s23-checked-core-verification-replay-gate-invoke
+  [artifact context plan validation runtime-rule authority]
+  (p15-s23-checked-core-bounded-context! context)
+  (doseq [[definition value maximum-nodes maximum-depth]
+          [[:verification-gate-artifact artifact
+            p15-s23-reference-runtime-max-packet-nodes
+            p15-s23-reference-runtime-max-closed-plan-carrier-depth]
+           [:verification-gate-plan plan
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-closed-plan-carrier-depth]
+           [:verification-gate-validation validation
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-contract-depth]
+           [:verification-gate-runtime-rule runtime-rule
+            p15-s23-reference-runtime-max-rule-nodes
+            p15-s23-reference-runtime-max-closed-plan-carrier-depth]
+           [:verification-gate-authority authority
+            p15-s23-reference-runtime-max-contract-nodes
+            p15-s23-reference-runtime-max-contract-depth]]]
+    (p15-s23-checked-core-bounded-ingress!
+     "C8-CAPABILITY" definition value maximum-nodes maximum-depth))
+  (let [source-path (:source-path context)
+        policy
+        (get (:runtime-contract-definitions runtime-rule)
+             'p15-s23-checked-core-verification-replay-policy)
+        audit-policy
+        (get (:runtime-contract-definitions runtime-rule)
+             'p15-s23-checked-core-verification-replay-audit-policy)
+        expected
+        (p15-s23-checked-core-verification-replay-authority-record
+         artifact context plan validation runtime-rule policy audit-policy)
+        _
+        (when-not
+         (p15-s23-checked-core-verification-replay-authority-structurally-valid?
+          authority)
+          (p15-s23-checked-core-verification-replay-gate-fail!
+           "R11-GRANT" source-path expected
+           :bounded-verification-replay-authority-schema nil false))]
+    (when-not (and (p15-s23-reference-runtime-rule-authentic? runtime-rule)
+                   (= p15-s23-checked-core-expected-verification-replay-policy
+                      policy)
+                   (= p15-s23-checked-core-expected-verification-replay-audit-policy
+                      audit-policy)
+                   (= expected authority))
+      (p15-s23-checked-core-verification-replay-gate-fail!
+       "R11-GRANT" source-path expected
+       :exact-pinned-verification-replay-authority nil false))
+    (try
+      (p15-s23-checked-core-verification-replay-provider-preflight!
+       authority)
+      (catch StackOverflowError error
+        (p15-s23-checked-core-verification-replay-gate-fail!
+         "R1-FAILURE" source-path expected
+         :verification-replay-provider-preflight-host-stack error false))
+      (catch Exception exception
+        (p15-s23-checked-core-verification-replay-gate-fail!
+         "R1-FAILURE" source-path expected
+         :verification-replay-provider-preflight exception false)))
+    (let [pre-call-audit
+          (p15-s23-checked-core-verification-replay-audit-records
+           authority false :pre-call)
+          _ (when-not
+             (p15-s23-checked-core-verification-replay-audit-records-valid?
+              authority pre-call-audit false :pre-call)
+              (p15-s23-checked-core-verification-replay-gate-fail!
+               "R11-GRANT" source-path authority
+               :pre-call-verification-grant-decision-audit nil false))
+          pre-call-decision-records (:decision-records pre-call-audit)
+          result
+          (try
+            (p15-s23-stage2-runtime-artifact-invoke
+             runtime-rule
+             p15-s23-stage2-runtime-artifact-closed-plan-function
+             [plan])
+            (catch clojure.lang.ExceptionInfo exception
+              (if (p15-s23-reference-runtime-structured-diagnostic?
+                   exception
+                   #{(:runtime-artifact-source-path runtime-rule)
+                     (get-in plan [:source :path])})
+                (p15-s23-checked-core-verification-replay-gate-fail!
+                 (:id (ex-data exception)) source-path authority
+                 (or (:missing-fact (ex-data exception))
+                     :structured-verification-runtime-rejection)
+                 exception true)
+                (p15-s23-checked-core-verification-replay-gate-fail!
+                 "R4-EXCEPTION" source-path authority
+                 :untranslated-verification-runtime-exception
+                 exception true)))
+            (catch StackOverflowError error
+              (p15-s23-checked-core-verification-replay-gate-fail!
+               "R1-FAILURE" source-path authority
+               :verification-runtime-host-stack-failure error true))
+            (catch Exception exception
+              (p15-s23-checked-core-verification-replay-gate-fail!
+               "R4-EXCEPTION" source-path authority
+               :untranslated-verification-runtime-exception
+               exception true)))
+          ]
+      (try
+        (let [_ (when-not
+                 (p15-s23-checked-core-reference-result-valid? result plan)
+                  (p15-s23-checked-core-verification-replay-gate-fail!
+                   "R4-EXCEPTION" source-path authority
+                   :exact-checked-core-reference-result-envelope nil true))
+              capture-invoked? (boolean (seq (:stdout result)))
+              audit
+              (p15-s23-checked-core-verification-replay-audit-records
+               authority capture-invoked?)
+              _ (when-not
+                 (p15-s23-checked-core-verification-replay-audit-records-valid?
+                  authority audit capture-invoked?)
+                  (p15-s23-checked-core-verification-replay-gate-fail!
+                   "R11-GRANT" source-path authority
+                   :exact-content-addressed-verification-replay-audit nil true))
+              _ (when-not (= pre-call-decision-records
+                             (:decision-records audit))
+                  (p15-s23-checked-core-verification-replay-gate-fail!
+                   "R11-GRANT" source-path authority
+                   :pre-call-post-call-verification-decision-parity nil true))
+              binding (:binding authority)
+              replay-base
+              {:kind :gravity/p15-s23-checked-core-verification-replay-record
+               :status :passed
+               :binding binding
+               :replay-authority-record-id (:authority-record-id authority)
+               :verification-policy-hash (:policy-hash authority)
+               :verification-audit-policy-hash (:audit-policy-hash authority)
+               :provider-selection-record-ids
+               (mapv :provider-selection-record-id
+                     (:provider-selection-records authority))
+               :grant-record-ids
+               (mapv :grant-record-id (:grant-records authority))
+               :decision-records (:decision-records audit)
+               :pre-call-decision-record-ids
+               (mapv :decision-id pre-call-decision-records)
+               :action-records (:action-records audit)
+               :result-hash
+               (p15-s23-reference-runtime-hash (:entrypoint-result result))
+               :transcript-hash
+               (str "sha256:" (sha256-hex (:stdout result)))
+               :replay-count 1
+               :runtime-evaluation-count 1
+               :authoritative-adapter-invocation-count 0
+               :verification-replay-gate-invocation-count 1
+               :verification-authority-consumed? true
+               :program-authority-consumed? false
+               :program-authorizing? false
+               :authoritative-invocation? false
+               :included-in-authoritative-invocation-count? false
+               :result-producing? true
+               :external-io-delivery :in-memory-reference-transcript
+               :live-external-io? false
+               :deployment-runtime? false
+               :clojure-seed-boundary? true
+               :self-hosted? false}
+              replay-record
+              (assoc replay-base :replay-id
+                     (p15-s23-reference-runtime-hash replay-base))]
+          {:result result
+           :replay-record replay-record})
+        (catch clojure.lang.ExceptionInfo exception
+          (if (= :p15-s23-checked-core-verification-replay-gate
+                 (:stage (ex-data exception)))
+            (throw exception)
+            (p15-s23-checked-core-verification-replay-gate-fail!
+             "R4-EXCEPTION" source-path authority
+             :verification-replay-post-call-translation
+             exception true)))
+        (catch StackOverflowError error
+          (p15-s23-checked-core-verification-replay-gate-fail!
+           "R1-FAILURE" source-path authority
+           :verification-replay-post-call-host-stack error true))
+        (catch Exception exception
+          (p15-s23-checked-core-verification-replay-gate-fail!
+           "R4-EXCEPTION" source-path authority
+           :verification-replay-post-call-translation exception true))))))
+
+(defn p15-s23-stage2-closed-checked-core-verification-replay
+  [artifact context authority-evidence]
+  (p15-s23-checked-core-bounded-context! context)
+  (p15-s23-checked-core-bounded-ingress!
+   "C6-VERIFY" :verification-replay-artifact artifact
+   p15-s23-reference-runtime-max-packet-nodes
+   p15-s23-reference-runtime-max-closed-plan-carrier-depth)
+  (p15-s23-checked-core-bounded-ingress!
+   "C8-CAPABILITY" :verification-replay-program-authority-evidence
+   authority-evidence p15-s23-reference-runtime-max-contract-nodes
+   p15-s23-reference-runtime-max-contract-depth)
+  (when-not (and (= :effectful-reference
+                    (p15-s23-stage2-closed-checked-core-context-mode context))
+                 (p15-s23-checked-core-authority-record-valid?
+                  (:authority-record context)))
+    (p15-s23-closed-core-fail!
+     "C8-CAPABILITY" "<checked-core-verification-replay>" {}
+     {:missing-fact :bounded-authenticated-verification-replay-context}))
+  (p15-s23-closed-core-source-request-bounds!
+   (:source-path context) (:source-text context)
+   (:requested-target context))
+  (let [source-path (:source-path context)
+        source-text (:source-text context)
+        requested-target (:requested-target context)
+        emitter-rule
+        (c-backend-stage2-plan-emitter-source-rule!
+         source-path requested-target)
+        plan
+        (binding [*additional-bootstrap-targets*
+                  stage2-runtime-derived-source-targets]
+          (p15-s23-stage2-plan-emitter-compile-source
+           (:emitter emitter-rule) source-path source-text))
+        validation
+        (p15-s23-closed-runtime-plan-validation!
+         source-path requested-target plan)
+        runtime-rule
+        (c-backend-stage2-runtime-source-rule!
+         source-path requested-target)
+        policy
+        (get (:runtime-contract-definitions runtime-rule)
+             'p15-s23-checked-core-verification-replay-policy)
+        audit-policy
+        (get (:runtime-contract-definitions runtime-rule)
+             'p15-s23-checked-core-verification-replay-audit-policy)
+        reissued-program-authority
+        (p15-s23-stage2-closed-checked-core-authority-binding
+         source-path source-text requested-target
+         p15-s23-checked-core-reference-policy-selector)]
+    (when-not (and (= :effectful-reference
+                      (p15-s23-stage2-closed-checked-core-context-mode
+                       context))
+                   (= :jvm requested-target)
+                   (= (:source-content-hash authority-evidence)
+                      (str "sha256:" (sha256-hex source-text)))
+                   (= (:plan-id authority-evidence) (:plan-id plan))
+                   (= (:module authority-evidence)
+                      (get-in plan [:module :module]))
+                   (= (:authority-record-id (:authority-record context))
+                      (:authority-record-id authority-evidence))
+                   (= reissued-program-authority
+                      (:authority-record context))
+                   (= (:evidence-id authority-evidence)
+                      (get-in artifact
+                              [:source-core-input :authority-evidence
+                               :evidence-id]))
+                   (p15-s23-reference-runtime-rule-authentic? runtime-rule))
+      (p15-s23-closed-core-fail!
+       "C8-CAPABILITY" source-path authority-evidence
+       {:missing-fact
+        :verification-replay-source-artifact-plan-runtime-authority-binding}))
+    (let [replay-authority
+          (p15-s23-checked-core-verification-replay-authority-record
+           artifact context plan validation runtime-rule policy audit-policy)
+          gate-result
+          (p15-s23-checked-core-verification-replay-gate-invoke
+           artifact context plan validation runtime-rule replay-authority)
+          result (:result gate-result)
+          adapter-record
+          (p15-s23-reference-runtime-success-adapter-record
+           (:plan-id plan) (get-in plan [:source :sha256])
+           (contains? (:observed-operation-set validation) :println)
+           (boolean (seq (:stdout result))))
+          expected-evidence
+          (p15-s23-checked-core-reference-execution-evidence
+           authority-evidence {:result result :adapter-record adapter-record})]
+      {:expected-execution-evidence expected-evidence
+       :replay-record (:replay-record gate-result)
+       :actual-path-context
+       {:source-path source-path
+        :runtime-artifact-source-path
+        (:runtime-artifact-source-path runtime-rule)
+        :identity-bearing? false}})))
+
+(defn- p15-s23-authorized-checked-core-verification-rebuild
+    [artifact context authority-evidence execution-evidence source-path]
+    (let [replay
+          (p15-s23-stage2-closed-checked-core-verification-replay
+           artifact context authority-evidence)
+          replay-execution-evidence
+          (:expected-execution-evidence replay)]
+      (when-not (= execution-evidence replay-execution-evidence)
+        (p15-s23-closed-core-fail!
+         "C10-CHECK" source-path artifact
+         {:missing-fact
+          :verification-replay-exact-execution-evidence-parity
+          :result-committed? false
+          :output-committed? false}))
+      {:verification-replay replay
+       :fresh
+       (p15-s23-stage2-closed-checked-core-rebuild-internal
+        context replay-execution-evidence)}))
 
 (defn p15-s23-stage2-closed-checked-core-verify!*
   [artifact context]
+  (p15-s23-checked-core-bounded-context! context)
+  ;; Use the iterative closed-artifact walker here so the public verifier
+  ;; preserves the precise C6 bound that failed.  Generic runtime-carrier
+  ;; containment would collapse every hostile artifact into one opaque ingress
+  ;; error and lose the established checked-core diagnostic contract.
+  (p15-s23-closed-core-bounded-value! "<closed-core>" artifact)
   (let [source-path (or (:source-path context)
                         (get-in artifact [:provenance :actual-paths :source])
-                        "<closed-core>")]
+                        "<closed-core>")
+        mode
+        (p15-s23-stage2-closed-checked-core-context-mode context)
+        _ (when (= :invalid mode)
+            (p15-s23-closed-core-fail!
+             "C6-CORE-SHAPE" source-path context
+             {:missing-fact :exact-bounded-closed-core-verification-context}))
+        effectful? (= :effectful-reference mode)
+        authority-record (when effectful? (:authority-record context))
+        _ (when (and effectful?
+                     (not
+                      (p15-s23-checked-core-authority-record-valid?
+                       authority-record)))
+            (p15-s23-closed-core-fail!
+             "C8-CAPABILITY" source-path context
+             {:missing-fact
+              :integral-typed-fourth-verification-authority-record}))
+        expected-authority-evidence
+        (when effectful?
+          (p15-s23-checked-core-authority-evidence authority-record))
+        execution-evidence
+        (when effectful?
+          (get-in artifact
+                  [:authenticated-input :reference-execution-evidence]))]
     ;; Structural bounds and independent local fact reconstruction happen
     ;; before any whole-artifact canonical comparison.
-    (p15-s23-closed-core-validate-structure! source-path artifact)
-    (let [fresh (p15-s23-stage2-closed-checked-core-rebuild context)
+    (p15-s23-closed-core-validate-structure!
+     source-path artifact mode expected-authority-evidence)
+    (let [authorized-rebuild
+          (if effectful?
+            (p15-s23-authorized-checked-core-verification-rebuild
+             artifact context expected-authority-evidence
+             execution-evidence source-path)
+            {:verification-replay nil
+             :fresh
+             (p15-s23-stage2-closed-checked-core-rebuild context)})
+          verification-replay (:verification-replay authorized-rebuild)
+          fresh (:fresh authorized-rebuild)
           nodes (:core-nodes artifact)
           fresh-nodes (:core-nodes fresh)
           node-projection
@@ -112338,30 +116300,68 @@
          (enriched first-node
                    {:missing-fact :fresh-semantic-artifact-id-parity})
          {:missing-fact :fresh-semantic-artifact-id-parity}))
-      :passed)))
+      {:status :passed
+       :mode mode
+       :verification-replay-record
+       (:replay-record verification-replay)
+       :actual-path-context
+       (:actual-path-context verification-replay)})))
+
+(defn p15-s23-stage2-closed-checked-core-verification-report
+  [artifact context]
+  (try
+    (p15-s23-checked-core-bounded-context! context)
+    (p15-s23-closed-core-bounded-value! "<closed-core>" artifact)
+    (let [source-path
+          (or (:source-path context)
+              (get-in artifact [:provenance :actual-paths :source])
+              "<closed-core>")]
+      (try
+        (p15-s23-stage2-closed-checked-core-verify!* artifact context)
+        (catch clojure.lang.ExceptionInfo ex
+          (throw ex))
+        (catch StackOverflowError error
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" source-path {:missing-fact :host-stack-containment}
+           {:missing-fact :contained-public-verifier-host-failure
+            :contained-host-error-hash
+            (str "sha256:" (sha256-hex (.getName (class error))))}))
+        (catch Exception error
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" source-path {:missing-fact :host-failure-containment}
+           {:missing-fact :contained-public-verifier-host-failure
+            :contained-host-error-hash
+            (str "sha256:" (sha256-hex (.getName (class error))))
+            :cause-message-hash
+            (str "sha256:"
+                 (sha256-hex (or (.getMessage error) "")))}))))
+    (catch clojure.lang.ExceptionInfo ex
+      (throw ex))
+    (catch StackOverflowError error
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" "<closed-core>" {}
+       {:missing-fact :contained-public-verifier-ingress-host-stack
+        :contained-host-error-hash
+        (str "sha256:" (sha256-hex (.getName (class error))))}))
+    (catch Exception error
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" "<closed-core>" {}
+       {:missing-fact :contained-public-verifier-ingress-host-failure
+        :contained-host-error-hash
+        (str "sha256:" (sha256-hex (.getName (class error))))
+        :cause-message-hash
+        (str "sha256:" (sha256-hex (or (.getMessage error) "")))}))))
 
 (defn p15-s23-stage2-closed-checked-core-verify!
   [artifact context]
-  (let [source-path
-        (or (when (map? context) (:source-path context))
-            (when (map? artifact)
-              (get-in artifact [:provenance :actual-paths :source]))
-            "<closed-core>")]
-    (try
-      (p15-s23-stage2-closed-checked-core-verify!* artifact context)
-      (catch clojure.lang.ExceptionInfo ex
-        (throw ex))
-      (catch StackOverflowError error
-        (p15-s23-closed-core-fail!
-         "C6-VERIFY" source-path {:missing-fact :host-stack-containment}
-         {:missing-fact :contained-public-verifier-host-failure
-          :contained-host-error (.getName (class error))}))
-      (catch Exception error
-        (p15-s23-closed-core-fail!
-         "C6-VERIFY" source-path {:missing-fact :host-failure-containment}
-         {:missing-fact :contained-public-verifier-host-failure
-          :contained-host-error (.getName (class error))
-          :cause-message (.getMessage error)})))))
+  (let [report
+        (p15-s23-stage2-closed-checked-core-verification-report
+         artifact context)]
+    (when-not (= :passed (:status report))
+      (p15-s23-closed-core-fail!
+       "C6-VERIFY" "<closed-core>" {}
+       {:missing-fact :checked-core-verification-report-status}))
+    :passed))
 
 (defn p15-s23-stage2-closed-checked-core-authentic?
   ([artifact]
@@ -112372,6 +116372,8 @@
         (p15-s23-stage2-closed-checked-core-verify! artifact context))
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
+
+)))
 
 (defn p15-s23-closed-runtime-target-record
   "Build target evidence after the consumer has authenticated the packet once.
@@ -112515,8 +116517,14 @@
          :credit-boundary
          {:reference-runtime? true
           :deployment-runtime? false
-          :checked-core-str-println-admission? false
-          :typed-fourth-authority :absent
+          :checked-core-str-println-admission? true
+          :checked-core-admission-scope
+          :authenticated-hosted-jvm-reference-interpreter
+          :typed-fourth-authority
+          :gravity/p15-s23-checked-core-authority-binding-v1
+          :typed-fourth-authority-consumed-by-this-packet? false
+          :verification-replay-policy-id
+          p15-s23-checked-core-verification-replay-policy-id
           :target-lowering-credit? false
           :release-credit? false
           :c11-credit? false}
@@ -112784,7 +116792,8 @@
               :gravity/p15-s23-reference-runtime-contract-validation
               :status :complete
               :function-count 11
-              :contract-definition-count 19
+              :contract-definition-count
+              (count p15-s23-reference-runtime-contract-definition-names)
               :operation-count 289
               :proven-allocation-count 25
               :allocation-unproven-count 4
@@ -112925,8 +116934,14 @@
             (:effect-projections record))
          (= {:reference-runtime? true
              :deployment-runtime? false
-             :checked-core-str-println-admission? false
-             :typed-fourth-authority :absent
+             :checked-core-str-println-admission? true
+             :checked-core-admission-scope
+             :authenticated-hosted-jvm-reference-interpreter
+             :typed-fourth-authority
+             :gravity/p15-s23-checked-core-authority-binding-v1
+             :typed-fourth-authority-consumed-by-this-packet? false
+             :verification-replay-policy-id
+             p15-s23-checked-core-verification-replay-policy-id
              :target-lowering-credit? false
              :release-credit? false
              :c11-credit? false}

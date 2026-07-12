@@ -76,10 +76,21 @@
    :superseded-for-pinned-runtime-contract
    :generic-emitter-effect-summary-credited? false
    :program-deployment-stdout :unresolved
-   :checked-core-str-println-admission? false
-   :checked-core-str-println-admission-status :unresolved
-   :typed-fourth-authority :absent
-   :typed-fourth-authority-consumed? false
+   :checked-core-str-println-admission? true
+   :checked-core-str-println-admission-status
+   :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :checked-core-program-authority-policy-id
+   :gravity.reference/checked-core-program-authority-policy
+   :checked-core-verification-replay-policy-id
+   :gravity.reference/checked-core-verification-replay-policy
+   :checked-core-verification-replay-audit-policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :checked-core-authority-record-schema-version 1
+   :checked-core-verification-replay-authority-schema-version 1
+   :checked-core-reference-only? true
+   :typed-fourth-authority
+   :gravity/p15-s23-checked-core-authority-binding-v1
+   :typed-fourth-authority-consumed? true
    :target-lowering-credit? false
    :release-credit? false
    :c11-credit? false
@@ -96,6 +107,253 @@
    :whole-language? false
    :clojure-seed-boundary? true
    :self-hosted? false})
+
+; This policy is the direct issuer and trust anchor for checked-program C8
+; authority.  Its program grants are distinct from the runtime and handler
+; grants consumed by the B1 adapter.  Source declarations describe effects and
+; capabilities but are never themselves grants.  The bootstrap helper binds an
+; exact program principal, source hash, plan id, provider selection, and grant
+; record to this pinned policy before any reference-runtime invocation.
+(def p15-s23-checked-core-program-authority-policy
+  {:artifact :gravity/p15-s23-checked-core-program-authority-policy
+   :schema-version 1
+   :policy-id :gravity.reference/checked-core-program-authority-policy
+   :audit-policy-id :gravity.reference/runtime-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :profile :hosted
+   :target :jvm
+   :program-principal-source :compiled-module
+   :source-declaration-is-grant? false
+   :operation-contracts
+   {str {:source-operation :str
+         :effect :memory/allocate
+         :capability :memory/allocator
+         :provider-id :gravity.reference/jvm-managed-allocator
+         :program-grant-template-id
+         :gravity.reference/program-grant-managed-allocation
+         :scope :pinned-runtime-plan
+         :safety-outcome :runtime-checked
+         :result-type :gravity/string}
+    println {:source-operation :println
+             :effect :io/write
+             :capability :io/stdout
+             :provider-id :gravity.reference/transcript-capture
+             :program-grant-template-id
+             :gravity.reference/program-grant-reference-stdout
+             :scope :checked-core-program-transcript
+             :safety-outcome :runtime-checked
+             :result-type :gravity/nil
+             :delivery :in-memory-reference-transcript}}
+   :runtime-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/reference-harness
+   :allowed-runtime-provider-ids
+   #{:gravity.reference/jvm-managed-allocator
+     :gravity.reference/transcript-capture}
+   :allowed-runtime-grant-ids
+   #{:gravity.reference/grant-managed-allocation
+     :gravity.reference/grant-reference-stdout}
+   :allowed-handler-provider-ids #{:gravity.reference/transcript-capture}
+   :allowed-handler-grant-ids #{:gravity.reference/grant-test-fixture}
+   :phase :runtime
+   :lifetime :single-reference-execution
+   :reference-invocation :single-reference-execution
+   :package :gravity/bootstrap
+   :deployment :reference-harness-only
+   :single-invocation? true
+   :reference-interpreter? true
+   :transcript-only? true
+   :deployment-runtime? false
+   :live-external-io? false
+   :delegation :none
+   :authority-widening? false
+   :program-grants-in-adapter-authority? false})
+
+; Verification is a second runtime evaluation, not part of authoritative
+; artifact construction.  It therefore has its own code-owned principal,
+; grants, lifetime, and audit boundary.  It never consumes the checked
+; program's fourth-argument authority and never reaches deployment stdout.
+(def p15-s23-checked-core-verification-replay-policy
+  {:artifact :gravity/p15-s23-checked-core-verification-replay-policy
+   :schema-version 1
+   :policy-id :gravity.reference/checked-core-verification-replay-policy
+   :audit-policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :profile :hosted
+   :target :jvm
+   :verifier-principal :gravity.bootstrap/checked-core-verifier
+   :runtime-principal gravity.bootstrap.p15-s23.runtime
+   :handler-principal :gravity.bootstrap/verification-transcript-harness
+   :invocation-contract
+   {:caller-principal :gravity.bootstrap/checked-core-verifier
+    :callee-principal gravity.bootstrap.p15-s23.runtime
+    :invocation-handle-id
+    :gravity.reference/checked-core-verification-runtime-handle
+    :authorization-source :exact-verifier-provider-grants
+    :scope :pinned-checked-core-artifact-replay
+    :authority-transfer? false}
+   :provider-contracts
+   {:verifier-managed-allocation
+    {:provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :required-when :every-verification-replay}
+    :verifier-transcript-fixture
+    {:provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :required-when :structural-println-present}
+    :managed-allocation
+    {:provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :required-when :every-verification-replay}
+    :transcript-capture
+    {:provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :io/stdout
+     :handler-capability :test/fixture
+     :required-when :structural-println-present}}
+   :grant-contracts
+   {:verifier-managed-allocation
+    {:grant-id
+     :gravity.reference/verification-grant-verifier-managed-allocation
+     :principal :gravity.bootstrap/checked-core-verifier
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :scope :pinned-checked-core-artifact-replay}
+    :verifier-transcript-fixture
+    {:grant-id
+     :gravity.reference/verification-grant-verifier-test-fixture
+     :principal :gravity.bootstrap/checked-core-verifier
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :scope :verification-transcript}
+    :managed-allocation
+    {:grant-id
+     :gravity.reference/verification-grant-managed-allocation
+     :principal gravity.bootstrap.p15-s23.runtime
+     :provider-id :gravity.reference/jvm-managed-allocator
+     :effect :memory/allocate
+     :capability :memory/allocator
+     :scope :pinned-verification-runtime-plan}
+    :transcript-capture
+    {:grant-id
+     :gravity.reference/verification-grant-transcript-capture
+     :principal gravity.bootstrap.p15-s23.runtime
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :io/stdout
+     :scope :verification-transcript}
+    :fixture
+    {:grant-id :gravity.reference/verification-grant-test-fixture
+     :principal :gravity.bootstrap/verification-transcript-harness
+     :provider-id :gravity.reference/transcript-capture
+     :effect :io/write
+     :capability :test/fixture
+     :scope :verification-transcript}}
+   :binding-inputs
+   #{:checked-core-artifact-id :mapping-id :provenance-binding-id
+     :source-content-hash :plan-id :module
+     :runtime-source-content-hash :runtime-artifact-hash
+     :runtime-contract-definition-hash :runtime-derived-facts-hash
+     :runtime-function :runtime-function-hash :verification-policy-id
+     :verification-policy-hash :verification-audit-policy-hash
+     :structural-operation-set :concrete-core-operation-set
+     :reissued-program-authority-record-id
+     :reissued-program-authority-evidence-id}
+   :plan-requirement-source :authenticated-structural-operation-set
+   :host-service-boundary :typed-r1-delegated-adapters
+   :deny-by-default? true
+   :redaction-policy :hash-host-class-and-message
+   :audit-record-contract
+   {:invocation-decision :required-before-runtime-call
+    :provider-decisions :exactly-required-structural-services
+    :pre-call-actions :none-before-runtime-invocation
+    :action-records :exactly-invoked-or-structurally-not-invoked
+    :failure-diagnostics
+    {:gate-owned #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+     :preserved-runtime-projection
+     :bounded-authenticated-runtime-diagnostic-projection}
+    :raw-host-message? false}
+   :phase :verification
+   :lifetime :single-verification-replay
+   :reference-invocation :single-verification-replay
+   :package :gravity/bootstrap
+   :deployment :verification-harness-only
+   :single-replay? true
+   :authoritative-invocation? false
+   :excluded-from-authoritative-invocation-count? true
+   :result-producing? true
+   :external-io-delivery :in-memory-reference-transcript
+   :live-external-io? false
+   :program-authority-consumed? false
+   :program-grants-consumed? false
+   :delegation :none
+   :authority-widening? false})
+
+(def p15-s23-checked-core-verification-replay-audit-policy
+  {:artifact
+   :gravity/p15-s23-checked-core-verification-replay-audit-policy
+   :schema-version 1
+   :policy-id
+   :gravity.reference/checked-core-verification-replay-audit-policy
+   :status :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :principals
+   {:verifier :gravity.bootstrap/checked-core-verifier
+    :runtime gravity.bootstrap.p15-s23.runtime
+    :handler :gravity.bootstrap/verification-transcript-harness}
+   :decision-record-fields
+   #{:decision-id :kind :action-id :principal-id :effect :capability
+     :provider-id :provider-selection-record-id :grant-id :grant-record-id
+     :replay-authority-record-id :phase :lifetime :policy-id
+     :verification-policy-hash :audit-policy-id
+     :verification-audit-policy-hash :runtime-contract-definition-hash
+     :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+     :scope :plan-id :source-content-hash :checked-core-artifact-id
+     :runtime-artifact-hash :profile :target :runtime-family :service-id
+     :module :package :deployment :source-span :generated-origin-edge
+     :delegated-handle-id :decision :result :reason :redaction
+     :redaction-policy :redaction-status :audit-status
+     :diagnostic :missing-fact}
+   :action-record-fields
+   #{:record-id :kind :action-id :principal-id :effect :capability
+     :provider-id :provider-selection-record-id :grant-id :grant-record-id
+     :replay-authority-record-id :phase :lifetime :policy-id
+     :verification-policy-hash :audit-policy-id
+     :verification-audit-policy-hash :runtime-contract-definition-hash
+     :runtime-derived-facts-hash :runtime-function :runtime-function-hash
+     :scope :plan-id :source-content-hash :checked-core-artifact-id
+     :runtime-artifact-hash :action-started? :action-status
+     :result-committed? :output-committed? :diagnostic :redaction
+     :profile :target :runtime-family :service-id :module :package
+     :deployment :source-span :generated-origin-edge :delegated-handle-id
+     :redaction-policy :redaction-status :audit-status
+     :missing-fact :reason}
+   :failure-record-fields
+   #{:failure-record-id :diagnostic :missing-fact :decision-record :action-record
+     :result-committed? :output-committed? :redaction :redaction-policy
+     :redaction-status :audit-status :remediation :profile :target
+     :runtime-family :service-id :effect :capability :provider-id
+     :runtime-function :module :package :delegated-handle-id
+     :host-runtime :host-symbol :host-package :gravity-type :adapter-id
+     :missing-policy :runtime-diagnostic-projection}
+   :failure-diagnostics
+   {:gate-owned #{"R1-FAILURE" "R4-EXCEPTION" "R11-GRANT"}
+    :preserved-runtime-projection
+    :bounded-authenticated-runtime-diagnostic-projection}
+   :redaction-policy :hash-host-class-and-message
+   :raw-host-message? false
+   :deny-by-default? true
+   :phase :verification
+   :lifetime :single-verification-replay
+   :package :gravity/bootstrap
+   :deployment :verification-harness-only
+   :live-external-io? false
+   :delegation :none
+   :authority-widening? false})
 
 (def p15-s23-reference-runtime-function-graph
   {:artifact :gravity/p15-s23-runtime-function-graph
