@@ -60163,6 +60163,14 @@
                  :remediation "Keep formal release governance, deployment custody, self-hosting evidence, TCB deltas, unsafe-audit records, and residual full-compiler self-hosting assumptions in Gravity-owned source; reject human governance or deployment custody fallback."}
                 data)))
 
+(defn- stage1-reader-token-index
+  [tokens]
+  (into {}
+        (map (juxt #(or (:token-id %)
+                        (keyword (str "tok-" (:index %))))
+                   identity)
+             tokens)))
+
 (defn stage1-reader-products-from-token-stream
   [source-path source-text table token-stream]
   (let [expected-source-id (str "sha256:" (sha256-hex source-text))
@@ -60187,6 +60195,7 @@
                                                       :token-count]}))
     (let [line-starts (line-start-indices source-text)
           token-count (count tokens)
+          token-index (delay (stage1-reader-token-index tokens))
           nodes (atom {})
           form-order (atom [])
           next-form-index (atom 0)]
@@ -60214,7 +60223,7 @@
                     (recur (inc idx) (conj trivia (token-id (tokens idx))))
                     [idx trivia])))
               (trivia-hash [ids]
-                (let [by-id (into {} (map (juxt token-id identity) tokens))]
+                (let [by-id @token-index]
                   (reader-canonical-hash
                    (mapv (fn [id]
                            (let [token (by-id id)]

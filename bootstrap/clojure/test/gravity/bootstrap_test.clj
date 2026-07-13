@@ -63,6 +63,20 @@
        "   :syntax `(outer ~value ~@items)\n"
        "   :deref @state})\n"))
 
+(defn- reference-stage1-trivia-hash
+  [tokens token-ids]
+  (let [token-id (fn [token]
+                   (or (:token-id token)
+                       (keyword (str "tok-" (:index token)))))
+        tokens-by-id (into {} (map (juxt token-id identity) tokens))]
+    (bootstrap/reader-canonical-hash
+     (mapv (fn [id]
+             (let [token (tokens-by-id id)]
+               {:kind (:kind token)
+                :raw (:raw token)
+                :span (dissoc (:span token) :source :file)}))
+           token-ids))))
+
 (def ^:private qualified-symbol-quote-source
   (str "(ns quote.analysis (:profile :hosted) (:target :jvm)\n"
        "  (:metadata {:bootstrap {:owner :gravity-source\n"
@@ -10128,6 +10142,252 @@
       (is (= 4 (get-in last-token [:span :start :column])))
       (is (= :unicode-scalar
              (get-in first-token [:span :end :column-unit]))))))
+
+(deftest c2-reader-reuses-one-token-index-with-reference-product-parity
+  (let [source (str "; token-index reference λ🙂\n"
+                    "(ns token.index.reference\n"
+                    "  (:profile :hosted)\n"
+                    "  (:target :jvm))\n"
+                    "\n"
+                    "(def values\n"
+                    "  ^{:doc \"héllo λ🙂\"}\n"
+                    "  [1 2 {:a true :b '(x y)} (deref state)])\n")
+        token-index-var
+        (ns-resolve 'gravity.bootstrap 'stage1-reader-token-index)
+        original-token-index @token-index-var
+        index-builds (atom 0)
+        project-root "/token-index-reference"
+        project-root-id
+        (bootstrap/reader-canonical-hash {:project :token-index-reference})
+        project-context {:project-root-id project-root-id
+                         :project-root-path project-root
+                         :project-relative-path "src/reference-source"}
+        artifacts (atom {})]
+    (is (var? token-index-var))
+    (with-redefs-fn
+      {token-index-var
+       (fn [tokens]
+         (swap! index-builds inc)
+         (original-token-index tokens))}
+      (fn []
+        (doseq [[ordinal suffix] (map-indexed vector [".gravity" ".qst"])]
+          (let [path (str project-root "/src/reference-source" suffix)
+                artifact
+                (bootstrap/compiler-c2-reader-source-artifact
+                 path source project-context)
+                reference-values
+                (mapv :form (bootstrap/read-source-form-records path source))
+                table (bootstrap/stage1-reader-table)
+                fallback-stream
+                (bootstrap/stage1-reader-token-stream
+                 path source table bootstrap/standard-reader-options)
+                fallback-products
+                (bootstrap/stage1-reader-products-from-token-stream
+                 path source table fallback-stream)
+                fallback-token-ids
+                (set (map #(keyword (str "tok-" (:index %)))
+                          (:tokens fallback-stream)))
+                forms (:form-tree artifact)]
+            (swap! artifacts assoc suffix artifact)
+            (is (= (+ 2 (* ordinal 2)) @index-builds))
+            (is (= reference-values (:parsed-semantic-values artifact)))
+            (is (= reference-values (:parsed-values fallback-products)))
+            (is (not-any? #(contains? % :token-id)
+                          (:tokens fallback-stream)))
+            (is (every? fallback-token-ids
+                        (mapcat (juxt :open-token :close-token)
+                                (:form-tree fallback-products))))
+            (is (= :passed
+                   (get-in artifact [:lexical-product-validation :status])))
+            (is (= :stable
+                   (get-in artifact [:incremental-reader-hashes :status])))
+            (doseq [form forms
+                    [ids-key hash-key]
+                    [[:leading-trivia-token-ids :leading-trivia-hash]
+                     [:trailing-trivia-token-ids :trailing-trivia-hash]]
+                    :when (contains? form ids-key)]
+              (is (= (reference-stage1-trivia-hash
+                      (:token-stream artifact) (get form ids-key))
+                     (get form hash-key))))
+            (doseq [form (:form-tree fallback-products)
+                    [ids-key hash-key]
+                    [[:leading-trivia-token-ids :leading-trivia-hash]
+                     [:trailing-trivia-token-ids :trailing-trivia-hash]]
+                    :when (contains? form ids-key)]
+              (is (= (reference-stage1-trivia-hash
+                      (:tokens fallback-stream) (get form ids-key))
+                     (get form hash-key))))))))
+    (let [gravity (@artifacts ".gravity")
+          qst (@artifacts ".qst")
+          neutral-trivia
+          (fn [artifact]
+            (mapv #(-> %
+                       (dissoc :source-path)
+                       (update :span bootstrap/c2-path-neutral-span))
+                  (:trivia-retention-records artifact)))]
+      (is (= (get-in gravity [:source-unit-record :source-id])
+             (get-in qst [:source-unit-record :source-id])))
+      (is (= (bootstrap/c2-token-hash-input (:token-stream gravity))
+             (bootstrap/c2-token-hash-input (:token-stream qst))))
+      (is (= (bootstrap/c2-form-hash-input (:form-tree gravity))
+             (bootstrap/c2-form-hash-input (:form-tree qst))))
+      (is (= (bootstrap/c2-syntax-seed-hash-input
+              (:syntax-seed-stream gravity))
+             (bootstrap/c2-syntax-seed-hash-input
+              (:syntax-seed-stream qst))))
+      (is (= (:incremental-reader-hashes gravity)
+             (:incremental-reader-hashes qst)))
+      (is (= (:reader-product-integrity gravity)
+             (:reader-product-integrity qst)))
+      (is (= (:artifact-id gravity) (:artifact-id qst)))
+      (is (= (mapv :token-id (:token-stream gravity))
+             (mapv :token-id (:token-stream qst))))
+      (is (= (mapv :form-id (:form-tree gravity))
+             (mapv :form-id (:form-tree qst))))
+      (is (= (mapv :syntax-id (:syntax-seed-stream gravity))
+             (mapv :syntax-id (:syntax-seed-stream qst))))
+      (is (= (mapv #(bootstrap/c2-path-neutral-span (:span %))
+                   (:token-stream gravity))
+             (mapv #(bootstrap/c2-path-neutral-span (:span %))
+                   (:token-stream qst))))
+      (is (= (mapv #(bootstrap/c2-path-neutral-span (:span %))
+                   (:form-tree gravity))
+             (mapv #(bootstrap/c2-path-neutral-span (:span %))
+                   (:form-tree qst))))
+      (is (= (neutral-trivia gravity) (neutral-trivia qst)))
+      (is (not= (get-in gravity [:source-unit-record :path])
+                (get-in qst [:source-unit-record :path])))
+      (is (every? #(= (get-in gravity [:source-unit-record :path])
+                      (get-in % [:span :source]))
+                  (:token-stream gravity)))
+      (is (every? #(= (get-in qst [:source-unit-record :path])
+                      (get-in % [:span :source]))
+                  (:token-stream qst))))))
+
+(deftest c2-reader-token-index-large-source-makes-bounded-progress
+  (let [definition-count 768
+        source
+        (str "(ns token.index.scale (:profile :hosted) (:target :jvm))\n"
+             (apply str
+                    (for [idx (range definition-count)]
+                      (str "; retained source record " idx " λ🙂\n"
+                           "(def value-" (format "%04d" idx)
+                           " {:index " idx
+                           " :label \"λ🙂\" :items [" idx " "
+                           (inc idx) " " (+ idx 2)
+                           "] :enabled true})\n"))))
+        source-bytes (.getBytes source
+                                java.nio.charset.StandardCharsets/UTF_8)
+        token-index-var
+        (ns-resolve 'gravity.bootstrap 'stage1-reader-token-index)
+        original-token-index @token-index-var
+        index-builds (atom 0)
+        path "/token-index-scale/src/scale.gravity"
+        artifact
+        (with-redefs-fn
+          {token-index-var
+           (fn [tokens]
+             (swap! index-builds inc)
+             (original-token-index tokens))}
+          #(bootstrap/compiler-c2-reader-source-artifact path source))
+        forms-by-id (into {} (map (juxt :form-id identity)
+                                  (:form-tree artifact)))
+        last-root (forms-by-id (last (:top-level-form-ids artifact)))]
+    (is (< 50000 (alength source-bytes) 150000))
+    (is (= 1 @index-builds))
+    (is (= (inc definition-count)
+           (count (:top-level-form-ids artifact))))
+    (is (> (count (:token-stream artifact)) 10000))
+    (is (> (count (:form-tree artifact)) 8000))
+    (is (= (str "(def value-" (format "%04d" (dec definition-count)))
+           (subs (:raw last-root) 0 15)))
+    (is (= (dec (alength source-bytes))
+           (get-in last-root [:span :byte-end])))
+    (is (= :passed
+           (get-in artifact [:lexical-product-validation :status])))
+    (is (= :stable
+           (get-in artifact [:incremental-reader-hashes :status])))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id artifact)))))
+
+(deftest c2-reader-token-index-preserves-hostile-and-malformed-diagnostics
+  (let [token-index-var
+        (ns-resolve 'gravity.bootstrap 'stage1-reader-token-index)
+        original-token-index @token-index-var
+        cases [{:name :odd-map
+                :source "; retained trivia\n{:a 1 :b}"
+                :expected {:id "C2-MAP"
+                           :remapped-from "L1-MAP-ARITY"
+                           :reader-engine-diagnostic "STAGE1READER005"}
+                :index-builds 1}
+               {:name :unexpected-close
+                :source "]"
+                :expected {:id "C2-DELIMITER"
+                           :remapped-from "L1-DELIMITER"
+                           :reader-engine-diagnostic "STAGE1READER001"}
+                :index-builds 0}
+               {:name :malformed-number
+                :source "1e2e3"
+                :expected {:id "STAGE1READER007"
+                           :reader-engine-diagnostic "STAGE1READER007"}
+                :index-builds 0}]]
+    (doseq [{:keys [name source expected index-builds]} cases]
+      (let [diagnostics (atom {})
+            project-root "/token-index-hostile"
+            project-context
+            {:project-root-id
+             (bootstrap/reader-canonical-hash
+              {:project :token-index-hostile :case name})
+             :project-root-path project-root
+             :project-relative-path
+             (str "src/" (clojure.core/name name))}]
+        (doseq [suffix [".gravity" ".qst"]]
+          (let [path (str project-root "/src/" (clojure.core/name name)
+                          suffix)
+                builds (atom 0)
+                diagnostic
+                (with-redefs-fn
+                  {token-index-var
+                   (fn [tokens]
+                     (swap! builds inc)
+                     (original-token-index tokens))}
+                  #(diagnostic-data
+                    (fn []
+                      (bootstrap/compiler-c2-reader-source-artifact
+                       path source project-context))))
+                projection
+                (select-keys diagnostic
+                             (keys expected))]
+            (swap! diagnostics assoc suffix diagnostic)
+            (is (= expected projection) (str name suffix))
+            (is (= index-builds @builds) (str name suffix))
+            (is (= :error (:severity diagnostic)))
+            (is (= :read-source (:stage diagnostic)))
+            (is (= :c2-reader (:diagnostic-family diagnostic)))
+            (is (= path (get-in diagnostic [:source-span :source])))
+            (is (= (:source-span diagnostic)
+                   (get-in diagnostic [:primary :span])))
+            (is (re-matches #"sha256:[0-9a-f]{64}"
+                            (:diagnostic-id diagnostic)))))
+        (let [gravity (@diagnostics ".gravity")
+              qst (@diagnostics ".qst")]
+          (is (= (:source-id gravity) (:source-id qst))
+              (str name " source identity parity"))
+          (is (= (:diagnostic-id gravity) (:diagnostic-id qst))
+              (str name " diagnostic identity parity"))
+          (is (= (dissoc (:source-span gravity) :source)
+                 (dissoc (:source-span qst) :source))
+              (str name " diagnostic span parity"))
+          (is (not= (get-in gravity [:source-span :source])
+                    (get-in qst [:source-span :source])))
+          (is (= (select-keys gravity
+                            [:id :severity :stage :token-id :form-id
+                             :raw-spelling :facts :remapped-from
+                             :reader-engine-diagnostic :reader-state])
+                 (select-keys qst
+                            [:id :severity :stage :token-id :form-id
+                             :raw-spelling :facts :remapped-from
+                             :reader-engine-diagnostic :reader-state]))
+              (str name " extension parity")))))))
 
 (deftest stage1-reader-character-stream-uses-unicode-scalars-and-exact-bytes
   (doseq [suffix [".gravity" ".qst"]
