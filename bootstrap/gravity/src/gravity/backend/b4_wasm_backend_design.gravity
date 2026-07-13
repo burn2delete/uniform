@@ -21,7 +21,8 @@
              build-b4-linear-memory-plan
              build-b4-async-abi-manifest
              build-b4-wasm-artifact-record
-             verify-b4-wasm-backend-design])
+             verify-b4-wasm-backend-design
+             b4-build-bounded-wasm32-core])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -516,7 +517,18 @@
    :memory-width memory-width
    :features features
    :embedding embedding
-   :required-fields (:required-fields b4-target-feature-contract)
+   :required-fields
+   [:wasm-version :embedding-model :memory-width :memory-count
+    :initial-memory-pages :maximum-memory-pages
+    :memory-growth-permission :table-representation
+    :reference-type-support :exception-handling-support
+    :gc-proposal-support :simd-support :relaxed-simd-support
+    :atomic-and-shared-memory-support :component-model-abi-version
+    :wasi-preview-or-profile :async-component-abi-version
+    :canonical-abi-adapter-support :resource-handle-and-borrow-support
+    :async-func-stream-future-support
+    :completion-cancellation-backpressure-strategy :import-namespace
+    :deterministic-or-replay-required-mode]
    :source-model-only? true})
 
 (defn build-b4-component-contract-manifest
@@ -526,7 +538,9 @@
    :interfaces interfaces
    :worlds worlds
    :resources resources
-   :contract-items (:contract-items b4-component-contract)
+   :contract-items
+   [:package :interface :world :function :record :variant :flags :list
+    :option :result :stream :future :resource]
    :source-model-only? true})
 
 (defn build-b4-canonical-abi-manifest
@@ -535,7 +549,12 @@
    :abi-records abi-records
    :schema-version schema-version
    :schema-hash schema-hash
-   :required-fields (:required-fields b4-canonical-abi-contract)
+   :required-fields
+   [:lowered-form :lifted-form :copy-behavior :borrow-behavior
+    :transfer-behavior :drop-behavior :allocation-function
+    :realloc-function :trap-error-and-cancellation-mapping
+    :host-and-guest-ownership :schema-version :schema-hash
+    :conformance-fixture-id]
    :source-model-only? true})
 
 (defn build-b4-import-capability-manifest
@@ -545,7 +564,11 @@
    :exports exports
    :host-boundary-schemas host-boundary-schemas
    :import-required-fields
-   (:import-required-fields b4-import-export-capability-contract)
+   [:host-namespace :host-symbol :interface-world-item-name
+    :gravity-effect :capability-grant :parameter-schema :return-schema
+    :determinism-policy :replay-policy :trap-and-error-behavior
+    :async-or-sync-behavior :host-resource-ownership :taint-policy
+    :source-and-generated-origin]
    :source-model-only? true})
 
 (defn build-b4-linear-memory-plan
@@ -554,7 +577,12 @@
    :memory-width memory-width
    :segments segments
    :ownership ownership
-   :required-fields (:required-fields b4-linear-memory-contract)
+   :required-fields
+   [:allocation-provider :stack-segment :heap-segment
+    :static-data-segments :exported-memory-policy :string-representation
+    :byte-buffer-representation :struct-tuple-enum-tagged-union-layout
+    :handle-and-resource-table-representation :copy-borrow-transfer-rules
+    :bounds-and-lifetime-proofs :memory-growth-invalidation-rules]
    :source-model-only? true})
 
 (defn build-b4-async-abi-manifest
@@ -563,7 +591,10 @@
    :async-items async-items
    :replay-policy replay-policy
    :scheduling scheduling
-   :required-fields (:required-fields b4-async-component-contract)
+   :required-fields
+   [:typed-abi-item :completion-policy :cancellation-policy
+    :backpressure-policy :resource-ownership :scheduling-metadata
+    :replay-policy :drop-or-leak-policy :error-and-trap-mapping]
    :source-model-only? true})
 
 (defn build-b4-wasm-artifact-record
@@ -574,7 +605,11 @@
    :source-hash source-hash
    :manifest-id manifest-id
    :provenance provenance
-   :required-fields (:required-fields b4-artifact-manifest-contract)
+   :required-fields
+   [:artifact-id :source-input-digest :compiler-identity :profile
+    :target :wasm-target-kind :feature-record :effects :capabilities
+    :safety-summary :proof-summary :unsafe-audit-links :dependency-graph
+    :source-map :generated-origin-map :replay-record]
    :source-model-only? true})
 
 (defn verify-b4-wasm-backend-design
@@ -594,3 +629,604 @@
    :diagnostics-covered? true
    :production-backend-execution? false
    :source-model-only? true})
+
+; ---------------------------------------------------------------------------
+; Authenticated bounded raw Wasm32 core-module slice (FL-P07-T02).
+;
+; This source-owned builder is deliberately narrower than the design model
+; above.  Its caller has already regenerated and independently verified C11
+; MIR.  The builder still validates the lowering-relevant pure scalar surface
+; and emits bytes for a core module containing exactly one () -> i32 function,
+; exported only as `main`.  There are no imports, memories, tables, globals,
+; start/data/custom sections, components, WIT, WASI, or runtime helpers.
+
+(defn b4-last
+  [values]
+  (if (= (count values) 0)
+    nil
+    (if (= (count values) 1)
+      (first values)
+      (b4-last (rest values)))))
+
+(defn b4-vector-append
+  [left right]
+  (if (= (count right) 0)
+    left
+    (b4-vector-append (conj left (first right)) (rest right))))
+
+(defn b4-u32-leb
+  [value]
+  (let [next (quot value 128)
+        byte (- value (* next 128))]
+    (if (= next 0)
+      [byte]
+      (b4-vector-append [(+ byte 128)] (b4-u32-leb next)))))
+
+(defn b4-s32-leb
+  [value]
+  (let [next (if (< value 0)
+               (quot (- value 127) 128)
+               (quot value 128))
+        byte (- value (* next 128))
+        done (if (= next 0)
+               (< byte 64)
+               (if (= next -1) (>= byte 64) false))]
+    (if done
+      [byte]
+      (b4-vector-append [(+ byte 128)] (b4-s32-leb next)))))
+
+(defn b4-section
+  [section-id payload]
+  (b4-vector-append
+   [section-id]
+   (b4-vector-append (b4-u32-leb (count payload)) payload)))
+
+(defn b4-collect-operations
+  [blocks block-order result]
+  (if (= (count block-order) 0)
+    result
+    (b4-collect-operations
+     blocks
+     (rest block-order)
+     (b4-vector-append
+      result (get (get blocks (first block-order)) :instructions)))))
+
+(defn b4-block-order
+  [mir function]
+  (let [entry (get function :entry)
+        blocks (get function :blocks)
+        entry-block (get blocks entry)
+        successors (get entry-block :successors)]
+    (if (= (count blocks) 1)
+      [entry]
+      [entry
+       (first successors)
+       (second successors)
+       (get (get (get mir :control-flow-graph) :join) :block-id)])))
+
+(defn b4-index-operations
+  [operations index result]
+  (if (= (count operations) 0)
+    result
+    (b4-index-operations
+     (rest operations) (+ index 1)
+     (assoc result (get (first operations) :op-id) index))))
+
+(defn b4-find-operation
+  [operations operation-id]
+  (if (= (count operations) 0)
+    nil
+    (if (= operation-id (get (first operations) :op-id))
+      (first operations)
+      (b4-find-operation (rest operations) operation-id))))
+
+(defn b4-forwarded-opcode?
+  [opcode]
+  (if (= opcode :local)
+    true
+    (if (= opcode :local-binding)
+      true
+      (if (= opcode :sequence)
+        true
+        (if (= opcode :lexical-scope)
+          true
+          (if (= opcode :function-boundary) true false))))))
+
+(defn b4-scalar-type?
+  [type]
+  (if (= type :gravity/integer)
+    true
+    (if (= type :gravity/bool)
+      true
+      (if (= type :gravity/nil) true false))))
+
+(defn b4-reference-before?
+  [operation-index operation-id reference-id]
+  (if (contains? operation-index reference-id)
+    (< (get operation-index reference-id)
+       (get operation-index operation-id))
+    false))
+
+(defn b4-all-references-before?
+  [operation-index operation-id references]
+  (if (= (count references) 0)
+    true
+    (if (b4-reference-before?
+         operation-index operation-id (first references))
+      (b4-all-references-before?
+       operation-index operation-id (rest references))
+      false)))
+
+(defn b4-constant-value
+  [operation]
+  (let [type (get operation :type)
+        payload (get operation :constant-payload)
+        value (get payload :value)]
+    (if (= payload {:present? true :value value})
+      (if (= type :gravity/bool)
+        (if (boolean? value) (if value 1 0) :unsupported)
+        (if (= type :gravity/nil)
+          (if (= value nil) 0 :unsupported)
+          (if (= type :gravity/integer)
+            (if (integer? value)
+              (if (>= value -2147483648)
+                (if (<= value 2147483647) value :unsupported)
+                :unsupported)
+              :unsupported)
+            :unsupported)))
+      :unsupported)))
+
+(defn b4-operation-reason
+  [operation operations operation-index]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)
+        operation-id (get operation :op-id)]
+    (if (= (get operation :artifact) :gravity/mir-operation)
+      (if (= (get operation :verifier-status) :passed)
+        (if (= (get operation :effects) #{})
+          (if (= (get operation :capabilities) #{})
+            (if (= (get operation :domain-anchor) nil)
+              (if (contains? operation-index operation-id)
+                (if (= opcode :constant)
+                  (if (if (= (count operands) 0)
+                        (if (= (b4-constant-value operation) :unsupported)
+                          false true)
+                        false)
+                    (if (b4-scalar-type? (get operation :type))
+                      nil :constant-scalar-type)
+                    :bounded-i32-constant)
+                  (if (b4-forwarded-opcode? opcode)
+                    (if (> (count operands) 0)
+                      (if (b4-all-references-before?
+                           operation-index operation-id operands)
+                        (let [source-operation
+                              (b4-find-operation operations (b4-last operands))]
+                          (if (= opcode :function-boundary)
+                            (if (b4-scalar-type?
+                                 (get source-operation :type))
+                              nil :function-boundary-source-type)
+                            (if (if (b4-scalar-type?
+                                     (get operation :type))
+                                  (= (get operation :type)
+                                     (get source-operation :type))
+                                  false)
+                              nil :forwarded-type-parity)))
+                        :forwarded-definition-order)
+                      :forwarded-arity)
+                    (if (= opcode :truthiness)
+                      (if (= (count operands) 1)
+                        (if (b4-reference-before?
+                             operation-index operation-id (first operands))
+                          (let [source-operation
+                                (b4-find-operation operations (first operands))]
+                            (if (if (b4-scalar-type?
+                                     (get source-operation :type))
+                                  (= (get operation :type) :gravity/bool)
+                                  false)
+                              nil :truthiness-type-parity))
+                          :truthiness-definition-order)
+                        :truthiness-arity)
+                      (if (= opcode :conditional-join)
+                        (if (= (count operands) 3)
+                          (if (b4-all-references-before?
+                               operation-index operation-id operands)
+                            (let [condition
+                                  (b4-find-operation operations (first operands))
+                                  then-value
+                                  (b4-find-operation operations (second operands))
+                                  else-value
+                                  (b4-find-operation operations (b4-last operands))]
+                              (if (if (= (get condition :type) :gravity/bool)
+                                    (if (b4-scalar-type?
+                                         (get operation :type))
+                                      (if (= (get then-value :type)
+                                             (get else-value :type))
+                                        (= (get operation :type)
+                                           (get then-value :type))
+                                        false)
+                                      false)
+                                    false)
+                                nil :conditional-type-parity))
+                            :conditional-definition-order)
+                          :conditional-arity)
+                        :unsupported-opcode))))
+                :operation-index-closure)
+              :domain-anchor-unsupported)
+            :capabilities-unsupported)
+          :effects-unsupported)
+        :unverified-operation)
+      :operation-envelope)))
+
+(defn b4-first-operation-rejection
+  [remaining operations operation-index]
+  (if (= (count remaining) 0)
+    nil
+    (let [operation (first remaining)
+          reason (b4-operation-reason operation operations operation-index)]
+      (if (= reason nil)
+        (b4-first-operation-rejection
+         (rest remaining) operations operation-index)
+        {:reason reason
+         :operation-id (get operation :op-id)
+         :opcode (get operation :opcode)
+         :type (get operation :type)}))))
+
+(defn b4-count-opcode
+  [operations opcode total]
+  (if (= (count operations) 0)
+    total
+    (b4-count-opcode
+     (rest operations) opcode
+     (if (= (get (first operations) :opcode) opcode)
+       (+ total 1) total))))
+
+(defn b4-cfg-reason
+  [mir function block-order operations]
+  (let [blocks (get function :blocks)
+        cfg (get mir :control-flow-graph)
+        entry-id (first block-order)
+        entry (get blocks entry-id)]
+    (if (= (set (keys cfg)) #{:entry :edges :dominance :join})
+      (if (= (get cfg :entry) entry-id)
+        (if (= (set (keys blocks)) (set block-order))
+          (if (= (count block-order) 1)
+            (if (if (= (get entry :predecessors) [])
+                  (if (= (get entry :successors) [])
+                    (if (= (get (get entry :terminator) :kind) :return)
+                      (if (= (get cfg :join) nil)
+                        (= (b4-count-opcode operations :conditional-join 0) 0)
+                        false)
+                      false)
+                    false)
+                  false)
+              nil :linear-cfg-envelope)
+            (let [then-id (second block-order)
+                  else-id (first (rest (rest block-order)))
+                  join-id (b4-last block-order)
+                  then-block (get blocks then-id)
+                  else-block (get blocks else-id)
+                  join-block (get blocks join-id)]
+              (if (if (= (get entry :successors) [then-id else-id])
+                    (if (= (get then-block :predecessors) [entry-id])
+                      (if (= (get then-block :successors) [join-id])
+                        (if (= (get else-block :predecessors) [entry-id])
+                          (if (= (get else-block :successors) [join-id])
+                            (if (= (get join-block :predecessors)
+                                   [then-id else-id])
+                              (if (= (get join-block :successors) [])
+                                (if (= (get (get entry :terminator) :kind)
+                                       :conditional-branch)
+                                  (if (= (get (get then-block :terminator) :kind)
+                                         :branch)
+                                    (if (= (get (get else-block :terminator) :kind)
+                                           :branch)
+                                      (if (= (get (get join-block :terminator) :kind)
+                                             :return)
+                                        (if (= (get (get cfg :join) :block-id)
+                                               join-id)
+                                          (= (b4-count-opcode
+                                              operations :conditional-join 0) 1)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                nil :diamond-cfg-envelope)))
+          :block-order-coverage)
+        :cfg-entry-parity)
+      :exact-cfg-envelope)))
+
+(defn b4-local-get
+  [operation-index operation-id]
+  (b4-vector-append [32] (b4-u32-leb (get operation-index operation-id))))
+
+(defn b4-local-set
+  [operation-index operation-id]
+  (b4-vector-append [33] (b4-u32-leb (get operation-index operation-id))))
+
+(defn b4-operation-bytes
+  [operation operations operation-index]
+  (let [opcode (get operation :opcode)
+        operation-id (get operation :op-id)
+        operands (get operation :operands)
+        value-bytes
+        (if (= opcode :constant)
+          (b4-vector-append
+           [65] (b4-s32-leb (b4-constant-value operation)))
+          (if (b4-forwarded-opcode? opcode)
+            (b4-local-get operation-index (b4-last operands))
+            (if (= opcode :truthiness)
+              (let [operand-id (first operands)
+                    operand (b4-find-operation operations operand-id)
+                    operand-type (get operand :type)]
+                (if (= operand-type :gravity/bool)
+                  (b4-local-get operation-index operand-id)
+                  (if (= operand-type :gravity/nil) [65 0] [65 1])))
+              (if (= opcode :conditional-join)
+                (b4-vector-append
+                 (b4-local-get operation-index (first operands))
+                 (b4-vector-append
+                  [4 127]
+                  (b4-vector-append
+                   (b4-local-get operation-index (second operands))
+                   (b4-vector-append
+                    [5]
+                    (b4-vector-append
+                     (b4-local-get operation-index (b4-last operands))
+                     [11])))))
+                []))))]
+    (b4-vector-append
+     value-bytes (b4-local-set operation-index operation-id))))
+
+(defn b4-operation-stream
+  [remaining operations operation-index result]
+  (if (= (count remaining) 0)
+    result
+    (b4-operation-stream
+     (rest remaining) operations operation-index
+     (b4-vector-append
+      result (b4-operation-bytes
+              (first remaining) operations operation-index)))))
+
+(defn b4-without-opcode
+  [operations opcode result]
+  (if (= (count operations) 0)
+    result
+    (b4-without-opcode
+     (rest operations) opcode
+     (if (= (get (first operations) :opcode) opcode)
+       result
+       (conj result (first operations))))))
+
+(defn b4-find-opcode
+  [operations opcode]
+  (if (= (count operations) 0)
+    nil
+    (if (= (get (first operations) :opcode) opcode)
+      (first operations)
+      (b4-find-opcode (rest operations) opcode))))
+
+(defn b4-function-instructions
+  [function block-order operations operation-index]
+  (let [blocks (get function :blocks)]
+    (if (= (count block-order) 1)
+      (let [entry (get blocks (first block-order))
+            return-id (first (get (get entry :terminator) :operands))]
+        (b4-vector-append
+         (b4-operation-stream operations operations operation-index [])
+         (b4-local-get operation-index return-id)))
+      (let [entry (get blocks (first block-order))
+            then-block (get blocks (second block-order))
+            else-block (get blocks (first (rest (rest block-order))))
+            join-block (get blocks (b4-last block-order))
+            entry-operations (get entry :instructions)
+            then-operations (get then-block :instructions)
+            else-operations (get else-block :instructions)
+            join-operations (get join-block :instructions)
+            join-operation (b4-find-opcode join-operations :conditional-join)
+            remaining-join
+            (b4-without-opcode join-operations :conditional-join [])
+            condition-id (first (get (get entry :terminator) :operands))
+            then-id (first (get (get then-block :terminator) :operands))
+            else-id (first (get (get else-block :terminator) :operands))
+            return-id (first (get (get join-block :terminator) :operands))
+            entry-bytes
+            (b4-operation-stream
+             entry-operations operations operation-index [])
+            then-bytes
+            (b4-operation-stream
+             then-operations operations operation-index [])
+            else-bytes
+            (b4-operation-stream
+             else-operations operations operation-index [])
+            join-bytes
+            (b4-operation-stream
+             remaining-join operations operation-index [])]
+        (b4-vector-append
+         entry-bytes
+         (b4-vector-append
+          (b4-local-get operation-index condition-id)
+          (b4-vector-append
+           [4 127]
+           (b4-vector-append
+            then-bytes
+            (b4-vector-append
+             (b4-local-get operation-index then-id)
+             (b4-vector-append
+              [5]
+              (b4-vector-append
+               else-bytes
+               (b4-vector-append
+                (b4-local-get operation-index else-id)
+                (b4-vector-append
+                 [11]
+                 (b4-vector-append
+                  (b4-local-set operation-index
+                                (get join-operation :op-id))
+                  (b4-vector-append
+                   join-bytes
+                   (b4-local-get operation-index return-id))))))))))))))))
+
+(defn b4-semantic-value
+  [operation operations values]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (= opcode :constant)
+      (let [value (get (get operation :constant-payload) :value)]
+        (if (= value true) 1 (if (= value false) 0 (if (= value nil) 0 value))))
+      (if (b4-forwarded-opcode? opcode)
+        (get values (b4-last operands))
+        (if (= opcode :truthiness)
+          (let [operand-id (first operands)
+                operand (b4-find-operation operations operand-id)]
+            (if (= (get operand :type) :gravity/nil)
+              0
+              (if (= (get operand :type) :gravity/bool)
+                (get values operand-id) 1)))
+          (if (= opcode :conditional-join)
+            (if (= (get values (first operands)) 0)
+              (get values (b4-last operands))
+              (get values (second operands)))
+            nil))))))
+
+(defn b4-evaluate-operations
+  [remaining operations values]
+  (if (= (count remaining) 0)
+    values
+    (let [operation (first remaining)]
+      (b4-evaluate-operations
+       (rest remaining) operations
+       (assoc values (get operation :op-id)
+              (b4-semantic-value operation operations values))))))
+
+(defn b4-rejected
+  [diagnostic reason subject]
+  {:status :rejected
+   :diagnostic diagnostic
+   :missing-fact reason
+   :operation-id (get subject :operation-id)
+   :opcode (get subject :opcode)
+   :type (get subject :type)})
+
+(defn b4-build-bounded-wasm32-core
+  [mir]
+  (if (if (= (get mir :artifact) :gravity/mir-module)
+        (if (= (get mir :verification-status) :passed)
+          (if (= (get mir :profile) :hosted)
+            (if (= (get mir :target-request) :wasm)
+              (if (= (get mir :target-independent?) true)
+                (if (= (get mir :source-target) :jvm)
+                  (if (= (get mir :globals) {})
+                    (= (set (keys (get mir :functions))) #{(quote main)})
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+    (let [function (get (get mir :functions) (quote main))
+          blocks (get function :blocks)
+          block-order (b4-block-order mir function)
+          operations (b4-collect-operations blocks block-order [])
+          operation-index (b4-index-operations operations 0 {})
+          function-reason
+          (if (= (get function :artifact) :gravity/mir-function)
+            (if (= (get function :name) (quote main))
+              (if (= (get function :params) [])
+                (if (= (get function :latent-effects) #{})
+                  (if (= (get function :capabilities) #{})
+                    (if (if (= (count blocks) 1)
+                          true
+                          (= (count blocks) 4))
+                      nil :bounded-block-count)
+                    :function-capabilities)
+                  :function-effects)
+                :zero-parameter-function)
+              :main-function-name)
+            :mir-function-envelope)
+          cfg-reason
+          (if (= function-reason nil)
+            (b4-cfg-reason mir function block-order operations)
+            nil)
+          rejection
+          (if (= function-reason nil)
+            (if (= cfg-reason nil)
+              (if (if (> (count operations) 0)
+                    (if (<= (count operations) 127)
+                      (= (count operations) (count operation-index))
+                      false)
+                    false)
+                (b4-first-operation-rejection
+                 operations operations operation-index)
+                {:reason :bounded-unique-operation-count})
+              {:reason cfg-reason})
+            {:reason function-reason})]
+      (if (= rejection nil)
+        (let [return-block (get blocks (b4-last block-order))
+              return-terminator (get return-block :terminator)
+              return-id (first (get return-terminator :operands))
+              local-declarations
+              (b4-vector-append
+               [1] (b4-vector-append
+                    (b4-u32-leb (count operations)) [127]))
+              instruction-bytes
+              (b4-function-instructions
+               function block-order operations operation-index)
+              body
+              (b4-vector-append
+               local-declarations
+               (b4-vector-append
+                instruction-bytes
+                [11]))
+              type-section (b4-section 1 [1 96 0 1 127])
+              function-section (b4-section 3 [1 0])
+              export-section (b4-section 7 [1 4 109 97 105 110 0 0])
+              code-entry
+              (b4-vector-append (b4-u32-leb (count body)) body)
+              code-section
+              (b4-section 10 (b4-vector-append [1] code-entry))
+              bytes
+              (b4-vector-append
+               [0 97 115 109 1 0 0 0]
+               (b4-vector-append
+                type-section
+                (b4-vector-append
+                 function-section
+                 (b4-vector-append export-section code-section))))
+              values (b4-evaluate-operations operations operations {})]
+          {:artifact :gravity/b4-bounded-wasm32-core-lowering
+           :status :constructed-unverified
+           :source-mir-id (get mir :module-id)
+           :target :wasm32-unknown-unknown
+           :target-kind :core-module
+           :features #{}
+           :abi {:parameters [] :result :i32}
+           :imports []
+           :exports [{:name "main" :kind :function :index 0}]
+           :memory nil
+           :table nil
+           :globals []
+           :start nil
+           :data []
+           :custom-sections []
+           :runtime-helpers []
+           :component-model? false
+           :wit? false
+           :wasi? false
+           :block-order block-order
+           :operation-index operation-index
+           :wasm-bytes bytes
+           :expected-result (get values return-id)
+           :diagnostics []
+           :clojure-seed-boundary? true
+           :self-hosted? false})
+        (b4-rejected "B1-UNSUPPORTED" (get rejection :reason) rejection)))
+    (b4-rejected "B1-INPUT" :verified-bounded-wasm-mir {})))

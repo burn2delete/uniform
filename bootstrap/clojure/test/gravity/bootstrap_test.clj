@@ -33315,6 +33315,711 @@
     (is (true? (get-in fatal [:interrupt :interrupt-restored?])))
     (is (false? (get-in fatal [:interrupt :thread-alive?])))))
 
+;; FL-P07-T02 authenticated bounded raw Wasm32 core-module tests.
+
+(def ^:private authenticated-wasm-constant-source
+  (closed-pure-source-with-main "42" {:exports '[main]}))
+
+(def ^:private authenticated-wasm-conditional-source
+  (closed-pure-source-with-main
+   "(let [x 7] (if false (do x) -65))" {:exports '[main]}))
+
+(def ^:private authenticated-wasm-zero-truthiness-source
+  (closed-pure-source-with-main "(if 0 7 9)" {:exports '[main]}))
+
+(def ^:private authenticated-wasm-constant-bytes
+  [0 97 115 109 1 0 0 0
+   1 5 1 96 0 1 127
+   3 2 1 0
+   7 8 1 4 109 97 105 110 0 0
+   10 16 1 14 1 2 127
+   65 42 33 0
+   32 0 33 1
+   32 0 11])
+
+(defn- authenticated-wasm-one-op-reconstruction []
+  (let [operation
+        {:artifact :gravity/mir-operation :op-id "constant-42"
+         :opcode :constant :source-operation :literal :operands []
+         :result "constant-42" :result-kind :value
+         :constant-payload {:present? true :value 42}
+         :type :gravity/integer :effects #{} :capabilities #{}
+         :ordering :none :source {} :profile :hosted :facts {}
+         :domain-anchor nil :block-id "entry" :verifier-status :passed}
+        function
+        {:blocks {"entry" {:instructions [operation]
+                            :terminator {:operands ["constant-42"]}}}}]
+    (bootstrap/p15-s23-b4-wasm-reconstruct
+     {:function function :block-order ["entry"]
+      :operations [operation] :operation-index {"constant-42" 0}})))
+
+(defn- authenticated-wasm-insert [values index additions]
+  (vec (concat (subvec values 0 index) additions (subvec values index))))
+
+(defn- authenticated-wasm-resize-code [bytes]
+  (-> bytes (update 30 inc) (update 32 inc)))
+
+(defn- authenticated-wasm-rehash [artifact]
+  (let [semantic-id (bootstrap/p15-s23-b4-wasm-artifact-id artifact)
+        with-ids
+        (assoc artifact :semantic-id semantic-id
+               :artifact-id
+               (bootstrap/p15-s23-c11-mir-digest
+                {:kind (:kind artifact) :schema-version (:schema-version artifact)
+                 :semantic-id semantic-id}))]
+    (assoc with-ids :actual-path-binding-id
+           (bootstrap/p15-s23-b4-wasm-actual-path-binding-id
+            semantic-id (:actual-path-provenance with-ids)))))
+
+(deftest authenticated-wasm-source-plan-target-and-node-pins-are-exact
+  (let [path (str (java.io.File.
+                   "../gravity/src/gravity/backend/b4_wasm_backend_design.gravity"))
+        source (slurp path)
+        rule (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :wasm)
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
+              (:emitter rule) path source)
+        functions (:functions plan)
+        shapes
+        (into {}
+              (map (fn [[name _]]
+                     [name (select-keys (get functions name) [:arity :params])]))
+              bootstrap/p15-s23-b4-wasm-required-functions)
+        node-path (java.nio.file.Paths/get
+                   bootstrap/p15-s23-b4-wasm-node-path
+                   (make-array String 0))
+        node-bytes (java.nio.file.Files/readAllBytes node-path)
+        effectful
+        (closed-pure-source-with-main
+         "(println \"denied\")"
+         {:effects #{:io/write} :capabilities #{:io/stdout}
+          :exports '[main]})
+        effectful-data
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+           "effectful-wasm.gravity" effectful :wasm))]
+    (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
+    (is (= 52967 (alength (.getBytes
+                           source java.nio.charset.StandardCharsets/UTF_8))))
+    (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
+           (str "sha256:" (bootstrap/sha256-hex source))))
+    (is (= bootstrap/p15-s23-b4-wasm-expected-plan-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest
+            (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input plan))))
+    (is (= bootstrap/p15-s23-b4-wasm-expected-functions-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest functions)))
+    (is (= bootstrap/p15-s23-b4-wasm-expected-builder-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest
+            (get functions bootstrap/p15-s23-b4-wasm-builder-function))))
+    (is (= bootstrap/p15-s23-b4-wasm-required-functions shapes))
+    (is (= 38 (count functions)))
+    (is (= bootstrap/p15-s23-b4-wasm-node-byte-count
+           (alength node-bytes)))
+    (is (= bootstrap/p15-s23-b4-wasm-node-content-hash
+           (str "sha256:" (bootstrap/sha256-bytes-hex node-bytes))))
+    (is (= bootstrap/p15-s23-b4-wasm-node-script-hash
+           (str "sha256:"
+                (bootstrap/sha256-hex
+                 bootstrap/p15-s23-b4-wasm-node-script))))
+    (is (set/subset?
+         #{:wasm-version :embedding-model :memory-width :memory-count
+           :initial-memory-pages :maximum-memory-pages
+           :memory-growth-permission :table-representation
+           :reference-type-support :exception-handling-support
+           :gc-proposal-support :simd-support :relaxed-simd-support
+           :atomic-and-shared-memory-support :component-model-abi-version
+           :wasi-preview-or-profile :async-component-abi-version
+           :canonical-abi-adapter-support
+           :resource-handle-and-borrow-support
+           :async-func-stream-future-support
+           :completion-cancellation-backpressure-strategy
+           :import-namespace :deterministic-or-replay-required-mode}
+         (set (keys bootstrap/p15-s23-b4-wasm-bounded-feature-policy))))
+    (is (= {:wasm-version :core-v1 :memory-width :wasm32
+            :memory-growth-permission :forbidden
+            :atomic-and-shared-memory-support :disabled
+            :wasi-preview-or-profile :none}
+           (select-keys bootstrap/p15-s23-b4-wasm-bounded-feature-policy
+                        [:wasm-version :memory-width
+                         :memory-growth-permission
+                         :atomic-and-shared-memory-support
+                         :wasi-preview-or-profile])))
+    (is (= "C6-LOWERING-GAP" (:id effectful-data)))
+    (is (= :effectful-reference-interpreter-requested-jvm-target
+           (:missing-fact effectful-data)))
+    (is (not= "C14-UNSUPPORTED" (:id effectful-data)))
+    (is (= [0] (bootstrap/p15-s23-b4-wasm-u32-leb 0)))
+    (is (= [128 1] (bootstrap/p15-s23-b4-wasm-u32-leb 128)))
+    (is (= [127] (bootstrap/p15-s23-b4-wasm-s32-leb -1)))
+    (is (= [64] (bootstrap/p15-s23-b4-wasm-s32-leb -64)))
+    (is (= [191 127] (bootstrap/p15-s23-b4-wasm-s32-leb -65)))
+    (is (= [255 255 255 255 7]
+           (bootstrap/p15-s23-b4-wasm-s32-leb Integer/MAX_VALUE)))))
+
+(deftest authenticated-wasm-independent-parser-is-canonical-bounded-and-strict
+  (let [expected (authenticated-wasm-one-op-reconstruction)
+        mir {:module-id "mir-for-lowering-envelope-test"}
+        gravity-envelope
+        (bootstrap/p15-s23-b4-wasm-expected-gravity-lowering mir expected)
+        bytes (:wasm-bytes expected)
+        parsed (bootstrap/p15-s23-b4-wasm-parse-module! bytes expected)
+        padded (-> bytes
+                   (authenticated-wasm-insert 38 [0])
+                   authenticated-wasm-resize-code
+                   (assoc 37 170))
+        nop (-> bytes
+                (authenticated-wasm-insert 36 [1])
+                authenticated-wasm-resize-code)
+        bad-local (assoc bytes 39 1)
+        renamed-export (assoc bytes 24 (int \n))
+        omitted-export (vec (concat (subvec bytes 0 19)
+                                    (subvec bytes 29)))
+        empty-import (authenticated-wasm-insert bytes 15 [2 1 0])
+        empty-memory (authenticated-wasm-insert bytes 29 [5 1 0])
+        custom (vec (concat bytes [0 1 0]))
+        bad-version (assoc bytes 4 2)]
+    (is (= 43 (count bytes)))
+    (is (= bootstrap/p15-s23-b4-wasm-gravity-lowering-keys
+           (set (keys gravity-envelope))))
+    (is (bootstrap/p15-s23-b4-wasm-gravity-lowering-valid?
+         gravity-envelope mir expected))
+    (is (false? (bootstrap/p15-s23-b4-wasm-gravity-lowering-valid?
+                 (assoc gravity-envelope :forged true) mir expected)))
+    (is (false? (bootstrap/p15-s23-b4-wasm-gravity-lowering-valid?
+                 (assoc gravity-envelope :target :forged) mir expected)))
+    (is (false? (bootstrap/p15-s23-b4-wasm-gravity-lowering-valid?
+                 (assoc gravity-envelope :source-mir-id "forged")
+                 mir expected)))
+    (is (= 42 (:decoded-result parsed)))
+    (is (= [1 3 7 10] (:section-ids parsed)))
+    (is (= :code-section-payload (:operation-byte-map-coordinate parsed)))
+    (is (true? (:byte-end-exclusive? parsed)))
+    (is (= [{:operation-id "constant-42" :local-index 0
+             :opcode :constant :byte-start 5 :byte-end 9}]
+           (:operation-byte-map parsed)))
+    (doseq [truncated (mapv #(vec (take % bytes))
+                            (range (count bytes)))]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-b4-wasm-parse-module!
+               truncated expected))]
+        (is (contains? bootstrap/p15-s23-b4-wasm-diagnostic-rules
+                       (:id data)))
+        (is (not (re-find
+                  #"IndexOutOfBoundsException|IllegalArgumentException|StackOverflowError"
+                  (pr-str data))))))
+    (let [data
+          (diagnostic-data
+           #(bootstrap/p15-s23-b4-wasm-parse-instructions!
+             [0x04 0x7f 0x04] 0 3 [:i32] #{} #{0x0b} 0))]
+      (is (= "B4-MANIFEST" (:id data)))
+      (is (= :at-most-one-structured-if (:missing-fact data))))
+    (is (= "B4-MANIFEST"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module! padded expected)))))
+    (is (= "B4-MANIFEST"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module! nop expected)))))
+    (is (= "B4-MANIFEST"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module! bad-local expected)))))
+    (is (= "B4-EXPORT"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module!
+                   renamed-export expected)))))
+    (is (= "B4-EXPORT"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module!
+                   omitted-export expected)))))
+    (is (= "B4-IMPORT"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module!
+                   empty-import expected)))))
+    (is (= "B4-MEMORY"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module!
+                   empty-memory expected)))))
+    (is (= "B4-TARGET"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module! custom expected)))))
+    (is (= "B4-TARGET"
+           (:id (diagnostic-data
+                 #(bootstrap/p15-s23-b4-wasm-parse-module!
+                   bad-version expected)))))))
+
+(deftest authenticated-wasm-public-verifiers-contain-malformed-inputs
+  (let [context {:source-path "malformed-b4.gravity"}
+        before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+        host-exception-pattern
+        #"IllegalArgumentException|ClassCastException|NullPointerException|StackOverflowError"]
+    (doseq [candidate [nil 1 "x" [] {:bad true}]
+            verifier
+            [#(bootstrap/p15-s23-stage2-b4-wasm-verification-report
+               candidate nil context)
+             #(bootstrap/p15-s23-stage2-b4-wasm-verify!
+               candidate nil context)]]
+      (let [data (diagnostic-data verifier)]
+        (is (= "B4-MANIFEST" (:id data)) candidate)
+        (is (nil? (re-find host-exception-pattern (pr-str data))) candidate)))
+    (let [data
+          (diagnostic-data
+           #(bootstrap/p15-s23-b4-wasm-verify-integrity!
+             1 nil context nil nil))]
+      (is (= "B4-MANIFEST" (:id data)))
+      (is (= :bounded-b4-final-artifact-map (:missing-fact data))))
+    (let [forged
+          {:id "B4-MANIFEST" :rule "B4-MANIFEST"
+           :primary {:span {:source "secret-path"}}
+           :facts {:missing-fact :forged} :secret "do-not-leak"}
+          data
+          (diagnostic-data
+           #(bootstrap/p15-s23-b4-wasm-contain-exception!
+             "malformed-b4.gravity" :crafted-b4-diagnostic-spoof
+             (ex-info "do-not-leak" forged)))]
+      (is (= "B4-MANIFEST" (:id data)))
+      (is (= :crafted-b4-diagnostic-spoof (:missing-fact data)))
+      (is (not (str/includes? (pr-str data) "do-not-leak")))
+      (is (not (str/includes? (pr-str data) "secret-path"))))
+    (is (= before
+           (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)))))
+
+(def ^:private authenticated-wasm-live-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-wasm-"
+      (fn [root]
+        (let [left-dir (.resolve root "left")
+              right-dir (.resolve root "right")
+              _ (java.nio.file.Files/createDirectories
+                 left-dir (make-array java.nio.file.attribute.FileAttribute 0))
+              _ (java.nio.file.Files/createDirectories
+                 right-dir (make-array java.nio.file.attribute.FileAttribute 0))
+              left-path (.resolve left-dir "program.gravity")
+              right-path (.resolve right-dir "program.qst")
+              conditional-path (.resolve root "conditional.gravity")
+              truthiness-path (.resolve root "zero-truthiness.qst")
+              _ (spit (.toFile left-path) authenticated-wasm-constant-source)
+              _ (spit (.toFile right-path) authenticated-wasm-constant-source)
+              _ (spit (.toFile conditional-path)
+                      authenticated-wasm-conditional-source)
+              _ (spit (.toFile truthiness-path)
+                      authenticated-wasm-zero-truthiness-source)
+              build
+              (fn [path source]
+                (let [path (.toString path)
+                      core
+                      (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                       path source :wasm)
+                      context
+                      (bootstrap/p15-s23-stage2-closed-checked-core-context
+                       path source :wasm)
+                      c11 (bootstrap/p15-s23-stage2-c11-mir-artifact core context)
+                      artifact
+                      (bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+                       c11 core context)]
+                  {:artifact artifact :core core :context context :c11 c11}))
+              left (build left-path authenticated-wasm-constant-source)
+              right (build right-path authenticated-wasm-constant-source)
+              conditional
+              (bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
+               (.toString conditional-path)
+               authenticated-wasm-conditional-source)
+              truthiness
+              (bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
+               (.toString truthiness-path)
+               authenticated-wasm-zero-truthiness-source)
+              before-static
+              (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+              scope-tamper
+              (-> (:artifact left)
+                  (assoc-in [:scope :whole-b4?] true)
+                  authenticated-wasm-rehash)
+              scope-data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b4-wasm-verification-report
+                 scope-tamper (:core left) (:context left)))
+              after-static
+              (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+              before-context after-static
+              contextual
+              (bootstrap/p15-s23-stage2-b4-wasm-verification-report
+               (:artifact left) (:core left) (:context left))
+              after-context
+              (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+              before-missing after-context
+              missing-data
+              (with-redefs [bootstrap/p15-s23-b4-wasm-node-path
+                            "/missing/gravity-node"]
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+                   (:c11 left) (:core left) (:context left))))
+              after-missing
+              (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+              before-timeout after-missing
+              timeout-script "'use strict';setInterval(()=>{},1000);\n"
+              timeout-script-hash
+              (str "sha256:" (bootstrap/sha256-hex timeout-script))
+              timeout-data
+              (with-redefs
+                [bootstrap/p15-s23-b4-wasm-node-timeout-ms 100
+                 bootstrap/p15-s23-b4-wasm-node-script timeout-script
+                 bootstrap/p15-s23-b4-wasm-node-script-hash
+                 timeout-script-hash]
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+                   (:c11 left) (:core left) (:context left))))
+              after-timeout
+              (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+          {:left left :right right :conditional conditional
+           :truthiness truthiness
+           :static {:data scope-data :before before-static :after after-static}
+           :contextual {:report contextual :before before-context
+                        :after after-context}
+           :missing {:data missing-data :before before-missing
+                     :after after-missing}
+           :timeout {:data timeout-data :before before-timeout
+                     :after after-timeout}})))))
+
+(deftest authenticated-wasm-emits-executes-and-is-path-neutral
+  (let [{:keys [left right conditional truthiness contextual]}
+        @authenticated-wasm-live-proof
+        left-artifact (:artifact left)
+        right-artifact (:artifact right)]
+    (is (= :gravity/p15-s23-b4-authenticated-wasm-artifact
+           (:kind left-artifact)))
+    (is (= authenticated-wasm-constant-bytes
+           (get-in left-artifact [:raw-wasm :bytes])))
+    (is (= 47 (get-in left-artifact [:raw-wasm :byte-count])))
+    (is (= 42 (get-in left-artifact [:node-conformance :observed-result])))
+    (is (= 1 (get-in left-artifact
+                     [:node-conformance :invocation-local-start-count])))
+    (is (= -65 (get-in conditional [:node-conformance :observed-result])))
+    (is (= 7 (get-in truthiness [:node-conformance :observed-result])))
+    (is (str/ends-with? (get-in truthiness
+                                [:actual-path-provenance :source])
+                        ".qst"))
+    (is (= [1 3 7 10]
+           (get-in left-artifact [:independent-parser :section-ids])))
+    (let [entries (get-in conditional
+                          [:independent-parser :operation-byte-map])
+          joins (filterv #(= :conditional-join (:opcode %)) entries)
+          join (first joins)
+          width (when join (- (:byte-end join) (:byte-start join)))]
+      (is (= 1 (count joins)))
+      (is (pos-int? width))
+      (is (> width 4)))
+    (is (= [{:operation-id
+             (get-in left-artifact
+                     [:independent-parser :operation-byte-map 0 :operation-id])
+             :local-index 0 :opcode :constant :byte-start 5 :byte-end 9}
+            {:operation-id
+             (get-in left-artifact
+                     [:independent-parser :operation-byte-map 1 :operation-id])
+             :local-index 1 :opcode :function-boundary
+             :byte-start 9 :byte-end 13}]
+           (get-in left-artifact [:independent-parser :operation-byte-map])))
+    (is (= (:semantic-id left-artifact) (:semantic-id right-artifact)))
+    (is (= (:artifact-id left-artifact) (:artifact-id right-artifact)))
+    (is (= (:raw-wasm left-artifact) (:raw-wasm right-artifact)))
+    (is (= (:contract-bindings left-artifact)
+           (:contract-bindings right-artifact)))
+    (is (not= (:actual-path-binding-id left-artifact)
+              (:actual-path-binding-id right-artifact)))
+    (is (str/ends-with? (get-in left-artifact
+                                [:actual-path-provenance :source])
+                        ".gravity"))
+    (is (str/ends-with? (get-in right-artifact
+                                [:actual-path-provenance :source])
+                        ".qst"))
+    (is (= false (get-in left-artifact [:scope :whole-b4?])))
+    (is (= false (get-in left-artifact [:scope :component-model?])))
+    (is (= false (get-in left-artifact [:scope :wasi?])))
+    (is (= false (get-in left-artifact [:scope :self-hosted?])))
+    (is (= :bounded-experimental-slice
+           (get-in left-artifact [:b14-record :status])))
+    (is (= :bounded-experimental-slice
+           (get-in left-artifact [:c18-record :status])))
+    (is (false? (bootstrap/p15-s23-stage2-b4-wasm-authentic?
+                 left-artifact)))
+    (is (= :passed (get-in contextual [:report :status])))
+    (is (= 1 (get-in contextual
+                     [:report :invocation-local-start-count])))
+    (is (= 1 (- (get-in contextual [:after :starts])
+                (get-in contextual [:before :starts]))))))
+
+(deftest authenticated-wasm-static-tamper-missing-node-and-timeout-are-bounded
+  (let [{:keys [static missing timeout]} @authenticated-wasm-live-proof]
+    (is (= "B4-MANIFEST" (get-in static [:data :id])))
+    (is (= :frozen-b4-envelope-self-consistency
+           (get-in static [:data :missing-fact])))
+    (is (= (:before static) (:after static)))
+    (is (= "B4-TARGET" (get-in missing [:data :id])))
+    (is (= :pinned-node-executable (get-in missing [:data :missing-fact])))
+    (is (= (:before missing) (:after missing)))
+    (is (= "B4-TARGET" (get-in timeout [:data :id])))
+    (is (= :bounded-node-timeout-and-process-tree-cleanup
+           (get-in timeout [:data :missing-fact])))
+    (is (true? (get-in timeout [:data :facts :timed-out?])))
+    (is (true? (get-in timeout
+                       [:data :facts :captured-process-set-reaped?])))
+    (is (nat-int? (get-in timeout
+                          [:data :facts :captured-descendant-count])))
+    (is (= 1 (- (get-in timeout [:after :starts])
+                (get-in timeout [:before :starts]))))))
+
+(deftest authenticated-wasm-coherent-final-tamper-never-reaches-node
+  (let [{:keys [left]} @authenticated-wasm-live-proof
+        artifact (:artifact left)
+        core (:core left)
+        context (:context left)
+        zero-hash (str "sha256:" (apply str (repeat 64 "0")))
+        changed-bytes (assoc (get-in artifact [:raw-wasm :bytes]) 37 43)
+        changed-hash
+        (str "sha256:"
+             (bootstrap/sha256-bytes-hex
+              (byte-array (map unchecked-byte changed-bytes))))
+        forged-stdout (.getBytes
+                       "B4NODE1:43\n"
+                       java.nio.charset.StandardCharsets/UTF_8)
+        coherent-raw-forgery
+        (-> artifact
+            (assoc-in [:raw-wasm :bytes] changed-bytes)
+            (assoc-in [:raw-wasm :content-hash] changed-hash)
+            (assoc-in [:b13-record :content-hash] changed-hash)
+            (assoc-in [:independent-reconstruction :wasm-bytes]
+                      changed-bytes)
+            (assoc-in [:independent-reconstruction :expected-result] 43)
+            (assoc-in [:lowering :expected-result] 43)
+            (update-in
+             [:independent-parser :decoded-ast]
+             (fn [nodes]
+               (mapv (fn [node]
+                       (if (= :i32.const (:op node))
+                         (assoc node :value 43)
+                         node))
+                     nodes)))
+            (assoc-in [:independent-parser :decoded-result] 43)
+            (assoc-in [:independent-parser :expected-result] 43)
+            (assoc-in [:node-conformance :expected-result] 43)
+            (assoc-in [:node-conformance :observed-result] 43)
+            (assoc-in [:node-conformance :repeat-result] 43)
+            (assoc-in [:node-conformance :stdout-hash]
+                      (str "sha256:"
+                           (bootstrap/sha256-bytes-hex forged-stdout)))
+            (assoc-in [:node-conformance :stdout-byte-count]
+                      (alength forged-stdout))
+            (assoc-in [:b14-record :expected-result] 43)
+            (assoc-in [:b14-record :observed-result] 43)
+            authenticated-wasm-rehash)
+        repeated-id-paths
+        [[:b1-record :contract-binding-id]
+         [:c14-request :contract-binding-id]
+         [:b4-record :contract-binding-id]
+         [:b13-record :contract-binding-id]
+         [:b14-record :contract-binding-id]
+         [:c18-record :contract-binding-id]]
+        cheap-cases
+        (vec
+         (concat
+          [{:label :contract-closure
+            :expected "B4-MANIFEST"
+            :artifact
+            (-> artifact
+                (assoc-in [:contract-bindings :contract-binding-id] zero-hash)
+                authenticated-wasm-rehash)}
+           {:label :raw-content-hash
+            :expected "B13-HASH"
+            :artifact
+            (-> artifact
+                (assoc-in [:raw-wasm :content-hash] zero-hash)
+                authenticated-wasm-rehash)}
+           {:label :parser-extra
+            :expected "B4-MANIFEST"
+            :artifact
+            (-> artifact
+                (assoc-in [:independent-parser :forged] true)
+                authenticated-wasm-rehash)}
+           {:label :node-extra
+            :expected "B4-MANIFEST"
+            :artifact
+            (-> artifact
+                (assoc-in [:node-conformance :forged] true)
+                authenticated-wasm-rehash)}
+           {:label :c11-verifier-extra
+            :expected "B4-MANIFEST"
+            :artifact
+            (-> artifact
+                (assoc-in [:c11-verification :forged] true)
+                authenticated-wasm-rehash)}
+           {:label :scope
+            :expected "B4-MANIFEST"
+            :artifact
+            (-> artifact
+                (assoc-in [:scope :whole-b4?] true)
+                authenticated-wasm-rehash)}
+           {:label :feature-policy
+            :expected "B4-MANIFEST"
+            :artifact
+            (-> artifact
+                (assoc-in [:b4-record :feature-record
+                           :memory-growth-permission]
+                          :allowed)
+                authenticated-wasm-rehash)}]
+          (map (fn [path]
+                 {:label path :expected "B4-MANIFEST"
+                  :artifact (-> artifact
+                                (assoc-in path zero-hash)
+                                authenticated-wasm-rehash)})
+               repeated-id-paths)))]
+    (doseq [{:keys [label expected artifact]} cheap-cases]
+      (let [before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+            data
+            (diagnostic-data
+             #(bootstrap/p15-s23-b4-wasm-verify-frozen-envelope!
+               artifact (:source-path context)))
+            after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+        (is (= expected (:id data)) label)
+        (is (= before after) label)))
+    (is (= :passed
+           (bootstrap/p15-s23-b4-wasm-verify-frozen-envelope!
+            coherent-raw-forgery (:source-path context))))
+    (let [before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+          data
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-b4-wasm-verification-report
+             coherent-raw-forgery core context))
+          after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+      (is (= "B4-MANIFEST" (:id data)))
+      (is (= before after)))))
+
+(deftest authenticated-wasm-source-wrapper-preserves-upstream-diagnostics
+  (let [cases
+        [[:c6
+          (closed-pure-source-with-main
+           "7" {:target :wasm :exports '[main]})
+          "C6-LOWERING-GAP"
+          :pure-closed-slice-jvm-source-target
+          :core-lowering]
+         [:c7
+          (closed-pure-source-with-main "1.5" {:exports '[main]})
+          "C7-TYPE-MISMATCH"
+          :pure-closed-integer-numeric-scalar
+          :type-check]
+         [:c8
+          (closed-pure-source-with-main
+           "nil" {:effects #{:mystery/effect} :exports '[main]})
+          "C8-UNKNOWN"
+          :recognized-pure-slice-effect-label
+          :effect-check]]
+        before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+        observations
+        (for [extension [".gravity" ".qst"]
+              [label source expected-id expected-missing expected-stage] cases]
+          (let [path (str "b4-owned-upstream-" (name label) extension)
+                data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
+                   path source))]
+            {:label [label extension]
+             :path path
+             :expected-id expected-id
+             :expected-missing expected-missing
+             :expected-stage expected-stage
+             :data data}))
+        after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+    (is (= before after))
+    (doseq [{:keys [label path expected-id expected-missing
+                    expected-stage data]}
+            observations]
+      (is (= expected-id (:id data) (:rule data)) [label data])
+      (is (= expected-missing (:missing-fact data)) [label data])
+      (is (= expected-stage (:stage data)) [label data])
+      (is (= :wasm (:target data)) [label data])
+      (is (= path (get-in data [:primary :span :source])) [label data])
+      (is (= :gravity/diagnostic (:artifact data)) [label data])
+      (is (= :active (:lifecycle data)) [label data])
+      (is (every? (set (keys data))
+                  bootstrap/c15-diagnostic-required-fields)
+          [label data])
+      (is (= (:diagnostic-id data)
+             (bootstrap/c15-stable-diagnostic-id data))
+          [label data])
+      (is (some #(= :diagnostic-boundary-observation (:kind %))
+                (:redactions data))
+          [label data])
+      (is (not-any? #(= "c11-upstream-diagnostic-owner" (name %))
+                    (keys data))
+          [label data]))))
+
+(deftest authenticated-wasm-public-boundaries-propagate-fatal-errors
+  (let [source (closed-pure-source-with-main "7" {:exports '[main]})
+        source-fatals
+        [(AssertionError. "synthetic-b4-source-assertion")
+         (LinkageError. "synthetic-b4-source-linkage")
+         (OutOfMemoryError. "synthetic-b4-source-oom")
+         (ThreadDeath.)]
+        source-observations
+        (mapv
+         (fn [fatal]
+           {:expected fatal
+            :observed
+            (try
+              (with-redefs
+                [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 (fn [& _] (throw fatal))]
+                (bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
+                 "fatal-b4-source.gravity" source))
+              :unexpected-success
+              (catch Throwable observed observed))})
+         source-fatals)
+        observe-private-fatal
+        (fn [symbol fatal invocation]
+          (let [target (or (ns-resolve 'gravity.bootstrap symbol)
+                           (throw (ex-info "missing B4 fatal test seam"
+                                           {:symbol symbol})))]
+            (try
+              (with-redefs-fn {target (fn [& _] (throw fatal))}
+                invocation)
+              :unexpected-success
+              (catch Throwable observed observed))))
+        artifact-fatal (OutOfMemoryError. "synthetic-b4-artifact-oom")
+        artifact-observed
+        (observe-private-fatal
+         'p15-s23-b4-wasm-build-internal! artifact-fatal
+         #(bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+           nil nil {:source-path "fatal-b4-artifact.gravity"}))
+        verification-fatal
+        (LinkageError. "synthetic-b4-verification-linkage")
+        verification-observed
+        (observe-private-fatal
+         'p15-s23-b4-wasm-verify-frozen-envelope! verification-fatal
+         #(bootstrap/p15-s23-stage2-b4-wasm-verification-report
+           {} nil {:source-path "fatal-b4-verification.gravity"}))
+        authenticity-fatal
+        (AssertionError. "synthetic-b4-authenticity-assertion")
+        authenticity-observed
+        (observe-private-fatal
+         'p15-s23-stage2-b4-wasm-verify! authenticity-fatal
+         #(bootstrap/p15-s23-stage2-b4-wasm-authentic?
+           {} nil {:source-path "fatal-b4-authenticity.gravity"}))]
+    (doseq [{:keys [expected observed]} source-observations]
+      (is (identical? expected observed) (.getName (class expected))))
+    (is (identical? artifact-fatal artifact-observed))
+    (is (identical? verification-fatal verification-observed))
+    (is (identical? authenticity-fatal authenticity-observed))))
+
+(deftest authenticated-wasm-public-wrapper-preserves-b1-unsupported
+  (let [source (closed-pure-source-with-main
+                "2147483648" {:exports '[main]})
+        before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+        data
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
+           "i32-overflow.gravity" source))
+        after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+    (is (= "B1-UNSUPPORTED" (:id data)))
+    (is (= :bounded-pure-i32-mir-operation (:missing-fact data)))
+    (is (= before after))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]

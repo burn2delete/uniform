@@ -106991,9 +106991,10 @@
                 extra)))
 
 (def stage2-runtime-derived-source-targets
-  ;; :llvm is admitted only to the internal pure checked-core/C11 construction
-  ;; path.  Effectful reference authority remains explicitly JVM-only below.
-  #{:jvm :c :c-hosted :c11 :js :js-ts :llvm})
+  ;; :llvm and :wasm are admitted only to the internal pure checked-core/C11
+  ;; construction path.  Effectful reference authority remains explicitly
+  ;; JVM-only below.
+  #{:jvm :c :c-hosted :c11 :js :js-ts :llvm :wasm})
 
 (def p15-s23-closed-runtime-operations
   #{:literal :quote :local :builtin-call :println :do :if :let})
@@ -124810,6 +124811,1909 @@
         source-path :contained-source-host-failure exception)))))
 
   ))
+
+;; ---------------------------------------------------------------------------
+;; Verified C11 MIR -> authenticated bounded raw Wasm32 (FL-P07-T02 slice)
+;; ---------------------------------------------------------------------------
+
+(def p15-s23-b4-wasm-source-relative-path
+  "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity")
+(def p15-s23-b4-wasm-builder-function 'b4-build-bounded-wasm32-core)
+(def p15-s23-b4-wasm-source-byte-count 52967)
+(def p15-s23-b4-wasm-expected-source-content-hash
+  "sha256:ff0092e2c6290aa8d1bfbffdf85a18dbca8a19e939941f9c578db23c4eb614f2")
+(def p15-s23-b4-wasm-expected-plan-semantic-hash
+  "sha256:3cc9fa2bf1e41852d382ff37a1e6c69a675245065fbb03193a84ac9866c2408a")
+(def p15-s23-b4-wasm-expected-functions-semantic-hash
+  "sha256:7bfd8c7d7afd43977741374e2db8a201526e7cebfde00cfa0f90aeaac74c9227")
+(def p15-s23-b4-wasm-expected-builder-semantic-hash
+  "sha256:2c7b978156d43e0090b84dae66a3f913c0b78c7a49688ec5ee807d4e57e25ede")
+(def p15-s23-b4-wasm-required-functions
+  {'b4-build-bounded-wasm32-core {:arity 1 :params ['mir]}
+   'b4-block-order {:arity 2 :params ['mir 'function]}
+   'b4-u32-leb {:arity 1 :params ['value]}
+   'b4-s32-leb {:arity 1 :params ['value]}
+   'b4-operation-reason
+   {:arity 3 :params ['operation 'operations 'operation-index]}
+   'b4-function-instructions
+   {:arity 4 :params ['function 'block-order 'operations 'operation-index]}
+   'b4-evaluate-operations
+   {:arity 3 :params ['remaining 'operations 'values]}})
+
+(def p15-s23-b4-wasm-node-path
+  "/Users/matt/.nvm/versions/node/v20.9.0/bin/node")
+(def p15-s23-b4-wasm-node-version "v20.9.0")
+(def p15-s23-b4-wasm-node-architecture "arm64")
+(def p15-s23-b4-wasm-node-byte-count 93278736)
+(def p15-s23-b4-wasm-node-content-hash
+  "sha256:a54ba15c721a9f5b62f84e845e914be0bc48c7bb62cf62de86be6583865495a5")
+(def p15-s23-b4-wasm-node-timeout-ms 10000)
+(def p15-s23-b4-wasm-max-module-bytes 65536)
+(def p15-s23-b4-wasm-max-tool-output-bytes 4096)
+(def p15-s23-b4-wasm-bounded-feature-policy
+  {:wasm-version :core-v1
+   :embedding-model :standalone-core-module
+   :memory-width :wasm32
+   :memory-count 0 :initial-memory-pages 0 :maximum-memory-pages 0
+   :memory-growth-permission :forbidden
+   :table-count 0 :table-representation :absent :global-count 0
+   :reference-type-support :disabled
+   :exception-handling-support :disabled
+   :gc-proposal-support :disabled
+   :simd-support :disabled :relaxed-simd-support :disabled
+   :atomics-support :disabled :shared-memory-support :disabled
+   :atomic-and-shared-memory-support :disabled
+   :component-model-abi-version :not-applicable
+   :wasi-preview-profile :none
+   :wasi-preview-or-profile :none
+   :async-component-abi-version :not-applicable
+   :canonical-abi-adapter-support :disabled
+   :resource-handle-support :disabled :resource-borrow-support :disabled
+   :resource-handle-and-borrow-support :disabled
+   :async-function-support :disabled :stream-support :disabled
+   :future-support :disabled
+   :async-func-stream-future-support :disabled
+   :completion-strategy :not-applicable
+   :cancellation-strategy :not-applicable
+   :backpressure-strategy :not-applicable
+   :completion-cancellation-backpressure-strategy :not-applicable
+   :import-namespace :none
+   :deterministic-or-replay-required-mode :deterministic-pure
+   :enabled-features #{}
+   :rejected-features
+   #{:threads :tail-calls :multiple-memories :memory64}})
+(def p15-s23-b4-wasm-node-script
+  (str
+   "'use strict';\n"
+   "(async()=>{try{\n"
+   "if(process.version!==\"v20.9.0\"||process.arch!==\"arm64\")process.exit(71);\n"
+   "const b=Buffer.from(process.argv[1],\"base64\");\n"
+   "const expected=Number(process.argv[2]);\n"
+   "if(!WebAssembly.validate(b))process.exit(72);\n"
+   "const m=await WebAssembly.compile(b);\n"
+   "if(JSON.stringify(WebAssembly.Module.imports(m))!==\"[]\")process.exit(73);\n"
+   "if(JSON.stringify(WebAssembly.Module.exports(m))!==\"[{\\\"name\\\":\\\"main\\\",\\\"kind\\\":\\\"function\\\"}]\")process.exit(74);\n"
+   "const i=await WebAssembly.instantiate(m,{});\n"
+   "if(JSON.stringify(Reflect.ownKeys(i.exports))!==\"[\\\"main\\\"]\")process.exit(75);\n"
+   "const a=i.exports.main(),c=i.exports.main();\n"
+   "if(typeof a!==\"number\"||a!==expected||c!==expected)process.exit(76);\n"
+   "process.stdout.write(\"B4NODE1:\"+String(a)+\"\\n\");\n"
+   "}catch(_){process.exit(77);}})();\n"))
+(def p15-s23-b4-wasm-node-script-hash
+  "sha256:079ca5e52a1db233e31028c3890fae19ddb85d8859fc1925f0b0846bebb16c08")
+
+(def p15-s23-b4-wasm-diagnostic-rules
+  #{"B1-INPUT" "B1-UNSUPPORTED" "B4-TARGET" "B4-IMPORT"
+    "B4-EXPORT" "B4-MEMORY" "B4-MANIFEST" "B13-HASH"
+    "B14-DIFFERENTIAL"})
+
+(defn p15-s23-b4-wasm-diagnostic-stage [id]
+  (cond
+    (str/starts-with? id "B1-") :b1-backend-interface
+    (= id "B13-HASH") :b13-artifact-emission
+    (= id "B14-DIFFERENTIAL") :b14-backend-conformance
+    :else :b4-wasm-backend))
+
+(defn p15-s23-b4-wasm-diagnostic-message [id]
+  (get {"B1-INPUT" "Wasm backend input is unverified or incomplete"
+        "B1-UNSUPPORTED" "verified MIR is outside the bounded Wasm slice"
+        "B4-TARGET" "pinned Wasm target or Node contract failed"
+        "B4-IMPORT" "bounded Wasm slice forbids imports"
+        "B4-EXPORT" "bounded Wasm export contract failed"
+        "B4-MEMORY" "bounded Wasm slice forbids memory and tables"
+        "B4-MANIFEST" "raw Wasm module or artifact manifest is invalid"
+        "B13-HASH" "raw Wasm content identity failed"
+        "B14-DIFFERENTIAL" "Wasm result differs from authoritative MIR"}
+       id "bounded Wasm backend failure"))
+
+(defn p15-s23-b4-wasm-safe-facts [facts]
+  (into (sorted-map)
+        (keep (fn [key]
+                (when (contains? facts key)
+                  [key (p15-s23-c11-mir-safe-diagnostic-scalar
+                        (get facts key))])))
+        [:missing-fact :operation-id :opcode :observed-type
+         :expected-type :requested-target :tool-step :exit-code
+         :expected-result :observed-result :byte-count :expected-byte-count
+         :content-hash :expected-hash :timed-out? :node-start-count
+         :invocation-local-start-count :captured-descendant-count
+         :captured-process-set-reaped?]))
+
+(defn p15-s23-b4-wasm-diagnostic-record [id source-path subject facts]
+  (let [id (if (contains? p15-s23-b4-wasm-diagnostic-rules id)
+             id "B4-MANIFEST")
+        source-path (p15-s23-c11-mir-safe-source-path source-path)
+        facts (let [safe (p15-s23-b4-wasm-safe-facts facts)]
+                (if (seq safe) safe {:missing-fact :bounded-wasm-failure}))
+        anchor (or (:artifact-id subject)
+                   (p15-s23-c11-mir-digest
+                    {:kind :gravity/b4-diagnostic :rule id :facts facts}))
+        primary {:span (p15-s23-c11-mir-span-with-source source-path subject)
+                 :syntax-id (or (:syntax-id subject) :not-applicable)
+                 :core-node-id (or (:op-id subject) :not-applicable)
+                 :mir-operation-id (or (:op-id subject) :not-applicable)
+                 :origin-id (or (get-in subject [:source :origin-id])
+                                :not-applicable)
+                 :artifact anchor}
+        base {:artifact :gravity/diagnostic
+              :rule id :severity :error
+              :stage (p15-s23-b4-wasm-diagnostic-stage id)
+              :message-key (keyword "diagnostic" (str/lower-case id))
+              :primary primary :related []
+              :origin-chain (if (= :not-applicable (:origin-id primary))
+                              [] [(:origin-id primary)])
+              :profile :hosted :target :wasm
+              :involved-artifacts [anchor]
+              :facts facts
+              :remediation [{:kind :repair-bounded-wasm-input
+                             :from-stage :verified-c11-mir
+                             :required-evidence
+                             [:authenticated-c11-replay
+                              :independent-raw-module-verification
+                              :node-differential-execution]}]
+              :redactions [{:kind :host-details :status :redacted
+                            :policy :hashes-and-bounded-counts-only}]
+              :lifecycle :active}
+        diagnostic-id (c15-stable-diagnostic-id base)]
+    (assoc base :diagnostic-id diagnostic-id
+           :ordering-key [id (:stage base) anchor diagnostic-id])))
+
+(defn p15-s23-b4-wasm-throw-record! [record]
+  (let [message (p15-s23-b4-wasm-diagnostic-message (:rule record))]
+    (throw (ex-info message
+                    (merge record {:id (:rule record) :message message
+                                   :bootstrap-stage :stage0
+                                   :source-span (get-in record [:primary :span])
+                                   :missing-fact
+                                   (get-in record [:facts :missing-fact])
+                                   :fallback-status :rejected})))))
+
+(defn p15-s23-b4-wasm-fail! [id source-path subject facts]
+  (p15-s23-b4-wasm-throw-record!
+   (p15-s23-b4-wasm-diagnostic-record id source-path subject facts)))
+
+(defn p15-s23-b4-wasm-sanitized-complete-diagnostic [data]
+  (when (and (map? data)
+             (contains? p15-s23-b4-wasm-diagnostic-rules (:id data))
+             (= (:id data) (:rule data))
+             (map? (:primary data)) (map? (:facts data)))
+    (let [primary (:primary data)
+          source-path (or (get-in primary [:span :source]) "<b4-wasm>")
+          subject {:artifact-id (:artifact primary)
+                   :syntax-id (:syntax-id primary)
+                   :op-id (:mir-operation-id primary)
+                   :source-span (:span primary)
+                   :source {:origin-id (:origin-id primary)}}
+          rebuilt (p15-s23-b4-wasm-diagnostic-record
+                   (:id data) source-path subject (:facts data))
+          required (set c15-diagnostic-required-fields)]
+      (when (and (every? (set (keys data)) required)
+                 (= rebuilt (select-keys data (keys rebuilt))))
+        rebuilt))))
+
+(defn p15-s23-b4-wasm-contain-exception!
+  [source-path boundary exception]
+  (let [data (when (instance? clojure.lang.ExceptionInfo exception)
+               (ex-data exception))
+        b4 (p15-s23-b4-wasm-sanitized-complete-diagnostic data)
+        c11 (p15-s23-c11-mir-sanitized-complete-diagnostic data)]
+    (cond
+      b4 (p15-s23-b4-wasm-throw-record! b4)
+      c11 (p15-s23-c11-mir-throw-record! c11)
+      :else
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" source-path {}
+       {:missing-fact boundary
+        :content-hash
+        (str "sha256:" (sha256-hex (.getName (class exception))))}))))
+
+(let [p15-s23-b4-wasm-authority-token (Object.)
+      p15-s23-b4-wasm-node-state (atom {:starts 0})]
+
+(defn- p15-s23-b4-wasm-require-authority! [candidate source-path operation]
+  (when-not (identical? candidate p15-s23-b4-wasm-authority-token)
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" source-path {}
+     {:missing-fact :opaque-authenticated-b4-authority
+      :tool-step operation})))
+
+(defn p15-s23-b4-wasm-node-execution-snapshot []
+  @p15-s23-b4-wasm-node-state)
+
+(defn- p15-s23-b4-wasm-resolve-source-path [candidate source-path]
+  (p15-s23-b4-wasm-require-authority!
+   candidate source-path :resolve-pinned-b4-source)
+  (let [c11-file (java.io.File. (p15-s23-c11-mir-resolve-source-path))
+        root (loop [directory (.getParentFile c11-file)]
+               (if (or (nil? directory)
+                       (.isFile (java.io.File.
+                                 directory
+                                 p15-s23-b4-wasm-source-relative-path)))
+                 directory
+                 (recur (.getParentFile directory))))]
+    (if root
+      (.getCanonicalPath
+       (java.io.File. root p15-s23-b4-wasm-source-relative-path))
+      p15-s23-b4-wasm-source-relative-path)))
+
+(defn- p15-s23-b4-wasm-source-binding! [candidate request-source]
+  (p15-s23-b4-wasm-require-authority!
+   candidate request-source :load-pinned-b4-source)
+  (let [source-path (p15-s23-b4-wasm-resolve-source-path
+                     candidate request-source)
+        file (java.io.File. source-path)
+        byte-count (.length file)]
+    (when-not (and (.isFile file)
+                   (= byte-count p15-s23-b4-wasm-source-byte-count))
+      (p15-s23-b4-wasm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :pinned-gravity-b4-source
+        :byte-count byte-count
+        :expected-byte-count p15-s23-b4-wasm-source-byte-count}))
+    (let [bytes (java.nio.file.Files/readAllBytes (.toPath file))
+          source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
+          source-hash (str "sha256:" (sha256-bytes-hex bytes))
+          rule (c-backend-stage2-plan-emitter-source-rule!
+                request-source :wasm)
+          plan (p15-s23-stage2-compiler-artifact-plan
+                (:emitter rule) source-path source-text)
+          functions (:functions plan)
+          shapes (into {}
+                       (map (fn [[name _]]
+                              [name (select-keys (get functions name)
+                                                 [:arity :params])]))
+                       p15-s23-b4-wasm-required-functions)
+          plan-hash (p15-s23-c11-mir-digest
+                     (p15-s23-stage2-compiler-artifact-semantic-input plan))
+          functions-hash (p15-s23-c11-mir-digest functions)
+          builder-hash (p15-s23-c11-mir-digest
+                        (get functions p15-s23-b4-wasm-builder-function))]
+      (when-not (and (= source-hash
+                         p15-s23-b4-wasm-expected-source-content-hash)
+                     (= shapes p15-s23-b4-wasm-required-functions)
+                     (= plan-hash
+                        p15-s23-b4-wasm-expected-plan-semantic-hash)
+                     (= functions-hash
+                        p15-s23-b4-wasm-expected-functions-semantic-hash)
+                     (= builder-hash
+                        p15-s23-b4-wasm-expected-builder-semantic-hash))
+        (p15-s23-b4-wasm-fail!
+         "B1-INPUT" request-source {}
+         {:missing-fact :pinned-gravity-b4-source-identity
+          :content-hash source-hash}))
+      {:source-path source-path :source-byte-count byte-count
+       :source-content-hash source-hash :plan plan
+       :plan-semantic-hash plan-hash
+       :functions-semantic-hash functions-hash
+       :builder-semantic-hash builder-hash :function-shapes shapes})))
+
+(defn p15-s23-b4-wasm-u32-leb [value]
+  (loop [value value result []]
+    (let [next (quot value 128)
+          byte (mod value 128)]
+      (if (zero? next)
+        (conj result byte)
+        (recur next (conj result (+ byte 128)))))))
+
+(defn p15-s23-b4-wasm-s32-leb [value]
+  (loop [value value result []]
+    (let [q (quot value 128)
+          r (- value (* q 128))
+          [q r] (if (neg? r) [(dec q) (+ r 128)] [q r])
+          done? (or (and (zero? q) (< r 64))
+                    (and (= -1 q) (>= r 64)))]
+      (if done?
+        (conj result r)
+        (recur q (conj result (+ r 128)))))))
+
+(defn p15-s23-b4-wasm-section [id payload]
+  (vec (concat [id] (p15-s23-b4-wasm-u32-leb (count payload)) payload)))
+
+(defn p15-s23-b4-wasm-block-order [mir function]
+  (let [entry (:entry function)
+        blocks (:blocks function)]
+    (if (= 1 (count blocks))
+      [entry]
+      [entry
+       (first (get-in blocks [entry :successors]))
+       (second (get-in blocks [entry :successors]))
+       (get-in mir [:control-flow-graph :join :block-id])])))
+
+(defn p15-s23-b4-wasm-operation-sequence [mir function block-order]
+  (vec (mapcat #(get-in function [:blocks % :instructions]) block-order)))
+
+(defn p15-s23-b4-wasm-constant-i32 [operation]
+  (let [value (get-in operation [:constant-payload :value])]
+    (cond (= :gravity/bool (:type operation)) (if value 1 0)
+          (= :gravity/nil (:type operation)) 0
+          :else value)))
+
+(defn p15-s23-b4-wasm-preflight! [c11]
+  (let [mir (:mir-module c11)
+        function (get-in mir [:functions 'main])
+        block-order (when function
+                      (p15-s23-b4-wasm-block-order mir function))
+        operations (when function
+                     (p15-s23-b4-wasm-operation-sequence
+                      mir function block-order))
+        allowed #{:constant :local :local-binding :truthiness :sequence
+                  :conditional-join :lexical-scope :function-boundary}]
+    (when-not (and (= :gravity/mir-module (:artifact mir))
+                   (= :passed (:verification-status mir))
+                   (= :hosted (:profile mir))
+                   (= :jvm (:source-target mir))
+                   (= :wasm (:target-request mir))
+                   (true? (:target-independent? mir))
+                   (= #{'main} (set (keys (:functions mir))))
+                   (= #{} (:latent-effects function))
+                   (= #{} (:capabilities function))
+                   (= [] (:params function))
+                   (contains? #{1 4} (count (:blocks function)))
+                   (<= 1 (count operations) 127)
+                   (= {} (:globals mir))
+                   (= {} (:domain-anchors mir))
+                   (= {} (:runtime-check-table mir)))
+      (p15-s23-b4-wasm-fail!
+       "B1-INPUT" (get-in c11 [:provenance :actual-paths :source]) c11
+       {:missing-fact :exact-pure-wasm32-c11-envelope
+        :requested-target (:target-request mir)}))
+    (doseq [operation operations]
+      (when-not (and (contains? allowed (:opcode operation))
+                     (= #{} (:effects operation))
+                     (= #{} (:capabilities operation))
+                     (nil? (:domain-anchor operation))
+                     (= :passed (:verifier-status operation))
+                     (or (= :function-boundary (:opcode operation))
+                         (contains? #{:gravity/integer :gravity/bool
+                                      :gravity/nil}
+                                    (:type operation)))
+                     (or (not= :constant (:opcode operation))
+                         (let [value (p15-s23-b4-wasm-constant-i32 operation)]
+                           (and (integer? value)
+                                (<= Integer/MIN_VALUE value Integer/MAX_VALUE)))))
+        (p15-s23-b4-wasm-fail!
+         "B1-UNSUPPORTED" (get-in c11 [:provenance :actual-paths :source])
+         operation {:missing-fact :bounded-pure-i32-mir-operation
+                    :operation-id (:op-id operation)
+                    :opcode (:opcode operation)
+                    :observed-type (:type operation)})))
+    {:mir mir :function function :block-order block-order
+     :operations operations
+     :operation-index (zipmap (map :op-id operations) (range))}))
+
+(defn p15-s23-b4-wasm-local [opcode index]
+  (vec (concat [opcode] (p15-s23-b4-wasm-u32-leb index))))
+
+(defn p15-s23-b4-wasm-forwarded? [opcode]
+  (contains? #{:local :local-binding :sequence :lexical-scope
+               :function-boundary} opcode))
+
+(defn p15-s23-b4-wasm-operation-bytes
+  [operation operations-by-id operation-index]
+  (let [opcode (:opcode operation)
+        operands (:operands operation)
+        value-bytes
+        (cond
+          (= :constant opcode)
+          (vec (concat [0x41]
+                       (p15-s23-b4-wasm-s32-leb
+                        (p15-s23-b4-wasm-constant-i32 operation))))
+
+          (p15-s23-b4-wasm-forwarded? opcode)
+          (p15-s23-b4-wasm-local
+           0x20 (get operation-index (last operands)))
+
+          (= :truthiness opcode)
+          (let [operand (get operations-by-id (first operands))]
+            (cond (= :gravity/bool (:type operand))
+                  (p15-s23-b4-wasm-local
+                   0x20 (get operation-index (:op-id operand)))
+                  (= :gravity/nil (:type operand)) [0x41 0]
+                  :else [0x41 1]))
+
+          :else
+          (p15-s23-b4-wasm-fail!
+           "B1-UNSUPPORTED" "<b4-wasm>" operation
+           {:missing-fact :independent-operation-emission
+            :opcode opcode :operation-id (:op-id operation)}))]
+    (vec (concat value-bytes
+                 (p15-s23-b4-wasm-local
+                  0x21 (get operation-index (:op-id operation)))))))
+
+(defn p15-s23-b4-wasm-operation-stream
+  [operations all-by-id operation-index]
+  (vec (mapcat #(p15-s23-b4-wasm-operation-bytes
+                 % all-by-id operation-index)
+               operations)))
+
+(defn p15-s23-b4-wasm-function-bytes
+  [{:keys [function block-order operations operation-index]}]
+  (let [blocks (:blocks function)
+        by-id (into {} (map (juxt :op-id identity) operations))]
+    (if (= 1 (count block-order))
+      (let [block (get blocks (first block-order))
+            return-id (first (get-in block [:terminator :operands]))]
+        (vec (concat
+              (p15-s23-b4-wasm-operation-stream
+               operations by-id operation-index)
+              (p15-s23-b4-wasm-local
+               0x20 (get operation-index return-id)))))
+      (let [[entry-id then-id else-id join-id] block-order
+            entry (get blocks entry-id)
+            then-block (get blocks then-id)
+            else-block (get blocks else-id)
+            join-block (get blocks join-id)
+            join-op (first (filter #(= :conditional-join (:opcode %))
+                                   (:instructions join-block)))
+            remaining-join (vec (remove #(= :conditional-join (:opcode %))
+                                        (:instructions join-block)))
+            condition-id (first (get-in entry [:terminator :operands]))
+            then-value (first (get-in then-block [:terminator :operands]))
+            else-value (first (get-in else-block [:terminator :operands]))
+            return-id (first (get-in join-block [:terminator :operands]))]
+        (when-not (and join-op
+                       (= [condition-id then-value else-value]
+                          (:operands join-op)))
+          (p15-s23-b4-wasm-fail!
+           "B1-INPUT" "<b4-wasm>" (or join-op {})
+           {:missing-fact :exact-conditional-join-binding}))
+        (vec
+         (concat
+          (p15-s23-b4-wasm-operation-stream
+           (:instructions entry) by-id operation-index)
+          (p15-s23-b4-wasm-local 0x20 (get operation-index condition-id))
+          [0x04 0x7f]
+          (p15-s23-b4-wasm-operation-stream
+           (:instructions then-block) by-id operation-index)
+          (p15-s23-b4-wasm-local 0x20 (get operation-index then-value))
+          [0x05]
+          (p15-s23-b4-wasm-operation-stream
+           (:instructions else-block) by-id operation-index)
+          (p15-s23-b4-wasm-local 0x20 (get operation-index else-value))
+          [0x0b]
+          (p15-s23-b4-wasm-local 0x21 (get operation-index (:op-id join-op)))
+          (p15-s23-b4-wasm-operation-stream
+           remaining-join by-id operation-index)
+          (p15-s23-b4-wasm-local 0x20 (get operation-index return-id))))))))
+
+(defn p15-s23-b4-wasm-evaluate
+  [{:keys [function block-order operations]}]
+  (let [by-id (into {} (map (juxt :op-id identity) operations))
+        values
+        (reduce
+         (fn [values operation]
+           (let [opcode (:opcode operation)
+                 operands (:operands operation)
+                 value
+                 (cond
+                   (= :constant opcode)
+                   (p15-s23-b4-wasm-constant-i32 operation)
+                   (p15-s23-b4-wasm-forwarded? opcode)
+                   (get values (last operands))
+                   (= :truthiness opcode)
+                   (let [operand (get by-id (first operands))]
+                     (cond (= :gravity/nil (:type operand)) 0
+                           (= :gravity/bool (:type operand))
+                           (get values (:op-id operand))
+                           :else 1))
+                   (= :conditional-join opcode)
+                   (if (zero? (get values (first operands)))
+                     (get values (last operands))
+                     (get values (second operands))))]
+             (assoc values (:op-id operation) value)))
+         {} operations)
+        return-id (first (get-in function
+                                 [:blocks (last block-order)
+                                  :terminator :operands]))]
+    (get values return-id)))
+
+(defn p15-s23-b4-wasm-reconstruct [preflight]
+  (let [operations (:operations preflight)
+        body (vec (concat
+                   [1]
+                   (p15-s23-b4-wasm-u32-leb (count operations))
+                   [0x7f]
+                   (p15-s23-b4-wasm-function-bytes preflight)
+                   [0x0b]))
+        code-payload (vec (concat [1]
+                                  (p15-s23-b4-wasm-u32-leb (count body))
+                                  body))
+        bytes (vec (concat
+                    [0 0x61 0x73 0x6d 1 0 0 0]
+                    (p15-s23-b4-wasm-section
+                     1 [1 0x60 0 1 0x7f])
+                    (p15-s23-b4-wasm-section 3 [1 0])
+                    (p15-s23-b4-wasm-section
+                     7 [1 4 0x6d 0x61 0x69 0x6e 0 0])
+                    (p15-s23-b4-wasm-section 10 code-payload)))
+        result (p15-s23-b4-wasm-evaluate preflight)]
+    {:artifact :gravity/b4-independent-wasm32-reconstruction
+     :target :wasm32-unknown-unknown
+     :target-kind :core-module :features #{}
+     :abi {:parameters [] :result :i32}
+     :operation-count (count operations)
+     :operation-opcodes (into {} (map (juxt :op-id :opcode) operations))
+     :block-order (:block-order preflight)
+     :operation-index (:operation-index preflight)
+     :wasm-bytes bytes :expected-result result
+     :imports [] :exports [{:name "main" :kind :function :index 0}]
+     :memory nil :table nil :globals [] :start nil :data []
+     :custom-sections [] :runtime-helpers []
+     :component-model? false :wit? false :wasi? false}))
+
+(defn p15-s23-b4-wasm-parser-u32-bytes [value]
+  (loop [value value result []]
+    (let [q (quot value 128)
+          r (mod value 128)]
+      (if (zero? q)
+        (conj result r)
+        (recur q (conj result (bit-or r 0x80)))))))
+
+(defn p15-s23-b4-wasm-parser-s32-bytes [value]
+  (loop [value value result []]
+    (let [q0 (quot value 128)
+          r0 (- value (* q0 128))
+          q (if (neg? r0) (dec q0) q0)
+          r (if (neg? r0) (+ r0 128) r0)
+          done? (or (and (zero? q) (< r 64))
+                    (and (= -1 q) (>= r 64)))]
+      (if done?
+        (conj result r)
+        (recur q (conj result (bit-or r 0x80)))))))
+
+(defn p15-s23-b4-wasm-decode-u32 [bytes offset limit]
+  (loop [offset offset shift 0 value 0 raw []]
+    (when (or (>= offset limit) (>= (count raw) 5))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" "<b4-wasm>" {}
+       {:missing-fact :canonical-bounded-u32-leb}))
+    (let [byte (nth bytes offset)
+          low (bit-and byte 0x7f)
+          value (+ value (bit-shift-left low shift))
+          raw (conj raw byte)]
+      (if (zero? (bit-and byte 0x80))
+        (do
+          (when-not (and (<= 0 value 0xffffffff)
+                         (or (< shift 28) (<= low 15))
+                         (= raw (p15-s23-b4-wasm-parser-u32-bytes value)))
+            (p15-s23-b4-wasm-fail!
+             "B4-MANIFEST" "<b4-wasm>" {}
+             {:missing-fact :noncanonical-u32-leb}))
+          [value (inc offset)])
+        (recur (inc offset) (+ shift 7) value raw)))))
+
+(defn p15-s23-b4-wasm-decode-s32 [bytes offset limit]
+  (loop [offset offset shift 0 value 0 raw []]
+    (when (or (>= offset limit) (>= (count raw) 5))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" "<b4-wasm>" {}
+       {:missing-fact :canonical-bounded-s32-leb}))
+    (let [byte (nth bytes offset)
+          low (bit-and byte 0x7f)
+          next-shift (+ shift 7)
+          unsigned (+ value (bit-shift-left low shift))
+          continued? (pos? (bit-and byte 0x80))
+          signed (if (and (not continued?)
+                          (pos? (bit-and low 0x40))
+                          (< next-shift 64))
+                   (- unsigned (bit-shift-left 1 next-shift))
+                   unsigned)
+          raw (conj raw byte)]
+      (if continued?
+        (recur (inc offset) next-shift unsigned raw)
+        (do
+          (when-not (and (<= Integer/MIN_VALUE signed Integer/MAX_VALUE)
+                         (= raw (p15-s23-b4-wasm-parser-s32-bytes signed)))
+            (p15-s23-b4-wasm-fail!
+             "B4-MANIFEST" "<b4-wasm>" {}
+             {:missing-fact :noncanonical-or-overflowing-s32-leb}))
+          [signed (inc offset)])))))
+
+(declare p15-s23-b4-wasm-parse-instructions!)
+
+(defn p15-s23-b4-wasm-parse-instructions!
+  [bytes offset limit stack initialized stop-opcodes if-count]
+  (loop [offset offset stack stack initialized initialized ast []
+         if-count if-count]
+    (when (>= offset limit)
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" "<b4-wasm>" {}
+       {:missing-fact :terminated-wasm-instruction-sequence}))
+    (let [opcode (nth bytes offset)]
+      (if (contains? stop-opcodes opcode)
+        {:offset offset :stop opcode :stack stack
+         :initialized initialized :ast ast :if-count if-count}
+        (case opcode
+          0x41
+          (let [[value next]
+                (p15-s23-b4-wasm-decode-s32 bytes (inc offset) limit)]
+            (recur next (conj stack :i32) initialized
+                   (conj ast {:op :i32.const :value value
+                              :offset offset :end next}) if-count))
+
+          0x20
+          (let [[index next]
+                (p15-s23-b4-wasm-decode-u32 bytes (inc offset) limit)]
+            (when-not (contains? initialized index)
+              (p15-s23-b4-wasm-fail!
+               "B4-MANIFEST" "<b4-wasm>" {}
+               {:missing-fact :local-get-after-definite-initialization
+                :operation-id index}))
+            (recur next (conj stack :i32) initialized
+                   (conj ast {:op :local.get :index index
+                              :offset offset :end next}) if-count))
+
+          0x21
+          (let [[index next]
+                (p15-s23-b4-wasm-decode-u32 bytes (inc offset) limit)]
+            (when-not (= :i32 (peek stack))
+              (p15-s23-b4-wasm-fail!
+               "B4-MANIFEST" "<b4-wasm>" {}
+               {:missing-fact :local-set-i32-stack-value
+                :operation-id index}))
+            (recur next (pop stack) (conj initialized index)
+                   (conj ast {:op :local.set :index index
+                              :offset offset :end next}) if-count))
+
+          0x04
+          (do
+            (when-not (zero? if-count)
+              (p15-s23-b4-wasm-fail!
+               "B4-MANIFEST" "<b4-wasm>" {}
+               {:missing-fact :at-most-one-structured-if}))
+            (when-not (and (= :i32 (peek stack))
+                           (< (inc offset) limit)
+                           (= 0x7f (nth bytes (inc offset))))
+              (p15-s23-b4-wasm-fail!
+               "B4-MANIFEST" "<b4-wasm>" {}
+               {:missing-fact :structured-if-i32-contract}))
+            (let [base-stack (pop stack)
+                  then-result
+                  (p15-s23-b4-wasm-parse-instructions!
+                   bytes (+ offset 2) limit base-stack initialized #{0x05} 1)
+                  _ (when-not (and (= 0x05 (:stop then-result))
+                                   (= (conj base-stack :i32)
+                                      (:stack then-result)))
+                      (p15-s23-b4-wasm-fail!
+                       "B4-MANIFEST" "<b4-wasm>" {}
+                       {:missing-fact :structured-if-then-result}))
+                  else-result
+                  (p15-s23-b4-wasm-parse-instructions!
+                   bytes (inc (:offset then-result)) limit
+                   base-stack initialized #{0x0b} 1)
+                  _ (when-not (and (= 0x0b (:stop else-result))
+                                   (= (conj base-stack :i32)
+                                      (:stack else-result)))
+                      (p15-s23-b4-wasm-fail!
+                       "B4-MANIFEST" "<b4-wasm>" {}
+                       {:missing-fact :structured-if-else-result}))
+                  next (inc (:offset else-result))
+                  common-initialized
+                  (set/intersection (:initialized then-result)
+                                    (:initialized else-result))]
+              (recur next (conj base-stack :i32) common-initialized
+                     (conj ast {:op :if-i32 :offset offset :end next
+                                :then (:ast then-result)
+                                :else (:ast else-result)}) 1)))
+
+          (p15-s23-b4-wasm-fail!
+           "B4-MANIFEST" "<b4-wasm>" {}
+           {:missing-fact :bounded-wasm-instruction-opcode
+            :opcode opcode}))))))
+
+(declare p15-s23-b4-wasm-evaluate-decoded-ast)
+
+(defn p15-s23-b4-wasm-evaluate-decoded-ast [ast locals stack]
+  (loop [remaining ast locals locals stack stack]
+    (if (empty? remaining)
+      {:locals locals :stack stack}
+      (let [node (first remaining)]
+        (case (:op node)
+          :i32.const
+          (recur (rest remaining) locals (conj stack (:value node)))
+          :local.get
+          (recur (rest remaining) locals
+                 (conj stack (get locals (:index node))))
+          :local.set
+          (recur (rest remaining)
+                 (assoc locals (:index node) (peek stack)) (pop stack))
+          :if-i32
+          (let [condition (peek stack)
+                branch (if (zero? condition) (:else node) (:then node))
+                result (p15-s23-b4-wasm-evaluate-decoded-ast
+                        branch locals (pop stack))]
+            (recur (rest remaining) (:locals result) (:stack result))))))))
+
+(defn p15-s23-b4-wasm-flatten-decoded-ast [ast]
+  (vec
+   (mapcat (fn [node]
+             (if (= :if-i32 (:op node))
+               (concat (p15-s23-b4-wasm-flatten-decoded-ast (:then node))
+                       (p15-s23-b4-wasm-flatten-decoded-ast (:else node))
+                       [node])
+               [node]))
+           ast)))
+
+(defn p15-s23-b4-wasm-parse-module! [bytes expected]
+  (when-not (and (vector? bytes)
+                 (<= 8 (count bytes) p15-s23-b4-wasm-max-module-bytes)
+                 (every? #(and (integer? %) (<= 0 % 255)) bytes))
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" "<b4-wasm>" {}
+     {:missing-fact :raw-wasm-byte-bounds
+      :byte-count (if (coll? bytes) (count bytes) 0)}))
+  (when-not (= [0 0x61 0x73 0x6d] (subvec bytes 0 4))
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" "<b4-wasm>" {}
+     {:missing-fact :raw-wasm-magic}))
+  (when-not (= [1 0 0 0] (subvec bytes 4 8))
+    (p15-s23-b4-wasm-fail!
+     "B4-TARGET" "<b4-wasm>" {}
+     {:missing-fact :raw-wasm-core-version-one}))
+  (let [sections
+        (loop [offset 8 expected-ids [1 3 7 10] records []]
+          (if (= offset (count bytes))
+            (do
+              (when-not (empty? expected-ids)
+                (p15-s23-b4-wasm-fail!
+                 (if (= 7 (first expected-ids))
+                   "B4-EXPORT" "B4-MANIFEST")
+                 "<b4-wasm>" {}
+                 {:missing-fact :complete-required-section-set}))
+              records)
+            (let [id (nth bytes offset)
+                  _ (when-not (= id (first expected-ids))
+                      (p15-s23-b4-wasm-fail!
+                       (cond (= 7 (first expected-ids)) "B4-EXPORT"
+                             (= id 2) "B4-IMPORT"
+                             (contains? #{4 5 9 11 12} id) "B4-MEMORY"
+                             :else "B4-TARGET")
+                       "<b4-wasm>" {}
+                       {:missing-fact :exact-core-section-order}))
+                  [size payload-start]
+                  (p15-s23-b4-wasm-decode-u32
+                   bytes (inc offset) (count bytes))
+                  end (+ payload-start size)]
+              (when (> end (count bytes))
+                (p15-s23-b4-wasm-fail!
+                 "B4-MANIFEST" "<b4-wasm>" {}
+                 {:missing-fact :section-size-within-module}))
+              (recur end (rest expected-ids)
+                     (conj records {:id id :offset offset
+                                    :payload-start payload-start
+                                    :end end
+                                    :payload (subvec bytes payload-start end)})))))]
+    (let [code (:payload (nth sections 3))
+          [function-count body-size-offset]
+          (p15-s23-b4-wasm-decode-u32 code 0 (count code))
+          _function-count
+          (when-not (and (= 1 function-count)
+                         (< body-size-offset (count code)))
+            (p15-s23-b4-wasm-fail!
+             "B4-MANIFEST" "<b4-wasm>" {}
+             {:missing-fact :single-code-function-body}))
+          [body-size body-start]
+          (p15-s23-b4-wasm-decode-u32
+           code body-size-offset (count code))
+          body-end (+ body-start body-size)
+          _body-bounds
+          (when-not (and (<= body-start body-end (count code))
+                         (< body-start body-end))
+            (p15-s23-b4-wasm-fail!
+             "B4-MANIFEST" "<b4-wasm>" {}
+             {:missing-fact :code-body-size-within-section}))
+          [local-groups local-count-offset]
+          (p15-s23-b4-wasm-decode-u32 code body-start body-end)
+          [local-count local-type-offset]
+          (p15-s23-b4-wasm-decode-u32 code local-count-offset body-end)
+          instruction-start (inc local-type-offset)
+          _ (when-not (and (= 1 function-count) (= body-end (count code))
+                           (= 1 local-groups)
+                           (= (:operation-count expected) local-count)
+                           (< local-type-offset body-end)
+                           (= 0x7f (nth code local-type-offset)))
+              (p15-s23-b4-wasm-fail!
+               "B4-MANIFEST" "<b4-wasm>" {}
+               {:missing-fact :exact-code-body-and-i32-locals}))
+          decoded
+          (p15-s23-b4-wasm-parse-instructions!
+           code instruction-start body-end [] #{} #{0x0b} 0)
+          decoded-result
+          (p15-s23-b4-wasm-evaluate-decoded-ast (:ast decoded) {} [])
+          set-indices
+          (letfn [(indices [nodes]
+                    (mapcat (fn [node]
+                              (concat
+                               (when (= :local.set (:op node))
+                                 [(:index node)])
+                               (when (= :if-i32 (:op node))
+                                 (concat (indices (:then node))
+                                         (indices (:else node))))) )
+                            nodes))]
+            (vec (indices (:ast decoded))))
+          flat-ast (p15-s23-b4-wasm-flatten-decoded-ast (:ast decoded))
+          operation-id-by-index
+          (set/map-invert (:operation-index expected))
+          operation-byte-map
+          (mapv
+           (fn [index]
+             (let [position (first (keep-indexed
+                                    (fn [position node]
+                                     (when (and (= :local.set (:op node))
+                                                 (= index (:index node)))
+                                        position))
+                                    flat-ast))
+                   _ (when-not (and (integer? position) (pos? position))
+                       (p15-s23-b4-wasm-fail!
+                        "B4-MANIFEST" "<b4-wasm>" {}
+                        {:missing-fact :complete-operation-byte-map
+                         :operation-id index}))
+                   set-node (nth flat-ast position)
+                   value-node (nth flat-ast (dec position))
+                   operation-id (get operation-id-by-index index)]
+               {:operation-id operation-id :local-index index
+                :opcode (get (:operation-opcodes expected) operation-id)
+                :byte-start (:offset value-node) :byte-end (:end set-node)}))
+           (range (:operation-count expected)))]
+    (when-not (= [1 4 0x6d 0x61 0x69 0x6e 0 0]
+                 (:payload (nth sections 2)))
+      (p15-s23-b4-wasm-fail!
+       "B4-EXPORT" "<b4-wasm>" {}
+       {:missing-fact :exact-main-function-export}))
+    (when-not (and (= [1 0x60 0 1 0x7f] (:payload (nth sections 0)))
+                   (= [1 0] (:payload (nth sections 1)))
+                   (= 0x0b (:stop decoded))
+                   (= (dec body-end) (:offset decoded))
+                   (= [:i32] (:stack decoded))
+                   (= (vec (range (:operation-count expected)))
+                      (vec (sort set-indices)))
+                   (= [(:expected-result expected)]
+                      (:stack decoded-result))
+                   (= bytes (:wasm-bytes expected)))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" "<b4-wasm>" {}
+       {:missing-fact :independent-byte-plan-and-module-parity
+        :byte-count (count bytes)
+        :expected-byte-count (count (:wasm-bytes expected))}))
+    {:artifact :gravity/b4-independent-raw-module-verification
+     :status :passed :format :webassembly-core-v1
+     :section-ids (mapv :id sections)
+     :section-offsets (mapv #(select-keys % [:id :offset :end]) sections)
+     :function-count 1 :type-count 1 :export-count 1
+     :imports [] :exports [{:name "main" :kind :function :index 0}]
+     :memory-count 0 :table-count 0 :global-count 0
+     :operation-count (:operation-count expected)
+     :decoded-ast (:ast decoded)
+     :decoded-result (peek (:stack decoded-result))
+     :operation-byte-map operation-byte-map
+     :operation-byte-map-coordinate :code-section-payload
+     :byte-end-exclusive? true
+     :definitely-initialized-locals (:initialized decoded)
+     :expected-result (:expected-result expected)})))
+
+(def p15-s23-b4-wasm-gravity-lowering-keys
+  #{:artifact :status :source-mir-id :target :target-kind :features :abi
+    :imports :exports :memory :table :globals :start :data :custom-sections
+    :runtime-helpers :component-model? :wit? :wasi? :block-order
+    :operation-index :wasm-bytes :expected-result :diagnostics
+    :clojure-seed-boundary? :self-hosted?})
+
+(defn p15-s23-b4-wasm-expected-gravity-lowering [mir expected]
+  {:artifact :gravity/b4-bounded-wasm32-core-lowering
+   :status :constructed-unverified
+   :source-mir-id (:module-id mir)
+   :target (:target expected) :target-kind (:target-kind expected)
+   :features (:features expected) :abi (:abi expected)
+   :imports (:imports expected) :exports (:exports expected)
+   :memory (:memory expected) :table (:table expected)
+   :globals (:globals expected) :start (:start expected)
+   :data (:data expected) :custom-sections (:custom-sections expected)
+   :runtime-helpers (:runtime-helpers expected)
+   :component-model? (:component-model? expected)
+   :wit? (:wit? expected) :wasi? (:wasi? expected)
+   :block-order (:block-order expected)
+   :operation-index (:operation-index expected)
+   :wasm-bytes (:wasm-bytes expected)
+   :expected-result (:expected-result expected)
+   :diagnostics [] :clojure-seed-boundary? true :self-hosted? false})
+
+(defn p15-s23-b4-wasm-gravity-lowering-valid? [result mir expected]
+  (and (map? result)
+       (= p15-s23-b4-wasm-gravity-lowering-keys (set (keys result)))
+       (= (p15-s23-b4-wasm-expected-gravity-lowering mir expected)
+          result)))
+
+(defn- p15-s23-b4-wasm-invoke-builder!
+  [candidate binding mir source-path expected]
+  (p15-s23-b4-wasm-require-authority!
+   candidate source-path :invoke-pinned-gravity-b4-builder)
+  (let [result
+        (try
+          (p15-s23-stage2-runtime-execute-function
+           {:engine :gravity-b4-pinned-builder-host-runner
+            :compiler-artifact-plan? true}
+           (:plan binding) p15-s23-b4-wasm-builder-function [mir])
+          (catch StackOverflowError _
+            (p15-s23-b4-wasm-fail!
+             "B1-UNSUPPORTED" source-path {}
+             {:missing-fact :bounded-gravity-b4-builder-host-stack})))]
+    (when (= :rejected (:status result))
+      (p15-s23-b4-wasm-fail!
+       (or (:diagnostic result) "B1-UNSUPPORTED") source-path result
+       {:missing-fact (:missing-fact result)
+        :operation-id (:operation-id result) :opcode (:opcode result)
+        :observed-type (:type result)}))
+    (when-not (p15-s23-b4-wasm-gravity-lowering-valid?
+               result mir expected)
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" source-path result
+       {:missing-fact :independent-gravity-lowering-reconstruction}))
+    result))
+
+(defn- p15-s23-b4-wasm-read-stream [stream]
+  (with-open [input stream output (java.io.ByteArrayOutputStream.)]
+    (let [buffer (byte-array 1024)]
+      (loop [total 0]
+        (let [n (.read input buffer)]
+          (if (neg? n)
+            (let [bytes (.toByteArray output)]
+              {:bytes bytes :byte-count total
+               :hash (str "sha256:" (sha256-bytes-hex bytes))
+               :text (String. bytes java.nio.charset.StandardCharsets/UTF_8)})
+            (let [next (+ total n)]
+              (when (> next p15-s23-b4-wasm-max-tool-output-bytes)
+                (throw (ex-info "bounded B4 tool stream exceeded"
+                                {:b4-stream-limit? true
+                                 :byte-count next})))
+              (.write output buffer 0 n)
+              (recur next))))))))
+
+(defn- p15-s23-b4-wasm-kill-tree! [process]
+  (let [root (.toHandle process)
+        descendants (with-open [stream (.descendants root)]
+                      (vec (iterator-seq
+                            (.iterator (.limit stream (long 65))))))]
+    (doseq [handle descendants]
+      (try (.destroyForcibly ^java.lang.ProcessHandle handle)
+           (catch Exception _ nil)))
+    (try (.destroyForcibly root) (catch Exception _ nil))
+    (let [deadline (+ (System/nanoTime) 2000000000)]
+      (loop []
+        (let [alive (or (.isAlive root)
+                        (some #(.isAlive ^java.lang.ProcessHandle %)
+                              descendants))]
+          (if (and alive (< (System/nanoTime) deadline))
+            (do (Thread/sleep 10) (recur))
+            {:descendant-count (count descendants)
+             :captured-process-set-reaped? (not alive)}))))))
+
+(defn- p15-s23-b4-wasm-delete-tree! [path]
+  (when (and path (java.nio.file.Files/exists
+                   path (make-array java.nio.file.LinkOption 0)))
+    (with-open [stream (java.nio.file.Files/walk
+                        path (make-array java.nio.file.FileVisitOption 0))]
+      (doseq [entry (sort-by #(.getNameCount ^java.nio.file.Path %)
+                             > (iterator-seq (.iterator stream)))]
+        (java.nio.file.Files/deleteIfExists entry)))))
+
+(defn- p15-s23-b4-wasm-node-preflight! [candidate source-path]
+  (p15-s23-b4-wasm-require-authority!
+   candidate source-path :pinned-node-preflight)
+  (when-not (= p15-s23-b4-wasm-node-script-hash
+               (str "sha256:" (sha256-hex p15-s23-b4-wasm-node-script)))
+    (p15-s23-b4-wasm-fail!
+     "B4-TARGET" source-path {}
+     {:missing-fact :pinned-node-probe-script-identity
+      :content-hash
+      (str "sha256:" (sha256-hex p15-s23-b4-wasm-node-script))}))
+  (let [path (java.nio.file.Paths/get
+              p15-s23-b4-wasm-node-path (make-array String 0))]
+    (when-not (java.nio.file.Files/isRegularFile
+               path (make-array java.nio.file.LinkOption 0))
+      (p15-s23-b4-wasm-fail!
+       "B4-TARGET" source-path {}
+       {:missing-fact :pinned-node-executable}))
+    (let [actual (.toRealPath path (make-array java.nio.file.LinkOption 0))
+          size (java.nio.file.Files/size actual)
+          bytes (java.nio.file.Files/readAllBytes actual)
+          hash (str "sha256:" (sha256-bytes-hex bytes))]
+      (when-not (and (= size p15-s23-b4-wasm-node-byte-count)
+                     (= hash p15-s23-b4-wasm-node-content-hash)
+                     (= (.toString actual) p15-s23-b4-wasm-node-path))
+        (p15-s23-b4-wasm-fail!
+         "B4-TARGET" source-path {}
+         {:missing-fact :pinned-node-identity
+          :byte-count size :content-hash hash}))
+      {:actual-path (.toString actual) :byte-count size
+       :content-hash hash :version p15-s23-b4-wasm-node-version
+       :architecture p15-s23-b4-wasm-node-architecture})))
+
+(defn- p15-s23-b4-wasm-run-node!
+  [candidate source-path module-bytes expected-result invocation-audit]
+  (p15-s23-b4-wasm-require-authority!
+   candidate source-path :run-pinned-node-wasm)
+  (when-not (instance? clojure.lang.IAtom invocation-audit)
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" source-path {}
+     {:missing-fact :invocation-local-node-audit}))
+  (let [node (p15-s23-b4-wasm-node-preflight! candidate source-path)
+        workspace (java.nio.file.Files/createTempDirectory
+                   "gravity-b4-wasm-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        encoded (.encodeToString (java.util.Base64/getEncoder)
+                                 (byte-array (map unchecked-byte
+                                                  module-bytes)))
+        command [(:actual-path node) "-e" p15-s23-b4-wasm-node-script
+                 encoded (str expected-result)]
+        process-holder (atom nil)
+        stdout-holder (atom nil)
+        stderr-holder (atom nil)
+        primary (atom nil)]
+    (try
+      (java.nio.file.Files/setPosixFilePermissions
+       workspace #{java.nio.file.attribute.PosixFilePermission/OWNER_READ
+                   java.nio.file.attribute.PosixFilePermission/OWNER_WRITE
+                   java.nio.file.attribute.PosixFilePermission/OWNER_EXECUTE})
+      (let [builder (ProcessBuilder. ^java.util.List command)
+            _ (.directory builder (.toFile workspace))
+            environment (.environment builder)
+            _ (.clear environment)
+            _ (.put environment "PATH" "/usr/bin:/bin")
+            _ (.put environment "LC_ALL" "C")
+            _ (.put environment "LANG" "C")
+            _ (.put environment "HOME" (.toString workspace))
+            _ (.put environment "TMPDIR" (.toString workspace))
+            _ (.redirectErrorStream builder false)
+            process (.start builder)
+            _ (reset! process-holder process)
+            _ (swap! p15-s23-b4-wasm-node-state update :starts inc)
+            _ (swap! invocation-audit update :starts inc)
+            _ (.close (.getOutputStream process))
+            stdout-future (future (p15-s23-b4-wasm-read-stream
+                                   (.getInputStream process)))
+            _ (reset! stdout-holder stdout-future)
+            stderr-future (future (p15-s23-b4-wasm-read-stream
+                                   (.getErrorStream process)))
+            _ (reset! stderr-holder stderr-future)
+            finished? (.waitFor process p15-s23-b4-wasm-node-timeout-ms
+                                java.util.concurrent.TimeUnit/MILLISECONDS)
+            termination (when-not finished?
+                          (p15-s23-b4-wasm-kill-tree! process))
+            _ (when (and termination
+                         (not (true?
+                               (:captured-process-set-reaped? termination))))
+                (p15-s23-b4-wasm-fail!
+                 "B4-TARGET" source-path {}
+                 {:missing-fact :captured-process-set-reaping
+                  :captured-descendant-count
+                  (:descendant-count termination)
+                  :captured-process-set-reaped?
+                  (:captured-process-set-reaped? termination)}))
+            stdout (deref stdout-future 3000 nil)
+            stderr (deref stderr-future 3000 nil)]
+        (when-not (and finished? stdout stderr
+                       (zero? (.exitValue process))
+                       (= "" (:text stderr))
+                       (= (str "B4NODE1:" expected-result "\n")
+                          (:text stdout)))
+          (let [exit-code (when finished? (.exitValue process))
+                diagnostic
+                (if (not finished?)
+                  "B4-TARGET"
+                  (case exit-code
+                    71 "B4-TARGET"
+                    72 "B4-MANIFEST"
+                    73 "B4-IMPORT"
+                    74 "B4-EXPORT"
+                    75 "B4-EXPORT"
+                    76 "B14-DIFFERENTIAL"
+                    77 "B4-TARGET"
+                    0 "B14-DIFFERENTIAL"
+                    "B4-TARGET"))]
+           (p15-s23-b4-wasm-fail!
+           diagnostic
+           source-path {}
+           {:missing-fact (if finished?
+                            :pinned-node-wasm-result
+                            :bounded-node-timeout-and-process-tree-cleanup)
+            :exit-code exit-code
+            :timed-out? (not finished?)
+            :expected-result expected-result
+            :invocation-local-start-count (:starts @invocation-audit)
+            :captured-descendant-count (:descendant-count termination)
+            :captured-process-set-reaped?
+            (:captured-process-set-reaped? termination)})))
+        (when-not (= {:starts 1} @invocation-audit)
+          (p15-s23-b4-wasm-fail!
+           "B4-MANIFEST" source-path {}
+           {:missing-fact :exactly-one-invocation-local-node-process
+            :invocation-local-start-count (:starts @invocation-audit)}))
+        {:artifact :gravity/b4-node-conformance-execution
+         :status :passed :tool :node :version (:version node)
+         :architecture (:architecture node)
+         :tool-content-hash (:content-hash node)
+         :tool-byte-count (:byte-count node)
+         :probe-script-hash p15-s23-b4-wasm-node-script-hash
+         :timeout-ms p15-s23-b4-wasm-node-timeout-ms
+         :stdin :closed :environment :fixed-private
+         :imports [] :exports [{:name "main" :kind :function}]
+         :validate :passed :compile :passed :instantiate :passed
+         :expected-result expected-result :observed-result expected-result
+         :repeat-result expected-result
+         :stdout-hash (:hash stdout) :stdout-byte-count (:byte-count stdout)
+         :stderr-hash (:hash stderr) :stderr-byte-count (:byte-count stderr)
+         :invocation-local-start-count (:starts @invocation-audit)
+         :process-tree termination
+         :atomic-tool-identity-binding? false
+         :whole-process-tree-reaping-proved? false})
+      (catch InterruptedException interrupted
+        (reset! primary interrupted)
+        (doseq [reader [@stdout-holder @stderr-holder]]
+          (when reader (future-cancel reader)))
+        (when-let [process @process-holder]
+          (try
+            (p15-s23-b4-wasm-kill-tree! process)
+            (catch Throwable cleanup
+              (.addSuppressed interrupted cleanup))))
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch Throwable error
+        (reset! primary error)
+        (when-let [process @process-holder]
+          (when (.isAlive process)
+            (p15-s23-b4-wasm-kill-tree! process)))
+        (doseq [reader [@stdout-holder @stderr-holder]]
+          (when reader (future-cancel reader)))
+        (throw error))
+      (finally
+        (try
+          (p15-s23-b4-wasm-delete-tree! workspace)
+          (catch Throwable cleanup
+            (if-let [failure @primary]
+              (.addSuppressed ^Throwable failure cleanup)
+              (throw cleanup))))))))
+
+(defn p15-s23-b4-wasm-source-rule [binding]
+  {:artifact :gravity/b4-pinned-source-rule
+   :owner :gravity-source
+   :source-content-hash (:source-content-hash binding)
+   :source-byte-count (:source-byte-count binding)
+   :plan-semantic-hash (:plan-semantic-hash binding)
+   :functions-semantic-hash (:functions-semantic-hash binding)
+   :builder-function p15-s23-b4-wasm-builder-function
+   :builder-semantic-hash (:builder-semantic-hash binding)
+   :function-shapes (:function-shapes binding)
+   :compiled-by :clojure-stage0-seed
+   :executed-by :clojure-stage0-rule-runner
+   :self-hosted? false})
+
+(defn p15-s23-b4-wasm-semantic-input [artifact]
+  (p15-s23-c11-mir-path-neutral-value
+   (dissoc artifact :semantic-id :artifact-id :actual-path-binding-id
+           :actual-path-provenance)))
+
+(defn p15-s23-b4-wasm-artifact-id [artifact]
+  (p15-s23-c11-mir-digest (p15-s23-b4-wasm-semantic-input artifact)))
+
+(defn p15-s23-b4-wasm-actual-path-binding-id
+  [semantic-id provenance]
+  (p15-s23-c11-mir-digest
+   {:kind :gravity/b4-actual-path-binding
+    :semantic-id semantic-id :actual-path-provenance provenance}))
+
+(defn p15-s23-b4-wasm-contract-bindings [c11 binding]
+  (let [mir (:mir-module c11)
+        content (fn [kind value]
+                  {:kind kind
+                   :content-id
+                   (p15-s23-c11-mir-digest
+                    (p15-s23-c11-mir-path-neutral-value value))
+                   :entry-count (if (coll? value) (count value) 1)})]
+    (let [base
+          {:artifact :gravity/b4-frozen-contract-binding-closure
+           :profile-target
+           (content :profile-target
+                    (select-keys mir [:profile :source-target :target-request
+                                      :target-request-metadata
+                                      :profile-target-table]))
+           :effects-capabilities
+           (content :effects-capabilities
+                    (select-keys mir [:effect-table :effect-order-graph
+                                      :capability-table
+                                      :capability-proof-table]))
+           :safety-proofs-ownership
+           (content :safety-proofs-ownership
+                    (select-keys mir [:safety-table :ownership-table
+                                      :runtime-check-table
+                                      :proof-certificate-table]))
+           :types-source-map
+           (content :types-source-map
+                    (select-keys mir [:type-table :source-map]))
+           :abi-runtime-providers
+           (content :abi-runtime-providers
+                    {:abi {:parameters [] :result :i32}
+                     :target-runtime :none :target-providers []
+                     :runtime-helpers []
+                     :wasm-feature-policy
+                     p15-s23-b4-wasm-bounded-feature-policy
+                     :conformance-tool
+                     {:tool :node :version p15-s23-b4-wasm-node-version
+                      :content-hash p15-s23-b4-wasm-node-content-hash
+                      :target-runtime? false}})
+           :dependencies
+           (content :dependencies
+                    {:c11-source-rule (:source-rule c11)
+                     :c11-pass-record (:pass-execution-record mir)
+                     :b4-source-rule (p15-s23-b4-wasm-source-rule binding)})
+           :c11-verifier
+           (content :c11-verifier
+                    {:report-id (get-in c11 [:verification-report :report-id])
+                     :report-hash
+                     (get-in c11 [:verification-report :report-hash])
+                     :status (get-in c11 [:verification-report
+                                          :verification-status])})}]
+      (assoc base :contract-binding-id
+             (p15-s23-c11-mir-digest base)))))
+
+(defn- p15-s23-b4-wasm-final-record
+  [c11 checked-core context c11-report binding lowering reconstruction
+   parser-report node-report]
+  (let [bytes (byte-array (map unchecked-byte
+                               (:wasm-bytes reconstruction)))
+        content-hash (str "sha256:" (sha256-bytes-hex bytes))
+        source-path (:source-path context)
+        contract-bindings (p15-s23-b4-wasm-contract-bindings c11 binding)
+        contract-binding-id (:contract-binding-id contract-bindings)
+        base
+        {:kind :gravity/p15-s23-b4-authenticated-wasm-artifact
+         :schema-version 1
+         :c11 {:artifact-id (:artifact-id c11) :mir-id (:mir-id c11)
+               :source-core-artifact-id (:source-core-artifact-id c11)
+               :verification-report-id
+               (get-in c11 [:verification-report :report-id])
+               :verification-report-hash
+               (get-in c11 [:verification-report :report-hash])}
+         :source-rule (p15-s23-b4-wasm-source-rule binding)
+         :contract-bindings contract-bindings
+         :b1-record {:artifact :gravity/b1-backend-input
+                     :input-kind :verified-mir
+                     :verification-status :passed
+                     :mir-id (:mir-id c11) :effects #{} :capabilities #{}
+                     :contract-binding-id contract-binding-id}
+         :c14-request {:artifact :gravity/lowering-request
+                       :profile :hosted :source-target :jvm
+                       :requested-target :wasm
+                       :target :wasm32-unknown-unknown
+                       :abi {:parameters [] :result :i32}
+                       :features #{} :effects #{} :capabilities #{}
+                       :contract-binding-id contract-binding-id}
+         :b4-record {:artifact :gravity/wasm-backend-manifest
+                     :status :partial-bounded-executable-slice
+                     :target-kind :core-module
+                     :target :wasm32-unknown-unknown
+                     :feature-record
+                     p15-s23-b4-wasm-bounded-feature-policy
+                     :imports [] :exports [{:name "main" :kind :function
+                                            :index 0}]
+                     :runtime-helpers [] :effects #{} :capabilities #{}
+                     :contract-binding-id contract-binding-id}
+         :b13-record {:artifact :gravity/content-addressed-artifact-record
+                      :logical-path "program.wasm"
+                      :retention :ephemeral-conformance-intent
+                      :content-hash content-hash
+                      :byte-count (count bytes)
+                      :contract-binding-id contract-binding-id}
+         :b14-record {:artifact :gravity/backend-conformance-report
+                      :status :bounded-experimental-slice
+                      :validator :pinned-node-20.9.0
+                      :expected-result (:expected-result reconstruction)
+                      :observed-result (:observed-result node-report)
+                      :tool-identity-race-residual :unclosed
+                      :process-tree-proof :bounded-captured-set-only
+                      :negative-diagnostics :covered-by-focused-tests
+                      :contract-binding-id contract-binding-id}
+         :c18-record {:artifact :gravity/backend-translation-validation
+                      :status :bounded-experimental-slice
+                      :gravity-source-lowering :reconstructed
+                      :raw-module-parser :passed
+                      :differential-execution :passed
+                      :contract-binding-id contract-binding-id}
+         :lowering (dissoc lowering :wasm-bytes)
+         :raw-wasm {:bytes (:wasm-bytes reconstruction)
+                    :content-hash content-hash
+                    :byte-count (count bytes)}
+         :independent-reconstruction reconstruction
+         :independent-parser parser-report
+         :node-conformance node-report
+         :c11-verification
+         (select-keys c11-report [:status :mir-id :checked-core-artifact-id
+                                  :semantic-replay-parity :b1-preflight])
+         :scope {:task :FL-P07-B4-PHASE1
+                 :subset :bounded-pure-scalar-forwarding-do-let-if
+                 :whole-b4? false :public? false :release? false
+                 :component-model? false :wit? false :wasi? false
+                 :memory? false :self-hosted? false
+                 :compile-to-any-target? false
+                 :atomic-tool-identity-binding? false
+                 :whole-process-tree-reaping-proved? false}
+         :diagnostics [] :clojure-seed-boundary? true :self-hosted? false}
+        provenance {:source source-path
+                    :c11-source (get-in c11 [:provenance :actual-paths
+                                             :c11-source])
+                    :b4-source (:source-path binding)
+                    :node p15-s23-b4-wasm-node-path}
+        semantic-id (p15-s23-b4-wasm-artifact-id base)
+        artifact-id (p15-s23-c11-mir-digest
+                     {:kind (:kind base) :schema-version 1
+                      :semantic-id semantic-id})]
+    (assoc base :semantic-id semantic-id :artifact-id artifact-id
+           :actual-path-provenance provenance
+           :actual-path-binding-id
+           (p15-s23-b4-wasm-actual-path-binding-id
+            semantic-id provenance))))
+
+(def p15-s23-b4-wasm-final-artifact-keys
+  #{:kind :schema-version :semantic-id :artifact-id :actual-path-binding-id
+    :actual-path-provenance :c11 :source-rule :contract-bindings
+    :b1-record :c14-request
+    :b4-record :b13-record :b14-record :c18-record :lowering :raw-wasm
+    :independent-reconstruction :independent-parser :node-conformance
+    :c11-verification :scope :diagnostics :clojure-seed-boundary?
+    :self-hosted?})
+
+(def p15-s23-b4-wasm-frozen-nested-keysets
+  {[:actual-path-provenance] #{:source :c11-source :b4-source :node}
+   [:c11] #{:artifact-id :mir-id :source-core-artifact-id
+            :verification-report-id :verification-report-hash}
+   [:source-rule] #{:artifact :owner :source-content-hash :source-byte-count
+                    :plan-semantic-hash :functions-semantic-hash
+                    :builder-function :builder-semantic-hash :function-shapes
+                    :compiled-by :executed-by :self-hosted?}
+   [:contract-bindings]
+   #{:artifact :profile-target :effects-capabilities
+     :safety-proofs-ownership :types-source-map :abi-runtime-providers
+     :dependencies :c11-verifier :contract-binding-id}
+   [:contract-bindings :profile-target] #{:kind :content-id :entry-count}
+   [:contract-bindings :effects-capabilities] #{:kind :content-id :entry-count}
+   [:contract-bindings :safety-proofs-ownership]
+   #{:kind :content-id :entry-count}
+   [:contract-bindings :types-source-map] #{:kind :content-id :entry-count}
+   [:contract-bindings :abi-runtime-providers]
+   #{:kind :content-id :entry-count}
+   [:contract-bindings :dependencies] #{:kind :content-id :entry-count}
+   [:contract-bindings :c11-verifier] #{:kind :content-id :entry-count}
+   [:b1-record] #{:artifact :input-kind :verification-status :mir-id
+                  :effects :capabilities :contract-binding-id}
+   [:c14-request] #{:artifact :profile :source-target :requested-target :target
+                    :abi :features :effects :capabilities
+                    :contract-binding-id}
+   [:b4-record] #{:artifact :status :target-kind :target :feature-record
+                  :imports :exports :runtime-helpers :effects :capabilities
+                  :contract-binding-id}
+   [:b13-record] #{:artifact :logical-path :retention :content-hash
+                   :byte-count :contract-binding-id}
+   [:b14-record] #{:artifact :status :validator :expected-result
+                   :observed-result :tool-identity-race-residual
+                   :process-tree-proof :negative-diagnostics
+                   :contract-binding-id}
+   [:c18-record] #{:artifact :status :gravity-source-lowering
+                   :raw-module-parser :differential-execution
+                   :contract-binding-id}
+   [:lowering] (disj p15-s23-b4-wasm-gravity-lowering-keys :wasm-bytes)
+   [:raw-wasm] #{:bytes :content-hash :byte-count}
+   [:independent-reconstruction]
+   #{:artifact :target :target-kind :features :abi :operation-count
+     :operation-opcodes :block-order :operation-index :wasm-bytes
+     :expected-result :imports :exports :memory :table :globals :start :data
+     :custom-sections :runtime-helpers :component-model? :wit? :wasi?}
+   [:independent-parser]
+   #{:artifact :status :format :section-ids :section-offsets :function-count
+     :type-count :export-count :imports :exports :memory-count :table-count
+     :global-count :operation-count :decoded-ast :decoded-result
+     :operation-byte-map :operation-byte-map-coordinate :byte-end-exclusive?
+     :definitely-initialized-locals :expected-result}
+   [:node-conformance]
+   #{:artifact :status :tool :version :architecture :tool-content-hash
+     :tool-byte-count :probe-script-hash :timeout-ms :stdin :environment
+     :imports :exports :validate :compile :instantiate :expected-result
+     :observed-result :repeat-result :stdout-hash :stdout-byte-count
+     :stderr-hash :stderr-byte-count :invocation-local-start-count
+     :process-tree :atomic-tool-identity-binding?
+     :whole-process-tree-reaping-proved?}
+   [:c11-verification] #{:status :mir-id :checked-core-artifact-id
+                         :semantic-replay-parity :b1-preflight}
+   [:scope] #{:task :subset :whole-b4? :public? :release? :component-model?
+              :wit? :wasi? :memory? :self-hosted? :compile-to-any-target?
+              :atomic-tool-identity-binding?
+              :whole-process-tree-reaping-proved?}})
+
+(def p15-s23-b4-wasm-frozen-scope
+  {:task :FL-P07-B4-PHASE1
+   :subset :bounded-pure-scalar-forwarding-do-let-if
+   :whole-b4? false :public? false :release? false
+   :component-model? false :wit? false :wasi? false
+   :memory? false :self-hosted? false :compile-to-any-target? false
+   :atomic-tool-identity-binding? false
+   :whole-process-tree-reaping-proved? false})
+
+(defn p15-s23-b4-wasm-verify-frozen-envelope!
+  [artifact source-path]
+  (when-not (map? artifact)
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" source-path {}
+     {:missing-fact :bounded-b4-final-artifact-map}))
+  (p15-s23-c11-mir-bounded-value!
+   source-path :b4-frozen-envelope artifact 65536 128)
+  (when-not (= p15-s23-b4-wasm-final-artifact-keys
+               (set (keys artifact)))
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" source-path artifact
+     {:missing-fact :frozen-b4-envelope-self-consistency}))
+  (doseq [[path expected-keys] p15-s23-b4-wasm-frozen-nested-keysets]
+    (let [value (get-in artifact path)]
+      (when-not (and (map? value) (= expected-keys (set (keys value))))
+        (p15-s23-b4-wasm-fail!
+         "B4-MANIFEST" source-path artifact
+         {:missing-fact :frozen-b4-envelope-self-consistency}))))
+  (let [raw (:raw-wasm artifact)
+        bytes (:bytes raw)]
+    (when-not (and (vector? bytes)
+                   (<= 8 (count bytes) p15-s23-b4-wasm-max-module-bytes)
+                   (every? #(and (integer? %) (<= 0 % 255)) bytes))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" source-path artifact
+       {:missing-fact :raw-wasm-byte-bounds
+        :byte-count (if (vector? bytes) (count bytes) 0)}))
+    (let [observed-hash
+          (str "sha256:"
+               (sha256-bytes-hex (byte-array (map unchecked-byte bytes))))]
+      (when-not (and (= (count bytes) (:byte-count raw))
+                     (= observed-hash (:content-hash raw))
+                     (= (:byte-count raw)
+                        (get-in artifact [:b13-record :byte-count]))
+                     (= (:content-hash raw)
+                        (get-in artifact [:b13-record :content-hash])))
+        (p15-s23-b4-wasm-fail!
+         "B13-HASH" source-path artifact
+         {:missing-fact :raw-wasm-content-hash
+          :content-hash (:content-hash raw)
+          :expected-hash observed-hash}))))
+  (let [closure (:contract-bindings artifact)
+        contract-id (:contract-binding-id closure)
+        repeated-contract-ids
+        (mapv #(get-in artifact [% :contract-binding-id])
+              [:b1-record :c14-request :b4-record :b13-record
+               :b14-record :c18-record])
+        node (:node-conformance artifact)
+        result (:expected-result node)
+        stdout-bytes (.getBytes
+                      (str "B4NODE1:" result "\n")
+                      java.nio.charset.StandardCharsets/UTF_8)
+        empty-bytes (byte-array 0)
+        fixed-node
+        {:artifact :gravity/b4-node-conformance-execution
+         :status :passed :tool :node
+         :version p15-s23-b4-wasm-node-version
+         :architecture p15-s23-b4-wasm-node-architecture
+         :tool-content-hash p15-s23-b4-wasm-node-content-hash
+         :tool-byte-count p15-s23-b4-wasm-node-byte-count
+         :probe-script-hash p15-s23-b4-wasm-node-script-hash
+         :timeout-ms p15-s23-b4-wasm-node-timeout-ms
+         :stdin :closed :environment :fixed-private
+         :imports [] :exports [{:name "main" :kind :function}]
+         :validate :passed :compile :passed :instantiate :passed
+         :invocation-local-start-count 1 :process-tree nil
+         :atomic-tool-identity-binding? false
+         :whole-process-tree-reaping-proved? false}
+        fixed-node-keys (set (keys fixed-node))]
+    (when-not
+     (and
+      (= :gravity/p15-s23-b4-authenticated-wasm-artifact (:kind artifact))
+      (= 1 (:schema-version artifact)) (= [] (:diagnostics artifact))
+      (true? (:clojure-seed-boundary? artifact))
+      (false? (:self-hosted? artifact))
+      (= (:semantic-id artifact) (p15-s23-b4-wasm-artifact-id artifact))
+      (= (:artifact-id artifact)
+         (p15-s23-c11-mir-digest
+          {:kind (:kind artifact) :schema-version 1
+           :semantic-id (:semantic-id artifact)}))
+      (= (:actual-path-binding-id artifact)
+         (p15-s23-b4-wasm-actual-path-binding-id
+          (:semantic-id artifact) (:actual-path-provenance artifact)))
+      (= :gravity/b4-frozen-contract-binding-closure (:artifact closure))
+      (= contract-id
+         (p15-s23-c11-mir-digest (dissoc closure :contract-binding-id)))
+      (every? #(= contract-id %) repeated-contract-ids)
+      (= p15-s23-b4-wasm-bounded-feature-policy
+         (get-in artifact [:b4-record :feature-record]))
+      (= p15-s23-b4-wasm-frozen-scope (:scope artifact))
+      (= fixed-node (select-keys node fixed-node-keys))
+      (= result (:observed-result node) (:repeat-result node)
+         (get-in artifact [:b14-record :expected-result])
+         (get-in artifact [:b14-record :observed-result]))
+      (= (str "sha256:" (sha256-bytes-hex stdout-bytes))
+         (:stdout-hash node))
+      (= (alength stdout-bytes) (:stdout-byte-count node))
+      (= (str "sha256:" (sha256-bytes-hex empty-bytes))
+         (:stderr-hash node))
+      (= 0 (:stderr-byte-count node))
+      (= :bounded-experimental-slice (get-in artifact [:b14-record :status]))
+      (= :bounded-experimental-slice (get-in artifact [:c18-record :status])))
+     (p15-s23-b4-wasm-fail!
+      "B4-MANIFEST" source-path artifact
+      {:missing-fact :frozen-b4-envelope-self-consistency})))
+  :passed)
+
+(defn p15-s23-b4-wasm-verify-integrity!
+  [artifact fresh context binding preflight]
+  (let [source-path (:source-path context)]
+    (when-not (map? artifact)
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" source-path {}
+       {:missing-fact :bounded-b4-final-artifact-map}))
+    (p15-s23-c11-mir-bounded-value!
+     source-path :b4-final-artifact-integrity artifact 65536 128)
+    (let [raw-bytes (get-in artifact [:raw-wasm :bytes])]
+      (when (and (vector? raw-bytes)
+                 (<= (count raw-bytes) p15-s23-b4-wasm-max-module-bytes)
+                 (every? #(and (integer? %) (<= 0 % 255)) raw-bytes))
+        (let [observed (str "sha256:"
+                            (sha256-bytes-hex
+                             (byte-array (map unchecked-byte raw-bytes))))]
+          (when-not (= observed (get-in artifact [:raw-wasm :content-hash]))
+            (p15-s23-b4-wasm-fail!
+             "B13-HASH" source-path artifact
+             {:missing-fact :raw-wasm-content-hash
+              :content-hash (get-in artifact [:raw-wasm :content-hash])
+              :expected-hash observed})))))
+    (when-not (and (= p15-s23-b4-wasm-final-artifact-keys
+                       (set (keys artifact)))
+                   (= :gravity/p15-s23-b4-authenticated-wasm-artifact
+                      (:kind artifact))
+                   (= 1 (:schema-version artifact))
+                   (= [] (:diagnostics artifact))
+                   (true? (:clojure-seed-boundary? artifact))
+                   (false? (:self-hosted? artifact))
+                   (= (:semantic-id artifact)
+                      (p15-s23-b4-wasm-artifact-id artifact))
+                   (= (:artifact-id artifact)
+                      (p15-s23-c11-mir-digest
+                       {:kind (:kind artifact) :schema-version 1
+                        :semantic-id (:semantic-id artifact)}))
+                   (= (:actual-path-binding-id artifact)
+                      (p15-s23-b4-wasm-actual-path-binding-id
+                       (:semantic-id artifact)
+                       (:actual-path-provenance artifact))))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" source-path artifact
+       {:missing-fact :exact-frozen-b4-envelope-and-identities}))
+    (let [expected-reconstruction (p15-s23-b4-wasm-reconstruct preflight)
+          expected-lowering
+          (p15-s23-b4-wasm-invoke-builder!
+           p15-s23-b4-wasm-authority-token binding
+           (:mir-module fresh) source-path expected-reconstruction)
+          parser (p15-s23-b4-wasm-parse-module!
+                  (get-in artifact [:raw-wasm :bytes])
+                  expected-reconstruction)
+          raw-bytes (byte-array
+                     (map unchecked-byte
+                          (get-in artifact [:raw-wasm :bytes])))
+          content-hash (str "sha256:" (sha256-bytes-hex raw-bytes))
+          expected-provenance
+          {:source source-path
+           :c11-source (get-in fresh [:provenance :actual-paths :c11-source])
+           :b4-source (:source-path binding)
+           :node p15-s23-b4-wasm-node-path}
+          expected-contract-bindings
+          (p15-s23-b4-wasm-contract-bindings fresh binding)
+          contract-binding-id
+          (:contract-binding-id expected-contract-bindings)
+          expected-result (:expected-result expected-reconstruction)
+          stdout-bytes (.getBytes
+                        (str "B4NODE1:" expected-result "\n")
+                        java.nio.charset.StandardCharsets/UTF_8)
+          empty-bytes (byte-array 0)
+          expected-node
+          {:artifact :gravity/b4-node-conformance-execution
+           :status :passed :tool :node
+           :version p15-s23-b4-wasm-node-version
+           :architecture p15-s23-b4-wasm-node-architecture
+           :tool-content-hash p15-s23-b4-wasm-node-content-hash
+           :tool-byte-count p15-s23-b4-wasm-node-byte-count
+           :probe-script-hash p15-s23-b4-wasm-node-script-hash
+           :timeout-ms p15-s23-b4-wasm-node-timeout-ms
+           :stdin :closed :environment :fixed-private
+           :imports [] :exports [{:name "main" :kind :function}]
+           :validate :passed :compile :passed :instantiate :passed
+           :expected-result expected-result :observed-result expected-result
+           :repeat-result expected-result
+           :stdout-hash (str "sha256:" (sha256-bytes-hex stdout-bytes))
+           :stdout-byte-count (alength stdout-bytes)
+           :stderr-hash (str "sha256:" (sha256-bytes-hex empty-bytes))
+           :stderr-byte-count 0 :invocation-local-start-count 1
+           :process-tree nil
+           :atomic-tool-identity-binding? false
+           :whole-process-tree-reaping-proved? false}
+          expected-c11-verification
+          {:status :passed :mir-id (:mir-id fresh)
+           :checked-core-artifact-id (:source-core-artifact-id fresh)
+           :semantic-replay-parity :passed
+           :b1-preflight (:b1-preflight fresh)}]
+      (when-not
+       (and
+        (= {:artifact-id (:artifact-id fresh) :mir-id (:mir-id fresh)
+            :source-core-artifact-id (:source-core-artifact-id fresh)
+            :verification-report-id
+            (get-in fresh [:verification-report :report-id])
+            :verification-report-hash
+            (get-in fresh [:verification-report :report-hash])}
+           (:c11 artifact))
+        (= (p15-s23-b4-wasm-source-rule binding) (:source-rule artifact))
+        (= expected-contract-bindings (:contract-bindings artifact))
+        (= expected-provenance (:actual-path-provenance artifact))
+        (= (dissoc expected-lowering :wasm-bytes) (:lowering artifact))
+        (= expected-reconstruction (:independent-reconstruction artifact))
+        (= parser (:independent-parser artifact))
+        (= {:bytes (:wasm-bytes expected-reconstruction)
+            :content-hash content-hash
+            :byte-count (count (:wasm-bytes expected-reconstruction))}
+           (:raw-wasm artifact))
+        (= {:artifact :gravity/b1-backend-input
+            :input-kind :verified-mir :verification-status :passed
+            :mir-id (:mir-id fresh) :effects #{} :capabilities #{}
+            :contract-binding-id contract-binding-id}
+           (:b1-record artifact))
+        (= {:artifact :gravity/lowering-request
+            :profile :hosted :source-target :jvm :requested-target :wasm
+            :target :wasm32-unknown-unknown
+            :abi {:parameters [] :result :i32}
+            :features #{} :effects #{} :capabilities #{}
+            :contract-binding-id contract-binding-id}
+           (:c14-request artifact))
+        (= {:artifact :gravity/wasm-backend-manifest
+            :status :partial-bounded-executable-slice
+            :target-kind :core-module :target :wasm32-unknown-unknown
+            :feature-record p15-s23-b4-wasm-bounded-feature-policy
+            :imports [] :exports [{:name "main" :kind :function :index 0}]
+            :runtime-helpers [] :effects #{} :capabilities #{}
+            :contract-binding-id contract-binding-id}
+           (:b4-record artifact))
+        (= {:artifact :gravity/content-addressed-artifact-record
+            :logical-path "program.wasm"
+            :retention :ephemeral-conformance-intent
+            :content-hash content-hash
+            :byte-count (count (:wasm-bytes expected-reconstruction))
+            :contract-binding-id contract-binding-id}
+           (:b13-record artifact))
+        (= {:artifact :gravity/backend-conformance-report
+            :status :bounded-experimental-slice
+            :validator :pinned-node-20.9.0
+            :expected-result expected-result :observed-result expected-result
+            :tool-identity-race-residual :unclosed
+            :process-tree-proof :bounded-captured-set-only
+            :negative-diagnostics :covered-by-focused-tests
+            :contract-binding-id contract-binding-id}
+           (:b14-record artifact))
+        (= {:artifact :gravity/backend-translation-validation
+            :status :bounded-experimental-slice
+            :gravity-source-lowering :reconstructed
+            :raw-module-parser :passed :differential-execution :passed
+            :contract-binding-id contract-binding-id}
+           (:c18-record artifact))
+        (= {:task :FL-P07-B4-PHASE1
+            :subset :bounded-pure-scalar-forwarding-do-let-if
+            :whole-b4? false :public? false :release? false
+            :component-model? false :wit? false :wasi? false
+            :memory? false :self-hosted? false
+            :compile-to-any-target? false
+            :atomic-tool-identity-binding? false
+            :whole-process-tree-reaping-proved? false}
+           (:scope artifact))
+        (= expected-c11-verification (:c11-verification artifact))
+        (= expected-node (:node-conformance artifact)))
+       (p15-s23-b4-wasm-fail!
+        "B4-MANIFEST" source-path artifact
+        {:missing-fact :fresh-c11-source-proof-byte-and-tool-bindings}))
+      :passed)))
+
+(defn- p15-s23-b4-wasm-build-internal!
+  [supplied-c11 checked-core context]
+  (let [source-path (or (:source-path context) "<b4-wasm>")]
+    (p15-s23-c11-mir-bounded-value!
+     source-path :b4-c11-ingress supplied-c11
+     p15-s23-c11-mir-max-final-artifact-carrier-nodes
+     p15-s23-c11-mir-max-carrier-depth)
+    (let [fresh (p15-s23-stage2-c11-mir-artifact checked-core context)
+          report (p15-s23-stage2-c11-mir-verification-report
+                  supplied-c11 checked-core context)]
+      (when-not (and (= :passed (:status report))
+                     (= supplied-c11 fresh)
+                     (= (p15-s23-c11-mir-semantic-input supplied-c11)
+                        (p15-s23-c11-mir-semantic-input fresh)))
+        (p15-s23-b4-wasm-fail!
+         "B1-INPUT" source-path supplied-c11
+         {:missing-fact :fresh-context-bound-c11-parity}))
+      (let [preflight (p15-s23-b4-wasm-preflight! fresh)
+            binding (p15-s23-b4-wasm-source-binding!
+                     p15-s23-b4-wasm-authority-token source-path)
+            reconstruction (p15-s23-b4-wasm-reconstruct preflight)
+            lowering (p15-s23-b4-wasm-invoke-builder!
+                      p15-s23-b4-wasm-authority-token binding
+                      (:mir-module fresh) source-path reconstruction)
+            parser (p15-s23-b4-wasm-parse-module!
+                    (:wasm-bytes lowering) reconstruction)
+            invocation-audit (atom {:starts 0})
+            node (p15-s23-b4-wasm-run-node!
+                  p15-s23-b4-wasm-authority-token source-path
+                  (:wasm-bytes lowering) (:expected-result reconstruction)
+                  invocation-audit)]
+        (let [artifact
+              (p15-s23-b4-wasm-final-record
+               fresh checked-core context report binding lowering
+               reconstruction parser node)]
+          (p15-s23-b4-wasm-verify-integrity!
+           artifact fresh context binding preflight)
+          artifact)))))
+
+(defn p15-s23-stage2-b4-wasm-artifact-from-c11!
+  [c11 checked-core context]
+  (let [source-path (or (:source-path context) "<b4-wasm>")]
+    (try
+      (p15-s23-b4-wasm-build-internal! c11 checked-core context)
+      (catch StackOverflowError _
+        (p15-s23-b4-wasm-fail!
+         "B1-INPUT" source-path {}
+         {:missing-fact :bounded-hostile-b4-ingress-host-stack}))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread)) (throw interrupted))
+      (catch clojure.lang.ExceptionInfo exception
+        (p15-s23-b4-wasm-contain-exception!
+         source-path :contained-b4-diagnostic exception))
+      (catch Exception error
+        (p15-s23-b4-wasm-contain-exception!
+         source-path :contained-b4-host-failure error)))))
+
+(defn p15-s23-stage2-b4-wasm-source-artifact!
+  [source-path source-text]
+  (try
+    (let [upstream-diagnostic-owner (Object.)
+          [checked-core context]
+          (binding [*p15-s23-c11-upstream-diagnostic-owner*
+                    upstream-diagnostic-owner
+                    *p15-s23-c11-mir-diagnostic-context*
+                    {:requested-target :wasm}]
+            (try
+              [(p15-s23-stage2-closed-checked-core-source-artifact
+                source-path source-text :wasm)
+               (p15-s23-stage2-closed-checked-core-context
+                source-path source-text :wasm)]
+              (catch InterruptedException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted))
+              (catch clojure.lang.ExceptionInfo exception
+                (if (p15-s23-c11-mir-owned-upstream-diagnostic?
+                     (ex-data exception))
+                  (p15-s23-c11-mir-contain-checked-core-exception!
+                   source-path :b4-source-checked-core-diagnostic exception)
+                  (throw exception)))))
+          c11 (p15-s23-stage2-c11-mir-artifact checked-core context)]
+      (p15-s23-stage2-b4-wasm-artifact-from-c11!
+       c11 checked-core context))
+    (catch StackOverflowError _
+      (p15-s23-b4-wasm-fail!
+       "B1-INPUT" source-path {}
+       {:missing-fact :bounded-hostile-b4-source-host-stack}))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread)) (throw interrupted))
+    (catch clojure.lang.ExceptionInfo exception
+      (p15-s23-b4-wasm-contain-exception!
+       source-path :contained-b4-source-diagnostic exception))
+    (catch Exception error
+      (p15-s23-b4-wasm-contain-exception!
+       source-path :contained-b4-source-host-failure error))))
+
+(defn p15-s23-stage2-b4-wasm-verification-report
+  [artifact checked-core context]
+  (let [source-path (if (map? context)
+                      (or (:source-path context) "<b4-wasm>")
+                      "<b4-wasm>")]
+    (try
+      (when-not (map? artifact)
+        (p15-s23-b4-wasm-fail!
+         "B4-MANIFEST" source-path {}
+         {:missing-fact :bounded-b4-final-artifact-map}))
+      (p15-s23-c11-mir-bounded-value!
+       source-path :b4-public-final-artifact-ingress artifact 65536 128)
+      (p15-s23-b4-wasm-verify-frozen-envelope! artifact source-path)
+      (let [fresh (p15-s23-stage2-c11-mir-artifact checked-core context)
+            fresh-report (p15-s23-stage2-c11-mir-verification-report
+                          fresh checked-core context)
+            _ (when-not (= :passed (:status fresh-report))
+                (p15-s23-b4-wasm-fail!
+                 "B1-INPUT" source-path fresh
+                 {:missing-fact :fresh-c11-before-static-b4-integrity}))
+            binding (p15-s23-b4-wasm-source-binding!
+                     p15-s23-b4-wasm-authority-token source-path)
+            preflight (p15-s23-b4-wasm-preflight! fresh)
+            _ (p15-s23-b4-wasm-verify-integrity!
+               artifact fresh context binding preflight)
+            expected (p15-s23-b4-wasm-build-internal!
+                      fresh checked-core context)
+            local-start-count
+            (get-in expected
+                    [:node-conformance :invocation-local-start-count])]
+        (when-not (= 1 local-start-count)
+          (p15-s23-b4-wasm-fail!
+           "B4-MANIFEST" source-path artifact
+           {:missing-fact :exactly-one-contextual-node-process
+            :invocation-local-start-count local-start-count}))
+        (when-not (= (p15-s23-b4-wasm-semantic-input artifact)
+                     (p15-s23-b4-wasm-semantic-input expected))
+          (p15-s23-b4-wasm-fail!
+           "B4-MANIFEST" source-path artifact
+           {:missing-fact :contextual-fresh-b4-replay-parity}))
+        {:artifact :gravity/b4-contextual-authenticity-report
+         :status :passed :artifact-id (:artifact-id artifact)
+         :semantic-id (:semantic-id artifact)
+         :fresh-c11 :passed :gravity-b4-replay :passed
+         :independent-reconstruction :passed
+         :raw-module-verification :passed :pinned-node-replay :passed
+         :invocation-local-start-count local-start-count
+         :self-hosted? false})
+      (catch StackOverflowError _
+        (p15-s23-b4-wasm-fail!
+         "B4-MANIFEST" source-path {}
+         {:missing-fact :bounded-hostile-b4-verification-host-stack}))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread)) (throw interrupted))
+      (catch clojure.lang.ExceptionInfo exception
+        (p15-s23-b4-wasm-contain-exception!
+         source-path :contained-b4-verification-diagnostic exception))
+      (catch Exception error
+        (p15-s23-b4-wasm-contain-exception!
+         source-path :contained-b4-verification-host-failure error)))))
+
+(defn p15-s23-stage2-b4-wasm-verify! [artifact checked-core context]
+  (let [report (p15-s23-stage2-b4-wasm-verification-report
+                artifact checked-core context)]
+    (when-not (= :passed (:status report))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" (:source-path context) artifact
+       {:missing-fact :contextual-b4-verification-status}))
+    :passed))
+
+(defn p15-s23-stage2-b4-wasm-authentic?
+  ([artifact] false)
+  ([artifact checked-core context]
+   (try
+     (= :passed (p15-s23-stage2-b4-wasm-verify!
+                 artifact checked-core context))
+     (catch StackOverflowError _ false)
+     (catch InterruptedException interrupted
+       (.interrupt (Thread/currentThread)) (throw interrupted))
+     (catch Exception _ false))))
+
+)
 
 (defn p15-s23-closed-runtime-target-record
   "Build target evidence after the consumer has authenticated the packet once.
