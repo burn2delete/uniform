@@ -129468,13 +129468,17 @@
   [value]
   (cond
     (map? value)
-    [:map
-     (->> value
-          (map (fn [[key item]]
-                 [(reader-canonical-value key)
-                  (reader-canonical-value item)]))
-          (sort-by pr-str)
-          vec)]
+    (let [decorated
+          (mapv
+           (fn [[key item]]
+             (let [entry [(reader-canonical-value key)
+                          (reader-canonical-value item)]]
+               [(pr-str entry) entry]))
+           value)]
+      [:map
+       (->> decorated
+            (sort-by first)
+            (mapv second))])
 
     (set? value)
     [:set (->> value

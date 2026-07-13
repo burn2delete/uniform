@@ -9717,6 +9717,94 @@
               (bootstrap/reader-canonical-hash
                (conj long-prefix :suffix-b))))))
 
+(defrecord ReaderCanonicalCollisionRecord [value])
+
+(defn- legacy-reader-canonical-value
+  [value]
+  (cond
+    (map? value)
+    [:map
+     (->> value
+          (map (fn [[key item]]
+                 [(legacy-reader-canonical-value key)
+                  (legacy-reader-canonical-value item)]))
+          (sort-by pr-str)
+          vec)]
+
+    (set? value)
+    [:set (->> value
+               (map legacy-reader-canonical-value)
+               (sort-by pr-str)
+               vec)]
+
+    (vector? value)
+    [:vector (mapv legacy-reader-canonical-value value)]
+
+    (seq? value)
+    [:list (mapv legacy-reader-canonical-value value)]
+
+    :else value))
+
+(defn- legacy-reader-canonical-hash
+  [value]
+  (str "sha256:"
+       (bootstrap/sha256-hex
+        (binding [*print-length* nil
+                  *print-level* nil
+                  *print-meta* true]
+          (pr-str (legacy-reader-canonical-value value))))))
+
+(deftest reader-canonical-map-order-caches-exact-legacy-entry-keys
+  (let [pattern-left (java.util.regex.Pattern/compile "same-pattern")
+        pattern-right (java.util.regex.Pattern/compile "same-pattern")
+        record-key (->ReaderCanonicalCollisionRecord 7)
+        map-key {:value 7}
+        prefix-key (symbol "canonical-prefix")
+        control-key (symbol (str "canonical-prefix" (char 1)))
+        collision-maps
+        [{pattern-left :z pattern-right :a}
+         (into {} [[pattern-right :a] [pattern-left :z]])
+         {record-key :record map-key :plain-map}
+         (into {} [[map-key :plain-map] [record-key :record]])
+         {prefix-key [:short :value]
+          control-key [:control :value]}]
+        curated
+        [nil true false 0 -1 1N 1.5M 2/3 "text" \a :keyword 'symbol
+         (java.util.UUID/fromString "00000000-0000-0000-0000-000000000007")
+         (java.util.Date. 0)
+         '(a (b c))
+         [1 {:nested [2 3]} #{:z :a}]
+         (with-meta [:meta :value] {:source :test})
+         (array-map :z [3 2 1] :a {:deep {:value [1 2 3]}})
+         (hash-map :a {:deep {:value [1 2 3]}} :z [3 2 1])
+         (array-map :duplicate 1 :duplicate 2)]
+        values (vec (concat curated collision-maps))]
+    (doseq [value values]
+      (is (= (legacy-reader-canonical-value value)
+             (bootstrap/reader-canonical-value value))
+          value)
+      (is (= (legacy-reader-canonical-hash value)
+             (bootstrap/reader-canonical-hash value))
+          value))
+    (is (= (bootstrap/reader-canonical-value
+            (array-map :z [3 2 1] :a {:deep {:value [1 2 3]}}))
+           (bootstrap/reader-canonical-value
+            (hash-map :a {:deep {:value [1 2 3]}} :z [3 2 1]))))
+    (let [entry-count 64
+          value (into {}
+                      (map (fn [index]
+                             [(keyword (str "k" index))
+                              (vec (range 256))]))
+                      (range entry-count))
+          calls (atom 0)
+          original @#'clojure.core/pr-str]
+      (with-redefs [clojure.core/pr-str
+                    (fn [& args]
+                      (swap! calls inc)
+                      (apply original args))]
+        (bootstrap/reader-canonical-value value))
+      (is (= entry-count @calls)))))
+
 (deftest reader-source-id-is-independent-of-process-working-directory
   (let [repo-root (.getCanonicalPath (java.io.File. "."))
         bootstrap-directory (.getCanonicalPath
