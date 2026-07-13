@@ -307,7 +307,7 @@
 (def c11-mir-instruction-contract
   {:artifact :gravity/c11-mir-instruction-contract
    :required-fields [:op-id :opcode :operands :result
-                     :type :effects :ordering
+                     :constant-payload :type :effects :ordering
                      :source :profile :facts
                      :domain-anchor :verifier-status]
    :operation-families [:constant
@@ -371,7 +371,7 @@
 (def c11-mir-value-contract
   {:artifact :gravity/c11-mir-value-contract
    :required-fields [:value-id :kind :type
-                     :defined-by :uses :source
+                     :constant-payload :defined-by :uses :source
                      :ownership :effects :safety]
    :value-kinds [:parameter
                  :block-argument
@@ -552,12 +552,13 @@
           :contract c11-mir-terminator-contract}))
 
 (defn build-c11-mir-instruction
-  [op-id opcode operands result type effects ordering source profile facts domain-anchor]
+  [op-id opcode operands result constant-payload type effects ordering source profile facts domain-anchor]
   (quote {:artifact :gravity/mir-instruction
           :op-id op-id
           :opcode opcode
           :operands operands
           :result result
+          :constant-payload constant-payload
           :type type
           :effects effects
           :ordering ordering
@@ -569,11 +570,12 @@
           :contract c11-mir-instruction-contract}))
 
 (defn build-c11-mir-value
-  [value-id kind type defined-by uses source ownership effects safety]
+  [value-id kind type constant-payload defined-by uses source ownership effects safety]
   (quote {:artifact :gravity/mir-value
           :value-id value-id
           :kind kind
           :type type
+          :constant-payload constant-payload
           :defined-by defined-by
           :uses uses
           :source source
@@ -829,6 +831,16 @@
   ; Gravity `println` returns nil.  Model that nil as an explicit SSA value so
   ; a resultless effect at function tail never creates an undefined return.
   (get node :node-id))
+
+(defn c11-constant-payload
+  [node]
+  ; Constants must remain self-contained in MIR.  A type and an origin cannot
+  ; distinguish 1 from 2 or true from false, so the authenticated payload is
+  ; carried explicitly for every :constant operation and is unambiguously
+  ; absent everywhere else.
+  (if (= (c11-opcode node) :constant)
+    {:present? true :value (get (get node :attributes) :value)}
+    :not-applicable))
 
 (defn c11-operation-ordering
   [node]
@@ -1147,6 +1159,7 @@
      :operands []
      :result (c11-runtime-check-token-id check)
      :result-kind :runtime-check-token
+     :constant-payload :not-applicable
      :type :gravity/runtime-check-token
      :effects #{}
      :capabilities #{}
@@ -1184,6 +1197,7 @@
      :operands (c11-operation-operands node)
      :result (c11-operation-result node)
      :result-kind (if (= (get node :type) :gravity/nil) :unit :value)
+     :constant-payload (c11-constant-payload node)
      :type (get node :type)
      ; Containers carry aggregate child summaries in checked core.  MIR direct
      ; effects/capabilities come only from the intrinsic operation; the full
@@ -1375,6 +1389,7 @@
                 :value-id token-id
                 :kind :runtime-check-token
                 :type :gravity/runtime-check-token
+                :constant-payload :not-applicable
                 :defined-by (get definitions token-id)
                 :uses (c11-uses-for-value data-flow token-id [])
                 :source (c11-runtime-check-source node check)
@@ -1396,6 +1411,7 @@
                  :value-id value-id
                  :kind :instruction-result
                  :type (get node :type)
+                 :constant-payload (c11-constant-payload node)
                  :defined-by (get definitions value-id)
                  :uses
                  (c11-append-uses

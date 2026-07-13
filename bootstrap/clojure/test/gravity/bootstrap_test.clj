@@ -24077,7 +24077,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:1f08cbf50f5a6664e93efd44c82bff2fb654f503a93a8dc080c1b02b834ee7d2"
+    (is (= bootstrap/p15-s23-c11-mir-expected-source-content-hash
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c11-mir-specification\n"
@@ -30515,6 +30515,16 @@
                 blocks (get-in module [:functions entrypoint :blocks])
                 operations
                 (bootstrap/p15-s23-c11-mir-operation-sequence module)
+                nodes-by-id
+                (into {} (map (juxt :node-id identity))
+                      (:core-nodes left-core))
+                values (get-in module [:data-flow-graph :values])
+                constant-operation
+                (first (filter #(= :constant (:opcode %)) operations))
+                constant-operation-id (:op-id constant-operation)
+                tampered-constant-payload
+                (assoc (:constant-payload constant-operation)
+                       :value :tampered-constant-payload)
                 edges (get-in module [:data-flow-graph :edges])
                 terminator-uses
                 (get-in module [:data-flow-graph :terminator-uses])
@@ -30623,6 +30633,19 @@
                 (is (contains? (get module table-key)
                                (get-in operation [:facts fact-key]))
                     [(:op-id operation) fact-key]))
+              (doseq [operation operations]
+                (let [node (get nodes-by-id (:op-id operation))
+                      expected
+                      (if (= :constant (:opcode operation))
+                        {:present? true
+                         :value (get-in node [:attributes :value])}
+                        :not-applicable)]
+                  (is (= expected (:constant-payload operation))
+                      [(:op-id operation) :operation-constant-payload])
+                  (is (= expected
+                         (get-in values
+                                 [(:result operation) :constant-payload]))
+                      [(:op-id operation) :value-constant-payload])))
               (doseq [edge edges]
                 (is
                  (some
@@ -30671,7 +30694,27 @@
                                    :incoming 0 :predecessor]
                                   "sha256:forged-predecessor")
                         "C11-BLOCK"
-                        :canonical-single-conditional-c11-cfg]]]
+                        :canonical-single-conditional-c11-cfg]
+                       [(c11-update-operation
+                         module constant-operation-id
+                         #(assoc % :constant-payload
+                                 tampered-constant-payload))
+                        "C11-MODULE" :checked-core-operation-parity]
+                       [(assoc-in module
+                                  [:data-flow-graph :values
+                                   constant-operation-id :constant-payload]
+                                  tampered-constant-payload)
+                        "C11-TYPE" :exact-ssa-value-table]
+                       [(-> module
+                            (c11-update-operation
+                             constant-operation-id
+                             #(assoc % :constant-payload
+                                     tampered-constant-payload))
+                            (assoc-in
+                             [:data-flow-graph :values
+                              constant-operation-id :constant-payload]
+                             tampered-constant-payload))
+                        "C11-MODULE" :checked-core-operation-parity]]]
                 (let [data (c11-raw-diagnostic
                             candidate left-core left-context)]
                   (is (= expected-id (:id data)) data)
@@ -30708,6 +30751,25 @@
                     (c11-final-diagnostic coherent left-core left-context)]
                 (is (= "C11-SAFETY" (:id data)) data)
                 (is (= :linked-c6-c10-id-references
+                       (:missing-fact data)) data))
+              (let [mutated-module
+                    (-> module
+                        (c11-update-operation
+                         constant-operation-id
+                         #(assoc % :constant-payload
+                                 tampered-constant-payload))
+                        (assoc-in
+                         [:data-flow-graph :values
+                          constant-operation-id :constant-payload]
+                         tampered-constant-payload))
+                    coherent
+                    (c11-test-rehash
+                     (assoc left :mir-module mutated-module)
+                     left-core left-context)
+                    data
+                    (c11-final-diagnostic coherent left-core left-context)]
+                (is (= "C11-MODULE" (:id data)) data)
+                (is (= :checked-core-operation-parity
                        (:missing-fact data)) data)))
             (testing "complete C15 diagnostics survive nested containment"
               (let [broken
@@ -31290,12 +31352,12 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 67382 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:1f08cbf50f5a6664e93efd44c82bff2fb654f503a93a8dc080c1b02b834ee7d2"
+    (is (= 68163 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:bee70c3a0c30404ef000d046f85601d8bbbb1205ff679bceb5d284de8c30459b"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:b2811b29e76331aea22ab04635a54d7bf39975c78d7cea1120c3843b9776b2b3"
+    (is (= "sha256:23e422b13189e9565654fec4d24ec3345aa231b0e27ff4547d70f39da0e236cd"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:50f8e40298b8b8d5a5f11961154c5cc60a11cf0e6f3d61608763ba4ed5296495"
+    (is (= "sha256:cf8b8f970db7509f78a8c1a388c33c82a7ea1151e141e6de492ae3032761a9d8"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
     (is (= "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
@@ -31311,7 +31373,7 @@
            (:builder-semantic-hash binding)))
     (is (= bootstrap/p15-s23-c11-mir-required-functions
            (:function-shapes binding)))
-    (is (= 64 (count (get-in binding [:plan :functions]))))
+    (is (= 65 (count (get-in binding [:plan :functions]))))
     (with-temp-directory
       "gravity-c11-unrelated-cwd-"
       (fn [directory]
@@ -31404,6 +31466,1507 @@
                        [:facts :expected-source-content-hash])
                (get-in same-size-data
                        [:facts :observed-source-content-hash]))))))))
+(deftest authenticated-llvm-source-and-toolchain-records-are-pinned
+  (let [source-path bootstrap/p15-s23-b3-llvm-source-relative-path
+        source-text (slurp source-path)
+        emitter-rule
+        (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+         source-path :llvm)
+        plan
+        (bootstrap/p15-s23-stage2-compiler-artifact-plan
+         (:emitter emitter-rule) source-path source-text)
+        functions (:functions plan)
+        shapes
+        (into {}
+              (map (fn [[name _]]
+                     [name (select-keys (get functions name)
+                                        [:arity :params])]))
+              bootstrap/p15-s23-b3-llvm-required-functions)
+        gravity-source-policy
+        (bootstrap/p15-s23-stage2-runtime-execute-function
+         {:engine :b3-policy-pin :compiler-artifact-plan? true}
+         plan 'b3-bounded-arm64-macos-policy-record [])]
+    (is (= 82589 bootstrap/p15-s23-b3-llvm-source-byte-count
+           (alength (.getBytes
+                     source-text java.nio.charset.StandardCharsets/UTF_8))))
+    (is (= "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37"
+           bootstrap/p15-s23-b3-llvm-expected-source-content-hash
+           (str "sha256:" (bootstrap/sha256-hex source-text))))
+    (is (= "sha256:38810226acd2009934a18d58a12c2a7de2d3815f4f344eb2162854059d16ddd2"
+           bootstrap/p15-s23-b3-llvm-expected-plan-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest
+            (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
+             plan))))
+    (is (= "sha256:119618cc5180e8d75f4a4f62634d9ef91aa8c8962029fff7b0009b217bd252e8"
+           bootstrap/p15-s23-b3-llvm-expected-functions-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest functions)))
+    (is (= "sha256:a18355c4b224902853e30f249593103b1515afc64e88486dc56c65ec98360f36"
+           bootstrap/p15-s23-b3-llvm-expected-builder-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest
+            (get functions bootstrap/p15-s23-b3-llvm-builder-function))))
+    (is (= bootstrap/p15-s23-b3-llvm-required-functions shapes))
+    (is (= 72 (count functions)))
+    (is (= {:source-content-hash
+            bootstrap/p15-s23-b3-llvm-expected-source-content-hash
+            :source-byte-count bootstrap/p15-s23-b3-llvm-source-byte-count
+            :plan-semantic-hash
+            bootstrap/p15-s23-b3-llvm-expected-plan-semantic-hash
+            :functions-semantic-hash
+            bootstrap/p15-s23-b3-llvm-expected-functions-semantic-hash
+            :builder-semantic-hash
+            bootstrap/p15-s23-b3-llvm-expected-builder-semantic-hash
+            :function-shapes bootstrap/p15-s23-b3-llvm-required-functions}
+           (bootstrap/p15-s23-b3-llvm-expected-source-rule)))
+    (is (= {:byte-count 7273344
+            :content-hash
+            "sha256:38fc8af9d342a3a1d32a626195314a913ee255d8cbd259067d665ea55735b7c0"}
+           bootstrap/p15-s23-b3-llvm-expected-file-magic-content))
+    (is (= {:artifact :gravity/b3-llvm-toolchain-fingerprint
+            :sdk-version "26.5" :sdk-policy :macosx-26.5
+            :clang-identity "Apple clang 21.0.0 clang-2100.1.1.101"
+            :default-target-triple "arm64-apple-darwin25.5.0"
+            :linker-identity :apple-ld-1267
+            :xcrun-identity :apple-xcrun-72
+            :file-identity :file-5.41
+            :file-magic-source :system-file-magic-mgc
+            :file-magic-content
+            bootstrap/p15-s23-b3-llvm-expected-file-magic-content
+            :otool-identity :llvm-otool-cctools-1040-llvm-21
+            :observed-target-triple "arm64-apple-macosx14.0.0"
+            :target-policy-source :pinned-not-host-inferred
+            :observed-environment-only? true}
+           (bootstrap/p15-s23-b3-llvm-expected-toolchain-static-record)))
+    (is (= {:source-target :jvm
+            :requested-target :llvm
+            :selection :explicit-bootstrap-seed-target-override
+            :reason :checked-core-seed-contract}
+           (:target-selection bootstrap/p15-s23-b3-llvm-policy)))
+    (is (= "arm64-apple-macosx14.0.0"
+           (:target-triple bootstrap/p15-s23-b3-llvm-policy)))
+    (is (= {:source-declaration-target :jvm
+            :requested-lowering-target :llvm
+            :direct-source-declared-llvm? false
+            :target-triple "arm64-apple-macosx14.0.0"
+            :data-layout
+            "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+            :cpu "generic"
+            :features "+v8a,+fp-armv8,+neon"
+            :calling-convention :darwin-pcs-ccc
+            :object-format :mach-o
+            :architecture :arm64
+            :relocation-model :pic
+            :code-model :small
+            :optimization-level :O0
+            :minimum-os-version "14.0"
+            :sanitizers []
+            :instrumentation []
+            :gravity-exception-unwind :none
+            :platform-unwind-metadata :darwin-compact-unwind-required
+            :tls-model :not-applicable}
+           (select-keys
+            bootstrap/p15-s23-b3-llvm-policy
+            [:source-declaration-target :requested-lowering-target
+             :direct-source-declared-llvm? :target-triple :data-layout
+             :cpu :features :calling-convention :object-format
+             :architecture :relocation-model :code-model
+             :optimization-level :minimum-os-version :sanitizers
+             :instrumentation :gravity-exception-unwind
+             :platform-unwind-metadata :tls-model])))
+    (is (= [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+           (:platform-runtime-providers bootstrap/p15-s23-b3-llvm-policy)))
+    (is (= (assoc bootstrap/p15-s23-b3-llvm-policy
+                  :build-runtime-providers
+                  [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
+                   :file-5.41 :llvm-otool-cctools-1040
+                   :darwin-process-loader])
+           bootstrap/p15-s23-b3-llvm-source-lowering-policy))
+    (is (= bootstrap/p15-s23-b3-llvm-source-lowering-policy
+           gravity-source-policy))
+    (is (every?
+         (set (:build-runtime-providers bootstrap/p15-s23-b3-llvm-policy))
+         [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
+          :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader
+          :openjdk-26.0.1-ffm-native-access
+          :darwin-libsystem-renamex-np]))
+    (is (= (:build-runtime-providers bootstrap/p15-s23-b3-llvm-policy)
+           (get-in (bootstrap/p15-s23-b3-llvm-expected-provider-contract)
+                   [:build])))
+    (is (= {:inherited-environment? false
+            :fixed-values {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
+                           "LC_ALL" "C" "LANG" "C"}
+            :private-physical-values ["HOME" "TMPDIR"]
+            :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
+            :forbidden-names
+            ["DEVELOPER_DIR" "SDKROOT" "MACOSX_DEPLOYMENT_TARGET"
+             "CPATH" "LIBRARY_PATH"]}
+           bootstrap/p15-s23-b3-llvm-environment-policy))
+    (is (= :experimental
+           (:tier bootstrap/p15-s23-b3-llvm-policy)))
+    (is (= :internal
+           (:exposure bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:whole-b3? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:public? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:release? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:self-hosted? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (nil? (ns-resolve 'gravity.bootstrap
+                          'p15-s23-b3-llvm-finalization-token)))
+    (is (nil? (ns-resolve 'gravity.bootstrap
+                          'p15-s23-b3-llvm-final-record)))
+    (is (some? (ns-resolve 'gravity.bootstrap
+                           'p15-s23-b3-llvm-require-authority!)))))
+
+(deftest authenticated-llvm-source-declared-target-is-preserved-as-c6
+  (let [source
+        (closed-pure-source-with-main
+         "7" {:target :llvm :exports '[main]})
+        before (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+        observations
+        (into
+         (sorted-map)
+         (map
+          (fn [extension]
+            (let [path (str "source-declared-llvm" extension)]
+              [extension
+               [(diagnostic-data
+                 #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                   path source))
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                   path source))]])))
+         [".gravity" ".qst"])
+        forged-record
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+             (fn [& _]
+               (throw
+                (ex-info
+                 "source-target-secret"
+                 {:id "C6-LOWERING-GAP"
+                  :missing-fact :pure-closed-slice-jvm-source-target
+                  :source-target-secret "must-not-cross"})))]
+            (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+             "forged-source-declared-llvm.gravity" source)))
+        fatal-results
+        (mapv
+         (fn [fatal]
+           {:expected fatal
+            :observed
+            (try
+              (with-redefs
+                [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                 (fn [& _] (throw fatal))]
+                (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                 "fatal-source-boundary.gravity" source))
+              :unexpected-success
+              (catch Throwable observed observed))})
+         [(AssertionError. "source-assertion")
+          (LinkageError. "source-linkage")
+          (OutOfMemoryError. "source-oom")
+          (ThreadDeath.)])
+        stack-record
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+             (fn [& _] (throw (StackOverflowError. "source-stack")))]
+            (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+             "stack-source-boundary.gravity" source)))
+        ordinary-record
+        (diagnostic-data
+         #(with-redefs
+            [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+             (fn [& _] (throw (Exception. "ordinary-source-secret")))]
+            (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+             "ordinary-source-boundary.gravity" source)))
+        after (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)]
+    (is (= before after))
+    (doseq [[extension [first-record second-record]] observations]
+      (is (= first-record second-record) extension)
+      (is (= ["C6-LOWERING-GAP"
+              :pure-closed-slice-jvm-source-target]
+             ((juxt :id :missing-fact) first-record)) extension)
+      (is (= :gravity/diagnostic (:artifact first-record)) extension)
+      (is (every? (set (keys first-record))
+                  bootstrap/c15-diagnostic-required-fields)
+          extension)
+      (is (= (:diagnostic-id first-record)
+             (bootstrap/c15-stable-diagnostic-id
+              first-record))
+          extension)
+      (is (not (str/includes? (pr-str first-record)
+                              "source-target-secret")) extension))
+    (is (= ["B3-MANIFEST" :contained-unstructured-source-diagnostic]
+           ((juxt :id :missing-fact) forged-record)))
+    (is (not (str/includes? (pr-str forged-record)
+                            "source-target-secret")))
+    (doseq [{:keys [expected observed]} fatal-results]
+      (is (identical? expected observed)
+          (.getName (class expected))))
+    (is (= ["B1-INPUT" :bounded-hostile-source-host-stack]
+           ((juxt :id :missing-fact) stack-record)))
+    (is (= ["B3-MANIFEST" :contained-source-host-failure]
+           ((juxt :id :missing-fact) ordinary-record)))
+    (is (not (str/includes? (pr-str ordinary-record)
+                            "ordinary-source-secret")))))
+
+(def ^:private authenticated-llvm-live-source
+  (closed-pure-source-with-main
+   "(let [x 7] (if true (do x) 9))"
+   {:exports '[main]}))
+
+(defn- authenticated-llvm-private-var
+  [symbol]
+  (or (ns-resolve 'gravity.bootstrap symbol)
+      (throw (ex-info "missing private B3 test seam" {:symbol symbol}))))
+
+(defn- authenticated-llvm-rehash
+  [artifact]
+  (let [semantic-id (bootstrap/p15-s23-b3-llvm-artifact-id artifact)
+        artifact-id
+        (bootstrap/p15-s23-c11-mir-digest
+         {:kind (:kind artifact)
+          :schema-version (:schema-version artifact)
+          :semantic-id semantic-id})
+        with-ids (assoc artifact
+                        :semantic-id semantic-id
+                        :artifact-id artifact-id)]
+    (assoc with-ids :actual-path-binding-id
+           (bootstrap/p15-s23-b3-llvm-actual-path-binding-id
+            semantic-id (:actual-path-provenance with-ids)))))
+
+(defn- authenticated-llvm-content-binding
+  [value]
+  {:content-id (bootstrap/p15-s23-c11-mir-digest value)
+   :entry-count (if (coll? value) (count value) 1)})
+
+(defn- authenticated-llvm-rehash-c14-request
+  [artifact]
+  (assoc-in artifact [:c14-request :request-id]
+            (bootstrap/p15-s23-c11-mir-digest
+             (dissoc (:c14-request artifact) :request-id))))
+
+(defn- authenticated-llvm-rehash-build-identity
+  [artifact]
+  (let [old-build-id (get-in artifact [:b13-record :build-id])
+        build-identity-base
+        (dissoc (get-in artifact [:b13-record :build-identity])
+                :build-id)
+        build-id
+        (bootstrap/p15-s23-c11-mir-digest build-identity-base)]
+    (-> artifact
+        (assoc-in [:b13-record :build-id] build-id)
+        (assoc-in [:b13-record :build-identity]
+                  (assoc build-identity-base :build-id build-id))
+        (update-in
+         [:b13-record :artifact-files]
+         (fn [files]
+           (into (empty files)
+                 (map (fn [[kind file]]
+                        [kind (assoc file :bundle-build-id build-id)]))
+                 files)))
+        (update-in
+         [:b13-record :artifact-graph]
+         (fn [edges]
+           (mapv (fn [edge]
+                   (if (and (= :bundle-build-identity (:edge edge))
+                            (= old-build-id (:from edge)))
+                     (assoc edge :from build-id)
+                     edge))
+                 edges))))))
+
+(defn- authenticated-llvm-coherent-target-tamper
+  [artifact]
+  (let [forged-cpu "forged-cpu"
+        forged-target (assoc (get-in artifact [:c14-request :target])
+                             :cpu forged-cpu)
+        forged-binding (authenticated-llvm-content-binding forged-target)]
+    (-> artifact
+        (assoc-in [:c14-request :target] forged-target)
+        (assoc-in [:b1-packet :target] forged-target)
+        (assoc-in [:b3-record :target-record :cpu] forged-cpu)
+        (assoc-in [:b13-record :target :cpu] forged-cpu)
+        (assoc-in [:b13-record :build-identity :target :cpu] forged-cpu)
+        (update :c14-request assoc-in
+                [:contract-bindings :target] forged-binding)
+        (update :b1-packet assoc-in
+                [:contract-bindings :target] forged-binding)
+        (update :b3-record assoc-in
+                [:contract-bindings :target] forged-binding)
+        (update :b13-record assoc-in
+                [:contract-bindings :target] forged-binding)
+        (update :c18-record assoc-in
+                [:contract-bindings :target] forged-binding)
+        authenticated-llvm-rehash-c14-request
+        authenticated-llvm-rehash-build-identity
+        authenticated-llvm-rehash)))
+
+(defn- authenticated-llvm-coherent-build-tamper
+  [artifact]
+  (-> artifact
+      (assoc-in [:b13-record :build-identity :target :cpu]
+                "forged-build-cpu")
+      authenticated-llvm-rehash-build-identity
+      authenticated-llvm-rehash))
+
+(def ^:private authenticated-llvm-contract-stages
+  [:c14-request :b1-packet :b3-record :b13-record :c18-record])
+
+(defn- authenticated-llvm-copy-binding
+  [artifact key binding]
+  (reduce (fn [result stage]
+            (assoc-in result [stage :contract-bindings key] binding))
+          artifact authenticated-llvm-contract-stages))
+
+(defn- authenticated-llvm-coherent-selection-tamper
+  [artifact]
+  (let [selection (assoc (get-in artifact
+                                 [:c14-request :source-target-selection])
+                         :reason :forged-reason)
+        target (assoc (get-in artifact [:c14-request :target])
+                      :reason :forged-reason)
+        target-binding (authenticated-llvm-content-binding target)]
+    (-> (reduce (fn [result stage]
+                  (assoc-in result [stage :source-target-selection]
+                            selection))
+                artifact authenticated-llvm-contract-stages)
+        (assoc-in [:c14-request :target] target)
+        (assoc-in [:b1-packet :target] target)
+        (authenticated-llvm-copy-binding :target target-binding)
+        authenticated-llvm-rehash-c14-request
+        authenticated-llvm-rehash)))
+
+(defn- authenticated-llvm-coherent-pass-tamper
+  [artifact]
+  (let [pass-record (update-in (get-in artifact [:b3-record :pass-record])
+                               [:passes] conj :forged-pass)
+        c11-pass (get-in artifact [:b13-record :pass-provenance :c11])
+        pipeline {:c11 c11-pass
+                  :b3 (:passes pass-record)
+                  :optimization-level (:optimization-level pass-record)
+                  :ub-sensitive-flags (:ub-sensitive-flags pass-record)}
+        pipeline-id (bootstrap/p15-s23-c11-mir-digest pipeline)]
+    (-> artifact
+        (assoc-in [:b3-record :pass-record] pass-record)
+        (assoc-in [:b13-record :pass-provenance :b3]
+                  (:passes pass-record))
+        (assoc-in [:b13-record :pass-provenance :pass-pipeline-digest]
+                  pipeline-id)
+        (assoc-in [:b13-record :build-identity :compiler
+                   :pass-pipeline-digest]
+                  pipeline-id)
+        (assoc-in [:b13-record :reproducibility :pass-pipeline-digest]
+                  pipeline-id)
+        authenticated-llvm-rehash-build-identity
+        authenticated-llvm-rehash)))
+
+(defn- authenticated-llvm-coherent-toolchain-tamper
+  [artifact]
+  (let [toolchain
+        (assoc-in (get-in artifact
+                          [:toolchain-evidence :toolchain-fingerprint])
+                  [:file-magic-content :byte-count]
+                  (inc (:byte-count
+                        bootstrap/p15-s23-b3-llvm-expected-file-magic-content)))
+        toolchain-id (bootstrap/p15-s23-c11-mir-digest toolchain)]
+    (-> artifact
+        (assoc-in [:toolchain-evidence :toolchain-fingerprint] toolchain)
+        (assoc-in [:b13-record :compiler-provenance :toolchain] toolchain)
+        (assoc-in [:b13-record :compiler-provenance
+                   :target-toolchain-digest]
+                  toolchain-id)
+        (assoc-in [:b13-record :build-identity :compiler
+                   :target-toolchain-digest]
+                  toolchain-id)
+        (assoc-in [:b13-record :reproducibility
+                   :target-toolchain-digest]
+                  toolchain-id)
+        authenticated-llvm-rehash-build-identity
+        authenticated-llvm-rehash)))
+
+(defn- authenticated-llvm-coherent-empty-bundle-tamper
+  [artifact]
+  (-> artifact
+      (assoc-in [:b13-record :artifact-files] (sorted-map))
+      (assoc-in [:b13-record :content-hashes] (sorted-map))
+      (assoc-in [:b13-record :build-identity :artifact-content-hashes]
+                (sorted-map))
+      (assoc-in [:b13-record :artifact-graph]
+                (subvec (get-in artifact [:b13-record :artifact-graph]) 0 2))
+      authenticated-llvm-rehash-build-identity
+      authenticated-llvm-rehash))
+
+(defn- authenticated-llvm-absolute-classpath
+  []
+  (let [root (.getCanonicalFile (java.io.File. "."))]
+    (str/join
+     java.io.File/pathSeparator
+     (map (fn [entry]
+            (.getCanonicalPath
+             (if (.isAbsolute (java.io.File. entry))
+               (java.io.File. entry)
+               (java.io.File. root entry))))
+          (str/split (System/getProperty "java.class.path")
+                     (re-pattern java.io.File/pathSeparator))))))
+
+(defn- authenticated-llvm-file-mode
+  [path]
+  (set (java.nio.file.Files/getPosixFilePermissions
+        path
+        (into-array java.nio.file.LinkOption
+                    [java.nio.file.LinkOption/NOFOLLOW_LINKS]))))
+
+(def ^:private authenticated-llvm-empty-stream-result
+  {:bytes (byte-array 0)
+   :text ""
+   :stream-read-complete? true
+   :total-byte-count 0
+   :retained-byte-count 0
+   :truncated? false
+   :hash
+   "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"})
+
+(defn- authenticated-llvm-fatal-reader-probe
+  [directory fatal]
+  (let [authority-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-require-authority!)
+        reader-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-read-bounded-stream)
+        runner
+        (var-get
+         (authenticated-llvm-private-var
+          'p15-s23-b3-llvm-run-process))
+        calls (atom 0)]
+    (try
+      (with-redefs-fn
+        {authority-var (fn [& _] nil)
+         reader-var
+         (fn [& _]
+           (if (= 1 (swap! calls inc))
+             (throw fatal)
+             authenticated-llvm-empty-stream-result))}
+        #(runner nil directory ["/usr/bin/true"] 5000
+                 "fatal-reader-probe.gravity"))
+      :unexpected-success
+      (catch Throwable error error))))
+
+(defn- authenticated-llvm-cleanup-precedence-probe
+  [primary cleanup]
+  (let [authority-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-require-authority!)
+        preflight-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-toolchain-preflight!)
+        delete-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-delete-tree!)
+        transaction
+        (var-get
+         (authenticated-llvm-private-var
+          'p15-s23-b3-llvm-toolchain-transaction!))
+        workspace (atom nil)
+        observed
+        (try
+          (with-redefs-fn
+            {authority-var (fn [& _] nil)
+             preflight-var
+             (fn [_ candidate-workspace _]
+               (reset! workspace candidate-workspace)
+               (throw primary))
+             delete-var (fn [& _] (throw cleanup))}
+            #(transaction nil "cleanup-probe.gravity" {} false))
+          :unexpected-success
+          (catch Throwable error error))]
+    (when @workspace
+      (java.nio.file.Files/deleteIfExists @workspace))
+    observed))
+
+(defn- authenticated-llvm-interrupt-probe
+  [directory]
+  (let [authority-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-require-authority!)
+        runner
+        (var-get
+         (authenticated-llvm-private-var
+          'p15-s23-b3-llvm-run-process))
+        result (promise)
+        thread
+        (Thread.
+         (fn []
+           (try
+             (runner nil directory ["/bin/sleep" "5"] 10000
+                     "interrupt-probe.gravity")
+             (deliver result {:status :unexpected-success})
+             (catch InterruptedException error
+               (deliver result
+                        {:status :interrupted
+                         :error error
+                         :interrupt-restored?
+                         (.isInterrupted (Thread/currentThread))}))
+             (catch Throwable error
+               (deliver result {:status :wrong-throwable :error error})))))]
+    (with-redefs-fn
+      {authority-var (fn [& _] nil)}
+      #(do
+         (.start thread)
+         (Thread/sleep 150)
+         (.interrupt thread)
+         (.join thread 5000)))
+    (assoc (deref result 1000 {:status :no-result})
+           :thread-alive? (.isAlive thread))))
+
+(defn- authenticated-llvm-timeout-probe
+  [directory]
+  (let [authority-var
+        (authenticated-llvm-private-var
+         'p15-s23-b3-llvm-require-authority!)
+        runner
+        (var-get
+         (authenticated-llvm-private-var
+          'p15-s23-b3-llvm-run-process))]
+    (with-redefs-fn
+      {authority-var (fn [& _] nil)}
+      #(runner nil directory ["/bin/sleep" "5"] 20
+               "timeout-probe.gravity"))))
+
+(defn- authenticated-llvm-missing-native-probe
+  [directory]
+  (let [destination (.resolve directory "missing-native-bundle")
+        expression
+        (str
+         "(require 'gravity.bootstrap) "
+         "(let [before (:total (gravity.bootstrap/"
+         "p15-s23-b3-llvm-tool-execution-snapshot)) "
+         "data (try (gravity.bootstrap/"
+         "p15-s23-stage2-b3-llvm-artifact-from-c11! "
+         "{} {} {:source-path \"missing-native.gravity\" "
+         ":source-text \"\" :requested-target :llvm} "
+         "{:output-directory " (pr-str (.toString destination)) "}) "
+         "nil (catch clojure.lang.ExceptionInfo e (ex-data e))) "
+         "after (:total (gravity.bootstrap/"
+         "p15-s23-b3-llvm-tool-execution-snapshot))] "
+         "(prn {:id (:id data) :missing-fact (:missing-fact data) "
+         ":native-access-enabled? (get-in data [:facts "
+         ":native-access-enabled?]) :tool-delta (- after before) "
+         ":output-exists? (.exists (java.io.File. "
+         (pr-str (.toString destination)) "))}))")
+        java-bin (str (System/getProperty "java.home") "/bin/java")
+        result
+        (run-process-in-directory
+         (.toString directory)
+         {"JDK_JAVA_OPTIONS" ""
+          "JAVA_TOOL_OPTIONS" ""
+          "_JAVA_OPTIONS" ""}
+         [java-bin "-cp" (authenticated-llvm-absolute-classpath)
+          "clojure.main" "-e" expression])
+        last-line (last (str/split-lines (str/trim (:out result))))]
+    {:process result
+     :record (when (and (zero? (:exit result)) (seq last-line))
+               (edn/read-string last-line))}))
+
+(def ^:private authenticated-llvm-live-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-llvm-live-"
+      (fn [root]
+        (let [root (.toRealPath root
+                                (make-array java.nio.file.LinkOption 0))
+              left-directory (.resolve root "left")
+              right-directory (.resolve root "right")
+              _ (java.nio.file.Files/createDirectories
+                 left-directory
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              _ (java.nio.file.Files/createDirectories
+                 right-directory
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              left-path (.resolve left-directory "program.gravity")
+              right-path (.resolve right-directory "program.qst")
+              _ (spit (.toFile left-path) authenticated-llvm-live-source)
+              _ (spit (.toFile right-path) authenticated-llvm-live-source)
+              left-output (.resolve root "left-bundle")
+              right-output (.resolve root "right-bundle")
+              c11-var
+              #'bootstrap/p15-s23-stage2-c11-mir-artifact
+              original-c11 (var-get c11-var)
+              c11-observations (atom [])
+              transaction-var
+              (authenticated-llvm-private-var
+               'p15-s23-b3-llvm-toolchain-transaction!)
+              original-transaction (var-get transaction-var)
+              transaction-observations (atom [])
+              tool-before-live
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              live-results
+              (with-redefs-fn
+                {c11-var
+                 (fn [checked-core context]
+                   (let [artifact (original-c11 checked-core context)]
+                     (swap! c11-observations
+                            conj {:checked-core checked-core
+                                  :context context :c11 artifact})
+                     artifact))
+                 transaction-var
+                 (fn [candidate source-path lowering publication-intent?]
+                   (let [result
+                         (original-transaction
+                          candidate source-path lowering publication-intent?)]
+                     (swap! transaction-observations
+                            conj {:candidate candidate
+                                  :publication-intent?
+                                  publication-intent?
+                                  :payload (:publication-payload result)})
+                     result))}
+                (fn []
+                  (let [left
+                        (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                         (.toString left-path) authenticated-llvm-live-source
+                         {:output-directory (.toString left-output)})
+                        right
+                        (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                         (.toString right-path) authenticated-llvm-live-source
+                         {:output-directory (.toString right-output)})
+                        left-observation (first @c11-observations)
+                        contextual-report
+                        (bootstrap/p15-s23-stage2-b3-llvm-verification-report
+                         left (:checked-core left-observation)
+                         (:context left-observation))]
+                    {:left left :right right
+                     :contextual-report contextual-report
+                     :c11-observations @c11-observations})))
+              left (:left live-results)
+              right (:right live-results)
+              contextual-report (:contextual-report live-results)
+              c11-values (:c11-observations live-results)
+              left-core (:checked-core (nth c11-values 0))
+              left-context (:context (nth c11-values 0))
+              left-c11 (:c11 (nth c11-values 0))
+              right-core (:checked-core (nth c11-values 1))
+              right-context (:context (nth c11-values 1))
+              right-c11 (:c11 (nth c11-values 1))
+              tool-after-live
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              transaction-values @transaction-observations
+              first-candidate (:candidate (first transaction-values))
+              payload-summary
+              (mapv
+               (fn [observation]
+                 {:candidate-identical?
+                  (identical? first-candidate (:candidate observation))
+                  :publication-intent? (:publication-intent? observation)
+                  :payload-hashes
+                  (into
+                   (sorted-map)
+                   (map (fn [[kind bytes]]
+                          [kind
+                           (str "sha256:"
+                                (bootstrap/sha256-bytes-hex bytes))]))
+                   (:payload observation))})
+               transaction-values)
+              authority-var
+              (authenticated-llvm-private-var
+               'p15-s23-b3-llvm-require-authority!)
+              source-binding
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-source-binding!))
+              invoke-builder
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-invoke-builder!))
+              left-b3-binding
+              (with-redefs-fn
+                {authority-var (fn [& _] nil)}
+                #(source-binding nil (.toString left-path)))
+              diamond-lowering
+              (with-redefs-fn
+                {authority-var (fn [& _] nil)}
+                #(invoke-builder nil left-b3-binding
+                                 (:mir-module left-c11)
+                                 (.toString left-path)))
+              logical-names
+              ["program.ll" "program.o" "program"
+               "manifest.edn" "provenance.edn" "conformance.edn"]
+              snapshot-output
+              (fn [directory]
+                {:names (set (seq (.list (.toFile directory))))
+                 :bytes
+                 (into {}
+                       (map (fn [name]
+                              [name
+                               (java.nio.file.Files/readAllBytes
+                                (.resolve directory name))]))
+                       logical-names)
+                 :modes
+                 (into {}
+                       (map (fn [name]
+                              [name
+                               (authenticated-llvm-file-mode
+                                (.resolve directory name))]))
+                       logical-names)
+                 :directory-mode
+                 (authenticated-llvm-file-mode directory)
+                 :manifest
+                 (edn/read-string
+                  (slurp (.toFile (.resolve directory "manifest.edn"))))
+                 :provenance
+                 (edn/read-string
+                  (slurp (.toFile (.resolve directory "provenance.edn"))))
+                 :conformance
+                 (edn/read-string
+                  (slurp (.toFile (.resolve directory "conformance.edn"))))
+                 :program-run
+                 (run-process-in-directory
+                  (.toString directory) nil ["./program"])
+                 :file-record
+                 (run-process-in-directory
+                  (.toString directory) nil
+                  ["/usr/bin/file" "program.o" "program"])})
+              left-output-record (snapshot-output left-output)
+              right-output-record (snapshot-output right-output)
+              tool-before-tamper
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              target-c11-data
+              (diagnostic-data
+               #(bootstrap/p15-s23-b3-llvm-preflight!
+                 (assoc-in left-c11 [:mir-module :target-request] :wasm)))
+              operations
+              (bootstrap/p15-s23-c11-mir-operation-sequence
+               (:mir-module left-c11))
+              unsupported-id (:op-id (first operations))
+              unsupported-c11
+              (update left-c11 :mir-module
+                      #(c11-update-operation
+                        % unsupported-id (fn [op] (assoc op :opcode :llvm/load))))
+              unsupported-data
+              (diagnostic-data
+               #(bootstrap/p15-s23-b3-llvm-preflight! unsupported-c11))
+              integrity-verifier
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-verify-integrity!))
+              context-binding-verifier
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-verify-context-bindings!))
+              context-provenance-verifier
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-verify-context-provenance!))
+              build-tamper
+              (authenticated-llvm-coherent-build-tamper left)
+              build-tamper-data
+              (diagnostic-data
+               #(integrity-verifier build-tamper))
+              request-tamper
+              (authenticated-llvm-coherent-target-tamper left)
+              request-tamper-data
+              (diagnostic-data
+               #(integrity-verifier request-tamper))
+              coherent-candidates
+              {:b1-safety
+               (authenticated-llvm-rehash
+                (assoc-in left [:b1-packet :safety :outcomes]
+                          (inc (get-in left
+                                       [:b1-packet :safety :outcomes]))))
+               :b13-proof
+               (authenticated-llvm-rehash
+                (assoc-in left [:b13-record :proof :metadata-map]
+                          {:forged true}))
+               :b13-schema
+               (authenticated-llvm-rehash
+                (assoc-in left [:b13-record :schema-version] 2))
+               :extra-base
+               (authenticated-llvm-rehash
+                (assoc left :hostile-extra-credit true))
+               :extra-c14
+               (-> left
+                   (assoc-in [:c14-request :hostile-extra-credit] true)
+                   authenticated-llvm-rehash-c14-request
+                   authenticated-llvm-rehash)
+               :extra-b1
+               (authenticated-llvm-rehash
+                (assoc-in left [:b1-packet :hostile-extra-credit] true))
+               :extra-b3
+               (authenticated-llvm-rehash
+                (assoc-in left [:b3-record :hostile-extra-credit] true))
+               :extra-b13
+               (authenticated-llvm-rehash
+                (assoc-in left [:b13-record :hostile-extra-credit] true))
+               :extra-provider-record
+               (authenticated-llvm-rehash
+                (assoc-in left [:b3-record :provider-record
+                                :hostile-extra-credit] true))
+               :extra-source-map-record
+               (authenticated-llvm-rehash
+                (assoc-in left [:b3-record :source-map-record
+                                :hostile-extra-credit] true))
+               :tool-artifact-files
+               (authenticated-llvm-rehash
+                (assoc-in left [:toolchain-evidence :artifact-files
+                                :llvm-ir :hostile-extra-credit] true))
+               :tool-publication
+               (authenticated-llvm-rehash
+                (assoc-in left [:toolchain-evidence :publication
+                                :hostile-extra-credit] true))
+               :actual-path-provenance
+               (authenticated-llvm-rehash
+                (assoc-in left [:actual-path-provenance
+                                :hostile-extra-credit] true))
+               :clang-path-mismatch
+               (authenticated-llvm-rehash
+                (assoc-in left [:actual-path-provenance :clang-path]
+                          "/forged/usr/bin/clang"))
+               :publisher-native-access
+               (authenticated-llvm-rehash
+                (assoc-in left [:actual-path-provenance
+                                :publication-receipt :publisher-evidence
+                                :native-access-enabled?] false))
+               :publisher-flags
+               (authenticated-llvm-rehash
+                (assoc-in left [:actual-path-provenance
+                                :publication-receipt :publisher-evidence
+                                :flags :combined] 0))
+               :sidecar-logical-path
+               (authenticated-llvm-rehash
+                (assoc-in left [:actual-path-provenance
+                                :publication-receipt :sidecar-hashes
+                                :manifest :logical-path]
+                          "hostile-manifest.edn"))
+               :receipt-vs-retention
+               (-> left
+                   (assoc-in [:actual-path-provenance :publication-path] nil)
+                   (assoc-in [:actual-path-provenance :publication-receipt]
+                             {:status :ephemeral-conformance-artifacts
+                              :sidecar-hashes {}})
+                   authenticated-llvm-rehash)
+               :nil-receipt
+               (-> left
+                   (assoc-in [:actual-path-provenance :publication-path] nil)
+                   (assoc-in [:actual-path-provenance :publication-receipt] nil)
+                   authenticated-llvm-rehash)
+               :selection
+               (authenticated-llvm-coherent-selection-tamper left)
+               :pass (authenticated-llvm-coherent-pass-tamper left)
+               :toolchain
+               (authenticated-llvm-coherent-toolchain-tamper left)
+               :empty-bundle
+               (authenticated-llvm-coherent-empty-bundle-tamper left)
+               :nonclaim
+               (authenticated-llvm-rehash
+                (assoc left :whole-language? true))}
+              coherent-data
+              (into (sorted-map)
+                    (map (fn [[kind candidate]]
+                           [kind (diagnostic-data
+                                  #(integrity-verifier candidate))]))
+                    coherent-candidates)
+              dynamic-binding-tamper
+              (-> left
+                  (authenticated-llvm-copy-binding
+                   :effects
+                   {:content-id
+                    "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    :entry-count 0})
+                  authenticated-llvm-rehash-c14-request
+                  authenticated-llvm-rehash)
+              dynamic-binding-data
+              (diagnostic-data
+               #(context-binding-verifier
+                 dynamic-binding-tamper left-c11 left-core
+                 (get-in left
+                         [:b1-packet :input :verifier-report])
+                 (.toString left-path)))
+              carried-b1-tamper
+              (-> left
+                  (assoc-in [:b1-packet :proofs :capability :proof-ids]
+                            [:forged-proof])
+                  authenticated-llvm-rehash)
+              carried-b1-data
+              (diagnostic-data
+               #(context-binding-verifier
+                 carried-b1-tamper left-c11 left-core
+                 (get-in left
+                         [:b1-packet :input :verifier-report])
+                 (.toString left-path)))
+              context-binding-genuine
+              (context-binding-verifier
+               left left-c11 left-core
+               (get-in left [:b1-packet :input :verifier-report])
+               (.toString left-path))
+              context-provenance-genuine
+              (context-provenance-verifier
+               left left-c11 left-context left-b3-binding)
+              context-source-tamper
+              (authenticated-llvm-rehash
+               (assoc-in left [:actual-path-provenance :source]
+                         "/forged/source.gravity"))
+              context-source-data
+              (diagnostic-data
+               #(context-provenance-verifier
+                 context-source-tamper left-c11 left-context
+                 left-b3-binding))
+              declared-llvm-source
+              (closed-pure-source-with-main
+               "7" {:target :llvm :exports '[main]})
+              declared-llvm-data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                 (.toString (.resolve root "declared-llvm.qst"))
+                 declared-llvm-source))
+              tool-after-tamper
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              collision-output (.resolve root "collision-bundle")
+              _ (java.nio.file.Files/createDirectory
+                 collision-output
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              tool-before-output
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              collision-data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                 left-c11 left-core left-context
+                 {:output-directory (.toString collision-output)}))
+              real-parent (.resolve root "real-parent")
+              _ (java.nio.file.Files/createDirectory
+                 real-parent
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              symlink-parent (.resolve root "symlink-parent")
+              _ (java.nio.file.Files/createSymbolicLink
+                 symlink-parent real-parent
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              symlink-data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                 left-c11 left-core left-context
+                 {:output-directory
+                  (.toString (.resolve symlink-parent "bundle"))}))
+              _ (java.nio.file.Files/deleteIfExists symlink-parent)
+              verify-publication
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-verify-publication!))
+              alias-parent (.resolve root "published-alias")
+              _ (java.nio.file.Files/createSymbolicLink
+                 alias-parent root
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              aliased-provenance
+              (assoc (:actual-path-provenance left)
+                     :publication-path
+                     (.toString (.resolve alias-parent "left-bundle")))
+              alias-artifact
+              (assoc left
+                     :actual-path-provenance aliased-provenance
+                     :actual-path-binding-id
+                     (bootstrap/p15-s23-b3-llvm-actual-path-binding-id
+                      (:semantic-id left) aliased-provenance))
+              alias-data
+              (diagnostic-data
+               #(with-redefs-fn
+                  {authority-var (fn [& _] nil)}
+                  (fn [] (verify-publication nil alias-artifact))))
+              _ (java.nio.file.Files/deleteIfExists alias-parent)
+              extra-receipt-provenance
+              (assoc-in (:actual-path-provenance left)
+                        [:publication-receipt :hostile-extra]
+                        "must-not-pass")
+              extra-receipt-artifact
+              (assoc left
+                     :actual-path-provenance extra-receipt-provenance
+                     :actual-path-binding-id
+                     (bootstrap/p15-s23-b3-llvm-actual-path-binding-id
+                      (:semantic-id left) extra-receipt-provenance))
+              extra-receipt-data
+              (diagnostic-data
+               #(with-redefs-fn
+                  {authority-var (fn [& _] nil)}
+                  (fn [] (verify-publication nil extra-receipt-artifact))))
+              race-output (.resolve root "race-bundle")
+              race-marker (.resolve race-output "attacker-marker")
+              watch-service
+              (.newWatchService (java.nio.file.FileSystems/getDefault))
+              _ (.register root watch-service
+                           (into-array
+                            java.nio.file.WatchEvent$Kind
+                            [java.nio.file.StandardWatchEventKinds/ENTRY_CREATE]))
+              output-preflight
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-output-preflight!))
+              publish-final
+              (var-get
+               (authenticated-llvm-private-var
+                'p15-s23-b3-llvm-publish-final!))
+              inventory-var
+              (authenticated-llvm-private-var
+               'p15-s23-b3-llvm-capped-directory-inventory!)
+              original-inventory (var-get inventory-var)
+              race-preflight
+              (output-preflight first-candidate (.toString race-output)
+                                (.toString left-path))
+              race-triggered? (atom false)
+              race-data
+              (diagnostic-data
+               #(with-redefs-fn
+                  {inventory-var
+                   (fn [candidate directory source-path expected-maximum]
+                     (let [result
+                           (original-inventory
+                            candidate directory source-path expected-maximum)]
+                       (when (and (= 6 expected-maximum)
+                                  (= #{"program.ll" "program.o" "program"
+                                       "manifest.edn" "provenance.edn"
+                                       "conformance.edn"}
+                                     result)
+                                  (compare-and-set! race-triggered? false true))
+                         (java.nio.file.Files/createDirectory
+                          race-output
+                          (make-array
+                           java.nio.file.attribute.FileAttribute 0))
+                         (spit (.toFile race-marker) "attacker-owned"))
+                       result))}
+                  (fn []
+                    (publish-final
+                     first-candidate left
+                     (:payload (first transaction-values)) race-preflight
+                     (fn [receipt]
+                       (let [actual-path-provenance
+                             (assoc (:actual-path-provenance left)
+                                    :publication-path
+                                    (:actual-output-directory receipt)
+                                    :publication-receipt
+                                    (dissoc receipt :actual-output-directory))]
+                         (assoc left
+                                :actual-path-provenance
+                                actual-path-provenance
+                                :actual-path-binding-id
+                                (bootstrap/p15-s23-b3-llvm-actual-path-binding-id
+                                 (:semantic-id left)
+                                 actual-path-provenance))))))))
+              watch-key
+              (.poll watch-service 2 java.util.concurrent.TimeUnit/SECONDS)
+              watch-events
+              (if watch-key
+                (mapv #(str (.context ^java.nio.file.WatchEvent %))
+                      (.pollEvents watch-key))
+                [])
+              _ (when watch-key (.reset watch-key))
+              race-record
+              {:data race-data
+               :triggered? @race-triggered?
+               :watch-events watch-events
+               :marker (when (java.nio.file.Files/exists
+                              race-marker
+                              (make-array java.nio.file.LinkOption 0))
+                         (slurp (.toFile race-marker)))
+               :destination-names
+               (when (java.nio.file.Files/isDirectory
+                      race-output
+                      (make-array java.nio.file.LinkOption 0))
+                 (set (seq (.list (.toFile race-output)))))}
+              _ (.close watch-service)
+              _ (java.nio.file.Files/deleteIfExists race-marker)
+              _ (java.nio.file.Files/deleteIfExists race-output)
+              tool-after-output
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              missing-native
+              (authenticated-llvm-missing-native-probe root)
+              fatal-errors
+              [(AssertionError. "assertion-fatal")
+               (LinkageError. "linkage-fatal")
+               (OutOfMemoryError. "oom-fatal")
+               (ThreadDeath.)]
+              fatal-results
+              (mapv (fn [fatal]
+                      {:expected fatal
+                       :observed
+                       (authenticated-llvm-fatal-reader-probe root fatal)})
+                    fatal-errors)
+              primary-fatal (AssertionError. "primary-fatal")
+              cleanup-fatal (LinkageError. "cleanup-fatal")
+              primary-fatal-result
+              (authenticated-llvm-cleanup-precedence-probe
+               primary-fatal cleanup-fatal)
+              ordinary-primary (Exception. "ordinary-primary")
+              winning-cleanup (OutOfMemoryError. "winning-cleanup")
+              cleanup-fatal-result
+              (authenticated-llvm-cleanup-precedence-probe
+               ordinary-primary winning-cleanup)
+              timeout-result
+              (authenticated-llvm-timeout-probe root)
+              interrupt-result
+              (authenticated-llvm-interrupt-probe root)
+              b3-complete
+              (bootstrap/p15-s23-b3-llvm-diagnostic-record
+               "B3-MANIFEST" (.toString left-path) {}
+               {:bounded-reason :legitimate})
+              b3-forged-base
+              (assoc-in b3-complete [:facts :bounded-reason]
+                        "B3-FACT-SECRET")
+              b3-forged-id
+              (bootstrap/c15-stable-diagnostic-id b3-forged-base)
+              b3-forged
+              (assoc b3-forged-base
+                     :diagnostic-id b3-forged-id
+                     :ordering-key
+                     ["B3-MANIFEST" (:stage b3-forged-base)
+                      (get-in b3-forged-base [:primary :artifact])
+                      b3-forged-id])
+              b3-contained
+              (diagnostic-data
+               #(bootstrap/p15-s23-b3-llvm-contain-exception!
+                 (.toString left-path) :forged-b3-diagnostic
+                 (ex-info "B3-TOP-SECRET"
+                          (merge b3-forged
+                                 {:id "B3-MANIFEST"
+                                  :hostile-extra "B3-EXTRA-SECRET"}))))
+              staging-leftovers
+              (set (filter #(str/starts-with?
+                             % ".gravity-b3-final-publish-")
+                           (seq (.list (.toFile root)))))]
+          {:source authenticated-llvm-live-source
+           :root (.toString root)
+           :left {:artifact left :checked-core left-core
+                  :c11 left-c11 :context left-context
+                  :output left-output-record}
+           :right {:artifact right :checked-core right-core
+                   :c11 right-c11 :context right-context
+                   :output right-output-record}
+           :contextual-report contextual-report
+           :diamond-lowering diamond-lowering
+           :transactions
+           {:before tool-before-live :after tool-after-live
+            :count (count transaction-values)
+            :records payload-summary}
+           :tamper
+           {:before tool-before-tamper :after tool-after-tamper
+            :target-c11 target-c11-data
+            :unsupported unsupported-data
+            :build build-tamper-data
+            :request request-tamper-data
+            :coherent coherent-data
+            :dynamic-binding dynamic-binding-data
+            :carried-b1 carried-b1-data
+            :context-binding-genuine context-binding-genuine
+            :context-source context-source-data
+            :context-provenance-genuine context-provenance-genuine
+            :declared-llvm declared-llvm-data}
+           :output-probes
+           {:before tool-before-output :after tool-after-output
+            :collision collision-data :symlink symlink-data
+            :alias alias-data :extra-receipt extra-receipt-data
+            :last-moment-race race-record
+            :missing-native missing-native
+            :collision-directory-preserved?
+            (java.nio.file.Files/isDirectory
+             collision-output (make-array java.nio.file.LinkOption 0))
+            :collision-directory-names
+            (set (seq (.list (.toFile collision-output))))
+            :real-parent-preserved?
+            (java.nio.file.Files/isDirectory
+             real-parent (make-array java.nio.file.LinkOption 0))
+            :staging-leftovers staging-leftovers}
+           :fatal
+           {:readers fatal-results
+            :primary-fatal primary-fatal
+            :cleanup-fatal cleanup-fatal
+            :primary-fatal-result primary-fatal-result
+            :ordinary-primary ordinary-primary
+            :winning-cleanup winning-cleanup
+            :cleanup-fatal-result cleanup-fatal-result
+            :timeout timeout-result
+            :interrupt interrupt-result}
+           :diagnostics {:b3-contained b3-contained}})))))
+
+(deftest authenticated-llvm-arm64-macos-emits-runs-and-is-reproducible
+  (let [{:keys [left right contextual-report diamond-lowering transactions]}
+        @authenticated-llvm-live-proof
+        left-artifact (:artifact left)
+        right-artifact (:artifact right)
+        left-output (:output left)
+        right-output (:output right)
+        expected-names
+        #{"program.ll" "program.o" "program"
+          "manifest.edn" "provenance.edn" "conformance.edn"}
+        nonexecutable-permissions
+        #{java.nio.file.attribute.PosixFilePermission/OWNER_READ
+          java.nio.file.attribute.PosixFilePermission/OWNER_WRITE
+          java.nio.file.attribute.PosixFilePermission/GROUP_READ
+          java.nio.file.attribute.PosixFilePermission/OTHERS_READ}
+        executable-permissions
+        #{java.nio.file.attribute.PosixFilePermission/OWNER_READ
+          java.nio.file.attribute.PosixFilePermission/OWNER_WRITE
+          java.nio.file.attribute.PosixFilePermission/OWNER_EXECUTE
+          java.nio.file.attribute.PosixFilePermission/GROUP_READ
+          java.nio.file.attribute.PosixFilePermission/GROUP_EXECUTE
+          java.nio.file.attribute.PosixFilePermission/OTHERS_READ
+          java.nio.file.attribute.PosixFilePermission/OTHERS_EXECUTE}
+        expected-tool-steps
+        #{:xcrun-version :file-version :clang-path :ld-path :otool-path
+          :sdk-path :sdk-version :otool-version :clang-version
+          :clang-target-triple :clang-default-target :linker-version
+          :llvm-to-object :link :file-format :mach-o-header
+          :mach-o-load-commands :runtime-providers :run}
+        tool-records (get-in left-artifact
+                             [:toolchain-evidence :tool-records])
+        tool-record-by-step (into {} (map (juxt :step identity))
+                                  tool-records)]
+    (is (= :gravity/p15-s23-b3-authenticated-llvm-artifact
+           (:kind left-artifact) (:kind right-artifact)))
+    (is (= :passed (:status contextual-report)))
+    (is (= 3 (:count transactions)))
+    (is (= 57 (- (get-in transactions [:after :total])
+                 (get-in transactions [:before :total]))))
+    (is (= expected-tool-steps
+           (set (keys (get-in transactions [:after :steps])))))
+    (doseq [step expected-tool-steps]
+      (is (= 3
+             (- (get-in transactions [:after :steps step] 0)
+                (get-in transactions [:before :steps step] 0)))
+          step))
+    (is (= 19 (count tool-records) (count tool-record-by-step)))
+    (is (= (bootstrap/p15-s23-b3-llvm-expected-command-contracts)
+           (into (sorted-map)
+                 (map (fn [[step record]]
+                        [step (:command-contract record)]))
+                 tool-record-by-step)))
+    (doseq [[step record] tool-record-by-step]
+      (is (= :gravity/b3-bounded-tool-step (:artifact record)) step)
+      (is (true? (:finished? record)) step)
+      (is (false? (:timed-out? record)) step)
+      (is (false? (:raw-output-retained? record)) step)
+      (is (= bootstrap/p15-s23-b3-llvm-environment-policy
+             (:environment-policy record)) step))
+    (is (every? :candidate-identical? (:records transactions)))
+    (is (every? :publication-intent? (:records transactions)))
+    (is (apply = (map :payload-hashes (:records transactions))))
+    (is (= (:semantic-id left-artifact) (:semantic-id right-artifact)))
+    (is (= (:artifact-id left-artifact) (:artifact-id right-artifact)))
+    (is (= (get-in left-artifact [:b13-record :build-id])
+           (get-in right-artifact [:b13-record :build-id])))
+    (is (not= (:actual-path-binding-id left-artifact)
+              (:actual-path-binding-id right-artifact)))
+    (is (= :jvm (get-in left [:checked-core :source-target])))
+    (is (= :llvm (get-in left [:c11 :mir-module :target-request])))
+    (is (= :jvm
+           (get-in left-artifact
+                   [:c14-request :source-target-selection
+                    :source-declaration-target])))
+    (is (= :llvm
+           (get-in left-artifact
+                   [:c14-request :source-target-selection
+                    :requested-lowering-target])))
+    (is (false?
+         (get-in left-artifact
+                 [:c14-request :source-target-selection
+                  :direct-source-declared-llvm?])))
+    (is (= (bootstrap/p15-s23-b3-llvm-expected-target-contract)
+           (get-in left-artifact [:c14-request :target])
+           (get-in left-artifact [:b1-packet :target])))
+    (is (= 7 (:semantic-result diamond-lowering)))
+    (is (= 7 (:expected-exit-code diamond-lowering)))
+    (is (str/includes? (:llvm-ir diamond-lowering) "phi i64"))
+    (is (= expected-names (:names left-output) (:names right-output)))
+    (doseq [name expected-names]
+      (is (java.util.Arrays/equals
+           ^bytes (get-in left-output [:bytes name])
+           ^bytes (get-in right-output [:bytes name])) name))
+    (is (= executable-permissions (:directory-mode left-output)))
+    (is (= executable-permissions
+           (get-in left-output [:modes "program"])))
+    (doseq [name ["program.ll" "program.o" "manifest.edn"
+                  "provenance.edn" "conformance.edn"]]
+      (is (= nonexecutable-permissions
+             (get-in left-output [:modes name])) name))
+    (is (= 7 (get-in left-output [:program-run :exit])))
+    (is (= "" (get-in left-output [:program-run :out])))
+    (is (= "" (get-in left-output [:program-run :err])))
+    (is (str/includes? (get-in left-output [:file-record :out])
+                       "Mach-O 64-bit object arm64"))
+    (is (str/includes? (get-in left-output [:file-record :out])
+                       "Mach-O 64-bit executable arm64"))
+    (is (= (:artifact-id left-artifact)
+           (get-in left-output [:manifest :final-artifact-id])
+           (get-in left-output [:provenance :final-artifact-id])
+           (get-in left-output [:conformance :final-artifact-id])))
+    (is (= (get-in left-artifact [:b13-record :build-id])
+           (get-in left-output [:manifest :b13-record :build-id])))
+    (doseq [[_ file] (get-in left-artifact
+                             [:b13-record :artifact-files])]
+      (is (= (get-in left-artifact [:b13-record :build-id])
+             (:bundle-build-id file)))
+      (is (= 1 (:schema-version file)))
+      (is (= :gravity.backend/llvm (:backend file)))
+      (is (= :hosted (:profile file))))
+    (is (= ["/usr/lib/libSystem.B.dylib"]
+           (get-in left-artifact
+                   [:b14-record :runtime-provider-evidence
+                    :exact-linked-provider-paths])))
+    (is (= "1356.0.0"
+           (get-in left-artifact
+                   [:b14-record :runtime-provider-evidence
+                    :libsystem-current-version])))
+    (is (= (bootstrap/p15-s23-b3-llvm-expected-toolchain-static-record)
+           (select-keys
+            (get-in left-artifact
+                    [:toolchain-evidence :toolchain-fingerprint])
+            (keys (bootstrap/p15-s23-b3-llvm-expected-toolchain-static-record)))))
+    (is (= {:jdk-version "26.0.1" :jdk-feature 26
+            :native-access-enabled? true
+            :ffi-provider :jdk-26-foreign-function-and-memory
+            :native-library :darwin-libsystem
+            :symbol "renamex_np" :errno-read-policy :failure-only
+            :guarantee-scope
+            #{:exclusive-destination :no-symlink-traversal}
+            :path-identity-linearization
+            :precommit-file-key-checked-not-fd-relative
+            :flags {:rename-excl 4 :rename-nofollow-any 16 :combined 20}
+            :commit-primitive :darwin-renamex-np
+            :exclusive-no-clobber? true :no-follow-any? true}
+           (dissoc
+            (get-in left-artifact
+                    [:actual-path-provenance :publication-receipt
+                     :publisher-evidence])
+            :parent-file-key-hash :staging-file-key-hash)))
+    (is (= :closed (get-in left-artifact [:c18-record :release-gate])))
+    (is (some #{:darwin-process-loader}
+              (get-in left-artifact [:c18-record :trust-boundary])))
+    (is (true? (:seed-boundary? left-artifact)))
+    (is (false? (:backend-credit? left-artifact)))
+    (is (false? (:public-target? left-artifact)))
+    (is (false? (:release-credit? left-artifact)))
+    (is (false? (:self-hosted? left-artifact)))
+    (is (not (contains? (:toolchain-evidence left-artifact)
+                        :publication-payload)))
+    (is (not (str/includes?
+              (pr-str (:toolchain-evidence left-artifact))
+              "/Library/Developer")))
+    (is (str/ends-with?
+         (get-in left-artifact
+                 [:actual-path-provenance :otool-path])
+         "/usr/bin/llvm-otool"))
+    (is (false? (bootstrap/p15-s23-stage2-b3-llvm-authentic?
+                 left-artifact)))))
+
+(deftest authenticated-llvm-rejects-mir-target-and-evidence-tamper-before-clang
+  (let [{:keys [tamper diagnostics]} @authenticated-llvm-live-proof]
+    (is (= (:total (:before tamper)) (:total (:after tamper))))
+    (is (= ["B1-INPUT" :verified-pure-c11-b1-input]
+           ((juxt :id :missing-fact) (:target-c11 tamper))))
+    (is (= ["B1-UNSUPPORTED" :unsupported-mir-opcode]
+           ((juxt :id :missing-fact) (:unsupported tamper))))
+    (is (= "B3-MANIFEST" (get-in tamper [:build :id])))
+    (is (= :content-bound-final-b3-artifact
+           (get-in tamper [:build :missing-fact])))
+    (is (= "B3-MANIFEST" (get-in tamper [:request :id])))
+    (is (= :content-bound-final-b3-artifact
+           (get-in tamper [:request :missing-fact])))
+    (doseq [[kind data] (:coherent tamper)]
+      (is (= ["B3-MANIFEST" :content-bound-final-b3-artifact]
+             ((juxt :id :missing-fact) data)) kind))
+    (is (= ["B3-MANIFEST"
+            :fresh-c11-bound-contract-evidence-before-toolchain]
+           ((juxt :id :missing-fact) (:dynamic-binding tamper))))
+    (is (= ["B3-MANIFEST"
+            :fresh-c11-bound-contract-evidence-before-toolchain]
+           ((juxt :id :missing-fact) (:carried-b1 tamper))))
+    (is (= :passed (:context-binding-genuine tamper)))
+    (is (= ["B3-MANIFEST"
+            :fresh-context-bound-source-provenance-before-toolchain]
+           ((juxt :id :missing-fact) (:context-source tamper))))
+    (is (= :passed (:context-provenance-genuine tamper)))
+    (is (= ["C6-LOWERING-GAP"
+            :pure-closed-slice-jvm-source-target]
+           ((juxt :id :missing-fact) (:declared-llvm tamper))))
+    (is (= "B3-MANIFEST"
+           (get-in diagnostics [:b3-contained :id])))
+    (is (not (str/includes?
+              (pr-str (get-in diagnostics [:b3-contained]))
+              "B3-FACT-SECRET")))
+    (is (not (str/includes?
+              (pr-str (get-in diagnostics [:b3-contained]))
+              "B3-EXTRA-SECRET")))))
+
+(deftest authenticated-llvm-output-is-transactional-and-fail-closed
+  (let [{:keys [root output-probes fatal]} @authenticated-llvm-live-proof
+        missing (:missing-native output-probes)]
+    (is (false? (.exists (java.io.File. root))))
+    (is (= (:total (:before output-probes))
+           (:total (:after output-probes))))
+    (is (= ["B3-MANIFEST" :collision-free-regular-output-directory]
+           ((juxt :id :missing-fact) (:collision output-probes))))
+    (is (= ["B3-MANIFEST" :non-symlink-output-ancestor]
+           ((juxt :id :missing-fact) (:symlink output-probes))))
+    (is (= "B3-MANIFEST" (get-in output-probes [:alias :id])))
+    (is (= :canonical-non-symlink-published-bundle-path
+           (get-in output-probes [:alias :missing-fact])))
+    (is (= ["B3-MANIFEST"
+            :exact-published-bundle-inventory-and-publisher-receipt]
+           ((juxt :id :missing-fact) (:extra-receipt output-probes))))
+    (is (= ["B3-MANIFEST" :exclusive-no-clobber-publication]
+           ((juxt :id :missing-fact)
+            (get-in output-probes [:last-moment-race :data]))))
+    (is (true? (get-in output-probes
+                       [:last-moment-race :triggered?])))
+    (is (some #{"race-bundle"}
+              (get-in output-probes
+                      [:last-moment-race :watch-events])))
+    (is (= "attacker-owned"
+           (get-in output-probes [:last-moment-race :marker])))
+    (is (= #{"attacker-marker"}
+           (get-in output-probes
+                   [:last-moment-race :destination-names])))
+    (is (= 17 (get-in output-probes
+                      [:last-moment-race :data :facts :captured-errno])))
+    (is (true? (get-in output-probes
+                       [:last-moment-race :data :facts
+                        :output-collision?])))
+    (is (not (zero? (get-in output-probes
+                            [:last-moment-race :data :facts
+                             :rename-return-code]))))
+    (is (true? (:collision-directory-preserved? output-probes)))
+    (is (= #{} (:collision-directory-names output-probes)))
+    (is (true? (:real-parent-preserved? output-probes)))
+    (is (= #{} (:staging-leftovers output-probes)))
+    (is (zero? (get-in missing [:process :exit]))
+        (get-in missing [:process :err]))
+    (is (= "B3-MANIFEST" (get-in missing [:record :id])))
+    (is (= :jdk26-native-access-required-for-exclusive-publication
+           (get-in missing [:record :missing-fact])))
+    (is (false? (get-in missing [:record :native-access-enabled?])))
+    (is (zero? (get-in missing [:record :tool-delta])))
+    (is (false? (get-in missing [:record :output-exists?])))
+    (is (not (str/includes? (get-in missing [:process :err])
+                            "WARNING: Restricted method")))
+    (doseq [{:keys [expected observed]} (:readers fatal)]
+      (is (identical? expected observed)
+          [(.getName (class expected)) observed]))
+    (is (identical? (:primary-fatal fatal)
+                    (:primary-fatal-result fatal)))
+    (is (some #(identical? (:cleanup-fatal fatal) %)
+              (.getSuppressed ^Throwable (:primary-fatal-result fatal))))
+    (is (identical? (:winning-cleanup fatal)
+                    (:cleanup-fatal-result fatal)))
+    (is (some #(identical? (:ordinary-primary fatal) %)
+              (.getSuppressed ^Throwable (:cleanup-fatal-result fatal))))
+    (is (true? (get-in fatal [:timeout :timed-out?])))
+    (is (false? (get-in fatal
+                        [:timeout :termination :root-alive-after-kill?])))
+    (is (zero? (get-in fatal
+                       [:timeout :termination
+                        :descendants-alive-after-kill])))
+    (is (true? (get-in fatal
+                       [:timeout :termination
+                        :captured-process-set-reaped?])))
+    (is (false? (get-in fatal
+                        [:timeout :termination
+                         :whole-process-tree-reaping-proved?])))
+    (is (= :interrupted (get-in fatal [:interrupt :status])))
+    (is (true? (get-in fatal [:interrupt :interrupt-restored?])))
+    (is (false? (get-in fatal [:interrupt :thread-alive?])))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]

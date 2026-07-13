@@ -19,7 +19,8 @@
              build-b3-runtime-abi-helper-map
              build-b3-pass-pipeline-record
              build-b3-llvm-artifact-record
-             verify-b3-llvm-backend-design])
+             verify-b3-llvm-backend-design
+             b3-build-bounded-arm64-macos-llvm])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -436,7 +437,9 @@
    :target-record target-record
    :emits emitted-artifacts
    :requires required-facts
-   :metadata-gated (:metadata b3-metadata-attribute-contract)
+   :metadata-gated [:nonnull :dereferenceable :align :noalias :readonly
+                    :writeonly :noundef :range :invariant-load
+                    :fast-math-flags]
    :rejects [:proofless-llvm-metadata
              :implicit-llvm-ub
              :unpinned-data-layout
@@ -452,7 +455,8 @@
    :llvm-target-cpu cpu
    :target-feature-string features
    :abi abi
-   :required-fields (:required-fields b3-target-data-layout-contract)
+   :required-fields [:target-triple :data-layout :llvm-target-cpu
+                     :target-feature-string :abi]
    :source-model-only? true})
 
 (defn build-b3-metadata-map
@@ -462,7 +466,8 @@
    :proof-records proof-records
    :source-map source-map
    :required-proof-sources
-   (:required-proof-sources b3-metadata-attribute-contract)
+   [:range-proof :alignment-proof :alias-proof :lifetime-proof
+    :nonnull-proof :floating-mode-proof :initialization-proof]
    :source-model-only? true})
 
 (defn build-b3-runtime-abi-helper-map
@@ -470,7 +475,10 @@
   {:artifact :gravity/b3-runtime-abi-helper-map
    :profile profile
    :helpers helpers
-   :helper-categories (:helper-categories b3-runtime-abi-contract)
+   :helper-categories [:allocation :deallocation :panic :error
+                       :exception-or-unwind :dynamic-dispatch
+                       :closure :async :concurrency :atomic-fallback
+                       :simd-fallback :reflection :gc-barrier :ffi-trampoline]
    :source-model-only? true})
 
 (defn build-b3-pass-pipeline-record
@@ -480,7 +488,8 @@
    :optimization-level optimization-level
    :passes passes
    :verifier-results verifier-results
-   :required-fields (:required-fields b3-pass-pipeline-contract)
+   :required-fields [:llvm-version :optimization-level :passes
+                     :verifier-results]
    :source-model-only? true})
 
 (defn build-b3-llvm-artifact-record
@@ -491,7 +500,8 @@
    :source-hash source-hash
    :manifest-id manifest-id
    :provenance provenance
-   :required-fields (:required-fields b3-artifact-manifest-contract)
+   :required-fields [:artifact-kind :source-path :source-hash
+                     :manifest-id :provenance]
    :source-model-only? true})
 
 (defn verify-b3-llvm-backend-design
@@ -511,3 +521,1415 @@
    :diagnostics-covered? true
    :production-backend-execution? false
    :source-model-only? true})
+
+; Executable experimental B3 slice.  The seed authenticates and replays C11,
+; but this Gravity source owns every MIR-to-LLVM semantic decision.  The
+; accepted surface is deliberately smaller than the C11 bootstrap slice:
+; scalar integer/boolean/nil constants, forwarding locals/lets/do, truthiness,
+; one conditional join, and return.  The independent seed verifier rejects
+; every other operation before this result may cross the Clang boundary.
+
+(defn b3-bounded-arm64-macos-policy-record
+  []
+  {:artifact :gravity/b3-bounded-arm64-macos-policy
+   :owner :gravity.backend/b3-llvm
+   :tier :experimental
+   :exposure :internal
+   :opt-in-required? true
+   :backend-status :partial-bounded-executable-slice
+   :source-declaration-target :jvm
+   :requested-lowering-target :llvm
+   :target-selection {:source-target :jvm
+                      :requested-target :llvm
+                      :selection :explicit-bootstrap-seed-target-override
+                      :reason :checked-core-seed-contract}
+   :direct-source-declared-llvm? false
+   :full-target-selection-credit? false
+   :source-to-native-operational-status
+   :upstream-fresh-replay-performance-residual
+   :fresh-replay-latency-slo :not-established
+   :identity-path-neutrality
+   :checkout-temp-output-and-effective-tool-installation
+   :tool-launcher-path-policy :pinned-system-launchers
+   :runtime-status :no-gravity-helpers-platform-runtime-required
+   :target-triple "arm64-apple-macosx14.0.0"
+   :data-layout "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+   :cpu "generic"
+   :features "+v8a,+fp-armv8,+neon"
+   :calling-convention :darwin-pcs-ccc
+   :object-format :mach-o
+   :architecture :arm64
+   :relocation-model :pic
+   :code-model :small
+   :optimization-level :O0
+   :minimum-os-version "14.0"
+   :sanitizers []
+   :instrumentation []
+   :gravity-runtime-providers []
+   :platform-runtime-providers
+   [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+   :platform-runtime-provider-status :requires-otool-verification
+   :build-runtime-providers
+   [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
+    :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader]
+   :requested-vs-emitted-binding :requires-seed-and-clang-verification
+   :gravity-exception-unwind :none
+   :platform-unwind-metadata :darwin-compact-unwind-required
+   :tls-model :not-applicable
+   :supported-profiles #{:hosted}
+   :unsupported-profiles [:hardware :firmware :kernel :native
+                          :distributed :ai :meta :gpu :formal]
+   :required-evidence [:authenticated-c11-replay
+                       :independent-lowering-reconstruction
+                       :llvm-tool-acceptance
+                       :mach-o-arm64-object
+                       :differential-process-result
+                       :content-hash-and-provenance]
+   :unsupported-surface [:strings :quote :str :println :runtime-checks
+                         :effects :program-capabilities :domain-anchors
+                         :multiple-functions :multiple-conditionals
+                         :non-scalar-types :integer-outside-signed-i64
+                         :process-result-outside-0-to-255]
+   :whole-b3? false
+   :public? false
+   :release? false
+   :self-hosted? false})
+
+(defn b3-last
+  [values]
+  (if (= (count values) 0)
+    nil
+    (if (= (count values) 1)
+      (first values)
+      (b3-last (rest values)))))
+
+(defn b3-append
+  [left right]
+  (if (= (count right) 0)
+    left
+    (b3-append (conj left (first right)) (rest right))))
+
+(defn b3-exact-keys?
+  [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn b3-all-map-fields?
+  [value fields]
+  (if (= (count fields) 0)
+    true
+    (if (map? (get value (first fields)))
+      (b3-all-map-fields? value (rest fields))
+      false)))
+
+(defn b3-scalar-carrier-type?
+  [type]
+  (if (= type :gravity/integer)
+    true
+    (if (= type :gravity/bool)
+      true
+      (= type :gravity/nil))))
+
+(defn b3-function-boundary-type?
+  [type]
+  (if (b3-exact-keys?
+       type
+       #{:params :return :latent-effects :capabilities :throws
+         :ownership-constraints :profile-constraints})
+    (if (= (get type :params) [])
+      (if (b3-scalar-carrier-type? (get type :return))
+        (if (= (get type :latent-effects) #{})
+          (if (= (get type :capabilities) #{})
+            (if (= (get type :throws) #{})
+              (if (= (get type :ownership-constraints)
+                     #{:persistent-immutable-shareable})
+                (= (get type :profile-constraints) #{:hosted})
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b3-operation-facts-shape?
+  [facts]
+  (b3-exact-keys?
+   facts
+   #{:type-fact-id :effect-fact-id :capability-fact-id
+     :capability-proof-ids :ownership-fact-id :safety-outcome-id
+     :safety-proof-id :profile-target-fact-id :runtime-check-id
+     :proof-certificate-ids :failure-behavior :source-origin-id}))
+
+(defn b3-module-carrier-shape?
+  [mir]
+  (if (b3-all-map-fields?
+       mir
+       [:functions :globals :control-flow-graph :data-flow-graph
+        :type-table :effect-table :effect-order-graph :ownership-table
+        :capability-table :capability-proof-table :safety-table
+        :profile-target-table :runtime-check-table :proof-certificate-table
+        :source-map :domain-anchors :provenance :construction
+        :pass-contract :pass-execution-record :b1-preflight :scope
+        :target-request-metadata])
+    (vector? (get mir :diagnostics))
+    false))
+
+(defn b3-module-envelope-reason
+  [mir]
+  (if (b3-exact-keys?
+       mir
+       #{:artifact :schema-version :source-core :module-id :profile
+         :source-target :target-request :target-request-metadata :functions
+         :globals :control-flow-graph :data-flow-graph :type-table
+         :effect-table :effect-order-graph :ownership-table
+         :capability-table :capability-proof-table :safety-table
+         :profile-target-table :runtime-check-table
+         :proof-certificate-table :source-map :domain-anchors :diagnostics
+         :provenance :construction :pass-contract :pass-execution-record
+         :verification-status :target-independent? :b1-preflight :scope
+         :clojure-seed-boundary? :self-hosted?})
+    (if (b3-module-carrier-shape? mir)
+    (if (= (get mir :artifact) :gravity/mir-module)
+      (if (= (get mir :schema-version) 1)
+        (if (= (get mir :verification-status) :passed)
+          (if (= (get mir :target-independent?) true)
+            (if (= (get mir :profile) :hosted)
+              (if (= (get mir :source-target) :jvm)
+              (if (= (get mir :target-request) :llvm)
+                (if (= (set (keys (get mir :functions))) #{(quote main)})
+                  (if (= (get mir :globals) {})
+                    (if (= (get mir :runtime-check-table) {})
+                      (if (= (get mir :domain-anchors) {})
+                        (if (= (get mir :diagnostics) [])
+                          nil
+                          :mir-diagnostics-must-be-empty)
+                        :domain-anchors-unsupported)
+                      :runtime-checks-unsupported)
+                    :globals-unsupported)
+                  :single-main-function-required)
+                :llvm-target-request-required)
+              :jvm-source-declaration-required)
+              :hosted-profile-required)
+            :target-independent-mir-required)
+          :passed-c11-verification-required)
+        :mir-schema-version)
+      :mir-artifact-kind)
+    :concrete-mir-module-carrier-shapes)
+    :exact-mir-module-envelope))
+
+(defn b3-function-envelope-reason
+  [function]
+  (if (b3-exact-keys?
+       function
+       #{:artifact :fn-id :name :params :returns :latent-effects
+         :capabilities :blocks :entry :source :facts :provenance})
+    (if (= (get function :artifact) :gravity/mir-function)
+      (if (= (get function :name) 'main)
+        (if (= (get function :params) [])
+          (if (= (get function :latent-effects) #{})
+            (if (= (get function :capabilities) #{})
+              (if (map? (get function :blocks))
+              (if (if (string? (get function :entry))
+                    (<= (count (get function :entry)) 256)
+                    false)
+              (if (b3-scalar-carrier-type? (get function :returns))
+              (if (map? (get function :source))
+              (if (map? (get function :facts))
+              (if (map? (get function :provenance))
+              (if (if (= (count (get function :blocks)) 1)
+                    true
+                    (= (count (get function :blocks)) 4))
+                (if (= (get (get function :blocks) (get function :entry)) nil)
+                  :entry-block-definition
+                  (if (<= (b3-block-instruction-count
+                           (get function :blocks)
+                           (keys (get function :blocks)) 0)
+                          128)
+                    nil
+                    :bounded-operation-count))
+                :bounded-one-or-four-block-cfg)
+              :function-provenance-map)
+              :function-facts-map)
+              :function-source-map)
+              :bounded-scalar-function-return)
+              :bounded-string-entry-block-id)
+              :function-block-map)
+              :function-capabilities-unsupported)
+            :function-effects-unsupported)
+          :zero-parameter-main-required)
+        :main-entrypoint-required)
+      :mir-function-kind)
+    :exact-mir-function-envelope))
+
+(defn b3-block-instruction-count
+  [blocks block-ids total]
+  (if (= (count block-ids) 0)
+    total
+    (let [instructions (get (get blocks (first block-ids)) :instructions)]
+      (if (vector? instructions)
+        (b3-block-instruction-count
+         blocks (rest block-ids) (+ total (count instructions)))
+        129))))
+
+(defn b3-operation-envelope-reason-loop
+  [operations index seen]
+  (if (= (count operations) 0)
+    nil
+    (let [operation (first operations)
+          operation-id (get operation :op-id)
+          opcode (get operation :opcode)
+          type (get operation :type)]
+      (if (> index 127)
+        :bounded-operation-count
+        (if (b3-exact-keys?
+             operation
+             #{:artifact :op-id :opcode :source-operation :operands :result
+               :result-kind :constant-payload :type :effects :capabilities
+               :ordering :source :profile :facts :domain-anchor :block-id
+               :verifier-status})
+          (if (= (get operation :artifact) :gravity/mir-operation)
+            (if (if (string? operation-id)
+                  (<= (count operation-id) 256)
+                  false)
+              (if (= operation-id (get operation :result))
+              (if (vector? (get operation :operands))
+              (if (= (get operation :effects) #{})
+              (if (= (get operation :capabilities) #{})
+              (if (= (get operation :ordering) :none)
+              (if (= (get operation :profile) :hosted)
+              (if (map? (get operation :source))
+              (if (b3-operation-facts-shape? (get operation :facts))
+              (if (= (get operation :result-kind)
+                     (if (= type :gravity/nil) :unit :value))
+              (if (if (= opcode :constant)
+                    true
+                    (= (get operation :constant-payload) :not-applicable))
+              (if (= (get operation :verifier-status) :passed)
+                (if (= (get operation :domain-anchor) nil)
+                  (if (contains? seen operation-id)
+                    :unique-operation-ids
+                    (b3-operation-envelope-reason-loop
+                     (rest operations) (+ index 1)
+                     (conj seen operation-id)))
+                  :operation-domain-anchor-unsupported)
+                :passed-operation-verifier-status)
+              :nonconstant-payload-must-be-not-applicable)
+              :operation-result-kind-type-parity)
+              :operation-facts-map)
+              :operation-source-map)
+              :hosted-operation-profile)
+              :pure-operation-ordering)
+              :operation-capabilities-must-be-empty-set)
+              :operation-effects-must-be-empty-set)
+              :operation-operands-vector)
+              :operation-result-must-equal-id)
+              :bounded-string-operation-id)
+            :mir-operation-kind)
+          :exact-mir-operation-envelope)))))
+
+(defn b3-operation-envelope-reason
+  [operations]
+  (if (= (count operations) 0)
+    :nonempty-operation-sequence
+    (b3-operation-envelope-reason-loop operations 0 #{})))
+
+(defn b3-block-operation-placement?
+  [instructions block-id]
+  (if (= (count instructions) 0)
+    true
+    (if (map? (first instructions))
+      (if (= (get (first instructions) :block-id) block-id)
+        (b3-block-operation-placement? (rest instructions) block-id)
+        false)
+      false)))
+
+(defn b3-block-envelope-reason-loop
+  [blocks block-order]
+  (if (= (count block-order) 0)
+    nil
+    (let [block-id (first block-order)
+          block (get blocks block-id)]
+      (if (b3-exact-keys?
+           block
+           #{:artifact :block-id :arguments :instructions :terminator
+             :predecessors :successors :dominators :data-flow :source})
+        (if (= (get block :artifact) :gravity/mir-block)
+          (if (= (get block :block-id) block-id)
+            (if (if (string? block-id) (<= (count block-id) 256) false)
+            (if (= (get block :arguments) [])
+              (if (vector? (get block :instructions))
+                (if (vector? (get block :predecessors))
+                  (if (vector? (get block :successors))
+                    (if (vector? (get block :dominators))
+                      (if (= (get block :data-flow)
+                             {:module-data-flow-graph-reference true})
+                        (if (b3-block-operation-placement?
+                             (get block :instructions) block-id)
+                          (b3-block-envelope-reason-loop
+                           blocks (rest block-order))
+                          :operation-container-block-id-parity)
+                        :block-data-flow-reference)
+                      :block-dominators-vector)
+                    :block-successors-vector)
+                  :block-predecessors-vector)
+                :block-instructions-vector)
+              :block-arguments-unsupported)
+            :bounded-string-block-id)
+            :block-id-map-key-parity)
+          :mir-block-kind)
+        :exact-mir-block-envelope))))
+
+(defn b3-block-envelope-reason
+  [function block-order]
+  (let [blocks (get function :blocks)]
+    (if (= (set (keys blocks)) (set block-order))
+      (b3-block-envelope-reason-loop blocks block-order)
+      :exact-block-order-coverage)))
+
+(defn b3-terminator-envelope?
+  [terminator]
+  (if (b3-exact-keys?
+       terminator
+       #{:artifact :terminator-id :kind :operands :successors :effects
+         :ordering :source :profile :facts :verifier-status})
+    (if (= (get terminator :artifact) :gravity/mir-terminator)
+      (if (= (get terminator :verifier-status) :passed)
+        (if (vector? (get terminator :operands))
+          (if (vector? (get terminator :successors))
+            (if (= (get terminator :effects) #{})
+              (if (= (get terminator :ordering) :none)
+                (if (= (get terminator :profile) :hosted)
+                  (if (map? (get terminator :source))
+                    (map? (get terminator :facts))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b3-terminator-shape-reason
+  [function block-order]
+  (let [blocks (get function :blocks)
+        entry-id (first block-order)
+        entry-terminator (get (get blocks entry-id) :terminator)]
+    (if (b3-terminator-envelope? entry-terminator)
+      (if (= (count block-order) 1)
+        (if (= (get entry-terminator :kind) :return)
+          (if (= (count (get entry-terminator :operands)) 1)
+            (if (= (count (get entry-terminator :successors)) 0)
+              (if (= (get entry-terminator :terminator-id)
+                     (str entry-id ":return"))
+                (if (= (get entry-terminator :facts)
+                       {:returned-value
+                        (first (get entry-terminator :operands))})
+                  nil
+                  :linear-return-facts)
+                :linear-return-id)
+              :linear-return-successors)
+            :linear-return-operand)
+          :linear-return-terminator)
+        (let [then-id (second block-order)
+              else-id (first (rest (rest block-order)))
+              join-id (b3-last block-order)
+              then-terminator (get (get blocks then-id) :terminator)
+              else-terminator (get (get blocks else-id) :terminator)
+              join-terminator (get (get blocks join-id) :terminator)]
+          (if (if (b3-terminator-envelope? then-terminator)
+                (if (b3-terminator-envelope? else-terminator)
+                  (b3-terminator-envelope? join-terminator)
+                  false)
+                false)
+            (if (= (get entry-terminator :kind) :conditional-branch)
+              (if (= (count (get entry-terminator :operands)) 1)
+                (if (= (get entry-terminator :successors)
+                       [then-id else-id])
+                  (if (if (= (get then-terminator :kind) :branch)
+                        (if (= (get else-terminator :kind) :branch)
+                          (= (get join-terminator :kind) :return)
+                          false)
+                        false)
+                    (if (if (= (count (get then-terminator :operands)) 1)
+                          (if (= (count (get else-terminator :operands)) 1)
+                            (= (count (get join-terminator :operands)) 1)
+                            false)
+                          false)
+                      (if (if (= (get then-terminator :successors) [join-id])
+                            (if (= (get else-terminator :successors) [join-id])
+                              (= (count (get join-terminator :successors)) 0)
+                              false)
+                            false)
+                        (if (if (= (get entry-terminator :terminator-id)
+                                   (str entry-id ":conditional"))
+                              (if (= (get then-terminator :terminator-id)
+                                     (str then-id ":branch"))
+                                (if (= (get else-terminator :terminator-id)
+                                       (str else-id ":branch"))
+                                  (= (get join-terminator :terminator-id)
+                                     (str join-id ":return"))
+                                  false)
+                                false)
+                              false)
+                          (if (= (get entry-terminator :facts)
+                                 {:condition
+                                  (first (get entry-terminator :operands))
+                                  :join join-id})
+                            (if (= (get then-terminator :facts)
+                                   {:incoming-value
+                                    (first (get then-terminator :operands))})
+                              (if (= (get else-terminator :facts)
+                                     {:incoming-value
+                                      (first (get else-terminator :operands))})
+                                (if (= (get join-terminator :facts)
+                                       {:returned-value
+                                        (first
+                                         (get join-terminator :operands))})
+                                  nil
+                                  :conditional-return-facts)
+                                :conditional-else-branch-facts)
+                              :conditional-then-branch-facts)
+                            :conditional-entry-facts)
+                          :conditional-terminator-ids)
+                        :conditional-terminator-successors)
+                      :conditional-terminator-operands)
+                    :conditional-terminator-kinds)
+                  :conditional-entry-successors)
+                :conditional-entry-operand)
+              :conditional-entry-terminator)
+            :conditional-terminator-envelope)))
+      :entry-terminator-envelope)))
+
+(defn b3-count-opcode
+  [operations opcode count]
+  (if (= (count operations) 0)
+    count
+    (b3-count-opcode
+     (rest operations) opcode
+     (if (= (get (first operations) :opcode) opcode)
+       (+ count 1)
+       count))))
+
+(defn b3-find-opcode
+  [operations opcode]
+  (if (= (count operations) 0)
+    nil
+    (if (= (get (first operations) :opcode) opcode)
+      (first operations)
+      (b3-find-opcode (rest operations) opcode))))
+
+(defn b3-cfg-join-reason
+  [mir function block-order operations]
+  (let [blocks (get function :blocks)]
+    (if (= (count block-order) 1)
+      (if (= (b3-count-opcode operations :conditional-join 0) 0)
+        nil
+        :linear-cfg-must-not-contain-conditional-join)
+      (let [entry-id (first block-order)
+            then-id (second block-order)
+            else-id (first (rest (rest block-order)))
+            join-id (b3-last block-order)
+            entry-terminator (get (get blocks entry-id) :terminator)
+            then-terminator (get (get blocks then-id) :terminator)
+            else-terminator (get (get blocks else-id) :terminator)
+            join (get (get mir :control-flow-graph) :join)
+            operation (b3-find-opcode operations :conditional-join)
+            operands (get operation :operands)]
+        (if (= (b3-count-opcode operations :conditional-join 0) 1)
+          (if (= (set (keys join)) #{:block-id :value-id :incoming})
+            (if (= (get join :block-id) join-id)
+              (if (= (get join :value-id) (get operation :op-id))
+                (if (= (get join :incoming)
+                       [{:predecessor then-id :value (second operands)}
+                        {:predecessor else-id
+                         :value (first (rest (rest operands)))}])
+                  (if (= (get entry-terminator :operands)
+                         [(first operands)])
+                    (if (= (get then-terminator :operands)
+                           [(second operands)])
+                      (if (= (get else-terminator :operands)
+                             [(first (rest (rest operands)))])
+                        nil
+                        :else-terminator-phi-value)
+                      :then-terminator-phi-value)
+                    :entry-terminator-condition)
+                  :phi-incoming-predecessor-value-pairs)
+                :phi-join-value-id)
+              :phi-join-block-id)
+            :exact-phi-join-envelope)
+          :exactly-one-conditional-join)))))
+
+(defn b3-cfg-structure-reason
+  [mir function block-order]
+  (let [blocks (get function :blocks)
+        cfg (get mir :control-flow-graph)
+        entry-id (first block-order)]
+    (if (= (set (keys cfg)) #{:entry :edges :dominance :join})
+      (if (= (get cfg :entry) entry-id)
+        (if (= (count block-order) 1)
+          (let [entry (get blocks entry-id)]
+            (if (= (get entry :predecessors) [])
+              (if (= (get entry :successors) [])
+                (if (= (get cfg :edges) [])
+                  (if (= (get cfg :dominance) {entry-id [entry-id]})
+                    (if (= (get cfg :join) nil)
+                      nil
+                      :linear-cfg-join-must-be-nil)
+                    :linear-cfg-dominance)
+                  :linear-cfg-edges)
+                :linear-block-successors)
+              :linear-block-predecessors))
+          (let [then-id (second block-order)
+                else-id (first (rest (rest block-order)))
+                join-id (b3-last block-order)
+                entry (get blocks entry-id)
+                then-block (get blocks then-id)
+                else-block (get blocks else-id)
+                join-block (get blocks join-id)]
+            (if (= (get entry :predecessors) [])
+              (if (= (get entry :successors) [then-id else-id])
+                (if (= (get then-block :predecessors) [entry-id])
+                  (if (= (get then-block :successors) [join-id])
+                    (if (= (get else-block :predecessors) [entry-id])
+                      (if (= (get else-block :successors) [join-id])
+                        (if (= (get join-block :predecessors)
+                               [then-id else-id])
+                          (if (= (get join-block :successors) [])
+                            (if (= (get cfg :edges)
+                                   [{:from entry-id :to then-id :kind :true}
+                                    {:from entry-id :to else-id :kind :false}
+                                    {:from then-id :to join-id :kind :join}
+                                    {:from else-id :to join-id :kind :join}])
+                              (if (= (get cfg :dominance)
+                                     {entry-id [entry-id]
+                                      then-id [entry-id then-id]
+                                      else-id [entry-id else-id]
+                                      join-id [entry-id join-id]})
+                                nil
+                                :conditional-cfg-dominance)
+                              :conditional-cfg-edges)
+                            :join-block-successors)
+                          :join-block-predecessors)
+                        :else-block-successors)
+                      :else-block-predecessors)
+                    :then-block-successors)
+                  :then-block-predecessors)
+                :entry-block-successors)
+              :entry-block-predecessors)))
+        :cfg-entry-parity)
+      :exact-control-flow-graph-envelope)))
+
+(defn b3-expected-terminator-use
+  [block edge-kind]
+  (let [terminator (get block :terminator)]
+    {:value-id (first (get terminator :operands))
+     :consumer-kind :terminator
+     :consumer-id (get terminator :terminator-id)
+     :consumer-block (get block :block-id)
+     :operand-index 0
+     :edge-kind edge-kind}))
+
+(defn b3-expected-terminator-uses
+  [function block-order]
+  (let [blocks (get function :blocks)
+        entry (get blocks (first block-order))]
+    (if (= (count block-order) 1)
+      [(b3-expected-terminator-use entry :return-value)]
+      (let [then-block (get blocks (second block-order))
+            else-block (get blocks (first (rest (rest block-order))))
+            join-block (get blocks (b3-last block-order))]
+        [(b3-expected-terminator-use entry :condition)
+         (b3-expected-terminator-use then-block :branch-value)
+         (b3-expected-terminator-use else-block :branch-value)
+         (b3-expected-terminator-use join-block :return-value)]))))
+
+(defn b3-return-reason
+  [mir function block-order operations]
+  (let [return-block (get (get function :blocks) (b3-last block-order))
+        return-id (first (get (get return-block :terminator) :operands))
+        return-operation (b3-find-operation operations return-id)
+        return-operation-block (get return-operation :block-id)
+        allowed-block?
+        (if (= (count block-order) 1)
+          (= return-operation-block (first block-order))
+          (if (= return-operation-block (first block-order))
+            true
+            (= return-operation-block (b3-last block-order))))
+        observed-uses
+        (get (get mir :data-flow-graph) :terminator-uses)]
+    (if (= return-operation nil)
+      :return-value-definition
+      (if allowed-block?
+      (if (= observed-uses
+             (b3-expected-terminator-uses function block-order))
+      (if (b3-scalar-type-supported? (get return-operation :type))
+        (if (= (get function :returns) (get return-operation :type))
+          nil
+          :function-return-type)
+        :bounded-scalar-return-type)
+      :exact-terminator-use-role-parity)
+      :return-definition-must-dominate-return-block))))
+
+(defn b3-block-order
+  [mir function]
+  (let [entry (get function :entry)
+        blocks (get function :blocks)
+        entry-block (get blocks entry)
+        successors (get entry-block :successors)]
+    (if (= (count blocks) 1)
+      [entry]
+      (let [join (get (get (get mir :control-flow-graph) :join) :block-id)]
+        [entry (first successors) (second successors) join]))))
+
+(defn b3-collect-block-operations
+  [blocks block-order result]
+  (if (= (count block-order) 0)
+    result
+    (b3-collect-block-operations
+     blocks
+     (rest block-order)
+     (b3-append result
+                (get (get blocks (first block-order)) :instructions)))))
+
+(defn b3-index-operations
+  [operations index result]
+  (if (= (count operations) 0)
+    result
+    (b3-index-operations
+     (rest operations)
+     (+ index 1)
+     (assoc result (get (first operations) :op-id) index))))
+
+(defn b3-find-operation
+  [operations operation-id]
+  (if (= (count operations) 0)
+    nil
+    (if (= (get (first operations) :op-id) operation-id)
+      (first operations)
+      (b3-find-operation (rest operations) operation-id))))
+
+(defn b3-operation-source-matches-opcode?
+  [operation]
+  (let [opcode (get operation :opcode)
+        source (get operation :source-operation)]
+    (if (= opcode :constant)
+      (if (= source :literal) true (= source :implicit-nil))
+      (if (= opcode :local)
+        (= source :local)
+        (if (= opcode :local-binding)
+          (= source :let-binding)
+          (if (= opcode :sequence)
+            (= source :do)
+            (if (= opcode :lexical-scope)
+              (= source :let)
+              (if (= opcode :function-boundary)
+                (= source :function)
+                (if (= opcode :truthiness)
+                  (= source :truthy)
+                  (if (= opcode :conditional-join)
+                    (= source :if)
+                    false))))))))))
+
+(defn b3-operation-reference-allowed?
+  [operation operand operations operation-index block-labels]
+  (let [operand-operation (b3-find-operation operations operand)
+        current-index (get operation-index (get operation :op-id))
+        operand-index (get operation-index operand)
+        current-label (get block-labels (get operation :block-id))
+        operand-label
+        (get block-labels (get operand-operation :block-id))
+        opcode (get operation :opcode)]
+    (if (= operand-operation nil)
+      false
+      (if (< operand-index current-index)
+        (if (= current-label "entry")
+          (= operand-label "entry")
+          (if (= current-label "then")
+            (if (= operand-label "entry") true (= operand-label "then"))
+            (if (= current-label "else")
+              (if (= operand-label "entry") true (= operand-label "else"))
+              (if (= opcode :conditional-join)
+                (if (= operand-label "entry")
+                  true
+                  (if (= operand-label "then")
+                    true
+                    (= operand-label "else")))
+                (if (= operand-label "entry")
+                  true
+                  (= operand-label "join"))))))
+        false))))
+
+(defn b3-operation-references-allowed?
+  [operation operands operations operation-index block-labels]
+  (if (= (count operands) 0)
+    true
+    (if (b3-operation-reference-allowed?
+         operation (first operands) operations operation-index block-labels)
+      (b3-operation-references-allowed?
+       operation (rest operands) operations operation-index block-labels)
+      false)))
+
+(defn b3-conditional-role-references-allowed?
+  [operation operands operations operation-index block-labels]
+  (let [condition (b3-find-operation operations (first operands))
+        then-value (b3-find-operation operations (second operands))
+        else-value
+        (b3-find-operation operations (first (rest (rest operands))))]
+    (if (= condition nil)
+      false
+      (if (= then-value nil)
+        false
+        (if (= else-value nil)
+          false
+          (let [operation-label
+                (get block-labels (get operation :block-id))
+                condition-label
+                (get block-labels (get condition :block-id))
+                then-label (get block-labels (get then-value :block-id))
+                else-label (get block-labels (get else-value :block-id))
+                operation-position
+                (get operation-index (get operation :op-id))]
+            (if (= operation-label "join")
+              (if (= condition-label "entry")
+                (if (if (= then-label "entry")
+                      true
+                      (= then-label "then"))
+                  (if (if (= else-label "entry")
+                        true
+                        (= else-label "else"))
+                    (if (< (get operation-index (get condition :op-id))
+                           operation-position)
+                      (if (< (get operation-index (get then-value :op-id))
+                             operation-position)
+                        (< (get operation-index (get else-value :op-id))
+                           operation-position)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)))))))
+
+(defn b3-value-reference
+  [operation-index operation-id]
+  (str "%v" (get operation-index operation-id)))
+
+(defn b3-constant-number
+  [value]
+  (if (= value true)
+    1
+    (if (= value false) 0 (if (= value nil) 0 value))))
+
+(defn b3-forwarded-operation?
+  [opcode]
+  (if (= opcode :local)
+    true
+    (if (= opcode :local-binding)
+      true
+      (if (= opcode :sequence)
+        true
+        (if (= opcode :lexical-scope)
+          true
+          (if (= opcode :function-boundary) true false))))))
+
+(defn b3-forwarded-operand-arity?
+  [opcode operands]
+  (if (= opcode :local)
+    (= (count operands) 1)
+    (if (= opcode :local-binding)
+      (= (count operands) 1)
+      (if (> (count operands) 0)
+        (<= (count operands) 128)
+        false))))
+
+(defn b3-scalar-type-supported?
+  [type]
+  (if (= type :gravity/integer)
+    true
+    (if (= type :gravity/bool)
+      true
+      (if (= type :gravity/nil) true false))))
+
+(defn b3-constant-payload-supported?
+  [operation]
+  (let [type (get operation :type)
+        payload (get operation :constant-payload)
+        value (get payload :value)]
+    (if (= payload {:present? true :value value})
+      (if (= type :gravity/bool)
+        (boolean? value)
+        (if (= type :gravity/nil)
+          (= value nil)
+          (if (= type :gravity/integer)
+            (if (integer? value)
+              (if (>= value -9223372036854775808)
+                (<= value 9223372036854775807)
+                false)
+              false)
+            false)))
+      false)))
+
+(defn b3-operation-value-reason
+  [operation values]
+  (let [value (get values (get operation :op-id))
+        payload (get operation :constant-payload)]
+    (if (= value nil)
+      :mir-value-definition
+      (if (= (get value :value-id) (get operation :op-id))
+        (if (= (get (get value :defined-by) :operation-id)
+               (get operation :op-id))
+          (if (= (get value :type) (get operation :type))
+            (if (= (get value :constant-payload) payload)
+              (if (= (get operation :opcode) :constant)
+                nil
+                (if (= payload :not-applicable)
+                  nil
+                  :nonconstant-payload-must-be-not-applicable))
+              :operation-value-constant-payload-parity)
+            :operation-value-type-parity)
+          :operation-value-definition-parity)
+        :operation-value-id-parity))))
+
+(defn b3-value-envelope-reason
+  [operation definition value]
+  (let [operation-id (get operation :op-id)]
+    (if (= definition
+           {:value-id operation-id
+            :operation-id operation-id
+            :block-id (get operation :block-id)})
+      (if (b3-exact-keys?
+           value
+           #{:artifact :value-id :kind :type :constant-payload
+             :defined-by :uses :source :ownership :effects :safety})
+        (if (= (get value :artifact) :gravity/mir-value)
+          (if (= (get value :value-id) operation-id)
+            (if (= (get value :kind) :instruction-result)
+              (if (= (get value :type) (get operation :type))
+                (if (= (get value :constant-payload)
+                       (get operation :constant-payload))
+                  (if (= (get value :defined-by) definition)
+                    (if (vector? (get value :uses))
+                      (if (map? (get value :source))
+                        (if (map? (get value :ownership))
+                          (if (= (get value :effects) #{})
+                            (if (map? (get value :safety))
+                              nil
+                              :mir-value-safety-map)
+                            :mir-value-effects-empty-set)
+                          :mir-value-ownership-map)
+                        :mir-value-source-map)
+                      :mir-value-uses-vector)
+                    :mir-value-defined-by-parity)
+                  :mir-value-payload-parity)
+                :mir-value-type-parity)
+              :mir-value-instruction-result-kind)
+            :mir-value-id-parity)
+          :mir-value-artifact-kind)
+        :exact-mir-value-envelope)
+      :exact-mir-definition-record)))
+
+(defn b3-data-flow-operation-closure-reason
+  [operations definitions values]
+  (if (= (count operations) 0)
+    nil
+    (let [operation (first operations)
+          operation-id (get operation :op-id)]
+      (if (contains? definitions operation-id)
+        (if (contains? values operation-id)
+          (let [reason
+                (b3-value-envelope-reason
+                 operation (get definitions operation-id)
+                 (get values operation-id))]
+            (if (= reason nil)
+              (b3-data-flow-operation-closure-reason
+               (rest operations) definitions values)
+              reason))
+          :mir-value-key-coverage)
+        :mir-definition-key-coverage))))
+
+(defn b3-data-flow-value-closure-reason
+  [mir operations]
+  (let [data-flow (get mir :data-flow-graph)]
+    (if (b3-exact-keys?
+         data-flow #{:edges :terminator-uses :definitions :values})
+      (let [edges (get data-flow :edges)
+            terminator-uses (get data-flow :terminator-uses)
+            definitions (get data-flow :definitions)
+            values (get data-flow :values)]
+        (if (vector? edges)
+          (if (vector? terminator-uses)
+            (if (map? definitions)
+              (if (map? values)
+                (if (if (= (count definitions) (count operations))
+                      (= (count values) (count operations))
+                      false)
+                  (b3-data-flow-operation-closure-reason
+                   operations definitions values)
+                  :exact-operation-definition-value-counts)
+                :mir-values-map)
+              :mir-definitions-map)
+            :mir-terminator-uses-vector)
+          :mir-data-flow-edges-vector))
+      :exact-mir-data-flow-envelope)))
+
+(defn b3-operation-unsupported-reason
+  [operation operations operation-index block-labels values]
+  (let [opcode (get operation :opcode)
+        source-operation (get operation :source-operation)
+        operands (get operation :operands)]
+    (if (= (b3-operation-value-reason operation values) nil)
+     (if (b3-operation-source-matches-opcode? operation)
+     (if (= (get operation :effects) #{})
+      (if (= (get operation :capabilities) #{})
+        (if (= opcode :constant)
+          (if (= operands [])
+          (if (if (= source-operation :literal)
+                true
+                (= source-operation :implicit-nil))
+            (if (b3-constant-payload-supported? operation)
+              nil
+              :bounded-scalar-constant-payload)
+            :unsupported-constant-source-operation)
+          :constant-must-have-zero-operands)
+          (if (b3-forwarded-operation? opcode)
+            (if (b3-forwarded-operand-arity? opcode operands)
+              (if (b3-operation-references-allowed?
+                   operation operands operations operation-index block-labels)
+                (let [source-operation
+                      (b3-find-operation operations (b3-last operands))]
+                  (if (= opcode :function-boundary)
+                    (if (b3-function-boundary-type?
+                         (get operation :type))
+                      (if (= (get (get operation :type) :return)
+                             (get source-operation :type))
+                        nil
+                        :function-return-type-parity)
+                      :function-boundary-type)
+                    (if (b3-scalar-type-supported?
+                         (get source-operation :type))
+                      (if (b3-scalar-type-supported?
+                           (get operation :type))
+                        (if (= (get operation :type)
+                               (get source-operation :type))
+                          nil
+                          :forwarded-result-type-parity)
+                        :forwarded-result-scalar-type)
+                      :forwarded-operand-scalar-type)))
+                :forwarded-operation-definition-or-dominance)
+              :forwarded-operation-exact-arity)
+            (if (= opcode :truthiness)
+              (if (= (count operands) 1)
+                (let [operand (b3-find-operation operations (first operands))]
+                  (if (= operand nil)
+                    :truthiness-operand-definition
+                    (if (b3-operation-reference-allowed?
+                         operation (first operands) operations
+                         operation-index block-labels)
+                      (if (b3-scalar-type-supported? (get operand :type))
+                        (if (= (get operation :type) :gravity/bool)
+                          nil
+                          :truthiness-result-type)
+                        :truthiness-operand-type)
+                      :truthiness-operand-dominance)))
+                :truthiness-requires-one-operand)
+              (if (= opcode :conditional-join)
+                (if (= (count operands) 3)
+                  (let [condition
+                        (b3-find-operation operations (first operands))
+                        then-value
+                        (b3-find-operation operations (second operands))
+                        else-value
+                        (b3-find-operation
+                         operations (first (rest (rest operands))))]
+                    (if (= condition nil)
+                      :conditional-condition-definition
+                      (if (= then-value nil)
+                        :conditional-then-definition
+                        (if (= else-value nil)
+                          :conditional-else-definition
+                          (if (= (get condition :type) :gravity/bool)
+                            (if (b3-scalar-type-supported?
+                                 (get then-value :type))
+                              (if (b3-scalar-type-supported?
+                                   (get else-value :type))
+                                (if (= (get then-value :type)
+                                       (get else-value :type))
+                                  (if (= (get operation :type)
+                                         (get then-value :type))
+                                    (if (b3-conditional-role-references-allowed?
+                                         operation operands operations
+                                         operation-index block-labels)
+                                      nil
+                                      :conditional-role-specific-dominance)
+                                    :conditional-result-type-parity)
+                                  :conditional-branch-type-parity)
+                                :unsupported-conditional-else-type)
+                              :unsupported-conditional-then-type)
+                            :conditional-condition-type)))))
+                  :conditional-join-requires-three-operands)
+                :unsupported-mir-opcode))))
+        :program-capabilities-unsupported)
+      :program-effects-unsupported)
+     :source-operation-opcode-parity)
+     (b3-operation-value-reason operation values))))
+
+(defn b3-first-unsupported-operation-loop
+  [remaining operations operation-index block-labels values]
+  (if (= (count remaining) 0)
+    nil
+    (let [operation (first remaining)
+          reason
+          (b3-operation-unsupported-reason
+           operation operations operation-index block-labels values)]
+      (if (= reason nil)
+        (b3-first-unsupported-operation-loop
+         (rest remaining) operations operation-index block-labels values)
+        {:operation-id (get operation :op-id)
+         :opcode (get operation :opcode)
+         :source-operation (get operation :source-operation)
+         :type (get operation :type)
+         :reason reason}))))
+
+(defn b3-first-unsupported-operation
+  [operations operation-index block-labels values]
+  (b3-first-unsupported-operation-loop
+   operations operations operation-index block-labels values))
+
+(defn b3-evaluated-operation-value
+  [operation operations values]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (= opcode :constant)
+      (get (get operation :constant-payload) :value)
+      (if (b3-forwarded-operation? opcode)
+        (get values (b3-last operands))
+        (if (= opcode :truthiness)
+          (let [operand-id (first operands)
+                operand (b3-find-operation operations operand-id)
+                value (get values operand-id)]
+            (if (= (get operand :type) :gravity/nil)
+              false
+              (if (= (get operand :type) :gravity/bool) value true)))
+          (if (= opcode :conditional-join)
+            (if (get values (first operands))
+              (get values (second operands))
+              (get values (first (rest (rest operands)))))
+            nil))))))
+
+(defn b3-evaluate-operations-loop
+  [remaining operations values]
+  (if (= (count remaining) 0)
+    values
+    (let [operation (first remaining)]
+      (b3-evaluate-operations-loop
+       (rest remaining) operations
+       (assoc values (get operation :op-id)
+              (b3-evaluated-operation-value
+               operation operations values))))))
+
+(defn b3-semantic-result
+  [function block-order operations]
+  (let [values (b3-evaluate-operations-loop operations operations {})
+        return-block (get (get function :blocks) (b3-last block-order))
+        return-id (first (get (get return-block :terminator) :operands))]
+    (get values return-id)))
+
+(defn b3-exit-code
+  [value]
+  (if (= value true) 1 (if (= value false) 0 (if (= value nil) 0 value))))
+
+(defn b3-operation-instruction
+  [operation operations operation-index block-labels]
+  (let [opcode (get operation :opcode)
+        result (b3-value-reference operation-index (get operation :op-id))
+        operands (get operation :operands)]
+    (if (= opcode :constant)
+      (str "  " result " = add i64 0, "
+           (b3-constant-number
+            (get (get operation :constant-payload) :value)))
+      (if (b3-forwarded-operation? opcode)
+        (str "  " result " = add i64 0, "
+             (b3-value-reference operation-index (b3-last operands)))
+        (if (= opcode :truthiness)
+          (let [operand-id (first operands)
+                operand (b3-find-operation operations operand-id)
+                operand-type (get operand :type)]
+            (if (= operand-type :gravity/bool)
+              (str "  " result " = and i64 "
+                   (b3-value-reference operation-index operand-id) ", 1")
+              (if (= operand-type :gravity/nil)
+                (str "  " result " = add i64 0, 0")
+                (str "  " result " = add i64 0, 1"))))
+          (if (= opcode :conditional-join)
+            (let [then-id (second operands)
+                  else-id (first (rest (rest operands)))
+                  block-id (get operation :block-id)
+                  block-label (get block-labels block-id)
+                  then-label (get block-labels (get operation :b3-then-block))
+                  else-label (get block-labels (get operation :b3-else-block))]
+              (str "  " result " = phi i64 [ "
+                   (b3-value-reference operation-index then-id) ", %"
+                   then-label " ], [ "
+                   (b3-value-reference operation-index else-id) ", %"
+                   else-label " ]"))
+            :unsupported))))))
+
+(defn b3-annotate-conditional-operations
+  [operations mir]
+  (let [join (get (get mir :control-flow-graph) :join)]
+    (if (= join nil)
+      operations
+      (let [incoming (get join :incoming)
+            then-block (get (first incoming) :predecessor)
+            else-block (get (second incoming) :predecessor)]
+        (b3-annotate-conditional-operations-loop
+         operations then-block else-block [])))))
+
+(defn b3-annotate-conditional-operations-loop
+  [operations then-block else-block result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)]
+      (b3-annotate-conditional-operations-loop
+       (rest operations) then-block else-block
+       (conj result
+             (if (= (get operation :opcode) :conditional-join)
+               (assoc (assoc operation :b3-then-block then-block)
+                      :b3-else-block else-block)
+               operation))))))
+
+(defn b3-build-operation-records
+  [operations all-operations operation-index block-labels result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)
+          instruction
+          (b3-operation-instruction
+           operation all-operations operation-index block-labels)]
+      (b3-build-operation-records
+       (rest operations) all-operations operation-index block-labels
+       (conj result
+             {:mir-operation-id (get operation :op-id)
+              :mir-block-id (get operation :block-id)
+              :source-operation (get operation :source-operation)
+              :mir-opcode (get operation :opcode)
+              :mir-type (get operation :type)
+              :llvm-type :i64
+              :llvm-value
+              (b3-value-reference operation-index (get operation :op-id))
+              :llvm-instruction instruction})))))
+
+(defn b3-label-map
+  [block-order]
+  (if (= (count block-order) 1)
+    {(first block-order) "entry"}
+    {(first block-order) "entry"
+     (second block-order) "then"
+     (first (rest (rest block-order))) "else"
+     (b3-last block-order) "join"}))
+
+(defn b3-block-operation-lines
+  [records block-id result]
+  (if (= (count records) 0)
+    result
+    (let [record (first records)]
+      (b3-block-operation-lines
+       (rest records) block-id
+       (if (= block-id (get record :mir-block-id))
+         (conj result (get record :llvm-instruction))
+         result)))))
+
+(defn b3-build-block-records
+  [mir function block-order block-labels records operation-index result]
+  (if (= (count block-order) 0)
+    result
+    (let [block-id (first block-order)
+          block (get (get function :blocks) block-id)
+          terminator (get block :terminator)
+          kind (get terminator :kind)
+          operands (get terminator :operands)
+          successors (get terminator :successors)
+          label (get block-labels block-id)
+          terminator-lines
+          (if (= kind :conditional-branch)
+            [(str "  %branchcond = icmp ne i64 "
+                  (b3-value-reference operation-index (first operands)) ", 0")
+             (str "  br i1 %branchcond, label %"
+                  (get block-labels (first successors)) ", label %"
+                  (get block-labels (second successors)))]
+            (if (= kind :branch)
+              [(str "  br label %" (get block-labels (first successors)))]
+              [(str "  %exit = trunc i64 "
+                    (b3-value-reference operation-index (first operands))
+                    " to i32")
+               "  ret i32 %exit"]))]
+      (b3-build-block-records
+       mir function (rest block-order) block-labels records operation-index
+       (conj result
+             {:mir-block-id block-id
+              :llvm-label label
+              :operation-lines
+              (b3-block-operation-lines records block-id [])
+              :terminator-lines terminator-lines})))))
+
+(defn b3-lines-text
+  [lines result]
+  (if (= (count lines) 0)
+    result
+    (b3-lines-text (rest lines) (str result (first lines) "\n"))))
+
+(defn b3-blocks-text
+  [blocks result]
+  (if (= (count blocks) 0)
+    result
+    (let [block (first blocks)]
+      (b3-blocks-text
+       (rest blocks)
+       (str result
+            (get block :llvm-label) ":\n"
+            (b3-lines-text (get block :operation-lines) "")
+            (b3-lines-text (get block :terminator-lines) ""))))))
+
+(defn b3-rejected
+  [diagnostic reason operation]
+  {:status :rejected
+   :diagnostic diagnostic
+   :missing-fact reason
+   :operation-id (get operation :operation-id)
+   :opcode (get operation :opcode)
+   :source-operation (get operation :source-operation)
+   :type (get operation :type)})
+
+(defn b3-build-emitted-lowering
+  [mir function block-order operations operation-index block-labels]
+  (let [semantic-result (b3-semantic-result function block-order operations)
+        expected-exit-code (b3-exit-code semantic-result)]
+    (if (if (integer? expected-exit-code)
+          (if (>= expected-exit-code 0)
+            (<= expected-exit-code 255)
+            false)
+          false)
+      (let [operation-records
+            (b3-build-operation-records
+             operations operations operation-index block-labels [])
+            block-records
+            (b3-build-block-records
+             mir function block-order block-labels operation-records
+             operation-index [])
+            ir
+            (str
+             "; Gravity authenticated B3 bounded LLVM\n"
+             "source_filename = \"gravity-b3-internal\"\n"
+             "target datalayout = \""
+             (get (b3-bounded-arm64-macos-policy-record) :data-layout)
+             "\"\n"
+             "target triple = \""
+             (get (b3-bounded-arm64-macos-policy-record) :target-triple)
+             "\"\n\n"
+             "define ccc i32 @main() {\n"
+             (b3-blocks-text block-records "")
+             "}\n")]
+        (if (<= (count ir) 65536)
+          {:artifact :gravity/b3-bounded-arm64-macos-lowering
+           :status :constructed-unverified
+           :policy (b3-bounded-arm64-macos-policy-record)
+           :source-mir-id (get mir :module-id)
+           :block-order block-order
+           :block-labels block-labels
+           :operation-index operation-index
+           :operation-records operation-records
+           :block-records block-records
+           :llvm-ir ir
+           :semantic-result semantic-result
+           :expected-exit-code expected-exit-code
+           :runtime-providers
+           [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+           :emitted-metadata []
+           :emitted-function-attributes []
+           :proof-to-metadata-map {}
+           :ub-sensitive-flags []
+           :verified-input-closure
+           {:status :pending-host-content-binding
+            :c11-full-mir-authenticity
+            :required-upstream-contextual-verifier
+            :b3-revalidated-surface :lowering-relevant-closure
+            :full-dfg-edge-use-replay :upstream-c11-owned
+            :source-core (get mir :source-core)
+            :pass-execution-record-id
+            (get (get mir :pass-execution-record) :record-id)
+            :type-fact-count (count (get mir :type-table))
+            :effect-fact-count (count (get mir :effect-table))
+            :safety-fact-count (count (get mir :safety-table))
+            :source-map-count (count (get mir :source-map))}
+           :diagnostics []
+           :clojure-seed-boundary? true
+           :self-hosted? false}
+          (b3-rejected "B1-UNSUPPORTED" :bounded-llvm-ir-bytes {})))
+      (b3-rejected "B1-UNSUPPORTED" :bounded-process-exit-code {}))))
+
+(defn b3-build-validated-operations
+  [mir function block-order raw-operations]
+  (let [operation-envelope-reason
+        (b3-operation-envelope-reason raw-operations)]
+    (if (= operation-envelope-reason nil)
+      (let [operations
+            (b3-annotate-conditional-operations raw-operations mir)
+            operation-index (b3-index-operations operations 0 {})
+            block-labels (b3-label-map block-order)
+            values (get (get mir :data-flow-graph) :values)
+            data-flow-reason
+            (b3-data-flow-value-closure-reason mir operations)
+            unsupported
+            (if (= data-flow-reason nil)
+              (b3-first-unsupported-operation
+               operations operation-index block-labels values)
+              nil)
+            cfg-join-reason
+            (b3-cfg-join-reason mir function block-order operations)
+            return-reason
+            (b3-return-reason mir function block-order operations)]
+        (if (= data-flow-reason nil)
+          (if (= unsupported nil)
+            (if (= cfg-join-reason nil)
+              (if (= return-reason nil)
+                (b3-build-emitted-lowering
+                 mir function block-order operations operation-index
+                 block-labels)
+                (b3-rejected "B1-UNSUPPORTED" return-reason {}))
+              (b3-rejected "B1-UNSUPPORTED" cfg-join-reason {}))
+            (b3-rejected
+             "B1-UNSUPPORTED" (get unsupported :reason) unsupported))
+          (b3-rejected "B1-INPUT" data-flow-reason {})))
+      (b3-rejected "B1-INPUT" operation-envelope-reason {}))))
+
+(defn b3-build-validated-cfg
+  [mir function]
+  (let [block-order (b3-block-order mir function)
+        block-reason (b3-block-envelope-reason function block-order)
+        terminator-reason (b3-terminator-shape-reason function block-order)
+        cfg-reason (b3-cfg-structure-reason mir function block-order)]
+    (if (= block-reason nil)
+      (if (= terminator-reason nil)
+        (if (= cfg-reason nil)
+          (b3-build-validated-operations
+           mir function block-order
+           (b3-collect-block-operations
+            (get function :blocks) block-order []))
+          (b3-rejected "B1-INPUT" cfg-reason {}))
+        (b3-rejected "B1-INPUT" terminator-reason {}))
+      (b3-rejected "B1-INPUT" block-reason {}))))
+
+(defn b3-build-bounded-arm64-macos-llvm
+  [mir]
+  (let [module-reason (b3-module-envelope-reason mir)]
+    (if (= module-reason nil)
+      (let [function (get (get mir :functions) 'main)
+            function-reason (b3-function-envelope-reason function)]
+        (if (= function-reason nil)
+          (b3-build-validated-cfg mir function)
+          (b3-rejected "B1-INPUT" function-reason {})))
+      (b3-rejected "B1-INPUT" module-reason {}))))
