@@ -30752,6 +30752,312 @@
              :unexpected
              (catch AssertionError _ :propagated))))))
 
+;; FL-P06-T02 Gravity-owned bounded C6-C10 checked-core tests.
+
+(def ^:private gravity-c6c10-accepted-source
+  (str "(ns gravity.c6c10.probe (:profile :hosted) (:target :jvm) "
+       "(:effects #{}) (:capabilities #{}) (:safety :safe) "
+       "(:exports [main]))\n"
+       "(defn main [] nil)\n"))
+
+(def ^:private gravity-c6c10-deferred-ratio-source
+  (str "(ns gravity.c6c10.ratio (:profile :hosted) (:target :jvm) "
+       "(:effects #{}) (:capabilities #{}) (:safety :safe) "
+       "(:exports [main]))\n"
+       "(defn main [] 1/0)\n"))
+
+(defn- gravity-c6c10-fresh-construction
+  [context]
+  ((deref
+    (ns-resolve 'gravity.bootstrap
+                'p15-s23-c6c10-fresh-construction))
+   context))
+
+(defn- gravity-c6c10-semantic-view
+  [artifact]
+  (apply dissoc artifact bootstrap/p15-s23-c6c10-physical-artifact-keys))
+
+(defn- gravity-c6c10-rehydrated-candidate
+  [source-path fresh candidate]
+  (bootstrap/p15-s23-c6c10-rehydrate-candidate-template!
+   source-path
+   (get-in fresh [:raw-result :artifact-template])
+   (get-in fresh [:sealed-result :sealed-artifact-template])
+   candidate
+   (get-in fresh [:sealed-result :resolved-digests])))
+
+(deftest gravity-c6c10-digest-request-sealer-is-exact-and-collision-safe
+  (let [source-path "/tmp/gravity-c6c10-graph.gravity"
+        authority
+        {:semantic-owner :gravity-source
+         :host-role :generic-validation-hashing-and-instantiation
+         :scope :bounded-pure-c6-c10
+         :self-hosted? false}
+        artifact-base {:kind :gravity/test-artifact :value [1 2]}
+        root-ref {:digest-ref 0}
+        request
+        {:algorithm :sha256
+         :depends-on []
+         :encoding :gravity/canonical-edn-v1
+         :key 0
+         :ordinal 0
+         :preimage
+         {:domain :gravity/c6-c10-checked-core-artifact-v1
+          :semantic-artifact artifact-base}}
+        valid
+        {:status :accepted
+         :artifact-template (assoc artifact-base :artifact-id root-ref)
+         :digest-requests [request]
+         :digest-graph-root root-ref
+         :digest-graph-roots [root-ref]
+         :diagnostics []
+         :authority authority}
+        sealed
+        (bootstrap/p15-s23-c6c10-seal-digest-request-result!
+         source-path valid)
+        reject
+        (fn [candidate]
+          (diagnostic-data
+           #(bootstrap/p15-s23-c6c10-seal-digest-request-result!
+             source-path candidate)))]
+    (is (= :accepted (:status sealed)))
+    (is (= 1 (get-in sealed [:graph-proof :request-count])))
+    (is (= (first (:root-digests sealed))
+           (get-in sealed [:sealed-artifact-template :artifact-id])))
+    (is (false?
+         (bootstrap/p15-s23-c6c10-exact-digest-ref-present? sealed)))
+    (doseq [[candidate missing-fact]
+            [[(assoc-in valid [:digest-requests 0 :extra] true)
+              :exact-ordered-digest-request-schema]
+             [(assoc-in valid [:digest-requests 0 :key] 9)
+              :exact-ordered-digest-request-schema]
+             [(assoc-in valid [:digest-requests 0 :depends-on] [0])
+              :exact-prior-digest-request-dependency-closure]
+             [(-> valid
+                  (assoc-in
+                   [:digest-requests 0 :preimage
+                    :semantic-artifact :value]
+                   root-ref)
+                  (assoc-in [:artifact-template :value] root-ref))
+              :bounded-prior-digest-reference]
+             [(assoc-in valid [:artifact-template :value] [2 1])
+              :root-bound-gravity-artifact-template]]]
+      (is (= missing-fact (:missing-fact (reject candidate)))))
+    (let [seed-preimage {:seed 1}
+          seed-digest
+          (bootstrap/p15-s23-c6c10-canonical-digest
+           source-path seed-preimage)
+          collision-base
+          {:kind :gravity/test-artifact
+           :collision {{:digest-ref 0} :left seed-digest :right}}
+          collision-root {:digest-ref 1}
+          collision
+          {:status :accepted
+           :artifact-template
+           (assoc collision-base :artifact-id collision-root)
+           :digest-requests
+           [{:algorithm :sha256
+             :depends-on []
+             :encoding :gravity/canonical-edn-v1
+             :key 0 :ordinal 0 :preimage seed-preimage}
+            {:algorithm :sha256
+             :depends-on [0]
+             :encoding :gravity/canonical-edn-v1
+             :key 1 :ordinal 1
+             :preimage
+             {:domain :gravity/c6-c10-checked-core-artifact-v1
+              :semantic-artifact collision-base}}]
+           :digest-graph-root collision-root
+           :digest-graph-roots [collision-root]
+           :diagnostics []
+           :authority authority}]
+      (is (= :collision-free-resolved-map-keys
+             (:missing-fact (reject collision)))))
+    (let [chain-count 129
+          chain-requests
+          (mapv
+           (fn [ordinal]
+             (let [root? (= ordinal (dec chain-count))
+                   preimage
+                   (if root?
+                     {:domain :gravity/c6-c10-checked-core-artifact-v1
+                      :semantic-artifact
+                      {:kind :gravity/test-chain
+                       :tip {:digest-ref (dec ordinal)}}}
+                     (if (zero? ordinal)
+                       {:chain-seed 0}
+                       {:chain-link {:digest-ref (dec ordinal)}}))]
+               {:algorithm :sha256
+                :depends-on (if (zero? ordinal) [] [(dec ordinal)])
+                :encoding :gravity/canonical-edn-v1
+                :key ordinal :ordinal ordinal :preimage preimage}))
+           (range chain-count))
+          chain-root {:digest-ref (dec chain-count)}
+          chain-result
+          {:status :accepted
+           :artifact-template
+           {:kind :gravity/test-chain
+            :tip {:digest-ref (- chain-count 2)}
+            :artifact-id chain-root}
+           :digest-requests chain-requests
+           :digest-graph-root chain-root
+           :digest-graph-roots [chain-root]
+           :diagnostics []
+           :authority authority}
+          chain-sealed
+          (bootstrap/p15-s23-c6c10-seal-digest-request-result!
+           source-path chain-result)]
+      (is (= chain-count
+             (get-in chain-sealed [:graph-proof :request-count])))
+      (is (false?
+           (bootstrap/p15-s23-c6c10-exact-digest-ref-present?
+            chain-sealed))))
+    (is (= :bounded-digest-request-vector
+           (:missing-fact
+            (reject
+             (assoc valid :digest-requests
+                    (vec (repeat 2049 request)))))))
+    (is (= :type-sensitive-container
+           (:missing-fact
+            (diagnostic-data
+             #(bootstrap/p15-s23-c6c10-strict-structure!
+               source-path {:path [0 1]} {:path (list 0 1)}
+               :type-sensitive-container)))))))
+
+(deftest gravity-c6c10-public-artifact-replays-source-and-fails-closed
+  (let [gravity-path "/tmp/gravity-c6c10-public.gravity"
+        qst-path "/tmp/gravity-c6c10-public.qst"
+        context
+        (bootstrap/p15-s23-stage2-gravity-checked-core-context
+         gravity-path gravity-c6c10-accepted-source :jvm)
+        fresh (gravity-c6c10-fresh-construction context)
+        artifact (:artifact fresh)
+        semantic (gravity-c6c10-semantic-view artifact)
+        report
+        (bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+         artifact context)
+        qst-artifact
+        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+         qst-path gravity-c6c10-accepted-source :wasm)
+        raw-ref-data
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+           {:digest-ref 0} context))]
+    (is (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
+           (:kind artifact)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id artifact)))
+    (is (false?
+         (bootstrap/p15-s23-c6c10-exact-digest-ref-present? artifact)))
+    (is (false?
+         (bootstrap/p15-s23-stage2-gravity-checked-core-authentic?
+          artifact)))
+    (is (= :passed (:status report)))
+    (is (= :passed
+           (get-in report [:gravity-source-verification :status])))
+    (is (= :passed
+           (get-in report [:gravity-candidate-verification :status])))
+    (is (= :passed (get-in report [:semantic-structure :status])))
+    (is (= :passed
+           (get-in report [:target-request-metadata :status])))
+    (is (= :passed (get-in report [:physical-provenance :status])))
+    (is (= (:artifact-id artifact) (:artifact-id qst-artifact)))
+    (is (= semantic (gravity-c6c10-semantic-view qst-artifact)))
+    (is (= :wasm
+           (get-in qst-artifact
+                   [:target-request-metadata :requested-target])))
+    (is (not= (get-in artifact
+                      [:physical-provenance :request-binding-id])
+              (get-in qst-artifact
+                      [:physical-provenance :request-binding-id])))
+    (is (= :public-candidate-free-of-raw-digest-refs
+           (:missing-fact raw-ref-data)))
+    (let [metadata-context (with-meta context {:tampered true})
+          metadata-data
+          (diagnostic-data
+           #(bootstrap/p15-s23-c6c10-validate-public-context!
+             metadata-context))
+          oversized-path (str (apply str (repeat 70000 "x")) ".gravity")
+          oversized-data
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-gravity-checked-core-context
+             oversized-path gravity-c6c10-accepted-source :jvm))]
+      (is (= :exact-public-source-verification-context
+             (:missing-fact metadata-data)))
+      (is (= :maximum-scalar-characters
+             (:missing-fact oversized-data))))
+    (let [mutated (assoc artifact :type-facts [])
+          data
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+             mutated context))]
+      (is (= "C7-VERIFY" (:id data)))
+      (is (= :type-check (:stage data)))
+      (is (= :exact-gravity-type-replay
+             (get-in data [:facts :missing-fact])))
+      (is (= gravity-path (get-in data [:source-span :source]))))
+    (let [list-candidate
+          (update semantic :root-node-ids #(apply list %))
+          candidate-raw
+          (gravity-c6c10-rehydrated-candidate
+           gravity-path fresh list-candidate)
+          gravity-report
+          (bootstrap/p15-s23-c6c10-gravity-candidate-verification!
+           gravity-path fresh candidate-raw)
+          zipper-data
+          (diagnostic-data
+           #(bootstrap/p15-s23-c6c10-strict-structure!
+             gravity-path semantic list-candidate
+             :fresh-type-sensitive-semantic-artifact-zipper))]
+      (is (= :passed (:status gravity-report)))
+      (is (= :fresh-type-sensitive-semantic-artifact-zipper
+             (:missing-fact zipper-data)))
+      (is (= :vector (get-in zipper-data [:subject :expected-kind])))
+      (is (= :list (get-in zipper-data [:subject :actual-kind]))))
+    (doseq [[expected candidate missing-fact]
+            [[(:target-request-metadata artifact)
+              (assoc (:target-request-metadata artifact)
+                     :requested-target :native)
+              :exact-physical-target-request-metadata]
+             [(:physical-provenance artifact)
+              (assoc-in (:physical-provenance artifact)
+                        [:actual-paths :source]
+                        "/tmp/substituted.gravity")
+              :exact-physical-source-provenance]]]
+      (is (= missing-fact
+             (:missing-fact
+              (diagnostic-data
+               #(bootstrap/p15-s23-c6c10-strict-structure!
+                 gravity-path expected candidate missing-fact))))))))
+
+(deftest gravity-c6c10-public-deferred-ratio-diagnostic-is-stable
+  (let [gravity-path "/tmp/gravity-c6c10-ratio.gravity"
+        qst-path "/tmp/gravity-c6c10-ratio.qst"
+        reject
+        (fn [source-path]
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+             source-path gravity-c6c10-deferred-ratio-source :jvm)))
+        gravity-data (reject gravity-path)
+        qst-data (reject qst-path)]
+    (doseq [[source-path data]
+            [[gravity-path gravity-data] [qst-path qst-data]]]
+      (is (= "C7-TYPE-MISMATCH" (:id data)))
+      (is (= :type-check (:stage data)))
+      (is (= :gravity/deferred-ratio
+             (get-in data [:facts :actual-type])))
+      (is (= source-path (get-in data [:source-span :source])))
+      (is (= 2 (get-in data [:source-span :start :line])))
+      (is (re-matches #"sha256:[0-9a-f]{64}"
+                      (get-in data
+                              [:sealed-diagnostic :diagnostic-id]))))
+    (is (= (get-in gravity-data [:sealed-diagnostic :diagnostic-id])
+           (get-in qst-data [:sealed-diagnostic :diagnostic-id])))
+    (is (= (:facts gravity-data) (:facts qst-data)))
+    (is (= (get-in gravity-data
+                   [:digest-graph-proof :graph-proof-id])
+           (get-in qst-data
+                   [:digest-graph-proof :graph-proof-id])))))
+
 ;; FL-P06-T03 authenticated checked-core -> genuine Gravity C11 MIR tests.
 
 (def ^:private c11-authenticated-pure-source

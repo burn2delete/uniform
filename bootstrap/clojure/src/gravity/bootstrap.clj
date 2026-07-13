@@ -92532,7 +92532,7 @@
   'p15-s23-assemble-plan-products)
 
 (def p15-s23-stage2-compiler-artifact-builtins
-  '#{symbol? seq? vector? map? set? string? contains? even? set sort-by-pr-str
+  '#{symbol? keyword? char? seq? vector? map? set? string? contains? even? set sort-by-pr-str
      vec quot subvec integer? boolean? keys})
 
 (def p15-s23-stage2-compiler-artifact-required-functions
@@ -92919,25 +92919,13 @@
     p15-s23-stage2-compiler-artifact-plan-assembly-function
     [emitter module ordered-definitions])))
 
-(defn p15-s23-stage2-emitted-core-plan
-  [emitter source-path source-text module]
-  (let [function-table (stage0-function-table module)
-        module (assoc module :function-table function-table)
-        _ (validate-stage0-compiled-profile! module)
-        _ (executable-profile! source-path module (:forms module))
-        _ (validate-module-effects! module)
-        _ (validate-stage0-executable-safety! module)
-        _ (validate-stage0-compiled-performance! module)
-        _ (validate-stage0-compiled-math! module)
-        _ (validate-stage0-compiled-compiler! module)
-        _ (validate-stage0-compiled-backend! module)
-        _ (validate-stage0-compiled-runtime! module)
-        _ (validate-stage0-compiled-domain! module)
-        _ (validate-stage0-compiled-schema! module)
-        _ (validate-stage0-compiled-ai! module)
-        _ (validate-stage0-compiled-package! module)
-        _ (validate-stage0-compiled-tooling! module)
-        _ (validate-stage0-compiled-conformance! module)
+(defn p15-s23-stage2-construct-emitted-core-plan
+  "Construct the stage2 plan envelope from an already parsed module and its
+  authoritative function table.  Policy/admission validation deliberately
+  remains in the public emitted-core wrapper below; authenticated private
+  compiler stages use this construction seam so Gravity owns later policy."
+  [emitter source-path source-text module function-table]
+  (let [module (assoc module :function-table function-table)
         compiler-artifact-binding
         (or *p15-s23-stage2-compiler-artifact-binding*
             (p15-s23-stage2-compiler-artifact-binding!
@@ -93009,6 +92997,28 @@
     (assoc plan-base
            :plan-id
            (c4-artifact-id (c-backend-canonical-value identity-base)))))
+
+(defn p15-s23-stage2-emitted-core-plan
+  [emitter source-path source-text module]
+  (let [function-table (stage0-function-table module)
+        module (assoc module :function-table function-table)
+        _ (validate-stage0-compiled-profile! module)
+        _ (executable-profile! source-path module (:forms module))
+        _ (validate-module-effects! module)
+        _ (validate-stage0-executable-safety! module)
+        _ (validate-stage0-compiled-performance! module)
+        _ (validate-stage0-compiled-math! module)
+        _ (validate-stage0-compiled-compiler! module)
+        _ (validate-stage0-compiled-backend! module)
+        _ (validate-stage0-compiled-runtime! module)
+        _ (validate-stage0-compiled-domain! module)
+        _ (validate-stage0-compiled-schema! module)
+        _ (validate-stage0-compiled-ai! module)
+        _ (validate-stage0-compiled-package! module)
+        _ (validate-stage0-compiled-tooling! module)
+        _ (validate-stage0-compiled-conformance! module)]
+    (p15-s23-stage2-construct-emitted-core-plan
+     emitter source-path source-text module function-table)))
 
 (declare p15-s23-stage2-c2-c3-front-end-products)
 
@@ -93772,6 +93782,20 @@
                   (throw (IllegalArgumentException.
                           "compiler-only predicate outside compiler artifact")))
                 (symbol? (first args)))
+      keyword? (do
+                 (p15-s23-stage2-runtime-assert-exact-arity!
+                  plan callee args 1)
+                 (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                   (throw (IllegalArgumentException.
+                           "compiler-only predicate outside compiler artifact")))
+                 (keyword? (first args)))
+      char? (do
+              (p15-s23-stage2-runtime-assert-exact-arity!
+               plan callee args 1)
+              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                (throw (IllegalArgumentException.
+                        "compiler-only predicate outside compiler artifact")))
+              (char? (first args)))
       seq? (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 1)
@@ -95831,72 +95855,85 @@
                                      :policy :hygienic}))))
       (assoc syntax :phase :macro-expanded))))
 
+(defn p15-s23-stage2-c2-c3-records
+  [c2-artifact rich-syntax]
+  (let [form-by-id (into {} (map (juxt :form-id identity)
+                                  (:form-tree c2-artifact)))
+        token-by-id (into {} (map (juxt :token-id identity)
+                                   (:token-stream c2-artifact)))]
+    (mapv
+     (fn [syntax]
+       (let [form-id (get-in syntax [:source :form-id])
+             token-id (get-in syntax [:source :token-id])
+             form-record (get form-by-id form-id)
+             token-record (get token-by-id token-id)]
+         {:form (get-in syntax [:form :value])
+          :span (get-in syntax [:span :primary])
+          :origin :source
+          :metadata (or (:metadata syntax) {})
+          :reader-origin
+          {:kind :stage2-source-front-end
+           :engine :gravity-stage2-c2-c3-ingress
+           :c3-origin (:origin syntax)}
+          :source-origin (vec (or (:origin syntax) []))
+          :generated-origin []
+          :form-id form-id
+          :token-id token-id
+          :source-id (get-in syntax [:source :source-id])
+          :c2-form-record form-record
+          :c2-token-record token-record
+          :c3-syntax-object syntax}))
+     rich-syntax)))
+
 (defn p15-s23-stage2-c2-c3-front-end-products
   "Build the stage2 source-front-end view from the authoritative C2/C3
   reader products.  The old P15 parser remains available for its direct
   compatibility probes, but stage2 source ingress must not re-read source
   through that simplified parser."
-  [source-path source-text]
+  ([source-path source-text]
+   (p15-s23-stage2-c2-c3-front-end-products
+    source-path source-text
+    (reader-project-context-for-source source-path)))
+  ([source-path source-text project-context]
+   (p15-s23-stage2-c2-c3-front-end-products
+    source-path source-text project-context false))
+  ([source-path source-text project-context retain-authenticated-artifacts?]
   (let [c3-artifact (compiler-c3-syntax-source-artifact
-                     source-path source-text)
+                     source-path source-text project-context)
         c2-artifact (:c2-reader-artifact c3-artifact)
         root-form-ids (:top-level-form-ids c2-artifact)
-        form-by-id (into {} (map (juxt :form-id identity)
-                                 (:form-tree c2-artifact)))
-        token-by-id (into {} (map (juxt :token-id identity)
-                                  (:token-stream c2-artifact)))
         rich-syntax (vec (take (count root-form-ids)
                                (:syntax-object-stream c3-artifact)))
-        records
-        (mapv
-         (fn [syntax]
-           (let [form-id (get-in syntax [:source :form-id])
-                 token-id (get-in syntax [:source :token-id])
-                 form-record (get form-by-id form-id)
-                 token-record (get token-by-id token-id)]
-             {:form (get-in syntax [:form :value])
-              :span (get-in syntax [:span :primary])
-              :origin :source
-              :metadata (or (:metadata syntax) {})
-              :reader-origin
-              {:kind :stage2-source-front-end
-               :engine :gravity-stage2-c2-c3-ingress
-               :c3-origin (:origin syntax)}
-              :source-origin (vec (or (:origin syntax) []))
-              :generated-origin []
-              :form-id form-id
-              :token-id token-id
-              :source-id (get-in syntax [:source :source-id])
-              :c2-form-record form-record
-              :c2-token-record token-record
-              :c3-syntax-object syntax}))
-         rich-syntax)
+        records (p15-s23-stage2-c2-c3-records c2-artifact rich-syntax)
         forms (mapv :form records)]
-    {:artifact :gravity/p15-s23-stage2-c2-c3-front-end-products
-     :source-path source-path
-     :source-text source-text
-     :source-unit-record (:source-unit-record c2-artifact)
-     :source-unit-id (get-in c2-artifact [:source-unit-record :source-id])
-     :token-stream (:token-stream c2-artifact)
-     :form-tree (:form-tree c2-artifact)
-     :top-level-form-ids root-form-ids
-     :syntax-seed-stream (:syntax-seed-stream c2-artifact)
-     :reader-source-map (:reader-source-map c2-artifact)
-     :literal-decoding-records (:literal-decoding-records c2-artifact)
-     :semantic-error-deferment-record
-     (:semantic-error-deferment-record c2-artifact)
-     :reader-extension-invocation-records
-     (:reader-extension-invocation-records c2-artifact)
-     :reader-diagnostics (:reader-diagnostics c2-artifact)
-     :incremental-reader-hashes (:incremental-reader-hashes c2-artifact)
-     :reader-product-integrity (:reader-product-integrity c2-artifact)
-     :c2-reader-artifact (:c2-reader-artifact c3-artifact)
-     :c3-artifact-id (:artifact-id c3-artifact)
-     :c3-syntax-object-stream rich-syntax
-     :c3-capability-proof (:capability-based-proof c3-artifact)
-     :records records
-     :forms forms
-     :status :complete}))
+    (cond->
+     {:artifact :gravity/p15-s23-stage2-c2-c3-front-end-products
+      :source-path source-path
+      :source-text source-text
+      :source-unit-record (:source-unit-record c2-artifact)
+      :source-unit-id (get-in c2-artifact [:source-unit-record :source-id])
+      :token-stream (:token-stream c2-artifact)
+      :form-tree (:form-tree c2-artifact)
+      :top-level-form-ids root-form-ids
+      :syntax-seed-stream (:syntax-seed-stream c2-artifact)
+      :reader-source-map (:reader-source-map c2-artifact)
+      :literal-decoding-records (:literal-decoding-records c2-artifact)
+      :semantic-error-deferment-record
+      (:semantic-error-deferment-record c2-artifact)
+      :reader-extension-invocation-records
+      (:reader-extension-invocation-records c2-artifact)
+      :reader-diagnostics (:reader-diagnostics c2-artifact)
+      :incremental-reader-hashes (:incremental-reader-hashes c2-artifact)
+      :reader-product-integrity (:reader-product-integrity c2-artifact)
+      :c2-reader-artifact (:c2-reader-artifact c3-artifact)
+      :c3-artifact-id (:artifact-id c3-artifact)
+      :c3-syntax-object-stream rich-syntax
+      :c3-capability-proof (:capability-based-proof c3-artifact)
+      :records records
+      :forms forms
+      :status :complete}
+      retain-authenticated-artifacts?
+      (assoc :authenticated-c3-source-artifact c3-artifact)))))
 
 (defn p15-s23-stage2-front-end-source-module-record
   [front-end source-path source-text]
@@ -116431,6 +116468,4026 @@
      (catch Exception _ false))))
 
 )))
+
+;; ---------------------------------------------------------------------------
+;; Gravity-owned bounded C6-C10 checked-core bridge (FL-P06-T02 slice)
+;; ---------------------------------------------------------------------------
+
+(def p15-s23-c6c10-source-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
+
+(def p15-s23-c6c10-builder-function
+  'c6-c10-build-checked-core-template)
+
+(def p15-s23-c6c10-verifier-function
+  'c6-c10-verify-checked-core-template)
+
+(def p15-s23-c6c10-source-byte-count 134088)
+
+(def p15-s23-c6c10-expected-source-content-hash
+  "sha256:653913a24b3c67fdafc64442d02cba328541383ce354286b975fc27364df8aa8")
+
+;; Filled from the dedicated canonical encoder below.  These pins are not the
+;; legacy emitter's pr-str identities and are checked before either exported
+;; Gravity function may execute.
+(def p15-s23-c6c10-expected-plan-semantic-hash
+  "sha256:9f108463aaa3cef0ca423c27aa574ff489d335e087be383b725c7ae16f1663d2")
+
+(def p15-s23-c6c10-expected-functions-semantic-hash
+  "sha256:a70eee45018f50316479afb06208641862b433f451f7f5c8786977e31e7bd52c")
+
+(def p15-s23-c6c10-expected-builder-semantic-hash
+  "sha256:df7e2f80f42a7761fd6ac25eb8380133677b0da5aad177fcfb36762d187d15cf")
+
+(def p15-s23-c6c10-expected-verifier-semantic-hash
+  "sha256:7ea8152dc05084689b175236b64b262160c5cb4ada53009df21a21a55c0b276c")
+
+(def p15-s23-c6c10-required-functions
+  {p15-s23-c6c10-builder-function
+   {:arity 1 :params ['input]}
+   p15-s23-c6c10-verifier-function
+   {:arity 3 :params ['input 'template 'requests]}})
+
+(def p15-s23-c6c10-canonical-map-classes
+  #{"clojure.lang.PersistentArrayMap"
+    "clojure.lang.PersistentHashMap"
+    "clojure.lang.PersistentTreeMap"})
+
+(def p15-s23-c6c10-canonical-vector-classes
+  #{"clojure.lang.PersistentVector"
+    "clojure.lang.APersistentVector$SubVector"})
+
+(def p15-s23-c6c10-canonical-set-classes
+  #{"clojure.lang.PersistentHashSet"
+    "clojure.lang.PersistentTreeSet"})
+
+(def p15-s23-c6c10-canonical-list-classes
+  #{"clojure.lang.PersistentList"
+    "clojure.lang.PersistentList$EmptyList"})
+
+(def p15-s23-c6c10-max-carrier-nodes 32768)
+(def p15-s23-c6c10-max-carrier-depth 64)
+(def p15-s23-c6c10-max-container-width 128)
+(def p15-s23-c6c10-max-scalar-bytes 65536)
+(def p15-s23-c6c10-max-total-scalar-bytes (* 8 1024 1024))
+(def p15-s23-c6c10-max-integer-bits 256)
+(def p15-s23-c6c10-max-digest-requests 2048)
+(def p15-s23-c6c10-max-source-bytes (* 1024 1024))
+
+(defn p15-s23-c6c10-host-fail!
+  [rule source-path missing-fact subject]
+  (throw
+   (ex-info
+    (str rule " at bounded Gravity C6-C10 bridge")
+    {:id rule
+     :rule rule
+     :bootstrap-stage :stage0
+     :stage (if (str/starts-with? rule "C7-")
+              :type-check
+              (if (str/starts-with? rule "C8-")
+                :effect-check
+                (if (str/starts-with? rule "C10-")
+                  :safety-analysis
+                  :core-lowering)))
+     :diagnostic-family :c6-c10-gravity-bridge
+     :source-span {:source (or source-path "<c6-c10>")}
+     :profile :hosted
+     :target :jvm
+     :missing-fact missing-fact
+     :subject subject
+     :generated-origin-chain []
+     :remediation
+     "Regenerate the bounded product from fresh C2/C3 products, the pinned stage2 plan, and the pinned Gravity C6-C10 module."})))
+
+(defn p15-s23-c6c10-valid-unicode-string?
+  [^String value]
+  (loop [index 0]
+    (if (= index (.length value))
+      true
+      (let [code (int (.charAt value index))]
+        (cond
+          (<= 0xD800 code 0xDBFF)
+          (and (< (inc index) (.length value))
+               (let [low (int (.charAt value (inc index)))]
+                 (and (<= 0xDC00 low 0xDFFF)
+                      (recur (+ index 2)))))
+
+          (<= 0xDC00 code 0xDFFF) false
+          :else (recur (inc index)))))))
+
+(defn p15-s23-c6c10-bounded-string-bytes!
+  [source-path stats value]
+  (when (> (.length ^String value) p15-s23-c6c10-max-scalar-bytes)
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :maximum-scalar-characters
+     {:observed-scalar-characters (.length ^String value)
+      :maximum-scalar-characters p15-s23-c6c10-max-scalar-bytes}))
+  (when-not (p15-s23-c6c10-valid-unicode-string? value)
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :well-formed-unicode-scalar-string
+     {:value-kind :string}))
+  (let [byte-count (utf8-byte-count value)]
+    (when (> byte-count p15-s23-c6c10-max-scalar-bytes)
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :maximum-scalar-bytes
+       {:observed-scalar-bytes byte-count
+        :maximum-scalar-bytes p15-s23-c6c10-max-scalar-bytes}))
+    (swap! stats update :scalar-bytes + byte-count)
+    (swap! stats update :maximum-scalar-bytes max byte-count)
+    (when (> (:scalar-bytes @stats)
+             p15-s23-c6c10-max-total-scalar-bytes)
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :maximum-total-scalar-bytes
+       {:observed-total-scalar-bytes (:scalar-bytes @stats)}))))
+
+(defn p15-s23-c6c10-bounded-integer!
+  [source-path stats value]
+  (let [bits (.bitLength (.abs (biginteger value)))]
+    (swap! stats update :maximum-integer-bits max bits)
+    (when (> bits p15-s23-c6c10-max-integer-bits)
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :maximum-integer-bits
+       {:observed-integer-bits bits
+        :maximum-integer-bits p15-s23-c6c10-max-integer-bits}))))
+
+(declare p15-s23-c6c10-canonical-form*)
+
+(defn p15-s23-c6c10-canonical-sort-key
+  [form]
+  (let [text
+        (binding [*print-length* nil
+                  *print-level* nil
+                  *print-meta* false
+                  *print-dup* false
+                  *print-readably* true
+                  *print-namespace-maps* false]
+          (pr-str [:gravity/canonical-sort-v1 form]))]
+    (apply str
+           (map #(format "%02x" (bit-and % 0xff))
+                (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8)))))
+
+(defn p15-s23-c6c10-valid-named-component?
+  [value]
+  (and (string? value)
+       (not (str/blank? value))
+       (not-any? #(or (Character/isWhitespace ^Character %)
+                      (Character/isISOControl ^Character %)
+                      (= \/ %))
+                 value)))
+
+(defn p15-s23-c6c10-canonical-sequence
+  [source-path stats depth values]
+  (mapv #(p15-s23-c6c10-canonical-form*
+          source-path stats (inc depth) %)
+        values))
+
+(defn p15-s23-c6c10-canonical-form*
+  [source-path stats depth value]
+  (swap! stats update :nodes inc)
+  (swap! stats update :maximum-depth max depth)
+  (when (or (> (:nodes @stats) p15-s23-c6c10-max-carrier-nodes)
+            (> depth p15-s23-c6c10-max-carrier-depth))
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :bounded-canonical-carrier
+     (select-keys @stats [:nodes :maximum-depth])))
+  (when (and (instance? clojure.lang.IObj value) (some? (meta value)))
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :metadata-free-canonical-value
+     {:value-kind (some-> value class .getName)}))
+  (cond
+    (nil? value) [:nil]
+    (boolean? value) [:boolean value]
+    (integer? value)
+    (do (p15-s23-c6c10-bounded-integer! source-path stats value)
+        [:integer (.toString (biginteger value))])
+    (string? value)
+    (do (p15-s23-c6c10-bounded-string-bytes! source-path stats value)
+        [:string value])
+    (char? value)
+    (let [code (int value)]
+      (when (<= 0xD800 code 0xDFFF)
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :unicode-scalar-character {:code code}))
+      [:character code])
+    (keyword? value)
+    (let [namespace (namespace value)
+          name (name value)]
+      (when-not (and (p15-s23-c6c10-valid-named-component? name)
+                     (or (nil? namespace)
+                         (p15-s23-c6c10-valid-named-component? namespace)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :canonical-keyword-components
+         {:namespace namespace :name name}))
+      (when namespace
+        (p15-s23-c6c10-bounded-string-bytes! source-path stats namespace))
+      (p15-s23-c6c10-bounded-string-bytes! source-path stats name)
+      [:keyword namespace name])
+    (symbol? value)
+    (let [namespace (namespace value)
+          name (name value)]
+      (when-not (or (and (nil? namespace) (= "/" name))
+                    (and (p15-s23-c6c10-valid-named-component? name)
+                         (or (nil? namespace)
+                             (p15-s23-c6c10-valid-named-component?
+                              namespace))))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :canonical-symbol-components
+         {:namespace namespace :name name}))
+      (when namespace
+        (p15-s23-c6c10-bounded-string-bytes! source-path stats namespace))
+      (p15-s23-c6c10-bounded-string-bytes! source-path stats name)
+      [:symbol namespace name])
+    (record? value)
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :record-free-canonical-value
+     {:class (.getName (class value))})
+    (vector? value)
+    (do
+      (when-not (contains? p15-s23-c6c10-canonical-vector-classes
+                           (.getName (class value)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :exact-persistent-vector-class
+         {:class (.getName (class value))}))
+      (when (> (count value) p15-s23-c6c10-max-container-width)
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :maximum-container-width
+         {:observed-width (count value)}))
+      (swap! stats update :maximum-width max (count value))
+      [:vector
+       (p15-s23-c6c10-canonical-sequence source-path stats depth value)])
+    (map? value)
+    (do
+      (when-not (contains? p15-s23-c6c10-canonical-map-classes
+                           (.getName (class value)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :exact-persistent-map-class
+         {:class (.getName (class value))}))
+      (when (> (count value) p15-s23-c6c10-max-container-width)
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :maximum-container-width
+         {:observed-width (count value)}))
+      (swap! stats update :maximum-width max (count value))
+      (let [entries
+            (mapv (fn [[key child]]
+                    (let [encoded-key
+                          (p15-s23-c6c10-canonical-form*
+                           source-path stats (inc depth) key)]
+                      {:key encoded-key
+                       :key-sort (p15-s23-c6c10-canonical-sort-key
+                                  encoded-key)
+                       :entry
+                       [:entry encoded-key
+                        (p15-s23-c6c10-canonical-form*
+                         source-path stats (inc depth) child)]}))
+                  value)
+            key-sorts (mapv :key-sort entries)
+            ordered (mapv :entry (sort-by
+                                  #(p15-s23-c6c10-canonical-sort-key
+                                    (:entry %))
+                                  entries))]
+        (when-not (= (count key-sorts) (count (distinct key-sorts)))
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path :unique-canonical-map-keys {}))
+        [:map ordered]))
+    (set? value)
+    (do
+      (when-not (contains? p15-s23-c6c10-canonical-set-classes
+                           (.getName (class value)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :exact-persistent-set-class
+         {:class (.getName (class value))}))
+      (when (> (count value) p15-s23-c6c10-max-container-width)
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :maximum-container-width
+         {:observed-width (count value)}))
+      (swap! stats update :maximum-width max (count value))
+      (let [items (p15-s23-c6c10-canonical-sequence
+                   source-path stats depth value)
+            sort-keys (mapv p15-s23-c6c10-canonical-sort-key items)
+            ordered (vec (sort-by p15-s23-c6c10-canonical-sort-key items))]
+        (when-not (= (count sort-keys) (count (distinct sort-keys)))
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path :unique-canonical-set-items {}))
+        [:set ordered]))
+    (list? value)
+    (do
+      (when-not (contains? p15-s23-c6c10-canonical-list-classes
+                           (.getName (class value)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :exact-persistent-list-class
+         {:class (.getName (class value))}))
+      (when (> (count value) p15-s23-c6c10-max-container-width)
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :maximum-container-width
+         {:observed-width (count value)}))
+      (swap! stats update :maximum-width max (count value))
+      [:list
+       (p15-s23-c6c10-canonical-sequence source-path stats depth value)])
+    :else
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :canonical-value-domain
+     {:class (some-> value class .getName)})))
+
+(defn p15-s23-c6c10-canonical-record
+  ([value]
+   (p15-s23-c6c10-canonical-record "<c6-c10-canonical>" value))
+  ([source-path value]
+   (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
+                      :scalar-bytes 0 :maximum-scalar-bytes 0
+                      :maximum-integer-bits 0})
+         form (p15-s23-c6c10-canonical-form* source-path stats 0 value)
+         text
+         (binding [*print-length* nil
+                   *print-level* nil
+                   *print-meta* false
+                   *print-dup* false
+                   *print-readably* true
+                   *print-namespace-maps* false]
+           (pr-str [:gravity/canonical-edn-v1 form]))]
+     {:form form :text text :stats @stats})))
+
+(defn p15-s23-c6c10-canonical-digest
+  ([value]
+   (p15-s23-c6c10-canonical-digest "<c6-c10-canonical>" value))
+  ([source-path value]
+   (str "sha256:"
+        (sha256-hex (:text (p15-s23-c6c10-canonical-record
+                            source-path value))))))
+
+(defn p15-s23-c6c10-class-supported-carrier?
+  [value]
+  (cond
+    (vector? value)
+    (contains? p15-s23-c6c10-canonical-vector-classes
+               (.getName (class value)))
+    (map? value)
+    (contains? p15-s23-c6c10-canonical-map-classes
+               (.getName (class value)))
+    (set? value)
+    (contains? p15-s23-c6c10-canonical-set-classes
+               (.getName (class value)))
+    (list? value)
+    (contains? p15-s23-c6c10-canonical-list-classes
+               (.getName (class value)))
+    :else false))
+
+(defn p15-s23-c6c10-carrier-validation
+  [source-path value]
+  (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
+                     :scalar-bytes 0 :maximum-scalar-bytes 0
+                     :maximum-integer-bits 0})]
+    (letfn [(visit [depth item]
+              (swap! stats update :nodes inc)
+              (swap! stats update :maximum-depth max depth)
+              (when (or (> (:nodes @stats)
+                           p15-s23-c6c10-max-carrier-nodes)
+                        (> depth p15-s23-c6c10-max-carrier-depth))
+                (p15-s23-c6c10-host-fail!
+                 "C6-VERIFY" source-path :bounded-input-carrier @stats))
+              (when (and (instance? clojure.lang.IObj item)
+                         (some? (meta item)))
+                (p15-s23-c6c10-host-fail!
+                 "C6-VERIFY" source-path :metadata-free-input-carrier
+                 {:class (.getName (class item))}))
+              (cond
+                (or (nil? item) (boolean? item)) nil
+                (integer? item)
+                (p15-s23-c6c10-bounded-integer! source-path stats item)
+                (ratio? item)
+                (do (p15-s23-c6c10-bounded-integer!
+                     source-path stats (numerator item))
+                    (p15-s23-c6c10-bounded-integer!
+                     source-path stats (denominator item)))
+                ;; Genuine C2 decimal literals currently retain the host
+                ;; reader's IEEE-754 value for C6/C7 source-plan lockstep.
+                ;; The strict digest encoder below still rejects raw doubles;
+                ;; only authenticated literal positions receive a lossless
+                ;; bit descriptor before hashing.
+                (instance? Double item) nil
+                (instance? java.math.BigDecimal item)
+                (let [scale (long (.scale ^java.math.BigDecimal item))]
+                  (p15-s23-c6c10-bounded-integer!
+                   source-path stats (.unscaledValue ^java.math.BigDecimal item))
+                    (when (> (Math/abs scale) 65536)
+                      (p15-s23-c6c10-host-fail!
+                       "C6-VERIFY" source-path :bounded-decimal-scale
+                       {:scale scale})))
+                (string? item)
+                (p15-s23-c6c10-bounded-string-bytes! source-path stats item)
+                (char? item)
+                (when (<= 0xD800 (int item) 0xDFFF)
+                  (p15-s23-c6c10-host-fail!
+                   "C6-VERIFY" source-path :unicode-scalar-character
+                   {:code (int item)}))
+                (keyword? item)
+                (do (when-let [namespace (namespace item)]
+                      (p15-s23-c6c10-bounded-string-bytes!
+                       source-path stats namespace))
+                    (p15-s23-c6c10-bounded-string-bytes!
+                     source-path stats (name item)))
+                (symbol? item)
+                (do (when-let [namespace (namespace item)]
+                      (p15-s23-c6c10-bounded-string-bytes!
+                       source-path stats namespace))
+                    (p15-s23-c6c10-bounded-string-bytes!
+                     source-path stats (name item)))
+                (record? item)
+                (p15-s23-c6c10-host-fail!
+                 "C6-VERIFY" source-path :record-free-input-carrier
+                 {:class (.getName (class item))})
+                (or (vector? item) (map? item) (set? item) (list? item))
+                (do
+                  (when-not (p15-s23-c6c10-class-supported-carrier? item)
+                    (p15-s23-c6c10-host-fail!
+                     "C6-VERIFY" source-path :exact-persistent-carrier-class
+                     {:class (.getName (class item))}))
+                  (when (> (count item)
+                           p15-s23-c6c10-max-container-width)
+                    (p15-s23-c6c10-host-fail!
+                     "C6-VERIFY" source-path :maximum-container-width
+                     {:observed-width (count item)}))
+                  (swap! stats update :maximum-width max (count item))
+                  (if (map? item)
+                    (doseq [[key child] item]
+                      (visit (inc depth) key)
+                      (visit (inc depth) child))
+                    (doseq [child item]
+                      (visit (inc depth) child))))
+                :else
+                (p15-s23-c6c10-host-fail!
+                 "C6-VERIFY" source-path :input-carrier-value-domain
+                 {:class (some-> item class .getName)})))]
+      (visit 0 value)
+      {:status :passed
+       :maximum-carrier-nodes p15-s23-c6c10-max-carrier-nodes
+       :maximum-carrier-depth p15-s23-c6c10-max-carrier-depth
+       :maximum-container-width p15-s23-c6c10-max-container-width
+       :maximum-scalar-bytes p15-s23-c6c10-max-scalar-bytes
+       :maximum-integer-bits p15-s23-c6c10-max-integer-bits
+       :observed-carrier-nodes (:nodes @stats)
+       :observed-carrier-depth (:maximum-depth @stats)
+       :observed-container-width (:maximum-width @stats)
+       :observed-scalar-bytes (:maximum-scalar-bytes @stats)
+       :observed-integer-bits (:maximum-integer-bits @stats)})))
+
+(defn p15-s23-c6c10-path-neutral-value
+  "Strip host IObj metadata without rewriting any semantic value.  Physical
+  provenance is normalized only by schema-specific helpers below; key-name or
+  global scalar rewriting would corrupt valid user maps and source strings."
+  [source-content-hash value]
+  (letfn [(neutral [item]
+            (cond
+              (record? item)
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" source-content-hash
+               :record-free-private-input-projection
+               {:class (.getName (class item))})
+
+              (map? item)
+              (into {}
+                    (map (fn [[key child]]
+                           [(neutral key) (neutral child)]))
+                    item)
+
+              (vector? item) (mapv neutral item)
+              (set? item) (into #{} (map neutral) item)
+              (list? item) (apply list (map neutral item))
+              (and (instance? clojure.lang.IObj item) (some? (meta item)))
+              (with-meta item nil)
+              :else item))]
+    (neutral value)))
+
+(defn p15-s23-c6c10-literal-scalar-descriptor
+  "Return a lossless canonical digest descriptor for a host numeric value
+  that C2 can retain at a genuine literal position.  This does not broaden
+  the strict canonical value domain: callers must authenticate the descriptor
+  against fresh C2 literal-decoding records before substituting it."
+  [value]
+  (cond
+    (instance? Double value)
+    {:kind :gravity/ieee-754-binary64-literal
+     :raw-bits (format "%016x"
+                       (Double/doubleToRawLongBits ^Double value))}
+
+    (instance? java.math.BigDecimal value)
+    {:kind :gravity/arbitrary-decimal-literal
+     :unscaled-value (.toString
+                      (.unscaledValue ^java.math.BigDecimal value))
+     :scale (.scale ^java.math.BigDecimal value)}
+
+    (ratio? value)
+    {:kind :gravity/exact-ratio-literal
+     :numerator (.toString (biginteger (numerator value)))
+     :denominator (.toString (biginteger (denominator value)))}
+
+    :else nil))
+
+(def p15-s23-c6c10-deferred-ratio-descriptor-keys
+  #{:artifact :kind :raw :numerator-spelling :denominator-spelling
+    :numerator :denominator :semantic-validation :reason})
+
+(defn p15-s23-c6c10-deferred-ratio-descriptor?
+  [value]
+  (and (map? value)
+       (= p15-s23-c6c10-deferred-ratio-descriptor-keys
+          (set (keys value)))
+       (= :gravity/deferred-ratio-literal (:artifact value))
+       (= :ratio (:kind value))
+       (string? (:raw value))
+       (string? (:numerator-spelling value))
+       (string? (:denominator-spelling value))
+       (integer? (:numerator value))
+       (integer? (:denominator value))
+       (zero? (:denominator value))
+       (= :deferred (:semantic-validation value))
+       (= :zero-denominator (:reason value))))
+
+(declare p15-s23-c6c10-base-numeric-occurrences
+         p15-s23-c6c10-form-numeric-occurrence-index
+         c3-c2-reader-integrity-report
+         c3-syntax-stream-reader-products-authentic?
+         c3-syntax-capability-proof
+         c3-artifact-id)
+
+(defn p15-s23-c6c10-literal-authentication
+  [source-path raw-front-end]
+  (let [embedded-c2 (:c2-reader-artifact raw-front-end)
+        integrity-report
+        (when (map? embedded-c2)
+          (c3-c2-reader-integrity-report embedded-c2))
+        duplicated-fields
+        [:source-unit-record :token-stream :form-tree :top-level-form-ids
+         :syntax-seed-stream :reader-source-map :literal-decoding-records
+         :semantic-error-deferment-record
+         :reader-extension-invocation-records :reader-diagnostics
+         :incremental-reader-hashes :reader-product-integrity]
+        duplicated-fields-current?
+        (and embedded-c2
+             (every? #(= (get raw-front-end %)
+                         (get embedded-c2 %))
+                     duplicated-fields)
+             (= (:source-unit-id raw-front-end)
+                (get-in embedded-c2 [:source-unit-record :source-id])))
+        authenticated-c3
+        (:authenticated-c3-source-artifact raw-front-end)
+        authenticated-c3-stream (:syntax-object-stream authenticated-c3)
+        expected-rich-syntax
+        (when (and authenticated-c3 embedded-c2)
+          (vec (take (count (:top-level-form-ids embedded-c2))
+                     authenticated-c3-stream)))
+        expected-records
+        (when expected-rich-syntax
+          (p15-s23-stage2-c2-c3-records embedded-c2
+                                        expected-rich-syntax))
+        fresh-c3-proof
+        (when authenticated-c3
+          (c3-syntax-capability-proof authenticated-c3))
+        authenticated-c3-current?
+        (and authenticated-c3
+             (= embedded-c2 (:c2-reader-artifact authenticated-c3))
+             (= (:artifact-id authenticated-c3)
+                (c3-artifact-id authenticated-c3))
+             (c3-syntax-stream-reader-products-authentic?
+              authenticated-c3-stream embedded-c2)
+             (= :complete (:status fresh-c3-proof))
+             (= fresh-c3-proof
+                (:capability-based-proof authenticated-c3))
+             (= (:c3-artifact-id raw-front-end)
+                (:artifact-id authenticated-c3))
+             (= (:c3-capability-proof raw-front-end) fresh-c3-proof)
+             (= (:c3-syntax-object-stream raw-front-end)
+                expected-rich-syntax)
+             (= (:records raw-front-end) expected-records)
+             (= (:forms raw-front-end) (mapv :form expected-records)))
+        _
+        (when-not (and (true? (:authentic? integrity-report))
+                       duplicated-fields-current?
+                       authenticated-c3-current?)
+          (p15-s23-c6c10-host-fail!
+           "C6-ORIGIN" source-path
+           :fresh-authentic-embedded-c2-c3-products
+           {:integrity-report integrity-report
+            :duplicated-fields-current? duplicated-fields-current?
+            :authenticated-c3-current? authenticated-c3-current?}))
+        forms-by-id (into {} (map (juxt :form-id identity)
+                                   (:form-tree raw-front-end)))
+        tokens-by-id (into {} (map (juxt :token-id identity)
+                                    (:token-stream raw-front-end)))
+        records
+        (mapv
+         (fn [record]
+           (when-let [descriptor
+                      (p15-s23-c6c10-literal-scalar-descriptor
+                       (:decoded record))]
+             (let [form-record (get forms-by-id (:form-id record))
+                   token-record (get tokens-by-id (:open-token form-record))
+                   expected-kind
+                   (if (= :gravity/exact-ratio-literal
+                          (:kind descriptor))
+                     :ratio
+                     :decimal)]
+               (when-not (and (= expected-kind (:kind record)
+                                  (:kind form-record)
+                                  (:kind token-record))
+                              (= (:raw record) (:raw form-record)
+                                 (:raw token-record))
+                              (= (:decoded record) (:value form-record)
+                                 (:decoded token-record))
+                              (= (:span record) (:span form-record)
+                                 (:span token-record)))
+                 (p15-s23-c6c10-host-fail!
+                  "C6-ORIGIN" source-path
+                  :numeric-host-value-bound-to-exact-c2-literal
+                  {:literal-id (:literal-id record)
+                   :form-id (:form-id record)
+                   :expected-kind expected-kind
+                   :observed-kind (:kind record)
+                   :token-id (:token-id token-record)}))
+               {:descriptor descriptor
+                :literal-id (:literal-id record)
+                :form-id (:form-id record)
+                :token-id (:token-id token-record)
+                :kind (:kind record)
+                :raw (:raw record)})))
+         (:literal-decoding-records raw-front-end))
+        records (vec (remove nil? records))
+        literal-records-by-form
+        (group-by :form-id (:literal-decoding-records raw-front-end))
+        deferred-records-by-form
+        (group-by :form-id
+                  (get-in raw-front-end
+                          [:semantic-error-deferment-record
+                           :deferred-literal-records]))
+        deferred-ratio-by-form-id
+        (into
+         {}
+         (for [form (:form-tree raw-front-end)
+               :when (and (= :ratio (:kind form))
+                          (p15-s23-c6c10-deferred-ratio-descriptor?
+                           (:value form)))]
+           (let [token (get tokens-by-id (:open-token form))
+                 literal-records
+                 (get literal-records-by-form (:form-id form))
+                 deferred-records
+                 (get deferred-records-by-form (:form-id form))
+                 literal (first literal-records)
+                 deferred (first deferred-records)
+                 descriptor (:value form)]
+             (when-not
+              (and (= 1 (count literal-records))
+                   (= 1 (count deferred-records))
+                   (= :ratio (:kind token) (:kind literal)
+                      (:kind deferred))
+                   (= (:raw form) (:raw token) (:raw literal)
+                      (:raw deferred) (:raw descriptor))
+                   (= descriptor (:decoded token) (:decoded literal)
+                      (:value deferred))
+                   (= (:span form) (:span token) (:span literal)
+                      (:span deferred)))
+               (p15-s23-c6c10-host-fail!
+                "C6-ORIGIN" source-path
+                :exact-deferred-ratio-c2-evidence
+                {:form-id (:form-id form)
+                 :literal-count (count literal-records)
+                 :deferred-count (count deferred-records)}))
+             [(:form-id form)
+              {:descriptor descriptor
+               :form-id (:form-id form)
+               :token-id (:token-id token)
+               :literal-id (:literal-id literal)
+               :kind :ratio
+               :raw (:raw form)
+               :span (:span form)
+               :semantic-validation :deferred
+               :reason :zero-denominator}])))]
+    (let [authentication
+          {:by-form-id (into {} (map (juxt :form-id identity)) records)
+           :forms-by-id forms-by-id
+           :deferred-ratio-by-form-id deferred-ratio-by-form-id
+           :records records}
+          authentication
+          (merge authentication
+                 (p15-s23-c6c10-form-numeric-occurrence-index
+                  source-path authentication raw-front-end))]
+      (assoc authentication :occurrences
+             (p15-s23-c6c10-base-numeric-occurrences
+              source-path authentication raw-front-end)))))
+
+(def p15-s23-c6c10-numeric-projection-fields
+  #{:c2-token-stream :c2-form-tree :c2-syntax-seed-stream
+    :c2-literal-decoding-records :c2-deferred-literal-records
+    :c3-syntax-identity :private-c3-artifact
+    :private-stage2-plan})
+
+(defn p15-s23-c6c10-host-order-key
+  [value]
+  (binding [*print-length* nil
+            *print-level* nil
+            *print-meta* false
+            *print-dup* false
+            *print-readably* true
+            *print-namespace-maps* false]
+    (pr-str [(some-> value class .getName) value])))
+
+(defn p15-s23-c6c10-map-value-path
+  [path index key]
+  (conj path
+        (if (or (keyword? key) (symbol? key) (string? key)
+                (integer? key) (char? key) (boolean? key) (nil? key))
+          key
+          [:map-value index])))
+
+(defn p15-s23-c6c10-collect-numeric-occurrences
+  [base-path value]
+  (let [occurrences (atom {})]
+    (letfn [(collect [path item]
+              (if-let [descriptor
+                       (p15-s23-c6c10-literal-scalar-descriptor item)]
+                (swap! occurrences assoc path descriptor)
+                (cond
+                  (map? item)
+                  (doseq [[index [key child]]
+                          (map-indexed
+                           vector
+                           (sort-by (comp p15-s23-c6c10-host-order-key key)
+                                    item))]
+                    (collect (conj path [:map-key index]) key)
+                    (collect (p15-s23-c6c10-map-value-path
+                              path index key)
+                             child))
+                  (vector? item)
+                  (doseq [[index child] (map-indexed vector item)]
+                    (collect (conj path index) child))
+                  (set? item)
+                  (doseq [[index child]
+                          (map-indexed
+                           vector
+                           (sort-by p15-s23-c6c10-host-order-key item))]
+                    (collect (conj path [:set-item index]) child))
+                  (list? item)
+                  (doseq [[index child] (map-indexed vector item)]
+                    (collect (conj path index) child)))))]
+      (collect base-path value)
+      @occurrences)))
+
+(defn p15-s23-c6c10-merge-occurrences
+  [& occurrence-maps]
+  (apply merge occurrence-maps))
+
+(defn p15-s23-c6c10-exact-numeric-occurrence
+  [source-path path value evidence]
+  (let [descriptor (p15-s23-c6c10-literal-scalar-descriptor value)]
+    (when-not (and descriptor evidence
+                   (= descriptor (:descriptor evidence)))
+      (p15-s23-c6c10-host-fail!
+       "C6-ORIGIN" source-path
+       :structurally-corresponding-numeric-occurrence
+       {:projected-path path
+        :descriptor descriptor
+        :evidence (some-> evidence
+                          (select-keys [:literal-id :form-id :token-id
+                                        :descriptor]))}))
+    {path {:descriptor descriptor :evidence evidence}}))
+
+(defn p15-s23-c6c10-prefix-occurrences
+  [prefix occurrences]
+  (into {}
+        (map (fn [[path occurrence]]
+               [(into prefix path) occurrence]))
+        occurrences))
+
+(defn p15-s23-c6c10-form-numeric-occurrence-index
+  "Build all C2 form occurrence maps bottom-up.  The explicit reverse-preorder
+  reduction is host-stack independent even for adversarially deep valid form
+  chains; equal-valued leaves remain bound to their exact structural child."
+  [source-path literal-authentication raw-front-end]
+  (let [forms (vec (:form-tree raw-front-end))
+        forms-by-id (:forms-by-id literal-authentication)
+        evidence-by-form-id (:by-form-id literal-authentication)
+        shape-fail!
+        (fn [form facts]
+          (p15-s23-c6c10-host-fail!
+           "C6-ORIGIN" source-path
+           :c2-form-structural-numeric-correspondence
+           (merge {:form-id (:form-id form)
+                   :form-kind (:kind form)} facts)))
+        child-occurrences
+        (fn [index form child-id]
+          (when-not (and (contains? forms-by-id child-id)
+                         (contains? index child-id))
+            (shape-fail! form {:unindexed-child-form-id child-id}))
+          (get index child-id))
+        value-index
+        (reduce
+         (fn [index form]
+           (let [occurrences
+                 (if (p15-s23-c6c10-literal-scalar-descriptor
+                      (:value form))
+                   (p15-s23-c6c10-exact-numeric-occurrence
+                    source-path [] (:value form)
+                    (get evidence-by-form-id (:form-id form)))
+                   (cond
+                     (or (= :list (:kind form))
+                         (= :vector (:kind form)))
+                     (let [children (:children form)
+                           values (vec (:value form))]
+                       (when-not (= (count children) (count values))
+                         (shape-fail! form
+                                      {:child-count (count children)
+                                       :value-count (count values)}))
+                       (apply
+                        p15-s23-c6c10-merge-occurrences
+                        (map-indexed
+                         (fn [child-index child-id]
+                           (let [child (get forms-by-id child-id)]
+                             (when-not (= (nth values child-index)
+                                          (:value child))
+                               (shape-fail!
+                                form {:child-form-id child-id
+                                      :child-index child-index}))
+                             (p15-s23-c6c10-prefix-occurrences
+                              [child-index]
+                              (child-occurrences index form child-id))))
+                         children)))
+
+                     (= :map (:kind form))
+                     (let [children (:children form)]
+                       (when (odd? (count children))
+                         (shape-fail! form
+                                      {:child-count (count children)}))
+                       (let [pairs
+                             (sort-by
+                              (fn [[key-id _]]
+                                (p15-s23-c6c10-host-order-key
+                                 (:value (get forms-by-id key-id))))
+                              (partition 2 children))
+                             entries
+                             (sort-by
+                              (comp p15-s23-c6c10-host-order-key key)
+                              (:value form))]
+                         (when-not (= (count pairs) (count entries))
+                           (shape-fail! form
+                                        {:pair-count (count pairs)
+                                         :entry-count (count entries)}))
+                         (apply
+                          p15-s23-c6c10-merge-occurrences
+                          (map-indexed
+                           (fn [entry-index [[key-id value-id]
+                                            [entry-key entry-value]]]
+                             (let [key-form (get forms-by-id key-id)
+                                   value-form (get forms-by-id value-id)]
+                               (when-not
+                                (and (= entry-key (:value key-form))
+                                     (= entry-value (:value value-form)))
+                                 (shape-fail!
+                                  form {:entry-index entry-index
+                                        :key-form-id key-id
+                                        :value-form-id value-id}))
+                               (p15-s23-c6c10-merge-occurrences
+                                (p15-s23-c6c10-prefix-occurrences
+                                 [[:map-key entry-index]]
+                                 (child-occurrences index form key-id))
+                                (p15-s23-c6c10-prefix-occurrences
+                                 (p15-s23-c6c10-map-value-path
+                                  [] entry-index entry-key)
+                                 (child-occurrences index form value-id)))))
+                           (map vector pairs entries)))))
+
+                     (= :set (:kind form))
+                     (let [children
+                           (sort-by
+                            (fn [child-id]
+                              (p15-s23-c6c10-host-order-key
+                               (:value (get forms-by-id child-id))))
+                            (:children form))
+                           values
+                           (sort-by p15-s23-c6c10-host-order-key
+                                    (:value form))]
+                       (when-not (= (count children) (count values))
+                         (shape-fail! form
+                                      {:child-count (count children)
+                                       :value-count (count values)}))
+                       (apply
+                        p15-s23-c6c10-merge-occurrences
+                        (map-indexed
+                         (fn [child-index [child-id value]]
+                           (let [child (get forms-by-id child-id)]
+                             (when-not (= value (:value child))
+                               (shape-fail!
+                                form {:child-form-id child-id
+                                      :child-index child-index}))
+                             (p15-s23-c6c10-prefix-occurrences
+                              [[:set-item child-index]]
+                              (child-occurrences index form child-id))))
+                         (map vector children values))))
+
+                     (= :abbreviation (:kind form))
+                     (let [children (:children form)
+                           values (vec (:value form))]
+                       (when-not
+                        (and (= 1 (count children))
+                             (= 2 (count values))
+                             (= (second values)
+                                (:value (get forms-by-id
+                                             (first children)))))
+                         (shape-fail! form
+                                      {:child-count (count children)
+                                       :value-count (count values)}))
+                       (p15-s23-c6c10-prefix-occurrences
+                        [1]
+                        (child-occurrences index form (first children))))
+
+                     (= :metadata-wrapper (:kind form))
+                     (let [attached-id (last (:children form))
+                           attached (get forms-by-id attached-id)]
+                       (when-not (and attached
+                                      (= (:value form) (:value attached)))
+                         (shape-fail! form
+                                      {:attached-form-id attached-id}))
+                       (child-occurrences index form attached-id))
+
+                     :else
+                     {}))
+                 expected
+                 (p15-s23-c6c10-collect-numeric-occurrences
+                  [] (:value form))
+                 observed (update-vals occurrences :descriptor)]
+             (when-not (= expected observed)
+               (shape-fail!
+                form {:expected-occurrences expected
+                      :observed-occurrences observed}))
+             (assoc index (:form-id form) occurrences)))
+         {}
+         (rseq forms))
+        metadata-index
+        (reduce
+         (fn [index form]
+           (let [expected
+                 (p15-s23-c6c10-collect-numeric-occurrences
+                  [] (:metadata form))
+                 metadata-form-id
+                 (when (= :metadata-wrapper (:kind form))
+                   (first (:children form)))
+                 metadata-form (get forms-by-id metadata-form-id)
+                 occurrences
+                 (if (empty? expected)
+                   {}
+                   (when (and metadata-form
+                              (= (:metadata form) (:value metadata-form)))
+                     (get value-index metadata-form-id)))
+                 observed (some-> occurrences (update-vals :descriptor))]
+             (when-not (= expected observed)
+               (p15-s23-c6c10-host-fail!
+                "C6-ORIGIN" source-path
+                :c2-metadata-structural-numeric-correspondence
+                {:form-id (:form-id form)
+                 :metadata-form-id metadata-form-id
+                 :expected-occurrences expected
+                 :observed-occurrences observed}))
+             (assoc index (:form-id form) occurrences)))
+         {}
+         (rseq forms))]
+    {:value-occurrences-by-form-id value-index
+     :metadata-occurrences-by-form-id metadata-index}))
+
+(defn p15-s23-c6c10-form-value-numeric-occurrences
+  [source-path literal-authentication root-form-id]
+  (if (contains? (:value-occurrences-by-form-id literal-authentication)
+                 root-form-id)
+    (get (:value-occurrences-by-form-id literal-authentication) root-form-id)
+    (p15-s23-c6c10-host-fail!
+     "C6-ORIGIN" source-path :indexed-c2-form-numeric-occurrences
+     {:form-id root-form-id})))
+
+(defn p15-s23-c6c10-form-metadata-numeric-occurrences
+  [source-path literal-authentication root-form-id]
+  (if (contains? (:metadata-occurrences-by-form-id literal-authentication)
+                 root-form-id)
+    (get (:metadata-occurrences-by-form-id literal-authentication)
+         root-form-id)
+    (p15-s23-c6c10-host-fail!
+     "C6-ORIGIN" source-path :indexed-c2-metadata-numeric-occurrences
+     {:form-id root-form-id})))
+
+(defn p15-s23-c6c10-form-semantic-copy-numeric-occurrences
+  [source-path literal-authentication form-id copy-value]
+  (let [form (get (:forms-by-id literal-authentication) form-id)
+        occurrences
+        (p15-s23-c6c10-form-value-numeric-occurrences
+         source-path literal-authentication form-id)
+        expected
+        (p15-s23-c6c10-collect-numeric-occurrences [] copy-value)
+        observed (update-vals occurrences :descriptor)]
+    (when-not (and form
+                   (= copy-value (:value form))
+                   (= expected observed))
+      (p15-s23-c6c10-host-fail!
+       "C6-ORIGIN" source-path
+       :exact-c2-expanded-form-numeric-correspondence
+       {:form-id form-id
+        :expected-occurrences expected
+        :observed-occurrences observed}))
+    occurrences))
+
+(defn p15-s23-c6c10-form-copy-field-numeric-occurrences
+  [source-path literal-authentication prefix form-id record]
+  (p15-s23-c6c10-merge-occurrences
+   (if (contains? record :expanded-form)
+     (p15-s23-c6c10-prefix-occurrences
+      (conj prefix :expanded-form)
+      (p15-s23-c6c10-form-semantic-copy-numeric-occurrences
+       source-path literal-authentication form-id
+       (:expanded-form record)))
+     {})
+   (apply
+    p15-s23-c6c10-merge-occurrences
+    (for [[origin-index origin]
+          (map-indexed vector (or (:generated-origin record) []))
+          :when (contains? origin :expanded-form)]
+      (p15-s23-c6c10-prefix-occurrences
+       (into prefix [:generated-origin origin-index :expanded-form])
+       (p15-s23-c6c10-form-semantic-copy-numeric-occurrences
+        source-path literal-authentication form-id
+        (:expanded-form origin)))))))
+
+(defn p15-s23-c6c10-authentication-with-occurrences
+  [literal-authentication projection-field occurrences]
+  (assoc-in literal-authentication
+            [:occurrences projection-field]
+            occurrences))
+
+(defn p15-s23-c6c10-base-numeric-occurrences
+  [source-path literal-authentication raw-front-end]
+  (let [evidence-by-token-id
+        (into {} (map (juxt :token-id identity)
+                      (:records literal-authentication)))
+        evidence-by-literal-id
+        (into {} (map (juxt :literal-id identity)
+                      (:records literal-authentication)))
+        token-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index record]
+               (map-indexed vector (:token-stream raw-front-end))
+               :let [descriptor
+                     (p15-s23-c6c10-literal-scalar-descriptor
+                      (:decoded record))]
+               :when descriptor]
+           (p15-s23-c6c10-exact-numeric-occurrence
+            source-path [:records index :decoded] (:decoded record)
+            (get evidence-by-token-id (:token-id record)))))
+        form-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index record]
+               (map-indexed vector (:form-tree raw-front-end))]
+           (p15-s23-c6c10-merge-occurrences
+            (p15-s23-c6c10-prefix-occurrences
+             [:records index :value]
+             (p15-s23-c6c10-form-value-numeric-occurrences
+              source-path literal-authentication (:form-id record)))
+            (p15-s23-c6c10-prefix-occurrences
+             [:records index :metadata]
+             (p15-s23-c6c10-form-metadata-numeric-occurrences
+              source-path literal-authentication (:form-id record)))
+            (p15-s23-c6c10-form-copy-field-numeric-occurrences
+             source-path literal-authentication [:records index]
+             (:form-id record) record))))
+        seed-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index record]
+               (map-indexed vector (:syntax-seed-stream raw-front-end))]
+           (p15-s23-c6c10-merge-occurrences
+            (p15-s23-c6c10-prefix-occurrences
+             [:records index :form]
+             (p15-s23-c6c10-form-value-numeric-occurrences
+              source-path literal-authentication (:form-id record)))
+            (p15-s23-c6c10-prefix-occurrences
+             [:records index :metadata]
+             (p15-s23-c6c10-form-metadata-numeric-occurrences
+              source-path literal-authentication (:form-id record)))
+            (p15-s23-c6c10-form-copy-field-numeric-occurrences
+             source-path literal-authentication [:records index]
+             (:form-id record) record))))
+        literal-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index record]
+               (map-indexed vector (:literal-decoding-records raw-front-end))
+               :let [descriptor
+                     (p15-s23-c6c10-literal-scalar-descriptor
+                      (:decoded record))]
+               :when descriptor]
+           (p15-s23-c6c10-exact-numeric-occurrence
+            source-path [:records index :decoded] (:decoded record)
+            (get evidence-by-literal-id (:literal-id record)))))
+        deferred-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index record]
+               (map-indexed
+                vector
+                (get-in raw-front-end
+                        [:semantic-error-deferment-record
+                         :deferred-literal-records]))
+               :let [descriptor
+                     (p15-s23-c6c10-literal-scalar-descriptor
+                      (:value record))]
+               :when descriptor]
+           (p15-s23-c6c10-exact-numeric-occurrence
+            source-path [:records index :value] (:value record)
+            (get (:by-form-id literal-authentication) (:form-id record)))))]
+    {:c2-token-stream token-occurrences
+     :c2-form-tree form-occurrences
+     :c2-syntax-seed-stream seed-occurrences
+     :c2-literal-decoding-records literal-occurrences
+     :c2-deferred-literal-records deferred-occurrences}))
+
+(defn p15-s23-c6c10-c3-syntax-authentication
+  [source-path literal-authentication syntax]
+  (let [form-id (get-in syntax [:source :form-id])
+        occurrences
+        (p15-s23-c6c10-merge-occurrences
+         (p15-s23-c6c10-prefix-occurrences
+          [:form]
+          (p15-s23-c6c10-form-value-numeric-occurrences
+           source-path literal-authentication form-id))
+         (p15-s23-c6c10-prefix-occurrences
+          [:metadata]
+          (p15-s23-c6c10-form-metadata-numeric-occurrences
+           source-path literal-authentication form-id)))]
+    (p15-s23-c6c10-authentication-with-occurrences
+     literal-authentication :c3-syntax-identity occurrences)))
+
+(defn p15-s23-c6c10-remap-occurrences
+  [occurrences target-prefix]
+  (into {}
+        (map (fn [[path occurrence]]
+               [(into target-prefix (rest path)) occurrence]))
+        occurrences))
+
+(defn p15-s23-c6c10-private-c3-artifact-occurrences
+  [source-path literal-authentication front-end]
+  (let [base (:occurrences literal-authentication)
+        remapped
+        [(p15-s23-c6c10-remap-occurrences
+          (:c2-token-stream base) [:front-end :token-stream])
+         (p15-s23-c6c10-remap-occurrences
+          (:c2-form-tree base) [:front-end :form-tree])
+         (p15-s23-c6c10-remap-occurrences
+          (:c2-syntax-seed-stream base)
+          [:front-end :syntax-seed-stream])
+         (p15-s23-c6c10-remap-occurrences
+          (:c2-literal-decoding-records base)
+          [:front-end :literal-decoding-records])
+         (p15-s23-c6c10-remap-occurrences
+          (:c2-deferred-literal-records base)
+          [:front-end :semantic-error-deferment-record
+           :deferred-literal-records])]
+        evidence-by-token
+        (into {} (map (juxt :token-id identity)
+                      (:records literal-authentication)))
+        form-value
+        (fn [prefix form-id]
+          (p15-s23-c6c10-prefix-occurrences
+           prefix
+           (p15-s23-c6c10-form-value-numeric-occurrences
+            source-path literal-authentication form-id)))
+        form-metadata
+        (fn [prefix form-id]
+          (p15-s23-c6c10-prefix-occurrences
+           prefix
+           (p15-s23-c6c10-form-metadata-numeric-occurrences
+            source-path literal-authentication form-id)))
+        token-decoded
+        (fn [path token-id value]
+          (if (p15-s23-c6c10-literal-scalar-descriptor value)
+            (p15-s23-c6c10-exact-numeric-occurrence
+             source-path path value (get evidence-by-token token-id))
+            {}))
+        syntax-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index syntax]
+               (map-indexed vector (:c3-syntax-object-stream front-end))]
+           (let [form-id (get-in syntax [:source :form-id])]
+             (p15-s23-c6c10-merge-occurrences
+              (form-value
+               [:front-end :c3-syntax-object-stream index :form :value]
+               form-id)
+              (form-metadata
+               [:front-end :c3-syntax-object-stream index :metadata]
+               form-id)))))
+        record-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index record] (map-indexed vector (:records front-end))]
+           (let [form-id (:form-id record)
+                 token-id (:token-id record)]
+             (p15-s23-c6c10-merge-occurrences
+              (form-value [:front-end :records index :form] form-id)
+              (form-metadata
+               [:front-end :records index :metadata] form-id)
+              (form-value
+               [:front-end :records index :c2-form-record :value]
+               form-id)
+              (form-metadata
+               [:front-end :records index :c2-form-record :metadata]
+               form-id)
+              (p15-s23-c6c10-form-copy-field-numeric-occurrences
+               source-path literal-authentication
+               [:front-end :records index :c2-form-record]
+               form-id (:c2-form-record record))
+              (token-decoded
+               [:front-end :records index :c2-token-record :decoded]
+               token-id (get-in record [:c2-token-record :decoded]))
+              (form-value
+               [:front-end :records index
+                :c3-syntax-object :form :value]
+               form-id)
+              (form-metadata
+               [:front-end :records index :c3-syntax-object :metadata]
+               form-id)))))
+        form-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (for [[index form] (map-indexed vector (:forms front-end))
+               :let [form-id
+                     (nth (:top-level-form-ids front-end) index nil)]]
+           (form-value [:front-end :forms index] form-id)))]
+    (apply p15-s23-c6c10-merge-occurrences
+           (concat remapped
+                   [syntax-occurrences record-occurrences
+                    form-occurrences]))))
+
+(defn p15-s23-c6c10-project-authenticated-literal-scalars
+  [source-path literal-authentication projection-field value]
+  (when-not (contains? p15-s23-c6c10-numeric-projection-fields
+                       projection-field)
+    (p15-s23-c6c10-host-fail!
+     "C6-ORIGIN" source-path
+     :typed-authenticated-numeric-projection-field
+     {:projection-field projection-field}))
+  (let [expected-occurrences
+        (or (get-in literal-authentication [:occurrences projection-field]) {})
+        consumed (atom #{})]
+    (letfn [(project [path item]
+              (if-let [descriptor
+                       (p15-s23-c6c10-literal-scalar-descriptor item)]
+                (if-let [occurrence (get expected-occurrences path)]
+                  (if (= descriptor (:descriptor occurrence))
+                    (do
+                      (swap! consumed conj path)
+                      (assoc descriptor
+                             :projection-field projection-field
+                             :literal-evidence
+                             [(select-keys (:evidence occurrence)
+                                           [:literal-id :form-id :token-id
+                                            :kind :raw])]))
+                    (p15-s23-c6c10-host-fail!
+                     "C6-ORIGIN" source-path
+                     :numeric-host-value-bound-to-fresh-c2-literal
+                     {:descriptor descriptor
+                      :projection-field projection-field
+                      :projected-path path
+                      :expected-descriptor
+                      (:descriptor occurrence)}))
+                  (p15-s23-c6c10-host-fail!
+                   "C6-ORIGIN" source-path
+                   :numeric-host-value-bound-to-fresh-c2-literal
+                   {:descriptor descriptor
+                    :projection-field projection-field
+                    :projected-path path}))
+                (cond
+                  (record? item)
+                  (p15-s23-c6c10-host-fail!
+                   "C6-VERIFY" source-path
+                   :record-free-private-digest-projection
+                   {:class (.getName (class item))})
+                  (map? item)
+                  (into
+                   {}
+                   (map-indexed
+                    (fn [index [key child]]
+                      [(project (conj path [:map-key index]) key)
+                       (project (p15-s23-c6c10-map-value-path
+                                 path index key)
+                                child)])
+                    (sort-by (comp p15-s23-c6c10-host-order-key key)
+                             item)))
+                  (vector? item)
+                  (mapv (fn [index child]
+                          (project (conj path index) child))
+                        (range) item)
+                  (set? item)
+                  (into #{}
+                        (map-indexed
+                         (fn [index child]
+                           (project (conj path [:set-item index]) child))
+                         (sort-by p15-s23-c6c10-host-order-key item)))
+                  (list? item)
+                  (apply list
+                         (map (fn [index child]
+                                (project (conj path index) child))
+                              (range) item))
+                  :else item)))]
+      (let [projected (project [] value)
+            expected-paths (set (keys expected-occurrences))]
+        (when-not (= expected-paths @consumed)
+          (p15-s23-c6c10-host-fail!
+           "C6-ORIGIN" source-path
+           :exhaustive-authenticated-numeric-occurrences
+           {:projection-field projection-field
+            :expected-paths expected-paths
+            :consumed-paths @consumed
+            :missing-paths (set/difference expected-paths @consumed)
+            :unexpected-paths (set/difference @consumed expected-paths)}))
+        projected))))
+
+(defn p15-s23-c6c10-authenticated-semantic-digest
+  [source-path literal-authentication projection-field value]
+  (p15-s23-c6c10-canonical-digest
+   source-path
+   (p15-s23-c6c10-project-authenticated-literal-scalars
+    source-path literal-authentication projection-field value)))
+
+(def p15-s23-c6c10-front-end-projection-keys
+  [:artifact :status :source-unit-record :source-unit-id
+   :token-stream :form-tree :top-level-form-ids :syntax-seed-stream
+   :reader-source-map :literal-decoding-records
+   :semantic-error-deferment-record :reader-extension-invocation-records
+   :reader-diagnostics :incremental-reader-hashes
+   :reader-product-integrity :c3-artifact-id :c3-syntax-object-stream
+   :c3-capability-proof :records :forms])
+
+(def p15-s23-c6c10-source-unit-projection-keys
+  [:artifact :encoding :reader-options :bytes-hash
+   :extension-policy :enabled-features])
+
+(defn p15-s23-c6c10-private-span
+  [private-source-id span]
+  (if (map? span)
+    (cond-> (dissoc span :source)
+      (contains? span :file) (assoc :file private-source-id))
+    span))
+
+(defn p15-s23-c6c10-private-origin
+  [private-source-id origin]
+  (if (map? origin)
+    (let [origin (p15-s23-c6c10-path-neutral-value
+                  private-source-id origin)]
+      (cond-> (dissoc origin :source-path :path)
+        (contains? origin :source-id)
+        (assoc :source-id private-source-id)
+        (contains? origin :span)
+        (update :span #(p15-s23-c6c10-private-span
+                        private-source-id %))
+        (contains? origin :source-span)
+        (update :source-span #(p15-s23-c6c10-private-span
+                               private-source-id %))
+        (contains? origin :from)
+        (update :from #(p15-s23-c6c10-private-span
+                        private-source-id %))))
+    origin))
+
+(defn p15-s23-c6c10-private-token-record
+  [private-source-id token]
+  (let [token (p15-s23-c6c10-path-neutral-value private-source-id token)]
+    (cond-> (dissoc token :source-path)
+      (contains? token :source-id) (assoc :source-id private-source-id)
+      (contains? token :span)
+      (update :span #(p15-s23-c6c10-private-span private-source-id %)))))
+
+(defn p15-s23-c6c10-private-form-record
+  [private-source-id form]
+  (let [form (p15-s23-c6c10-path-neutral-value private-source-id form)]
+    (cond-> (dissoc form :source-path)
+      (contains? form :source-id) (assoc :source-id private-source-id)
+      (contains? form :span)
+      (update :span #(p15-s23-c6c10-private-span private-source-id %))
+      (contains? form :surface-span)
+      (update :surface-span #(p15-s23-c6c10-private-span
+                              private-source-id %))
+      (contains? form :origin)
+      (update :origin #(p15-s23-c6c10-private-origin
+                        private-source-id %))
+      (contains? form :generated-origin)
+      (update :generated-origin
+              #(mapv (fn [origin]
+                       (p15-s23-c6c10-private-origin
+                        private-source-id origin))
+                     (or % []))))))
+
+(defn p15-s23-c6c10-private-syntax-seed
+  [private-source-id seed]
+  (let [seed (p15-s23-c6c10-path-neutral-value private-source-id seed)]
+    (cond-> seed
+      (contains? seed :span)
+      (update :span #(p15-s23-c6c10-private-span private-source-id %))
+      (contains? seed :generated-origin)
+      (update :generated-origin
+              #(mapv (fn [origin]
+                       (p15-s23-c6c10-private-origin
+                        private-source-id origin))
+                     (or % []))))))
+
+(defn p15-s23-c6c10-private-reader-source-record
+  [private-source-id record]
+  (let [record (p15-s23-c6c10-path-neutral-value private-source-id record)]
+    (cond-> (dissoc record :source-path)
+      (contains? record :source-id) (assoc :source-id private-source-id)
+      (contains? record :span)
+      (update :span #(p15-s23-c6c10-private-span private-source-id %)))))
+
+(defn p15-s23-c6c10-private-literal-record
+  [private-source-id record]
+  (let [record (p15-s23-c6c10-path-neutral-value private-source-id record)]
+    (cond-> record
+      (contains? record :source-id) (assoc :source-id private-source-id)
+      (contains? record :span)
+      (update :span #(p15-s23-c6c10-private-span private-source-id %)))))
+
+(defn p15-s23-c6c10-private-extension-record
+  [private-source-id record]
+  (let [record (p15-s23-c6c10-path-neutral-value private-source-id record)]
+    (cond-> (dissoc record :source-path)
+      (contains? record :source-id) (assoc :source-id private-source-id)
+      (contains? record :span)
+      (update :span #(p15-s23-c6c10-private-span private-source-id %)))))
+
+(defn p15-s23-c6c10-private-diagnostic
+  [private-source-id diagnostic]
+  (let [diagnostic (p15-s23-c6c10-path-neutral-value
+                    private-source-id diagnostic)]
+    (cond-> diagnostic
+      (contains? diagnostic :source-span)
+      (update :source-span #(p15-s23-c6c10-private-span
+                             private-source-id %))
+      (get-in diagnostic [:primary :span])
+      (update-in [:primary :span]
+                 #(p15-s23-c6c10-private-span private-source-id %))
+      (contains? diagnostic :related)
+      (update :related
+              #(mapv (fn [related]
+                       (cond-> related
+                         (contains? related :span)
+                         (update :span
+                                 (fn [span]
+                                   (p15-s23-c6c10-private-span
+                                    private-source-id span)))))
+                     (or % [])))
+      (contains? diagnostic :origin-chain)
+      (update :origin-chain
+              #(mapv (fn [origin]
+                       (p15-s23-c6c10-private-origin
+                        private-source-id origin))
+                     (or % []))))))
+
+(defn p15-s23-c6c10-private-source-identity
+  [source-path source-unit]
+  (let [identity-inputs
+        {:domain :gravity/c6-c10-private-source-identity-v1
+         :bytes-hash (:bytes-hash source-unit)
+         :encoding (:encoding source-unit)
+         :reader-options (:reader-options source-unit)
+         :enabled-features (:enabled-features source-unit)
+         :extension-policy (:extension-policy source-unit)}
+        private-source-id
+        (p15-s23-c6c10-canonical-digest source-path identity-inputs)]
+    {:identity-inputs identity-inputs
+     :private-source-id private-source-id}))
+
+(declare c2-token-hash-input
+         c2-form-hash-input
+         c2-syntax-seed-hash-input
+         c2-extension-hash-input
+         c2-diagnostic-hash-input)
+
+(defn p15-s23-c6c10-private-c2-derived-products
+  [source-path literal-authentication source-unit-record private-source-id
+   private-identity-inputs normalized]
+  (let [token-hash
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path literal-authentication :c2-token-stream
+         {:domain :gravity/c6-c10-private-token-stream-v1
+          :records (c2-token-hash-input (:token-stream normalized))})
+        form-hash
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path literal-authentication :c2-form-tree
+         {:domain :gravity/c6-c10-private-form-tree-v1
+          :records (c2-form-hash-input (:form-tree normalized))})
+        syntax-seed-hash
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path literal-authentication :c2-syntax-seed-stream
+         {:domain :gravity/c6-c10-private-syntax-seed-stream-v1
+          :records (c2-syntax-seed-hash-input
+                    (:syntax-seed-stream normalized))})
+        extension-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-private-reader-extensions-v1
+          :records (c2-extension-hash-input
+                    (:reader-extension-invocation-records normalized))})
+        diagnostic-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-private-reader-diagnostics-v1
+          :records (c2-diagnostic-hash-input
+                    (:reader-diagnostics normalized))})
+        incremental-hashes
+        {:artifact :gravity/reader-incremental-hashes
+         :source-unit private-source-id
+         :token-stream token-hash
+         :form-tree form-hash
+         :syntax-seed-stream syntax-seed-hash
+         :extension-invocation-set extension-hash
+         :reader-diagnostics diagnostic-hash
+         :retained-trivia-affects-form-tree?
+         (true? (get-in source-unit-record
+                        [:reader-options :retain-comments]))
+         :status :stable}
+        literal-records (:literal-decoding-records normalized)
+        deferred-records
+        (get-in normalized
+                [:semantic-error-deferment-record
+                 :deferred-literal-records])
+        literal-records-hash
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path literal-authentication :c2-literal-decoding-records
+         {:domain :gravity/c6-c10-private-literal-records-v1
+          :records literal-records})
+        deferred-literal-records-hash
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path literal-authentication :c2-deferred-literal-records
+         {:domain :gravity/c6-c10-private-deferred-literals-v1
+          :records deferred-records})
+        integrity-input
+        {:source-id private-source-id
+         :source-identity-inputs private-identity-inputs
+         :source-bytes-hash (:bytes-hash source-unit-record)
+         :reader-options (:reader-options source-unit-record)
+         :top-level-form-ids (vec (:top-level-form-ids normalized))
+         :incremental-reader-hashes incremental-hashes
+         :literal-records-hash literal-records-hash
+         :deferred-literal-records-hash deferred-literal-records-hash}
+        integrity-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-private-reader-integrity-v1
+          :input integrity-input})
+        integrity
+        {:artifact :gravity/c2-reader-product-integrity
+         :algorithm :sha256
+         :input integrity-input
+         :integrity-hash integrity-hash
+         :status :verified}]
+    {:incremental-reader-hashes incremental-hashes
+     :reader-product-integrity integrity}))
+
+(defn p15-s23-c6c10-private-c3-syntax-identity
+  [syntax]
+  {:domain :gravity/c6-c10-private-c3-syntax-v1
+   :form-kind (get-in syntax [:form :kind])
+   :form (get-in syntax [:form :value])
+   :raw (get-in syntax [:form :raw])
+   :span (:span syntax)
+   :origin (:origin syntax)
+   :namespace (:namespace syntax)
+   :phase (:phase syntax)
+   :profile (:profile syntax)
+   :metadata (:metadata syntax)
+   :hygiene (:hygiene syntax)
+   :facts (:facts syntax)
+   :prior-syntax-ids (:prior-syntax-ids syntax)
+   :version (:version syntax)})
+
+(def p15-s23-c6c10-private-c3-semantic-fields
+  [:form-kind :form :raw :span :origin :namespace :phase :profile
+   :metadata :hygiene :facts :prior-syntax-ids :version])
+
+(defn p15-s23-c6c10-rekey-c3-id-vector
+  [id-replacements ids]
+  (mapv #(get id-replacements % %) (or ids [])))
+
+(defn p15-s23-c6c10-rekey-private-c3-origin
+  [id-replacements origin]
+  (cond-> origin
+    (contains? origin :inputs)
+    (update :inputs #(p15-s23-c6c10-rekey-c3-id-vector
+                      id-replacements %))
+    (contains? origin :input-syntax-ids)
+    (update :input-syntax-ids
+            #(p15-s23-c6c10-rekey-c3-id-vector id-replacements %))))
+
+(defn p15-s23-c6c10-normalize-private-c3-syntax
+  [private-source-id integrity-hash syntax]
+  (let [syntax (p15-s23-c6c10-path-neutral-value
+                private-source-id syntax)]
+    (-> syntax
+        (update :span
+                (fn [span]
+                  (-> span
+                      (update :primary
+                              #(p15-s23-c6c10-private-span
+                                private-source-id %))
+                      (update :all
+                              #(mapv (fn [item]
+                                       (p15-s23-c6c10-private-span
+                                        private-source-id item))
+                                     (or % []))))))
+        (update :source
+                (fn [source]
+                  (-> source
+                      (dissoc :source-path :path)
+                      (assoc :source-id private-source-id))))
+        (update :origin
+                #(mapv (fn [origin]
+                         (p15-s23-c6c10-private-origin
+                          private-source-id origin))
+                       (or % [])))
+        (update :facts
+                (fn [facts]
+                  (cond-> facts
+                    (contains? facts :reader-source-id)
+                    (assoc :reader-source-id private-source-id)
+                    (contains? facts :reader-product-integrity-hash)
+                    (assoc :reader-product-integrity-hash
+                           integrity-hash)))))))
+
+(defn p15-s23-c6c10-rekey-private-c3-syntaxes
+  [source-path literal-authentication syntaxes]
+  (loop [remaining syntaxes
+         replacements {}
+         projected []]
+    (if-let [syntax (first remaining)]
+      (let [old-syntax-id (:syntax/id syntax)
+            prior-rekeyed
+            (-> syntax
+                (update :prior-syntax-ids
+                        #(p15-s23-c6c10-rekey-c3-id-vector
+                          replacements %))
+                (update :origin
+                        #(mapv (fn [origin]
+                                 (p15-s23-c6c10-rekey-private-c3-origin
+                                  replacements origin))
+                               (or % []))))
+            identity-input
+            (p15-s23-c6c10-private-c3-syntax-identity prior-rekeyed)
+            syntax-authentication
+            (p15-s23-c6c10-c3-syntax-authentication
+             source-path literal-authentication prior-rekeyed)
+            syntax-id
+            (p15-s23-c6c10-authenticated-semantic-digest
+             source-path syntax-authentication :c3-syntax-identity
+             identity-input)
+            rekeyed
+            (-> prior-rekeyed
+                (assoc :syntax/id syntax-id)
+                (assoc-in [:identity :algorithm] :sha256)
+                (assoc-in [:identity :semantic-fields]
+                          p15-s23-c6c10-private-c3-semantic-fields)
+                (assoc-in [:identity :input-hash] syntax-id))
+            replacements
+            (if (string? old-syntax-id)
+              (assoc replacements old-syntax-id syntax-id)
+              replacements)]
+        (recur (rest remaining) replacements (conj projected rekeyed)))
+      {:syntax-object-stream projected
+       :replacements replacements})))
+
+(defn p15-s23-c6c10-private-c3-capability-proof
+  [raw-proof top-level-form-ids syntaxes]
+  (let [checks
+        {:upstream-capability-proof-passed? (= :complete (:status raw-proof))
+         :construction-from-reader-seeds?
+         (= (count top-level-form-ids) (count syntaxes))
+         :stable-syntax-ids?
+         (and (every? #(re-matches #"sha256:[0-9a-f]{64}"
+                                   (:syntax/id %))
+                      syntaxes)
+              (= (count syntaxes)
+                 (count (set (map :syntax/id syntaxes)))))
+         :identity-inputs-current?
+         (every? #(= (:syntax/id %)
+                     (get-in % [:identity :input-hash]))
+                 syntaxes)
+         :source-and-generated-origins?
+         (every? #(seq (:origin %)) syntaxes)
+         :hygiene-propagated?
+         (every? map? (map :hygiene syntaxes))
+         :metadata-preserved?
+         (every? map? (map :metadata syntaxes))}
+        passed? (every? true? (vals checks))]
+    (merge {:artifact :gravity/c6-c10-private-c3-capability-proof}
+           checks
+           {:status (if passed? :complete :failed)})))
+
+(defn p15-s23-c6c10-private-front-end-records
+  [private-source-id raw-records token-stream form-tree syntaxes]
+  (let [tokens-by-id (into {} (map (juxt :token-id identity) token-stream))
+        forms-by-id (into {} (map (juxt :form-id identity) form-tree))]
+    (mapv
+     (fn [index raw-record]
+       (let [syntax (nth syntaxes index)
+             form-record (get forms-by-id (:form-id raw-record))
+             token-record (get tokens-by-id (:token-id raw-record))
+             base (-> (p15-s23-c6c10-path-neutral-value
+                       private-source-id raw-record)
+                      (dissoc :c2-form-record :c2-token-record
+                              :c3-syntax-object))]
+         (-> base
+             (assoc :source-id private-source-id
+                    :span (p15-s23-c6c10-private-span
+                           private-source-id (:span raw-record))
+                    :source-origin (:origin syntax)
+                    :reader-origin
+                    (assoc (:reader-origin base) :c3-origin
+                           (:origin syntax))
+                    :generated-origin
+                    (mapv #(p15-s23-c6c10-private-origin
+                            private-source-id %)
+                          (or (:generated-origin base) []))
+                    :c2-form-record form-record
+                    :c2-token-record token-record
+                    :c3-syntax-object syntax))))
+     (range)
+     raw-records)))
+
+(defn p15-s23-c6c10-private-program-branches
+  [source-content-hash front-end]
+  {:forms (p15-s23-c6c10-path-neutral-value
+           source-content-hash (:forms front-end))
+   :form-values
+   (mapv #(select-keys % [:form-id :value :metadata])
+         (p15-s23-c6c10-path-neutral-value
+          source-content-hash (:form-tree front-end)))
+   :literal-values
+   (mapv #(select-keys % [:literal-id :form-id :decoded])
+         (p15-s23-c6c10-path-neutral-value
+          source-content-hash (:literal-decoding-records front-end)))
+   :seed-values
+   (mapv #(select-keys % [:syntax-id :form :metadata])
+         (p15-s23-c6c10-path-neutral-value
+          source-content-hash (:syntax-seed-stream front-end)))
+   :c3-values
+   (mapv #(select-keys % [:form :metadata])
+         (p15-s23-c6c10-path-neutral-value
+          source-content-hash (:c3-syntax-object-stream front-end)))
+   :record-values
+   (mapv #(select-keys % [:form-id :form])
+         (p15-s23-c6c10-path-neutral-value
+          source-content-hash (:records front-end)))})
+
+(defn p15-s23-c6c10-private-provenance-valid?
+  [private-source-id front-end]
+  (let [span-valid?
+        (fn [span]
+          (or (not (map? span))
+              (and (not (contains? span :source))
+                   (or (not (contains? span :file))
+                       (= private-source-id (:file span))))))
+        token-valid?
+        (fn [token]
+          (and (not (contains? token :source-path))
+               (= private-source-id (:source-id token))
+               (span-valid? (:span token))))
+        form-valid?
+        (fn [form]
+          (and (not (contains? form :source-path))
+               (= private-source-id (:source-id form))
+               (span-valid? (:span form))
+               (span-valid? (:surface-span form))))
+        syntax-valid?
+        (fn [syntax]
+          (and (= private-source-id (get-in syntax [:source :source-id]))
+               (span-valid? (get-in syntax [:span :primary]))
+               (every? span-valid? (get-in syntax [:span :all]))))]
+    (and (every? token-valid? (:token-stream front-end))
+         (every? form-valid? (:form-tree front-end))
+         (every? #(span-valid? (:span %))
+                 (:syntax-seed-stream front-end))
+         (every? syntax-valid? (:c3-syntax-object-stream front-end)))))
+
+(defn p15-s23-c6c10-verify-private-front-end-projection!
+  [source-path raw-front-end literal-authentication front-end]
+  (let [raw-source-unit (:source-unit-record raw-front-end)
+        expected-source-unit
+        (-> (select-keys raw-source-unit
+                         p15-s23-c6c10-source-unit-projection-keys)
+            (dissoc :source-id :identity-inputs))
+        expected-private-identity
+        (p15-s23-c6c10-private-source-identity
+         source-path expected-source-unit)
+        expected-private-identity-inputs
+        (:identity-inputs expected-private-identity)
+        expected-private-source-id
+        (:private-source-id expected-private-identity)
+        source-content-hash (:bytes-hash raw-source-unit)
+        private-source-id (:source-unit-id front-end)
+        source-unit (:source-unit-record front-end)
+        private-identity-inputs
+        (get-in front-end
+                [:reader-product-integrity :input
+                 :source-identity-inputs])
+        normalized
+        (select-keys front-end
+                     [:token-stream :form-tree :top-level-form-ids
+                      :syntax-seed-stream :literal-decoding-records
+                      :semantic-error-deferment-record
+                      :reader-extension-invocation-records
+                      :reader-diagnostics])
+        derived
+        (p15-s23-c6c10-private-c2-derived-products
+         source-path literal-authentication expected-source-unit
+         expected-private-source-id expected-private-identity-inputs
+         normalized)
+        syntax-identities-current?
+        (every?
+         (fn [syntax]
+           (let [syntax-authentication
+                 (p15-s23-c6c10-c3-syntax-authentication
+                  source-path literal-authentication syntax)]
+             (= (:syntax/id syntax)
+                (p15-s23-c6c10-authenticated-semantic-digest
+                 source-path syntax-authentication :c3-syntax-identity
+                 (p15-s23-c6c10-private-c3-syntax-identity syntax)))))
+         (:c3-syntax-object-stream front-end))
+        records-current?
+        (= (:records front-end)
+           (p15-s23-c6c10-private-front-end-records
+            private-source-id (:records raw-front-end)
+            (:token-stream front-end) (:form-tree front-end)
+            (:c3-syntax-object-stream front-end)))
+        c3-artifact-current?
+        (let [artifact-input (dissoc front-end :c3-artifact-id)
+              artifact-authentication
+              (p15-s23-c6c10-authentication-with-occurrences
+               literal-authentication :private-c3-artifact
+               (p15-s23-c6c10-private-c3-artifact-occurrences
+                source-path literal-authentication artifact-input))]
+          (= (:c3-artifact-id front-end)
+             (p15-s23-c6c10-authenticated-semantic-digest
+              source-path artifact-authentication :private-c3-artifact
+              {:domain :gravity/c6-c10-private-c3-artifact-v1
+               :front-end artifact-input})))
+        checks
+        {:source-unit-current? (= expected-source-unit source-unit)
+         :source-identity-inputs-current?
+         (= expected-private-identity-inputs private-identity-inputs)
+         :source-id-current?
+         (= expected-private-source-id private-source-id)
+         :incremental-hashes-current?
+         (= (:incremental-reader-hashes front-end)
+            (:incremental-reader-hashes derived))
+         :reader-integrity-current?
+         (= (:reader-product-integrity front-end)
+            (:reader-product-integrity derived))
+         :syntax-identities-current? syntax-identities-current?
+         :record-copies-current? records-current?
+         :c3-artifact-current? c3-artifact-current?
+         :capability-proof-current?
+         (= (:c3-capability-proof front-end)
+            (p15-s23-c6c10-private-c3-capability-proof
+             (:c3-capability-proof raw-front-end)
+             (:top-level-form-ids raw-front-end)
+             (:c3-syntax-object-stream front-end)))
+         :typed-provenance-path-neutral?
+         (p15-s23-c6c10-private-provenance-valid?
+          private-source-id front-end)
+         :program-branches-preserved?
+         (= (p15-s23-c6c10-private-program-branches
+             source-content-hash raw-front-end)
+            (p15-s23-c6c10-private-program-branches
+             source-content-hash front-end))}]
+    (when-not (every? true? (vals checks))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :verified-private-front-end-projection
+       {:checks checks}))
+    {:status :passed :checks checks}))
+
+(defn p15-s23-c6c10-project-front-end
+  [source-path raw-front-end]
+  (let [raw-source-unit (:source-unit-record raw-front-end)
+        source-content-hash (:bytes-hash raw-source-unit)
+        literal-authentication
+        (p15-s23-c6c10-literal-authentication source-path raw-front-end)
+        private-identity
+        (p15-s23-c6c10-private-source-identity source-path raw-source-unit)
+        private-source-id (:private-source-id private-identity)
+        source-unit-record
+        (-> (select-keys raw-source-unit
+                         p15-s23-c6c10-source-unit-projection-keys)
+            (dissoc :source-id :identity-inputs))
+        token-stream
+        (mapv #(p15-s23-c6c10-private-token-record private-source-id %)
+              (:token-stream raw-front-end))
+        form-tree
+        (mapv #(p15-s23-c6c10-private-form-record private-source-id %)
+              (:form-tree raw-front-end))
+        syntax-seeds
+        (mapv #(p15-s23-c6c10-private-syntax-seed private-source-id %)
+              (:syntax-seed-stream raw-front-end))
+        reader-source-map
+        (mapv #(p15-s23-c6c10-private-reader-source-record
+                private-source-id %)
+              (:reader-source-map raw-front-end))
+        literal-records
+        (mapv #(p15-s23-c6c10-private-literal-record private-source-id %)
+              (:literal-decoding-records raw-front-end))
+        deferment-record
+        (-> (p15-s23-c6c10-path-neutral-value
+             private-source-id (:semantic-error-deferment-record
+                                raw-front-end))
+            (update :deferred-literal-records
+                    #(mapv (fn [record]
+                             (p15-s23-c6c10-private-literal-record
+                              private-source-id record))
+                           (or % []))))
+        extension-records
+        (mapv #(p15-s23-c6c10-private-extension-record
+                private-source-id %)
+              (:reader-extension-invocation-records raw-front-end))
+        diagnostics
+        (mapv #(p15-s23-c6c10-private-diagnostic private-source-id %)
+              (:reader-diagnostics raw-front-end))
+        normalized
+        {:token-stream token-stream
+         :form-tree form-tree
+         :top-level-form-ids (:top-level-form-ids raw-front-end)
+         :syntax-seed-stream syntax-seeds
+         :literal-decoding-records literal-records
+         :semantic-error-deferment-record deferment-record
+         :reader-extension-invocation-records extension-records
+         :reader-diagnostics diagnostics}
+        c2-derived
+        (p15-s23-c6c10-private-c2-derived-products
+         source-path literal-authentication source-unit-record
+         private-source-id (:identity-inputs private-identity) normalized)
+        integrity-hash
+        (get-in c2-derived [:reader-product-integrity :integrity-hash])
+        normalized-c3-syntaxes
+        (mapv #(p15-s23-c6c10-normalize-private-c3-syntax
+                private-source-id integrity-hash %)
+              (:c3-syntax-object-stream raw-front-end))
+        c3-rekeyed
+        (p15-s23-c6c10-rekey-private-c3-syntaxes
+         source-path literal-authentication normalized-c3-syntaxes)
+        syntaxes (:syntax-object-stream c3-rekeyed)
+        records
+        (p15-s23-c6c10-private-front-end-records
+         private-source-id (:records raw-front-end)
+         token-stream form-tree syntaxes)
+        capability-proof
+        (p15-s23-c6c10-private-c3-capability-proof
+         (:c3-capability-proof raw-front-end)
+         (:top-level-form-ids raw-front-end) syntaxes)
+        projected-base
+        {:artifact (:artifact raw-front-end)
+         :status (:status raw-front-end)
+         :source-unit-record source-unit-record
+         :source-unit-id private-source-id
+         :token-stream token-stream
+         :form-tree form-tree
+         :top-level-form-ids (:top-level-form-ids raw-front-end)
+         :syntax-seed-stream syntax-seeds
+         :reader-source-map reader-source-map
+         :literal-decoding-records literal-records
+         :semantic-error-deferment-record deferment-record
+         :reader-extension-invocation-records extension-records
+         :reader-diagnostics diagnostics
+         :incremental-reader-hashes
+         (:incremental-reader-hashes c2-derived)
+         :reader-product-integrity
+         (:reader-product-integrity c2-derived)
+         :c3-syntax-object-stream syntaxes
+         :c3-capability-proof capability-proof
+         :records records
+         :forms (p15-s23-c6c10-path-neutral-value
+                 private-source-id (:forms raw-front-end))}
+        c3-artifact-authentication
+        (p15-s23-c6c10-authentication-with-occurrences
+         literal-authentication :private-c3-artifact
+         (p15-s23-c6c10-private-c3-artifact-occurrences
+          source-path literal-authentication projected-base))
+        new-c3-artifact-id
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path c3-artifact-authentication :private-c3-artifact
+         {:domain :gravity/c6-c10-private-c3-artifact-v1
+          :front-end projected-base})
+        projected (assoc projected-base :c3-artifact-id new-c3-artifact-id)
+        _ (p15-s23-c6c10-verify-private-front-end-projection!
+           source-path raw-front-end literal-authentication projected)]
+    projected))
+
+(def p15-s23-c6c10-plan-projection-keys
+  [:kind :compatibility-kind :diagnostics :plan-id :functions
+   :effect-summary :source :binding-table :instruction-summary
+   :module :compiler :entrypoint])
+
+(def p15-s23-c6c10-function-projection-keys
+  [:name :instructions :params :definition-form :binding
+   :body-form-count :arity :body])
+
+(def p15-s23-c6c10-binding-projection-keys
+  [:capabilities :name :effects :kind :target
+   :namespace :visibility :profile])
+
+(defn p15-s23-c6c10-stage2-order-key
+  [value]
+  (binding [*print-length* nil
+            *print-level* nil
+            *print-meta* false
+            *print-dup* false
+            *print-readably* true
+            *print-namespace-maps* false]
+    (pr-str value)))
+
+(defn p15-s23-c6c10-plan-shape-fail!
+  [source-path facts]
+  (p15-s23-c6c10-host-fail!
+   "C6-ORIGIN" source-path
+   :stage2-plan-c2-form-correspondence facts))
+
+(defn p15-s23-c6c10-static-literal-instruction-value
+  [instruction]
+  (case (:op instruction)
+    :literal {:static? true :value (:value instruction)}
+    :map-literal
+    (loop [entries (:entries instruction)
+           result {}]
+      (if-let [entry (first entries)]
+        (let [key-result
+              (p15-s23-c6c10-static-literal-instruction-value
+               (:key entry))
+              value-result
+              (p15-s23-c6c10-static-literal-instruction-value
+               (:value entry))]
+          (if (and (:static? key-result) (:static? value-result)
+                   (not (contains? result (:value key-result))))
+            (recur (rest entries)
+                   (assoc result (:value key-result) (:value value-result)))
+            {:static? false}))
+        {:static? true :value result}))
+    {:static? false}))
+
+(defn p15-s23-c6c10-authentic-deferred-ratio-instruction?
+  [literal-authentication form-id instruction]
+  (let [evidence
+        (get (:deferred-ratio-by-form-id literal-authentication) form-id)
+        static (p15-s23-c6c10-static-literal-instruction-value instruction)]
+    (and evidence
+         (= :map-literal (:op instruction))
+         (true? (:static? static))
+         (= (:descriptor evidence) (:value static)))))
+
+(defn p15-s23-c6c10-normalize-deferred-ratio-instruction
+  [source-path literal-authentication instruction source-form-id]
+  (let [forms-by-id (:forms-by-id literal-authentication)]
+    (letfn [(form! [form-id]
+              (or (get forms-by-id form-id)
+                  (p15-s23-c6c10-plan-shape-fail!
+                   source-path {:missing-form-id form-id})))
+            (normalize-many [instructions form-ids]
+              (when-not (= (count instructions) (count form-ids))
+                (p15-s23-c6c10-plan-shape-fail!
+                 source-path
+                 {:normalization-operation (:op instruction)
+                  :instruction-count (count instructions)
+                  :form-count (count form-ids)}))
+              (mapv (fn [child-instruction child-form-id]
+                      (normalize child-instruction child-form-id))
+                    instructions form-ids))
+            (normalize [current-instruction current-form-id]
+              (let [source-form (form! current-form-id)
+                    metadata-wrapper?
+                    (= :metadata-wrapper (:kind source-form))
+                    attached-form-id
+                    (when metadata-wrapper? (last (:children source-form)))
+                    attached-deferred?
+                    (and attached-form-id
+                         (p15-s23-c6c10-authentic-deferred-ratio-instruction?
+                          literal-authentication attached-form-id
+                          current-instruction))]
+                (cond
+                  (p15-s23-c6c10-authentic-deferred-ratio-instruction?
+                   literal-authentication current-form-id current-instruction)
+                  {:op :literal
+                   :value
+                   (:descriptor
+                    (get (:deferred-ratio-by-form-id
+                          literal-authentication)
+                         current-form-id))}
+
+                  attached-deferred?
+                  ;; Metadata exclusion is intentional and is diagnosed by
+                  ;; the Gravity C6 form gate.  Do not erase the wrapper by
+                  ;; normalizing its attached deferred ratio into a literal.
+                  current-instruction
+
+                  :else
+                  (let [form
+                        (if metadata-wrapper?
+                          (form! attached-form-id)
+                          source-form)
+                        children (:children form)
+                        operation (:op current-instruction)]
+                    (case operation
+                      :do
+                      (assoc current-instruction :body
+                             (normalize-many (:body current-instruction)
+                                             (vec (rest children))))
+
+                      :if
+                      (let [arguments (vec (rest children))]
+                        (cond-> current-instruction
+                          (>= (count arguments) 1)
+                          (assoc :test
+                                 (normalize (:test current-instruction)
+                                            (nth arguments 0)))
+                          (>= (count arguments) 2)
+                          (assoc :then
+                                 (normalize (:then current-instruction)
+                                            (nth arguments 1)))
+                          (= (count arguments) 3)
+                          (assoc :else
+                                 (normalize (:else current-instruction)
+                                            (nth arguments 2)))))
+
+                      :let
+                      (let [binding-form (form! (second children))
+                            pairs (partition 2 (:children binding-form))
+                            bindings (:bindings current-instruction)
+                            body-form-ids (vec (drop 2 children))]
+                        (when-not (= (count pairs) (count bindings))
+                          (p15-s23-c6c10-plan-shape-fail!
+                           source-path
+                           {:normalization-operation operation
+                            :binding-count (count bindings)
+                            :source-pair-count (count pairs)}))
+                        (assoc current-instruction
+                               :bindings
+                               (mapv
+                                (fn [binding [_ expression-id]]
+                                  (update binding :expr
+                                          #(normalize % expression-id)))
+                                bindings pairs)
+                               :body
+                               (normalize-many (:body current-instruction)
+                                               body-form-ids)))
+
+                      (:println :builtin-call :function-call)
+                      (assoc current-instruction :args
+                             (normalize-many (:args current-instruction)
+                                             (vec (rest children))))
+
+                      :vector-literal
+                      (assoc current-instruction :items
+                             (normalize-many (:items current-instruction)
+                                             (vec children)))
+
+                      :set-literal
+                      (let [ordered
+                            (sort-by
+                             (fn [child-id]
+                               (p15-s23-c6c10-stage2-order-key
+                                (:value (form! child-id))))
+                             children)]
+                        (assoc current-instruction :items
+                               (normalize-many (:items current-instruction)
+                                               (vec ordered))))
+
+                      :map-literal
+                      (let [ordered
+                            (sort-by
+                             (fn [[key-id value-id]]
+                               (p15-s23-c6c10-stage2-order-key
+                                [(:value (form! key-id))
+                                 (:value (form! value-id))]))
+                             (partition 2 children))
+                            entries (:entries current-instruction)]
+                        (when-not (= (count ordered) (count entries))
+                          (p15-s23-c6c10-plan-shape-fail!
+                           source-path
+                           {:normalization-operation operation
+                            :entry-count (count entries)
+                            :source-pair-count (count ordered)}))
+                        (assoc current-instruction :entries
+                               (mapv
+                                (fn [entry [key-id value-id]]
+                                  (-> entry
+                                      (update :key #(normalize % key-id))
+                                      (update :value
+                                              #(normalize % value-id))))
+                                entries ordered)))
+
+                      current-instruction)))))]
+      (normalize instruction source-form-id))))
+
+(defn p15-s23-c6c10-instruction-numeric-occurrences
+  [source-path literal-authentication instruction source-form-id]
+  (let [forms-by-id (:forms-by-id literal-authentication)]
+    (letfn [(form! [form-id]
+              (or (get forms-by-id form-id)
+                  (p15-s23-c6c10-plan-shape-fail!
+                   source-path {:missing-form-id form-id})))
+            (effective-form [form-id]
+              (let [form (form! form-id)]
+                (if (= :metadata-wrapper (:kind form))
+                  (form! (last (:children form)))
+                  form)))
+            (merge-children [path-key instructions child-ids]
+              (when-not (= (count instructions) (count child-ids))
+                (p15-s23-c6c10-plan-shape-fail!
+                 source-path
+                 {:operation (:op instruction)
+                  :instruction-count (count instructions)
+                  :source-child-count (count child-ids)}))
+              (apply
+               p15-s23-c6c10-merge-occurrences
+               (map-indexed
+                (fn [index [child-instruction child-id]]
+                  (p15-s23-c6c10-prefix-occurrences
+                   [path-key index]
+                   (walk child-instruction child-id)))
+                (map vector instructions child-ids))))
+            (walk [current-instruction current-form-id]
+              (let [source-form (form! current-form-id)
+                    attached-form-id
+                    (when (= :metadata-wrapper (:kind source-form))
+                      (last (:children source-form)))
+                    wrapped-deferred?
+                    (and attached-form-id
+                         (p15-s23-c6c10-authentic-deferred-ratio-instruction?
+                          literal-authentication attached-form-id
+                          current-instruction))
+                    form (effective-form current-form-id)
+                    children (:children form)
+                    operation (:op current-instruction)
+                    occurrences
+                    (if wrapped-deferred?
+                      {}
+                      (cond
+                      (= :literal operation)
+                      (do
+                        (when-not (= (:value current-instruction)
+                                     (:value form))
+                          (p15-s23-c6c10-plan-shape-fail!
+                           source-path
+                           {:operation operation
+                            :form-id (:form-id form)
+                            :plan-value (:value current-instruction)
+                            :source-value (:value form)}))
+                        (p15-s23-c6c10-prefix-occurrences
+                         [:value]
+                         (p15-s23-c6c10-form-value-numeric-occurrences
+                          source-path literal-authentication
+                          (:form-id form))))
+
+                      (= :quote operation)
+                      (let [value (vec (:value form))
+                            quoted-form-id
+                            (if (= :abbreviation (:kind form))
+                              (first children)
+                              (second children))]
+                        (when-not (and (= 'quote (first value))
+                                       (= (:value current-instruction)
+                                          (second value))
+                                       quoted-form-id)
+                          (p15-s23-c6c10-plan-shape-fail!
+                           source-path
+                           {:operation operation
+                            :form-id (:form-id form)}))
+                        (p15-s23-c6c10-prefix-occurrences
+                         [:value]
+                         (p15-s23-c6c10-form-value-numeric-occurrences
+                          source-path literal-authentication
+                          quoted-form-id)))
+
+                      (= :do operation)
+                      (merge-children :body (:body current-instruction)
+                                      (vec (rest children)))
+
+                      (= :if operation)
+                      (let [source-arguments (vec (rest children))
+                            explicit-else? (= 3 (count source-arguments))
+                            _ (when-not (or (= 2 (count source-arguments))
+                                            explicit-else?)
+                                (p15-s23-c6c10-plan-shape-fail!
+                                 source-path
+                                 {:operation operation
+                                  :form-id (:form-id form)
+                                  :source-argument-count
+                                  (count source-arguments)}))]
+                        (p15-s23-c6c10-merge-occurrences
+                         (p15-s23-c6c10-prefix-occurrences
+                          [:test]
+                          (walk (:test current-instruction)
+                                (nth source-arguments 0)))
+                         (p15-s23-c6c10-prefix-occurrences
+                          [:then]
+                          (walk (:then current-instruction)
+                                (nth source-arguments 1)))
+                         (if explicit-else?
+                           (p15-s23-c6c10-prefix-occurrences
+                            [:else]
+                            (walk (:else current-instruction)
+                                  (nth source-arguments 2)))
+                           (do
+                             (when-not (= {:op :literal :value nil}
+                                          (:else current-instruction))
+                               (p15-s23-c6c10-plan-shape-fail!
+                                source-path
+                                {:operation operation
+                                 :implicit-else
+                                 (:else current-instruction)}))
+                             {}))))
+
+                      (= :let operation)
+                      (let [binding-form (form! (second children))
+                            binding-child-ids (:children binding-form)
+                            pairs (partition 2 binding-child-ids)
+                            plan-bindings (:bindings current-instruction)
+                            body-form-ids (vec (drop 2 children))]
+                        (when-not (and (= :vector (:kind binding-form))
+                                       (even? (count binding-child-ids))
+                                       (= (count pairs)
+                                          (count plan-bindings)))
+                          (p15-s23-c6c10-plan-shape-fail!
+                           source-path
+                           {:operation operation
+                            :form-id (:form-id form)
+                            :binding-form-id (:form-id binding-form)}))
+                        (p15-s23-c6c10-merge-occurrences
+                         (apply
+                          p15-s23-c6c10-merge-occurrences
+                          (map-indexed
+                           (fn [index [[name-id expression-id] binding]]
+                             (when-not (= (:name binding)
+                                          (:value (form! name-id)))
+                               (p15-s23-c6c10-plan-shape-fail!
+                                source-path
+                                {:operation operation
+                                 :binding-index index
+                                 :name-form-id name-id}))
+                             (p15-s23-c6c10-prefix-occurrences
+                              [:bindings index :expr]
+                              (walk (:expr binding) expression-id)))
+                           (map vector pairs plan-bindings)))
+                         (merge-children :body (:body current-instruction)
+                                         body-form-ids)))
+
+                      (contains? #{:println :builtin-call :function-call}
+                                 operation)
+                      (merge-children :args (:args current-instruction)
+                                      (vec (rest children)))
+
+                      (= :vector-literal operation)
+                      (merge-children :items (:items current-instruction)
+                                      (vec children))
+
+                      (= :set-literal operation)
+                      (let [ordered-child-ids
+                            (sort-by
+                             (fn [child-id]
+                               (p15-s23-c6c10-stage2-order-key
+                                (:value (form! child-id))))
+                             children)]
+                        (merge-children :items (:items current-instruction)
+                                        (vec ordered-child-ids)))
+
+                      (= :map-literal operation)
+                      (let [source-pairs (partition 2 children)
+                            ordered-pairs
+                            (sort-by
+                             (fn [[key-id value-id]]
+                               (p15-s23-c6c10-stage2-order-key
+                                [(:value (form! key-id))
+                                 (:value (form! value-id))]))
+                             source-pairs)
+                            plan-entries (:entries current-instruction)]
+                        (when-not (= (count ordered-pairs)
+                                     (count plan-entries))
+                          (p15-s23-c6c10-plan-shape-fail!
+                           source-path
+                           {:operation operation
+                            :form-id (:form-id form)
+                            :entry-count (count plan-entries)
+                            :source-pair-count (count ordered-pairs)}))
+                        (apply
+                         p15-s23-c6c10-merge-occurrences
+                         (map-indexed
+                          (fn [index [[key-id value-id] entry]]
+                            (p15-s23-c6c10-merge-occurrences
+                             (p15-s23-c6c10-prefix-occurrences
+                              [:entries index :key]
+                              (walk (:key entry) key-id))
+                             (p15-s23-c6c10-prefix-occurrences
+                              [:entries index :value]
+                              (walk (:value entry) value-id))))
+                          (map vector ordered-pairs plan-entries))))
+
+                        :else {}))
+                    expected
+                    (p15-s23-c6c10-collect-numeric-occurrences
+                     [] current-instruction)
+                    observed (update-vals occurrences :descriptor)]
+                (when-not (= expected observed)
+                  (p15-s23-c6c10-plan-shape-fail!
+                   source-path
+                   {:operation operation
+                    :form-id (:form-id form)
+                    :expected-occurrences expected
+                    :observed-occurrences observed}))
+                occurrences))]
+      (walk instruction source-form-id))))
+
+(defn p15-s23-c6c10-main-source-body
+  [source-path literal-authentication]
+  (let [forms-by-id (:forms-by-id literal-authentication)
+        candidates
+        (filterv
+         (fn [form]
+           (let [value (:value form)]
+             (and (nil? (:parent-form-id form))
+                  (seq? value)
+                  (= 'defn (first value))
+                  (= 'main (second value)))))
+         (vals forms-by-id))]
+    (when-not (= 1 (count candidates))
+      (p15-s23-c6c10-plan-shape-fail!
+       source-path {:main-form-candidates (mapv :form-id candidates)}))
+    (let [main-root (first candidates)
+          definition-form
+          (if (= :metadata-wrapper (:kind main-root))
+            (get forms-by-id (last (:children main-root)))
+            main-root)]
+      {:main-root main-root
+       :definition-form definition-form
+       :body-form-ids (vec (drop 3 (:children definition-form)))})))
+
+(defn p15-s23-c6c10-normalize-deferred-ratios-in-plan
+  [source-path literal-authentication raw-plan]
+  (let [body-form-ids
+        (:body-form-ids
+         (p15-s23-c6c10-main-source-body
+          source-path literal-authentication))
+        instructions (get-in raw-plan [:functions 'main :instructions])]
+    (when-not (= (count body-form-ids) (count instructions))
+      (p15-s23-c6c10-plan-shape-fail!
+       source-path
+       {:normalization-operation :function-body
+        :body-form-count (count body-form-ids)
+        :instruction-count (count instructions)}))
+    (assoc-in
+     raw-plan [:functions 'main :instructions]
+     (mapv #(p15-s23-c6c10-normalize-deferred-ratio-instruction
+             source-path literal-authentication %1 %2)
+           instructions body-form-ids))))
+
+(defn p15-s23-c6c10-private-stage2-plan-occurrences
+  [source-path literal-authentication plan]
+  (let [forms-by-id (:forms-by-id literal-authentication)
+        main-source
+        (p15-s23-c6c10-main-source-body source-path literal-authentication)
+        main-root (:main-root main-source)
+        body-form-ids (:body-form-ids main-source)
+        main-plan (get-in plan [:functions 'main])
+        body (:body main-plan)
+        instructions (:instructions main-plan)
+        _ (when-not (and (= (count body-form-ids) (count body))
+                         (= (count body-form-ids) (count instructions))
+                         (= (vec body)
+                            (mapv #(get-in forms-by-id [% :value])
+                                  body-form-ids)))
+            (p15-s23-c6c10-plan-shape-fail!
+             source-path
+             {:main-form-id (:form-id main-root)
+              :body-form-ids body-form-ids
+              :plan-body-count (count body)
+              :instruction-count (count instructions)}))
+        body-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (map-indexed
+          (fn [index form-id]
+            (p15-s23-c6c10-prefix-occurrences
+             [:plan :functions 'main :body index]
+             (p15-s23-c6c10-form-value-numeric-occurrences
+              source-path literal-authentication form-id)))
+          body-form-ids))
+        instruction-occurrences
+        (apply
+         p15-s23-c6c10-merge-occurrences
+         (map-indexed
+          (fn [index [instruction form-id]]
+            (p15-s23-c6c10-prefix-occurrences
+             [:plan :functions 'main :instructions index]
+             (p15-s23-c6c10-instruction-numeric-occurrences
+              source-path literal-authentication instruction form-id)))
+          (map vector instructions body-form-ids)))]
+    (p15-s23-c6c10-merge-occurrences
+     body-occurrences instruction-occurrences)))
+
+(defn p15-s23-c6c10-project-plan
+  [source-path source-content-hash literal-authentication raw-plan]
+  (let [raw-plan
+        (p15-s23-c6c10-normalize-deferred-ratios-in-plan
+         source-path literal-authentication raw-plan)
+        raw-main (get-in raw-plan [:functions 'main])
+        projected-main
+        (-> (select-keys raw-main p15-s23-c6c10-function-projection-keys)
+            (update :binding select-keys
+                    p15-s23-c6c10-binding-projection-keys))
+        selected
+        (-> (select-keys raw-plan p15-s23-c6c10-plan-projection-keys)
+            (assoc :functions {'main projected-main})
+            (update :source select-keys [:sha256])
+            (update :module select-keys
+                    [:capabilities :module :exports :effects
+                     :safety :target :profile]))
+        neutral (p15-s23-c6c10-path-neutral-value
+                 source-content-hash selected)
+        plan-authentication
+        (p15-s23-c6c10-authentication-with-occurrences
+         literal-authentication :private-stage2-plan
+         (p15-s23-c6c10-private-stage2-plan-occurrences
+          source-path literal-authentication neutral))
+        plan-id
+        (p15-s23-c6c10-authenticated-semantic-digest
+         source-path plan-authentication :private-stage2-plan
+         {:domain :gravity/c6-c10-private-stage2-plan-v1
+          :plan (dissoc neutral :plan-id)})]
+    (assoc neutral :plan-id plan-id)))
+
+(defn p15-s23-c6c10-project-authoritative-module
+  [source-content-hash raw-module front-end]
+  (p15-s23-c6c10-path-neutral-value
+   source-content-hash
+   (merge {:requires [] :imports [] :providers []
+           :metadata {} :doc nil}
+          (select-keys raw-module
+                       [:module :profile :target :effects :capabilities
+                        :exports :safety :requires :imports :providers
+                        :metadata :doc])
+          {:forms (vec (rest (:forms front-end)))})))
+
+(defn- p15-s23-c6c10-private-stage2-plan
+  [emitter source-path source-text authoritative-module]
+  ;; The module is parsed exactly once from genuine C2/C3 forms.  Invoke only
+  ;; the pinned Gravity compiler artifact's construction seam: public P1/math,
+  ;; effect, capability, and safety admission belongs after this boundary to
+  ;; the Gravity C6-C10 module.
+  (let [function-table (stage0-function-table authoritative-module)]
+    (p15-s23-stage2-construct-emitted-core-plan
+     emitter source-path source-text authoritative-module function-table)))
+
+(defn- p15-s23-c6c10-private-ingress-products
+  [source-path source-text]
+  (when-not (and (string? source-path)
+                 (qst-or-gravity-source? source-path)
+                 (string? source-text))
+    (p15-s23-c6c10-host-fail!
+     "C6-CORE-SHAPE"
+     (if (string? source-path) source-path "<c6-c10>")
+     :co-canonical-source-path-and-text
+     {:source-path source-path}))
+  ;; C2/C3 construction is deliberately first and occurs exactly once under
+  ;; the actual normative project context.  The private projection then
+  ;; rebuilds every path-sensitive derived hash rather than lying about the
+  ;; source unit's project-relative path or parsing a virtual second source.
+  (binding [*print-length* nil
+            *print-level* nil
+            *print-meta* false
+            *print-dup* false
+            *print-readably* true
+            *print-namespace-maps* false]
+    (let [raw-front-end
+          (p15-s23-stage2-c2-c3-front-end-products
+           source-path source-text
+           (reader-project-context-for-source source-path)
+           true)
+          source-content-hash
+          (get-in raw-front-end [:source-unit-record :bytes-hash])
+          literal-authentication
+          (p15-s23-c6c10-literal-authentication source-path raw-front-end)
+          front-end
+          (p15-s23-c6c10-project-front-end source-path raw-front-end)
+          _ (validate-ns-syntax! source-path (:forms raw-front-end))
+          raw-module (parse-module source-path (:forms raw-front-end))
+          emitter-rule
+          (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
+          raw-plan
+          (p15-s23-c6c10-private-stage2-plan
+           (:emitter emitter-rule) source-path source-text raw-module)
+          plan
+          (p15-s23-c6c10-project-plan
+           source-path source-content-hash literal-authentication raw-plan)
+          authoritative-module
+          (p15-s23-c6c10-project-authoritative-module
+           source-content-hash raw-module front-end)
+          carrier-subject
+          {:front-end-products front-end
+           :stage2-plan plan
+           :authoritative-module authoritative-module}
+          carrier-validation
+          (p15-s23-c6c10-carrier-validation source-path carrier-subject)]
+      {:source-content-hash source-content-hash
+       :front-end-products front-end
+       :stage2-plan plan
+       :authoritative-module authoritative-module
+       :carrier-validation carrier-validation
+       :raw-plan-id (:plan-id raw-plan)
+       :plan-emitter-rule
+       {:source-rule-hash (:source-rule-hash emitter-rule)
+        :rule-record (:rule-record emitter-rule)}})))
+
+(defn p15-s23-c6c10-resolve-source-path
+  []
+  (let [relative p15-s23-c6c10-source-relative-path
+        classpath-roots
+        (keep (fn [entry]
+                (let [file (java.io.File. entry)]
+                  (when (.isDirectory file) file)))
+              (str/split (System/getProperty "java.class.path" "")
+                         (re-pattern (java.io.File/pathSeparator))))
+        roots (distinct
+               (cons (java.io.File. (System/getProperty "user.dir"))
+                     classpath-roots))]
+    (or (some (fn [root]
+                (loop [directory root]
+                  (let [candidate (java.io.File. directory relative)]
+                    (cond
+                      (.isFile candidate) (.getPath candidate)
+                      (.getParentFile directory)
+                      (recur (.getParentFile directory))
+                      :else nil))))
+              roots)
+        relative)))
+
+(defn p15-s23-c6c10-function-order-key
+  [source-path function-name]
+  (p15-s23-c6c10-canonical-sort-key
+   (:form (p15-s23-c6c10-canonical-record
+           source-path function-name))))
+
+(defn p15-s23-c6c10-function-merkle-manifest
+  [source-path source-content-hash functions]
+  (when-not (and (map? functions)
+                 (<= (count functions) 256)
+                 (every? symbol? (keys functions))
+                 (every? map? (vals functions)))
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :bounded-compiled-function-table
+     {:observed-function-count
+      (when (map? functions) (count functions))}))
+  (let [ordered-names
+        (vec (sort-by #(p15-s23-c6c10-function-order-key
+                        source-path %)
+                      (keys functions)))
+        records
+        (mapv
+         (fn [function-name]
+           (let [definition
+                 (p15-s23-c6c10-path-neutral-value
+                  source-content-hash (get functions function-name))
+                 shape (select-keys definition [:arity :params])]
+             {:name function-name
+              :shape shape
+              :definition-digest
+              (p15-s23-c6c10-canonical-digest
+               source-path
+               {:domain :gravity/c6-c10-compiled-function-v1
+                :name function-name
+                :definition definition})}))
+         ordered-names)
+        chunks
+        (mapv
+         (fn [index chunk-records]
+           (let [records (vec chunk-records)
+                 chunk-base
+                 {:domain :gravity/c6-c10-function-chunk-v1
+                  :index index
+                  :records records}]
+             {:index index
+              :count (count records)
+              :records records
+              :chunk-digest
+              (p15-s23-c6c10-canonical-digest
+               source-path chunk-base)}))
+         (range)
+         (partition-all 64 records))
+        root-input
+        {:domain :gravity/c6-c10-function-manifest-v1
+         :function-count (count records)
+         :chunk-size 64
+         :chunks (mapv #(select-keys %
+                                    [:index :count :chunk-digest])
+                       chunks)}]
+    {:function-count (count records)
+     :chunk-size 64
+     :chunk-count (count chunks)
+     :chunks chunks
+     :root-input root-input
+     :root-digest
+     (p15-s23-c6c10-canonical-digest source-path root-input)}))
+
+(defn p15-s23-c6c10-plan-pin-input
+  [source-content-hash plan function-manifest]
+  {:domain :gravity/c6-c10-compiled-plan-binding-v1
+   :source-content-hash source-content-hash
+   :function-count (:function-count function-manifest)
+   :function-manifest-root (:root-digest function-manifest)
+   :plan
+   (p15-s23-c6c10-path-neutral-value
+    source-content-hash
+    (-> plan
+        (dissoc :functions :plan-id)
+        (update :source dissoc :path)
+        (update :module dissoc :source-path)))})
+
+(defn p15-s23-c6c10-compile-source-binding
+  [request-source]
+  (let [source-path (p15-s23-c6c10-resolve-source-path)
+        source-file (java.io.File. source-path)]
+    (when-not (.isFile source-file)
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" request-source :pinned-gravity-c6-c10-source-present
+       {:builder-source source-path}))
+    (binding [*print-length* nil
+              *print-level* nil
+              *print-meta* false
+              *print-dup* false
+              *print-readably* true
+              *print-namespace-maps* false]
+      (let [source-bytes
+            (java.nio.file.Files/readAllBytes (.toPath source-file))
+          source-content-hash
+          (str "sha256:" (sha256-bytes-hex source-bytes))
+          _
+          (when-not (and (= p15-s23-c6c10-source-byte-count
+                            (alength source-bytes))
+                         (= p15-s23-c6c10-expected-source-content-hash
+                            source-content-hash))
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" request-source
+             :pinned-gravity-c6-c10-source-bytes
+             {:builder-source source-path
+              :expected-byte-count p15-s23-c6c10-source-byte-count
+              :actual-byte-count (alength source-bytes)
+              :expected-source-content-hash
+              p15-s23-c6c10-expected-source-content-hash
+              :actual-source-content-hash source-content-hash}))
+          source-text
+          (try
+            (let [decoder
+                  (doto (.newDecoder
+                         java.nio.charset.StandardCharsets/UTF_8)
+                    (.onMalformedInput
+                     java.nio.charset.CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter
+                     java.nio.charset.CodingErrorAction/REPORT))]
+              (.toString
+               (.decode decoder (java.nio.ByteBuffer/wrap source-bytes))))
+            (catch java.nio.charset.CharacterCodingException ex
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" request-source
+               :strict-utf8-pinned-gravity-c6-c10-source
+               {:builder-source source-path
+                :cause-message (.getMessage ex)})))
+          emitter-rule
+          (c-backend-stage2-plan-emitter-source-rule!
+           request-source :jvm)
+          emitter (:emitter emitter-rule)
+          plan
+          (p15-s23-stage2-compiler-artifact-plan
+           emitter source-path source-text)
+          function-manifest
+          (p15-s23-c6c10-function-merkle-manifest
+           source-path source-content-hash (:functions plan))
+          plan-pin-input
+          (p15-s23-c6c10-plan-pin-input
+           source-content-hash plan function-manifest)
+          plan-semantic-hash
+          (p15-s23-c6c10-canonical-digest source-path plan-pin-input)
+          builder-semantic-hash
+          (p15-s23-c6c10-canonical-digest
+           source-path
+           {:domain :gravity/c6-c10-exported-builder-v1
+            :source-content-hash source-content-hash
+            :definition
+            (p15-s23-c6c10-path-neutral-value
+             source-content-hash
+             (get-in plan [:functions p15-s23-c6c10-builder-function]))})
+          verifier-semantic-hash
+          (p15-s23-c6c10-canonical-digest
+           source-path
+           {:domain :gravity/c6-c10-exported-verifier-v1
+            :source-content-hash source-content-hash
+            :definition
+            (p15-s23-c6c10-path-neutral-value
+             source-content-hash
+             (get-in plan [:functions p15-s23-c6c10-verifier-function]))})
+          observed-shapes
+          (into {}
+                (map (fn [[function-name _]]
+                       [function-name
+                        (select-keys
+                         (get-in plan [:functions function-name])
+                         [:arity :params])]))
+                p15-s23-c6c10-required-functions)]
+      {:kind :gravity/p15-s23-c6-c10-source-binding
+       :status :complete
+       :request-source request-source
+       :source-path source-path
+       :source-byte-count (alength source-bytes)
+       :source-content-hash source-content-hash
+       :legacy-plan-id (:plan-id plan)
+       :plan-semantic-hash plan-semantic-hash
+       :functions-semantic-hash (:root-digest function-manifest)
+       :builder-semantic-hash builder-semantic-hash
+       :verifier-semantic-hash verifier-semantic-hash
+       :function-shapes observed-shapes
+       :function-manifest function-manifest
+       :plan plan}))))
+
+(defn p15-s23-c6c10-validate-source-binding!
+  [binding]
+  (when-not
+   (and (= :complete (:status binding))
+        (= p15-s23-c6c10-source-byte-count
+           (:source-byte-count binding))
+        (= p15-s23-c6c10-expected-source-content-hash
+           (:source-content-hash binding))
+        (= p15-s23-c6c10-expected-plan-semantic-hash
+           (:plan-semantic-hash binding))
+        (= p15-s23-c6c10-expected-functions-semantic-hash
+           (:functions-semantic-hash binding))
+        (= p15-s23-c6c10-expected-builder-semantic-hash
+           (:builder-semantic-hash binding))
+        (= p15-s23-c6c10-expected-verifier-semantic-hash
+           (:verifier-semantic-hash binding))
+        (= p15-s23-c6c10-required-functions
+           (:function-shapes binding))
+        (= 138 (get-in binding [:function-manifest :function-count]))
+        (<= (apply max 0
+                   (map :count
+                        (get-in binding
+                                [:function-manifest :chunks])))
+            64))
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" (:request-source binding)
+     :exact-pinned-gravity-c6-c10-source-binding
+     (dissoc binding :plan :function-manifest)))
+  binding)
+
+(defn p15-s23-c6c10-source-binding!
+  [request-source]
+  ;; Authenticity is a fresh replay boundary.  Caching a previously validated
+  ;; map would let source tampering, resolver substitution, or CWD changes
+  ;; bypass raw-byte pinning on later calls.
+  (p15-s23-c6c10-validate-source-binding!
+   (p15-s23-c6c10-compile-source-binding request-source)))
+
+(def p15-s23-c6c10-digest-request-keys
+  #{:algorithm :depends-on :encoding :key :ordinal :preimage})
+
+(defn p15-s23-c6c10-digest-ref-shape?
+  "Recognize only the reserved one-key request reference shape.  Maps that
+  merely contain :digest-ref alongside another key remain ordinary semantic
+  maps and are traversed normally."
+  [value]
+  (and (map? value)
+       (= #{:digest-ref} (set (keys value)))))
+
+(defn p15-s23-c6c10-exact-digest-ref-ordinal!
+  [source-path value request-count consumer-ordinal]
+  (when-not (p15-s23-c6c10-digest-ref-shape? value)
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :exact-one-key-digest-reference
+     {:observed value}))
+  (let [ordinal (:digest-ref value)]
+    (when-not (and (integer? ordinal)
+                   (<= 0 ordinal)
+                   (< ordinal request-count)
+                   (or (nil? consumer-ordinal)
+                       (< ordinal consumer-ordinal)))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :bounded-prior-digest-reference
+       {:digest-ref ordinal
+        :consumer-ordinal consumer-ordinal
+        :request-count request-count}))
+    ordinal))
+
+(defn p15-s23-c6c10-collect-digest-ref-ordinals!
+  [source-path value request-count consumer-ordinal]
+  (letfn [(collect [item ordinals]
+            (cond
+              (p15-s23-c6c10-digest-ref-shape? item)
+              (conj ordinals
+                    (p15-s23-c6c10-exact-digest-ref-ordinal!
+                     source-path item request-count consumer-ordinal))
+
+              (map? item)
+              (reduce (fn [result [key child]]
+                        (collect child (collect key result)))
+                      ordinals
+                      item)
+
+              (or (vector? item) (set? item) (list? item))
+              (reduce (fn [result child]
+                        (collect child result))
+                      ordinals
+                      item)
+
+              :else ordinals))]
+    (collect value [])))
+
+(defn p15-s23-c6c10-canonical-identity
+  [source-path value]
+  (:form (p15-s23-c6c10-canonical-record source-path value)))
+
+(defn p15-s23-c6c10-unique-resolved-values!
+  [source-path missing-fact values]
+  (let [canonical-identities
+        (mapv #(p15-s23-c6c10-canonical-identity source-path %) values)]
+    ;; Canonical identity separates vector/list and every scalar type.  The
+    ;; second check is also required because Clojure maps and sets would merge
+    ;; certain canonically distinct but host-equal values during construction.
+    (when-not (and (= (count values)
+                      (count (distinct canonical-identities)))
+                   (= (count values)
+                      (count (distinct values))))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path missing-fact
+       {:value-count (count values)
+        :canonical-identity-count
+        (count (distinct canonical-identities))
+        :host-equality-count (count (distinct values))})))
+  values)
+
+(defn p15-s23-c6c10-resolve-digest-references!
+  [source-path value request-count consumer-ordinal resolved-digests]
+  (when-not
+   (and (vector? resolved-digests)
+        (= (count resolved-digests)
+           (if (nil? consumer-ordinal)
+             request-count
+             consumer-ordinal))
+        (every? #(and (string? %)
+                      (boolean (re-matches #"sha256:[0-9a-f]{64}" %)))
+                resolved-digests))
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" source-path :exact-prior-resolved-digest-vector
+     {:request-count request-count
+      :consumer-ordinal consumer-ordinal
+      :resolved-digest-count
+      (when (vector? resolved-digests) (count resolved-digests))}))
+  (letfn [(resolve-value [item]
+            (cond
+              (p15-s23-c6c10-digest-ref-shape? item)
+              (let [ordinal
+                    (p15-s23-c6c10-exact-digest-ref-ordinal!
+                     source-path item request-count consumer-ordinal)
+                    digest (get resolved-digests ordinal ::missing)]
+                (when (= ::missing digest)
+                  (p15-s23-c6c10-host-fail!
+                   "C6-VERIFY" source-path :resolved-prior-digest-reference
+                   {:digest-ref ordinal
+                    :consumer-ordinal consumer-ordinal}))
+                digest)
+
+              (map? item)
+              (let [entries
+                    (mapv (fn [[key child]]
+                            [(resolve-value key) (resolve-value child)])
+                          item)
+                    keys (mapv first entries)]
+                (p15-s23-c6c10-unique-resolved-values!
+                 source-path :collision-free-resolved-map-keys keys)
+                (into {} entries))
+
+              (vector? item)
+              (mapv resolve-value item)
+
+              (set? item)
+              (let [items (mapv resolve-value item)]
+                (p15-s23-c6c10-unique-resolved-values!
+                 source-path :collision-free-resolved-set-items items)
+                (into #{} items))
+
+              (list? item)
+              (apply list (map resolve-value item))
+
+              :else item))]
+    (resolve-value value)))
+
+(def p15-s23-c6c10-accepted-builder-result-keys
+  #{:artifact-template :authority :diagnostics :digest-graph-root
+    :digest-graph-roots :digest-requests :status})
+
+(def p15-s23-c6c10-rejected-builder-result-keysets
+  #{#{:artifact-template :containment :diagnostics :digest-graph-roots
+      :digest-requests :fatal? :status}
+    #{:artifact-template :containment :diagnostics :digest-graph-roots
+      :digest-requests :fatal? :propagated-upstream? :status}})
+
+(defn p15-s23-c6c10-validate-builder-result-canonical-carrier!
+  [source-path raw-result]
+  (let [requests (:digest-requests raw-result)]
+    (when-not
+     (and (map? raw-result)
+          (vector? requests)
+          (contains? p15-s23-c6c10-canonical-vector-classes
+                     (.getName (class requests)))
+          (nil? (meta requests))
+          (<= (count requests) p15-s23-c6c10-max-digest-requests))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :bounded-digest-request-vector
+       {:request-count (when (vector? requests) (count requests))}))
+    ;; The request graph itself is the one schema-declared exception to the
+    ;; ordinary width-128 carrier rule.  Validate its outer vector separately,
+    ;; while sharing one aggregate budget across every request/preimage and all
+    ;; other result fields.
+    (let [stats (atom {:nodes 1 :maximum-depth 0 :maximum-width 0
+                       :scalar-bytes 0 :maximum-scalar-bytes 0
+                       :maximum-integer-bits 0})]
+      (p15-s23-c6c10-canonical-form*
+       source-path stats 0 (assoc raw-result :digest-requests []))
+      (doseq [request requests]
+        (p15-s23-c6c10-canonical-form*
+         source-path stats 2 request))
+      @stats)))
+
+(defn p15-s23-c6c10-validate-builder-result-envelope!
+  [source-path raw-result]
+  ;; This establishes bounded, metadata-free canonical carrier classes before
+  ;; any recursive graph traversal below.
+  (p15-s23-c6c10-validate-builder-result-canonical-carrier!
+   source-path raw-result)
+  (let [status (:status raw-result)
+        keyset (when (map? raw-result) (set (keys raw-result)))]
+    (when-not
+     (and (map? raw-result)
+          (contains? #{:accepted :rejected} status)
+          (if (= :accepted status)
+            (and (= p15-s23-c6c10-accepted-builder-result-keys keyset)
+                 (map? (:artifact-template raw-result))
+                 (vector? (:diagnostics raw-result))
+                 (empty? (:diagnostics raw-result))
+                 (= {:semantic-owner :gravity-source
+                     :host-role :generic-validation-hashing-and-instantiation
+                     :scope :bounded-pure-c6-c10
+                     :self-hosted? false}
+                    (:authority raw-result)))
+            (and (contains?
+                  p15-s23-c6c10-rejected-builder-result-keysets keyset)
+                 (true? (:fatal? raw-result))
+                 (nil? (:artifact-template raw-result))
+                 (vector? (:diagnostics raw-result))
+                 (not (empty? (:diagnostics raw-result)))
+                 (map? (:containment raw-result)))))
+     (p15-s23-c6c10-host-fail!
+      "C6-VERIFY" source-path :exact-gravity-builder-result-envelope
+      {:status status :keys keyset}))
+    raw-result))
+
+(defn p15-s23-c6c10-request-graph-reachable-ordinals
+  [requests root-ordinals]
+  (loop [pending (vec root-ordinals)
+         reachable #{}]
+    (if (empty? pending)
+      reachable
+      (let [ordinal (peek pending)
+            pending (pop pending)]
+        (if (contains? reachable ordinal)
+          (recur pending reachable)
+          (recur (into pending (:depends-on (get requests ordinal)))
+                 (conj reachable ordinal)))))))
+
+(defn p15-s23-c6c10-validate-digest-request-graph!
+  [source-path raw-result]
+  (p15-s23-c6c10-validate-builder-result-envelope!
+   source-path raw-result)
+  (let [requests (:digest-requests raw-result)
+        roots (:digest-graph-roots raw-result)
+        request-count (when (vector? requests) (count requests))]
+    (when-not (and (vector? requests)
+                   (<= request-count p15-s23-c6c10-max-digest-requests)
+                   (vector? roots)
+                   (if (= :accepted (:status raw-result))
+                     (and (pos? request-count)
+                          (= 1 (count roots))
+                          (= (:digest-graph-root raw-result) (first roots)))
+                     (if (contains? raw-result :propagated-upstream?)
+                       (and (empty? requests)
+                            (empty? roots)
+                            (true? (:propagated-upstream? raw-result)))
+                       (and (pos? request-count)
+                            (= 1 (count roots))
+                            (= 1 (count (:diagnostics raw-result)))))))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :bounded-rooted-digest-request-graph
+       {:status (:status raw-result)
+        :request-count request-count
+        :root-count (when (vector? roots) (count roots))}))
+    (let [preimage-identities
+          (mapv
+           (fn [expected-ordinal request]
+             (when-not
+              (and (map? request)
+                   (= p15-s23-c6c10-digest-request-keys
+                      (set (keys request)))
+                   (= expected-ordinal (:key request))
+                   (= expected-ordinal (:ordinal request))
+                   (= :sha256 (:algorithm request))
+                   (= :gravity/canonical-edn-v1 (:encoding request))
+                   (vector? (:depends-on request)))
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" source-path :exact-ordered-digest-request-schema
+               {:expected-ordinal expected-ordinal
+                :observed-request
+                (when (map? request)
+                  (dissoc request :preimage))}))
+             (let [dependencies (:depends-on request)
+                   references
+                   (p15-s23-c6c10-collect-digest-ref-ordinals!
+                    source-path (:preimage request) request-count
+                    expected-ordinal)]
+               (when-not
+                (and (= dependencies
+                        (vec (sort (distinct dependencies))))
+                     (every? #(and (integer? %)
+                                   (<= 0 %)
+                                   (< % expected-ordinal))
+                             dependencies)
+                     (= (set dependencies) (set references)))
+                 (p15-s23-c6c10-host-fail!
+                  "C6-VERIFY" source-path
+                  :exact-prior-digest-request-dependency-closure
+                  {:ordinal expected-ordinal
+                   :declared-dependencies dependencies
+                   :observed-references (vec (sort (set references)))})))
+             (p15-s23-c6c10-canonical-identity
+              source-path (:preimage request)))
+           (range request-count)
+           requests)
+          root-ordinals
+          (mapv #(p15-s23-c6c10-exact-digest-ref-ordinal!
+                  source-path % request-count nil)
+                roots)]
+      (when-not (= root-ordinals (vec (sort (distinct root-ordinals))))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :unique-ordered-digest-graph-roots
+         {:root-ordinals root-ordinals}))
+      (when-not (= request-count (count (distinct preimage-identities)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :unique-raw-digest-request-preimages
+         {:request-count request-count
+          :unique-preimage-count (count (distinct preimage-identities))}))
+      (when (pos? request-count)
+        (let [reachable
+              (p15-s23-c6c10-request-graph-reachable-ordinals
+               requests root-ordinals)]
+          (when-not (= (set (range request-count)) reachable)
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" source-path :root-reachable-digest-request-closure
+             {:request-count request-count
+              :root-ordinals root-ordinals
+              :unreachable-ordinals
+              (vec (sort (remove reachable (range request-count))))}))))
+      (when (= :accepted (:status raw-result))
+        (let [root-ordinal (first root-ordinals)
+              root-request (get requests root-ordinal)
+              root-preimage (:preimage root-request)
+              template (:artifact-template raw-result)]
+          (when-not
+           (and (= root-ordinal (dec request-count))
+                (= #{:domain :semantic-artifact}
+                   (set (keys root-preimage)))
+                (= :gravity/c6-c10-checked-core-artifact-v1
+                   (:domain root-preimage))
+                (= (p15-s23-c6c10-canonical-identity
+                    source-path (:semantic-artifact root-preimage))
+                   (p15-s23-c6c10-canonical-identity
+                    source-path (dissoc template :artifact-id)))
+                (= (p15-s23-c6c10-canonical-identity
+                    source-path (first roots))
+                   (p15-s23-c6c10-canonical-identity
+                    source-path (:artifact-id template))))
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" source-path
+             :root-bound-gravity-artifact-template
+             {:root-ordinal root-ordinal
+              :request-count request-count}))))
+      (when (and (= :rejected (:status raw-result))
+                 (not (contains? raw-result :propagated-upstream?)))
+        (let [root-ordinal (first root-ordinals)
+              root-preimage (:preimage (get requests root-ordinal))
+              diagnostic (first (:diagnostics raw-result))
+              expected-identity
+              {:domain :gravity/c6-c10-diagnostic-v1
+               :rule (:rule diagnostic)
+               :stage (:stage diagnostic)
+               :primary (:primary diagnostic)
+               :involved-artifacts (:involved-artifacts diagnostic)
+               :facts (:facts diagnostic)}]
+          (when-not
+           (and (= root-ordinal (dec request-count))
+                (= (p15-s23-c6c10-canonical-identity
+                    source-path (first roots))
+                   (p15-s23-c6c10-canonical-identity
+                    source-path (:diagnostic-id diagnostic)))
+                (= (p15-s23-c6c10-canonical-identity
+                    source-path expected-identity)
+                   (p15-s23-c6c10-canonical-identity
+                    source-path root-preimage)))
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" source-path
+             :root-bound-gravity-diagnostic-identity
+             {:root-ordinal root-ordinal
+              :request-count request-count}))))
+      {:request-count request-count
+       :root-ordinals root-ordinals
+       :raw-preimage-identities preimage-identities})))
+
+(defn p15-s23-c6c10-resolve-digest-request-graph!
+  [source-path raw-result]
+  (let [{:keys [request-count root-ordinals] :as validation}
+        (p15-s23-c6c10-validate-digest-request-graph!
+         source-path raw-result)
+        requests (:digest-requests raw-result)]
+    (loop [ordinal 0
+           resolved-digests []
+           resolved-preimage-identities []
+           resolved-requests []]
+      (if (= ordinal request-count)
+        (let [root-digests (mapv #(get resolved-digests %) root-ordinals)]
+          {:validation validation
+           :resolved-digests resolved-digests
+           :resolved-requests resolved-requests
+           :root-digests root-digests})
+        (let [request (get requests ordinal)
+              resolved-preimage
+              (p15-s23-c6c10-resolve-digest-references!
+               source-path (:preimage request) request-count ordinal
+               resolved-digests)
+              resolved-identity
+              (p15-s23-c6c10-canonical-identity
+               source-path resolved-preimage)
+              digest
+              (p15-s23-c6c10-canonical-digest
+               source-path resolved-preimage)]
+          (when (or (some #{resolved-identity}
+                          resolved-preimage-identities)
+                    (some #{digest} resolved-digests))
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" source-path
+             :unique-resolved-digest-request-preimages-and-digests
+             {:ordinal ordinal :digest digest}))
+          (recur
+           (inc ordinal)
+           (conj resolved-digests digest)
+           (conj resolved-preimage-identities resolved-identity)
+           (conj resolved-requests
+                 (assoc request
+                        :preimage resolved-preimage
+                        :digest digest))))))))
+
+(defn p15-s23-c6c10-seal-digest-request-result!
+  [source-path raw-result]
+  (let [{:keys [validation resolved-digests resolved-requests root-digests]}
+        (p15-s23-c6c10-resolve-digest-request-graph!
+         source-path raw-result)
+        request-count (:request-count validation)
+        resolve-complete
+        (fn [value]
+          (p15-s23-c6c10-resolve-digest-references!
+           source-path value request-count nil resolved-digests))
+        sealed-template
+        (when (some? (:artifact-template raw-result))
+          (resolve-complete (:artifact-template raw-result)))
+        sealed-diagnostics (resolve-complete (:diagnostics raw-result))
+        resolved-envelope
+        (cond-> (assoc raw-result
+                       :artifact-template sealed-template
+                       :diagnostics sealed-diagnostics
+                       :digest-requests resolved-requests
+                       :digest-graph-roots root-digests)
+          (contains? raw-result :digest-graph-root)
+          (assoc :digest-graph-root (first root-digests)))
+        _
+        (p15-s23-c6c10-validate-builder-result-canonical-carrier!
+         source-path resolved-envelope)
+        residual-refs
+        (p15-s23-c6c10-collect-digest-ref-ordinals!
+         source-path resolved-envelope request-count nil)]
+    (when-not (empty? residual-refs)
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :fully-resolved-digest-reference-closure
+       {:residual-reference-count (count residual-refs)}))
+    (if (= :accepted (:status raw-result))
+      (when-not (and (= 1 (count root-digests))
+                     (= (first root-digests)
+                        (:artifact-id sealed-template)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :sealed-artifact-id-equals-root-digest
+         {:root-digests root-digests
+          :artifact-id (:artifact-id sealed-template)}))
+      (when (seq root-digests)
+        (when-not (= root-digests
+                     (mapv :diagnostic-id sealed-diagnostics))
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path
+           :sealed-diagnostic-ids-equal-root-digests
+           {:root-digests root-digests
+            :diagnostic-ids (mapv :diagnostic-id sealed-diagnostics)}))))
+    (let [request-chunk-digests
+          (mapv
+           (fn [chunk-index chunk]
+             (p15-s23-c6c10-canonical-digest
+              source-path
+              {:domain :gravity/c6-c10-resolved-request-chunk-v1
+               :chunk-index chunk-index
+               :requests (vec chunk)}))
+           (range)
+           (partition-all 128 resolved-requests))
+          graph-proof-base
+          {:domain :gravity/c6-c10-sealed-digest-request-graph-v1
+           :algorithm :sha256
+           :encoding :gravity/canonical-edn-v1
+           :request-count request-count
+           :root-digests root-digests
+           :request-chunk-size 128
+           :request-chunk-digests request-chunk-digests}
+          graph-proof-id
+          (p15-s23-c6c10-canonical-digest
+           source-path graph-proof-base)]
+      {:kind :gravity/p15-s23-c6-c10-sealed-builder-result
+       :status (:status raw-result)
+       :sealed-artifact-template sealed-template
+       :sealed-diagnostics sealed-diagnostics
+       :root-digests root-digests
+       :resolved-digests resolved-digests
+       :resolved-requests resolved-requests
+       :graph-proof (assoc graph-proof-base :graph-proof-id graph-proof-id)
+       :authority (:authority raw-result)
+       :containment (:containment raw-result)
+       :propagated-upstream? (true? (:propagated-upstream? raw-result))})))
+
+(defn p15-s23-c6c10-binding-pins
+  [source-path ingress source-binding]
+  (let [front-end (:front-end-products ingress)
+        integrity (:reader-product-integrity front-end)
+        c2-semantic-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-authenticated-c2-pin-v1
+          :source-content-hash (:source-content-hash ingress)
+          :source-unit-id (:source-unit-id front-end)
+          :incremental-reader-hashes
+          (:incremental-reader-hashes front-end)
+          :reader-product-integrity integrity})
+        reader-integrity-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-reader-integrity-pin-v1
+          :c2-semantic-hash c2-semantic-hash
+          :reader-product-integrity integrity})
+        c3-semantic-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-authenticated-c3-pin-v1
+          :c2-semantic-hash c2-semantic-hash
+          :c3-artifact-id (:c3-artifact-id front-end)
+          :c3-capability-proof (:c3-capability-proof front-end)})
+        plan-semantic-hash
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/c6-c10-authenticated-stage2-plan-pin-v1
+          :c3-semantic-hash c3-semantic-hash
+          :plan-id (get-in ingress [:stage2-plan :plan-id])})]
+    {:c2-semantic-hash c2-semantic-hash
+     :c3-semantic-hash c3-semantic-hash
+     :plan-semantic-hash plan-semantic-hash
+     :reader-integrity-hash reader-integrity-hash
+     :builder-source-hash (:source-content-hash source-binding)
+     :builder-plan-hash (:plan-semantic-hash source-binding)
+     :builder-function-hash (:builder-semantic-hash source-binding)}))
+
+(defn p15-s23-c6c10-private-builder-envelope
+  [source-path ingress source-binding]
+  (let [envelope
+        (assoc
+         (select-keys
+          ingress
+          [:source-content-hash :front-end-products :stage2-plan
+           :authoritative-module :carrier-validation])
+         :kind :gravity/private-fresh-c2-c3-stage2-plan-envelope
+         :scope :bounded-pure-hosted-safe-jvm-source
+         :binding-pins
+         (p15-s23-c6c10-binding-pins
+          source-path ingress source-binding))]
+    envelope))
+
+(defn p15-s23-c6c10-invoke-pinned-source-function!
+  [source-path source-binding function-name arguments boundary]
+  (try
+    (p15-s23-stage2-runtime-execute-function
+     {:engine :gravity-c6-c10-pinned-source-host-runner
+      :compiler-artifact-plan? true}
+     (:plan source-binding)
+     function-name
+     arguments)
+    (catch StackOverflowError error
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :contained-gravity-source-host-stack
+       {:boundary boundary
+        :contained-host-error (.getName (class error))}))
+    (catch clojure.lang.ExceptionInfo exception
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :contained-gravity-source-diagnostic
+       {:boundary boundary
+        :cause-diagnostic (:id (ex-data exception))}))
+    (catch InterruptedException error
+      (.interrupt (Thread/currentThread))
+      (throw error))
+    (catch Exception error
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :contained-gravity-source-host-failure
+       {:boundary boundary
+        :contained-host-error (.getName (class error))}))))
+
+(defn p15-s23-c6c10-gravity-replay-verification!
+  [source-path source-binding envelope raw-result]
+  (let [report
+        (p15-s23-c6c10-invoke-pinned-source-function!
+         source-path source-binding p15-s23-c6c10-verifier-function
+         [envelope (:artifact-template raw-result)
+          (:digest-requests raw-result)]
+         :gravity-source-verifier)
+        expected-keys
+        #{:artifact-template :checks :diagnostics :digest-graph-root
+          :digest-graph-roots :request-count :semantic-authority :status}]
+    (p15-s23-c6c10-canonical-record source-path report)
+    (when-not
+     (and (map? report)
+          (= expected-keys (set (keys report)))
+          (= :passed (:status report))
+          (= :gravity-source (:semantic-authority report))
+          (= (count (:digest-requests raw-result))
+             (:request-count report))
+          (vector? (:diagnostics report))
+          (empty? (:diagnostics report))
+          (vector? (:checks report))
+          (= [:fresh-template-replay
+              :exact-digest-request-replay
+              :bounded-pure-c6-c10-scope]
+             (:checks report))
+          (= (p15-s23-c6c10-canonical-identity
+              source-path (:artifact-template raw-result))
+             (p15-s23-c6c10-canonical-identity
+              source-path (:artifact-template report)))
+          (= (p15-s23-c6c10-canonical-identity
+              source-path (:digest-graph-roots raw-result))
+             (p15-s23-c6c10-canonical-identity
+              source-path (:digest-graph-roots report)))
+          (= (p15-s23-c6c10-canonical-identity
+              source-path (:digest-graph-root raw-result))
+             (p15-s23-c6c10-canonical-identity
+              source-path (:digest-graph-root report))))
+     (p15-s23-c6c10-host-fail!
+      "C6-VERIFY" source-path :fresh-gravity-source-verifier-replay
+      {:status (:status report)
+       :request-count (:request-count report)}))
+    report))
+
+(def p15-s23-c6c10-public-context-keys
+  #{:kind :source-path :source-text :source-content-hash :requested-target})
+
+(def p15-s23-c6c10-physical-artifact-keys
+  #{:target-request-metadata :physical-provenance})
+
+(defn p15-s23-stage2-gravity-checked-core-context
+  [source-path source-text requested-target]
+  (when-not (and (string? source-path)
+                 (qst-or-gravity-source? source-path)
+                 (string? source-text)
+                 (p15-s23-c6c10-valid-unicode-string? source-text)
+                 (<= (utf8-byte-count source-text)
+                     p15-s23-c6c10-max-source-bytes)
+                 (keyword? requested-target))
+    (p15-s23-c6c10-host-fail!
+     "C6-CORE-SHAPE"
+     (if (string? source-path) source-path "<gravity-checked-core>")
+     :bounded-co-canonical-source-context
+     {:source-path source-path
+      :source-text? (string? source-text)
+      :requested-target requested-target}))
+  (p15-s23-c6c10-canonical-record source-path source-path)
+  (p15-s23-c6c10-canonical-record source-path requested-target)
+  {:kind :gravity/p15-s23-stage2-gravity-checked-core-context
+   :source-path source-path
+   :source-text source-text
+   :source-content-hash (str "sha256:" (sha256-hex source-text))
+   :requested-target requested-target})
+
+(defn p15-s23-c6c10-validate-public-context!
+  [context]
+  (let [source-path
+        (if (and (map? context) (string? (:source-path context)))
+          (:source-path context)
+          "<gravity-checked-core>")]
+    (when-not
+     (and (map? context)
+          (nil? (meta context))
+          (contains? p15-s23-c6c10-canonical-map-classes
+                     (.getName (class context)))
+          (= p15-s23-c6c10-public-context-keys
+             (set (keys context)))
+          (= :gravity/p15-s23-stage2-gravity-checked-core-context
+             (:kind context))
+          (= context
+             (p15-s23-stage2-gravity-checked-core-context
+              (:source-path context) (:source-text context)
+              (:requested-target context))))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :exact-public-source-verification-context
+       {:context-keys (when (map? context) (set (keys context)))}))
+    context))
+
+(defn p15-s23-c6c10-throw-sealed-rejection!
+  [source-path sealed-result]
+  (let [diagnostic (or (first (:sealed-diagnostics sealed-result)) {})
+        rule (or (:rule diagnostic) (:id diagnostic) "C6-VERIFY")
+        primary-span (or (get-in diagnostic [:primary :span]) {})
+        public-span (assoc primary-span
+                           :source source-path
+                           :file source-path)]
+    (throw
+     (ex-info
+      (str rule " from Gravity C6-C10 checked-core source")
+      (merge
+       diagnostic
+       {:id rule
+        :rule rule
+        :diagnostic-family :gravity-source-c6-c10
+        :source-span public-span
+        :sealed-diagnostic diagnostic
+        :sealed-diagnostics (:sealed-diagnostics sealed-result)
+        :digest-graph-proof (:graph-proof sealed-result)
+        :clojure-seed-boundary? true
+        :self-hosted? false})))))
+
+(defn p15-s23-c6c10-public-artifact
+  [context source-binding ingress sealed-result]
+  (let [template (:sealed-artifact-template sealed-result)
+        target-request-metadata
+        {:requested-target (:requested-target context)
+         :source-target (:source-target template)
+         :identity-bearing? false
+         :downstream-lowering-required? true}
+        physical-provenance-base
+        {:actual-paths
+         {:source (:source-path context)
+          :gravity-c6-c10-source (:source-path source-binding)}
+         :source-content-hash (:source-content-hash context)
+         :c2-source-unit-id
+         (get-in ingress [:front-end-products :source-unit-id])
+         :c3-artifact-id
+         (get-in ingress [:front-end-products :c3-artifact-id])
+         :binding-pins
+         (p15-s23-c6c10-binding-pins
+          (:source-path context) ingress source-binding)
+         :digest-graph-proof-id
+         (get-in sealed-result [:graph-proof :graph-proof-id])}
+        request-binding-id
+        (p15-s23-c6c10-canonical-digest
+         (:source-path context)
+         {:domain :gravity/c6-c10-physical-request-binding-v1
+          :artifact-id (:artifact-id template)
+          :source-content-hash (:source-content-hash context)
+          :target-request-metadata target-request-metadata
+          :actual-paths (:actual-paths physical-provenance-base)
+          :digest-graph-proof-id
+          (:digest-graph-proof-id physical-provenance-base)})
+        physical-provenance
+        (assoc physical-provenance-base
+               :request-binding-id request-binding-id)]
+    (assoc template
+           :target-request-metadata target-request-metadata
+           :physical-provenance physical-provenance)))
+
+(defn- p15-s23-c6c10-fresh-construction
+  [context]
+  (let [context (p15-s23-c6c10-validate-public-context! context)
+        source-path (:source-path context)
+        source-binding (p15-s23-c6c10-source-binding! source-path)
+        ingress
+        (p15-s23-c6c10-private-ingress-products
+         source-path (:source-text context))
+        envelope
+        (p15-s23-c6c10-private-builder-envelope
+         source-path ingress source-binding)
+        raw-result
+        (p15-s23-c6c10-invoke-pinned-source-function!
+         source-path source-binding p15-s23-c6c10-builder-function
+         [envelope] :gravity-source-builder)
+        sealed-result
+        (p15-s23-c6c10-seal-digest-request-result!
+         source-path raw-result)]
+    (when (= :rejected (:status sealed-result))
+      (p15-s23-c6c10-throw-sealed-rejection!
+       source-path sealed-result))
+    (let [gravity-verification
+          (p15-s23-c6c10-gravity-replay-verification!
+           source-path source-binding envelope raw-result)
+          artifact
+          (p15-s23-c6c10-public-artifact
+           context source-binding ingress sealed-result)]
+      {:artifact artifact
+       :context context
+       :private-envelope envelope
+       :private-source-binding source-binding
+       :raw-result raw-result
+       :sealed-result sealed-result
+       :source-binding (dissoc source-binding :plan :function-manifest)
+       :binding-pins (:binding-pins envelope)
+       :graph-proof (:graph-proof sealed-result)
+       :gravity-verification
+       (select-keys gravity-verification
+                    [:status :request-count :semantic-authority :checks])})))
+
+(defn p15-s23-stage2-gravity-checked-core-source-artifact
+  ([source-path source-text requested-target]
+   (:artifact
+    (p15-s23-c6c10-fresh-construction
+     (p15-s23-stage2-gravity-checked-core-context
+      source-path source-text requested-target))))
+  ([context]
+   (:artifact (p15-s23-c6c10-fresh-construction context))))
+
+(defn p15-s23-c6c10-exact-digest-ref-present?
+  [value]
+  (letfn [(present? [item]
+            (cond
+              (p15-s23-c6c10-digest-ref-shape? item) true
+              (map? item)
+              (boolean
+               (some (fn [[key child]]
+                       (or (present? key) (present? child)))
+                     item))
+              (or (vector? item) (set? item) (list? item))
+              (boolean (some present? item))
+              :else false))]
+    (present? value)))
+
+(defn p15-s23-c6c10-structure-kind
+  [value]
+  (cond
+    (map? value) :map
+    (vector? value) :vector
+    (list? value) :list
+    (set? value) :set
+    :else :scalar))
+
+(declare p15-s23-c6c10-strict-first-mismatch)
+
+(defn p15-s23-c6c10-strict-map-index
+  [source-path value]
+  (into {}
+        (map (fn [[key child]]
+               [(p15-s23-c6c10-canonical-identity source-path key)
+                [key child]]))
+        value))
+
+(defn p15-s23-c6c10-strict-first-mismatch
+  [source-path expected actual path]
+  (let [expected-kind (p15-s23-c6c10-structure-kind expected)
+        actual-kind (p15-s23-c6c10-structure-kind actual)]
+    (cond
+      (not= expected-kind actual-kind)
+      {:path path :expected-kind expected-kind :actual-kind actual-kind}
+
+      (= :map expected-kind)
+      (let [expected-index
+            (p15-s23-c6c10-strict-map-index source-path expected)
+            actual-index
+            (p15-s23-c6c10-strict-map-index source-path actual)
+            expected-keys (set (keys expected-index))
+            actual-keys (set (keys actual-index))]
+        (if (not= expected-keys actual-keys)
+          {:path path
+           :expected-kind :map
+           :actual-kind :map
+           :missing-key-count (count (remove actual-keys expected-keys))
+           :unexpected-key-count (count (remove expected-keys actual-keys))}
+          (some
+           (fn [identity]
+             (let [[key expected-child] (get expected-index identity)
+                   [_ actual-child] (get actual-index identity)]
+               (p15-s23-c6c10-strict-first-mismatch
+                source-path expected-child actual-child
+                (conj path
+                      [:map-key
+                       (p15-s23-c6c10-canonical-digest
+                        source-path key)]))))
+           (sort-by p15-s23-c6c10-canonical-sort-key expected-keys))))
+
+      (contains? #{:vector :list} expected-kind)
+      (if (not= (count expected) (count actual))
+        {:path path
+         :expected-kind expected-kind
+         :actual-kind actual-kind
+         :expected-count (count expected)
+         :actual-count (count actual)}
+        (some identity
+              (map-indexed
+               (fn [index [expected-child actual-child]]
+                 (p15-s23-c6c10-strict-first-mismatch
+                  source-path expected-child actual-child
+                  (conj path index)))
+               (map vector expected actual))))
+
+      (= :set expected-kind)
+      (let [expected-items
+            (set (map #(p15-s23-c6c10-canonical-identity
+                        source-path %) expected))
+            actual-items
+            (set (map #(p15-s23-c6c10-canonical-identity
+                        source-path %) actual))]
+        (when (not= expected-items actual-items)
+          {:path path
+           :expected-kind :set
+           :actual-kind :set
+           :expected-count (count expected)
+           :actual-count (count actual)}))
+
+      :else
+      (when-not (= (p15-s23-c6c10-canonical-identity
+                    source-path expected)
+                   (p15-s23-c6c10-canonical-identity
+                    source-path actual))
+        {:path path :expected-kind :scalar :actual-kind :scalar}))))
+
+(defn p15-s23-c6c10-strict-structure!
+  [source-path expected actual missing-fact]
+  (let [expected-record
+        (p15-s23-c6c10-canonical-record source-path expected)
+        actual-record
+        (p15-s23-c6c10-canonical-record source-path actual)
+        mismatch
+        (p15-s23-c6c10-strict-first-mismatch
+         source-path expected actual [])]
+    (when (or mismatch (not= (:form expected-record) (:form actual-record)))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path missing-fact
+       (or mismatch {:path [] :expected-kind :canonical
+                     :actual-kind :canonical})))
+    {:status :passed
+     :canonical-digest
+     (p15-s23-c6c10-canonical-digest source-path expected)}))
+
+(defn p15-s23-c6c10-canonical-identical?
+  [source-path left right]
+  (= (p15-s23-c6c10-canonical-identity source-path left)
+     (p15-s23-c6c10-canonical-identity source-path right)))
+
+(defn p15-s23-c6c10-rehydrate-candidate-template!
+  [source-path expected-raw expected-sealed candidate-sealed
+   resolved-digests]
+  (let [request-count (count resolved-digests)
+        resolve-complete
+        (fn [value]
+          (p15-s23-c6c10-resolve-digest-references!
+           source-path value request-count nil resolved-digests))]
+    (letfn
+     [(rehydrate [raw sealed candidate]
+        (cond
+          (p15-s23-c6c10-digest-ref-shape? raw)
+          (if (p15-s23-c6c10-canonical-identical?
+               source-path sealed candidate)
+            raw
+            candidate)
+
+          (and (map? raw) (map? sealed) (map? candidate))
+          (let [raw-index
+                (into {}
+                      (map (fn [[raw-key raw-child]]
+                             [(p15-s23-c6c10-canonical-identity
+                               source-path (resolve-complete raw-key))
+                              [raw-key raw-child]]))
+                      raw)
+                sealed-index
+                (p15-s23-c6c10-strict-map-index source-path sealed)
+                entries
+                (mapv
+                 (fn [[candidate-key candidate-child]]
+                   (let [identity
+                         (p15-s23-c6c10-canonical-identity
+                          source-path candidate-key)]
+                     (if (and (contains? raw-index identity)
+                              (contains? sealed-index identity))
+                       (let [[raw-key raw-child] (get raw-index identity)
+                             [sealed-key sealed-child]
+                             (get sealed-index identity)]
+                         [(rehydrate raw-key sealed-key candidate-key)
+                          (rehydrate raw-child sealed-child
+                                     candidate-child)])
+                       [candidate-key candidate-child])))
+                 candidate)
+                keys (mapv first entries)]
+            (p15-s23-c6c10-unique-resolved-values!
+             source-path :collision-free-rehydrated-map-keys keys)
+            (into {} entries))
+
+          (and (contains? #{:vector :list}
+                          (p15-s23-c6c10-structure-kind raw))
+               (contains? #{:vector :list}
+                          (p15-s23-c6c10-structure-kind sealed))
+               (contains? #{:vector :list}
+                          (p15-s23-c6c10-structure-kind candidate))
+               (= (count raw) (count sealed) (count candidate)))
+          (let [values
+                (mapv (fn [[raw-child sealed-child candidate-child]]
+                        (rehydrate raw-child sealed-child candidate-child))
+                      (map vector raw sealed candidate))]
+            (if (list? candidate) (apply list values) values))
+
+          (and (set? raw) (set? sealed) (set? candidate))
+          (let [raw-index
+                (into {}
+                      (map (fn [raw-item]
+                             [(p15-s23-c6c10-canonical-identity
+                               source-path (resolve-complete raw-item))
+                              raw-item]))
+                      raw)
+                sealed-index
+                (into {}
+                      (map (fn [sealed-item]
+                             [(p15-s23-c6c10-canonical-identity
+                               source-path sealed-item)
+                              sealed-item]))
+                      sealed)
+                items
+                (mapv
+                 (fn [candidate-item]
+                   (let [identity
+                         (p15-s23-c6c10-canonical-identity
+                          source-path candidate-item)]
+                     (if (and (contains? raw-index identity)
+                              (contains? sealed-index identity))
+                       (rehydrate (get raw-index identity)
+                                  (get sealed-index identity)
+                                  candidate-item)
+                       candidate-item)))
+                 candidate)]
+            (p15-s23-c6c10-unique-resolved-values!
+             source-path :collision-free-rehydrated-set-items items)
+            (into #{} items))
+
+          :else candidate))]
+      (rehydrate expected-raw expected-sealed candidate-sealed))))
+
+(defn p15-s23-c6c10-gravity-candidate-verification!
+  [source-path fresh candidate-raw]
+  (let [source-binding (:private-source-binding fresh)
+        envelope (:private-envelope fresh)
+        raw-result (:raw-result fresh)
+        report
+        (p15-s23-c6c10-invoke-pinned-source-function!
+         source-path source-binding p15-s23-c6c10-verifier-function
+         [envelope candidate-raw (:digest-requests raw-result)]
+         :gravity-source-candidate-verifier)]
+    (if (= :rejected (:status report))
+      (p15-s23-c6c10-throw-sealed-rejection!
+       source-path
+       (p15-s23-c6c10-seal-digest-request-result!
+        source-path report))
+      (let [expected-keys
+            #{:artifact-template :checks :diagnostics :digest-graph-root
+              :digest-graph-roots :request-count :semantic-authority :status}]
+        (p15-s23-c6c10-canonical-record source-path report)
+        (when-not
+         (and (map? report)
+              (= expected-keys (set (keys report)))
+              (= :passed (:status report))
+              (= :gravity-source (:semantic-authority report))
+              (= (count (:digest-requests raw-result))
+                 (:request-count report))
+              (vector? (:diagnostics report))
+              (empty? (:diagnostics report))
+              (vector? (:checks report))
+              (= [:fresh-template-replay
+                  :exact-digest-request-replay
+                  :bounded-pure-c6-c10-scope]
+                 (:checks report))
+              (p15-s23-c6c10-canonical-identical?
+               source-path candidate-raw (:artifact-template report))
+              (p15-s23-c6c10-canonical-identical?
+               source-path (:digest-graph-root raw-result)
+               (:digest-graph-root report))
+              (p15-s23-c6c10-canonical-identical?
+               source-path (:digest-graph-roots raw-result)
+               (:digest-graph-roots report)))
+          (p15-s23-c6c10-host-fail!
+           "C6-VERIFY" source-path
+           :fresh-gravity-candidate-verifier-replay
+           {:status (:status report)
+            :request-count (:request-count report)}))
+        (select-keys report
+                     [:status :request-count :semantic-authority
+                      :checks])))))
+
+(defn p15-s23-stage2-gravity-checked-core-verification-report
+  [artifact context]
+  (let [context (p15-s23-c6c10-validate-public-context! context)
+        source-path (:source-path context)]
+    (p15-s23-c6c10-canonical-record source-path artifact)
+    (when (p15-s23-c6c10-exact-digest-ref-present? artifact)
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :public-candidate-free-of-raw-digest-refs
+       {:artifact-kind (when (map? artifact) (:kind artifact))}))
+    (let [{expected :artifact :as fresh}
+          (p15-s23-c6c10-fresh-construction context)
+          semantic-view
+          (fn [value]
+            (if (map? value)
+              (apply dissoc value p15-s23-c6c10-physical-artifact-keys)
+              value))
+          candidate-raw
+          (p15-s23-c6c10-rehydrate-candidate-template!
+           source-path
+           (get-in fresh [:raw-result :artifact-template])
+           (get-in fresh [:sealed-result :sealed-artifact-template])
+           (semantic-view artifact)
+           (get-in fresh [:sealed-result :resolved-digests]))
+          gravity-candidate-verification
+          (p15-s23-c6c10-gravity-candidate-verification!
+           source-path fresh candidate-raw)
+          semantic-check
+          (p15-s23-c6c10-strict-structure!
+           source-path (semantic-view expected) (semantic-view artifact)
+           :fresh-type-sensitive-semantic-artifact-zipper)
+          target-check
+          (p15-s23-c6c10-strict-structure!
+           source-path (:target-request-metadata expected)
+           (:target-request-metadata artifact)
+           :exact-physical-target-request-metadata)
+          provenance-check
+          (p15-s23-c6c10-strict-structure!
+           source-path (:physical-provenance expected)
+           (:physical-provenance artifact)
+           :exact-physical-source-provenance)]
+      (when-not (= (:artifact-id expected) (:artifact-id artifact))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :fresh-sealed-semantic-root-parity
+         {:expected-artifact-id (:artifact-id expected)
+          :observed-artifact-id (:artifact-id artifact)}))
+      {:artifact :gravity/p15-s23-c6-c10-verification-report
+       :status :passed
+       :artifact-id (:artifact-id artifact)
+       :source-content-hash (:source-content-hash context)
+       :semantic-structure semantic-check
+       :target-request-metadata target-check
+       :physical-provenance provenance-check
+       :source-binding (:source-binding fresh)
+       :binding-pins (:binding-pins fresh)
+       :graph-proof (:graph-proof fresh)
+       :gravity-source-verification (:gravity-verification fresh)
+       :gravity-candidate-verification gravity-candidate-verification
+       :actual-path-context
+       {:source source-path
+        :gravity-c6-c10-source
+        (get-in expected [:physical-provenance :actual-paths
+                          :gravity-c6-c10-source])}
+       :clojure-seed-boundary? true
+       :self-hosted? false})))
+
+(defn p15-s23-stage2-gravity-checked-core-verify!
+  [artifact context]
+  (let [report
+        (p15-s23-stage2-gravity-checked-core-verification-report
+         artifact context)]
+    (when-not (= :passed (:status report))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" (:source-path context)
+       :gravity-checked-core-verification-report-status
+       {:status (:status report)}))
+    :passed))
+
+(defn p15-s23-stage2-gravity-checked-core-authentic?
+  ([artifact] false)
+  ([artifact context]
+   (try
+     (= :passed
+        (p15-s23-stage2-gravity-checked-core-verify!
+         artifact context))
+     (catch StackOverflowError _ false)
+     (catch InterruptedException error
+       (.interrupt (Thread/currentThread))
+       (throw error))
+     (catch Exception _ false))))
 
 ;; ---------------------------------------------------------------------------
 ;; Authenticated checked-core -> Gravity C11 MIR bridge (FL-P06-T03 slice)
