@@ -30392,19 +30392,22 @@
         lone-surrogate (char 0xD800)
         candidates
         [[(assoc accepted :diagnostics wide)
-          :bounded-container-expansion]
+          :trusted-legacy-checked-core-carrier
+          :maximum-carrier-width]
          [(assoc accepted :diagnostics [oversized-scalar])
-          :bounded-canonical-string-scalar]
+          :bounded-canonical-string-scalar nil]
          [(assoc accepted :diagnostics [oversized-integer])
-          :bounded-closed-core-integer]
+          :bounded-closed-core-integer nil]
          [(assoc accepted :diagnostics [lone-surrogate])
-          :unicode-scalar-character]
+          :unicode-scalar-character nil]
          [(assoc accepted :diagnostics [(Object.)])
-          :closed-artifact-canonical-scalar-domain]
+          :trusted-legacy-checked-core-carrier
+          :untrusted-scalar-class]
          [(assoc accepted :diagnostics [(iterate inc 0)])
-          :closed-artifact-canonical-scalar-domain]
+          :trusted-legacy-checked-core-carrier
+          :untrusted-scalar-class]
          [(assoc accepted :core-nodes 42)
-          :typed-closed-core-node-vector]]]
+          :typed-closed-core-node-vector nil]]]
     (is (= :complete-for-pure-closed-slice (:status accepted)))
     (is (= 128 (get-in accepted [:bounds :observed-plan-nodes])))
     (is (= 128 (get-in accepted [:bounds :observed-plan-depth])))
@@ -30412,13 +30415,15 @@
     (is (= :bounded-pure-source-form-surface
            (:missing-fact rejected)) rejected)
     (is (= 129 (:observed-source-forms rejected)))
-    (doseq [[candidate expected-missing] candidates]
+    (doseq [[candidate expected-missing expected-reason] candidates]
       (let [data
             (diagnostic-data
              #(bootstrap/p15-s23-stage2-closed-checked-core-verify!
                candidate context))]
         (is (= "C6-VERIFY" (:id data)) data)
         (is (= expected-missing (:missing-fact data)) data)
+        (when expected-reason
+          (is (= expected-reason (:reason data)) data))
         (is (not (str/includes? (pr-str data) ":fixture/")) data)))
     (let [oversized-source
           (.repeat "a"
@@ -30983,8 +30988,15 @@
              oversized-path gravity-c6c10-accepted-source :jvm))]
       (is (= :exact-public-source-verification-context
              (:missing-fact metadata-data)))
+      (is (= "C6-CORE-SHAPE" (:id oversized-data)))
       (is (= :maximum-scalar-characters
-             (:missing-fact oversized-data))))
+             (:missing-fact oversized-data)))
+      (is (= (.length ^String oversized-path)
+             (get-in oversized-data
+                     [:facts :observed-scalar-characters])))
+      (is (= 4096
+             (get-in oversized-data
+                     [:facts :maximum-scalar-characters]))))
     (let [mutated (assoc artifact :type-facts [])
           data
           (diagnostic-data
@@ -31144,18 +31156,18 @@
                 right-path (.toString (.resolve right-directory "program.qst"))
                 _ (spit left-path c11-authenticated-pure-source)
                 _ (spit right-path c11-authenticated-pure-source)
-                left-core
-                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
-                 left-path c11-authenticated-pure-source :c)
-                right-core
-                (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
-                 right-path c11-authenticated-pure-source :c)
                 left-context
-                (bootstrap/p15-s23-stage2-closed-checked-core-context
+                (bootstrap/p15-s23-stage2-gravity-checked-core-context
                  left-path c11-authenticated-pure-source :c)
                 right-context
-                (bootstrap/p15-s23-stage2-closed-checked-core-context
+                (bootstrap/p15-s23-stage2-gravity-checked-core-context
                  right-path c11-authenticated-pure-source :c)
+                left-core
+                (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                 left-context)
+                right-core
+                (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                 right-context)
                 left (bootstrap/p15-s23-stage2-c11-mir-artifact
                       left-core left-context)
                 right (bootstrap/p15-s23-stage2-c11-mir-artifact
@@ -31195,6 +31207,16 @@
               (is (every? empty? (map :effects operations)))
               (is (= :c (:target-request module)))
               (is (true? (:target-independent? module)))
+              (is (= {:schema-version 1
+                      :checked-core-artifact-kind
+                      :gravity/p15-s23-stage2-gravity-checked-core-artifact
+                      :checked-core-context-kind
+                      :gravity/p15-s23-stage2-gravity-checked-core-context
+                      :checked-core-ingress-mode :gravity-source-pure
+                      :checked-core-semantic-authority :gravity-source
+                      :checked-core-verification-status :passed}
+                     (:checked-core-ingress left)
+                     (:checked-core-ingress report)))
               (is (= {:semantic-constructor
                       {:owner :gravity-source
                        :function
@@ -31211,7 +31233,20 @@
                       :live-invocation-claim? false
                       :self-hosted? false}
                      (:construction-record left)))
+              (is (map? report))
+              (is (= #{:artifact :status :mir-id
+                       :checked-core-artifact-id :checked-core-ingress
+                       :checked-core-request-binding-provenance
+                       :source-rule :semantic-replay-parity
+                       :invocation-audit :execution-count
+                       :live-invocation-claim? :execution-tcb
+                       :independent-verifier :b1-preflight
+                       :actual-path-context}
+                     (set (keys report))))
               (is (= :passed (:status report)))
+              (is (= (bootstrap/p15-s23-c11-mir-expected-request-binding-provenance
+                      left-core left-context)
+                     (:checked-core-request-binding-provenance report)))
               (is (= :passed (:semantic-replay-parity report)))
               (is (= :not-available (:invocation-audit report)))
               (is (= :not-claimed (:execution-count report)))
@@ -31226,14 +31261,66 @@
                       (:mir-module left))
                      (bootstrap/p15-s23-c11-mir-path-neutral-value
                       (:mir-module right))))
+              (let [semantic-file-id
+                    (get-in left [:mir-module :functions entrypoint
+                                  :source :span :file])
+                    semantic-ids
+                    (mapv (fn [index]
+                            (str "sha256:"
+                                 (format "%064x" (inc index))))
+                          (range 17))
+                    semantic-carrier
+                    {:records
+                     (mapv (fn [identity]
+                             {:source identity :file identity})
+                           semantic-ids)}]
+                (is (re-matches #"sha256:[0-9a-f]{64}"
+                                semantic-file-id))
+                (is (= semantic-file-id
+                       (get-in
+                        (bootstrap/p15-s23-c11-mir-path-neutral-value
+                         (:mir-module left))
+                        [:functions entrypoint :source :span :file])))
+                (is (= semantic-carrier
+                       (bootstrap/p15-s23-c11-mir-path-neutral-value
+                        semantic-carrier)))
+                (is (= {:record {}}
+                       (bootstrap/p15-s23-c11-mir-path-neutral-value
+                        {:record {:source "/tmp/physical.gravity"
+                                  :file "/tmp/physical.gravity"}}))))
               (is (= left-path
                      (get-in left [:provenance :actual-paths :source])))
               (is (= right-path
                      (get-in right [:provenance :actual-paths :source])))
+              (is (= (get-in left
+                             [:provenance :checked-core-origin-closure])
+                     (get-in right
+                             [:provenance :checked-core-origin-closure])))
               (is (not= (get-in left
-                                [:provenance :checked-core-origin-closure])
+                                [:provenance
+                                 :checked-core-request-binding])
                         (get-in right
-                                [:provenance :checked-core-origin-closure]))))
+                                [:provenance
+                                 :checked-core-request-binding]))))
+            (testing "target request changes MIR identity, not operation IDs"
+              (let [wasm-context
+                    (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                     left-path c11-authenticated-pure-source :wasm)
+                    wasm-core
+                    (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                     wasm-context)
+                    wasm
+                    (bootstrap/p15-s23-stage2-c11-mir-artifact
+                     wasm-core wasm-context)]
+                (is (= (:artifact-id left-core) (:artifact-id wasm-core)))
+                (is (= (mapv :op-id operations)
+                       (mapv :op-id
+                             (bootstrap/p15-s23-c11-mir-operation-sequence
+                              (:mir-module wasm)))))
+                (is (not= (:mir-id left) (:mir-id wasm)))
+                (is (not= (:artifact-id left) (:artifact-id wasm)))
+                (is (not= (:actual-path-binding-id left)
+                          (:actual-path-binding-id wasm)))))
             (testing "pass execution and B1 candidate are content-bound"
               (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
                      (:maximum-module-carrier-nodes scope)))
@@ -31391,6 +31478,54 @@
                             candidate left-core left-context)]
                   (is (= "C11-VERIFY" (:id data)) data)
                   (is (= expected-fact (:missing-fact data)) data))))
+            (testing "collection types and metadata are authenticity-bearing"
+              (let [builder-function
+                    (first (keys (get-in left
+                                         [:source-rule :function-shapes])))
+                    builder-params
+                    (get-in left [:source-rule :function-shapes
+                                  builder-function :params])
+                    source-rule-list
+                    (c11-test-rehash
+                     (assoc-in left
+                               [:source-rule :function-shapes
+                                builder-function :params]
+                               (apply list builder-params))
+                     left-core left-context)
+                    function-params
+                    (get-in left [:mir-module :functions
+                                  entrypoint :params])
+                    mir-list
+                    (c11-test-rehash
+                     (assoc-in left
+                               [:mir-module :functions entrypoint :params]
+                               (apply list function-params))
+                     left-core left-context)
+                    operation-path
+                    (into [:mir-module]
+                          (:path (c11-operation-location
+                                  module first-op-id)))
+                    operation (get-in left operation-path)
+                    nested-metadata
+                    (assoc-in left operation-path
+                              (with-meta operation {:hostile true}))]
+                (doseq [[label candidate]
+                        [[:source-rule-list source-rule-list]
+                         [:mir-list mir-list]
+                         [:nested-metadata nested-metadata]]]
+                  (let [direct
+                        (c11-final-diagnostic
+                         candidate left-core left-context)
+                        public
+                        (diagnostic-data
+                         #(bootstrap/p15-s23-stage2-c11-mir-verification-report
+                           candidate left-core left-context))]
+                    (is (contains? #{"C11-VERIFY" "C11-MODULE"}
+                                   (:id direct))
+                        [label direct])
+                    (is (contains? #{"C11-VERIFY" "C11-MODULE"}
+                                   (:id public))
+                        [label public])))))
             (testing "content rehashing cannot authenticate a semantic forgery"
               (let [mutated-module
                     (c11-update-operation
@@ -31425,6 +31560,62 @@
                 (is (= "C11-MODULE" (:id data)) data)
                 (is (= :checked-core-operation-parity
                        (:missing-fact data)) data)))
+            (testing "custom-comparator C11 carriers reject before authentication"
+              (let [armed? (atom false)
+                    comparator-calls (atom 0)
+                    comparator
+                    (reify java.util.Comparator
+                      (compare [_ left-value right-value]
+                        (if @armed?
+                          (do
+                            (swap! comparator-calls inc)
+                            (throw
+                             (RuntimeException.
+                              "C11 comparator must not execute")))
+                          (compare (pr-str left-value)
+                                   (pr-str right-value)))))
+                    top-level (into (sorted-map-by comparator) left)
+                    nested-map
+                    (assoc left :source-rule
+                           (into (sorted-map-by comparator)
+                                 (:source-rule left)))
+                    nested-set
+                    (assoc-in
+                     left [:scope :operation-set]
+                     (into (sorted-set-by comparator)
+                           (get-in left [:scope :operation-set])))
+                    _ (reset! armed? true)]
+                (doseq [[label candidate]
+                        [[:top-level top-level]
+                         [:nested-map nested-map]
+                         [:nested-set nested-set]]]
+                  (let [verifier-calls (atom 0)
+                        source-lookups (atom 0)
+                        direct
+                        (c11-final-diagnostic
+                         candidate left-core left-context)
+                        public
+                        (with-redefs
+                          [bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                           (fn [& _]
+                             (swap! verifier-calls inc)
+                             (throw (AssertionError. "verifier ran")))
+                           bootstrap/p15-s23-c11-mir-source-binding!
+                           (fn [& _]
+                             (swap! source-lookups inc)
+                             (throw (AssertionError. "source loaded")))]
+                          (diagnostic-data
+                           #(bootstrap/p15-s23-stage2-c11-mir-verification-report
+                             candidate left-core left-context)))]
+                    (is (= "C11-MODULE" (:id direct)) [label direct])
+                    (is (= "C11-MODULE" (:id public)) [label public])
+                    (is (= :trusted-comparator-free-c11-carrier
+                           (:missing-fact direct)
+                           (:missing-fact public))
+                        [label direct public])
+                    (is (zero? @verifier-calls) label)
+                    (is (zero? @source-lookups) label)))
+                (is (zero? @comparator-calls))))
             (testing "complete C15 diagnostics survive nested containment"
               (let [broken
                     (c11-update-operation
@@ -31495,7 +31686,16 @@
                     final-data
                     (diagnostic-data
                      #(bootstrap/p15-s23-stage2-c11-mir-verification-report
-                       final-node-carrier left-core left-context))]
+                       final-node-carrier left-core left-context))
+                    final-validation
+                    (bootstrap/p15-s23-trusted-carrier-validation
+                     final-node-carrier :reject
+                     bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+                     bootstrap/p15-s23-c11-mir-max-carrier-depth
+                     bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes)
+                    class-validation
+                    (bootstrap/p15-s23-trusted-carrier-validation
+                     (subvec [nil] 0 1) :reject 8 8 8)]
                 (is (= "C11-VERIFY" (:id raw-data)) raw-data)
                 (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
                        (get-in raw-data [:facts :maximum-nodes])))
@@ -31511,6 +31711,21 @@
                      bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
                      (get-in final-data [:facts :maximum-nodes])))
                 (is (= :error (:severity final-data)))
+                (is (= {:status :rejected
+                        :reason :maximum-carrier-nodes
+                        :maximum-nodes
+                        bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes}
+                       (select-keys
+                        final-validation
+                        [:status :reason :maximum-nodes])))
+                (is (not-any? #(contains? final-validation %)
+                              [:maximum-depth :maximum-width]))
+                (is (= :untrusted-vector-class
+                       (:reason class-validation)))
+                (is (not-any? #(contains? class-validation %)
+                              [:maximum-nodes
+                               :maximum-depth
+                               :maximum-width]))
                 (is (not (str/includes?
                           (pr-str [raw-data depth-data cycle-data final-data])
                           "StackOverflowError")))))
@@ -31562,10 +31777,379 @@
                 (is (not (str/includes?
                           (pr-str data)
                           "c11-host-secret-must-not-escape")))))
+            (testing "interrupts are rethrown with the thread flag restored"
+              (doseq [[label invocation]
+                      [[:constructor
+                        #(bootstrap/p15-s23-stage2-c11-mir-artifact
+                          left-core left-context)]
+                       [:verification-report
+                        #(bootstrap/p15-s23-stage2-c11-mir-verification-report
+                          left left-core left-context)]
+                       [:authenticity
+                        #(bootstrap/p15-s23-stage2-c11-mir-authentic?
+                          left left-core left-context)]]]
+                (Thread/interrupted)
+                (let [restored?
+                      (try
+                        (with-redefs
+                          [bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                           (fn [& _]
+                             (throw
+                              (InterruptedException.
+                               "synthetic-c11-interrupt")))]
+                          (invocation))
+                        false
+                        (catch InterruptedException _
+                          (.isInterrupted (Thread/currentThread)))
+                        (finally
+                          (Thread/interrupted)))]
+                  (is restored? label))))
             (is (false?
                  (bootstrap/p15-s23-stage2-c11-mir-authentic? left)))
             (is (bootstrap/p15-s23-stage2-c11-mir-authentic?
                  left left-core left-context))))))))
+
+(deftest authenticated-c11-ingress-pairs-reject-downgrade-and-hostile-maps
+  (with-temp-source
+    ".gravity" c11-authenticated-pure-source
+    (fn [path]
+      (let [gravity-context
+            (bootstrap/p15-s23-stage2-gravity-checked-core-context
+             path c11-authenticated-pure-source :c)
+            gravity-core
+            (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+             gravity-context)
+            legacy-core
+            (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+             path c11-authenticated-pure-source :c)
+            legacy-context
+            (bootstrap/p15-s23-stage2-closed-checked-core-context
+             path c11-authenticated-pure-source :c)
+            comparator-armed? (atom false)
+            comparator-calls (atom 0)
+            comparator
+            (reify java.util.Comparator
+              (compare [_ left right]
+                (if @comparator-armed?
+                  (do
+                    (swap! comparator-calls inc)
+                    (throw
+                     (RuntimeException.
+                      "attacker comparator must not execute")))
+                  (compare (pr-str left) (pr-str right)))))
+            hostile-context
+            (into (sorted-map-by comparator) gravity-context)
+            hostile-source-core-input
+            (into (sorted-map-by comparator)
+                  (:source-core-input gravity-core))
+            hostile-nested-core
+            (assoc gravity-core :source-core-input hostile-source-core-input)
+            default-sorted-core
+            (assoc gravity-core :source-core-input
+                   (into (sorted-map) (:source-core-input gravity-core)))
+            root-node-ids (:root-node-ids gravity-core)
+            hostile-node-set
+            (into (sorted-set-by comparator) root-node-ids)
+            hostile-tree-set-core
+            (assoc gravity-core :root-node-ids hostile-node-set)
+            default-tree-set-core
+            (assoc gravity-core :root-node-ids
+                   (into (sorted-set) root-node-ids))
+            hostile-subvector
+            (subvec (conj root-node-ids (Object.))
+                    0 (count root-node-ids))
+            hostile-subvector-core
+            (assoc gravity-core :root-node-ids hostile-subvector)
+            lazy-tail-calls (atom 0)
+            hostile-lazy-tail
+            (lazy-seq
+             (swap! lazy-tail-calls inc)
+             (list :hidden-tail))
+            hostile-cons
+            (clojure.lang.Cons. (first root-node-ids) hostile-lazy-tail)
+            hostile-cons-core
+            (assoc gravity-core :root-node-ids hostile-cons)
+            hostile-hash-calls (atom 0)
+            hostile-key
+            (proxy [Object] []
+              (hashCode []
+                (swap! hostile-hash-calls inc)
+                (throw
+                 (RuntimeException.
+                  "attacker hashCode must not execute"))))
+            hostile-key-context
+            (assoc (dissoc gravity-context :source-content-hash)
+                   hostile-key :hidden)
+            _ (reset! comparator-armed? true)
+            oversized-core
+            (into gravity-core
+                  (map (fn [index]
+                         [(keyword (str "hostile-extra-" index)) index]))
+                  (range 129))
+            source-lookups (atom 0)
+            invalid-pairs
+            [[:legacy-pure legacy-core legacy-context
+              :authenticated-checked-core-ingress-pair]
+             [:new-core-legacy-context gravity-core legacy-context
+              :authenticated-checked-core-ingress-pair]
+             [:legacy-core-new-context legacy-core gravity-context
+              :authenticated-checked-core-ingress-pair]
+             [:metadata-core (with-meta gravity-core {:hostile true})
+              gravity-context :trusted-comparator-free-c11-carrier]
+             [:oversized-core oversized-core gravity-context
+              :authenticated-checked-core-ingress-pair]
+             [:throwing-comparator-context gravity-core hostile-context
+              :trusted-comparator-free-c11-carrier]]]
+        (doseq [[label candidate expected-missing]
+                [[:throwing-comparator-context
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    gravity-core hostile-context)
+                  :exact-public-source-verification-context]
+                 [:nested-tree-map
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    hostile-nested-core gravity-context)
+                  :trusted-gravity-checked-core-carrier]
+                 [:default-sorted-map
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    default-sorted-core gravity-context)
+                  :trusted-gravity-checked-core-carrier]
+                 [:nested-tree-set
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    hostile-tree-set-core gravity-context)
+                  :trusted-gravity-checked-core-carrier]
+                 [:default-sorted-set
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    default-tree-set-core gravity-context)
+                  :trusted-gravity-checked-core-carrier]
+                 [:hidden-subvector
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    hostile-subvector-core gravity-context)
+                  :trusted-gravity-checked-core-carrier]
+                 [:armed-cons-tail
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    hostile-cons-core gravity-context)
+                  :trusted-gravity-checked-core-carrier]
+                 [:armed-context-key
+                  #(bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                    gravity-core hostile-key-context)
+                  :trusted-gravity-checked-core-carrier]]]
+          (let [data (diagnostic-data candidate)]
+            (is (= "C6-VERIFY" (:id data)) [label data])
+            (is (= expected-missing (:missing-fact data))
+                [label data])))
+        (is (false?
+             (bootstrap/p15-s23-stage2-gravity-checked-core-authentic?
+              hostile-nested-core gravity-context)))
+        (is (zero? @comparator-calls))
+        (is (zero? @lazy-tail-calls))
+        (is (zero? @hostile-hash-calls))
+        (doseq [[label hostile-path hostile-source expected-missing]
+                [[:oversized-source "oversized-source.gravity"
+                  (apply str
+                         (repeat
+                          (inc bootstrap/p15-s23-c6c10-max-source-bytes)
+                          \a))
+                  :bounded-co-canonical-source-context]
+                 [:oversized-path
+                  (str (apply str (repeat 4090 \p)) ".gravity")
+                  c11-authenticated-pure-source
+                  :maximum-scalar-characters]
+                 [:invalid-surrogate-path
+                  (str "invalid-" (char 0xD800) ".gravity")
+                  c11-authenticated-pure-source
+                  :well-formed-unicode-scalar-string]]]
+          (let [data
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-gravity-checked-core-context
+                   hostile-path hostile-source :c))]
+            (is (= "C6-CORE-SHAPE" (:id data)) [label data])
+            (is (= expected-missing (:missing-fact data)) [label data])
+            (when (= :oversized-path label)
+              (is (= (.length ^String hostile-path)
+                     (get-in data
+                             [:facts :observed-scalar-characters])))
+              (is (= 4096
+                     (get-in data
+                             [:facts :maximum-scalar-characters]))))))
+        (is (= :passed
+               (:status
+                (bootstrap/p15-s23-trusted-carrier-validation
+                 (cons :visible (list :tail)) :reject 32 8 8))))
+        (is (= :maximum-carrier-width
+               (:reason
+                (bootstrap/p15-s23-trusted-carrier-validation
+                 (cons :head (apply list (range 8)))
+                 :reject 32 8 4))))
+        (doseq [[label checked-core context expected-missing] invalid-pairs]
+          (let [data
+                (with-redefs
+                  [bootstrap/p15-s23-c11-mir-source-binding!
+                   (fn [& _]
+                     (swap! source-lookups inc)
+                     (throw
+                      (AssertionError.
+                       "C11 source must not load for invalid ingress")))]
+                  (diagnostic-data
+                   #(bootstrap/p15-s23-stage2-c11-mir-artifact
+                     checked-core context)))]
+            (is (= "C11-MODULE" (:id data)) [label data])
+            (is (= expected-missing (:missing-fact data))
+                [label data])))
+        (is (zero? @source-lookups))
+        (doseq [[label checked-core context]
+                [[:nested-tree-map hostile-nested-core gravity-context]
+                 [:default-sorted-map default-sorted-core gravity-context]
+                 [:nested-tree-set hostile-tree-set-core gravity-context]
+                 [:default-sorted-set default-tree-set-core gravity-context]
+                 [:hidden-subvector hostile-subvector-core gravity-context]
+                 [:armed-cons-tail hostile-cons-core gravity-context]
+                 [:armed-context-key gravity-core hostile-key-context]]]
+          (let [verifier-calls (atom 0)
+                c11-source-lookups (atom 0)
+                data
+                (with-redefs
+                  [bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
+                   (fn [& _]
+                     (swap! verifier-calls inc)
+                     (throw (AssertionError. "verifier must not run")))
+                   bootstrap/p15-s23-c11-mir-source-binding!
+                   (fn [& _]
+                     (swap! c11-source-lookups inc)
+                     (throw (AssertionError. "C11 source must not load")))]
+                   (diagnostic-data
+                   #(bootstrap/p15-s23-stage2-c11-mir-artifact
+                     checked-core context)))]
+            (is (= "C11-MODULE" (:id data)) [label data])
+            (is (= :trusted-comparator-free-c11-carrier
+                   (:missing-fact data))
+                [label data])
+            (is (zero? @verifier-calls) label)
+            (is (zero? @c11-source-lookups) label)))
+        (is (zero? @comparator-calls))
+        (is (zero? @lazy-tail-calls))
+        (is (zero? @hostile-hash-calls))
+        (let [c11-source-lookups (atom 0)
+              data
+              (with-redefs
+                [bootstrap/p15-s23-c11-mir-source-binding!
+                 (fn [& _]
+                   (swap! c11-source-lookups inc)
+                   (throw
+                    (AssertionError.
+                     "C11 source must not load for rejected C7 core")))]
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-c11-mir-artifact
+                   (assoc gravity-core :type-facts [])
+                   gravity-context)))]
+          (is (= "C7-VERIFY" (:id data)) data)
+          (is (= :type-check (:stage data)) data)
+          (is (= path (get-in data [:primary :span :source])) data)
+          (is (re-matches #"sha256:[0-9a-f]{64}"
+                          (get-in data
+                                  [:facts :producer-diagnostic-id])))
+          (is (zero? @c11-source-lookups)))))))
+
+(deftest c6c10-owned-diagnostic-id-bounds-hostile-source-spans
+  (let [owner (Object.)
+        data
+        (diagnostic-data
+         #(binding [bootstrap/*p15-s23-c11-upstream-diagnostic-owner*
+                    owner]
+            (bootstrap/p15-s23-c6c10-host-fail!
+             "C6-VERIFY" "hostile-span.gravity"
+             :bounded-hostile-source-span
+             {:source-span
+              {:start {:line (.shiftLeft java.math.BigInteger/ONE 10000)
+                       :column (.shiftLeft java.math.BigInteger/ONE 10000)}
+               :end {:line (.shiftLeft java.math.BigInteger/ONE 10000)
+                     :column (.shiftLeft java.math.BigInteger/ONE 10000)}}})))
+        syntax-id (str "sha256:" (apply str (repeat 64 \a)))
+        core-node-id (str "sha256:" (apply str (repeat 64 \b)))
+        operation-id (str "sha256:" (apply str (repeat 64 \c)))
+        origin-id (str "sha256:" (apply str (repeat 64 \d)))
+        origin-chain
+        (into [origin-id]
+              (map (fn [index]
+                     (str "sha256:" (format "%064x" (+ 100 index)))))
+              (range 16))
+        produce
+        (fn [candidate-operation-id]
+          (try
+            (binding [bootstrap/*p15-s23-c11-upstream-diagnostic-owner*
+                      owner]
+              (bootstrap/p15-s23-c6c10-host-fail!
+               "C8-CAPABILITY" "owned-diagnostic.gravity"
+               :owned-semantic-identity-propagation
+               {:source-span {:source "owned-diagnostic.gravity"
+                              :start {:line 1 :column 1}
+                              :end {:line 1 :column 2}}
+                :syntax-id syntax-id
+                :core-node-id core-node-id
+                :operation-id candidate-operation-id
+                :origin-id origin-id
+                :generated-origin-chain origin-chain
+                :requested-target :c}))
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception)))
+        producer (produce operation-id)
+        producer-repeat (produce operation-id)
+        producer-distinct
+        (produce (str "sha256:" (apply str (repeat 64 \e))))
+        sealed-origin-id
+        (str "sha256:" (apply str (repeat 64 \f)))
+        sealed-data
+        (diagnostic-data
+         #(bootstrap/p15-s23-c6c10-throw-sealed-rejection!
+           "sealed-origin.gravity"
+           {:sealed-diagnostics
+            [{:id "C7-VERIFY"
+              :rule "C7-VERIFY"
+              :primary {:span {:start {:line 1 :column 1}
+                               :end {:line 1 :column 2}}
+                        :syntax-id syntax-id
+                        :core-node-id core-node-id
+                        :mir-operation-id operation-id}
+              :facts {:missing-fact :sealed-origin-propagation}
+              :origin-chain [sealed-origin-id]}]}))
+        propagated
+        (binding [bootstrap/*p15-s23-c11-upstream-diagnostic-owner* owner]
+          (diagnostic-data
+           #(bootstrap/p15-s23-c11-mir-contain-checked-core-exception!
+             "owned-diagnostic.gravity" :owned-producer producer)))
+        oversized-keyword
+        (keyword (apply str (repeat 300 \x)))
+        oversized-data
+        (diagnostic-data
+         #(binding [bootstrap/*p15-s23-c11-upstream-diagnostic-owner*
+                    owner]
+            (bootstrap/p15-s23-c6c10-host-fail!
+             "C6-VERIFY" "oversized-identity.gravity"
+             :bounded-semantic-diagnostic-identity
+             {:syntax-id oversized-keyword})))]
+    (is (= "C6-VERIFY" (:id data)) data)
+    (is (= :bounded-hostile-source-span (:missing-fact data)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id data)))
+    (is (not (str/includes? (pr-str data) "StackOverflowError")))
+    (is (= syntax-id (get-in propagated [:primary :syntax-id])))
+    (is (= core-node-id (get-in propagated [:primary :core-node-id])))
+    (is (= operation-id
+           (get-in propagated [:primary :mir-operation-id])))
+    (is (= origin-id (get-in propagated [:primary :origin-id])))
+    (is (= syntax-id (get-in propagated [:facts :syntax-id])))
+    (is (= core-node-id (get-in propagated [:facts :core-node-id])))
+    (is (= operation-id (get-in propagated [:facts :operation-id])))
+    (is (= origin-id (get-in propagated [:facts :origin-id])))
+    (is (= origin-chain (:origin-chain propagated)))
+    (is (= (:diagnostic-id (ex-data producer))
+           (:diagnostic-id (ex-data producer-repeat))))
+    (is (not= (:diagnostic-id (ex-data producer))
+              (:diagnostic-id (ex-data producer-distinct))))
+    (is (= sealed-origin-id (:origin-id sealed-data)))
+    (is (= sealed-origin-id
+           (first (:generated-origin-chain sealed-data))))
+    (is (not (contains? oversized-data :syntax-id)))
+    (is (re-matches #"sha256:[0-9a-f]{64}"
+                    (:diagnostic-id oversized-data)))))
 
 (deftest authenticated-c11-mir-models-effectful-unit-result-directly
   (with-temp-source
@@ -31588,6 +32172,29 @@
             (bootstrap/p15-s23-stage2-c11-mir-verification-report
              artifact checked-core context)
             module (:mir-module artifact)
+            legacy-ordering-index
+            (get-in module [:effect-order-graph :ordering-index])
+            legacy-carrier-validation
+            (bootstrap/p15-s23-trusted-carrier-validation
+             artifact :default-only
+             bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+             bootstrap/p15-s23-c11-mir-max-carrier-depth
+             bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes)
+            strict-carrier-validation
+            (bootstrap/p15-s23-trusted-carrier-validation
+             artifact :reject
+             bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+             bootstrap/p15-s23-c11-mir-max-carrier-depth
+             bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes)
+            metadata-carrier-validation
+            (bootstrap/p15-s23-trusted-carrier-validation
+             (assoc-in artifact
+                       [:mir-module :effect-order-graph :ordering-index]
+                       (with-meta legacy-ordering-index {:hostile true}))
+             :default-only
+             bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
+             bootstrap/p15-s23-c11-mir-max-carrier-depth
+             bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes)
             pending (bootstrap/p15-s23-c11-mir-pending-view module)
             operations
             (bootstrap/p15-s23-c11-mir-operation-sequence pending)
@@ -31631,9 +32238,34 @@
                       (bootstrap/p15-s23-c11-mir-path-prefix?
                        else-prefix (:path %)))))
               (:core-nodes checked-core)))]
+        (testing "legacy effect ordering uses only the pinned default tree map"
+          (is (= "clojure.lang.PersistentTreeMap"
+                 (.getName (class legacy-ordering-index))))
+          (is (identical? (.comparator ^clojure.lang.Sorted
+                                      legacy-ordering-index)
+                          clojure.lang.RT/DEFAULT_COMPARATOR))
+          (is (= :passed (:status legacy-carrier-validation)))
+          (is (= {:status :rejected
+                  :reason :untrusted-map-class-or-comparator
+                  :class "clojure.lang.PersistentTreeMap"}
+                 (select-keys strict-carrier-validation
+                              [:status :reason :class])))
+          (is (= :carrier-metadata
+                 (:reason metadata-carrier-validation))))
         (testing "runtime checks are explicit typed operations and guard tokens"
           (is (= :passed (:status public-report)))
           (is (= :passed (:semantic-replay-parity public-report)))
+          (is (= {:schema-version 1
+                  :checked-core-artifact-kind
+                  :gravity/p15-s23-stage2-closed-checked-core-artifact
+                  :checked-core-context-kind
+                  :legacy-effectful-reference-context
+                  :checked-core-ingress-mode :effectful-reference
+                  :checked-core-semantic-authority
+                  :legacy-effectful-reference-verifier
+                  :checked-core-verification-status :passed}
+                 (:checked-core-ingress artifact)
+                 (:checked-core-ingress public-report)))
           (is (= 14 (count (:core-nodes checked-core))))
           (is (= 18 (count operations)))
           (is (= 4 (count blocks)))
@@ -31724,6 +32356,50 @@
                               (:proof-certificate-ids facts))]
                 (is (contains? (:capability-proof-table pending)
                                proof-id))))))
+        (testing "legacy and safe-path interrupts rethrow with restored flags"
+          (Thread/interrupted)
+          (let [restored?
+                (try
+                  (with-redefs
+                    [bootstrap/p15-s23-closed-core-bounded-utf8-count
+                     (fn [& _]
+                       (throw
+                        (InterruptedException.
+                         "synthetic-safe-source-interrupt")))]
+                    (bootstrap/p15-s23-c11-mir-safe-source-path path))
+                  false
+                  (catch InterruptedException _
+                    (.isInterrupted (Thread/currentThread)))
+                  (finally (Thread/interrupted)))]
+            (is restored? :safe-source-path))
+          (doseq [[label invocation]
+                  [[:legacy-report
+                    #(bootstrap/p15-s23-stage2-closed-checked-core-verification-report
+                      checked-core context)]
+                   [:legacy-authentic
+                    #(bootstrap/p15-s23-stage2-closed-checked-core-authentic?
+                      checked-core context)]
+                   [:c11-report
+                    #(bootstrap/p15-s23-stage2-c11-mir-verification-report
+                      artifact checked-core context)]
+                   [:c11-authentic
+                    #(bootstrap/p15-s23-stage2-c11-mir-authentic?
+                      artifact checked-core context)]]]
+            (Thread/interrupted)
+            (let [restored?
+                  (try
+                    (with-redefs
+                      [bootstrap/p15-s23-stage2-closed-checked-core-verify!*
+                       (fn [& _]
+                         (throw
+                          (InterruptedException.
+                           "synthetic-legacy-interrupt")))]
+                      (invocation))
+                    false
+                    (catch InterruptedException _
+                      (.isInterrupted (Thread/currentThread)))
+                    (finally (Thread/interrupted)))]
+              (is restored? label))))
         (testing "direct verifier mutations reject every runtime-check link"
           (let [check (first checks)
                 check-id (:check-id check)
@@ -31961,12 +32637,12 @@
     (with-temp-source
       ".qst" source
       (fn [path]
-        (let [checked-core
-              (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+        (let [context
+              (bootstrap/p15-s23-stage2-gravity-checked-core-context
                path source :c)
-              context
-              (bootstrap/p15-s23-stage2-closed-checked-core-context
-               path source :c)
+              checked-core
+              (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+               context)
               data
               (diagnostic-data
                #(bootstrap/p15-s23-stage2-c11-mir-artifact
@@ -32291,7 +32967,7 @@
         forged-record
         (diagnostic-data
          #(with-redefs
-            [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+            [bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
              (fn [& _]
                (throw
                 (ex-info
@@ -32308,7 +32984,7 @@
             :observed
             (try
               (with-redefs
-                [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                [bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
                  (fn [& _] (throw fatal))]
                 (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
                  "fatal-source-boundary.gravity" source))
@@ -32321,14 +32997,14 @@
         stack-record
         (diagnostic-data
          #(with-redefs
-            [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+            [bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
              (fn [& _] (throw (StackOverflowError. "source-stack")))]
             (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
              "stack-source-boundary.gravity" source)))
         ordinary-record
         (diagnostic-data
          #(with-redefs
-            [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+            [bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
              (fn [& _] (throw (Exception. "ordinary-source-secret")))]
             (bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
              "ordinary-source-boundary.gravity" source)))
@@ -32337,7 +33013,7 @@
     (doseq [[extension [first-record second-record]] observations]
       (is (= first-record second-record) extension)
       (is (= ["C6-LOWERING-GAP"
-              :pure-closed-slice-jvm-source-target]
+              :bounded-jvm-source-target]
              ((juxt :id :missing-fact) first-record)) extension)
       (is (= :gravity/diagnostic (:artifact first-record)) extension)
       (is (every? (set (keys first-record))
@@ -32689,15 +33365,25 @@
 (defn- authenticated-llvm-missing-native-probe
   [directory]
   (let [destination (.resolve directory "missing-native-bundle")
+        source (closed-pure-source-with-main "7" {:exports '[main]})
         expression
         (str
          "(require 'gravity.bootstrap) "
-         "(let [before (:total (gravity.bootstrap/"
+         "(binding [gravity.bootstrap/*additional-bootstrap-targets* "
+         "gravity.bootstrap/stage2-runtime-derived-source-targets] "
+         "(let [source " (pr-str source) " "
+         "context (gravity.bootstrap/"
+         "p15-s23-stage2-gravity-checked-core-context "
+         "\"missing-native.gravity\" source :llvm) "
+         "core (gravity.bootstrap/"
+         "p15-s23-stage2-gravity-checked-core-source-artifact context) "
+         "c11 (gravity.bootstrap/p15-s23-stage2-c11-mir-artifact "
+         "core context) "
+         "before (:total (gravity.bootstrap/"
          "p15-s23-b3-llvm-tool-execution-snapshot)) "
          "data (try (gravity.bootstrap/"
          "p15-s23-stage2-b3-llvm-artifact-from-c11! "
-         "{} {} {:source-path \"missing-native.gravity\" "
-         ":source-text \"\" :requested-target :llvm} "
+         "c11 core context "
          "{:output-directory " (pr-str (.toString destination)) "}) "
          "nil (catch clojure.lang.ExceptionInfo e (ex-data e))) "
          "after (:total (gravity.bootstrap/"
@@ -32706,7 +33392,7 @@
          ":native-access-enabled? (get-in data [:facts "
          ":native-access-enabled?]) :tool-delta (- after before) "
          ":output-exists? (.exists (java.io.File. "
-         (pr-str (.toString destination)) "))}))")
+         (pr-str (.toString destination)) "))})))")
         java-bin (str (System/getProperty "java.home") "/bin/java")
         result
         (run-process-in-directory
@@ -33369,6 +34055,14 @@
                                   tool-records)]
     (is (= :gravity/p15-s23-b3-authenticated-llvm-artifact
            (:kind left-artifact) (:kind right-artifact)))
+    (is (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
+           (get-in left [:checked-core :kind])
+           (get-in right [:checked-core :kind])))
+    (is (= :gravity-source-pure
+           (get-in left [:c11 :checked-core-ingress
+                         :checked-core-ingress-mode])
+           (get-in right [:c11 :checked-core-ingress
+                          :checked-core-ingress-mode])))
     (is (= :passed (:status contextual-report)))
     (is (= 3 (:count transactions)))
     (is (= 57 (- (get-in transactions [:after :total])
@@ -33532,7 +34226,7 @@
            ((juxt :id :missing-fact) (:context-source tamper))))
     (is (= :passed (:context-provenance-genuine tamper)))
     (is (= ["C6-LOWERING-GAP"
-            :pure-closed-slice-jvm-source-target]
+            :bounded-jvm-source-target]
            ((juxt :id :missing-fact) (:declared-llvm tamper))))
     (is (= "B3-MANIFEST"
            (get-in diagnostics [:b3-contained :id])))
@@ -33768,6 +34462,9 @@
         (bootstrap/p15-s23-b4-wasm-expected-gravity-lowering mir expected)
         bytes (:wasm-bytes expected)
         parsed (bootstrap/p15-s23-b4-wasm-parse-module! bytes expected)
+        big-int-bytes (mapv bigint bytes)
+        big-int-parsed
+        (bootstrap/p15-s23-b4-wasm-parse-module! big-int-bytes expected)
         padded (-> bytes
                    (authenticated-wasm-insert 38 [0])
                    authenticated-wasm-resize-code
@@ -33796,6 +34493,13 @@
                  (assoc gravity-envelope :source-mir-id "forged")
                  mir expected)))
     (is (= 42 (:decoded-result parsed)))
+    (is (= parsed big-int-parsed))
+    (is (= [128 2]
+           (bootstrap/p15-s23-b4-wasm-decode-u32 [128N 1N] 0 2)))
+    (is (= [42 1]
+           (bootstrap/p15-s23-b4-wasm-decode-s32 [42N] 0 1)))
+    (is (= [-1 1]
+           (bootstrap/p15-s23-b4-wasm-decode-s32 [127N] 0 1)))
     (is (= [1 3 7 10] (:section-ids parsed)))
     (is (= :code-section-payload (:operation-byte-map-coordinate parsed)))
     (is (true? (:byte-end-exclusive? parsed)))
@@ -33813,6 +34517,23 @@
         (is (not (re-find
                   #"IndexOutOfBoundsException|IllegalArgumentException|StackOverflowError"
                   (pr-str data))))))
+    (doseq [[decoder bytes missing-fact]
+            [[bootstrap/p15-s23-b4-wasm-decode-u32 [256N]
+              :canonical-bounded-u32-leb]
+             [bootstrap/p15-s23-b4-wasm-decode-u32 [1.0]
+              :canonical-bounded-u32-leb]
+             [bootstrap/p15-s23-b4-wasm-decode-s32 [-1N]
+              :canonical-bounded-s32-leb]
+             [bootstrap/p15-s23-b4-wasm-decode-s32 ["42"]
+              :canonical-bounded-s32-leb]]]
+      (let [data (diagnostic-data #(decoder bytes 0 1))]
+        (is (= "B4-MANIFEST" (:id data) (:rule data))
+            [bytes data])
+        (is (= missing-fact (:missing-fact data)) [bytes data])
+        (is (not (re-find
+                  #"IllegalArgumentException|ClassCastException"
+                  (pr-str data)))
+            [bytes data])))
     (let [data
           (diagnostic-data
            #(bootstrap/p15-s23-b4-wasm-parse-instructions!
@@ -33888,6 +34609,376 @@
     (is (= before
            (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)))))
 
+(deftest authenticated-backend-public-ingress-rejects-hostile-carriers-before-effects
+  (with-temp-source
+    ".gravity" c11-authenticated-pure-source
+    (fn [path]
+      (binding [bootstrap/*additional-bootstrap-targets*
+                bootstrap/stage2-runtime-derived-source-targets]
+        (let [llvm-context
+              (bootstrap/p15-s23-stage2-gravity-checked-core-context
+               path c11-authenticated-pure-source :llvm)
+              llvm-core
+              (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+               llvm-context)
+              llvm-c11
+              (bootstrap/p15-s23-stage2-c11-mir-artifact
+               llvm-core llvm-context)
+              wasm-context
+              (bootstrap/p15-s23-stage2-gravity-checked-core-context
+               path c11-authenticated-pure-source :wasm)
+              wasm-core
+              (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+               wasm-context)
+              wasm-c11
+              (bootstrap/p15-s23-stage2-c11-mir-artifact
+               wasm-core wasm-context)
+              comparator-armed? (atom false)
+              comparator-calls (atom 0)
+              comparator
+              (reify java.util.Comparator
+                (compare [_ left right]
+                  (if @comparator-armed?
+                    (do
+                      (swap! comparator-calls inc)
+                      (throw
+                       (RuntimeException.
+                        "backend-ingress-comparator-secret")))
+                    (compare (pr-str left) (pr-str right)))))
+              hostile-tree
+              (into (sorted-map-by comparator) {:left 1 :right 2})
+              hostile-set
+              (into (sorted-set-by comparator) [:left :right])
+              hostile-llvm-context
+              (into (sorted-map-by comparator) llvm-context)
+              hostile-wasm-context
+              (into (sorted-map-by comparator) wasm-context)
+              hostile-options
+              (into (sorted-map-by comparator)
+                    {:output-directory "/tmp/backend-ingress-secret"})
+              lazy-tail-calls (atom 0)
+              hostile-lazy-tail
+              (lazy-seq
+               (swap! lazy-tail-calls inc)
+               (list :backend-ingress-hidden-tail))
+              hostile-cons
+              (clojure.lang.Cons. :visible hostile-lazy-tail)
+              hostile-subvector (subvec [:visible :hidden] 0 1)
+              hostile-hash-calls (atom 0)
+              hostile-equals-calls (atom 0)
+              hostile-scalar
+              (proxy [Object] []
+                (hashCode []
+                  (swap! hostile-hash-calls inc)
+                  (throw
+                   (RuntimeException. "backend-ingress-hash-secret")))
+                (equals [_]
+                  (swap! hostile-equals-calls inc)
+                  (throw
+                   (RuntimeException. "backend-ingress-equals-secret"))))
+              hostile-c11-candidates
+              [[:metadata
+                (with-meta llvm-c11 {:backend-ingress :hostile})
+                (with-meta wasm-c11 {:backend-ingress :hostile})]
+               [:tree
+                (assoc llvm-c11 :diagnostics hostile-tree)
+                (assoc wasm-c11 :diagnostics hostile-tree)]
+               [:set
+                (assoc llvm-c11 :diagnostics hostile-set)
+                (assoc wasm-c11 :diagnostics hostile-set)]
+               [:subvector
+                (assoc llvm-c11 :diagnostics hostile-subvector)
+                (assoc wasm-c11 :diagnostics hostile-subvector)]
+               [:lazy-cons
+                (assoc llvm-c11 :diagnostics hostile-cons)
+                (assoc wasm-c11 :diagnostics hostile-cons)]
+               [:scalar
+                (assoc llvm-c11 :diagnostics hostile-scalar)
+                (assoc wasm-c11 :diagnostics hostile-scalar)]]
+              hostile-final-candidates
+              [[:metadata
+                (with-meta {:placeholder true}
+                  {:backend-ingress :hostile})]
+               [:tree {:nested hostile-tree}]
+               [:set {:nested hostile-set}]
+               [:subvector {:nested hostile-subvector}]
+               [:lazy-cons {:nested hostile-cons}]
+               [:scalar {:nested hostile-scalar}]]
+              hostile-ex-data
+              (into (sorted-map-by comparator)
+                    {:id "B3-MANIFEST" :secret :must-not-cross})
+              hostile-nested-ex-data {:nested hostile-tree}
+              owner (Object.)
+              owner-key :gravity.bootstrap/c11-upstream-diagnostic-owner
+              owned-data {owner-key owner
+                          :status :bounded-control
+                          :nested (sorted-map :left 1 :right 2)}
+              wrong-owner-data {owner-key (Object.)
+                                :status :bounded-control}
+              validate-options
+              (var-get
+               (or (ns-resolve 'gravity.bootstrap
+                               'p15-s23-b3-llvm-validated-options!)
+                   (throw (ex-info "missing B3 options test seam" {}))))
+              _ (reset! comparator-armed? true)
+              calls (atom {})
+              blocked
+              (fn [boundary]
+                (fn [& _]
+                  (swap! calls update boundary (fnil inc 0))
+                  (throw
+                   (AssertionError.
+                    (str "unexpected pre-auth effect: " boundary)))))
+              private-var
+              (fn [symbol]
+                (or (ns-resolve 'gravity.bootstrap symbol)
+                    (throw (ex-info "missing backend ingress test seam"
+                                    {:symbol symbol}))))
+              cases
+              (vec
+               (concat
+                (mapcat
+                 (fn [[label llvm-candidate wasm-candidate]]
+                   [[[:b3-c11 label]
+                     #(bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                       llvm-candidate llvm-core llvm-context)
+                     "C11-MODULE"
+                     :trusted-comparator-free-c11-carrier]
+                    [[:b4-c11 label]
+                     #(bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+                       wasm-candidate wasm-core wasm-context)
+                     "C11-MODULE"
+                     :trusted-comparator-free-c11-carrier]])
+                 hostile-c11-candidates)
+                [[[:b3-context]
+                  #(bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                    llvm-c11 llvm-core hostile-llvm-context)
+                  "C11-MODULE"
+                  :trusted-comparator-free-c11-carrier]
+                 [[:b4-context]
+                  #(bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+                    wasm-c11 wasm-core hostile-wasm-context)
+                  "C11-MODULE"
+                  :trusted-comparator-free-c11-carrier]
+                 [[:b3-options-direct]
+                  #(bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                    nil nil nil hostile-options)
+                  "B3-MANIFEST"
+                  :trusted-comparator-free-b3-options]
+                 [[:b3-options-source]
+                  #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                    "hostile-options.gravity"
+                    c11-authenticated-pure-source hostile-options)
+                  "B3-MANIFEST"
+                  :trusted-comparator-free-b3-options]]
+                (mapcat
+                 (fn [[label candidate]]
+                   [[[:b3-report label]
+                     #(bootstrap/p15-s23-stage2-b3-llvm-verification-report
+                       candidate llvm-core llvm-context)
+                     "B3-MANIFEST"
+                     :trusted-comparator-free-b3-final-artifact-carrier]
+                    [[:b3-verify label]
+                     #(bootstrap/p15-s23-stage2-b3-llvm-verify!
+                       candidate llvm-core llvm-context)
+                     "B3-MANIFEST"
+                     :trusted-comparator-free-b3-final-artifact-carrier]
+                    [[:b4-report label]
+                     #(bootstrap/p15-s23-stage2-b4-wasm-verification-report
+                       candidate wasm-core wasm-context)
+                     "B4-MANIFEST"
+                     :trusted-comparator-free-b4-final-artifact-carrier]
+                    [[:b4-verify label]
+                     #(bootstrap/p15-s23-stage2-b4-wasm-verify!
+                       candidate wasm-core wasm-context)
+                     "B4-MANIFEST"
+                     :trusted-comparator-free-b4-final-artifact-carrier]])
+                 hostile-final-candidates)
+                (mapcat
+                 (fn [[label data]]
+                   [[[:b3-ex-data label]
+                     #(bootstrap/p15-s23-b3-llvm-contain-exception!
+                       "hostile-ex-data.gravity" :hostile-ex-data
+                       (ex-info "backend-ingress-ex-data-secret" data))
+                     "B3-MANIFEST" :hostile-ex-data]
+                    [[:b4-ex-data label]
+                     #(bootstrap/p15-s23-b4-wasm-contain-exception!
+                       "hostile-ex-data.gravity" :hostile-ex-data
+                       (ex-info "backend-ingress-ex-data-secret" data))
+                     "B4-MANIFEST" :hostile-ex-data]])
+                 [[:top-level hostile-ex-data]
+                  [:nested hostile-nested-ex-data]])))
+              authentic-cases
+              (vec
+               (mapcat
+                (fn [[label candidate]]
+                  [[[:b3-authentic label]
+                    #(bootstrap/p15-s23-stage2-b3-llvm-authentic?
+                      candidate llvm-core llvm-context)]
+                   [[:b4-authentic label]
+                    #(bootstrap/p15-s23-stage2-b4-wasm-authentic?
+                      candidate wasm-core wasm-context)]])
+                hostile-final-candidates))
+              before-b3
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              before-b4
+              (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+              result
+              (with-redefs-fn
+                {#'bootstrap/p15-s23-stage2-gravity-checked-core-context
+                 (blocked :checked-core-context)
+                 #'bootstrap/p15-s23-stage2-c11-mir-artifact
+                 (blocked :c11-constructor)
+                 #'bootstrap/p15-s23-c11-mir-source-binding!
+                 (blocked :c11-source)
+                 (private-var 'p15-s23-b3-llvm-source-binding!)
+                 (blocked :b3-source)
+                 (private-var 'p15-s23-b3-llvm-output-preflight!)
+                 (blocked :b3-output)
+                 (private-var 'p15-s23-b3-llvm-toolchain-transaction!)
+                 (blocked :b3-toolchain)
+                 (private-var 'p15-s23-b4-wasm-source-binding!)
+                 (blocked :b4-source)
+                 (private-var 'p15-s23-b4-wasm-run-node!)
+                 (blocked :b4-node)}
+                (fn []
+                  {:observations
+                   (mapv
+                    (fn [[label invocation expected-id expected-missing]]
+                      [label (diagnostic-data invocation)
+                       (diagnostic-data invocation)
+                       expected-id expected-missing])
+                    cases)
+                   :authentic
+                   (mapv (fn [[label invocation]] [label (invocation)])
+                         authentic-cases)}))
+              interrupt-cases
+              [[:b3-source
+                #'bootstrap/p15-s23-stage2-gravity-checked-core-context
+                #(bootstrap/p15-s23-stage2-b3-llvm-source-artifact!
+                  "interrupt-b3-source.gravity"
+                  c11-authenticated-pure-source)]
+               [:b3-artifact
+                (private-var 'p15-s23-b3-llvm-validated-options!)
+                #(bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                  nil nil nil {})]
+               [:b3-report
+                (private-var
+                 'p15-s23-b3-llvm-require-trusted-final-carrier!)
+                #(bootstrap/p15-s23-stage2-b3-llvm-verification-report
+                  {} nil {:source-path "interrupt-b3-report.gravity"})]
+               [:b3-verify
+                (private-var
+                 'p15-s23-b3-llvm-require-trusted-final-carrier!)
+                #(bootstrap/p15-s23-stage2-b3-llvm-verify!
+                  {} nil {:source-path "interrupt-b3-verify.gravity"})]
+               [:b3-authentic
+                (private-var
+                 'p15-s23-b3-llvm-require-trusted-final-carrier!)
+                #(bootstrap/p15-s23-stage2-b3-llvm-authentic?
+                  {} nil {:source-path "interrupt-b3-authentic.gravity"})]
+               [:b4-source
+                #'bootstrap/p15-s23-stage2-gravity-checked-core-context
+                #(bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
+                  "interrupt-b4-source.gravity"
+                  c11-authenticated-pure-source)]
+               [:b4-artifact
+                (private-var 'p15-s23-b4-wasm-build-internal!)
+                #(bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+                  nil nil {:source-path "interrupt-b4-artifact.gravity"})]
+               [:b4-report
+                (private-var
+                 'p15-s23-b4-wasm-require-trusted-final-carrier!)
+                #(bootstrap/p15-s23-stage2-b4-wasm-verification-report
+                  {} nil {:source-path "interrupt-b4-report.gravity"})]
+               [:b4-verify
+                (private-var
+                 'p15-s23-b4-wasm-require-trusted-final-carrier!)
+                #(bootstrap/p15-s23-stage2-b4-wasm-verify!
+                  {} nil {:source-path "interrupt-b4-verify.gravity"})]
+               [:b4-authentic
+                (private-var
+                 'p15-s23-b4-wasm-require-trusted-final-carrier!)
+                #(bootstrap/p15-s23-stage2-b4-wasm-authentic?
+                  {} nil {:source-path "interrupt-b4-authentic.gravity"})]]
+              interrupt-results
+              (mapv
+               (fn [[label target invocation]]
+                 (let [expected
+                       (InterruptedException.
+                        (str "synthetic-backend-interrupt-" (name label)))
+                       _ (Thread/interrupted)
+                       observed
+                       (try
+                         (with-redefs-fn
+                           {target (fn [& _] (throw expected))}
+                           invocation)
+                         :unexpected-success
+                         (catch InterruptedException interrupted
+                           interrupted))
+                       restored?
+                       (.isInterrupted (Thread/currentThread))
+                       _ (Thread/interrupted)]
+                   [label expected observed restored?]))
+               interrupt-cases)]
+          (is (= {:output-directory nil}
+                 (validate-options path {})))
+          (is (= {:output-directory nil}
+                 (validate-options path {:output-directory nil})))
+          (is (= {:output-directory "/tmp/gravity-b3-output"}
+                 (validate-options
+                  path {:output-directory "/tmp/gravity-b3-output"})))
+          (is (identical?
+               owned-data
+               (binding [bootstrap/*p15-s23-c11-upstream-diagnostic-owner*
+                         owner]
+                 (bootstrap/p15-s23-trusted-diagnostic-data
+                  owned-data 64 16))))
+          (is (nil?
+               (binding [bootstrap/*p15-s23-c11-upstream-diagnostic-owner*
+                         owner]
+                 (bootstrap/p15-s23-trusted-diagnostic-data
+                  wrong-owner-data 64 16))))
+          (is (nil?
+               (bootstrap/p15-s23-trusted-diagnostic-data
+                owned-data 64 16)))
+          (doseq [[label left right expected-id expected-missing]
+                  (:observations result)]
+            (is (= left right) label)
+            (is (= [expected-id expected-id expected-missing]
+                   [(:id left) (:rule left) (:missing-fact left)])
+                [label left])
+            (is (= :gravity/diagnostic (:artifact left)) label)
+            (is (every? (set (keys left))
+                        bootstrap/c15-diagnostic-required-fields)
+                label)
+            (is (= (:diagnostic-id left)
+                   (bootstrap/c15-stable-diagnostic-id left))
+                label)
+            (is (nil?
+                 (re-find
+                  #"backend-ingress-|PersistentTreeMap|PersistentTreeSet|LazySeq|proxy"
+                  (pr-str left)))
+                label)
+            (when (contains? #{[:b3-context] [:b4-context]} label)
+              (is (= "<c11-mir>"
+                     (get-in left [:primary :span :source]))
+                  [label left])))
+          (doseq [[label observed] (:authentic result)]
+            (is (false? observed) label))
+          (doseq [[label expected observed restored?] interrupt-results]
+            (is (identical? expected observed) label)
+            (is (true? restored?) label))
+          (is (zero? @comparator-calls))
+          (is (zero? @lazy-tail-calls))
+          (is (zero? @hostile-hash-calls))
+          (is (zero? @hostile-equals-calls))
+          (is (= {} @calls))
+          (is (= before-b3
+                 (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)))
+          (is (= before-b4
+                 (bootstrap/p15-s23-b4-wasm-node-execution-snapshot))))))))
+
 (def ^:private authenticated-wasm-live-proof
   (delay
     (with-temp-directory
@@ -33912,12 +35003,12 @@
               build
               (fn [path source]
                 (let [path (.toString path)
-                      core
-                      (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
-                       path source :wasm)
                       context
-                      (bootstrap/p15-s23-stage2-closed-checked-core-context
+                      (bootstrap/p15-s23-stage2-gravity-checked-core-context
                        path source :wasm)
+                      core
+                      (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                       context)
                       c11 (bootstrap/p15-s23-stage2-c11-mir-artifact core context)
                       artifact
                       (bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
@@ -33992,6 +35083,14 @@
         right-artifact (:artifact right)]
     (is (= :gravity/p15-s23-b4-authenticated-wasm-artifact
            (:kind left-artifact)))
+    (is (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
+           (get-in left [:core :kind])
+           (get-in right [:core :kind])))
+    (is (= :gravity-source-pure
+           (get-in left [:c11 :checked-core-ingress
+                         :checked-core-ingress-mode])
+           (get-in right [:c11 :checked-core-ingress
+                          :checked-core-ingress-mode])))
     (is (= authenticated-wasm-constant-bytes
            (get-in left-artifact [:raw-wasm :bytes])))
     (is (= 47 (get-in left-artifact [:raw-wasm :byte-count])))
@@ -34203,19 +35302,19 @@
           (closed-pure-source-with-main
            "7" {:target :wasm :exports '[main]})
           "C6-LOWERING-GAP"
-          :pure-closed-slice-jvm-source-target
+         :bounded-jvm-source-target
           :core-lowering]
          [:c7
           (closed-pure-source-with-main "1.5" {:exports '[main]})
           "C7-TYPE-MISMATCH"
-          :pure-closed-integer-numeric-scalar
+          :bounded-scalar-literal-type
           :type-check]
-         [:c8
+         [:c6-effect
           (closed-pure-source-with-main
            "nil" {:effects #{:mystery/effect} :exports '[main]})
-          "C8-UNKNOWN"
-          :recognized-pure-slice-effect-label
-          :effect-check]]
+          "C6-LOWERING-GAP"
+          :empty-declared-effects
+          :core-lowering]]
         before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
         observations
         (for [extension [".gravity" ".qst"]
@@ -34270,7 +35369,7 @@
             :observed
             (try
               (with-redefs
-                [bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+                [bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
                  (fn [& _] (throw fatal))]
                 (bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
                  "fatal-b4-source.gravity" source))

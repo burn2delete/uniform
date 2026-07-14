@@ -116401,9 +116401,188 @@
        :actual-path-context
        (:actual-path-context verification-replay)})))
 
+(def p15-s23-trusted-carrier-map-classes
+  #{"clojure.lang.PersistentArrayMap"
+    "clojure.lang.PersistentHashMap"})
+
+(def p15-s23-trusted-carrier-vector-classes
+  #{"clojure.lang.PersistentVector"})
+
+(def p15-s23-trusted-carrier-set-classes
+  #{"clojure.lang.PersistentHashSet"})
+
+(def p15-s23-trusted-carrier-list-classes
+  #{"clojure.lang.PersistentList"
+    "clojure.lang.PersistentList$EmptyList"
+    "clojure.lang.Cons"})
+
+(def p15-s23-trusted-carrier-scalar-classes
+  #{"java.lang.String" "java.lang.Character"
+    "java.lang.Long" "java.lang.Integer" "java.lang.Short"
+    "java.lang.Byte" "java.lang.Double" "java.lang.Float"
+    "java.math.BigInteger" "java.math.BigDecimal"
+    "clojure.lang.BigInt" "clojure.lang.Ratio"
+    "clojure.lang.Keyword" "clojure.lang.Symbol"
+    "java.lang.Boolean"})
+
+(defn p15-s23-trusted-carrier-validation
+  "Iteratively validate exact host carrier classes without executing custom
+  comparators or descending into an untrusted collection implementation.
+  `sorted-policy` is either :reject or :default-only."
+  [value sorted-policy maximum-nodes maximum-depth maximum-width]
+  (loop [stack [[value 0]]
+         nodes 0
+         observed-depth 0
+         classes #{}]
+    (if (empty? stack)
+      {:status :passed
+       :observed-nodes nodes
+       :observed-depth observed-depth
+       :classes classes}
+      (let [[item depth] (peek stack)
+            stack (pop stack)
+            nodes (inc nodes)
+            observed-depth (max observed-depth depth)
+            class-name (when (some? item) (.getName (class item)))
+            classes (if class-name (conj classes class-name) classes)
+            reject
+            (fn [reason]
+              (cond->
+               {:status :rejected
+                :reason reason
+                :class (or class-name :nil)
+                :observed-nodes nodes
+                :observed-depth observed-depth}
+                (= :maximum-carrier-nodes reason)
+                (assoc :maximum-nodes maximum-nodes)
+                (= :maximum-carrier-depth reason)
+                (assoc :maximum-depth maximum-depth)
+                (= :maximum-carrier-width reason)
+                (assoc :maximum-width maximum-width)))]
+        (cond
+          (> nodes maximum-nodes) (reject :maximum-carrier-nodes)
+          (> depth maximum-depth) (reject :maximum-carrier-depth)
+          (nil? item)
+          (recur stack nodes observed-depth classes)
+
+          (map? item)
+          (let [tree? (= "clojure.lang.PersistentTreeMap" class-name)
+                allowed?
+                (or (contains? p15-s23-trusted-carrier-map-classes
+                               class-name)
+                    (and tree?
+                         (= :default-only sorted-policy)
+                         (identical?
+                          (.comparator ^clojure.lang.Sorted item)
+                          clojure.lang.RT/DEFAULT_COMPARATOR)))]
+            (cond
+              (not allowed?) (reject :untrusted-map-class-or-comparator)
+              (some? (meta item)) (reject :carrier-metadata)
+              (> (count item) maximum-width) (reject :maximum-carrier-width)
+              :else
+              (recur
+               (reduce-kv (fn [pending key child]
+                            (conj pending [key (inc depth)]
+                                  [child (inc depth)]))
+                          stack item)
+               nodes observed-depth classes)))
+
+          (vector? item)
+          (let [allowed? (= "clojure.lang.PersistentVector" class-name)]
+           (cond
+            (not allowed?)
+            (reject :untrusted-vector-class)
+            (some? (meta item)) (reject :carrier-metadata)
+            (> (count item) maximum-width) (reject :maximum-carrier-width)
+            :else
+            (recur (reduce #(conj %1 [%2 (inc depth)]) stack item)
+                   nodes observed-depth classes)))
+
+          (set? item)
+          (let [tree? (= "clojure.lang.PersistentTreeSet" class-name)
+                allowed?
+                (or (contains? p15-s23-trusted-carrier-set-classes class-name)
+                    (and tree?
+                         (= :default-only sorted-policy)
+                         (identical?
+                          (.comparator ^clojure.lang.Sorted item)
+                          clojure.lang.RT/DEFAULT_COMPARATOR)))]
+            (cond
+              (not allowed?) (reject :untrusted-set-class-or-comparator)
+              (some? (meta item)) (reject :carrier-metadata)
+              (> (count item) maximum-width) (reject :maximum-carrier-width)
+              :else
+              (recur (reduce #(conj %1 [%2 (inc depth)]) stack item)
+                     nodes observed-depth classes)))
+
+          (or (list? item) (= "clojure.lang.Cons" class-name))
+          (cond
+            (not (contains? p15-s23-trusted-carrier-list-classes class-name))
+            (reject :untrusted-list-class)
+            (some? (meta item)) (reject :carrier-metadata)
+            :else
+            (let [expanded
+                  (loop [cursor item
+                         width 0
+                         pending stack]
+                    (let [cursor-class
+                          (when (some? cursor) (.getName (class cursor)))]
+                      (cond
+                        (or (nil? cursor)
+                            (= "clojure.lang.PersistentList$EmptyList"
+                               cursor-class))
+                        {:status :passed :stack pending}
+
+                        (>= width maximum-width)
+                        {:status :rejected :reason :maximum-carrier-width}
+
+                        (not (contains?
+                              p15-s23-trusted-carrier-list-classes
+                              cursor-class))
+                        {:status :rejected
+                         :reason :untrusted-list-tail-class}
+
+                        (some? (meta cursor))
+                        {:status :rejected :reason :carrier-metadata}
+
+                        :else
+                        (let [pending
+                              (conj pending
+                                    [(.first ^clojure.lang.ISeq cursor)
+                                     (inc depth)])
+                              tail
+                              (if (= "clojure.lang.Cons" cursor-class)
+                                (.more ^clojure.lang.Cons cursor)
+                                (.next ^clojure.lang.ISeq cursor))]
+                          (recur tail (inc width) pending)))))]
+              (if (= :passed (:status expanded))
+                (recur (:stack expanded) nodes observed-depth classes)
+                (reject (:reason expanded)))))
+
+          (contains? p15-s23-trusted-carrier-scalar-classes class-name)
+          (if (and (instance? clojure.lang.IObj item) (some? (meta item)))
+            (reject :carrier-metadata)
+            (recur stack nodes observed-depth classes))
+
+          :else (reject :untrusted-scalar-class))))))
+
 (defn p15-s23-stage2-closed-checked-core-verification-report
   [artifact context]
   (try
+    (doseq [[carrier value] [[:legacy-checked-core artifact]
+                             [:legacy-checked-core-context context]]]
+      (let [validation
+            (p15-s23-trusted-carrier-validation
+             value :default-only
+             p15-s23-closed-core-max-serialized-values
+             p15-s23-closed-core-max-plan-depth
+             p15-s23-closed-core-max-derived-nodes)]
+        (when-not (= :passed (:status validation))
+          (p15-s23-closed-core-fail!
+           "C6-VERIFY" "<closed-core>" {}
+           (assoc validation
+                  :missing-fact :trusted-legacy-checked-core-carrier
+                  :carrier carrier)))))
     (p15-s23-checked-core-bounded-context! context)
     (p15-s23-closed-core-bounded-value! "<closed-core>" artifact)
     (let [source-path
@@ -116412,6 +116591,9 @@
               "<closed-core>")]
       (try
         (p15-s23-stage2-closed-checked-core-verify!* artifact context)
+        (catch InterruptedException interrupted
+          (.interrupt (Thread/currentThread))
+          (throw interrupted))
         (catch clojure.lang.ExceptionInfo ex
           (throw ex))
         (catch StackOverflowError error
@@ -116429,6 +116611,9 @@
             :cause-message-hash
             (str "sha256:"
                  (sha256-hex (or (.getMessage error) "")))}))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch clojure.lang.ExceptionInfo ex
       (throw ex))
     (catch StackOverflowError error
@@ -116464,6 +116649,9 @@
    (try
      (= :passed
         (p15-s23-stage2-closed-checked-core-verify! artifact context))
+     (catch InterruptedException interrupted
+       (.interrupt (Thread/currentThread))
+       (throw interrupted))
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
 
@@ -116534,30 +116722,158 @@
 (def p15-s23-c6c10-max-digest-requests 2048)
 (def p15-s23-c6c10-max-source-bytes (* 1024 1024))
 
+(declare p15-s23-c6c10-canonical-digest)
+
+(defn p15-s23-c6c10-upstream-diagnostic-contract
+  [rule]
+  (cond
+    (contains? (set c6-lowering-diagnostic-ids) rule)
+    {:stage :core-lowering
+     :family :c6-ast-core-lowering
+     :document-id "C6"
+     :expected-document c6-lowering-governing-document}
+
+    (contains? (set c7-type-diagnostic-ids) rule)
+    {:stage :type-check
+     :family :c7-type-checker
+     :document-id "C7"
+     :expected-document c7-type-governing-document}
+
+    (contains? (set c8-effect-diagnostic-ids) rule)
+    {:stage :effect-check
+     :family :c8-effect-checker
+     :document-id "C8"
+     :expected-document c8-effect-governing-document}
+
+    (contains? (set c9-ownership-diagnostic-ids) rule)
+    {:stage :ownership-lifetime-region-check
+     :family :c9-ownership-checker
+     :document-id "C9"
+     :expected-document c9-ownership-governing-document}
+
+    (contains? (set c10-safety-diagnostic-ids) rule)
+    {:stage :safety-analysis
+     :family :c10-safety-analysis
+     :document-id "C10"
+     :expected-document c10-safety-governing-document}
+
+    :else
+    {:stage :core-lowering
+     :family :c6-ast-core-lowering
+     :document-id "C6"
+     :expected-document c6-lowering-governing-document}))
+
+(defn p15-s23-c6c10-owned-upstream-data
+  [data]
+  (if (some? *p15-s23-c11-upstream-diagnostic-owner*)
+    (assoc data
+           ::c11-upstream-diagnostic-owner
+           *p15-s23-c11-upstream-diagnostic-owner*)
+    data))
+
+(defn p15-s23-c6c10-diagnostic-semantic-span
+  [span]
+  (let [span (if (map? span) span {})
+        position
+        (fn [candidate]
+          (let [candidate (if (map? candidate) candidate {})]
+            (into {}
+                  (keep (fn [key]
+                          (let [value (get candidate key)]
+                            (cond
+                              (and (not= :column-unit key)
+                                   (integer? value)
+                                   (<= 0 value Long/MAX_VALUE))
+                              [key (long value)]
+
+                              (and (= :column-unit key)
+                                   (keyword? value))
+                              [key value]
+
+                              :else nil))))
+                  [:line :column :column-unit :char :byte])))]
+    (cond-> {}
+      (seq (position (:start span)))
+      (assoc :start (position (:start span)))
+      (seq (position (:end span)))
+      (assoc :end (position (:end span)))
+      (and (integer? (:byte-start span))
+           (<= 0 (:byte-start span) Long/MAX_VALUE))
+      (assoc :byte-start (long (:byte-start span)))
+      (and (integer? (:byte-end span))
+           (<= 0 (:byte-end span) Long/MAX_VALUE))
+      (assoc :byte-end (long (:byte-end span)))
+      (and (integer? (:form-index span))
+           (<= 0 (:form-index span) Long/MAX_VALUE))
+      (assoc :form-index (long (:form-index span))))))
+
+(defn p15-s23-c6c10-diagnostic-semantic-id
+  [candidate]
+  (let [text (when (or (keyword? candidate)
+                       (symbol? candidate)
+                       (string? candidate))
+               (str candidate))]
+    (when (and (string? text) (<= (.length ^String text) 256))
+      candidate)))
+
 (defn p15-s23-c6c10-host-fail!
   [rule source-path missing-fact subject]
-  (throw
-   (ex-info
-    (str rule " at bounded Gravity C6-C10 bridge")
-    {:id rule
-     :rule rule
-     :bootstrap-stage :stage0
-     :stage (if (str/starts-with? rule "C7-")
-              :type-check
-              (if (str/starts-with? rule "C8-")
-                :effect-check
-                (if (str/starts-with? rule "C10-")
-                  :safety-analysis
-                  :core-lowering)))
-     :diagnostic-family :c6-c10-gravity-bridge
-     :source-span {:source (or source-path "<c6-c10>")}
-     :profile :hosted
-     :target :jvm
-     :missing-fact missing-fact
-     :subject subject
-     :generated-origin-chain []
-     :remediation
-     "Regenerate the bounded product from fresh C2/C3 products, the pinned stage2 plan, and the pinned Gravity C6-C10 module."})))
+  (let [subject (if (map? subject) subject {})
+        contract (p15-s23-c6c10-upstream-diagnostic-contract rule)
+        span (or (:source-span subject)
+                 (:span subject)
+                 {:source (or source-path "<c6-c10>")})
+        generated-origin-chain
+        (let [origin (or (:generated-origin-chain subject)
+                         (:generated-origin subject))]
+          (if (and (vector? origin) (<= (count origin) 64)) origin []))
+        semantic-identities
+        (into {}
+              (keep (fn [key]
+                      (when-let [identity
+                                 (p15-s23-c6c10-diagnostic-semantic-id
+                                  (get subject key))]
+                        [key identity])))
+              [:syntax-id :core-node-id :operation-id :origin-id])
+        stable-input
+        {:domain :gravity/c6-c10-upstream-diagnostic-id-v1
+         :rule rule
+         :stage (:stage contract)
+         :primary-span
+         (p15-s23-c6c10-diagnostic-semantic-span span)
+         :semantic-identities semantic-identities
+         :missing-fact
+         (if (keyword? missing-fact) missing-fact :invalid-missing-fact)}
+        data
+        (p15-s23-c6c10-owned-upstream-data
+         (merge
+          {:id rule
+          :rule rule
+          :diagnostic-id
+          (p15-s23-c6c10-canonical-digest
+           (or source-path "<c6-c10>") stable-input)
+          :bootstrap-stage :stage0
+          :stage (:stage contract)
+          :diagnostic-family (:family contract)
+          :document-id (:document-id contract)
+          :expected-document (:expected-document contract)
+          :source-span span
+          :profile (if (keyword? (:profile subject))
+                     (:profile subject) :hosted)
+          :target (let [candidate (or (:requested-target subject)
+                                      (:target subject))]
+                    (if (keyword? candidate) candidate :jvm))
+          :missing-fact missing-fact
+          :facts (assoc subject :missing-fact missing-fact)
+          :subject subject
+          :generated-origin-chain generated-origin-chain
+          :remediation
+          "Regenerate the bounded product from fresh C2/C3 products, the pinned stage2 plan, and the pinned Gravity C6-C10 module."}
+          semantic-identities))]
+    (throw
+     (ex-info
+      (str rule " at bounded Gravity C6-C10 bridge")
+      data))))
 
 (defn p15-s23-c6c10-valid-unicode-string?
   [^String value]
@@ -119968,21 +120284,62 @@
 (def p15-s23-c6c10-physical-artifact-keys
   #{:target-request-metadata :physical-provenance})
 
+(defn p15-s23-c6c10-require-trusted-carrier!
+  [source-path carrier value]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         value :reject p15-s23-c6c10-max-carrier-nodes
+         p15-s23-c6c10-max-carrier-depth
+         p15-s23-c6c10-max-container-width)]
+    (when-not (= :passed (:status validation))
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" source-path :trusted-gravity-checked-core-carrier
+       (assoc validation :carrier carrier)))
+    validation))
+
 (defn p15-s23-stage2-gravity-checked-core-context
   [source-path source-text requested-target]
-  (when-not (and (string? source-path)
+  (let [path-count
+        (when (string? source-path)
+          (p15-s23-closed-core-bounded-utf8-count source-path 4096))
+        source-count
+        (when (string? source-text)
+          (p15-s23-closed-core-bounded-utf8-count
+           source-text p15-s23-c6c10-max-source-bytes))
+        safe-source-path
+        (if (and (= :valid (:status path-count))
+                 (qst-or-gravity-source? source-path))
+          source-path
+          "<gravity-checked-core>")]
+   (when (= :over-limit (:status path-count))
+     (p15-s23-c6c10-host-fail!
+      "C6-CORE-SHAPE"
+      safe-source-path
+      :maximum-scalar-characters
+      {:observed-scalar-characters (.length ^String source-path)
+       :maximum-scalar-characters 4096}))
+   (when (= :invalid-surrogate (:status path-count))
+     (p15-s23-c6c10-host-fail!
+      "C6-CORE-SHAPE"
+      safe-source-path
+      :well-formed-unicode-scalar-string
+      {:value-kind :string}))
+   (when-not (and (string? source-path)
+                 (= :valid (:status path-count))
                  (qst-or-gravity-source? source-path)
                  (string? source-text)
-                 (p15-s23-c6c10-valid-unicode-string? source-text)
-                 (<= (utf8-byte-count source-text)
-                     p15-s23-c6c10-max-source-bytes)
-                 (keyword? requested-target))
+                 (= :valid (:status source-count))
+                 (keyword? requested-target)
+                 (<= (count (str requested-target)) 256))
     (p15-s23-c6c10-host-fail!
      "C6-CORE-SHAPE"
-     (if (string? source-path) source-path "<gravity-checked-core>")
+     safe-source-path
      :bounded-co-canonical-source-context
-     {:source-path source-path
+     {:source-path-valid? (= :valid (:status path-count))
+      :source-path-extension-valid?
+      (and (string? source-path) (qst-or-gravity-source? source-path))
       :source-text? (string? source-text)
+      :source-text-status (or (:status source-count) :not-a-string)
       :requested-target requested-target}))
   (p15-s23-c6c10-canonical-record source-path source-path)
   (p15-s23-c6c10-canonical-record source-path requested-target)
@@ -119990,20 +120347,29 @@
    :source-path source-path
    :source-text source-text
    :source-content-hash (str "sha256:" (sha256-hex source-text))
-   :requested-target requested-target})
+   :requested-target requested-target}))
 
 (defn p15-s23-c6c10-validate-public-context!
   [context]
-  (let [source-path
-        (if (and (map? context) (string? (:source-path context)))
-          (:source-path context)
-          "<gravity-checked-core>")]
+  (let [trusted-top-level?
+        (and (map? context)
+             (contains? p15-s23-trusted-carrier-map-classes
+                        (.getName (class context)))
+             (nil? (meta context))
+             (<= (count context) 5))]
+    (when-not trusted-top-level?
+      (p15-s23-c6c10-host-fail!
+       "C6-VERIFY" "<gravity-checked-core>"
+       :exact-public-source-verification-context
+       {:context-class (some-> context class .getName)}))
+    (p15-s23-c6c10-require-trusted-carrier!
+     "<gravity-checked-core>" :gravity-checked-core-context context)
+    (let [source-path
+          (if (string? (:source-path context))
+            (:source-path context)
+            "<gravity-checked-core>")]
     (when-not
-     (and (map? context)
-          (nil? (meta context))
-          (contains? p15-s23-c6c10-canonical-map-classes
-                     (.getName (class context)))
-          (= p15-s23-c6c10-public-context-keys
+     (and (= p15-s23-c6c10-public-context-keys
              (set (keys context)))
           (= :gravity/p15-s23-stage2-gravity-checked-core-context
              (:kind context))
@@ -120013,31 +120379,70 @@
               (:requested-target context))))
       (p15-s23-c6c10-host-fail!
        "C6-VERIFY" source-path :exact-public-source-verification-context
-       {:context-keys (when (map? context) (set (keys context)))}))
-    context))
+       {:context-keys (set (keys context))}))
+      context)))
 
 (defn p15-s23-c6c10-throw-sealed-rejection!
   [source-path sealed-result]
   (let [diagnostic (or (first (:sealed-diagnostics sealed-result)) {})
         rule (or (:rule diagnostic) (:id diagnostic) "C6-VERIFY")
+        contract (p15-s23-c6c10-upstream-diagnostic-contract rule)
         primary-span (or (get-in diagnostic [:primary :span]) {})
+        missing-fact (get-in diagnostic [:facts :missing-fact])
         public-span (assoc primary-span
                            :source source-path
-                           :file source-path)]
+                           :file source-path)
+        _ (when-not (keyword? missing-fact)
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" source-path
+             :sealed-gravity-diagnostic-missing-fact
+             {:source-span public-span}))
+        origin-chain
+        (if (and (vector? (:origin-chain diagnostic))
+                 (<= (count (:origin-chain diagnostic)) 64))
+          (:origin-chain diagnostic) [])
+        syntax-id
+        (p15-s23-c6c10-diagnostic-semantic-id
+         (get-in diagnostic [:primary :syntax-id]))
+        core-node-id
+        (p15-s23-c6c10-diagnostic-semantic-id
+         (or (get-in diagnostic [:primary :core-node-id])
+             (get-in diagnostic [:primary :artifact])))
+        operation-id
+        (p15-s23-c6c10-diagnostic-semantic-id
+         (or (get-in diagnostic [:primary :mir-operation-id])
+             (get-in diagnostic [:primary :artifact])))
+        origin-id
+        (p15-s23-c6c10-diagnostic-semantic-id
+         (or (get-in diagnostic [:primary :origin-id])
+             (first origin-chain)))
+        data
+        (p15-s23-c6c10-owned-upstream-data
+         (merge
+          diagnostic
+          {:id rule
+           :rule rule
+           :bootstrap-stage :stage0
+           :stage (:stage contract)
+           :diagnostic-family (:family contract)
+           :document-id (:document-id contract)
+           :expected-document (:expected-document contract)
+           :source-span public-span
+           :missing-fact missing-fact
+           :syntax-id syntax-id
+           :core-node-id core-node-id
+           :operation-id operation-id
+           :origin-id origin-id
+           :generated-origin-chain origin-chain
+           :sealed-diagnostic diagnostic
+           :sealed-diagnostics (:sealed-diagnostics sealed-result)
+           :digest-graph-proof (:graph-proof sealed-result)
+           :clojure-seed-boundary? true
+           :self-hosted? false}))]
     (throw
      (ex-info
       (str rule " from Gravity C6-C10 checked-core source")
-      (merge
-       diagnostic
-       {:id rule
-        :rule rule
-        :diagnostic-family :gravity-source-c6-c10
-        :source-span public-span
-        :sealed-diagnostic diagnostic
-        :sealed-diagnostics (:sealed-diagnostics sealed-result)
-        :digest-graph-proof (:graph-proof sealed-result)
-        :clojure-seed-boundary? true
-        :self-hosted? false})))))
+      data))))
 
 (defn p15-s23-c6c10-public-artifact
   [context source-binding ingress sealed-result]
@@ -120403,6 +120808,8 @@
   [artifact context]
   (let [context (p15-s23-c6c10-validate-public-context! context)
         source-path (:source-path context)]
+    (p15-s23-c6c10-require-trusted-carrier!
+     source-path :gravity-checked-core-artifact artifact)
     (p15-s23-c6c10-canonical-record source-path artifact)
     (when (p15-s23-c6c10-exact-digest-ref-present? artifact)
       (p15-s23-c6c10-host-fail!
@@ -120603,6 +121010,9 @@
                 (:status
                  (p15-s23-closed-core-bounded-utf8-count
                   source-path 4096)))
+             (catch InterruptedException interrupted
+               (.interrupt (Thread/currentThread))
+               (throw interrupted))
              (catch Exception _ false)))
     source-path
     "<c11-mir>"))
@@ -120619,6 +121029,10 @@
     :expected-source-content-hash :observed-source-content-hash
     :observed-plan-semantic-hash :observed-functions-semantic-hash
     :observed-builder-semantic-hash :construction-mode
+    :checked-core-artifact-kind :checked-core-context-kind
+    :checked-core-ingress-mode :checked-core-semantic-authority
+    :checked-core-verification-status :checked-core-ingress-schema-version
+    :producer-diagnostic-id
     :observed-nodes :observed-depth
     :observed-width :maximum-width :observed-total-scalar-bytes
     :maximum-total-scalar-bytes :maximum-nodes :maximum-depth
@@ -120718,8 +121132,8 @@
   (cond
     (nil? value) nil
     (boolean? value) value
-    (keyword? value) value
-    (symbol? value) value
+    (and (keyword? value) (<= (count (str value)) 256)) value
+    (and (symbol? value) (<= (count (str value)) 256)) value
     (and (integer? value)
          (<= (.bitLength (.abs (biginteger value))) 256)) value
     (and (string? value)
@@ -120732,6 +121146,13 @@
     (mapv p15-s23-c11-mir-safe-diagnostic-scalar value)
     :else :redacted))
 
+(defn p15-s23-c11-mir-safe-origin-chain
+  [candidate]
+  (cond
+    (not (vector? candidate)) []
+    (> (count candidate) 64) [:redacted-origin-chain-over-limit]
+    :else (mapv p15-s23-c11-mir-safe-diagnostic-scalar candidate)))
+
 (defn p15-s23-c11-mir-safe-diagnostic-fact-value
   [key value]
   (let [sha256?
@@ -120740,7 +121161,10 @@
                (re-matches #"sha256:[0-9a-f]{64}" candidate)))
         semantic-id?
         (fn [candidate]
-          (or (keyword? candidate) (symbol? candidate)
+          (or (and (keyword? candidate)
+                   (<= (count (str candidate)) 256))
+              (and (symbol? candidate)
+                   (<= (count (str candidate)) 256))
               (sha256? candidate)))
         bounded-count?
         (fn [candidate]
@@ -120759,6 +121183,10 @@
                    :actual-type :effect :capability :provider :grant
                    :specialized-safe-rule :safety-mode
                    :boundary-identity-reason :construction-mode
+                   :checked-core-artifact-kind :checked-core-context-kind
+                   :checked-core-ingress-mode
+                   :checked-core-semantic-authority
+                   :checked-core-verification-status
                    :runtime-contract-definition :bounded-reason}
                  key)
       (if (or (keyword? value) (symbol? value)) value :redacted)
@@ -120779,12 +121207,15 @@
                  key)
       (if (sha256? value) value :redacted)
 
+      (= :producer-diagnostic-id key)
+      (if (sha256? value) value :redacted)
+
       (contains? #{:conditional-count :expected-source-bytes
                    :observed-source-bytes :observed-nodes
                    :observed-depth :observed-width :maximum-width
                    :observed-total-scalar-bytes
                    :maximum-total-scalar-bytes :maximum-nodes
-                   :maximum-depth}
+                   :maximum-depth :checked-core-ingress-schema-version}
                  key)
       (if (bounded-count? value) value :redacted)
 
@@ -120921,19 +121352,23 @@
              (:op-id subject)
              (:operation-id subject)
              :not-applicable))
+        mir-operation-id
+        (p15-s23-c11-mir-safe-diagnostic-scalar
+         (or (:operation-id subject)
+             (:op-id subject)
+             (:core-node-id subject)
+             :not-applicable))
         semantic-origin-id
         (p15-s23-c11-mir-safe-diagnostic-scalar
          (or (get-in subject [:source :origin-id])
              (:origin-id subject)
              :not-applicable))
         origin-chain
-        (let [candidate (or (:origin-chain subject)
-                            (get-in subject [:source :origin-chain])
-                            (when (not= :not-applicable semantic-origin-id)
-                              [semantic-origin-id]))]
-          (if (and (vector? candidate) (<= (count candidate) 16))
-            (mapv p15-s23-c11-mir-safe-diagnostic-scalar candidate)
-            []))
+        (p15-s23-c11-mir-safe-origin-chain
+         (or (:origin-chain subject)
+             (get-in subject [:source :origin-chain])
+             (when (not= :not-applicable semantic-origin-id)
+               [semantic-origin-id])))
         generated-origin
         (first (get-in subject [:source :generated-origin]))
         producer-operation-id
@@ -120980,11 +121415,11 @@
          {:span span
           :syntax-id
           (p15-s23-c11-mir-safe-diagnostic-scalar
-           (or (:syntax-id subject)
-               (get-in subject [:source :enclosing-syntax-origin-id])
-               semantic-origin-id))
+          (or (:syntax-id subject)
+              (get-in subject [:source :enclosing-syntax-origin-id])
+              semantic-origin-id))
           :core-node-id core-node-id
-          :mir-operation-id core-node-id
+          :mir-operation-id mir-operation-id
           :origin-id semantic-origin-id
           :artifact primary-artifact}
          :related related
@@ -121083,7 +121518,32 @@
                 id source-path subject extra)
         _ (p15-s23-c11-mir-throw-record! record)]))
 
-(defn p15-s23-c11-mir-sanitized-complete-diagnostic
+(defn p15-s23-c11-mir-require-trusted-carrier!
+  [source-path carrier value sorted-policy]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         value sorted-policy
+         p15-s23-c11-mir-max-final-artifact-carrier-nodes
+         p15-s23-c11-mir-max-carrier-depth
+         p15-s23-c11-mir-max-final-artifact-carrier-nodes)]
+    (when-not (= :passed (:status validation))
+      (p15-s23-c11-mir-fail!
+       (if (contains? #{:maximum-carrier-nodes
+                        :maximum-carrier-depth
+                        :maximum-carrier-width}
+                      (:reason validation))
+         "C11-VERIFY"
+         "C11-MODULE")
+       source-path {}
+       (assoc
+        (select-keys validation
+                     [:reason :observed-nodes :observed-depth
+                      :maximum-nodes :maximum-depth :maximum-width])
+        :missing-fact :trusted-comparator-free-c11-carrier
+        :carrier carrier)))
+    validation))
+
+(defn- p15-s23-c11-mir-sanitized-complete-diagnostic
   [data]
   (when (map? data)
     (let [rule (:rule data)
@@ -121104,7 +121564,7 @@
           safe-related
           (p15-s23-c11-mir-safe-related source-path (:related data))
           safe-origin-chain
-          (p15-s23-c11-mir-safe-diagnostic-scalar (:origin-chain data))
+          (p15-s23-c11-mir-safe-origin-chain (:origin-chain data))
           safe-involved
           (p15-s23-c11-mir-safe-diagnostic-scalar
            (:involved-artifacts data))
@@ -121183,10 +121643,53 @@
    :status :recorded
    :observed-at :c11-authenticated-mir})
 
+(defn p15-s23-trusted-diagnostic-data
+  [data maximum-nodes maximum-depth]
+  (when (and (map? data)
+             (contains? p15-s23-trusted-carrier-map-classes
+                        (.getName (class data)))
+             (nil? (meta data))
+             (<= (count data) maximum-nodes))
+    (let [projection
+          (reduce-kv
+           (fn [state key value]
+             (if (identical? key ::c11-upstream-diagnostic-owner)
+               (-> state
+                   (update :owner-count inc)
+                   (update :owner-valid?
+                           #(and %
+                                 (some?
+                                  *p15-s23-c11-upstream-diagnostic-owner*)
+                                 (identical?
+                                  *p15-s23-c11-upstream-diagnostic-owner*
+                                  value)))
+                   (update :entries conj [key nil]))
+               (update state :entries conj [key value])))
+           {:entries [] :owner-count 0 :owner-valid? true}
+           data)
+          owner-valid?
+          (or (zero? (:owner-count projection))
+              (and (= 1 (:owner-count projection))
+                   (:owner-valid? projection)))
+          validation
+          (when owner-valid?
+            (p15-s23-trusted-carrier-validation
+             (:entries projection) :default-only
+             maximum-nodes maximum-depth maximum-nodes))]
+      (when (= :passed (:status validation)) data))))
+
+(defn p15-s23-backend-trusted-exception-data
+  [exception maximum-nodes maximum-depth]
+  (when (instance? clojure.lang.ExceptionInfo exception)
+    (p15-s23-trusted-diagnostic-data
+     (ex-data exception) maximum-nodes maximum-depth)))
+
 (defn p15-s23-c11-mir-contain-exception!
   [source-path boundary exception]
-  (let [data (when (instance? clojure.lang.ExceptionInfo exception)
-               (ex-data exception))
+  (let [data
+        (p15-s23-backend-trusted-exception-data
+         exception p15-s23-c11-mir-max-final-artifact-carrier-nodes
+         p15-s23-c11-mir-max-carrier-depth)
         complete (p15-s23-c11-mir-sanitized-complete-diagnostic data)]
     (if complete
       (let [observation (p15-s23-c11-mir-containment-observation)
@@ -121204,8 +121707,12 @@
         (str "sha256:" (sha256-hex (.getName (class exception))))}))))
 
 (defn p15-s23-c11-mir-owned-upstream-diagnostic?
-  [data]
-  (let [rule (:id data)
+  [candidate]
+  (let [data
+        (p15-s23-trusted-diagnostic-data
+         candidate p15-s23-c11-mir-max-final-artifact-carrier-nodes
+         p15-s23-c11-mir-max-carrier-depth)
+        rule (:id data)
         contract (p15-s23-c11-mir-diagnostic-rule-contract rule)]
     (and (map? data)
          contract
@@ -121219,6 +121726,9 @@
          (= (:family contract) (:diagnostic-family data))
          (= (:document-id contract) (:document-id data))
          (= (:expected-document contract) (:expected-document data))
+         (and (string? (:diagnostic-id data))
+              (re-matches #"sha256:[0-9a-f]{64}"
+                          (:diagnostic-id data)))
          (map? (:source-span data))
          (string? (or (get-in data [:source-span :source])
                       (get-in data [:source-span :file])))
@@ -121226,19 +121736,29 @@
          (keyword? (:target data))
          (keyword? (:missing-fact data))
          (vector? (:generated-origin-chain data))
-         (string? (:remediation data))
-         (not (str/blank? (:remediation data))))))
+         (or (and (string? (:remediation data))
+                  (not (str/blank? (:remediation data))))
+             (and (vector? (:remediation data))
+                  (seq (:remediation data))
+                  (every? map? (:remediation data)))))))
 
 (defn p15-s23-c11-mir-contain-checked-core-exception!
   [source-path boundary exception]
-  (let [data (when (instance? clojure.lang.ExceptionInfo exception)
-               (ex-data exception))]
+  (let [data
+        (p15-s23-backend-trusted-exception-data
+         exception p15-s23-c11-mir-max-final-artifact-carrier-nodes
+         p15-s23-c11-mir-max-carrier-depth)]
     (if (p15-s23-c11-mir-owned-upstream-diagnostic? data)
       (let [rule (:id data)
             contract (p15-s23-c11-mir-diagnostic-rule-contract rule)
             facts
             (p15-s23-c11-mir-safe-diagnostic-facts
-             data *p15-s23-c11-mir-diagnostic-context*)
+             data
+             (merge *p15-s23-c11-mir-diagnostic-context*
+                    (select-keys data
+                                 [:syntax-id :core-node-id
+                                  :operation-id :origin-id])
+                    {:producer-diagnostic-id (:diagnostic-id data)}))
             subject
             {:source-span (:source-span data)
              :syntax-id (:syntax-id data)
@@ -121293,7 +121813,9 @@
                     (and (contains? #{:source :file :source-path
                                       :actual-source-path :actual-path}
                                     key)
-                         (string? child)))
+                         (string? child)
+                         (not (re-matches #"sha256:[0-9a-f]{64}"
+                                          child))))
               result
               (assoc result key child)))
           (empty item)
@@ -121424,6 +121946,9 @@
   (try
     (p15-s23-c11-mir-source-binding!*
      request-source requested-target)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch StackOverflowError error
       (p15-s23-c11-mir-contain-exception!
        request-source :contained-c11-source-binding-host-stack error))
@@ -121455,6 +121980,9 @@
      value
      maximum-nodes
      maximum-depth)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch StackOverflowError error
       (p15-s23-c11-mir-contain-exception!
        source-path :contained-c11-carrier-host-stack error))
@@ -121502,6 +122030,36 @@
     (catch Exception error
       (p15-s23-c11-mir-contain-exception!
        source-path :contained-c11-carrier-host-failure error)))))
+
+(defn p15-s23-c11-mir-metadata-free?
+  [value]
+  (loop [stack [value]]
+    (if (empty? stack)
+      true
+      (let [item (peek stack)
+            stack (pop stack)]
+        (if (and (instance? clojure.lang.IObj item)
+                 (some? (meta item)))
+          false
+          (cond
+            (map? item)
+            (recur
+             (reduce (fn [pending [key child]]
+                       (conj pending key child))
+                     stack item))
+
+            (or (vector? item) (list? item) (set? item))
+            (recur (reduce conj stack item))
+
+            :else (recur stack)))))))
+
+(defn p15-s23-c11-mir-require-strict-structure!
+  [source-path expected actual missing-fact]
+  (when (p15-s23-c6c10-strict-first-mismatch
+         source-path expected actual [])
+    (p15-s23-c11-mir-fail!
+     "C11-VERIFY" source-path {}
+     {:missing-fact missing-fact})))
 
 (defn p15-s23-c11-mir-require!
   [condition id source-path subject missing-fact]
@@ -122089,9 +122647,13 @@
              (:target-request mir))
           (= (:target-request-metadata checked-core)
              (:target-request-metadata mir))
+          (map? (:functions mir))
           (= #{entrypoint} (set (keys (:functions mir))))
+          (map? (:globals mir))
           (= {} (:globals mir))
+          (map? (:domain-anchors mir))
           (= {} (:domain-anchors mir))
+          (vector? (:diagnostics mir))
           (= [] (:diagnostics mir))
           (= :pending (:verification-status mir))
           (true? (:target-independent? mir))
@@ -122106,6 +122668,7 @@
           (= :gravity/mir-function (:artifact function))
           (= root-id (:fn-id function))
           (= entrypoint (:name function))
+          (vector? (:params function))
           (= [] (:params function))
           (= (:type return-node) (:returns function))
           (= (get-in checked-core
@@ -122138,12 +122701,28 @@
          (:provenance-binding-id checked-core)}
         (:provenance mir))
      "C11-ORIGIN" source-path mir :checked-core-provenance-binding)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:checked-core-artifact-id (:artifact-id checked-core)
+      :checked-core-mapping-id (:mapping-id checked-core)
+      :checked-core-provenance-binding-id
+      (:provenance-binding-id checked-core)
+      :checked-core-origin-closure-binding-id
+      (:provenance-binding-id checked-core)}
+     (:provenance mir)
+     :type-sensitive-checked-core-provenance-binding)
     (p15-s23-c11-mir-require!
      (= {:owner :gravity-source
          :function :c11-build-target-independent-mir
          :status :constructed}
         (:construction mir))
      "C11-VERIFY" source-path mir :gravity-owned-mir-construction)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:owner :gravity-source
+      :function :c11-build-target-independent-mir
+      :status :constructed}
+     (:construction mir) :type-sensitive-gravity-owned-mir-construction)
     (p15-s23-c11-mir-require!
      (and (= (p15-s23-c11-mir-pass-contract-record)
              (:pass-contract mir))
@@ -122160,6 +122739,23 @@
              (:pass-execution-record mir)))
      "C11-VERIFY" source-path mir
      :gravity-owned-build-mir-pass-contract-and-pending-execution)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path (p15-s23-c11-mir-pass-contract-record)
+     (:pass-contract mir) :type-sensitive-build-mir-pass-contract)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:artifact :gravity/build-mir-pass-execution-record
+      :pass-id :c11-build-mir-bounded-slice
+      :pass-contract-hash :pending-source-binding
+      :input-artifact-id (:artifact-id checked-core)
+      :output-content-id :pending-independent-verifier
+      :verifier-report-id :pending-independent-verifier
+      :verifier-report-hash :pending-independent-verifier
+      :diagnostics []
+      :status :constructed-unverified
+      :record-id :pending-independent-verifier}
+     (:pass-execution-record mir)
+     :type-sensitive-pending-build-mir-pass-execution)
     (p15-s23-c11-mir-require!
      (and (= {:input-kind :gravity/mir
               :requires-verifier-status :passed
@@ -122186,6 +122782,33 @@
               :self-hosted? false}
              (:scope mir)))
      "C11-VERIFY" source-path mir :bounded-c11-and-b1-scope)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:input-kind :gravity/mir
+      :requires-verifier-status :passed
+      :status :pending-c11-verifier
+      :backend-credit? false}
+     (:b1-preflight mir) :type-sensitive-pending-b1-preflight)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:operation-set
+      [:literal :implicit-nil :quote :local :let-binding :truthy
+       :do :if :let :str :println :function :runtime-check]
+      :maximum-conditionals 1
+      :maximum-module-carrier-nodes p15-s23-c11-mir-max-carrier-nodes
+      :maximum-final-artifact-carrier-nodes
+      p15-s23-c11-mir-max-final-artifact-carrier-nodes
+      :maximum-carrier-depth 256
+      :whole-c11? false
+      :domain-ir-credit? false
+      :optimization-credit? false
+      :target-lowering-credit? false
+      :backend-credit? false
+      :llvm-credit? false
+      :release-credit? false
+      :whole-language? false
+      :self-hosted? false}
+     (:scope mir) :type-sensitive-bounded-c11-and-b1-scope)
     {:function function
      :root-node root-node
      :return-node return-node
@@ -122506,6 +123129,7 @@
                   (contains? p15-s23-c11-mir-allowed-source-operations
                              (:source-operation operation))
                   (= (:source-operation node) (:source-operation operation))
+                  (vector? (:operands operation))
                   (= (p15-s23-c11-mir-node-operands node)
                      (:operands operation))
                   (= node-id (:result operation))
@@ -122607,7 +123231,9 @@
           (= :gravity/mir-terminator (:artifact terminator))
           (= (:terminator-id expected) (:terminator-id terminator))
           (= (:kind expected) (:kind terminator))
+          (vector? (:operands terminator))
           (= (:operands expected) (:operands terminator))
+          (vector? (:successors terminator))
           (= (:successors expected) (:successors terminator))
           (= #{} (:effects terminator))
           (= :none (:ordering terminator))
@@ -122642,7 +123268,10 @@
             block (get blocks entry-id)]
         (p15-s23-c11-mir-require!
          (and (= #{entry-id} (set (keys blocks)))
+              (vector? (:edges cfg))
               (= [] (:edges cfg))
+              (map? (:dominance cfg))
+              (every? vector? (vals (:dominance cfg)))
               (= {entry-id [entry-id]} (:dominance cfg))
               (nil? (:join cfg))
               (= [] (:arguments block))
@@ -122679,8 +123308,12 @@
             join-block (get blocks join-id)]
         (p15-s23-c11-mir-require!
          (and (= #{entry-id then-id else-id join-id} (set (keys blocks)))
+              (vector? (:edges cfg))
               (= expected-edges (:edges cfg))
+              (map? (:dominance cfg))
+              (every? vector? (vals (:dominance cfg)))
               (= expected-dominance (:dominance cfg))
+              (vector? (get-in cfg [:join :incoming]))
               (= {:block-id join-id
                   :value-id if-id
                   :incoming
@@ -122945,7 +123578,8 @@
               [[(:node-id node) (:source node)]]))
           nodes))]
     (p15-s23-c11-mir-require!
-     (= expected-data-flow data-flow)
+     (and (vector? data-flow)
+          (= expected-data-flow data-flow))
      "C11-DOMINANCE" source-path mir :exact-checked-core-data-flow)
     (p15-s23-c11-mir-require!
      (every? #(p15-s23-c11-mir-valid-dominance-edge?
@@ -122954,7 +123588,8 @@
              data-flow)
      "C11-DOMINANCE" source-path mir :definition-dominates-use)
     (p15-s23-c11-mir-require!
-     (= expected-terminator-uses terminator-uses)
+     (and (vector? terminator-uses)
+          (= expected-terminator-uses terminator-uses))
      "C11-DOMINANCE" source-path mir :exact-terminator-use-sites)
     (p15-s23-c11-mir-require!
      (every? #(p15-s23-c11-mir-valid-terminator-use?
@@ -123035,6 +123670,9 @@
    (try
     (p15-s23-c11-mir-validate-constructed!*
       source-path checked-core mir)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch StackOverflowError error
       (p15-s23-c11-mir-contain-exception!
        source-path :contained-c11-constructed-verifier-host-stack error))
@@ -123213,11 +123851,122 @@
    :clojure-seed-boundary? true
    :self-hosted? false})
 
+(def p15-s23-c11-legacy-effectful-context-keys
+  #{:source-path :source-text :source-content-hash
+    :requested-target :authority-record})
+
+(def p15-s23-c11-ingress-map-classes
+  ;; The ingress classifier must not invoke attacker-controlled ordering code.
+  ;; In particular PersistentTreeMap lookup can execute a supplied comparator.
+  ;; Genuine public C6-C10 artifacts/contexts use only the two comparator-free
+  ;; built-in persistent map representations below.
+  #{"clojure.lang.PersistentArrayMap"
+    "clojure.lang.PersistentHashMap"})
+
+(defn p15-s23-c11-exact-bounded-map?
+  [candidate maximum-count]
+  (and (map? candidate)
+       (contains? p15-s23-c11-ingress-map-classes
+                  (.getName (class candidate)))
+       (nil? (meta candidate))
+       (<= (count candidate) maximum-count)))
+
+(defn p15-s23-c11-ingress-source-path
+  [context]
+  (if (p15-s23-c11-exact-bounded-map? context 5)
+    (p15-s23-c11-mir-safe-source-path (:source-path context))
+    "<c11-mir>"))
+
+(defn p15-s23-c11-carrier-sorted-policy
+  [checked-core]
+  (if (and (p15-s23-c11-exact-bounded-map? checked-core 128)
+           (= :gravity/p15-s23-stage2-closed-checked-core-artifact
+              (:kind checked-core)))
+    :default-only
+    :reject))
+
+(defn p15-s23-c11-mir-expected-ingress-semantic
+  [checked-core context]
+  (let [checked-core-map?
+        (p15-s23-c11-exact-bounded-map? checked-core 128)
+        context-map? (p15-s23-c11-exact-bounded-map? context 5)
+        artifact-kind (when checked-core-map? (:kind checked-core))
+        context-kind (when context-map? (:kind context))
+        context-keys (when context-map? (set (keys context)))
+        source-core-input
+        (when checked-core-map? (:source-core-input checked-core))
+        legacy-artifact-mode
+        (when (p15-s23-c11-exact-bounded-map? source-core-input 32)
+          (:mode source-core-input))]
+    (cond
+      (and (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
+              artifact-kind)
+           (= :gravity/p15-s23-stage2-gravity-checked-core-context
+              context-kind)
+           (= p15-s23-c6c10-public-context-keys context-keys))
+      {:schema-version 1
+       :checked-core-artifact-kind artifact-kind
+       :checked-core-context-kind context-kind
+       :checked-core-ingress-mode :gravity-source-pure
+       :checked-core-semantic-authority :gravity-source
+       :checked-core-verification-status :passed}
+
+      (and (= :gravity/p15-s23-stage2-closed-checked-core-artifact
+              artifact-kind)
+           (= p15-s23-c11-legacy-effectful-context-keys
+              context-keys)
+           (= :effectful-reference legacy-artifact-mode))
+      {:schema-version 1
+       :checked-core-artifact-kind artifact-kind
+       :checked-core-context-kind :legacy-effectful-reference-context
+       :checked-core-ingress-mode :effectful-reference
+       :checked-core-semantic-authority
+       :legacy-effectful-reference-verifier
+       :checked-core-verification-status :passed}
+
+      :else nil)))
+
+(defn p15-s23-c11-mir-expected-request-binding-provenance
+  [checked-core context]
+  (case (:kind checked-core)
+    :gravity/p15-s23-stage2-gravity-checked-core-artifact
+    {:kind :gravity/c6-c10-physical-request-binding
+     :request-binding-id
+     (get-in checked-core [:physical-provenance :request-binding-id])
+     :source-content-hash
+     (get-in checked-core [:physical-provenance :source-content-hash])
+     :digest-graph-proof-id
+     (get-in checked-core [:physical-provenance :digest-graph-proof-id])
+     :requested-target (:requested-target context)
+     :actual-paths
+     (get-in checked-core [:physical-provenance :actual-paths])}
+
+    :gravity/p15-s23-stage2-closed-checked-core-artifact
+    {:kind :gravity/legacy-checked-core-actual-path-binding
+     :actual-path-binding-id (:actual-path-binding-id checked-core)
+     :requested-target (:requested-target context)
+     :actual-paths (get-in checked-core [:provenance :actual-paths])}
+
+    nil))
+
+(defn p15-s23-c11-mir-expected-provenance
+  [checked-core context c11-source-path]
+  {:actual-paths {:source (:source-path context)
+                  :c11-source c11-source-path}
+   :checked-core-request-binding
+   (p15-s23-c11-mir-expected-request-binding-provenance
+    checked-core context)
+   :checked-core-mapping-id (:mapping-id checked-core)
+   :checked-core-provenance-binding-id
+   (:provenance-binding-id checked-core)
+   :checked-core-origin-closure (:origin-closure checked-core)})
+
 (defn p15-s23-c11-mir-semantic-input
   [artifact]
   {:kind :gravity/p15-s23-c11-authenticated-mir
    :schema-version (:schema-version artifact)
    :source-core-artifact-id (:source-core-artifact-id artifact)
+   :checked-core-ingress (:checked-core-ingress artifact)
    :mir-module
    (p15-s23-c11-mir-path-neutral-value (:mir-module artifact))
    :source-rule (:source-rule artifact)
@@ -123227,7 +123976,8 @@
     (:verification-report artifact))
    :provenance
    (p15-s23-c11-mir-path-neutral-value
-    (dissoc (:provenance artifact) :actual-paths))
+    (dissoc (:provenance artifact)
+            :actual-paths :checked-core-request-binding))
    :scope (:scope artifact)
    :b1-preflight (:b1-preflight artifact)
    :mir-derived? (:mir-derived? artifact)
@@ -123236,7 +123986,12 @@
 
 (defn p15-s23-c11-mir-recomputed-id
   [artifact]
-  (p15-s23-c11-mir-digest
+  ;; C11 semantic identity is collection-type-sensitive.  The general C11
+  ;; digest remains unchanged for pinned source-plan compatibility, while the
+  ;; authenticated artifact root uses the bounded canonical encoder that
+  ;; distinguishes vectors, lists, sets, and maps.
+  (p15-s23-c6c10-canonical-digest
+   "<c11-semantic-identity>"
    (p15-s23-c11-mir-semantic-input artifact)))
 
 (defn p15-s23-c11-mir-recomputed-actual-path-binding-id
@@ -123245,20 +124000,22 @@
    {:kind :gravity/c11-mir-actual-path-binding
     :mir-id (:mir-id artifact)
     :source-path (:source-path context)
-    :checked-core-actual-path-binding-id
-    (:actual-path-binding-id checked-core)
+    :checked-core-request-binding
+    (p15-s23-c11-mir-expected-request-binding-provenance
+     checked-core context)
     :c11-source-path
     (get-in artifact [:provenance :actual-paths :c11-source])}))
 
 (def p15-s23-c11-mir-artifact-keys
   #{:kind :schema-version :artifact-id :mir-id
     :actual-path-binding-id :source-core-artifact-id :mir-module
+    :checked-core-ingress
     :source-rule :construction-record :verification-report :b1-preflight
     :provenance :scope :diagnostics :mir-derived?
     :clojure-seed-boundary? :self-hosted?})
 
 (defn p15-s23-c11-mir-final-artifact-base
-  [checked-core context binding constructed verifier]
+  [checked-core context ingress binding constructed verifier]
   (let [scope (p15-s23-c11-mir-scope-record)
         verifier-record
         (p15-s23-c11-independent-verifier-record verifier)
@@ -123270,6 +124027,7 @@
         {:kind :gravity/p15-s23-c11-authenticated-mir-artifact
          :schema-version 1
          :source-core-artifact-id (:artifact-id checked-core)
+         :checked-core-ingress ingress
          :mir-module mir-module
          :source-rule source-rule
          :construction-record
@@ -123289,12 +124047,8 @@
          :verification-report verifier-record
          :b1-preflight (:b1-preflight mir-module)
          :provenance
-         {:actual-paths {:source (:source-path context)
-                         :c11-source (:source-path binding)}
-          :checked-core-mapping-id (:mapping-id checked-core)
-          :checked-core-provenance-binding-id
-          (:provenance-binding-id checked-core)
-          :checked-core-origin-closure (:origin-closure checked-core)}
+         (p15-s23-c11-mir-expected-provenance
+          checked-core context (:source-path binding))
          :scope scope
          :diagnostics []
          :mir-derived? true
@@ -123312,16 +124066,31 @@
 
 (defn p15-s23-c11-mir-validate-final-artifact!
   [artifact checked-core context]
-  (binding [*p15-s23-c11-mir-diagnostic-context*
-            (p15-s23-c11-mir-diagnostic-context
-             checked-core context artifact)]
-   (let [source-path (or (:source-path context) "<c11-mir>")]
+  (let [source-path (p15-s23-c11-ingress-source-path context)
+        checked-core-sorted-policy
+        (p15-s23-c11-carrier-sorted-policy checked-core)]
+    (p15-s23-c11-mir-require-trusted-carrier!
+     source-path :authenticated-c11-artifact artifact
+     checked-core-sorted-policy)
+    (p15-s23-c11-mir-require-trusted-carrier!
+     source-path :checked-core checked-core checked-core-sorted-policy)
+    (p15-s23-c11-mir-require-trusted-carrier!
+     source-path :checked-core-context context checked-core-sorted-policy)
     (p15-s23-c11-mir-bounded-value!
      source-path :authenticated-c11-mir-artifact artifact
      p15-s23-c11-mir-max-final-artifact-carrier-nodes
      p15-s23-c11-mir-max-carrier-depth)
+    (binding [*p15-s23-c11-mir-diagnostic-context*
+              (p15-s23-c11-mir-diagnostic-context
+               checked-core context artifact)]
+     (let [source-path source-path]
+    (p15-s23-c11-mir-require!
+     (p15-s23-c11-mir-metadata-free? artifact)
+     "C11-VERIFY" source-path {}
+     :metadata-free-authenticated-c11-carrier)
     (p15-s23-c11-mir-require!
      (and (map? artifact)
+          (nil? (meta artifact))
           (= p15-s23-c11-mir-artifact-keys (set (keys artifact)))
           (= :gravity/p15-s23-c11-authenticated-mir-artifact
              (:kind artifact))
@@ -123330,11 +124099,19 @@
              (:source-core-artifact-id artifact))
           (= (:b1-preflight artifact)
              (get-in artifact [:mir-module :b1-preflight]))
+          (vector? (:diagnostics artifact))
           (= [] (:diagnostics artifact))
+          (vector? (get-in artifact [:mir-module :diagnostics]))
           (true? (:mir-derived? artifact))
           (true? (:clojure-seed-boundary? artifact))
           (false? (:self-hosted? artifact)))
      "C11-MODULE" source-path artifact :authenticated-c11-artifact-envelope)
+    (p15-s23-c11-mir-require!
+     (= (p15-s23-c11-mir-expected-ingress-semantic
+         checked-core context)
+        (:checked-core-ingress artifact))
+     "C11-MODULE" source-path artifact
+     :authenticated-checked-core-ingress-authority)
     (p15-s23-c11-mir-require!
      (= p15-s23-c11-mir-module-keys
         (set (keys (:mir-module artifact))))
@@ -123361,6 +124138,12 @@
               (:scope artifact))
              (:b1-preflight artifact)))
      "C11-VERIFY" source-path artifact :verified-mir-candidate-for-b1)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     (p15-s23-c11-b1-candidate-record
+      (:mir-module artifact) checked-core
+      (:verification-report artifact) (:scope artifact))
+     (:b1-preflight artifact) :type-sensitive-verified-mir-candidate-for-b1)
     (p15-s23-c11-mir-require!
      (and (= (p15-s23-c11-mir-pass-contract-record)
              (get-in artifact [:mir-module :pass-contract]))
@@ -123370,9 +124153,22 @@
              (get-in artifact [:mir-module :pass-execution-record])))
      "C11-VERIFY" source-path artifact
      :content-bound-build-mir-pass-contract-and-execution)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path (p15-s23-c11-mir-pass-contract-record)
+     (get-in artifact [:mir-module :pass-contract])
+     :type-sensitive-content-bound-build-mir-pass-contract)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     (p15-s23-c11-mir-pass-execution-record
+      (:mir-module artifact) checked-core (:verification-report artifact))
+     (get-in artifact [:mir-module :pass-execution-record])
+     :type-sensitive-content-bound-build-mir-pass-execution)
     (p15-s23-c11-mir-require!
      (= (p15-s23-c11-mir-scope-record) (:scope artifact))
      "C11-VERIFY" source-path artifact :exact-partial-c11-scope)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path (p15-s23-c11-mir-scope-record) (:scope artifact)
+     :type-sensitive-partial-c11-scope)
     (p15-s23-c11-mir-require!
      (= (p15-s23-c11-mir-source-rule-record
          {:source-content-hash
@@ -123387,17 +124183,33 @@
           :function-shapes p15-s23-c11-mir-required-functions})
         (:source-rule artifact))
      "C11-VERIFY" source-path artifact :pinned-c11-source-rule-record)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     (p15-s23-c11-mir-source-rule-record
+      {:source-content-hash
+       p15-s23-c11-mir-expected-source-content-hash
+       :source-byte-count p15-s23-c11-mir-source-byte-count
+       :plan-semantic-hash
+       p15-s23-c11-mir-expected-plan-semantic-hash
+       :functions-semantic-hash
+       p15-s23-c11-mir-expected-functions-semantic-hash
+       :builder-semantic-hash
+       p15-s23-c11-mir-expected-builder-semantic-hash
+       :function-shapes p15-s23-c11-mir-required-functions})
+     (:source-rule artifact)
+     :type-sensitive-pinned-c11-source-rule)
     (p15-s23-c11-mir-require!
-     (= {:actual-paths
-         {:source (:source-path context)
-          :c11-source (p15-s23-c11-mir-resolve-source-path)}
-         :checked-core-mapping-id (:mapping-id checked-core)
-         :checked-core-provenance-binding-id
-         (:provenance-binding-id checked-core)
-         :checked-core-origin-closure (:origin-closure checked-core)}
+     (= (p15-s23-c11-mir-expected-provenance
+         checked-core context (p15-s23-c11-mir-resolve-source-path))
         (:provenance artifact))
      "C11-ORIGIN" source-path artifact
      :exact-checked-core-and-c11-source-provenance)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     (p15-s23-c11-mir-expected-provenance
+      checked-core context (p15-s23-c11-mir-resolve-source-path))
+     (:provenance artifact)
+     :type-sensitive-checked-core-and-c11-source-provenance)
     (p15-s23-c11-mir-require!
      (= (:mir-id artifact)
         (p15-s23-c11-mir-recomputed-id artifact))
@@ -123432,6 +124244,24 @@
         (:construction-record artifact))
      "C11-VERIFY" source-path artifact
      :honest-gravity-constructor-and-clojure-execution-tcb)
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:semantic-constructor
+      {:owner :gravity-source
+       :function p15-s23-c11-mir-builder-function
+       :builder-semantic-hash
+       (get-in artifact [:source-rule :builder-semantic-hash])}
+      :execution-tcb
+      {:runner :clojure-stage0-rule-runner
+       :compiled-by :clojure-stage0-seed
+       :seed-boundary? true}
+      :semantic-replay-parity :public-verifier-required
+      :invocation-audit :not-available
+      :execution-count :not-claimed
+      :live-invocation-claim? false
+      :self-hosted? false}
+     (:construction-record artifact)
+     :type-sensitive-gravity-constructor-and-execution-tcb)
     (let [recomputed-verifier
           (p15-s23-c11-mir-validate-constructed!
            source-path checked-core
@@ -123440,22 +124270,68 @@
        (= (p15-s23-c11-independent-verifier-record recomputed-verifier)
           (:verification-report artifact))
        "C11-VERIFY" source-path artifact
-       :independently-recomputed-verifier-report))
-    :passed)))
+       :independently-recomputed-verifier-report)
+      (p15-s23-c11-mir-require-strict-structure!
+       source-path
+       (p15-s23-c11-independent-verifier-record recomputed-verifier)
+       (:verification-report artifact)
+       :type-sensitive-independently-recomputed-verifier-report))
+    :passed))))
 
 (let [opaque-c11-construction-token (Object.)
       opaque-c11-upstream-diagnostic-owner (Object.)]
   (letfn
-   [(verify-authenticated-checked-core!
-      [checked-core context boundary-prefix]
+   [(classify-checked-core-ingress-pair
+      [checked-core context]
+      (let [checked-core-map?
+            (p15-s23-c11-exact-bounded-map? checked-core 128)
+            context-map?
+            (p15-s23-c11-exact-bounded-map? context 5)
+            artifact-kind
+            (when checked-core-map? (:kind checked-core))
+            context-kind (when context-map? (:kind context))
+            source-core-input
+            (when checked-core-map? (:source-core-input checked-core))
+            legacy-artifact-mode
+            (when (p15-s23-c11-exact-bounded-map?
+                   source-core-input 32)
+              (:mode source-core-input))]
+        (cond
+          (and (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
+                  artifact-kind)
+               (= :gravity/p15-s23-stage2-gravity-checked-core-context
+                  context-kind)
+               (= 5 (count context)))
+          :gravity-source-pure
+
+          (and (= :gravity/p15-s23-stage2-closed-checked-core-artifact
+                  artifact-kind)
+               (nil? context-kind)
+               (= 5 (count context))
+               (= :effectful-reference legacy-artifact-mode))
+          :effectful-reference
+
+          :else :invalid)))
+
+    (invoke-checked-core-verifier!
+      [checked-core context ingress-mode boundary-prefix]
       (let [boundary
             (fn [suffix]
               (keyword (str (name boundary-prefix) "-" suffix)))]
         (binding [*p15-s23-c11-upstream-diagnostic-owner*
                   opaque-c11-upstream-diagnostic-owner]
           (try
-            (p15-s23-stage2-closed-checked-core-verification-report
-             checked-core context)
+            (case ingress-mode
+              :gravity-source-pure
+              (p15-s23-stage2-gravity-checked-core-verification-report
+               checked-core context)
+
+              :effectful-reference
+              (p15-s23-stage2-closed-checked-core-verification-report
+               checked-core context))
+            (catch InterruptedException interrupted
+              (.interrupt (Thread/currentThread))
+              (throw interrupted))
             (catch StackOverflowError error
               (p15-s23-c11-mir-contain-checked-core-exception!
                (:source-path context) (boundary "host-stack") error))
@@ -123472,6 +124348,89 @@
               (p15-s23-c11-mir-contain-checked-core-exception!
                (:source-path context)
                (boundary "host-failure") exception))))))
+
+    (authenticate-checked-core-ingress!
+      [checked-core context boundary-prefix]
+      ;; Comparator-safe bounded carrier walks intentionally precede all map
+      ;; lookups.  Family classification remains top-level only; canonical
+      ;; replay and C11 source lookup wait for the exact pair and the stricter
+      ;; new-family no-sorted-carrier rescan below.
+      (p15-s23-c11-mir-require-trusted-carrier!
+       "<c11-mir>" :preclassified-checked-core
+       checked-core :default-only)
+      (p15-s23-c11-mir-require-trusted-carrier!
+       "<c11-mir>" :preclassified-checked-core-context
+       context :default-only)
+      (let [ingress-mode
+            (classify-checked-core-ingress-pair checked-core context)
+            artifact-kind
+            (when (p15-s23-c11-exact-bounded-map? checked-core 128)
+              (:kind checked-core))
+            context-kind
+            (when (p15-s23-c11-exact-bounded-map? context 5)
+              (:kind context))]
+        (when (= :invalid ingress-mode)
+          (p15-s23-c11-mir-fail!
+           "C11-MODULE"
+           (p15-s23-c11-ingress-source-path context)
+           {}
+           {:missing-fact :authenticated-checked-core-ingress-pair
+            :checked-core-artifact-kind
+            (if (keyword? artifact-kind) artifact-kind :invalid)
+            :checked-core-context-kind
+            (if (keyword? context-kind) context-kind :legacy-or-invalid)
+            :checked-core-ingress-mode :invalid}))
+        (let [source-path (p15-s23-c11-ingress-source-path context)
+              sorted-policy
+              (if (= :effectful-reference ingress-mode)
+                :default-only :reject)]
+          (p15-s23-c11-mir-require-trusted-carrier!
+           source-path :checked-core checked-core sorted-policy)
+          (p15-s23-c11-mir-require-trusted-carrier!
+           source-path :checked-core-context context sorted-policy))
+        (let [report
+              (binding [*p15-s23-c11-mir-diagnostic-context*
+                        (p15-s23-c11-mir-diagnostic-context
+                         checked-core context {})]
+                (invoke-checked-core-verifier!
+                 checked-core context ingress-mode boundary-prefix))
+              expected
+              (p15-s23-c11-mir-expected-ingress-semantic
+               checked-core context)]
+          (case ingress-mode
+            :gravity-source-pure
+            (p15-s23-c11-mir-require!
+             (and (= :passed (:status report))
+                  (= :gravity-source
+                     (get-in report
+                             [:gravity-source-verification
+                              :semantic-authority]))
+                  (= :gravity-source
+                     (get-in report
+                             [:gravity-candidate-verification
+                              :semantic-authority]))
+                  (= :passed
+                     (get-in report
+                             [:gravity-source-verification :status]))
+                  (= :passed
+                     (get-in report
+                             [:gravity-candidate-verification :status]))
+                  (= :gravity-source-pure
+                     (:checked-core-ingress-mode expected)))
+             "C11-MODULE" (:source-path context) {}
+             :gravity-source-checked-core-semantic-authority)
+
+            :effectful-reference
+            (p15-s23-c11-mir-require!
+             (and (= :passed (:status report))
+                  (= :effectful-reference (:mode report))
+                  (= :effectful-reference
+                     (get-in checked-core [:source-core-input :mode]))
+                  (= :effectful-reference
+                     (:checked-core-ingress-mode expected)))
+             "C11-MODULE" (:source-path context) {}
+             :explicit-effectful-reference-checked-core-authority))
+          expected)))
 
     (invoke-pinned-c11-builder!
       [checked-core context binding mode token]
@@ -123502,6 +124461,9 @@
                                 :gravity-c11-builder-rejection)
               :conditional-count (:conditional-count result)}))
           result)
+        (catch InterruptedException interrupted
+          (.interrupt (Thread/currentThread))
+          (throw interrupted))
         (catch StackOverflowError error
           (p15-s23-c11-mir-contain-exception!
            (:source-path context)
@@ -123524,15 +124486,11 @@
            :contained-gravity-c11-builder-host-failure error))))
 
     (construct-authenticated-c11-mir!
-      [checked-core context token]
+      [checked-core context ingress token]
       (when-not (identical? opaque-c11-construction-token token)
         (p15-s23-c11-mir-fail!
          "C11-VERIFY" (:source-path context) {}
          {:missing-fact :opaque-c11-constructor-entry}))
-      ;; No C11 source is loaded or invoked until the supplied C6-C10 product
-      ;; has passed its independent authenticating verifier against context.
-      (verify-authenticated-checked-core!
-       checked-core context :contained-checked-core-ingress)
       (let [source-path (:source-path context)
             binding (p15-s23-c11-mir-source-binding!
                      source-path (:requested-target context))
@@ -123544,7 +124502,7 @@
              source-path checked-core constructed)
             artifact
             (p15-s23-c11-mir-final-artifact-base
-             checked-core context binding constructed verifier)]
+             checked-core context ingress binding constructed verifier)]
         (p15-s23-c11-mir-validate-final-artifact!
          artifact checked-core context)
         artifact))]
@@ -123554,113 +124512,149 @@
     checked-core artifact and its sealed source context.  There is no public
     raw source or arbitrary-map C11 constructor."
     [checked-core context]
-    (binding [*p15-s23-c11-mir-diagnostic-context*
-              (p15-s23-c11-mir-diagnostic-context
-               checked-core context {})]
-     (try
-       (construct-authenticated-c11-mir!
-        checked-core context opaque-c11-construction-token)
+    (try
+      (let [ingress
+            (authenticate-checked-core-ingress!
+             checked-core context :contained-checked-core-ingress)]
+        (binding [*p15-s23-c11-mir-diagnostic-context*
+                  (p15-s23-c11-mir-diagnostic-context
+                   checked-core context {})]
+          (construct-authenticated-c11-mir!
+           checked-core context ingress opaque-c11-construction-token)))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
       (catch StackOverflowError error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         (p15-s23-c11-ingress-source-path context)
          :contained-public-c11-constructor-host-stack error))
       (catch AssertionError error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         (p15-s23-c11-ingress-source-path context)
          :contained-public-c11-constructor-assertion error))
       (catch LinkageError error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         (p15-s23-c11-ingress-source-path context)
          :contained-public-c11-constructor-linkage error))
       (catch clojure.lang.ExceptionInfo ex
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         (p15-s23-c11-ingress-source-path context)
          :contained-public-c11-constructor-diagnostic ex))
       (catch Exception error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
-         :contained-public-c11-constructor-host-failure error)))))
+         (p15-s23-c11-ingress-source-path context)
+         :contained-public-c11-constructor-host-failure error))))
 
   (defn p15-s23-stage2-c11-mir-verification-report
     [artifact checked-core context]
-    (binding [*p15-s23-c11-mir-diagnostic-context*
-              (p15-s23-c11-mir-diagnostic-context
-               checked-core context artifact)]
+    (let [source-path (p15-s23-c11-ingress-source-path context)
+          artifact-sorted-policy
+          (p15-s23-c11-carrier-sorted-policy checked-core)]
      (try
-      ;; Bounds precede checked-core verification, source loading, and replay.
+      ;; The supplied C11 carrier is bounded before detailed context lookup.
+      ;; Checked-core pair classification/authentication then precedes C11
+      ;; source lookup and semantic replay.
+      (p15-s23-c11-mir-require-trusted-carrier!
+       source-path :public-c11-mir-verifier-ingress artifact
+       artifact-sorted-policy)
       (p15-s23-c11-mir-bounded-value!
-       (or (:source-path context) "<c11-mir>")
+       source-path
        :public-c11-mir-verifier-ingress artifact
        p15-s23-c11-mir-max-final-artifact-carrier-nodes
        p15-s23-c11-mir-max-carrier-depth)
-      (verify-authenticated-checked-core!
-       checked-core context :contained-public-checked-core-verifier)
-      (p15-s23-c11-mir-validate-final-artifact!
-       artifact checked-core context)
-      (let [binding
-            (p15-s23-c11-mir-source-binding!
-             (:source-path context) (:requested-target context))
-            _
+      (let [ingress
+            (authenticate-checked-core-ingress!
+             checked-core context :contained-public-checked-core-verifier)]
+        (binding [*p15-s23-c11-mir-diagnostic-context*
+                  (p15-s23-c11-mir-diagnostic-context
+                   checked-core context artifact)]
+          (p15-s23-c11-mir-validate-final-artifact!
+           artifact checked-core context)
+          (let [binding
+                (p15-s23-c11-mir-source-binding!
+                 (:source-path context) (:requested-target context))
+                _
+                (p15-s23-c11-mir-require!
+                 (and (= (p15-s23-c11-mir-source-rule-record binding)
+                         (:source-rule artifact))
+                      (= (:source-path binding)
+                         (get-in artifact
+                                 [:provenance :actual-paths :c11-source])))
+                 "C11-VERIFY" (:source-path context) artifact
+                 :fresh-pinned-c11-source-rule-and-path)
+                replay
+                (invoke-pinned-c11-builder!
+                 checked-core context binding :verification-replay
+                 opaque-c11-construction-token)
+                replay-verifier
+                (p15-s23-c11-mir-validate-constructed!
+                 (:source-path context) checked-core replay)
+                replay-verifier-record
+                (p15-s23-c11-independent-verifier-record replay-verifier)
+                replay-module
+                (p15-s23-c11-mir-finalize
+                 replay checked-core replay-verifier-record
+                 (p15-s23-c11-mir-scope-record))
+                expected-artifact
+                (p15-s23-c11-mir-final-artifact-base
+                 checked-core context ingress binding replay
+                 replay-verifier)]
             (p15-s23-c11-mir-require!
-             (and (= (p15-s23-c11-mir-source-rule-record binding)
-                     (:source-rule artifact))
-                  (= (:source-path binding)
-                     (get-in artifact
-                             [:provenance :actual-paths :c11-source])))
+             (= (p15-s23-c11-mir-path-neutral-value replay-module)
+                (p15-s23-c11-mir-path-neutral-value
+                 (:mir-module artifact)))
              "C11-VERIFY" (:source-path context) artifact
-             :fresh-pinned-c11-source-rule-and-path)
-            replay
-            (invoke-pinned-c11-builder!
-             checked-core context binding :verification-replay
-             opaque-c11-construction-token)
-            replay-verifier
-            (p15-s23-c11-mir-validate-constructed!
-             (:source-path context) checked-core replay)
-            replay-verifier-record
-            (p15-s23-c11-independent-verifier-record replay-verifier)
-            replay-module
-            (p15-s23-c11-mir-finalize
-             replay checked-core replay-verifier-record
-             (p15-s23-c11-mir-scope-record))]
-        (p15-s23-c11-mir-require!
-         (= (p15-s23-c11-mir-path-neutral-value replay-module)
-            (p15-s23-c11-mir-path-neutral-value (:mir-module artifact)))
-         "C11-VERIFY" (:source-path context) artifact
-         :independent-gravity-replay-semantic-parity)
-        {:artifact :gravity/c11-mir-verification-report
-         :status :passed
-         :mir-id (:mir-id artifact)
-         :checked-core-artifact-id (:artifact-id checked-core)
-         :source-rule (p15-s23-c11-mir-source-rule-record binding)
-         :semantic-replay-parity :passed
-         :invocation-audit :not-available
-         :execution-count :not-claimed
-         :live-invocation-claim? false
-         :execution-tcb :clojure-stage0-rule-runner
-         :independent-verifier replay-verifier
-         :b1-preflight (:b1-preflight artifact)
-         :actual-path-context
-         {:source (:source-path context)
-          :c11-source (:source-path binding)}})
+             :independent-gravity-replay-semantic-parity)
+            (p15-s23-c11-mir-require-strict-structure!
+             (:source-path context)
+             (p15-s23-c11-mir-path-neutral-value replay-module)
+             (p15-s23-c11-mir-path-neutral-value
+              (:mir-module artifact))
+             :type-sensitive-independent-gravity-replay-parity)
+            (p15-s23-c11-mir-require-strict-structure!
+             (:source-path context) expected-artifact artifact
+             :type-sensitive-contextual-c11-artifact-parity)
+            {:artifact :gravity/c11-mir-verification-report
+             :status :passed
+             :mir-id (:mir-id artifact)
+             :checked-core-artifact-id (:artifact-id checked-core)
+             :checked-core-ingress ingress
+             :checked-core-request-binding-provenance
+             (p15-s23-c11-mir-expected-request-binding-provenance
+              checked-core context)
+             :source-rule (p15-s23-c11-mir-source-rule-record binding)
+             :semantic-replay-parity :passed
+             :invocation-audit :not-available
+             :execution-count :not-claimed
+             :live-invocation-claim? false
+             :execution-tcb :clojure-stage0-rule-runner
+             :independent-verifier replay-verifier
+             :b1-preflight (:b1-preflight artifact)
+             :actual-path-context
+             {:source (:source-path context)
+              :c11-source (:source-path binding)}})))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
       (catch StackOverflowError error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         source-path
          :contained-public-c11-verifier-host-stack error))
       (catch AssertionError error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         source-path
          :contained-public-c11-verifier-assertion error))
       (catch LinkageError error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         source-path
          :contained-public-c11-verifier-linkage error))
       (catch clojure.lang.ExceptionInfo ex
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         source-path
          :contained-public-c11-verifier-diagnostic ex))
       (catch Exception error
         (p15-s23-c11-mir-contain-exception!
-         (or (:source-path context) "<c11-mir>")
+         source-path
          :contained-public-c11-verifier-host-failure error)))))
 
   (defn p15-s23-stage2-c11-mir-verify!
@@ -123670,7 +124664,8 @@
            artifact checked-core context)]
       (p15-s23-c11-mir-require!
        (= :passed (:status report)) "C11-VERIFY"
-       (:source-path context) artifact :c11-verification-report-status)
+       (p15-s23-c11-ingress-source-path context)
+       artifact :c11-verification-report-status)
       :passed))
 
   (defn p15-s23-stage2-c11-mir-authentic?
@@ -123680,6 +124675,9 @@
        (= :passed
           (p15-s23-stage2-c11-mir-verify!
            artifact checked-core context))
+       (catch InterruptedException interrupted
+         (.interrupt (Thread/currentThread))
+         (throw interrupted))
        (catch StackOverflowError _ false)
        (catch AssertionError _ false)
        (catch LinkageError _ false)
@@ -125436,7 +126434,7 @@
           requested-destination
           (.normalize (.toAbsolutePath
                        (java.nio.file.Paths/get
-                        (str output-directory)
+                        output-directory
                         (make-array String 0))))
           parent (.getParent requested-destination)
           parent-real
@@ -128211,10 +129209,61 @@
                    :backend-credit? :public-target? :release-credit?
                    :self-hosted? :whole-language?])))))
 
+(def p15-s23-b3-llvm-max-final-artifact-carrier-nodes 65536)
+(def p15-s23-b3-llvm-max-final-artifact-carrier-depth 512)
+
+(defn- p15-s23-b3-llvm-safe-carrier-facts
+  [validation]
+  (select-keys validation
+               [:reason :observed-nodes :observed-depth
+                :maximum-nodes :maximum-depth :maximum-width]))
+
+(defn- p15-s23-b3-llvm-require-trusted-final-carrier!
+  [source-path artifact]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         artifact :default-only
+         p15-s23-b3-llvm-max-final-artifact-carrier-nodes
+         p15-s23-b3-llvm-max-final-artifact-carrier-depth
+         p15-s23-b3-llvm-max-final-artifact-carrier-nodes)]
+    (when-not (= :passed (:status validation))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path {}
+       (assoc (p15-s23-b3-llvm-safe-carrier-facts validation)
+              :missing-fact
+              :trusted-comparator-free-b3-final-artifact-carrier)))
+    validation))
+
+(defn- p15-s23-b3-llvm-validated-options!
+  [source-path options]
+  (let [validation
+        (p15-s23-trusted-carrier-validation options :reject 16 4 4)]
+    (when-not (= :passed (:status validation))
+      (p15-s23-b3-llvm-fail!
+       "B3-MANIFEST" source-path {}
+       (assoc (p15-s23-b3-llvm-safe-carrier-facts validation)
+              :missing-fact :trusted-comparator-free-b3-options)))
+    (let [class-name (when (some? options) (.getName (class options)))
+          option-keys (when (map? options) (set (keys options)))
+          output-directory
+          (when (contains? option-keys :output-directory)
+            (:output-directory options))]
+      (when-not
+       (and (contains? p15-s23-trusted-carrier-map-classes class-name)
+            (contains? #{#{} #{:output-directory}} option-keys)
+            (or (nil? output-directory) (string? output-directory)))
+        (p15-s23-b3-llvm-fail!
+         "B3-MANIFEST" source-path {}
+         {:missing-fact :trusted-comparator-free-b3-options
+          :bounded-reason :exact-b3-output-directory-options}))
+      {:output-directory output-directory})))
+
 (defn- p15-s23-b3-llvm-verify-integrity!
   ([artifact]
    (p15-s23-b3-llvm-verify-integrity! artifact :final))
   ([artifact publication-phase]
+   (p15-s23-b3-llvm-require-trusted-final-carrier!
+    "<b3-llvm>" artifact)
    (when-not
     (and (contains? #{:pre-final :final} publication-phase)
          (if (= :pre-final publication-phase)
@@ -128347,9 +129396,6 @@
       (get-in artifact [:actual-path-provenance :source]) artifact
       {:missing-fact :content-bound-final-b3-artifact}))
    :passed))
-
-(def p15-s23-b3-llvm-max-final-artifact-carrier-nodes 65536)
-(def p15-s23-b3-llvm-max-final-artifact-carrier-depth 512)
 
 (defn- p15-s23-b3-llvm-expected-sidecar
   [logical-path record]
@@ -128566,7 +129612,7 @@
            :core-artifact-count 3
            :sidecar-count 3})))))
 
-(defn p15-s23-b3-llvm-sanitized-complete-diagnostic
+(defn- p15-s23-b3-llvm-sanitized-complete-diagnostic
   [data]
   (when (and (map? data)
              (contains? p15-s23-b3-llvm-diagnostic-rules (:id data))
@@ -128594,8 +129640,9 @@
 
 (defn p15-s23-b3-llvm-contain-exception!
   [source-path boundary exception]
-  (let [data (when (instance? clojure.lang.ExceptionInfo exception)
-               (ex-data exception))
+  (let [data
+        (p15-s23-backend-trusted-exception-data
+         exception 65536 128)
         b3-diagnostic
         (p15-s23-b3-llvm-sanitized-complete-diagnostic data)
         c11-diagnostic
@@ -128621,14 +129668,26 @@
   alone is deliberately insufficient; the one-argument authenticity API below
   therefore always returns false."
   [artifact checked-core context]
-  (let [source-path (or (:source-path context) "<b3-llvm-verifier>")]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
     (try
+      (p15-s23-b3-llvm-require-trusted-final-carrier!
+       source-path artifact)
       (p15-s23-c11-mir-bounded-value!
        source-path :b3-final-artifact-ingress artifact
        p15-s23-b3-llvm-max-final-artifact-carrier-nodes
        p15-s23-b3-llvm-max-final-artifact-carrier-depth)
       (p15-s23-b3-llvm-verify-integrity! artifact)
-      (let [retentions
+      (let [fresh-c11
+            (p15-s23-stage2-c11-mir-artifact checked-core context)
+            fresh-c11-report
+            (p15-s23-stage2-c11-mir-verification-report
+             fresh-c11 checked-core context)
+            _ (when-not (= :passed (:status fresh-c11-report))
+                (p15-s23-b3-llvm-fail!
+                 "B1-INPUT" source-path fresh-c11
+                 {:missing-fact :fresh-c11-replay-pass}))
+            _ (p15-s23-b3-llvm-preflight! fresh-c11)
+            retentions
             (set (map :retention
                       (vals (get-in artifact
                                     [:b13-record :artifact-files]))))
@@ -128640,16 +129699,6 @@
               (p15-s23-b3-llvm-fail!
                "B3-MANIFEST" source-path artifact
                {:missing-fact :uniform-artifact-retention-intent}))
-            fresh-c11
-            (p15-s23-stage2-c11-mir-artifact checked-core context)
-            fresh-c11-report
-            (p15-s23-stage2-c11-mir-verification-report
-             fresh-c11 checked-core context)
-            _ (when-not (= :passed (:status fresh-c11-report))
-                (p15-s23-b3-llvm-fail!
-                 "B1-INPUT" source-path fresh-c11
-                 {:missing-fact :fresh-c11-replay-pass}))
-            _ (p15-s23-b3-llvm-preflight! fresh-c11)
             _
             (p15-s23-b3-llvm-verify-context-bindings!
              artifact fresh-c11 checked-core fresh-c11-report source-path)
@@ -128729,7 +129778,7 @@
          artifact checked-core context)]
     (when-not (= :passed (:status report))
       (p15-s23-b3-llvm-fail!
-       "B3-MANIFEST" (:source-path context) artifact
+       "B3-MANIFEST" (p15-s23-c11-ingress-source-path context) artifact
        {:missing-fact :contextual-b3-verification-report-status}))
     :passed))
 
@@ -128750,19 +129799,17 @@
   ([c11-artifact checked-core context]
    (p15-s23-stage2-b3-llvm-artifact-from-c11!
     c11-artifact checked-core context {}))
-  ([c11-artifact checked-core context {:keys [output-directory]}]
-   (let [source-path (or (:source-path context) "<b3-llvm>")]
+  ([c11-artifact checked-core context options]
+   (let [source-path (p15-s23-c11-ingress-source-path context)]
      (try
-       ;; Bounds and a fresh authenticated C11 replay precede B3 source load,
-       ;; filesystem staging, and every subprocess.
-       (p15-s23-c11-mir-bounded-value!
-        source-path :b3-c11-ingress c11-artifact
-        p15-s23-c11-mir-max-final-artifact-carrier-nodes
-        p15-s23-c11-mir-max-carrier-depth)
-       (let [publication-preflight
-             (p15-s23-b3-llvm-output-preflight!
-              p15-s23-b3-llvm-finalization-token
-              output-directory source-path)
+       (let [{:keys [output-directory]}
+             (p15-s23-b3-llvm-validated-options! source-path options)
+             checked-core-sorted-policy
+             (p15-s23-c11-carrier-sorted-policy checked-core)
+             _
+             (p15-s23-c11-mir-require-trusted-carrier!
+              source-path :b3-c11-ingress c11-artifact
+              checked-core-sorted-policy)
              c11-report
              (p15-s23-stage2-c11-mir-verification-report
               c11-artifact checked-core context)
@@ -128771,6 +129818,10 @@
                   "B1-INPUT" source-path c11-artifact
                   {:missing-fact :fresh-c11-replay-pass}))
              _ (p15-s23-b3-llvm-preflight! c11-artifact)
+             publication-preflight
+             (p15-s23-b3-llvm-output-preflight!
+              p15-s23-b3-llvm-finalization-token
+              output-directory source-path)
              binding
              (p15-s23-b3-llvm-source-binding!
               p15-s23-b3-llvm-finalization-token source-path)
@@ -128829,30 +129880,40 @@
     source-path source-text {}))
   ([source-path source-text options]
    (try
-     (let [upstream-diagnostic-owner (Object.)
+     (let [validated-options
+           (p15-s23-b3-llvm-validated-options! source-path options)
+           upstream-diagnostic-owner (Object.)
            [checked-core context]
            (binding [*p15-s23-c11-upstream-diagnostic-owner*
                      upstream-diagnostic-owner
                      *p15-s23-c11-mir-diagnostic-context*
-                     {:requested-target :llvm}]
+                     {:requested-target :llvm}
+                     *additional-bootstrap-targets*
+                     stage2-runtime-derived-source-targets]
              (try
-               [(p15-s23-stage2-closed-checked-core-source-artifact
-                 source-path source-text :llvm)
-                (p15-s23-stage2-closed-checked-core-context
-                 source-path source-text :llvm)]
+               (let [context
+                     (p15-s23-stage2-gravity-checked-core-context
+                      source-path source-text :llvm)]
+                 [(p15-s23-stage2-gravity-checked-core-source-artifact
+                   context)
+                  context])
                (catch InterruptedException interrupted
                  (.interrupt (Thread/currentThread))
                  (throw interrupted))
-               (catch clojure.lang.ExceptionInfo exception
-                 (if (p15-s23-c11-mir-owned-upstream-diagnostic?
-                      (ex-data exception))
-                   (p15-s23-c11-mir-contain-checked-core-exception!
-                    source-path :b3-source-checked-core-diagnostic exception)
-                   (throw exception)))))
+              (catch clojure.lang.ExceptionInfo exception
+                 (let [data
+                       (p15-s23-backend-trusted-exception-data
+                        exception 65536 128)]
+                   (if (and
+                        data
+                        (p15-s23-c11-mir-owned-upstream-diagnostic? data))
+                     (p15-s23-c11-mir-contain-checked-core-exception!
+                      source-path :b3-source-checked-core-diagnostic exception)
+                     (throw exception))))))
            c11-artifact
            (p15-s23-stage2-c11-mir-artifact checked-core context)]
        (p15-s23-stage2-b3-llvm-artifact-from-c11!
-        c11-artifact checked-core context options))
+        c11-artifact checked-core context validated-options))
      (catch StackOverflowError error
        (p15-s23-b3-llvm-fail!
         "B1-INPUT" source-path {}
@@ -129049,7 +130110,7 @@
   (p15-s23-b4-wasm-throw-record!
    (p15-s23-b4-wasm-diagnostic-record id source-path subject facts)))
 
-(defn p15-s23-b4-wasm-sanitized-complete-diagnostic [data]
+(defn- p15-s23-b4-wasm-sanitized-complete-diagnostic [data]
   (when (and (map? data)
              (contains? p15-s23-b4-wasm-diagnostic-rules (:id data))
              (= (:id data) (:rule data))
@@ -129070,8 +130131,9 @@
 
 (defn p15-s23-b4-wasm-contain-exception!
   [source-path boundary exception]
-  (let [data (when (instance? clojure.lang.ExceptionInfo exception)
-               (ex-data exception))
+  (let [data
+        (p15-s23-backend-trusted-exception-data
+         exception 65536 128)
         b4 (p15-s23-b4-wasm-sanitized-complete-diagnostic data)
         c11 (p15-s23-c11-mir-sanitized-complete-diagnostic data)]
     (cond
@@ -129438,13 +130500,22 @@
         (conj result r)
         (recur q (conj result (bit-or r 0x80)))))))
 
+(defn- p15-s23-b4-wasm-canonical-bounded-octet!
+  [value missing-fact]
+  (when-not (and (integer? value) (<= 0 value 255))
+    (p15-s23-b4-wasm-fail!
+     "B4-MANIFEST" "<b4-wasm>" {}
+     {:missing-fact missing-fact}))
+  (long value))
+
 (defn p15-s23-b4-wasm-decode-u32 [bytes offset limit]
   (loop [offset offset shift 0 value 0 raw []]
     (when (or (>= offset limit) (>= (count raw) 5))
       (p15-s23-b4-wasm-fail!
        "B4-MANIFEST" "<b4-wasm>" {}
        {:missing-fact :canonical-bounded-u32-leb}))
-    (let [byte (nth bytes offset)
+    (let [byte (p15-s23-b4-wasm-canonical-bounded-octet!
+                (nth bytes offset) :canonical-bounded-u32-leb)
           low (bit-and byte 0x7f)
           value (+ value (bit-shift-left low shift))
           raw (conj raw byte)]
@@ -129465,7 +130536,8 @@
       (p15-s23-b4-wasm-fail!
        "B4-MANIFEST" "<b4-wasm>" {}
        {:missing-fact :canonical-bounded-s32-leb}))
-    (let [byte (nth bytes offset)
+    (let [byte (p15-s23-b4-wasm-canonical-bounded-octet!
+                (nth bytes offset) :canonical-bounded-s32-leb)
           low (bit-and byte 0x7f)
           next-shift (+ shift 7)
           unsigned (+ value (bit-shift-left low shift))
@@ -130313,14 +131385,40 @@
    :atomic-tool-identity-binding? false
    :whole-process-tree-reaping-proved? false})
 
+(def p15-s23-b4-wasm-max-final-artifact-carrier-nodes 65536)
+(def p15-s23-b4-wasm-max-final-artifact-carrier-depth 128)
+
+(defn- p15-s23-b4-wasm-require-trusted-final-carrier!
+  [source-path artifact]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         artifact :default-only
+         p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+         p15-s23-b4-wasm-max-final-artifact-carrier-depth
+         p15-s23-b4-wasm-max-final-artifact-carrier-nodes)]
+    (when-not (= :passed (:status validation))
+      (p15-s23-b4-wasm-fail!
+       "B4-MANIFEST" source-path {}
+       (assoc
+        (select-keys validation
+                     [:reason :observed-nodes :observed-depth
+                      :maximum-nodes :maximum-depth :maximum-width])
+        :missing-fact
+        :trusted-comparator-free-b4-final-artifact-carrier)))
+    validation))
+
 (defn p15-s23-b4-wasm-verify-frozen-envelope!
   [artifact source-path]
+  (p15-s23-b4-wasm-require-trusted-final-carrier!
+   source-path artifact)
   (when-not (map? artifact)
     (p15-s23-b4-wasm-fail!
      "B4-MANIFEST" source-path {}
      {:missing-fact :bounded-b4-final-artifact-map}))
   (p15-s23-c11-mir-bounded-value!
-   source-path :b4-frozen-envelope artifact 65536 128)
+   source-path :b4-frozen-envelope artifact
+   p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+   p15-s23-b4-wasm-max-final-artifact-carrier-depth)
   (when-not (= p15-s23-b4-wasm-final-artifact-keys
                (set (keys artifact)))
     (p15-s23-b4-wasm-fail!
@@ -130423,13 +131521,17 @@
 
 (defn p15-s23-b4-wasm-verify-integrity!
   [artifact fresh context binding preflight]
-  (let [source-path (:source-path context)]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (p15-s23-b4-wasm-require-trusted-final-carrier!
+     source-path artifact)
     (when-not (map? artifact)
       (p15-s23-b4-wasm-fail!
        "B4-MANIFEST" source-path {}
        {:missing-fact :bounded-b4-final-artifact-map}))
     (p15-s23-c11-mir-bounded-value!
-     source-path :b4-final-artifact-integrity artifact 65536 128)
+     source-path :b4-final-artifact-integrity artifact
+     p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+     p15-s23-b4-wasm-max-final-artifact-carrier-depth)
     (let [raw-bytes (get-in artifact [:raw-wasm :bytes])]
       (when (and (vector? raw-bytes)
                  (<= (count raw-bytes) p15-s23-b4-wasm-max-module-bytes)
@@ -130595,22 +131697,28 @@
 
 (defn- p15-s23-b4-wasm-build-internal!
   [supplied-c11 checked-core context]
-  (let [source-path (or (:source-path context) "<b4-wasm>")]
-    (p15-s23-c11-mir-bounded-value!
+  (let [source-path (p15-s23-c11-ingress-source-path context)
+        checked-core-sorted-policy
+        (p15-s23-c11-carrier-sorted-policy checked-core)]
+    (p15-s23-c11-mir-require-trusted-carrier!
      source-path :b4-c11-ingress supplied-c11
-     p15-s23-c11-mir-max-final-artifact-carrier-nodes
-     p15-s23-c11-mir-max-carrier-depth)
-    (let [fresh (p15-s23-stage2-c11-mir-artifact checked-core context)
-          report (p15-s23-stage2-c11-mir-verification-report
+     checked-core-sorted-policy)
+    (let [report (p15-s23-stage2-c11-mir-verification-report
                   supplied-c11 checked-core context)]
-      (when-not (and (= :passed (:status report))
-                     (= supplied-c11 fresh)
-                     (= (p15-s23-c11-mir-semantic-input supplied-c11)
-                        (p15-s23-c11-mir-semantic-input fresh)))
+      (when-not (= :passed (:status report))
         (p15-s23-b4-wasm-fail!
          "B1-INPUT" source-path supplied-c11
          {:missing-fact :fresh-context-bound-c11-parity}))
-      (let [preflight (p15-s23-b4-wasm-preflight! fresh)
+      (let [preflight (p15-s23-b4-wasm-preflight! supplied-c11)
+            fresh (p15-s23-stage2-c11-mir-artifact checked-core context)
+            _
+            (when-not
+             (and (= supplied-c11 fresh)
+                  (= (p15-s23-c11-mir-semantic-input supplied-c11)
+                     (p15-s23-c11-mir-semantic-input fresh)))
+              (p15-s23-b4-wasm-fail!
+               "B1-INPUT" source-path supplied-c11
+               {:missing-fact :fresh-context-bound-c11-parity}))
             binding (p15-s23-b4-wasm-source-binding!
                      p15-s23-b4-wasm-authority-token source-path)
             reconstruction (p15-s23-b4-wasm-reconstruct preflight)
@@ -130634,7 +131742,7 @@
 
 (defn p15-s23-stage2-b4-wasm-artifact-from-c11!
   [c11 checked-core context]
-  (let [source-path (or (:source-path context) "<b4-wasm>")]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
     (try
       (p15-s23-b4-wasm-build-internal! c11 checked-core context)
       (catch StackOverflowError _
@@ -130658,21 +131766,29 @@
           (binding [*p15-s23-c11-upstream-diagnostic-owner*
                     upstream-diagnostic-owner
                     *p15-s23-c11-mir-diagnostic-context*
-                    {:requested-target :wasm}]
+                    {:requested-target :wasm}
+                    *additional-bootstrap-targets*
+                    stage2-runtime-derived-source-targets]
             (try
-              [(p15-s23-stage2-closed-checked-core-source-artifact
-                source-path source-text :wasm)
-               (p15-s23-stage2-closed-checked-core-context
-                source-path source-text :wasm)]
+              (let [context
+                    (p15-s23-stage2-gravity-checked-core-context
+                     source-path source-text :wasm)]
+                [(p15-s23-stage2-gravity-checked-core-source-artifact
+                  context)
+                 context])
               (catch InterruptedException interrupted
                 (.interrupt (Thread/currentThread))
                 (throw interrupted))
               (catch clojure.lang.ExceptionInfo exception
-                (if (p15-s23-c11-mir-owned-upstream-diagnostic?
-                     (ex-data exception))
-                  (p15-s23-c11-mir-contain-checked-core-exception!
-                   source-path :b4-source-checked-core-diagnostic exception)
-                  (throw exception)))))
+                (let [data
+                      (p15-s23-backend-trusted-exception-data
+                       exception 65536 128)]
+                  (if (and
+                       data
+                       (p15-s23-c11-mir-owned-upstream-diagnostic? data))
+                    (p15-s23-c11-mir-contain-checked-core-exception!
+                     source-path :b4-source-checked-core-diagnostic exception)
+                    (throw exception))))))
           c11 (p15-s23-stage2-c11-mir-artifact checked-core context)]
       (p15-s23-stage2-b4-wasm-artifact-from-c11!
        c11 checked-core context))
@@ -130691,16 +131807,18 @@
 
 (defn p15-s23-stage2-b4-wasm-verification-report
   [artifact checked-core context]
-  (let [source-path (if (map? context)
-                      (or (:source-path context) "<b4-wasm>")
-                      "<b4-wasm>")]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
     (try
+      (p15-s23-b4-wasm-require-trusted-final-carrier!
+       source-path artifact)
       (when-not (map? artifact)
         (p15-s23-b4-wasm-fail!
          "B4-MANIFEST" source-path {}
          {:missing-fact :bounded-b4-final-artifact-map}))
       (p15-s23-c11-mir-bounded-value!
-       source-path :b4-public-final-artifact-ingress artifact 65536 128)
+       source-path :b4-public-final-artifact-ingress artifact
+       p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+       p15-s23-b4-wasm-max-final-artifact-carrier-depth)
       (p15-s23-b4-wasm-verify-frozen-envelope! artifact source-path)
       (let [fresh (p15-s23-stage2-c11-mir-artifact checked-core context)
             fresh-report (p15-s23-stage2-c11-mir-verification-report
@@ -130709,9 +131827,9 @@
                 (p15-s23-b4-wasm-fail!
                  "B1-INPUT" source-path fresh
                  {:missing-fact :fresh-c11-before-static-b4-integrity}))
+            preflight (p15-s23-b4-wasm-preflight! fresh)
             binding (p15-s23-b4-wasm-source-binding!
                      p15-s23-b4-wasm-authority-token source-path)
-            preflight (p15-s23-b4-wasm-preflight! fresh)
             _ (p15-s23-b4-wasm-verify-integrity!
                artifact fresh context binding preflight)
             expected (p15-s23-b4-wasm-build-internal!
@@ -130755,7 +131873,7 @@
                 artifact checked-core context)]
     (when-not (= :passed (:status report))
       (p15-s23-b4-wasm-fail!
-       "B4-MANIFEST" (:source-path context) artifact
+       "B4-MANIFEST" (p15-s23-c11-ingress-source-path context) artifact
        {:missing-fact :contextual-b4-verification-status}))
     :passed))
 
