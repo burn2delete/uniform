@@ -36811,6 +36811,418 @@
     (is (= :bounded-pure-i32-mir-operation (:missing-fact data)))
     (is (= before after))))
 
+(def ^:private authenticated-b2-gate-a-source
+  (closed-pure-source-with-main
+   "(let [x 7] (if 0 (do x) 9))"
+   {:exports '[main]}))
+
+(def ^:private authenticated-b2-gate-a-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-b2-gate-a-"
+      (fn [root]
+        (let [left-directory (.resolve root "left")
+              right-directory (.resolve root "right")
+              _ (java.nio.file.Files/createDirectories
+                 left-directory
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              _ (java.nio.file.Files/createDirectories
+                 right-directory
+                 (make-array java.nio.file.attribute.FileAttribute 0))
+              left-path (.resolve left-directory "program.gravity")
+              right-path (.resolve right-directory "program.qst")
+              _ (spit (.toFile left-path) authenticated-b2-gate-a-source)
+              _ (spit (.toFile right-path) authenticated-b2-gate-a-source)
+              left-path (.toString (.toRealPath left-path
+                                                (make-array
+                                                 java.nio.file.LinkOption 0)))
+              right-path (.toString (.toRealPath right-path
+                                                 (make-array
+                                                  java.nio.file.LinkOption 0)))
+              construct-upstream
+              (fn [path]
+                (binding
+                 [bootstrap/*additional-bootstrap-targets*
+                  bootstrap/stage2-runtime-derived-source-targets]
+                  (let [context
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                         path authenticated-b2-gate-a-source :c)
+                        checked-core
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                         context)
+                        c11
+                        (bootstrap/p15-s23-stage2-c11-mir-artifact
+                         checked-core context)]
+                    {:context context :checked-core checked-core :c11 c11})))
+              left-upstream (construct-upstream left-path)
+              tool-before
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              left-artifact
+              (bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+               (:c11 left-upstream) (:checked-core left-upstream)
+               (:context left-upstream))
+              verification
+              (bootstrap/p15-s23-stage2-b2-c17-verification-report
+               left-artifact (:checked-core left-upstream)
+               (:context left-upstream))
+              right-artifact
+              (bootstrap/p15-s23-stage2-b2-c17-source-artifact!
+               right-path authenticated-b2-gate-a-source)
+              tool-after
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              b2-source
+              (slurp bootstrap/p15-s23-b2-c17-source-relative-path)
+              b2-plan
+              (bootstrap/p15-s23-stage2-compiler-artifact-plan
+               (:emitter
+                (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                 bootstrap/p15-s23-b2-c17-source-relative-path :c))
+               bootstrap/p15-s23-b2-c17-source-relative-path b2-source)
+              raw-empty
+              (bootstrap/p15-s23-stage2-runtime-execute-function
+               {:engine :b2-gate-a-malformed-source-probe
+                :compiler-artifact-plan? true}
+               b2-plan bootstrap/p15-s23-b2-c17-builder-function [{}])
+              pin-data
+              (with-redefs
+               [bootstrap/p15-s23-b2-c17-source-byte-count
+                (inc bootstrap/p15-s23-b2-c17-source-byte-count)]
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+                   (:c11 left-upstream) (:checked-core left-upstream)
+                   (:context left-upstream))))]
+          {:left-path left-path :right-path right-path
+           :left-upstream left-upstream
+           :left-artifact left-artifact :right-artifact right-artifact
+           :verification verification
+           :tool-before tool-before :tool-after tool-after
+           :b2-source b2-source :b2-plan b2-plan
+           :raw-empty raw-empty :pin-data pin-data})))))
+
+(deftest authenticated-b2-hosted-c17-source-and-plan-are-pinned
+  (let [{:keys [b2-source b2-plan raw-empty]}
+        @authenticated-b2-gate-a-proof
+        functions (:functions b2-plan)
+        shapes
+        (into {}
+              (map (fn [[name _]]
+                     [name (select-keys (get functions name)
+                                        [:arity :params])]))
+              bootstrap/p15-s23-b2-c17-required-functions)]
+    (is (= bootstrap/p15-s23-b2-c17-source-byte-count
+           (alength (.getBytes
+                     b2-source java.nio.charset.StandardCharsets/UTF_8))))
+    (is (= bootstrap/p15-s23-b2-c17-expected-source-content-hash
+           (str "sha256:" (bootstrap/sha256-hex b2-source))))
+    (is (= bootstrap/p15-s23-b2-c17-expected-plan-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest
+            (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
+             b2-plan))))
+    (is (= bootstrap/p15-s23-b2-c17-expected-functions-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest functions)))
+    (is (= bootstrap/p15-s23-b2-c17-expected-builder-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest
+            (get functions bootstrap/p15-s23-b2-c17-builder-function))))
+    (is (= bootstrap/p15-s23-b2-c17-required-functions shapes))
+    (is (= 120 (count functions)))
+    (is (= {:artifact :gravity/b2-bounded-hosted-c17
+            :schema-version 1 :status :rejected
+            :diagnostic "B1-INPUT"
+            :missing-fact :exact-sealed-b1-c-packet
+            :operation-id nil :opcode nil :type nil
+            :diagnostics ["B1-INPUT"]}
+           raw-empty))))
+
+(deftest authenticated-b2-gate-a-is-path-neutral-contextual-and-tool-free
+  (let [{:keys [left-path right-path left-upstream left-artifact
+                right-artifact verification tool-before tool-after]}
+        @authenticated-b2-gate-a-proof
+        left-records (:operation-records left-artifact)
+        source-text (get-in left-artifact [:source-file :content])
+        backend-manifest (:backend-manifest left-artifact)
+        build-manifest (:c-build-manifest left-artifact)
+        abi-manifest (:abi-layout-manifest left-artifact)
+        source-debug-map (:source-debug-map left-artifact)
+        debug-entries (:entries source-debug-map)
+        debug-return-id
+        (get-in source-debug-map [:final-return :mir-operation-id])
+        debug-return-record
+        (some #(when (= debug-return-id (:mir-operation-id %)) %)
+              left-records)
+        proof-map (:proof-to-c-assumption-map left-artifact)
+        proof-bindings (:operation-bindings proof-map)
+        casts (get-in left-artifact
+                      [:proof-to-c-assumption-map :generated-c-casts])
+        discard-casts (butlast casts)
+        final-cast (last casts)]
+    (is (= bootstrap/p15-s23-b2-c17-final-artifact-keys
+           (set (keys left-artifact))
+           (set (keys right-artifact))))
+    (is (= :gravity/b2-bounded-hosted-c17
+           (:artifact left-artifact) (:artifact right-artifact)))
+    (is (= :constructed-unverified
+           (:status left-artifact) (:status right-artifact)))
+    (is (= 7 (:semantic-result left-artifact)
+           (:expected-exit-code left-artifact)
+           (:semantic-result right-artifact)
+           (:expected-exit-code right-artifact)))
+    (is (= (:semantic-id left-artifact)
+           (:semantic-id right-artifact)))
+    (is (= (:artifact-id left-artifact)
+           (:artifact-id right-artifact)))
+    (is (not= (:actual-path-binding-id left-artifact)
+              (:actual-path-binding-id right-artifact)))
+    (is (= left-path
+           (get-in left-artifact [:actual-path-provenance :source])))
+    (is (= right-path
+           (get-in right-artifact [:actual-path-provenance :source])))
+    (is (= bootstrap/p15-s23-b2-c17-policy-record
+           (:policy left-artifact)))
+    (is (= [:c-source :c-header] (:emits backend-manifest)))
+    (is (= :gravity.backend/c (:backend backend-manifest)))
+    (is (not-any? #{:mach-o-object :mach-o-executable}
+                  (:emits backend-manifest)))
+    (is (= :pending-gate-b-toolchain-execution
+           (:status build-manifest)))
+    (is (= :not-performed-in-gate-a
+           (:external-tool-execution build-manifest)))
+    (is (= ["program.c"] (:source-files build-manifest)))
+    (is (= ["program.h"] (:header-files build-manifest)))
+    (is (= [] (:object-files build-manifest)
+           (:executables build-manifest)))
+    (is (= (:flags bootstrap/p15-s23-b2-c17-dialect-selection-record)
+           (:flags build-manifest)))
+    (is (= :pending-gate-b-toolchain-verification
+           (:status abi-manifest)))
+    (is (= :not-performed-in-gate-a
+           (:toolchain-verification abi-manifest)))
+    (is (= {:int {:size-bits 32 :alignment-bits 32}
+            :int64-t {:size-bits 64 :alignment-bits 64}}
+           (:alignment abi-manifest)))
+    (doseq [field [:struct-field-order :padding :enum-and-tag-widths
+                   :closure-representation :slice-and-buffer-representation
+                   :region-and-arena-handle-representation
+                   :linear-resource-handle-representation]]
+      (is (= :not-applicable-bounded-scalar-slice
+             (get abi-manifest field)) field))
+    (is (= :not-applicable-no-ffi
+           (:ffi-calling-convention abi-manifest)))
+    (is (= :source-map-preserved-debug-emission-pending-gate-b
+           (:status source-debug-map)))
+    (is (= "program.c" (:generated-file source-debug-map)))
+    (is (= :not-performed-in-gate-a
+           (:debug-info-emission source-debug-map)))
+    (is (= (count left-records) (count debug-entries)
+           (count proof-bindings) (count discard-casts)))
+    (doseq [[index record debug proof cast]
+            (map vector (range) left-records debug-entries
+                 proof-bindings discard-casts)]
+      (is (= (:mir-operation-id record)
+             (:mir-operation-id debug)
+             (:mir-operation-id proof)) [index record debug proof])
+      (is (= (:mir-block-id record) (:mir-block-id debug))
+          [index record debug])
+      (is (= (:c-value record) (:c-value debug) (:c-value proof))
+          [index record debug proof])
+      (is (= (+ 5 (* index 2)) (:generated-declaration-line debug))
+          [index debug])
+      (is (= (+ 6 (* index 2)) (:generated-liveness-line debug))
+          [index debug])
+      (is (= (:safety-proof-id proof) (:safety-proof-id cast))
+          [index proof cast])
+      (is (= [(:safety-proof-id proof)]
+             (:proof-certificate-ids proof)) [index proof]))
+    (is (= (+ 5 (* 2 (count left-records)))
+           (get-in source-debug-map
+                   [:final-return :generated-return-line])))
+    (is (some? debug-return-record))
+    (is (= (:c-value debug-return-record)
+           (get-in source-debug-map [:final-return :c-value])))
+    (is (= :integer-narrowing (:kind final-cast)))
+    (is (= :independent-bounded-mir-evaluation
+           (get-in final-cast [:proof-binding :kind])))
+    (is (= (:semantic-result left-artifact)
+           (get-in final-cast [:proof-binding :semantic-result])))
+    (is (= [0 255]
+           (get-in final-cast [:proof-binding :permitted-result-range])))
+    (is (= (get-in left-artifact [:input-bindings :b1-artifact-id])
+           (get-in final-cast [:proof-binding :b1-artifact-id])))
+    (is (= (get-in proof-map [:proof-certificate-binding :content-id])
+           (get-in final-cast
+                   [:proof-binding :proof-table-content-id])))
+    (is (true? (get-in left-artifact
+                       [:policy :root-contextual-b1-verification-required?])))
+    (is (false? (get-in left-artifact
+                        [:policy
+                         :raw-structural-validator-is-seal-verifier?])))
+    (is (= :not-a-standalone-seal-verifier
+           (get-in left-artifact
+                   [:verified-input-closure :raw-source-validator])))
+    (is (= :clojure-seed-root-capability-gate
+           (get-in left-artifact
+                   [:verified-input-closure :invocation-authority])))
+    (is (= :passed (:status verification)))
+    (is (true? (bootstrap/p15-s23-stage2-b2-c17-authentic?
+                left-artifact (:checked-core left-upstream)
+                (:context left-upstream))))
+    (is (= :not-performed-in-gate-a
+           (:external-tool-execution verification)))
+    (is (= [:passed :passed :passed :passed :passed :passed]
+           ((juxt :fresh-c11 :fresh-c13 :fresh-c14 :fresh-b1
+                  :gravity-b2-source-replay :independent-c-reconstruction)
+            verification)))
+    (is (= tool-before tool-after))
+    (is (false? (bootstrap/p15-s23-stage2-b2-c17-authentic?
+                 left-artifact)))
+    (is (= "program.h" (get-in left-artifact [:header-file :path])))
+    (is (= "program.c" (get-in left-artifact [:source-file :path])))
+    (is (str/includes? source-text "#include <stdint.h>"))
+    (is (str/includes? source-text "#include \"program.h\""))
+    (is (str/includes? source-text "return (int)"))
+    (is (= (count left-records)
+           (count (filter #(str/includes? % "(void)gravity_v")
+                          (str/split-lines source-text)))))
+    (is (every? #(str/starts-with? (:c-liveness-use %) "(void)gravity_v")
+                left-records))
+    (is (= (inc (count left-records)) (count casts)))
+    (is (= :integer-narrowing (:kind (last casts))))
+    (is (every? #(= :discarded-value (:kind %)) (butlast casts)))
+    (is (= (:artifact-id (:c11 left-upstream))
+           (get-in left-artifact [:input-bindings :c11-artifact-id])))
+    (is (= (:semantic-id left-artifact)
+           (#'bootstrap/p15-s23-b2-c17-semantic-id left-artifact)))
+    (is (= (:artifact-id left-artifact)
+           (#'bootstrap/p15-s23-b2-c17-artifact-id left-artifact)))
+    (is (= (:actual-path-binding-id left-artifact)
+           (#'bootstrap/p15-s23-b2-c17-actual-path-binding-id
+            left-artifact)))))
+
+(deftest authenticated-b2-gate-a-rejects-tamper-and-unsupported-source
+  (let [{:keys [left-artifact left-upstream pin-data]}
+        @authenticated-b2-gate-a-proof
+        checked-core (:checked-core left-upstream)
+        context (:context left-upstream)
+        forged-sha (str "sha256:" (apply str (repeat 64 "0")))
+        resealed-content-forgery
+        (let [forgery
+              (assoc-in left-artifact [:source-file :content]
+                        "int main(void) { return 99; }\n")
+              forgery
+              (assoc forgery :semantic-id
+                     (#'bootstrap/p15-s23-b2-c17-semantic-id forgery))
+              forgery
+              (assoc forgery :artifact-id
+                     (#'bootstrap/p15-s23-b2-c17-artifact-id forgery))]
+          (assoc forgery :actual-path-binding-id
+                 (#'bootstrap/p15-s23-b2-c17-actual-path-binding-id
+                  forgery)))
+        deep-hostile-carrier
+        (assoc
+         left-artifact :source-file
+         (loop [depth 0 value (:source-file left-artifact)]
+           (if (= depth 600)
+             value
+             (recur (inc depth) {:nested value}))))
+        mutations
+        [(assoc left-artifact :semantic-id forged-sha)
+         (assoc-in left-artifact [:source-file :content]
+                   "int main(void) { return 99; }\n")
+         (assoc-in left-artifact [:actual-path-provenance :source]
+                   "/forged/program.gravity")
+         (assoc-in left-artifact [:input-bindings :b1-artifact-id]
+                   forged-sha)
+         resealed-content-forgery
+         deep-hostile-carrier]
+        mutation-data
+        (mapv
+         (fn [candidate]
+           (diagnostic-data
+            #(bootstrap/p15-s23-stage2-b2-c17-verification-report
+              candidate checked-core context)))
+         mutations)
+        unsupported
+        [[:quote "'hello"]
+         [:string "\"hello\""]
+         [:large-result "256"]]
+        unsupported-data
+        (mapv
+         (fn [[label body]]
+           [label
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-b2-c17-source-artifact!
+               (str "b2-unsupported-" (name label) ".gravity")
+               (closed-pure-source-with-main body {:exports '[main]})))])
+         unsupported)]
+    (is (= "B2-MANIFEST" (:id pin-data)) pin-data)
+    (is (= :pinned-b2-gravity-source-identity
+           (:missing-fact pin-data)) pin-data)
+    (is (= :c (:target pin-data)) pin-data)
+    (is (= :hosted-c17 (:dialect pin-data)) pin-data)
+    (is (= :none (:helper pin-data)) pin-data)
+    (is (= :hosted-c17 (get-in pin-data [:facts :dialect])) pin-data)
+    (is (= :none (get-in pin-data [:facts :helper])) pin-data)
+    (is (not (str/includes? (pr-str pin-data)
+                            "repair-bounded-llvm-input")) pin-data)
+    (is (not (str/includes? (pr-str pin-data) ":llvm")) pin-data)
+    (doseq [data mutation-data]
+      (is (contains? #{"B13-HASH" "B2-MANIFEST"} (:id data)) data)
+      (is (= :c (:target data)) data)
+      (is (= :hosted-c17 (:dialect data)) data)
+      (is (= :none (:helper data)) data)
+      (is (= :hosted-c17 (get-in data [:facts :dialect])) data)
+      (is (= :none (get-in data [:facts :helper])) data)
+      (is (not (str/includes? (pr-str data) "repair-bounded-llvm-input"))
+          data)
+      (is (not (str/includes? (pr-str data) ":llvm")) data))
+    (doseq [[label data] unsupported-data]
+      (is (= "C14-UNSUPPORTED" (:id data)) [label data])
+      (is (= :c (:target data)) [label data])
+      (is (= :hosted-c17 (:dialect data)) [label data])
+      (is (= :none (:helper data)) [label data])
+      (is (= :hosted-c17 (get-in data [:facts :dialect])) [label data])
+      (is (= :none (get-in data [:facts :helper])) [label data])
+      (is (= :c14-target-lowering (:stage data)) [label data])
+      (is (not (str/includes? (pr-str data) "repair-bounded-llvm-input"))
+          [label data])
+      (is (not (str/includes? (pr-str data) ":llvm")) [label data]))))
+
+(deftest authenticated-b2-source-api-preserves-canonical-reader-diagnostics
+  (let [reader-cases
+        [[:delimiter "(" "C2-DELIMITER" "STAGE1READER002"]
+         [:metadata "^" "C2-METADATA" nil]
+         [:set "#{1 1}" "C2-SET" nil]
+         [:abbrev "'" "C2-ABBREV" nil]
+         [:numeric "1e2e3" "STAGE1READER007" "STAGE1READER007"]]
+        reader-data
+        (vec
+         (for [[label source expected-id expected-engine] reader-cases
+               extension [".gravity" ".qst"]]
+           (let [path (str "b2-reader-" (name label) extension)]
+             {:label label :path path :expected-id expected-id
+              :expected-engine expected-engine
+              :data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b2-c17-source-artifact!
+                 path source))})))]
+    (doseq [{:keys [label path expected-id expected-engine data]}
+            reader-data]
+      (is (= expected-id (:id data)) [label data])
+      (is (= (keyword expected-id) (:rule data)) [label data])
+      (is (= :c2-reader (:diagnostic-family data)) [label data])
+      (is (= :read-source (:stage data)) [label data])
+      (is (= expected-engine (:reader-engine-diagnostic data))
+          [label data])
+      (is (= path (get-in data [:source-span :source])) [label data])
+      (when (= label :numeric)
+        (is (= :unassigned
+               (get-in data [:facts :normative-c2-mapping])) data)
+        (is (true? (get-in data [:facts :catalog-gap])) data))
+      (is (not (str/includes? (pr-str data)
+                              "contained-b2-c17-source-diagnostic"))
+          [label data])
+      (is (not (str/includes? (pr-str data) "B2-MANIFEST"))
+          [label data]))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.bootstrap-test)]
