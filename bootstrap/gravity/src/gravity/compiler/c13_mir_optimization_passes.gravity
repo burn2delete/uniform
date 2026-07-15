@@ -15,6 +15,7 @@
              build-c13-decision-record
              build-c13-invalidation-entry
              build-c13-check-elision-gate
+             c13-build-bounded-identity-optimized-mir
              verify-c13-mir-optimization-passes])
   (:effects #{})
   (:capabilities #{})
@@ -555,3 +556,401 @@
                       :residual-cost-reports
                       :deterministic-ordering
                       :self-hosting-metadata]}))
+
+; Executable bounded bootstrap slice.  This is deliberately an identity pass:
+; it proves the C11 -> C13 contract without smuggling target selection into
+; generic MIR optimization.  The seed seals semantic identifiers around this
+; path-neutral Gravity-owned record and retains physical paths separately.
+(defn c13-lowercase-hex?
+  [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (c13-lowercase-hex? (rest characters))
+      false)))
+
+(defn c13-sha256-id?
+  [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (c13-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn c13-content-binding-valid?
+  [binding]
+  (if (map? binding)
+    (if (= (set (keys binding)) #{:content-id :entry-count})
+      (if (c13-sha256-id? (get binding :content-id))
+        (if (integer? (get binding :entry-count))
+          (>= (get binding :entry-count) 0)
+          false)
+        false)
+      false)
+    false))
+
+(defn c13-fact-bindings-valid?
+  [bindings]
+  (if (map? bindings)
+    (if (= (set (keys bindings))
+           #{:type :effect :ownership :capability :safety
+             :runtime-checks :proofs :source-map})
+      (if (c13-content-binding-valid? (get bindings :type))
+        (if (c13-content-binding-valid? (get bindings :effect))
+          (if (c13-content-binding-valid? (get bindings :ownership))
+            (if (c13-content-binding-valid? (get bindings :capability))
+              (if (c13-content-binding-valid? (get bindings :safety))
+                (if (c13-content-binding-valid?
+                     (get bindings :runtime-checks))
+                  (if (c13-content-binding-valid? (get bindings :proofs))
+                    (c13-content-binding-valid? (get bindings :source-map))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c13-fact-bindings-match-mir?
+  [mir bindings]
+  (if (= (get (get bindings :type) :entry-count)
+         (count (get mir :type-table)))
+    (if (= (get (get bindings :effect) :entry-count)
+           (count (get mir :effect-table)))
+      (if (= (get (get bindings :ownership) :entry-count)
+             (count (get mir :ownership-table)))
+        (if (= (get (get bindings :capability) :entry-count)
+               (count (get mir :capability-table)))
+          (if (= (get (get bindings :safety) :entry-count)
+                 (count (get mir :safety-table)))
+            (if (= (get (get bindings :runtime-checks) :entry-count)
+                   (count (get mir :runtime-check-table)))
+              (if (= (get (get bindings :proofs) :entry-count)
+                     (count (get mir :proof-certificate-table)))
+                (= (get (get bindings :source-map) :entry-count)
+                   (count (get mir :source-map)))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c13-operation-ids
+  [instructions result]
+  (if (= (count instructions) 0)
+    result
+    (c13-operation-ids
+     (rest instructions)
+     (conj result (get (first instructions) :op-id)))))
+
+(defn c13-operation-order-from-blocks
+  [blocks block-order result]
+  (if (= (count block-order) 0)
+    result
+    (c13-operation-order-from-blocks
+     blocks
+     (rest block-order)
+     (c13-operation-ids
+      (get (get blocks (first block-order)) :instructions)
+      result))))
+
+(defn c13-bounded-operation-count?
+  [mir]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        functions (get mir :functions)
+        function (get functions (first (keys functions)))
+        blocks (get function :blocks)
+        operation-count
+        (if (contains? blocks join-id)
+          (+ (count (get (get blocks entry-id) :instructions))
+             (count (get (get blocks then-id) :instructions))
+             (count (get (get blocks else-id) :instructions))
+             (count (get (get blocks join-id) :instructions)))
+          (count (get (get blocks entry-id) :instructions)))]
+    (if (> operation-count 0)
+      (<= operation-count 256)
+      false)))
+
+(defn c13-bounded-operation-order
+  [mir]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        functions (get mir :functions)
+        function (get functions (first (keys functions)))
+        blocks (get function :blocks)
+        block-order (if (contains? blocks join-id)
+                      [entry-id then-id else-id join-id]
+                      [entry-id])]
+    (if (c13-bounded-operation-count? mir)
+      (c13-operation-order-from-blocks blocks block-order [])
+      [])))
+
+(defn c13-unique-operation-ids?
+  [operation-ids seen]
+  (if (= (count operation-ids) 0)
+    true
+    (let [operation-id (first operation-ids)]
+      (if (= operation-id nil)
+        false
+        (if (contains? seen operation-id)
+          false
+          (c13-unique-operation-ids?
+           (rest operation-ids) (conj seen operation-id)))))))
+
+(defn c13-bounded-mir-operation-shape-valid?
+  [mir operation-order]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        functions (get mir :functions)]
+    (if (map? functions)
+      (if (= (count functions) 1)
+        (let [function (get functions (first (keys functions)))
+              blocks (get function :blocks)]
+          (if (map? blocks)
+            (if (contains? blocks join-id)
+              (if (= (set (keys blocks))
+                     #{entry-id then-id else-id join-id})
+                (if (vector? (get (get blocks entry-id) :instructions))
+                  (if (vector? (get (get blocks then-id) :instructions))
+                    (if (vector? (get (get blocks else-id) :instructions))
+                      (if (vector? (get (get blocks join-id) :instructions))
+                        (if (vector? operation-order)
+                          (if (> (count operation-order) 0)
+                            (if (<= (count operation-order) 256)
+                              (c13-unique-operation-ids? operation-order #{})
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              (if (= (set (keys blocks)) #{entry-id})
+                (if (vector? (get (get blocks entry-id) :instructions))
+                  (if (vector? operation-order)
+                    (if (> (count operation-order) 0)
+                      (if (<= (count operation-order) 256)
+                        (c13-unique-operation-ids? operation-order #{})
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false))
+        false)
+      false)))
+
+(defn c13-bounded-identity-input-valid?
+  [mir evidence]
+  (if (map? mir)
+    (if (map? evidence)
+      (if (= (set (keys evidence))
+             #{:c11-artifact-id :c11-mir-id :module-id :source-core
+               :verifier-report-id :verifier-status
+               :semantic-replay-parity :pass-execution-record-id
+               :fact-bindings :runtime-check-inventory
+               :source-map-binding :operation-order :effect-order-graph
+               :profile :target :decision-id})
+        (if (c13-sha256-id? (get evidence :c11-artifact-id))
+          (if (c13-sha256-id? (get evidence :c11-mir-id))
+            (if (c13-sha256-id? (get evidence :verifier-report-id))
+              (if (c13-sha256-id? (get evidence :decision-id))
+                (if (c13-sha256-id?
+                     (get evidence :pass-execution-record-id))
+                  (if (= (get evidence :verifier-status) :passed)
+                    (if (= (get evidence :semantic-replay-parity) :passed)
+                      (if (= (get evidence :profile) :hosted)
+                        (if (= (get evidence :target) :llvm)
+                          (if (= (get evidence :module-id)
+                                 (get mir :module-id))
+                            (if (= (get evidence :source-core)
+                                   (get mir :source-core))
+                              (if (c13-sha256-id?
+                                   (get evidence :source-core))
+                                (if (c13-bounded-mir-operation-shape-valid?
+                                     mir (get evidence :operation-order))
+                                  (if (= (get evidence
+                                              :pass-execution-record-id)
+                                         (get (get mir
+                                                   :pass-execution-record)
+                                              :record-id))
+                                    (if (c13-fact-bindings-valid?
+                                         (get evidence :fact-bindings))
+                                      (if (c13-fact-bindings-match-mir?
+                                           mir (get evidence :fact-bindings))
+                                        (if (= (get evidence :operation-order)
+                                               (c13-bounded-operation-order mir))
+                                        (if (= (get evidence
+                                                    :effect-order-graph)
+                                               (get mir
+                                                    :effect-order-graph))
+                                          (if (= (get evidence
+                                                      :runtime-check-inventory)
+                                                 (get mir
+                                                      :runtime-check-table))
+                                            (= (get evidence
+                                                    :source-map-binding)
+                                               (get (get evidence
+                                                         :fact-bindings)
+                                                    :source-map))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c13-build-bounded-identity-optimized-mir
+  [mir evidence]
+  (if (c13-bounded-identity-input-valid? mir evidence)
+    {:artifact :gravity/c13-bounded-identity-optimized-mir
+     :schema-version 1
+     :status :accepted
+     :input
+     {:kind :gravity/mir
+      :c11-artifact-id (get evidence :c11-artifact-id)
+      :c11-mir-id (get evidence :c11-mir-id)
+      :module-id (get mir :module-id)
+      :source-core (get mir :source-core)
+      :verifier-report-id (get evidence :verifier-report-id)
+      :verifier-status (get evidence :verifier-status)
+      :semantic-replay-parity (get evidence :semantic-replay-parity)
+      :pass-execution-record-id
+      (get (get mir :pass-execution-record) :record-id)}
+     :optimized-mir mir
+     :pass-contract
+     {:pass-id :c13-bounded-identity
+      :family :identity
+      :version 1
+      :input-ir :gravity/mir
+      :output-ir :gravity/optimized-mir
+      :required-analyses [:c11-verifier-report]
+      :preconditions [:mir-verifier-passed]
+      :preserves [:type-facts :effect-facts :ownership-facts
+                  :capability-facts :safety-outcomes
+                  :runtime-check-table :proof-certificate-table
+                  :source-map :operation-order :effect-order-graph]
+      :invalidates []
+      :regenerates []
+      :proof-obligations [:semantic-identity-replay]
+      :profile-constraints [(get evidence :profile)]
+      :target-assumptions []
+      :effect-ordering-policy :unchanged
+      :safety-policy :unchanged
+      :domain-policy :unchanged
+      :maximum-operation-count 256
+      :emits [:decision-record :invalidation-ledger
+              :residual-check-report :verifier-replay]}
+     :decision-record
+     {:artifact :gravity/optimization-decision
+      :pass-id :c13-bounded-identity
+      :decision-id (get evidence :decision-id)
+      :input-mir (get evidence :c11-mir-id)
+      :output-mir (get evidence :c11-mir-id)
+      :decision :retain-input-unchanged
+      :changed? false
+      :changed-operations []
+      :reason :bounded-bootstrap-identity-pass
+      :preserved
+      {:fact-bindings (get evidence :fact-bindings)
+       :operation-order (get evidence :operation-order)
+       :effect-order-graph (get evidence :effect-order-graph)}
+      :invalidated []
+      :proofs-used [(get evidence :verifier-report-id)]
+      :residual-checks (get evidence :runtime-check-inventory)
+      :source-map (get evidence :source-map-binding)
+      :verifier-result :passed}
+     :invalidation-ledger
+     {:artifact :gravity/c13-invalidation-ledger
+      :pass-id :c13-bounded-identity
+      :decision-id (get evidence :decision-id)
+      :input-mir (get evidence :c11-mir-id)
+      :output-mir (get evidence :c11-mir-id)
+      :analysis-invalidated []
+      :facts-invalidated []
+      :facts-regenerated []
+      :proofs-invalidated []
+      :certificates-invalidated []
+      :runtime-checks-restored []
+      :passes-to-rerun []
+      :caches-cleared []
+      :diagnostics-affected []
+      :profile (get evidence :profile)
+      :target (get evidence :target)}
+     :residual-check-report
+     {:artifact :gravity/c13-residual-check-report
+      :status :complete
+      :retained-runtime-checks (get evidence :runtime-check-inventory)
+      :elided-runtime-checks []
+      :open-proof-obligations []}
+     :verifier-replay
+     {:artifact :gravity/c13-post-pass-verifier-replay
+      :required? true
+      :c11-artifact-id (get evidence :c11-artifact-id)
+      :verifier-report-id (get evidence :verifier-report-id)
+      :c11-mir-id (get evidence :c11-mir-id)
+      :expected-input-module-id (get evidence :module-id)
+      :expected-output-module-id (get evidence :module-id)
+      :fact-bindings (get evidence :fact-bindings)
+      :semantic-identity-required? true
+      :result :passed}
+     :semantic-identity
+     {:c11-input-mir-id (get evidence :c11-mir-id)
+      :c11-output-mir-id (get evidence :c11-mir-id)
+      :input-module-id (get evidence :module-id)
+      :output-module-id (get evidence :module-id)
+      :fact-bindings (get evidence :fact-bindings)
+      :operation-order (get evidence :operation-order)
+      :operation-count (count (get evidence :operation-order))
+      :maximum-operation-count 256
+      :effect-order-graph (get evidence :effect-order-graph)
+      :unchanged? true}
+     :target-instruction-selection :forbidden
+     :diagnostics []
+     :semantic-authority :gravity-source
+     :execution-tcb :clojure-stage0-rule-runner
+     :clojure-seed-boundary? true
+     :self-hosted? false}
+    {:artifact :gravity/c13-bounded-identity-optimized-mir
+     :schema-version 1
+     :status :rejected
+     :diagnostic "C13-VERIFY"
+     :missing-fact :fresh-c11-verifier-and-fact-closure
+     :diagnostics ["C13-VERIFY"]}))

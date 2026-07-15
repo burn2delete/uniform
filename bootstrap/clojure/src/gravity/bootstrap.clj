@@ -124816,13 +124816,23 @@
           :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader]))
 
 (def p15-s23-b3-llvm-diagnostic-rules
-  #{"B1-INPUT" "B1-UNSUPPORTED" "B3-TARGET" "B3-METADATA"
+  #{"C13-CONTRACT" "C13-PRESERVE" "C13-INVALIDATE" "C13-PROOF"
+    "C13-CHECK-ELISION" "C13-EFFECT" "C13-SAFETY" "C13-DOMAIN"
+    "C13-NONDETERMINISM" "C13-VERIFY"
+    "C14-INPUT" "C14-PROFILE" "C14-TARGET" "C14-ABI"
+    "C14-RUNTIME" "C14-PROVIDER" "C14-PROOF-METADATA"
+    "C14-CAPABILITY" "C14-UNSUPPORTED" "C14-MANIFEST"
+    "B1-INPUT" "B1-PROFILE" "B1-TARGET" "B1-ABI" "B1-RUNTIME"
+    "B1-PROOF" "B1-CAPABILITY" "B1-UNSUPPORTED" "B1-METADATA"
+    "B3-TARGET" "B3-METADATA"
     "B3-UB" "B3-RUNTIME" "B3-PASS" "B3-ABI" "B3-MANIFEST" "B13-HASH"
     "B14-DIFFERENTIAL"})
 
 (defn p15-s23-b3-llvm-diagnostic-stage
   [id]
   (cond
+    (str/starts-with? id "C13-") :c13-mir-optimization
+    (str/starts-with? id "C14-") :c14-target-lowering
     (str/starts-with? id "B1-") :b1-backend-interface
     (= id "B13-HASH") :b13-artifact-emission
     (= id "B14-DIFFERENTIAL") :b14-backend-conformance
@@ -124830,8 +124840,35 @@
 
 (defn p15-s23-b3-llvm-diagnostic-message
   [id]
-  (get {"B1-INPUT" "LLVM backend input is unverified or incomplete"
+  (get {"C13-CONTRACT" "C13 optimization pass contract is invalid"
+        "C13-PRESERVE" "C13 optimization preservation evidence is incomplete"
+        "C13-INVALIDATE" "C13 invalidation ledger is incomplete"
+        "C13-PROOF" "C13 optimization proof closure is incomplete"
+        "C13-CHECK-ELISION" "C13 runtime check accounting is incomplete"
+        "C13-EFFECT" "C13 effect ordering preservation failed"
+        "C13-SAFETY" "C13 safety preservation failed"
+        "C13-DOMAIN" "C13 domain anchor preservation failed"
+        "C13-NONDETERMINISM" "C13 deterministic replay failed"
+        "C13-VERIFY" "C13 optimized MIR verification failed"
+        "C14-INPUT" "C14 lowering input is unverified or stale"
+        "C14-PROFILE" "C14 profile is ineligible for the requested backend"
+        "C14-TARGET" "C14 target contract is unsupported or incomplete"
+        "C14-ABI" "C14 ABI or layout contract is incomplete"
+        "C14-RUNTIME" "C14 runtime contract is incomplete"
+        "C14-PROVIDER" "C14 provider contract is incomplete"
+        "C14-PROOF-METADATA" "C14 target metadata lacks proof authority"
+        "C14-CAPABILITY" "C14 effect or capability authority is incomplete"
+        "C14-UNSUPPORTED" "C14 input is outside the bounded lowering surface"
+        "C14-MANIFEST" "C14 lowering manifest is incomplete"
+        "B1-INPUT" "LLVM backend input is unverified or incomplete"
+        "B1-PROFILE" "B1 profile contract is ineligible"
+        "B1-TARGET" "B1 target or backend manifest is incomplete"
+        "B1-ABI" "B1 ABI contract is incomplete"
+        "B1-RUNTIME" "B1 runtime contract is incomplete"
+        "B1-PROOF" "B1 proof closure is incomplete"
+        "B1-CAPABILITY" "B1 authority closure is incomplete"
         "B1-UNSUPPORTED" "verified MIR is outside the bounded LLVM slice"
+        "B1-METADATA" "B1 metadata or provenance is incomplete"
         "B3-TARGET" "pinned LLVM target or toolchain contract failed"
         "B3-METADATA" "LLVM metadata is not proof-authorized"
         "B3-UB" "LLVM lowering would introduce undefined behavior"
@@ -124853,7 +124890,11 @@
     :c11-mir-id :b3-source-content-hash :bounded-reason
     :native-access-enabled? :rename-return-code :captured-errno
     :expected-file-count :observed-file-count :logical-path
-    :maximum-byte-count :observed-byte-count :observed-mode})
+    :maximum-byte-count :observed-byte-count :observed-mode
+    :carrier :reason :observed-nodes :observed-depth :maximum-nodes
+    :maximum-depth :maximum-width :source-content-hash
+    :expected-source-content-hash :observed-source-content-hash
+    :expected-source-bytes :observed-source-bytes})
 
 (defn p15-s23-b3-llvm-safe-fact-value
   [key value]
@@ -125010,11 +125051,90 @@
    (p15-s23-b3-llvm-diagnostic-record
     id source-path subject facts)))
 
+(declare p15-s23-stage2-c13-c14-b1-packet-from-c11!
+         p15-s23-stage2-c13-c14-b1-verification-report
+         p15-s23-stage2-c13-c14-b1-verify!
+         p15-s23-stage2-c13-c14-b1-authentic?
+         p15-s23-c13-c14-b1-sidecar-evidence!)
+
 (let [p15-s23-b3-llvm-finalization-token (Object.)
       p15-s23-b3-llvm-tool-observation-state
       (atom {:total 0 :steps {}})]
 
 (declare ^:private p15-s23-b3-llvm-file-snapshot!)
+
+(defn p15-s23-c13-c14-b1-path-neutral-value
+  "Recursively remove only physical bridge provenance and binding carriers.
+  Semantic source/origin data remains and is normalized by the C11 neutralizer."
+  [value]
+  (p15-s23-c11-mir-path-neutral-value
+   (walk/postwalk
+    (fn [item]
+      (if (map? item)
+        (dissoc item
+                :actual-path-provenance
+                :actual-path-binding-id
+                :actual-paths
+                :actual-path-binding-hash)
+        item))
+    value)))
+
+(defn p15-s23-c13-c14-b1-stage-semantic-input
+  [record]
+  (p15-s23-c13-c14-b1-path-neutral-value
+   (dissoc record :semantic-id :artifact-id)))
+
+(defn p15-s23-c13-c14-b1-stage-semantic-projection
+  [record]
+  (assoc (p15-s23-c13-c14-b1-stage-semantic-input record)
+         :semantic-id (:semantic-id record)
+         :artifact-id (:artifact-id record)))
+
+(defn p15-s23-c13-c14-b1-semantic-input
+  [packet]
+  (p15-s23-c13-c14-b1-path-neutral-value
+   (-> packet
+       (dissoc :semantic-id :artifact-id)
+       (update :c13 p15-s23-c13-c14-b1-stage-semantic-projection)
+       (update :c14 p15-s23-c13-c14-b1-stage-semantic-projection)
+       (update :b1 p15-s23-c13-c14-b1-stage-semantic-projection)
+       (update :optimized-mir
+               p15-s23-c13-c14-b1-path-neutral-value))))
+
+(defn p15-s23-c13-c14-b1-reproducible-projection
+  [packet]
+  {:semantic-id (:semantic-id packet)
+   :artifact-id (:artifact-id packet)
+   :c13-semantic-id (get-in packet [:c13 :semantic-id])
+   :c13-artifact-id (get-in packet [:c13 :artifact-id])
+   :c14-request-id (get-in packet [:c14 :request :request-id])
+   :c14-semantic-id (get-in packet [:c14 :semantic-id])
+   :c14-artifact-id (get-in packet [:c14 :artifact-id])
+   :b1-semantic-id (get-in packet [:b1 :semantic-id])
+   :b1-artifact-id (get-in packet [:b1 :artifact-id])
+   :semantic-input (p15-s23-c13-c14-b1-semantic-input packet)})
+
+(defn p15-s23-c13-c14-b1-contextual-report-record
+  [packet]
+  (let [base
+        {:artifact :gravity/c13-c14-b1-contextual-verification-report
+         :schema-version 1
+         :status :passed
+         :packet-id (:artifact-id packet)
+         :semantic-id (:semantic-id packet)
+         :fresh-c11-mir-id (get-in packet [:c11 :mir-id])
+         :c13-artifact-id (get-in packet [:c13 :artifact-id])
+         :c14-request-id (get-in packet [:c14 :request :request-id])
+         :c14-artifact-id (get-in packet [:c14 :artifact-id])
+         :b1-artifact-id (get-in packet [:b1 :artifact-id])
+         :c11 :passed :c13 :passed :c14 :passed :b1 :passed
+         :gravity-source-replay :passed
+         :independent-reconstruction :passed
+         :self-hosted? false}]
+    (assoc base :report-id
+           (p15-s23-c11-mir-digest
+            {:kind :gravity/c13-c14-b1-contextual-verification-report
+             :schema-version 1 :report base}))))
 
 (defn- p15-s23-b3-llvm-require-authority!
   [candidate source-path operation]
@@ -125217,6 +125337,8 @@
 
       :else :unsupported-mir-opcode)))
 
+(def p15-s23-b3-llvm-max-bridge-operations 256)
+
 (defn p15-s23-b3-llvm-preflight!
   [artifact]
   (let [mir (:mir-module artifact)
@@ -125251,6 +125373,15 @@
        "B1-INPUT" (get-in artifact [:provenance :actual-paths :source])
        artifact {:missing-fact :verified-pure-c11-b1-input
                  :c11-mir-id (:mir-id artifact)}))
+    (when (> (count operations) p15-s23-b3-llvm-max-bridge-operations)
+      (p15-s23-b3-llvm-fail!
+       "B1-UNSUPPORTED"
+       (get-in artifact [:provenance :actual-paths :source])
+       artifact
+       {:missing-fact :bounded-c13-c14-b1-operation-count
+        :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+        :observed-operation-count (count operations)
+        :c11-mir-id (:mir-id artifact)}))
     (when-let [operation
                (first (filter #(p15-s23-b3-llvm-operation-rejection
                                 operations %)
@@ -127255,6 +127386,10 @@
    :schema-version 1
    :final-artifact-id (:artifact-id artifact)
    :semantic-id (:semantic-id artifact)
+   :c13-c14-b1-packet
+   (p15-s23-c13-c14-b1-sidecar-evidence! artifact)
+   :contextual-evidence-ids
+   (get-in artifact [:c18-record :evidence-ids])
    :c14-request (:c14-request artifact)
    :b1-packet (:b1-packet artifact)
    :b3-record (:b3-record artifact)
@@ -127497,11 +127632,16 @@
 
 (defn p15-s23-b3-llvm-semantic-input
   [artifact]
-  (-> artifact
-      (dissoc :artifact-id :semantic-id :actual-path-binding-id
-              :actual-path-provenance)
+  (let [base
+        (dissoc artifact :artifact-id :semantic-id
+                :actual-path-binding-id :actual-path-provenance)]
+    (cond-> base
+      (contains? base :c13-c14-b1-packet)
+      (update :c13-c14-b1-packet
+              p15-s23-c13-c14-b1-reproducible-projection)
+      true
       (update :toolchain-evidence dissoc
-              :physical-tool-provenance :actual-publication-path)))
+              :physical-tool-provenance :actual-publication-path))))
 
 (defn p15-s23-b3-llvm-artifact-id
   [artifact]
@@ -127802,38 +127942,31 @@
                       :preserved? true}}))
 
 (defn- p15-s23-b3-llvm-verify-context-bindings!
-  [artifact c11-artifact checked-core c11-report source-path]
-  (let [expected
-        (p15-s23-b3-llvm-contract-bindings
-         c11-artifact checked-core c11-report)
-        evidence
-        (p15-s23-b3-llvm-expected-b1-context-evidence
-         c11-artifact checked-core c11-report)
+  [artifact bridge-packet source-path]
+  (let [c14-request (get-in bridge-packet [:c14 :request])
+        b1-packet
+        (dissoc (:b1 bridge-packet)
+                :source-rule :actual-path-provenance
+                :semantic-id :artifact-id :actual-path-binding-id)
+        expected (:contract-bindings c14-request)
         valid?
         (and
+         (= bridge-packet (:c13-c14-b1-packet artifact))
+         (= c14-request (:c14-request artifact))
+         (= b1-packet (:b1-packet artifact))
+         (= (:optimized-mir bridge-packet)
+            (get-in bridge-packet [:c13 :optimized-mir]))
+         (= (:artifact-id (:c13 bridge-packet))
+            (get-in c14-request [:input :artifact-id])
+            (get-in b1-packet [:input :artifact-id]))
+         (= (get-in bridge-packet [:c14 :artifact-id])
+            (get-in bridge-packet [:b1 :backend-manifest
+                                   :c14-artifact-id]))
+         (= (get-in c14-request [:request-id])
+            (get-in b1-packet [:backend-manifest :c14-request-id]))
          (every? #(= expected (get-in artifact [% :contract-bindings]))
                  [:c14-request :b1-packet :b3-record
-                  :b13-record :c18-record])
-         (= (:c14-input evidence) (get-in artifact [:c14-request :input]))
-         (= (:b1-input evidence) (get-in artifact [:b1-packet :input]))
-         (= (:dependencies evidence)
-            (get-in artifact [:c14-request :dependency-provenance])
-            (get-in artifact [:b1-packet :dependencies]))
-         (= (:c14-source-map evidence)
-            (get-in artifact [:c14-request :source-map]))
-         (= (:b1-source-map evidence)
-            (get-in artifact [:b1-packet :source-map]))
-         (= (:proofs evidence) (get-in artifact [:b1-packet :proofs]))
-         (= (:fact-table-closure evidence)
-            (get-in artifact [:b1-packet :fact-table-closure]))
-         (= (:b1-preflight evidence)
-            (get-in artifact [:b1-packet :b1-preflight]))
-         (every? (fn [key]
-                   (= (get evidence key)
-                      (get-in artifact [:b1-packet key])))
-                 [:mir-id :mir-artifact-id :source-core-artifact-id
-                  :c11-verification-status :c11-semantic-replay-parity
-                  :pass-execution-record-id]))]
+                  :b13-record :c18-record]))]
     (when-not valid?
       (p15-s23-b3-llvm-fail!
        "B3-MANIFEST" source-path artifact
@@ -127847,9 +127980,21 @@
    (= {:source (:source-path context)
        :c11-source (get-in c11-artifact
                            [:provenance :actual-paths :c11-source])
+       :c13-source
+       (get-in artifact
+               [:c13-c14-b1-packet :actual-path-provenance :c13-source])
+       :c14-source
+       (get-in artifact
+               [:c13-c14-b1-packet :actual-path-provenance :c14-source])
+       :b1-source
+       (get-in artifact
+               [:c13-c14-b1-packet :actual-path-provenance :b1-source])
+       :c13-c14-b1-packet-binding-id
+       (get-in artifact [:c13-c14-b1-packet :actual-path-binding-id])
        :b3-source (:source-path binding)}
       (select-keys (:actual-path-provenance artifact)
-                   [:source :c11-source :b3-source]))
+                   [:source :c11-source :c13-source :c14-source :b1-source
+                    :c13-c14-b1-packet-binding-id :b3-source]))
     (p15-s23-b3-llvm-fail!
      "B3-MANIFEST" (:source-path context) artifact
      {:missing-fact
@@ -127858,10 +128003,24 @@
 
 (letfn
  [(p15-s23-b3-llvm-final-record
-   [c11-artifact checked-core context c11-report binding lowering oracle
-    toolchain]
+   [c11-artifact checked-core context c11-report bridge-packet bridge-report
+    binding lowering oracle toolchain]
   (let [source-path (:source-path context)
-        mir (:mir-module c11-artifact)
+        _
+        (when-not
+         (= bridge-report
+            (p15-s23-c13-c14-b1-contextual-report-record bridge-packet))
+          (p15-s23-b3-llvm-fail!
+           "B13-HASH" source-path bridge-packet
+           {:missing-fact :contextual-bridge-report-identity}))
+        bridge-report-id (:report-id bridge-report)
+        mir (:optimized-mir bridge-packet)
+        c14-stage (:c14 bridge-packet)
+        c14-request (:request c14-stage)
+        b1-packet
+        (dissoc (:b1 bridge-packet)
+                :source-rule :actual-path-provenance
+                :semantic-id :artifact-id :actual-path-binding-id)
         capability-proof-table (:capability-proof-table mir)
         proof-certificate-table (:proof-certificate-table mir)
         safety-proof-table (:safety-proofs proof-certificate-table)
@@ -127870,118 +128029,20 @@
         c11-verifier-record-id
         (p15-s23-c11-mir-digest c11-verifier-record)
         source-target-selection
-        (p15-s23-b3-llvm-expected-source-target-selection)
-        profile-contract (p15-s23-b3-llvm-expected-profile-contract)
-        target-contract
-        (p15-s23-b3-llvm-expected-target-contract)
+        (:source-target-selection c14-request)
+        profile-contract (:profile-contract c14-request)
+        target-contract (:target c14-request)
         abi-contract
         (p15-s23-b3-llvm-expected-abi-contract)
         runtime-contract
         (p15-s23-b3-llvm-expected-runtime-contract)
         provider-contract
         (p15-s23-b3-llvm-expected-provider-contract)
-        dependency-contract
-        {:source-core (:artifact-id checked-core)
-         :c11-source-rule (:source-rule c11-artifact)
-         :c11-pass (get-in mir [:pass-execution-record :record-id])
-         :b3-source p15-s23-b3-llvm-expected-source-content-hash}
-        contract-bindings
-        (p15-s23-b3-llvm-contract-bindings
-         c11-artifact checked-core c11-report)
+        dependency-contract (:dependency-provenance c14-request)
+        contract-bindings (:contract-bindings c14-request)
         lowering-id
         (p15-s23-c11-mir-digest
          (dissoc lowering :clojure-seed-boundary? :self-hosted?))
-        c14-request
-        (let [base
-              {:artifact :gravity/c14-internal-target-lowering-request
-               :schema-version 1
-               :status :accepted
-               :input
-               {:kind :gravity/mir
-                :id (:mir-id c11-artifact)
-                :artifact-id (:artifact-id c11-artifact)
-                :verified? true
-                :verifier-report c11-verifier-record
-                :verifier-report-id c11-verifier-record-id
-                :optimization-status :not-run
-                :domain-status :not-applicable}
-               :profile :hosted
-               :profile-contract profile-contract
-               :target
-               target-contract
-               :source-target-selection source-target-selection
-               :abi (assoc abi-contract :return-type :i32)
-               :runtime runtime-contract
-               :providers provider-contract
-               :contract-bindings contract-bindings
-               :required-evidence
-               (:required-evidence p15-s23-b3-llvm-policy)
-               :source-map
-               {:id (p15-s23-c11-mir-digest
-                     (get-in c11-artifact [:mir-module :source-map]))
-                :preserved? true}
-               :dependency-provenance dependency-contract
-               :c13-optimization-status :not-run
-               :domain-ir-status :not-applicable
-               :fusion-status :not-run
-               :target-policy p15-s23-b3-llvm-policy
-               :diagnostics []}]
-          (assoc base :request-id (p15-s23-c11-mir-digest base)))
-        b1-packet
-        {:artifact :gravity/b1-verified-backend-input-packet
-         :schema-version 1
-         :status :accepted-for-bounded-llvm
-         :input {:kind :gravity/mir
-                 :id (:mir-id c11-artifact)
-                 :artifact-id (:artifact-id c11-artifact)
-                 :verified? true
-                 :verifier-report c11-verifier-record
-                 :verifier-report-id c11-verifier-record-id}
-         :profile profile-contract
-         :target target-contract
-         :source-target-selection source-target-selection
-         :abi abi-contract
-         :runtime runtime-contract
-         :providers provider-contract
-         :contract-bindings contract-bindings
-         :effects #{}
-         :capabilities #{}
-         :safety {:outcomes (count (get-in c11-artifact
-                                           [:mir-module :safety-table]))
-                  :runtime-checks 0 :unsafe-islands 0}
-         :proofs
-         {:capability
-          (assoc (p15-s23-b3-llvm-content-binding capability-proof-table)
-                 :proof-ids (vec (sort (keys capability-proof-table))))
-          :certificates
-          (assoc (p15-s23-b3-llvm-content-binding proof-certificate-table)
-                 :safety-proof-count (count safety-proof-table)
-                 :safety-proof-ids (vec (sort (keys safety-proof-table))))}
-         :source-map {:id (p15-s23-c11-mir-digest
-                           (get-in c11-artifact
-                                   [:mir-module :source-map]))
-                      :complete? true}
-         :dependencies dependency-contract
-         :mir-id (:mir-id c11-artifact)
-         :mir-artifact-id (:artifact-id c11-artifact)
-         :source-core-artifact-id (:artifact-id checked-core)
-         :c11-verification-status (:status c11-report)
-         :c11-semantic-replay-parity (:semantic-replay-parity c11-report)
-         :pass-execution-record-id
-         (get-in c11-artifact
-                 [:mir-module :pass-execution-record :record-id])
-         :b1-preflight (:b1-preflight c11-artifact)
-         :fact-table-closure
-         {:type (p15-s23-b3-llvm-content-binding (:type-table mir))
-          :effect (p15-s23-b3-llvm-content-binding (:effect-table mir))
-          :ownership
-          (p15-s23-b3-llvm-content-binding (:ownership-table mir))
-          :capability
-          (p15-s23-b3-llvm-content-binding (:capability-table mir))
-          :safety (p15-s23-b3-llvm-content-binding (:safety-table mir))
-          :source-map
-          (p15-s23-b3-llvm-content-binding (:source-map mir))}
-         :diagnostics []}
         b3-record
         {:artifact :gravity/b3-internal-arm64-macos-llvm-record
          :status :validated-candidate-for-bounded-internal-slice
@@ -128031,6 +128092,53 @@
           :diagnostic "B1-UNSUPPORTED"
           :fail-before-tool? true}
          :diagnostics []}
+        c13-pass-provenance
+        {:pass-id (get-in bridge-packet [:c13 :pass-contract :pass-id])
+         :version (get-in bridge-packet [:c13 :pass-contract :version])
+         :decision-id
+         (get-in bridge-packet [:c13 :decision-record :decision-id])
+         :c13-artifact-id (get-in bridge-packet [:c13 :artifact-id])
+         :input-mir-id
+         (get-in bridge-packet [:c13 :decision-record :input-mir])
+         :output-mir-id
+         (get-in bridge-packet [:c13 :decision-record :output-mir])}
+        pass-pipeline-base
+        {:c11 (get-in c11-artifact
+                      [:mir-module :pass-execution-record :record-id])
+         :c13 c13-pass-provenance
+         :b3 (get-in b3-record [:pass-record :passes])
+         :optimization-level
+         (get-in b3-record [:pass-record :optimization-level])
+         :ub-sensitive-flags
+         (get-in b3-record [:pass-record :ub-sensitive-flags])}
+        pass-pipeline-digest
+        (p15-s23-c11-mir-digest pass-pipeline-base)
+        compiler-provenance
+        {:c13-source-rule-id
+         (p15-s23-c11-mir-digest
+          (get-in bridge-packet [:c13 :source-rule]))
+         :c14-source-rule-id
+         (p15-s23-c11-mir-digest
+          (get-in bridge-packet [:c14 :source-rule]))
+         :b1-source-rule-id
+         (p15-s23-c11-mir-digest
+          (get-in bridge-packet [:b1 :source-rule]))
+         :b3-source p15-s23-b3-llvm-expected-source-content-hash
+         :builder p15-s23-b3-llvm-expected-builder-semantic-hash
+         :toolchain (:toolchain-fingerprint toolchain)
+         :target-toolchain-digest
+         (p15-s23-c11-mir-digest (:toolchain-fingerprint toolchain))
+         :pass-pipeline-digest pass-pipeline-digest}
+        dependency-provenance
+        {:gravity-runtime-providers []
+         :platform-runtime-providers
+         [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+         :build-providers (:build provider-contract)
+         :c14-dependencies dependency-contract
+         :backend-manifest-id
+         (p15-s23-c11-mir-digest
+          (get-in bridge-packet [:b1 :backend-manifest]))
+         :authenticated-packet-id (:artifact-id bridge-packet)}
         b13-build-identity-base
         {:artifact :gravity/b13-bounded-llvm-build-identity
          :schema-version 1
@@ -128042,27 +128150,16 @@
          :source-inputs
          {:checked-core (:artifact-id checked-core)
           :mir (:mir-id c11-artifact)
+          :c13 (get-in bridge-packet [:c13 :artifact-id])
+          :c14-request (get-in bridge-packet [:c14 :request :request-id])
+          :c14 (get-in bridge-packet [:c14 :artifact-id])
+          :b1 (get-in bridge-packet [:b1 :artifact-id])
+          :authenticated-packet (:artifact-id bridge-packet)
           :lowering lowering-id
           :b3-source p15-s23-b3-llvm-expected-source-content-hash
           :b3-builder p15-s23-b3-llvm-expected-builder-semantic-hash}
-         :compiler
-         {:target-toolchain-digest
-          (p15-s23-c11-mir-digest
-           (:toolchain-fingerprint toolchain))
-          :pass-pipeline-digest
-          (p15-s23-c11-mir-digest
-           {:c11 (get-in c11-artifact
-                         [:mir-module :pass-execution-record :record-id])
-            :b3 (get-in b3-record [:pass-record :passes])
-            :optimization-level
-            (get-in b3-record [:pass-record :optimization-level])
-            :ub-sensitive-flags
-            (get-in b3-record [:pass-record :ub-sensitive-flags])})}
-         :dependencies
-         {:gravity-runtime-providers []
-          :platform-runtime-providers
-          [:darwin/process-startup :darwin/dyld :darwin/libsystem]
-          :build-providers (:build provider-contract)}
+         :compiler compiler-provenance
+         :dependencies dependency-provenance
          :build-environment
          {:policy p15-s23-b3-llvm-environment-policy
           :content-id
@@ -128104,39 +128201,29 @@
          :inputs
          {:source-core (:artifact-id checked-core)
           :mir (:mir-id c11-artifact)
+          :c13 (get-in bridge-packet [:c13 :artifact-id])
+          :c14-request (get-in bridge-packet [:c14 :request :request-id])
+          :c14 (get-in bridge-packet [:c14 :artifact-id])
+          :b1 (get-in bridge-packet [:b1 :artifact-id])
+          :authenticated-packet (:artifact-id bridge-packet)
           :lowering lowering-id}
          :source-target-selection source-target-selection
          :contract-bindings contract-bindings
-         :compiler-provenance
-         {:b3-source p15-s23-b3-llvm-expected-source-content-hash
-          :builder p15-s23-b3-llvm-expected-builder-semantic-hash
-          :toolchain (:toolchain-fingerprint toolchain)
-          :target-toolchain-digest
-          (p15-s23-c11-mir-digest
-           (:toolchain-fingerprint toolchain))}
+         :compiler-provenance compiler-provenance
          :pass-provenance
          {:c11 (get-in c11-artifact
                        [:mir-module :pass-execution-record :record-id])
+          :c13 c13-pass-provenance
           :b3 (get-in b3-record [:pass-record :passes])
-          :pass-pipeline-digest
-          (p15-s23-c11-mir-digest
-           {:c11 (get-in c11-artifact
-                         [:mir-module :pass-execution-record :record-id])
-            :b3 (get-in b3-record [:pass-record :passes])
-            :optimization-level
-            (get-in b3-record [:pass-record :optimization-level])
-            :ub-sensitive-flags
-            (get-in b3-record [:pass-record :ub-sensitive-flags])})}
-         :dependency-provenance
-         {:gravity-runtime-providers []
-          :platform-runtime-providers
-          [:darwin/process-startup :darwin/dyld :darwin/libsystem]
-          :build-providers (:build provider-contract)}
+          :pass-pipeline-digest pass-pipeline-digest}
+         :dependency-provenance dependency-provenance
          :safety {:runtime-checks 0 :unsafe-islands 0
                   :ub-sensitive-flags []
                   :table-binding (get contract-bindings :safety)}
          :proof {:metadata-map {} :c11-verifier :passed
                  :c11-verifier-record-id c11-verifier-record-id
+                 :c13-c14-b1-contextual-replay :passed
+                 :c13-c14-b1-contextual-report-id bridge-report-id
                  :capability-proof-table
                  (get contract-bindings :capabilities)
                  :proof-certificate-table (get contract-bindings :proofs)
@@ -128163,8 +128250,23 @@
          [{:from (:artifact-id checked-core)
            :to (:mir-id c11-artifact)
            :edge :authenticated-c11-mir-construction}
-          {:from (:mir-id c11-artifact) :to lowering-id
-           :edge :verified-mir-lowering}
+          {:from (:mir-id c11-artifact)
+           :to (get-in bridge-packet [:c13 :artifact-id])
+           :edge :gravity-c13-identity-optimization}
+          {:from (get-in bridge-packet [:c13 :artifact-id])
+           :to (get-in bridge-packet [:c14 :request :request-id])
+           :edge :gravity-c14-lowering-request}
+          {:from (get-in bridge-packet [:c14 :request :request-id])
+           :to (get-in bridge-packet [:c14 :artifact-id])
+           :edge :gravity-c14-target-lowering-acceptance}
+          {:from (get-in bridge-packet [:c14 :artifact-id])
+           :to (get-in bridge-packet [:b1 :artifact-id])
+           :edge :gravity-b1-backend-authentication}
+          {:from (get-in bridge-packet [:b1 :artifact-id])
+           :to (:artifact-id bridge-packet)
+           :edge :authenticated-c13-c14-b1-packet}
+          {:from (:artifact-id bridge-packet) :to lowering-id
+           :edge :verified-optimized-mir-lowering}
           {:from lowering-id
            :to (get-in toolchain
                        [:artifact-files :llvm-ir :content-hash])
@@ -128200,15 +128302,7 @@
           :environment-inputs-digest
           (p15-s23-c11-mir-digest
            p15-s23-b3-llvm-environment-policy)
-          :pass-pipeline-digest
-          (p15-s23-c11-mir-digest
-           {:c11 (get-in c11-artifact
-                         [:mir-module :pass-execution-record :record-id])
-            :b3 (get-in b3-record [:pass-record :passes])
-            :optimization-level
-            (get-in b3-record [:pass-record :optimization-level])
-            :ub-sensitive-flags
-            (get-in b3-record [:pass-record :ub-sensitive-flags])})
+          :pass-pipeline-digest pass-pipeline-digest
           :target-toolchain-digest
           (p15-s23-c11-mir-digest
            (:toolchain-fingerprint toolchain))
@@ -128242,23 +128336,54 @@
          :same-result?
          (= (:expected-exit-code oracle)
             (get-in toolchain [:process-evidence :observed-exit-code]))}
+        c18-minimum-evidence
+        [:fresh-c11-replay
+         :c13-identity-verifier-replay
+         :c14-lowering-eligibility-reconstruction
+         :b1-manifest-reconstruction
+         :c13-c14-b1-contextual-replay
+         :gravity-b3-replay
+         :independent-lowering-reconstruction
+         :clang-codegen :mach-o-abi :darwin-runtime-provider
+         :differential-execution :content-hashes]
         c18-record
         {:artifact :gravity/c18-bounded-llvm-risk-trust-record
          :status :internal-experimental-only
+         :evidence-ids
+         {:c13-c14-b1-contextual-replay bridge-report-id}
+         :upstream-pass-risk
+         {:artifact :gravity/pass-risk
+          :pass :c13-bounded-identity
+          :version 1
+          :risk :critical
+          :reason #{:trusted-semantic-base
+                    :seed-executed-semantic-preservation-boundary}
+          :affected-profiles #{:hosted}
+          :affected-targets #{:llvm}
+          :target-assumptions []
+          :artifact-kinds #{:gravity/mir :gravity/optimized-mir}
+          :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+          :minimum-evidence
+          #{:fresh-c11-replay :c13-source-pin :operation-order-replay
+            :effect-order-graph-replay :fact-table-replay
+            :identity-bound-c11-verifier-replay}
+          :available-evidence
+          #{:fresh-c11-replay :c13-source-pin :operation-order-replay
+            :effect-order-graph-replay :fact-table-replay
+            :identity-bound-c11-verifier-replay}
+          :release-policy :internal-experimental-only
+          :release-gate :closed :whole-pass-gate :closed
+          :self-hosting-gate :closed}
          :pass
          {:id :gravity-b3-bounded-arm64-macos-llvm
           :version 1
           :risk-class :critical-seed-and-native-code-emission
-          :required-evidence
-          (:required-evidence p15-s23-b3-llvm-policy)
-          :available-evidence
-          [:fresh-c11-replay :gravity-b3-replay
-           :independent-lowering-reconstruction
-           :clang-codegen :mach-o-abi :darwin-runtime-provider
-           :differential-execution :content-hashes]
+          :required-evidence c18-minimum-evidence
+          :available-evidence c18-minimum-evidence
           :missing-for-full-credit
           [:source-declared-llvm :bounded-fresh-replay-latency
-           :second-host-toolchain :whole-c11 :whole-b3
+           :second-host-toolchain :whole-c11 :whole-c13 :whole-c14
+           :whole-b1 :whole-b3
            :whole-language :seedless-self-hosting
            :fd-relative-publication-linearization
            :whole-process-tree-reaping-proof]}
@@ -128269,13 +128394,11 @@
           :architecture :arm64 :object-format :mach-o
           :exposure :internal :tier :experimental}
          :critical-risk :seed-and-single-host-toolchain
-         :minimum-evidence
-         [:fresh-c11-replay :gravity-b3-replay
-          :independent-lowering-reconstruction
-          :clang-codegen :mach-o-abi :darwin-runtime-provider
-          :differential-execution :content-hashes]
+         :minimum-evidence c18-minimum-evidence
          :trust-boundary
-         [:clojure-stage0-seed :gravity-b3-source
+         [:clojure-stage0-seed :clojure-stage0-rule-runner
+          :gravity-c13-source :gravity-c14-source :gravity-b1-source
+          :gravity-b3-source
           :apple-xcrun-72 :apple-clang-21 :apple-ld-1267
           :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader
           :openjdk-26.0.1-ffm-native-access
@@ -128313,6 +128436,7 @@
          :public-target-gate :closed
          :self-hosting-gate :closed
          :whole-c11-gate :closed
+         :whole-c13-gate :closed
          :whole-c14-gate :closed
          :whole-b1-gate :closed
          :whole-b3-gate :closed
@@ -128323,6 +128447,14 @@
         {:source source-path
          :c11-source (get-in c11-artifact
                              [:provenance :actual-paths :c11-source])
+         :c13-source
+         (get-in bridge-packet [:actual-path-provenance :c13-source])
+         :c14-source
+         (get-in bridge-packet [:actual-path-provenance :c14-source])
+         :b1-source
+         (get-in bridge-packet [:actual-path-provenance :b1-source])
+         :c13-c14-b1-packet-binding-id
+         (:actual-path-binding-id bridge-packet)
          :b3-source (:source-path binding)
          :xcrun-path (get-in toolchain
                              [:physical-tool-provenance :xcrun-path])
@@ -128360,6 +128492,7 @@
         {:kind :gravity/p15-s23-b3-authenticated-llvm-artifact
          :schema-version 1
          :status :validated-candidate-for-bounded-internal-slice
+         :c13-c14-b1-packet bridge-packet
          :c14-request c14-request
          :b1-packet b1-packet
          :b3-record b3-record
@@ -128397,11 +128530,11 @@
   [artifact]
   (let [selection (p15-s23-b3-llvm-expected-source-target-selection)
         profile (p15-s23-b3-llvm-expected-profile-contract)
-        target (p15-s23-b3-llvm-expected-target-contract)
+        target (get-in artifact [:c14-request :target])
         b3-target (p15-s23-b3-llvm-expected-b3-target-record)
         b13-target (p15-s23-b3-llvm-expected-b13-target)
         build-target (p15-s23-b3-llvm-expected-build-target)
-        abi (p15-s23-b3-llvm-expected-abi-contract)
+        abi (get-in artifact [:c14-request :abi])
         b3-abi (p15-s23-b3-llvm-expected-b3-abi-record)
         runtime (p15-s23-b3-llvm-expected-runtime-contract)
         providers (p15-s23-b3-llvm-expected-provider-contract)
@@ -128424,12 +128557,23 @@
         build-identity (get-in artifact [:b13-record :build-identity])
         b14-scope (get-in artifact [:b14-record :availability-scope])
         c18 (get-in artifact [:c18-record])
+        expected-bridge-report
+        (p15-s23-c13-c14-b1-contextual-report-record
+         (:c13-c14-b1-packet artifact))
         expected-build-providers (:build providers)
         expected-dependencies
         {:gravity-runtime-providers []
          :platform-runtime-providers
          [:darwin/process-startup :darwin/dyld :darwin/libsystem]
-         :build-providers expected-build-providers}
+         :build-providers expected-build-providers
+         :c14-dependencies
+         (get-in artifact [:c13-c14-b1-packet :c14 :request
+                           :dependency-provenance])
+         :backend-manifest-id
+         (p15-s23-c11-mir-digest
+          (get-in artifact [:c13-c14-b1-packet :b1 :backend-manifest]))
+         :authenticated-packet-id
+         (get-in artifact [:c13-c14-b1-packet :artifact-id])}
         expected-artifact-kinds
         {:llvm-ir {:artifact-kind :llvm-ir
                    :logical-path "program.ll" :mode "0644"}
@@ -128461,24 +128605,78 @@
                         record))))
         source-inputs
         {:checked-core (get-in artifact
-                               [:b1-packet :source-core-artifact-id])
-         :mir (get-in artifact [:b1-packet :mir-id])
+                               [:c13-c14-b1-packet :c11
+                                :checked-core-artifact-id])
+         :mir (get-in artifact [:c13-c14-b1-packet :c11 :mir-id])
+         :c13 (get-in artifact [:c13-c14-b1-packet :c13 :artifact-id])
+         :c14-request
+         (get-in artifact [:c13-c14-b1-packet :c14 :request :request-id])
+         :c14 (get-in artifact [:c13-c14-b1-packet :c14 :artifact-id])
+         :b1 (get-in artifact [:c13-c14-b1-packet :b1 :artifact-id])
+         :authenticated-packet
+         (get-in artifact [:c13-c14-b1-packet :artifact-id])
          :lowering (get-in artifact [:b3-record :lowering-id])
          :b3-source p15-s23-b3-llvm-expected-source-content-hash
          :b3-builder p15-s23-b3-llvm-expected-builder-semantic-hash}
         toolchain-digest (p15-s23-c11-mir-digest toolchain-fingerprint)
+        c13-pass-provenance
+        {:pass-id
+         (get-in artifact [:c13-c14-b1-packet :c13
+                           :pass-contract :pass-id])
+         :version
+         (get-in artifact [:c13-c14-b1-packet :c13
+                           :pass-contract :version])
+         :decision-id
+         (get-in artifact [:c13-c14-b1-packet :c13
+                           :decision-record :decision-id])
+         :c13-artifact-id
+         (get-in artifact [:c13-c14-b1-packet :c13 :artifact-id])
+         :input-mir-id
+         (get-in artifact [:c13-c14-b1-packet :c13
+                           :decision-record :input-mir])
+         :output-mir-id
+         (get-in artifact [:c13-c14-b1-packet :c13
+                           :decision-record :output-mir])}
         pass-pipeline-base
         {:c11 (get-in artifact [:b13-record :pass-provenance :c11])
+         :c13 c13-pass-provenance
          :b3 (:passes pass-record)
          :optimization-level (:optimization-level pass-record)
          :ub-sensitive-flags (:ub-sensitive-flags pass-record)}
         pass-pipeline-digest
         (p15-s23-c11-mir-digest pass-pipeline-base)
+        expected-compiler-provenance
+        {:c13-source-rule-id
+         (p15-s23-c11-mir-digest
+          (get-in artifact [:c13-c14-b1-packet :c13 :source-rule]))
+         :c14-source-rule-id
+         (p15-s23-c11-mir-digest
+          (get-in artifact [:c13-c14-b1-packet :c14 :source-rule]))
+         :b1-source-rule-id
+         (p15-s23-c11-mir-digest
+          (get-in artifact [:c13-c14-b1-packet :b1 :source-rule]))
+         :b3-source p15-s23-b3-llvm-expected-source-content-hash
+         :builder p15-s23-b3-llvm-expected-builder-semantic-hash
+         :toolchain toolchain-fingerprint
+         :target-toolchain-digest toolchain-digest
+         :pass-pipeline-digest pass-pipeline-digest}
         expected-artifact-graph
         [{:from (:checked-core source-inputs) :to (:mir source-inputs)
           :edge :authenticated-c11-mir-construction}
-         {:from (:mir source-inputs) :to (:lowering source-inputs)
-          :edge :verified-mir-lowering}
+         {:from (:mir source-inputs) :to (:c13 source-inputs)
+          :edge :gravity-c13-identity-optimization}
+         {:from (:c13 source-inputs) :to (:c14-request source-inputs)
+          :edge :gravity-c14-lowering-request}
+         {:from (:c14-request source-inputs) :to (:c14 source-inputs)
+          :edge :gravity-c14-target-lowering-acceptance}
+         {:from (:c14 source-inputs) :to (:b1 source-inputs)
+          :edge :gravity-b1-backend-authentication}
+         {:from (:b1 source-inputs)
+          :to (:authenticated-packet source-inputs)
+          :edge :authenticated-c13-c14-b1-packet}
+         {:from (:authenticated-packet source-inputs)
+          :to (:lowering source-inputs)
+          :edge :verified-optimized-mir-lowering}
          {:from (:lowering source-inputs)
           :to (get-in files [:llvm-ir :content-hash])
           :edge :llvm-ir-emission}
@@ -128496,7 +128694,8 @@
           :edge :bundle-build-identity}]
         actual-path-provenance (:actual-path-provenance artifact)
         actual-path-base-keys
-        #{:source :c11-source :b3-source :xcrun-path :file-path
+        #{:source :c11-source :c13-source :c14-source :b1-source
+          :c13-c14-b1-packet-binding-id :b3-source :xcrun-path :file-path
           :magic-path :sdk-path :sdk-locator-path :clang-path
           :clang-locator-path :ld-path :ld-locator-path :otool-path
           :otool-locator-path :tool-installation-record :publication-path}
@@ -128513,7 +128712,8 @@
           (and (string? value) (<= 1 (count value) 4096)
                (str/starts-with? value "/")))]
     (and
-     (= #{:kind :schema-version :status :c14-request :b1-packet
+     (= #{:kind :schema-version :status :c13-c14-b1-packet
+          :c14-request :b1-packet
           :b3-record :b13-record :b14-record :c18-record :lowering
           :toolchain-evidence :actual-path-provenance :diagnostics
           :seed-boundary? :clojure-seed-boundary? :c11-llvm-credit?
@@ -128521,10 +128721,67 @@
           :release-credit? :self-hosted? :whole-language? :semantic-id
           :artifact-id :actual-path-binding-id}
         (set (keys artifact)))
+     (let [packet (:c13-c14-b1-packet artifact)
+           raw-b1
+           (dissoc (:b1 packet)
+                   :source-rule :actual-path-provenance
+                   :semantic-id :artifact-id :actual-path-binding-id)
+           packet-semantic-input
+           (p15-s23-c13-c14-b1-semantic-input packet)
+           packet-projection
+           (p15-s23-c13-c14-b1-reproducible-projection packet)]
+       (and
+        (= :gravity/p15-s23-c13-c14-b1-authenticated-packet
+           (:kind packet))
+        (= :accepted-for-bounded-llvm (:status packet))
+        (= (:c14-request artifact) (get-in packet [:c14 :request]))
+        (= (:b1-packet artifact) raw-b1)
+        (= (:optimized-mir packet) (get-in packet [:c13 :optimized-mir]))
+        (= (:semantic-id packet)
+           (p15-s23-c11-mir-digest packet-semantic-input))
+        (= packet-semantic-input (:semantic-input packet-projection))
+        (= packet-projection
+           {:semantic-id (:semantic-id packet)
+            :artifact-id (:artifact-id packet)
+            :c13-semantic-id (get-in packet [:c13 :semantic-id])
+            :c13-artifact-id (get-in packet [:c13 :artifact-id])
+            :c14-request-id (get-in packet [:c14 :request :request-id])
+            :c14-semantic-id (get-in packet [:c14 :semantic-id])
+            :c14-artifact-id (get-in packet [:c14 :artifact-id])
+            :b1-semantic-id (get-in packet [:b1 :semantic-id])
+            :b1-artifact-id (get-in packet [:b1 :artifact-id])
+            :semantic-input packet-semantic-input})
+        (= (:artifact-id packet)
+           (p15-s23-c11-mir-digest
+            {:kind (:kind packet) :schema-version 1
+             :semantic-id (:semantic-id packet)}))
+        (= (:actual-path-binding-id packet)
+           (p15-s23-c11-mir-digest
+            {:kind :gravity/c13-c14-b1-actual-path-binding
+             :semantic-id (:semantic-id packet)
+             :actual-path-provenance
+             (:actual-path-provenance packet)}))))
      (= (cond-> actual-path-base-keys
           (contains? actual-path-provenance :publication-receipt)
           (conj :publication-receipt))
         (set (keys actual-path-provenance)))
+     (= {:c13-source
+         (get-in artifact [:c13-c14-b1-packet
+                           :actual-path-provenance :c13-source])
+         :c14-source
+         (get-in artifact [:c13-c14-b1-packet
+                           :actual-path-provenance :c14-source])
+         :b1-source
+         (get-in artifact [:c13-c14-b1-packet
+                           :actual-path-provenance :b1-source])
+         :c13-c14-b1-packet-binding-id
+         (get-in artifact [:c13-c14-b1-packet :actual-path-binding-id])}
+        (select-keys actual-path-provenance
+                     [:c13-source :c14-source :b1-source
+                      :c13-c14-b1-packet-binding-id]))
+     (every? absolute-path?
+             (map actual-path-provenance
+                  [:c13-source :c14-source :b1-source]))
      (= #{:xcrun-path :file-path :magic-path :magic-file-key-hash
           :magic-last-modified-millis :sdk-locator-path
           :sdk-effective-path :clang-locator-path :clang-effective-path
@@ -128642,10 +128899,12 @@
         (get-in artifact [:c14-request :artifact]))
      (= #{:artifact :schema-version :status :input :profile
           :profile-contract :target :source-target-selection :abi
-          :runtime :providers :contract-bindings :required-evidence
+          :runtime :providers :effects :capabilities :safety :proofs
+          :contract-bindings :required-evidence
           :source-map :dependency-provenance :c13-optimization-status
-          :domain-ir-status :fusion-status :target-policy :diagnostics
-          :request-id}
+          :domain-ir-status :fusion-status :target-policy
+          :proof-to-target-metadata :unsupported-feature-report
+          :diagnostics :request-id}
         (set (keys (:c14-request artifact))))
      (= 1 (get-in artifact [:c14-request :schema-version]))
      (= :accepted-for-bounded-llvm (get-in artifact [:b1-packet :status]))
@@ -128654,10 +128913,11 @@
      (= #{:artifact :schema-version :status :input :profile :target
           :source-target-selection :abi :runtime :providers
           :contract-bindings :effects :capabilities :safety :proofs
-          :source-map :dependencies :mir-id :mir-artifact-id
-          :source-core-artifact-id :c11-verification-status
-          :c11-semantic-replay-parity :pass-execution-record-id
-          :b1-preflight :fact-table-closure :diagnostics}
+          :proof-to-target-metadata :source-map :dependencies
+          :c14-eligibility :eligibility :backend-manifest
+          :unsupported-feature-report :diagnostics
+          :semantic-authority :execution-tcb
+          :clojure-seed-boundary? :self-hosted?}
         (set (keys (:b1-packet artifact))))
      (= 1 (get-in artifact [:b1-packet :schema-version]))
      (= :gravity/b3-internal-arm64-macos-llvm-record
@@ -128692,12 +128952,14 @@
         (set (keys (:b14-record artifact))))
      (= :gravity/c18-bounded-llvm-risk-trust-record (:artifact c18))
      (= :internal-experimental-only (:status c18))
-     (= #{:artifact :status :pass :affected-target :critical-risk
+     (= #{:artifact :status :upstream-pass-risk :pass
+          :evidence-ids
+          :affected-target :critical-risk
           :minimum-evidence :trust-boundary :risks
           :native-publication-boundary :process-cleanup-boundary
           :performance-residual :source-target-selection
           :contract-bindings :release-gate :public-target-gate
-          :self-hosting-gate :whole-c11-gate :whole-c14-gate
+          :self-hosting-gate :whole-c11-gate :whole-c13-gate :whole-c14-gate
           :whole-b1-gate :whole-b3-gate :whole-b13-gate
           :whole-b14-gate :whole-c18-gate}
         (set (keys c18)))
@@ -128705,30 +128967,24 @@
      (= [] (get-in artifact [:b1-packet :diagnostics]))
      (= [] (get-in artifact [:b3-record :diagnostics]))
      (= [] (get-in artifact [:b13-record :diagnostics]))
-     (= {:kind :gravity/mir
-         :id (get-in artifact [:b1-packet :input :id])
-         :artifact-id (get-in artifact [:b1-packet :input :artifact-id])
-         :verified? true
-         :verifier-report
-         (get-in artifact [:b1-packet :input :verifier-report])
-         :verifier-report-id
-         (get-in artifact [:b1-packet :input :verifier-report-id])
-         :optimization-status :not-run
-         :domain-status :not-applicable}
+     (= (get-in artifact [:b1-packet :input])
         (get-in artifact [:c14-request :input]))
      (= #{:kind :id :artifact-id :verified? :verifier-report
-          :verifier-report-id}
+          :verifier-report-id :optimization-status
+          :optimization-report :domain-status}
         (set (keys (get-in artifact [:b1-packet :input]))))
      (= :gravity/mir (get-in artifact [:b1-packet :input :kind]))
      (true? (get-in artifact [:b1-packet :input :verified?]))
+     (= :identity-pass-complete
+        (get-in artifact [:b1-packet :input :optimization-status]))
+     (= :passed
+        (get-in artifact [:b1-packet :input
+                          :optimization-report :verifier-result]))
      (= (:required-evidence p15-s23-b3-llvm-policy)
         (get-in artifact [:c14-request :required-evidence]))
-     (= {:id (get-in artifact [:b1-packet :source-map :id])
-         :preserved? true}
-        (get-in artifact [:c14-request :source-map]))
-     (= {:id (get-in artifact [:c14-request :source-map :id])
-         :complete? true}
+     (= (get-in artifact [:c14-request :source-map])
         (get-in artifact [:b1-packet :source-map]))
+     (= true (get-in artifact [:b1-packet :source-map :preserved?]))
      (= (get-in artifact [:c14-request :dependency-provenance])
         (get-in artifact [:b1-packet :dependencies]))
      (every? #(= selection %)
@@ -128750,12 +129006,21 @@
      (= profile (get-in artifact [:b1-packet :profile]))
      (= :hosted (get-in artifact [:b13-record :profile]))
      (= :hosted (:profile build-identity))
-     (= target (get-in artifact [:c14-request :target]))
+     (= (assoc (p15-s23-b3-llvm-expected-target-contract)
+               :profile-eligibility [:hosted])
+        (dissoc target :fingerprint))
+     (= (:fingerprint target)
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/c14-bounded-llvm-target-fingerprint
+          :target (dissoc target :fingerprint)}))
      (= target (get-in artifact [:b1-packet :target]))
      (= b3-target (get-in artifact [:b3-record :target-record]))
      (= b13-target (get-in artifact [:b13-record :target]))
      (= build-target (:target build-identity))
-     (= p15-s23-b3-llvm-policy
+     (= {:scope :bounded-pure-scalar-forwarding-do-let-if
+         :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+         :whole-c14? false :whole-b1? false :whole-b3? false
+         :public? false :release? false :self-hosted? false}
         (get-in artifact [:c14-request :target-policy]))
      (= p15-s23-b3-llvm-source-lowering-policy
         (get-in artifact [:lowering :policy]))
@@ -128773,6 +129038,8 @@
         (get-in artifact [:b13-record :compiler-provenance :b3-source]))
      (= p15-s23-b3-llvm-expected-builder-semantic-hash
         (get-in artifact [:b13-record :compiler-provenance :builder]))
+     (= expected-compiler-provenance
+        (get-in artifact [:b13-record :compiler-provenance]))
      (= toolchain-static
         (select-keys toolchain-fingerprint (keys toolchain-static)))
      (= (set (concat (keys toolchain-static)
@@ -128867,8 +129134,9 @@
         (:dependencies bindings))
 
      ;; ABI, runtime, providers, effects, safety, and pass records.
-     (= (assoc abi :return-type :i32)
-        (get-in artifact [:c14-request :abi]))
+     (= (assoc (p15-s23-b3-llvm-expected-abi-contract)
+               :return-type :i32)
+        abi)
      (= abi (get-in artifact [:b1-packet :abi]))
      (= b3-abi (get-in artifact [:b3-record :abi-record]))
      (= {:calling-convention :darwin-pcs-ccc
@@ -128896,8 +129164,16 @@
         (get-in artifact [:b13-record :providers]))
      (= #{} (get-in artifact [:b1-packet :effects]))
      (= #{} (get-in artifact [:b1-packet :capabilities]))
-     (= {:outcomes (get-in bindings [:safety :entry-count])
-         :runtime-checks 0 :unsafe-islands 0}
+     (= {:outcomes
+         (count (get-in artifact
+                        [:c13-c14-b1-packet :optimized-mir
+                         :safety-table]))
+         :runtime-checks
+         (count (get-in artifact
+                        [:c13-c14-b1-packet :optimized-mir
+                         :runtime-check-table]))
+         :unsafe-islands 0
+         :binding (:safety bindings)}
         (get-in artifact [:b1-packet :safety]))
      (= #{} (get-in artifact [:b3-record :provider-record
                               :program-effects]))
@@ -128918,11 +129194,18 @@
          :c11-verifier :passed
          :c11-verifier-record-id
          (get-in bindings [:c11-verifier :content-id])
+         :c13-c14-b1-contextual-replay :passed
+         :c13-c14-b1-contextual-report-id
+         (:report-id expected-bridge-report)
          :capability-proof-table (:capabilities bindings)
          :proof-certificate-table (:proofs bindings)
          :b3-reconstruction :passed}
         (get-in artifact [:b13-record :proof]))
-     (= :not-run (get-in artifact [:c14-request :c13-optimization-status]))
+     (= :identity-pass-complete
+        (get-in artifact [:c14-request :c13-optimization-status]))
+     (= {:c13-c14-b1-contextual-replay
+         (:report-id expected-bridge-report)}
+        (:evidence-ids c18))
      (= :not-applicable (get-in artifact [:c14-request :domain-ir-status]))
      (= :not-run (get-in artifact [:c14-request :fusion-status]))
      (= {:effects #{:process/spawn :process/execute
@@ -129096,19 +129379,19 @@
      (= source-inputs (:source-inputs build-identity))
      (= {:source-core (:checked-core source-inputs)
          :mir (:mir source-inputs)
+         :c13 (:c13 source-inputs)
+         :c14-request (:c14-request source-inputs)
+         :c14 (:c14 source-inputs)
+         :b1 (:b1 source-inputs)
+         :authenticated-packet (:authenticated-packet source-inputs)
          :lowering (:lowering source-inputs)}
         (get-in artifact [:b13-record :inputs]))
-     (= {:target-toolchain-digest toolchain-digest
-         :pass-pipeline-digest pass-pipeline-digest}
-        (:compiler build-identity))
-     (= {:b3-source p15-s23-b3-llvm-expected-source-content-hash
-         :builder p15-s23-b3-llvm-expected-builder-semantic-hash
-         :toolchain toolchain-fingerprint
-         :target-toolchain-digest toolchain-digest}
-        (get-in artifact [:b13-record :compiler-provenance]))
+     (= expected-compiler-provenance (:compiler build-identity))
      (= (:c11 pass-pipeline-base)
-        (get-in artifact [:b1-packet :pass-execution-record-id]))
+        (get-in artifact [:b1-packet :input :verifier-report
+                          :b1-preflight :binding :pass-execution-record-id]))
      (= {:c11 (:c11 pass-pipeline-base)
+         :c13 (:c13 pass-pipeline-base)
          :b3 (:b3 pass-pipeline-base)
          :pass-pipeline-digest pass-pipeline-digest}
         (get-in artifact [:b13-record :pass-provenance]))
@@ -129147,10 +129430,13 @@
      ;; Exact risk/nonclaim envelope; no coherent mutation may broaden credit.
      (= :closed (:release-gate c18) (:public-target-gate c18)
         (:self-hosting-gate c18) (:whole-c11-gate c18)
+        (:whole-c13-gate c18)
         (:whole-c14-gate c18) (:whole-b1-gate c18)
         (:whole-b3-gate c18) (:whole-b13-gate c18)
         (:whole-b14-gate c18) (:whole-c18-gate c18))
-     (= [:clojure-stage0-seed :gravity-b3-source
+     (= [:clojure-stage0-seed :clojure-stage0-rule-runner
+         :gravity-c13-source :gravity-c14-source :gravity-b1-source
+         :gravity-b3-source
          :apple-xcrun-72 :apple-clang-21 :apple-ld-1267
          :file-5.41 :llvm-otool-cctools-1040 :darwin-process-loader
          :openjdk-26.0.1-ffm-native-access
@@ -129166,25 +129452,65 @@
          :concurrent-descendant-fork-linearization? false
          :whole-process-tree-proof? false}
         (:process-cleanup-boundary c18))
+     (= {:artifact :gravity/pass-risk
+         :pass :c13-bounded-identity
+         :version 1
+         :risk :critical
+         :reason #{:trusted-semantic-base
+                   :seed-executed-semantic-preservation-boundary}
+         :affected-profiles #{:hosted}
+         :affected-targets #{:llvm}
+         :target-assumptions []
+         :artifact-kinds #{:gravity/mir :gravity/optimized-mir}
+         :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+         :minimum-evidence
+         #{:fresh-c11-replay :c13-source-pin :operation-order-replay
+           :effect-order-graph-replay :fact-table-replay
+           :identity-bound-c11-verifier-replay}
+         :available-evidence
+         #{:fresh-c11-replay :c13-source-pin :operation-order-replay
+           :effect-order-graph-replay :fact-table-replay
+           :identity-bound-c11-verifier-replay}
+         :release-policy :internal-experimental-only
+         :release-gate :closed :whole-pass-gate :closed
+         :self-hosting-gate :closed}
+        (:upstream-pass-risk c18))
      (= {:id :gravity-b3-bounded-arm64-macos-llvm
          :version 1
          :risk-class :critical-seed-and-native-code-emission
-         :required-evidence (:required-evidence p15-s23-b3-llvm-policy)
+         :required-evidence
+         [:fresh-c11-replay
+          :c13-identity-verifier-replay
+          :c14-lowering-eligibility-reconstruction
+          :b1-manifest-reconstruction
+          :c13-c14-b1-contextual-replay
+          :gravity-b3-replay :independent-lowering-reconstruction
+          :clang-codegen :mach-o-abi :darwin-runtime-provider
+          :differential-execution :content-hashes]
          :available-evidence
-         [:fresh-c11-replay :gravity-b3-replay
-          :independent-lowering-reconstruction :clang-codegen
-          :mach-o-abi :darwin-runtime-provider
+         [:fresh-c11-replay
+          :c13-identity-verifier-replay
+          :c14-lowering-eligibility-reconstruction
+          :b1-manifest-reconstruction
+          :c13-c14-b1-contextual-replay
+          :gravity-b3-replay :independent-lowering-reconstruction
+          :clang-codegen :mach-o-abi :darwin-runtime-provider
           :differential-execution :content-hashes]
          :missing-for-full-credit
          [:source-declared-llvm :bounded-fresh-replay-latency
-          :second-host-toolchain :whole-c11 :whole-b3 :whole-language
+          :second-host-toolchain :whole-c11 :whole-c13 :whole-c14
+          :whole-b1 :whole-b3 :whole-language
           :seedless-self-hosting :fd-relative-publication-linearization
           :whole-process-tree-reaping-proof]}
         (:pass c18))
      (= :seed-and-single-host-toolchain (:critical-risk c18))
-     (= [:fresh-c11-replay :gravity-b3-replay
-         :independent-lowering-reconstruction :clang-codegen
-         :mach-o-abi :darwin-runtime-provider
+     (= [:fresh-c11-replay
+         :c13-identity-verifier-replay
+         :c14-lowering-eligibility-reconstruction
+         :b1-manifest-reconstruction
+         :c13-c14-b1-contextual-replay
+         :gravity-b3-replay :independent-lowering-reconstruction
+         :clang-codegen :mach-o-abi :darwin-runtime-provider
          :differential-execution :content-hashes]
         (:minimum-evidence c18))
      (= [:seed-hosted-builder-execution :bounded-language-surface
@@ -129288,7 +129614,9 @@
             (:semantic-id artifact) (:actual-path-provenance artifact)))
         (= (get-in artifact [:c14-request :request-id])
            (p15-s23-c11-mir-digest
-            (dissoc (:c14-request artifact) :request-id)))
+            {:kind :gravity/c14-bounded-llvm-lowering-request
+             :request
+             (dissoc (:c14-request artifact) :request-id)}))
         (= (get-in artifact [:b1-packet :input :verifier-report-id])
            (p15-s23-c11-mir-digest
             (get-in artifact [:b1-packet :input :verifier-report])))
@@ -129340,6 +129668,8 @@
            (p15-s23-c11-mir-digest
             {:c11 (get-in artifact
                           [:b13-record :pass-provenance :c11])
+             :c13 (get-in artifact
+                          [:b13-record :pass-provenance :c13])
              :b3 (get-in artifact
                          [:b13-record :pass-provenance :b3])
              :optimization-level
@@ -129664,7 +129994,8 @@
 
 (defn p15-s23-stage2-b3-llvm-verification-report
   "Contextually authenticate a bounded LLVM artifact by replaying the checked
-  core -> C11 -> Gravity B3 path and the pinned host toolchain.  A content hash
+  core -> C11 -> Gravity C13 -> Gravity C14 -> Gravity B1 -> Gravity B3 path
+  and the pinned host toolchain.  A content hash
   alone is deliberately insufficient; the one-argument authenticity API below
   therefore always returns false."
   [artifact checked-core context]
@@ -129687,6 +130018,16 @@
                  "B1-INPUT" source-path fresh-c11
                  {:missing-fact :fresh-c11-replay-pass}))
             _ (p15-s23-b3-llvm-preflight! fresh-c11)
+            bridge-packet
+            (p15-s23-stage2-c13-c14-b1-packet-from-c11!
+             fresh-c11 checked-core context)
+            bridge-report
+            (p15-s23-stage2-c13-c14-b1-verification-report
+             bridge-packet checked-core context)
+            _ (when-not (= :passed (:status bridge-report))
+                (p15-s23-b3-llvm-fail!
+                 "B1-INPUT" source-path bridge-packet
+                 {:missing-fact :fresh-contextual-c13-c14-b1-replay}))
             retentions
             (set (map :retention
                       (vals (get-in artifact
@@ -129701,7 +130042,7 @@
                {:missing-fact :uniform-artifact-retention-intent}))
             _
             (p15-s23-b3-llvm-verify-context-bindings!
-             artifact fresh-c11 checked-core fresh-c11-report source-path)
+             artifact bridge-packet source-path)
             binding
             (p15-s23-b3-llvm-source-binding!
              p15-s23-b3-llvm-finalization-token source-path)
@@ -129711,7 +130052,7 @@
             lowering
             (p15-s23-b3-llvm-invoke-builder!
              p15-s23-b3-llvm-finalization-token
-             binding (:mir-module fresh-c11) source-path)
+             binding (:optimized-mir bridge-packet) source-path)
             _ (when-not (= lowering (:lowering artifact))
                 (p15-s23-b3-llvm-fail!
                  "B3-PASS" source-path artifact
@@ -129725,8 +130066,8 @@
              source-path lowering publication-intent?)
             expected
             (p15-s23-b3-llvm-final-record
-             fresh-c11 checked-core context fresh-c11-report binding
-             lowering oracle toolchain)
+             fresh-c11 checked-core context fresh-c11-report bridge-packet
+             bridge-report binding lowering oracle toolchain)
             publication-report
             (p15-s23-b3-llvm-verify-publication!
              p15-s23-b3-llvm-finalization-token artifact)]
@@ -129743,19 +130084,31 @@
           (p15-s23-b3-llvm-fail!
            "B3-MANIFEST" source-path artifact
            {:missing-fact :contextual-fresh-replay-final-record-parity}))
-        {:artifact :gravity/b3-contextual-authenticity-report
-         :schema-version 1
-         :status :passed
-         :artifact-id (:artifact-id artifact)
-         :semantic-id (:semantic-id artifact)
-         :fresh-c11-mir-id (:mir-id fresh-c11)
-         :fresh-c11-verifier-status (:status fresh-c11-report)
-         :gravity-b3-replay :passed
-         :independent-lowering-reconstruction :passed
-         :pinned-toolchain-replay :passed
-         :publication publication-report
-         :seed-boundary? true
-         :self-hosted? false})
+        (let [base
+              {:artifact :gravity/b3-contextual-authenticity-report
+               :schema-version 1
+               :status :passed
+               :artifact-id (:artifact-id artifact)
+               :semantic-id (:semantic-id artifact)
+               :fresh-c11-mir-id (:mir-id fresh-c11)
+               :fresh-c11-verifier-status (:status fresh-c11-report)
+               :authenticated-packet-id (:packet-id bridge-report)
+               :bridge-report-id (:report-id bridge-report)
+               :c13-artifact-id (:c13-artifact-id bridge-report)
+               :c14-request-id (:c14-request-id bridge-report)
+               :c14-artifact-id (:c14-artifact-id bridge-report)
+               :b1-artifact-id (:b1-artifact-id bridge-report)
+               :c13-c14-b1-contextual-replay :passed
+               :gravity-b3-replay :passed
+               :independent-lowering-reconstruction :passed
+               :pinned-toolchain-replay :passed
+               :publication publication-report
+               :seed-boundary? true
+               :self-hosted? false}]
+          (assoc base :report-id
+                 (p15-s23-c11-mir-digest
+                  {:kind :gravity/b3-contextual-authenticity-report
+                   :schema-version 1 :report base}))))
       (catch StackOverflowError error
         (p15-s23-b3-llvm-fail!
          "B1-INPUT" source-path {}
@@ -129763,6 +130116,12 @@
       (catch InterruptedException interrupted
         (.interrupt (Thread/currentThread))
         (throw interrupted))
+      (catch AssertionError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-b3-verifier-assertion error))
+      (catch LinkageError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-b3-verifier-linkage error))
       (catch clojure.lang.ExceptionInfo exception
         (p15-s23-b3-llvm-contain-exception!
          source-path :contained-unstructured-b3-verifier-diagnostic
@@ -129793,6 +130152,8 @@
      (catch InterruptedException interrupted
        (.interrupt (Thread/currentThread))
        (throw interrupted))
+     (catch AssertionError _ false)
+     (catch LinkageError _ false)
      (catch Exception _ false))))
 
 (defn p15-s23-stage2-b3-llvm-artifact-from-c11!
@@ -129818,6 +130179,16 @@
                   "B1-INPUT" source-path c11-artifact
                   {:missing-fact :fresh-c11-replay-pass}))
              _ (p15-s23-b3-llvm-preflight! c11-artifact)
+             bridge-packet
+             (p15-s23-stage2-c13-c14-b1-packet-from-c11!
+              c11-artifact checked-core context)
+             bridge-report
+             (p15-s23-stage2-c13-c14-b1-verification-report
+              bridge-packet checked-core context)
+             _ (when-not (= :passed (:status bridge-report))
+                 (p15-s23-b3-llvm-fail!
+                  "B1-INPUT" source-path bridge-packet
+                  {:missing-fact :fresh-contextual-c13-c14-b1-replay}))
              publication-preflight
              (p15-s23-b3-llvm-output-preflight!
               p15-s23-b3-llvm-finalization-token
@@ -129828,7 +130199,7 @@
              lowering
              (p15-s23-b3-llvm-invoke-builder!
               p15-s23-b3-llvm-finalization-token
-              binding (:mir-module c11-artifact) source-path)
+              binding (:optimized-mir bridge-packet) source-path)
              oracle
              (p15-s23-b3-llvm-reference-oracle!
               p15-s23-b3-llvm-finalization-token context lowering)
@@ -129838,8 +130209,8 @@
               source-path lowering (boolean publication-preflight))
              artifact
              (p15-s23-b3-llvm-final-record
-              c11-artifact checked-core context c11-report binding
-              lowering oracle toolchain)]
+              c11-artifact checked-core context c11-report bridge-packet
+              bridge-report binding lowering oracle toolchain)]
          (p15-s23-b3-llvm-verify-integrity! artifact :pre-final)
          (p15-s23-b3-llvm-publish-final!
           p15-s23-b3-llvm-finalization-token
@@ -129867,6 +130238,12 @@
        (catch InterruptedException interrupted
          (.interrupt (Thread/currentThread))
          (throw interrupted))
+       (catch AssertionError error
+         (p15-s23-b3-llvm-contain-exception!
+          source-path :contained-b3-constructor-assertion error))
+       (catch LinkageError error
+         (p15-s23-b3-llvm-contain-exception!
+          source-path :contained-b3-constructor-linkage error))
        (catch clojure.lang.ExceptionInfo exception
          (p15-s23-b3-llvm-contain-exception!
           source-path :contained-unstructured-b3-diagnostic exception))
@@ -129921,6 +130298,12 @@
      (catch InterruptedException interrupted
        (.interrupt (Thread/currentThread))
        (throw interrupted))
+     (catch AssertionError error
+       (p15-s23-b3-llvm-contain-exception!
+        source-path :contained-b3-source-assertion error))
+     (catch LinkageError error
+       (p15-s23-b3-llvm-contain-exception!
+        source-path :contained-b3-source-linkage error))
      (catch clojure.lang.ExceptionInfo exception
        (p15-s23-b3-llvm-contain-exception!
         source-path :contained-unstructured-source-diagnostic exception))
@@ -129929,6 +130312,1194 @@
         source-path :contained-source-host-failure exception)))))
 
   ))
+
+;; ---------------------------------------------------------------------------
+;; Authentic C11 -> C13 -> C14 -> B1 packet for bounded LLVM
+;; ---------------------------------------------------------------------------
+
+(def p15-s23-c13-source-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+(def p15-s23-c14-source-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+(def p15-s23-b1-source-relative-path
+  "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
+
+(def p15-s23-c13-source-byte-count 43463)
+(def p15-s23-c13-expected-source-content-hash
+  "sha256:6967aec226a8d54b74d4c22b242a0147bdaa1ef37869efd40ab3e7bfa69f4374")
+(def p15-s23-c13-expected-plan-semantic-hash
+  "sha256:3d7246254c750ec528318185480c0bba1be2d2b0509e05e117929eec70a1a904")
+(def p15-s23-c13-expected-functions-semantic-hash
+  "sha256:fc6406aab555a1a851d89d01be974727e2d16fbbd01f576d74bb24d514731ba6")
+(def p15-s23-c13-expected-builder-semantic-hash
+  "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
+(def p15-s23-c13-builder-function
+  'c13-build-bounded-identity-optimized-mir)
+(def p15-s23-c13-required-functions
+  {'c13-bounded-identity-input-valid?
+   {:arity 2 :params ['mir 'evidence]}
+   'c13-operation-ids
+   {:arity 2 :params ['instructions 'result]}
+   'c13-operation-order-from-blocks
+   {:arity 3 :params ['blocks 'block-order 'result]}
+   'c13-bounded-operation-count?
+   {:arity 1 :params ['mir]}
+   'c13-bounded-operation-order
+   {:arity 1 :params ['mir]}
+   'c13-unique-operation-ids?
+   {:arity 2 :params ['operation-ids 'seen]}
+   'c13-bounded-mir-operation-shape-valid?
+   {:arity 2 :params ['mir 'operation-order]}
+   'c13-build-bounded-identity-optimized-mir
+   {:arity 2 :params ['mir 'evidence]}})
+
+(def p15-s23-c14-source-byte-count 66939)
+(def p15-s23-c14-expected-source-content-hash
+  "sha256:0a54d4ac07e94889ed518574a9ccbcf5186bdee1b4f40927b21468dd96b067ce")
+(def p15-s23-c14-expected-plan-semantic-hash
+  "sha256:a271a5d9e05c42b7288171f66705148e056b4eaa8d4a41d5aeac696636571432")
+(def p15-s23-c14-expected-functions-semantic-hash
+  "sha256:bcea03f7ee6409f433c24dcdfdd5678de0ba0b595fd7ea0ee32cc5cbf5915a37")
+(def p15-s23-c14-expected-builder-semantic-hash
+  "sha256:1b42b7a74d67607e4d9076adda65e64160317e34d3e608ae2e4a81fbce3b4b30")
+(def p15-s23-c14-builder-function
+  'c14-build-bounded-llvm-lowering-record)
+(def p15-s23-c14-required-functions
+  {'c14-bounded-optimized-input-valid?
+   {:arity 2 :params ['optimized 'policy]}
+   'c14-bounded-policy-valid?
+   {:arity 2 :params ['optimized 'policy]}
+   'c14-build-bounded-llvm-lowering-record
+   {:arity 2 :params ['optimized 'policy]}})
+
+(def p15-s23-b1-source-byte-count 59249)
+(def p15-s23-b1-expected-source-content-hash
+  "sha256:e64f01709d9695184ea2e53f0ffdd19aea2567b86b12c3e297450724bead7296")
+(def p15-s23-b1-expected-plan-semantic-hash
+  "sha256:dc2705a0225e465f9f67261f636d4f8e5215d4f6893351c248338e84da5e7f9a")
+(def p15-s23-b1-expected-functions-semantic-hash
+  "sha256:f4c141325e050c3d42df5598ebe438b37fbdb4014e685a6055ec3617e84e9b7e")
+(def p15-s23-b1-expected-builder-semantic-hash
+  "sha256:31424123c41b05344d022ab712ec1bcd95718711ea1f1a6787808914db62d7b4")
+(def p15-s23-b1-builder-function
+  'b1-build-bounded-llvm-authenticated-packet)
+(def p15-s23-b1-required-functions
+  {'b1-bounded-c14-input-valid?
+   {:arity 1 :params ['lowering]}
+   'b1-bounded-llvm-manifest-valid?
+   {:arity 1 :params ['backend-manifest]}
+   'b1-build-bounded-llvm-authenticated-packet
+   {:arity 2 :params ['lowering 'backend-manifest]}})
+
+(def p15-s23-c13-c14-b1-max-carrier-nodes 65536)
+(def p15-s23-c13-c14-b1-max-carrier-depth 512)
+
+(defn p15-s23-c13-c14-b1-source-rule
+  [owner binding builder]
+  {:artifact :gravity/pinned-gravity-source-rule
+   :owner owner
+   :source-content-hash (:source-content-hash binding)
+   :source-byte-count (:source-byte-count binding)
+   :plan-semantic-hash (:plan-semantic-hash binding)
+   :functions-semantic-hash (:functions-semantic-hash binding)
+   :builder-function builder
+   :builder-semantic-hash (:builder-semantic-hash binding)
+   :function-shapes (:function-shapes binding)
+   :semantic-authority :gravity-source
+   :compiled-by :clojure-stage0-seed
+   :executed-by :clojure-stage0-rule-runner
+   :self-hosted? false})
+
+(defn p15-s23-c13-c14-b1-sidecar-evidence!
+  [artifact]
+  (let [packet (:c13-c14-b1-packet artifact)
+        c13 (:c13 packet)
+        c14 (:c14 packet)
+        b1 (:b1 packet)
+        projection
+        (p15-s23-c13-c14-b1-reproducible-projection packet)
+        packet-semantic-id
+        (p15-s23-c11-mir-digest (:semantic-input projection))
+        packet-artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:kind packet)
+          :schema-version (:schema-version packet)
+          :semantic-id packet-semantic-id})
+        c13-semantic-id
+        (p15-s23-c11-mir-digest
+         {:kind (:artifact c13)
+          :record (p15-s23-c13-c14-b1-stage-semantic-input c13)})
+        c13-artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:artifact c13)
+          :schema-version (:schema-version c13)
+          :semantic-id c13-semantic-id})
+        c14-request-id
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/c14-bounded-llvm-lowering-request
+          :request (dissoc (:request c14) :request-id)})
+        c14-semantic-id
+        (p15-s23-c11-mir-digest
+         {:kind (:artifact c14)
+          :record (p15-s23-c13-c14-b1-stage-semantic-input c14)})
+        c14-artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:artifact c14)
+          :schema-version (:schema-version c14)
+          :semantic-id c14-semantic-id})
+        b1-semantic-id
+        (p15-s23-c11-mir-digest
+         {:kind (:artifact b1)
+          :record (p15-s23-c13-c14-b1-stage-semantic-input b1)})
+        b1-artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:artifact b1)
+          :schema-version (:schema-version b1)
+          :semantic-id b1-semantic-id})
+        source-path
+        (or (get-in artifact [:actual-path-provenance :source])
+            "<bounded-llvm-artifact>")]
+    (when-not
+     (and
+      (= #{:semantic-id :artifact-id
+           :c13-semantic-id :c13-artifact-id
+           :c14-request-id :c14-semantic-id :c14-artifact-id
+           :b1-semantic-id :b1-artifact-id :semantic-input}
+         (set (keys projection)))
+      (= [(:semantic-id packet) (:artifact-id packet)
+          (:semantic-id c13) (:artifact-id c13)
+          (get-in c14 [:request :request-id])
+          (:semantic-id c14) (:artifact-id c14)
+          (:semantic-id b1) (:artifact-id b1)]
+         [packet-semantic-id packet-artifact-id
+          c13-semantic-id c13-artifact-id
+          c14-request-id c14-semantic-id c14-artifact-id
+          b1-semantic-id b1-artifact-id]))
+      (p15-s23-b3-llvm-fail!
+       "B13-HASH" source-path packet
+       {:missing-fact :reproducible-c13-c14-b1-sidecar-identity}))
+    projection))
+
+(defn p15-s23-c13-c14-b1-semantic-id
+  [packet]
+  (p15-s23-c11-mir-digest
+   (p15-s23-c13-c14-b1-semantic-input packet)))
+
+(defn p15-s23-c13-c14-b1-actual-path-binding-id
+  [semantic-id actual-path-provenance]
+  (p15-s23-c11-mir-digest
+   {:kind :gravity/c13-c14-b1-actual-path-binding
+    :semantic-id semantic-id
+    :actual-path-provenance actual-path-provenance}))
+
+(defn p15-s23-c13-c14-b1-require-trusted!
+  [source-path carrier value sorted-policy]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         value sorted-policy
+         p15-s23-c13-c14-b1-max-carrier-nodes
+         p15-s23-c13-c14-b1-max-carrier-depth
+         p15-s23-c13-c14-b1-max-carrier-nodes)]
+    (when-not (= :passed (:status validation))
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" source-path {}
+       (merge {:missing-fact :trusted-bounded-c13-c14-b1-carrier
+               :carrier carrier}
+              (select-keys validation
+                           [:reason :observed-nodes :observed-depth
+                            :maximum-nodes :maximum-depth :maximum-width]))))
+    validation))
+
+(let [p15-s23-c13-c14-b1-authority-token (Object.)]
+
+(defn- p15-s23-c13-c14-b1-require-authority!
+  [candidate source-path operation]
+  (when-not (identical? candidate p15-s23-c13-c14-b1-authority-token)
+    (p15-s23-b3-llvm-fail!
+     "B1-INPUT" source-path {}
+     {:missing-fact :opaque-c13-c14-b1-construction-authority
+      :bounded-reason operation})))
+
+(defn- p15-s23-c13-c14-b1-resolve-source-path
+  [candidate request-source relative]
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate request-source :resolve-pinned-bridge-source)
+  (let [c11-path (java.io.File. (p15-s23-c11-mir-resolve-source-path))
+        root (loop [directory (.getParentFile c11-path)]
+               (if (or (nil? directory)
+                       (.isFile (java.io.File. directory relative)))
+                 directory
+                 (recur (.getParentFile directory))))]
+    (if root
+      (.getCanonicalPath (java.io.File. root relative))
+      relative)))
+
+(defn- p15-s23-c13-c14-b1-read-pinned-bytes!
+  [candidate request-source source-file expected-byte-count]
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate request-source :read-pinned-bridge-source)
+  (let [path (.toPath source-file)
+        nofollow
+        (into-array java.nio.file.LinkOption
+                    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (java.nio.file.Files/readAttributes
+         path java.nio.file.attribute.BasicFileAttributes nofollow)]
+    (when-not (and (.isRegularFile attributes)
+                   (= (long expected-byte-count) (.size attributes)))
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :exact-regular-pinned-gravity-bridge-source
+        :expected-source-bytes expected-byte-count
+        :observed-source-bytes (.size attributes)
+        :regular-file? (.isRegularFile attributes)}))
+    (let [limit (inc expected-byte-count)
+          buffer (byte-array limit)
+          observed
+          (with-open
+           [input
+            (java.nio.file.Files/newInputStream
+             path
+             (into-array java.nio.file.OpenOption
+                         [java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+            (loop [offset 0]
+              (if (= offset limit)
+                offset
+                (let [read-count (.read input buffer offset (- limit offset))]
+                  (if (= read-count -1)
+                    offset
+                    (recur (+ offset read-count)))))))]
+      (when-not (= expected-byte-count observed)
+        (p15-s23-b3-llvm-fail!
+         "B1-INPUT" request-source {}
+         {:missing-fact :stable-exact-pinned-gravity-bridge-source-size
+          :expected-source-bytes expected-byte-count
+          :observed-source-bytes observed}))
+      (java.util.Arrays/copyOf buffer expected-byte-count))))
+
+(defn- p15-s23-c13-c14-b1-source-binding!
+  [candidate request-source
+   {:keys [owner relative-path source-byte-count source-content-hash
+           plan-semantic-hash functions-semantic-hash
+           builder-semantic-hash builder-function required-functions]}]
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate request-source :load-pinned-bridge-source)
+  (let [source-path
+        (p15-s23-c13-c14-b1-resolve-source-path
+         candidate request-source relative-path)
+        source-file (java.io.File. source-path)]
+    (when-not (.isFile source-file)
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :pinned-gravity-bridge-source}))
+    (let [bytes
+          (p15-s23-c13-c14-b1-read-pinned-bytes!
+           candidate request-source source-file source-byte-count)
+          observed-byte-count (alength bytes)
+          observed-content-hash
+          (str "sha256:" (sha256-bytes-hex bytes))]
+      (when-not (and (= source-byte-count observed-byte-count)
+                     (= source-content-hash observed-content-hash))
+        (p15-s23-b3-llvm-fail!
+         "B1-INPUT" request-source {}
+         {:missing-fact :pinned-gravity-bridge-source-identity
+          :expected-source-bytes source-byte-count
+          :observed-source-bytes observed-byte-count
+          :expected-source-content-hash source-content-hash
+          :observed-source-content-hash observed-content-hash}))
+      (let [source-text
+            (String. bytes java.nio.charset.StandardCharsets/UTF_8)
+            emitter
+            (:emitter
+             (c-backend-stage2-plan-emitter-source-rule!
+              request-source :llvm))
+            plan
+            (p15-s23-stage2-compiler-artifact-plan
+             emitter source-path source-text)
+            functions (:functions plan)
+            shapes
+            (into {}
+                  (map (fn [[name _]]
+                         [name (select-keys (get functions name)
+                                            [:arity :params])]))
+                  required-functions)
+            observed-plan-hash
+            (p15-s23-c11-mir-digest
+             (p15-s23-stage2-compiler-artifact-semantic-input plan))
+            observed-functions-hash
+            (p15-s23-c11-mir-digest functions)
+            observed-builder-hash
+            (p15-s23-c11-mir-digest (get functions builder-function))]
+        (when-not
+         (and (= required-functions shapes)
+              (= plan-semantic-hash observed-plan-hash)
+              (= functions-semantic-hash observed-functions-hash)
+              (= builder-semantic-hash observed-builder-hash))
+          (p15-s23-b3-llvm-fail!
+           "B1-INPUT" request-source {}
+           {:missing-fact :pinned-gravity-bridge-function-identity
+            :observed-source-content-hash observed-content-hash}))
+        {:owner owner
+         :source-path source-path
+         :source-byte-count observed-byte-count
+         :source-content-hash observed-content-hash
+         :plan-semantic-hash observed-plan-hash
+         :functions-semantic-hash observed-functions-hash
+         :builder-semantic-hash observed-builder-hash
+         :function-shapes shapes
+         :plan plan}))))
+
+(defn- p15-s23-c13-c14-b1-source-bindings!
+  [candidate source-path]
+  {:c13
+   (p15-s23-c13-c14-b1-source-binding!
+    candidate source-path
+    {:owner :gravity.compiler/c13-mir-optimization
+     :relative-path p15-s23-c13-source-relative-path
+     :source-byte-count p15-s23-c13-source-byte-count
+     :source-content-hash p15-s23-c13-expected-source-content-hash
+     :plan-semantic-hash p15-s23-c13-expected-plan-semantic-hash
+     :functions-semantic-hash
+     p15-s23-c13-expected-functions-semantic-hash
+     :builder-semantic-hash p15-s23-c13-expected-builder-semantic-hash
+     :builder-function p15-s23-c13-builder-function
+     :required-functions p15-s23-c13-required-functions})
+   :c14
+   (p15-s23-c13-c14-b1-source-binding!
+    candidate source-path
+    {:owner :gravity.compiler/c14-target-lowering
+     :relative-path p15-s23-c14-source-relative-path
+     :source-byte-count p15-s23-c14-source-byte-count
+     :source-content-hash p15-s23-c14-expected-source-content-hash
+     :plan-semantic-hash p15-s23-c14-expected-plan-semantic-hash
+     :functions-semantic-hash
+     p15-s23-c14-expected-functions-semantic-hash
+     :builder-semantic-hash p15-s23-c14-expected-builder-semantic-hash
+     :builder-function p15-s23-c14-builder-function
+     :required-functions p15-s23-c14-required-functions})
+   :b1
+   (p15-s23-c13-c14-b1-source-binding!
+    candidate source-path
+    {:owner :gravity.backend/b1-backend-interface
+     :relative-path p15-s23-b1-source-relative-path
+     :source-byte-count p15-s23-b1-source-byte-count
+     :source-content-hash p15-s23-b1-expected-source-content-hash
+     :plan-semantic-hash p15-s23-b1-expected-plan-semantic-hash
+     :functions-semantic-hash p15-s23-b1-expected-functions-semantic-hash
+     :builder-semantic-hash p15-s23-b1-expected-builder-semantic-hash
+     :builder-function p15-s23-b1-builder-function
+     :required-functions p15-s23-b1-required-functions})})
+
+(defn- p15-s23-c13-c14-b1-invoke!
+  [candidate source-path binding function-name arguments diagnostic]
+  (p15-s23-c13-c14-b1-require-authority!
+   candidate source-path :execute-pinned-gravity-bridge-source)
+  (let [result
+        (try
+          (p15-s23-stage2-runtime-execute-function
+           {:engine :gravity-c13-c14-b1-pinned-source-host-runner
+            :compiler-artifact-plan? true}
+           (:plan binding) function-name arguments)
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch StackOverflowError _
+            (p15-s23-b3-llvm-fail!
+             diagnostic source-path {}
+             {:missing-fact :bounded-gravity-bridge-builder-host-stack}))
+          (catch AssertionError error
+            (p15-s23-b3-llvm-contain-exception!
+             source-path :contained-gravity-bridge-builder-assertion error))
+          (catch LinkageError error
+            (p15-s23-b3-llvm-contain-exception!
+             source-path :contained-gravity-bridge-builder-linkage error)))]
+    (p15-s23-c13-c14-b1-require-trusted!
+     source-path :gravity-bridge-builder-result result :default-only)
+    (when (= :rejected (:status result))
+      (p15-s23-b3-llvm-fail!
+       (or (:diagnostic result) diagnostic) source-path result
+       {:missing-fact (or (:missing-fact result)
+                          :rejected-gravity-bridge-builder)}))
+    result))
+
+(defn p15-s23-c13-c14-b1-content-binding
+  [value]
+  {:content-id
+   (p15-s23-c11-mir-digest
+    (p15-s23-c11-mir-path-neutral-value value))
+   :entry-count (if (coll? value) (count value) 1)})
+
+(defn p15-s23-c13-evidence
+  [c11-artifact c11-report]
+  (let [mir (:mir-module c11-artifact)
+        verifier-record
+        (select-keys c11-report
+                     [:status :mir-id :semantic-replay-parity
+                      :execution-tcb :independent-verifier :b1-preflight])
+        verifier-record-id (p15-s23-c11-mir-digest verifier-record)
+        operation-order
+        (mapv :op-id (p15-s23-c11-mir-operation-sequence mir))
+        fact-bindings
+        {:type (p15-s23-c13-c14-b1-content-binding (:type-table mir))
+         :effect (p15-s23-c13-c14-b1-content-binding (:effect-table mir))
+         :ownership
+         (p15-s23-c13-c14-b1-content-binding (:ownership-table mir))
+         :capability
+         (p15-s23-c13-c14-b1-content-binding (:capability-table mir))
+         :safety (p15-s23-c13-c14-b1-content-binding (:safety-table mir))
+         :runtime-checks
+         (p15-s23-c13-c14-b1-content-binding (:runtime-check-table mir))
+         :proofs
+         (p15-s23-c13-c14-b1-content-binding
+          (:proof-certificate-table mir))
+         :source-map
+         (p15-s23-c13-c14-b1-content-binding (:source-map mir))}
+        base
+        {:c11-artifact-id (:artifact-id c11-artifact)
+         :c11-mir-id (:mir-id c11-artifact)
+         :module-id (:module-id mir)
+         :source-core (:source-core mir)
+         :verifier-report-id verifier-record-id
+         :verifier-status (:status c11-report)
+         :semantic-replay-parity (:semantic-replay-parity c11-report)
+         :pass-execution-record-id
+         (get-in mir [:pass-execution-record :record-id])
+         :fact-bindings fact-bindings
+         :runtime-check-inventory (:runtime-check-table mir)
+         :source-map-binding (:source-map fact-bindings)
+         :operation-order operation-order
+         :effect-order-graph (:effect-order-graph mir)
+         :profile :hosted
+         :target :llvm}]
+    (assoc base :decision-id
+           (p15-s23-c11-mir-digest
+            {:kind :gravity/c13-bounded-identity-decision
+             :evidence base}))))
+
+(defn p15-s23-c13-expected-record
+  [mir evidence]
+  {:artifact :gravity/c13-bounded-identity-optimized-mir
+   :schema-version 1
+   :status :accepted
+   :input
+   {:kind :gravity/mir
+    :c11-artifact-id (:c11-artifact-id evidence)
+    :c11-mir-id (:c11-mir-id evidence)
+    :module-id (:module-id mir)
+    :source-core (:source-core mir)
+    :verifier-report-id (:verifier-report-id evidence)
+    :verifier-status (:verifier-status evidence)
+    :semantic-replay-parity (:semantic-replay-parity evidence)
+    :pass-execution-record-id
+    (get-in mir [:pass-execution-record :record-id])}
+   :optimized-mir mir
+   :pass-contract
+   {:pass-id :c13-bounded-identity
+    :family :identity
+    :version 1
+    :input-ir :gravity/mir
+    :output-ir :gravity/optimized-mir
+    :required-analyses [:c11-verifier-report]
+    :preconditions [:mir-verifier-passed]
+    :preserves [:type-facts :effect-facts :ownership-facts
+                :capability-facts :safety-outcomes
+                :runtime-check-table :proof-certificate-table
+                :source-map :operation-order :effect-order-graph]
+    :invalidates [] :regenerates []
+    :proof-obligations [:semantic-identity-replay]
+    :profile-constraints [(:profile evidence)]
+    :target-assumptions []
+    :effect-ordering-policy :unchanged
+    :safety-policy :unchanged
+    :domain-policy :unchanged
+    :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+    :emits [:decision-record :invalidation-ledger
+            :residual-check-report :verifier-replay]}
+   :decision-record
+   {:artifact :gravity/optimization-decision
+    :pass-id :c13-bounded-identity
+    :decision-id (:decision-id evidence)
+    :input-mir (:c11-mir-id evidence)
+    :output-mir (:c11-mir-id evidence)
+    :decision :retain-input-unchanged
+    :changed? false :changed-operations []
+    :reason :bounded-bootstrap-identity-pass
+    :preserved
+    {:fact-bindings (:fact-bindings evidence)
+     :operation-order (:operation-order evidence)
+     :effect-order-graph (:effect-order-graph evidence)}
+    :invalidated []
+    :proofs-used [(:verifier-report-id evidence)]
+    :residual-checks (:runtime-check-inventory evidence)
+    :source-map (:source-map-binding evidence)
+    :verifier-result :passed}
+   :invalidation-ledger
+   {:artifact :gravity/c13-invalidation-ledger
+    :pass-id :c13-bounded-identity
+    :decision-id (:decision-id evidence)
+    :input-mir (:c11-mir-id evidence)
+    :output-mir (:c11-mir-id evidence)
+    :analysis-invalidated [] :facts-invalidated []
+    :facts-regenerated [] :proofs-invalidated []
+    :certificates-invalidated [] :runtime-checks-restored []
+    :passes-to-rerun [] :caches-cleared []
+    :diagnostics-affected []
+    :profile (:profile evidence) :target (:target evidence)}
+   :residual-check-report
+   {:artifact :gravity/c13-residual-check-report
+    :status :complete
+    :retained-runtime-checks (:runtime-check-inventory evidence)
+    :elided-runtime-checks [] :open-proof-obligations []}
+   :verifier-replay
+   {:artifact :gravity/c13-post-pass-verifier-replay
+    :required? true
+    :c11-artifact-id (:c11-artifact-id evidence)
+    :verifier-report-id (:verifier-report-id evidence)
+    :c11-mir-id (:c11-mir-id evidence)
+    :expected-input-module-id (:module-id evidence)
+    :expected-output-module-id (:module-id evidence)
+    :fact-bindings (:fact-bindings evidence)
+    :semantic-identity-required? true :result :passed}
+   :semantic-identity
+   {:c11-input-mir-id (:c11-mir-id evidence)
+    :c11-output-mir-id (:c11-mir-id evidence)
+    :input-module-id (:module-id evidence)
+    :output-module-id (:module-id evidence)
+    :fact-bindings (:fact-bindings evidence)
+    :operation-order (:operation-order evidence)
+    :operation-count (count (:operation-order evidence))
+    :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+    :effect-order-graph (:effect-order-graph evidence)
+    :unchanged? true}
+   :target-instruction-selection :forbidden
+   :diagnostics []
+   :semantic-authority :gravity-source
+   :execution-tcb :clojure-stage0-rule-runner
+   :clojure-seed-boundary? true
+   :self-hosted? false})
+
+(defn p15-s23-c13-c14-b1-seal-stage
+  [kind raw source-rule actual-path-provenance]
+  (let [base (assoc raw
+                    :source-rule source-rule
+                    :actual-path-provenance actual-path-provenance)
+        semantic-id
+        (p15-s23-c11-mir-digest
+         {:kind kind
+          :record (p15-s23-c13-c14-b1-stage-semantic-input base)})
+        artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind kind :schema-version 1 :semantic-id semantic-id})]
+    (assoc base
+           :semantic-id semantic-id
+           :artifact-id artifact-id
+           :actual-path-binding-id
+           (p15-s23-c13-c14-b1-actual-path-binding-id
+            semantic-id actual-path-provenance))))
+
+(defn- p15-s23-c13-build!
+  [candidate source-path c11-artifact c11-report binding]
+  (let [mir (:mir-module c11-artifact)
+        evidence (p15-s23-c13-evidence c11-artifact c11-report)
+        raw
+        (p15-s23-c13-c14-b1-invoke!
+         candidate source-path binding p15-s23-c13-builder-function
+         [mir evidence] "C13-VERIFY")
+        expected (p15-s23-c13-expected-record mir evidence)]
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path expected raw :independent-c13-identity-reconstruction)
+    (when-not (and (= expected raw)
+                   (= mir (:optimized-mir raw))
+                   (= (:mir-id c11-artifact)
+                      (get-in raw [:input :c11-mir-id])
+                      (get-in raw [:semantic-identity :c11-input-mir-id])
+                      (get-in raw [:semantic-identity :c11-output-mir-id]))
+                   (= (:module-id mir)
+                      (get-in raw [:input :module-id])
+                      (get-in raw [:semantic-identity :input-module-id])
+                      (get-in raw [:semantic-identity :output-module-id])))
+      (p15-s23-b3-llvm-fail!
+       "C13-VERIFY" source-path raw
+       {:missing-fact :exact-c11-bound-c13-identity-replay}))
+    (p15-s23-c13-c14-b1-seal-stage
+     :gravity/c13-bounded-identity-optimized-mir
+     raw
+     (p15-s23-c13-c14-b1-source-rule
+      :gravity.compiler/c13-mir-optimization binding
+      p15-s23-c13-builder-function)
+     {:source source-path
+     :c11-source (get-in c11-artifact
+                          [:provenance :actual-paths :c11-source])
+      :c13-source (:source-path binding)})))
+
+(defn p15-s23-c14-target-contract
+  []
+  (let [base
+        (assoc (p15-s23-b3-llvm-expected-target-contract)
+               :profile-eligibility [:hosted])]
+    (assoc base :fingerprint
+           (p15-s23-c11-mir-digest
+            {:kind :gravity/c14-bounded-llvm-target-fingerprint
+             :target base}))))
+
+(defn p15-s23-c14-target-policy
+  []
+  {:scope :bounded-pure-scalar-forwarding-do-let-if
+   :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
+   :whole-c14? false :whole-b1? false :whole-b3? false
+   :public? false :release? false :self-hosted? false})
+
+(defn p15-s23-c14-contract-bindings
+  [c11-artifact checked-core c11-report c13-record dependencies]
+  (let [target (p15-s23-c14-target-contract)
+        abi (assoc (p15-s23-b3-llvm-expected-abi-contract)
+                   :return-type :i32)
+        fact-bindings
+        (get-in c13-record [:semantic-identity :fact-bindings])]
+    (assoc
+     (p15-s23-b3-llvm-contract-bindings
+      c11-artifact checked-core c11-report)
+     :target (p15-s23-c13-c14-b1-content-binding target)
+     :abi (p15-s23-c13-c14-b1-content-binding abi)
+     :dependencies
+     (p15-s23-c13-c14-b1-content-binding dependencies)
+     :type (:type fact-bindings)
+     :ownership (:ownership fact-bindings)
+     :c13-optimization
+     (p15-s23-c13-c14-b1-content-binding
+      {:artifact-id (:artifact-id c13-record)
+       :semantic-id (:semantic-id c13-record)
+       :decision-id (get-in c13-record [:decision-record :decision-id])
+       :verifier-result (get-in c13-record [:verifier-replay :result])}))))
+
+(defn p15-s23-c14-policy-base
+  [c11-artifact checked-core c11-report c13-record c13-rule]
+  (let [mir (:mir-module c11-artifact)
+        c11-verifier (p15-s23-b3-llvm-c11-verifier-record c11-report)
+        c11-verifier-id (p15-s23-c11-mir-digest c11-verifier)
+        target (p15-s23-c14-target-contract)
+        abi (assoc (p15-s23-b3-llvm-expected-abi-contract)
+                   :return-type :i32)
+        runtime (p15-s23-b3-llvm-expected-runtime-contract)
+        providers (p15-s23-b3-llvm-expected-provider-contract)
+        fact-bindings (get-in c13-record
+                              [:semantic-identity :fact-bindings])
+        source-map {:id (p15-s23-c11-mir-digest (:source-map mir))
+                    :preserved? true}
+        proofs
+        (:proofs
+         (p15-s23-b3-llvm-expected-b1-context-evidence
+          c11-artifact checked-core c11-report))
+        dependencies
+        {:source-core (:artifact-id checked-core)
+         :c11-source-rule (:source-rule c11-artifact)
+         :c11-pass (get-in mir [:pass-execution-record :record-id])
+         :c13-artifact (:artifact-id c13-record)
+         :c13-source-rule c13-rule
+         :b3-source p15-s23-b3-llvm-expected-source-content-hash}
+        contract-bindings
+        (p15-s23-c14-contract-bindings
+         c11-artifact checked-core c11-report c13-record dependencies)]
+    {:expected-c11-artifact-id (:artifact-id c11-artifact)
+     :expected-c13-artifact-id (:artifact-id c13-record)
+     :profile :hosted
+     :profile-contract (p15-s23-b3-llvm-expected-profile-contract)
+     :target target
+     :source-target-selection
+     (p15-s23-b3-llvm-expected-source-target-selection)
+     :abi abi :runtime runtime :providers providers
+     :effects #{} :capabilities #{}
+     :safety {:outcomes (count (:safety-table mir))
+              :runtime-checks (count (:runtime-check-table mir))
+              :unsafe-islands 0
+              :binding (:safety fact-bindings)}
+     :proofs proofs
+     :contract-bindings contract-bindings
+     :required-evidence (:required-evidence p15-s23-b3-llvm-policy)
+     :source-map source-map
+     :expected-source-map-binding source-map
+     :dependencies dependencies
+     :target-policy (p15-s23-c14-target-policy)
+     :unsupported-surface (vec (:unsupported-surface
+                                p15-s23-b3-llvm-policy))
+     :proof-target-metadata
+     {:entries [] :proofless-metadata-rejected? true}
+     :fact-bindings fact-bindings
+     :supported-operation-ids
+     (get-in c13-record [:semantic-identity :operation-order])
+     :c11-verifier c11-verifier
+     :c11-verifier-id c11-verifier-id}))
+
+(defn p15-s23-c14-expected-record
+  [optimized policy]
+  (let [request
+        {:artifact :gravity/c14-internal-target-lowering-request
+         :schema-version 1 :status :accepted
+         :input
+         {:kind :gravity/mir
+          :id (:semantic-id optimized)
+          :artifact-id (:artifact-id optimized)
+          :verified? true
+          :verifier-report (:c11-verifier policy)
+          :verifier-report-id (:c11-verifier-id policy)
+          :optimization-status :identity-pass-complete
+          :optimization-report
+          {:artifact-id (:artifact-id optimized)
+           :semantic-id (:semantic-id optimized)
+           :decision-id (get-in optimized [:decision-record :decision-id])
+           :verifier-result (get-in optimized [:verifier-replay :result])}
+          :domain-status :not-applicable}
+         :request-id (:request-id policy)
+         :profile (:profile policy)
+         :profile-contract (:profile-contract policy)
+         :target (:target policy)
+         :source-target-selection (:source-target-selection policy)
+         :abi (:abi policy) :runtime (:runtime policy)
+         :providers (:providers policy)
+         :effects (:effects policy) :capabilities (:capabilities policy)
+         :safety (:safety policy) :proofs (:proofs policy)
+         :contract-bindings (:contract-bindings policy)
+         :required-evidence (:required-evidence policy)
+         :source-map (:source-map policy)
+         :dependency-provenance (:dependencies policy)
+         :c13-optimization-status :identity-pass-complete
+         :domain-ir-status :not-applicable :fusion-status :not-run
+         :target-policy (:target-policy policy)
+         :proof-to-target-metadata (:proof-target-metadata policy)
+         :unsupported-feature-report
+         {:status :bounded-surface-only
+          :policy (:unsupported-surface policy)
+          :diagnostic "C14-UNSUPPORTED" :fallback-status :rejected}
+         :diagnostics []}
+        eligibility
+        {:artifact :gravity/c14-target-eligibility-report
+         :backend :gravity.backend/llvm
+         :profile (:profile policy) :target (:target policy)
+         :accepted? true :rejections [] :fallbacks []
+         :missing-features [] :required-providers (:providers policy)
+         :proof-assumptions []
+         :explainability-record
+         {:decision :accepted
+          :bounded-surface :pure-scalar-forwarding-do-let-if
+          :unsupported-diagnostic "C14-UNSUPPORTED"
+          :no-hidden-runtime? true
+          :no-hidden-effect-or-capability? true}
+         :checks
+         [:profile-allows-backend
+          :target-supports-required-mir-families
+          :runtime-services-explicit :abi-represents-exports
+          :effects-have-authority-preserving-providers
+          :proof-assumptions-valid-for-target]}]
+    {:artifact :gravity/c14-bounded-llvm-lowering-record
+     :schema-version 1 :status :accepted
+     :request request :eligibility eligibility
+     :abi-layout
+     {:artifact :gravity/c14-abi-layout-record
+      :abi (:abi policy) :target (:target policy)
+      :type-facts (get-in policy [:fact-bindings :type])
+      :ownership-facts (get-in policy [:fact-bindings :ownership])
+      :safety-facts (get-in policy [:fact-bindings :safety])
+      :profile-contract (:profile-contract policy)
+      :source-map (:source-map policy)}
+     :runtime-provider
+     {:artifact :gravity/c14-runtime-provider-record
+      :runtime (:runtime policy) :providers (:providers policy)
+      :effects (:effects policy) :capabilities (:capabilities policy)}
+     :proof-target-metadata
+     {:artifact :gravity/c14-proof-target-metadata-map
+      :entries (get-in policy [:proof-target-metadata :entries])
+      :proofless-metadata-rejected?
+      (get-in policy [:proof-target-metadata
+                      :proofless-metadata-rejected?])
+      :proofs (:proofs policy)}
+     :dependency-provenance (:dependencies policy)
+     :diagnostics [] :semantic-authority :gravity-source
+     :execution-tcb :clojure-stage0-rule-runner
+     :clojure-seed-boundary? true :self-hosted? false}))
+
+(defn p15-s23-c14-policy
+  [c11-artifact checked-core c11-report c13-record c13-rule]
+  (let [base (p15-s23-c14-policy-base
+              c11-artifact checked-core c11-report c13-record c13-rule)
+        request-base
+        (:request (p15-s23-c14-expected-record
+                   c13-record (assoc base :request-id nil)))
+        request-id
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/c14-bounded-llvm-lowering-request
+          :request (dissoc request-base :request-id)})]
+    (assoc base :request-id request-id)))
+
+(defn- p15-s23-c14-build!
+  [candidate source-path c11-artifact checked-core c11-report
+   c13-record binding]
+  (let [c13-rule (:source-rule c13-record)
+        policy (p15-s23-c14-policy
+                c11-artifact checked-core c11-report c13-record c13-rule)
+        raw
+        (p15-s23-c13-c14-b1-invoke!
+         candidate source-path binding p15-s23-c14-builder-function
+         [c13-record policy] "C14-INPUT")
+        expected (p15-s23-c14-expected-record c13-record policy)]
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path expected raw :independent-c14-lowering-reconstruction)
+    (when-not (and (= expected raw)
+                   (= (:artifact-id c13-record)
+                      (get-in raw [:request :input :artifact-id]))
+                   (= (:request-id policy)
+                      (get-in raw [:request :request-id]))
+                   (= (:target policy)
+                      (get-in raw [:request :target])
+                      (get-in raw [:eligibility :target]))
+                   (= (:providers policy)
+                      (get-in raw [:request :providers])
+                      (get-in raw [:eligibility :required-providers])))
+      (p15-s23-b3-llvm-fail!
+       "C14-MANIFEST" source-path raw
+       {:missing-fact :exact-c13-bound-c14-reconstruction}))
+    (p15-s23-c13-c14-b1-seal-stage
+     :gravity/c14-bounded-llvm-lowering-record raw
+     (p15-s23-c13-c14-b1-source-rule
+      :gravity.compiler/c14-target-lowering binding
+      p15-s23-c14-builder-function)
+     {:source source-path
+      :c11-source (get-in c11-artifact
+                          [:provenance :actual-paths :c11-source])
+      :c13-source (get-in c13-record
+                          [:actual-path-provenance :c13-source])
+      :c14-source (:source-path binding)})))
+
+(defn p15-s23-b1-backend-manifest
+  [c14-record]
+  {:artifact :gravity/backend-manifest
+   :backend :gravity.backend/llvm
+   :version :bounded-authenticated-v1
+   :accepts [:gravity/mir]
+   :emits [:llvm-ir :mach-o-object :mach-o-executable]
+   :requires [:profile-manifest :target-manifest :abi-policy
+              :runtime-provider-selection :effect-summary
+              :capability-proof-summary :safety-bundle :proof-table
+              :source-map :dependency-graph]
+   :supports-profiles [:hosted]
+   :rejects [:unverified-ir :unsupported-op :missing-proof
+             :implicit-ub :ambient-capability :profile-violation]
+   :c14-request-id (get-in c14-record [:request :request-id])
+   :c14-artifact-id (:artifact-id c14-record)})
+
+(defn p15-s23-b1-expected-record
+  [lowering backend-manifest]
+  (let [request (:request lowering)]
+    {:artifact :gravity/b1-verified-backend-input-packet
+     :schema-version 1 :status :accepted-for-bounded-llvm
+     :input (:input request)
+     :profile (:profile-contract request)
+     :target (:target request)
+     :source-target-selection (:source-target-selection request)
+     :abi (:abi request) :runtime (:runtime request)
+     :providers (:providers request)
+     :effects (:effects request) :capabilities (:capabilities request)
+     :safety (:safety request) :proofs (:proofs request)
+     :proof-to-target-metadata (:proof-to-target-metadata request)
+     :source-map (:source-map request)
+     :dependencies (:dependency-provenance request)
+     :contract-bindings (:contract-bindings request)
+     :c14-eligibility (:eligibility lowering)
+     :eligibility
+     {:artifact :gravity/b1-backend-eligibility-report
+      :backend :gravity.backend/llvm
+      :input-artifact (get-in request [:input :artifact-id])
+      :profile (:profile request) :target (:target request)
+      :accepted? true :rejections [] :fallbacks []
+      :missing-evidence [] :unsupported-operations [] :remediation []
+      :checks [:profile-backend-compatibility :target-feature-support
+               :runtime-availability-or-no-runtime-proof
+               :abi-representability :layout-representability
+               :provider-availability :effect-preservation
+               :capability-preservation :safety-bundle-completeness
+               :proof-validity-for-target-assumptions
+               :source-debug-map-preservation]}
+     :backend-manifest backend-manifest
+     :unsupported-feature-report
+     {:status :bounded-surface-only
+      :policy (get-in request [:unsupported-feature-report :policy])
+      :diagnostic "B1-UNSUPPORTED" :fallback-status :rejected}
+     :diagnostics [] :semantic-authority :gravity-source
+     :execution-tcb :clojure-stage0-rule-runner
+     :clojure-seed-boundary? true :self-hosted? false}))
+
+(defn- p15-s23-b1-build!
+  [candidate source-path c11-artifact c13-record c14-record binding]
+  (let [manifest (p15-s23-b1-backend-manifest c14-record)
+        raw
+        (p15-s23-c13-c14-b1-invoke!
+         candidate source-path binding p15-s23-b1-builder-function
+         [c14-record manifest] "B1-INPUT")
+        expected (p15-s23-b1-expected-record c14-record manifest)]
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path expected raw :independent-b1-packet-reconstruction)
+    (when-not
+     (and (= expected raw)
+          (= (:artifact-id c14-record)
+             (get-in raw [:backend-manifest :c14-artifact-id]))
+          (= (get-in c14-record [:request :request-id])
+             (get-in raw [:backend-manifest :c14-request-id]))
+          (= (:artifact-id c13-record)
+             (get-in raw [:input :artifact-id])))
+      (p15-s23-b3-llvm-fail!
+       "B1-METADATA" source-path raw
+       {:missing-fact :exact-c14-bound-b1-reconstruction}))
+    (p15-s23-c13-c14-b1-seal-stage
+     :gravity/b1-verified-backend-input-packet raw
+     (p15-s23-c13-c14-b1-source-rule
+      :gravity.backend/b1-backend-interface binding
+      p15-s23-b1-builder-function)
+     {:source source-path
+      :c11-source (get-in c11-artifact
+                          [:provenance :actual-paths :c11-source])
+      :c13-source (get-in c13-record
+                          [:actual-path-provenance :c13-source])
+      :c14-source (get-in c14-record
+                          [:actual-path-provenance :c14-source])
+      :b1-source (:source-path binding)})))
+
+(defn- p15-s23-c13-c14-b1-final-record
+  [source-path c11-artifact checked-core c11-report bindings
+   c13-record c14-record b1-record]
+  (let [actual-path-provenance
+        {:source source-path
+         :c11-source (get-in c11-artifact
+                             [:provenance :actual-paths :c11-source])
+         :c13-source (get-in bindings [:c13 :source-path])
+         :c14-source (get-in bindings [:c14 :source-path])
+         :b1-source (get-in bindings [:b1 :source-path])}
+        base
+        {:kind :gravity/p15-s23-c13-c14-b1-authenticated-packet
+         :schema-version 1 :status :accepted-for-bounded-llvm
+         :c11
+         {:artifact-id (:artifact-id c11-artifact)
+          :mir-id (:mir-id c11-artifact)
+          :module-id (get-in c11-artifact [:mir-module :module-id])
+          :checked-core-artifact-id (:artifact-id checked-core)
+          :verifier-record
+          (p15-s23-b3-llvm-c11-verifier-record c11-report)}
+         :c13 c13-record :c14 c14-record :b1 b1-record
+         :optimized-mir (:optimized-mir c13-record)
+         :actual-path-provenance actual-path-provenance
+         :diagnostics []
+         :semantic-authority :gravity-source
+         :verification-tcb :clojure-stage0-independent-reconstruction
+         :scope
+         {:bounded-llvm? true :whole-c13? false :whole-c14? false
+          :whole-b1? false :whole-b3? false :public? false
+          :release? false :self-hosted? false}}
+        semantic-id (p15-s23-c13-c14-b1-semantic-id base)
+        artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:kind base) :schema-version 1 :semantic-id semantic-id})]
+    (assoc base :semantic-id semantic-id :artifact-id artifact-id
+           :actual-path-binding-id
+           (p15-s23-c13-c14-b1-actual-path-binding-id
+            semantic-id actual-path-provenance))))
+
+(defn- p15-s23-c13-c14-b1-build-internal!
+  [candidate c11-artifact checked-core context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)
+        sorted-policy (p15-s23-c11-carrier-sorted-policy checked-core)]
+    (p15-s23-c13-c14-b1-require-trusted!
+     source-path :c13-c14-b1-c11-ingress c11-artifact sorted-policy)
+    (let [c11-report
+          (p15-s23-stage2-c11-mir-verification-report
+           c11-artifact checked-core context)]
+      (when-not (= :passed (:status c11-report))
+        (p15-s23-b3-llvm-fail!
+         "B1-INPUT" source-path c11-artifact
+         {:missing-fact :fresh-c11-before-c13-c14-b1}))
+      ;; Pure bounded eligibility is independently rejected before any source,
+      ;; output, temporary workspace, or toolchain effect.
+      (p15-s23-b3-llvm-preflight! c11-artifact)
+      (let [bindings
+            (p15-s23-c13-c14-b1-source-bindings! candidate source-path)
+            c13-record
+            (p15-s23-c13-build!
+             candidate source-path c11-artifact c11-report (:c13 bindings))
+            c14-record
+            (p15-s23-c14-build!
+             candidate source-path c11-artifact checked-core c11-report
+             c13-record (:c14 bindings))
+            b1-record
+            (p15-s23-b1-build!
+             candidate source-path c11-artifact c13-record c14-record
+             (:b1 bindings))]
+        (p15-s23-c13-c14-b1-final-record
+         source-path c11-artifact checked-core c11-report bindings
+         c13-record c14-record b1-record)))))
+
+(defn p15-s23-stage2-c13-c14-b1-packet-from-c11!
+  [c11-artifact checked-core context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (try
+      (p15-s23-c13-c14-b1-build-internal!
+       p15-s23-c13-c14-b1-authority-token
+       c11-artifact checked-core context)
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch StackOverflowError _
+        (p15-s23-b3-llvm-fail!
+         "B1-INPUT" source-path {}
+         {:missing-fact :bounded-hostile-c13-c14-b1-host-stack}))
+      (catch AssertionError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-assertion error))
+      (catch LinkageError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-linkage error))
+      (catch clojure.lang.ExceptionInfo exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-diagnostic exception))
+      (catch Exception exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-host-failure exception)))))
+
+(def p15-s23-c13-c14-b1-final-packet-keys
+  #{:kind :schema-version :status :c11 :c13 :c14 :b1 :optimized-mir
+    :actual-path-provenance :diagnostics :semantic-authority
+    :verification-tcb :scope :semantic-id :artifact-id
+    :actual-path-binding-id})
+
+(def p15-s23-c13-c14-b1-final-packet-scope
+  {:bounded-llvm? true :whole-c13? false :whole-c14? false
+   :whole-b1? false :whole-b3? false :public? false
+   :release? false :self-hosted? false})
+
+(defn- p15-s23-c13-c14-b1-verification-preflight!
+  [source-path packet]
+  ;; Exact carrier classes are established before the general bounded-value
+  ;; walk so no custom comparator, lazy sequence, hashCode, or equals method
+  ;; can execute at this untrusted public boundary.
+  (p15-s23-c13-c14-b1-require-trusted!
+   source-path :c13-c14-b1-final-packet packet :default-only)
+  ;; The trusted-carrier walk bounds shape only.  Apply the shared C11 scalar,
+  ;; magnitude, collection-width, and total-byte limits before any fresh C11
+  ;; replay or Gravity source-plan reconstruction.
+  (p15-s23-c11-mir-bounded-value!
+   source-path :c13-c14-b1-final-packet packet
+   p15-s23-c13-c14-b1-max-carrier-nodes
+   p15-s23-c13-c14-b1-max-carrier-depth)
+  (let [top-level-class (when (some? packet) (.getName (class packet)))]
+    (when-not
+     (and (map? packet)
+          (contains? p15-s23-trusted-carrier-map-classes top-level-class)
+          (= p15-s23-c13-c14-b1-final-packet-keys
+             (set (keys packet)))
+          (= :gravity/p15-s23-c13-c14-b1-authenticated-packet
+             (:kind packet))
+          (= 1 (:schema-version packet))
+          (= :accepted-for-bounded-llvm (:status packet))
+          (= :gravity-source (:semantic-authority packet))
+          (= :clojure-stage0-independent-reconstruction
+             (:verification-tcb packet))
+          (= [] (:diagnostics packet))
+          (= p15-s23-c13-c14-b1-final-packet-scope (:scope packet))
+          (every? map?
+                  ((juxt :c11 :c13 :c14 :b1 :optimized-mir
+                         :actual-path-provenance)
+                   packet))
+          (every? string?
+                  ((juxt :semantic-id :artifact-id :actual-path-binding-id)
+                   packet)))
+      (p15-s23-b3-llvm-fail!
+       "B1-METADATA" source-path packet
+       {:missing-fact :bounded-c13-c14-b1-final-envelope})))
+  (let [semantic-id (p15-s23-c13-c14-b1-semantic-id packet)
+        artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind (:kind packet) :schema-version 1 :semantic-id semantic-id})
+        actual-path-binding-id
+        (p15-s23-c13-c14-b1-actual-path-binding-id
+         semantic-id (:actual-path-provenance packet))]
+    (when-not
+     (= [semantic-id artifact-id actual-path-binding-id]
+        ((juxt :semantic-id :artifact-id :actual-path-binding-id) packet))
+      (p15-s23-b3-llvm-fail!
+       "B1-METADATA" source-path packet
+       {:missing-fact :recomputable-c13-c14-b1-final-identities})))
+  :passed)
+
+(defn p15-s23-stage2-c13-c14-b1-verification-report
+  [packet checked-core context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (try
+      (p15-s23-c13-c14-b1-verification-preflight! source-path packet)
+      (let [fresh-c11 (p15-s23-stage2-c11-mir-artifact checked-core context)
+            expected
+            (p15-s23-c13-c14-b1-build-internal!
+             p15-s23-c13-c14-b1-authority-token
+             fresh-c11 checked-core context)]
+        (p15-s23-c11-mir-require-strict-structure!
+         source-path expected packet
+         :contextual-fresh-c13-c14-b1-reconstruction)
+        (when-not
+         (and (= expected packet)
+              (= (:semantic-id packet)
+                 (p15-s23-c13-c14-b1-semantic-id packet))
+              (= (:artifact-id packet)
+                 (p15-s23-c11-mir-digest
+                  {:kind (:kind packet) :schema-version 1
+                   :semantic-id (:semantic-id packet)}))
+              (= (:actual-path-binding-id packet)
+                 (p15-s23-c13-c14-b1-actual-path-binding-id
+                  (:semantic-id packet) (:actual-path-provenance packet))))
+          (p15-s23-b3-llvm-fail!
+           "B1-METADATA" source-path packet
+           {:missing-fact :fresh-context-bound-c13-c14-b1-packet}))
+        (p15-s23-c13-c14-b1-contextual-report-record packet))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch StackOverflowError _
+        (p15-s23-b3-llvm-fail!
+         "B1-INPUT" source-path {}
+         {:missing-fact :bounded-hostile-c13-c14-b1-verifier-stack}))
+      (catch AssertionError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-verifier-assertion error))
+      (catch LinkageError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-verifier-linkage error))
+      (catch clojure.lang.ExceptionInfo exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-verifier-diagnostic exception))
+      (catch Exception exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-c13-c14-b1-verifier-failure exception)))))
+
+(defn p15-s23-stage2-c13-c14-b1-verify!
+  [packet checked-core context]
+  (let [report
+        (p15-s23-stage2-c13-c14-b1-verification-report
+         packet checked-core context)]
+    (when-not (= :passed (:status report))
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" (p15-s23-c11-ingress-source-path context) packet
+       {:missing-fact :c13-c14-b1-verification-status}))
+    :passed))
+
+(defn p15-s23-stage2-c13-c14-b1-authentic?
+  ([packet] false)
+  ([packet checked-core context]
+   (try
+     (= :passed
+        (p15-s23-stage2-c13-c14-b1-verify!
+         packet checked-core context))
+     (catch InterruptedException interrupted
+       (.interrupt (Thread/currentThread)) (throw interrupted))
+     (catch StackOverflowError _ false)
+     (catch AssertionError _ false)
+     (catch LinkageError _ false)
+     (catch Exception _ false))))
+
+)
 
 ;; ---------------------------------------------------------------------------
 ;; Verified C11 MIR -> authenticated bounded raw Wasm32 (FL-P07-T02 slice)

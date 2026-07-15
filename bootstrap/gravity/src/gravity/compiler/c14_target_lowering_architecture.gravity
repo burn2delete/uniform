@@ -12,6 +12,7 @@
              c14-lowering-diagnostic-catalog
              build-c14-lowering-request
              build-c14-target-artifact
+             c14-build-bounded-llvm-lowering-record
              verify-c14-target-lowering])
   (:effects #{})
   (:capabilities #{})
@@ -349,3 +350,1155 @@
                       :effect-facts :capability-facts
                       :safety-outcomes :proof-references
                       :source-maps :dependency-provenance]}))
+
+; Executable bounded C14 request constructor.  Every lowering dependency is an
+; explicit input field; this function performs no source, tool, provider, or
+; artifact effect and emits eligibility before a backend can run.
+(defn c14-lowercase-hex?
+  [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (c14-lowercase-hex? (rest characters))
+      false)))
+
+(defn c14-sha256-id?
+  [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (c14-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn c14-content-binding-valid?
+  [binding]
+  (if (map? binding)
+    (if (= (set (keys binding)) #{:content-id :entry-count})
+      (if (c14-sha256-id? (get binding :content-id))
+        (if (integer? (get binding :entry-count))
+          (>= (get binding :entry-count) 0)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-contract-bindings-valid?
+  [bindings]
+  (if (map? bindings)
+    (if (= (set (keys bindings))
+           #{:profile :target :abi :runtime :providers :effects
+             :capabilities :type :ownership :safety :proofs
+             :source-map :dependencies
+             :c11-verifier :c13-optimization})
+      (if (c14-content-binding-valid? (get bindings :profile))
+        (if (c14-content-binding-valid? (get bindings :target))
+          (if (c14-content-binding-valid? (get bindings :abi))
+            (if (c14-content-binding-valid? (get bindings :runtime))
+              (if (c14-content-binding-valid? (get bindings :providers))
+                (if (c14-content-binding-valid? (get bindings :effects))
+                  (if (c14-content-binding-valid?
+                       (get bindings :capabilities))
+                    (if (c14-content-binding-valid? (get bindings :type))
+                      (if (c14-content-binding-valid?
+                           (get bindings :ownership))
+                        (if (c14-content-binding-valid?
+                             (get bindings :safety))
+                          (if (c14-content-binding-valid?
+                               (get bindings :proofs))
+                            (if (c14-content-binding-valid?
+                                 (get bindings :source-map))
+                              (if (c14-content-binding-valid?
+                                   (get bindings :dependencies))
+                                (if (c14-content-binding-valid?
+                                     (get bindings :c11-verifier))
+                                  (c14-content-binding-valid?
+                                   (get bindings :c13-optimization))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-target-valid?
+  [target]
+  (if (map? target)
+    (if (= (set (keys target))
+           #{:request :triple :data-layout :cpu :features :object-format
+             :architecture :relocation-model :code-model
+             :optimization-level :minimum-os-version :sanitizers
+             :instrumentation :backend :tier :exposure
+             :source-declaration-target :requested-lowering-target
+             :selection :reason :direct-source-declared-llvm?
+             :profile-eligibility :fingerprint})
+      (if (= (get target :request) :llvm)
+        (if (= (get target :triple) "arm64-apple-macosx14.0.0")
+          (if (= (get target :data-layout)
+                 "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32")
+            (if (= (get target :cpu) "generic")
+              (if (= (get target :features) "+v8a,+fp-armv8,+neon")
+                (if (= (get target :object-format) :mach-o)
+                  (if (= (get target :architecture) :arm64)
+                    (if (= (get target :relocation-model) :pic)
+                      (if (= (get target :code-model) :small)
+                        (if (= (get target :optimization-level) :O0)
+                          (if (= (get target :minimum-os-version) "14.0")
+                            (if (= (get target :sanitizers) [])
+                              (if (= (get target :instrumentation) [])
+                                (if (= (get target :backend)
+                                       :gravity.backend/llvm)
+                                  (if (= (get target :tier) :experimental)
+                                    (if (= (get target :exposure) :internal)
+                                      (if (= (get target
+                                                  :source-declaration-target)
+                                             :jvm)
+                                        (if (= (get target
+                                                    :requested-lowering-target)
+                                               :llvm)
+                                          (if (= (get target :selection)
+                                                 :explicit-bootstrap-seed-target-override)
+                                            (if (= (get target :reason)
+                                                   :checked-core-seed-contract)
+                                              (if (= (get target
+                                                          :direct-source-declared-llvm?)
+                                                     false)
+                                                (if (= (get target
+                                                            :profile-eligibility)
+                                                       [:hosted])
+                                                  (c14-sha256-id?
+                                                   (get target :fingerprint))
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-abi-valid?
+  [abi]
+  (if (map? abi)
+    (= abi
+       {:calling-convention :darwin-pcs-ccc
+        :object-format :mach-o :architecture :arm64
+        :integer-carrier :i64 :process-result :i32
+        :gravity-exception-unwind :none
+        :platform-unwind-metadata :darwin-compact-unwind-required
+        :return-type :i32})
+    false))
+
+(defn c14-runtime-valid?
+  [runtime]
+  (if (map? runtime)
+    (= runtime
+       {:gravity-runtime-providers []
+        :platform-runtime-providers
+        [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+        :status :no-gravity-helpers-platform-runtime-required
+        :full-conformance? false})
+    false))
+
+(defn c14-providers-valid?
+  [providers]
+  (if (map? providers)
+    (= providers
+       {:semantic []
+        :build [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
+                :file-5.41 :llvm-otool-cctools-1040
+                :darwin-process-loader
+                :openjdk-26.0.1-ffm-native-access
+                :darwin-libsystem-renamex-np]
+        :platform [:darwin/process-startup :darwin/dyld
+                   :darwin/libsystem]})
+    false))
+
+(defn c14-fact-bindings-valid?
+  [bindings]
+  (if (map? bindings)
+    (if (= (set (keys bindings))
+           #{:type :effect :ownership :capability :safety
+             :runtime-checks :proofs :source-map})
+      (if (c14-content-binding-valid? (get bindings :type))
+        (if (c14-content-binding-valid? (get bindings :effect))
+          (if (c14-content-binding-valid? (get bindings :ownership))
+            (if (c14-content-binding-valid? (get bindings :capability))
+              (if (c14-content-binding-valid? (get bindings :safety))
+                (if (c14-content-binding-valid?
+                     (get bindings :runtime-checks))
+                  (if (c14-content-binding-valid? (get bindings :proofs))
+                    (c14-content-binding-valid? (get bindings :source-map))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-c11-source-rule-valid?
+  [rule]
+  (if (map? rule)
+    (if (= (set (keys rule))
+           #{:artifact :owner :source-content-hash :source-byte-count
+             :plan-semantic-hash :functions-semantic-hash
+             :builder-function :builder-semantic-hash :function-shapes
+             :compiled-by :executed-by :clojure-seed-boundary?
+             :self-hosted?})
+      (if (= (get rule :artifact) :gravity/c11-pinned-source-rule)
+        (if (= (get rule :owner) :gravity-source)
+          (if (= (get rule :source-byte-count) 68163)
+            (if (= (get rule :source-content-hash)
+                   "sha256:bee70c3a0c30404ef000d046f85601d8bbbb1205ff679bceb5d284de8c30459b")
+              (if (= (get rule :plan-semantic-hash)
+                     "sha256:23e422b13189e9565654fec4d24ec3345aa231b0e27ff4547d70f39da0e236cd")
+                (if (= (get rule :functions-semantic-hash)
+                       "sha256:cf8b8f970db7509f78a8c1a388c33c82a7ea1151e141e6de492ae3032761a9d8")
+                  (if (= (get rule :builder-function)
+                         'c11-build-target-independent-mir)
+                    (if (= (get rule :builder-semantic-hash)
+                           "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e")
+                      (if (= (get rule :function-shapes)
+                             '{c11-nodes-before-id
+                               {:arity 3 :params [nodes node-id result]}
+                               c11-runtime-check-fact-id
+                               {:arity 2 :params [check fact-kind]}
+                               c11-build-runtime-check-operation
+                               {:arity 3
+                                :params [checked-core node block-id]}
+                               c11-build-data-flow-for-node
+                               {:arity 3
+                                :params [node consumer-block result]}
+                               c11-runtime-check-fact-record
+                               {:arity 3
+                                :params [checked-core node fact-kind]}
+                               c11-build-runtime-check-table
+                               {:arity 2 :params [nodes result]}
+                               c11-build-conditional-mir
+                               {:arity 4
+                                :params [checked-core nodes if-node
+                                         return-value-id]}
+                               c11-build-source-map
+                               {:arity 2 :params [nodes result]}
+                               c11-build-data-flow
+                               {:arity 10
+                                :params [nodes if-id then-ids else-ids
+                                         downstream-ids entry-id then-id
+                                         else-id join-id result]}
+                               c11-build-values
+                               {:arity 5
+                                :params [nodes data-flow definitions
+                                         terminator-uses result]}
+                               c11-build-data-flow-for-operands
+                               {:arity 5
+                                :params [operands consumer consumer-block
+                                         operand-index result]}
+                               c11-build-profile-target-table
+                               {:arity 3
+                                :params [checked-core nodes result]}
+                               c11-constant-payload
+                               {:arity 1 :params [node]}
+                               c11-build-linear-mir
+                               {:arity 3
+                                :params [checked-core nodes
+                                         return-value-id]}
+                               c11-build-capability-proof-table
+                               {:arity 2 :params [proofs result]}
+                               c11-build-definitions
+                               {:arity 10
+                                :params [nodes if-id then-ids else-ids
+                                         downstream-ids entry-id then-id
+                                         else-id join-id result]}
+                               c11-build-safety-proof-table
+                               {:arity 2 :params [nodes result]}
+                               c11-runtime-check-token-id
+                               {:arity 1 :params [check]}
+                               c11-add-runtime-check-facts
+                               {:arity 4
+                                :params [checked-core nodes fact-kind
+                                         result]}
+                               c11-operation-operands
+                               {:arity 1 :params [node]}
+                               c11-build-operation
+                               {:arity 3
+                                :params [checked-core node block-id]}
+                               c11-build-mir-pass-contract
+                               {:arity 0 :params []}
+                               c11-build-target-independent-mir
+                               {:arity 1 :params [checked-core]}
+                               c11-nodes-from-id
+                               {:arity 2 :params [nodes node-id]}
+                               c11-build-fact-table-by-id
+                               {:arity 5
+                                :params [nodes source-table id-field
+                                         generated-suffix result]}
+                               c11-runtime-check-operation-id
+                               {:arity 1 :params [check]}})
+                        (if (= (get rule :compiled-by)
+                               :clojure-stage0-seed)
+                          (if (= (get rule :executed-by)
+                                 :clojure-stage0-rule-runner)
+                            (if (= (get rule :clojure-seed-boundary?) true)
+                              (= (get rule :self-hosted?) false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-c13-source-rule-valid?
+  [rule]
+  (if (map? rule)
+    (if (= (set (keys rule))
+           #{:artifact :owner :source-content-hash :source-byte-count
+             :plan-semantic-hash :functions-semantic-hash
+             :builder-function :builder-semantic-hash :function-shapes
+             :semantic-authority :compiled-by :executed-by :self-hosted?})
+      (if (= (get rule :artifact) :gravity/pinned-gravity-source-rule)
+        (if (= (get rule :owner)
+               :gravity.compiler/c13-mir-optimization)
+          (if (= (get rule :builder-function)
+                 'c13-build-bounded-identity-optimized-mir)
+            (if (= (get rule :source-byte-count) 43463)
+              (if (= (get rule :source-content-hash)
+                     "sha256:6967aec226a8d54b74d4c22b242a0147bdaa1ef37869efd40ab3e7bfa69f4374")
+                (if (= (get rule :plan-semantic-hash)
+                       "sha256:3d7246254c750ec528318185480c0bba1be2d2b0509e05e117929eec70a1a904")
+                  (if (= (get rule :functions-semantic-hash)
+                         "sha256:fc6406aab555a1a851d89d01be974727e2d16fbbd01f576d74bb24d514731ba6")
+                    (if (= (get rule :builder-semantic-hash)
+                           "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
+                      (if (= (get rule :function-shapes)
+                             '{c13-bounded-identity-input-valid?
+                               {:arity 2 :params [mir evidence]}
+                               c13-operation-ids
+                               {:arity 2 :params [instructions result]}
+                               c13-operation-order-from-blocks
+                               {:arity 3
+                                :params [blocks block-order result]}
+                               c13-bounded-operation-count?
+                               {:arity 1 :params [mir]}
+                               c13-bounded-operation-order
+                               {:arity 1 :params [mir]}
+                               c13-unique-operation-ids?
+                               {:arity 2 :params [operation-ids seen]}
+                               c13-bounded-mir-operation-shape-valid?
+                               {:arity 2 :params [mir operation-order]}
+                               c13-build-bounded-identity-optimized-mir
+                               {:arity 2 :params [mir evidence]}})
+                        (if (= (get rule :semantic-authority)
+                               :gravity-source)
+                          (if (= (get rule :compiled-by)
+                                 :clojure-stage0-seed)
+                            (if (= (get rule :executed-by)
+                                   :clojure-stage0-rule-runner)
+                              (= (get rule :self-hosted?) false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-dependencies-valid?
+  [optimized dependencies]
+  (if (map? dependencies)
+    (if (= (set (keys dependencies))
+           #{:source-core :c11-source-rule :c11-pass
+             :c13-artifact :c13-source-rule :b3-source})
+      (if (= (get dependencies :source-core)
+             (get (get optimized :input) :source-core))
+        (if (c14-sha256-id? (get dependencies :source-core))
+          (if (c14-c11-source-rule-valid?
+               (get dependencies :c11-source-rule))
+            (if (= (get dependencies :c11-pass)
+                   (get (get optimized :input)
+                        :pass-execution-record-id))
+              (if (c14-sha256-id? (get dependencies :c11-pass))
+                (if (= (get dependencies :c13-artifact)
+                       (get optimized :artifact-id))
+                  (if (= (get dependencies :c13-source-rule)
+                         (get optimized :source-rule))
+                    (if (c14-c13-source-rule-valid?
+                         (get dependencies :c13-source-rule))
+                      (= (get dependencies :b3-source)
+                         "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37")
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    )
+
+(defn c14-proofs-valid?
+  [mir proofs]
+  (if (map? proofs)
+    (if (= (set (keys proofs)) #{:capability :certificates})
+      (if (map? (get proofs :capability))
+       (if (map? (get proofs :certificates))
+        (if (= (set (keys (get proofs :capability)))
+             #{:content-id :entry-count :proof-ids})
+        (if (= (set (keys (get proofs :certificates)))
+               #{:content-id :entry-count :safety-proof-count
+                 :safety-proof-ids})
+          (if (c14-sha256-id?
+               (get (get proofs :capability) :content-id))
+            (if (c14-sha256-id?
+                 (get (get proofs :certificates) :content-id))
+              (if (= (get (get proofs :capability) :entry-count)
+                     (count (get mir :capability-proof-table)))
+                (if (= (get (get proofs :certificates) :entry-count)
+                       (count (get mir :proof-certificate-table)))
+                  (if (= (get (get proofs :certificates)
+                              :safety-proof-count)
+                         (count (get (get mir :proof-certificate-table)
+                                     :safety-proofs)))
+                    (if (vector?
+                         (get (get proofs :capability) :proof-ids))
+                      (if (vector?
+                           (get (get proofs :certificates)
+                                :safety-proof-ids))
+                        (if (= (get (get proofs :capability) :proof-ids)
+                               (vec (sort-by-pr-str
+                                     (keys (get mir
+                                                :capability-proof-table)))))
+                          (= (get (get proofs :certificates)
+                                  :safety-proof-ids)
+                             (vec (sort-by-pr-str
+                                   (keys (get (get mir
+                                                   :proof-certificate-table)
+                                              :safety-proofs)))))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+       false)
+      false)
+      false)
+    false))
+
+(defn c14-fact-bindings-match-mir?
+  [mir bindings]
+  (if (= (get (get bindings :type) :entry-count)
+         (count (get mir :type-table)))
+    (if (= (get (get bindings :effect) :entry-count)
+           (count (get mir :effect-table)))
+      (if (= (get (get bindings :ownership) :entry-count)
+             (count (get mir :ownership-table)))
+        (if (= (get (get bindings :capability) :entry-count)
+               (count (get mir :capability-table)))
+          (if (= (get (get bindings :safety) :entry-count)
+                 (count (get mir :safety-table)))
+            (if (= (get (get bindings :runtime-checks) :entry-count)
+                   (count (get mir :runtime-check-table)))
+              (if (= (get (get bindings :proofs) :entry-count)
+                     (count (get mir :proof-certificate-table)))
+                (= (get (get bindings :source-map) :entry-count)
+                   (count (get mir :source-map)))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-safety-valid?
+  [mir safety bindings]
+  (if (map? safety)
+    (if (= (set (keys safety))
+           #{:outcomes :runtime-checks :unsafe-islands :binding})
+      (if (= (get safety :outcomes) (count (get mir :safety-table)))
+        (if (= (get safety :runtime-checks)
+               (count (get mir :runtime-check-table)))
+          (if (= (get safety :unsafe-islands) 0)
+            (= (get safety :binding) (get bindings :safety))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-operation-ids
+  [instructions result]
+  (if (= (count instructions) 0)
+    result
+    (c14-operation-ids
+     (rest instructions)
+     (conj result (get (first instructions) :op-id)))))
+
+(defn c14-operation-order-from-blocks
+  [blocks block-order result]
+  (if (= (count block-order) 0)
+    result
+    (c14-operation-order-from-blocks
+     blocks (rest block-order)
+     (c14-operation-ids
+      (get (get blocks (first block-order)) :instructions) result))))
+
+(defn c14-bounded-operation-count?
+  [mir]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        functions (get mir :functions)
+        function (get functions (first (keys functions)))
+        blocks (get function :blocks)
+        operation-count
+        (if (contains? blocks join-id)
+          (+ (count (get (get blocks entry-id) :instructions))
+             (count (get (get blocks then-id) :instructions))
+             (count (get (get blocks else-id) :instructions))
+             (count (get (get blocks join-id) :instructions)))
+          (count (get (get blocks entry-id) :instructions)))]
+    (if (> operation-count 0)
+      (<= operation-count 256)
+      false)))
+
+(defn c14-bounded-operation-order
+  [mir]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        functions (get mir :functions)
+        function (get functions (first (keys functions)))
+        blocks (get function :blocks)
+        block-order (if (contains? blocks join-id)
+                      [entry-id then-id else-id join-id]
+                      [entry-id])]
+    (if (c14-bounded-operation-count? mir)
+      (c14-operation-order-from-blocks blocks block-order [])
+      [])))
+
+(defn c14-c11-independent-verifier-valid?
+  [mir verifier]
+  (if (map? verifier)
+    (if (= (set (keys verifier))
+           #{:status :module-shape-valid? :block-count :operation-count
+             :conditional-count :dominance-valid? :type-facts-valid?
+             :direct-effects-valid? :safety-facts-valid?
+             :origin-closure-valid? :runtime-checks-valid?
+             :runtime-checks :target-independent? :data-flow})
+      (if (= [(get verifier :status)
+              (get verifier :module-shape-valid?)
+              (get verifier :dominance-valid?)
+              (get verifier :type-facts-valid?)
+              (get verifier :direct-effects-valid?)
+              (get verifier :safety-facts-valid?)
+              (get verifier :origin-closure-valid?)
+              (get verifier :runtime-checks-valid?)
+              (get verifier :target-independent?)]
+             [:passed true true true true true true true true])
+        (let [functions (get mir :functions)
+              function (get functions (first (keys functions)))
+              blocks (get function :blocks)
+              operation-order (c14-bounded-operation-order mir)
+              runtime-checks (get verifier :runtime-checks)
+              runtime-table (get mir :runtime-check-table)
+              data-flow (get verifier :data-flow)
+              graph (get mir :data-flow-graph)]
+          (if (= (get verifier :block-count) (count blocks))
+            (if (= (get verifier :operation-count)
+                   (count operation-order))
+              (if (= (get verifier :conditional-count)
+                     (if (= (get (get mir :control-flow-graph) :join) nil)
+                       0 1))
+                (if (= (set (keys runtime-checks))
+                       #{:runtime-check-count :runtime-check-ids})
+                  (if (= (get runtime-checks :runtime-check-count)
+                         (count runtime-table))
+                    (if (= (get runtime-checks :runtime-check-ids)
+                           (vec (sort-by-pr-str (keys runtime-table))))
+                      (if (= (set (keys data-flow))
+                             #{:edge-count :terminator-use-count
+                               :definition-count :value-count})
+                        (= data-flow
+                           {:edge-count (count (get graph :edges))
+                            :terminator-use-count
+                            (count (get graph :terminator-uses))
+                            :definition-count
+                            (count (get graph :definitions))
+                            :value-count (count (get graph :values))})
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn c14-c11-b1-preflight-valid?
+  [optimized preflight]
+  (if (map? preflight)
+    (if (= (set (keys preflight))
+           #{:artifact :status :input-kind :requires-verifier-status
+             :mir-verifier-status :binding :target-lowering-credit?
+             :backend-credit? :llvm-credit?})
+      (if (= [(get preflight :artifact) (get preflight :status)
+              (get preflight :input-kind)
+              (get preflight :requires-verifier-status)
+              (get preflight :mir-verifier-status)
+              (get preflight :target-lowering-credit?)
+              (get preflight :backend-credit?)
+              (get preflight :llvm-credit?)]
+             [:gravity/verified-mir-candidate-for-b1
+              :verified-mir-candidate-for-b1 :gravity/mir
+              :passed :passed false false false])
+        (let [binding (get preflight :binding)]
+          (if (map? binding)
+            (if (= (set (keys binding))
+                   #{:mir-content-id :checked-core-artifact-id
+                     :independent-verifier-report-id
+                     :independent-verifier-report-hash
+                     :pass-execution-record-id :scope-hash})
+              (if (= (get binding :checked-core-artifact-id)
+                     (get (get optimized :input) :source-core))
+                (if (= (get binding :pass-execution-record-id)
+                       (get (get optimized :input)
+                            :pass-execution-record-id))
+                  (if (c14-sha256-id? (get binding :mir-content-id))
+                    (if (c14-sha256-id?
+                         (get binding :independent-verifier-report-id))
+                      (if (c14-sha256-id?
+                           (get binding :independent-verifier-report-hash))
+                        (c14-sha256-id? (get binding :scope-hash))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn c14-c11-verifier-valid?
+  [optimized verifier verifier-id]
+  (if (map? verifier)
+    (if (= (set (keys verifier))
+           #{:status :mir-id :semantic-replay-parity :execution-tcb
+             :independent-verifier :b1-preflight})
+      (if (= (get verifier :status) :passed)
+        (if (= (get verifier :semantic-replay-parity) :passed)
+          (if (= (get verifier :execution-tcb)
+                 :clojure-stage0-rule-runner)
+            (if (= (get verifier :mir-id)
+                   (get (get optimized :input) :c11-mir-id))
+              (if (= verifier-id
+                     (get (get optimized :input) :verifier-report-id))
+                (if (= verifier-id
+                       (get (get optimized :verifier-replay)
+                            :verifier-report-id))
+                  (if (c14-c11-independent-verifier-valid?
+                       (get optimized :optimized-mir)
+                       (get verifier :independent-verifier))
+                    (if (= (get verifier :b1-preflight)
+                           (get (get optimized :optimized-mir)
+                                :b1-preflight))
+                      (c14-c11-b1-preflight-valid?
+                       optimized (get verifier :b1-preflight))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-contract-bindings-match?
+  [mir policy]
+  (let [bindings (get policy :contract-bindings)
+        fact-bindings (get policy :fact-bindings)
+        dependencies (get policy :dependencies)]
+    (if (= (get (get bindings :profile) :entry-count) 2)
+      (if (= (get (get bindings :target) :entry-count)
+             (count (get policy :target)))
+        (if (= (get (get bindings :abi) :entry-count)
+               (count (get policy :abi)))
+          (if (= (get (get bindings :runtime) :entry-count)
+                 (count (get policy :runtime)))
+            (if (= (get (get bindings :providers) :entry-count)
+                   (count (get policy :providers)))
+              (if (= (get (get bindings :effects) :entry-count) 2)
+                (if (= (get (get bindings :capabilities) :entry-count) 3)
+                  (if (= (get bindings :type)
+                         (get fact-bindings :type))
+                    (if (= (get bindings :ownership)
+                           (get fact-bindings :ownership))
+                      (if (= (get bindings :safety)
+                             (get fact-bindings :safety))
+                        (if (= (get (get bindings :proofs) :entry-count) 2)
+                          (if (= (get bindings :source-map)
+                                 (get fact-bindings :source-map))
+                            (if (= (get (get bindings :dependencies)
+                                        :entry-count)
+                                   (count dependencies))
+                              (if (= (get (get bindings :c11-verifier)
+                                          :entry-count) 1)
+                                (if (= (get (get bindings :c11-verifier)
+                                            :content-id)
+                                       (get policy :c11-verifier-id))
+                                  (= (get (get bindings :c13-optimization)
+                                          :entry-count) 4)
+                                  false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))))
+
+(defn c14-c13-envelope-valid?
+  [optimized]
+  (if (= (set (keys optimized))
+         #{:artifact :schema-version :status :input :optimized-mir
+           :pass-contract :decision-record :invalidation-ledger
+           :residual-check-report :verifier-replay :semantic-identity
+           :target-instruction-selection :diagnostics :semantic-authority
+           :execution-tcb :clojure-seed-boundary? :self-hosted?
+           :source-rule :actual-path-provenance :semantic-id :artifact-id
+           :actual-path-binding-id})
+    (if (= (get optimized :artifact)
+           :gravity/c13-bounded-identity-optimized-mir)
+      (if (= (get optimized :schema-version) 1)
+        (if (= (get optimized :status) :accepted)
+          (if (= (get optimized :diagnostics) [])
+            (if (= (get optimized :semantic-authority) :gravity-source)
+              (if (= (get optimized :execution-tcb)
+                     :clojure-stage0-rule-runner)
+                (if (= (get optimized :clojure-seed-boundary?) true)
+                  (if (= (get optimized :self-hosted?) false)
+                    (if (= (get optimized :target-instruction-selection)
+                           :forbidden)
+                      (if (c14-c13-source-rule-valid?
+                           (get optimized :source-rule))
+                        (if (c14-sha256-id?
+                             (get optimized :actual-path-binding-id))
+                          true
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-bounded-optimized-input-valid?
+  [optimized policy]
+  (if (map? optimized)
+    (if (map? policy)
+      (if (c14-c13-envelope-valid? optimized)
+        (if (c14-sha256-id? (get optimized :artifact-id))
+          (if (c14-sha256-id? (get optimized :semantic-id))
+            (if (c14-sha256-id? (get policy :expected-c11-artifact-id))
+              (if (c14-sha256-id? (get policy :expected-c13-artifact-id))
+                (if (= (get (get optimized :input) :c11-artifact-id)
+                       (get policy :expected-c11-artifact-id))
+                  (if (= (get optimized :artifact-id)
+                         (get policy :expected-c13-artifact-id))
+                    (if (= (get (get optimized :verifier-replay) :result)
+                           :passed)
+                      (if (= [(get (get optimized :semantic-identity)
+                                    :c11-input-mir-id)
+                              (get (get optimized :semantic-identity)
+                                   :c11-output-mir-id)
+                              (get (get optimized :decision-record)
+                                   :input-mir)
+                              (get (get optimized :decision-record)
+                                   :output-mir)
+                              (get (get optimized :verifier-replay)
+                                   :c11-mir-id)]
+                             [(get (get optimized :input) :c11-mir-id)
+                              (get (get optimized :input) :c11-mir-id)
+                              (get (get optimized :input) :c11-mir-id)
+                              (get (get optimized :input) :c11-mir-id)
+                              (get (get optimized :input) :c11-mir-id)])
+                        (if (= (get (get optimized :semantic-identity)
+                                    :unchanged?) true)
+                        (if (= (get (get optimized :semantic-identity)
+                                    :fact-bindings)
+                               (get policy :fact-bindings))
+                          (let [mir (get optimized :optimized-mir)
+                                semantic (get optimized :semantic-identity)
+                                decision (get optimized :decision-record)
+                                operation-order
+                                (c14-bounded-operation-order mir)]
+                            (if (= [(get semantic :maximum-operation-count)
+                                    (get (get optimized :pass-contract)
+                                         :maximum-operation-count)]
+                                   [256 256])
+                              (if (= (get semantic :operation-order)
+                                     operation-order)
+                              (if (> (count operation-order) 0)
+                                (if (= (get semantic :operation-count)
+                                       (count operation-order))
+                                  (if (= (get semantic :effect-order-graph)
+                                         (get mir :effect-order-graph))
+                                    (if (= (get decision :preserved)
+                                           {:fact-bindings
+                                            (get semantic :fact-bindings)
+                                            :operation-order operation-order
+                                            :effect-order-graph
+                                            (get mir :effect-order-graph)})
+                                      (if (= (get decision :decision-id)
+                                             (get (get optimized
+                                                       :invalidation-ledger)
+                                                  :decision-id))
+                                        (if (c14-sha256-id?
+                                             (get decision :decision-id))
+                                          (= (get decision :residual-checks)
+                                             (get mir
+                                                  :runtime-check-table))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false))
+                          false)
+                        false)
+                      false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-source-map-valid?
+  [policy]
+  (let [source-map (get policy :source-map)
+        bindings (get policy :fact-bindings)]
+    (if (map? source-map)
+      (if (= (set (keys source-map)) #{:id :preserved?})
+        (if (= source-map (get policy :expected-source-map-binding))
+          (if (c14-sha256-id? (get source-map :id))
+            (if (= (get source-map :preserved?) true)
+              (= (get source-map :id)
+                 (get (get bindings :source-map) :content-id))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-policy-core-valid?
+  [optimized policy]
+  (if (= (get policy :profile) :hosted)
+    (if (= (get policy :profile-contract)
+           {:name :hosted :validated? true})
+      (if (c14-target-valid? (get policy :target))
+        (if (= (get policy :source-target-selection)
+               {:source-declaration-target :jvm
+                :requested-lowering-target :llvm
+                :selection :explicit-bootstrap-seed-target-override
+                :reason :checked-core-seed-contract
+                :direct-source-declared-llvm? false})
+          (if (= (get policy :effects) #{})
+            (if (= (get policy :capabilities) #{})
+              (if (= (get policy :supported-operation-ids)
+                     (get (get optimized :semantic-identity)
+                          :operation-order))
+                (if (c14-abi-valid? (get policy :abi))
+                  (if (c14-runtime-valid? (get policy :runtime))
+                    (c14-providers-valid? (get policy :providers))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-policy-evidence-valid?
+  [optimized policy]
+  (let [mir (get optimized :optimized-mir)
+        bindings (get policy :fact-bindings)
+        proofs (get policy :proofs)]
+    (if (c14-fact-bindings-valid? bindings)
+      (if (c14-fact-bindings-match-mir? mir bindings)
+        (if (c14-safety-valid? mir (get policy :safety) bindings)
+          (if (c14-proofs-valid? mir proofs)
+            (if (= (get (get proofs :certificates) :content-id)
+                   (get (get bindings :proofs) :content-id))
+              (if (c14-dependencies-valid?
+                   optimized (get policy :dependencies))
+                (if (= (get policy :required-evidence)
+                       [:authenticated-c11-replay
+                        :independent-lowering-reconstruction
+                        :llvm-tool-acceptance :mach-o-arm64-object
+                        :differential-process-result
+                        :content-hash-and-provenance])
+                  (if (c14-c11-verifier-valid?
+                       optimized (get policy :c11-verifier)
+                       (get policy :c11-verifier-id))
+                    (if (c14-contract-bindings-valid?
+                         (get policy :contract-bindings))
+                      (if (c14-contract-bindings-match? mir policy)
+                        (c14-source-map-valid? policy)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-policy-scope-valid?
+  [policy]
+  (if (= (get policy :target-policy)
+         {:scope :bounded-pure-scalar-forwarding-do-let-if
+          :maximum-operation-count 256
+          :whole-c14? false :whole-b1? false :whole-b3? false
+          :public? false :release? false :self-hosted? false})
+    (if (= (get policy :unsupported-surface)
+           [:strings :quote :str :println :runtime-checks :effects
+            :program-capabilities :domain-anchors :multiple-functions
+            :multiple-conditionals :non-scalar-types
+            :integer-outside-signed-i64
+            :process-result-outside-0-to-255])
+      (if (= (get policy :proof-target-metadata)
+             {:entries [] :proofless-metadata-rejected? true})
+        (c14-sha256-id? (get policy :request-id))
+        false)
+      false)
+    false))
+
+(defn c14-bounded-policy-valid?
+  [optimized policy]
+  (if (= (set (keys policy))
+         #{:expected-c11-artifact-id :expected-c13-artifact-id
+           :profile :profile-contract :target :source-target-selection
+           :abi :runtime :providers :effects :capabilities :safety
+           :proofs :contract-bindings :required-evidence :source-map
+           :expected-source-map-binding :dependencies :target-policy
+           :unsupported-surface :proof-target-metadata :fact-bindings
+           :supported-operation-ids :c11-verifier :c11-verifier-id
+           :request-id})
+    (if (c14-policy-core-valid? optimized policy)
+      (if (c14-policy-evidence-valid? optimized policy)
+        (c14-policy-scope-valid? policy)
+        false)
+      false)
+    false))
+
+(defn c14-build-bounded-llvm-lowering-record
+  [optimized policy]
+  (if (c14-bounded-optimized-input-valid? optimized policy)
+    (if (= (get policy :profile) :hosted)
+      (if (c14-bounded-policy-valid? optimized policy)
+        {:artifact :gravity/c14-bounded-llvm-lowering-record
+         :schema-version 1
+         :status :accepted
+         :request
+         {:artifact :gravity/c14-internal-target-lowering-request
+          :schema-version 1
+          :status :accepted
+          :input
+          {:kind :gravity/mir
+           :id (get optimized :semantic-id)
+           :artifact-id (get optimized :artifact-id)
+           :verified? true
+           :verifier-report (get policy :c11-verifier)
+           :verifier-report-id (get policy :c11-verifier-id)
+           :optimization-status :identity-pass-complete
+           :optimization-report
+           {:artifact-id (get optimized :artifact-id)
+            :semantic-id (get optimized :semantic-id)
+            :decision-id
+            (get (get optimized :decision-record) :decision-id)
+            :verifier-result
+            (get (get optimized :verifier-replay) :result)}
+           :domain-status :not-applicable}
+          :request-id (get policy :request-id)
+          :profile (get policy :profile)
+          :profile-contract (get policy :profile-contract)
+          :target (get policy :target)
+          :source-target-selection (get policy :source-target-selection)
+          :abi (get policy :abi)
+          :runtime (get policy :runtime)
+          :providers (get policy :providers)
+          :effects (get policy :effects)
+          :capabilities (get policy :capabilities)
+          :safety (get policy :safety)
+          :proofs (get policy :proofs)
+          :contract-bindings (get policy :contract-bindings)
+          :required-evidence (get policy :required-evidence)
+          :source-map (get policy :source-map)
+          :dependency-provenance (get policy :dependencies)
+          :c13-optimization-status :identity-pass-complete
+          :domain-ir-status :not-applicable
+          :fusion-status :not-run
+          :target-policy (get policy :target-policy)
+          :proof-to-target-metadata (get policy :proof-target-metadata)
+          :unsupported-feature-report
+          {:status :bounded-surface-only
+           :policy (get policy :unsupported-surface)
+           :diagnostic "C14-UNSUPPORTED"
+           :fallback-status :rejected}
+          :diagnostics []}
+         :eligibility
+         {:artifact :gravity/c14-target-eligibility-report
+          :backend :gravity.backend/llvm
+          :profile (get policy :profile)
+          :target (get policy :target)
+          :accepted? true
+          :rejections []
+          :fallbacks []
+          :missing-features []
+          :required-providers (get policy :providers)
+          :proof-assumptions []
+          :explainability-record
+          {:decision :accepted
+           :bounded-surface :pure-scalar-forwarding-do-let-if
+           :unsupported-diagnostic "C14-UNSUPPORTED"
+           :no-hidden-runtime? true
+           :no-hidden-effect-or-capability? true}
+          :checks
+          [:profile-allows-backend
+           :target-supports-required-mir-families
+           :runtime-services-explicit
+           :abi-represents-exports
+           :effects-have-authority-preserving-providers
+           :proof-assumptions-valid-for-target]}
+         :abi-layout
+         {:artifact :gravity/c14-abi-layout-record
+          :abi (get policy :abi)
+          :target (get policy :target)
+          :type-facts (get (get policy :fact-bindings) :type)
+          :ownership-facts (get (get policy :fact-bindings) :ownership)
+          :safety-facts (get (get policy :fact-bindings) :safety)
+          :profile-contract (get policy :profile-contract)
+          :source-map (get policy :source-map)}
+         :runtime-provider
+         {:artifact :gravity/c14-runtime-provider-record
+          :runtime (get policy :runtime)
+          :providers (get policy :providers)
+          :effects (get policy :effects)
+          :capabilities (get policy :capabilities)}
+         :proof-target-metadata
+         {:artifact :gravity/c14-proof-target-metadata-map
+          :entries (get (get policy :proof-target-metadata) :entries)
+          :proofless-metadata-rejected?
+          (get (get policy :proof-target-metadata)
+               :proofless-metadata-rejected?)
+          :proofs (get policy :proofs)}
+         :dependency-provenance (get policy :dependencies)
+         :diagnostics []
+         :semantic-authority :gravity-source
+         :execution-tcb :clojure-stage0-rule-runner
+         :clojure-seed-boundary? true
+         :self-hosted? false}
+        {:artifact :gravity/c14-bounded-llvm-lowering-record
+         :schema-version 1
+         :status :rejected
+         :diagnostic "C14-TARGET"
+         :missing-fact :explicit-bounded-llvm-target
+         :diagnostics ["C14-TARGET"]})
+      {:artifact :gravity/c14-bounded-llvm-lowering-record
+       :schema-version 1
+       :status :rejected
+       :diagnostic "C14-PROFILE"
+       :missing-fact :hosted-profile-eligibility
+       :diagnostics ["C14-PROFILE"]})
+    {:artifact :gravity/c14-bounded-llvm-lowering-record
+     :schema-version 1
+     :status :rejected
+     :diagnostic "C14-INPUT"
+     :missing-fact :verified-optimized-mir
+     :diagnostics ["C14-INPUT"]}))

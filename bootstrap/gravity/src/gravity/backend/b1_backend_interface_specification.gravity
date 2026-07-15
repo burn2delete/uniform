@@ -12,6 +12,7 @@
              build-b1-input-packet
              build-b1-eligibility-report
              build-b1-emitted-artifact-record
+             b1-build-bounded-llvm-authenticated-packet
              verify-b1-backend-interface])
   (:effects #{})
   (:capabilities #{})
@@ -261,7 +262,10 @@
    :version "source-model-v1"
    :accepts [:gravity/mir :gravity/domain-ir]
    :emits emitted-artifacts
-   :requires (:requires b1-backend-interface-contract)
+   :requires [:profile-manifest :target-manifest :abi-policy
+              :runtime-provider-selection :effect-summary
+              :capability-proof-summary :safety-bundle :proof-table
+              :source-map :dependency-graph]
    :supports-profiles supported-profiles
    :rejects [:unverified-ir :unsupported-op :missing-proof
              :implicit-ub :ambient-capability :profile-violation]})
@@ -273,7 +277,9 @@
    :profile profile
    :target target
    :evidence evidence
-   :required-fields (:required-fields b1-backend-input-contract)
+   :required-fields [:input :profile :target :abi :runtime :providers
+                     :effects :capabilities :safety :proofs :source-map
+                     :dependencies]
    :source-model-only? true})
 
 (defn build-b1-eligibility-report
@@ -283,7 +289,13 @@
    :input input
    :accepted? accepted?
    :rejections rejections
-   :checks (:checks b1-eligibility-contract)
+   :checks [:profile-backend-compatibility :target-feature-support
+            :runtime-availability-or-no-runtime-proof
+            :abi-representability :layout-representability
+            :provider-availability :effect-preservation
+            :capability-preservation :safety-bundle-completeness
+            :proof-validity-for-target-assumptions
+            :source-debug-map-preservation]
    :source-model-only? true})
 
 (defn build-b1-emitted-artifact-record
@@ -293,7 +305,12 @@
    :digest digest
    :source-map source-map
    :provenance provenance
-   :required-fields (:artifact-fields b1-emission-contract)
+   :required-fields [:artifact-kind :digest :backend-id :backend-version
+                     :source-input-digest :profile-fingerprint
+                     :target-fingerprint :abi-layout-manifest
+                     :runtime-provider-manifest :safety-summary
+                     :proof-summary :capability-summary :source-map
+                     :debug-map :dependency-graph :conformance-fixtures]
    :source-model-only? true})
 
 (defn verify-b1-backend-interface
@@ -306,3 +323,982 @@
    :proof-to-target-metadata-required? true
    :production-backend-execution? false
    :source-model-only? true})
+
+; Executable bounded B1 bridge.  It accepts only the already eligible C14
+; record and copies every authority-bearing field into the authenticated
+; backend packet.  The seed independently reconstructs and seals its identity.
+(defn b1-lowercase-hex?
+  [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (b1-lowercase-hex? (rest characters))
+      false)))
+
+(defn b1-sha256-id?
+  [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (b1-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn b1-content-binding-valid?
+  [binding]
+  (if (map? binding)
+    (if (= (set (keys binding)) #{:content-id :entry-count})
+      (if (b1-sha256-id? (get binding :content-id))
+        (if (integer? (get binding :entry-count))
+          (>= (get binding :entry-count) 0)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-c14-target-valid?
+  [target]
+  (if (map? target)
+    (if (= (set (keys target))
+           #{:request :triple :data-layout :cpu :features :object-format
+             :architecture :relocation-model :code-model
+             :optimization-level :minimum-os-version :sanitizers
+             :instrumentation :backend :tier :exposure
+             :source-declaration-target :requested-lowering-target
+             :selection :reason :direct-source-declared-llvm?
+             :profile-eligibility :fingerprint})
+      (if (= [(get target :request) (get target :triple)
+              (get target :data-layout) (get target :cpu)
+              (get target :features) (get target :object-format)
+              (get target :architecture) (get target :relocation-model)
+              (get target :code-model) (get target :optimization-level)
+              (get target :minimum-os-version) (get target :sanitizers)
+              (get target :instrumentation) (get target :backend)
+              (get target :tier) (get target :exposure)
+              (get target :source-declaration-target)
+              (get target :requested-lowering-target)
+              (get target :selection) (get target :reason)
+              (get target :direct-source-declared-llvm?)
+              (get target :profile-eligibility)]
+             [:llvm "arm64-apple-macosx14.0.0"
+              "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
+              "generic" "+v8a,+fp-armv8,+neon" :mach-o :arm64 :pic
+              :small :O0 "14.0" [] [] :gravity.backend/llvm
+              :experimental :internal :jvm :llvm
+              :explicit-bootstrap-seed-target-override
+              :checked-core-seed-contract false [:hosted]])
+        (b1-sha256-id? (get target :fingerprint))
+        false)
+      false)
+    false))
+
+(defn b1-c14-abi-valid?
+  [abi]
+  (= abi
+     {:calling-convention :darwin-pcs-ccc :object-format :mach-o
+      :architecture :arm64 :integer-carrier :i64 :process-result :i32
+      :gravity-exception-unwind :none
+      :platform-unwind-metadata :darwin-compact-unwind-required
+      :return-type :i32}))
+
+(defn b1-c14-runtime-valid?
+  [runtime]
+  (= runtime
+     {:gravity-runtime-providers []
+      :platform-runtime-providers
+      [:darwin/process-startup :darwin/dyld :darwin/libsystem]
+      :status :no-gravity-helpers-platform-runtime-required
+      :full-conformance? false}))
+
+(defn b1-c14-providers-valid?
+  [providers]
+  (= providers
+     {:semantic []
+      :build [:apple-xcrun-72 :apple-clang-21 :apple-ld-1267
+              :file-5.41 :llvm-otool-cctools-1040
+              :darwin-process-loader
+              :openjdk-26.0.1-ffm-native-access
+              :darwin-libsystem-renamex-np]
+      :platform [:darwin/process-startup :darwin/dyld
+                 :darwin/libsystem]}))
+
+(defn b1-nonnegative-integer?
+  [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn b1-c11-independent-count-relations-valid?
+  [verifier]
+  (let [conditional-count (get verifier :conditional-count)
+        block-count (get verifier :block-count)
+        operation-count (get verifier :operation-count)
+        runtime-check-count
+        (get (get verifier :runtime-checks) :runtime-check-count)
+        data-flow (get verifier :data-flow)]
+    (if (contains? #{0 1} conditional-count)
+      (if (> operation-count 0)
+        (if (<= operation-count 256)
+          (if (= block-count (if (= conditional-count 0) 1 4))
+            (if (= (get data-flow :definition-count) operation-count)
+              (if (= (get data-flow :value-count) operation-count)
+                (if (= (get data-flow :terminator-use-count)
+                       (if (= conditional-count 0) 1 4))
+                  (<= runtime-check-count operation-count)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b1-c11-independent-verifier-valid?
+  [verifier]
+  (if (map? verifier)
+    (if (= (set (keys verifier))
+           #{:status :module-shape-valid? :block-count :operation-count
+             :conditional-count :dominance-valid? :type-facts-valid?
+             :direct-effects-valid? :safety-facts-valid?
+             :origin-closure-valid? :runtime-checks-valid?
+             :runtime-checks :target-independent? :data-flow})
+      (if (= [(get verifier :status)
+              (get verifier :module-shape-valid?)
+              (get verifier :dominance-valid?)
+              (get verifier :type-facts-valid?)
+              (get verifier :direct-effects-valid?)
+              (get verifier :safety-facts-valid?)
+              (get verifier :origin-closure-valid?)
+              (get verifier :runtime-checks-valid?)
+              (get verifier :target-independent?)]
+             [:passed true true true true true true true true])
+        (if (b1-nonnegative-integer? (get verifier :block-count))
+          (if (b1-nonnegative-integer? (get verifier :operation-count))
+            (if (b1-nonnegative-integer? (get verifier :conditional-count))
+              (if (= (set (keys (get verifier :runtime-checks)))
+                     #{:runtime-check-count :runtime-check-ids})
+                (if (b1-nonnegative-integer?
+                     (get (get verifier :runtime-checks)
+                          :runtime-check-count))
+                  (if (vector?
+                       (get (get verifier :runtime-checks)
+                            :runtime-check-ids))
+                    (if (= (count (get (get verifier :runtime-checks)
+                                       :runtime-check-ids))
+                           (get (get verifier :runtime-checks)
+                                :runtime-check-count))
+                      (if (= (set (keys (get verifier :data-flow)))
+                             #{:edge-count :terminator-use-count
+                               :definition-count :value-count})
+                        (if (b1-nonnegative-integer?
+                             (get (get verifier :data-flow) :edge-count))
+                          (if (b1-nonnegative-integer?
+                               (get (get verifier :data-flow)
+                                    :terminator-use-count))
+                            (if (b1-nonnegative-integer?
+                                 (get (get verifier :data-flow)
+                                      :definition-count))
+                              (if (b1-nonnegative-integer?
+                                   (get (get verifier :data-flow)
+                                        :value-count))
+                                (b1-c11-independent-count-relations-valid?
+                                 verifier)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-c11-b1-preflight-valid?
+  [preflight]
+  (if (map? preflight)
+    (if (= (set (keys preflight))
+           #{:artifact :status :input-kind :requires-verifier-status
+             :mir-verifier-status :binding :target-lowering-credit?
+             :backend-credit? :llvm-credit?})
+      (if (= [(get preflight :artifact) (get preflight :status)
+              (get preflight :input-kind)
+              (get preflight :requires-verifier-status)
+              (get preflight :mir-verifier-status)
+              (get preflight :target-lowering-credit?)
+              (get preflight :backend-credit?)
+              (get preflight :llvm-credit?)]
+             [:gravity/verified-mir-candidate-for-b1
+              :verified-mir-candidate-for-b1 :gravity/mir
+              :passed :passed false false false])
+        (let [binding (get preflight :binding)]
+          (if (map? binding)
+            (if (= (set (keys binding))
+                   #{:mir-content-id :checked-core-artifact-id
+                     :independent-verifier-report-id
+                     :independent-verifier-report-hash
+                     :pass-execution-record-id :scope-hash})
+              (if (b1-sha256-id? (get binding :mir-content-id))
+                (if (b1-sha256-id?
+                     (get binding :checked-core-artifact-id))
+                  (if (b1-sha256-id?
+                       (get binding :independent-verifier-report-id))
+                    (if (b1-sha256-id?
+                         (get binding :independent-verifier-report-hash))
+                      (if (b1-sha256-id?
+                           (get binding :pass-execution-record-id))
+                        (b1-sha256-id? (get binding :scope-hash))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)
+    false))
+
+(defn b1-c14-verifier-valid?
+  [verifier]
+  (if (map? verifier)
+    (if (= (set (keys verifier))
+           #{:status :mir-id :semantic-replay-parity :execution-tcb
+             :independent-verifier :b1-preflight})
+      (if (= [(get verifier :status)
+              (get verifier :semantic-replay-parity)
+              (get verifier :execution-tcb)]
+             [:passed :passed :clojure-stage0-rule-runner])
+        (if (b1-sha256-id? (get verifier :mir-id))
+          (if (b1-c11-independent-verifier-valid?
+               (get verifier :independent-verifier))
+            (b1-c11-b1-preflight-valid? (get verifier :b1-preflight))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-c14-input-valid?
+  [input]
+  (if (map? input)
+    (if (= (set (keys input))
+           #{:kind :id :artifact-id :verified? :verifier-report
+             :verifier-report-id :optimization-status
+             :optimization-report :domain-status})
+      (if (= [(get input :kind) (get input :verified?)
+              (get input :optimization-status) (get input :domain-status)]
+             [:gravity/mir true :identity-pass-complete :not-applicable])
+        (if (b1-sha256-id? (get input :id))
+          (if (b1-sha256-id? (get input :artifact-id))
+            (if (b1-sha256-id? (get input :verifier-report-id))
+              (if (b1-c14-verifier-valid? (get input :verifier-report))
+                (if (map? (get input :optimization-report))
+                 (if (= (set (keys (get input :optimization-report)))
+                        #{:artifact-id :semantic-id :decision-id
+                          :verifier-result})
+                  (if (= [(get (get input :optimization-report) :artifact-id)
+                          (get (get input :optimization-report) :semantic-id)
+                          (get (get input :optimization-report)
+                               :verifier-result)]
+                         [(get input :artifact-id) (get input :id) :passed])
+                    (b1-sha256-id?
+                     (get (get input :optimization-report) :decision-id))
+                    false)
+                  false)
+                 false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-c14-safety-valid?
+  [safety]
+  (if (map? safety)
+    (if (= (set (keys safety))
+           #{:outcomes :runtime-checks :unsafe-islands :binding})
+      (if (integer? (get safety :outcomes))
+        (if (>= (get safety :outcomes) 0)
+          (if (integer? (get safety :runtime-checks))
+            (if (>= (get safety :runtime-checks) 0)
+              (if (= (get safety :unsafe-islands) 0)
+                (b1-content-binding-valid? (get safety :binding))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-c14-proofs-valid?
+  [proofs]
+  (if (map? proofs)
+    (if (= (set (keys proofs)) #{:capability :certificates})
+      (let [capability (get proofs :capability)
+            certificates (get proofs :certificates)]
+        (if (map? capability)
+          (if (map? certificates)
+            (if (= (set (keys capability))
+                   #{:content-id :entry-count :proof-ids})
+              (if (= (set (keys certificates))
+                     #{:content-id :entry-count :safety-proof-count
+                       :safety-proof-ids})
+                (let [capability-ids (get capability :proof-ids)
+                      safety-ids (get certificates :safety-proof-ids)]
+                  (if (b1-sha256-id? (get capability :content-id))
+                    (if (b1-sha256-id? (get certificates :content-id))
+                      (if (b1-nonnegative-integer?
+                           (get capability :entry-count))
+                        (if (b1-nonnegative-integer?
+                             (get certificates :entry-count))
+                          (if (b1-nonnegative-integer?
+                               (get certificates :safety-proof-count))
+                            (if (vector? capability-ids)
+                              (if (vector? safety-ids)
+                                (if (= (count capability-ids)
+                                       (get capability :entry-count))
+                                  (if (= (count safety-ids)
+                                         (get certificates
+                                              :safety-proof-count))
+                                    (if (= capability-ids
+                                           (vec (sort-by-pr-str
+                                                 capability-ids)))
+                                      (if (= safety-ids
+                                             (vec (sort-by-pr-str
+                                                   safety-ids)))
+                                        (if (= (count capability-ids)
+                                               (count (set capability-ids)))
+                                          (= (count safety-ids)
+                                             (count (set safety-ids)))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false))
+                false)
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn b1-c14-contract-bindings-valid?
+  [request]
+  (let [bindings (get request :contract-bindings)
+        safety (get request :safety)
+        source-map (get request :source-map)]
+    (if (map? bindings)
+      (if (= (set (keys bindings))
+             #{:profile :target :abi :runtime :providers :effects
+               :capabilities :type :ownership :safety :proofs
+               :source-map :dependencies
+               :c11-verifier :c13-optimization})
+        (if (= [(get (get bindings :profile) :entry-count)
+                (get (get bindings :target) :entry-count)
+                (get (get bindings :abi) :entry-count)
+                (get (get bindings :runtime) :entry-count)
+                (get (get bindings :providers) :entry-count)
+                (get (get bindings :effects) :entry-count)
+                (get (get bindings :capabilities) :entry-count)
+                (get (get bindings :proofs) :entry-count)
+                (get (get bindings :dependencies) :entry-count)
+                (get (get bindings :c11-verifier) :entry-count)
+                (get (get bindings :c13-optimization) :entry-count)]
+               [2 23 8 4 3 2 3 2 6 1 4])
+          (if (b1-content-binding-valid? (get bindings :profile))
+            (if (b1-content-binding-valid? (get bindings :target))
+              (if (b1-content-binding-valid? (get bindings :abi))
+                (if (b1-content-binding-valid? (get bindings :runtime))
+                  (if (b1-content-binding-valid? (get bindings :providers))
+                    (if (b1-content-binding-valid? (get bindings :effects))
+                      (if (b1-content-binding-valid?
+                           (get bindings :capabilities))
+                        (if (b1-content-binding-valid?
+                             (get bindings :type))
+                          (if (b1-content-binding-valid?
+                               (get bindings :ownership))
+                            (if (= (get bindings :safety)
+                                   (get safety :binding))
+                              (if (b1-content-binding-valid?
+                                   (get bindings :proofs))
+                                (if (= (get (get bindings :source-map)
+                                            :content-id)
+                                       (get source-map :id))
+                                  (if (b1-content-binding-valid?
+                                       (get bindings :dependencies))
+                                    (if (= (get (get bindings :c11-verifier)
+                                                :content-id)
+                                           (get (get request :input)
+                                                :verifier-report-id))
+                                      (if (b1-content-binding-valid?
+                                           (get bindings :c11-verifier))
+                                        (b1-content-binding-valid?
+                                         (get bindings :c13-optimization))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b1-c11-source-rule-valid?
+  [rule]
+  (if (map? rule)
+    (if (= (set (keys rule))
+           #{:artifact :owner :source-content-hash :source-byte-count
+             :plan-semantic-hash :functions-semantic-hash
+             :builder-function :builder-semantic-hash :function-shapes
+             :compiled-by :executed-by :clojure-seed-boundary?
+             :self-hosted?})
+     (= [(get rule :artifact) (get rule :owner)
+        (get rule :source-byte-count) (get rule :source-content-hash)
+        (get rule :plan-semantic-hash)
+        (get rule :functions-semantic-hash)
+        (get rule :builder-function) (get rule :builder-semantic-hash)
+        (get rule :compiled-by) (get rule :executed-by)
+        (get rule :clojure-seed-boundary?) (get rule :self-hosted?)
+        (get rule :function-shapes)]
+       [:gravity/c11-pinned-source-rule :gravity-source 68163
+        "sha256:bee70c3a0c30404ef000d046f85601d8bbbb1205ff679bceb5d284de8c30459b"
+        "sha256:23e422b13189e9565654fec4d24ec3345aa231b0e27ff4547d70f39da0e236cd"
+        "sha256:cf8b8f970db7509f78a8c1a388c33c82a7ea1151e141e6de492ae3032761a9d8"
+        'c11-build-target-independent-mir
+        "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e"
+        :clojure-stage0-seed :clojure-stage0-rule-runner true false
+        '{c11-nodes-before-id {:arity 3 :params [nodes node-id result]}
+          c11-runtime-check-fact-id {:arity 2 :params [check fact-kind]}
+          c11-build-runtime-check-operation
+          {:arity 3 :params [checked-core node block-id]}
+          c11-build-data-flow-for-node
+          {:arity 3 :params [node consumer-block result]}
+          c11-runtime-check-fact-record
+          {:arity 3 :params [checked-core node fact-kind]}
+          c11-build-runtime-check-table {:arity 2 :params [nodes result]}
+          c11-build-conditional-mir
+          {:arity 4 :params [checked-core nodes if-node return-value-id]}
+          c11-build-source-map {:arity 2 :params [nodes result]}
+          c11-build-data-flow
+          {:arity 10
+           :params [nodes if-id then-ids else-ids downstream-ids entry-id
+                    then-id else-id join-id result]}
+          c11-build-values
+          {:arity 5
+           :params [nodes data-flow definitions terminator-uses result]}
+          c11-build-data-flow-for-operands
+          {:arity 5
+           :params [operands consumer consumer-block operand-index result]}
+          c11-build-profile-target-table
+          {:arity 3 :params [checked-core nodes result]}
+          c11-constant-payload {:arity 1 :params [node]}
+          c11-build-linear-mir
+          {:arity 3 :params [checked-core nodes return-value-id]}
+          c11-build-capability-proof-table {:arity 2 :params [proofs result]}
+          c11-build-definitions
+          {:arity 10
+           :params [nodes if-id then-ids else-ids downstream-ids entry-id
+                    then-id else-id join-id result]}
+          c11-build-safety-proof-table {:arity 2 :params [nodes result]}
+          c11-runtime-check-token-id {:arity 1 :params [check]}
+          c11-add-runtime-check-facts
+          {:arity 4 :params [checked-core nodes fact-kind result]}
+          c11-operation-operands {:arity 1 :params [node]}
+          c11-build-operation {:arity 3 :params [checked-core node block-id]}
+          c11-build-mir-pass-contract {:arity 0 :params []}
+          c11-build-target-independent-mir {:arity 1 :params [checked-core]}
+          c11-nodes-from-id {:arity 2 :params [nodes node-id]}
+          c11-build-fact-table-by-id
+          {:arity 5
+           :params [nodes source-table id-field generated-suffix result]}
+          c11-runtime-check-operation-id {:arity 1 :params [check]}}])
+     false)
+    false))
+
+(defn b1-c13-source-rule-valid?
+  [rule]
+  (if (map? rule)
+    (if (= (set (keys rule))
+           #{:artifact :owner :source-content-hash :source-byte-count
+             :plan-semantic-hash :functions-semantic-hash
+             :builder-function :builder-semantic-hash :function-shapes
+             :semantic-authority :compiled-by :executed-by :self-hosted?})
+     (= [(get rule :artifact) (get rule :owner)
+        (get rule :source-byte-count) (get rule :source-content-hash)
+        (get rule :plan-semantic-hash)
+        (get rule :functions-semantic-hash)
+        (get rule :builder-function) (get rule :builder-semantic-hash)
+        (get rule :semantic-authority) (get rule :compiled-by)
+        (get rule :executed-by) (get rule :self-hosted?)
+        (get rule :function-shapes)]
+       [:gravity/pinned-gravity-source-rule
+        :gravity.compiler/c13-mir-optimization 43463
+        "sha256:6967aec226a8d54b74d4c22b242a0147bdaa1ef37869efd40ab3e7bfa69f4374"
+        "sha256:3d7246254c750ec528318185480c0bba1be2d2b0509e05e117929eec70a1a904"
+        "sha256:fc6406aab555a1a851d89d01be974727e2d16fbbd01f576d74bb24d514731ba6"
+        'c13-build-bounded-identity-optimized-mir
+        "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
+        :gravity-source :clojure-stage0-seed
+        :clojure-stage0-rule-runner false
+        '{c13-bounded-identity-input-valid?
+          {:arity 2 :params [mir evidence]}
+          c13-operation-ids {:arity 2 :params [instructions result]}
+          c13-operation-order-from-blocks
+          {:arity 3 :params [blocks block-order result]}
+          c13-bounded-operation-count? {:arity 1 :params [mir]}
+          c13-bounded-operation-order {:arity 1 :params [mir]}
+          c13-unique-operation-ids?
+          {:arity 2 :params [operation-ids seen]}
+          c13-bounded-mir-operation-shape-valid?
+          {:arity 2 :params [mir operation-order]}
+          c13-build-bounded-identity-optimized-mir
+          {:arity 2 :params [mir evidence]}}])
+     false)
+    false))
+
+(defn b1-c14-dependencies-valid?
+  [request]
+  (let [dependencies (get request :dependency-provenance)
+        input (get request :input)]
+    (if (map? dependencies)
+      (if (= (set (keys dependencies))
+             #{:source-core :c11-source-rule :c11-pass :c13-artifact
+               :c13-source-rule :b3-source})
+        (if (b1-sha256-id? (get dependencies :source-core))
+          (if (b1-c11-source-rule-valid?
+               (get dependencies :c11-source-rule))
+            (if (b1-sha256-id? (get dependencies :c11-pass))
+              (if (= (get dependencies :c13-artifact)
+                     (get input :artifact-id))
+                (if (b1-c13-source-rule-valid?
+                     (get dependencies :c13-source-rule))
+                  (if (= (get dependencies :source-core)
+                         (get (get (get (get input :verifier-report)
+                                            :b1-preflight)
+                                   :binding)
+                              :checked-core-artifact-id))
+                    (if (= (get dependencies :c11-pass)
+                           (get (get (get (get input :verifier-report)
+                                              :b1-preflight)
+                                     :binding)
+                                :pass-execution-record-id))
+                      (= (get dependencies :b3-source)
+                         "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37")
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b1-bounded-c14-request-valid?
+  [request]
+  (if (map? request)
+    (if (= (set (keys request))
+           #{:artifact :schema-version :status :input :request-id
+             :profile :profile-contract :target :source-target-selection
+             :abi :runtime :providers :effects :capabilities :safety
+             :proofs :contract-bindings :required-evidence :source-map
+             :dependency-provenance :c13-optimization-status
+             :domain-ir-status :fusion-status :target-policy
+             :proof-to-target-metadata :unsupported-feature-report
+             :diagnostics})
+      (if (= [(get request :artifact) (get request :schema-version)
+              (get request :status) (get request :profile)
+              (get request :profile-contract) (get request :effects)
+              (get request :capabilities)
+              (get request :c13-optimization-status)
+              (get request :domain-ir-status) (get request :fusion-status)
+              (get request :diagnostics)]
+             [:gravity/c14-internal-target-lowering-request 1 :accepted
+              :hosted {:name :hosted :validated? true} #{} #{}
+              :identity-pass-complete :not-applicable :not-run []])
+        (if (b1-sha256-id? (get request :request-id))
+          (if (b1-c14-input-valid? (get request :input))
+            (if (b1-c14-target-valid? (get request :target))
+              (if (= (get request :source-target-selection)
+                     {:source-declaration-target :jvm
+                      :requested-lowering-target :llvm
+                      :selection :explicit-bootstrap-seed-target-override
+                      :reason :checked-core-seed-contract
+                      :direct-source-declared-llvm? false})
+                (if (b1-c14-abi-valid? (get request :abi))
+                  (if (b1-c14-runtime-valid? (get request :runtime))
+                    (if (b1-c14-providers-valid? (get request :providers))
+                      (if (b1-c14-safety-valid? (get request :safety))
+                        (if (= [(get (get request :safety) :outcomes)
+                                (get (get request :safety) :runtime-checks)]
+                               [(get (get (get (get request :input)
+                                               :verifier-report)
+                                          :independent-verifier)
+                                     :operation-count)
+                                (get (get (get (get (get request :input)
+                                                         :verifier-report)
+                                                :independent-verifier)
+                                           :runtime-checks)
+                                     :runtime-check-count)])
+                          (if (b1-c14-proofs-valid? (get request :proofs))
+                          (if (b1-c14-contract-bindings-valid? request)
+                            (if (= (get request :required-evidence)
+                                   [:authenticated-c11-replay
+                                    :independent-lowering-reconstruction
+                                    :llvm-tool-acceptance
+                                    :mach-o-arm64-object
+                                    :differential-process-result
+                                    :content-hash-and-provenance])
+                              (if (= (get request :source-map)
+                                     {:id (get (get request :source-map) :id)
+                                      :preserved? true})
+                                (if (b1-sha256-id?
+                                     (get (get request :source-map) :id))
+                                  (if (b1-c14-dependencies-valid? request)
+                                    (if (= (get request :target-policy)
+                                           {:scope
+                                            :bounded-pure-scalar-forwarding-do-let-if
+                                            :maximum-operation-count 256
+                                            :whole-c14? false :whole-b1? false
+                                            :whole-b3? false :public? false
+                                            :release? false :self-hosted? false})
+                                      (if (= (get request
+                                                  :proof-to-target-metadata)
+                                             {:entries []
+                                              :proofless-metadata-rejected?
+                                              true})
+                                        (= (get request
+                                                :unsupported-feature-report)
+                                           {:status :bounded-surface-only
+                                            :policy
+                                            [:strings :quote :str :println
+                                             :runtime-checks :effects
+                                             :program-capabilities
+                                             :domain-anchors
+                                             :multiple-functions
+                                             :multiple-conditionals
+                                             :non-scalar-types
+                                             :integer-outside-signed-i64
+                                             :process-result-outside-0-to-255]
+                                            :diagnostic "C14-UNSUPPORTED"
+                                            :fallback-status :rejected})
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-bounded-c14-eligibility-valid?
+  [eligibility]
+  (if (map? eligibility)
+    (if (= (set (keys eligibility))
+           #{:artifact :backend :profile :target :accepted? :rejections
+             :fallbacks :missing-features :required-providers
+             :proof-assumptions :explainability-record :checks})
+      (if (= [(get eligibility :artifact) (get eligibility :backend)
+              (get eligibility :profile) (get eligibility :accepted?)
+              (get eligibility :rejections) (get eligibility :fallbacks)
+              (get eligibility :missing-features)
+              (get eligibility :proof-assumptions)
+              (get eligibility :explainability-record)
+              (get eligibility :checks)]
+             [:gravity/c14-target-eligibility-report
+              :gravity.backend/llvm :hosted true [] [] [] []
+              {:decision :accepted
+               :bounded-surface :pure-scalar-forwarding-do-let-if
+               :unsupported-diagnostic "C14-UNSUPPORTED"
+               :no-hidden-runtime? true
+               :no-hidden-effect-or-capability? true}
+              [:profile-allows-backend
+               :target-supports-required-mir-families
+               :runtime-services-explicit :abi-represents-exports
+               :effects-have-authority-preserving-providers
+               :proof-assumptions-valid-for-target]])
+        (if (b1-c14-target-valid? (get eligibility :target))
+          (b1-c14-providers-valid?
+           (get eligibility :required-providers))
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-c14-source-rule-valid?
+  [rule]
+  (if (map? rule)
+    (if (= (set (keys rule))
+           #{:artifact :owner :source-content-hash :source-byte-count
+             :plan-semantic-hash :functions-semantic-hash
+             :builder-function :builder-semantic-hash :function-shapes
+             :semantic-authority :compiled-by :executed-by :self-hosted?})
+      (= [(get rule :artifact) (get rule :owner)
+          (get rule :source-byte-count) (get rule :source-content-hash)
+          (get rule :plan-semantic-hash)
+          (get rule :functions-semantic-hash)
+          (get rule :builder-function) (get rule :builder-semantic-hash)
+          (get rule :function-shapes) (get rule :semantic-authority)
+          (get rule :compiled-by) (get rule :executed-by)
+          (get rule :self-hosted?)]
+         [:gravity/pinned-gravity-source-rule
+          :gravity.compiler/c14-target-lowering 66939
+          "sha256:0a54d4ac07e94889ed518574a9ccbcf5186bdee1b4f40927b21468dd96b067ce"
+          "sha256:a271a5d9e05c42b7288171f66705148e056b4eaa8d4a41d5aeac696636571432"
+          "sha256:bcea03f7ee6409f433c24dcdfdd5678de0ba0b595fd7ea0ee32cc5cbf5915a37"
+          'c14-build-bounded-llvm-lowering-record
+          "sha256:1b42b7a74d67607e4d9076adda65e64160317e34d3e608ae2e4a81fbce3b4b30"
+          '{c14-bounded-optimized-input-valid?
+            {:arity 2 :params [optimized policy]}
+            c14-bounded-policy-valid?
+            {:arity 2 :params [optimized policy]}
+            c14-build-bounded-llvm-lowering-record
+            {:arity 2 :params [optimized policy]}}
+          :gravity-source :clojure-stage0-seed
+          :clojure-stage0-rule-runner false])
+      false)
+    false))
+
+(defn b1-c14-projected-records-valid?
+  [lowering]
+  (let [request (get lowering :request)
+        bindings (get request :contract-bindings)]
+    (if (= (get lowering :abi-layout)
+           {:artifact :gravity/c14-abi-layout-record
+            :abi (get request :abi)
+            :target (get request :target)
+            :type-facts (get bindings :type)
+            :ownership-facts (get bindings :ownership)
+            :safety-facts (get bindings :safety)
+            :profile-contract (get request :profile-contract)
+            :source-map (get request :source-map)})
+      (if (= (get lowering :runtime-provider)
+             {:artifact :gravity/c14-runtime-provider-record
+              :runtime (get request :runtime)
+              :providers (get request :providers)
+              :effects (get request :effects)
+              :capabilities (get request :capabilities)})
+        (if (= (get lowering :proof-target-metadata)
+               {:artifact :gravity/c14-proof-target-metadata-map
+                :entries [] :proofless-metadata-rejected? true
+                :proofs (get request :proofs)})
+          (= (get lowering :dependency-provenance)
+             (get request :dependency-provenance))
+          false)
+        false)
+      false)))
+
+(defn b1-bounded-c14-input-valid?
+  [lowering]
+  (if (map? lowering)
+    (if (= (set (keys lowering))
+           #{:artifact :schema-version :status :request :eligibility
+             :abi-layout :runtime-provider :proof-target-metadata
+             :dependency-provenance :diagnostics :semantic-authority
+             :execution-tcb :clojure-seed-boundary? :self-hosted?
+             :source-rule :actual-path-provenance :semantic-id
+             :artifact-id :actual-path-binding-id})
+     (if (= [(get lowering :artifact) (get lowering :schema-version)
+             (get lowering :status) (get lowering :diagnostics)
+             (get lowering :semantic-authority)
+             (get lowering :execution-tcb)
+             (get lowering :clojure-seed-boundary?)
+             (get lowering :self-hosted?)]
+            [:gravity/c14-bounded-llvm-lowering-record 1 :accepted []
+             :gravity-source :clojure-stage0-rule-runner true false])
+       (if (b1-sha256-id? (get lowering :semantic-id))
+        (if (b1-sha256-id? (get lowering :artifact-id))
+         (if (b1-sha256-id? (get lowering :actual-path-binding-id))
+          (if (b1-c14-source-rule-valid? (get lowering :source-rule))
+           (if (map? (get lowering :actual-path-provenance))
+            (if (= (set (keys (get lowering :actual-path-provenance)))
+                  #{:source :c11-source :c13-source :c14-source})
+            (if (b1-bounded-c14-request-valid? (get lowering :request))
+             (if (b1-bounded-c14-eligibility-valid?
+                  (get lowering :eligibility))
+              (if (= (get (get lowering :request) :target)
+                     (get (get lowering :eligibility) :target))
+               (if (= (get (get lowering :request) :providers)
+                      (get (get lowering :eligibility)
+                           :required-providers))
+                 (b1-c14-projected-records-valid? lowering)
+                 false)
+               false)
+              false)
+             false)
+            false)
+           false)
+           false)
+          false)
+         false)
+        false)
+       false)
+     false)
+    false))
+
+(defn b1-bounded-llvm-manifest-valid?
+  [backend-manifest]
+  (if (map? backend-manifest)
+   (if (= (set (keys backend-manifest))
+         #{:artifact :backend :version :accepts :emits :requires
+           :supports-profiles :rejects :c14-request-id
+           :c14-artifact-id})
+   (if (= (get backend-manifest :artifact) :gravity/backend-manifest)
+    (if (= (get backend-manifest :backend) :gravity.backend/llvm)
+      (if (= (get backend-manifest :version) :bounded-authenticated-v1)
+        (if (= (get backend-manifest :accepts) [:gravity/mir])
+          (if (= (get backend-manifest :supports-profiles) [:hosted])
+            (if (= (get backend-manifest :emits)
+                   [:llvm-ir :mach-o-object :mach-o-executable])
+              (if (= (get backend-manifest :rejects)
+                     [:unverified-ir :unsupported-op :missing-proof
+                      :implicit-ub :ambient-capability :profile-violation])
+                (if (= (get backend-manifest :requires)
+                       [:profile-manifest :target-manifest :abi-policy
+                        :runtime-provider-selection :effect-summary
+                        :capability-proof-summary :safety-bundle
+                        :proof-table :source-map :dependency-graph])
+                  (if (b1-sha256-id?
+                       (get backend-manifest :c14-request-id))
+                    (b1-sha256-id?
+                     (get backend-manifest :c14-artifact-id))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+   false)
+   false))
+
+(defn b1-build-bounded-llvm-authenticated-packet
+  [lowering backend-manifest]
+  (if (b1-bounded-c14-input-valid? lowering)
+    (if (b1-bounded-llvm-manifest-valid? backend-manifest)
+      (if (= (get backend-manifest :c14-request-id)
+             (get (get lowering :request) :request-id))
+       (if (= (get backend-manifest :c14-artifact-id)
+              (get lowering :artifact-id))
+      (let [request (get lowering :request)]
+        {:artifact :gravity/b1-verified-backend-input-packet
+         :schema-version 1
+         :status :accepted-for-bounded-llvm
+         :input (get request :input)
+         :profile (get request :profile-contract)
+         :target (get request :target)
+         :source-target-selection (get request :source-target-selection)
+         :abi (get request :abi)
+         :runtime (get request :runtime)
+         :providers (get request :providers)
+         :effects (get request :effects)
+         :capabilities (get request :capabilities)
+         :safety (get request :safety)
+         :proofs (get request :proofs)
+         :proof-to-target-metadata
+         (get request :proof-to-target-metadata)
+         :source-map (get request :source-map)
+         :dependencies (get request :dependency-provenance)
+         :contract-bindings (get request :contract-bindings)
+         :c14-eligibility (get lowering :eligibility)
+         :eligibility
+         {:artifact :gravity/b1-backend-eligibility-report
+          :backend :gravity.backend/llvm
+          :input-artifact (get (get request :input) :artifact-id)
+          :profile (get request :profile)
+          :target (get request :target)
+          :accepted? true
+          :rejections []
+          :fallbacks []
+          :missing-evidence []
+          :unsupported-operations []
+          :remediation []
+          :checks [:profile-backend-compatibility
+                   :target-feature-support
+                   :runtime-availability-or-no-runtime-proof
+                   :abi-representability :layout-representability
+                   :provider-availability :effect-preservation
+                   :capability-preservation
+                   :safety-bundle-completeness
+                   :proof-validity-for-target-assumptions
+                   :source-debug-map-preservation]}
+         :backend-manifest backend-manifest
+         :unsupported-feature-report
+         {:status :bounded-surface-only
+          :policy
+          (get (get request :unsupported-feature-report) :policy)
+          :diagnostic "B1-UNSUPPORTED"
+          :fallback-status :rejected}
+         :diagnostics []
+         :semantic-authority :gravity-source
+         :execution-tcb :clojure-stage0-rule-runner
+         :clojure-seed-boundary? true
+         :self-hosted? false})
+      {:artifact :gravity/b1-verified-backend-input-packet
+       :schema-version 1
+       :status :rejected
+       :diagnostic "B1-INPUT"
+       :missing-fact :c14-artifact-manifest-binding
+       :diagnostics ["B1-INPUT"]})
+      {:artifact :gravity/b1-verified-backend-input-packet
+       :schema-version 1
+       :status :rejected
+       :diagnostic "B1-INPUT"
+       :missing-fact :c14-request-manifest-binding
+       :diagnostics ["B1-INPUT"]})
+      {:artifact :gravity/b1-verified-backend-input-packet
+       :schema-version 1
+       :status :rejected
+       :diagnostic "B1-TARGET"
+       :missing-fact :exact-llvm-backend-manifest
+       :diagnostics ["B1-TARGET"]})
+    {:artifact :gravity/b1-verified-backend-input-packet
+     :schema-version 1
+     :status :rejected
+     :diagnostic "B1-INPUT"
+     :missing-fact :accepted-c14-lowering-record
+     :diagnostics ["B1-INPUT"]}))
