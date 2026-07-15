@@ -8489,6 +8489,433 @@
           (is (string? (:diagnostic-id diagnostic)))
           (is (seq (:origin-chain diagnostic))))))))
 
+(deftest p15-seed-readable-printer-is-bounded-and-host-neutral
+  (let [source-path "/seed-printer.gravity"
+        integer-values [(byte 19) (short 19) (int 19) (long 19)
+                        (bigint 19) (biginteger 19)]
+        reader-table (bootstrap/stage1-reader-table)
+        render #(bootstrap/p15-s23-seed-readable-pr-str source-path %)
+        diagnostic
+        (fn [value]
+          (diagnostic-data #(render [value])))]
+    (is (every? #{"19"} (map #(render [%]) integer-values)))
+    (is (= "-19" (render [-19N])))
+    (is (= "" (render [])))
+    (is (= "1 2 3" (render [1 2N (biginteger 3)])))
+    (is (string?
+         (render [(.shiftLeft java.math.BigInteger/ONE 4095)])))
+    (is (= "1/2 1.5 -0.0"
+           (render [1/2 1.5 -0.0])))
+    (is (= "(2) [:a 1]"
+           (render [(list 2)
+                    (first (array-map :a 1))])))
+    (is (= "(:ok 19)" (render [(list :ok 19N)])))
+    (is (= "\"a\\n\\u0000🙂\\\"\\\\\""
+           (render [(str "a" \newline \u0000 "🙂\"\\")])))
+    (is (= "\\newline \\space \\tab \\a"
+           (render [\newline \space \tab \a])))
+    (doseq [[code expected]
+            [[0 "\\u0000"] [11 "\\u000b"] [34 "\\u0022"]
+             [35 "\\u0023"] [39 "\\u0027"] [44 "\\u002c"]
+             [59 "\\u003b"] [64 "\\u0040"] [92 "\\u005c"]
+             [94 "\\u005e"] [96 "\\u0060"] [126 "\\u007e"]
+             [127 "\\u007f"]]]
+      (let [value (char code)
+            output (render [value])
+            token-stream
+            (bootstrap/stage1-reader-token-stream
+             source-path output reader-table)]
+        (is (= expected output))
+        (is (= 1 (:token-count token-stream)))
+        (is (= :character (get-in token-stream [:tokens 0 :kind])))
+        (is (= value (get-in token-stream [:tokens 0 :decoded])))))
+    (is (= "N :N :1 :1/x nil/x \"N\" : :/x :x/ /x x/ /"
+           (render ['N :N (keyword "1") (keyword "1" "x")
+                    (symbol "nil" "x") "N"
+                    (keyword "") (keyword "" "x")
+                    (keyword "x" "") (symbol "" "x")
+                    (symbol "x" "") (symbol "/")])))
+    (is (= "{:a 1, :b 2}"
+           (render [(into {} [[:b 2N] [:a 1N]])])))
+    (is (= "#{:a :b}"
+           (render [(into #{} [:b :a])])))
+    (is (= (render [(into {} [[:a 1] [:b 2]])])
+           (render [(into {} [[:b 2] [:a 1]])])))
+    (is (= (render [(into #{} [:a :b])])
+           (render [(into #{} [:b :a])])))
+    (let [compiler-plan
+          {:compiler-artifact-plan? true
+           :kind :gravity/stage2-compiler-artifact-plan
+           :module {:profile :meta}
+           :compiler {:stage :p15-s23-stage2-expression-lowering}
+           :source {:path source-path}}
+          stage0-rest
+          (bootstrap/invoke-stage0-builtin
+           {:source-path source-path} 'rest [[1 2]])
+          stage2-rest
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           compiler-plan 'rest [[1 2]])
+          safe-list (list 1 2)
+          safe-list-tail (rest safe-list)
+          stage2-list-rest
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           compiler-plan 'rest [safe-list])
+          stage2-keys
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           compiler-plan 'keys [(array-map :a 1 :b 2)])
+          stage2-sorted
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           compiler-plan 'sort-by-pr-str [[2 1]])
+          stage2-subvector
+          (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           compiler-plan 'subvec [[1 2] 0 1])]
+      (is (every? #(contains? #{clojure.lang.PersistentList
+                                clojure.lang.PersistentList$EmptyList}
+                              (class %))
+                  [stage0-rest stage2-rest stage2-keys stage2-sorted]))
+      (is (identical? safe-list-tail stage2-list-rest))
+      (is (identical? clojure.lang.PersistentVector
+                      (class stage2-subvector)))
+      (is (= "(2)" (render [stage0-rest])))
+      (is (= "(2)" (render [stage2-rest])))
+      (is (= "(:a :b)" (render [stage2-keys])))
+      (is (= "(1 2)" (render [stage2-sorted])))
+      (is (= "[1]" (render [stage2-subvector])))
+      (is (= "()"
+             (render [(bootstrap/invoke-stage0-builtin
+                       {:source-path source-path} 'rest [[1]])]))))
+    (let [value [nil false true 19N 1/2 1.5
+                 "text" \newline :ok 'hello
+                 (list 2) [:nested 3]
+                 (array-map :b 2 :a 1) #{:b :a}
+                 () [] {} #{}]
+          output (render [value])
+          artifact
+          (bootstrap/compiler-c2-reader-source-artifact
+           "/seed-printer-roundtrip.gravity" output)]
+      (is (= value (first (:parsed-semantic-values artifact)))))
+    (binding [*print-length* 0 *print-level* 0 *print-meta* true]
+      (is (= "(:ok 19)" (render [(list :ok 19N)])))
+      (is (= "(1)" (render [(with-meta (list 1) {:hidden :metadata})]))))
+    (is (every? #(instance? Class %)
+                (keys bootstrap/p15-s23-seed-readable-printer-scalar-class-kinds)))
+    (is (every? #(instance? Class %)
+                (keys bootstrap/p15-s23-seed-readable-printer-collection-class-kinds)))
+    (with-redefs [clojure.core/pr-str
+                  (fn [& _]
+                    (throw (AssertionError. "host pr-str was invoked")))]
+      (is (= "(:ok 19)"
+             (bootstrap/invoke-stage0-builtin
+              {:source-path source-path} 'pr-str [(list :ok 19N)])))
+      (is (= "(:ok 19)"
+             (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+              {:source {:path source-path}} 'pr-str [(list :ok 19N)])))
+      (is (= "1/2"
+             (bootstrap/invoke-stage0-builtin
+              {:source-path source-path} 'pr-str
+              [(bootstrap/invoke-stage0-builtin
+                {:source-path source-path} '/ [1 2])])))
+      (is (= "(2)"
+             (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+              {:source {:path source-path}} 'pr-str
+              [(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+                {:source {:path source-path}} 'rest [[1 2]])]))))
+    (doseq [[value reason]
+            [[1.0M :unsupported-value-carrier]
+             [(float 1.5) :unsupported-value-carrier]
+             [Double/POSITIVE_INFINITY :non-finite-floating-point]
+             [Double/NaN :non-finite-floating-point]
+             [(lazy-seq (cons 1 nil)) :unsupported-value-carrier]
+             [(rest [1 2]) :unsupported-value-carrier]
+             [(rest "ab") :unsupported-value-carrier]
+             [(seq [1 2]) :unsupported-value-carrier]
+             [(clojure.lang.ArraySeq/create (object-array [1 2]))
+              :unsupported-value-carrier]
+             [(subvec [1 2] 0 1) :unsupported-value-carrier]
+             [(java.util.HashMap.) :unsupported-value-carrier]
+             [(symbol "") :unreadable-name]
+             [(symbol ":x") :unreadable-name]
+             [(symbol "+1") :unreadable-name]
+             [(symbol "-1") :unreadable-name]
+             [(symbol "#x") :unreadable-name]
+             [(keyword "#x") :unreadable-name]
+             [(nth (iterate vector nil) 98) :depth-limit]
+             [(vec (range 513)) :collection-width-limit]
+             [(.shiftLeft java.math.BigInteger/ONE 4096)
+              :integer-magnitude-limit]
+             [(.negate (.shiftLeft java.math.BigInteger/ONE 4096))
+              :integer-magnitude-limit]
+             [(apply str (repeat 32769 "x")) :scalar-byte-limit]]]
+      (let [data (diagnostic value)]
+        (is (= "L2-BUILTIN-ERROR" (:id data)))
+        (is (= reason (:reason data)))
+        (is (= :clojure-seed-compatibility (:printer-boundary data)))
+        (is (true? (:clojure-seed-boundary? data)))
+        (is (false? (:self-hosted? data)))
+        (is (false? (:result-committed? data)))
+        (is (false? (:output-committed? data)))
+        (is (not (contains? data :cause-message)))))
+    (doseq [[args reason]
+            [[(range) :unsupported-argument-carrier]
+             [(vec (range 257)) :argument-count-limit]]]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-seed-readable-pr-str source-path args))]
+        (is (= "L2-BUILTIN-ERROR" (:id data)))
+        (is (= reason (:reason data)))))
+    (doseq [value [Double/MIN_VALUE Double/MIN_NORMAL
+                   Double/MAX_VALUE Math/PI]]
+      (let [output (render [value])
+            roundtrip
+            (bootstrap/compiler-c2-reader-source-artifact
+             "/seed-printer-double.gravity" output)]
+        (is (= value (first (:parsed-semantic-values roundtrip))))))
+    (doseq [source ["#inst \"0000-01-01T00:00:00.000-00:00\""
+                    "#inst \"0001-01-01T00:00:00.000-00:00\""
+                    "#inst \"1500-01-01T00:00:00.000-00:00\""
+                    "#inst \"1582-10-04T00:00:00.000-00:00\""
+                    "#inst \"1582-10-15T00:00:00.000-00:00\""
+                    "#inst \"9999-12-31T23:59:59.999-00:00\""
+                    "#uuid \"550e8400-e29b-41d4-a716-446655440000\""]]
+      (let [accepted
+            (bootstrap/compiler-c2-reader-source-artifact
+             "/seed-printer-tagged-source.gravity" source)
+            value (first (:parsed-semantic-values accepted))
+            output (render [value])
+            roundtrip
+            (bootstrap/compiler-c2-reader-source-artifact
+             "/seed-printer-tagged-roundtrip.gravity" output)]
+        (is (= source output))
+        (is (= value (first (:parsed-semantic-values roundtrip))))))
+    (let [source "[() [] {} #{}]"
+          artifact
+          (bootstrap/compiler-c2-reader-source-artifact
+           "/seed-printer-empty-collections.gravity" source)
+          proof (bootstrap/c2-reader-capability-proof artifact)]
+      (is (= [(list) [] {} #{}]
+             (first (:parsed-semantic-values artifact))))
+      (is (empty? (:literal-decoding-records artifact)))
+      (is (true? (:literal-facts-present? proof))))
+    (doseq [[value reason]
+            [[(clojure.lang.Ratio.
+               java.math.BigInteger/ZERO java.math.BigInteger/ONE)
+              :noncanonical-ratio]
+             [(clojure.lang.Ratio.
+               java.math.BigInteger/ONE java.math.BigInteger/ONE)
+              :noncanonical-ratio]
+             [(clojure.lang.Ratio.
+               java.math.BigInteger/ONE
+               (.negate (java.math.BigInteger/valueOf 2)))
+              :noncanonical-ratio]
+             [(clojure.lang.Ratio.
+               (java.math.BigInteger/valueOf 2)
+               (java.math.BigInteger/valueOf 4))
+              :noncanonical-ratio]
+             [(clojure.lang.Ratio.
+               java.math.BigInteger/ONE
+               (.shiftLeft java.math.BigInteger/ONE 4096))
+              :integer-magnitude-limit]]]
+      (is (= reason (:reason (diagnostic value)))))
+    (let [calls (atom 0)
+          hostile-bigint
+          (proxy [java.math.BigInteger] [(byte-array [1])]
+            (abs []
+              (swap! calls inc)
+              (throw (AssertionError. "hostile BigInteger abs"))))
+          hostile-ratio
+          (clojure.lang.Ratio.
+           hostile-bigint java.math.BigInteger/ONE)
+          data (diagnostic hostile-ratio)]
+      (is (= :invalid-ratio-component-carrier (:reason data)))
+      (is (zero? @calls)))
+    (let [calls (atom 0)
+          magnitude (.shiftLeft java.math.BigInteger/ONE 100)
+          hostile-bigint
+          (proxy [java.math.BigInteger] [(.toByteArray magnitude)]
+            (abs []
+              (swap! calls inc)
+              (throw (AssertionError. "hostile BigInt abs"))))
+          value (clojure.lang.BigInt/fromBigInteger hostile-bigint)
+          _ (reset! calls 0)
+          data (diagnostic value)]
+      (is (= :invalid-bigint-component-carrier (:reason data)))
+      (is (zero? @calls)))
+    (let [realizations (atom 0)
+          hostile-tail
+          (lazy-seq
+           (swap! realizations inc)
+           (throw (AssertionError. "hostile sequence realized")))
+          hostile-cons (cons 1 hostile-tail)
+          hostile-key-seq
+          (clojure.lang.APersistentMap$KeySeq/create hostile-tail)]
+      (reset! realizations 0)
+      (is (= :unsupported-value-carrier
+             (:reason (diagnostic hostile-cons))))
+      (is (= :unsupported-value-carrier
+             (:reason (diagnostic hostile-key-seq))))
+      (is (zero? @realizations)))
+    (let [backing (object-array ["small"])
+          adopted (clojure.lang.PersistentVector/adopt backing)
+          original-preflight
+          bootstrap/p15-s23-seed-readable-preflight!]
+      (with-redefs
+       [bootstrap/p15-s23-seed-readable-preflight!
+        (fn [path args]
+          (let [evidence (original-preflight path args)]
+            (aset backing 0 (apply str (repeat 32769 "x")))
+            evidence))]
+        (is (= "[\"small\"]" (render [adopted])))))
+    (let [data
+          (with-redefs
+           [bootstrap/p15-s23-seed-readable-preflight!
+            (fn [& _]
+              (throw (AssertionError. "nonfatal hostile carrier error")))]
+            (diagnostic-data #(render [1])))]
+      (is (= "L2-BUILTIN-ERROR" (:id data)))
+      (is (= :contained-seed-printer-failure (:reason data)))
+      (is (not (contains? data :cause-message))))
+    (let [data
+          (with-redefs
+           [bootstrap/p15-s23-seed-readable-preflight!
+            (fn [& _]
+              (throw (ex-info "foreign secret"
+                              {:id "FORGED"
+                               :cause-message "foreign cause"})))]
+            (diagnostic-data #(render [1])))]
+      (is (= "L2-BUILTIN-ERROR" (:id data)))
+      (is (= :contained-seed-printer-failure (:reason data)))
+      (is (not (contains? data :cause-message)))
+      (is (not= "foreign secret" (:message data))))
+    (let [fatal (StackOverflowError. "fatal identity probe")
+          observed
+          (try
+            (with-redefs
+             [bootstrap/p15-s23-seed-readable-preflight!
+              (fn [& _] (throw fatal))]
+              (render [1]))
+            nil
+            (catch StackOverflowError error error))]
+      (is (identical? fatal observed)))
+    (let [to-string-calls (atom 0)
+          hostile (proxy [Object] []
+                    (toString []
+                      (swap! to-string-calls inc)
+                      (throw (RuntimeException. "must not run"))))
+          data (diagnostic hostile)]
+      (is (= "L2-BUILTIN-ERROR" (:id data)))
+      (is (= :unsupported-value-carrier (:reason data)))
+      (is (zero? @to-string-calls)))))
+
+(deftest p15-source-front-end-wraps-only-authenticated-reader-diagnostics
+  (let [front-end {:reader-rules {:engine :gravity-stage2-reader-rules-v1}}
+        cases [[")" "STAGE1READER001" "C2-DELIMITER"]
+               ["(]" "STAGE1READER001" "C2-DELIMITER"]
+               ["(" "STAGE1READER002" "C2-DELIMITER"]
+               ["\"x" "STAGE1READER003" "C2-STRING"]
+               ["#x" "STAGE1READER004" "C2-EXTENSION"]
+               ["{:a}" "STAGE1READER005" "C2-MAP"]]
+        forbidden-upstream-keys
+        #{:id :message :cause-message :raw :raw-spelling :value
+          :reader-options :extension-tag :host-stack :sentinel}]
+    (doseq [suffix [".gravity" ".qst"]
+            [source engine-id c2-id] cases]
+      (with-temp-source
+        suffix source
+        (fn [path]
+          (let [direct
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                   path source))
+                wrapped
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-front-end-source-module-record
+                   front-end path source))
+                upstream (:upstream-diagnostic wrapped)]
+            (is (= c2-id (:id direct)))
+            (is (= engine-id (:reader-engine-diagnostic direct)))
+            (is (= "P15S23F009" (:id wrapped)))
+            (is (= :authoritative-reader-rejection (:reason wrapped)))
+            (is (= :p15-s23-stage2-source-front-end (:stage wrapped)))
+            (is (= :p15-s23-stage2-source-front-end
+                   (:diagnostic-family wrapped)))
+            (is (nil? (:value wrapped)))
+            (is (= :c2-to-p15-s23 (:reader-compatibility-boundary wrapped)))
+            (is (= (:diagnostic-id direct) (:upstream-diagnostic-id wrapped)))
+            (is (= (:rule direct) (:upstream-rule wrapped)))
+            (is (= engine-id (:upstream-reader-engine-diagnostic wrapped)))
+            (is (= (:diagnostic-id direct) (:diagnostic-id upstream)))
+            (is (= (:rule direct) (:rule upstream)))
+            (is (= path (get-in upstream [:source-span :source])))
+            (is (= path (get-in upstream [:origin-chain 0 :path])))
+            (is (= (:facts direct) (:facts upstream)))
+            (is (empty? (set/intersection forbidden-upstream-keys
+                                          (set (keys upstream)))))
+            (is (set/subset? forbidden-upstream-keys
+                             (set (:redactions upstream))))))))
+    (doseq [[source expected]
+            [["1e2e3" "STAGE1READER007"]
+             ["#{:dup :dup}" "C2-SET"]]]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-front-end-source-module-record
+               front-end "/not-wrapped.gravity" source))]
+        (is (= expected (:id data)))
+        (is (not= "P15S23F009" (:id data)))))
+    (let [forged
+          {:id "C2-DELIMITER"
+           :artifact :gravity/diagnostic
+           :rule :C2-DELIMITER
+           :diagnostic-family :c2-reader
+           :stage :read-source
+           :reader-engine-diagnostic "STAGE1READER002"}
+          data
+          (with-redefs
+            [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+             (fn [& _]
+               (throw (ex-info "forged" forged)))]
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-front-end-reader-products
+               "/forged.gravity" "(")))]
+      (is (= "C2-DELIMITER" (:id data)))
+      (is (not= "P15S23F009" (:id data))))
+    (let [source ")"
+          source-path "/coherent-forgery.gravity"
+          genuine
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-c2-c3-front-end-products
+             source-path source))
+          forged-base
+          (-> genuine
+              (assoc :actual "]")
+              (assoc :facts {:actual-delimiter "]"}))
+          forged
+          (assoc
+           forged-base :diagnostic-id
+           (bootstrap/reader-canonical-hash
+            {:rule (:rule forged-base)
+             :primary-artifact (:source-id forged-base)
+             :stage :read-source
+             :span (dissoc (:source-span forged-base) :source)
+             :token-id (:token-id forged-base)
+             :form-id (:form-id forged-base)
+             :facts (:facts forged-base)}))]
+      (doseq [candidate
+              [forged
+               (assoc-in genuine [:reader-state :stage]
+                         :lexical-tokenization)
+               (assoc genuine :source-span "not-a-map")
+               (assoc genuine :sentinel "must-not-authenticate")]]
+        (let [data
+              (with-redefs
+                [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                 (fn [& _]
+                   (throw (ex-info "coherent forgery" candidate)))]
+                (diagnostic-data
+                 #(bootstrap/p15-s23-stage2-front-end-reader-products
+                   source-path source)))]
+          (is (= "C2-DELIMITER" (:id data)))
+          (is (not= "P15S23F009" (:id data))))))))
+
 (deftest p15-s23-stage2-source-front-end-ingress-preserves-line-endings
   (doseq [suffix [".gravity" ".qst"]
           newline ["\r" "\n" "\r\n"]]

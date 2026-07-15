@@ -89026,6 +89026,830 @@
     (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
                       "an even number of arguments")))
 
+;; This printer is intentionally a Clojure-seed compatibility boundary.  It
+;; prevents host reader/printer implementation details (notably BigInt's `N`
+;; suffix and ambient print vars) from becoming Gravity output semantics, but
+;; it does not claim that readable printing has moved into Gravity source.
+(def p15-s23-seed-readable-printer-limits
+  {:maximum-arguments 256
+   :maximum-nodes 4096
+   :maximum-depth 96
+   :maximum-collection-width 512
+   :maximum-integer-bits 4096
+   :maximum-scalar-bytes 32768
+   :maximum-output-bytes 262144})
+
+(def p15-s23-seed-readable-printer-scalar-class-kinds
+  {java.lang.Boolean :boolean
+   java.lang.Byte :integer
+   java.lang.Short :integer
+   java.lang.Integer :integer
+   java.lang.Long :integer
+   java.math.BigInteger :integer
+   clojure.lang.BigInt :integer
+   clojure.lang.Ratio :ratio
+   java.lang.Double :floating
+   java.lang.String :string
+   java.lang.Character :character
+   clojure.lang.Keyword :keyword
+   clojure.lang.Symbol :symbol
+   java.util.Date :instant
+   java.util.UUID :uuid})
+
+(def p15-s23-seed-readable-printer-collection-class-kinds
+  {clojure.lang.PersistentVector :vector
+   clojure.lang.MapEntry :vector
+   clojure.lang.PersistentList :list
+   clojure.lang.PersistentList$EmptyList :list
+   clojure.lang.PersistentArrayMap :map
+   clojure.lang.PersistentHashMap :map
+   clojure.lang.PersistentHashSet :set})
+
+(def ^:dynamic ^:private *p15-s23-seed-readable-owned-failures* nil)
+
+(defn p15-s23-seed-readable-printer-fail!
+  [source-path reason data]
+  (let [failure
+        (diagnostic
+         "L2-BUILTIN-ERROR"
+         "bounded Clojure-seed readable printer rejected a value"
+         (merge
+          {:source-span {:source (or source-path "<unknown-source>")}
+           :function 'pr-str
+           :reason reason
+           :printer-boundary :clojure-seed-compatibility
+           :clojure-seed-boundary? true
+           :self-hosted? false
+           :result-committed? false
+           :output-committed? false
+           :remediation
+           "Keep pr-str inputs inside the bounded Gravity value algebra until readable printing is implemented and authenticated in Gravity source."}
+          data))]
+    (when *p15-s23-seed-readable-owned-failures*
+      (.put ^java.util.IdentityHashMap
+            *p15-s23-seed-readable-owned-failures*
+            failure Boolean/TRUE))
+    (throw failure)))
+
+(defn p15-s23-seed-readable-bounded-utf8-observation
+  [^String text maximum-bytes]
+  (loop [index 0
+         bytes 0]
+    (if (>= index (.length text))
+      {:status :valid :bytes bytes}
+      (let [unit (.charAt text index)
+            high? (Character/isHighSurrogate unit)
+            low? (Character/isLowSurrogate unit)]
+        (cond
+          (and high?
+               (or (>= (inc index) (.length text))
+                   (not (Character/isLowSurrogate
+                         (.charAt text (inc index))))))
+          {:status :invalid-unicode :bytes bytes}
+
+          low?
+          {:status :invalid-unicode :bytes bytes}
+
+          :else
+          (let [codepoint
+                (if high?
+                  (Character/toCodePoint unit (.charAt text (inc index)))
+                  (int unit))
+                width (cond
+                        (<= codepoint 0x7f) 1
+                        (<= codepoint 0x7ff) 2
+                        (<= codepoint 0xffff) 3
+                        :else 4)
+                next-bytes (+ bytes width)]
+            (if (> next-bytes maximum-bytes)
+              {:status :byte-limit :bytes next-bytes}
+              (recur (+ index (if high? 2 1)) next-bytes))))))))
+
+(defn p15-s23-seed-readable-utf8-bytes
+  [^String text]
+  (alength (.getBytes text java.nio.charset.StandardCharsets/UTF_8)))
+
+(defn p15-s23-seed-readable-name-safe?
+  [^String text _symbol-name?]
+  (not-any?
+   (fn [unit]
+     (or (Character/isWhitespace ^Character unit)
+         (Character/isISOControl ^Character unit)
+         (contains? #{\( \) \[ \] \{ \} \" \; \, \\ \' \` \~ \^ \@ \#}
+                    unit)))
+   text))
+
+(defn p15-s23-seed-readable-named-scalar-text
+  [kind value]
+  (str (when (= :keyword kind) ":")
+       (when-let [namespace-text (namespace value)]
+         (str namespace-text "/"))
+       (name value)))
+
+(defn p15-s23-seed-readable-value-kind
+  [source-path value]
+  (let [value-class (when (some? value) (class value))
+        scalar-kind
+        (get p15-s23-seed-readable-printer-scalar-class-kinds value-class)
+        collection-kind
+        (get p15-s23-seed-readable-printer-collection-class-kinds
+             value-class)]
+    (cond
+      (nil? value) :nil
+      scalar-kind scalar-kind
+      collection-kind collection-kind
+      :else
+      (p15-s23-seed-readable-printer-fail!
+       source-path :unsupported-value-carrier
+       {:observed-kind
+        (cond
+          (number? value) :unsupported-number
+          (map? value) :unsupported-map
+          (set? value) :unsupported-set
+          (sequential? value) :unsupported-sequence
+          (.isArray (class value)) :unsupported-array
+          :else :unsupported-host-object)}))))
+
+(defn p15-s23-seed-readable-bounded-text-bytes!
+  [source-path scalar-kind text]
+  (let [maximum-scalar-bytes
+        (:maximum-scalar-bytes p15-s23-seed-readable-printer-limits)
+        observation
+        (p15-s23-seed-readable-bounded-utf8-observation
+         text maximum-scalar-bytes)]
+    (case (:status observation)
+      :valid (:bytes observation)
+      :invalid-unicode
+      (p15-s23-seed-readable-printer-fail!
+       source-path :invalid-unicode-scalar
+       {:scalar-kind scalar-kind})
+      :byte-limit
+      (p15-s23-seed-readable-printer-fail!
+       source-path :scalar-byte-limit
+       {:scalar-kind scalar-kind
+        :observed-scalar-bytes-at-least (:bytes observation)
+        :maximum-scalar-bytes maximum-scalar-bytes}))))
+
+(defn p15-s23-seed-readable-integer-bits
+  [value]
+  (.bitLength (.abs ^java.math.BigInteger (biginteger value))))
+
+(defn p15-s23-seed-readable-integer-size!
+  [source-path value component]
+  (let [maximum-integer-bits
+        (:maximum-integer-bits p15-s23-seed-readable-printer-limits)
+        bits (p15-s23-seed-readable-integer-bits value)]
+    (when (> bits maximum-integer-bits)
+      (p15-s23-seed-readable-printer-fail!
+       source-path :integer-magnitude-limit
+       (cond-> {:observed-integer-bits bits
+                :maximum-integer-bits maximum-integer-bits}
+         component (assoc :integer-component component))))
+    (+ 2 (quot (+ bits 2) 3))))
+
+(defn p15-s23-seed-readable-ratio-components!
+  [source-path value]
+  (let [numerator (.numerator ^clojure.lang.Ratio value)
+        denominator (.denominator ^clojure.lang.Ratio value)]
+    (when-not (and (identical? java.math.BigInteger (class numerator))
+                   (identical? java.math.BigInteger (class denominator)))
+      (p15-s23-seed-readable-printer-fail!
+       source-path :invalid-ratio-component-carrier {}))
+    (let [numerator-size
+          (p15-s23-seed-readable-integer-size!
+           source-path numerator :numerator)
+          denominator-size
+          (p15-s23-seed-readable-integer-size!
+           source-path denominator :denominator)]
+    (when-not (and (not (zero? (.signum ^java.math.BigInteger numerator)))
+                   (pos? (.compareTo ^java.math.BigInteger denominator
+                                     java.math.BigInteger/ONE))
+                   (= java.math.BigInteger/ONE
+                      (.gcd (.abs ^java.math.BigInteger numerator)
+                            ^java.math.BigInteger denominator)))
+      (p15-s23-seed-readable-printer-fail!
+       source-path :noncanonical-ratio {}))
+      [numerator denominator numerator-size denominator-size])))
+
+(defn p15-s23-seed-readable-floating-text
+  [source-path value]
+  (let [number (double value)]
+    (when-not (Double/isFinite number)
+      (p15-s23-seed-readable-printer-fail!
+       source-path :non-finite-floating-point
+       {:scalar-kind :floating}))
+    (Double/toString number)))
+
+(declare p15-s23-seed-readable-instant-text
+         p15-s23-seed-readable-uuid-text)
+
+(defn p15-s23-seed-readable-scalar-bytes!
+  [source-path kind value]
+  (case kind
+      :nil 1
+      :boolean 5
+      :integer
+      (p15-s23-seed-readable-integer-size! source-path value nil)
+      :ratio
+      (let [[_ _ numerator-size denominator-size]
+            (p15-s23-seed-readable-ratio-components! source-path value)]
+        (+ 1 numerator-size denominator-size))
+      :floating
+      (p15-s23-seed-readable-bounded-text-bytes!
+       source-path kind (p15-s23-seed-readable-floating-text source-path value))
+      :character
+      (let [unit (char value)]
+        (when (Character/isSurrogate unit)
+          (p15-s23-seed-readable-printer-fail!
+           source-path :invalid-unicode-scalar
+           {:scalar-kind :character}))
+        10)
+      :string
+      (p15-s23-seed-readable-bounded-text-bytes!
+       source-path kind value)
+      :instant
+      (p15-s23-seed-readable-bounded-text-bytes!
+       source-path kind
+       (p15-s23-seed-readable-instant-text source-path value))
+      :uuid
+      (p15-s23-seed-readable-bounded-text-bytes!
+       source-path kind (p15-s23-seed-readable-uuid-text value))
+      :keyword
+      (let [namespace-text (namespace value)
+            name-text (name value)
+            symbol-name? false
+            namespace-bytes
+            (if namespace-text
+              (p15-s23-seed-readable-bounded-text-bytes!
+               source-path kind namespace-text)
+              0)
+            name-bytes
+            (p15-s23-seed-readable-bounded-text-bytes!
+             source-path kind name-text)
+            named-bytes (+ 1 (if namespace-text 1 0)
+                           namespace-bytes name-bytes)
+            maximum-scalar-bytes
+            (:maximum-scalar-bytes p15-s23-seed-readable-printer-limits)
+            named-size-check
+            (when (> named-bytes maximum-scalar-bytes)
+              (p15-s23-seed-readable-printer-fail!
+               source-path :scalar-byte-limit
+               {:scalar-kind kind
+                :observed-scalar-bytes named-bytes
+                :maximum-scalar-bytes maximum-scalar-bytes}))
+            rendered
+            (p15-s23-seed-readable-named-scalar-text kind value)]
+        (when-not (and (seq rendered)
+                       (p15-s23-seed-readable-name-safe?
+                        name-text symbol-name?)
+                       (or (nil? namespace-text)
+                           (p15-s23-seed-readable-name-safe?
+                            namespace-text false))
+                       (= :keyword (stage1-reader-token-kind rendered))
+                       (= value (keyword (subs rendered 1))))
+          (p15-s23-seed-readable-printer-fail!
+           source-path :unreadable-name
+           {:scalar-kind kind}))
+        named-bytes)
+      :symbol
+      (let [namespace-text (namespace value)
+            name-text (name value)
+            symbol-name? true
+            namespace-bytes
+            (if namespace-text
+              (p15-s23-seed-readable-bounded-text-bytes!
+               source-path kind namespace-text)
+              0)
+            name-bytes
+            (p15-s23-seed-readable-bounded-text-bytes!
+             source-path kind name-text)
+            named-bytes (+ (if namespace-text 1 0)
+                           namespace-bytes name-bytes)
+            maximum-scalar-bytes
+            (:maximum-scalar-bytes p15-s23-seed-readable-printer-limits)
+            named-size-check
+            (when (> named-bytes maximum-scalar-bytes)
+              (p15-s23-seed-readable-printer-fail!
+               source-path :scalar-byte-limit
+               {:scalar-kind kind
+                :observed-scalar-bytes named-bytes
+                :maximum-scalar-bytes maximum-scalar-bytes}))
+            rendered
+            (p15-s23-seed-readable-named-scalar-text kind value)]
+        (when-not (and (seq rendered)
+                       (p15-s23-seed-readable-name-safe?
+                        name-text symbol-name?)
+                       (or (nil? namespace-text)
+                           (p15-s23-seed-readable-name-safe?
+                            namespace-text true))
+                       (= :symbol (stage1-reader-token-kind rendered))
+                       (= value (symbol rendered)))
+          (p15-s23-seed-readable-printer-fail!
+           source-path :unreadable-name
+           {:scalar-kind kind}))
+        named-bytes)
+      0))
+
+(defn p15-s23-seed-readable-snapshot-scalar!
+  [source-path kind value]
+  (case kind
+    :instant (java.util.Date. (.getTime ^java.util.Date value))
+    :integer
+    (if (identical? clojure.lang.BigInt (class value))
+      (let [big-part (.-bipart ^clojure.lang.BigInt value)]
+        (when-not (or (nil? big-part)
+                      (identical? java.math.BigInteger (class big-part)))
+          (p15-s23-seed-readable-printer-fail!
+           source-path :invalid-bigint-component-carrier {}))
+        (if big-part
+          (clojure.lang.BigInt/fromBigInteger big-part)
+          (clojure.lang.BigInt/fromLong
+           (.-lpart ^clojure.lang.BigInt value))))
+      value)
+    :ratio
+    (let [[numerator denominator _ _]
+          (p15-s23-seed-readable-ratio-components! source-path value)]
+      (clojure.lang.Ratio. numerator denominator))
+    value))
+
+(defn p15-s23-seed-readable-preflight!
+  [source-path args]
+  (let [{:keys [maximum-arguments maximum-nodes maximum-depth
+                maximum-collection-width maximum-scalar-bytes
+                maximum-output-bytes]}
+        p15-s23-seed-readable-printer-limits
+        active (java.util.IdentityHashMap.)
+        stats (volatile! {:node-count 0
+                          :scalar-bytes 0
+                          :maximum-depth 0})]
+    (when-not (identical? clojure.lang.PersistentVector (class args))
+      (p15-s23-seed-readable-printer-fail!
+       source-path :unsupported-argument-carrier
+       {:expected-argument-carrier :persistent-vector}))
+    (when (> (count args) maximum-arguments)
+      (p15-s23-seed-readable-printer-fail!
+       source-path :argument-count-limit
+       {:observed-arguments (count args)
+        :maximum-arguments maximum-arguments}))
+    (letfn [(fail-width! [observed]
+              (p15-s23-seed-readable-printer-fail!
+               source-path :collection-width-limit
+               {:observed-width observed
+                :maximum-collection-width maximum-collection-width}))
+            (record-node! [depth scalar-bytes]
+              (let [next-stats
+                    (vswap! stats
+                            (fn [{:keys [node-count] :as current}]
+                              (-> current
+                                  (assoc :node-count (inc node-count))
+                                  (update :scalar-bytes + scalar-bytes)
+                                  (update :maximum-depth max depth))))
+                    node-count (:node-count next-stats)
+                    total-scalar-bytes (:scalar-bytes next-stats)]
+                (when (> node-count maximum-nodes)
+                  (p15-s23-seed-readable-printer-fail!
+                   source-path :node-count-limit
+                   {:observed-nodes node-count
+                    :maximum-nodes maximum-nodes}))
+                (when (> depth maximum-depth)
+                  (p15-s23-seed-readable-printer-fail!
+                   source-path :depth-limit
+                   {:observed-depth depth
+                    :maximum-depth maximum-depth}))
+                (when (> total-scalar-bytes maximum-scalar-bytes)
+                  (p15-s23-seed-readable-printer-fail!
+                   source-path :scalar-byte-limit
+                   {:observed-scalar-bytes total-scalar-bytes
+                    :maximum-scalar-bytes maximum-scalar-bytes}))
+                (when (> (+ (* total-scalar-bytes 6) (* node-count 4))
+                         maximum-output-bytes)
+                  (p15-s23-seed-readable-printer-fail!
+                   source-path :prospective-output-byte-limit
+                   {:maximum-output-bytes maximum-output-bytes}))))
+            (snapshot-value! [value depth]
+              (let [kind (p15-s23-seed-readable-value-kind source-path value)
+                    collection? (contains? #{:vector :list :map :set} kind)]
+                (record-node! depth 0)
+                (if-not collection?
+                  (let [snapshot
+                        (p15-s23-seed-readable-snapshot-scalar!
+                         source-path kind value)
+                        scalar-bytes
+                        (p15-s23-seed-readable-scalar-bytes!
+                         source-path kind snapshot)]
+                    (vswap! stats update :scalar-bytes + scalar-bytes)
+                    (let [{:keys [node-count scalar-bytes]} @stats]
+                      (when (> scalar-bytes maximum-scalar-bytes)
+                        (p15-s23-seed-readable-printer-fail!
+                         source-path :scalar-byte-limit
+                         {:observed-scalar-bytes scalar-bytes
+                          :maximum-scalar-bytes maximum-scalar-bytes}))
+                      (when (> (+ (* scalar-bytes 6) (* node-count 4))
+                               maximum-output-bytes)
+                        (p15-s23-seed-readable-printer-fail!
+                         source-path :prospective-output-byte-limit
+                         {:maximum-output-bytes maximum-output-bytes})))
+                    snapshot)
+                  (do
+                    (when (.containsKey active value)
+                      (p15-s23-seed-readable-printer-fail!
+                       source-path :cyclic-value
+                       {:observed-depth depth}))
+                    (.put active value Boolean/TRUE)
+                    (try
+                      (case kind
+                        :vector
+                        (let [width (count value)]
+                          (when (> width maximum-collection-width)
+                            (fail-width! width))
+                          (loop [index 0
+                                 snapshot []]
+                            (if (= index width)
+                              snapshot
+                              (recur
+                               (inc index)
+                               (conj snapshot
+                                     (snapshot-value!
+                                      (nth value index) (inc depth)))))))
+
+                        :list
+                        (loop [cursor (seq value)
+                               width 0
+                               snapshot []]
+                          (if (nil? cursor)
+                            (apply list snapshot)
+                            (do
+                              (when (>= width maximum-collection-width)
+                                (fail-width! (inc width)))
+                              (when-not
+                               (or (identical? clojure.lang.PersistentList
+                                               (class cursor))
+                                   (identical?
+                                    clojure.lang.PersistentList$EmptyList
+                                    (class cursor)))
+                                (p15-s23-seed-readable-printer-fail!
+                                 source-path :unsupported-list-tail-carrier {}))
+                              (recur
+                               (next cursor)
+                               (inc width)
+                               (conj snapshot
+                                     (snapshot-value!
+                                      (first cursor) (inc depth)))))))
+
+                        :set
+                        (loop [cursor (seq value)
+                               width 0
+                               snapshot []]
+                          (if (nil? cursor)
+                            (let [result (into #{} snapshot)]
+                              (when-not (= (count result) width)
+                                (p15-s23-seed-readable-printer-fail!
+                                 source-path :snapshot-collision {}))
+                              result)
+                            (do
+                              (when (>= width maximum-collection-width)
+                                (fail-width! (inc width)))
+                              (recur
+                               (next cursor)
+                               (inc width)
+                               (conj snapshot
+                                     (snapshot-value!
+                                      (first cursor) (inc depth)))))))
+
+                        :map
+                        (loop [cursor (seq value)
+                               width 0
+                               snapshot []]
+                          (if (nil? cursor)
+                            (let [result (into {} snapshot)]
+                              (when-not (= (count result) width)
+                                (p15-s23-seed-readable-printer-fail!
+                                 source-path :snapshot-collision {}))
+                              result)
+                            (do
+                              (when (>= width maximum-collection-width)
+                                (fail-width! (inc width)))
+                              (let [entry (first cursor)]
+                                (when-not
+                                 (identical? clojure.lang.MapEntry
+                                             (class entry))
+                                  (p15-s23-seed-readable-printer-fail!
+                                   source-path :unsupported-map-entry-carrier
+                                   {}))
+                                (recur
+                                 (next cursor)
+                                 (inc width)
+                                 (conj snapshot
+                                       [(snapshot-value!
+                                         (key entry) (inc depth))
+                                        (snapshot-value!
+                                         (val entry) (inc depth))])))))))
+                      (finally
+                        (.remove active value)))))))]
+      (let [snapshot-args
+            (loop [index 0 snapshot []]
+              (if (= index (count args))
+                snapshot
+                (recur (inc index)
+                       (conj snapshot
+                             (snapshot-value! (nth args index) 0)))))]
+        (assoc @stats
+               :snapshot-args snapshot-args
+               :printer-boundary :clojure-seed-compatibility)))))
+
+(defn p15-s23-seed-readable-integer-text
+  [value]
+  (let [integer (biginteger value)
+        negative? (neg? (.signum integer))
+        magnitude (.abs integer)
+        ten (java.math.BigInteger/valueOf 10)]
+    (if (zero? (.signum magnitude))
+      "0"
+      (loop [remaining magnitude digits []]
+        (if (zero? (.signum remaining))
+          (str (when negative? "-") (apply str (reverse digits)))
+          (let [digit (.intValue (.remainder remaining ten))]
+            (recur (.divide remaining ten)
+                   (conj digits (.charAt "0123456789" digit)))))))))
+
+(defn p15-s23-seed-readable-append-hex4!
+  [^StringBuilder builder code]
+  (let [digits "0123456789abcdef"]
+    (doseq [shift [12 8 4 0]]
+      (.append builder
+               (.charAt digits (bit-and 15 (bit-shift-right code shift))))))
+  builder)
+
+(defn p15-s23-seed-readable-append-fixed-decimal!
+  [^StringBuilder builder value width]
+  (let [text (Long/toString (long value))]
+    (dotimes [_ (- width (.length text))]
+      (.append builder \0))
+    (.append builder text))
+  builder)
+
+(defn p15-s23-seed-readable-instant-text
+  [source-path value]
+  (let [calendar
+        (doto (java.util.GregorianCalendar.
+               (java.util.TimeZone/getTimeZone "GMT")
+               java.util.Locale/ROOT)
+          (.setGregorianChange (java.util.Date. -12219292800000))
+          (.setLenient false)
+          (.setTime ^java.util.Date value))
+        era (.get calendar java.util.Calendar/ERA)
+        calendar-year (.get calendar java.util.Calendar/YEAR)
+        year (cond
+               (and (= era java.util.GregorianCalendar/BC)
+                    (= calendar-year 1))
+               0
+
+               (= era java.util.GregorianCalendar/AD)
+               calendar-year
+
+               :else nil)]
+    (when-not (and (some? year) (<= 0 year 9999))
+      (p15-s23-seed-readable-printer-fail!
+       source-path :instant-range-limit
+       {:minimum-year 0 :maximum-year 9999}))
+    (let [builder (doto (StringBuilder.) (.append "#inst \""))]
+      (p15-s23-seed-readable-append-fixed-decimal! builder year 4)
+      (.append builder \-)
+      (p15-s23-seed-readable-append-fixed-decimal!
+       builder (inc (.get calendar java.util.Calendar/MONTH)) 2)
+      (.append builder \-)
+      (p15-s23-seed-readable-append-fixed-decimal!
+       builder (.get calendar java.util.Calendar/DAY_OF_MONTH) 2)
+      (.append builder \T)
+      (p15-s23-seed-readable-append-fixed-decimal!
+       builder (.get calendar java.util.Calendar/HOUR_OF_DAY) 2)
+      (.append builder \:)
+      (p15-s23-seed-readable-append-fixed-decimal!
+       builder (.get calendar java.util.Calendar/MINUTE) 2)
+      (.append builder \:)
+      (p15-s23-seed-readable-append-fixed-decimal!
+       builder (.get calendar java.util.Calendar/SECOND) 2)
+      (.append builder \.)
+      (p15-s23-seed-readable-append-fixed-decimal!
+       builder (.get calendar java.util.Calendar/MILLISECOND) 3)
+      (.append builder "-00:00\"")
+      (.toString builder))))
+
+(defn p15-s23-seed-readable-append-long-hex-range!
+  [^StringBuilder builder value high-shift low-shift]
+  (let [digits "0123456789abcdef"]
+    (doseq [shift (range high-shift (dec low-shift) -4)]
+      (.append builder
+               (.charAt digits
+                        (int (bit-and 15
+                                      (bit-shift-right (long value)
+                                                       shift)))))))
+  builder)
+
+(defn p15-s23-seed-readable-uuid-text
+  [value]
+  (let [most (.getMostSignificantBits ^java.util.UUID value)
+        least (.getLeastSignificantBits ^java.util.UUID value)
+        builder (doto (StringBuilder.) (.append "#uuid \""))]
+    (p15-s23-seed-readable-append-long-hex-range! builder most 60 32)
+    (.append builder \-)
+    (p15-s23-seed-readable-append-long-hex-range! builder most 28 16)
+    (.append builder \-)
+    (p15-s23-seed-readable-append-long-hex-range! builder most 12 0)
+    (.append builder \-)
+    (p15-s23-seed-readable-append-long-hex-range! builder least 60 48)
+    (.append builder \-)
+    (p15-s23-seed-readable-append-long-hex-range! builder least 44 0)
+    (.append builder \" )
+    (.toString builder)))
+
+(defn p15-s23-seed-readable-string-text
+  [^String value]
+  (let [builder (StringBuilder.)]
+    (.append builder \" )
+    (loop [index 0]
+      (when (< index (.length value))
+        (let [codepoint (.codePointAt value index)]
+          (case codepoint
+            8 (.append builder "\\b")
+            9 (.append builder "\\t")
+            10 (.append builder "\\n")
+            12 (.append builder "\\f")
+            13 (.append builder "\\r")
+            34 (.append builder "\\\"")
+            92 (.append builder "\\\\")
+            (if (or (< codepoint 32) (= codepoint 127))
+              (do
+                (.append builder "\\u")
+                (p15-s23-seed-readable-append-hex4! builder codepoint))
+              (.appendCodePoint builder codepoint)))
+          (recur (+ index (Character/charCount codepoint))))))
+    (.append builder \" )
+    (.toString builder)))
+
+(defn p15-s23-seed-readable-character-text
+  [value]
+  (case (int (char value))
+    8 "\\backspace"
+    9 "\\tab"
+    10 "\\newline"
+    12 "\\formfeed"
+    13 "\\return"
+    32 "\\space"
+    (let [unit (char value)]
+      (if (or (Character/isWhitespace unit)
+              (Character/isISOControl unit)
+              (contains? #{\, \; \" \' \` \~ \^ \@ \\ \#} unit))
+        (let [builder (doto (StringBuilder.) (.append "\\u"))]
+          (p15-s23-seed-readable-append-hex4! builder (int unit))
+          (.toString builder))
+        (str "\\" unit)))))
+
+(defn p15-s23-seed-readable-compare-utf8
+  [^String left ^String right]
+  (let [left-bytes (.getBytes left java.nio.charset.StandardCharsets/UTF_8)
+        right-bytes (.getBytes right java.nio.charset.StandardCharsets/UTF_8)
+        common (min (alength left-bytes) (alength right-bytes))]
+    (loop [index 0]
+      (if (= index common)
+        (compare (alength left-bytes) (alength right-bytes))
+        (let [left-byte (bit-and 0xff (aget left-bytes index))
+              right-byte (bit-and 0xff (aget right-bytes index))]
+          (if (= left-byte right-byte)
+            (recur (inc index))
+            (compare left-byte right-byte)))))))
+
+(declare p15-s23-seed-readable-value-text)
+
+(defn p15-s23-seed-readable-sorted-distinct!
+  [source-path collision-reason rendered]
+  (let [ordered (vec (sort p15-s23-seed-readable-compare-utf8 rendered))]
+    (when (some true? (map = ordered (rest ordered)))
+      (p15-s23-seed-readable-printer-fail!
+       source-path collision-reason {}))
+    ordered))
+
+(defn p15-s23-seed-readable-value-text
+  [source-path value]
+  (let [kind (p15-s23-seed-readable-value-kind source-path value)]
+    (case kind
+      :nil "nil"
+      :boolean (if value "true" "false")
+      :integer (p15-s23-seed-readable-integer-text value)
+      :ratio
+      (let [[numerator denominator _ _]
+            (p15-s23-seed-readable-ratio-components! source-path value)]
+        (str (p15-s23-seed-readable-integer-text numerator)
+             "/"
+             (p15-s23-seed-readable-integer-text denominator)))
+      :floating (p15-s23-seed-readable-floating-text source-path value)
+      :string (p15-s23-seed-readable-string-text value)
+      :character (p15-s23-seed-readable-character-text value)
+      :instant (p15-s23-seed-readable-instant-text source-path value)
+      :uuid (p15-s23-seed-readable-uuid-text value)
+      :keyword (p15-s23-seed-readable-named-scalar-text kind value)
+      :symbol (p15-s23-seed-readable-named-scalar-text kind value)
+      :vector
+      (str "[" (str/join " " (map #(p15-s23-seed-readable-value-text
+                                      source-path %)
+                                   value)) "]")
+      :list
+      (str "(" (str/join " " (map #(p15-s23-seed-readable-value-text
+                                      source-path %)
+                                   value)) ")")
+      :set
+      (let [rendered
+            (mapv #(p15-s23-seed-readable-value-text source-path %) value)]
+        (str "#{"
+             (str/join
+              " "
+              (p15-s23-seed-readable-sorted-distinct!
+               source-path :set-render-collision rendered))
+             "}"))
+      :map
+      (let [rendered
+            (reduce-kv
+             (fn [entries key item]
+               (conj entries
+                     [(p15-s23-seed-readable-value-text source-path key)
+                      (p15-s23-seed-readable-value-text source-path item)]))
+             [] value)
+            ordered
+            (vec
+             (sort
+              (fn [[left-key left-value] [right-key right-value]]
+                (let [key-order
+                      (p15-s23-seed-readable-compare-utf8
+                       left-key right-key)]
+                  (if (zero? key-order)
+                    (p15-s23-seed-readable-compare-utf8
+                     left-value right-value)
+                    key-order)))
+              rendered))]
+        (when (some true? (map #(= (first %1) (first %2))
+                               ordered (rest ordered)))
+          (p15-s23-seed-readable-printer-fail!
+           source-path :map-key-render-collision {}))
+        (str "{"
+             (str/join ", " (map (fn [[key-text value-text]]
+                                    (str key-text " " value-text))
+                                  ordered))
+             "}")))))
+
+(defn p15-s23-seed-readable-pr-str
+  [source-path args]
+  (binding [*p15-s23-seed-readable-owned-failures*
+            (java.util.IdentityHashMap.)]
+    (try
+      (let [preflight
+            (p15-s23-seed-readable-preflight! source-path args)
+            snapshot-args (:snapshot-args preflight)
+            output
+            (str/join " "
+                      (map #(p15-s23-seed-readable-value-text source-path %)
+                           snapshot-args))
+            output-bytes (p15-s23-seed-readable-utf8-bytes output)
+            maximum-output-bytes
+            (:maximum-output-bytes p15-s23-seed-readable-printer-limits)]
+        (when (> output-bytes maximum-output-bytes)
+          (p15-s23-seed-readable-printer-fail!
+           source-path :output-byte-limit
+           {:observed-output-bytes output-bytes
+            :maximum-output-bytes maximum-output-bytes}))
+        output)
+      (catch clojure.lang.ExceptionInfo ex
+        (if (.remove ^java.util.IdentityHashMap
+                     *p15-s23-seed-readable-owned-failures* ex)
+          (throw ex)
+          (p15-s23-seed-readable-printer-fail!
+           source-path :contained-seed-printer-failure {})))
+      (catch InterruptedException _
+        (.interrupt (Thread/currentThread))
+        (p15-s23-seed-readable-printer-fail!
+         source-path :contained-seed-printer-failure
+         {:interrupt-restored? true}))
+      (catch Exception _
+        (p15-s23-seed-readable-printer-fail!
+         source-path :contained-seed-printer-failure {}))
+      (catch java.lang.ThreadDeath fatal
+        (throw fatal))
+      (catch VirtualMachineError fatal
+        (throw fatal))
+      (catch LinkageError fatal
+        (throw fatal))
+      (catch Throwable _
+        (p15-s23-seed-readable-printer-fail!
+         source-path :contained-seed-printer-failure {})))))
+
+(defn p15-s23-seed-readable-normalized-rest
+  [value]
+  (let [tail (rest value)
+        tail-class (class tail)]
+    (if (or (identical? clojure.lang.PersistentList tail-class)
+            (identical? clojure.lang.PersistentList$EmptyList tail-class))
+      tail
+      (apply list tail))))
+
 (defn invoke-stage0-builtin
   [module callee args]
   (try
@@ -89047,7 +89871,7 @@
       >= (do (assert-min-arity! module callee args 2)
              (apply >= args))
       str (apply str args)
-      pr-str (apply pr-str args)
+      pr-str (p15-s23-seed-readable-pr-str (:source-path module) args)
       hash-map (do (assert-even-arity! module callee args)
                    (apply hash-map args))
       vector (vec args)
@@ -89067,7 +89891,7 @@
       second (do (assert-exact-arity! module callee args 1)
                  (second (first args)))
       rest (do (assert-exact-arity! module callee args 1)
-               (rest (first args)))
+               (p15-s23-seed-readable-normalized-rest (first args)))
       count (do (assert-exact-arity! module callee args 1)
                 (count (first args))))
     (catch clojure.lang.ExceptionInfo ex
@@ -93743,7 +94567,8 @@
               plan callee args 2)
              (apply >= args))
       str (apply str args)
-      pr-str (apply pr-str args)
+      pr-str (p15-s23-seed-readable-pr-str
+              (get-in plan [:source :path]) args)
       hash-map (do (p15-s23-stage2-runtime-assert-even-arity!
                     plan callee args)
                    (apply hash-map args))
@@ -93771,7 +94596,7 @@
                  (second (first args)))
       rest (do (p15-s23-stage2-runtime-assert-exact-arity!
                 plan callee args 1)
-               (rest (first args)))
+               (p15-s23-seed-readable-normalized-rest (first args)))
       count (do (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
                 (count (first args)))
@@ -93865,7 +94690,7 @@
              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                (throw (IllegalArgumentException.
                        "compiler-only collection primitive outside compiler artifact")))
-             (keys (first args)))
+             (apply list (keys (first args))))
       set (do
             (p15-s23-stage2-runtime-assert-exact-arity!
              plan callee args 1)
@@ -93879,14 +94704,14 @@
                        (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                          (throw (IllegalArgumentException.
                                  "compiler-only ordering primitive outside compiler artifact")))
-                       (sort-by pr-str (first args)))
+                       (apply list (sort-by pr-str (first args))))
       vec (do
             (p15-s23-stage2-runtime-assert-exact-arity!
              plan callee args 1)
             (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
               (throw (IllegalArgumentException.
                       "compiler-only vectorization primitive outside compiler artifact")))
-            (vec (first args)))
+            (into [] (first args)))
       quot (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 2)
@@ -93900,7 +94725,8 @@
                (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
                  (throw (IllegalArgumentException.
                          "compiler-only slicing primitive outside compiler artifact")))
-               (subvec (first args) (second args) (nth args 2))))
+               (into []
+                     (subvec (first args) (second args) (nth args 2)))))
     (catch clojure.lang.ExceptionInfo ex
       (throw ex))
     (catch Exception ex
@@ -95935,6 +96761,205 @@
       retain-authenticated-artifacts?
       (assoc :authenticated-c3-source-artifact c3-artifact)))))
 
+(declare c2-reader-message reader-canonical-hash
+         c2-reader-governing-document c2-source-unit-record
+         standard-reader-options compiler-c2-reader-source-artifact)
+
+(def p15-s23-stage2-reader-compatibility-diagnostic-map
+  {"STAGE1READER001"
+   {:c2-id "C2-DELIMITER"
+    :remapped-from "L1-DELIMITER"
+    :reader-state-stage :recursive-form-building
+    :fact-key-sets #{#{:actual-delimiter}
+                     #{:expected-delimiter :actual-delimiter}}}
+   "STAGE1READER002"
+   {:c2-id "C2-DELIMITER"
+    :remapped-from "L1-DELIMITER"
+    :reader-state-stage :recursive-form-building
+    :fact-key-sets #{#{:expected-delimiter :open-token}}}
+   "STAGE1READER003"
+   {:c2-id "C2-STRING"
+    :remapped-from "L1-STRING"
+    :reader-state-stage :lexical-tokenization
+    :fact-key-sets #{#{}}}
+   "STAGE1READER004"
+   {:c2-id "C2-EXTENSION"
+    :remapped-from "L1-READER-EXTENSION"
+    :reader-state-stage :lexical-tokenization
+    :fact-key-sets #{#{}}}
+   "STAGE1READER005"
+   {:c2-id "C2-MAP"
+    :remapped-from "L1-MAP-ARITY"
+    :reader-state-stage :recursive-form-building
+    :fact-key-sets #{#{:entry-count}}}})
+
+(defn p15-s23-stage2-reader-replayed-diagnostic
+  [source-path source-text]
+  (try
+    (compiler-c2-reader-source-artifact source-path source-text)
+    nil
+    (catch clojure.lang.ExceptionInfo ex
+      (ex-data ex))
+    (catch Exception _
+      nil)))
+
+(defn p15-s23-stage2-reader-safe-location
+  [location]
+  (when (map? location)
+    (select-keys location [:line :column :column-unit :char :byte])))
+
+(defn p15-s23-stage2-reader-safe-span
+  [span]
+  (when (map? span)
+    (cond-> (select-keys span [:source :byte-start :byte-end :file])
+      (:start span)
+      (assoc :start (p15-s23-stage2-reader-safe-location (:start span)))
+      (:end span)
+      (assoc :end (p15-s23-stage2-reader-safe-location (:end span))))))
+
+(defn p15-s23-stage2-reader-diagnostic-authentic?
+  [source-path source-text data replayed-data]
+  (try
+    (let [engine-id (when (map? data)
+                      (:reader-engine-diagnostic data))
+          contract
+          (get p15-s23-stage2-reader-compatibility-diagnostic-map engine-id)
+          c2-id (:c2-id contract)
+          span (:source-span data)
+          facts (:facts data)
+          reader-state (:reader-state data)]
+      (and (map? data)
+           (map? replayed-data)
+           contract
+           (map? span)
+           (map? (:start span))
+           (map? (:end span))
+           (map? facts)
+           (map? reader-state)
+           ;; A second direct C2 replay binds every copied value to the
+           ;; supplied source.  The structural checks below remain as an
+           ;; independent defense against a weakened replay implementation.
+           (= replayed-data data)
+           (let [source-id
+                 (:source-id
+                  (c2-source-unit-record source-path source-text
+                                         standard-reader-options))
+                 expected-diagnostic-id
+                 (reader-canonical-hash
+                  {:rule (keyword c2-id)
+                   :primary-artifact source-id
+                   :stage :read-source
+                   :span (dissoc span :source)
+                   :token-id (:token-id data)
+                   :form-id (:form-id data)
+                   :facts facts})]
+             (and
+              (= :gravity/diagnostic (:artifact data))
+              (= c2-id (:id data))
+              (= (keyword c2-id) (:rule data))
+              (= (c2-reader-message c2-id) (:message data))
+              (= :error (:severity data))
+              (= :c2-reader (:diagnostic-family data))
+              (= :read-source (:stage data))
+              (= "C2" (:document-id data))
+              (= c2-reader-governing-document (:expected-document data))
+              (= source-id (:source-id data))
+              (= source-path (:source span))
+              (= source-id (:file span))
+              (= {:span span :artifact source-id} (:primary data))
+              (= [{:kind :source :source-id source-id :path source-path}]
+                 (:origin-chain data))
+              (= [source-id] (:involved-artifacts data))
+              (= [] (:related data))
+              (= :stage0 (:bootstrap-stage data))
+              (= (:remapped-from contract) (:remapped-from data))
+              (= expected-diagnostic-id (:diagnostic-id data))
+              (contains? (:fact-key-sets contract) (set (keys facts)))
+              (= standard-reader-options (:reader-options data))
+              (= #{:source :start :end :byte-start :byte-end :file}
+                 (set (keys span)))
+              (= #{:line :column :column-unit :char :byte}
+                 (set (keys (:start span))))
+              (= #{:line :column :column-unit :char :byte}
+                 (set (keys (:end span))))
+              (= :unicode-scalar (get-in span [:start :column-unit]))
+              (= :unicode-scalar (get-in span [:end :column-unit]))
+              (= (:byte-start span) (get-in span [:start :byte]))
+              (= (:byte-end span) (get-in span [:end :byte]))
+              (= #{:artifact :stage :byte-offset :line :column
+                   :token-id :form-id}
+                 (set (keys reader-state)))
+              (= :gravity/reader-state (:artifact reader-state))
+              (= (:reader-state-stage contract) (:stage reader-state))
+              (= (:byte-start span) (:byte-offset reader-state))
+              (= (get-in span [:start :line]) (:line reader-state))
+              (= (get-in span [:start :column]) (:column reader-state))
+              (= (:token-id data) (:token-id reader-state))
+              (= (:form-id data) (:form-id reader-state))))))
+    (catch Exception _
+      false)))
+
+(defn p15-s23-stage2-reader-sanitized-upstream-diagnostic
+  [data]
+  (let [span (p15-s23-stage2-reader-safe-span (:source-span data))
+        source-id (:source-id data)
+        reader-state (:reader-state data)]
+    {:artifact :gravity/diagnostic
+     :diagnostic-id (:diagnostic-id data)
+     :rule (:rule data)
+     :severity :error
+     :source-id source-id
+     :source-span span
+     :primary {:span span :artifact source-id}
+     :related []
+     :origin-chain
+     (mapv #(select-keys % [:kind :source-id :path])
+           (:origin-chain data))
+     :facts (:facts data)
+     :diagnostic-family :c2-reader
+     :stage :read-source
+     :document-id "C2"
+     :expected-document c2-reader-governing-document
+     :involved-artifacts [source-id]
+     :token-id (:token-id data)
+     :form-id (:form-id data)
+     :reader-engine-diagnostic (:reader-engine-diagnostic data)
+     :remapped-from (:remapped-from data)
+     :reader-state
+     (select-keys reader-state
+                  [:artifact :stage :byte-offset :line :column
+                   :token-id :form-id])
+     :redactions
+     [:id :message :cause-message :raw :raw-spelling :value
+      :reader-options :extension-tag :host-stack :sentinel]}))
+
+(defn p15-s23-stage2-front-end-reader-products
+  [source-path source-text]
+  (try
+    (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+    (catch clojure.lang.ExceptionInfo ex
+      (let [data (ex-data ex)]
+        (if (and
+             (contains? p15-s23-stage2-reader-compatibility-diagnostic-map
+                        (:reader-engine-diagnostic data))
+             (p15-s23-stage2-reader-diagnostic-authentic?
+              source-path source-text data
+              (p15-s23-stage2-reader-replayed-diagnostic
+               source-path source-text)))
+          (p15-s23-stage2-source-front-end-fail!
+           "P15S23F009" source-path nil
+           {:reason :authoritative-reader-rejection
+            :reader-compatibility-boundary :c2-to-p15-s23
+            :upstream-diagnostic-id (:diagnostic-id data)
+            :upstream-rule (:rule data)
+            :upstream-reader-engine-diagnostic
+            (:reader-engine-diagnostic data)
+            :upstream-diagnostic
+            (p15-s23-stage2-reader-sanitized-upstream-diagnostic data)
+            :clojure-seed-boundary? true
+            :self-hosted? false})
+          (throw ex))))))
+
 (defn p15-s23-stage2-front-end-source-module-record
   [front-end source-path source-text]
   (when-not (= :gravity-stage2-reader-rules-v1
@@ -95943,7 +96968,7 @@
      "P15S23F002" source-path front-end
      {:missing-fields [:reader-rules :engine]}))
   (let [reader-products
-        (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
+        (p15-s23-stage2-front-end-reader-products source-path source-text)
         records (:records reader-products)
         forms (:forms reader-products)
         _ (validate-ns-syntax! source-path forms)
@@ -139025,8 +140050,9 @@
      :abbreviation-origins-present?
      (every? #(seq (:generated-origin %)) abbreviation-forms)
      :literal-facts-present?
-     (let [records (:literal-decoding-records artifact)]
-       (and (seq records)
+     (let [records (:literal-decoding-records artifact)
+           expected-records (c2-literal-records (:form-tree artifact))]
+       (and (= (count expected-records) (count records))
             (every? #(and (:literal-id %)
                           (:form-id %)
                           (:kind %)
