@@ -25071,7 +25071,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:a27c0b5c1d30f2ae7170827e0123cfeb0078735121193f4d76b3dbb0d4d561d5"
+    (is (= bootstrap/p15-s23-b2-c17-expected-source-content-hash
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.backend.b2-c-backend-design\n"
@@ -37222,6 +37222,587 @@
           [label data])
       (is (not (str/includes? (pr-str data) "B2-MANIFEST"))
           [label data]))))
+
+(defn- authenticated-b2-gate-b-private-var
+  [symbol]
+  (or (ns-resolve 'gravity.bootstrap symbol)
+      (throw (ex-info "missing authenticated C17 Gate B test seam"
+                      {:symbol symbol}))))
+
+(defn- authenticated-b2-gate-b-with-home-temp-directory
+  [prefix f]
+  (let [requested-home
+        (java.nio.file.Paths/get (System/getProperty "user.home")
+                                 (make-array String 0))
+        home
+        (.toRealPath requested-home
+                     (make-array java.nio.file.LinkOption 0))
+        valid-home?
+        (and (.isAbsolute home)
+             (= home (.normalize home))
+             (java.nio.file.Files/isDirectory
+              home
+              (into-array
+               java.nio.file.LinkOption
+               [java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+             (not (java.nio.file.Files/isSymbolicLink requested-home))
+             (not (java.nio.file.Files/isSymbolicLink home)))
+        _
+        (when-not valid-home?
+          (throw
+           (ex-info "C17 publication test requires a real home directory"
+                    {:home (.toString home)})))
+        path
+        (java.nio.file.Files/createTempDirectory
+         home prefix
+         (make-array java.nio.file.attribute.FileAttribute 0))]
+    (try
+      (f path)
+      (finally
+        (doseq [file (reverse (file-seq (.toFile path)))]
+          (.delete file))
+        (is (not (java.nio.file.Files/exists
+                  path
+                  (make-array java.nio.file.LinkOption 0)))
+            (str "temporary C17 publication root survived: " path))))))
+
+(deftest authenticated-b2-gate-b-rejects-options-before-effects
+  (let [gate-a-called? (atom false)
+        comparator-calls (atom 0)
+        before
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+        cases
+        [[:custom-map (sorted-map-by (fn [left right]
+                                      (swap! comparator-calls inc)
+                                      (compare right left))
+                                     :output-directory "/tmp/c17-out")
+          :exact-c17-gate-b-option-envelope]
+         [:metadata (with-meta {:output-directory "/tmp/c17-out"}
+                      {:untrusted true})
+          :trusted-bounded-c17-gate-b-options]
+         [:extra {:output-directory "/tmp/c17-out" :extra true}
+          :exact-c17-gate-b-option-envelope]
+         [:relative {:output-directory "relative/c17-out"}
+         :absolute-normalized-c17-output-directory]
+         [:utf8-over-limit
+          {:output-directory (apply str (repeat 1025 "\u00e9\u00e9"))}
+          :bounded-c17-output-directory-option]
+         [:nul {:output-directory "/tmp/c17\u0000out"}
+          :bounded-c17-output-directory-option]]
+        observations
+        (with-redefs
+         [bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+          (fn [& _]
+            (reset! gate-a-called? true)
+            (throw (AssertionError. "Gate A must not run")))]
+          (mapv
+           (fn [[label options expected-missing]]
+             {:label label :expected-missing expected-missing
+              :data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+                 nil nil {:source-path "hostile-options.gravity"}
+                 options))})
+           cases))
+        after
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+    (is (false? @gate-a-called?))
+    (is (zero? @comparator-calls))
+    (is (= before after))
+    (doseq [{:keys [label expected-missing data]} observations]
+      (is (= "B2-MANIFEST" (:id data)) [label data])
+      (is (= expected-missing (:missing-fact data)) [label data]))))
+
+(deftest authenticated-b2-gate-b-public-boundaries-propagate-fatal-errors
+  (let [before
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+        observe
+        (fn [target fatal invocation]
+          (try
+            (with-redefs-fn {target (fn [& _] (throw fatal))}
+              invocation)
+            :unexpected-success
+            (catch Throwable observed observed)))
+        assertion
+        (AssertionError. "synthetic-c17-gate-b-transitive-assertion")
+        observed-assertion
+        (observe
+         #'bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+         assertion
+         #(bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+           nil nil {:source-path "fatal-c17-from-c11.gravity"}))
+        linkage
+        (LinkageError. "synthetic-c17-gate-b-authenticity-linkage")
+        observed-linkage
+        (observe
+         #'bootstrap/p15-s23-stage2-b2-c17-gate-b-verify!
+         linkage
+         #(bootstrap/p15-s23-stage2-b2-c17-gate-b-authentic?
+           {} nil {:source-path "fatal-c17-authentic.gravity"}))
+        oom (OutOfMemoryError. "synthetic-c17-gate-b-source-oom")
+        observed-oom
+        (observe
+         #'bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+         oom
+         #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+           "fatal-c17-source.gravity" authenticated-b2-gate-a-source))
+        after
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+    (is (identical? assertion observed-assertion))
+    (is (identical? linkage observed-linkage))
+    (is (identical? oom observed-oom))
+    (is (= before after))))
+
+(def ^:private authenticated-b2-gate-b-upstream-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-b2-gate-b-upstream-"
+      (fn [root]
+        (let [left-directory (.resolve root "left")
+              right-directory (.resolve root "right")
+              _
+              (java.nio.file.Files/createDirectories
+               left-directory
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              _
+              (java.nio.file.Files/createDirectories
+               right-directory
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              left-file (.resolve left-directory "program.gravity")
+              right-file (.resolve right-directory "program.qst")
+              _ (spit (.toFile left-file) authenticated-b2-gate-a-source)
+              _ (spit (.toFile right-file) authenticated-b2-gate-a-source)
+              left-path
+              (.toString
+               (.toRealPath left-file
+                            (make-array java.nio.file.LinkOption 0)))
+              right-path
+              (.toString
+               (.toRealPath right-file
+                            (make-array java.nio.file.LinkOption 0)))
+              construct-upstream
+              (fn [path]
+                (binding
+                 [bootstrap/*additional-bootstrap-targets*
+                  bootstrap/stage2-runtime-derived-source-targets]
+                  (let [context
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                         path authenticated-b2-gate-a-source :c)
+                        checked-core
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                         context)
+                        c11
+                        (bootstrap/p15-s23-stage2-c11-mir-artifact
+                         checked-core context)]
+                    {:context context :checked-core checked-core :c11 c11})))]
+          {:left-path left-path :right-path right-path
+           :left-upstream (construct-upstream left-path)
+           :right-upstream (construct-upstream right-path)})))))
+
+(def ^:private authenticated-b2-gate-b-proof
+  (delay
+    (let [{:keys [left-path right-path left-upstream right-upstream]}
+          @authenticated-b2-gate-b-upstream-proof
+          before
+          (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+          left
+          (bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+           (:c11 left-upstream) (:checked-core left-upstream)
+           (:context left-upstream))
+          after-left
+          (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+          right
+          (bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+           right-path authenticated-b2-gate-a-source)
+          after-right
+          (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+          verification
+          (bootstrap/p15-s23-stage2-b2-c17-gate-b-verification-report
+           left (:checked-core left-upstream) (:context left-upstream))
+          after-verification
+          (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+      {:left-path left-path :right-path right-path
+       :left-upstream left-upstream :right-upstream right-upstream
+       :gate-a (:gate-a-artifact left)
+       :left left :right right :verification verification
+       :before before :after-left after-left :after-right after-right
+       :after-verification after-verification})))
+
+(deftest authenticated-b2-gate-b-semantic-closure-fails-closed-before-effects
+  (let [{:keys [left-upstream gate-a left]}
+        @authenticated-b2-gate-b-proof
+        left-artifact gate-a
+        verification (:gate-a-contextual-report left)
+        context (:context left-upstream)
+        checked-core (:checked-core left-upstream)
+        metadata-closure?
+        (authenticated-b2-gate-b-private-var
+         'p15-s23-b2-c17-gate-b-metadata-closure?)
+        pre-effect!
+        (authenticated-b2-gate-b-private-var
+         'p15-s23-b2-c17-gate-b-pre-effect-gate!)
+        rehash-closure
+        (fn [closure]
+          (let [base (dissoc closure :evidence-id)]
+            (assoc
+             base :evidence-id
+             (bootstrap/p15-s23-c11-mir-digest
+              {:kind :gravity/b2-c17-semantic-pure-closure-evidence
+               :schema-version 1 :record base}))))
+        rehash-report
+        (fn [report]
+          (let [base (dissoc report :report-id)]
+            (assoc
+             base :report-id
+             (bootstrap/p15-s23-c11-mir-digest
+              {:kind :gravity/b2-c17-contextual-verification-report
+               :schema-version 1 :report base}))))
+        closure (:semantic-pure-closure verification)
+        with-closure
+        (fn [candidate]
+          (rehash-report
+           (assoc verification :semantic-pure-closure candidate)))
+        semantic-effect-report
+        (with-closure
+         (rehash-closure
+          (assoc closure :semantic-effects #{:io}
+                 :semantic-effect-count 1)))
+        semantic-capability-report
+        (with-closure
+         (rehash-closure
+          (assoc closure :semantic-capabilities #{:filesystem}
+                 :semantic-capability-count 1)))
+        row-mismatch-report
+        (with-closure
+         (rehash-closure
+          (update closure :effect-fact-row-count inc)))
+        runtime-report
+        (with-closure
+         (rehash-closure
+          (assoc closure :runtime-check-count 1)))
+        extra-key-report
+        (with-closure
+         (rehash-closure (assoc closure :unexpected true)))
+        forged-sha (str "sha256:" (apply str (repeat 64 "0")))
+        evidence-id-report
+        (assoc-in verification
+                  [:semantic-pure-closure :evidence-id] forged-sha)
+        report-id-report (assoc verification :report-id forged-sha)
+        mir-id-report
+        (with-closure
+         (rehash-closure (assoc closure :c11-mir-id forged-sha)))
+        report-mutations
+        [semantic-effect-report semantic-capability-report
+         row-mismatch-report runtime-report extra-key-report
+         evidence-id-report report-id-report mir-id-report]
+        gate-a-mutations
+        [(assoc-in left-artifact
+                   [:runtime-helper-manifest :helpers] [:hidden-helper])
+         (assoc-in left-artifact
+                   [:runtime-helper-manifest :hidden-runtime-dependence?]
+                   true)
+         (assoc-in left-artifact
+                   [:proof-to-c-assumption-map
+                    :all-casts-proof-authorized?]
+                   false)]
+        before
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+        pre-effect-data
+        (mapv
+         (fn [candidate]
+           (with-redefs-fn
+            {#'bootstrap/p15-s23-stage2-b2-c17-verification-report
+             (constantly candidate)}
+            (fn []
+              (diagnostic-data
+               #(pre-effect! left-artifact checked-core context {})))))
+         report-mutations)
+        valid-result
+        (with-redefs-fn
+         {#'bootstrap/p15-s23-stage2-b2-c17-verification-report
+          (constantly verification)}
+         #(pre-effect! left-artifact checked-core context {}))
+        original-vendor (System/getProperty "java.vendor")
+        host-mismatch-data
+        (try
+          (System/setProperty "java.vendor" "hostile-vendor")
+          (with-redefs-fn
+           {#'bootstrap/p15-s23-stage2-b2-c17-verification-report
+            (constantly verification)}
+           (fn []
+             (diagnostic-data
+              #(pre-effect! left-artifact checked-core context {}))))
+          (finally
+            (System/setProperty "java.vendor" original-vendor)))
+        after
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+    (is (true? (metadata-closure? left-artifact verification)))
+    (doseq [candidate report-mutations]
+      (is (false? (metadata-closure? left-artifact candidate))))
+    (doseq [candidate gate-a-mutations]
+      (is (false? (metadata-closure? candidate verification))))
+    (doseq [data pre-effect-data]
+      (is (= "B14-METADATA" (:id data)) data)
+      (is (= :exact-c17-source-proof-metadata-closure
+             (:missing-fact data)) data))
+    (is (= {} (:options valid-result)))
+    (is (= verification (:gate-a-contextual-report valid-result)))
+    (is (= "B2-MANIFEST" (:id host-mismatch-data)) host-mismatch-data)
+    (is (= :pinned-jdk26-macos-aarch64-c17-host-runtime
+           (:missing-fact host-mismatch-data)) host-mismatch-data)
+    (is (= before after))))
+
+(deftest authenticated-b2-gate-b-publication-is-exclusive-and-verifiable
+  (let [native-access-enabled?
+        (.isNativeAccessEnabled (.getModule clojure.lang.RT))]
+    (authenticated-b2-gate-b-with-home-temp-directory
+      "gravity-authenticated-b2-gate-b-publish-"
+      (fn [root]
+        (let [input (.resolve root "input.gravity")
+              _ (spit (.toFile input) authenticated-b2-gate-a-source)
+              source-path
+              (.toString
+               (.toRealPath input
+                            (make-array java.nio.file.LinkOption 0)))
+              [checked-core context c11]
+              (binding
+               [bootstrap/*additional-bootstrap-targets*
+                bootstrap/stage2-runtime-derived-source-targets]
+                (let [context
+                      (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                       source-path authenticated-b2-gate-a-source :c)
+                      checked-core
+                      (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                       context)
+                      c11
+                      (bootstrap/p15-s23-stage2-c11-mir-artifact
+                       checked-core context)]
+                  [checked-core context c11]))
+              output (.resolve root "bundle")
+              output-path (.toString output)
+              before
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+          (if-not native-access-enabled?
+            (let [data
+                  (diagnostic-data
+                   #(bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+                     c11 checked-core context
+                     {:output-directory output-path}))
+                  after
+                  (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+              (is (= "B2-MANIFEST" (:id data)) data)
+              (is (= :jdk26-native-access-required-for-c17-publication
+                     (:missing-fact data)) data)
+              (is (false? (get-in data [:facts :native-access-enabled?]))
+                  data)
+              (is (= before after))
+              (is (not (java.nio.file.Files/exists
+                        output
+                        (make-array java.nio.file.LinkOption 0))))
+              (is (= #{"input.gravity"}
+                     (set (seq (.list (.toFile root)))))))
+            (let [artifact
+                  (bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+                   c11 checked-core context
+                   {:output-directory output-path})
+                  after-publication
+                  (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+                  report
+                  (bootstrap/p15-s23-stage2-b2-c17-gate-b-verification-report
+                   artifact checked-core context)
+                  after-verification
+                  (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+                  receipt (:publication-receipt artifact)
+                  names
+                  (set (seq (.list (.toFile output))))
+                  expected-names
+                  #{"program.c" "program.h" "program.o" "program"
+                    "manifest.edn" "provenance.edn" "conformance.edn"}
+                  mode
+                  (fn [path]
+                    (java.nio.file.attribute.PosixFilePermissions/toString
+                     (java.nio.file.Files/getPosixFilePermissions
+                      path
+                      (into-array
+                       java.nio.file.LinkOption
+                       [java.nio.file.LinkOption/NOFOLLOW_LINKS]))))
+                  hash-record
+                  (fn [logical-path]
+                    (let [bytes
+                          (java.nio.file.Files/readAllBytes
+                           (.resolve output logical-path))]
+                      {:logical-path logical-path
+                       :byte-count (alength ^bytes bytes)
+                       :content-hash
+                       (str "sha256:"
+                            (bootstrap/sha256-bytes-hex bytes))}))
+                  core-kinds
+                  {:source "program.c" :header "program.h"
+                   :object "program.o" :executable "program"}
+                  sidecar-kinds
+                  {:manifest "manifest.edn"
+                   :provenance "provenance.edn"
+                   :conformance "conformance.edn"}
+                  parent-names (set (seq (.list (.toFile root))))]
+              (is (= 20 (- (:total after-publication) (:total before))))
+              (is (= 20 (- (:total after-verification)
+                           (:total after-publication))))
+              (is (= expected-names names))
+              (is (= #{"input.gravity" "bundle"} parent-names))
+              (is (= "rwxr-xr-x" (mode output)))
+              (is (= "rwxr-xr-x" (mode (.resolve output "program"))))
+              (doseq [name (disj expected-names "program")]
+                (is (= "rw-r--r--" (mode (.resolve output name))) name))
+              (is (= :published-atomically-after-final-verification
+                     (:status receipt)))
+              (is (= output-path (:actual-output-directory receipt)))
+              (is (= {:directory "0755" :executable "0755"
+                      :nonexecutable "0644"}
+                     (:mode-policy receipt)))
+              (doseq [[kind logical-path] core-kinds]
+                (is (= (select-keys
+                        (get-in artifact
+                                [:toolchain-evidence
+                                 :artifact-files kind])
+                        [:logical-path :byte-count :content-hash])
+                       (hash-record logical-path))
+                    [kind logical-path]))
+              (doseq [[kind logical-path] sidecar-kinds]
+                (is (= (get-in receipt [:sidecar-hashes kind])
+                       (hash-record logical-path))
+                    [kind logical-path]))
+              (doseq [logical-path (vals sidecar-kinds)]
+                (is (map? (edn/read-string
+                           (slurp (.toFile
+                                   (.resolve output logical-path)))))
+                    logical-path))
+              (is (= :passed (:status report)))
+              (is (= {:status :passed
+                      :publication :atomically-published
+                      :core-artifact-count 4 :sidecar-count 3}
+                     (:publication report))))))))))
+
+(deftest authenticated-b2-gate-b-is-path-neutral-contextual-and-bounded
+  (let [{:keys [left-path right-path left-upstream gate-a left right
+                right-upstream verification before after-left after-right
+                after-verification]}
+        @authenticated-b2-gate-b-proof
+        ephemeral
+        {:status :ephemeral-conformance-artifacts
+         :actual-output-directory nil :sidecar-hashes {}}
+        toolchain (:toolchain-evidence left)
+        b13 (:b13-record left)
+        b14 (:b14-record left)
+        c18 (:c18-record left)
+        left-contextual (:gate-a-contextual-report left)
+        right-contextual (:gate-a-contextual-report right)
+        semantic-closure (:semantic-pure-closure left-contextual)
+        expected-host-runtime
+        {:artifact :gravity/b2-c17-gate-b-host-runtime
+         :schema-version 1 :java-vendor "Homebrew"
+         :java-vm-name "OpenJDK 64-Bit Server VM"
+         :java-version "26.0.1" :java-feature 26
+         :os-name "Mac OS X" :os-arch "aarch64"}
+        wrapper-results
+        (with-redefs
+         [bootstrap/p15-s23-stage2-b2-c17-gate-b-verification-report
+          (fn [& _] verification)]
+          [(bootstrap/p15-s23-stage2-b2-c17-gate-b-verify!
+            left (:checked-core left-upstream) (:context left-upstream))
+           (bootstrap/p15-s23-stage2-b2-c17-gate-b-authentic?
+            left (:checked-core left-upstream) (:context left-upstream))])]
+    (is (= 20 (- (:total after-left) (:total before))))
+    (is (= 20 (- (:total after-right) (:total after-left))))
+    (is (= 20 (- (:total after-verification) (:total after-right))))
+    (is (= 20 (count (:tool-records toolchain))))
+    (is (= (:mir-id (:c11 left-upstream))
+           (:mir-id (:c11 right-upstream))))
+    (is (= (:artifact-id (:c11 left-upstream))
+           (:artifact-id (:c11 right-upstream))))
+    (is (= bootstrap/p15-s23-b2-c17-gate-b-final-artifact-keys
+           (set (keys left)) (set (keys right))))
+    (is (= :gravity/b2-hosted-c17-gate-b
+           (:artifact left) (:artifact right)))
+    (is (= :validated-bounded-internal-c17-candidate
+           (:status left) (:status right)))
+    (is (= (:semantic-id left) (:semantic-id right)))
+    (is (= (:artifact-id left) (:artifact-id right)))
+    (is (= left-contextual right-contextual))
+    (is (= semantic-closure
+           (:semantic-pure-closure right-contextual)))
+    (is (= (:report-id left-contextual)
+           (:report-id right-contextual)))
+    (is (= (:evidence-id semantic-closure)
+           (get-in right-contextual
+                   [:semantic-pure-closure :evidence-id])))
+    (is (not= (:actual-path-binding-id left)
+              (:actual-path-binding-id right)))
+    (is (= left-path
+           (get-in left [:actual-path-provenance :source])))
+    (is (= right-path
+           (get-in right [:actual-path-provenance :source])))
+    (is (= gate-a (:gate-a-artifact left)))
+    (is (= ephemeral (:publication-receipt left)
+                     (:publication-receipt right)))
+    (is (false? (:publication-intent? toolchain)))
+    (is (not (contains? left :publication-payload)))
+    (is (not (contains? toolchain :publication-payload)))
+    (is (= #{:source :header :object :executable}
+           (set (keys (:artifact-files toolchain)))))
+    (is (= :content-addressed-internal-candidate (:status b13)))
+    (is (= :passed-for-bounded-positive-slice (:status b14)))
+    (is (= :passed-for-experimental-bounded-slice (:status c18)))
+    (is (= expected-host-runtime
+           (get-in toolchain [:toolchain-fingerprint :host-runtime])))
+    (is (pos? (:effect-fact-row-count semantic-closure)))
+    (is (pos? (:capability-fact-row-count semantic-closure)))
+    (is (= (:effect-fact-row-count semantic-closure)
+           (get-in b14 [:metadata-evidence :effect-fact-row-count])))
+    (is (= (:capability-fact-row-count semantic-closure)
+           (get-in b14
+                   [:metadata-evidence :capability-fact-row-count])))
+    (is (= 0 (:semantic-effect-count semantic-closure)
+           (get-in b14 [:metadata-evidence :semantic-effect-count])))
+    (is (= 0 (:semantic-capability-count semantic-closure)
+           (get-in b14
+                   [:metadata-evidence :semantic-capability-count])))
+    (is (= (:evidence-id semantic-closure)
+           (get-in b14
+                   [:metadata-evidence
+                    :semantic-pure-closure-evidence-id])
+           (get-in c18
+                   [:evidence :semantic-pure-closure-evidence-id])))
+    (is (= (:report-id left-contextual)
+           (get-in b14
+                   [:metadata-evidence :gate-a-contextual-report-id])
+           (get-in c18 [:evidence :gate-a-contextual-report-id])))
+    (is (some #{:semantic-pure-effect-capability-closure}
+              (:minimum-evidence c18)))
+    (is (= :blocked (:release-result c18)))
+    (is (= {:fresh-replay-required? true
+            :fresh-replay-latency-slo :not-established
+            :single-run-timing-is-performance-evidence? false
+            :operational-public-gate :closed :release-gate :closed}
+           (:performance-residual c18)))
+    (is (= [:passed :passed :passed :passed :passed]
+           ((juxt :fresh-c11 :fresh-gate-a
+                  :fresh-gate-a-contextual-verification
+                  :pinned-toolchain-replay
+                  :strict-final-record-reconstruction)
+            verification)))
+    (is (= {:status :passed :publication :ephemeral
+            :core-artifact-count 4 :sidecar-count 0}
+           (:publication verification)))
+    (is (= :passed (:status verification)))
+    (is (= [:passed true] wrapper-results))
+    (is (false?
+         (bootstrap/p15-s23-stage2-b2-c17-gate-b-authentic? left)))
+    (doseq [key [:whole-b2? :public? :release? :self-hosted?]]
+      (is (false? (get left key)) key))
+    (is (true? (:seed-boundary? left)))
+    (is (true? (:clojure-seed-boundary? left)))
+    (is (not (str/includes? (pr-str (:diagnostics left)) "B3-")))
+    (is (not (str/includes? (pr-str (:diagnostics left)) "LLVM")))))
 
 (defn -main
   [& _]
