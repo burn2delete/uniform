@@ -138094,13 +138094,14 @@
 
 (defn- p15-s23-stage2-b2-c17-gate-b-p18-t04-route-source-artifact!
   "Sealed Gate-C entry: callers provide data, never executable projectors."
-  [source-path source-text output-directory]
+  [source-path source-text source-snapshot-evidence output-directory]
   (p15-s23-stage2-b2-c17-gate-b-source-artifact-projected!
    p15-s23-b2-c17-gate-b-authority-token
    source-path source-text {:output-directory output-directory}
    (fn [finalized-gate-b]
      (p18-t04-experimental-verified-mir-c-route-record
-      source-path source-text output-directory finalized-gate-b))))
+      source-path source-text source-snapshot-evidence
+      output-directory finalized-gate-b))))
 
 (defn p15-s23-stage2-b2-c17-gate-b-verification-report
   "Contextually reauthenticate Gate A, the pinned hosted-C17 toolchain, and any
@@ -144056,46 +144057,45 @@
                         :capabilities (:capabilities module)}}))
 
 (defn source-path-policy-fail!
-  [source-path]
-  (let [source-file (java.io.File. source-path)
-        bytes (when (.isFile source-file)
-                (java.nio.file.Files/readAllBytes (.toPath source-file)))
-        bytes-hash (when bytes
-                     (str "sha256:" (sha256-bytes-hex bytes)))
-        span {:source source-path :byte-start 0 :byte-end 0}]
-    (fail! "L1-SOURCE-EXTENSION"
-           "Gravity source path does not use a co-canonical source extension"
-           (cond->
-            {:severity :error
-             :stage :read-source
-             :source-span span
-             :primary (cond-> {:span span}
-                        bytes-hash (assoc :artifact bytes-hash))
-             :related []
-             :origin-chain
-             [(cond-> {:kind :source-path :path source-path}
-                bytes-hash (assoc :source-id bytes-hash))]
-             :profile nil
-             :target nil
-             :facts
-             (cond->
-              {:actual-extension (gravity-source-extension source-path)
-               :allowed-extensions
-               (vec (sort co-canonical-source-extensions))}
-               bytes-hash (assoc :bytes-hash bytes-hash
-                                 :byte-count (alength bytes)))
-             :reader-state {:stage :source-unit-policy}
-             :remediation
-             "Rename the source to .qst or .gravity; both are canonical and first-class."}
-             bytes-hash (assoc :source-id bytes-hash)))))
+  ([source-path]
+   (let [source-file (java.io.File. source-path)
+         bytes (when (.isFile source-file)
+                 (java.nio.file.Files/readAllBytes (.toPath source-file)))]
+     (source-path-policy-fail! source-path bytes)))
+  ([source-path bytes]
+   (let [bytes-hash (when bytes
+                      (str "sha256:" (sha256-bytes-hex bytes)))
+         span {:source source-path :byte-start 0 :byte-end 0}]
+     (fail! "L1-SOURCE-EXTENSION"
+            "Gravity source path does not use a co-canonical source extension"
+            (cond->
+             {:severity :error
+              :stage :read-source
+              :source-span span
+              :primary (cond-> {:span span}
+                         bytes-hash (assoc :artifact bytes-hash))
+              :related []
+              :origin-chain
+              [(cond-> {:kind :source-path :path source-path}
+                 bytes-hash (assoc :source-id bytes-hash))]
+              :profile nil
+              :target nil
+              :facts
+              (cond->
+               {:actual-extension (gravity-source-extension source-path)
+                :allowed-extensions
+                (vec (sort co-canonical-source-extensions))}
+                bytes-hash (assoc :bytes-hash bytes-hash
+                                  :byte-count (alength bytes)))
+              :reader-state {:stage :source-unit-policy}
+              :remediation
+              "Rename the source to .qst or .gravity; both are canonical and first-class."}
+              bytes-hash (assoc :source-id bytes-hash))))))
 
-(defn read-gravity-source-text
-  [path]
-  (when-not (qst-or-gravity-source? path)
-    (source-path-policy-fail! path))
-  (let [bytes (java.nio.file.Files/readAllBytes
-               (.toPath (java.io.File. path)))
-        decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+(defn decode-gravity-source-bytes
+  "Decode one already-captured source snapshot without reopening its path."
+  [path bytes]
+  (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
                   (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
                   (.onUnmappableCharacter
                    java.nio.charset.CodingErrorAction/REPORT))
@@ -144133,6 +144133,15 @@
         (.throwException flush-result)))
     (.flip output)
     (.toString output)))
+
+(defn read-gravity-source-text
+  [path]
+  (when-not (qst-or-gravity-source? path)
+    (source-path-policy-fail! path))
+  (decode-gravity-source-bytes
+   path
+   (java.nio.file.Files/readAllBytes
+    (.toPath (java.io.File. path)))))
 
 (defn compile-file
   [path]
@@ -148903,6 +148912,8 @@
   [args]
   (:output-path (p18-t04-parse-compile-request args)))
 
+(def p18-t04-verified-mir-c-maximum-source-bytes (* 1024 1024))
+
 (def p18-t04-experimental-verified-mir-c-route-policy
   {:artifact :gravity/p18-t04-experimental-verified-mir-c-route-policy
    :schema-version 1
@@ -148922,6 +148933,25 @@
    :profile :hosted
    :lowering-mode :verified-mir
    :nested-capability :bounded-hosted-c17-gate-b
+   :source-snapshot-policy
+   {:maximum-byte-count p18-t04-verified-mir-c-maximum-source-bytes
+    :capture-provider :jdk26-ffm-darwin-libsystem
+    :native-functions ["fstatat" "open" "fstat" "fcntl" "read" "close"]
+    :open-flags {:o-rdonly 0 :o-cloexec 0x01000000
+                 :o-nofollow-any 0x20000000 :combined 0x21000000
+                 :variadic-mode 0}
+    :path-stat-flags {:at-symlink-nofollow-any 0x0800}
+    :descriptor-path-command {:f-getpath 50}
+    :identity-observation-phases
+    [:path-before-open :opened-descriptor-before-read
+     :descriptor-path-before-read :opened-descriptor-after-read
+     :descriptor-path-after-read :path-after-read]
+    :required-identity-fields
+    [:device :inode :mode :byte-count :modified-time
+     :changed-time :birth-time]
+    :opened-handle-file-key-observation :native-fstat-device-and-inode
+    :content-identity :sha256
+    :source-byte-path-reopen-count 0}
    :governance-status :pending-feature-specific-review
    :governance-conforming? false
    :security-review-complete? false
@@ -148946,6 +148976,7 @@
 
 (def p18-t04-experimental-verified-mir-c-route-artifact-keys
   #{:kind :schema-version :task :status :route-policy :source
+    :source-snapshot-evidence :source-snapshot-evidence-id
     :source-target :requested-target :profile :lowering-mode
     :command-boundary :gate-b-summary :semantic-id :artifact-id
     :actual-path-provenance :actual-path-binding-id :diagnostics
@@ -148956,6 +148987,17 @@
     :public-command-route? :public-target-support-claim? :whole-b2?
     :public? :release? :self-hosted? :seed-boundary?
     :clojure-seed-boundary?})
+
+(def p18-t04-verified-mir-c-source-snapshot-evidence-keys
+  #{:kind :schema-version :policy-id :actual-path
+    :file-key-hash :byte-count :content-hash
+    :capture-provider :native-functions
+    :identity-observation-phase-count
+    :source-byte-path-reopen-count
+    :opened-handle-file-key-observation
+    :opened-handle-size-parity?
+    :path-and-descriptor-identity-parity?
+    :native-access-enabled? :status})
 
 (defn p18-t04-repository-root-path
   "Resolve the repository root through the pinned C11 Gravity source, not CWD."
@@ -149121,6 +149163,303 @@
             :else :output-outside-repository-target)}))
       (.toString destination))))
 
+(defn- p18-t04-verified-mir-c-source-snapshot-fail!
+  [source-path missing-fact bounded-reason extra]
+  (p15-s23-c-backend-fail!
+   "C14-INPUT" source-path {}
+   (merge {:missing-fact missing-fact
+           :source-target :jvm :requested-target :c
+           :bounded-reason bounded-reason}
+          extra)))
+
+(def ^:private p18-t04-darwin-stat-byte-count 144)
+(def ^:private p18-t04-darwin-at-fdcwd -2)
+(def ^:private p18-t04-darwin-at-symlink-nofollow-any 0x0800)
+(def ^:private p18-t04-darwin-open-read-nofollow-flags 0x21000000)
+(def ^:private p18-t04-darwin-f-getpath 50)
+(def ^:private p18-t04-darwin-s-ifmt 0xf000)
+(def ^:private p18-t04-darwin-s-ifreg 0x8000)
+
+(defn- p18-t04-verified-mir-c-source-native-binding!
+  [source-path]
+  (when-not
+   (and (= 26 (.feature (Runtime/version)))
+        (= "Mac OS X" (System/getProperty "os.name"))
+        (= "aarch64" (System/getProperty "os.arch")))
+    (p18-t04-verified-mir-c-source-snapshot-fail!
+     source-path :descriptor-bound-source-snapshot
+     :jdk26-darwin-arm64-source-snapshot-provider-required {}))
+  (try
+    (let [linker (java.lang.foreign.Linker/nativeLinker)
+          lookup (.defaultLookup linker)
+          capture
+          (java.lang.foreign.Linker$Option/captureCallState
+           (into-array String ["errno"]))
+          state-layout
+          (java.lang.foreign.Linker$Option/captureStateLayout)
+          errno-handle
+          (.toMethodHandle
+           (.varHandle
+            state-layout
+            (into-array
+             java.lang.foreign.MemoryLayout$PathElement
+             [(java.lang.foreign.MemoryLayout$PathElement/groupElement
+               "errno")]))
+           java.lang.invoke.VarHandle$AccessMode/GET)
+          symbol
+          (fn [name]
+            (let [candidate (.find lookup name)]
+              (when (.isEmpty candidate)
+                (p18-t04-verified-mir-c-source-snapshot-fail!
+                 source-path :descriptor-bound-source-snapshot
+                 :missing-darwin-source-snapshot-symbol
+                 {:missing-fields [(keyword name)]}))
+              (.get candidate)))
+          bind
+          (fn [name return-layout argument-layouts & linker-options]
+            (.downcallHandle
+             linker (symbol name)
+             (java.lang.foreign.FunctionDescriptor/of
+              return-layout
+              (into-array java.lang.foreign.MemoryLayout argument-layouts))
+             (into-array
+              java.lang.foreign.Linker$Option
+              (into [capture] linker-options))))]
+      {:state-layout state-layout
+       :errno-handle errno-handle
+       :fstatat
+       (bind "fstatat" java.lang.foreign.ValueLayout/JAVA_INT
+             [java.lang.foreign.ValueLayout/JAVA_INT
+              java.lang.foreign.ValueLayout/ADDRESS
+              java.lang.foreign.ValueLayout/ADDRESS
+              java.lang.foreign.ValueLayout/JAVA_INT])
+       :open
+       (bind "open" java.lang.foreign.ValueLayout/JAVA_INT
+             [java.lang.foreign.ValueLayout/ADDRESS
+              java.lang.foreign.ValueLayout/JAVA_INT
+              java.lang.foreign.ValueLayout/JAVA_INT]
+             (java.lang.foreign.Linker$Option/firstVariadicArg 2))
+       :fstat
+       (bind "fstat" java.lang.foreign.ValueLayout/JAVA_INT
+             [java.lang.foreign.ValueLayout/JAVA_INT
+              java.lang.foreign.ValueLayout/ADDRESS])
+       :fcntl
+       (bind "fcntl" java.lang.foreign.ValueLayout/JAVA_INT
+             [java.lang.foreign.ValueLayout/JAVA_INT
+              java.lang.foreign.ValueLayout/JAVA_INT
+              java.lang.foreign.ValueLayout/ADDRESS]
+             (java.lang.foreign.Linker$Option/firstVariadicArg 2))
+       :read
+       (bind "read" java.lang.foreign.ValueLayout/JAVA_LONG
+             [java.lang.foreign.ValueLayout/JAVA_INT
+              java.lang.foreign.ValueLayout/ADDRESS
+              java.lang.foreign.ValueLayout/JAVA_LONG])
+       :close
+       (bind "close" java.lang.foreign.ValueLayout/JAVA_INT
+             [java.lang.foreign.ValueLayout/JAVA_INT])})
+    (catch clojure.lang.ExceptionInfo exception
+      (throw exception))
+    (catch Exception _
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :descriptor-bound-source-snapshot
+       :jdk26-darwin-source-snapshot-ffi-binding-unavailable {}))))
+
+(defn- p18-t04-verified-mir-c-source-native-errno
+  [binding state]
+  (int
+   (.invokeWithArguments
+    (:errno-handle binding)
+    (object-array [state (long 0)]))))
+
+(defn- p18-t04-verified-mir-c-source-native-int-call
+  [binding operation state arguments]
+  (int
+   (.invokeWithArguments
+    (get binding operation)
+    (object-array (into [state] arguments)))))
+
+(defn- p18-t04-verified-mir-c-source-native-long-call
+  [binding operation state arguments]
+  (long
+   (.invokeWithArguments
+    (get binding operation)
+    (object-array (into [state] arguments)))))
+
+(defn- p18-t04-verified-mir-c-source-native-stat-record
+  [segment]
+  (let [mode (bit-and 0xffff
+                      (int (.get segment
+                                 java.lang.foreign.ValueLayout/JAVA_SHORT
+                                 (long 4))))]
+    {:device (int (.get segment java.lang.foreign.ValueLayout/JAVA_INT
+                        (long 0)))
+     :inode (long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                        (long 8)))
+     :mode mode
+     :byte-count
+     (long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                 (long 96)))
+     :modified-time
+     [(long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                  (long 48)))
+      (long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                  (long 56)))]
+     :changed-time
+     [(long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                  (long 64)))
+      (long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                  (long 72)))]
+     :birth-time
+     [(long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                  (long 80)))
+      (long (.get segment java.lang.foreign.ValueLayout/JAVA_LONG
+                  (long 88)))]}))
+
+(defn- p18-t04-verified-mir-c-source-native-path-stat!
+  [binding arena state source-path actual-path]
+  (let [path-segment (.allocateFrom arena actual-path)
+        stat-segment
+        (.allocate arena (long p18-t04-darwin-stat-byte-count) (long 8))
+        return-code
+        (p18-t04-verified-mir-c-source-native-int-call
+         binding :fstatat state
+         [(int p18-t04-darwin-at-fdcwd) path-segment stat-segment
+          (int p18-t04-darwin-at-symlink-nofollow-any)])]
+    (when (neg? return-code)
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :descriptor-bound-source-snapshot
+       :nofollow-source-path-stat-failed
+       {:captured-errno
+        (p18-t04-verified-mir-c-source-native-errno binding state)}))
+    (p18-t04-verified-mir-c-source-native-stat-record stat-segment)))
+
+(defn- p18-t04-verified-mir-c-source-native-fstat!
+  [binding arena state source-path file-descriptor]
+  (let [stat-segment
+        (.allocate arena (long p18-t04-darwin-stat-byte-count) (long 8))
+        return-code
+        (p18-t04-verified-mir-c-source-native-int-call
+         binding :fstat state [file-descriptor stat-segment])]
+    (when (neg? return-code)
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :descriptor-bound-source-snapshot
+       :opened-source-fstat-failed
+       {:captured-errno
+        (p18-t04-verified-mir-c-source-native-errno binding state)}))
+    (p18-t04-verified-mir-c-source-native-stat-record stat-segment)))
+
+(defn- p18-t04-verified-mir-c-source-native-open!
+  [binding arena state source-path actual-path]
+  (let [path-segment (.allocateFrom arena actual-path)
+        file-descriptor
+        (p18-t04-verified-mir-c-source-native-int-call
+         binding :open state
+         [path-segment
+          (int p18-t04-darwin-open-read-nofollow-flags)
+          (int 0)])]
+    (when (neg? file-descriptor)
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :bounded-readable-regular-gravity-source
+       :descriptor-open-read-nofollow-failed
+       {:maximum-byte-count p18-t04-verified-mir-c-maximum-source-bytes
+        :captured-errno
+        (p18-t04-verified-mir-c-source-native-errno binding state)}))
+    file-descriptor))
+
+(defn- p18-t04-verified-mir-c-source-native-fd-path!
+  [binding arena state source-path file-descriptor]
+  (let [path-buffer (.allocate arena (long 4096) (long 1))
+        return-code
+        (p18-t04-verified-mir-c-source-native-int-call
+         binding :fcntl state
+         [file-descriptor (int p18-t04-darwin-f-getpath) path-buffer])]
+    (when (neg? return-code)
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :descriptor-bound-source-snapshot
+       :opened-source-f-getpath-failed
+       {:captured-errno
+        (p18-t04-verified-mir-c-source-native-errno binding state)}))
+    (.getString path-buffer (long 0)
+                java.nio.charset.StandardCharsets/UTF_8)))
+
+(defn- p18-t04-verified-mir-c-source-native-read-call
+  [binding state file-descriptor buffer maximum-byte-count]
+  (p18-t04-verified-mir-c-source-native-long-call
+   binding :read state
+   [file-descriptor buffer (long maximum-byte-count)]))
+
+(defn- p18-t04-verified-mir-c-source-native-read-bytes!
+  [binding arena state source-path file-descriptor initial-byte-count]
+  (let [capacity (inc initial-byte-count)
+        buffer (.allocate arena (long capacity) (long 1))]
+    (loop [offset 0]
+      (let [remaining (- capacity offset)
+            read-count
+            (p18-t04-verified-mir-c-source-native-read-call
+             binding state file-descriptor
+             (.asSlice buffer (long offset) (long remaining)) remaining)]
+        (cond
+          (neg? read-count)
+          (p18-t04-verified-mir-c-source-snapshot-fail!
+           source-path :stable-bounded-source-snapshot
+           :opened-source-read-failed
+           {:captured-errno
+            (p18-t04-verified-mir-c-source-native-errno binding state)})
+
+          (zero? read-count)
+          (do
+            (when-not (= offset initial-byte-count)
+              (p18-t04-verified-mir-c-source-snapshot-fail!
+               source-path :stable-bounded-source-snapshot
+               :opened-source-size-changed-during-snapshot
+               {:initial-byte-count initial-byte-count
+                :observed-byte-count offset}))
+            (.toArray (.asSlice buffer (long 0) (long offset))
+                      java.lang.foreign.ValueLayout/JAVA_BYTE))
+
+          (> (+ offset read-count) initial-byte-count)
+          (p18-t04-verified-mir-c-source-snapshot-fail!
+           source-path :stable-bounded-source-snapshot
+           :opened-source-size-grew-during-snapshot
+           {:maximum-byte-count
+            p18-t04-verified-mir-c-maximum-source-bytes
+            :initial-byte-count initial-byte-count
+            :observed-byte-count (+ offset read-count)})
+
+          :else
+          (recur (+ offset (int read-count))))))))
+
+(defn- p18-t04-verified-mir-c-source-native-close
+  [binding state file-descriptor]
+  (p18-t04-verified-mir-c-source-native-int-call
+   binding :close state [file-descriptor]))
+
+(defn- p18-t04-verified-mir-c-with-source-descriptor!
+  [binding arena state source-path actual-path f]
+  (let [file-descriptor
+        (p18-t04-verified-mir-c-source-native-open!
+         binding arena state source-path actual-path)
+        close-attempted? (atom false)]
+    (try
+      (let [result (f file-descriptor)
+            _ (reset! close-attempted? true)
+            close-code
+            (p18-t04-verified-mir-c-source-native-close
+             binding state file-descriptor)]
+        (when-not (zero? close-code)
+          (p18-t04-verified-mir-c-source-snapshot-fail!
+           source-path :descriptor-bound-source-snapshot
+           :opened-source-close-failed
+           {:captured-errno
+            (p18-t04-verified-mir-c-source-native-errno binding state)}))
+        result)
+      (finally
+        (when-not @close-attempted?
+          (try
+            (p18-t04-verified-mir-c-source-native-close
+             binding state file-descriptor)
+            (catch Throwable _ nil)))))))
+
 (defn p18-t04-verified-mir-c-source-input!
   [source-path]
   (let [character-count (when (string? source-path) (count source-path))
@@ -149136,89 +149475,253 @@
           (not (str/blank? source-path))
           (not (str/includes? source-path "\u0000"))
           (not-any? #(Character/isISOControl ^char %) source-path))
-      (p15-s23-c-backend-fail!
-       "C14-INPUT" (if (string? source-path) source-path
-                       "<verified-mir-c-source>") {}
-       {:missing-fact :bounded-public-gravity-source-path
-        :source-target :jvm :requested-target :c
-        :bounded-reason :invalid-source-path-spelling})))
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       (if (string? source-path) source-path
+           "<verified-mir-c-source>")
+       :bounded-public-gravity-source-path
+       :invalid-source-path-spelling {})))
   (try
     (let [requested-path
           (java.nio.file.Paths/get source-path (make-array String 0))
-          nofollow
-          (into-array java.nio.file.LinkOption
-                      [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-          attributes
-          (try
-            (java.nio.file.Files/readAttributes
-             requested-path java.nio.file.attribute.BasicFileAttributes
-             nofollow)
-            (catch java.nio.channels.ClosedByInterruptException interrupted
-              (.interrupt (Thread/currentThread))
-              (throw interrupted))
-            (catch java.io.InterruptedIOException interrupted
-              (.interrupt (Thread/currentThread))
-              (throw interrupted))
-            (catch java.io.IOException _ nil)
-            (catch SecurityException _ nil))
           _
-          (when-not
-           (and attributes (.isRegularFile attributes)
-                (not (java.nio.file.Files/isSymbolicLink requested-path))
-                (java.nio.file.Files/isReadable requested-path)
-                (<= 0 (.size attributes) (* 1024 1024)))
-            (p15-s23-c-backend-fail!
-             "C14-INPUT" source-path {}
-             {:missing-fact :bounded-readable-regular-gravity-source
-              :maximum-byte-count (* 1024 1024)
-              :observed-byte-count (when attributes (.size attributes))
-              :source-target :jvm :requested-target :c
-              :bounded-reason
-              :missing-nonregular-unreadable-or-oversize-source}))
-          _
-          (when-not (qst-or-gravity-source? source-path)
-            (source-path-policy-fail! source-path))
-          source-text (read-gravity-source-text source-path)
-          actual-path
+          (when (java.nio.file.Files/isSymbolicLink requested-path)
+            (p18-t04-verified-mir-c-source-snapshot-fail!
+             source-path :bounded-readable-regular-gravity-source
+             :source-final-component-is-symbolic-link
+             {:maximum-byte-count
+              p18-t04-verified-mir-c-maximum-source-bytes}))
+          requested-actual-path-before
           (.toString
            (.toRealPath requested-path
-                        (make-array java.nio.file.LinkOption 0)))]
-      {:source-path actual-path :source-text source-text})
+                        (make-array java.nio.file.LinkOption 0)))
+          binding
+          (p18-t04-verified-mir-c-source-native-binding! source-path)
+          snapshot
+          (with-open [arena (java.lang.foreign.Arena/ofConfined)]
+            (let [state (.allocate arena (:state-layout binding))
+                  path-stat-before
+                  (p18-t04-verified-mir-c-source-native-path-stat!
+                   binding arena state source-path requested-actual-path-before)]
+              (p18-t04-verified-mir-c-with-source-descriptor!
+               binding arena state source-path requested-actual-path-before
+               (fn [file-descriptor]
+                 (let [descriptor-stat-before
+                       (p18-t04-verified-mir-c-source-native-fstat!
+                        binding arena state source-path file-descriptor)
+                       descriptor-path-before
+                       (p18-t04-verified-mir-c-source-native-fd-path!
+                        binding arena state source-path file-descriptor)
+                       descriptor-path-stat-before
+                       (p18-t04-verified-mir-c-source-native-path-stat!
+                        binding arena state source-path
+                        descriptor-path-before)
+                       initial-byte-count (:byte-count descriptor-stat-before)
+                       regular?
+                       (= p18-t04-darwin-s-ifreg
+                          (bit-and (:mode descriptor-stat-before)
+                                   p18-t04-darwin-s-ifmt))
+                       _
+                       (when-not
+                        (and regular?
+                             (= path-stat-before descriptor-stat-before
+                                descriptor-path-stat-before)
+                             (<= 0 initial-byte-count
+                                 p18-t04-verified-mir-c-maximum-source-bytes))
+                         (p18-t04-verified-mir-c-source-snapshot-fail!
+                          source-path
+                          :bounded-readable-regular-gravity-source
+                          :path-and-opened-descriptor-identity-mismatch
+                          {:maximum-byte-count
+                           p18-t04-verified-mir-c-maximum-source-bytes
+                           :observed-byte-count initial-byte-count}))
+                       bytes
+                       (p18-t04-verified-mir-c-source-native-read-bytes!
+                        binding arena state source-path file-descriptor
+                        initial-byte-count)
+                       descriptor-stat-after
+                       (p18-t04-verified-mir-c-source-native-fstat!
+                        binding arena state source-path file-descriptor)
+                       descriptor-path-after
+                       (p18-t04-verified-mir-c-source-native-fd-path!
+                        binding arena state source-path file-descriptor)
+                       descriptor-path-stat-after
+                       (p18-t04-verified-mir-c-source-native-path-stat!
+                        binding arena state source-path descriptor-path-after)
+                       requested-path-stat-after
+                       (p18-t04-verified-mir-c-source-native-path-stat!
+                        binding arena state source-path
+                        requested-actual-path-before)
+                       requested-actual-path-after
+                       (.toString
+                        (.toRealPath
+                         requested-path
+                         (make-array java.nio.file.LinkOption 0)))]
+                   (when-not
+                    (and (= path-stat-before descriptor-stat-before
+                            descriptor-path-stat-before
+                            descriptor-stat-after
+                            descriptor-path-stat-after
+                            requested-path-stat-after)
+                         (= requested-actual-path-before
+                            requested-actual-path-after)
+                         (not (java.nio.file.Files/isSymbolicLink
+                               requested-path))
+                         (= descriptor-path-before descriptor-path-after)
+                         (= (alength bytes)
+                            (:byte-count descriptor-stat-after)))
+                     (p18-t04-verified-mir-c-source-snapshot-fail!
+                      source-path :stable-bounded-source-snapshot
+                      :source-path-or-descriptor-mutated-during-snapshot
+                      {:observed-byte-count (alength bytes)
+                       :after-byte-count
+                       (:byte-count descriptor-stat-after)}))
+                   {:actual-path descriptor-path-after
+                    :identity descriptor-stat-after
+                    :bytes bytes})))))
+          bytes (:bytes snapshot)
+          actual-path (:actual-path snapshot)
+          _
+          (when-not (qst-or-gravity-source? source-path)
+            (source-path-policy-fail! source-path bytes))
+          source-text (decode-gravity-source-bytes actual-path bytes)
+          content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+      {:source-path actual-path
+       :source-text source-text
+       :source-snapshot-evidence
+       {:kind :gravity/p18-t04-bounded-source-snapshot
+        :schema-version 1
+        :policy-id
+        (p15-s23-c11-mir-digest
+         (:source-snapshot-policy
+          p18-t04-experimental-verified-mir-c-route-policy))
+        :actual-path actual-path
+        :file-key-hash
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/p18-t04-source-file-key
+          :schema-version 1
+          :device (get-in snapshot [:identity :device])
+          :inode (get-in snapshot [:identity :inode])})
+        :byte-count (alength bytes)
+        :content-hash content-hash
+        :capture-provider :jdk26-ffm-darwin-libsystem
+        :native-functions
+        ["fstatat" "open" "fstat" "fcntl" "read" "close"]
+        :identity-observation-phase-count
+        (count
+         (get-in p18-t04-experimental-verified-mir-c-route-policy
+                 [:source-snapshot-policy :identity-observation-phases]))
+        :source-byte-path-reopen-count 0
+        :opened-handle-file-key-observation
+        :native-fstat-device-and-inode
+        :opened-handle-size-parity? true
+        :path-and-descriptor-identity-parity? true
+        :native-access-enabled?
+        (.isNativeAccessEnabled (.getModule clojure.lang.RT))
+        :status :captured}})
     (catch java.nio.file.NoSuchFileException _
-      (p15-s23-c-backend-fail!
-       "C14-INPUT" source-path {}
-       {:missing-fact :readable-gravity-source
-        :source-target :jvm :requested-target :c
-        :bounded-reason :missing-source-file}))
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :bounded-readable-regular-gravity-source
+       :missing-nonregular-unreadable-or-oversize-source
+       {:maximum-byte-count
+        p18-t04-verified-mir-c-maximum-source-bytes}))
     (catch java.nio.file.AccessDeniedException _
-      (p15-s23-c-backend-fail!
-       "C14-INPUT" source-path {}
-       {:missing-fact :readable-gravity-source
-        :source-target :jvm :requested-target :c
-        :bounded-reason :source-access-denied}))
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :bounded-readable-regular-gravity-source
+       :missing-nonregular-unreadable-or-oversize-source
+       {:maximum-byte-count
+        p18-t04-verified-mir-c-maximum-source-bytes}))
     (catch java.nio.file.InvalidPathException _
-      (p15-s23-c-backend-fail!
-       "C14-INPUT" source-path {}
-       {:missing-fact :readable-gravity-source
-        :source-target :jvm :requested-target :c
-        :bounded-reason :invalid-source-path}))
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :readable-gravity-source :invalid-source-path {}))
     (catch java.nio.channels.ClosedByInterruptException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
     (catch java.io.InterruptedIOException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
+    (catch UnsupportedOperationException _
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :descriptor-bound-source-snapshot
+       :source-provider-lacks-descriptor-bound-capture {}))
+    (catch SecurityException _
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :readable-gravity-source :source-security-denial {}))
     (catch java.io.IOException _
-      (p15-s23-c-backend-fail!
-       "C14-INPUT" source-path {}
-       {:missing-fact :readable-gravity-source
-        :source-target :jvm :requested-target :c
-        :bounded-reason :source-io-failure}))))
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :readable-gravity-source :source-io-failure {}))
+    (catch clojure.lang.ExceptionInfo exception
+      (throw exception))
+    (catch Exception _
+      (p18-t04-verified-mir-c-source-snapshot-fail!
+       source-path :descriptor-bound-source-snapshot
+       :contained-source-snapshot-host-failure {}))))
+
+(defn- p18-t04-verified-mir-c-authenticated-source-snapshot!
+  [source-path source-text evidence]
+  (let [source-bytes
+        (when (string? source-text)
+          (.getBytes ^String source-text
+                     java.nio.charset.StandardCharsets/UTF_8))
+        snapshot-policy
+        (:source-snapshot-policy
+         p18-t04-experimental-verified-mir-c-route-policy)
+        expected-policy-id (p15-s23-c11-mir-digest snapshot-policy)
+        expected-content-hash
+        (when source-bytes
+          (str "sha256:" (sha256-bytes-hex source-bytes)))
+        expected-phase-count
+        (count (:identity-observation-phases snapshot-policy))]
+    (when-not
+     (and (string? source-path)
+          source-bytes
+          (map? evidence)
+          (= p18-t04-verified-mir-c-source-snapshot-evidence-keys
+             (set (keys evidence)))
+          (= :gravity/p18-t04-bounded-source-snapshot (:kind evidence))
+          (= 1 (:schema-version evidence))
+          (= expected-policy-id (:policy-id evidence))
+          (= source-path (:actual-path evidence))
+          (string? (:file-key-hash evidence))
+          (re-matches #"sha256:[0-9a-f]{64}" (:file-key-hash evidence))
+          (= (alength ^bytes source-bytes) (:byte-count evidence))
+          (<= 0 (:byte-count evidence)
+              p18-t04-verified-mir-c-maximum-source-bytes)
+          (= expected-content-hash (:content-hash evidence))
+          (= (:capture-provider snapshot-policy)
+             (:capture-provider evidence))
+          (= (:native-functions snapshot-policy)
+             (:native-functions evidence))
+          (= expected-phase-count
+             (:identity-observation-phase-count evidence))
+          (= 0 (:source-byte-path-reopen-count evidence))
+          (= :native-fstat-device-and-inode
+             (:opened-handle-file-key-observation evidence))
+          (true? (:opened-handle-size-parity? evidence))
+          (true? (:path-and-descriptor-identity-parity? evidence))
+          (= (.isNativeAccessEnabled (.getModule clojure.lang.RT))
+             (:native-access-enabled? evidence))
+          (= :captured (:status evidence)))
+      (p18-t04-fail!
+       "P18T04001"
+       {:source (if (string? source-path)
+                  source-path
+                  "<verified-mir-c-source>")
+        :missing-fields
+        [:authenticated-descriptor-bound-source-snapshot-evidence]}))
+    {:source-snapshot-evidence evidence
+     :source-snapshot-evidence-id
+     (p15-s23-c11-mir-digest
+      {:kind :gravity/p18-t04-authenticated-source-snapshot-evidence
+       :schema-version 1
+       :evidence evidence})}))
 
 (defn- p18-t04-experimental-verified-mir-c-gate-b-handoff!
-  [source-path output-directory gate-b]
-  (p15-s23-b2-c17-gate-b-integrity-preflight! source-path gate-b)
-  (let [receipt (:publication-receipt gate-b)
+  [source-path source-text source-snapshot-evidence output-directory gate-b]
+  (let [{:keys [source-snapshot-evidence source-snapshot-evidence-id]}
+        (p18-t04-verified-mir-c-authenticated-source-snapshot!
+         source-path source-text source-snapshot-evidence)
+        _ (p15-s23-b2-c17-gate-b-integrity-preflight! source-path gate-b)
+        receipt (:publication-receipt gate-b)
         provenance (:actual-path-provenance gate-b)
         expected-semantic-id
         (p15-s23-b2-c17-gate-b-artifact-id gate-b)
@@ -149262,6 +149765,8 @@
        {:source source-path
         :missing-fields [:exact-published-c17-gate-b-handoff]}))
     {:gate-b gate-b
+     :source-snapshot-evidence source-snapshot-evidence
+     :source-snapshot-evidence-id source-snapshot-evidence-id
      :publication-receipt-id
      (p15-s23-c11-mir-digest
       {:kind :gravity/b2-c17-gate-b-publication-receipt
@@ -149286,10 +149791,12 @@
    :clojure-seed-boundary? (:clojure-seed-boundary? gate-b)})
 
 (defn- p18-t04-experimental-verified-mir-c-route-record
-  [source-path source-text output-directory gate-b]
-  (let [{:keys [gate-b publication-receipt-id]}
+  [source-path source-text source-snapshot-evidence output-directory gate-b]
+  (let [{:keys [gate-b publication-receipt-id
+                source-snapshot-evidence source-snapshot-evidence-id]}
         (p18-t04-experimental-verified-mir-c-gate-b-handoff!
-         source-path output-directory gate-b)
+         source-path source-text source-snapshot-evidence
+         output-directory gate-b)
         summary
         (p18-t04-experimental-verified-mir-c-gate-b-summary
          gate-b publication-receipt-id)
@@ -149305,7 +149812,9 @@
          {:kind :gravity/p18-t04-experimental-verified-mir-c-route-artifact
           :schema-version 1 :semantic-id semantic-id})
         actual-path-provenance
-        {:source source-path :output-directory output-directory}
+        {:source source-path
+         :source-snapshot-evidence-id source-snapshot-evidence-id
+         :output-directory output-directory}
         actual-path-binding-id
         (p15-s23-c11-mir-digest
          {:kind :gravity/p18-t04-experimental-verified-mir-c-route-path-binding
@@ -149323,6 +149832,8 @@
          {:kind (gravity-source-kind source-path)
           :extension (gravity-source-extension source-path)
           :content-hash (str "sha256:" (sha256-hex source-text))}
+         :source-snapshot-evidence source-snapshot-evidence
+         :source-snapshot-evidence-id source-snapshot-evidence-id
          :source-target :jvm :requested-target :c :profile :hosted
          :lowering-mode :verified-mir
          :command-boundary
@@ -149368,13 +149879,13 @@
           output-directory
           (p18-t04-verified-mir-c-output-directory!
            (:source-path request) (:output-path request))
-          {:keys [source-path source-text]}
+          {:keys [source-path source-text source-snapshot-evidence]}
           (p18-t04-verified-mir-c-source-input! (:source-path request))]
       ;; The private Gate-B path executes the projector while the complete
       ;; bundle is still staged, then makes the exclusive rename its final
       ;; success-path effect and returns this precomputed route record.
       (p15-s23-stage2-b2-c17-gate-b-p18-t04-route-source-artifact!
-       source-path source-text output-directory))
+       source-path source-text source-snapshot-evidence output-directory))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))

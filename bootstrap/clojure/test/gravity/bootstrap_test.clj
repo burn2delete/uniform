@@ -38190,6 +38190,13 @@
               "runtime-derived" "-o" "target/runtime-derived-output"])
             valid-source
             (bootstrap/p18-t04-verified-mir-c-source-input! source-path)
+            valid-source-snapshot
+            (:source-snapshot-evidence valid-source)
+            valid-source-snapshot-id
+            (bootstrap/p15-s23-c11-mir-digest
+             {:kind :gravity/p18-t04-authenticated-source-snapshot-evidence
+              :schema-version 1
+              :evidence valid-source-snapshot})
             wrong-extension (.resolve root "wrong.txt")
             _ (spit (.toFile wrong-extension) authenticated-b2-gate-a-source)
             oversize (.resolve root "oversize.gravity")
@@ -38319,6 +38326,9 @@
             route-handoff!
             (authenticated-b2-gate-b-private-var
              'p18-t04-experimental-verified-mir-c-gate-b-handoff!)
+            authenticate-snapshot!
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-verified-mir-c-authenticated-source-snapshot!)
             synthetic-id
             "sha256:0000000000000000000000000000000000000000000000000000000000000000"
             synthetic-gate-b
@@ -38338,9 +38348,43 @@
              {route-handoff!
               (fn [& _]
                 {:gate-b synthetic-gate-b
+                 :source-snapshot-evidence valid-source-snapshot
+                 :source-snapshot-evidence-id valid-source-snapshot-id
                  :publication-receipt-id synthetic-id})}
              #(route-record! source-path authenticated-b2-gate-a-source
+                             valid-source-snapshot
                              valid-output synthetic-gate-b))
+            projected-route-arguments (atom nil)
+            projected-route
+            (with-redefs-fn
+             {sealed-route
+              (fn [projected-source-path projected-source-text
+                   projected-source-snapshot projected-output-directory]
+                (reset! projected-route-arguments
+                        [projected-source-path projected-source-text
+                         projected-source-snapshot
+                         projected-output-directory])
+                (let [{:keys [source-snapshot-evidence
+                              source-snapshot-evidence-id]}
+                      (authenticate-snapshot!
+                       projected-source-path projected-source-text
+                       projected-source-snapshot)]
+                  (with-redefs-fn
+                   {route-handoff!
+                    (fn [& _]
+                      {:gate-b synthetic-gate-b
+                       :source-snapshot-evidence source-snapshot-evidence
+                       :source-snapshot-evidence-id
+                       source-snapshot-evidence-id
+                       :publication-receipt-id synthetic-id})}
+                   #(route-record!
+                     projected-source-path projected-source-text
+                     projected-source-snapshot projected-output-directory
+                     synthetic-gate-b))))}
+             #(bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
+               (p18-t04-verified-mir-request
+                source-path output-relative
+                [:target :lowering :output])))
             after
             (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
         (is (= 1 (count (set canonical))) canonical)
@@ -38411,6 +38455,19 @@
                 bootstrap/p18-t04-experimental-verified-mir-c-route-policy)))
         (is (= :implemented-experimental-public-command-route-governance-pending
                (:status governance-route)))
+        (is (= :implemented-experimental-public-command-route-governance-pending
+               (:status projected-route)))
+        (is (= [source-path authenticated-b2-gate-a-source
+                valid-source-snapshot valid-output]
+               @projected-route-arguments))
+        (is (= valid-source-snapshot
+               (:source-snapshot-evidence projected-route)))
+        (is (= valid-source-snapshot-id
+               (:source-snapshot-evidence-id projected-route)))
+        (is (= valid-source-snapshot-id
+               (get-in projected-route
+                       [:actual-path-provenance
+                        :source-snapshot-evidence-id])))
         (is (= :pending-feature-specific-review
                (:governance-status governance-route)))
         (doseq [key [:governance-conforming?
@@ -38435,6 +38492,207 @@
         (is (not (java.nio.file.Files/exists
                   output (make-array java.nio.file.LinkOption 0))))
         (is (= before after))))))
+
+(deftest p18-t04-verified-mir-c-source-snapshot-is-bounded-and-descriptor-bound
+  (with-temp-directory
+    "gravity-p18-t04-source-snapshot-"
+    (fn [root]
+      (let [maximum
+            bootstrap/p18-t04-verified-mir-c-maximum-source-bytes
+            native-open-var
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-verified-mir-c-source-native-open!)
+            original-native-open @native-open-var
+            native-read-var
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-verified-mir-c-source-native-read-call)
+            original-native-read @native-read-var
+            authenticate-snapshot-var
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-verified-mir-c-authenticated-source-snapshot!)
+            move-options
+            (into-array
+             java.nio.file.CopyOption
+             [java.nio.file.StandardCopyOption/ATOMIC_MOVE
+              java.nio.file.StandardCopyOption/REPLACE_EXISTING])
+            valid-results
+            (mapv
+             (fn [suffix]
+               (let [path (.resolve root (str "stable" suffix))
+                     _ (spit (.toFile path) authenticated-b2-gate-a-source)]
+                 (with-redefs-fn
+                  {#'bootstrap/read-gravity-source-text
+                   (fn [& _]
+                     (throw
+                      (AssertionError.
+                       "Gate C reopened an authenticated source path")))}
+                  #(bootstrap/p18-t04-verified-mir-c-source-input!
+                    (.toString path)))))
+             [".gravity" ".qst"])
+            tampered-snapshot-data
+            (let [{:keys [source-path source-text source-snapshot-evidence]}
+                  (first valid-results)]
+              (diagnostic-data
+               #(authenticate-snapshot-var
+                 source-path source-text
+                 (assoc source-snapshot-evidence
+                        :content-hash
+                        "sha256:0000000000000000000000000000000000000000000000000000000000000000"))))
+            exact-limit (.resolve root "exact-limit.gravity")
+            exact-bytes (byte-array maximum)
+            _ (java.util.Arrays/fill exact-bytes (byte 32))
+            _ (java.nio.file.Files/write
+               exact-limit exact-bytes
+               (make-array java.nio.file.OpenOption 0))
+            exact-result
+            (bootstrap/p18-t04-verified-mir-c-source-input!
+             (.toString exact-limit))
+            oversize (.resolve root "oversize-snapshot.gravity")
+            _ (java.nio.file.Files/write
+               oversize (byte-array (inc maximum))
+               (make-array java.nio.file.OpenOption 0))
+            oversize-data
+            (diagnostic-data
+             #(bootstrap/p18-t04-verified-mir-c-source-input!
+               (.toString oversize)))
+            malformed (.resolve root "malformed-snapshot.qst")
+            _ (java.nio.file.Files/write
+               malformed
+               (byte-array [(byte 40) (unchecked-byte 0xc3) (byte 40)])
+               (make-array java.nio.file.OpenOption 0))
+            malformed-data
+            (diagnostic-data
+             #(bootstrap/p18-t04-verified-mir-c-source-input!
+               (.toString malformed)))
+            replacement-diagnostic
+            (fn [label replacement-bytes]
+              (let [source (.resolve root (str label ".gravity"))
+                    replacement (.resolve root (str label "-replacement"))
+                    original (.resolve root (str label "-original"))
+                    displaced (.resolve root (str label "-displaced"))
+                    _ (spit (.toFile source) authenticated-b2-gate-a-source)
+                    _ (java.nio.file.Files/write
+                       replacement replacement-bytes
+                       (make-array java.nio.file.OpenOption 0))]
+                (with-redefs-fn
+                 {native-open-var
+                  (fn [binding arena state reported-source actual-path]
+                    (java.nio.file.Files/move
+                     source original move-options)
+                    (java.nio.file.Files/move
+                     replacement source move-options)
+                    (try
+                      (let [file-descriptor
+                            (original-native-open
+                             binding arena state reported-source actual-path)]
+                        (java.nio.file.Files/move
+                         source displaced move-options)
+                        (java.nio.file.Files/move
+                         original source move-options)
+                        file-descriptor)
+                      (catch Throwable throwable
+                        (when (java.nio.file.Files/exists
+                               original
+                               (make-array java.nio.file.LinkOption 0))
+                          (java.nio.file.Files/move
+                           original source move-options))
+                        (throw throwable))))}
+                 #(diagnostic-data
+                   (fn []
+                     (bootstrap/p18-t04-verified-mir-c-source-input!
+                      (.toString source)))))))
+            regular-replacement-data
+            (replacement-diagnostic
+             "regular-swap"
+             (.getBytes "(ns replacement (:profile :hosted))"
+                        java.nio.charset.StandardCharsets/UTF_8))
+            oversize-replacement-data
+            (replacement-diagnostic
+             "oversize-swap" (byte-array (inc maximum)))
+            growing-source (.resolve root "growing-source.gravity")
+            _ (spit (.toFile growing-source)
+                    authenticated-b2-gate-a-source)
+            read-calls (atom 0)
+            growth-data
+            (with-redefs-fn
+             {native-read-var
+              (fn [binding state file-descriptor buffer byte-count]
+                (when (= 1 (swap! read-calls inc))
+                  (java.nio.file.Files/write
+                   growing-source (byte-array [(byte 32)])
+                   (into-array java.nio.file.OpenOption
+                               [java.nio.file.StandardOpenOption/APPEND])))
+                (original-native-read
+                 binding state file-descriptor buffer byte-count))}
+             #(diagnostic-data
+               (fn []
+                 (bootstrap/p18-t04-verified-mir-c-source-input!
+                  (.toString growing-source)))))]
+        (doseq [result valid-results]
+          (let [evidence (:source-snapshot-evidence result)]
+            (is (= authenticated-b2-gate-a-source (:source-text result)))
+            (is (= #{:kind :schema-version :policy-id :actual-path
+                     :file-key-hash :byte-count :content-hash
+                     :capture-provider :native-functions
+                     :identity-observation-phase-count
+                     :source-byte-path-reopen-count
+                     :opened-handle-file-key-observation
+                     :opened-handle-size-parity?
+                     :path-and-descriptor-identity-parity?
+                     :native-access-enabled? :status}
+                   (set (keys evidence))) evidence)
+            (is (= :gravity/p18-t04-bounded-source-snapshot
+                   (:kind evidence)))
+            (is (= :jdk26-ffm-darwin-libsystem
+                   (:capture-provider evidence)))
+            (is (= ["fstatat" "open" "fstat" "fcntl" "read" "close"]
+                   (:native-functions evidence)))
+            (is (= :native-fstat-device-and-inode
+                   (:opened-handle-file-key-observation evidence)))
+            (is (= [6 0 true true :captured]
+                   ((juxt :identity-observation-phase-count
+                          :source-byte-path-reopen-count
+                          :opened-handle-size-parity?
+                          :path-and-descriptor-identity-parity?
+                          :status)
+                    evidence)))
+            (is (= (.isNativeAccessEnabled (.getModule clojure.lang.RT))
+                   (:native-access-enabled? evidence)))
+            (doseq [key [:policy-id :file-key-hash :content-hash]]
+              (is (re-matches #"sha256:[0-9a-f]{64}" (get evidence key))
+                  [key evidence]))))
+        (is (= "P18T04001" (:id tampered-snapshot-data))
+            tampered-snapshot-data)
+        (is (= [:authenticated-descriptor-bound-source-snapshot-evidence]
+               (:missing-fields tampered-snapshot-data))
+            tampered-snapshot-data)
+        (is (= maximum
+               (get-in exact-result
+                       [:source-snapshot-evidence :byte-count])))
+        (is (= "C14-INPUT" (:id oversize-data)) oversize-data)
+        (is (= :bounded-readable-regular-gravity-source
+               (:missing-fact oversize-data)) oversize-data)
+        (is (= maximum (get-in oversize-data
+                               [:facts :maximum-byte-count]))
+            oversize-data)
+        (is (= "L1-SOURCE-ENCODING" (:id malformed-data)) malformed-data)
+        (doseq [data [regular-replacement-data oversize-replacement-data]]
+          (is (= "C14-INPUT" (:id data)) data)
+          (is (= :bounded-readable-regular-gravity-source
+                 (:missing-fact data)) data)
+          (is (= :path-and-opened-descriptor-identity-mismatch
+                 (get-in data [:facts :bounded-reason])) data)
+          (is (not (str/includes? (pr-str data) "file-key-hash")) data)
+          (is (= [{:kind :host-and-tool-details
+                   :status :redacted
+                   :policy :hashes-and-bounded-counts-only}]
+                 (:redactions data)) data))
+        (is (= "C14-INPUT" (:id growth-data)) growth-data)
+        (is (= :stable-bounded-source-snapshot
+               (:missing-fact growth-data)) growth-data)
+        (is (= :opened-source-size-grew-during-snapshot
+               (get-in growth-data [:facts :bounded-reason]))
+            growth-data)))))
 
 (deftest p18-t04-verified-mir-c-shell-native-classifier-is-exact
   (with-p18-t04-verified-mir-target-root
@@ -39050,6 +39308,26 @@
                     conformance (:conformance sidecar)]
                 (is (= source-real
                        (get-in record [:actual-path-provenance :source])))
+                (is (= (:source-snapshot-evidence-id record)
+                       (get-in record
+                               [:actual-path-provenance
+                                :source-snapshot-evidence-id])))
+                (is (= (:source-snapshot-evidence-id record)
+                       (bootstrap/p15-s23-c11-mir-digest
+                        {:kind
+                         :gravity/p18-t04-authenticated-source-snapshot-evidence
+                         :schema-version 1
+                         :evidence (:source-snapshot-evidence record)})))
+                (is (= source-real
+                       (get-in record
+                               [:source-snapshot-evidence :actual-path])))
+                (is (= (get-in record [:source :content-hash])
+                       (get-in record
+                               [:source-snapshot-evidence :content-hash])))
+                (is (= 6
+                       (get-in record
+                               [:source-snapshot-evidence
+                                :identity-observation-phase-count])))
                 (is (= output-real
                        (get-in record
                                [:actual-path-provenance
