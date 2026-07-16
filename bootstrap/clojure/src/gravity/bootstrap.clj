@@ -8,7 +8,8 @@
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.walk :as walk])
+            [clojure.walk :as walk]
+            [gravity.diagnostics :as diagnostics])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
 
@@ -47,7 +48,7 @@
 
 (defn diagnostic
   [id message data]
-  (ex-info message (merge {:id id :message message :bootstrap-stage :stage0} data)))
+  (diagnostics/diagnostic id message data))
 
 (defn fail!
   [id message data]
@@ -147104,6 +147105,18 @@
 (def p18-t02-jar-path (str p18-t02-build-root "/gravity-jvm-cli.jar"))
 (def p18-t02-launcher-source "bootstrap/clojure/java/gravity/cli/Main.java")
 (def p18-t02-bootstrap-source "bootstrap/clojure/src/gravity/bootstrap.clj")
+(def p18-t02-diagnostics-source
+  "bootstrap/clojure/src/gravity/diagnostics.clj")
+(def p18-t02-manifest-entry "META-INF/MANIFEST.MF")
+(def p18-t02-launcher-class-entry "gravity/cli/Main.class")
+(def p18-t02-source-inventory
+  [{:role :launcher :path p18-t02-launcher-source
+    :compiled-jar-entry p18-t02-launcher-class-entry}
+   {:role :bootstrap :path p18-t02-bootstrap-source
+    :jar-entry "gravity/bootstrap.clj"}
+   {:role :diagnostics :path p18-t02-diagnostics-source
+    :jar-entry "gravity/diagnostics.clj"}
+   {:role :deps :path "deps.edn"}])
 (def p18-t02-artifact-dir "docs/artifacts/phase-18/jvm-cli")
 
 (defn p18-packaged-jvm-cli?
@@ -147198,6 +147211,153 @@
     (str "sha256:" (p18-bytes-sha256 (p18-file-bytes path)))
     "sha256:missing"))
 
+(defn p18-t02-source-material
+  []
+  (mapv (fn [{:keys [path]}]
+          {:path path
+           :hash (if (string? path)
+                   (p18-file-sha256 path)
+                   "sha256:missing")})
+        p18-t02-source-inventory))
+
+(defn p18-t02-source-hashes
+  []
+  (into (sorted-map)
+        (map (fn [{:keys [role path]}]
+               [role (if (string? path)
+                       (p18-file-sha256 path)
+                       "sha256:missing")]))
+        p18-t02-source-inventory))
+
+(defn p18-t02-packaged-source-entries
+  []
+  (into
+   []
+   (keep
+    (fn [{:keys [path jar-entry]}]
+      (let [suffix (str "/" jar-entry)]
+        (when (and (string? path) (string? jar-entry)
+                   (str/ends-with? path suffix))
+          {:path path
+           :source-root (subs path 0 (- (count path) (count suffix)))
+           :jar-entry jar-entry}))))
+   (filterv :jar-entry p18-t02-source-inventory)))
+
+(defn p18-t02-compiled-jar-entries
+  []
+  (mapv :compiled-jar-entry
+        (filterv :compiled-jar-entry p18-t02-source-inventory)))
+
+(defn p18-t02-expected-jar-file-entries
+  []
+  (->> (concat [p18-t02-manifest-entry]
+               (p18-t02-compiled-jar-entries)
+               (map :jar-entry (p18-t02-packaged-source-entries)))
+       sort
+       vec))
+
+(defn p18-t02-source-inventory-report
+  []
+  (let [inventory p18-t02-source-inventory
+        roles (mapv :role inventory)
+        paths (mapv :path inventory)
+        packaged-inventory (filterv :jar-entry inventory)
+        compiled-inventory (filterv :compiled-jar-entry inventory)
+        packaged-sources (p18-t02-packaged-source-entries)
+        jar-entries (mapv :jar-entry packaged-inventory)
+        compiled-jar-entries (mapv :compiled-jar-entry compiled-inventory)
+        material (p18-t02-source-material)
+        valid?
+        (and (= #{:launcher :bootstrap :diagnostics :deps} (set roles))
+             (= (count roles) (count (set roles)))
+             (= (count paths) (count (set paths)))
+             (= #{:bootstrap :diagnostics}
+                (set (map :role packaged-inventory)))
+             (= [:launcher] (mapv :role compiled-inventory))
+             (= (count packaged-inventory) (count packaged-sources))
+             (= (count jar-entries) (count (set jar-entries)))
+             (= [p18-t02-launcher-class-entry] compiled-jar-entries)
+             (= (count compiled-jar-entries)
+                (count (set compiled-jar-entries)))
+             (every? (fn [path]
+                       (and (string? path)
+                            (not (str/blank? path))
+                            (not (.isAbsolute (java.io.File. path)))
+                            (.isFile (java.io.File. path))))
+                     paths)
+             (every? #(re-matches #"sha256:[0-9a-f]{64}" (:hash %))
+                     material))]
+    {:valid? (boolean valid?)
+     :roles roles
+     :paths paths
+     :packaged-source-entries (mapv :jar-entry packaged-sources)
+     :source-material material}))
+
+(defn p18-t02-validate-source-inventory!
+  []
+  (let [report (p18-t02-source-inventory-report)]
+    (when-not (:valid? report)
+      (fail! "P18T02006"
+             "packaged JVM CLI source inventory is invalid"
+             {:source-span {:source "P18-T02 source inventory"}
+              :missing-fact :complete-packaged-source-inventory
+              :observed-source-count (count (:paths report))
+              :observed-packaged-source-count
+              (count (:packaged-source-entries report))
+              :remediation
+              "Restore the exact declared launcher, bootstrap, diagnostics, and deps inputs before building the package."}))
+    report))
+
+(defn p18-t02-jar-source-inventory-report
+  [jar-entries]
+  (let [expected (mapv :jar-entry (p18-t02-packaged-source-entries))
+        observed (filterv #(and (string? %)
+                                (str/ends-with? % ".clj"))
+                          jar-entries)
+        entry-frequencies (frequencies jar-entries)
+        valid?
+        (and (every? string? jar-entries)
+             (= expected observed)
+             (every? #(= 1 (get entry-frequencies % 0)) expected))]
+    {:valid? (boolean valid?)
+     :expected expected
+     :observed observed
+     :entry-frequencies entry-frequencies}))
+
+(defn p18-t02-jar-inventory-report
+  [jar-file-entries]
+  (let [expected (p18-t02-expected-jar-file-entries)
+        string-entries? (every? string? jar-file-entries)
+        observed (if string-entries?
+                   (vec (sort jar-file-entries))
+                   (vec jar-file-entries))
+        entry-frequencies (frequencies jar-file-entries)
+        valid?
+        (and string-entries?
+             (= expected observed)
+             (every? #(= 1 (get entry-frequencies % 0)) expected))]
+    {:valid? (boolean valid?)
+     :expected expected
+     :observed observed
+     :missing (vec (remove (set observed) expected))
+     :unexpected (vec (remove (set expected) observed))
+     :entry-frequencies entry-frequencies}))
+
+(defn p18-t02-jar-command
+  []
+  (vec
+   (concat
+    ["jar" "--create"
+     (str "--file=" p18-t02-jar-path)
+     (str "--manifest=" p18-t02-manifest-path)
+     "--date=2026-01-01T00:00:00Z"]
+    (mapcat (fn [jar-entry]
+              ["-C" p18-t02-classes-dir jar-entry])
+            (p18-t02-compiled-jar-entries))
+    (mapcat (fn [{:keys [source-root jar-entry]}]
+              ["-C" source-root jar-entry])
+            (p18-t02-packaged-source-entries)))))
+
 (defn p18-t02-classpath-entries
   []
   (vec (remove str/blank?
@@ -147291,8 +147451,11 @@
              "Gravity-Bootstrap-Hosted: true\n"
              "Gravity-Seedless-Release: false\n\n")))
 
+(declare p18-t02-jar-entries p18-t02-jar-file-entries)
+
 (defn p18-t02-build-packaged-jvm-cli!
   []
+  (p18-t02-validate-source-inventory!)
   (p18-ensure-dir! p18-t02-build-root)
   (p18-ensure-dir! p18-t02-classes-dir)
   (p18-t02-write-manifest!)
@@ -147304,21 +147467,46 @@
     p18-t02-launcher-source])
   (p18-t02-shell!
    "p18-t02-jar"
-   ["jar" "--create"
-    (str "--file=" p18-t02-jar-path)
-    (str "--manifest=" p18-t02-manifest-path)
-    "--date=2026-01-01T00:00:00Z"
-    "-C" p18-t02-classes-dir "."
-    "-C" "bootstrap/clojure/src" "gravity/bootstrap.clj"])
+   (p18-t02-jar-command))
+  (let [source-report
+        (p18-t02-jar-source-inventory-report (p18-t02-jar-entries))
+        jar-report
+        (p18-t02-jar-inventory-report (p18-t02-jar-file-entries))]
+    (when-not (and (:valid? source-report) (:valid? jar-report))
+      (fail! "P18T02006"
+             "packaged JVM CLI JAR inventory is invalid"
+             {:source-span {:source p18-t02-jar-path}
+              :missing-fact :exact-whole-jar-file-inventory
+              :expected-file-entries (:expected jar-report)
+              :observed-file-entries (:observed jar-report)
+              :missing-file-entries (:missing jar-report)
+              :unexpected-file-entries (:unexpected jar-report)
+              :packaged-source-inventory-valid?
+              (:valid? source-report)
+              :remediation
+              "Rebuild the package from the exact declared launcher and Clojure source inventory without omissions or ambient files."})))
   p18-t02-jar-path)
 
-(defn p18-t02-jar-entries
+(defn p18-t02-jar-entry-records
   []
   (with-open [jar-file (java.util.jar.JarFile. p18-t02-jar-path)]
     (->> (enumeration-seq (.entries jar-file))
-         (map #(.getName %))
-         sort
+         (map (fn [entry]
+                {:name (.getName entry)
+                 :directory? (.isDirectory entry)}))
+         (sort-by :name)
          vec)))
+
+(defn p18-t02-jar-entries
+  []
+  (mapv :name (p18-t02-jar-entry-records)))
+
+(defn p18-t02-jar-file-entries
+  []
+  (into []
+        (comp (remove :directory?)
+              (map :name))
+        (p18-t02-jar-entry-records)))
 
 (defn p18-t02-dependency-record
   []
@@ -147384,18 +147572,11 @@
               :package-id (:package-id package-manifest)
               :recipe {:javac ["javac" "-cp" "<runtime-classpath>" "-d"
                                p18-t02-classes-dir p18-t02-launcher-source]
-                       :jar ["jar" "--create"
-                             (str "--file=" p18-t02-jar-path)
-                             (str "--manifest=" p18-t02-manifest-path)
-                             "--date=2026-01-01T00:00:00Z"
-                             "-C" p18-t02-classes-dir "."
-                             "-C" "bootstrap/clojure/src"
-                             "gravity/bootstrap.clj"]}
+                       :jar (p18-t02-jar-command)}
               :timestamp-policy :fixed-jar-entry-time
               :network-policy :disabled-after-local-runtime-dependencies
-              :source-hashes {:launcher (p18-file-sha256 p18-t02-launcher-source)
-                              :bootstrap (p18-file-sha256 p18-t02-bootstrap-source)
-                              :deps (p18-file-sha256 "deps.edn")}
+              :source-inventory p18-t02-source-inventory
+              :source-hashes (p18-t02-source-hashes)
               :expected-output-hash jar-hash
               :reproducible-claim :packaged-jvm-bootstrap-milestone
               :final-release-reproducible? false}]
@@ -147413,12 +147594,7 @@
               :builder-identity {:kind :local-jdk
                                  :java-version (System/getProperty "java.version")
                                  :java-runtime (System/getProperty "java.runtime.name")}
-              :source-material [{:path p18-t02-launcher-source
-                                 :hash (p18-file-sha256 p18-t02-launcher-source)}
-                                {:path p18-t02-bootstrap-source
-                                 :hash (p18-file-sha256 p18-t02-bootstrap-source)}
-                                {:path "deps.edn"
-                                 :hash (p18-file-sha256 "deps.edn")}]
+              :source-material (p18-t02-source-material)
               :dependency-record-id (:artifact-id dependency-record)
               :reproducible-build-record-id (:artifact-id reproducible-record)
               :generated-source-ledger []
@@ -147436,9 +147612,7 @@
               :package-version (:package-version package-manifest)
               :artifact-path p18-t02-jar-path
               :dependencies (:dependencies dependency-record)
-              :source-references [{:path p18-t02-launcher-source}
-                                  {:path p18-t02-bootstrap-source}
-                                  {:path "deps.edn"}]
+              :source-references (p18-t02-source-material)
               :capability-summary {:declared #{:io/stdout}
                                    :denied #{:network/ambient :shell/ambient}}
               :unsafe-summary {:unsafe-islands 0}
@@ -147587,7 +147761,15 @@
 (defn p18-t02-packaged-jvm-cli-artifact!
   []
   (p18-t02-build-packaged-jvm-cli!)
-  (let [jar-hash (p18-file-sha256 p18-t02-jar-path)
+  (let [jar-entries (p18-t02-jar-entries)
+        jar-file-entries (p18-t02-jar-file-entries)
+        jar-source-report
+        (p18-t02-jar-source-inventory-report jar-entries)
+        jar-inventory-report
+        (p18-t02-jar-inventory-report jar-file-entries)
+        jar-entry-frequencies (:entry-frequencies jar-source-report)
+        expected-source-entries (:expected jar-source-report)
+        jar-hash (p18-file-sha256 p18-t02-jar-path)
         dependency-record (p18-t02-dependency-record)
         package-manifest (p18-t02-package-manifest jar-hash)
         artifact-manifest (p18-t02-artifact-manifest package-manifest jar-hash)
@@ -147625,10 +147807,15 @@
         proof {:packaged-jar-built? (.isFile (java.io.File. p18-t02-jar-path))
                :jar-contains-launcher?
                (boolean
-                (some #{"gravity/cli/Main.class"} (p18-t02-jar-entries)))
+                (some #{"gravity/cli/Main.class"} jar-entries))
                :jar-contains-bootstrap-source?
-               (boolean
-                (some #{"gravity/bootstrap.clj"} (p18-t02-jar-entries)))
+               (= 1 (get jar-entry-frequencies "gravity/bootstrap.clj" 0))
+               :jar-contains-diagnostics-source?
+               (= 1 (get jar-entry-frequencies "gravity/diagnostics.clj" 0))
+               :jar-contains-packaged-sources-exactly-once?
+               (:valid? jar-source-report)
+               :jar-file-inventory-exact?
+               (:valid? jar-inventory-report)
                :bin-gravity-launches-packaged-jar?
                (and (zero? (:exit bin-version))
                     (str/includes? (:out bin-version)
@@ -147665,7 +147852,10 @@
          :phase :binary-distribution-and-seedless-release
          :jar-path p18-t02-jar-path
          :jar-content-hash jar-hash
-         :jar-entries (p18-t02-jar-entries)
+         :jar-entries jar-entries
+         :jar-file-entries jar-file-entries
+         :packaged-source-inventory p18-t02-source-inventory
+         :packaged-source-entries expected-source-entries
          :command-boundary
          {:public-command "bin/gravity"
           :packaged-command ["java" "-cp"
