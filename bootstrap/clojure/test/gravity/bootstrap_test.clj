@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.cli-test]
+            [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]))
 
 (defn fixture
@@ -21994,6 +21995,9 @@
          {:role :diagnostics
           :path "bootstrap/clojure/src/gravity/diagnostics.clj"
           :jar-entry "gravity/diagnostics.clj"}
+         {:role :darwin-publication
+          :path "bootstrap/clojure/src/gravity/darwin_publication.clj"
+          :jar-entry "gravity/darwin_publication.clj"}
          {:role :deps :path "deps.edn"}]
         expected-packaged-sources
         [{:path "bootstrap/clojure/src/gravity/bootstrap.clj"
@@ -22004,7 +22008,10 @@
           :jar-entry "gravity/cli.clj"}
          {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
           :source-root "bootstrap/clojure/src"
-          :jar-entry "gravity/diagnostics.clj"}]
+          :jar-entry "gravity/diagnostics.clj"}
+         {:path "bootstrap/clojure/src/gravity/darwin_publication.clj"
+          :source-root "bootstrap/clojure/src"
+          :jar-entry "gravity/darwin_publication.clj"}]
         expected-jar-command
         ["jar" "--create"
          (str "--file=" bootstrap/p18-t02-jar-path)
@@ -22013,12 +22020,14 @@
          "-C" bootstrap/p18-t02-classes-dir "gravity/cli/Main.class"
          "-C" "bootstrap/clojure/src" "gravity/bootstrap.clj"
          "-C" "bootstrap/clojure/src" "gravity/cli.clj"
-         "-C" "bootstrap/clojure/src" "gravity/diagnostics.clj"]
+         "-C" "bootstrap/clojure/src" "gravity/diagnostics.clj"
+         "-C" "bootstrap/clojure/src" "gravity/darwin_publication.clj"]
         expected-jar-file-entries
         ["META-INF/MANIFEST.MF"
          "gravity/bootstrap.clj"
          "gravity/cli.clj"
          "gravity/cli/Main.class"
+         "gravity/darwin_publication.clj"
          "gravity/diagnostics.clj"]
         material (bootstrap/p18-t02-source-material)
         source-hashes (bootstrap/p18-t02-source-hashes)
@@ -22047,12 +22056,13 @@
            (bootstrap/p18-t02-compiled-jar-entries)))
     (is (= expected-jar-file-entries
            (bootstrap/p18-t02-expected-jar-file-entries)))
-    (is (= 3 (count (set (map :jar-entry packaged-sources)))))
+    (is (= 4 (count (set (map :jar-entry packaged-sources)))))
     (is (= expected-jar-command jar-command))
     (doseq [entry (map :jar-entry packaged-sources)]
       (is (= 1 (get (frequencies jar-command) entry 0)) entry))
     (is (= (mapv :path inventory) (mapv :path material)))
-    (is (= #{:launcher :bootstrap :cli :diagnostics :deps}
+    (is (= #{:launcher :bootstrap :cli :diagnostics
+             :darwin-publication :deps}
            (set (keys source-hashes))))
     (doseq [[{:keys [role path]} {:keys [hash]}]
             (map vector inventory material)]
@@ -22068,7 +22078,7 @@
     (is (= (bootstrap/p18-t02-source-hashes) source-hashes))
     (is (= (bootstrap/p18-t02-jar-command) jar-command))
     (doseq [hostile-inventory
-            [(subvec expected-inventory 0 4)
+            [(subvec expected-inventory 0 5)
              (assoc-in expected-inventory [4 :path]
                        "bootstrap/clojure/src/gravity/diagnostics.clj")
              (assoc-in expected-inventory [2 :path] nil)
@@ -22085,15 +22095,19 @@
         (is (= :complete-packaged-source-inventory
                (:missing-fact rejected)) rejected)))
     (doseq [hostile-entries
-            [["gravity/bootstrap.clj" "gravity/cli.clj"]
+            [["gravity/bootstrap.clj" "gravity/cli.clj"
+              "gravity/diagnostics.clj"]
              ["gravity/bootstrap.clj" "gravity/bootstrap.clj"
               "gravity/cli.clj"
-              "gravity/diagnostics.clj"]
+              "gravity/diagnostics.clj"
+              "gravity/darwin_publication.clj"]
              ["gravity/bootstrap.clj" "gravity/cli.clj"
               "gravity/diagnostics.clj"
+              "gravity/darwin_publication.clj"
               "gravity/ambient.clj"]
              ["gravity/bootstrap.clj" "gravity/cli.clj"
-              "gravity/diagnostics.clj" nil]]]
+              "gravity/diagnostics.clj"
+              "gravity/darwin_publication.clj" nil]]]
       (is (false?
            (:valid?
             (bootstrap/p18-t02-jar-source-inventory-report
@@ -22154,8 +22168,11 @@
                       "gravity/cli.clj" 0)))
         (is (= 1 (get (:frequencies observation)
                       "gravity/diagnostics.clj" 0)))
+        (is (= 1 (get (:frequencies observation)
+                      "gravity/darwin_publication.clj" 0)))
         (is (= #{"gravity/bootstrap.clj" "gravity/cli.clj"
-                 "gravity/diagnostics.clj"}
+                 "gravity/diagnostics.clj"
+                 "gravity/darwin_publication.clj"}
                (set (filter #(str/ends-with? % ".clj")
                             (:entries observation)))))
         (is (.isFile (java.io.File. (:ambient-file observation))))
@@ -22168,7 +22185,8 @@
               (bootstrap/p18-t02-jar-inventory-report
                (:file-entries observation)))))
         (is (= ["gravity/bootstrap.clj" "gravity/cli.clj"
-                "gravity/diagnostics.clj"]
+                "gravity/diagnostics.clj"
+                "gravity/darwin_publication.clj"]
                (mapv :jar-entry
                      (bootstrap/p18-t02-packaged-source-entries))))
         (is (= 1 (get (frequencies (:jar-command observation))
@@ -22177,6 +22195,8 @@
                       "gravity/cli.clj" 0)))
         (is (= 1 (get (frequencies (:jar-command observation))
                       "gravity/diagnostics.clj" 0)))
+        (is (= 1 (get (frequencies (:jar-command observation))
+                      "gravity/darwin_publication.clj" 0)))
         (is (zero? (get-in observation [:packaged :exit])) observation)
         (is (empty? (get-in observation [:packaged :err])) observation)
         (is (str/includes? (get-in observation [:packaged :out])
@@ -22213,6 +22233,7 @@
     (is (true? (:jar-contains-bootstrap-source? proof)))
     (is (true? (:jar-contains-cli-source? proof)))
     (is (true? (:jar-contains-diagnostics-source? proof)))
+    (is (true? (:jar-contains-darwin-publication-source? proof)))
     (is (true? (:jar-contains-packaged-sources-exactly-once? proof)))
     (is (true? (:jar-file-inventory-exact? proof)))
     (is (true? (:bin-gravity-launches-packaged-jar? proof)))
@@ -22230,10 +22251,13 @@
     (is (some #{"gravity/bootstrap.clj"} (:jar-entries artifact)))
     (is (some #{"gravity/cli.clj"} (:jar-entries artifact)))
     (is (some #{"gravity/diagnostics.clj"} (:jar-entries artifact)))
+    (is (some #{"gravity/darwin_publication.clj"}
+              (:jar-entries artifact)))
     (is (= (bootstrap/p18-t02-expected-jar-file-entries)
            (:jar-file-entries artifact)))
     (is (= ["gravity/bootstrap.clj" "gravity/cli.clj"
-            "gravity/diagnostics.clj"]
+            "gravity/diagnostics.clj"
+            "gravity/darwin_publication.clj"]
            (:packaged-source-entries artifact)))
     (is (= bootstrap/p18-t02-source-inventory
            (:packaged-source-inventory artifact)))
@@ -37491,6 +37515,303 @@
                   (make-array java.nio.file.LinkOption 0)))
             (str "temporary C17 publication root survived: " path))))))
 
+(deftest authenticated-b2-gate-b-darwin-provider-failures-are-bounded-and-owned
+  (let [provider-call!
+        (authenticated-b2-gate-b-private-var
+         'p15-s23-b2-c17-gate-b-provider-call!)
+        canonical-receipt
+        (authenticated-b2-gate-b-private-var
+         'p15-s23-b2-c17-gate-b-canonical-provider-receipt)
+        cases
+        [{:operation :native-preflight :reason :native-access-disabled
+          :expected-id "B2-MANIFEST"
+          :expected-missing
+          :jdk26-native-access-required-for-c17-publication}
+         {:operation :native-preflight :reason :missing-native-symbol
+          :expected-id "B2-MANIFEST"
+          :expected-missing :jdk26-darwin-c17-publication-ffi-binding}
+         {:operation :authenticate-destination :reason :destination-exists
+          :expected-id "B2-MANIFEST"
+          :expected-missing
+          :collision-free-regular-c17-output-directory}
+         {:operation :verify-publication
+          :reason :invalid-publication-receipt
+          :expected-id "B13-SCHEMA"
+          :expected-missing :exact-descriptor-relative-c17-bundle}
+         {:operation :fstat :reason :descriptor-stat-failed
+          :expected-id "B13-PROVENANCE"
+          :expected-missing
+          :descriptor-relative-c17-publication-provenance
+          :return-fact :provider-return-code}
+         {:operation :fcntl-address :reason :descriptor-path-failed
+          :expected-id "B13-PROVENANCE"
+          :expected-missing
+          :descriptor-relative-c17-publication-provenance
+          :return-fact :provider-return-code}
+         {:operation :fchmod :reason :descriptor-chmod-failed
+          :expected-id "B13-SCHEMA"
+          :expected-missing :exact-descriptor-relative-c17-bundle
+          :return-fact :provider-return-code}
+         {:operation :fsync :reason :descriptor-sync-failed
+          :expected-id "B13-PROVENANCE"
+          :expected-missing
+          :descriptor-relative-c17-publication-provenance
+          :return-fact :provider-return-code}
+         {:operation :inventory :reason :directory-reopen-failed
+          :expected-id "B13-PROVENANCE"
+          :expected-missing
+          :descriptor-relative-c17-publication-provenance
+          :return-fact :provider-return-code}
+         {:operation :inventory :reason :directory-stream-close-failed
+          :expected-id "B13-PROVENANCE"
+          :expected-missing
+          :descriptor-relative-c17-publication-provenance
+          :return-fact :provider-return-code}
+         {:operation :read-file :reason :file-readback-failed
+          :expected-id "B13-HASH"
+          :expected-missing
+          :descriptor-relative-c17-publication-content
+          :return-fact :provider-return-code}
+         {:operation :validate-bundle :reason :invalid-file-set
+          :expected-id "B13-SCHEMA"
+          :expected-missing :exact-descriptor-relative-c17-bundle}
+         {:operation :commit :reason :destination-collision
+          :expected-id "B2-MANIFEST"
+          :expected-missing :exclusive-no-clobber-c17-publication
+          :return-fact :rename-return-code}]]
+    (doseq [{:keys [operation reason expected-id expected-missing
+                    return-fact]}
+            cases]
+      (let [raw-data
+            (cond->
+             {:gravity.darwin-publication/error true
+              :provider :gravity/darwin-descriptor-publication
+              :provider-version 1 :operation operation :reason reason
+              :errno 5 :logical-path "program.c"
+              :expected-byte-count 4 :observed-byte-count 3
+              :expected-mode 0644 :observed-mode 0755
+              :untrusted-secret "must-not-cross-boundary"}
+              (= reason :native-access-disabled)
+              (assoc :native-access-enabled? false)
+
+              (= reason :destination-exists)
+              (assoc :output-collision? true)
+
+              return-fact (assoc :return-code -1))
+            diagnostic
+            (diagnostic-data
+             #(provider-call!
+               "/tmp/provider-mapping.gravity" :stage
+               (fn []
+                 (throw (ex-info "synthetic raw provider failure"
+                                 raw-data)))))
+            facts (:facts diagnostic)]
+        (is (= expected-id (:id diagnostic)) [reason diagnostic])
+        (is (= expected-missing (:missing-fact diagnostic))
+            [reason diagnostic])
+        (is (= reason (:bounded-reason facts)) [reason facts])
+        (is (= operation (:tool-step facts)) [reason facts])
+        (when (= reason :native-access-disabled)
+          (is (false? (:native-access-enabled? facts)) facts))
+        (when (= reason :destination-exists)
+          (is (true? (:output-collision? facts)) facts))
+        (is (= [4 3 "0644" "0755"]
+               ((juxt :expected-byte-count :observed-byte-count
+                      :expected-mode :observed-mode)
+                facts))
+            [reason facts])
+        (when return-fact
+          (is (= -1 (get facts return-fact)) [reason facts]))
+        (is (= (boolean (= return-fact :rename-return-code))
+               (contains? facts :rename-return-code))
+            [reason facts])
+        (is (= (boolean (= return-fact :provider-return-code))
+               (contains? facts :provider-return-code))
+            [reason facts])
+        (is (not (contains? diagnostic
+                            :gravity.darwin-publication/error))
+            [reason diagnostic])
+        (is (not (str/includes? (pr-str diagnostic)
+                                "must-not-cross-boundary"))
+            [reason diagnostic])))
+    (let [material {:file-records {} :sidecars {}}
+          exact-invalid
+          {:status :invalid
+           :actual-output-directory "/tmp/provider-mapping-bundle"
+           :file-records {}
+           :publisher-evidence {}
+           :mode-policy {}}
+          mismatched
+          (assoc exact-invalid :file-records {"unexpected" {}})
+          envelope-diagnostic
+          (diagnostic-data
+           #(canonical-receipt nil material
+                               "/tmp/provider-mapping.gravity"))
+          record-diagnostic
+          (diagnostic-data
+           #(canonical-receipt mismatched material
+                               "/tmp/provider-mapping.gravity"))
+          value-diagnostic
+          (diagnostic-data
+           #(canonical-receipt exact-invalid material
+                               "/tmp/provider-mapping.gravity"))]
+      (is (= ["B13-SCHEMA"
+              :canonical-darwin-publication-receipt-envelope]
+             ((juxt :id :missing-fact) envelope-diagnostic))
+          envelope-diagnostic)
+      (is (= ["B13-HASH"
+              :content-bound-darwin-publication-file-records]
+             ((juxt :id :missing-fact) record-diagnostic))
+          record-diagnostic)
+      (is (= ["B13-SCHEMA"
+              :canonical-darwin-publication-receipt-values]
+             ((juxt :id :missing-fact) value-diagnostic))
+          value-diagnostic))))
+
+(deftest authenticated-b2-gate-b-incomplete-cleanup-is-bounded
+  (let [abort-after-failure!
+        (authenticated-b2-gate-b-private-var
+         'p15-s23-b2-c17-gate-b-abort-after-failure!)
+        capture
+        (fn [operation]
+          (try
+            (operation)
+            ::unexpected-success
+            (catch Throwable error error)))
+        primary
+        (capture
+         #(bootstrap/p15-s23-c-backend-fail!
+           "B13-HASH" "/tmp/cleanup.gravity" {}
+           {:missing-fact :synthetic-primary-hash-failure}))
+        after-abort
+        (with-redefs
+          [darwin-publication/abort-staged-bundle!
+           (fn [_]
+             {:status :aborted :published? false
+              :cleanup-complete? false :residue-possible? true})]
+          (capture
+           #(abort-after-failure!
+             (Object.) "/tmp/cleanup.gravity" primary)))
+        after-containment
+        (capture
+         #(bootstrap/p15-s23-c-backend-contain-exception!
+           "/tmp/cleanup.gravity" :synthetic-outer-boundary
+           after-abort))]
+    (doseq [observed [after-abort after-containment]]
+      (is (= "B13-PROVENANCE" (:id (ex-data observed)))
+          (ex-data observed))
+      (is (= :complete-descriptor-relative-c17-publication-cleanup
+             (get-in (ex-data observed) [:facts :missing-fact])))
+      (is (false? (get-in (ex-data observed)
+                          [:facts :cleanup-complete?])))
+      (is (true? (get-in (ex-data observed)
+                         [:facts :residue-possible?])))
+      (is (= "B13-HASH"
+             (get-in (ex-data observed)
+                     [:facts :primary-failure-rule])))
+      (is (= (:diagnostic-id (ex-data primary))
+             (get-in (ex-data observed)
+                     [:facts :primary-diagnostic-id]))))
+    (is (= 1 (count (.getSuppressed ^Throwable after-abort))))
+    (is (zero? (count (.getSuppressed ^Throwable after-containment))))
+    (doseq [cleanup
+            [nil
+             {:cleanup-complete? true :residue-possible? false}
+             {:status :aborted :published? false
+              :cleanup-complete? false :residue-possible? false}
+             {:status :already-committed :published? true
+              :cleanup-applicable? false :native-calls 0}]]
+      (let [observed
+            (with-redefs
+              [darwin-publication/abort-staged-bundle!
+               (fn [_] cleanup)]
+              (capture
+               #(abort-after-failure!
+                 (Object.) "/tmp/cleanup.gravity" primary)))]
+        (is (= "B13-PROVENANCE" (:id (ex-data observed)))
+            [cleanup (ex-data observed)])
+        (is (true? (get-in (ex-data observed)
+                           [:facts :residue-possible?]))
+            [cleanup (ex-data observed)])))
+    (let [observed
+          (with-redefs
+            [darwin-publication/abort-staged-bundle!
+             (fn [_]
+               {:status :already-aborted :published? false
+                :cleanup-complete? true :residue-possible? false
+                :native-calls 0})]
+            (capture
+             #(abort-after-failure!
+               (Object.) "/tmp/cleanup.gravity" primary)))]
+      (is (identical? primary observed)))
+    (let [primary-interrupt (InterruptedException. "primary interrupt")
+          cleanup-fatal (OutOfMemoryError. "fatal cleanup")
+          _ (Thread/interrupted)
+          observed
+          (with-redefs
+            [darwin-publication/abort-staged-bundle!
+             (fn [_] (throw cleanup-fatal))]
+            (capture
+             #(abort-after-failure!
+               (Object.) "/tmp/cleanup.gravity" primary-interrupt)))
+          interrupted? (.isInterrupted (Thread/currentThread))]
+      (Thread/interrupted)
+      (is (identical? cleanup-fatal observed))
+      (is (true? interrupted?))
+      (is (some #(identical? primary-interrupt %)
+                (.getSuppressed ^Throwable cleanup-fatal))))
+    (let [primary-fatal (AssertionError. "fatal primary")
+          cleanup-interrupt
+          (java.io.InterruptedIOException. "cleanup interrupt")
+          _ (Thread/interrupted)
+          observed
+          (with-redefs
+            [darwin-publication/abort-staged-bundle!
+             (fn [_] (throw cleanup-interrupt))]
+            (capture
+             #(abort-after-failure!
+               (Object.) "/tmp/cleanup.gravity" primary-fatal)))
+          interrupted? (.isInterrupted (Thread/currentThread))]
+      (Thread/interrupted)
+      (is (identical? primary-fatal observed))
+      (is (true? interrupted?))
+      (is (some #(identical? cleanup-interrupt %)
+                (.getSuppressed ^Throwable primary-fatal))))
+    (let [gate-b-artifact!
+          (authenticated-b2-gate-b-private-var
+           'p15-s23-stage2-b2-c17-gate-b-artifact!)
+          pre-effect-gate!
+          (authenticated-b2-gate-b-private-var
+           'p15-s23-b2-c17-gate-b-pre-effect-gate!)
+          output-preflight!
+          (authenticated-b2-gate-b-private-var
+           'p15-s23-b2-c17-gate-b-output-preflight!)
+          toolchain-transaction!
+          (authenticated-b2-gate-b-private-var
+           'p15-s23-b2-c17-gate-b-toolchain-transaction!)
+          opened-context (Object.)
+          aborts (atom [])
+          fatal (AssertionError. "fatal first post-open operation")
+          observed
+          (with-redefs-fn
+            {pre-effect-gate!
+             (fn [& _]
+               {:options {:output-directory "/tmp/never-observed"}
+                :gate-a-contextual-report {}})
+             output-preflight! (fn [& _] opened-context)
+             toolchain-transaction! (fn [& _] (throw fatal))
+             #'darwin-publication/abort-staged-bundle!
+             (fn [context]
+               (swap! aborts conj context)
+               {:status :aborted :published? false
+                :cleanup-complete? true :residue-possible? false})}
+            #(capture
+              (fn []
+                (gate-b-artifact!
+                 {} {} {:source-path "/tmp/post-open.gravity"} {}))))]
+      (is (identical? fatal observed))
+      (is (= [opened-context] @aborts)))))
+
 (deftest authenticated-b2-gate-b-rejects-options-before-effects
   (let [gate-a-called? (atom false)
         comparator-calls (atom 0)
@@ -37884,6 +38205,11 @@
               (is (= {:directory "0755" :executable "0755"
                       :nonexecutable "0644"}
                      (:mode-policy receipt)))
+              (is (some #{:darwin-libsystem-renameatx-np}
+                        (get-in artifact [:c18-record :trust-boundary])))
+              (is (not (some #{:darwin-libsystem-renamex-np}
+                             (get-in artifact
+                                     [:c18-record :trust-boundary]))))
               (doseq [[kind logical-path] core-kinds]
                 (is (= (select-keys
                         (get-in artifact
@@ -38073,6 +38399,37 @@
     (f)
     ::unexpected-success
     (catch Throwable error error)))
+
+(deftest p18-t04-public-governance-never-reaches-darwin-publication
+  (let [provider-calls (atom [])
+        prohibited
+        (fn [operation]
+          (fn [& _]
+            (swap! provider-calls conj operation)
+            (throw (AssertionError.
+                    (str "public route reached Darwin provider: "
+                         operation)))))
+        request
+        (p18-t04-verified-mir-request
+         "missing-governed.gravity" "target/missing-governed-bundle"
+         [:target :lowering :output])
+        diagnostic
+        (with-redefs
+          [darwin-publication/open-target! (prohibited :open)
+           darwin-publication/stage-bundle! (prohibited :stage)
+           darwin-publication/commit-staged-bundle! (prohibited :commit)
+           darwin-publication/verify-published-bundle!
+           (prohibited :verify)
+           darwin-publication/abort-staged-bundle! (prohibited :abort)]
+          (diagnostic-data
+           #(bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
+             request)))]
+    (is (= "GOV7006" (:id diagnostic)) diagnostic)
+    (is (= :feature-specific-gov4-security-review-record
+           (:missing-fact diagnostic)) diagnostic)
+    (is (= :public-exposure-disabled (:fallback-status diagnostic))
+        diagnostic)
+    (is (empty? @provider-calls) @provider-calls)))
 
 (deftest p18-t04-verified-mir-c-request-preflights-are-exact-and-effect-free
   (with-p18-t04-verified-mir-target-root

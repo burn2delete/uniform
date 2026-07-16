@@ -10,6 +10,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.cli :as cli]
+            [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics :as diagnostics])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
@@ -133204,7 +133205,10 @@
               :b3-source-content-hash)
         :dialect :helper :c-source-content-hash :b1-source-content-hash
         :b2-source-content-hash :semantic-result :source-target
-        :requested-target-argument))
+        :requested-target-argument :provider-return-code
+        :expected-byte-count :expected-mode
+        :cleanup-complete? :residue-possible?
+        :primary-failure-rule :primary-diagnostic-id))
 
 (defn p15-s23-c-backend-safe-facts
   [facts]
@@ -134707,6 +134711,265 @@
      "B2-MANIFEST" source-path {}
      {:missing-fact :opaque-authenticated-c17-gate-b-authority
       :bounded-reason operation})))
+
+(defn- p15-s23-b2-c17-gate-b-provider-error?
+  [error]
+  (true? (:gravity.darwin-publication/error (ex-data error))))
+
+(defn- p15-s23-b2-c17-gate-b-provider-mode
+  [mode]
+  (case mode
+    0755 "0755"
+    0644 "0644"
+    :redacted))
+
+(defn- p15-s23-b2-c17-gate-b-provider-fail!
+  [source-path boundary error]
+  (let [data (ex-data error)
+        operation (:operation data)
+        reason (:reason data)
+        native-reasons
+        #{:unsupported-host-runtime :native-access-disabled
+          :missing-native-symbol :ffi-binding-unavailable}
+        authority-reasons
+        #{:invalid-output-location :parent-descriptor-open-failed
+          :untrusted-parent-descriptor :destination-exists
+          :destination-absence-check-failed :invalid-provider-context
+          :invalid-provider-control-state :invalid-provider-lifecycle}
+        schema-reasons
+        #{:invalid-file-set :invalid-file-specification
+          :created-file-metadata-mismatch :descriptor-chmod-failed
+          :staging-contract-mismatch
+          :directory-inventory-limit :directory-read-failed
+          :fdopendir-failed :invalid-directory-entry-layout
+          :unterminated-directory-entry :invalid-utf8-directory-entry
+          :platform-thread-required :invalid-publication-receipt}
+        hash-reasons
+        #{:file-write-failed :zero-progress-file-write
+          :file-readback-failed :short-file-readback
+          :file-content-or-metadata-mismatch
+          :published-bundle-content-or-identity-mismatch}
+        provenance-reasons
+        #{:descriptor-stat-failed :descriptor-path-failed
+          :descriptor-sync-failed :descriptor-close-failed
+          :access-control-list-inspection-failed
+          :access-control-list-release-failed
+          :nontrivial-extended-access-control-list
+          :bounded-staging-name-exhausted
+          :staging-directory-create-failed
+          :staging-directory-open-failed
+          :directory-reopen-failed :directory-stream-close-failed
+          :cleanup-directory-open-failed
+          :exclusive-file-create-failed :unique-file-open-failed
+          :untrusted-staging-descriptor
+          :descriptor-or-content-identity-changed
+          :published-directory-open-failed
+          :published-directory-provenance-mismatch}
+        [diagnostic-id missing-fact]
+        (cond
+          (= :native-access-disabled reason)
+          ["B2-MANIFEST"
+           :jdk26-native-access-required-for-c17-publication]
+
+          (= :unsupported-host-runtime reason)
+          ["B2-MANIFEST"
+           :pinned-jdk26-macos-aarch64-c17-host-runtime]
+
+          (contains? #{:missing-native-symbol :ffi-binding-unavailable}
+                     reason)
+          ["B2-MANIFEST"
+           :jdk26-darwin-c17-publication-ffi-binding]
+
+          (= :destination-exists reason)
+          ["B2-MANIFEST"
+           :collision-free-regular-c17-output-directory]
+
+          (contains? #{:destination-collision
+                       :exclusive-rename-failed}
+                     reason)
+          ["B2-MANIFEST" :exclusive-no-clobber-c17-publication]
+
+          (or (contains? native-reasons reason)
+              (contains? authority-reasons reason))
+          ["B2-MANIFEST" :descriptor-relative-c17-publication-authority]
+
+          (contains? schema-reasons reason)
+          ["B13-SCHEMA" :exact-descriptor-relative-c17-bundle]
+
+          (contains? hash-reasons reason)
+          ["B13-HASH" :descriptor-relative-c17-publication-content]
+
+          (contains? provenance-reasons reason)
+          ["B13-PROVENANCE"
+           :descriptor-relative-c17-publication-provenance]
+
+          (= :verify boundary)
+          ["B13-PROVENANCE"
+           :descriptor-relative-c17-publication-verification]
+
+          :else
+          ["B2-MANIFEST" :contained-darwin-publication-failure])
+        facts
+        (cond->
+         {:missing-fact missing-fact
+          :bounded-reason
+          (if (keyword? reason) reason :invalid-provider-failure)
+          :tool-step
+          (if (keyword? operation) operation :darwin-publication)}
+          (boolean? (:output-collision? data))
+          (assoc :output-collision? (:output-collision? data))
+
+          (boolean? (:native-access-enabled? data))
+          (assoc :native-access-enabled? (:native-access-enabled? data))
+
+          (integer? (:return-code data))
+          (assoc (if (= :commit operation)
+                   :rename-return-code
+                   :provider-return-code)
+                 (:return-code data))
+
+          (integer? (:errno data))
+          (assoc :captured-errno (:errno data))
+
+          (integer? (:expected-file-count data))
+          (assoc :expected-file-count (:expected-file-count data))
+
+          (integer? (:observed-file-count data))
+          (assoc :observed-file-count (:observed-file-count data))
+
+          (integer? (:observed-byte-count data))
+          (assoc :observed-byte-count (:observed-byte-count data))
+
+          (and (integer? (:expected-byte-count data))
+               (<= 0 (:expected-byte-count data) (* 8 1024 1024)))
+          (assoc :expected-byte-count (:expected-byte-count data))
+
+          (string? (:logical-path data))
+          (assoc :logical-path (:logical-path data))
+
+          (integer? (:observed-mode data))
+          (assoc :observed-mode
+                 (p15-s23-b2-c17-gate-b-provider-mode
+                  (:observed-mode data)))
+
+          (contains? data :expected-mode)
+          (assoc :expected-mode
+                 (p15-s23-b2-c17-gate-b-provider-mode
+                  (:expected-mode data))))]
+    (p15-s23-c-backend-fail!
+     diagnostic-id source-path {} facts)))
+
+(defn- p15-s23-b2-c17-gate-b-provider-call!
+  [source-path boundary operation]
+  (try
+    (operation)
+    (catch clojure.lang.ExceptionInfo error
+      (if (p15-s23-b2-c17-gate-b-provider-error? error)
+        (p15-s23-b2-c17-gate-b-provider-fail!
+         source-path boundary error)
+        (throw error)))))
+
+(defn- p15-s23-b2-c17-gate-b-incomplete-cleanup!
+  [source-path primary cleanup-error]
+  (let [data
+        (p15-s23-backend-trusted-exception-data primary 65536 128)
+        primary-rule
+        (if (and (map? data)
+                 (contains? p15-s23-c-backend-diagnostic-rules
+                            (:id data)))
+          (:id data)
+          :contained-host-failure)
+        primary-diagnostic-id
+        (when (and (map? data)
+                   (string? (:diagnostic-id data))
+                   (re-matches #"diag-[0-9a-f]{64}"
+                               (:diagnostic-id data)))
+          (:diagnostic-id data))
+        facts
+        (cond->
+         {:missing-fact
+          :complete-descriptor-relative-c17-publication-cleanup
+          :cleanup-complete? false :residue-possible? true
+          :primary-failure-rule primary-rule}
+          primary-diagnostic-id
+          (assoc :primary-diagnostic-id primary-diagnostic-id))
+        diagnostic
+        (try
+          (p15-s23-c-backend-fail!
+           "B13-PROVENANCE" source-path {} facts)
+          (catch clojure.lang.ExceptionInfo diagnostic
+            diagnostic))]
+    (.addSuppressed ^Throwable diagnostic ^Throwable primary)
+    (when cleanup-error
+      (.addSuppressed ^Throwable diagnostic ^Throwable cleanup-error))
+    (throw diagnostic)))
+
+(defn- p15-s23-b2-c17-gate-b-canonical-abort-result?
+  [cleanup]
+  (and
+   (map? cleanup)
+   (contains? #{:aborted :already-aborted} (:status cleanup))
+   (= (if (= :aborted (:status cleanup))
+        #{:status :published? :cleanup-complete? :residue-possible?}
+        #{:status :published? :cleanup-complete? :residue-possible?
+          :native-calls})
+      (set (keys cleanup)))
+   (false? (:published? cleanup))
+   (boolean? (:cleanup-complete? cleanup))
+   (boolean? (:residue-possible? cleanup))
+   (= (:cleanup-complete? cleanup)
+      (not (:residue-possible? cleanup)))
+   (or (= :aborted (:status cleanup))
+       (and (integer? (:native-calls cleanup))
+            (zero? (:native-calls cleanup))))))
+
+(defn- p15-s23-b2-c17-gate-b-abort-after-failure!
+  [publication-context source-path error]
+  (let [incomplete? (atom false)
+        cleanup-error (atom nil)]
+    (try
+      (let [cleanup
+            (darwin-publication/abort-staged-bundle! publication-context)]
+        (when-not
+         (and (p15-s23-b2-c17-gate-b-canonical-abort-result? cleanup)
+              (true? (:cleanup-complete? cleanup)))
+          (reset! incomplete? true)))
+      (catch Throwable cleanup
+        (p15-s23-b2-c17-gate-b-restore-interrupt! error)
+        (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
+        (cond
+          (instance? Error error)
+          (.addSuppressed ^Throwable error ^Throwable cleanup)
+
+          (instance? Error cleanup)
+          (do
+            (.addSuppressed ^Throwable cleanup ^Throwable error)
+            (throw cleanup))
+
+          (p15-s23-b2-c17-gate-b-interrupt-like? error)
+          (.addSuppressed ^Throwable error ^Throwable cleanup)
+
+          (p15-s23-b2-c17-gate-b-interrupt-like? cleanup)
+          (do
+            (.addSuppressed ^Throwable cleanup ^Throwable error)
+            (throw cleanup))
+
+          :else
+          (do
+            (reset! incomplete? true)
+            (reset! cleanup-error cleanup)))))
+    (when @incomplete?
+      (if (or (instance? Error error)
+              (p15-s23-b2-c17-gate-b-interrupt-like? error))
+        (.addSuppressed
+         ^Throwable error
+         (ex-info
+          "C17 descriptor publication cleanup was incomplete"
+          {:cleanup-complete? false :residue-possible? true}))
+        (p15-s23-b2-c17-gate-b-incomplete-cleanup!
+         source-path error @cleanup-error)))
+    (p15-s23-b2-c17-gate-b-restore-interrupt! error)
+    (throw error)))
 
 (defn- p15-s23-b2-c17-gate-b-host-runtime-preflight!
   [candidate source-path]
@@ -136477,7 +136740,7 @@
            :darwin-process-loader :darwin-libsystem]
            (:publication-intent? transaction)
            (conj :openjdk-26.0.1-ffm-native-access
-                 :darwin-libsystem-renamex-np))
+                 :darwin-libsystem-renameatx-np))
          :release-gate :closed
          :public-target-gate :closed
          :self-hosting-gate :closed
@@ -136902,17 +137165,28 @@
                 (:content-hash record))))
         evidence (:publisher-evidence receipt)
         fixed-evidence
-        {:jdk-version "26.0.1" :jdk-feature 26
+        {:provider :gravity/darwin-descriptor-publication
+         :provider-version 1
+         :jdk-version "26.0.1" :jdk-feature 26
          :native-access-enabled? true
          :ffi-provider :jdk-26-foreign-function-and-memory
-         :native-library :darwin-libsystem :symbol "renamex_np"
+         :native-library :darwin-libsystem :symbol "renameatx_np"
          :errno-read-policy :failure-only
-         :guarantee-scope #{:exclusive-destination :no-symlink-traversal}
+         :guarantee-scope
+         #{:descriptor-bound-parent :descriptor-relative-staging
+           :resolve-beneath :no-symlink-traversal
+           :exclusive-destination :unique-regular-files
+           :exact-directory-inventory
+           :no-extended-access-control-lists}
          :path-identity-linearization
-         :precommit-file-key-checked-not-fd-relative
-         :flags {:rename-excl 4 :rename-nofollow-any 16 :combined 20}
-         :commit-primitive :darwin-renamex-np
-         :exclusive-no-clobber? true :no-follow-any? true}
+         :held-parent-and-staging-directory-descriptors
+         :flags {:rename-excl 4 :rename-nofollow-any 16
+                 :rename-resolve-beneath 32 :combined 52}
+         :commit-primitive :darwin-renameatx-np
+         :source-directory-trailing-slash? true
+         :postcommit-close-failures-change-result? false
+         :crash-durable-publication? false
+         :same-euid-concurrent-mutation-resistant? false}
         sidecars (:sidecar-hashes receipt)]
     (and (map? receipt)
          (= #{:status :actual-output-directory :sidecar-hashes
@@ -136929,18 +137203,23 @@
          (hash-record? "manifest.edn" (:manifest sidecars))
          (hash-record? "provenance.edn" (:provenance sidecars))
          (hash-record? "conformance.edn" (:conformance sidecars))
-         (= #{:jdk-version :jdk-feature :native-access-enabled?
+         (= #{:provider :provider-version
+              :jdk-version :jdk-feature :native-access-enabled?
               :ffi-provider :native-library :symbol :errno-read-policy
               :guarantee-scope :path-identity-linearization :flags
-              :commit-primitive :exclusive-no-clobber? :no-follow-any?
-              :parent-file-key-hash :staging-file-key-hash}
+              :commit-primitive :source-directory-trailing-slash?
+              :postcommit-close-failures-change-result?
+              :crash-durable-publication?
+              :same-euid-concurrent-mutation-resistant?
+              :parent-identity-hash :staging-identity-hash}
             (set (keys evidence)))
          (= fixed-evidence
-            (dissoc evidence :parent-file-key-hash :staging-file-key-hash))
+            (dissoc evidence
+                    :parent-identity-hash :staging-identity-hash))
          (p15-s23-b2-c17-gate-b-sha256-value?
-          (:parent-file-key-hash evidence))
+          (:parent-identity-hash evidence))
          (p15-s23-b2-c17-gate-b-sha256-value?
-          (:staging-file-key-hash evidence)))))
+          (:staging-identity-hash evidence)))))
 
 (defn- p15-s23-b2-c17-gate-b-integrity-preflight!
   [source-path artifact]
@@ -137124,142 +137403,17 @@
          {:missing-fact :recomputable-c17-gate-b-final-identities})))
     :passed))
 
-(defn- p15-s23-b2-c17-gate-b-native-publication-preflight!
-  [candidate source-path]
-  (p15-s23-b2-c17-gate-b-require-authority!
-   candidate source-path :native-exclusive-c17-publication-preflight)
-  (let [host-runtime
-        (p15-s23-b2-c17-gate-b-host-runtime-preflight!
-         candidate source-path)
-        enabled? (.isNativeAccessEnabled (.getModule clojure.lang.RT))
-        java-version (:java-version host-runtime)
-        feature (:java-feature host-runtime)]
-    (when-not enabled?
-      (p15-s23-c-backend-fail!
-       "B2-MANIFEST" source-path {}
-       {:missing-fact :jdk26-native-access-required-for-c17-publication
-        :native-access-enabled? enabled?}))
-    (let [binding
-          (try
-            (let [linker (java.lang.foreign.Linker/nativeLinker)
-                  optional-symbol
-                  (.find (.defaultLookup linker) "renamex_np")]
-              (when (.isEmpty optional-symbol)
-                (p15-s23-c-backend-fail!
-                 "B2-MANIFEST" source-path {}
-                 {:missing-fact :darwin-renamex-np-required-for-c17-publication}))
-              (let [descriptor
-                    (java.lang.foreign.FunctionDescriptor/of
-                     java.lang.foreign.ValueLayout/JAVA_INT
-                     (into-array
-                      java.lang.foreign.MemoryLayout
-                      [java.lang.foreign.ValueLayout/ADDRESS
-                       java.lang.foreign.ValueLayout/ADDRESS
-                       java.lang.foreign.ValueLayout/JAVA_INT]))
-                    capture-option
-                    (java.lang.foreign.Linker$Option/captureCallState
-                     (into-array String ["errno"]))
-                    handle
-                    (.downcallHandle
-                     linker (.get optional-symbol) descriptor
-                     (into-array java.lang.foreign.Linker$Option
-                                 [capture-option]))
-                    state-layout
-                    (java.lang.foreign.Linker$Option/captureStateLayout)
-                    errno-handle
-                    (.toMethodHandle
-                     (.varHandle
-                      state-layout
-                      (into-array
-                       java.lang.foreign.MemoryLayout$PathElement
-                       [(java.lang.foreign.MemoryLayout$PathElement/groupElement
-                         "errno")]))
-                     java.lang.invoke.VarHandle$AccessMode/GET)]
-                {:handle handle :state-layout state-layout
-                 :errno-handle errno-handle}))
-            (catch clojure.lang.ExceptionInfo exception
-              (throw exception))
-            (catch Exception _ :unavailable))]
-      (when (= :unavailable binding)
-        (p15-s23-c-backend-fail!
-         "B2-MANIFEST" source-path {}
-         {:missing-fact :jdk26-darwin-c17-publication-ffi-binding}))
-      {:evidence
-       {:jdk-version java-version :jdk-feature feature
-        :native-access-enabled? true
-        :ffi-provider :jdk-26-foreign-function-and-memory
-        :native-library :darwin-libsystem :symbol "renamex_np"
-        :errno-read-policy :failure-only
-        :guarantee-scope #{:exclusive-destination :no-symlink-traversal}
-        :path-identity-linearization
-        :precommit-file-key-checked-not-fd-relative
-        :flags {:rename-excl 4 :rename-nofollow-any 16 :combined 20}}
-       :runtime binding})))
-
 (defn- p15-s23-b2-c17-gate-b-output-preflight!
   [candidate output-directory source-path]
   (p15-s23-b2-c17-gate-b-require-authority!
    candidate source-path :exclusive-c17-publication-output-preflight)
   (when output-directory
-    ;; Native authority is rejected before output filesystem or tool effects.
-    (let [native-binding
-          (p15-s23-b2-c17-gate-b-native-publication-preflight!
-           candidate source-path)
-          requested-destination
-          (.normalize
-           (.toAbsolutePath
-            (java.nio.file.Paths/get output-directory (make-array String 0))))
-          parent (.getParent requested-destination)]
-      (loop [ancestor parent]
-        (when ancestor
-          (when (java.nio.file.Files/isSymbolicLink ancestor)
-            (p15-s23-c-backend-fail!
-             "B2-MANIFEST" source-path {}
-             {:missing-fact :non-symlink-c17-output-ancestor}))
-          (recur (.getParent ancestor))))
-      (let [nofollow
-            (into-array java.nio.file.LinkOption
-                        [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-            parent-real
-            (when parent
-              (try (.toRealPath parent (make-array java.nio.file.LinkOption 0))
-                   (catch Exception error
-                     (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
-                     nil)))
-            destination
-            (when parent-real
-              (.resolve parent-real (.getFileName requested-destination)))
-            parent-attributes
-            (when parent-real
-              (try
-                (java.nio.file.Files/readAttributes
-                 parent-real java.nio.file.attribute.BasicFileAttributes nofollow)
-                (catch Exception error
-                  (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
-                  nil)))
-            parent-file-key
-            (when parent-attributes (.fileKey parent-attributes))
-            collision?
-            (boolean
-             (and destination (java.nio.file.Files/exists destination nofollow)))]
-        (when-not
-         (and parent parent-real destination parent-attributes
-              (.isDirectory parent-attributes)
-              (not (java.nio.file.Files/isSymbolicLink parent-real))
-              parent-file-key
-              (java.nio.file.Files/isDirectory parent nofollow)
-              (not collision?))
-          (p15-s23-c-backend-fail!
-           "B2-MANIFEST" source-path {}
-           {:missing-fact :collision-free-regular-c17-output-directory
-            :output-collision? collision?}))
-        {:destination destination
-         :requested-destination requested-destination
-         :parent parent-real
-         :parent-file-key parent-file-key
-         :parent-file-key-hash
-         (str "sha256:" (sha256-hex (str parent-file-key)))
-         :native-binding native-binding}))))
+    ;; Opening the provider target authenticates native authority, parent and
+    ;; destination before compiler tool effects.  It returns an opaque held
+    ;; descriptor context, not a caller-authorized path map.
+    (p15-s23-b2-c17-gate-b-provider-call!
+     source-path :open
+     #(darwin-publication/open-target! output-directory))))
 
 (defn- p15-s23-b2-c17-gate-b-canonical-sidecar
   [logical-path record]
@@ -137322,193 +137476,165 @@
     {:from "provenance.edn" :to "manifest.edn" :edge :hash-bound}
     {:from "conformance.edn" :to "manifest.edn" :edge :hash-bound}]})
 
-(defn- p15-s23-b2-c17-gate-b-write-sidecar!
-  [candidate workspace sidecar source-path]
-  (p15-s23-b2-c17-gate-b-require-authority!
-   candidate source-path :write-private-canonical-c17-sidecar)
-  (let [logical-path (get-in sidecar [:hash-record :logical-path])
-        snapshot
-        (p15-s23-b2-c17-gate-b-write-bytes!
-         candidate workspace logical-path (:bytes sidecar) false source-path)
-        decoded
-        (try
-          (edn/read-string
-           (String. ^bytes (:bytes snapshot)
-                    java.nio.charset.StandardCharsets/UTF_8))
-          (catch Exception _ ::invalid-sidecar))]
-    (when-not
-     (and (= (:record sidecar) decoded)
-          (= (:hash-record sidecar)
-             (assoc (p15-s23-b2-c17-gate-b-snapshot-content snapshot)
-                    :logical-path logical-path)))
+(defn- p15-s23-b2-c17-gate-b-publication-file-records
+  [file-specs]
+  (into
+   (sorted-map)
+   (map
+    (fn [[logical-path {:keys [bytes mode]}]]
+      [logical-path
+       {:byte-count (alength ^bytes bytes)
+        :content-hash
+        (p15-s23-b2-c17-gate-b-sha256-bytes bytes)
+        :mode mode}]))
+   file-specs))
+
+(defn- p15-s23-b2-c17-gate-b-publication-material
+  [artifact payload source-path]
+  (let [core-specifications
+        [[:source "program.c" 0644]
+         [:header "program.h" 0644]
+         [:object "program.o" 0644]
+         [:executable "program" 0755]]
+        core-file-specs
+        (into
+         (sorted-map)
+         (map
+          (fn [[kind logical-path mode]]
+            (let [bytes (get payload kind)
+                  expected
+                  (select-keys
+                   (get-in artifact [:b13-record :artifact-files kind])
+                   [:logical-path :byte-count :content-hash])
+                  observed
+                  {:logical-path logical-path
+                   :byte-count (when (bytes? bytes)
+                                 (alength ^bytes bytes))
+                   :content-hash
+                   (when (bytes? bytes)
+                     (p15-s23-b2-c17-gate-b-sha256-bytes bytes))}]
+              (when-not
+               (and (bytes? bytes)
+                    (<= 1 (alength ^bytes bytes) (* 8 1024 1024))
+                    (= expected observed))
+                (p15-s23-c-backend-fail!
+                 "B13-HASH" source-path artifact
+                 {:missing-fact :buffered-c17-artifact-before-publication
+                  :logical-path logical-path
+                  :maximum-byte-count (* 8 1024 1024)
+                  :observed-byte-count
+                  (when (bytes? bytes) (alength ^bytes bytes))}))
+              [logical-path {:bytes bytes :mode mode}]))
+          core-specifications))
+        provenance
+        (p15-s23-b2-c17-gate-b-canonical-sidecar
+         "provenance.edn"
+         (p15-s23-b2-c17-gate-b-provenance-sidecar-record artifact))
+        conformance
+        (p15-s23-b2-c17-gate-b-canonical-sidecar
+         "conformance.edn"
+         (p15-s23-b2-c17-gate-b-conformance-sidecar-record artifact))
+        manifest
+        (p15-s23-b2-c17-gate-b-canonical-sidecar
+         "manifest.edn"
+         (p15-s23-b2-c17-gate-b-manifest-sidecar-record
+          artifact (:hash-record provenance) (:hash-record conformance)))
+        sidecars
+        {:manifest manifest :provenance provenance
+         :conformance conformance}
+        file-specs
+        (into
+         core-file-specs
+         (map
+          (fn [[_ {:keys [bytes hash-record]}]]
+            [(:logical-path hash-record) {:bytes bytes :mode 0644}]))
+         sidecars)]
+    {:file-specs file-specs
+     :file-records
+     (p15-s23-b2-c17-gate-b-publication-file-records file-specs)
+     :sidecars sidecars}))
+
+(defn- p15-s23-b2-c17-gate-b-publication-material-equivalent?
+  [left right]
+  (and
+   (= (:file-records left) (:file-records right))
+   (= (into (sorted-map)
+            (map (fn [[kind sidecar]]
+                   [kind (select-keys sidecar [:record :hash-record])]))
+            (:sidecars left))
+      (into (sorted-map)
+            (map (fn [[kind sidecar]]
+                   [kind (select-keys sidecar [:record :hash-record])]))
+            (:sidecars right)))
+   (every?
+    (fn [logical-path]
+      (java.util.Arrays/equals
+       ^bytes (get-in left [:file-specs logical-path :bytes])
+       ^bytes (get-in right [:file-specs logical-path :bytes])))
+    (keys (:file-specs left)))))
+
+(defn- p15-s23-b2-c17-gate-b-canonical-provider-receipt
+  [raw-receipt material source-path]
+  (let [raw-receipt-keys
+        #{:status :actual-output-directory :file-records
+          :publisher-evidence :mode-policy}
+        envelope-valid?
+        (and (map? raw-receipt)
+             (= raw-receipt-keys (set (keys raw-receipt))))
+        sidecars (:sidecars material)
+        receipt
+        {:status (:status raw-receipt)
+         :actual-output-directory
+         (:actual-output-directory raw-receipt)
+         :sidecar-hashes
+         {:manifest (get-in sidecars [:manifest :hash-record])
+          :provenance (get-in sidecars [:provenance :hash-record])
+          :conformance (get-in sidecars [:conformance :hash-record])}
+         :publisher-evidence (:publisher-evidence raw-receipt)
+         :mode-policy (:mode-policy raw-receipt)}]
+    (when-not envelope-valid?
+      (p15-s23-c-backend-fail!
+       "B13-SCHEMA"
+       source-path {}
+       {:missing-fact :canonical-darwin-publication-receipt-envelope}))
+    (when-not (= (:file-records material) (:file-records raw-receipt))
       (p15-s23-c-backend-fail!
        "B13-HASH" source-path {}
-       {:missing-fact :canonical-c17-sidecar-byte-roundtrip
-        :logical-path logical-path}))
-    (:hash-record sidecar)))
-
-(defn- p15-s23-b2-c17-gate-b-atomic-publish!
-  [candidate workspace preflight source-path finalized success-result
-   expected-hashes]
-  (p15-s23-b2-c17-gate-b-require-authority!
-   candidate source-path :atomic-publish-final-c17-staging)
-  (let [destination (:destination preflight)
-        parent (:parent preflight)
-        workspace (.normalize (.toAbsolutePath workspace))
-        nofollow
-        (into-array java.nio.file.LinkOption
-                    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-        expected-names
-        #{"program.c" "program.h" "program.o" "program"
-          "manifest.edn" "provenance.edn" "conformance.edn"}
-        observed-names
-        (p15-s23-b2-c17-gate-b-capped-directory-inventory!
-         candidate workspace source-path 7)
-        parent-real
-        (try (.toRealPath parent (make-array java.nio.file.LinkOption 0))
-             (catch Exception error
-               (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
-               nil))
-        staging-parent-real
-        (try
-          (.toRealPath (.getParent workspace)
-                       (make-array java.nio.file.LinkOption 0))
-          (catch Exception error
-            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
-            nil))
-        same-store?
-        (try
-          (= (java.nio.file.Files/getFileStore parent)
-             (java.nio.file.Files/getFileStore workspace))
-          (catch Exception error
-            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
-            false))]
+       {:missing-fact :content-bound-darwin-publication-file-records}))
     (when-not
-     (and (= expected-names observed-names)
-          (= expected-names (set (keys expected-hashes)))
-          parent-real staging-parent-real (= parent-real staging-parent-real)
-          same-store?
-          (java.nio.file.Files/isDirectory workspace nofollow)
-          (not (java.nio.file.Files/isSymbolicLink workspace))
-          (not (java.nio.file.Files/exists destination nofollow)))
+     (p15-s23-b2-c17-gate-b-canonical-published-receipt?
+      receipt (:actual-output-directory receipt))
       (p15-s23-c-backend-fail!
-       "B13-SCHEMA" source-path finalized
-       {:missing-fact :complete-same-filesystem-c17-publication-staging
-        :expected-file-count 7 :observed-file-count (count observed-names)
-        :output-collision?
-        (boolean (java.nio.file.Files/exists destination nofollow))}))
-    (doseq [name expected-names]
-      (let [observed
-            (p15-s23-b2-c17-gate-b-snapshot-content
-             (p15-s23-b2-c17-gate-b-file-snapshot!
-              candidate workspace (.resolve workspace name) source-path
-              :final-precommit-c17-staging-snapshot (* 8 1024 1024)))]
-        (when-not (= (get expected-hashes name) observed)
-          (p15-s23-c-backend-fail!
-           "B13-HASH" source-path finalized
-           {:missing-fact :final-precommit-c17-staging-content
-            :logical-path name}))))
-    (when-not
-     (and (= p15-s23-b2-c17-gate-b-directory-permissions
-             (set (java.nio.file.Files/getPosixFilePermissions
-                   workspace nofollow)))
-          (= p15-s23-b2-c17-gate-b-executable-permissions
-             (set (java.nio.file.Files/getPosixFilePermissions
-                   (.resolve workspace "program") nofollow)))
-          (every?
-           (fn [name]
-             (= p15-s23-b2-c17-gate-b-nonexecutable-permissions
-                (set (java.nio.file.Files/getPosixFilePermissions
-                      (.resolve workspace name) nofollow))))
-           ["program.c" "program.h" "program.o" "manifest.edn"
-            "provenance.edn" "conformance.edn"]))
-      (p15-s23-c-backend-fail!
-       "B13-SCHEMA" source-path finalized
-       {:missing-fact :exact-c17-publication-mode-policy}))
-    ;; Every potentially fallible Java/FFM binding and the caller's success
-    ;; carrier are constructed before the exclusive rename.  The rc=0 branch
-    ;; returns the precomputed `success-result` directly.
-    (let [current-parent-attributes
-          (java.nio.file.Files/readAttributes
-           parent java.nio.file.attribute.BasicFileAttributes nofollow)
-          staging-attributes
-          (java.nio.file.Files/readAttributes
-           workspace java.nio.file.attribute.BasicFileAttributes nofollow)
-          staging-file-key (.fileKey staging-attributes)
-          staging-file-key-hash
-          (when staging-file-key
-            (str "sha256:" (sha256-hex (str staging-file-key))))
-          destination-absent?
-          (not (java.nio.file.Files/exists destination nofollow))
-          expected-publisher-evidence
-          (assoc (get-in preflight [:native-binding :evidence])
-                 :commit-primitive :darwin-renamex-np
-                 :exclusive-no-clobber? true :no-follow-any? true
-                 :parent-file-key-hash (:parent-file-key-hash preflight)
-                 :staging-file-key-hash staging-file-key-hash)
-          receipt (:publication-receipt finalized)
-          _
-          (when-not
-           (and (.isDirectory current-parent-attributes)
-                (= (:parent-file-key preflight)
-                   (.fileKey current-parent-attributes))
-                (.isDirectory staging-attributes)
-                (not (java.nio.file.Files/isSymbolicLink workspace))
-                staging-file-key destination-absent?
-                (= expected-publisher-evidence
-                   (:publisher-evidence receipt)))
-            (p15-s23-c-backend-fail!
-             "B13-PROVENANCE" source-path finalized
-             {:missing-fact :stable-c17-publication-file-keys-and-destination
-              :output-collision? (not destination-absent?)}))
-          native-runtime (get-in preflight [:native-binding :runtime])
-          handle (:handle native-runtime)
-          state-layout (:state-layout native-runtime)
-          errno-handle (:errno-handle native-runtime)
-          arena (java.lang.foreign.Arena/ofAuto)
-          state-segment (.allocate arena state-layout)
-          source-segment (.allocateFrom arena (.toString workspace))
-          destination-segment (.allocateFrom arena (.toString destination))
-          flags (int (get-in preflight
-                             [:native-binding :evidence :flags :combined]))
-          return-code
-          (int (.invokeWithArguments
-                handle
-                (object-array
-                 [state-segment source-segment destination-segment flags])))]
-      (if (zero? return-code)
-        success-result
-        (let [captured-errno
-              (int (.invokeWithArguments
-                    errno-handle (object-array [state-segment (long 0)])))
-              failure-source-attributes
-              (try
-                (java.nio.file.Files/readAttributes
-                 workspace java.nio.file.attribute.BasicFileAttributes nofollow)
-                (catch Exception error
-                  (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
-                  nil))]
-          (when-not
-           (and failure-source-attributes staging-file-key
-                (.isDirectory failure-source-attributes)
-                (= staging-file-key (.fileKey failure-source-attributes)))
-            (p15-s23-c-backend-fail!
-             "B13-PROVENANCE" source-path finalized
-             {:missing-fact :exclusive-c17-rename-failure-source-preservation
-              :rename-return-code return-code :captured-errno captured-errno}))
-          (p15-s23-c-backend-fail!
-           "B2-MANIFEST" source-path finalized
-           {:missing-fact :exclusive-no-clobber-c17-publication
-            :output-collision? (= 17 captured-errno)
-            :rename-return-code return-code
-            :captured-errno captured-errno}))))))
+       "B13-SCHEMA" source-path {}
+       {:missing-fact :canonical-darwin-publication-receipt-values}))
+    receipt))
 
-(defn- p15-s23-b2-c17-gate-b-publish-final!
-  [candidate gate-a contextual transaction payload preflight source-path
-   success-projector]
+(defn- p15-s23-b2-c17-gate-b-raw-provider-receipt
+  [receipt material source-path]
+  (let [sidecars (:sidecars material)
+        expected-sidecar-hashes
+        {:manifest (get-in sidecars [:manifest :hash-record])
+         :provenance (get-in sidecars [:provenance :hash-record])
+         :conformance (get-in sidecars [:conformance :hash-record])}]
+    (when-not
+     (and (p15-s23-b2-c17-gate-b-canonical-published-receipt?
+           receipt (:actual-output-directory receipt))
+          (= expected-sidecar-hashes (:sidecar-hashes receipt)))
+      (p15-s23-c-backend-fail!
+       "B13-HASH" source-path {}
+       {:missing-fact :reconstructable-darwin-publication-receipt}))
+    {:status (:status receipt)
+     :actual-output-directory (:actual-output-directory receipt)
+     :file-records (:file-records material)
+     :publisher-evidence (:publisher-evidence receipt)
+     :mode-policy (:mode-policy receipt)}))
+
+(defn- p15-s23-b2-c17-gate-b-publish-via-provider!
+  [candidate gate-a contextual transaction payload publication-target
+   source-path success-projector]
   (p15-s23-b2-c17-gate-b-require-authority!
-   candidate source-path :prepare-final-c17-publication)
-  (if-not preflight
+   candidate source-path :prepare-descriptor-relative-c17-publication)
+  (if-not publication-target
     (let [receipt
           {:status :ephemeral-conformance-artifacts
            :actual-output-directory nil :sidecar-hashes {}}
@@ -137517,197 +137643,55 @@
            gate-a contextual transaction receipt)]
       (p15-s23-b2-c17-gate-b-integrity-preflight! source-path finalized)
       (success-projector finalized))
-    (let [workspace
-          (java.nio.file.Files/createTempDirectory
-           (:parent preflight) ".gravity-b2-c17-final-publish-"
-           (make-array java.nio.file.attribute.FileAttribute 0))]
-      (try
-        (java.nio.file.Files/setPosixFilePermissions
-         workspace p15-s23-b2-c17-gate-b-private-directory-permissions)
-        (let [preliminary
-              ;; Receipt/provenance are excluded from semantic identity.  This
-              ;; private value supplies stable IDs for cycle-free sidecars only.
-              (p15-s23-b2-c17-gate-b-final-record
-               gate-a contextual transaction nil)
-              core-specs
-              [[:source "program.c" false]
-               [:header "program.h" false]
-               [:object "program.o" false]
-               [:executable "program" true]]]
-          (doseq [[kind logical-path executable?] core-specs]
-            (let [bytes (get payload kind)
-                  expected
-                  (select-keys
-                   (get-in preliminary [:b13-record :artifact-files kind])
-                   [:byte-count :content-hash])]
-              (when-not
-               (and (bytes? bytes)
-                    (= expected
-                       {:byte-count (alength ^bytes bytes)
-                        :content-hash
-                        (p15-s23-b2-c17-gate-b-sha256-bytes bytes)}))
-                (p15-s23-c-backend-fail!
-                 "B13-HASH" source-path preliminary
-                 {:missing-fact :buffered-c17-artifact-before-publication
-                  :logical-path logical-path
-                  :maximum-byte-count (* 8 1024 1024)
-                  :observed-byte-count
-                  (when (bytes? bytes) (alength ^bytes bytes))}))
-              (let [snapshot
-                    (p15-s23-b2-c17-gate-b-write-bytes!
-                     candidate workspace logical-path bytes executable?
-                     source-path)]
-                (when-not (= expected
-                             (p15-s23-b2-c17-gate-b-snapshot-content snapshot))
-                  (p15-s23-c-backend-fail!
-                   "B13-HASH" source-path preliminary
-                   {:missing-fact :staged-c17-artifact-before-publication
-                    :logical-path logical-path})))))
-          (let [provenance
-                (p15-s23-b2-c17-gate-b-canonical-sidecar
-                 "provenance.edn"
-                 (p15-s23-b2-c17-gate-b-provenance-sidecar-record preliminary))
-                conformance
-                (p15-s23-b2-c17-gate-b-canonical-sidecar
-                 "conformance.edn"
-                 (p15-s23-b2-c17-gate-b-conformance-sidecar-record preliminary))
-                provenance-hash
-                (p15-s23-b2-c17-gate-b-write-sidecar!
-                 candidate workspace provenance source-path)
-                conformance-hash
-                (p15-s23-b2-c17-gate-b-write-sidecar!
-                 candidate workspace conformance source-path)
-                manifest
-                (p15-s23-b2-c17-gate-b-canonical-sidecar
-                 "manifest.edn"
-                 (p15-s23-b2-c17-gate-b-manifest-sidecar-record
-                  preliminary provenance-hash conformance-hash))
-                manifest-hash
-                (p15-s23-b2-c17-gate-b-write-sidecar!
-                 candidate workspace manifest source-path)
-                _
-                (do
-                  (java.nio.file.Files/setPosixFilePermissions
-                   workspace p15-s23-b2-c17-gate-b-directory-permissions)
-                  (java.nio.file.Files/setPosixFilePermissions
-                   (.resolve workspace "program")
-                   p15-s23-b2-c17-gate-b-executable-permissions)
-                  (doseq [name ["program.c" "program.h" "program.o"
-                                "manifest.edn" "provenance.edn"
-                                "conformance.edn"]]
-                    (java.nio.file.Files/setPosixFilePermissions
-                     (.resolve workspace name)
-                     p15-s23-b2-c17-gate-b-nonexecutable-permissions)))
-                staging-attributes
-                (java.nio.file.Files/readAttributes
-                 workspace java.nio.file.attribute.BasicFileAttributes
-                 (into-array java.nio.file.LinkOption
-                             [java.nio.file.LinkOption/NOFOLLOW_LINKS]))
-                staging-file-key (.fileKey staging-attributes)
-                _
-                (when-not (and (.isDirectory staging-attributes)
-                               staging-file-key)
-                  (p15-s23-c-backend-fail!
-                   "B13-PROVENANCE" source-path preliminary
-                   {:missing-fact :exclusive-c17-staging-file-key}))
-                publisher-evidence
-                (assoc (get-in preflight [:native-binding :evidence])
-                       :commit-primitive :darwin-renamex-np
-                       :exclusive-no-clobber? true :no-follow-any? true
-                       :parent-file-key-hash (:parent-file-key-hash preflight)
-                       :staging-file-key-hash
-                       (str "sha256:" (sha256-hex (str staging-file-key))))
-                receipt
-                {:status :published-atomically-after-final-verification
-                 :actual-output-directory
-                 (.toString ^java.nio.file.Path (:destination preflight))
-                 :sidecar-hashes
-                 {:manifest manifest-hash :provenance provenance-hash
-                  :conformance conformance-hash}
-                 :publisher-evidence publisher-evidence
-                 :mode-policy
-                 {:directory "0755" :executable "0755"
-                  :nonexecutable "0644"}}
-                finalized
-                (p15-s23-b2-c17-gate-b-final-record
-                 gate-a contextual transaction receipt)
-                _
-                (p15-s23-b2-c17-gate-b-integrity-preflight!
-                 source-path finalized)
-                success-result
-                ;; The success carrier is completed while publication is
-                ;; still private.  Any projector failure reaches the outer
-                ;; cleanup before the exclusive rename.
-                (success-projector finalized)
-                _
-                (when-not
-                 (and (= (:record provenance)
-                         (c-backend-canonical-value
-                          (p15-s23-b2-c17-gate-b-provenance-sidecar-record
-                           finalized)))
-                      (= (:record conformance)
-                         (c-backend-canonical-value
-                          (p15-s23-b2-c17-gate-b-conformance-sidecar-record
-                           finalized)))
-                      (= (:record manifest)
-                         (c-backend-canonical-value
-                          (p15-s23-b2-c17-gate-b-manifest-sidecar-record
-                           finalized provenance-hash conformance-hash))))
-                  (p15-s23-c-backend-fail!
-                   "B13-HASH" source-path finalized
-                   {:missing-fact :precommit-final-c17-sidecar-parity}))
-                core-hashes
-                (into {}
-                      (map (fn [[kind logical-path _]]
-                             [logical-path
-                              (select-keys
-                               (get-in finalized
-                                       [:b13-record :artifact-files kind])
-                               [:byte-count :content-hash])]))
-                      core-specs)
-                expected-hashes
-                (assoc core-hashes
-                       "manifest.edn"
-                       (select-keys manifest-hash
-                                    [:byte-count :content-hash])
-                       "provenance.edn"
-                       (select-keys provenance-hash
-                                    [:byte-count :content-hash])
-                       "conformance.edn"
-                       (select-keys conformance-hash
-                                    [:byte-count :content-hash]))]
-            ;; No finally surrounds this call.  On rc=0 the native rename is
-            ;; the final success-path effect and returns the already-built
-            ;; success carrier directly.
-            (p15-s23-b2-c17-gate-b-atomic-publish!
-             candidate workspace preflight source-path finalized
-             success-result
-             expected-hashes)))
-        (catch Throwable error
-          (p15-s23-b2-c17-gate-b-restore-interrupt! error)
-          (try
-            (p15-s23-b2-c17-gate-b-delete-tree!
-             candidate workspace source-path)
-            (catch Throwable cleanup
-              (p15-s23-b2-c17-gate-b-restore-interrupt! error)
-              (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
-              (cond
-                (instance? Error error) (.addSuppressed ^Throwable error cleanup)
-                (instance? Error cleanup)
-                (do (.addSuppressed ^Throwable cleanup error) (throw cleanup))
-                (p15-s23-b2-c17-gate-b-interrupt-like? error)
-                (.addSuppressed ^Throwable error cleanup)
-                (p15-s23-b2-c17-gate-b-interrupt-like? cleanup)
-                (do (.addSuppressed ^Throwable cleanup error) (throw cleanup))
-                :else (.addSuppressed ^Throwable error cleanup))))
-          (throw error))))))
+    (let [preliminary
+          ;; Receipt and actual paths are outside semantic identity.  Stable
+          ;; preliminary IDs make the canonical sidecars cycle-free.
+          (p15-s23-b2-c17-gate-b-final-record
+           gate-a contextual transaction nil)
+          material
+          (p15-s23-b2-c17-gate-b-publication-material
+           preliminary payload source-path)
+          staged
+          (p15-s23-b2-c17-gate-b-provider-call!
+           source-path :stage
+           #(darwin-publication/stage-bundle!
+             publication-target (:file-specs material)))
+          receipt
+          (p15-s23-b2-c17-gate-b-canonical-provider-receipt
+           (:publication-receipt staged) material source-path)
+          finalized
+          (p15-s23-b2-c17-gate-b-final-record
+           gate-a contextual transaction receipt)
+          _
+          (p15-s23-b2-c17-gate-b-integrity-preflight!
+           source-path finalized)
+          final-material
+          (p15-s23-b2-c17-gate-b-publication-material
+           finalized payload source-path)
+          _
+          (when-not
+           (p15-s23-b2-c17-gate-b-publication-material-equivalent?
+            material final-material)
+            (p15-s23-c-backend-fail!
+             "B13-HASH" source-path finalized
+             {:missing-fact :precommit-final-c17-sidecar-parity}))
+          success-result
+          ;; The caller's projection is completed while the complete bundle
+          ;; remains private.  A projection failure is cleaned by the outer
+          ;; provider lifecycle before any destination can exist.
+          (success-projector finalized)]
+      (p15-s23-b2-c17-gate-b-provider-call!
+       source-path :commit
+       #(darwin-publication/commit-staged-bundle!
+         staged success-result)))))
 
-(defn- p15-s23-b2-c17-gate-b-verify-publication!
-  [candidate artifact source-path]
+(defn- p15-s23-b2-c17-gate-b-verify-via-provider!
+  [candidate artifact transaction source-path]
   (p15-s23-b2-c17-gate-b-require-authority!
-   candidate source-path :verify-final-c17-publication)
+   candidate source-path :verify-descriptor-relative-c17-publication)
   (let [receipt (:publication-receipt artifact)
-        intent? (get-in artifact [:toolchain-evidence :publication-intent?])]
+        intent? (get-in artifact
+                        [:toolchain-evidence :publication-intent?])]
     (if-not intent?
       (do
         (when-not
@@ -137719,144 +137703,41 @@
            {:missing-fact :canonical-ephemeral-c17-publication-receipt}))
         {:status :passed :publication :ephemeral
          :core-artifact-count 4 :sidecar-count 0})
-      (let [directory
-            (java.nio.file.Paths/get
-             (:actual-output-directory receipt) (make-array String 0))
-            parent (.getParent directory)
-            nofollow
-            (into-array java.nio.file.LinkOption
-                        [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-            directory-attributes
-            (try
-              (java.nio.file.Files/readAttributes
-               directory java.nio.file.attribute.BasicFileAttributes nofollow)
-              (catch Exception _ nil))
-            parent-attributes
-            (when parent
-              (try
-                (java.nio.file.Files/readAttributes
-                 parent java.nio.file.attribute.BasicFileAttributes nofollow)
-                (catch Exception _ nil)))
-            directory-file-key
-            (when directory-attributes (.fileKey directory-attributes))
-            parent-file-key
-            (when parent-attributes (.fileKey parent-attributes))
-            publisher (:publisher-evidence receipt)
-            expected-names
-            #{"program.c" "program.h" "program.o" "program"
-              "manifest.edn" "provenance.edn" "conformance.edn"}]
-        (loop [ancestor directory]
-          (when ancestor
-            (when (java.nio.file.Files/isSymbolicLink ancestor)
-              (p15-s23-c-backend-fail!
-               "B13-PROVENANCE" source-path artifact
-               {:missing-fact :current-non-symlink-c17-output-ancestor}))
-            (recur (.getParent ancestor))))
+      (let [material
+            (p15-s23-b2-c17-gate-b-publication-material
+             artifact (:publication-payload transaction) source-path)
+            raw-receipt
+            (p15-s23-b2-c17-gate-b-raw-provider-receipt
+             receipt material source-path)
+            verification
+            (p15-s23-b2-c17-gate-b-provider-call!
+             source-path :verify
+             #(darwin-publication/verify-published-bundle!
+               raw-receipt (:file-specs material)))]
         (when-not
-         (and directory-attributes (.isDirectory directory-attributes)
-              (not (java.nio.file.Files/isSymbolicLink directory))
-              (= directory
-                 (.toRealPath directory
-                              (make-array java.nio.file.LinkOption 0)))
-              parent-attributes (.isDirectory parent-attributes)
-              (not (java.nio.file.Files/isSymbolicLink parent))
-              directory-file-key parent-file-key
-              (= (:staging-file-key-hash publisher)
-                 (str "sha256:" (sha256-hex (str directory-file-key))))
-              (= (:parent-file-key-hash publisher)
-                 (str "sha256:" (sha256-hex (str parent-file-key))))
-              (= expected-names
-                 (p15-s23-b2-c17-gate-b-capped-directory-inventory!
-                  candidate directory source-path 7)))
-          (p15-s23-c-backend-fail!
-           "B13-PROVENANCE" source-path artifact
-           {:missing-fact :current-content-bound-c17-publication-directory}))
-        (when-not
-         (and (= p15-s23-b2-c17-gate-b-directory-permissions
-                 (set (java.nio.file.Files/getPosixFilePermissions
-                       directory nofollow)))
-              (= p15-s23-b2-c17-gate-b-executable-permissions
-                 (set (java.nio.file.Files/getPosixFilePermissions
-                       (.resolve directory "program") nofollow)))
-              (every?
-               (fn [name]
-                 (= p15-s23-b2-c17-gate-b-nonexecutable-permissions
-                    (set (java.nio.file.Files/getPosixFilePermissions
-                          (.resolve directory name) nofollow))))
-               ["program.c" "program.h" "program.o" "manifest.edn"
-                "provenance.edn" "conformance.edn"]))
+         (and (map? verification)
+              (= #{:status :publication :file-count :file-records
+                   :publisher-evidence}
+                 (set (keys verification)))
+              (= :passed (:status verification))
+              (= :descriptor-relative-exclusive-rename
+                 (:publication verification))
+              (= 7 (:file-count verification)))
           (p15-s23-c-backend-fail!
            "B13-SCHEMA" source-path artifact
-           {:missing-fact :current-exact-c17-publication-mode-policy}))
-        (let [provenance
-              (p15-s23-b2-c17-gate-b-canonical-sidecar
-               "provenance.edn"
-               (p15-s23-b2-c17-gate-b-provenance-sidecar-record artifact))
-              conformance
-              (p15-s23-b2-c17-gate-b-canonical-sidecar
-               "conformance.edn"
-               (p15-s23-b2-c17-gate-b-conformance-sidecar-record artifact))
-              manifest
-              (p15-s23-b2-c17-gate-b-canonical-sidecar
-               "manifest.edn"
-               (p15-s23-b2-c17-gate-b-manifest-sidecar-record
-                artifact (:hash-record provenance)
-                (:hash-record conformance)))
-              expected-sidecars
-              {"manifest.edn" manifest "provenance.edn" provenance
-               "conformance.edn" conformance}
-              core-files (get-in artifact [:b13-record :artifact-files])
-              expected-core
-              {"program.c" (select-keys (:source core-files)
-                                         [:byte-count :content-hash])
-               "program.h" (select-keys (:header core-files)
-                                         [:byte-count :content-hash])
-               "program.o" (select-keys (:object core-files)
-                                         [:byte-count :content-hash])
-               "program" (select-keys (:executable core-files)
-                                       [:byte-count :content-hash])}]
-          (doseq [[name expected] expected-core]
-            (let [observed
-                  (p15-s23-b2-c17-gate-b-snapshot-content
-                   (p15-s23-b2-c17-gate-b-file-snapshot!
-                    candidate directory (.resolve directory name) source-path
-                    :verify-final-published-c17-core (* 8 1024 1024)))]
-              (when-not (= expected observed)
-                (p15-s23-c-backend-fail!
-                 "B13-HASH" source-path artifact
-                 {:missing-fact :current-published-c17-core-hash
-                  :logical-path name}))))
-          (doseq [[name expected] expected-sidecars]
-            (let [snapshot
-                  (p15-s23-b2-c17-gate-b-file-snapshot!
-                   candidate directory (.resolve directory name) source-path
-                   :verify-final-published-c17-sidecar (* 8 1024 1024))
-                  observed-hash
-                  (assoc (p15-s23-b2-c17-gate-b-snapshot-content snapshot)
-                         :logical-path name)
-                  decoded
-                  (try
-                    (edn/read-string
-                     (String. ^bytes (:bytes snapshot)
-                              java.nio.charset.StandardCharsets/UTF_8))
-                    (catch Exception _ ::invalid-sidecar))]
-              (when-not
-               (and (= (:hash-record expected) observed-hash)
-                    (= (:hash-record expected)
-                       (get (:sidecar-hashes receipt)
-                            (case name
-                              "manifest.edn" :manifest
-                              "provenance.edn" :provenance
-                              "conformance.edn" :conformance)))
-                    (java.util.Arrays/equals
-                     ^bytes (:bytes expected) ^bytes (:bytes snapshot))
-                    (= (:record expected) decoded))
-                (p15-s23-c-backend-fail!
-                 "B13-HASH" source-path artifact
-                 {:missing-fact :current-final-record-bound-c17-sidecar
-                  :logical-path name}))))
-          {:status :passed :publication :atomically-published
-           :core-artifact-count 4 :sidecar-count 3})))))
+           {:missing-fact
+            :canonical-descriptor-relative-c17-verification-envelope}))
+        (when-not
+         (and (= (:file-records material)
+                 (:file-records verification))
+              (= (:publisher-evidence receipt)
+                 (:publisher-evidence verification)))
+          (p15-s23-c-backend-fail!
+           "B13-HASH" source-path artifact
+           {:missing-fact
+            :exact-descriptor-relative-c17-publication-verification}))
+        {:status :passed :publication :atomically-published
+         :core-artifact-count 4 :sidecar-count 3}))))
 
 (defn- p15-s23-stage2-b2-c17-gate-b-artifact!
   "Execute the authenticated hosted-C17 Gate B from a context-bound Gate A.
@@ -137882,26 +137763,36 @@
        (let [{:keys [options gate-a-contextual-report]}
              (p15-s23-b2-c17-gate-b-pre-effect-gate!
               gate-a checked-core context options)
-             publication-preflight
+             execute
+             (fn [publication-context]
+               (let [transaction
+                     (p15-s23-b2-c17-gate-b-toolchain-transaction!
+                      p15-s23-b2-c17-gate-b-authority-token gate-a
+                      source-path (boolean publication-context))
+                     payload (:publication-payload transaction)]
+                 (when-not
+                  (and (= #{:source :header :object :executable}
+                          (set (keys payload)))
+                       (every? bytes? (vals payload)))
+                   (p15-s23-c-backend-fail!
+                    "B13-HASH" source-path gate-a
+                    {:missing-fact
+                     :exact-private-c17-publication-payload}))
+                 (p15-s23-b2-c17-gate-b-publish-via-provider!
+                  p15-s23-b2-c17-gate-b-authority-token
+                  gate-a gate-a-contextual-report transaction payload
+                  publication-context source-path success-projector)))
+             publication-context
              (p15-s23-b2-c17-gate-b-output-preflight!
               p15-s23-b2-c17-gate-b-authority-token
-              (:output-directory options) source-path)
-             transaction
-             (p15-s23-b2-c17-gate-b-toolchain-transaction!
-              p15-s23-b2-c17-gate-b-authority-token gate-a source-path
-              (boolean publication-preflight))
-             payload (:publication-payload transaction)]
-         (when-not
-          (and (= #{:source :header :object :executable}
-                  (set (keys payload)))
-               (every? bytes? (vals payload)))
-           (p15-s23-c-backend-fail!
-            "B13-HASH" source-path gate-a
-            {:missing-fact :exact-private-c17-publication-payload}))
-         (p15-s23-b2-c17-gate-b-publish-final!
-          p15-s23-b2-c17-gate-b-authority-token
-          gate-a gate-a-contextual-report transaction payload
-          publication-preflight source-path success-projector))
+              (:output-directory options) source-path)]
+         (try
+           (execute publication-context)
+           (catch Throwable error
+             (if publication-context
+               (p15-s23-b2-c17-gate-b-abort-after-failure!
+                publication-context source-path error)
+               (throw error)))))
        (catch InterruptedException interrupted
          (.interrupt (Thread/currentThread))
          (throw interrupted))
@@ -138147,8 +138038,9 @@
                {:missing-fact
                 :fresh-pinned-toolchain-and-final-c17-record-parity}))
             publication
-            (p15-s23-b2-c17-gate-b-verify-publication!
-             p15-s23-b2-c17-gate-b-authority-token artifact source-path)
+            (p15-s23-b2-c17-gate-b-verify-via-provider!
+             p15-s23-b2-c17-gate-b-authority-token artifact
+             fresh-transaction source-path)
             base
             {:artifact :gravity/b2-c17-gate-b-contextual-verification-report
              :schema-version 1 :status :passed
@@ -147118,6 +147010,8 @@
 (def p18-t02-diagnostics-source
   "bootstrap/clojure/src/gravity/diagnostics.clj")
 (def p18-t02-cli-source "bootstrap/clojure/src/gravity/cli.clj")
+(def p18-t02-darwin-publication-source
+  "bootstrap/clojure/src/gravity/darwin_publication.clj")
 (def p18-t02-manifest-entry "META-INF/MANIFEST.MF")
 (def p18-t02-launcher-class-entry "gravity/cli/Main.class")
 (def p18-t02-source-inventory
@@ -147129,6 +147023,8 @@
     :jar-entry "gravity/cli.clj"}
    {:role :diagnostics :path p18-t02-diagnostics-source
     :jar-entry "gravity/diagnostics.clj"}
+   {:role :darwin-publication :path p18-t02-darwin-publication-source
+    :jar-entry "gravity/darwin_publication.clj"}
    {:role :deps :path "deps.edn"}])
 (def p18-t02-artifact-dir "docs/artifacts/phase-18/jvm-cli")
 
@@ -147241,10 +147137,12 @@
         compiled-jar-entries (mapv :compiled-jar-entry compiled-inventory)
         material (p18-t02-source-material)
         valid?
-        (and (= #{:launcher :bootstrap :diagnostics :cli :deps} (set roles))
+        (and (= #{:launcher :bootstrap :diagnostics :cli
+                  :darwin-publication :deps}
+                (set roles))
              (= (count roles) (count (set roles)))
              (= (count paths) (count (set paths)))
-             (= #{:bootstrap :diagnostics :cli}
+             (= #{:bootstrap :diagnostics :cli :darwin-publication}
                 (set (map :role packaged-inventory)))
              (= [:launcher] (mapv :role compiled-inventory))
              (= (count packaged-inventory) (count packaged-sources))
@@ -147278,7 +147176,7 @@
               :observed-packaged-source-count
               (count (:packaged-source-entries report))
               :remediation
-              "Restore the exact declared launcher, bootstrap, diagnostics, CLI presentation, and deps inputs before building the package."}))
+              "Restore the exact declared launcher, bootstrap, diagnostics, CLI presentation, Darwin publication provider, and deps inputs before building the package."}))
     report))
 
 (defn p18-t02-jar-source-inventory-report
@@ -147787,6 +147685,9 @@
                (= 1 (get jar-entry-frequencies "gravity/cli.clj" 0))
                :jar-contains-diagnostics-source?
                (= 1 (get jar-entry-frequencies "gravity/diagnostics.clj" 0))
+               :jar-contains-darwin-publication-source?
+               (= 1 (get jar-entry-frequencies
+                         "gravity/darwin_publication.clj" 0))
                :jar-contains-packaged-sources-exactly-once?
                (:valid? jar-source-report)
                :jar-file-inventory-exact?
