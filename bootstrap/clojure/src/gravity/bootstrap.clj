@@ -9,6 +9,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
+            [gravity.cli :as cli]
             [gravity.diagnostics :as diagnostics])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
@@ -147107,6 +147108,7 @@
 (def p18-t02-bootstrap-source "bootstrap/clojure/src/gravity/bootstrap.clj")
 (def p18-t02-diagnostics-source
   "bootstrap/clojure/src/gravity/diagnostics.clj")
+(def p18-t02-cli-source "bootstrap/clojure/src/gravity/cli.clj")
 (def p18-t02-manifest-entry "META-INF/MANIFEST.MF")
 (def p18-t02-launcher-class-entry "gravity/cli/Main.class")
 (def p18-t02-source-inventory
@@ -147114,6 +147116,8 @@
     :compiled-jar-entry p18-t02-launcher-class-entry}
    {:role :bootstrap :path p18-t02-bootstrap-source
     :jar-entry "gravity/bootstrap.clj"}
+   {:role :cli :path p18-t02-cli-source
+    :jar-entry "gravity/cli.clj"}
    {:role :diagnostics :path p18-t02-diagnostics-source
     :jar-entry "gravity/diagnostics.clj"}
    {:role :deps :path "deps.edn"}])
@@ -147125,51 +147129,11 @@
 
 (defn p18-cli-version-record
   []
-  (let [packaged? (p18-packaged-jvm-cli?)]
-    {:command "gravity"
-     :phase (if packaged? "P18-T02" "P18-T01")
-     :bootstrap-hosted? true
-     :packaged-jvm-cli? packaged?
-     :seedless-release? false
-     :executable-command-contract? true
-     :executable-command-contract-scope :established-bootstrap-subset
-     :experimental-verified-mir-c-route
-     {:status :implementation-present-governance-pending
-      :excluded-from-executable-command-contract-credit? true
-      :governance-conforming? false
-      :t1-cli-conformance? false
-      :p18-t04-proof-credited? false
-      :public-target-support-claim? false}
-     :delegates-to (if packaged?
-                     "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
-                     "clojure -M:gravity")
-     :replaced-by "Phase 18 self-hosted release artifact"}))
+  (cli/p18-cli-version-record (p18-packaged-jvm-cli?)))
 
 (defn p18-cli-help-text
   []
-  (str
-   "gravity bootstrap-hosted command\n\n"
-   "Usage:\n"
-   "  gravity --version\n"
-   "  gravity help\n"
-   "  gravity check <file.qst|file.gravity>\n"
-   "  gravity run <file.qst|file.gravity>\n"
-   "  gravity compile <file.qst|file.gravity>\n"
-   "  gravity compile <file.qst|file.gravity> -o <executable>\n"
-   "  gravity compile <file.qst|file.gravity> --target c --lowering verified-mir -o target/<bundle-directory>  [experimental]\n"
-   "  gravity test\n"
-   "  gravity p18-t05-seedless-release-boundary\n"
-   "  gravity p18-t05-write-seedless-release-artifacts\n"
-   "  gravity p18-t06-final-release\n"
-   "  gravity p18-t06-write-final-release-artifacts\n"
-   "  gravity p18-t00-co-canonical-source-extensions\n"
-   "  gravity p18-t00-write-co-canonical-source-extension-artifacts\n"
-   "  gravity <artifact-command> <file.qst|file.gravity>\n\n"
-   "Metadata:\n"
-   "  :bootstrap-hosted? true\n"
-   "  :packaged-jvm-cli? " (if (p18-packaged-jvm-cli?) "true" "false") "\n"
-   "  :seedless-release? false\n"
-   "  :experimental-verified-mir-c-route \"current-source compiler with request-scoped JDK native access; bundle-directory output; governance, security, unsafe-island, target-record, and T1 reviews pending; no P18 command-proof, target-support, release, self-host, or T1 credit\"\n"))
+  (cli/p18-cli-help-text (p18-packaged-jvm-cli?)))
 
 (defn p18-seedless-overclaim!
   []
@@ -147268,10 +147232,10 @@
         compiled-jar-entries (mapv :compiled-jar-entry compiled-inventory)
         material (p18-t02-source-material)
         valid?
-        (and (= #{:launcher :bootstrap :diagnostics :deps} (set roles))
+        (and (= #{:launcher :bootstrap :diagnostics :cli :deps} (set roles))
              (= (count roles) (count (set roles)))
              (= (count paths) (count (set paths)))
-             (= #{:bootstrap :diagnostics}
+             (= #{:bootstrap :diagnostics :cli}
                 (set (map :role packaged-inventory)))
              (= [:launcher] (mapv :role compiled-inventory))
              (= (count packaged-inventory) (count packaged-sources))
@@ -147305,7 +147269,7 @@
               :observed-packaged-source-count
               (count (:packaged-source-entries report))
               :remediation
-              "Restore the exact declared launcher, bootstrap, diagnostics, and deps inputs before building the package."}))
+              "Restore the exact declared launcher, bootstrap, diagnostics, CLI presentation, and deps inputs before building the package."}))
     report))
 
 (defn p18-t02-jar-source-inventory-report
@@ -147810,6 +147774,8 @@
                 (some #{"gravity/cli/Main.class"} jar-entries))
                :jar-contains-bootstrap-source?
                (= 1 (get jar-entry-frequencies "gravity/bootstrap.clj" 0))
+               :jar-contains-cli-source?
+               (= 1 (get jar-entry-frequencies "gravity/cli.clj" 0))
                :jar-contains-diagnostics-source?
                (= 1 (get jar-entry-frequencies "gravity/diagnostics.clj" 0))
                :jar-contains-packaged-sources-exactly-once?

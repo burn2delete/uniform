@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.cli-test]
             [gravity.diagnostics-test]))
 
 (defn fixture
@@ -21987,6 +21988,9 @@
          {:role :bootstrap
           :path "bootstrap/clojure/src/gravity/bootstrap.clj"
           :jar-entry "gravity/bootstrap.clj"}
+         {:role :cli
+          :path "bootstrap/clojure/src/gravity/cli.clj"
+          :jar-entry "gravity/cli.clj"}
          {:role :diagnostics
           :path "bootstrap/clojure/src/gravity/diagnostics.clj"
           :jar-entry "gravity/diagnostics.clj"}
@@ -21995,6 +21999,9 @@
         [{:path "bootstrap/clojure/src/gravity/bootstrap.clj"
           :source-root "bootstrap/clojure/src"
           :jar-entry "gravity/bootstrap.clj"}
+         {:path "bootstrap/clojure/src/gravity/cli.clj"
+          :source-root "bootstrap/clojure/src"
+          :jar-entry "gravity/cli.clj"}
          {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
           :source-root "bootstrap/clojure/src"
           :jar-entry "gravity/diagnostics.clj"}]
@@ -22005,10 +22012,12 @@
          "--date=2026-01-01T00:00:00Z"
          "-C" bootstrap/p18-t02-classes-dir "gravity/cli/Main.class"
          "-C" "bootstrap/clojure/src" "gravity/bootstrap.clj"
+         "-C" "bootstrap/clojure/src" "gravity/cli.clj"
          "-C" "bootstrap/clojure/src" "gravity/diagnostics.clj"]
         expected-jar-file-entries
         ["META-INF/MANIFEST.MF"
          "gravity/bootstrap.clj"
+         "gravity/cli.clj"
          "gravity/cli/Main.class"
          "gravity/diagnostics.clj"]
         material (bootstrap/p18-t02-source-material)
@@ -22038,12 +22047,12 @@
            (bootstrap/p18-t02-compiled-jar-entries)))
     (is (= expected-jar-file-entries
            (bootstrap/p18-t02-expected-jar-file-entries)))
-    (is (= 2 (count (set (map :jar-entry packaged-sources)))))
+    (is (= 3 (count (set (map :jar-entry packaged-sources)))))
     (is (= expected-jar-command jar-command))
     (doseq [entry (map :jar-entry packaged-sources)]
       (is (= 1 (get (frequencies jar-command) entry 0)) entry))
     (is (= (mapv :path inventory) (mapv :path material)))
-    (is (= #{:launcher :bootstrap :diagnostics :deps}
+    (is (= #{:launcher :bootstrap :cli :diagnostics :deps}
            (set (keys source-hashes))))
     (doseq [[{:keys [role path]} {:keys [hash]}]
             (map vector inventory material)]
@@ -22059,10 +22068,14 @@
     (is (= (bootstrap/p18-t02-source-hashes) source-hashes))
     (is (= (bootstrap/p18-t02-jar-command) jar-command))
     (doseq [hostile-inventory
-            [(subvec expected-inventory 0 3)
-             (assoc-in expected-inventory [3 :path]
+            [(subvec expected-inventory 0 4)
+             (assoc-in expected-inventory [4 :path]
                        "bootstrap/clojure/src/gravity/diagnostics.clj")
-             (assoc-in expected-inventory [3 :path] nil)]]
+             (assoc-in expected-inventory [2 :path] nil)
+             (assoc-in expected-inventory [2 :path]
+                       "/tmp/gravity/cli.clj")
+             (assoc-in expected-inventory [2 :jar-entry]
+                       "gravity/not-cli.clj")]]
       (let [rejected
             (with-redefs [bootstrap/p18-t02-source-inventory
                           hostile-inventory]
@@ -22072,12 +22085,15 @@
         (is (= :complete-packaged-source-inventory
                (:missing-fact rejected)) rejected)))
     (doseq [hostile-entries
-            [["gravity/bootstrap.clj"]
+            [["gravity/bootstrap.clj" "gravity/cli.clj"]
              ["gravity/bootstrap.clj" "gravity/bootstrap.clj"
+              "gravity/cli.clj"
               "gravity/diagnostics.clj"]
-             ["gravity/bootstrap.clj" "gravity/diagnostics.clj"
+             ["gravity/bootstrap.clj" "gravity/cli.clj"
+              "gravity/diagnostics.clj"
               "gravity/ambient.clj"]
-             ["gravity/bootstrap.clj" "gravity/diagnostics.clj" nil]]]
+             ["gravity/bootstrap.clj" "gravity/cli.clj"
+              "gravity/diagnostics.clj" nil]]]
       (is (false?
            (:valid?
             (bootstrap/p18-t02-jar-source-inventory-report
@@ -22135,8 +22151,11 @@
         (is (= 1 (get (:frequencies observation)
                       "gravity/bootstrap.clj" 0)))
         (is (= 1 (get (:frequencies observation)
+                      "gravity/cli.clj" 0)))
+        (is (= 1 (get (:frequencies observation)
                       "gravity/diagnostics.clj" 0)))
-        (is (= #{"gravity/bootstrap.clj" "gravity/diagnostics.clj"}
+        (is (= #{"gravity/bootstrap.clj" "gravity/cli.clj"
+                 "gravity/diagnostics.clj"}
                (set (filter #(str/ends-with? % ".clj")
                             (:entries observation)))))
         (is (.isFile (java.io.File. (:ambient-file observation))))
@@ -22148,11 +22167,14 @@
              (:valid?
               (bootstrap/p18-t02-jar-inventory-report
                (:file-entries observation)))))
-        (is (= ["gravity/bootstrap.clj" "gravity/diagnostics.clj"]
+        (is (= ["gravity/bootstrap.clj" "gravity/cli.clj"
+                "gravity/diagnostics.clj"]
                (mapv :jar-entry
                      (bootstrap/p18-t02-packaged-source-entries))))
         (is (= 1 (get (frequencies (:jar-command observation))
                       "gravity/bootstrap.clj" 0)))
+        (is (= 1 (get (frequencies (:jar-command observation))
+                      "gravity/cli.clj" 0)))
         (is (= 1 (get (frequencies (:jar-command observation))
                       "gravity/diagnostics.clj" 0)))
         (is (zero? (get-in observation [:packaged :exit])) observation)
@@ -22189,6 +22211,7 @@
     (is (true? (:packaged-jar-built? proof)))
     (is (true? (:jar-contains-launcher? proof)))
     (is (true? (:jar-contains-bootstrap-source? proof)))
+    (is (true? (:jar-contains-cli-source? proof)))
     (is (true? (:jar-contains-diagnostics-source? proof)))
     (is (true? (:jar-contains-packaged-sources-exactly-once? proof)))
     (is (true? (:jar-file-inventory-exact? proof)))
@@ -22205,10 +22228,12 @@
     (is (= :clojure/jvm (get-in artifact [:package-manifest :runtime])))
     (is (some #{"gravity/cli/Main.class"} (:jar-entries artifact)))
     (is (some #{"gravity/bootstrap.clj"} (:jar-entries artifact)))
+    (is (some #{"gravity/cli.clj"} (:jar-entries artifact)))
     (is (some #{"gravity/diagnostics.clj"} (:jar-entries artifact)))
     (is (= (bootstrap/p18-t02-expected-jar-file-entries)
            (:jar-file-entries artifact)))
-    (is (= ["gravity/bootstrap.clj" "gravity/diagnostics.clj"]
+    (is (= ["gravity/bootstrap.clj" "gravity/cli.clj"
+            "gravity/diagnostics.clj"]
            (:packaged-source-entries artifact)))
     (is (= bootstrap/p18-t02-source-inventory
            (:packaged-source-inventory artifact)))
@@ -39272,6 +39297,7 @@
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.diagnostics-test
+                          'gravity.cli-test
                           'gravity.bootstrap-test)]
     (if (and (zero? (:fail result)) (zero? (:error result)))
       (do
