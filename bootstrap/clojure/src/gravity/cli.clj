@@ -36,7 +36,10 @@
    :self-hosted? false})
 
 (def ^:private experimental-c-route-version-record
-  {:status :implementation-present-governance-pending
+  {:status :implementation-present-public-exposure-disabled
+   :experiment-state :proposed
+   :exposure :internal-only
+   :public-command-route? false
    :excluded-from-executable-command-contract-credit? true
    :governance-conforming? false
    :t1-cli-conformance? false
@@ -46,10 +49,10 @@
 (def ^:private experimental-c-route-help
   (str
    "  :experimental-verified-mir-c-route "
-   "\"current-source compiler with request-scoped JDK native access; "
-   "bundle-directory output; governance, security, unsafe-island, "
-   "target-record, and T1 reviews pending; no P18 command-proof, "
-   "target-support, release, self-host, or T1 credit\"\n"))
+   "\"implementation present; public exposure disabled pending "
+   "feature-specific GOV4, GOV9, and GOV7 records; exact requests reject "
+   "before source-file I/O, output-filesystem I/O, native calls, tool "
+   "execution, or publication\"\n"))
 
 (defn p18-cli-version-record
   [packaged-jvm-cli?]
@@ -78,7 +81,6 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
-   "  gravity compile <file.qst|file.gravity> --target c --lowering verified-mir -o target/<bundle-directory>  [experimental]\n"
    "  gravity test\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"

@@ -38160,7 +38160,7 @@
               ["compile" source-path "--target" "C" "--lowering"
                "verified-mir" "-o" output-relative]
               "C14-TARGET"
-              {:missing-fact :exact-public-verified-mir-c-target}]
+              {:missing-fact :exact-verified-mir-c-target}]
              [:uppercase-lowering
               ["compile" source-path "--target" "c" "--lowering"
                "VERIFIED-MIR" "-o" output-relative]
@@ -38273,9 +38273,27 @@
                     "/c1" c1-control "-bundle")))
             route-calls (atom 0)
             source-calls (atom 0)
+            output-calls (atom 0)
+            hostile-public-policy
+            (merge
+             bootstrap/p18-t04-experimental-verified-mir-c-route-policy
+             {:experiment-state :active
+              :exposure :public
+              :feature-specific-experiment-record-complete? true
+              :governance-conforming? true
+              :security-review-complete? true
+              :unsafe-review-complete? true
+              :target-support-record-complete? true
+              :t1-cli-conformance? true
+              :p18-t04-proof-credited? true
+              :public-command-route? true
+              :public-target-support-claim? true})
             sealed-route
             (authenticated-b2-gate-b-private-var
              'p15-s23-stage2-b2-c17-gate-b-p18-t04-route-source-artifact!)
+            internal-compile
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-compile-internal-experimental-verified-mir-c-target-file!)
             invalid-wrapper-data
             (with-redefs-fn
              {sealed-route
@@ -38303,7 +38321,7 @@
                         "invalid output reached sealed Gate C route")))}
              #(diagnostic-data
                (fn []
-                 (bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
+                 (internal-compile
                   (p18-t04-verified-mir-request
                    source-path missing-parent-relative
                    [:target :lowering :output])))))
@@ -38316,7 +38334,7 @@
                         "invalid source reached sealed Gate C route")))}
              #(diagnostic-data
                (fn []
-                 (bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
+                 (internal-compile
                   (p18-t04-verified-mir-request
                    (.toString wrong-extension) output-relative
                    [:target :lowering :output])))))
@@ -38381,10 +38399,35 @@
                      projected-source-path projected-source-text
                      projected-source-snapshot projected-output-directory
                      synthetic-gate-b))))}
-             #(bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
+             #(internal-compile
                (p18-t04-verified-mir-request
                 source-path output-relative
                 [:target :lowering :output])))
+            public-governance-data
+            (with-redefs-fn
+             {#'bootstrap/p18-t04-verified-mir-c-output-directory!
+              (fn [& _]
+                (swap! output-calls inc)
+                (throw (AssertionError.
+                        "public governance gate reached output IO")))
+              #'bootstrap/p18-t04-verified-mir-c-source-input!
+              (fn [& _]
+                (swap! source-calls inc)
+                (throw (AssertionError.
+                        "public governance gate reached source IO")))
+              sealed-route
+              (fn [& _]
+                (swap! route-calls inc)
+                (throw (AssertionError.
+                        "public governance gate reached Gate B")))
+              #'bootstrap/p18-t04-experimental-verified-mir-c-route-policy
+              hostile-public-policy}
+             #(diagnostic-data
+               (fn []
+                 (bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
+                  (p18-t04-verified-mir-request
+                   source-path output-relative
+                   [:target :lowering :output])))))
             after
             (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
         (is (= 1 (count (set canonical))) canonical)
@@ -38443,9 +38486,29 @@
         (is (= :collision-free-repository-target-bundle-directory
                (:missing-fact invalid-output-order-data))
             invalid-output-order-data)
-        (is (= "L1-SOURCE-EXTENSION" (:id invalid-source-order-data))
+        (is (= "P18T04002" (:id invalid-source-order-data))
             invalid-source-order-data)
+        (is (= [:co-canonical-bounded-source-path]
+               (:missing-fields invalid-source-order-data))
+            invalid-source-order-data)
+        (is (= "GOV7006" (:id public-governance-data))
+            public-governance-data)
+        (is (= ["GOV7006" :phase17-governance-evolution
+                :feature-specific-gov4-security-review-record
+                :public-exposure-disabled]
+               ((juxt :rule :diagnostic-family :missing-fact
+                      :fallback-status)
+                public-governance-data))
+            public-governance-data)
+        (is (str/includes?
+             (:remediation public-governance-data)
+             "Use the established bootstrap compile routes instead."))
+        (is (= ["GOV7006" "GOV7007" "GOV7001"]
+               (get-in
+                bootstrap/p18-t04-experimental-verified-mir-c-route-policy
+                [:experimental-use-notice :blocking-diagnostic-order])))
         (is (zero? @source-calls))
+        (is (zero? @output-calls))
         (is (zero? @route-calls))
         (is (= :experimental
                (:implementation-tier
@@ -38453,9 +38516,12 @@
         (is (= :unassigned
                (:target-support-tier
                 bootstrap/p18-t04-experimental-verified-mir-c-route-policy)))
-        (is (= :implemented-experimental-public-command-route-governance-pending
+        (is (= [:proposed :internal-only false]
+               ((juxt :experiment-state :exposure :public-command-route?)
+                bootstrap/p18-t04-experimental-verified-mir-c-route-policy)))
+        (is (= :implemented-internal-candidate-public-exposure-disabled
                (:status governance-route)))
-        (is (= :implemented-experimental-public-command-route-governance-pending
+        (is (= :implemented-internal-candidate-public-exposure-disabled
                (:status projected-route)))
         (is (= [source-path authenticated-b2-gate-a-source
                 valid-source-snapshot valid-output]
@@ -38482,9 +38548,13 @@
                (get bootstrap/p18-t04-experimental-verified-mir-c-route-policy
                     key))
               [key bootstrap/p18-t04-experimental-verified-mir-c-route-policy]))
-        (is (= :implementation-present-governance-pending
+        (is (= :implementation-present-public-exposure-disabled
                (get-in (bootstrap/p18-cli-version-record)
                        [:experimental-verified-mir-c-route :status])))
+        (is (false?
+             (get-in (bootstrap/p18-cli-version-record)
+                     [:experimental-verified-mir-c-route
+                      :public-command-route?])))
         (is (true?
              (get-in (bootstrap/p18-cli-version-record)
                      [:experimental-verified-mir-c-route
@@ -38694,7 +38764,7 @@
                (get-in growth-data [:facts :bounded-reason]))
             growth-data)))))
 
-(deftest p18-t04-verified-mir-c-shell-native-classifier-is-exact
+(deftest p18-t04-verified-mir-c-shell-keeps-disabled-route-effect-free
   (with-p18-t04-verified-mir-target-root
     (fn [root]
       (with-temp-directory
@@ -38880,17 +38950,17 @@
                                 repo-root nil [bin-path "--version"])
                 version-record
                 (edn/read-string (str/trim (:out version-result)))
-                native-argument "-J--enable-native-access=ALL-UNNAMED"]
+                native-argument "-J--enable-native-access=ALL-UNNAMED"
+                launcher-text (slurp bin-path)]
             (doseq [[order result] (map vector valid-orders valid-results)]
               (is (zero? (:exit result)) [order result])
-              (is (= 1 (count (filter #{native-argument}
-                                      (:launched-args result))))
+              (is (not-any? #{native-argument} (:launched-args result))
                   [order result])
               (is (some #{"-M:gravity"} (:launched-args result))
                   [order result]))
             (is (zero? (:exit quoted-result)) quoted-result)
-            (is (= 1 (count (filter #{native-argument}
-                                    (:launched-args quoted-result))))
+            (is (not-any? #{native-argument}
+                          (:launched-args quoted-result))
                 quoted-result)
             (is (= quoted-args
                    (vec (take-last (count quoted-args)
@@ -38919,31 +38989,26 @@
             (is (= (get (bootstrap/p18-cli-version-record)
                         :experimental-verified-mir-c-route)
                    (:experimental-verified-mir-c-route version-record)))
-            (is (str/includes?
-                 (:out help-result)
-                 "--target c --lowering verified-mir -o target/<bundle-directory>"))
+            (is (not (str/includes?
+                      (:out help-result)
+                      "--target c --lowering verified-mir")))
             (is (str/includes? (:out help-result)
                                ":bootstrap-hosted? true"))
             (is (str/includes? (:out help-result)
                                ":seedless-release? false"))
-            (is (str/includes?
-                 (:out help-result)
-                 "governance, security, unsafe-island"))
-            (is (str/includes?
-                 (:out help-result)
-                 "no P18 command-proof, target-support, release, self-host, or T1 credit"))
-            (is (str/includes?
-                 (bootstrap/p18-cli-help-text)
-                 "--target c --lowering verified-mir -o target/<bundle-directory>"))
-            (is (str/includes?
-                 (bootstrap/p18-cli-help-text)
-                 "request-scoped JDK native access"))
-            (is (str/includes?
-                 (bootstrap/p18-cli-help-text)
-                 "governance, security, unsafe-island"))
-            (is (str/includes?
-                 (bootstrap/p18-cli-help-text)
-                 "no P18 command-proof, target-support, release, self-host, or T1 credit"))
+            (is (str/includes? (:out help-result)
+                               "public exposure disabled"))
+            (is (str/includes? (:out help-result)
+                               "before source-file I/O"))
+            (is (not (str/includes?
+                      (bootstrap/p18-cli-help-text)
+                      "--target c --lowering verified-mir")))
+            (is (str/includes? (bootstrap/p18-cli-help-text)
+                               "public exposure disabled"))
+            (doseq [forbidden ["verified_mir_compile_requested"
+                               "/usr/bin/stat"
+                               "--enable-native-access"]]
+              (is (not (str/includes? launcher-text forbidden)) forbidden))
             (is (not (java.nio.file.Files/exists
                       output (make-array java.nio.file.LinkOption 0))))
             (is (not (java.nio.file.Files/exists
@@ -38976,6 +39041,9 @@
             run-process!
             (authenticated-b2-gate-b-private-var
              'p15-s23-b2-c17-gate-b-run-process)
+            internal-compile!
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-compile-internal-experimental-verified-mir-c-target-file!)
             before
             (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
             internal-interruptions
@@ -39019,8 +39087,7 @@
                          {#'bootstrap/p18-t04-verified-mir-c-source-input!
                           (fn [& _] (throw expected))}
                          (fn []
-                           (bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
-                            request))))
+                           (internal-compile! request))))
                      interrupted? (.isInterrupted (Thread/currentThread))]
                  (Thread/interrupted)
                  {:expected expected :observed observed
@@ -39040,8 +39107,7 @@
                          {#'bootstrap/p18-t04-verified-mir-c-source-input!
                           (fn [& _] (throw expected))}
                          (fn []
-                           (bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
-                            request))))]
+                           (internal-compile! request))))]
                  {:expected expected :observed observed
                   :interrupted? (.isInterrupted (Thread/currentThread))}))
              fatal-errors)
@@ -39079,6 +39145,9 @@
             route-record!
             (authenticated-b2-gate-b-private-var
              'p18-t04-experimental-verified-mir-c-route-record)
+            internal-compile!
+            (authenticated-b2-gate-b-private-var
+             'p18-t04-compile-internal-experimental-verified-mir-c-target-file!)
             route-calls (atom 0)
             fatal (AssertionError.
                    "synthetic verified-MIR success-projector failure")
@@ -39094,11 +39163,9 @@
                      (swap! route-calls inc)
                      (throw fatal))}
                   (fn []
-                    (bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
-                     request))))
+                    (internal-compile! request))))
               (diagnostic-data
-               #(bootstrap/p18-t04-compile-experimental-verified-mir-c-target-file!
-                 request)))
+               #(internal-compile! request)))
             after
             (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
             after-names (set (seq (.list (.toFile root))))]
@@ -39118,411 +39185,120 @@
         (is (not (java.nio.file.Files/exists
                   output (make-array java.nio.file.LinkOption 0))))))))
 
-(deftest p18-t04-public-verified-mir-c-route-publishes-both-extensions
+(deftest p18-t04-public-verified-mir-c-route-is-governance-disabled
   (with-p18-t04-verified-mir-target-root
     (fn [root]
       (with-temp-directory
-        "gravity-p18-t04-unrelated-cwd-"
+        "gravity-p18-t04-disabled-unrelated-cwd-"
         (fn [unrelated-cwd]
           (let [repo-root (.getCanonicalPath (java.io.File. "."))
                 bin-path (.getCanonicalPath
                           (java.io.File. repo-root "bin/gravity"))
-                packaged-jar
-                (java.io.File.
-                 repo-root
-                 "target/phase-18/jvm-cli/gravity-jvm-cli.jar")
-                gravity-source (.resolve root "public.gravity")
-                qst-source (.resolve root "public.qst")
-                _ (spit (.toFile gravity-source)
-                        authenticated-b2-gate-a-source)
-                _ (spit (.toFile qst-source)
-                        authenticated-b2-gate-a-source)
-                gravity-output (.resolve root "gravity-bundle")
-                qst-output (.resolve root "qst-bundle")
-                gravity-output-relative
-                (p18-t04-verified-mir-relative-path gravity-output)
-                qst-output-relative
-                (p18-t04-verified-mir-relative-path qst-output)
-                environment
-                {"GRAVITY_BOOTSTRAP_ONLY" "0"
-                 "GRAVITY_PACKAGED_CLI_ONLY" "0"}
-                commands
-                [[bin-path "compile" (.toString gravity-source)
-                  "--target" "c" "--lowering" "verified-mir"
-                  "-o" gravity-output-relative]
-                 [bin-path "compile" (.toString qst-source)
-                  "-o" qst-output-relative "--lowering" "verified-mir"
-                  "--target" "c"]]
+                bootstrap-bin-path
+                (.getCanonicalPath
+                 (java.io.File. repo-root "bin/gravity-bootstrap"))
+                gravity-source (.resolve root "missing-public.gravity")
+                qst-source (.resolve root "missing-public.qst")
+                direct-source (.resolve root "missing-direct.gravity")
+                bootstrap-source (.resolve root "missing-bootstrap.qst")
+                gravity-output
+                (.resolve root "missing-parent/gravity-bundle")
+                qst-output
+                (.resolve root "missing-parent/qst-bundle")
+                direct-output
+                (.resolve root "missing-parent/direct-bundle")
+                bootstrap-output
+                (.resolve root "missing-parent/bootstrap-bundle")
+                cases
+                [{:label :public-bootstrap-only
+                  :directory (.toString unrelated-cwd)
+                  :environment {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                                "GRAVITY_PACKAGED_CLI_ONLY" "0"}
+                  :prefix [bin-path]
+                  :source gravity-source :output gravity-output
+                  :arguments
+                  ["compile" (.toString gravity-source)
+                   "--target" "c" "--lowering" "verified-mir"
+                   "-o"
+                   (p18-t04-verified-mir-relative-path gravity-output)]}
+                 {:label :public-packaged-selected
+                  :directory (.toString unrelated-cwd)
+                  :environment {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                                "GRAVITY_PACKAGED_CLI_ONLY" "1"}
+                  :prefix [bin-path]
+                  :source qst-source :output qst-output
+                  :arguments
+                  ["compile" (.toString qst-source)
+                   "-o" (p18-t04-verified-mir-relative-path qst-output)
+                   "--lowering" "verified-mir" "--target" "c"]}
+                 {:label :direct-clojure-main
+                  :directory repo-root :environment {}
+                  :prefix ["clojure" "-M:gravity"]
+                  :source direct-source :output direct-output
+                  :arguments
+                  ["compile" (.toString direct-source)
+                   "--lowering" "verified-mir" "--target" "c"
+                   "-o" (p18-t04-verified-mir-relative-path direct-output)]}
+                 {:label :bootstrap-recovery-entrypoint
+                  :directory (.toString unrelated-cwd) :environment {}
+                  :prefix [bootstrap-bin-path]
+                  :source bootstrap-source :output bootstrap-output
+                  :arguments
+                  ["compile" (.toString bootstrap-source)
+                   "--target" "c" "-o"
+                   (p18-t04-verified-mir-relative-path bootstrap-output)
+                   "--lowering" "verified-mir"]}]
                 results
-                (mapv #(run-process-in-directory
-                        (.toString unrelated-cwd) environment % 900000)
-                      commands)
+                (mapv
+                 (fn [{:keys [directory environment prefix arguments]
+                       :as case}]
+                   (assoc case :result
+                          (run-process-in-directory
+                           directory environment (into prefix arguments)
+                           180000)))
+                 cases)
                 records
                 (mapv
-                 (fn [result]
+                 (fn [{:keys [result]}]
                    (try
-                     (edn/read-string (str/trim (:out result)))
-                     (catch Exception _ ::invalid-public-route-record)))
-                 results)
-                outputs [gravity-output qst-output]
-                sources [gravity-source qst-source]
-                expected-names
-                #{"program.c" "program.h" "program.o" "program"
-                  "manifest.edn" "provenance.edn" "conformance.edn"}
-                mode
-                (fn [path]
-                  (java.nio.file.attribute.PosixFilePermissions/toString
-                   (java.nio.file.Files/getPosixFilePermissions
-                    path
-                    (into-array
-                     java.nio.file.LinkOption
-                     [java.nio.file.LinkOption/NOFOLLOW_LINKS]))))
-                hash-record
-                (fn [directory logical-path]
-                  (let [bytes
-                        (java.nio.file.Files/readAllBytes
-                         (.resolve directory logical-path))]
-                    {:logical-path logical-path
-                     :byte-count (alength ^bytes bytes)
-                     :content-hash
-                     (str "sha256:"
-                          (bootstrap/sha256-bytes-hex bytes))}))
-                bundle-hashes
-                (fn [directory]
-                  (into
-                   (sorted-map)
-                   (map (fn [logical-path]
-                          [logical-path
-                           (:content-hash
-                            (hash-record directory logical-path))]))
-                   expected-names))
-                sidecars
-                (mapv
-                 (fn [directory]
-                   {:manifest
-                    (edn/read-string
-                     (slurp (.toFile (.resolve directory "manifest.edn"))))
-                    :provenance
-                    (edn/read-string
-                     (slurp (.toFile (.resolve directory "provenance.edn"))))
-                    :conformance
-                    (edn/read-string
-                     (slurp (.toFile (.resolve directory "conformance.edn"))))})
-                 outputs)
-                program-results
-                (mapv
-                 #(run-process-in-directory
-                   (.toString unrelated-cwd) nil
-                   [(.toString (.resolve % "program"))])
-                 outputs)]
-            (is (.isFile packaged-jar)
-                (.getCanonicalPath packaged-jar))
-            (doseq [[result record] (map vector results records)]
-              (is (zero? (:exit result)) result)
-              (is (empty? (:err result)) result)
+                     (edn/read-string (str/trim (:err result)))
+                     (catch Exception _ ::invalid-governance-diagnostic)))
+                 results)]
+            (doseq [[{:keys [label result source output]} record]
+                    (map vector results records)]
+              (is (= 1 (:exit result)) [label result])
+              (is (empty? (:out result)) [label result])
               (is (= 1 (count (remove str/blank?
-                                     (str/split-lines (:out result)))))
-                  result)
-              (is (map? record) record)
-              (is (= (:out result) (str (pr-str record) "\n"))
-                  result)
-              (is (= bootstrap/p18-t04-experimental-verified-mir-c-route-artifact-keys
-                     (set (keys record))) record)
-              (is (= :gravity/p18-t04-experimental-verified-mir-c-route
-                     (:kind record)) record)
-              (is (= 1 (:schema-version record)) record)
-              (is (= "P18-T04" (:task record)) record)
-              (is (= :implemented-experimental-public-command-route-governance-pending
-                     (:status record)) record)
-              (is (= bootstrap/p18-t04-experimental-verified-mir-c-route-policy
-                     (:route-policy record)) record)
-              (is (= [:jvm :c :hosted :verified-mir]
-                     ((juxt :source-target :requested-target
-                            :profile :lowering-mode)
-                      record)) record)
-              (is (= {:grammar
-                      (:command-grammar
-                       bootstrap/p18-t04-experimental-verified-mir-c-route-policy)
-                      :output-kind :bundle-directory
-                      :experimental? true
-                      :governance-status :pending-feature-specific-review
-                      :activation :explicit-exact-command-only
-                      :replacement :established-bootstrap-compile-routes}
-                     (:command-boundary record)) record)
-              (doseq [key [:whole-b2? :public? :release? :self-hosted?
-                           :public-target-support-claim?
-                           :governance-conforming?
-                           :security-review-complete?
-                           :unsafe-review-complete?
-                           :target-support-record-complete?
-                           :t1-cli-conformance?
-                           :p18-t04-proof-credited?]]
-                (is (false? (get record key)) [key record]))
-              (doseq [key [:public-command-route? :seed-boundary?
-                           :clojure-seed-boundary?]]
-                (is (true? (get record key)) [key record]))
-              (is (= :pending-feature-specific-review
-                     (:governance-status record)) record)
-              (is (= {:status
-                      :implementation-present-governance-pending
-                      :activation :explicit-exact-command-only
-                      :disable-by :omit-verified-mir-c-route-options
-                      :replacement :established-bootstrap-compile-routes}
-                     (:experimental-use-notice record)) record)
-              (is (= [] (:diagnostics record)) record))
-            (is (= [[:gravity-branded-source ".gravity"]
-                    [:qst-theory-source ".qst"]]
-                   (mapv (fn [record]
-                           ((juxt :kind :extension) (:source record)))
-                         records)))
-            (is (= 1 (count (set (map #(get-in % [:source :content-hash])
-                                      records)))))
-            (is (= 1 (count (set (map :semantic-id records)))))
-            (is (= 1 (count (set (map :artifact-id records)))))
-            (is (= 2 (count (set (map :actual-path-binding-id records)))))
-            (is (= 1 (count (set (map #(get-in %
-                                               [:gate-b-summary :semantic-id])
-                                      records)))))
-            (is (= 1 (count (set (map #(get-in %
-                                               [:gate-b-summary :artifact-id])
-                                      records)))))
-            (is (= 2 (count (set (map #(get-in %
-                                               [:gate-b-summary
-                                                :actual-path-binding-id])
-                                      records)))))
-            (doseq [[record source output sidecar]
-                    (map vector records sources outputs sidecars)]
-              (let [source-real
-                    (.toString
-                     (.toRealPath source
-                                  (make-array java.nio.file.LinkOption 0)))
-                    output-real
-                    (.toString
-                     (.toRealPath output
-                                  (make-array java.nio.file.LinkOption 0)))
-                    summary (:gate-b-summary record)
-                    receipt (:publication-receipt summary)
-                    publisher (:publisher-evidence receipt)
-                    manifest (:manifest sidecar)
-                    provenance (:provenance sidecar)
-                    conformance (:conformance sidecar)]
-                (is (= source-real
-                       (get-in record [:actual-path-provenance :source])))
-                (is (= (:source-snapshot-evidence-id record)
-                       (get-in record
-                               [:actual-path-provenance
-                                :source-snapshot-evidence-id])))
-                (is (= (:source-snapshot-evidence-id record)
-                       (bootstrap/p15-s23-c11-mir-digest
-                        {:kind
-                         :gravity/p18-t04-authenticated-source-snapshot-evidence
-                         :schema-version 1
-                         :evidence (:source-snapshot-evidence record)})))
-                (is (= source-real
-                       (get-in record
-                               [:source-snapshot-evidence :actual-path])))
-                (is (= (get-in record [:source :content-hash])
-                       (get-in record
-                               [:source-snapshot-evidence :content-hash])))
-                (is (= 6
-                       (get-in record
-                               [:source-snapshot-evidence
-                                :identity-observation-phase-count])))
-                (is (= output-real
-                       (get-in record
-                               [:actual-path-provenance
-                                :output-directory])))
-                (is (= output-real (:actual-output-directory receipt)))
-                (is (= #{:artifact :schema-version :status :semantic-id
-                         :artifact-id :actual-path-binding-id :policy
-                         :publication-receipt :publication-receipt-id
-                         :whole-b2? :public? :release? :self-hosted?
-                         :seed-boundary? :clojure-seed-boundary?}
-                       (set (keys summary))) summary)
-                (is (not-any? #(contains? summary %)
-                              [:publication-payload :toolchain-evidence
-                               :physical-tool-provenance]))
-                (is (= [:gravity/b2-hosted-c17-gate-b 1
-                        :validated-bounded-internal-c17-candidate]
-                       ((juxt :artifact :schema-version :status) summary))
-                    summary)
-                (is (= bootstrap/p15-s23-b2-c17-gate-b-policy
-                       (:policy summary)) summary)
-                (doseq [key [:whole-b2? :public? :release? :self-hosted?]]
-                  (is (false? (get summary key)) [key summary]))
-                (doseq [key [:seed-boundary? :clojure-seed-boundary?]]
-                  (is (true? (get summary key)) [key summary]))
-                (is (= (:publication-receipt-id summary)
-                       (bootstrap/p15-s23-c11-mir-digest
-                        {:kind :gravity/b2-c17-gate-b-publication-receipt
-                         :schema-version 1 :receipt receipt})))
-                (is (= :published-atomically-after-final-verification
-                       (:status receipt)))
-                (is (= {:directory "0755" :executable "0755"
-                        :nonexecutable "0644"}
-                       (:mode-policy receipt)))
-                (is (= {:jdk-version "26.0.1" :jdk-feature 26
-                        :native-access-enabled? true
-                        :ffi-provider
-                        :jdk-26-foreign-function-and-memory
-                        :native-library :darwin-libsystem
-                        :symbol "renamex_np"
-                        :errno-read-policy :failure-only
-                        :guarantee-scope
-                        #{:exclusive-destination :no-symlink-traversal}
-                        :path-identity-linearization
-                        :precommit-file-key-checked-not-fd-relative
-                        :flags {:rename-excl 4 :rename-nofollow-any 16
-                                :combined 20}
-                        :commit-primitive :darwin-renamex-np
-                        :exclusive-no-clobber? true
-                        :no-follow-any? true}
-                       (dissoc publisher :parent-file-key-hash
-                               :staging-file-key-hash))
-                    publisher)
-                (doseq [key [:parent-file-key-hash
-                             :staging-file-key-hash]]
-                  (is (boolean
-                       (re-matches #"sha256:[0-9a-f]{64}"
-                                   (get publisher key)))
-                      [key publisher]))
-                (is (= expected-names
-                       (set (seq (.list (.toFile output))))))
-                (is (= "rwxr-xr-x" (mode output)))
-                (is (= "rwxr-xr-x" (mode (.resolve output "program"))))
-                (doseq [logical-path (disj expected-names "program")]
-                  (is (= "rw-r--r--"
-                         (mode (.resolve output logical-path)))
-                      logical-path))
-                (doseq [decoded [manifest provenance conformance]]
-                  (is (= (:artifact-id summary)
-                         (:final-artifact-id decoded)) decoded)
-                  (is (= (:semantic-id summary)
-                         (:semantic-id decoded)) decoded))
-                (doseq [[kind logical-path]
-                        {:source "program.c" :header "program.h"
-                         :object "program.o" :executable "program"}]
-                  (is (= (hash-record output logical-path)
-                         (select-keys
-                          (get-in manifest [:core-artifacts kind])
-                          [:logical-path :byte-count :content-hash]))
-                      [kind logical-path]))
-                (is (= (hash-record output "manifest.edn")
-                       (get-in receipt [:sidecar-hashes :manifest])))
-                (is (= (hash-record output "provenance.edn")
-                       (get-in receipt [:sidecar-hashes :provenance])))
-                (is (= (hash-record output "conformance.edn")
-                       (get-in receipt [:sidecar-hashes :conformance])))
-                (is (= (hash-record output "provenance.edn")
-                       (get-in manifest [:sidecars :provenance])))
-                (is (= (hash-record output "conformance.edn")
-                       (get-in manifest [:sidecars :conformance])))))
-            (doseq [result program-results]
-              (is (= 7 (:exit result)) result)
-              (is (empty? (:out result)) result)
-              (is (empty? (:err result)) result))
-            (let [gravity-hashes (bundle-hashes gravity-output)
-                  qst-hashes (bundle-hashes qst-output)
-                  collision-result
-                  (run-process-in-directory
-                   (.toString unrelated-cwd) environment (first commands))
-                  collision-diagnostic
-                  (try
-                    (edn/read-string (str/trim (:err collision-result)))
-                    (catch Exception _ ::invalid-collision-diagnostic))
-                  collision-after (bundle-hashes gravity-output)
-                  rejected-source (.resolve root "rejected.gravity")
-                  _ (spit (.toFile rejected-source) "(")
-                  rejected-output (.resolve root "rejected-bundle")
-                  rejected-result
-                  (run-process-in-directory
-                   (.toString unrelated-cwd) environment
-                   [bin-path "compile" (.toString rejected-source)
-                    "--target" "c" "--lowering" "verified-mir"
-                    "-o"
-                    (p18-t04-verified-mir-relative-path rejected-output)])
-                  rejected-diagnostic
-                  (try
-                    (edn/read-string (str/trim (:err rejected-result)))
-                    (catch Exception _ ::invalid-rejected-diagnostic))
-                  wrong-target-output (.resolve root "wrong-target-bundle")
-                  wrong-target-result
-                  (run-process-in-directory
-                   (.toString unrelated-cwd) environment
-                   [bin-path "compile" (.toString gravity-source)
-                    "--target" "js" "--lowering" "verified-mir"
-                   "-o"
-                   (p18-t04-verified-mir-relative-path
-                     wrong-target-output)])
-                  wrong-target-diagnostic
-                  (try
-                    (edn/read-string (str/trim (:err wrong-target-result)))
-                    (catch Exception _ ::invalid-wrong-target-diagnostic))]
-              (is (= gravity-hashes qst-hashes))
-              (is (= 1 (:exit collision-result)) collision-result)
-              (is (empty? (:out collision-result)) collision-result)
-              (is (= (:err collision-result)
-                     (str (pr-str collision-diagnostic) "\n"))
-                  [collision-result collision-diagnostic])
-              (is (= "C14-INPUT" (:id collision-diagnostic))
-                  collision-diagnostic)
-              (is (= ["C14-INPUT" :c14-target-lowering]
-                     ((juxt :rule :stage) collision-diagnostic))
-                  collision-diagnostic)
-              (is (= :collision-free-repository-target-bundle-directory
-                     (:missing-fact collision-diagnostic))
-                  collision-diagnostic)
-              (is (= :output-collision
-                     (get-in collision-diagnostic
-                             [:facts :bounded-reason]))
-                  collision-diagnostic)
-              (is (= gravity-hashes collision-after))
-              (is (= 1 (:exit rejected-result)) rejected-result)
-              (is (empty? (:out rejected-result)) rejected-result)
-              (is (= (:err rejected-result)
-                     (str (pr-str rejected-diagnostic) "\n"))
-                  [rejected-result rejected-diagnostic])
-              (is (= "C2-DELIMITER" (:id rejected-diagnostic))
-                  rejected-diagnostic)
-              (is (= :C2-DELIMITER (:rule rejected-diagnostic))
-                  rejected-diagnostic)
-              (is (= :c2-reader (:diagnostic-family rejected-diagnostic))
-                  rejected-diagnostic)
-              (is (= :read-source (:stage rejected-diagnostic))
-                  rejected-diagnostic)
-              (is (= (.toString
-                      (.toRealPath
-                       rejected-source
-                       (make-array java.nio.file.LinkOption 0)))
-                     (get-in rejected-diagnostic
-                             [:source-span :source]))
-                  rejected-diagnostic)
+                                      (str/split-lines (:err result)))))
+                  [label result])
+              (is (map? record) [label record])
+              (is (= (:err result) (str (pr-str record) "\n"))
+                  [label result record])
+              (is (= ["GOV7006" "GOV7006"
+                      :phase17-governance-evolution
+                      :governance-evolution "GOV7"
+                      :feature-specific-gov4-security-review-record
+                      :public-exposure-disabled]
+                     ((juxt :id :rule :diagnostic-family :stage
+                            :document-id :missing-fact :fallback-status)
+                      record))
+                  [label record])
+              (is (= [:gov4-security-review-record]
+                     (:required-evidence record))
+                  [label record])
+              (is (= [:hosted] (:affected-profiles record)) [label record])
+              (is (= [:c] (:affected-targets record)) [label record])
+              (is (= :blocked (:release-gate record)) [label record])
+              (is (str/includes?
+                   (:remediation record)
+                   "Use the established bootstrap compile routes instead."))
+              (is (= (.toString source)
+                     (get-in record [:source-span :source]))
+                  [label record])
               (is (not (java.nio.file.Files/exists
-                        rejected-output
-                        (make-array java.nio.file.LinkOption 0))))
-              (is (= 1 (:exit wrong-target-result)) wrong-target-result)
-              (is (empty? (:out wrong-target-result)) wrong-target-result)
-              (is (= (:err wrong-target-result)
-                     (str (pr-str wrong-target-diagnostic) "\n"))
-                  [wrong-target-result wrong-target-diagnostic])
-              (is (= "C14-TARGET" (:id wrong-target-diagnostic))
-                  wrong-target-diagnostic)
-              (is (= ["C14-TARGET" :c14-target-lowering]
-                     ((juxt :rule :stage) wrong-target-diagnostic))
-                  wrong-target-diagnostic)
-              (is (= :exact-public-verified-mir-c-target
-                     (:missing-fact wrong-target-diagnostic))
-                  wrong-target-diagnostic)
-              (is (= [:js-ts "js" :jvm
-                      :verified-mir-public-route-target-selection]
-                     ((juxt :requested-target
-                            :requested-target-argument
-                            :source-target :bounded-reason)
-                      (:facts wrong-target-diagnostic)))
-                  wrong-target-diagnostic)
+                        source (make-array java.nio.file.LinkOption 0))))
               (is (not (java.nio.file.Files/exists
-                        wrong-target-output
-                        (make-array java.nio.file.LinkOption 0)))))))))))
+                        output (make-array java.nio.file.LinkOption 0)))))))))))
 
 (deftest p18-t04-cli-diagnostic-facts-require-authentic-c15-records
   (let [render
@@ -39535,12 +39311,12 @@
         (try
           (bootstrap/p15-s23-c-backend-fail!
            "C14-TARGET" "diagnostic-projection.gravity" {}
-           {:missing-fact :exact-public-verified-mir-c-target
+           {:missing-fact :exact-verified-mir-c-target
             :requested-target :js-ts
             :requested-target-argument "js"
             :source-target :jvm
             :bounded-reason
-            :verified-mir-public-route-target-selection
+            :verified-mir-c-target-selection
             :raw-secret "must-not-survive"})
           ::unexpected-success
           (catch clojure.lang.ExceptionInfo exception exception))
@@ -39560,9 +39336,9 @@
     (is (= forged-output (str (pr-str forged-record) "\n")))
     (is (= "C14-TARGET" (:rule authentic-record)))
     (is (= {:bounded-reason
-            :verified-mir-public-route-target-selection
+            :verified-mir-c-target-selection
             :dialect :hosted-c17 :helper :none
-            :missing-fact :exact-public-verified-mir-c-target
+            :missing-fact :exact-verified-mir-c-target
             :requested-target :js-ts
             :requested-target-argument "js"
             :source-target :jvm}

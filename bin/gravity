@@ -32,95 +32,6 @@ current_source_compile_requested() {
   return 1
 }
 
-verified_mir_compile_requested() {
-  [[ "${1:-}" == "compile" ]] || return 1
-  shift
-
-  local source="${1:-}"
-  [[ -n "${source}" ]] || return 1
-  shift
-
-  local target=""
-  local lowering=""
-  local output=""
-  local target_count=0
-  local lowering_count=0
-  local output_count=0
-
-  while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-      --target)
-        [[ "$#" -ge 2 ]] || return 1
-        target_count=$((target_count + 1))
-        target="$2"
-        shift 2
-        ;;
-      --lowering)
-        [[ "$#" -ge 2 ]] || return 1
-        lowering_count=$((lowering_count + 1))
-        lowering="$2"
-        shift 2
-        ;;
-      -o)
-        [[ "$#" -ge 2 ]] || return 1
-        output_count=$((output_count + 1))
-        output="$2"
-        shift 2
-        ;;
-      *)
-        return 1
-        ;;
-    esac
-  done
-
-  [[ "${target_count}" -eq 1 && "${target}" == "c" ]] || return 1
-  [[ "${lowering_count}" -eq 1 && \
-     "${lowering}" == "verified-mir" ]] || return 1
-  [[ "${output_count}" -eq 1 && "${output}" == target/* ]] || return 1
-  local LC_ALL=C
-  # Bash 3's C-locale POSIX control class covers ASCII C0/DEL, but not the
-  # UTF-8 encoding of ISO C1 controls that the Clojure boundary rejects.
-  local c1_control_pattern=$'\302[\200-\237]'
-  [[ "${#source}" -ge 1 && "${#source}" -le 4096 ]] || return 1
-  [[ ! "${source}" =~ [[:cntrl:]] ]] || return 1
-  [[ ! "${source}" =~ ${c1_control_pattern} ]] || return 1
-  [[ "${source}" == *.gravity || "${source}" == *.qst ]] || return 1
-  local source_file="${source}"
-  [[ "${source_file}" == /* ]] || source_file="${ROOT_DIR}/${source_file}"
-  [[ -f "${source_file}" && -r "${source_file}" && \
-     ! -L "${source_file}" ]] || return 1
-  local source_size=""
-  source_size="$(/usr/bin/stat -f %z -- "${source_file}" 2>/dev/null)" || \
-    return 1
-  [[ "${source_size}" =~ ^[0-9]+$ && \
-     "${source_size}" -le 1048576 ]] || return 1
-  [[ "${#output}" -ge 8 && "${#output}" -le 4096 ]] || return 1
-  [[ ! "${output}" =~ [[:cntrl:]] ]] || return 1
-  [[ ! "${output}" =~ ${c1_control_pattern} ]] || return 1
-  [[ "${output}" != "target/" && "${output}" != */ && \
-     "${output}" != *//* && "${output}" != *"/./"* && \
-     "${output}" != *"/../"* && "${output}" != *\\* ]] || return 1
-  local segments=()
-  local segment=""
-  IFS='/' read -r -a segments <<< "${output}"
-  for segment in "${segments[@]}"; do
-    [[ -n "${segment}" && "${segment}" != "." && \
-       "${segment}" != ".." ]] || return 1
-  done
-
-  local destination="${ROOT_DIR}/${output}"
-  local parent="${destination%/*}"
-  [[ -d "${parent}" && ! -L "${parent}" ]] || return 1
-  [[ ! -e "${destination}" && ! -L "${destination}" ]] || return 1
-
-  local ancestor="${parent}"
-  while [[ "${ancestor}" != "${ROOT_DIR}" ]]; do
-    [[ "${ancestor}" == "${ROOT_DIR}/"* && ! -L "${ancestor}" ]] || return 1
-    ancestor="${ancestor%/*}"
-  done
-  return 0
-}
-
 packaged_jar_class_major() {
   local magic1 magic2 magic3 magic4 minor1 minor2 major1 major2
 
@@ -226,7 +137,6 @@ Usage:
   gravity compile <file.qst|file.gravity> -o <executable>
   gravity compile <file.qst|file.gravity> --target c -o <executable>
   gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>
-  gravity compile <file.qst|file.gravity> --target c --lowering verified-mir -o target/<bundle-directory>  [experimental]
   gravity test
   gravity self-host verify
   gravity <artifact-command> <file.qst|file.gravity>
@@ -236,7 +146,7 @@ Metadata:
   :packaged-jvm-cli? ${packaged}
   :seedless-release? false
   :delegates-to "${delegate}"
-  :experimental-verified-mir-c-route "current-source compiler with request-scoped JDK native access; bundle-directory output; governance, security, unsafe-island, target-record, and T1 reviews pending; no P18 command-proof, target-support, release, self-host, or T1 credit"
+  :experimental-verified-mir-c-route "implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication"
 
 Use gravity-bootstrap for explicit Clojure seed audit and recovery.
 EOF
@@ -250,7 +160,7 @@ version() {
  :bootstrap-hosted? true
  :packaged-jvm-cli? true
  :seedless-release? false
- :experimental-verified-mir-c-route {:status :implementation-present-governance-pending :excluded-from-executable-command-contract-credit? true :governance-conforming? false :t1-cli-conformance? false :p18-t04-proof-credited? false :public-target-support-claim? false}
+ :experimental-verified-mir-c-route {:status :implementation-present-public-exposure-disabled :experiment-state :proposed :exposure :internal-only :public-command-route? false :excluded-from-executable-command-contract-credit? true :governance-conforming? false :t1-cli-conformance? false :p18-t04-proof-credited? false :public-target-support-claim? false}
  :delegates-to "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar:<clojure-runtime-classpath> gravity.cli.Main"
  :replaced-by "Phase 18 self-hosted release artifact"}
 EOF
@@ -261,7 +171,7 @@ EOF
  :bootstrap-hosted? true
  :packaged-jvm-cli? false
  :seedless-release? false
- :experimental-verified-mir-c-route {:status :implementation-present-governance-pending :excluded-from-executable-command-contract-credit? true :governance-conforming? false :t1-cli-conformance? false :p18-t04-proof-credited? false :public-target-support-claim? false}
+ :experimental-verified-mir-c-route {:status :implementation-present-public-exposure-disabled :experiment-state :proposed :exposure :internal-only :public-command-route? false :excluded-from-executable-command-contract-credit? true :governance-conforming? false :t1-cli-conformance? false :p18-t04-proof-credited? false :public-target-support-claim? false}
  :delegates-to "clojure -M:gravity"
  :replaced-by "Phase 18 self-hosted release artifact"}
 EOF
@@ -316,9 +226,6 @@ if packaged_cli_selected && current_source_compile_requested "$@"; then
     exit 1
   fi
   cd "${ROOT_DIR}"
-  if verified_mir_compile_requested "$@"; then
-    exec clojure -J--enable-native-access=ALL-UNNAMED -M:gravity "$@"
-  fi
   exec clojure -M:gravity "$@"
 fi
 
@@ -347,7 +254,4 @@ EOF
 fi
 
 cd "${ROOT_DIR}"
-if verified_mir_compile_requested "$@"; then
-  exec clojure -J--enable-native-access=ALL-UNNAMED -M:gravity "$@"
-fi
 exec clojure -M:gravity "$@"

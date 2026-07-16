@@ -13,7 +13,10 @@
    :executable-command-contract? true
    :executable-command-contract-scope :established-bootstrap-subset
    :experimental-verified-mir-c-route
-   {:status :implementation-present-governance-pending
+   {:status :implementation-present-public-exposure-disabled
+    :experiment-state :proposed
+    :exposure :internal-only
+    :public-command-route? false
     :excluded-from-executable-command-contract-credit? true
     :governance-conforming? false
     :t1-cli-conformance? false
@@ -36,7 +39,6 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
-   "  gravity compile <file.qst|file.gravity> --target c --lowering verified-mir -o target/<bundle-directory>  [experimental]\n"
    "  gravity test\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
@@ -49,7 +51,7 @@
    "  :bootstrap-hosted? true\n"
    "  :packaged-jvm-cli? " (if packaged? "true" "false") "\n"
    "  :seedless-release? false\n"
-   "  :experimental-verified-mir-c-route \"current-source compiler with request-scoped JDK native access; bundle-directory output; governance, security, unsafe-island, target-record, and T1 reviews pending; no P18 command-proof, target-support, release, self-host, or T1 credit\"\n"))
+   "  :experimental-verified-mir-c-route \"implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication\"\n"))
 
 (deftest presentation-values-are-extracted-with-bootstrap-parity
   (doseq [packaged? [false true]]
@@ -71,13 +73,19 @@
              (get-in version
                      [:experimental-verified-mir-c-route
                       :public-target-support-claim?])))
+        (is (false?
+             (get-in version
+                     [:experimental-verified-mir-c-route
+                      :public-command-route?])))
         (is (.contains help ":bootstrap-hosted? true"))
         (is (.contains help
                        (str ":packaged-jvm-cli? "
                             (if packaged? "true" "false"))))
-        (is (.contains
-             help
-             "no P18 command-proof, target-support, release, self-host, or T1 credit"))
+        (is (not (.contains
+                  help
+                  "--target c --lowering verified-mir")))
+        (is (.contains help "public exposure disabled"))
+        (is (.contains help "exact requests reject before source-file I/O"))
         (with-redefs [bootstrap/p18-packaged-jvm-cli?
                       (constantly packaged?)]
           (is (= version (bootstrap/p18-cli-version-record)))
