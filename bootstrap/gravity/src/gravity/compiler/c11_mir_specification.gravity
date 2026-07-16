@@ -139,7 +139,8 @@
    :risk :bootstrap-seed-tcb
    :scope {:operation-set
            [:literal :implicit-nil :quote :local :let-binding :truthy
-            :do :if :let :str :println :function :runtime-check]
+            :integer-eq :do :if :let :str :println :function
+            :runtime-check]
            :maximum-conditionals 1
            :maximum-module-carrier-nodes 16384
            :maximum-final-artifact-carrier-nodes 32768
@@ -812,7 +813,9 @@
               :local-binding
               (if (= operation :truthy)
                 :truthiness
-                (if (= operation :do)
+                (if (= operation :integer-eq)
+                  :integer-eq
+                  (if (= operation :do)
                   :sequence
                   (if (= operation :if)
                     :conditional-join
@@ -824,7 +827,7 @@
                           :call
                           (if (= operation :function)
                             :function-boundary
-                            :unsupported-checked-core-operation))))))))))))))
+                            :unsupported-checked-core-operation)))))))))))))))
 
 (defn c11-operation-result
   [node]
@@ -1793,7 +1796,8 @@
        :scope
        {:operation-set
         [:literal :implicit-nil :quote :local :let-binding :truthy
-         :do :if :let :str :println :function :runtime-check]
+         :integer-eq :do :if :let :str :println :function
+         :runtime-check]
         :maximum-conditionals 1
         :maximum-module-carrier-nodes 16384
         :maximum-final-artifact-carrier-nodes 32768

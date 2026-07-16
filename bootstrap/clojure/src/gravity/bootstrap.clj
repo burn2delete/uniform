@@ -117766,25 +117766,25 @@
 (def p15-s23-c6c10-verifier-function
   'c6-c10-verify-checked-core-template)
 
-(def p15-s23-c6c10-source-byte-count 134088)
+(def p15-s23-c6c10-source-byte-count 139001)
 
 (def p15-s23-c6c10-expected-source-content-hash
-  "sha256:653913a24b3c67fdafc64442d02cba328541383ce354286b975fc27364df8aa8")
+  "sha256:420c236cfda13861bf92621c9f4d1ee053d5d4468a73ae62db0c4ef4ae0acc3d")
 
 ;; Filled from the dedicated canonical encoder below.  These pins are not the
 ;; legacy emitter's pr-str identities and are checked before either exported
 ;; Gravity function may execute.
 (def p15-s23-c6c10-expected-plan-semantic-hash
-  "sha256:9f108463aaa3cef0ca423c27aa574ff489d335e087be383b725c7ae16f1663d2")
+  "sha256:2ed45cb6b15fd14ea62785f6c2b20670a845de9bbe28713ea8924fc1621e2588")
 
 (def p15-s23-c6c10-expected-functions-semantic-hash
-  "sha256:a70eee45018f50316479afb06208641862b433f451f7f5c8786977e31e7bd52c")
+  "sha256:00caa624add7c95dff751bb92a5d73c18b5324befa09ab9b59095b1fbe85e8d7")
 
 (def p15-s23-c6c10-expected-builder-semantic-hash
-  "sha256:df7e2f80f42a7761fd6ac25eb8380133677b0da5aad177fcfb36762d187d15cf")
+  "sha256:654e331a9c59a4361e77432a8d5372c47e625e1496c7a03bd9364fd959616b21")
 
 (def p15-s23-c6c10-expected-verifier-semantic-hash
-  "sha256:7ea8152dc05084689b175236b64b262160c5cb4ada53009df21a21a55c0b276c")
+  "sha256:504ba6dff6047e782b53a8cd299f52023541f59ff2b63f71113ae04f769e4668")
 
 (def p15-s23-c6c10-required-functions
   {p15-s23-c6c10-builder-function
@@ -117809,7 +117809,7 @@
   #{"clojure.lang.PersistentList"
     "clojure.lang.PersistentList$EmptyList"})
 
-(def p15-s23-c6c10-max-carrier-nodes 32768)
+(def p15-s23-c6c10-max-carrier-nodes 65536)
 (def p15-s23-c6c10-max-carrier-depth 64)
 (def p15-s23-c6c10-max-container-width 128)
 (def p15-s23-c6c10-max-scalar-bytes 65536)
@@ -117823,6 +117823,12 @@
 (defn p15-s23-c6c10-upstream-diagnostic-contract
   [rule]
   (cond
+    (= "L2-BUILTIN-ARITY" rule)
+    {:stage :core-language-semantics
+     :family :l2-core-language-semantics
+     :document-id "L2"
+     :expected-document (get stage1-bootstrap-governing-documents "L2")}
+
     (contains? (set c6-lowering-diagnostic-ids) rule)
     {:stage :core-lowering
      :family :c6-ast-core-lowering
@@ -120741,7 +120747,7 @@
            (:verifier-semantic-hash binding))
         (= p15-s23-c6c10-required-functions
            (:function-shapes binding))
-        (= 138 (get-in binding [:function-manifest :function-count]))
+        (= 139 (get-in binding [:function-manifest :function-count]))
         (<= (apply max 0
                    (map :count
                         (get-in binding
@@ -122002,19 +122008,19 @@
 (def p15-s23-c11-mir-builder-function
   'c11-build-target-independent-mir)
 
-(def p15-s23-c11-mir-source-byte-count 68163)
+(def p15-s23-c11-mir-source-byte-count 68287)
 
 (def p15-s23-c11-mir-expected-source-content-hash
-  "sha256:bee70c3a0c30404ef000d046f85601d8bbbb1205ff679bceb5d284de8c30459b")
+  "sha256:8b0a83f86c45f4eb407c5beeca20ab252992e95cf0ef583b863c4be3379e0eed")
 
 (def p15-s23-c11-mir-expected-plan-semantic-hash
-  "sha256:23e422b13189e9565654fec4d24ec3345aa231b0e27ff4547d70f39da0e236cd")
+  "sha256:0b5e74eb394de93ac02fabcb532623d88e03ac5f336da52b98daac8c6d3c964a")
 
 (def p15-s23-c11-mir-expected-functions-semantic-hash
-  "sha256:cf8b8f970db7509f78a8c1a388c33c82a7ea1151e141e6de492ae3032761a9d8")
+  "sha256:8557c268eda62aca487ed797a1a82a4169dc0b0eec80fe6b737e421337c2ba7a")
 
 (def p15-s23-c11-mir-expected-builder-semantic-hash
-  "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e")
+  "sha256:b1f42efc29f2d66237c2491c13b092065059e623792776b27bb9965eabb6ca00")
 
 (def p15-s23-c11-mir-required-functions
   {'c11-build-target-independent-mir
@@ -122084,12 +122090,12 @@
 
 (def p15-s23-c11-mir-allowed-opcodes
   #{:constant :local :local-binding :truthiness :sequence
-    :conditional-join :lexical-scope :call :function-boundary
+    :integer-eq :conditional-join :lexical-scope :call :function-boundary
     :runtime-check})
 
 (def p15-s23-c11-mir-allowed-source-operations
   #{:literal :implicit-nil :quote :local :let-binding :truthy
-    :do :if :let :str :println :function :runtime-check})
+    :integer-eq :do :if :let :str :println :function :runtime-check})
 
 (defn p15-s23-c11-mir-digest
   [value]
@@ -122178,7 +122184,8 @@
       (or (:mir-id artifact) (:source-core artifact) :not-applicable))}))
 
 (def p15-s23-c11-mir-upstream-diagnostic-rules
-  (set (concat c6-lowering-diagnostic-ids
+  (set (concat ["L2-BUILTIN-ARITY"]
+               c6-lowering-diagnostic-ids
                c7-type-diagnostic-ids
                c8-effect-diagnostic-ids
                c9-ownership-diagnostic-ids
@@ -122186,7 +122193,12 @@
                c11-mir-diagnostic-ids)))
 
 (def p15-s23-c11-mir-diagnostic-rule-contracts
-  [{:rules (set c6-lowering-diagnostic-ids)
+  [{:rules #{"L2-BUILTIN-ARITY"}
+    :stage :core-language-semantics
+    :family :l2-core-language-semantics
+    :document-id "L2"
+    :expected-document (get stage1-bootstrap-governing-documents "L2")}
+   {:rules (set c6-lowering-diagnostic-ids)
     :stage :core-lowering
     :family :c6-ast-core-lowering
     :document-id "C6"
@@ -123172,6 +123184,7 @@
     :local :local
     :let-binding :local-binding
     :truthy :truthiness
+    :integer-eq :integer-eq
     :do :sequence
     :if :conditional-join
     :let :lexical-scope
@@ -123430,7 +123443,8 @@
    :risk :bootstrap-seed-tcb
    :scope {:operation-set
            [:literal :implicit-nil :quote :local :let-binding :truthy
-            :do :if :let :str :println :function :runtime-check]
+            :integer-eq :do :if :let :str :println :function
+            :runtime-check]
            :maximum-conditionals 1
            :maximum-module-carrier-nodes
            p15-s23-c11-mir-max-carrier-nodes
@@ -123860,7 +123874,8 @@
              (:b1-preflight mir))
           (= {:operation-set
               [:literal :implicit-nil :quote :local :let-binding :truthy
-               :do :if :let :str :println :function :runtime-check]
+               :integer-eq :do :if :let :str :println :function
+               :runtime-check]
               :maximum-conditionals 1
               :maximum-module-carrier-nodes
               p15-s23-c11-mir-max-carrier-nodes
@@ -123889,7 +123904,8 @@
      source-path
      {:operation-set
       [:literal :implicit-nil :quote :local :let-binding :truthy
-       :do :if :let :str :println :function :runtime-check]
+       :integer-eq :do :if :let :str :println :function
+       :runtime-check]
       :maximum-conditionals 1
       :maximum-module-carrier-nodes p15-s23-c11-mir-max-carrier-nodes
       :maximum-final-artifact-carrier-nodes
@@ -124245,6 +124261,45 @@
                "C11-MODULE"
                "C11-TARGET-LEAK")
              source-path operation :checked-core-operation-parity)
+            (when (= :integer-eq (:source-operation node))
+              (let [[left-id right-id] (:operands node)
+                    left (get node-by-id left-id)
+                    right (get node-by-id right-id)
+                    proof (get-in node [:safety :proof])]
+                (p15-s23-c11-mir-require!
+                 (and (= 2 (count (:operands node)))
+                      (map? left) (map? right)
+                      (= :gravity/integer (:type left) (:type right))
+                      (= :gravity/bool (:type node) (:type operation))
+                      (= :not-applicable (:constant-payload operation))
+                      (= {:primitive '=
+                          :arity 2
+                          :evaluation-order :left-to-right
+                          :operand-types
+                          [:gravity/integer :gravity/integer]
+                          :result-type :gravity/bool
+                          :numeric-semantics
+                          :exact-signed-integer-equality
+                          :overflow :not-applicable}
+                         (select-keys
+                          (:attributes node)
+                          [:primitive :arity :evaluation-order
+                           :operand-types :result-type
+                           :numeric-semantics :overflow])))
+                 "C11-TYPE" source-path operation
+                 :exact-binary-integer-equality-schema)
+                (p15-s23-c11-mir-require!
+                 (and (= :proven-safe (get-in node [:safety :outcome]))
+                      (= :exact-signed-integer-equality
+                         (get-in node [:safety :basis]))
+                      (= :exact-signed-integer-equality (:basis proof))
+                      (= :integer-eq (:source-operation proof))
+                      (= [left-id right-id] (:operand-node-ids proof))
+                      (= :gravity/bool (:type proof))
+                      (empty? (:effects operation))
+                      (empty? (:capabilities operation)))
+                 "C11-SAFETY" source-path operation
+                 :authenticated-pure-integer-equality-proof)))
             (p15-s23-c11-mir-require!
              (and (= (:type node) (:type operation))
                   (contains? (:type-table mir) (:type-fact-id facts))
@@ -131451,13 +131506,13 @@
    'c13-build-bounded-identity-optimized-mir
    {:arity 2 :params ['mir 'evidence]}})
 
-(def p15-s23-c14-source-byte-count 98297)
+(def p15-s23-c14-source-byte-count 99344)
 (def p15-s23-c14-expected-source-content-hash
-  "sha256:677e84d5f7711092a799a07f74bd92b101c3c8384891365305727e2bab5c8ac0")
+  "sha256:12e8a65771aa09fbe2db9dfd8d0a7de0ebdad0bfcb7b6b133a449404433b4a19")
 (def p15-s23-c14-expected-plan-semantic-hash
-  "sha256:af3cc306b968d5a1890745fc32ace8b4af1dcf134aed4a3a4e3b3b71a66a73f6")
+  "sha256:631614827531f4842d4f641c229669bfea5bbe087016ca397722c5f4d10657a9")
 (def p15-s23-c14-expected-functions-semantic-hash
-  "sha256:8ea809144c3a6cb3f190541a72a284a05ae86b5fa1d71ac32d3e23b8d8775fc7")
+  "sha256:9cb928c1278ae9594802e26b0e1afe05b073830bb9bb4e85b24f9588225b3224")
 (def p15-s23-c14-expected-builder-semantic-hash
   "sha256:1b42b7a74d67607e4d9076adda65e64160317e34d3e608ae2e4a81fbce3b4b30")
 (def p15-s23-c14-builder-function
@@ -131473,7 +131528,7 @@
 (def p15-s23-c14-c-builder-function
   'c14-build-bounded-c-lowering-record)
 (def p15-s23-c14-c-expected-builder-semantic-hash
-  "sha256:1b92b0ce0118579061f7f91daf0896633f311f7f07926d77f86f5c177b8c4428")
+  "sha256:6ff04fed1658fe82a466672ed90685656d6ced19df98dcd3e8664f32e1a38da3")
 (def p15-s23-c14-c-required-functions
   {'c14-bounded-optimized-input-valid?
    {:arity 2 :params ['optimized 'policy]}
@@ -131498,13 +131553,13 @@
    'c14-build-bounded-c-lowering-record
    {:arity 2 :params ['optimized 'policy]}})
 
-(def p15-s23-b1-source-byte-count 109989)
+(def p15-s23-b1-source-byte-count 110026)
 (def p15-s23-b1-expected-source-content-hash
-  "sha256:919b73916b8f3f7a78ef62aea8952901afdc5fd2ea2734eaf13d59a7a798231a")
+  "sha256:5565b4dfcded4596e33be9e8890f1e7398f0acf0b64e0300c370f91f07e0b0c2")
 (def p15-s23-b1-expected-plan-semantic-hash
-  "sha256:1e3dfb70c6a8be11bd7535e1df4e73660ee1ccf884eb4217b6b15b0a8ac879d1")
+  "sha256:91c349a17fe2d7cbed438796c7365010c98bec0d67a6daffbab11f4db884a044")
 (def p15-s23-b1-expected-functions-semantic-hash
-  "sha256:ea863215bb7f8214103f62c91c1cab4545a4fc44b2c80e22c21ccd99b0781391")
+  "sha256:4688d8f6a8049b931b0ffab1dcf1d0c3a0535418f22d0dd24822f5a48cc796e3")
 (def p15-s23-b1-expected-builder-semantic-hash
   "sha256:31424123c41b05344d022ab712ec1bcd95718711ea1f1a6787808914db62d7b4")
 (def p15-s23-b1-builder-function
@@ -132408,7 +132463,7 @@
 
 (defn p15-s23-c14-c-target-policy
   []
-  {:scope :bounded-pure-scalar-forwarding-do-let-if
+  {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-eq
    :maximum-operation-count 128
    :dialect :c17
    :whole-c14? false :whole-b1? false :whole-b2? false
@@ -132574,7 +132629,7 @@
          :proof-assumptions []
          :explainability-record
          {:decision :accepted
-          :bounded-surface :pure-scalar-forwarding-do-let-if
+          :bounded-surface :pure-scalar-forwarding-do-let-if-integer-eq
           :dialect :c17
           :unsupported-diagnostic "C14-UNSUPPORTED"
           :no-hidden-runtime? true
@@ -133375,6 +133430,74 @@
    :whole-b2? false :public? false :release? false
    :self-hosted? false})
 
+(defn p15-s23-c14-c-integer-eq-rejection
+  [operations operation]
+  (let [by-id (into {} (map (juxt :op-id identity)) operations)
+        position-by-id
+        (into {} (map-indexed (fn [index item] [(:op-id item) index])
+                              operations))
+        operands (:operands operation)
+        [left-id right-id] operands
+        left (get by-id left-id)
+        right (get by-id right-id)
+        current-position (get position-by-id (:op-id operation))]
+    (cond
+      (seq (:effects operation)) :program-effects-unsupported
+      (seq (:capabilities operation)) :program-capabilities-unsupported
+      (not= :integer-eq (:source-operation operation))
+      :integer-eq-source-operation
+      (not= :not-applicable (:constant-payload operation))
+      :integer-eq-constant-payload
+      (not= 2 (count operands)) :integer-eq-requires-two-operands
+      (nil? left) :integer-eq-left-definition
+      (nil? right) :integer-eq-right-definition
+      (not (< (get position-by-id left-id) current-position))
+      :integer-eq-left-dominance
+      (not (< (get position-by-id right-id) current-position))
+      :integer-eq-right-dominance
+      (not= :gravity/integer (:type left)) :integer-eq-left-type
+      (not= :gravity/integer (:type right)) :integer-eq-right-type
+      (not= :gravity/bool (:type operation)) :integer-eq-result-type
+      :else nil)))
+
+(defn p15-s23-c14-c-operation-rejection
+  [operations operation]
+  (if (= :integer-eq (:opcode operation))
+    (p15-s23-c14-c-integer-eq-rejection operations operation)
+    (p15-s23-b3-llvm-operation-rejection operations operation)))
+
+(defn p15-s23-c14-c-evaluate-operations
+  [operations]
+  (let [by-id (into {} (map (juxt :op-id identity)) operations)]
+    (reduce
+     (fn [values operation]
+       (let [opcode (:opcode operation)
+             operands (:operands operation)
+             value
+             (cond
+               (= :constant opcode)
+               (get-in operation [:constant-payload :value])
+               (contains? p15-s23-b3-llvm-forward-opcodes opcode)
+               (get values (last operands))
+               (= :truthiness opcode)
+               (let [operand-id (first operands)
+                     operand (get by-id operand-id)
+                     operand-value (get values operand-id)]
+                 (case (:type operand)
+                   :gravity/nil false
+                   :gravity/bool operand-value
+                   :gravity/integer true))
+               (= :integer-eq opcode)
+               (= (get values (first operands))
+                  (get values (second operands)))
+               (= :conditional-join opcode)
+               (if (get values (first operands))
+                 (get values (second operands))
+                 (get values (nth operands 2))))]
+         (assoc values (:op-id operation) value)))
+     {}
+     operations)))
+
 (defn- p15-s23-c13-c14-b1-c-preflight!
   [source-path c11-artifact]
   (let [mir (:mir-module c11-artifact)
@@ -133417,18 +133540,18 @@
     (when-let [operation
                (first
                 (filter
-                 #(p15-s23-b3-llvm-operation-rejection operations %)
+                 #(p15-s23-c14-c-operation-rejection operations %)
                  operations))]
       (p15-s23-c-backend-fail!
        "C14-UNSUPPORTED" source-path operation
        {:missing-fact
-        (p15-s23-b3-llvm-operation-rejection operations operation)
+        (p15-s23-c14-c-operation-rejection operations operation)
         :operation-id (:op-id operation)
         :opcode (:opcode operation)
         :source-operation (:source-operation operation)
         :observed-type (:type operation)
         :c11-mir-id (:mir-id c11-artifact)}))
-    (let [values (p15-s23-b3-llvm-evaluate-operations operations)
+    (let [values (p15-s23-c14-c-evaluate-operations operations)
           return-id
           (first
            (get-in function
@@ -133670,13 +133793,13 @@
 (def p15-s23-b2-c17-builder-function
   'b2-build-bounded-hosted-c17)
 
-(def p15-s23-b2-c17-source-byte-count 117912)
+(def p15-s23-b2-c17-source-byte-count 119918)
 (def p15-s23-b2-c17-expected-source-content-hash
-  "sha256:d30d00524df2db22a6f3851d116ff02079bd21cb6a65baacce224b8fbd89a095")
+  "sha256:07abd8c0fd9a7d9717fa6d50082e336882fa3d867a3e774c3aa90f6e10b752c6")
 (def p15-s23-b2-c17-expected-plan-semantic-hash
-  "sha256:a81d3519b21993a95b67e11568e25a726c4234d96b501c15277f3e9558355479")
+  "sha256:a14bbf069c1551256ef061f9ffec2e4559c82a0bcc6804899b6cb3b030dbdf3a")
 (def p15-s23-b2-c17-expected-functions-semantic-hash
-  "sha256:ddef0015698c12220e285677327b290787cfe3a057b20b5aa4d781f22b03b8dd")
+  "sha256:2d8121efb550659cbfafe44d6b8dda564bbaf555496d20eb67dc7dcb70a7b8d6")
 (def p15-s23-b2-c17-expected-builder-semantic-hash
   "sha256:1eb13380d0364d7cbf49c442e4b3ed571153b22fd25ac726d9eb30bccca032e8")
 
@@ -133746,7 +133869,7 @@
    :runtime-helpers []
    :supported-opcodes
    [:constant :local :local-binding :sequence :lexical-scope
-    :function-boundary :truthiness :conditional-join]
+    :function-boundary :truthiness :integer-eq :conditional-join]
    :whole-b2? false
    :public? false
    :release? false
@@ -133883,6 +134006,11 @@
           (str "(" value-name
                " == INT64_C(0) ? INT64_C(0) : INT64_C(1))")
           "INT64_C(1)"))
+
+      (= :integer-eq opcode)
+      (str "(" (name-for (first operands))
+           " == " (name-for (second operands))
+           " ? INT64_C(1) : INT64_C(0))")
 
       (= :conditional-join opcode)
       (str "(" (name-for (first operands))
@@ -134027,7 +134155,30 @@
 (defn p15-s23-b2-c17-proof-to-c-assumption-record
   [b1-record mir operations operation-records return-id
    return-value-name semantic-result]
-  (let [certificates (get-in b1-record [:proofs :certificates])]
+  (let [certificates (get-in b1-record [:proofs :certificates])
+        base-entries
+        [{:assumption :signed-i64-carrier
+          :evidence :authenticated-mir-scalar-type-and-constant-closure
+          :c-site :all-generated-int64-t-initializers
+          :outcome :proven-safe}
+         {:assumption :explicit-discarded-value-conversions
+          :evidence :initialized-generated-scalar-liveness
+          :c-site :one-void-conversion-per-generated-local
+          :outcome :proven-safe}
+         {:assumption :final-exit-code-narrowing
+          :evidence :independent-pure-mir-evaluation-in-0-to-255
+          :c-site (str "return (int)" return-value-name ";")
+          :outcome :proven-safe}]
+        entries
+        (if (some #(= :integer-eq (:opcode %)) operations)
+          (conj
+           base-entries
+           {:assumption :defined-signed-i64-equality
+            :evidence
+            :authenticated-two-integer-operands-and-boolean-result
+            :c-site :generated-integer-eq-expressions
+            :outcome :proven-safe})
+          base-entries)]
     {:artifact :gravity/b2-proof-to-c-assumption-map
      :proof-certificate-binding
      {:content-id (:content-id certificates)
@@ -134035,19 +134186,7 @@
      :operation-bindings
      (p15-s23-b2-c17-operation-proof-bindings
       operations operation-records)
-     :entries
-     [{:assumption :signed-i64-carrier
-       :evidence :authenticated-mir-scalar-type-and-constant-closure
-       :c-site :all-generated-int64-t-initializers
-       :outcome :proven-safe}
-      {:assumption :explicit-discarded-value-conversions
-       :evidence :initialized-generated-scalar-liveness
-       :c-site :one-void-conversion-per-generated-local
-       :outcome :proven-safe}
-      {:assumption :final-exit-code-narrowing
-       :evidence :independent-pure-mir-evaluation-in-0-to-255
-       :c-site (str "return (int)" return-value-name ";")
-       :outcome :proven-safe}]
+     :entries entries
      :generated-c-casts
      (conj
       (p15-s23-b2-c17-discard-cast-records

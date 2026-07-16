@@ -581,17 +581,17 @@
              :self-hosted?})
       (if (= (get rule :artifact) :gravity/c11-pinned-source-rule)
         (if (= (get rule :owner) :gravity-source)
-          (if (= (get rule :source-byte-count) 68163)
+          (if (= (get rule :source-byte-count) 68287)
             (if (= (get rule :source-content-hash)
-                   "sha256:bee70c3a0c30404ef000d046f85601d8bbbb1205ff679bceb5d284de8c30459b")
+                   "sha256:8b0a83f86c45f4eb407c5beeca20ab252992e95cf0ef583b863c4be3379e0eed")
               (if (= (get rule :plan-semantic-hash)
-                     "sha256:23e422b13189e9565654fec4d24ec3345aa231b0e27ff4547d70f39da0e236cd")
+                     "sha256:0b5e74eb394de93ac02fabcb532623d88e03ac5f336da52b98daac8c6d3c964a")
                 (if (= (get rule :functions-semantic-hash)
-                       "sha256:cf8b8f970db7509f78a8c1a388c33c82a7ea1151e141e6de492ae3032761a9d8")
+                       "sha256:8557c268eda62aca487ed797a1a82a4169dc0b0eec80fe6b737e421337c2ba7a")
                   (if (= (get rule :builder-function)
                          'c11-build-target-independent-mir)
                     (if (= (get rule :builder-semantic-hash)
-                           "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e")
+                           "sha256:b1f42efc29f2d66237c2491c13b092065059e623792776b27bb9965eabb6ca00")
                       (if (= (get rule :function-shapes)
                              '{c11-nodes-before-id
                                {:arity 3 :params [nodes node-id result]}
@@ -1701,9 +1701,11 @@
               (= source-operation :function)
               (if (= opcode :truthiness)
                 (= source-operation :truthy)
-                (if (= opcode :conditional-join)
+                (if (= opcode :integer-eq)
+                  (= source-operation :integer-eq)
+                  (if (= opcode :conditional-join)
                   (= source-operation :if)
-                  false)))))))))
+                  false))))))))))
 
 (defn c14-c-operands-seen?
   [operands seen]
@@ -1765,7 +1767,21 @@
                                 (= type :gravity/bool)
                                 false))
                             false)
-                          (if (= opcode :conditional-join)
+                          (if (= opcode :integer-eq)
+                            (if (= (count operands) 2)
+                              (let [left
+                                    (get operations-by-id (first operands))
+                                    right
+                                    (get operations-by-id
+                                         (first (rest operands)))]
+                                (if (= (get left :type) :gravity/integer)
+                                  (if (= (get right :type)
+                                         :gravity/integer)
+                                    (= type :gravity/bool)
+                                    false)
+                                  false))
+                              false)
+                            (if (= opcode :conditional-join)
                             (if (= (count operands) 3)
                               (let [condition
                                     (get operations-by-id (first operands))
@@ -1786,7 +1802,7 @@
                                     false)
                                   false))
                               false)
-                            false))))
+                            false)))))
                     false)
                   false)
                 false)
@@ -1828,11 +1844,14 @@
               (if (= (get operand :type) :gravity/bool)
                 (get values operand-id)
                 false)))
-          (if (= opcode :conditional-join)
+          (if (= opcode :integer-eq)
+            (= (get values (first operands))
+               (get values (first (rest operands))))
+            (if (= opcode :conditional-join)
             (if (get values (first operands))
               (get values (first (rest operands)))
               (get values (c14-c-last operands)))
-            nil))))))
+            nil)))))))
 
 (defn c14-c-evaluate-operations
   [operations operations-by-id values]
@@ -2046,7 +2065,7 @@
 (defn c14-c-policy-scope-valid?
   [policy]
   (if (= (get policy :target-policy)
-         {:scope :bounded-pure-scalar-forwarding-do-let-if
+         {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-eq
           :maximum-operation-count 128
           :dialect :c17
           :whole-c14? false :whole-b1? false :whole-b2? false
@@ -2167,7 +2186,7 @@
             :proof-assumptions []
             :explainability-record
             {:decision :accepted
-             :bounded-surface :pure-scalar-forwarding-do-let-if
+             :bounded-surface :pure-scalar-forwarding-do-let-if-integer-eq
              :dialect :c17
              :unsupported-diagnostic "C14-UNSUPPORTED"
              :no-hidden-runtime? true
@@ -2218,7 +2237,8 @@
            :schema-version 1
            :status :rejected
            :diagnostic "C14-UNSUPPORTED"
-           :missing-fact :bounded-pure-scalar-forwarding-do-let-if
+           :missing-fact
+           :bounded-pure-scalar-forwarding-do-let-if-integer-eq
            :diagnostics ["C14-UNSUPPORTED"]})
         {:artifact :gravity/c14-bounded-c-lowering-record
          :schema-version 1

@@ -578,7 +578,7 @@
    :raw-structural-validator-is-seal-verifier? false
    :supported-opcodes
    [:constant :local :local-binding :sequence :lexical-scope
-    :function-boundary :truthiness :conditional-join]
+    :function-boundary :truthiness :integer-eq :conditional-join]
    :whole-b2? false
    :public? false
    :release? false
@@ -667,10 +667,10 @@
         (get rule :compiled-by) (get rule :executed-by)
         (get rule :self-hosted?)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.backend/b1-backend-interface 109989
-        "sha256:919b73916b8f3f7a78ef62aea8952901afdc5fd2ea2734eaf13d59a7a798231a"
-        "sha256:1e3dfb70c6a8be11bd7535e1df4e73660ee1ccf884eb4217b6b15b0a8ac879d1"
-        "sha256:ea863215bb7f8214103f62c91c1cab4545a4fc44b2c80e22c21ccd99b0781391"
+        :gravity.backend/b1-backend-interface 110026
+        "sha256:5565b4dfcded4596e33be9e8890f1e7398f0acf0b64e0300c370f91f07e0b0c2"
+        "sha256:91c349a17fe2d7cbed438796c7365010c98bec0d67a6daffbab11f4db884a044"
+        "sha256:4688d8f6a8049b931b0ffab1dcf1d0c3a0535418f22d0dd24822f5a48cc796e3"
         'b1-build-bounded-c-authenticated-packet
         "sha256:9fa86940d7874c4260fea5e6c38bc6d01a5bbd3115bdd1e2c8c8d2bbf4d82760"
         '{b1-bounded-c14-c-input-valid?
@@ -1044,7 +1044,7 @@
            [:gravity/c14-target-eligibility-report :gravity.backend/c
             :hosted target true [] [] [] providers []
             {:decision :accepted
-             :bounded-surface :pure-scalar-forwarding-do-let-if
+             :bounded-surface :pure-scalar-forwarding-do-let-if-integer-eq
              :dialect :c17
              :unsupported-diagnostic "C14-UNSUPPORTED"
              :no-hidden-runtime? true
@@ -1948,9 +1948,11 @@
                 (= source :function)
                 (if (= opcode :truthiness)
                   (= source :truthy)
-                  (if (= opcode :conditional-join)
+                  (if (= opcode :integer-eq)
+                    (= source :integer-eq)
+                    (if (= opcode :conditional-join)
                     (= source :if)
-                    false))))))))))
+                    false)))))))))))
 
 (defn b2-block-role
   [block-order block-id]
@@ -2087,7 +2089,25 @@
                         :truthiness-source-type))
                     :truthiness-prior-definition-or-dominance)
                   :truthiness-arity)
-                (if (= opcode :conditional-join)
+                (if (= opcode :integer-eq)
+                  (if (= (count operands) 2)
+                    (let [left
+                          (b2-find-operation operations (first operands))
+                          right
+                          (b2-find-operation
+                           operations (first (rest operands)))]
+                      (if (b2-operation-references-valid?
+                           operation operands operations operation-index
+                           block-order)
+                        (if (= (get left :type) :gravity/integer)
+                          (if (= (get right :type) :gravity/integer)
+                            (if (= (get operation :type) :gravity/bool)
+                              nil :integer-eq-result-type)
+                            :integer-eq-right-operand-type)
+                          :integer-eq-left-operand-type)
+                        :integer-eq-prior-definition-or-dominance))
+                    :integer-eq-arity)
+                  (if (= opcode :conditional-join)
                   (if (= (count operands) 3)
                     (let [condition
                           (b2-find-operation operations (first operands))
@@ -2109,7 +2129,7 @@
                           :conditional-result-type)
                         :conditional-condition-type))
                     :conditional-arity)
-                  :unsupported-opcode)))
+                  :unsupported-opcode))))
             :nonconstant-payload))
         :source-operation-opcode-parity)
       :operation-envelope)))
@@ -2464,7 +2484,14 @@
                 (str "(" value-name
                      " == INT64_C(0) ? INT64_C(0) : INT64_C(1))")
                 "INT64_C(1)")))
-          (if (= opcode :conditional-join)
+          (if (= opcode :integer-eq)
+            (str "("
+                 (b2-c-value-name operation-index (first operands))
+                 " == "
+                 (b2-c-value-name
+                  operation-index (first (rest operands)))
+                 " ? INT64_C(1) : INT64_C(0))")
+            (if (= opcode :conditional-join)
             (str "("
                  (b2-c-value-name operation-index (first operands))
                  " == INT64_C(0) ? "
@@ -2472,7 +2499,7 @@
                  " : "
                  (b2-c-value-name operation-index (second operands))
                  ")")
-            "INT64_C(0)"))))))
+            "INT64_C(0)")))))))
 
 (defn b2-c-operation-record
   [operation operations operation-index]
@@ -2526,11 +2553,14 @@
             (if (= (get operand :type) :gravity/nil)
               false
               (if (= (get operand :type) :gravity/bool) value true)))
-          (if (= opcode :conditional-join)
+          (if (= opcode :integer-eq)
+            (= (get values (first operands))
+               (get values (first (rest operands))))
+            (if (= opcode :conditional-join)
             (if (get values (first operands))
               (get values (second operands))
               (get values (b2-last operands)))
-            nil))))))
+            nil)))))))
 
 (defn b2-evaluate-operations
   [remaining operations values]
@@ -2721,26 +2751,37 @@
 (defn b2-proof-to-c-assumption-record
   [packet mir operations operation-records return-id return-value-name
    semantic-result]
-  (let [certificates (get (get packet :proofs) :certificates)]
+  (let [certificates (get (get packet :proofs) :certificates)
+        base-entries
+        [{:assumption :signed-i64-carrier
+          :evidence :authenticated-mir-scalar-type-and-constant-closure
+          :c-site :all-generated-int64-t-initializers
+          :outcome :proven-safe}
+         {:assumption :explicit-discarded-value-conversions
+          :evidence :initialized-generated-scalar-liveness
+          :c-site :one-void-conversion-per-generated-local
+          :outcome :proven-safe}
+         {:assumption :final-exit-code-narrowing
+          :evidence :independent-pure-mir-evaluation-in-0-to-255
+          :c-site (str "return (int)" return-value-name ";")
+          :outcome :proven-safe}]
+        entries
+        (if (> (b2-count-opcode operations :integer-eq 0) 0)
+          (conj
+           base-entries
+           {:assumption :defined-signed-i64-equality
+            :evidence
+            :authenticated-two-integer-operands-and-boolean-result
+            :c-site :generated-integer-eq-expressions
+            :outcome :proven-safe})
+          base-entries)]
    {:artifact :gravity/b2-proof-to-c-assumption-map
    :proof-certificate-binding
    {:content-id (get certificates :content-id)
     :entry-count (get certificates :entry-count)}
    :operation-bindings
    (b2-operation-proof-bindings operations operation-records [])
-   :entries
-   [{:assumption :signed-i64-carrier
-     :evidence :authenticated-mir-scalar-type-and-constant-closure
-     :c-site :all-generated-int64-t-initializers
-     :outcome :proven-safe}
-    {:assumption :explicit-discarded-value-conversions
-     :evidence :initialized-generated-scalar-liveness
-     :c-site :one-void-conversion-per-generated-local
-     :outcome :proven-safe}
-    {:assumption :final-exit-code-narrowing
-     :evidence :independent-pure-mir-evaluation-in-0-to-255
-     :c-site (str "return (int)" return-value-name ";")
-     :outcome :proven-safe}]
+   :entries entries
    :generated-c-casts
    (conj
     (b2-c-discard-cast-records operations operation-records [])

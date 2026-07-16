@@ -33433,14 +33433,14 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 68163 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:bee70c3a0c30404ef000d046f85601d8bbbb1205ff679bceb5d284de8c30459b"
+    (is (= 68287 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:8b0a83f86c45f4eb407c5beeca20ab252992e95cf0ef583b863c4be3379e0eed"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:23e422b13189e9565654fec4d24ec3345aa231b0e27ff4547d70f39da0e236cd"
+    (is (= "sha256:0b5e74eb394de93ac02fabcb532623d88e03ac5f336da52b98daac8c6d3c964a"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:cf8b8f970db7509f78a8c1a388c33c82a7ea1151e141e6de492ae3032761a9d8"
+    (is (= "sha256:8557c268eda62aca487ed797a1a82a4169dc0b0eec80fe6b737e421337c2ba7a"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
-    (is (= "sha256:bc7dca8d3136428f7c65cd0d95a5046af34434166d66422f9301080f1d90a15e"
+    (is (= "sha256:b1f42efc29f2d66237c2491c13b092065059e623792776b27bb9965eabb6ca00"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
     (is (= bootstrap/p15-s23-c11-mir-source-byte-count
            (:source-byte-count binding)))
@@ -38354,6 +38354,399 @@
     (is (true? (:clojure-seed-boundary? left)))
     (is (not (str/includes? (pr-str (:diagnostics left)) "B3-")))
     (is (not (str/includes? (pr-str (:diagnostics left)) "LLVM")))))
+
+;; First authenticated computed operation through the private C17 path.  This
+;; is intentionally binary integer equality, not a claim that the bounded
+;; compiler slice implements every language-valid arity or equality category.
+
+(defn- authenticated-binary-integer-equality-source-values
+  [left right]
+  (closed-pure-source-with-main
+   (str "(let [x " left " y " right "] (if (= x y) 9 3))")
+   {:exports '[main]}))
+
+(defn- authenticated-binary-integer-equality-source
+  [right]
+  (authenticated-binary-integer-equality-source-values 7 right))
+
+(defn- authenticated-binary-integer-equality-upstream
+  [source-path source]
+  (binding
+   [bootstrap/*additional-bootstrap-targets*
+    bootstrap/stage2-runtime-derived-source-targets]
+    (let [context
+          (bootstrap/p15-s23-stage2-gravity-checked-core-context
+           source-path source :c)
+          checked-core
+          (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+           context)
+          c11
+          (bootstrap/p15-s23-stage2-c11-mir-artifact
+           checked-core context)]
+      {:context context :checked-core checked-core :c11 c11})))
+
+(def ^:private authenticated-binary-integer-equality-gate-a-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-integer-equality-"
+      (fn [root]
+        (let [equal-source
+              (authenticated-binary-integer-equality-source 7)
+              unequal-source
+              (authenticated-binary-integer-equality-source 8)
+              left-file (.resolve root "left.gravity")
+              right-file (.resolve root "right.qst")
+              unequal-file (.resolve root "unequal.gravity")
+              _ (spit (.toFile left-file) equal-source)
+              _ (spit (.toFile right-file) equal-source)
+              _ (spit (.toFile unequal-file) unequal-source)
+              left-path
+              (.toString
+               (.toRealPath left-file
+                            (make-array java.nio.file.LinkOption 0)))
+              right-path
+              (.toString
+               (.toRealPath right-file
+                            (make-array java.nio.file.LinkOption 0)))
+              unequal-path
+              (.toString
+               (.toRealPath unequal-file
+                            (make-array java.nio.file.LinkOption 0)))
+              left-upstream
+              (authenticated-binary-integer-equality-upstream
+               left-path equal-source)
+              right-upstream
+              (authenticated-binary-integer-equality-upstream
+               right-path equal-source)
+              unequal-upstream
+              (authenticated-binary-integer-equality-upstream
+               unequal-path unequal-source)
+              before
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+              left
+              (bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+               (:c11 left-upstream) (:checked-core left-upstream)
+               (:context left-upstream))
+              right
+              (bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+               (:c11 right-upstream) (:checked-core right-upstream)
+               (:context right-upstream))
+              unequal
+              (bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+               (:c11 unequal-upstream) (:checked-core unequal-upstream)
+               (:context unequal-upstream))
+              verification
+              (bootstrap/p15-s23-stage2-b2-c17-verification-report
+               left (:checked-core left-upstream) (:context left-upstream))
+              after
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+          {:equal-source equal-source :unequal-source unequal-source
+           :left-path left-path :right-path right-path
+           :unequal-path unequal-path
+           :left-upstream left-upstream :right-upstream right-upstream
+           :unequal-upstream unequal-upstream
+           :left left :right right :unequal unequal
+           :verification verification :before before :after after})))))
+
+(deftest authenticated-binary-integer-equality-reaches-gate-a-authentically
+  (let [{:keys [left-path right-path left-upstream right-upstream
+                left right unequal verification before after]}
+        @authenticated-binary-integer-equality-gate-a-proof
+        left-core (:checked-core left-upstream)
+        right-core (:checked-core right-upstream)
+        left-node
+        (first (filter #(= :integer-eq (:source-operation %))
+                       (:core-nodes left-core)))
+        right-node
+        (first (filter #(= :integer-eq (:source-operation %))
+                       (:core-nodes right-core)))
+        operations
+        (bootstrap/p15-s23-c11-mir-operation-sequence
+         (get-in left-upstream [:c11 :mir-module]))
+        equality
+        (first (filter #(= :integer-eq (:opcode %)) operations))
+        equality-id (:op-id equality)
+        operation-by-id (into {} (map (juxt :op-id identity)) operations)
+        [left-id right-id] (:operands equality)
+        expression
+        (:c-expression
+         (first (filter #(= :integer-eq (:mir-opcode %))
+                        (:operation-records left))))
+        proof-entries (get-in left [:proof-to-c-assumption-map :entries])
+        preflight!
+        (authenticated-b2-gate-b-private-var
+         'p15-s23-b2-c17-verification-preflight!)
+        tampered (update-in left [:source-file :content] str "\n")
+        tamper-data
+        (diagnostic-data #(preflight! left-path tampered))
+        module (get-in left-upstream [:c11 :mir-module])
+        context (:context left-upstream)
+        update-equality-core
+        (fn [core transform]
+          (update core :core-nodes
+                  (fn [nodes]
+                    (mapv (fn [node]
+                            (if (= equality-id (:node-id node))
+                              (transform node)
+                              node))
+                          nodes))))
+        arity-module
+        (c11-update-operation
+         module equality-id
+         #(assoc % :operands [(first (:operands %))]))
+        result-type-module
+        (c11-update-operation
+         module equality-id #(assoc % :type :gravity/integer))
+        attribute-core
+        (update-equality-core
+         left-core #(assoc-in % [:attributes :arity] 3))
+        safety-basis-core
+        (update-equality-core
+         left-core #(assoc-in % [:safety :basis] :forged-equality-basis))
+        safety-operands-core
+        (update-equality-core
+         left-core
+         #(update-in % [:safety :proof :operand-node-ids]
+                     (comp vec reverse)))
+        c11-mutation-data
+        (mapv
+         (fn [[label candidate-module candidate-core expected-id
+               expected-missing]]
+           {:label label :expected-id expected-id
+            :expected-missing expected-missing
+            :data (c11-raw-diagnostic
+                   candidate-module candidate-core context)})
+         [[:arity arity-module left-core
+           "C11-MODULE" :checked-core-operation-parity]
+          [:result-type result-type-module left-core
+           "C11-TYPE" :exact-binary-integer-equality-schema]
+          [:attributes module attribute-core
+           "C11-TYPE" :exact-binary-integer-equality-schema]
+          [:safety-basis module safety-basis-core
+           "C11-SAFETY" :authenticated-pure-integer-equality-proof]
+          [:safety-operands module safety-operands-core
+           "C11-SAFETY"
+           :id-indexed-authenticated-safety-proof-certificates]])
+        resealed-c11
+        (c11-test-rehash
+         (assoc (:c11 left-upstream) :mir-module result-type-module)
+         left-core context)
+        resealed-c11-data
+        (c11-final-diagnostic resealed-c11 left-core context)]
+    (is (= before after))
+    (is (= [:comparison :integer-eq :gravity/bool 2]
+           ((juxt :kind :source-operation :type
+                  #(count (:operands %))) left-node)))
+    (is (= [:gravity/integer :gravity/integer]
+           (mapv #(get-in operation-by-id [% :type]) [left-id right-id])))
+    (is (= :gravity/bool (:type equality)))
+    (is (= :not-applicable (:constant-payload equality)))
+    (is (empty? (:effects equality)))
+    (is (empty? (:capabilities equality)))
+    (is (= :proven-safe (get-in left-node [:safety :outcome])))
+    (is (= :exact-signed-integer-equality
+           (get-in left-node [:safety :basis])))
+    (is (= (:node-id left-node) (:node-id right-node)))
+    (is (= (:artifact-id left-core) (:artifact-id right-core)))
+    (is (= (get-in left-upstream [:c11 :mir-id])
+           (get-in right-upstream [:c11 :mir-id])))
+    (is (= (:semantic-id left) (:semantic-id right)))
+    (is (= (:artifact-id left) (:artifact-id right)))
+    (is (not= (:actual-path-binding-id left)
+              (:actual-path-binding-id right)))
+    (is (= left-path (get-in left [:actual-path-provenance :source])))
+    (is (= right-path (get-in right [:actual-path-provenance :source])))
+    (is (= 9 (:semantic-result left) (:semantic-result right)))
+    (is (= 3 (:semantic-result unequal)))
+    (is (= "(gravity_v4 == gravity_v5 ? INT64_C(1) : INT64_C(0))"
+           expression))
+    (is (some #(= :defined-signed-i64-equality (:assumption %))
+              proof-entries))
+    (is (= :passed (:status verification)))
+    (is (= [:passed :passed :passed :passed]
+           ((juxt :fresh-c11 :fresh-c13 :fresh-c14 :fresh-b1)
+            verification)))
+    (is (= :unsupported-mir-opcode
+           (bootstrap/p15-s23-b3-llvm-operation-rejection
+            operations equality)))
+    (is (= "B13-HASH" (:id tamper-data)) tamper-data)
+    (doseq [{:keys [label expected-id expected-missing data]}
+            c11-mutation-data]
+      (is (= expected-id (:id data)) [label data])
+      (is (= expected-missing (:missing-fact data)) [label data])
+      (is (= :c11-authenticated-mir (:stage data)) [label data]))
+    (is (= "C11-TYPE" (:id resealed-c11-data)) resealed-c11-data)
+    (is (= :exact-binary-integer-equality-schema
+           (:missing-fact resealed-c11-data)) resealed-c11-data)
+    (doseq [artifact [left right unequal]
+            key [:whole-b2? :public? :release? :self-hosted?]]
+      (is (false? (get artifact key)) [key artifact]))))
+
+(deftest authenticated-binary-integer-equality-rejects-before-effects
+  (let [source-for
+        (fn [body]
+          (closed-pure-source-with-main body {:exports '[main]}))
+        cases
+        [{:label :zero :body "(=)" :id "L2-BUILTIN-ARITY"
+          :stage :core-language-semantics
+          :missing-fact :at-least-one-equality-argument}
+         {:label :unary :body "(= 1)" :id "C6-LOWERING-GAP"
+          :stage :core-lowering
+          :missing-fact :bounded-binary-integer-equality}
+         {:label :nary :body "(= 1 1 1)" :id "C6-LOWERING-GAP"
+          :stage :core-lowering
+          :missing-fact :bounded-binary-integer-equality}
+         {:label :mixed :body "(= 1 true)" :id "C7-TYPE-MISMATCH"
+          :stage :type-check
+          :missing-fact :binary-integer-equality-operands}]
+        before
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+        results
+        (vec
+         (for [{:keys [label body] :as case} cases
+               extension [".gravity" ".qst"]]
+           (assoc
+            case :extension extension :data
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+               (str "integer-equality-" (name label) extension)
+               (source-for body))))))
+        after
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+    (is (= before after))
+    (doseq [{:keys [label id stage missing-fact data]} results]
+      (is (= id (:id data)) [label data])
+      (is (= stage (:stage data)) [label data])
+      (is (= missing-fact (:missing-fact data)) [label data])
+      (is (= id (:rule data)) [label data])
+      (is (not (str/includes? (pr-str data) "NumberFormatException"))
+          [label data]))
+    (doseq [{:keys [label]} cases]
+      (let [[gravity qst]
+            (mapv :data
+                  (sort-by :extension
+                           (filter #(= label (:label %)) results)))]
+        (is (= (:diagnostic-id gravity) (:diagnostic-id qst))
+            [label gravity qst])
+        (is (= (:facts gravity) (:facts qst)) [label gravity qst])))))
+
+(def ^:private authenticated-binary-integer-equality-i64-boundary-proof
+  (delay
+    (let [boundary-source
+          (authenticated-binary-integer-equality-source-values
+           "-9223372036854775808" "9223372036854775807")
+          below-source
+          (authenticated-binary-integer-equality-source-values
+           "-9223372036854775809" "-9223372036854775809")
+          above-source
+          (authenticated-binary-integer-equality-source-values
+           "9223372036854775808" "9223372036854775808")
+          before
+          (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+          accepted
+          (bootstrap/p15-s23-stage2-b2-c17-source-artifact!
+           "integer-equality-i64-boundaries.qst" boundary-source)
+          below
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+             "integer-equality-below-i64.qst" below-source))
+          above
+          (diagnostic-data
+           #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+             "integer-equality-above-i64.gravity" above-source))
+          after
+          (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+      {:accepted accepted :below below :above above
+       :before before :after after})))
+
+(deftest authenticated-binary-integer-equality-bounds-signed-i64-before-effects
+  (let [{:keys [accepted below above before after]}
+        @authenticated-binary-integer-equality-i64-boundary-proof
+        expressions (mapv :c-expression (:operation-records accepted))
+        source (get-in accepted [:source-file :content])]
+    (is (= before after))
+    (is (= 3 (:semantic-result accepted) (:expected-exit-code accepted)))
+    (is (some #{"INT64_MIN"} expressions))
+    (is (some #{"INT64_C(9223372036854775807)"} expressions))
+    (is (str/includes? source "INT64_MIN"))
+    (is (str/includes? source "INT64_C(9223372036854775807)"))
+    (is (str/includes? source " == "))
+    (doseq [[label data] [[:below below] [:above above]]]
+      (is (= "C14-UNSUPPORTED" (:id data) (:rule data)) [label data])
+      (is (= :c14-target-lowering (:stage data)) [label data])
+      (is (= :bounded-scalar-constant-payload (:missing-fact data))
+          [label data])
+      (is (not (str/includes? (pr-str data) "NumberFormatException"))
+          [label data])
+      (is (not (str/includes? (pr-str data) "ArithmeticException"))
+          [label data]))
+    (doseq [key [:whole-b2? :public? :release? :self-hosted?]]
+      (is (false? (get accepted key)) [key accepted]))))
+
+(def ^:private authenticated-binary-integer-equality-gate-b-proof
+  (delay
+    (authenticated-b2-gate-b-with-home-temp-directory
+      "gravity-authenticated-integer-equality-native-"
+      (fn [root]
+        (let [{:keys [left-upstream unequal-upstream]}
+              @authenticated-binary-integer-equality-gate-a-proof
+              output (.resolve root "equal-bundle")
+              before
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+              equal
+              (bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+               (:c11 left-upstream) (:checked-core left-upstream)
+               (:context left-upstream)
+               {:output-directory (.toString output)})
+              after-equal
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+              unequal
+              (bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+               (:c11 unequal-upstream) (:checked-core unequal-upstream)
+               (:context unequal-upstream))
+              after-unequal
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+              names (set (seq (.list (.toFile output))))]
+          {:equal equal :unequal unequal :names names
+           :before before :after-equal after-equal
+           :after-unequal after-unequal})))))
+
+(deftest authenticated-binary-integer-equality-runs-real-c17-both-ways
+  (let [{:keys [equal unequal names before after-equal after-unequal]}
+        @authenticated-binary-integer-equality-gate-b-proof
+        equal-process (get-in equal [:toolchain-evidence :process-evidence])
+        unequal-process
+        (get-in unequal [:toolchain-evidence :process-evidence])]
+    (is (= 20 (- (:total after-equal) (:total before))))
+    (is (= 20 (- (:total after-unequal) (:total after-equal))))
+    (is (= {:expected-exit-code 9 :observed-exit-code 9
+            :stdout-byte-count 0 :stderr-byte-count 0 :matched? true}
+           equal-process))
+    (is (= {:expected-exit-code 3 :observed-exit-code 3
+            :stdout-byte-count 0 :stderr-byte-count 0 :matched? true}
+           unequal-process))
+    (is (= #{"program.c" "program.h" "program.o" "program"
+             "manifest.edn" "provenance.edn" "conformance.edn"}
+           names))
+    (is (= :published-atomically-after-final-verification
+           (get-in equal [:publication-receipt :status])))
+    (is (= :ephemeral-conformance-artifacts
+           (get-in unequal [:publication-receipt :status])))
+    (is (= [9 9]
+           ((juxt #(get-in % [:c18-record :semantic-bindings
+                              :expected-result])
+                  #(get-in % [:c18-record :semantic-bindings
+                              :observed-result]))
+            equal)))
+    (is (= [3 3]
+           ((juxt #(get-in % [:c18-record :semantic-bindings
+                              :expected-result])
+                  #(get-in % [:c18-record :semantic-bindings
+                              :observed-result]))
+            unequal)))
+    (doseq [artifact [equal unequal]
+            key [:whole-b2? :public? :release? :self-hosted?]]
+      (is (false? (get artifact key)) [key artifact]))))
 
 (defn- with-p18-t04-verified-mir-target-root
   [f]

@@ -81,7 +81,8 @@
    :safety-modes [:safe]
    :source-targets [:jvm]
    :source-operations [:literal :quote :local :let :let-binding
-                       :do :if :truthy :implicit-nil :function]
+                       :do :if :truthy :integer-eq
+                       :implicit-nil :function]
    :scalar-literals [:nil :string :boolean :integer
                      :character :keyword :symbol]
    :intrinsic-effects #{}
@@ -107,7 +108,8 @@
   "c6-c10-core-lowering-v1")
 
 (def c6-c10-emitted-diagnostic-subset
-  {:C6 ["C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-ORIGIN" "C6-VERIFY"]
+  {:L2 ["L2-BUILTIN-ARITY"]
+   :C6 ["C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-ORIGIN" "C6-VERIFY"]
    :C7 ["C7-TYPE-MISMATCH" "C7-VERIFY"]
    :C8 ["C8-VERIFY"]
    :C9 []
@@ -356,7 +358,9 @@
 (defn c6c10-canonical-diagnostic-rule [rule]
   (if (string? rule)
     rule
-    (if (= rule :C6-LOWERING-GAP)
+    (if (= rule :L2-BUILTIN-ARITY)
+      "L2-BUILTIN-ARITY"
+      (if (= rule :C6-LOWERING-GAP)
       "C6-LOWERING-GAP"
       (if (= rule :C6-CORE-SHAPE)
         "C6-CORE-SHAPE"
@@ -372,10 +376,12 @@
                   "C8-VERIFY"
                   (if (= rule :C10-PROOF)
                     "C10-PROOF"
-                    :unassigned-diagnostic-rule))))))))))
+                    :unassigned-diagnostic-rule)))))))))))
 
 (defn c6c10-canonical-diagnostic-stage [stage]
-  (if (= stage :lower-to-core)
+  (if (= stage :core-semantics)
+    :core-language-semantics
+    (if (= stage :lower-to-core)
     :core-lowering
     (if (= stage :type-check)
       :type-check
@@ -385,7 +391,7 @@
           :ownership-lifetime-region-check
           (if (= stage :safety-analysis)
             :safety-analysis
-            :unassigned-diagnostic-stage))))))
+            :unassigned-diagnostic-stage)))))))
 
 (defn c6c10-diagnostic-involved-artifacts
   [primary source facts]
@@ -479,7 +485,16 @@
       scalar)))
 
 (defn c6c10-diagnostic-family-facts [rule source facts]
-  (if (c6c10-rule-in-family?
+  (if (= rule :L2-BUILTIN-ARITY)
+    (c6c10-merge-maps
+     {:function '=
+      :expected-arity :at-least-one
+      :actual-arity 0
+      :active-profile :hosted
+      :target :jvm
+      :normative-l2-mapping :catalog-gap}
+     facts)
+    (if (c6c10-rule-in-family?
        rule [:C6-LOWERING-GAP :C6-CORE-SHAPE :C6-EVAL-ORDER
              :C6-ORIGIN :C6-EFFECT-DROP :C6-VERIFY])
     (c6c10-merge-maps
@@ -537,7 +552,7 @@
           :active-profile :hosted
           :target :jvm}
          facts)
-        facts)))))
+        facts))))))
 
 (defn c6c10-diagnostic-rejection
   [state rule stage message-key source facts remediation-kind]
@@ -790,7 +805,9 @@
           :sequential-let-binding
           (if (= source-operation :truthy)
             :gravity-truthiness
-            (if (= source-operation :if)
+            (if (= source-operation :integer-eq)
+              :exact-signed-integer-equality
+              (if (= source-operation :if)
               :closed-conditional
               (if (= source-operation :do)
                 :ordered-sequence
@@ -798,7 +815,7 @@
                   :sequential-lexical-scope
                   (if (= source-operation :function)
                     :authenticated-closed-function
-                    :compiler-generated-nil))))))))))
+                    :compiler-generated-nil)))))))))))
 
 (defn c6c10-persistent-ownership [role extra]
   (c6c10-merge-maps
@@ -1663,6 +1680,93 @@
         :plan-path path}
        :regenerate-fresh-c2-c3-and-stage2-plan))))
 
+(defn c6c10-map-integer-eq
+  [state envelope instruction form path env depth]
+  (let [arguments (get instruction :args)
+        child-form-ids (rest (get form :children))
+        argument-count (count arguments)]
+    (if (= (get instruction :function) '=)
+      (if (= argument-count 0)
+        (c6c10-form-rejection
+         state envelope form :L2-BUILTIN-ARITY :core-semantics
+         :diagnostic/l2-builtin-arity
+         {:missing-fact :at-least-one-equality-argument
+          :function '=
+          :expected-arity :at-least-one
+          :actual-arity 0
+          :bounded-binary-slice? true
+          :plan-path path}
+         :supply-at-least-one-equality-argument)
+        (if (= argument-count 2)
+          (let [arguments-product
+                (c6c10-map-sequence
+                 state envelope arguments child-form-ids path :args env depth
+                 form :unreachable-empty-equality-arguments)]
+            (if (= (get arguments-product :status) :rejected)
+              arguments-product
+              (let [operand-ids
+                    (get arguments-product :direct-root-node-ids)
+                    left
+                    (c6c10-node-by-id
+                     (get arguments-product :nodes) (first operand-ids))
+                    right
+                    (c6c10-node-by-id
+                     (get arguments-product :nodes) (second operand-ids))
+                    left-type (get left :type)
+                    right-type (get right :type)]
+                (if (if (= left-type :gravity/integer)
+                      (= right-type :gravity/integer)
+                      false)
+                  (c6c10-add-node
+                   arguments-product envelope form path
+                   :comparison :integer-eq true depth operand-ids
+                   {:primitive '=
+                    :arity 2
+                    :evaluation-order :left-to-right
+                    :operand-types
+                    [:gravity/integer :gravity/integer]
+                    :result-type :gravity/bool
+                    :numeric-semantics :exact-signed-integer-equality
+                    :overflow :not-applicable}
+                   :gravity/bool :comparison-result
+                   {:storage :static-value
+                    :derived-from operand-ids}
+                   nil nil)
+                  (c6c10-form-rejection
+                   (get arguments-product :state) envelope form
+                   :C7-TYPE-MISMATCH :type-check
+                   :diagnostic/c7-type-mismatch
+                   {:missing-fact :binary-integer-equality-operands
+                    :expected-type :gravity/integer
+                    :actual-type
+                    (if (= left-type :gravity/integer)
+                      right-type
+                      left-type)
+                    :operand-types [left-type right-type]
+                    :plan-path path
+                    :plan-depth depth
+                    :prospective-kind :comparison
+                    :prospective-source-operation :integer-eq
+                    :observed-form-kind :list}
+                   :use-two-integer-equality-operands)))))
+          (c6c10-form-rejection
+           state envelope form :C6-LOWERING-GAP :lower-to-core
+           :diagnostic/c6-lowering-gap
+           {:missing-fact :bounded-binary-integer-equality
+            :function '=
+            :language-arity :variadic-at-least-one
+            :observed-arity argument-count
+            :plan-path path}
+           :use-two-integer-operands-for-this-bounded-slice)))
+      (c6c10-form-rejection
+       state envelope form :C6-LOWERING-GAP :lower-to-core
+       :diagnostic/c6-lowering-gap
+       {:missing-fact :bounded-source-operation
+        :observed-operation :builtin-call
+        :observed-function (get instruction :function)
+        :plan-path path}
+       :remove-out-of-scope-operation))))
+
 (defn c6c10-map-instruction
   [state envelope instruction form-id path env depth]
   (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
@@ -1701,13 +1805,16 @@
                     (if (= operation :let)
                       (c6c10-map-let
                        state envelope instruction form path env depth)
-                      (c6c10-form-rejection
-                       state envelope form :C6-LOWERING-GAP :lower-to-core
-                       :diagnostic/c6-lowering-gap
-                       {:missing-fact :bounded-source-operation
-                        :observed-operation operation
-                        :plan-path path}
-                       :remove-out-of-scope-operation)))))))
+                      (if (= operation :builtin-call)
+                        (c6c10-map-integer-eq
+                         state envelope instruction form path env depth)
+                        (c6c10-form-rejection
+                         state envelope form :C6-LOWERING-GAP :lower-to-core
+                         :diagnostic/c6-lowering-gap
+                         {:missing-fact :bounded-source-operation
+                          :observed-operation operation
+                          :plan-path path}
+                         :remove-out-of-scope-operation))))))))
           (c6c10-form-rejection
            state envelope form :C6-ORIGIN :lower-to-core
            :diagnostic/c6-origin
@@ -1932,13 +2039,15 @@
             :initializer-type
             (if (= source-operation :truthy)
               :truthiness-bool
-              (if (= source-operation :if)
+              (if (= source-operation :integer-eq)
+                :binary-integer-equality-bool
+                (if (= source-operation :if)
                 :branch-type-join
                 (if (= source-operation :do)
                   :sequence-result-type
                   (if (= source-operation :let)
                     :lexical-scope-result-type
-                    :closed-function-type))))))))))
+                    :closed-function-type)))))))))))
 
 (defn c6c10-source-value-ids [node]
   (let [operation (get node :source-operation)
@@ -1949,7 +2058,9 @@
         [(first operands)]
         (if (= operation :truthy)
           [(first operands)]
-          (if (= operation :if)
+          (if (= operation :integer-eq)
+            (c6c10-copy-vector operands [])
+            (if (= operation :if)
             (c6c10-copy-vector (rest operands) [])
             (if (= operation :do)
               [(first (c6c10-reverse operands))]
@@ -1957,7 +2068,7 @@
                 [(first (c6c10-reverse operands))]
                 (if (= operation :function)
                   [(first (c6c10-reverse operands))]
-                  [])))))))))
+                  []))))))))))
 
 (defn c6c10-forwarding-kind [source-operation]
   (if (= source-operation :local)
@@ -1966,7 +2077,9 @@
       :from-initializer
       (if (= source-operation :truthy)
         :derived-from-test
-        (if (= source-operation :if)
+        (if (= source-operation :integer-eq)
+          :derived-from-binary-integer-operands
+          (if (= source-operation :if)
           :from-conditional-incoming-values
           (if (= source-operation :do)
             :from-sequence-result
@@ -1974,7 +2087,7 @@
               :from-lexical-scope-result
               (if (= source-operation :function)
                 :from-entrypoint-result
-                :not-applicable))))))))
+                :not-applicable)))))))))
 
 (defn c6c10-empty-fact-product [state owner-domain-id]
   {:state state
@@ -2464,7 +2577,8 @@
    :safety-modes [:safe]
    :source-targets [:jvm]
    :source-operations [:literal :quote :local :let :let-binding
-                       :do :if :truthy :implicit-nil :function]
+                       :do :if :truthy :integer-eq
+                       :implicit-nil :function]
    :scalar-literals [:nil :string :boolean :integer
                      :character :keyword :symbol]
    :intrinsic-effects #{}
@@ -2609,13 +2723,13 @@
          :observed-carrier-depth :observed-container-width
          :observed-scalar-bytes :observed-integer-bits})
     (if (= (get validation :status) :passed)
-      (if (= (get validation :maximum-carrier-nodes) 32768)
+      (if (= (get validation :maximum-carrier-nodes) 65536)
         (if (= (get validation :maximum-carrier-depth) 64)
           (if (= (get validation :maximum-container-width) 128)
             (if (= (get validation :maximum-scalar-bytes) 65536)
               (if (= (get validation :maximum-integer-bits) 256)
                 (if (c6c10-nonnegative-at-most?
-                     (get validation :observed-carrier-nodes) 32768)
+                     (get validation :observed-carrier-nodes) 65536)
                   (if (c6c10-nonnegative-at-most?
                        (get validation :observed-carrier-depth) 64)
                     (if (c6c10-nonnegative-at-most?
@@ -2817,7 +2931,7 @@
               :maximum-digest-requests 2048
               :reserved-verifier-diagnostic-requests 1
               :maximum-graph-depth 48
-              :maximum-carrier-nodes 32768
+              :maximum-carrier-nodes 65536
               :maximum-carrier-depth 64
               :maximum-container-width 128
               :maximum-scalar-bytes 65536
