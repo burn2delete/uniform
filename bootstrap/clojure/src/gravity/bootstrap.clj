@@ -133201,7 +133201,8 @@
   (conj (disj p15-s23-b3-llvm-safe-fact-keys
               :b3-source-content-hash)
         :dialect :helper :c-source-content-hash :b1-source-content-hash
-        :b2-source-content-hash :semantic-result))
+        :b2-source-content-hash :semantic-result :source-target
+        :requested-target-argument))
 
 (defn p15-s23-c-backend-safe-facts
   [facts]
@@ -134596,6 +134597,8 @@
 ;; command machinery is reused: its diagnostics, target contract, and six-file
 ;; publication inventory are deliberately backend-specific.
 
+(declare p18-t04-experimental-verified-mir-c-route-record)
+
 (def p15-s23-b2-c17-gate-b-final-artifact-keys
   #{:artifact :schema-version :status :policy :gate-a-artifact
     :gate-a-contextual-report :toolchain-evidence :b13-record :b14-record
@@ -134670,6 +134673,25 @@
 (let [p15-s23-b2-c17-gate-b-authority-token (Object.)
       p15-s23-b2-c17-gate-b-tool-state
       (atom {:total 0 :steps {}})]
+
+(defn- p15-s23-b2-c17-gate-b-interrupt-like?
+  [error]
+  (or (instance? InterruptedException error)
+      (instance? java.nio.channels.ClosedByInterruptException error)
+      (instance? java.io.InterruptedIOException error)))
+
+(defn- p15-s23-b2-c17-gate-b-restore-interrupt!
+  [error]
+  (when (p15-s23-b2-c17-gate-b-interrupt-like? error)
+    (.interrupt (Thread/currentThread)))
+  error)
+
+(defn- p15-s23-b2-c17-gate-b-rethrow-interrupt!
+  [error]
+  (when (p15-s23-b2-c17-gate-b-interrupt-like? error)
+    (p15-s23-b2-c17-gate-b-restore-interrupt! error)
+    (throw error))
+  error)
 
 (defn p15-s23-b2-c17-gate-b-tool-execution-snapshot
   []
@@ -134873,8 +134895,8 @@
                   (let [cause (.getCause wrapped)]
                     (cond
                       (instance? Error cause) (throw cause)
-                      (instance? InterruptedException cause)
-                      (do (.interrupt (Thread/currentThread))
+                      (p15-s23-b2-c17-gate-b-interrupt-like? cause)
+                      (do (p15-s23-b2-c17-gate-b-restore-interrupt! cause)
                           (throw cause))
                       (instance? Exception cause) (throw cause)
                       :else (throw wrapped))))))
@@ -134897,7 +134919,13 @@
           (p15-s23-b2-c17-gate-b-destroy-process-tree!
            candidate process source-path)
           (catch Throwable cleanup
-            (.addSuppressed interrupted cleanup)))
+            (p15-s23-b2-c17-gate-b-restore-interrupt! interrupted)
+            (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
+            (if (instance? Error cleanup)
+              (do (.addSuppressed ^Throwable cleanup interrupted)
+                  (reset! primary-failure cleanup)
+                  (throw cleanup))
+              (.addSuppressed interrupted cleanup))))
         (when-let [stream-future @stdout-holder]
           (future-cancel stream-future))
         (when-let [stream-future @stderr-holder]
@@ -134906,6 +134934,7 @@
         (throw interrupted))
       (catch Throwable error
         (reset! primary-failure error)
+        (p15-s23-b2-c17-gate-b-restore-interrupt! error)
         (throw error))
       (finally
         (try
@@ -134918,16 +134947,28 @@
                 (future-cancel stream-future))))
           (catch Throwable cleanup
             (if-let [error @primary-failure]
-              (cond
-                (instance? Error error)
-                (.addSuppressed ^Throwable error cleanup)
+              (do
+                (p15-s23-b2-c17-gate-b-restore-interrupt! error)
+                (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
+                (cond
+                  (instance? Error error)
+                  (.addSuppressed ^Throwable error cleanup)
 
-                (instance? Error cleanup)
-                (do (.addSuppressed ^Throwable cleanup error)
-                    (throw cleanup))
+                  (instance? Error cleanup)
+                  (do (.addSuppressed ^Throwable cleanup error)
+                      (throw cleanup))
 
-                :else (.addSuppressed ^Throwable error cleanup))
-              (throw cleanup))))))))
+                  (p15-s23-b2-c17-gate-b-interrupt-like? error)
+                  (.addSuppressed ^Throwable error cleanup)
+
+                  (p15-s23-b2-c17-gate-b-interrupt-like? cleanup)
+                  (do (.addSuppressed ^Throwable cleanup error)
+                      (throw cleanup))
+
+                  :else (.addSuppressed ^Throwable error cleanup)))
+              (do
+                (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
+                (throw cleanup)))))))))
 
 (defn- p15-s23-b2-c17-gate-b-normalized-command-argument
   [argument]
@@ -135112,6 +135153,7 @@
           (catch clojure.lang.ExceptionInfo exception
             (throw exception))
           (catch Exception exception
+            (p15-s23-b2-c17-gate-b-rethrow-interrupt! exception)
             (p15-s23-c-backend-fail!
              diagnostic-id source-path {}
              {:missing-fact :bounded-c-tool-process-start
@@ -135166,7 +135208,9 @@
           (try
             (java.nio.file.Files/readAttributes
              path java.nio.file.attribute.BasicFileAttributes nofollow)
-            (catch Exception _ nil))]
+            (catch Exception error
+              (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+              nil))]
       (when-not (and before (.isRegularFile before)
                      (some? (.fileKey before))
                      (<= 0 (.size before) maximum-byte-count))
@@ -135354,7 +135398,9 @@
         (try
           (java.nio.file.Files/readAttributes
            path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception _ nil))]
+          (catch Exception error
+            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+            nil))]
     (when-not
      (and attributes (some? (.fileKey attributes))
           (case expected-kind
@@ -135386,7 +135432,9 @@
         (try
           (java.nio.file.Files/readAttributes
            path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception _ nil))]
+          (catch Exception error
+            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+            nil))]
     (when-not (and before (.isRegularFile before)
                    (not (java.nio.file.Files/isSymbolicLink path))
                    (some? (.fileKey before))
@@ -135549,7 +135597,9 @@
         sdk-real
         (try
           (.toRealPath sdk-locator (make-array java.nio.file.LinkOption 0))
-          (catch Exception _ nil))]
+          (catch Exception error
+            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+            nil))]
     (when-not
      (and (= "xcrun version 72." (text xcrun))
           (str/starts-with? (text file) "file-5.41")
@@ -136021,6 +136071,7 @@
           :executable (:bytes executable-final)}})
       (catch Throwable error
         (reset! primary-failure error)
+        (p15-s23-b2-c17-gate-b-restore-interrupt! error)
         (throw error))
       (finally
         (try
@@ -136028,14 +136079,24 @@
            candidate workspace source-path)
           (catch Throwable cleanup
             (if-let [error @primary-failure]
-              (cond
-                (instance? Error error)
-                (.addSuppressed ^Throwable error cleanup)
-                (instance? Error cleanup)
-                (do (.addSuppressed ^Throwable cleanup error)
-                    (throw cleanup))
-                :else (.addSuppressed ^Throwable error cleanup))
-              (throw cleanup))))))))
+              (do
+                (p15-s23-b2-c17-gate-b-restore-interrupt! error)
+                (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
+                (cond
+                  (instance? Error error)
+                  (.addSuppressed ^Throwable error cleanup)
+                  (instance? Error cleanup)
+                  (do (.addSuppressed ^Throwable cleanup error)
+                      (throw cleanup))
+                  (p15-s23-b2-c17-gate-b-interrupt-like? error)
+                  (.addSuppressed ^Throwable error cleanup)
+                  (p15-s23-b2-c17-gate-b-interrupt-like? cleanup)
+                  (do (.addSuppressed ^Throwable cleanup error)
+                      (throw cleanup))
+                  :else (.addSuppressed ^Throwable error cleanup)))
+              (do
+                (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
+                (throw cleanup)))))))))
 
 (defn- p15-s23-b2-c17-gate-b-validated-options!
   [source-path options]
@@ -137160,7 +137221,9 @@
             parent-real
             (when parent
               (try (.toRealPath parent (make-array java.nio.file.LinkOption 0))
-                   (catch Exception _ nil)))
+                   (catch Exception error
+                     (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+                     nil)))
             destination
             (when parent-real
               (.resolve parent-real (.getFileName requested-destination)))
@@ -137169,7 +137232,9 @@
               (try
                 (java.nio.file.Files/readAttributes
                  parent-real java.nio.file.attribute.BasicFileAttributes nofollow)
-                (catch Exception _ nil)))
+                (catch Exception error
+                  (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+                  nil)))
             parent-file-key
             (when parent-attributes (.fileKey parent-attributes))
             collision?
@@ -137281,7 +137346,8 @@
     (:hash-record sidecar)))
 
 (defn- p15-s23-b2-c17-gate-b-atomic-publish!
-  [candidate workspace preflight source-path finalized expected-hashes]
+  [candidate workspace preflight source-path finalized success-result
+   expected-hashes]
   (p15-s23-b2-c17-gate-b-require-authority!
    candidate source-path :atomic-publish-final-c17-staging)
   (let [destination (:destination preflight)
@@ -137298,17 +137364,23 @@
          candidate workspace source-path 7)
         parent-real
         (try (.toRealPath parent (make-array java.nio.file.LinkOption 0))
-             (catch Exception _ nil))
+             (catch Exception error
+               (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+               nil))
         staging-parent-real
         (try
           (.toRealPath (.getParent workspace)
                        (make-array java.nio.file.LinkOption 0))
-          (catch Exception _ nil))
+          (catch Exception error
+            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+            nil))
         same-store?
         (try
           (= (java.nio.file.Files/getFileStore parent)
              (java.nio.file.Files/getFileStore workspace))
-          (catch Exception _ false))]
+          (catch Exception error
+            (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+            false))]
     (when-not
      (and (= expected-names observed-names)
           (= expected-names (set (keys expected-hashes)))
@@ -137351,8 +137423,9 @@
       (p15-s23-c-backend-fail!
        "B13-SCHEMA" source-path finalized
        {:missing-fact :exact-c17-publication-mode-policy}))
-    ;; Every potentially fallible Java/FFM binding is constructed before the
-    ;; exclusive rename.  The rc=0 branch returns `finalized` directly.
+    ;; Every potentially fallible Java/FFM binding and the caller's success
+    ;; carrier are constructed before the exclusive rename.  The rc=0 branch
+    ;; returns the precomputed `success-result` directly.
     (let [current-parent-attributes
           (java.nio.file.Files/readAttributes
            parent java.nio.file.attribute.BasicFileAttributes nofollow)
@@ -137402,7 +137475,7 @@
                 (object-array
                  [state-segment source-segment destination-segment flags])))]
       (if (zero? return-code)
-        finalized
+        success-result
         (let [captured-errno
               (int (.invokeWithArguments
                     errno-handle (object-array [state-segment (long 0)])))
@@ -137410,7 +137483,9 @@
               (try
                 (java.nio.file.Files/readAttributes
                  workspace java.nio.file.attribute.BasicFileAttributes nofollow)
-                (catch Exception _ nil))]
+                (catch Exception error
+                  (p15-s23-b2-c17-gate-b-rethrow-interrupt! error)
+                  nil))]
           (when-not
            (and failure-source-attributes staging-file-key
                 (.isDirectory failure-source-attributes)
@@ -137427,7 +137502,8 @@
             :captured-errno captured-errno}))))))
 
 (defn- p15-s23-b2-c17-gate-b-publish-final!
-  [candidate gate-a contextual transaction payload preflight source-path]
+  [candidate gate-a contextual transaction payload preflight source-path
+   success-projector]
   (p15-s23-b2-c17-gate-b-require-authority!
    candidate source-path :prepare-final-c17-publication)
   (if-not preflight
@@ -137438,7 +137514,7 @@
           (p15-s23-b2-c17-gate-b-final-record
            gate-a contextual transaction receipt)]
       (p15-s23-b2-c17-gate-b-integrity-preflight! source-path finalized)
-      finalized)
+      (success-projector finalized))
     (let [workspace
           (java.nio.file.Files/createTempDirectory
            (:parent preflight) ".gravity-b2-c17-final-publish-"
@@ -137556,6 +137632,11 @@
                 _
                 (p15-s23-b2-c17-gate-b-integrity-preflight!
                  source-path finalized)
+                success-result
+                ;; The success carrier is completed while publication is
+                ;; still private.  Any projector failure reaches the outer
+                ;; cleanup before the exclusive rename.
+                (success-projector finalized)
                 _
                 (when-not
                  (and (= (:record provenance)
@@ -137594,22 +137675,29 @@
                        (select-keys conformance-hash
                                     [:byte-count :content-hash]))]
             ;; No finally surrounds this call.  On rc=0 the native rename is
-            ;; the final success-path effect and returns `finalized` directly.
+            ;; the final success-path effect and returns the already-built
+            ;; success carrier directly.
             (p15-s23-b2-c17-gate-b-atomic-publish!
              candidate workspace preflight source-path finalized
+             success-result
              expected-hashes)))
         (catch Throwable error
+          (p15-s23-b2-c17-gate-b-restore-interrupt! error)
           (try
             (p15-s23-b2-c17-gate-b-delete-tree!
              candidate workspace source-path)
             (catch Throwable cleanup
+              (p15-s23-b2-c17-gate-b-restore-interrupt! error)
+              (p15-s23-b2-c17-gate-b-restore-interrupt! cleanup)
               (cond
                 (instance? Error error) (.addSuppressed ^Throwable error cleanup)
                 (instance? Error cleanup)
                 (do (.addSuppressed ^Throwable cleanup error) (throw cleanup))
+                (p15-s23-b2-c17-gate-b-interrupt-like? error)
+                (.addSuppressed ^Throwable error cleanup)
+                (p15-s23-b2-c17-gate-b-interrupt-like? cleanup)
+                (do (.addSuppressed ^Throwable cleanup error) (throw cleanup))
                 :else (.addSuppressed ^Throwable error cleanup))))
-          (when (instance? InterruptedException error)
-            (.interrupt (Thread/currentThread)))
           (throw error))))))
 
 (defn- p15-s23-b2-c17-gate-b-verify-publication!
@@ -137775,8 +137863,20 @@
    (p15-s23-stage2-b2-c17-gate-b-artifact!
     gate-a checked-core context {}))
   ([gate-a checked-core context options]
+   (p15-s23-stage2-b2-c17-gate-b-artifact!
+    gate-a checked-core context options
+    p15-s23-b2-c17-gate-b-authority-token identity))
+  ([gate-a checked-core context options projector-authority
+    success-projector]
    (let [source-path (p15-s23-c11-ingress-source-path context)]
      (try
+       (p15-s23-b2-c17-gate-b-require-authority!
+        projector-authority source-path
+        :authenticated-c17-success-projector)
+       (when-not (ifn? success-projector)
+         (p15-s23-c-backend-fail!
+          "B2-MANIFEST" source-path {}
+          {:missing-fact :callable-authenticated-c17-success-projector}))
        (let [{:keys [options gate-a-contextual-report]}
              (p15-s23-b2-c17-gate-b-pre-effect-gate!
               gate-a checked-core context options)
@@ -137799,8 +137899,14 @@
          (p15-s23-b2-c17-gate-b-publish-final!
           p15-s23-b2-c17-gate-b-authority-token
           gate-a gate-a-contextual-report transaction payload
-          publication-preflight source-path))
+          publication-preflight source-path success-projector))
        (catch InterruptedException interrupted
+         (.interrupt (Thread/currentThread))
+         (throw interrupted))
+       (catch java.nio.channels.ClosedByInterruptException interrupted
+         (.interrupt (Thread/currentThread))
+         (throw interrupted))
+       (catch java.io.InterruptedIOException interrupted
          (.interrupt (Thread/currentThread))
          (throw interrupted))
        (catch StackOverflowError _
@@ -137811,8 +137917,8 @@
          (p15-s23-c-backend-contain-exception!
           source-path :contained-c17-gate-b-constructor-diagnostic exception))
        (catch Exception exception
-         (p15-s23-c-backend-contain-exception!
-          source-path :contained-c17-gate-b-constructor-host-failure
+       (p15-s23-c-backend-contain-exception!
+        source-path :contained-c17-gate-b-constructor-host-failure
           exception))))))
 
 (defn p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
@@ -137906,6 +138012,93 @@
      (catch Exception exception
        (p15-s23-c-backend-contain-exception!
         source-path :contained-c17-gate-b-source-host-failure exception)))))
+
+(defn- p15-s23-stage2-b2-c17-gate-b-source-artifact-projected!
+  "Private success-projector path used by an enclosing transactional route.
+  Projector execution occurs in private staging before exclusive publication."
+  [projector-authority source-path source-text options success-projector]
+  (p15-s23-b2-c17-gate-b-require-authority!
+   projector-authority source-path :authenticated-c17-source-projector)
+  (when-not (ifn? success-projector)
+    (p15-s23-c-backend-fail!
+     "B2-MANIFEST" source-path {}
+     {:missing-fact :callable-authenticated-c17-success-projector}))
+  (try
+    (let [validated-options
+          (p15-s23-b2-c17-gate-b-validated-options! source-path options)
+          upstream-diagnostic-owner (Object.)
+          [checked-core context]
+          (binding
+           [*p15-s23-c11-upstream-diagnostic-owner* upstream-diagnostic-owner
+            *p15-s23-c11-mir-diagnostic-context* {:requested-target :c}
+            *additional-bootstrap-targets* stage2-runtime-derived-source-targets]
+            (try
+              (let [context
+                    (p15-s23-stage2-gravity-checked-core-context
+                     source-path source-text :c)]
+                [(p15-s23-stage2-gravity-checked-core-source-artifact
+                  context)
+                 context])
+              (catch InterruptedException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted))
+              (catch clojure.lang.ExceptionInfo exception
+                (let [data
+                      (p15-s23-backend-trusted-exception-data
+                       exception 65536 128)]
+                  (if (and data
+                           (p15-s23-c11-mir-owned-upstream-diagnostic? data))
+                    (p15-s23-c11-mir-contain-checked-core-exception!
+                     source-path :c17-projected-source-checked-core-diagnostic
+                     exception)
+                    (throw exception))))))
+          c11 (p15-s23-stage2-c11-mir-artifact checked-core context)
+          gate-a
+          (p15-s23-stage2-b2-c17-artifact-from-c11!
+           c11 checked-core context)]
+      (p15-s23-stage2-b2-c17-gate-b-artifact!
+       gate-a checked-core context validated-options
+       p15-s23-b2-c17-gate-b-authority-token success-projector))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch java.nio.channels.ClosedByInterruptException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch java.io.InterruptedIOException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError _
+      (p15-s23-c-backend-fail!
+       "B2-MANIFEST" source-path {}
+       {:missing-fact :bounded-hostile-c17-projected-source-stack}))
+    (catch clojure.lang.ExceptionInfo exception
+      (let [data
+            (p15-s23-backend-trusted-exception-data exception 65536 128)
+            replayed
+            (when (map? data)
+              (p15-s23-stage2-reader-replayed-diagnostic
+               source-path source-text))]
+        (if (and data
+                 (p15-s23-stage2-canonical-c2-diagnostic-authentic?
+                  source-path source-text data replayed))
+          (throw exception)
+          (p15-s23-c-backend-contain-exception!
+           source-path :contained-c17-projected-source-diagnostic
+           exception))))
+    (catch Exception exception
+      (p15-s23-c-backend-contain-exception!
+       source-path :contained-c17-projected-source-host-failure exception))))
+
+(defn- p15-s23-stage2-b2-c17-gate-b-p18-t04-route-source-artifact!
+  "Sealed Gate-C entry: callers provide data, never executable projectors."
+  [source-path source-text output-directory]
+  (p15-s23-stage2-b2-c17-gate-b-source-artifact-projected!
+   p15-s23-b2-c17-gate-b-authority-token
+   source-path source-text {:output-directory output-directory}
+   (fn [finalized-gate-b]
+     (p18-t04-experimental-verified-mir-c-route-record
+      source-path source-text output-directory finalized-gate-b))))
 
 (defn p15-s23-stage2-b2-c17-gate-b-verification-report
   "Contextually reauthenticate Gate A, the pinned hosted-C17 toolchain, and any
@@ -146926,6 +147119,14 @@
      :packaged-jvm-cli? packaged?
      :seedless-release? false
      :executable-command-contract? true
+     :executable-command-contract-scope :established-bootstrap-subset
+     :experimental-verified-mir-c-route
+     {:status :implementation-present-governance-pending
+      :excluded-from-executable-command-contract-credit? true
+      :governance-conforming? false
+      :t1-cli-conformance? false
+      :p18-t04-proof-credited? false
+      :public-target-support-claim? false}
      :delegates-to (if packaged?
                      "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
                      "clojure -M:gravity")
@@ -146942,6 +147143,7 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
+   "  gravity compile <file.qst|file.gravity> --target c --lowering verified-mir -o target/<bundle-directory>  [experimental]\n"
    "  gravity test\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
@@ -146953,7 +147155,8 @@
    "Metadata:\n"
    "  :bootstrap-hosted? true\n"
    "  :packaged-jvm-cli? " (if (p18-packaged-jvm-cli?) "true" "false") "\n"
-   "  :seedless-release? false\n"))
+   "  :seedless-release? false\n"
+   "  :experimental-verified-mir-c-route \"current-source compiler with request-scoped JDK native access; bundle-directory output; governance, security, unsafe-island, target-record, and T1 reviews pending; no P18 command-proof, target-support, release, self-host, or T1 credit\"\n"))
 
 (defn p18-seedless-overclaim!
   []
@@ -148421,12 +148624,16 @@
     (loop [remaining (vec options)
            target nil
            output-path nil
-           lowering-mode nil]
+           lowering-mode nil
+           output-option nil]
       (if (empty? remaining)
-        (let [target (some-> target str/lower-case keyword
+        (let [target-argument target
+              lowering-argument lowering-mode
+              target (some-> target str/lower-case keyword
                              js-ts-backend-canonical-target)
               lowering-mode (some-> lowering-mode str/lower-case keyword)]
           (when (and lowering-mode
+                     (not= :verified-mir lowering-mode)
                      (not (or (contains? c-backend-supported-targets target)
                               (= js-ts-backend-target target)
                               (= jvm-backend-target target))))
@@ -148436,12 +148643,15 @@
                             :target target
                             :lowering-mode lowering-mode
                             :missing-fields [:runtime-derived-target]
-                            :remediation "Use --target c, jvm, js, or js-ts with --lowering runtime-derived."}))
+                            :remediation "Use --target c, jvm, js, or js-ts with --lowering runtime-derived, or the exact experimental --target c --lowering verified-mir route."}))
           {:source-path source-path
            :target target
+           :target-argument target-argument
            :target-requested? (some? target)
            :output-path output-path
+           :output-option output-option
            :lowering-mode lowering-mode
+           :lowering-argument lowering-argument
            :lowering-requested? (some? lowering-mode)})
         (let [option (first remaining)
               rest-options (subvec remaining 1)]
@@ -148465,7 +148675,7 @@
                                   :allowed-output-roots ["target/"
                                                           "<current-directory>"]}))
                 (recur (subvec rest-options 1) target candidate
-                       lowering-mode)))
+                       lowering-mode option)))
 
             (= "--target" option)
             (do
@@ -148485,7 +148695,7 @@
                                   :option option
                                   :missing-fields [:target]}))
                 (recur (subvec rest-options 1) candidate output-path
-                       lowering-mode)))
+                       lowering-mode output-option)))
 
             (= "--lowering" option)
             (do
@@ -148505,7 +148715,7 @@
                                   :option option
                                   :missing-fields [:lowering-mode]}))
                 (recur (subvec rest-options 1) target output-path
-                       candidate)))
+                       candidate output-option)))
 
             :else
             (p18-t04-fail! "P18T04002"
@@ -148525,11 +148735,507 @@
                                               "<file.qst|file.gravity>"
                                               "--target" "c"
                                               "--lowering" "runtime-derived"
-                                              "-o" "<executable>"]]})))))))
+                                              "-o" "<executable>"]
+                                             ["compile"
+                                              "<file.qst|file.gravity>"
+                                             "--target" "c"
+                                             "--lowering" "verified-mir"
+                                              "-o"
+                                              "target/<bundle-directory>"]]})))))))
 
 (defn p18-t04-parse-compile-output-path
   [args]
   (:output-path (p18-t04-parse-compile-request args)))
+
+(def p18-t04-experimental-verified-mir-c-route-policy
+  {:artifact :gravity/p18-t04-experimental-verified-mir-c-route-policy
+   :schema-version 1
+   :task "P18-T04"
+   :implementation-tier :experimental
+   :target-support-tier :unassigned
+   :exposure :opt-in-public-command
+   :command-grammar
+   ["gravity" "compile" "<file.qst|file.gravity>"
+    "--target" "c" "--lowering" "verified-mir"
+    "-o" "target/<bundle-directory>"]
+   :option-order :flexible
+   :option-cardinality :exactly-once
+   :output-kind :exclusive-seven-file-bundle-directory
+   :source-declaration-target :jvm
+   :requested-lowering-target :c
+   :profile :hosted
+   :lowering-mode :verified-mir
+   :nested-capability :bounded-hosted-c17-gate-b
+   :governance-status :pending-feature-specific-review
+   :governance-conforming? false
+   :security-review-complete? false
+   :unsafe-review-complete? false
+   :target-support-record-complete? false
+   :t1-cli-conformance? false
+   :p18-t04-proof-credited? false
+   :governance-blockers
+   [:gov4-security-review :gov5-target-support-record
+    :gov7-experiment-record :gov9-unsafe-island-review
+    :t1-cli-automation-contract]
+   :experimental-use-notice
+   {:status :implementation-present-governance-pending
+    :activation :explicit-exact-command-only
+    :disable-by :omit-verified-mir-c-route-options
+    :replacement :established-bootstrap-compile-routes}
+   :public-command-route? true
+   :public-target-support-claim? false
+   :whole-b2? false
+   :release? false
+   :self-hosted? false})
+
+(def p18-t04-experimental-verified-mir-c-route-artifact-keys
+  #{:kind :schema-version :task :status :route-policy :source
+    :source-target :requested-target :profile :lowering-mode
+    :command-boundary :gate-b-summary :semantic-id :artifact-id
+    :actual-path-provenance :actual-path-binding-id :diagnostics
+    :governance-status :governance-conforming?
+    :security-review-complete? :unsafe-review-complete?
+    :target-support-record-complete? :t1-cli-conformance?
+    :p18-t04-proof-credited? :experimental-use-notice
+    :public-command-route? :public-target-support-claim? :whole-b2?
+    :public? :release? :self-hosted? :seed-boundary?
+    :clojure-seed-boundary?})
+
+(defn p18-t04-repository-root-path
+  "Resolve the repository root through the pinned C11 Gravity source, not CWD."
+  []
+  (let [relative p15-s23-c11-mir-source-relative-path
+        pinned (.getCanonicalFile
+                (java.io.File. (p15-s23-c11-mir-resolve-source-path)))
+        root
+        (loop [candidate (.getParentFile pinned)]
+          (when candidate
+            (if (= pinned
+                   (.getCanonicalFile (java.io.File. candidate relative)))
+              (.getCanonicalFile candidate)
+              (recur (.getParentFile candidate)))))]
+    (when-not root
+      (p18-t04-fail!
+       "P18T04002"
+       {:source "bin/gravity"
+        :missing-fields [:normalized-repository-root]
+        :remediation
+        "Run the current-source compiler from a checkout containing the pinned C11 Gravity source."}))
+    (.toPath root)))
+
+(defn p18-t04-verified-mir-c-request!
+  [request]
+  (when-not
+   (and (map? request)
+        (= :verified-mir (:lowering-mode request))
+        (= "verified-mir" (:lowering-argument request))
+        (true? (:lowering-requested? request)))
+    (p18-t04-fail!
+     "P18T04002"
+     {:source (or (:source-path request) "bin/gravity")
+      :missing-fields [:exact-verified-mir-lowering]
+      :remediation
+      "Use the exact option pair --lowering verified-mir."}))
+  (when-not (:target-requested? request)
+    (p18-t04-fail!
+     "P18T04002"
+     {:source (:source-path request)
+      :missing-fields [:target]
+      :remediation
+      "The experimental verified-MIR route requires --target c."}))
+  (when-not (and (= :c (:target request))
+                 (= "c" (:target-argument request)))
+    (p15-s23-c-backend-fail!
+     "C14-TARGET" (:source-path request) {}
+     {:missing-fact :exact-public-verified-mir-c-target
+      :requested-target (:target request)
+      :requested-target-argument (:target-argument request)
+      :source-target :jvm
+      :bounded-reason :verified-mir-public-route-target-selection}))
+  (when-not (= "-o" (:output-option request))
+    (p18-t04-fail!
+     "P18T04002"
+     {:source (:source-path request)
+      :missing-fields
+      [(if (:output-path request)
+         :exact-bundle-output-option
+         :output-path)]
+      :remediation
+      "Use the exact bundle-directory option -o target/<bundle-directory>."}))
+  request)
+
+(defn p18-t04-verified-mir-c-output-directory!
+  "Resolve and validate an exclusive repo-root target bundle before source IO."
+  [source-path output-path]
+  (let [character-count (when (string? output-path) (count output-path))
+        utf8-byte-count
+        (when (and (string? output-path)
+                   (<= 1 character-count 4096))
+          (alength (.getBytes ^String output-path
+                             java.nio.charset.StandardCharsets/UTF_8)))
+        relative
+        (when (and (string? output-path)
+                   (<= 1 character-count 4096)
+                   (<= 1 (or utf8-byte-count 0) 4096)
+                   (not (str/blank? output-path))
+                   (not (str/includes? output-path "\u0000"))
+                   (not-any? #(Character/isISOControl ^char %)
+                             output-path)
+                   (not (str/includes? output-path "\\")))
+          (try
+            (java.nio.file.Paths/get output-path (make-array String 0))
+            (catch java.nio.file.InvalidPathException _ nil)))
+        normalized-relative (when relative (.normalize relative))
+        lexical-valid?
+        (and relative
+             (not (.isAbsolute relative))
+             (= output-path (.toString normalized-relative))
+             (<= 2 (.getNameCount normalized-relative))
+             (= "target" (.toString (.getName normalized-relative 0))))]
+    (when-not lexical-valid?
+      (p18-t04-fail!
+       "P18T04002"
+       {:source source-path
+        :output-character-count character-count
+        :output-byte-count utf8-byte-count
+        :missing-fields [:normalized-repository-target-bundle-directory]
+        :remediation
+        "Use a normalized relative path target/<bundle-directory> without empty, dot, dot-dot, trailing, or backslash segments."}))
+    (let [root (.normalize (.toAbsolutePath (p18-t04-repository-root-path)))
+          target-root (.resolve root "target")
+          destination (.normalize (.resolve root normalized-relative))
+          parent (.getParent destination)
+          nofollow
+          (into-array java.nio.file.LinkOption
+                      [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+          parent-attributes
+          (when parent
+            (try
+              (java.nio.file.Files/readAttributes
+               parent java.nio.file.attribute.BasicFileAttributes nofollow)
+              (catch java.nio.channels.ClosedByInterruptException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted))
+              (catch java.io.InterruptedIOException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted))
+              (catch java.io.IOException _ nil)
+              (catch SecurityException _ nil)))
+          parent-real
+          (when parent-attributes
+            (try
+              (.toRealPath parent (make-array java.nio.file.LinkOption 0))
+              (catch java.nio.channels.ClosedByInterruptException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted))
+              (catch java.io.InterruptedIOException interrupted
+                (.interrupt (Thread/currentThread))
+                (throw interrupted))
+              (catch java.io.IOException _ nil)
+              (catch SecurityException _ nil)))
+          collision?
+          (or (java.nio.file.Files/exists destination nofollow)
+              (java.nio.file.Files/isSymbolicLink destination))
+          non-symlink-ancestors?
+          (loop [ancestor parent]
+            (cond
+              (nil? ancestor) false
+              (java.nio.file.Files/isSymbolicLink ancestor) false
+              (= root ancestor) true
+              (not (.startsWith ancestor root)) false
+              :else (recur (.getParent ancestor))))]
+      (when-not
+       (and (.startsWith destination target-root)
+            (not= destination target-root)
+            parent parent-attributes (.isDirectory parent-attributes)
+            parent-real (= parent parent-real)
+            non-symlink-ancestors?
+            (not collision?))
+        (p15-s23-c-backend-fail!
+         "C14-INPUT" source-path {}
+         {:missing-fact :collision-free-repository-target-bundle-directory
+          :source-target :jvm
+          :requested-target :c
+          :bounded-reason
+          (cond
+            collision? :output-collision
+            (nil? parent-attributes) :missing-output-parent
+            (not= parent parent-real) :symlink-output-ancestor
+            (not non-symlink-ancestors?) :untrusted-output-ancestor
+            :else :output-outside-repository-target)}))
+      (.toString destination))))
+
+(defn p18-t04-verified-mir-c-source-input!
+  [source-path]
+  (let [character-count (when (string? source-path) (count source-path))
+        utf8-byte-count
+        (when (and (string? source-path)
+                   (<= 1 character-count 4096))
+          (alength (.getBytes ^String source-path
+                             java.nio.charset.StandardCharsets/UTF_8)))]
+    (when-not
+     (and (string? source-path)
+          (<= 1 character-count 4096)
+          (<= 1 (or utf8-byte-count 0) 4096)
+          (not (str/blank? source-path))
+          (not (str/includes? source-path "\u0000"))
+          (not-any? #(Character/isISOControl ^char %) source-path))
+      (p15-s23-c-backend-fail!
+       "C14-INPUT" (if (string? source-path) source-path
+                       "<verified-mir-c-source>") {}
+       {:missing-fact :bounded-public-gravity-source-path
+        :source-target :jvm :requested-target :c
+        :bounded-reason :invalid-source-path-spelling})))
+  (try
+    (let [requested-path
+          (java.nio.file.Paths/get source-path (make-array String 0))
+          nofollow
+          (into-array java.nio.file.LinkOption
+                      [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+          attributes
+          (try
+            (java.nio.file.Files/readAttributes
+             requested-path java.nio.file.attribute.BasicFileAttributes
+             nofollow)
+            (catch java.nio.channels.ClosedByInterruptException interrupted
+              (.interrupt (Thread/currentThread))
+              (throw interrupted))
+            (catch java.io.InterruptedIOException interrupted
+              (.interrupt (Thread/currentThread))
+              (throw interrupted))
+            (catch java.io.IOException _ nil)
+            (catch SecurityException _ nil))
+          _
+          (when-not
+           (and attributes (.isRegularFile attributes)
+                (not (java.nio.file.Files/isSymbolicLink requested-path))
+                (java.nio.file.Files/isReadable requested-path)
+                (<= 0 (.size attributes) (* 1024 1024)))
+            (p15-s23-c-backend-fail!
+             "C14-INPUT" source-path {}
+             {:missing-fact :bounded-readable-regular-gravity-source
+              :maximum-byte-count (* 1024 1024)
+              :observed-byte-count (when attributes (.size attributes))
+              :source-target :jvm :requested-target :c
+              :bounded-reason
+              :missing-nonregular-unreadable-or-oversize-source}))
+          _
+          (when-not (qst-or-gravity-source? source-path)
+            (source-path-policy-fail! source-path))
+          source-text (read-gravity-source-text source-path)
+          actual-path
+          (.toString
+           (.toRealPath requested-path
+                        (make-array java.nio.file.LinkOption 0)))]
+      {:source-path actual-path :source-text source-text})
+    (catch java.nio.file.NoSuchFileException _
+      (p15-s23-c-backend-fail!
+       "C14-INPUT" source-path {}
+       {:missing-fact :readable-gravity-source
+        :source-target :jvm :requested-target :c
+        :bounded-reason :missing-source-file}))
+    (catch java.nio.file.AccessDeniedException _
+      (p15-s23-c-backend-fail!
+       "C14-INPUT" source-path {}
+       {:missing-fact :readable-gravity-source
+        :source-target :jvm :requested-target :c
+        :bounded-reason :source-access-denied}))
+    (catch java.nio.file.InvalidPathException _
+      (p15-s23-c-backend-fail!
+       "C14-INPUT" source-path {}
+       {:missing-fact :readable-gravity-source
+        :source-target :jvm :requested-target :c
+        :bounded-reason :invalid-source-path}))
+    (catch java.nio.channels.ClosedByInterruptException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch java.io.InterruptedIOException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch java.io.IOException _
+      (p15-s23-c-backend-fail!
+       "C14-INPUT" source-path {}
+       {:missing-fact :readable-gravity-source
+        :source-target :jvm :requested-target :c
+        :bounded-reason :source-io-failure}))))
+
+(defn- p18-t04-experimental-verified-mir-c-gate-b-handoff!
+  [source-path output-directory gate-b]
+  (p15-s23-b2-c17-gate-b-integrity-preflight! source-path gate-b)
+  (let [receipt (:publication-receipt gate-b)
+        provenance (:actual-path-provenance gate-b)
+        expected-semantic-id
+        (p15-s23-b2-c17-gate-b-artifact-id gate-b)
+        expected-artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/b2-hosted-c17-gate-b-artifact
+          :schema-version 1 :semantic-id expected-semantic-id})
+        expected-path-binding-id
+        (p15-s23-b2-c17-gate-b-path-binding-id
+         expected-semantic-id provenance receipt)]
+    (when-not
+     (and (= p15-s23-b2-c17-gate-b-final-artifact-keys
+             (set (keys gate-b)))
+          (= :gravity/b2-hosted-c17-gate-b (:artifact gate-b))
+          (= 1 (:schema-version gate-b))
+          (= :validated-bounded-internal-c17-candidate (:status gate-b))
+          (= p15-s23-b2-c17-gate-b-policy (:policy gate-b))
+          (= source-path (:source provenance))
+          (= output-directory (:actual-output-directory provenance))
+          (= output-directory (:actual-output-directory receipt))
+          (p15-s23-b2-c17-gate-b-canonical-published-receipt?
+           receipt output-directory)
+          (= [expected-semantic-id expected-artifact-id
+              expected-path-binding-id]
+             ((juxt :semantic-id :artifact-id :actual-path-binding-id)
+              gate-b))
+          (= [] (:diagnostics gate-b))
+          (true? (get-in gate-b
+                         [:toolchain-evidence :publication-intent?]))
+          (false? (:whole-b2? gate-b))
+          (false? (:public? gate-b))
+          (false? (:release? gate-b))
+          (false? (:self-hosted? gate-b))
+          (true? (:seed-boundary? gate-b))
+          (true? (:clojure-seed-boundary? gate-b))
+          (not (contains? gate-b :publication-payload))
+          (not (contains? (:toolchain-evidence gate-b)
+                          :publication-payload)))
+      (p18-t04-fail!
+       "P18T04001"
+       {:source source-path
+        :missing-fields [:exact-published-c17-gate-b-handoff]}))
+    {:gate-b gate-b
+     :publication-receipt-id
+     (p15-s23-c11-mir-digest
+      {:kind :gravity/b2-c17-gate-b-publication-receipt
+       :schema-version 1 :receipt receipt})}))
+
+(defn- p18-t04-experimental-verified-mir-c-gate-b-summary
+  [gate-b publication-receipt-id]
+  {:artifact (:artifact gate-b)
+   :schema-version (:schema-version gate-b)
+   :status (:status gate-b)
+   :semantic-id (:semantic-id gate-b)
+   :artifact-id (:artifact-id gate-b)
+   :actual-path-binding-id (:actual-path-binding-id gate-b)
+   :policy (:policy gate-b)
+   :publication-receipt (:publication-receipt gate-b)
+   :publication-receipt-id publication-receipt-id
+   :whole-b2? (:whole-b2? gate-b)
+   :public? (:public? gate-b)
+   :release? (:release? gate-b)
+   :self-hosted? (:self-hosted? gate-b)
+   :seed-boundary? (:seed-boundary? gate-b)
+   :clojure-seed-boundary? (:clojure-seed-boundary? gate-b)})
+
+(defn- p18-t04-experimental-verified-mir-c-route-record
+  [source-path source-text output-directory gate-b]
+  (let [{:keys [gate-b publication-receipt-id]}
+        (p18-t04-experimental-verified-mir-c-gate-b-handoff!
+         source-path output-directory gate-b)
+        summary
+        (p18-t04-experimental-verified-mir-c-gate-b-summary
+         gate-b publication-receipt-id)
+        semantic-id
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/p18-t04-experimental-verified-mir-c-route
+          :schema-version 1
+          :route-policy p18-t04-experimental-verified-mir-c-route-policy
+          :gate-b
+          (select-keys summary [:semantic-id :artifact-id])})
+        artifact-id
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/p18-t04-experimental-verified-mir-c-route-artifact
+          :schema-version 1 :semantic-id semantic-id})
+        actual-path-provenance
+        {:source source-path :output-directory output-directory}
+        actual-path-binding-id
+        (p15-s23-c11-mir-digest
+         {:kind :gravity/p18-t04-experimental-verified-mir-c-route-path-binding
+          :schema-version 1 :semantic-id semantic-id
+          :actual-path-provenance actual-path-provenance
+          :gate-b-actual-path-binding-id (:actual-path-binding-id summary)
+          :gate-b-publication-receipt-id publication-receipt-id})
+        result
+        {:kind :gravity/p18-t04-experimental-verified-mir-c-route
+         :schema-version 1 :task "P18-T04"
+         :status
+         :implemented-experimental-public-command-route-governance-pending
+         :route-policy p18-t04-experimental-verified-mir-c-route-policy
+         :source
+         {:kind (gravity-source-kind source-path)
+          :extension (gravity-source-extension source-path)
+          :content-hash (str "sha256:" (sha256-hex source-text))}
+         :source-target :jvm :requested-target :c :profile :hosted
+         :lowering-mode :verified-mir
+         :command-boundary
+         {:grammar (:command-grammar
+                    p18-t04-experimental-verified-mir-c-route-policy)
+          :output-kind :bundle-directory
+          :experimental? true
+          :governance-status :pending-feature-specific-review
+          :activation :explicit-exact-command-only
+          :replacement :established-bootstrap-compile-routes}
+         :gate-b-summary summary
+         :semantic-id semantic-id :artifact-id artifact-id
+         :actual-path-provenance actual-path-provenance
+         :actual-path-binding-id actual-path-binding-id
+         :diagnostics []
+         :governance-status :pending-feature-specific-review
+         :governance-conforming? false
+         :security-review-complete? false
+         :unsafe-review-complete? false
+         :target-support-record-complete? false
+         :t1-cli-conformance? false
+         :p18-t04-proof-credited? false
+         :experimental-use-notice
+         (:experimental-use-notice
+          p18-t04-experimental-verified-mir-c-route-policy)
+         :public-command-route? true
+         :public-target-support-claim? false
+         :whole-b2? false :public? false :release? false :self-hosted? false
+         :seed-boundary? true :clojure-seed-boundary? true}]
+    (when-not
+     (= p18-t04-experimental-verified-mir-c-route-artifact-keys
+        (set (keys result)))
+      (p18-t04-fail!
+       "P18T04001"
+       {:source source-path
+        :missing-fields [:exact-experimental-verified-mir-c-route-envelope]}))
+    result))
+
+(defn p18-t04-compile-experimental-verified-mir-c-target-file!
+  [request]
+  (try
+    (let [request (p18-t04-verified-mir-c-request! request)
+          output-directory
+          (p18-t04-verified-mir-c-output-directory!
+           (:source-path request) (:output-path request))
+          {:keys [source-path source-text]}
+          (p18-t04-verified-mir-c-source-input! (:source-path request))]
+      ;; The private Gate-B path executes the projector while the complete
+      ;; bundle is still staged, then makes the exclusive rename its final
+      ;; success-path effect and returns this precomputed route record.
+      (p15-s23-stage2-b2-c17-gate-b-p18-t04-route-source-artifact!
+       source-path source-text output-directory))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch java.nio.channels.ClosedByInterruptException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch java.io.InterruptedIOException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch clojure.lang.ExceptionInfo exception
+      (throw exception))
+    (catch Exception _
+      (p15-s23-c-backend-fail!
+       "C14-INPUT" (or (:source-path request) "<verified-mir-c-route>") {}
+       {:missing-fact :contained-public-verified-mir-c-route-host-failure
+        :source-target :jvm :requested-target :c
+        :bounded-reason :public-route-host-failure}))))
 
 (defn p18-shell-single-quote
   [text]
@@ -152461,7 +153167,12 @@
 (defn print-diagnostic!
   [ex]
   (binding [*out* *err*]
-    (prn (select-keys (ex-data ex) [:id :message :bootstrap-stage :source-span
+    (let [data (ex-data ex)
+          authentic-c-diagnostic
+          (p15-s23-c-backend-sanitized-complete-diagnostic data)
+          projection
+          (select-keys data [:id :rule :message :bootstrap-stage
+                                     :source-span
                                      :profile :active-profile :target
                                      :reader-state :analyzer-stage :alias :symbol
                                      :module :macro :operator :function
@@ -152632,7 +153343,12 @@
                                      :affected-profiles
                                      :affected-targets
                                      :release-gate
-	                                     :remediation :cause-message]))))
+	                                     :remediation :cause-message])
+          projection
+          (if authentic-c-diagnostic
+            (assoc projection :facts (:facts authentic-c-diagnostic))
+            projection)]
+      (prn projection))))
 
 (defn -main
   [& args]
@@ -152833,10 +153549,15 @@
                          (p18-t04-public-test-overclaim! args)
                          (prn (p18-t04-public-test-command-artifact!)))
                 "self-host" (p18-t04-public-self-host-verify-command! args)
-                "compile" (let [{:keys [target output-path target-requested?
-                                          lowering-mode]}
-                                 (p18-t04-parse-compile-request args)]
-                             (if target-requested?
+                "compile" (let [request
+                                 (p18-t04-parse-compile-request args)
+                                 {:keys [target output-path target-requested?
+                                         lowering-mode]} request]
+                             (if (= :verified-mir lowering-mode)
+                               (prn
+                                (p18-t04-compile-experimental-verified-mir-c-target-file!
+                                 request))
+                               (if target-requested?
                                (cond
                                  (= :jvm target)
                                  (if lowering-mode
@@ -152874,10 +153595,10 @@
                                    :missing-fact :supported-target
                                    :remediation
                                    "Select jvm, c, js, or js-ts; other documented targets remain unimplemented."}))
-                               (if output-path
-                                 (prn (p18-t04-compile-executable-file!
-                                       path output-path))
-                                 (prn (compile-file path)))))
+                                 (if output-path
+                                   (prn (p18-t04-compile-executable-file!
+                                         path output-path))
+                                   (prn (compile-file path))))))
 	        "check" (let [artifact (check-file-artifact path)]
 	                  (println "gravity stage0 check passed:" (check-artifact-module-name artifact)))
         "run" (print (run-file path))
