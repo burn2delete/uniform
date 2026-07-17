@@ -915,7 +915,7 @@
                                      :binding)
                                 :pass-execution-record-id))
                       (= (get dependencies :b3-source)
-                         "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37")
+                         "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
                       false)
                     false)
                   false)
@@ -989,7 +989,7 @@
                                   (if (b1-c14-dependencies-valid? request)
                                     (if (= (get request :target-policy)
                                            {:scope
-                                            :bounded-pure-scalar-forwarding-do-let-if
+                                            :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
                                             :maximum-operation-count 256
                                             :whole-c14? false :whole-b1? false
                                             :whole-b3? false :public? false
@@ -1052,7 +1052,7 @@
              [:gravity/c14-target-eligibility-report
               :gravity.backend/llvm :hosted true [] [] [] []
               {:decision :accepted
-               :bounded-surface :pure-scalar-forwarding-do-let-if
+               :bounded-surface :pure-scalar-forwarding-do-let-if-integer-comparisons
                :unsupported-diagnostic "C14-UNSUPPORTED"
                :no-hidden-runtime? true
                :no-hidden-effect-or-capability? true}
@@ -1086,14 +1086,20 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 100279
-          "sha256:07832d2eef57a88b53234854089caf6acba3fd4c73b87e754ef8de7eada4b040"
-          "sha256:fe28b17d0408122b9511c133478765e2bae9367549cffe53a05f502c7fdc0dcb"
-          "sha256:1ce80a93b6e52c797e7069a7dfe84087a2344006f0d345c8dd6860f88e0e1217"
+          :gravity.compiler/c14-target-lowering 105031
+          "sha256:3619d38e50fc908b2b52927b5eb76e2338704fb24e88ec9f356d6980242acbb0"
+          "sha256:33ded37cf2f533a0ae89204b67d3ec0bd215d30ce2b5c660283bcddbaf06a5bf"
+          "sha256:9cbed7211819b0305b445716202ab18a42f06c6a1b6ff9572810ecd0b8477fa3"
           'c14-build-bounded-llvm-lowering-record
-          "sha256:1b42b7a74d67607e4d9076adda65e64160317e34d3e608ae2e4a81fbce3b4b30"
+          "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7"
           '{c14-bounded-optimized-input-valid?
             {:arity 2 :params [optimized policy]}
+            c14-llvm-bounded-mir-surface-valid?
+            {:arity 2 :params [optimized policy]}
+            c14-llvm-process-result-valid?
+            {:arity 3 :params [mir operations operations-by-id]}
+            c14-llvm-first-invalid-constant
+            {:arity 1 :params [operations]}
             c14-bounded-policy-valid?
             {:arity 2 :params [optimized policy]}
             c14-build-bounded-llvm-lowering-record
@@ -1660,10 +1666,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 100279
-          "sha256:07832d2eef57a88b53234854089caf6acba3fd4c73b87e754ef8de7eada4b040"
-          "sha256:fe28b17d0408122b9511c133478765e2bae9367549cffe53a05f502c7fdc0dcb"
-          "sha256:1ce80a93b6e52c797e7069a7dfe84087a2344006f0d345c8dd6860f88e0e1217"
+          :gravity.compiler/c14-target-lowering 105031
+          "sha256:3619d38e50fc908b2b52927b5eb76e2338704fb24e88ec9f356d6980242acbb0"
+          "sha256:33ded37cf2f533a0ae89204b67d3ec0bd215d30ce2b5c660283bcddbaf06a5bf"
+          "sha256:9cbed7211819b0305b445716202ab18a42f06c6a1b6ff9572810ecd0b8477fa3"
           'c14-build-bounded-c-lowering-record
           "sha256:3209bb1605d40c7a466a53eb01d6cf7a4d243210ce6a0c189ceb3b15564f09ee"
           '{c14-bounded-optimized-input-valid?

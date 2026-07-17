@@ -28961,6 +28961,9 @@
     (is (= {:reference-runtime? true
             :deployment-runtime? false
             :checked-core-str-println-admission? true
+            :checked-core-binary-integer-comparison-admission? true
+            :checked-core-binary-integer-comparison-operations
+            '#{= < <= > >=}
             :checked-core-admission-scope
             :authenticated-hosted-jvm-reference-interpreter
             :typed-fourth-authority
@@ -28982,7 +28985,7 @@
             :status :passed}
            (:verification-replay target-record)))
     (is (= {:kind :clojure-seed-runtime-primitive-classification
-            :pure-primitives '#{= count first get second}
+            :pure-primitives '#{= < <= > >= count first get second}
             :proven-allocation-primitives '#{assoc conj str}
             :proven-allocation-literals #{:vector-literal :map-literal}
             :allocation-unproven-primitives '#{rest}
@@ -31205,7 +31208,7 @@
          (set (keys (:runtime-contract-definitions rule)))))
     (is (= 11 (count (get-in rule [:runtime-artifact-plan :functions]))))
     (is (= 11 (count (:runtime-artifact-function-hashes rule))))
-    (is (= 289 (:operation-count validation)))
+    (is (= 328 (:operation-count validation)))
     (is (= 25 (:proven-allocation-count validation)))
     (is (= 4 (:allocation-unproven-count validation)))
     (is (= bootstrap/p15-s23-reference-runtime-expected-function-hashes
@@ -34316,18 +34319,18 @@
         (bootstrap/p15-s23-stage2-runtime-execute-function
          {:engine :b3-policy-pin :compiler-artifact-plan? true}
          plan 'b3-bounded-arm64-macos-policy-record [])]
-    (is (= 82589 bootstrap/p15-s23-b3-llvm-source-byte-count
+    (is (= 86185 bootstrap/p15-s23-b3-llvm-source-byte-count
            (alength (.getBytes
                      source-text java.nio.charset.StandardCharsets/UTF_8))))
-    (is (= "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37"
+    (is (= "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3"
            bootstrap/p15-s23-b3-llvm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source-text))))
-    (is (= "sha256:38810226acd2009934a18d58a12c2a7de2d3815f4f344eb2162854059d16ddd2"
+    (is (= "sha256:0cbc958898d7ec4e297613a129ec2352168eee3eb5938ac7b7cb0b9dfb72ec6a"
            bootstrap/p15-s23-b3-llvm-expected-plan-semantic-hash
            (bootstrap/p15-s23-c11-mir-digest
             (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
              plan))))
-    (is (= "sha256:119618cc5180e8d75f4a4f62634d9ef91aa8c8962029fff7b0009b217bd252e8"
+    (is (= "sha256:b92dfd22e71c426d6771158f27e01837664748155d09d227fab3b181c76a94bf"
            bootstrap/p15-s23-b3-llvm-expected-functions-semantic-hash
            (bootstrap/p15-s23-c11-mir-digest functions)))
     (is (= "sha256:a18355c4b224902853e30f249593103b1515afc64e88486dc56c65ec98360f36"
@@ -39181,9 +39184,8 @@
     (is (= [:passed :passed :passed :passed]
            ((juxt :fresh-c11 :fresh-c13 :fresh-c14 :fresh-b1)
             verification)))
-    (is (= :unsupported-mir-opcode
-           (bootstrap/p15-s23-b3-llvm-operation-rejection
-            operations equality)))
+    (is (nil? (bootstrap/p15-s23-b3-llvm-operation-rejection
+               operations equality)))
     (is (= "B13-HASH" (:id tamper-data)) tamper-data)
     (doseq [{:keys [label expected-id expected-missing data]}
             c11-mutation-data]
@@ -39550,9 +39552,8 @@
         (is (not-any? #(= :defined-signed-i64-equality (:assumption %))
                       proof-entries)
             label)
-        (is (= :unsupported-mir-opcode
-               (bootstrap/p15-s23-b3-llvm-operation-rejection
-                operations operation)) label)
+        (is (nil? (bootstrap/p15-s23-b3-llvm-operation-rejection
+                   operations operation)) label)
         (is (contains? #{".gravity" ".qst"} extension) label)
         (doseq [key [:whole-b2? :public? :release? :self-hosted?]]
           (is (false? (get artifact key)) [label key]))))
@@ -39962,6 +39963,768 @@
     (is (= #{"program.c" "program.h" "program.o" "program"
              "manifest.edn" "provenance.edn" "conformance.edn"}
            names))))
+
+;; The matching LLVM slice remains internal and experimental.  These tests
+;; credit only authenticated binary signed-i64 comparisons through the pinned
+;; Gravity B3 source and the existing arm64 macOS Clang boundary.
+
+(def ^:private authenticated-binary-integer-llvm-cases
+  [{:label :eq-true :operator '= :source-operation :integer-eq
+    :left "-9223372036854775808" :right "-9223372036854775808"
+    :expected true :extension ".gravity" :predicate "eq"}
+   {:label :eq-false :operator '= :source-operation :integer-eq
+    :left "-9223372036854775808" :right "9223372036854775807"
+    :expected false :extension ".qst" :predicate "eq"}
+   {:label :lt-true :operator '< :source-operation :integer-lt
+    :left "-9223372036854775808" :right "9223372036854775807"
+    :expected true :extension ".gravity" :predicate "slt"}
+   {:label :lt-equal-false :operator '< :source-operation :integer-lt
+    :left "7" :right "7" :expected false :extension ".qst"
+    :predicate "slt"}
+   {:label :lte-equal-true :operator '<= :source-operation :integer-lte
+    :left "7" :right "7" :expected true :extension ".gravity"
+    :predicate "sle"}
+   {:label :lte-false :operator '<= :source-operation :integer-lte
+    :left "9223372036854775807" :right "-9223372036854775808"
+    :expected false :extension ".qst" :predicate "sle"}
+   {:label :gt-true :operator '> :source-operation :integer-gt
+    :left "9223372036854775807" :right "-9223372036854775808"
+    :expected true :extension ".gravity" :predicate "sgt"}
+   {:label :gt-equal-false :operator '> :source-operation :integer-gt
+    :left "7" :right "7" :expected false :extension ".qst"
+    :predicate "sgt"}
+   {:label :gte-equal-true :operator '>= :source-operation :integer-gte
+    :left "7" :right "7" :expected true :extension ".gravity"
+    :predicate "sge"}
+   {:label :gte-false :operator '>= :source-operation :integer-gte
+    :left "-9223372036854775808" :right "9223372036854775807"
+    :expected false :extension ".qst" :predicate "sge"}])
+
+(defn- authenticated-binary-integer-llvm-source
+  [{:keys [operator left right]}]
+  (closed-pure-source-with-main
+   (str "(let [x " left " y " right "] (" operator " x y))")
+   {:exports '[main]}))
+
+(defn- authenticated-binary-integer-closed-plan
+  [instruction]
+  {:entrypoint 'main
+   :source {:path "authenticated-binary-integer-closed-plan.gravity"}
+   :functions
+   {'main {:arity 0 :params [] :instructions [instruction]}}})
+
+(deftest authenticated-reference-runtime-compares-binary-integers
+  (let [runtime-rule
+        (bootstrap/c-backend-stage2-runtime-source-rule!
+         "authenticated-reference-integer-comparisons.gravity" :llvm)
+        runtime-plan (:runtime-artifact-plan runtime-rule)
+        runtime-contract
+        (get-in runtime-rule
+                [:runtime-contract-definitions
+                 'p15-s23-reference-runtime-contract])
+        execute
+        (fn [plan]
+          (bootstrap/p15-s23-stage2-runtime-execute-function
+           {:engine :authenticated-reference-integer-comparison-test}
+           runtime-plan
+           bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function
+           [plan]))]
+    (is (true?
+         (:checked-core-binary-integer-comparison-admission?
+          runtime-contract)))
+    (is (= '#{= < <= > >=}
+           (:checked-core-binary-integer-comparison-operations
+            runtime-contract)))
+    (is (= bootstrap/p15-s23-stage2-runtime-artifact-expected-artifact-hash
+           (:runtime-artifact-hash runtime-rule)))
+    (is (= 328
+           (get-in runtime-rule
+                   [:runtime-contract-validation-record :operation-count])))
+    (doseq [{:keys [label operator left right expected]}
+            authenticated-binary-integer-llvm-cases]
+      (let [plan
+            (authenticated-binary-integer-closed-plan
+             {:op :builtin-call :function operator
+              :args [{:op :literal :value (bigint left)}
+                     {:op :literal :value (bigint right)}]})
+            validation
+            (bootstrap/p15-s23-closed-runtime-plan-validation!
+             (:path (:source plan)) :llvm plan)
+            execution (execute plan)]
+        (is (= :complete (:status validation)) label)
+        (is (= expected (:entrypoint-result execution)) label)
+        (is (= "" (:stdout execution)) label)))
+    (let [large-left (bigint "9223372036854775808")
+          large-right (bigint "9223372036854775809")
+          local-plan
+          (authenticated-binary-integer-closed-plan
+           {:op :let
+            :bindings
+            [{:name 'left :expr {:op :literal :value large-left}}
+             {:name 'right :expr {:op :literal :value large-right}}]
+            :body
+            [{:op :builtin-call :function '<
+              :args [{:op :local :name 'left}
+                     {:op :local :name 'right}]}]})
+          nested-plan
+          (authenticated-binary-integer-closed-plan
+           {:op :builtin-call :function '>=
+            :args
+            [{:op :if
+              :test {:op :literal :value true}
+              :then {:op :literal :value large-right}
+              :else {:op :literal :value large-left}}
+             {:op :literal :value large-right}]})]
+      (doseq [[label plan expected]
+              [[:large-sequential-locals local-plan true]
+               [:large-nested-if nested-plan true]]]
+        (is (= :complete
+               (:status
+                (bootstrap/p15-s23-closed-runtime-plan-validation!
+                 (:path (:source plan)) :llvm plan))) label)
+        (is (= expected (:entrypoint-result (execute plan))) label)))
+    (let [base
+          (authenticated-binary-integer-closed-plan
+           {:op :builtin-call :function '<
+            :args [{:op :literal :value 1}
+                   {:op :literal :value 2}]})
+          type-hostiles
+          [(assoc-in base [:functions 'main :instructions 0 :args 0 :value]
+                     "1")
+           (assoc-in base [:functions 'main :instructions 0 :args 1 :value]
+                     true)
+           (authenticated-binary-integer-closed-plan
+            {:op :let
+             :bindings [{:name 'left
+                         :expr {:op :literal :value "not-an-integer"}}]
+             :body [{:op :builtin-call :function '>=
+                     :args [{:op :local :name 'left}
+                            {:op :literal :value 0}]}]})]]
+      (doseq [plan type-hostiles]
+        (let [data
+              (diagnostic-data
+               #(bootstrap/p15-s23-closed-runtime-plan-validation!
+                 (:path (:source plan)) :llvm plan))]
+          (is (= "P15S23X002" (:id data)))
+          (is (= :closed-plan-binary-integer-comparison-operands
+                 (:missing-fact data)))
+          (is (not (str/includes? (pr-str data) "ClassCastException")))))
+      (let [arity-data
+            (diagnostic-data
+             #(bootstrap/p15-s23-closed-runtime-plan-validation!
+               (:path (:source base)) :llvm
+               (update-in base
+                          [:functions 'main :instructions 0 :args]
+                          pop)))
+            unknown-data
+            (diagnostic-data
+             #(bootstrap/p15-s23-closed-runtime-plan-validation!
+               (:path (:source base)) :llvm
+               (assoc-in base
+                         [:functions 'main :instructions 0 :function]
+                         '+)))]
+        (is (= "L2-BUILTIN-ARITY" (:id arity-data)))
+        (is (= 2 (:expected-arity arity-data)))
+        (is (= "P15S23X002" (:id unknown-data)))
+        (is (= :closed-plan-builtin (:missing-fact unknown-data)))))))
+
+(defn- authenticated-binary-integer-llvm-upstream
+  [source-path source]
+  (binding
+   [bootstrap/*p15-s23-c11-mir-diagnostic-context* {:requested-target :llvm}
+    bootstrap/*additional-bootstrap-targets*
+    bootstrap/stage2-runtime-derived-source-targets]
+    (let [context
+          (bootstrap/p15-s23-stage2-gravity-checked-core-context
+           source-path source :llvm)
+          checked-core
+          (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+           context)
+          c11
+          (bootstrap/p15-s23-stage2-c11-mir-artifact checked-core context)]
+      {:context context :checked-core checked-core :c11 c11})))
+
+(def ^:private authenticated-binary-integer-llvm-b3-plan
+  (delay
+    (let [path bootstrap/p15-s23-b3-llvm-source-relative-path
+          source (slurp path)]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (:emitter
+        (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :llvm))
+       path source))))
+
+(def ^:private authenticated-binary-integer-llvm-c14-plan
+  (delay
+    (let [path bootstrap/p15-s23-c14-source-relative-path
+          source (slurp path)]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (:emitter
+        (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :llvm))
+       path source))))
+
+(defn- authenticated-binary-integer-llvm-compiled-lowering
+  [mir]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :authenticated-integer-llvm-b3-test
+    :compiler-artifact-plan? true}
+   @authenticated-binary-integer-llvm-b3-plan
+   'b3-build-bounded-arm64-macos-llvm [mir]))
+
+(defn- authenticated-binary-integer-llvm-tool-free-row
+  [root case]
+  (let [source (authenticated-binary-integer-llvm-source case)
+        file (.resolve root (str (name (:label case)) (:extension case)))
+        _ (spit (.toFile file) source)
+        path (.toString
+              (.toRealPath file (make-array java.nio.file.LinkOption 0)))
+        upstream (authenticated-binary-integer-llvm-upstream path source)
+        packet
+        (bootstrap/p15-s23-stage2-c13-c14-b1-packet-from-c11!
+         (:c11 upstream) (:checked-core upstream) (:context upstream))
+        mir (:optimized-mir packet)
+        gravity (authenticated-binary-integer-llvm-compiled-lowering mir)
+        host (bootstrap/p15-s23-b3-llvm-reconstructed-lowering mir)]
+    (assoc case :source source :path path :upstream upstream :packet packet
+           :mir mir :gravity gravity :host host)))
+
+(def ^:private authenticated-binary-integer-llvm-gate-a-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-integer-llvm-left-"
+      (fn [left-root]
+        (with-temp-directory
+          "gravity-authenticated-integer-llvm-right-"
+          (fn [right-root]
+            (let [before
+                  (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+                  rows
+                  (mapv #(authenticated-binary-integer-llvm-tool-free-row
+                          left-root %)
+                        authenticated-binary-integer-llvm-cases)
+                  mirror
+                  (authenticated-binary-integer-llvm-tool-free-row
+                   right-root
+                   (assoc (first authenticated-binary-integer-llvm-cases)
+                          :label :eq-true-mirror :extension ".qst"))
+                  after
+                  (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)]
+              {:rows rows :mirror mirror :before before :after after})))))))
+
+(deftest authenticated-binary-integer-comparisons-reach-gravity-b3-llvm
+  (let [{:keys [rows mirror before after]}
+        @authenticated-binary-integer-llvm-gate-a-proof
+        expected-predicates
+        {:integer-eq "eq" :integer-lt "slt" :integer-lte "sle"
+         :integer-gt "sgt" :integer-gte "sge"}]
+    (is (= before after))
+    (is (= expected-predicates
+           (zipmap (map :source-operation rows) (map :predicate rows))))
+    (doseq [{:keys [label source-operation expected predicate extension
+                    packet mir gravity host]} rows]
+      (let [function (get-in mir [:functions 'main])
+            block-order
+            (bootstrap/p15-s23-b3-llvm-block-order mir function)
+            operations
+            (bootstrap/p15-s23-b3-llvm-operation-sequence
+             function block-order)
+            operation
+            (first (filter #(= source-operation (:opcode %)) operations))
+            [left-id right-id] (:operands operation)
+            operation-index (:operation-index gravity)
+            index (get operation-index (:op-id operation))
+            record
+            (first (filter #(= source-operation (:mir-opcode %))
+                           (:operation-records gravity)))
+            expected-instruction
+            (str "  %cmp" index " = icmp " predicate " i64 "
+                 (bootstrap/p15-s23-b3-llvm-value-reference
+                  operation-index left-id)
+                 ", "
+                 (bootstrap/p15-s23-b3-llvm-value-reference
+                  operation-index right-id)
+                 "\n  %v" index " = zext i1 %cmp" index " to i64")
+            ir (:llvm-ir gravity)]
+        (is (= :accepted-for-bounded-llvm (:status packet)) label)
+        (is (= gravity host) label)
+        (is (= :constructed-unverified (:status gravity)) label)
+        (is (= [source-operation source-operation :gravity/bool 2]
+               ((juxt :opcode :source-operation :type
+                      #(count (:operands %))) operation)) label)
+        (is (= :not-applicable (:constant-payload operation)) label)
+        (is (empty? (:effects operation)) label)
+        (is (empty? (:capabilities operation)) label)
+        (is (= expected (:semantic-result gravity)) label)
+        (is (= (if expected 1 0) (:expected-exit-code gravity)) label)
+        (is (= expected-instruction (:llvm-instruction record)) label)
+        (is (= [:gravity/bool :i64 (str "%v" index)]
+               ((juxt :mir-type :llvm-type :llvm-value) record)) label)
+        (is (= 1 (count (re-seq
+                         (re-pattern (str "icmp " predicate " i64")) ir)))
+            label)
+        (is (= 1 (count (re-seq #"zext i1 %cmp[0-9]+ to i64" ir)))
+            label)
+        (is (not (re-find #"icmp u|sext i1|sub i64| nsw| nuw| undef| poison"
+                          ir)) label)
+        (is (= [] (:emitted-metadata gravity)) label)
+        (is (= [] (:emitted-function-attributes gravity)) label)
+        (is (= {} (:proof-to-metadata-map gravity)) label)
+        (is (= [] (:ub-sensitive-flags gravity)) label)
+        (is (contains? #{".gravity" ".qst"} extension) label)
+        (doseq [key [:whole-c13? :whole-c14? :whole-b1? :whole-b3?
+                     :public? :release? :self-hosted?]]
+          (is (false? (get (:scope packet) key)) [label key]))))
+    (doseq [[source-operation grouped] (group-by :source-operation rows)]
+      (is (= #{true false} (set (map :expected grouped))) source-operation)
+      (is (= #{".gravity" ".qst"} (set (map :extension grouped)))
+          source-operation))
+    (let [left (first rows)
+          right mirror]
+      (is (= (:source left) (:source right)))
+      (is (= (get-in left [:upstream :checked-core :artifact-id])
+             (get-in right [:upstream :checked-core :artifact-id])))
+      (is (= (get-in left [:upstream :c11 :mir-id])
+             (get-in right [:upstream :c11 :mir-id])))
+      (is (= (get-in left [:packet :semantic-id])
+             (get-in right [:packet :semantic-id])))
+      (is (= (get-in left [:packet :artifact-id])
+             (get-in right [:packet :artifact-id])))
+      (is (not= (get-in left [:packet :actual-path-binding-id])
+                (get-in right [:packet :actual-path-binding-id])))
+      (is (= (:path left)
+             (get-in left [:packet :actual-path-provenance :source])))
+      (is (= (:path right)
+             (get-in right [:packet :actual-path-provenance :source])))
+      (is (= (:gravity left) (:gravity right))))
+    (is (= [:scalar-i64-bool-nil :forwarding :truthiness
+            :single-conditional :signed-i64-integer-comparisons]
+           (:supported-operation-families bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:whole-b3? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:public? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:release? bootstrap/p15-s23-b3-llvm-policy)))
+    (is (false? (:self-hosted? bootstrap/p15-s23-b3-llvm-policy)))))
+
+(defn- authenticated-binary-integer-llvm-replace-operation
+  [operations operation-id transform]
+  (mapv (fn [operation]
+          (if (= operation-id (:op-id operation))
+            (transform operation)
+            operation))
+        operations))
+
+(deftest authenticated-binary-integer-comparisons-fail-closed-at-b3
+  (let [case (first (filter #(= :lt-true (:label %))
+                            authenticated-binary-integer-llvm-cases))
+        before (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+        row
+        (with-temp-directory
+          "gravity-authenticated-integer-llvm-hostile-"
+          (fn [root]
+            (authenticated-binary-integer-llvm-tool-free-row root case)))
+        after (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+        mir (:mir row)
+        function (get-in mir [:functions 'main])
+        block-order (bootstrap/p15-s23-b3-llvm-block-order mir function)
+        operations
+        (bootstrap/p15-s23-b3-llvm-operation-sequence function block-order)
+        comparison
+        (first (filter #(= :integer-lt (:opcode %)) operations))
+        comparison-id (:op-id comparison)
+        [left-id right-id] (:operands comparison)
+        future-id (:op-id (last operations))
+        operation-index (:operation-index (:gravity row))
+        block-labels (:block-labels (:gravity row))
+        values (get-in mir [:data-flow-graph :values])
+        replace-comparison
+        (fn [candidate]
+          (authenticated-binary-integer-llvm-replace-operation
+           operations comparison-id (constantly candidate)))
+        cases
+        [{:label :source
+          :candidate (assoc comparison :source-operation :integer-gte)
+          :reason :source-operation-opcode-parity}
+         {:label :payload
+          :candidate (assoc comparison :constant-payload
+                            {:present? true :value 1})
+          :values (assoc-in values [comparison-id :constant-payload]
+                            {:present? true :value 1})
+          :reason :nonconstant-payload-must-be-not-applicable}
+         {:label :arity
+          :candidate (assoc comparison :operands [left-id])
+          :reason :integer-comparison-requires-two-operands}
+         {:label :undefined
+          :candidate (assoc comparison :operands ["missing-value" right-id])
+          :reason :integer-comparison-left-definition}
+         {:label :self
+          :candidate (assoc comparison :operands [comparison-id right-id])
+          :reason :integer-comparison-prior-definition-or-dominance}
+         {:label :future
+          :candidate (assoc comparison :operands [future-id right-id])
+          :reason :integer-comparison-prior-definition-or-dominance}
+         {:label :left-type
+          :candidate comparison
+          :operations
+          (authenticated-binary-integer-llvm-replace-operation
+           operations left-id #(assoc % :type :gravity/bool))
+          :reason :integer-comparison-left-operand-type}
+         {:label :right-type
+          :candidate comparison
+          :operations
+          (authenticated-binary-integer-llvm-replace-operation
+           operations right-id #(assoc % :type :gravity/bool))
+          :reason :integer-comparison-right-operand-type}
+         {:label :result-type
+          :candidate (assoc comparison :type :gravity/integer)
+          :values (assoc-in values [comparison-id :type] :gravity/integer)
+          :reason :integer-comparison-result-type}]
+        observations
+        (mapv
+         (fn [{:keys [candidate reason] :as case}]
+           (let [candidate-operations
+                 (or (:operations case) (replace-comparison candidate))
+                 candidate-values (or (:values case) values)]
+             (assoc
+              case
+              :compiled
+              (bootstrap/p15-s23-stage2-runtime-execute-function
+               {:engine :authenticated-integer-llvm-hostile-b3-test
+                :compiler-artifact-plan? true}
+               @authenticated-binary-integer-llvm-b3-plan
+               'b3-operation-unsupported-reason
+               [candidate candidate-operations operation-index block-labels
+                candidate-values])
+              :host
+              (bootstrap/p15-s23-b3-llvm-operation-rejection
+               candidate-operations candidate block-labels))))
+         cases)
+        sibling-then-id "hostile-sibling:mir:then"
+        sibling-else-id "hostile-sibling:mir:else"
+        sibling-operations
+        (-> operations
+            (authenticated-binary-integer-llvm-replace-operation
+             left-id #(assoc % :block-id sibling-then-id))
+            (authenticated-binary-integer-llvm-replace-operation
+             comparison-id #(assoc % :block-id sibling-else-id)))
+        sibling-comparison
+        (first (filter #(= comparison-id (:op-id %)) sibling-operations))
+        sibling-block-labels
+        (assoc block-labels
+               sibling-then-id "then"
+               sibling-else-id "else")
+        sibling-compiled
+        (bootstrap/p15-s23-stage2-runtime-execute-function
+         {:engine :authenticated-integer-llvm-sibling-dominance-test
+          :compiler-artifact-plan? true}
+         @authenticated-binary-integer-llvm-b3-plan
+         'b3-operation-unsupported-reason
+         [sibling-comparison sibling-operations operation-index
+          sibling-block-labels values])
+        sibling-host
+        (bootstrap/p15-s23-b3-llvm-operation-rejection
+         sibling-operations sibling-comparison sibling-block-labels)
+        spoof-block-id "hostile-opaque-block"
+        spoof-operations
+        (authenticated-binary-integer-llvm-replace-operation
+         operations comparison-id #(assoc % :block-id spoof-block-id))
+        spoof-comparison
+        (first (filter #(= comparison-id (:op-id %)) spoof-operations))
+        spoof-compiled
+        (bootstrap/p15-s23-stage2-runtime-execute-function
+         {:engine :authenticated-integer-llvm-spoof-block-test
+          :compiler-artifact-plan? true}
+         @authenticated-binary-integer-llvm-b3-plan
+         'b3-operation-unsupported-reason
+         [spoof-comparison spoof-operations operation-index
+          block-labels values])
+        spoof-host
+        (bootstrap/p15-s23-b3-llvm-operation-rejection
+         spoof-operations spoof-comparison block-labels)
+        source-mismatch
+        (assoc comparison :source-operation :integer-gte)
+        hostile-mir (c11-update-operation
+                     mir comparison-id (constantly source-mismatch))
+        full-gravity
+        (authenticated-binary-integer-llvm-compiled-lowering hostile-mir)
+        hostile-c11
+        (assoc-in (get-in row [:upstream :c11]) [:mir-module]
+                  (c11-update-operation
+                   (get-in row [:upstream :c11 :mir-module]) comparison-id
+                   (constantly source-mismatch)))
+        host-preflight
+        (diagnostic-data
+         #(bootstrap/p15-s23-b3-llvm-preflight! hostile-c11))
+        final-snapshot
+        (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)]
+    (is (= before after final-snapshot))
+    (is (nil? (bootstrap/p15-s23-b3-llvm-operation-rejection
+               operations comparison)))
+    (is (= :integer-comparison-prior-definition-or-dominance
+           sibling-compiled sibling-host))
+    (is (= :integer-comparison-prior-definition-or-dominance
+           spoof-compiled spoof-host))
+    (doseq [{:keys [label reason compiled host]} observations]
+      (is (= reason compiled) [label :compiled compiled])
+      (is (= reason host) [label :host host]))
+    (is (= [:rejected "B1-UNSUPPORTED"
+            :source-operation-opcode-parity]
+           ((juxt :status :diagnostic :missing-fact) full-gravity)))
+    (is (= "B1-UNSUPPORTED" (:id host-preflight) (:rule host-preflight)))
+    (is (= :source-operation-opcode-parity
+           (:missing-fact host-preflight)))
+    (is (= :b1-backend-interface (:stage host-preflight)))
+    (is (not (str/includes? (pr-str host-preflight)
+                            "ClassCastException")))))
+
+(deftest authenticated-binary-integer-llvm-c14-owns-signed-i64-admission
+  (let [valid-case (first authenticated-binary-integer-llvm-cases)
+        valid-source (authenticated-binary-integer-llvm-source valid-case)
+        valid-upstream
+        (authenticated-binary-integer-llvm-upstream
+         "llvm-c14-valid.gravity" valid-source)
+        valid-packet
+        (bootstrap/p15-s23-stage2-c13-c14-b1-packet-from-c11!
+         (:c11 valid-upstream) (:checked-core valid-upstream)
+         (:context valid-upstream))
+        valid-c13 (:c13 valid-packet)
+        valid-report
+        (bootstrap/p15-s23-stage2-c11-mir-verification-report
+         (:c11 valid-upstream) (:checked-core valid-upstream)
+         (:context valid-upstream))
+        valid-policy
+        (bootstrap/p15-s23-c14-policy
+         (:c11 valid-upstream) (:checked-core valid-upstream) valid-report
+         valid-c13 (:source-rule valid-c13))
+        execute
+        (fn [function arguments]
+          (bootstrap/p15-s23-stage2-runtime-execute-function
+           {:engine :authenticated-integer-llvm-c14-admission-test
+            :compiler-artifact-plan? true}
+           @authenticated-binary-integer-llvm-c14-plan function arguments))
+        valid-surface
+        (execute 'c14-llvm-bounded-mir-surface-valid?
+                 [valid-c13 valid-policy])
+        valid-mir (:optimized-mir valid-c13)
+        constants
+        (filterv #(and (= :constant (:opcode %))
+                       (= :gravity/integer (:type %)))
+                 (bootstrap/p15-s23-c11-mir-operation-sequence valid-mir))
+        mutate
+        (fn [value]
+          (let [constant (first constants)
+                mutated-mir
+                (c11-update-operation
+                 valid-mir (:op-id constant)
+                 #(assoc-in % [:constant-payload :value] (bigint value)))
+                mutated-c13 (assoc valid-c13 :optimized-mir mutated-mir)
+                policy
+                (bootstrap/p15-s23-c14-policy
+                 (:c11 valid-upstream) (:checked-core valid-upstream)
+                 valid-report mutated-c13 (:source-rule mutated-c13))]
+            {:operation-id (:op-id constant)
+             :surface
+             (execute 'c14-llvm-bounded-mir-surface-valid?
+                      [mutated-c13 policy])
+             :record
+             (execute 'c14-build-bounded-llvm-lowering-record
+                      [mutated-c13 policy])}))
+        direct
+        (mapv mutate ["9223372036854775808"
+                      "-9223372036854775809"])
+        source-cases
+        (for [[label value]
+              [[:above "9223372036854775808"]
+               [:below "-9223372036854775809"]]
+              extension [".gravity" ".qst"]]
+          {:label label :extension extension :value value})
+        before (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+        public
+        (mapv
+         (fn [{:keys [label extension value] :as case}]
+           (let [source
+                 (closed-pure-source-with-main
+                  (str "(= " value " 0)") {:exports '[main]})
+                 path (str "llvm-c14-" (name label) extension)
+                 upstream
+                 (authenticated-binary-integer-llvm-upstream path source)
+                 expected-operation-id
+                 (:op-id
+                  (first
+                   (filter
+                    #(= (bigint value)
+                        (get-in % [:constant-payload :value]))
+                    (bootstrap/p15-s23-c11-mir-operation-sequence
+                     (get-in upstream [:c11 :mir-module])))))]
+             (assoc
+              case :expected-operation-id expected-operation-id :data
+              (diagnostic-data
+               #(bootstrap/p15-s23-stage2-c13-c14-b1-packet-from-c11!
+                 (:c11 upstream) (:checked-core upstream)
+                 (:context upstream))))))
+         source-cases)
+        after (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)]
+    (is (true? valid-surface))
+    (is (= before after))
+    (doseq [{:keys [operation-id surface record]} direct]
+      (is (false? surface))
+      (is (= [:rejected "C14-UNSUPPORTED"
+              :bounded-scalar-constant-payload operation-id]
+             ((juxt :status :diagnostic :missing-fact :operation-id)
+              record)))
+      (is (= [:constant :literal :gravity/integer]
+             ((juxt :opcode :source-operation :observed-type) record)))
+      (is (not (contains? record :value))))
+    (doseq [{:keys [label extension value expected-operation-id data]}
+            public]
+      (is (= "C14-UNSUPPORTED" (:id data) (:rule data)) [label data])
+      (is (= :c14-target-lowering (:stage data)) [label data])
+      (is (= :bounded-scalar-constant-payload
+             (:missing-fact data)) [label data])
+      (is (re-matches #"sha256:[0-9a-f]{64}" expected-operation-id)
+          [label extension expected-operation-id])
+      (is (= expected-operation-id
+             (get-in data [:primary :mir-operation-id])
+             (get-in data [:facts :operation-id]))
+          [label extension data])
+      (is (= [:constant :literal :gravity/integer]
+             ((juxt #(get-in % [:facts :opcode])
+                    #(get-in % [:facts :source-operation])
+                    #(get-in % [:facts :observed-type])) data))
+          [label data])
+      (is (not (str/includes? (pr-str data) value)) [label data])
+      (is (not (str/includes? (pr-str data) "NumberFormatException"))
+          [label data])
+      (is (not (str/includes? (pr-str data) "ArithmeticException"))
+          [label data]))
+    (doseq [[label rows] (group-by :label public)]
+      (is (= #{".gravity" ".qst"} (set (map :extension rows))) label)
+      (is (= 1 (count (set (map #(get-in % [:data :diagnostic-id]) rows))))
+          label)
+      (is (= 1 (count (set (map #(get-in % [:data :facts]) rows))))
+          label))))
+
+(def ^:private authenticated-binary-integer-llvm-native-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-integer-llvm-native-"
+      (fn [root]
+        (let [root (.toRealPath root
+                                (make-array java.nio.file.LinkOption 0))
+              selected-labels
+              [:eq-false :lt-true :lte-equal-true
+               :gt-equal-false :gte-false]
+              by-label
+              (into {} (map (juxt :label identity))
+                    authenticated-binary-integer-llvm-cases)
+              before
+              (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+              runs
+              (loop [labels selected-labels result [] previous before]
+                (if (empty? labels)
+                  result
+                  (let [case (get by-label (first labels))
+                        source (authenticated-binary-integer-llvm-source case)
+                        file (.resolve root
+                                       (str "native-" (name (:label case))
+                                            (:extension case)))
+                        _ (spit (.toFile file) source)
+                        path (.toString
+                              (.toRealPath
+                               file (make-array java.nio.file.LinkOption 0)))
+                        upstream
+                        (authenticated-binary-integer-llvm-upstream path source)
+                        options
+                        (if (empty? result)
+                          {:output-directory
+                           (.toString (.resolve root "comparison-bundle"))}
+                          {})
+                        artifact
+                        (bootstrap/p15-s23-stage2-b3-llvm-artifact-from-c11!
+                         (:c11 upstream) (:checked-core upstream)
+                         (:context upstream) options)
+                        construction-snapshot
+                        (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)
+                        authenticity-report
+                        (when (empty? result)
+                          (bootstrap/p15-s23-stage2-b3-llvm-verification-report
+                           artifact (:checked-core upstream)
+                           (:context upstream)))
+                        final-snapshot
+                        (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)]
+                    (recur
+                     (rest labels)
+                     (conj result {:case case :path path :upstream upstream
+                                   :artifact artifact :before previous
+                                   :after construction-snapshot
+                                   :authenticity-report authenticity-report
+                                   :after-authenticity final-snapshot})
+                     final-snapshot))))]
+          {:runs runs
+           :names
+           (set (seq (.list (.toFile (.resolve root "comparison-bundle")))))})))))
+
+(deftest authenticated-binary-integer-comparisons-run-real-llvm-and-macho
+  (let [{:keys [runs names]}
+        @authenticated-binary-integer-llvm-native-proof
+        expected-labels
+        #{[:eq-false false] [:lt-true true] [:lte-equal-true true]
+          [:gt-equal-false false] [:gte-false false]}]
+    (is (= 5 (count runs)))
+    (is (= expected-labels
+           (set (map (fn [{:keys [case]}]
+                       [(:label case) (:expected case)])
+                     runs))))
+    (is (= :passed
+           (get-in (first runs) [:authenticity-report :status])))
+    (is (string?
+         (get-in (first runs) [:authenticity-report :report-id])))
+    (is (= 19
+           (- (get-in (first runs) [:after-authenticity :total])
+              (get-in (first runs) [:after :total]))))
+    (is (every? nil? (map :authenticity-report (rest runs))))
+    (doseq [{:keys [case artifact before after]} runs]
+      (let [{:keys [label expected predicate source-operation]} case
+            process (get-in artifact [:toolchain-evidence :process-evidence])
+            ir (get-in artifact [:lowering :llvm-ir])]
+        (is (= 19 (- (:total after) (:total before))) label)
+        (is (= {:expected-exit-code (if expected 1 0)
+                :observed-exit-code (if expected 1 0)
+                :stdout-byte-count 0 :stderr-byte-count 0 :matched? true}
+               process) label)
+        (is (= expected
+               (get-in artifact
+                       [:b14-record :reference-oracle :reference-result]))
+            label)
+        (is (= 1 (count (re-seq
+                         (re-pattern (str "icmp " predicate " i64")) ir)))
+            label)
+        (is (= 1 (count (re-seq #"zext i1 %cmp[0-9]+ to i64" ir)))
+            label)
+        (is (= source-operation
+               (:mir-opcode
+                (first (filter #(= source-operation (:mir-opcode %))
+                               (get-in artifact
+                                       [:lowering :operation-records])))))
+            label)
+        (is (= :passed (get-in artifact [:b14-record :status])) label)
+        (is (some #{:signed-i64-integer-comparisons}
+                  (get-in artifact
+                          [:b14-record :availability-scope :positive]))
+            label)
+        (is (= {} (get-in artifact
+                          [:b3-record :metadata-record
+                           :proof-to-metadata-map])) label)
+        (is (not (re-find #"icmp u|sext i1|sub i64| nsw| nuw| undef| poison"
+                          ir)) label)
+        (doseq [key [:backend-credit? :public-target? :release-credit?
+                     :self-hosted? :whole-language?]]
+          (is (false? (get artifact key))
+              [label key]))))
+    (is (= #{"program.ll" "program.o" "program"
+             "manifest.edn" "provenance.edn" "conformance.edn"}
+           names))
+    (is (= :published-atomically-after-final-verification
+           (get-in (first runs)
+                   [:artifact :actual-path-provenance
+                    :publication-receipt :status])))))
 
 (defn- with-p18-t04-verified-mir-target-root
   [f]

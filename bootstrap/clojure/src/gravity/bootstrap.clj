@@ -104233,13 +104233,13 @@
      p15-s23-reference-runtime-grant-records})
 
 (def p15-s23-stage2-runtime-artifact-expected-source-content-hash
-  "sha256:f2cd0103695fa6a9e715f01f2b4d8226aa7c54cfce238a65a051512f36b5e574")
+  "sha256:ec1a94a979d8464492a904587913d6d1634161e5cefaf6e0bc4db977365d7230")
 
 (def p15-s23-stage2-compiler-expected-source-content-hash
   "sha256:f0c5f30518dc8ddb9979bea3344b6b29c512a9a325e6c496bbe6be29ef55a673")
 
 (def p15-s23-stage2-compiler-expected-source-byte-count 116505)
-(def p15-s23-stage2-runtime-artifact-expected-source-byte-count 75272)
+(def p15-s23-stage2-runtime-artifact-expected-source-byte-count 75905)
 
 (defn p15-s23-stage2-compiler-pinned-source!
   "Read and authenticate compiler.gravity before any of its bytes are parsed,
@@ -104394,13 +104394,13 @@
      :module module}))
 
 (def p15-s23-stage2-runtime-artifact-expected-artifact-hash
-  "sha256:2ab31e08db4fdf131ee0541badb2aa1535ff18997a906836c6c88a5915aab5ab")
+  "sha256:6072cf2cb0d7d45ab4ece8e48190f5caed6597f882a585ebb0cdef1272939c11")
 
 (def p15-s23-reference-runtime-expected-contract-definition-hash
-  "sha256:8c5d6dcefdaea9682c7f327799bc42b4cef9a0bc9ed38a9a811ff2e0fc60a521")
+  "sha256:e29579c1c229e5633f93b9054a9b4d5af4ad0ef449b6a61601df97e4a94ad8e6")
 
 (def p15-s23-reference-runtime-expected-derived-facts-hash
-  "sha256:97e31633983459de11765473298c5db4951a53a45208f79468477270fe215bb1")
+  "sha256:66928c7eff9d8e5e136c820f465d2bc164decadeb2cfbcd1fdbb04e01b5fe7d1")
 
 (def p15-s23-reference-runtime-expected-function-hashes
   {'main
@@ -104412,7 +104412,7 @@
    'p15-s23-runtime-evaluate-bindings
    "sha256:5c520b294277ecb0dfe7d4ef32aab43d132506ae388c5f751ba231cb79b8efc5"
    'p15-s23-runtime-evaluate-closed-instruction
-   "sha256:74268eb3eb681e6c4ebb9ca9e2940facab66f2eabb4aeeed4894c590eeeaee49"
+   "sha256:ed8380d2290e1deb251f7bbecc4b964908dd2fbf465ee721142f62a9c0a5a2d8"
    'p15-s23-runtime-evaluate-sequence
    "sha256:24029a3eb0e3e235170208c9d2cef0948224b191b34609b3a01d0ed670a9521c"
    'p15-s23-runtime-execute-closed-plan
@@ -104436,7 +104436,7 @@
    'p15-s23-runtime-evaluate-sequence
    "sha256:24029a3eb0e3e235170208c9d2cef0948224b191b34609b3a01d0ed670a9521c"
    'p15-s23-runtime-evaluate-closed-instruction
-   "sha256:74268eb3eb681e6c4ebb9ca9e2940facab66f2eabb4aeeed4894c590eeeaee49"
+   "sha256:ed8380d2290e1deb251f7bbecc4b964908dd2fbf465ee721142f62a9c0a5a2d8"
    'p15-s23-runtime-execute-closed-plan
    "sha256:c4fa3df78d5d90b0d3301c592c10018a449ba1dace51dfa7af3f9c3299fadc0e"})
 
@@ -106186,6 +106186,9 @@
      {:checked-core-str-println-admission? true
       :checked-core-str-println-admission-status
       :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+      :checked-core-binary-integer-comparison-admission? true
+      :checked-core-binary-integer-comparison-operations
+      '#{= < <= > >=}
       :checked-core-program-authority-policy-id
       p15-s23-checked-core-program-authority-policy-id
       :checked-core-verification-replay-policy-id
@@ -106208,6 +106211,8 @@
      (select-keys contract
                   [:checked-core-str-println-admission?
                    :checked-core-str-println-admission-status
+                   :checked-core-binary-integer-comparison-admission?
+                   :checked-core-binary-integer-comparison-operations
                    :checked-core-program-authority-policy-id
                    :checked-core-verification-replay-policy-id
                    :checked-core-verification-replay-audit-policy-id
@@ -106817,10 +106822,10 @@
     :requires :effects :safety :target :doc :metadata :profile :forms})
 
 (def p15-s23-reference-runtime-expected-plan-id
-  "sha256:717fe799d311abfa0251732c7aea70f3cdbf5c4b197aee5d5bdc50d7ea678c34")
+  "sha256:d0b3edde952e5f2c4c0ba289087ebed05fb40620d5989894376611dc6838576f")
 
 (def p15-s23-reference-runtime-expected-authoritative-module-hash
-  "sha256:dba7fa068a7e035ef90139a669e7b1953eab11c43b315311e5cc8f47431c86d1")
+  "sha256:99128713ef7f6c2540239ebaf6f58f08fb42ee6f7a4d8ff1d39ef588b6354a32")
 
 (defn p15-s23-reference-runtime-pinned-file-binding
   [path expected-byte-count expected-content-hash]
@@ -108235,11 +108240,97 @@
 (def p15-s23-closed-runtime-max-depth 128)
 (def p15-s23-closed-runtime-max-nodes 128)
 
+(defn p15-s23-closed-runtime-inferred-type
+  [instruction local-types depth]
+  (if (or (> depth p15-s23-closed-runtime-max-depth)
+          (not (map? instruction)))
+    :unknown
+    (case (:op instruction)
+      :literal
+      (let [value (:value instruction)]
+        (cond
+          (integer? value) :gravity/integer
+          (boolean? value) :gravity/bool
+          (string? value) :gravity/string
+          (nil? value) :gravity/nil
+          :else :unknown))
+
+      :quote
+      (let [value (:value instruction)]
+        (cond
+          (integer? value) :gravity/integer
+          (boolean? value) :gravity/bool
+          (string? value) :gravity/string
+          (nil? value) :gravity/nil
+          :else :unknown))
+
+      :local
+      (get local-types (:name instruction) :unknown)
+
+      :builtin-call
+      (let [function (:function instruction)
+            arguments (:args instruction)]
+        (cond
+          (= 'str function) :gravity/string
+          (and (contains? '#{= < <= > >=} function)
+               (vector? arguments)
+               (= 2 (count arguments))
+               (every?
+                #(= :gravity/integer
+                    (p15-s23-closed-runtime-inferred-type
+                     % local-types (inc depth)))
+                arguments))
+          :gravity/bool
+          :else :unknown))
+
+      :println :gravity/nil
+
+      :do
+      (let [body (:body instruction)]
+        (if (and (vector? body) (seq body))
+          (p15-s23-closed-runtime-inferred-type
+           (peek body) local-types (inc depth))
+          :gravity/nil))
+
+      :if
+      (let [then-type
+            (p15-s23-closed-runtime-inferred-type
+             (:then instruction) local-types (inc depth))
+            else-type
+            (p15-s23-closed-runtime-inferred-type
+             (:else instruction) local-types (inc depth))]
+        (if (= then-type else-type) then-type :unknown))
+
+      :let
+      (let [bindings (:bindings instruction)
+            body (:body instruction)]
+        (if (and (vector? bindings)
+                 (vector? body)
+                 (every? #(and (map? %)
+                               (symbol? (:name %))
+                               (map? (:expr %)))
+                         bindings))
+          (let [next-types
+                (reduce
+                 (fn [types binding]
+                   (assoc
+                    types (:name binding)
+                    (p15-s23-closed-runtime-inferred-type
+                     (:expr binding) types (inc depth))))
+                 local-types bindings)]
+            (if (seq body)
+              (p15-s23-closed-runtime-inferred-type
+               (peek body) next-types (inc depth))
+              :gravity/nil))
+          :unknown))
+
+      :unknown)))
+
 (defn p15-s23-closed-runtime-plan-validation!
   "Validate the exact public closed-plan subset before the Gravity executor is
-  invoked.  The walk is iterative, bounded, and carries lexical bindings, so a
-  hostile plan cannot reach recursive Gravity evaluation or fail through the
-  host stack."
+  invoked.  The walk is iterative, bounded, and carries lexical bindings plus
+  conservative scalar type facts, so a hostile plan cannot reach recursive
+  Gravity evaluation or fail through the host stack."
   [source-path requested-target plan]
   (let [entrypoint (:entrypoint plan)
         definition (get-in plan [:functions entrypoint])]
@@ -108255,13 +108346,15 @@
        {:target requested-target
         :missing-fact :closed-plan-entrypoint-shape}))
     (loop [pending (vec (map (fn [instruction]
-                               {:instruction instruction
+                             {:instruction instruction
                                 :locals #{}
+                                :local-types {}
                                 :depth 1})
                              (:instructions definition)))
            visited 0
            observed-operation-set #{}]
-      (if-let [{:keys [instruction locals depth]} (peek pending)]
+      (if-let [{:keys [instruction locals local-types depth]}
+               (peek pending)]
         (let [pending (pop pending)
               visited (inc visited)
               op (when (map? instruction) (:op instruction))
@@ -108312,23 +108405,46 @@
               (recur pending visited observed-operation-set))
             :builtin-call
             (let [args (:args instruction)
-                  observed-arity (when (vector? args) (count args))]
-              (when-not (and (= 'str (:function instruction))
-                             (vector? args))
+                  function (:function instruction)
+                  observed-arity (when (vector? args) (count args))
+                  comparison?
+                  (contains? '#{= < <= > >=} function)
+                  operand-types
+                  (when (and comparison? (vector? args))
+                    (mapv
+                     #(p15-s23-closed-runtime-inferred-type
+                       % local-types (inc depth))
+                     args))]
+              (when-not (and (vector? args)
+                             (or (= 'str function) comparison?))
                 (p15-s23-stage2-runtime-executor-fail!
                  "P15S23X002" source-path instruction
                  {:target requested-target
                   :missing-fact :closed-plan-builtin
-                  :function (:function instruction)
+                  :function function
                   :actual-arity observed-arity}))
-              (when-not (contains? #{1 2} observed-arity)
+              (when-not (if comparison?
+                          (= 2 observed-arity)
+                          (contains? #{1 2} observed-arity))
                 (p15-s23-stage2-runtime-fail-call-arity!
-                 "L2-BUILTIN-ARITY" plan (:function instruction)
-                 (if (coll? args) args []) "1 or 2"))
+                 "L2-BUILTIN-ARITY" plan function
+                 (if (coll? args) args [])
+                 (if comparison? 2 "1 or 2")))
+              (when (and comparison?
+                         (not= [:gravity/integer :gravity/integer]
+                               operand-types))
+                (p15-s23-stage2-runtime-executor-fail!
+                 "P15S23X002" source-path instruction
+                 {:target requested-target
+                  :missing-fact
+                  :closed-plan-binary-integer-comparison-operands
+                  :function function
+                  :operand-types operand-types}))
               (recur (into pending
                            (map (fn [child]
                                   {:instruction child
                                    :locals locals
+                                   :local-types local-types
                                    :depth (inc depth)})
                                 args))
                      visited
@@ -108350,6 +108466,7 @@
                            (map (fn [child]
                                   {:instruction child
                                    :locals locals
+                                   :local-types local-types
                                    :depth (inc depth)})
                                 args))
                      visited
@@ -108365,6 +108482,7 @@
                            (map (fn [child]
                                   {:instruction child
                                    :locals locals
+                                   :local-types local-types
                                    :depth (inc depth)})
                                 (:body instruction)))
                      visited
@@ -108382,6 +108500,7 @@
                            (map (fn [child]
                                   {:instruction child
                                    :locals locals
+                                   :local-types local-types
                                    :depth (inc depth)})
                                 [(:test instruction)
                                  (:then instruction)
@@ -108408,7 +108527,15 @@
                                                              binding-names))
                                                     1)]
                                        name))
-                    next-locals (into locals binding-names)]
+                    next-locals (into locals binding-names)
+                    next-local-types
+                    (reduce
+                     (fn [types binding]
+                       (assoc
+                        types (:name binding)
+                        (p15-s23-closed-runtime-inferred-type
+                         (:expr binding) types (inc depth))))
+                     local-types bindings)]
                 (when duplicate
                   (p15-s23-stage2-runtime-executor-fail!
                    "P15S23X002" source-path instruction
@@ -108421,19 +108548,26 @@
                 (let [binding-frames
                       (:frames
                        (reduce
-                        (fn [{:keys [frames scope]} binding]
+                        (fn [{:keys [frames scope types]} binding]
                           {:frames
                            (conj frames
                                  {:instruction (:expr binding)
                                   :locals scope
+                                  :local-types types
                                   :depth (inc depth)})
-                           :scope (conj scope (:name binding))})
-                        {:frames [] :scope locals}
+                           :scope (conj scope (:name binding))
+                           :types
+                           (assoc
+                            types (:name binding)
+                            (p15-s23-closed-runtime-inferred-type
+                             (:expr binding) types (inc depth)))})
+                        {:frames [] :scope locals :types local-types}
                         bindings))
                       body-frames
                       (map (fn [child]
                              {:instruction child
                               :locals next-locals
+                              :local-types next-local-types
                               :depth (inc depth)})
                            body)]
                   (recur (into pending (concat binding-frames body-frames))
@@ -126347,13 +126481,13 @@
 (def p15-s23-b3-llvm-builder-function
   'b3-build-bounded-arm64-macos-llvm)
 
-(def p15-s23-b3-llvm-source-byte-count 82589)
+(def p15-s23-b3-llvm-source-byte-count 86185)
 (def p15-s23-b3-llvm-expected-source-content-hash
-  "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37")
+  "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
 (def p15-s23-b3-llvm-expected-plan-semantic-hash
-  "sha256:38810226acd2009934a18d58a12c2a7de2d3815f4f344eb2162854059d16ddd2")
+  "sha256:0cbc958898d7ec4e297613a129ec2352168eee3eb5938ac7b7cb0b9dfb72ec6a")
 (def p15-s23-b3-llvm-expected-functions-semantic-hash
-  "sha256:119618cc5180e8d75f4a4f62634d9ef91aa8c8962029fff7b0009b217bd252e8")
+  "sha256:b92dfd22e71c426d6771158f27e01837664748155d09d227fab3b181c76a94bf")
 (def p15-s23-b3-llvm-expected-builder-semantic-hash
   "sha256:a18355c4b224902853e30f249593103b1515afc64e88486dc56c65ec98360f36")
 
@@ -126440,6 +126574,9 @@
    :platform-unwind-metadata :darwin-compact-unwind-required
    :tls-model :not-applicable
    :supported-profiles #{:hosted}
+   :supported-operation-families
+   [:scalar-i64-bool-nil :forwarding :truthiness :single-conditional
+    :signed-i64-integer-comparisons]
    :unsupported-profiles
    [:hardware :firmware :kernel :native :distributed :ai :meta :gpu
     :formal]
@@ -126890,9 +127027,13 @@
 (def p15-s23-b3-llvm-forward-opcodes
   #{:local :local-binding :sequence :lexical-scope :function-boundary})
 
+(def p15-s23-b3-llvm-comparison-opcodes
+  #{:integer-eq :integer-lt :integer-lte :integer-gt :integer-gte})
+
 (def p15-s23-b3-llvm-supported-opcodes
-  (conj p15-s23-b3-llvm-forward-opcodes
-        :constant :truthiness :conditional-join))
+  (into (conj p15-s23-b3-llvm-forward-opcodes
+              :constant :truthiness :conditional-join)
+        p15-s23-b3-llvm-comparison-opcodes))
 
 (defn p15-s23-b3-llvm-signed-i64?
   [value]
@@ -126915,13 +127056,51 @@
   [function block-order]
   (vec (mapcat #(get-in function [:blocks % :instructions]) block-order)))
 
+(defn p15-s23-b3-llvm-block-labels
+  [block-order]
+  (case (count block-order)
+    1 {(first block-order) "entry"}
+    4 {(nth block-order 0) "entry"
+       (nth block-order 1) "then"
+       (nth block-order 2) "else"
+       (nth block-order 3) "join"}
+    {}))
+
+(defn p15-s23-b3-llvm-operation-reference-allowed?
+  [operation operand-id by-id position-by-id block-labels]
+  (let [operand (get by-id operand-id)
+        current-position (get position-by-id (:op-id operation))
+        operand-position (get position-by-id operand-id)
+        current-label (get block-labels (:block-id operation))
+        operand-label (get block-labels (:block-id operand))
+        opcode (:opcode operation)]
+    (and operand
+         (integer? current-position)
+         (integer? operand-position)
+         (< operand-position current-position)
+         (case current-label
+           "entry" (= "entry" operand-label)
+           "then" (contains? #{"entry" "then"} operand-label)
+           "else" (contains? #{"entry" "else"} operand-label)
+           "join" (if (= :conditional-join opcode)
+                    (contains? #{"entry" "then" "else"} operand-label)
+                    (contains? #{"entry" "join"} operand-label))
+           false))))
+
 (defn p15-s23-b3-llvm-operation-rejection
-  [operations operation]
-  (let [opcode (:opcode operation)
+  ([operations operation]
+   (let [block-order (vec (distinct (map :block-id operations)))]
+     (p15-s23-b3-llvm-operation-rejection
+      operations operation (p15-s23-b3-llvm-block-labels block-order))))
+  ([operations operation block-labels]
+   (let [opcode (:opcode operation)
         source-operation (:source-operation operation)
         operands (:operands operation)
         type (:type operation)
         by-id (into {} (map (juxt :op-id identity)) operations)
+        position-by-id
+        (into {} (map-indexed (fn [index item] [(:op-id item) index])
+                              operations))
         constant (:constant-payload operation)]
     (cond
       (seq (:effects operation)) :program-effects-unsupported
@@ -126951,6 +127130,11 @@
         (empty? operands) :forwarded-operation-requires-operand
         (not (every? #(contains? by-id %) operands))
         :forwarded-operation-operand-definition
+        (not (every?
+              #(p15-s23-b3-llvm-operation-reference-allowed?
+                operation % by-id position-by-id block-labels)
+              operands))
+        :forwarded-operation-definition-or-dominance
         (= :function-boundary opcode) nil
         (not (contains? p15-s23-b3-llvm-scalar-types type))
         :unsupported-forwarded-result-type
@@ -126961,9 +127145,40 @@
         (cond
           (not= 1 (count operands)) :truthiness-requires-one-operand
           (nil? operand) :truthiness-operand-definition
+          (not (p15-s23-b3-llvm-operation-reference-allowed?
+                operation (first operands) by-id position-by-id block-labels))
+          :truthiness-operand-dominance
           (not (contains? p15-s23-b3-llvm-scalar-types (:type operand)))
           :truthiness-operand-type
           (not= :gravity/bool type) :truthiness-result-type
+          :else nil))
+
+      (contains? p15-s23-b3-llvm-comparison-opcodes opcode)
+      (let [[left-id right-id] operands
+            left (get by-id left-id)
+            right (get by-id right-id)
+            current-position (get position-by-id (:op-id operation))]
+        (cond
+          (not= opcode source-operation)
+          :source-operation-opcode-parity
+          (not= :not-applicable constant)
+          :nonconstant-payload-must-be-not-applicable
+          (not= 2 (count operands))
+          :integer-comparison-requires-two-operands
+          (nil? left) :integer-comparison-left-definition
+          (nil? right) :integer-comparison-right-definition
+          (not (p15-s23-b3-llvm-operation-reference-allowed?
+                operation left-id by-id position-by-id block-labels))
+          :integer-comparison-prior-definition-or-dominance
+          (not (p15-s23-b3-llvm-operation-reference-allowed?
+                operation right-id by-id position-by-id block-labels))
+          :integer-comparison-prior-definition-or-dominance
+          (not= :gravity/integer (:type left))
+          :integer-comparison-left-operand-type
+          (not= :gravity/integer (:type right))
+          :integer-comparison-right-operand-type
+          (not= :gravity/bool type)
+          :integer-comparison-result-type
           :else nil))
 
       (= :conditional-join opcode)
@@ -126989,7 +127204,7 @@
           :unsupported-conditional-result-type
           :else nil))
 
-      :else :unsupported-mir-opcode)))
+      :else :unsupported-mir-opcode))))
 
 (def p15-s23-b3-llvm-max-bridge-operations 256)
 
@@ -127038,14 +127253,16 @@
         :c11-mir-id (:mir-id artifact)}))
     (when-let [operation
                (first (filter #(p15-s23-b3-llvm-operation-rejection
-                                operations %)
+                                operations %
+                                (p15-s23-b3-llvm-block-labels block-order))
                               operations))]
       (p15-s23-b3-llvm-fail!
        "B1-UNSUPPORTED"
        (get-in artifact [:provenance :actual-paths :source])
        operation
        {:missing-fact
-        (p15-s23-b3-llvm-operation-rejection operations operation)
+        (p15-s23-b3-llvm-operation-rejection
+         operations operation (p15-s23-b3-llvm-block-labels block-order))
         :operation-id (:op-id operation)
         :opcode (:opcode operation)
         :source-operation (:source-operation operation)
@@ -127091,6 +127308,23 @@
           :gravity/nil (str "  " result " = add i64 0, 0")
           :gravity/integer (str "  " result " = add i64 0, 1")))
 
+      (contains? p15-s23-b3-llvm-comparison-opcodes opcode)
+      (let [[left-id right-id] operands
+            comparison-result
+            (str "%cmp" (get operation-index (:op-id operation)))
+            predicate
+            (case opcode
+              :integer-eq "eq"
+              :integer-lt "slt"
+              :integer-lte "sle"
+              :integer-gt "sgt"
+              :integer-gte "sge")]
+        (str "  " comparison-result " = icmp " predicate " i64 "
+             (p15-s23-b3-llvm-value-reference operation-index left-id)
+             ", "
+             (p15-s23-b3-llvm-value-reference operation-index right-id)
+             "\n  " result " = zext i1 " comparison-result " to i64"))
+
       (= :conditional-join opcode)
       (let [[_ then-id else-id] operands
             [{then-block :predecessor} {else-block :predecessor}]
@@ -127122,6 +127356,21 @@
                    :gravity/nil false
                    :gravity/bool operand-value
                    :gravity/integer true))
+               (= :integer-eq opcode)
+               (= (get values (first operands))
+                  (get values (second operands)))
+               (= :integer-lt opcode)
+               (< (get values (first operands))
+                  (get values (second operands)))
+               (= :integer-lte opcode)
+               (<= (get values (first operands))
+                   (get values (second operands)))
+               (= :integer-gt opcode)
+               (> (get values (first operands))
+                  (get values (second operands)))
+               (= :integer-gte opcode)
+               (>= (get values (first operands))
+                   (get values (second operands)))
                (= :conditional-join opcode)
                (if (get values (first operands))
                  (get values (second operands))
@@ -127143,13 +127392,7 @@
         operation-index
         (into {} (map-indexed (fn [index operation]
                                [(:op-id operation) index])) operations)
-        block-labels
-        (if (= 1 (count block-order))
-          {(first block-order) "entry"}
-          {(nth block-order 0) "entry"
-           (nth block-order 1) "then"
-           (nth block-order 2) "else"
-           (nth block-order 3) "join"})
+        block-labels (p15-s23-b3-llvm-block-labels block-order)
         operation-records
         (mapv
          (fn [operation]
@@ -129977,6 +130220,7 @@
           :requested-lowering-target :llvm
           :positive
           [:scalar-i64-bool-nil :forwarding :single-conditional
+           :signed-i64-integer-comparisons
            :mach-o-arm64 :darwin-process-exit]
           :negative
           (:unsupported-surface p15-s23-b3-llvm-policy)
@@ -130671,7 +130915,7 @@
      (= b3-target (get-in artifact [:b3-record :target-record]))
      (= b13-target (get-in artifact [:b13-record :target]))
      (= build-target (:target build-identity))
-     (= {:scope :bounded-pure-scalar-forwarding-do-let-if
+     (= {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
          :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
          :whole-c14? false :whole-b1? false :whole-b3? false
          :public? false :release? false :self-hosted? false}
@@ -130902,6 +131146,7 @@
          :requested-lowering-target :llvm
          :positive
          [:scalar-i64-bool-nil :forwarding :single-conditional
+          :signed-i64-integer-comparisons
           :mach-o-arm64 :darwin-process-exit]
          :negative (:unsupported-surface p15-s23-b3-llvm-policy)
          :whole-backend? false :cross-host? false}
@@ -131671,7 +131916,6 @@
                 (p15-s23-b3-llvm-fail!
                  "B1-INPUT" source-path fresh-c11
                  {:missing-fact :fresh-c11-replay-pass}))
-            _ (p15-s23-b3-llvm-preflight! fresh-c11)
             bridge-packet
             (p15-s23-stage2-c13-c14-b1-packet-from-c11!
              fresh-c11 checked-core context)
@@ -131832,7 +132076,6 @@
                  (p15-s23-b3-llvm-fail!
                   "B1-INPUT" source-path c11-artifact
                   {:missing-fact :fresh-c11-replay-pass}))
-             _ (p15-s23-b3-llvm-preflight! c11-artifact)
              bridge-packet
              (p15-s23-stage2-c13-c14-b1-packet-from-c11!
               c11-artifact checked-core context)
@@ -132007,20 +132250,26 @@
    'c13-build-bounded-identity-optimized-mir
    {:arity 2 :params ['mir 'evidence]}})
 
-(def p15-s23-c14-source-byte-count 100279)
+(def p15-s23-c14-source-byte-count 105031)
 (def p15-s23-c14-expected-source-content-hash
-  "sha256:07832d2eef57a88b53234854089caf6acba3fd4c73b87e754ef8de7eada4b040")
+  "sha256:3619d38e50fc908b2b52927b5eb76e2338704fb24e88ec9f356d6980242acbb0")
 (def p15-s23-c14-expected-plan-semantic-hash
-  "sha256:fe28b17d0408122b9511c133478765e2bae9367549cffe53a05f502c7fdc0dcb")
+  "sha256:33ded37cf2f533a0ae89204b67d3ec0bd215d30ce2b5c660283bcddbaf06a5bf")
 (def p15-s23-c14-expected-functions-semantic-hash
-  "sha256:1ce80a93b6e52c797e7069a7dfe84087a2344006f0d345c8dd6860f88e0e1217")
+  "sha256:9cbed7211819b0305b445716202ab18a42f06c6a1b6ff9572810ecd0b8477fa3")
 (def p15-s23-c14-expected-builder-semantic-hash
-  "sha256:1b42b7a74d67607e4d9076adda65e64160317e34d3e608ae2e4a81fbce3b4b30")
+  "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7")
 (def p15-s23-c14-builder-function
   'c14-build-bounded-llvm-lowering-record)
 (def p15-s23-c14-required-functions
   {'c14-bounded-optimized-input-valid?
    {:arity 2 :params ['optimized 'policy]}
+   'c14-llvm-bounded-mir-surface-valid?
+   {:arity 2 :params ['optimized 'policy]}
+   'c14-llvm-process-result-valid?
+   {:arity 3 :params ['mir 'operations 'operations-by-id]}
+   'c14-llvm-first-invalid-constant
+   {:arity 1 :params ['operations]}
    'c14-bounded-policy-valid?
    {:arity 2 :params ['optimized 'policy]}
    'c14-build-bounded-llvm-lowering-record
@@ -132054,13 +132303,13 @@
    'c14-build-bounded-c-lowering-record
    {:arity 2 :params ['optimized 'policy]}})
 
-(def p15-s23-b1-source-byte-count 110046)
+(def p15-s23-b1-source-byte-count 110380)
 (def p15-s23-b1-expected-source-content-hash
-  "sha256:03aa7b021c53376b5e6dae228f72125a304ba22299114cc1b446400eea62c417")
+  "sha256:5f7aa0382e722f8382ac8b9f5fa9c82b765670f24a5f9a436db7726479880ce9")
 (def p15-s23-b1-expected-plan-semantic-hash
-  "sha256:ed24ac1c1339cdb2d3e6e3990c83462978430bb1d35847fb211f177eca25689b")
+  "sha256:711360bd0f15b9ba07e91fa26c9caf6f8945031e69a71dbcf6c63fb80008dfdc")
 (def p15-s23-b1-expected-functions-semantic-hash
-  "sha256:bc68a8be72666614261d92239120eef218a97601caa7c3fc00d75cea3c286b06")
+  "sha256:a2aaef433a572893c0533cac2c59c99de5ea00361b57ab07a0916fbbe1d75daf")
 (def p15-s23-b1-expected-builder-semantic-hash
   "sha256:31424123c41b05344d022ab712ec1bcd95718711ea1f1a6787808914db62d7b4")
 (def p15-s23-b1-builder-function
@@ -132467,8 +132716,12 @@
     (when (= :rejected (:status result))
       (p15-s23-b3-llvm-fail!
        (or (:diagnostic result) diagnostic) source-path result
-       {:missing-fact (or (:missing-fact result)
-                          :rejected-gravity-bridge-builder)}))
+       (merge
+        {:missing-fact (or (:missing-fact result)
+                           :rejected-gravity-bridge-builder)}
+        (select-keys result
+                     [:operation-id :opcode :source-operation
+                      :observed-type]))))
     result))
 
 (defn p15-s23-c13-c14-b1-content-binding
@@ -132703,7 +132956,7 @@
 
 (defn p15-s23-c14-target-policy
   []
-  {:scope :bounded-pure-scalar-forwarding-do-let-if
+  {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
    :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
    :whole-c14? false :whole-b1? false :whole-b3? false
    :public? false :release? false :self-hosted? false})
@@ -132839,7 +133092,7 @@
          :proof-assumptions []
          :explainability-record
          {:decision :accepted
-          :bounded-surface :pure-scalar-forwarding-do-let-if
+          :bounded-surface :pure-scalar-forwarding-do-let-if-integer-comparisons
           :unsupported-diagnostic "C14-UNSUPPORTED"
           :no-hidden-runtime? true
           :no-hidden-effect-or-capability? true}
@@ -133483,9 +133736,6 @@
         (p15-s23-b3-llvm-fail!
          "B1-INPUT" source-path c11-artifact
          {:missing-fact :fresh-c11-before-c13-c14-b1}))
-      ;; Pure bounded eligibility is independently rejected before any source,
-      ;; output, temporary workspace, or toolchain effect.
-      (p15-s23-b3-llvm-preflight! c11-artifact)
       (let [bindings
             (p15-s23-c13-c14-b1-source-bindings! candidate source-path)
             c13-record
@@ -133495,6 +133745,10 @@
             (p15-s23-c14-build!
              candidate source-path c11-artifact checked-core c11-report
              c13-record (:c14 bindings))
+            ;; C14 is the first owner of target-surface eligibility.  The
+            ;; backend mirror runs only after the Gravity C14 record accepts
+            ;; and before B1 or any backend/tool effect.
+            _ (p15-s23-b3-llvm-preflight! c11-artifact)
             b1-record
             (p15-s23-b1-build!
              candidate source-path c11-artifact c13-record c14-record
@@ -134324,11 +134578,11 @@
 
 (def p15-s23-b2-c17-source-byte-count 122488)
 (def p15-s23-b2-c17-expected-source-content-hash
-  "sha256:80ca04406c0825bde072884c8c7acc4b1b142ed716eb9a6e6588c7084c61a8ac")
+  "sha256:e58d4d2e78ebc77094adeb03d4f47a3fabcc1e143e8644310e194f9fd3185c1e")
 (def p15-s23-b2-c17-expected-plan-semantic-hash
-  "sha256:303e3227a8d0d2053913560aa5a8da17ea7d0007ef7307487cae8641442cccdc")
+  "sha256:589ffc2e7522fa915774e4444b26ea2c635a18ea5d47d94e31485293c535c252")
 (def p15-s23-b2-c17-expected-functions-semantic-hash
-  "sha256:0f3fef9d8c9721060449d71498f5303a3a57a6227c74fe9536400943ac2f9db5")
+  "sha256:bf6b8bdea203eb49e63b58ea2e061f1597d3a3e520540d11d13ebeb3b84f4369")
 (def p15-s23-b2-c17-expected-builder-semantic-hash
   "sha256:1eb13380d0364d7cbf49c442e4b3ed571153b22fd25ac726d9eb30bccca032e8")
 
@@ -140845,7 +141099,7 @@
           :status (:status execution)}
          :primitive-boundary
          {:kind :clojure-seed-runtime-primitive-classification
-          :pure-primitives '#{= count first get second}
+          :pure-primitives '#{= < <= > >= count first get second}
           :proven-allocation-primitives '#{assoc conj str}
           :proven-allocation-literals #{:vector-literal :map-literal}
           :allocation-unproven-primitives '#{rest}
@@ -140894,6 +141148,9 @@
          {:reference-runtime? true
           :deployment-runtime? false
           :checked-core-str-println-admission? true
+          :checked-core-binary-integer-comparison-admission? true
+          :checked-core-binary-integer-comparison-operations
+          '#{= < <= > >=}
           :checked-core-admission-scope
           :authenticated-hosted-jvm-reference-interpreter
           :typed-fourth-authority
@@ -141170,7 +141427,7 @@
               :function-count 11
               :contract-definition-count
               (count p15-s23-reference-runtime-contract-definition-names)
-              :operation-count 289
+              :operation-count 328
               :proven-allocation-count 25
               :allocation-unproven-count 4
               :handler-scope
@@ -141261,7 +141518,7 @@
          (= (:entrypoint context) (:entrypoint execution))
          (= (:stdout-hash context) (:stdout-hash execution))
          (= {:kind :clojure-seed-runtime-primitive-classification
-             :pure-primitives '#{= count first get second}
+             :pure-primitives '#{= < <= > >= count first get second}
              :proven-allocation-primitives '#{assoc conj str}
              :proven-allocation-literals #{:vector-literal :map-literal}
              :allocation-unproven-primitives '#{rest}
@@ -141311,6 +141568,9 @@
          (= {:reference-runtime? true
              :deployment-runtime? false
              :checked-core-str-println-admission? true
+             :checked-core-binary-integer-comparison-admission? true
+             :checked-core-binary-integer-comparison-operations
+             '#{= < <= > >=}
              :checked-core-admission-scope
              :authenticated-hosted-jvm-reference-interpreter
              :typed-fourth-authority

@@ -79,6 +79,9 @@
    :checked-core-str-println-admission? true
    :checked-core-str-println-admission-status
    :complete-for-authenticated-hosted-jvm-reference-interpreter-slice
+   :checked-core-binary-integer-comparison-admission? true
+   :checked-core-binary-integer-comparison-operations
+   #{= < <= > >=}
    :checked-core-program-authority-policy-id
    :gravity.reference/checked-core-program-authority-policy
    :checked-core-verification-replay-policy-id
@@ -1713,13 +1716,26 @@
         (if (= operation :local)
           [(get environment (get instruction :name)) output]
           (if (= operation :builtin-call)
-            (let [arguments-result
+            (let [function (get instruction :function)
+                  arguments-result
                   (p15-s23-runtime-evaluate-arguments
                    (get instruction :args) environment output [])
-                  values (first arguments-result)]
-              [(if (= (count values) 1)
-                 (str (first values))
-                 (str (first values) (second values)))
+                  values (first arguments-result)
+                  left (first values)
+                  right (second values)]
+              [(if (= function 'str)
+                 (if (= (count values) 1)
+                   (str left)
+                   (str left right))
+                 (if (= function '=)
+                   (= left right)
+                   (if (= function '<)
+                     (< left right)
+                     (if (= function '<=)
+                       (<= left right)
+                       (if (= function '>)
+                         (> left right)
+                         (>= left right))))))
                (second arguments-result)])
             (if (= operation :println)
               (let [arguments-result

@@ -577,6 +577,9 @@
    :platform-unwind-metadata :darwin-compact-unwind-required
    :tls-model :not-applicable
    :supported-profiles #{:hosted}
+   :supported-operation-families
+   [:scalar-i64-bool-nil :forwarding :truthiness :single-conditional
+    :signed-i64-integer-comparisons]
    :unsupported-profiles [:hardware :firmware :kernel :native
                           :distributed :ai :meta :gpu :formal]
    :required-evidence [:authenticated-c11-replay
@@ -1230,9 +1233,14 @@
                 (= source :function)
                 (if (= opcode :truthiness)
                   (= source :truthy)
-                  (if (= opcode :conditional-join)
-                    (= source :if)
-                    false))))))))))
+                  (if (contains?
+                       #{:integer-eq :integer-lt :integer-lte
+                         :integer-gt :integer-gte}
+                       opcode)
+                    (= source opcode)
+                    (if (= opcode :conditional-join)
+                      (= source :if)
+                      false)))))))))))
 
 (defn b3-operation-reference-allowed?
   [operation operand operations operation-index block-labels]
@@ -1252,15 +1260,17 @@
             (if (= operand-label "entry") true (= operand-label "then"))
             (if (= current-label "else")
               (if (= operand-label "entry") true (= operand-label "else"))
-              (if (= opcode :conditional-join)
-                (if (= operand-label "entry")
-                  true
-                  (if (= operand-label "then")
+              (if (= current-label "join")
+                (if (= opcode :conditional-join)
+                  (if (= operand-label "entry")
                     true
-                    (= operand-label "else")))
-                (if (= operand-label "entry")
-                  true
-                  (= operand-label "join"))))))
+                    (if (= operand-label "then")
+                      true
+                      (= operand-label "else")))
+                  (if (= operand-label "entry")
+                    true
+                    (= operand-label "join")))
+                false))))
         false))))
 
 (defn b3-operation-references-allowed?
@@ -1536,6 +1546,32 @@
                         :truthiness-operand-type)
                       :truthiness-operand-dominance)))
                 :truthiness-requires-one-operand)
+              (if (contains?
+                   #{:integer-eq :integer-lt :integer-lte
+                     :integer-gt :integer-gte}
+                   opcode)
+                (if (= (count operands) 2)
+                  (let [left
+                        (b3-find-operation operations (first operands))
+                        right
+                        (b3-find-operation
+                         operations (first (rest operands)))]
+                    (if (= left nil)
+                      :integer-comparison-left-definition
+                      (if (= right nil)
+                        :integer-comparison-right-definition
+                        (if (b3-operation-references-allowed?
+                             operation operands operations operation-index
+                             block-labels)
+                          (if (= (get left :type) :gravity/integer)
+                            (if (= (get right :type) :gravity/integer)
+                              (if (= (get operation :type) :gravity/bool)
+                                nil
+                                :integer-comparison-result-type)
+                              :integer-comparison-right-operand-type)
+                            :integer-comparison-left-operand-type)
+                          :integer-comparison-prior-definition-or-dominance))))
+                  :integer-comparison-requires-two-operands)
               (if (= opcode :conditional-join)
                 (if (= (count operands) 3)
                   (let [condition
@@ -1571,7 +1607,7 @@
                               :unsupported-conditional-then-type)
                             :conditional-condition-type)))))
                   :conditional-join-requires-three-operands)
-                :unsupported-mir-opcode))))
+                :unsupported-mir-opcode)))))
         :program-capabilities-unsupported)
       :program-effects-unsupported)
      :source-operation-opcode-parity)
@@ -1614,11 +1650,26 @@
             (if (= (get operand :type) :gravity/nil)
               false
               (if (= (get operand :type) :gravity/bool) value true)))
-          (if (= opcode :conditional-join)
-            (if (get values (first operands))
-              (get values (second operands))
-              (get values (first (rest (rest operands)))))
-            nil))))))
+          (if (= opcode :integer-eq)
+            (= (get values (first operands))
+               (get values (first (rest operands))))
+            (if (= opcode :integer-lt)
+              (< (get values (first operands))
+                 (get values (first (rest operands))))
+              (if (= opcode :integer-lte)
+                (<= (get values (first operands))
+                    (get values (first (rest operands))))
+                (if (= opcode :integer-gt)
+                  (> (get values (first operands))
+                     (get values (first (rest operands))))
+                  (if (= opcode :integer-gte)
+                    (>= (get values (first operands))
+                        (get values (first (rest operands))))
+                    (if (= opcode :conditional-join)
+                      (if (get values (first operands))
+                        (get values (second operands))
+                        (get values (first (rest (rest operands)))))
+                      nil)))))))))))
 
 (defn b3-evaluate-operations-loop
   [remaining operations values]
@@ -1664,6 +1715,26 @@
               (if (= operand-type :gravity/nil)
                 (str "  " result " = add i64 0, 0")
                 (str "  " result " = add i64 0, 1"))))
+          (if (contains?
+               #{:integer-eq :integer-lt :integer-lte
+                 :integer-gt :integer-gte}
+               opcode)
+            (let [left (first operands)
+                  right (first (rest operands))
+                  comparison-result
+                  (str "%cmp" (get operation-index (get operation :op-id)))
+                  predicate
+                  (if (= opcode :integer-eq)
+                    "eq"
+                    (if (= opcode :integer-lt)
+                      "slt"
+                      (if (= opcode :integer-lte)
+                        "sle"
+                        (if (= opcode :integer-gt) "sgt" "sge"))))]
+              (str "  " comparison-result " = icmp " predicate " i64 "
+                   (b3-value-reference operation-index left) ", "
+                   (b3-value-reference operation-index right) "\n"
+                   "  " result " = zext i1 " comparison-result " to i64"))
           (if (= opcode :conditional-join)
             (let [then-id (second operands)
                   else-id (first (rest (rest operands)))
@@ -1676,7 +1747,7 @@
                    then-label " ], [ "
                    (b3-value-reference operation-index else-id) ", %"
                    else-label " ]"))
-            :unsupported))))))
+            :unsupported)))))))
 
 (defn b3-annotate-conditional-operations
   [operations mir]

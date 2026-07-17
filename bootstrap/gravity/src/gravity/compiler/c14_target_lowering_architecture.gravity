@@ -773,7 +773,7 @@
                     (if (c14-c13-source-rule-valid?
                          (get dependencies :c13-source-rule))
                       (= (get dependencies :b3-source)
-                         "sha256:91381bbbfd37daeff789cdd5d1db4e3b0a08d50738ce9312a6d1483639ca2c37")
+                         "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3")
                       false)
                     false)
                   false)
@@ -1289,12 +1289,14 @@
                 :direct-source-declared-llvm? false})
           (if (= (get policy :effects) #{})
             (if (= (get policy :capabilities) #{})
-              (if (= (get policy :supported-operation-ids)
-                     (get (get optimized :semantic-identity)
-                          :operation-order))
-                (if (c14-abi-valid? (get policy :abi))
-                  (if (c14-runtime-valid? (get policy :runtime))
-                    (c14-providers-valid? (get policy :providers))
+              (if (c14-llvm-bounded-mir-surface-valid? optimized policy)
+                (if (= (get policy :supported-operation-ids)
+                       (get (get optimized :semantic-identity)
+                            :operation-order))
+                  (if (c14-abi-valid? (get policy :abi))
+                    (if (c14-runtime-valid? (get policy :runtime))
+                      (c14-providers-valid? (get policy :providers))
+                      false)
                     false)
                   false)
                 false)
@@ -1347,7 +1349,7 @@
 (defn c14-policy-scope-valid?
   [policy]
   (if (= (get policy :target-policy)
-         {:scope :bounded-pure-scalar-forwarding-do-let-if
+         {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
           :maximum-operation-count 256
           :whole-c14? false :whole-b1? false :whole-b3? false
           :public? false :release? false :self-hosted? false})
@@ -1386,7 +1388,8 @@
   [optimized policy]
   (if (c14-bounded-optimized-input-valid? optimized policy)
     (if (= (get policy :profile) :hosted)
-      (if (c14-bounded-policy-valid? optimized policy)
+      (if (c14-llvm-bounded-mir-surface-valid? optimized policy)
+       (if (c14-bounded-policy-valid? optimized policy)
         {:artifact :gravity/c14-bounded-llvm-lowering-record
          :schema-version 1
          :status :accepted
@@ -1450,7 +1453,7 @@
           :proof-assumptions []
           :explainability-record
           {:decision :accepted
-           :bounded-surface :pure-scalar-forwarding-do-let-if
+           :bounded-surface :pure-scalar-forwarding-do-let-if-integer-comparisons
            :unsupported-diagnostic "C14-UNSUPPORTED"
            :no-hidden-runtime? true
            :no-hidden-effect-or-capability? true}
@@ -1495,6 +1498,28 @@
          :diagnostic "C14-TARGET"
          :missing-fact :explicit-bounded-llvm-target
          :diagnostics ["C14-TARGET"]})
+       (let [mir (get optimized :optimized-mir)
+             operations (c14-c-operation-sequence mir)
+             invalid-constant
+             (c14-llvm-first-invalid-constant operations)
+             base
+             {:artifact :gravity/c14-bounded-llvm-lowering-record
+              :schema-version 1
+              :status :rejected
+              :diagnostic "C14-UNSUPPORTED"
+              :missing-fact
+              (if (= invalid-constant nil)
+                :bounded-llvm-mir-surface
+                :bounded-scalar-constant-payload)
+              :diagnostics ["C14-UNSUPPORTED"]}]
+         (if (= invalid-constant nil)
+           base
+           (assoc base
+                  :operation-id (get invalid-constant :op-id)
+                  :opcode (get invalid-constant :opcode)
+                  :source-operation
+                  (get invalid-constant :source-operation)
+                  :observed-type (get invalid-constant :type)))))
       {:artifact :gravity/c14-bounded-llvm-lowering-record
        :schema-version 1
        :status :rejected
@@ -1950,6 +1975,91 @@
           false)
         false)
       false)))
+
+; The operation helpers above are target-neutral even though their historical
+; names predate the bounded LLVM slice.  C14 owns this target eligibility gate:
+; B1 and B3 must never be the first stage to discover an unsupported scalar.
+(defn c14-llvm-bounded-mir-surface-valid?
+  [optimized policy]
+  (let [mir (get optimized :optimized-mir)
+        functions (get mir :functions)
+        function (get functions (first (keys functions)))
+        operations (c14-c-operation-sequence mir)
+        operation-order (c14-bounded-operation-order mir)
+        operations-by-id (c14-c-operation-map operations {})]
+    (if (= (get mir :profile) :hosted)
+      (if (= (get mir :target-request) :llvm)
+        (if (= (get mir :target-independent?) true)
+          (if (= (count functions) 1)
+            (if (= (get function :params) [])
+              (if (= (get function :latent-effects) #{})
+                (if (= (get function :capabilities) #{})
+                  (if (= (get mir :runtime-check-table) {})
+                    (if (= (get mir :domain-anchors) {})
+                      (if (= (get mir :globals) {})
+                        (if (> (count operations) 0)
+                          (if (<= (count operations) 256)
+                            (if (= operation-order
+                                   (get policy :supported-operation-ids))
+                              (if (= operation-order
+                                     (c14-operation-ids operations []))
+                                (if (= (count operations)
+                                       (count operations-by-id))
+                                  (if (c14-c-operations-valid?
+                                       operations operations-by-id #{} 0)
+                                    (c14-llvm-process-result-valid?
+                                     mir operations operations-by-id)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-llvm-process-result-valid?
+  [mir operations operations-by-id]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        join-id (str source-core ":mir:join")
+        functions (get mir :functions)
+        function (get functions (first (keys functions)))
+        blocks (get function :blocks)
+        return-block-id (if (contains? blocks join-id) join-id entry-id)
+        return-id
+        (first (get (get (get blocks return-block-id) :terminator)
+                    :operands))
+        values (c14-c-evaluate-operations operations operations-by-id {})
+        result (get values return-id)]
+    (if (contains? values return-id)
+      (if (contains? #{true false nil} result)
+        true
+        (if (integer? result)
+          (if (<= 0 result)
+            (<= result 255)
+            false)
+          false))
+      false)))
+
+(defn c14-llvm-first-invalid-constant
+  [operations]
+  (if (= (count operations) 0)
+    nil
+    (let [operation (first operations)]
+      (if (= (get operation :opcode) :constant)
+        (if (c14-c-constant-valid? operation)
+          (c14-llvm-first-invalid-constant (rest operations))
+          operation)
+        (c14-llvm-first-invalid-constant (rest operations))))))
 
 (defn c14-c-target-envelope-valid?
   [optimized policy]
