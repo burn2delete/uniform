@@ -104246,27 +104246,91 @@
   extracted, or interpreted.  The caller supplies its own diagnostic family;
   hostile source text is never copied into the rejection payload."
   [compiler-source requested-source target diagnostic-id fail-fn]
-  (let [file (java.io.File. compiler-source)
-        byte-count (.length file)]
-    (when-not (= p15-s23-stage2-compiler-expected-source-byte-count byte-count)
+  (let [path (.toPath (java.io.File. compiler-source))
+        nofollow
+        (into-array java.nio.file.LinkOption
+                    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        before
+        (try
+          (java.nio.file.Files/readAttributes
+           path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception _
+            (fail-fn
+             diagnostic-id compiler-source nil
+             {:requested-source requested-source
+              :target target
+              :missing-fact :stage2-compiler-source-byte-count
+              :expected-byte-count
+              p15-s23-stage2-compiler-expected-source-byte-count})))
+        byte-count (.size before)]
+    (when-not
+     (and (.isRegularFile before)
+          (not (.isSymbolicLink before))
+          (= (long p15-s23-stage2-compiler-expected-source-byte-count)
+             byte-count))
       (fail-fn
        diagnostic-id compiler-source nil
        {:requested-source requested-source
         :target target
         :missing-fact :stage2-compiler-source-byte-count
+        :regular-file? (.isRegularFile before)
+        :symbolic-link? (.isSymbolicLink before)
         :expected-byte-count
         p15-s23-stage2-compiler-expected-source-byte-count
         :observed-byte-count byte-count}))
-    (let [bytes
+    (let [maximum-byte-count
+          (inc p15-s23-stage2-compiler-expected-source-byte-count)
+          buffer (byte-array maximum-byte-count)
+          observed-byte-count
           (try
-            (java.nio.file.Files/readAllBytes (.toPath file))
+            (with-open
+             [input
+              (java.nio.file.Files/newInputStream
+               path
+               (into-array
+                java.nio.file.OpenOption
+                [java.nio.file.StandardOpenOption/READ
+                 java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+              (loop [offset 0]
+                (if (= offset maximum-byte-count)
+                  offset
+                  (let [read-count
+                        (.read input buffer offset
+                               (- maximum-byte-count offset))]
+                    (cond
+                      (neg? read-count) offset
+                      (zero? read-count) (recur offset)
+                      :else (recur (+ offset read-count)))))))
             (catch Exception _
               (fail-fn
                diagnostic-id compiler-source nil
                {:requested-source requested-source
                 :target target
-                :missing-fact :stage2-compiler-source-bytes})))
+                :missing-fact :stage2-compiler-source-bytes
+                :maximum-byte-count maximum-byte-count})))
+          after
+          (try
+            (java.nio.file.Files/readAttributes
+             path java.nio.file.attribute.BasicFileAttributes nofollow)
+            (catch Exception _
+              (fail-fn
+               diagnostic-id compiler-source nil
+               {:requested-source requested-source
+                :target target
+                :missing-fact :stage2-compiler-source-stable-snapshot})))
+          bytes (java.util.Arrays/copyOf buffer observed-byte-count)
           content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+      (when-not
+       (= p15-s23-stage2-compiler-expected-source-byte-count
+          observed-byte-count)
+        (fail-fn
+         diagnostic-id compiler-source nil
+         {:requested-source requested-source
+          :target target
+          :missing-fact :stage2-compiler-source-byte-count
+          :expected-byte-count
+          p15-s23-stage2-compiler-expected-source-byte-count
+          :observed-byte-count observed-byte-count}))
       (when-not (= p15-s23-stage2-compiler-expected-source-content-hash
                    content-hash)
         (fail-fn
@@ -104277,9 +104341,45 @@
           :expected-source-content-hash
           p15-s23-stage2-compiler-expected-source-content-hash
           :observed-source-content-hash content-hash}))
+      (when-not
+       (and (.isRegularFile after)
+            (not (.isSymbolicLink after))
+            (= (.fileKey before) (.fileKey after))
+            (= (.size before) (.size after)
+               (long observed-byte-count))
+            (= (.lastModifiedTime before)
+               (.lastModifiedTime after)))
+        (fail-fn
+         diagnostic-id compiler-source nil
+         {:requested-source requested-source
+          :target target
+          :missing-fact :stage2-compiler-source-stable-snapshot
+          :regular-file? (.isRegularFile after)
+          :symbolic-link? (.isSymbolicLink after)
+          :stable-file-key? (= (.fileKey before) (.fileKey after))
+          :stable-last-modified-time?
+          (= (.lastModifiedTime before)
+             (.lastModifiedTime after))
+          :expected-byte-count
+          p15-s23-stage2-compiler-expected-source-byte-count
+          :observed-byte-count (.size after)}))
       {:source-text
-       (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-       :source-byte-count (alength bytes)
+       (try
+         (let [decoder
+               (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                 (.onMalformedInput
+                  java.nio.charset.CodingErrorAction/REPORT)
+                 (.onUnmappableCharacter
+                  java.nio.charset.CodingErrorAction/REPORT))]
+           (.toString
+            (.decode decoder (java.nio.ByteBuffer/wrap bytes))))
+         (catch java.nio.charset.CharacterCodingException _
+           (fail-fn
+            diagnostic-id compiler-source nil
+            {:requested-source requested-source
+             :target target
+             :missing-fact :stage2-compiler-source-utf8})))
+       :source-byte-count observed-byte-count
        :source-content-hash content-hash})))
 
 (defn p15-s23-compiler-source-form-record-from-text
@@ -120657,148 +120757,470 @@
         (update :source dissoc :path)
         (update :module dissoc :source-path)))})
 
-(defn p15-s23-c6c10-compile-source-binding
+(def ^:dynamic ^:private *p15-s23-c6c10-compiled-binding-metrics*
+  nil)
+
+(defn- p15-s23-c6c10-record-compiled-binding-metric!
+  [event]
+  (when (instance? clojure.lang.IAtom
+                   *p15-s23-c6c10-compiled-binding-metrics*)
+    (swap! *p15-s23-c6c10-compiled-binding-metrics*
+           update event (fnil inc 0))))
+
+(defn- p15-s23-c6c10-canonical-file-path
+  [source-path]
+  (try
+    (.getCanonicalPath (java.io.File. source-path))
+    (catch java.io.IOException _
+      (.getPath
+       (.normalize
+        (.toAbsolutePath (.toPath (java.io.File. source-path))))))))
+
+(defn- p15-s23-c6c10-read-pinned-source-snapshot!
   [request-source]
   (let [source-path (p15-s23-c6c10-resolve-source-path)
-        source-file (java.io.File. source-path)]
-    (when-not (.isFile source-file)
+        source-file (java.io.File. source-path)
+        path (.toPath source-file)
+        nofollow
+        (into-array java.nio.file.LinkOption
+                    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (try
+          (java.nio.file.Files/readAttributes
+           path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception _
+            (p15-s23-c6c10-host-fail!
+             "C6-VERIFY" request-source
+             :pinned-gravity-c6-c10-source-present
+             {:builder-source source-path})))]
+    (when-not (and (.isRegularFile attributes)
+                   (not (.isSymbolicLink attributes))
+                   (= (long p15-s23-c6c10-source-byte-count)
+                      (.size attributes)))
       (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" request-source :pinned-gravity-c6-c10-source-present
-       {:builder-source source-path}))
+       "C6-VERIFY" request-source
+       :pinned-gravity-c6-c10-source-bytes
+       {:builder-source source-path
+        :regular-file? (.isRegularFile attributes)
+        :symbolic-link? (.isSymbolicLink attributes)
+        :expected-byte-count p15-s23-c6c10-source-byte-count
+        :actual-byte-count (.size attributes)
+        :expected-source-content-hash
+        p15-s23-c6c10-expected-source-content-hash}))
+    (let [maximum-byte-count (inc p15-s23-c6c10-source-byte-count)
+          buffer (byte-array maximum-byte-count)
+          observed-byte-count
+          (try
+            (with-open
+             [input
+              (java.nio.file.Files/newInputStream
+               path
+               (into-array
+                java.nio.file.OpenOption
+                [java.nio.file.StandardOpenOption/READ
+                 java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+              (loop [offset 0]
+                (if (= offset maximum-byte-count)
+                  offset
+                  (let [read-count
+                        (.read input buffer offset
+                               (- maximum-byte-count offset))]
+                    (cond
+                      (neg? read-count) offset
+                      (zero? read-count) (recur offset)
+                      :else (recur (+ offset read-count)))))))
+            (catch Exception _
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" request-source
+               :pinned-gravity-c6-c10-source-bytes
+               {:builder-source source-path
+                :expected-byte-count p15-s23-c6c10-source-byte-count})))
+          after
+          (try
+            (java.nio.file.Files/readAttributes
+             path java.nio.file.attribute.BasicFileAttributes nofollow)
+            (catch Exception _
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" request-source
+               :pinned-gravity-c6-c10-source-bytes
+               {:builder-source source-path
+                :expected-byte-count p15-s23-c6c10-source-byte-count})))
+          source-bytes
+          (java.util.Arrays/copyOf buffer observed-byte-count)
+          source-content-hash
+          (str "sha256:" (sha256-bytes-hex source-bytes))]
+      (when-not
+       (and (= p15-s23-c6c10-source-byte-count observed-byte-count)
+            (= p15-s23-c6c10-expected-source-content-hash
+               source-content-hash)
+            (.isRegularFile after)
+            (not (.isSymbolicLink after))
+            (= (.fileKey attributes) (.fileKey after))
+            (= (.size attributes) (.size after)
+               (long observed-byte-count))
+            (= (.lastModifiedTime attributes)
+               (.lastModifiedTime after)))
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" request-source
+         :pinned-gravity-c6-c10-source-bytes
+         {:builder-source source-path
+          :regular-file? (.isRegularFile after)
+          :symbolic-link? (.isSymbolicLink after)
+          :stable-file-key?
+          (= (.fileKey attributes) (.fileKey after))
+          :stable-last-modified-time?
+          (= (.lastModifiedTime attributes)
+             (.lastModifiedTime after))
+          :expected-byte-count p15-s23-c6c10-source-byte-count
+          :actual-byte-count observed-byte-count
+          :expected-source-content-hash
+          p15-s23-c6c10-expected-source-content-hash
+          :actual-source-content-hash source-content-hash}))
+      (let [source-text
+            (try
+              (let [decoder
+                    (doto (.newDecoder
+                           java.nio.charset.StandardCharsets/UTF_8)
+                      (.onMalformedInput
+                       java.nio.charset.CodingErrorAction/REPORT)
+                      (.onUnmappableCharacter
+                       java.nio.charset.CodingErrorAction/REPORT))]
+                (.toString
+                 (.decode decoder
+                          (java.nio.ByteBuffer/wrap source-bytes))))
+              (catch java.nio.charset.CharacterCodingException ex
+                (p15-s23-c6c10-host-fail!
+                 "C6-VERIFY" request-source
+                 :strict-utf8-pinned-gravity-c6-c10-source
+                 {:builder-source source-path
+                  :cause-message (.getMessage ex)})))]
+        (p15-s23-c6c10-record-compiled-binding-metric!
+         :source-authenticated)
+        {:source-path source-path
+         :canonical-source-path
+         (p15-s23-c6c10-canonical-file-path source-path)
+         :source-byte-count observed-byte-count
+         :source-content-hash source-content-hash
+         :source-text source-text}))))
+
+(defn- p15-s23-c6c10-authenticated-source-binding-inputs!
+  [request-source]
+  (let [source-snapshot
+        (p15-s23-c6c10-read-pinned-source-snapshot! request-source)
+        emitter-source-path
+        (c-backend-resolve-p15-s23-compiler-source-path)
+        emitter-path (.toPath (java.io.File. emitter-source-path))
+        nofollow
+        (into-array java.nio.file.LinkOption
+                    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        emitter-before
+        (try
+          (java.nio.file.Files/readAttributes
+           emitter-path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception _
+            (p15-s23-stage2-plan-emitter-fail!
+             "P15S23Q001" emitter-source-path nil
+             {:requested-source request-source
+              :target :jvm
+              :missing-fact :stage2-compiler-source-regular-file})))
+        _
+        (when-not
+         (and (.isRegularFile emitter-before)
+              (not (.isSymbolicLink emitter-before))
+              (= (long p15-s23-stage2-compiler-expected-source-byte-count)
+                 (.size emitter-before)))
+          (p15-s23-stage2-plan-emitter-fail!
+           "P15S23Q001" emitter-source-path nil
+           {:requested-source request-source
+            :target :jvm
+            :missing-fact :stage2-compiler-source-regular-file
+            :regular-file? (.isRegularFile emitter-before)
+            :symbolic-link? (.isSymbolicLink emitter-before)
+            :expected-byte-count
+            p15-s23-stage2-compiler-expected-source-byte-count
+            :observed-byte-count (.size emitter-before)}))
+        emitter-rule
+        (c-backend-stage2-plan-emitter-source-rule!
+         request-source :jvm)
+        emitter-after
+        (try
+          (java.nio.file.Files/readAttributes
+           emitter-path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception _
+            (p15-s23-stage2-plan-emitter-fail!
+             "P15S23Q001" emitter-source-path nil
+             {:requested-source request-source
+              :target :jvm
+              :missing-fact :stage2-compiler-source-stable-snapshot})))
+        returned-emitter-path
+        (p15-s23-c6c10-canonical-file-path (:source-path emitter-rule))
+        expected-emitter-path
+        (p15-s23-c6c10-canonical-file-path emitter-source-path)]
+    (when-not
+     (and (.isRegularFile emitter-after)
+          (not (.isSymbolicLink emitter-after))
+          (= (.fileKey emitter-before) (.fileKey emitter-after))
+          (= (.size emitter-before) (.size emitter-after)
+             (long p15-s23-stage2-compiler-expected-source-byte-count))
+          (= (.lastModifiedTime emitter-before)
+             (.lastModifiedTime emitter-after))
+          (= expected-emitter-path returned-emitter-path))
+      (p15-s23-stage2-plan-emitter-fail!
+       "P15S23Q001" emitter-source-path nil
+       {:requested-source request-source
+        :target :jvm
+        :missing-fact :stage2-compiler-source-stable-snapshot
+        :regular-file? (.isRegularFile emitter-after)
+        :symbolic-link? (.isSymbolicLink emitter-after)
+        :stable-file-key?
+        (= (.fileKey emitter-before) (.fileKey emitter-after))
+        :stable-last-modified-time?
+        (= (.lastModifiedTime emitter-before)
+           (.lastModifiedTime emitter-after))
+        :expected-byte-count
+        p15-s23-stage2-compiler-expected-source-byte-count
+        :observed-byte-count (.size emitter-after)
+        :expected-source-path expected-emitter-path
+        :observed-source-path returned-emitter-path}))
+    (p15-s23-c6c10-record-compiled-binding-metric!
+     :emitter-authenticated)
+    {:source-snapshot source-snapshot
+     :emitter-rule emitter-rule}))
+
+(defn- p15-s23-c6c10-compiled-binding-cache-key
+  [{:keys [source-snapshot emitter-rule]}]
+  {:schema-version 1
+   :owner :gravity/p15-s23-c6-c10-source-binding
+   :source-relative-path p15-s23-c6c10-source-relative-path
+   :source-path (:canonical-source-path source-snapshot)
+   :source-byte-count (:source-byte-count source-snapshot)
+   :source-content-hash (:source-content-hash source-snapshot)
+   :emitter-target :jvm
+   :emitter-source-path
+   (p15-s23-c6c10-canonical-file-path (:source-path emitter-rule))
+   :emitter-source-byte-count
+   p15-s23-stage2-compiler-expected-source-byte-count
+   :emitter-source-content-hash
+   p15-s23-stage2-compiler-expected-source-content-hash
+   :emitter-source-rule-hash (:source-rule-hash emitter-rule)
+   :expected-plan-semantic-hash
+   p15-s23-c6c10-expected-plan-semantic-hash
+   :expected-functions-semantic-hash
+   p15-s23-c6c10-expected-functions-semantic-hash
+   :builder-function p15-s23-c6c10-builder-function
+   :expected-builder-semantic-hash
+   p15-s23-c6c10-expected-builder-semantic-hash
+   :verifier-function p15-s23-c6c10-verifier-function
+   :expected-verifier-semantic-hash
+   p15-s23-c6c10-expected-verifier-semantic-hash
+   :required-functions p15-s23-c6c10-required-functions})
+
+(defn- p15-s23-c6c10-compile-authenticated-source-binding
+  [request-source {:keys [source-snapshot emitter-rule]}]
+  (p15-s23-c6c10-record-compiled-binding-metric! :compile-start)
+  (try
     (binding [*print-length* nil
               *print-level* nil
               *print-meta* false
               *print-dup* false
               *print-readably* true
               *print-namespace-maps* false]
-      (let [source-bytes
-            (java.nio.file.Files/readAllBytes (.toPath source-file))
-          source-content-hash
-          (str "sha256:" (sha256-bytes-hex source-bytes))
-          _
-          (when-not (and (= p15-s23-c6c10-source-byte-count
-                            (alength source-bytes))
-                         (= p15-s23-c6c10-expected-source-content-hash
-                            source-content-hash))
-            (p15-s23-c6c10-host-fail!
-             "C6-VERIFY" request-source
-             :pinned-gravity-c6-c10-source-bytes
-             {:builder-source source-path
-              :expected-byte-count p15-s23-c6c10-source-byte-count
-              :actual-byte-count (alength source-bytes)
-              :expected-source-content-hash
-              p15-s23-c6c10-expected-source-content-hash
-              :actual-source-content-hash source-content-hash}))
-          source-text
-          (try
-            (let [decoder
-                  (doto (.newDecoder
-                         java.nio.charset.StandardCharsets/UTF_8)
-                    (.onMalformedInput
-                     java.nio.charset.CodingErrorAction/REPORT)
-                    (.onUnmappableCharacter
-                     java.nio.charset.CodingErrorAction/REPORT))]
-              (.toString
-               (.decode decoder (java.nio.ByteBuffer/wrap source-bytes))))
-            (catch java.nio.charset.CharacterCodingException ex
-              (p15-s23-c6c10-host-fail!
-               "C6-VERIFY" request-source
-               :strict-utf8-pinned-gravity-c6-c10-source
-               {:builder-source source-path
-                :cause-message (.getMessage ex)})))
-          emitter-rule
-          (c-backend-stage2-plan-emitter-source-rule!
-           request-source :jvm)
-          emitter (:emitter emitter-rule)
-          plan
-          (p15-s23-stage2-compiler-artifact-plan
-           emitter source-path source-text)
-          function-manifest
-          (p15-s23-c6c10-function-merkle-manifest
-           source-path source-content-hash (:functions plan))
-          plan-pin-input
-          (p15-s23-c6c10-plan-pin-input
-           source-content-hash plan function-manifest)
-          plan-semantic-hash
-          (p15-s23-c6c10-canonical-digest source-path plan-pin-input)
-          builder-semantic-hash
-          (p15-s23-c6c10-canonical-digest
-           source-path
-           {:domain :gravity/c6-c10-exported-builder-v1
-            :source-content-hash source-content-hash
-            :definition
-            (p15-s23-c6c10-path-neutral-value
-             source-content-hash
-             (get-in plan [:functions p15-s23-c6c10-builder-function]))})
-          verifier-semantic-hash
-          (p15-s23-c6c10-canonical-digest
-           source-path
-           {:domain :gravity/c6-c10-exported-verifier-v1
-            :source-content-hash source-content-hash
-            :definition
-            (p15-s23-c6c10-path-neutral-value
-             source-content-hash
-             (get-in plan [:functions p15-s23-c6c10-verifier-function]))})
-          observed-shapes
-          (into {}
-                (map (fn [[function-name _]]
-                       [function-name
-                        (select-keys
-                         (get-in plan [:functions function-name])
-                         [:arity :params])]))
-                p15-s23-c6c10-required-functions)]
-      {:kind :gravity/p15-s23-c6-c10-source-binding
-       :status :complete
-       :request-source request-source
-       :source-path source-path
-       :source-byte-count (alength source-bytes)
-       :source-content-hash source-content-hash
-       :legacy-plan-id (:plan-id plan)
-       :plan-semantic-hash plan-semantic-hash
-       :functions-semantic-hash (:root-digest function-manifest)
-       :builder-semantic-hash builder-semantic-hash
-       :verifier-semantic-hash verifier-semantic-hash
-       :function-shapes observed-shapes
-       :function-manifest function-manifest
-       :plan plan}))))
+      (let [{:keys [source-path canonical-source-path
+                    source-byte-count source-content-hash source-text]}
+            source-snapshot
+            compilation-source-path canonical-source-path
+            emitter (:emitter emitter-rule)
+            plan
+            (p15-s23-stage2-compiler-artifact-plan
+             emitter compilation-source-path source-text)
+            function-manifest
+            (p15-s23-c6c10-function-merkle-manifest
+             compilation-source-path source-content-hash (:functions plan))
+            plan-pin-input
+            (p15-s23-c6c10-plan-pin-input
+             source-content-hash plan function-manifest)
+            plan-semantic-hash
+            (p15-s23-c6c10-canonical-digest
+             compilation-source-path plan-pin-input)
+            builder-semantic-hash
+            (p15-s23-c6c10-canonical-digest
+             compilation-source-path
+             {:domain :gravity/c6-c10-exported-builder-v1
+              :source-content-hash source-content-hash
+              :definition
+              (p15-s23-c6c10-path-neutral-value
+               source-content-hash
+               (get-in plan
+                       [:functions p15-s23-c6c10-builder-function]))})
+            verifier-semantic-hash
+            (p15-s23-c6c10-canonical-digest
+             compilation-source-path
+             {:domain :gravity/c6-c10-exported-verifier-v1
+              :source-content-hash source-content-hash
+              :definition
+              (p15-s23-c6c10-path-neutral-value
+               source-content-hash
+               (get-in plan
+                       [:functions p15-s23-c6c10-verifier-function]))})
+            observed-shapes
+            (into {}
+                  (map (fn [[function-name _]]
+                         [function-name
+                          (select-keys
+                           (get-in plan [:functions function-name])
+                           [:arity :params])]))
+                  p15-s23-c6c10-required-functions)
+            compiled
+            {:kind :gravity/p15-s23-c6-c10-source-binding
+             :status :complete
+             :request-source request-source
+             :source-path source-path
+             :source-byte-count source-byte-count
+             :source-content-hash source-content-hash
+             :legacy-plan-id (:plan-id plan)
+             :plan-semantic-hash plan-semantic-hash
+             :functions-semantic-hash (:root-digest function-manifest)
+             :builder-semantic-hash builder-semantic-hash
+             :verifier-semantic-hash verifier-semantic-hash
+             :function-shapes observed-shapes
+             :function-manifest function-manifest
+             :plan plan}]
+        (p15-s23-c6c10-record-compiled-binding-metric!
+         :compile-complete)
+        compiled))
+    (catch Throwable throwable
+      (p15-s23-c6c10-record-compiled-binding-metric!
+       :compile-failed)
+      (when (instance? InterruptedException throwable)
+        (.interrupt (Thread/currentThread)))
+      (throw throwable))))
+
+(defn p15-s23-c6c10-compile-source-binding
+  [request-source]
+  (p15-s23-c6c10-compile-authenticated-source-binding
+   request-source
+   (p15-s23-c6c10-authenticated-source-binding-inputs!
+    request-source)))
+
+(defn- p15-s23-c6c10-source-binding-valid?
+  [binding]
+  (and (= :complete (:status binding))
+       (= p15-s23-c6c10-source-byte-count
+          (:source-byte-count binding))
+       (= p15-s23-c6c10-expected-source-content-hash
+          (:source-content-hash binding))
+       (= p15-s23-c6c10-expected-plan-semantic-hash
+          (:plan-semantic-hash binding))
+       (= p15-s23-c6c10-expected-functions-semantic-hash
+          (:functions-semantic-hash binding))
+       (= p15-s23-c6c10-expected-builder-semantic-hash
+          (:builder-semantic-hash binding))
+       (= p15-s23-c6c10-expected-verifier-semantic-hash
+          (:verifier-semantic-hash binding))
+       (= p15-s23-c6c10-required-functions
+          (:function-shapes binding))
+       (= 139 (get-in binding [:function-manifest :function-count]))
+       (<= (apply max 0
+                  (map :count
+                       (get-in binding [:function-manifest :chunks])))
+           64)))
 
 (defn p15-s23-c6c10-validate-source-binding!
   [binding]
-  (when-not
-   (and (= :complete (:status binding))
-        (= p15-s23-c6c10-source-byte-count
-           (:source-byte-count binding))
-        (= p15-s23-c6c10-expected-source-content-hash
-           (:source-content-hash binding))
-        (= p15-s23-c6c10-expected-plan-semantic-hash
-           (:plan-semantic-hash binding))
-        (= p15-s23-c6c10-expected-functions-semantic-hash
-           (:functions-semantic-hash binding))
-        (= p15-s23-c6c10-expected-builder-semantic-hash
-           (:builder-semantic-hash binding))
-        (= p15-s23-c6c10-expected-verifier-semantic-hash
-           (:verifier-semantic-hash binding))
-        (= p15-s23-c6c10-required-functions
-           (:function-shapes binding))
-        (= 139 (get-in binding [:function-manifest :function-count]))
-        (<= (apply max 0
-                   (map :count
-                        (get-in binding
-                                [:function-manifest :chunks])))
-            64))
+  (when-not (p15-s23-c6c10-source-binding-valid? binding)
     (p15-s23-c6c10-host-fail!
      "C6-VERIFY" (:request-source binding)
      :exact-pinned-gravity-c6-c10-source-binding
      (dissoc binding :plan :function-manifest)))
   binding)
 
+(let [authority-token (Object.)
+      cache-state (atom nil)]
+
+  (defn- p15-s23-c6c10-clear-compiled-binding-cache!
+    []
+    (reset! cache-state nil)
+    :cleared)
+
+  (defn- p15-s23-c6c10-compiled-binding-cache-state
+    []
+    (let [entry @cache-state]
+      {:entry-count (if (nil? entry) 0 1)
+       :occupied? (some? entry)
+       :schema-version (:schema-version entry)
+       :cache-key (:cache-key entry)}))
+
+  (defn- p15-s23-c6c10-valid-compiled-binding-cache-entry?
+    [entry cache-key]
+    (and (map? entry)
+         (not (record? entry))
+         (nil? (meta entry))
+         (= #{:schema-version :authority-token :cache-key :binding}
+            (set (keys entry)))
+         (= 1 (:schema-version entry))
+         (identical? authority-token (:authority-token entry))
+         (= cache-key (:cache-key entry))
+         (map? (:binding entry))
+         (not (record? (:binding entry)))
+         (nil? (meta (:binding entry)))
+         (not (contains? (:binding entry) :request-source))
+         (not (contains? (:binding entry) :source-path))
+         (p15-s23-c6c10-source-binding-valid? (:binding entry))))
+
+  (defn- p15-s23-c6c10-cached-compiled-binding!
+    [request-source inputs]
+    (let [cache-key
+          (p15-s23-c6c10-compiled-binding-cache-key inputs)
+          entry @cache-state]
+      (if (p15-s23-c6c10-valid-compiled-binding-cache-entry?
+           entry cache-key)
+        (do
+          (p15-s23-c6c10-record-compiled-binding-metric! :cache-hit)
+          (:binding entry))
+        (locking cache-state
+          (let [entry @cache-state]
+            (if (p15-s23-c6c10-valid-compiled-binding-cache-entry?
+                 entry cache-key)
+              (do
+                (p15-s23-c6c10-record-compiled-binding-metric! :cache-hit)
+                (:binding entry))
+              (do
+                (p15-s23-c6c10-record-compiled-binding-metric! :cache-miss)
+                (when (and (some? entry)
+                           (= cache-key (:cache-key entry)))
+                  (reset! cache-state nil))
+                (let [binding
+                      (p15-s23-c6c10-validate-source-binding!
+                       (p15-s23-c6c10-compile-authenticated-source-binding
+                        request-source inputs))
+                      cached-binding
+                      (dissoc binding :request-source :source-path)]
+                  (reset!
+                   cache-state
+                   {:schema-version 1
+                    :authority-token authority-token
+                    :cache-key cache-key
+                    :binding cached-binding})
+                  cached-binding))))))))
+
 (defn p15-s23-c6c10-source-binding!
   [request-source]
-  ;; Authenticity is a fresh replay boundary.  Caching a previously validated
-  ;; map would let source tampering, resolver substitution, or CWD changes
-  ;; bypass raw-byte pinning on later calls.
-  (p15-s23-c6c10-validate-source-binding!
-   (p15-s23-c6c10-compile-source-binding request-source)))
+  ;; Raw module bytes and the Gravity plan-emitter are authenticated before
+  ;; every lookup.  Only the immutable compiled compiler program is reused;
+  ;; user ingress, builder/verifier execution, digest sealing, diagnostics,
+  ;; and target artifacts remain fresh replay boundaries.
+  (let [inputs
+        (p15-s23-c6c10-authenticated-source-binding-inputs!
+         request-source)
+        cached-binding
+        (p15-s23-c6c10-cached-compiled-binding!
+         request-source inputs)
+        current-source-path
+        (get-in inputs [:source-snapshot :source-path])]
+    (p15-s23-c6c10-validate-source-binding!
+     (assoc cached-binding
+            :request-source request-source
+            :source-path current-source-path)))))
 
 (def p15-s23-c6c10-digest-request-keys
   #{:algorithm :depends-on :encoding :key :ordinal :preimage})

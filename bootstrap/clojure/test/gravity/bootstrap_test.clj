@@ -31529,6 +31529,16 @@
                 'p15-s23-c6c10-fresh-construction))
    context))
 
+(defn- gravity-c6c10-private-var
+  [symbol]
+  (or (ns-resolve 'gravity.bootstrap symbol)
+      (throw (ex-info "missing private C6-C10 test seam"
+                      {:symbol symbol}))))
+
+(defn- gravity-c6c10-private-fn
+  [symbol]
+  (deref (gravity-c6c10-private-var symbol)))
+
 (defn- gravity-c6c10-semantic-view
   [artifact]
   (apply dissoc artifact bootstrap/p15-s23-c6c10-physical-artifact-keys))
@@ -31674,6 +31684,478 @@
         (is (re-matches #"sha256:[0-9a-f]{64}"
                         (:diagnostic-id data))
             [expected-missing data])))))
+
+(deftest gravity-c6c10-compiled-binding-cache-is-authenticated-and-nonsemantic
+  (let [clear-cache!
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-clear-compiled-binding-cache!)
+        cache-state
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-compiled-binding-cache-state)
+        metrics-var
+        (gravity-c6c10-private-var
+         '*p15-s23-c6c10-compiled-binding-metrics*)
+        metrics (atom {})
+        invoke-counts (atom {})
+        original-invoke
+        bootstrap/p15-s23-c6c10-invoke-pinned-source-function!
+        left-path "/tmp/c6-cache-left.gravity"
+        right-path "/tmp/c6-cache-right.qst"
+        observed
+        (try
+          (clear-cache!)
+          (with-bindings
+            {metrics-var metrics}
+            (let [left
+                  (bootstrap/p15-s23-c6c10-source-binding! left-path)
+                  right
+                  (bootstrap/p15-s23-c6c10-source-binding! right-path)
+                  hostile
+                  (-> left
+                      (assoc :cache-key :forged)
+                      (assoc-in [:plan :module :source-path]
+                                "/tmp/forged.gravity")
+                      (with-meta {:hostile true}))
+                  replay
+                  (bootstrap/p15-s23-c6c10-source-binding!
+                   "/tmp/c6-cache-replay.gravity")
+                  artifacts
+                  (with-redefs
+                    [bootstrap/p15-s23-c6c10-invoke-pinned-source-function!
+                     (fn [source-path source-binding function-name
+                          arguments boundary]
+                       (swap! invoke-counts update function-name (fnil inc 0))
+                       (original-invoke
+                        source-path source-binding function-name
+                        arguments boundary))]
+                    [(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                      "/tmp/c6-cache-artifact.gravity"
+                      gravity-c6c10-accepted-source :jvm)
+                     (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                      "/tmp/c6-cache-artifact.qst"
+                      gravity-c6c10-accepted-source :jvm)])]
+              {:left left
+               :right right
+               :hostile hostile
+               :replay replay
+               :artifacts artifacts
+               :state (cache-state)}))
+          (finally
+            (clear-cache!)))
+        {:keys [left right hostile replay artifacts state]} observed
+        binding-view #(dissoc % :request-source)]
+    (is (= left-path (:request-source left)))
+    (is (= right-path (:request-source right)))
+    (is (= (binding-view left)
+           (binding-view right)
+           (binding-view replay)))
+    (is (= "/tmp/forged.gravity"
+           (get-in hostile [:plan :module :source-path])))
+    (is (not= "/tmp/forged.gravity"
+              (get-in replay [:plan :module :source-path])))
+    (is (nil? (meta replay)))
+    (doseq [binding [left right replay]]
+      (is (= :gravity/p15-s23-c6-c10-source-binding
+             (:kind binding)))
+      (is (= bootstrap/p15-s23-c6c10-expected-source-content-hash
+             (:source-content-hash binding)))
+      (is (= bootstrap/p15-s23-c6c10-expected-plan-semantic-hash
+             (:plan-semantic-hash binding)))
+      (is (= bootstrap/p15-s23-c6c10-expected-functions-semantic-hash
+             (:functions-semantic-hash binding)))
+      (is (= bootstrap/p15-s23-c6c10-expected-builder-semantic-hash
+             (:builder-semantic-hash binding)))
+      (is (= bootstrap/p15-s23-c6c10-expected-verifier-semantic-hash
+             (:verifier-semantic-hash binding)))
+      (is (not (contains? binding :cache-key)))
+      (is (not (contains? binding :cache-status)))
+      (is (not (contains? binding :cache-metrics))))
+    (is (= (:artifact-id (first artifacts))
+           (:artifact-id (second artifacts))))
+    (is (= (gravity-c6c10-semantic-view (first artifacts))
+           (gravity-c6c10-semantic-view (second artifacts))))
+    (is (= {bootstrap/p15-s23-c6c10-builder-function 2
+            bootstrap/p15-s23-c6c10-verifier-function 2}
+           @invoke-counts))
+    (is (= {:source-authenticated 5
+            :emitter-authenticated 5
+            :cache-miss 1
+            :compile-start 1
+            :compile-complete 1
+            :cache-hit 4}
+           @metrics))
+    (is (= 1 (:entry-count state)))
+    (is (true? (:occupied? state)))
+    (is (= 1 (:schema-version state)))
+    (is (= 1 (get-in state [:cache-key :schema-version])))
+    (is (not (contains? (:cache-key state) :request-source)))
+    (is (not (contains? state :binding)))
+    (is (not (contains? state :authority-token)))))
+
+(deftest gravity-c6c10-compiled-binding-cache-preserves-current-path-provenance
+  (let [clear-cache!
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-clear-compiled-binding-cache!)
+        cache-state
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-compiled-binding-cache-state)
+        metrics-var
+        (gravity-c6c10-private-var
+         '*p15-s23-c6c10-compiled-binding-metrics*)
+        resolved (bootstrap/p15-s23-c6c10-resolve-source-path)
+        canonical (.getCanonicalPath (java.io.File. resolved))
+        canonical-file (java.io.File. canonical)
+        parent (.getParentFile canonical-file)
+        alias
+        (str (.getPath parent) java.io.File/separator ".."
+             java.io.File/separator (.getName parent)
+             java.io.File/separator (.getName canonical-file))
+        metrics (atom {})
+        observed
+        (try
+          (clear-cache!)
+          (with-bindings
+            {metrics-var metrics}
+            (let [alias-binding
+                  (with-redefs
+                    [bootstrap/p15-s23-c6c10-resolve-source-path
+                     (constantly alias)]
+                    (bootstrap/p15-s23-c6c10-source-binding!
+                     "/tmp/c6-cache-alias-binding.gravity"))
+                  canonical-binding
+                  (with-redefs
+                    [bootstrap/p15-s23-c6c10-resolve-source-path
+                     (constantly canonical)]
+                    (bootstrap/p15-s23-c6c10-source-binding!
+                     "/tmp/c6-cache-canonical-binding.gravity"))
+                  alias-artifact
+                  (with-redefs
+                    [bootstrap/p15-s23-c6c10-resolve-source-path
+                     (constantly alias)]
+                    (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                     "/tmp/c6-cache-alias-artifact.gravity"
+                     gravity-c6c10-accepted-source :jvm))
+                  canonical-artifact
+                  (with-redefs
+                    [bootstrap/p15-s23-c6c10-resolve-source-path
+                     (constantly canonical)]
+                    (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                     "/tmp/c6-cache-canonical-artifact.qst"
+                     gravity-c6c10-accepted-source :jvm))]
+              {:alias-binding alias-binding
+               :canonical-binding canonical-binding
+               :alias-artifact alias-artifact
+               :canonical-artifact canonical-artifact
+               :state (cache-state)}))
+          (finally
+            (clear-cache!)))
+        {:keys [alias-binding canonical-binding alias-artifact
+                canonical-artifact state]} observed]
+    (is (.isFile (java.io.File. alias)))
+    (is (= canonical (.getCanonicalPath (java.io.File. alias))))
+    (is (= alias (:source-path alias-binding)))
+    (is (= canonical (:source-path canonical-binding)))
+    (is (= (dissoc alias-binding :request-source :source-path)
+           (dissoc canonical-binding :request-source :source-path)))
+    (is (= (:plan alias-binding) (:plan canonical-binding)))
+    (is (not (str/includes? (pr-str (:plan alias-binding)) alias)))
+    (is (= alias
+           (get-in alias-artifact
+                   [:physical-provenance :actual-paths
+                    :gravity-c6-c10-source])))
+    (is (= canonical
+           (get-in canonical-artifact
+                   [:physical-provenance :actual-paths
+                    :gravity-c6-c10-source])))
+    (is (= (:artifact-id alias-artifact)
+           (:artifact-id canonical-artifact)))
+    (is (= (gravity-c6c10-semantic-view alias-artifact)
+           (gravity-c6c10-semantic-view canonical-artifact)))
+    (is (not=
+         (get-in alias-artifact
+                 [:physical-provenance :request-binding-id])
+         (get-in canonical-artifact
+                 [:physical-provenance :request-binding-id])))
+    (is (= canonical (get-in state [:cache-key :source-path])))
+    (is (= 1 (:entry-count state)))
+    (is (= {:source-authenticated 4
+            :emitter-authenticated 4
+            :cache-miss 1
+            :compile-start 1
+            :compile-complete 1
+            :cache-hit 3}
+           @metrics))))
+
+(deftest gravity-c6c10-compiled-binding-cache-rejects-source-substitution
+  (let [clear-cache!
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-clear-compiled-binding-cache!)
+        cache-state
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-compiled-binding-cache-state)
+        cache-lookup-var
+        (gravity-c6c10-private-var
+         'p15-s23-c6c10-cached-compiled-binding!)
+        source-path (bootstrap/p15-s23-c6c10-resolve-source-path)
+        compiler-path
+        (bootstrap/c-backend-resolve-p15-s23-compiler-source-path)
+        source-nio (.toPath (java.io.File. source-path))
+        compiler-nio (.toPath (java.io.File. compiler-path))
+        source-bytes (java.nio.file.Files/readAllBytes source-nio)
+        compiler-bytes (java.nio.file.Files/readAllBytes compiler-nio)
+        hostile-source-bytes (aclone source-bytes)
+        hostile-compiler-bytes (aclone compiler-bytes)]
+    (aset-byte hostile-source-bytes 0
+               (unchecked-byte
+                (bit-xor 1 (bit-and 0xff (aget hostile-source-bytes 0)))))
+    (aset-byte hostile-compiler-bytes 0
+               (unchecked-byte
+                (bit-xor 1 (bit-and 0xff (aget hostile-compiler-bytes 0)))))
+    (with-temp-directory
+      "gravity-c6-cache-auth-"
+      (fn [root]
+        (let [pinned-source (.resolve root "pinned-c6.gravity")
+              pinned-compiler (.resolve root "pinned-compiler.gravity")
+              _ (java.nio.file.Files/write
+                 pinned-source source-bytes
+                 (make-array java.nio.file.OpenOption 0))
+              _ (java.nio.file.Files/write
+                 pinned-compiler compiler-bytes
+                 (make-array java.nio.file.OpenOption 0))
+              source-resolver
+              (constantly (.toString pinned-source))
+              compiler-resolver
+              (constantly (.toString pinned-compiler))
+              cache-lookups (atom 0)
+              reject-before-lookup
+              (fn [request-source]
+                (with-redefs-fn
+                  {#'bootstrap/p15-s23-c6c10-resolve-source-path
+                   source-resolver
+                   #'bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                   compiler-resolver
+                   cache-lookup-var
+                   (fn [& _]
+                     (swap! cache-lookups inc)
+                     (throw (AssertionError.
+                             "hostile bytes reached cache lookup")))}
+                  #(diagnostic-data
+                    (fn []
+                      (bootstrap/p15-s23-c6c10-source-binding!
+                       request-source)))))]
+          (clear-cache!)
+          (try
+            (let [warm
+                  (with-redefs
+                    [bootstrap/p15-s23-c6c10-resolve-source-path
+                     source-resolver
+                     bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                     compiler-resolver]
+                    (bootstrap/p15-s23-c6c10-source-binding!
+                     "/tmp/c6-cache-warm.gravity"))
+                  warm-key (:cache-key (cache-state))]
+              (java.nio.file.Files/write
+               pinned-source hostile-source-bytes
+               (make-array java.nio.file.OpenOption 0))
+              (let [data
+                    (reject-before-lookup
+                     "/tmp/c6-cache-same-path-source.gravity")]
+                (is (= "C6-VERIFY" (:id data)) data)
+                (is (= :pinned-gravity-c6-c10-source-bytes
+                       (:missing-fact data)) data))
+              (java.nio.file.Files/write
+               pinned-source source-bytes
+               (make-array java.nio.file.OpenOption 0))
+              (java.nio.file.Files/write
+               pinned-compiler hostile-compiler-bytes
+               (make-array java.nio.file.OpenOption 0))
+              (let [data
+                    (reject-before-lookup
+                     "/tmp/c6-cache-same-path-compiler.gravity")]
+                (is (= "P15S23Q001" (:id data)) data)
+                (is (= :stage2-compiler-source-content-hash
+                       (:missing-fact data)) data))
+              (java.nio.file.Files/write
+               pinned-compiler compiler-bytes
+               (make-array java.nio.file.OpenOption 0))
+              (java.nio.file.Files/delete pinned-source)
+              (let [data
+                    (reject-before-lookup
+                     "/tmp/c6-cache-missing-source.gravity")]
+                (is (= "C6-VERIFY" (:id data)) data)
+                (is (= :pinned-gravity-c6-c10-source-present
+                       (:missing-fact data)) data))
+              (java.nio.file.Files/createSymbolicLink
+               pinned-source source-nio
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              (let [data
+                    (reject-before-lookup
+                     "/tmp/c6-cache-linked-source.gravity")]
+                (is (= "C6-VERIFY" (:id data)) data)
+                (is (= :pinned-gravity-c6-c10-source-bytes
+                       (:missing-fact data)) data))
+              (java.nio.file.Files/delete pinned-source)
+              (java.nio.file.Files/write
+               pinned-source source-bytes
+               (make-array java.nio.file.OpenOption 0))
+              (java.nio.file.Files/delete pinned-compiler)
+              (java.nio.file.Files/createSymbolicLink
+               pinned-compiler compiler-nio
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              (let [data
+                    (reject-before-lookup
+                     "/tmp/c6-cache-linked-compiler.gravity")]
+                (is (= "P15S23Q001" (:id data)) data)
+                (is (= :stage2-compiler-source-regular-file
+                       (:missing-fact data)) data))
+              (java.nio.file.Files/delete pinned-compiler)
+              (java.nio.file.Files/write
+               pinned-compiler compiler-bytes
+               (make-array java.nio.file.OpenOption 0))
+              (is (zero? @cache-lookups))
+              (is (= 1 (:entry-count (cache-state))))
+              (is (= warm-key (:cache-key (cache-state))))
+              (is (= (.getCanonicalPath (.toFile pinned-source))
+                     (:source-path warm-key)))
+              (let [replay
+                    (with-redefs
+                      [bootstrap/p15-s23-c6c10-resolve-source-path
+                       source-resolver
+                       bootstrap/c-backend-resolve-p15-s23-compiler-source-path
+                       compiler-resolver]
+                      (bootstrap/p15-s23-c6c10-source-binding!
+                       "/tmp/c6-cache-after-rejections.gravity"))]
+                (is (= (dissoc warm :request-source)
+                       (dissoc replay :request-source)))))
+            (finally
+              (clear-cache!))))))))
+
+(deftest gravity-c6c10-compiled-binding-cache-is-single-flight-and-failure-safe
+  (let [clear-cache!
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-clear-compiled-binding-cache!)
+        cache-state
+        (gravity-c6c10-private-fn
+         'p15-s23-c6c10-compiled-binding-cache-state)
+        authenticate-var
+        (gravity-c6c10-private-var
+         'p15-s23-c6c10-authenticated-source-binding-inputs!)
+        compile-var
+        (gravity-c6c10-private-var
+         'p15-s23-c6c10-compile-authenticated-source-binding)
+        expected-plan-var #'bootstrap/p15-s23-c6c10-expected-plan-semantic-hash
+        inputs ((deref authenticate-var) "/tmp/c6-cache-captured.gravity")
+        baseline
+        (bootstrap/p15-s23-c6c10-compile-source-binding
+         "/tmp/c6-cache-baseline.gravity")
+        valid-core (dissoc baseline :request-source)
+        requests (mapv #(str "/tmp/c6-cache-worker-" % ".gravity")
+                       (range 8))]
+    (clear-cache!)
+    (try
+      (let [authenticate-count (atom 0)
+            compile-count (atom 0)
+            authenticated
+            (java.util.concurrent.CountDownLatch. (count requests))
+            start (promise)
+            results
+            (with-redefs-fn
+              {authenticate-var
+               (fn [_]
+                 (swap! authenticate-count inc)
+                 (.countDown authenticated)
+                 inputs)
+               compile-var
+               (fn [request-source _]
+                 (swap! compile-count inc)
+                 (when-not
+                  (.await authenticated 10
+                          java.util.concurrent.TimeUnit/SECONDS)
+                   (throw (ex-info
+                           "workers did not authenticate concurrently"
+                           {:phase :single-flight-timeout
+                            :remaining (.getCount authenticated)})))
+                 (assoc valid-core :request-source request-source))}
+              #(let [workers
+                     (mapv
+                      (fn [request-source]
+                        (future
+                          @start
+                          (bootstrap/p15-s23-c6c10-source-binding!
+                           request-source)))
+                      requests)]
+                 (deliver start :go)
+                 (mapv (fn [worker]
+                         (deref worker 30000 ::timeout))
+                       workers)))]
+        (is (not-any? #{::timeout} results))
+        (is (zero? (.getCount authenticated)))
+        (is (= 8 @authenticate-count))
+        (is (= 1 @compile-count))
+        (is (= requests (mapv :request-source results)))
+        (is (apply = (map #(dissoc % :request-source) results)))
+        (is (= 1 (:entry-count (cache-state)))))
+      (let [warm-cache-key (:cache-key (cache-state))
+            drift-compile-count (atom 0)
+            drift-data
+            (with-redefs-fn
+              {authenticate-var (constantly inputs)
+               expected-plan-var
+               "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+               compile-var
+               (fn [request-source _]
+                 (swap! drift-compile-count inc)
+                 (assoc valid-core :request-source request-source))}
+              #(diagnostic-data
+                (fn []
+                  (bootstrap/p15-s23-c6c10-source-binding!
+                   "/tmp/c6-cache-pin-drift.gravity"))))]
+        (is (= "C6-VERIFY" (:id drift-data)) drift-data)
+        (is (= :exact-pinned-gravity-c6-c10-source-binding
+               (:missing-fact drift-data)) drift-data)
+        (is (= 1 @drift-compile-count))
+        (is (= 1 (:entry-count (cache-state))))
+        (is (= warm-cache-key (:cache-key (cache-state))))
+        (is (= bootstrap/p15-s23-c6c10-expected-plan-semantic-hash
+               (get-in (cache-state)
+                       [:cache-key :expected-plan-semantic-hash])))
+        (is (= (dissoc baseline :request-source)
+               (dissoc
+                (bootstrap/p15-s23-c6c10-source-binding!
+                 "/tmp/c6-cache-after-pin-drift.gravity")
+                :request-source))))
+      (clear-cache!)
+      (let [attempts (atom 0)
+            first-data
+            (with-redefs-fn
+              {authenticate-var (constantly inputs)
+               compile-var
+               (fn [request-source _]
+                 (if (= 1 (swap! attempts inc))
+                   (throw (ex-info "intentional cache compile failure"
+                                   {:phase :compile-failure}))
+                   (assoc valid-core :request-source request-source)))}
+              #(let [first-data
+                     (diagnostic-data
+                      (fn []
+                        (bootstrap/p15-s23-c6c10-source-binding!
+                         "/tmp/c6-cache-failure.gravity")))
+                     empty-state (cache-state)
+                     recovered
+                     (bootstrap/p15-s23-c6c10-source-binding!
+                      "/tmp/c6-cache-recovered.gravity")]
+                 {:first-data first-data
+                  :empty-state empty-state
+                  :recovered recovered}))]
+        (is (= :compile-failure
+               (get-in first-data [:first-data :phase])))
+        (is (= 0 (get-in first-data [:empty-state :entry-count])))
+        (is (= "/tmp/c6-cache-recovered.gravity"
+               (get-in first-data [:recovered :request-source])))
+        (is (= 2 @attempts))
+        (is (= 1 (:entry-count (cache-state)))))
+      (finally
+        (clear-cache!)))))
 
 (deftest gravity-c6c10-digest-request-sealer-is-exact-and-collision-safe
   (let [source-path "/tmp/gravity-c6c10-graph.gravity"
