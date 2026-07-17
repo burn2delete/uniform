@@ -31542,6 +31542,139 @@
    candidate
    (get-in fresh [:sealed-result :resolved-digests])))
 
+(defn- gravity-c6c10-legacy-canonical-sort-key
+  [form]
+  (let [text
+        (binding [*print-length* nil
+                  *print-level* nil
+                  *print-meta* false
+                  *print-dup* false
+                  *print-readably* true
+                  *print-namespace-maps* false]
+          (pr-str [:gravity/canonical-sort-v1 form]))]
+    (apply str
+           (map #(format "%02x" (bit-and % 0xff))
+                (.getBytes
+                 ^String text java.nio.charset.StandardCharsets/UTF_8)))))
+
+(deftest gravity-c6c10-canonical-encoder-is-exact-and-single-pass
+  (let [source-path "/tmp/gravity-c6c10-canonical-equivalence.gravity"
+        supplementary (String. (Character/toChars 0x1f642))
+        unicode (str "A" (char 0x00e9) (char 0x03bb) supplementary)
+        values
+        [nil false true -17 0 9223372036854775807N unicode
+         (char 0x03bb) :plain :ns/key 'plain 'ns/name
+         [1 :a unicode]
+         (list :x 2 false)
+         (array-map :b [2 3] :a #{:z :y})
+         #{[:b 2] [:a 1]}]
+        nested-map (array-map :b [2 3] :a #{:z :y})
+        nested-set #{[:b 2] [:a 1]}
+        frozen
+        [[unicode
+          [:string unicode]
+          {:nodes 1 :maximum-depth 0 :maximum-width 0
+           :scalar-bytes 9 :maximum-scalar-bytes 9
+           :maximum-integer-bits 0}
+          "sha256:917a032bfc2835056ef3f9716a2b1fb346a67a9cdda66d5775866b4755c0db01"]
+         [nested-map
+          [:map
+           [[:entry [:keyword nil "a"]
+             [:set [[:keyword nil "y"] [:keyword nil "z"]]]]
+            [:entry [:keyword nil "b"]
+             [:vector [[:integer "2"] [:integer "3"]]]]]]
+          {:nodes 9 :maximum-depth 2 :maximum-width 2
+           :scalar-bytes 4 :maximum-scalar-bytes 1
+           :maximum-integer-bits 2}
+          "sha256:47d0870e8d6ea4c344f3654f55c7cfef711d8039bf68a66148e025a311b8568b"]
+         [nested-set
+          [:set
+           [[:vector [[:keyword nil "a"] [:integer "1"]]]
+            [:vector [[:keyword nil "b"] [:integer "2"]]]]]
+          {:nodes 7 :maximum-depth 2 :maximum-width 2
+           :scalar-bytes 2 :maximum-scalar-bytes 1
+           :maximum-integer-bits 2}
+          "sha256:6c9fff304a6ee4cc0c09447bad2635be8ce935f7b40e6300ff6396f795e660cf"]]]
+    (doseq [value values]
+      (let [record
+            (bootstrap/p15-s23-c6c10-canonical-record source-path value)
+            form (:form record)]
+        (is (= (gravity-c6c10-legacy-canonical-sort-key form)
+               (bootstrap/p15-s23-c6c10-canonical-sort-key form))
+            value)))
+    (doseq [[value expected-form expected-stats expected-digest] frozen]
+      (let [record
+            (bootstrap/p15-s23-c6c10-canonical-record source-path value)]
+        (is (= expected-form (:form record)) value)
+        (is (= expected-stats (:stats record)) value)
+        (is (= expected-digest
+               (bootstrap/p15-s23-c6c10-canonical-digest
+                source-path value))
+            value)))
+    (let [array-left (array-map :b [2 3] :a #{:z :y})
+          array-right (array-map :a #{:y :z} :b [2 3])
+          tree (into (sorted-map) array-left)
+          entries (mapv (fn [index]
+                          [(keyword (str "key-" index)) [index]])
+                        (range 20))
+          hash-map-value (into {} entries)
+          tree-map-value (into (sorted-map) (reverse entries))
+          hash-set-value (set (map first entries))
+          tree-set-value (into (sorted-set) (reverse hash-set-value))
+          canonical
+          #(select-keys
+            (bootstrap/p15-s23-c6c10-canonical-record source-path %)
+            [:form :text :stats])]
+      (is (= (canonical array-left)
+             (canonical array-right)
+             (canonical tree)))
+      (is (= (canonical hash-map-value) (canonical tree-map-value)))
+      (is (= (canonical hash-set-value) (canonical tree-set-value))))
+    (let [original bootstrap/p15-s23-c6c10-canonical-sort-key
+          calls (atom 0)
+          counted
+          (fn [form]
+            (swap! calls inc)
+            (original form))
+          width-128-map
+          (into {} (map (fn [index]
+                          [(keyword (str "key-" index)) index])
+                        (range 128)))
+          width-128-set (set (map #(keyword (str "item-" %))
+                                  (range 128)))]
+      (with-redefs [bootstrap/p15-s23-c6c10-canonical-sort-key counted]
+        (bootstrap/p15-s23-c6c10-canonical-record
+         source-path width-128-map))
+      (is (= 256 @calls))
+      (reset! calls 0)
+      (with-redefs [bootstrap/p15-s23-c6c10-canonical-sort-key counted]
+        (bootstrap/p15-s23-c6c10-canonical-record
+         source-path width-128-set))
+      (is (= 128 @calls)))
+    (doseq [[value expected-missing]
+            [[(with-meta {:a 1} {:hostile true})
+              :metadata-free-canonical-value]
+             [(->ReaderCanonicalCollisionRecord 1)
+              :record-free-canonical-value]
+             [(into {} (map (fn [index] [index index]) (range 129)))
+              :maximum-container-width]
+             [(nth (iterate vector 0) 65)
+              :bounded-canonical-carrier]
+             [(.shiftLeft java.math.BigInteger/ONE 256)
+              :maximum-integer-bits]
+             [(str "invalid-" (char 0xd800))
+              :well-formed-unicode-scalar-string]]]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-c6c10-canonical-record
+               source-path value))]
+        (is (= "C6-VERIFY" (:id data)) [expected-missing data])
+        (is (= expected-missing (:missing-fact data))
+            [expected-missing data])
+        (is (re-matches #"sha256:[0-9a-f]{64}"
+                        (:diagnostic-id data))
+            [expected-missing data])))))
+
 (deftest gravity-c6c10-digest-request-sealer-is-exact-and-collision-safe
   (let [source-path "/tmp/gravity-c6c10-graph.gravity"
         authority

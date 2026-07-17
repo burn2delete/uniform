@@ -118030,6 +118030,28 @@
 
 (declare p15-s23-c6c10-canonical-form*)
 
+(def ^:private p15-s23-c6c10-lowercase-hex-digits
+  "0123456789abcdef")
+
+(defn- p15-s23-c6c10-lowercase-hex
+  [^bytes bytes]
+  (let [byte-count (alength bytes)
+        characters (char-array (* 2 byte-count))]
+    (loop [byte-index 0]
+      (if (= byte-index byte-count)
+        (String. characters)
+        (let [value (bit-and (aget bytes byte-index) 0xff)
+              character-index (* 2 byte-index)]
+          (aset-char
+           characters character-index
+           (.charAt ^String p15-s23-c6c10-lowercase-hex-digits
+                    (unsigned-bit-shift-right value 4)))
+          (aset-char
+           characters (inc character-index)
+           (.charAt ^String p15-s23-c6c10-lowercase-hex-digits
+                    (bit-and value 0x0f)))
+          (recur (inc byte-index)))))))
+
 (defn p15-s23-c6c10-canonical-sort-key
   [form]
   (let [text
@@ -118040,9 +118062,8 @@
                   *print-readably* true
                   *print-namespace-maps* false]
           (pr-str [:gravity/canonical-sort-v1 form]))]
-    (apply str
-           (map #(format "%02x" (bit-and % 0xff))
-                (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8)))))
+    (p15-s23-c6c10-lowercase-hex
+     (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8))))
 
 (defn p15-s23-c6c10-valid-named-component?
   [value]
@@ -118149,20 +118170,26 @@
             (mapv (fn [[key child]]
                     (let [encoded-key
                           (p15-s23-c6c10-canonical-form*
-                           source-path stats (inc depth) key)]
+                           source-path stats (inc depth) key)
+                          key-sort
+                          (p15-s23-c6c10-canonical-sort-key encoded-key)
+                          encoded-child
+                          (p15-s23-c6c10-canonical-form*
+                           source-path stats (inc depth) child)
+                          entry
+                          [:entry encoded-key encoded-child]]
                       {:key encoded-key
-                       :key-sort (p15-s23-c6c10-canonical-sort-key
-                                  encoded-key)
-                       :entry
-                       [:entry encoded-key
-                        (p15-s23-c6c10-canonical-form*
-                         source-path stats (inc depth) child)]}))
+                       :key-sort key-sort
+                       :entry entry}))
                   value)
+            entries-with-sorts
+            (mapv #(assoc % :entry-sort
+                          (p15-s23-c6c10-canonical-sort-key
+                           (:entry %)))
+                  entries)
             key-sorts (mapv :key-sort entries)
-            ordered (mapv :entry (sort-by
-                                  #(p15-s23-c6c10-canonical-sort-key
-                                    (:entry %))
-                                  entries))]
+            ordered (mapv :entry
+                          (sort-by :entry-sort entries-with-sorts))]
         (when-not (= (count key-sorts) (count (distinct key-sorts)))
           (p15-s23-c6c10-host-fail!
            "C6-VERIFY" source-path :unique-canonical-map-keys {}))
@@ -118181,8 +118208,14 @@
       (swap! stats update :maximum-width max (count value))
       (let [items (p15-s23-c6c10-canonical-sequence
                    source-path stats depth value)
-            sort-keys (mapv p15-s23-c6c10-canonical-sort-key items)
-            ordered (vec (sort-by p15-s23-c6c10-canonical-sort-key items))]
+            items-with-sorts
+            (mapv (fn [item]
+                    {:item item
+                     :sort-key
+                     (p15-s23-c6c10-canonical-sort-key item)})
+                  items)
+            sort-keys (mapv :sort-key items-with-sorts)
+            ordered (mapv :item (sort-by :sort-key items-with-sorts))]
         (when-not (= (count sort-keys) (count (distinct sort-keys)))
           (p15-s23-c6c10-host-fail!
            "C6-VERIFY" source-path :unique-canonical-set-items {}))
