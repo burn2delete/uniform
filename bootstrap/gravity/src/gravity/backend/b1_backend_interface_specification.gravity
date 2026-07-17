@@ -792,12 +792,12 @@
         (get rule :compiled-by) (get rule :executed-by)
         (get rule :clojure-seed-boundary?) (get rule :self-hosted?)
         (get rule :function-shapes)]
-       [:gravity/c11-pinned-source-rule :gravity-source 68287
-        "sha256:8b0a83f86c45f4eb407c5beeca20ab252992e95cf0ef583b863c4be3379e0eed"
-        "sha256:0b5e74eb394de93ac02fabcb532623d88e03ac5f336da52b98daac8c6d3c964a"
-        "sha256:8557c268eda62aca487ed797a1a82a4169dc0b0eec80fe6b737e421337c2ba7a"
+       [:gravity/c11-pinned-source-rule :gravity-source 68768
+        "sha256:ad5af43542edfcd19e15ea20eacd0590f914884c8c06d22ba14c8a07f6ed98f8"
+        "sha256:a72c4b7dcf4bb602c274f4f0c4f793d11cc5085fb85a36d74d43359ff365f2b5"
+        "sha256:fcfab1f2f150291fdefa26045059eade72fac930d345ca94082614ee9b8fe143"
         'c11-build-target-independent-mir
-        "sha256:b1f42efc29f2d66237c2491c13b092065059e623792776b27bb9965eabb6ca00"
+        "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
         :clojure-stage0-seed :clojure-stage0-rule-runner true false
         '{c11-nodes-before-id {:arity 3 :params [nodes node-id result]}
           c11-runtime-check-fact-id {:arity 2 :params [check fact-kind]}
@@ -1086,10 +1086,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 99344
-          "sha256:12e8a65771aa09fbe2db9dfd8d0a7de0ebdad0bfcb7b6b133a449404433b4a19"
-          "sha256:631614827531f4842d4f641c229669bfea5bbe087016ca397722c5f4d10657a9"
-          "sha256:9cb928c1278ae9594802e26b0e1afe05b073830bb9bb4e85b24f9588225b3224"
+          :gravity.compiler/c14-target-lowering 100279
+          "sha256:07832d2eef57a88b53234854089caf6acba3fd4c73b87e754ef8de7eada4b040"
+          "sha256:fe28b17d0408122b9511c133478765e2bae9367549cffe53a05f502c7fdc0dcb"
+          "sha256:1ce80a93b6e52c797e7069a7dfe84087a2344006f0d345c8dd6860f88e0e1217"
           'c14-build-bounded-llvm-lowering-record
           "sha256:1b42b7a74d67607e4d9076adda65e64160317e34d3e608ae2e4a81fbce3b4b30"
           '{c14-bounded-optimized-input-valid?
@@ -1556,7 +1556,7 @@
                                     (if (b1-c14-c-dependencies-valid? request)
                                       (if (= (get request :target-policy)
                                              {:scope
-                                              :bounded-pure-scalar-forwarding-do-let-if-integer-eq
+                                              :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
                                               :maximum-operation-count 128
                                               :dialect :c17
                                               :whole-c14? false
@@ -1625,7 +1625,7 @@
               :gravity.backend/c :hosted true [] [] [] []
               {:decision :accepted
                :bounded-surface
-               :pure-scalar-forwarding-do-let-if-integer-eq
+               :pure-scalar-forwarding-do-let-if-integer-comparisons
                :dialect :c17
                :unsupported-diagnostic "C14-UNSUPPORTED"
                :no-hidden-runtime? true
@@ -1660,12 +1660,12 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 99344
-          "sha256:12e8a65771aa09fbe2db9dfd8d0a7de0ebdad0bfcb7b6b133a449404433b4a19"
-          "sha256:631614827531f4842d4f641c229669bfea5bbe087016ca397722c5f4d10657a9"
-          "sha256:9cb928c1278ae9594802e26b0e1afe05b073830bb9bb4e85b24f9588225b3224"
+          :gravity.compiler/c14-target-lowering 100279
+          "sha256:07832d2eef57a88b53234854089caf6acba3fd4c73b87e754ef8de7eada4b040"
+          "sha256:fe28b17d0408122b9511c133478765e2bae9367549cffe53a05f502c7fdc0dcb"
+          "sha256:1ce80a93b6e52c797e7069a7dfe84087a2344006f0d345c8dd6860f88e0e1217"
           'c14-build-bounded-c-lowering-record
-          "sha256:6ff04fed1658fe82a466672ed90685656d6ced19df98dcd3e8664f32e1a38da3"
+          "sha256:3209bb1605d40c7a466a53eb01d6cf7a4d243210ce6a0c189ceb3b15564f09ee"
           '{c14-bounded-optimized-input-valid?
             {:arity 2 :params [optimized policy]}
             c14-c-bounded-mir-surface-valid?

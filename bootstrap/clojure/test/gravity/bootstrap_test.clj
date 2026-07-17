@@ -34048,14 +34048,14 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 68287 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:8b0a83f86c45f4eb407c5beeca20ab252992e95cf0ef583b863c4be3379e0eed"
+    (is (= 68768 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:ad5af43542edfcd19e15ea20eacd0590f914884c8c06d22ba14c8a07f6ed98f8"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:0b5e74eb394de93ac02fabcb532623d88e03ac5f336da52b98daac8c6d3c964a"
+    (is (= "sha256:a72c4b7dcf4bb602c274f4f0c4f793d11cc5085fb85a36d74d43359ff365f2b5"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:8557c268eda62aca487ed797a1a82a4169dc0b0eec80fe6b737e421337c2ba7a"
+    (is (= "sha256:fcfab1f2f150291fdefa26045059eade72fac930d345ca94082614ee9b8fe143"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
-    (is (= "sha256:b1f42efc29f2d66237c2491c13b092065059e623792776b27bb9965eabb6ca00"
+    (is (= "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
     (is (= bootstrap/p15-s23-c11-mir-source-byte-count
            (:source-byte-count binding)))
@@ -38984,7 +38984,7 @@
   [right]
   (authenticated-binary-integer-equality-source-values 7 right))
 
-(defn- authenticated-binary-integer-equality-upstream
+(defn- authenticated-binary-integer-comparison-upstream
   [source-path source]
   (binding
    [bootstrap/*additional-bootstrap-targets*
@@ -39028,13 +39028,13 @@
                (.toRealPath unequal-file
                             (make-array java.nio.file.LinkOption 0)))
               left-upstream
-              (authenticated-binary-integer-equality-upstream
+              (authenticated-binary-integer-comparison-upstream
                left-path equal-source)
               right-upstream
-              (authenticated-binary-integer-equality-upstream
+              (authenticated-binary-integer-comparison-upstream
                right-path equal-source)
               unequal-upstream
-              (authenticated-binary-integer-equality-upstream
+              (authenticated-binary-integer-comparison-upstream
                unequal-path unequal-source)
               before
               (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
@@ -39362,6 +39362,606 @@
     (doseq [artifact [equal unequal]
             key [:whole-b2? :public? :release? :self-hosted?]]
       (is (false? (get artifact key)) [key artifact]))))
+
+;; Internal experimental binary ordering slice.  The language-wide arity and
+;; mixed-numeric policy remain undecided; these tests credit only exact ordered
+;; integer predicates that C14 proves fit the signed-i64 C17 carrier.
+
+(def ^:private authenticated-binary-integer-order-cases
+  [{:label :lt-true :operator '< :source-operation :integer-lt
+    :left "-9223372036854775808" :right "9223372036854775807"
+    :expected 9 :extension ".gravity" :c-token "<"}
+   {:label :lt-equal-false :operator '< :source-operation :integer-lt
+    :left "7" :right "7" :expected 3 :extension ".qst" :c-token "<"}
+   {:label :lte-equal-true :operator '<= :source-operation :integer-lte
+    :left "7" :right "7" :expected 9 :extension ".gravity" :c-token "<="}
+   {:label :lte-false :operator '<= :source-operation :integer-lte
+    :left "9223372036854775807" :right "-9223372036854775808"
+    :expected 3 :extension ".qst" :c-token "<="}
+   {:label :gt-true :operator '> :source-operation :integer-gt
+    :left "9223372036854775807" :right "-9223372036854775808"
+    :expected 9 :extension ".gravity" :c-token ">"}
+   {:label :gt-equal-false :operator '> :source-operation :integer-gt
+    :left "7" :right "7" :expected 3 :extension ".qst" :c-token ">"}
+   {:label :gte-equal-true :operator '>= :source-operation :integer-gte
+    :left "7" :right "7" :expected 9 :extension ".gravity" :c-token ">="}
+   {:label :gte-false :operator '>= :source-operation :integer-gte
+    :left "-9223372036854775808" :right "9223372036854775807"
+    :expected 3 :extension ".qst" :c-token ">="}])
+
+(defn- authenticated-binary-integer-order-source
+  [operator left right]
+  (closed-pure-source-with-main
+   (str "(let [x " left " y " right "] "
+        "(if (" operator " x y) 9 3))")
+   {:exports '[main]}))
+
+(def ^:private authenticated-binary-integer-order-composite-source
+  (closed-pure-source-with-main
+   "(do (< 1 2) (<= 2 2) (> 3 2) (>= 4 4) 9)"
+   {:exports '[main]}))
+
+(defn- authenticated-binary-integer-order-gate-a-row
+  [root case]
+  (let [source
+        (authenticated-binary-integer-order-source
+         (:operator case) (:left case) (:right case))
+        file (.resolve root (str (name (:label case)) (:extension case)))
+        _ (spit (.toFile file) source)
+        path (.toString
+              (.toRealPath file (make-array java.nio.file.LinkOption 0)))
+        upstream
+        (authenticated-binary-integer-comparison-upstream path source)
+        artifact
+        (bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+         (:c11 upstream) (:checked-core upstream) (:context upstream))]
+    (assoc case :source source :path path
+           :upstream upstream :artifact artifact)))
+
+(defn- authenticated-binary-integer-order-composite-row
+  [root extension]
+  (let [file (.resolve root (str "all-ordering" extension))
+        _ (spit (.toFile file)
+                authenticated-binary-integer-order-composite-source)
+        path (.toString
+              (.toRealPath file (make-array java.nio.file.LinkOption 0)))
+        upstream
+        (authenticated-binary-integer-comparison-upstream
+         path authenticated-binary-integer-order-composite-source)
+        artifact
+        (bootstrap/p15-s23-stage2-b2-c17-artifact-from-c11!
+         (:c11 upstream) (:checked-core upstream) (:context upstream))]
+    {:path path :upstream upstream :artifact artifact}))
+
+(def ^:private authenticated-binary-integer-order-gate-a-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-integer-order-left-"
+      (fn [left-root]
+        (with-temp-directory
+          "gravity-authenticated-integer-order-right-"
+          (fn [right-root]
+            (let [before
+                  (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+                  rows
+                  (mapv
+                   #(authenticated-binary-integer-order-gate-a-row
+                     left-root %)
+                   authenticated-binary-integer-order-cases)
+                  composite-left
+                  (authenticated-binary-integer-order-composite-row
+                   left-root ".gravity")
+                  composite-right
+                  (authenticated-binary-integer-order-composite-row
+                   right-root ".qst")
+                  verification
+                  (bootstrap/p15-s23-stage2-b2-c17-verification-report
+                   (:artifact composite-left)
+                   (get-in composite-left [:upstream :checked-core])
+                   (get-in composite-left [:upstream :context]))
+                  after
+                  (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+              {:rows rows
+               :composite-left composite-left
+               :composite-right composite-right
+               :verification verification
+               :before before :after after})))))))
+
+(deftest authenticated-binary-integer-ordering-reaches-gate-a-authentically
+  (let [{:keys [rows composite-left composite-right verification
+                before after]}
+        @authenticated-binary-integer-order-gate-a-proof
+        expected-operations
+        #{:integer-lt :integer-lte :integer-gt :integer-gte}]
+    (is (= before after))
+    (is (= [:passed :passed :passed :passed :passed :passed]
+           ((juxt :fresh-c11 :fresh-c13 :fresh-c14 :fresh-b1
+                  :gravity-b2-source-replay :independent-c-reconstruction)
+            verification)))
+    (is (= :passed (:status verification)))
+    (doseq [{:keys [label operator source-operation expected c-token
+                    extension upstream artifact]} rows]
+      (let [core (:checked-core upstream)
+            node
+            (first (filter #(= source-operation (:source-operation %))
+                           (:core-nodes core)))
+            operations
+            (bootstrap/p15-s23-c11-mir-operation-sequence
+             (get-in upstream [:c11 :mir-module]))
+            operation
+            (first (filter #(= source-operation (:opcode %)) operations))
+            [left-id right-id] (:operands operation)
+            operation-by-id (into {} (map (juxt :op-id identity)) operations)
+            records (:operation-records artifact)
+            record
+            (first (filter #(= source-operation (:mir-opcode %)) records))
+            record-by-id
+            (into {} (map (juxt :mir-operation-id identity)) records)
+            expected-expression
+            (str "(" (get-in record-by-id [left-id :c-value])
+                 " " c-token " "
+                 (get-in record-by-id [right-id :c-value])
+                 " ? INT64_C(1) : INT64_C(0))")
+            proof (get-in node [:safety :proof])
+            proof-entries
+            (get-in artifact [:proof-to-c-assumption-map :entries])
+            ordering-entries
+            (filterv #(= :defined-signed-i64-ordering
+                         (:assumption %))
+                     proof-entries)]
+        (is (= [:comparison source-operation :gravity/bool 2]
+               ((juxt :kind :source-operation :type
+                      #(count (:operands %))) node)) label)
+        (is (= operator (get-in node [:attributes :primitive])) label)
+        (is (= :left-to-right
+               (get-in node [:attributes :evaluation-order])) label)
+        (is (= [:gravity/integer :gravity/integer]
+               (get-in node [:attributes :operand-types])) label)
+        (is (= :proof-required
+               (get-in node [:attributes :numeric-mode])) label)
+        (is (= :integer-exact
+               (get-in node [:attributes :mathematical-mode])) label)
+        (is (= :exact-integer-ordering
+               (get-in node [:attributes :numeric-semantics])) label)
+        (is (= :not-applicable
+               (get-in node [:attributes :overflow])) label)
+        (is (= :proven-safe (get-in node [:safety :outcome])) label)
+        (is (= :exact-integer-ordering
+               (get-in node [:safety :basis]) (:basis proof)) label)
+        (is (= (:operands node) (:operand-node-ids proof)) label)
+        (is (= [source-operation source-operation :gravity/bool]
+               ((juxt :opcode :source-operation :type) operation)) label)
+        (is (= (:operands node) (:operands operation)) label)
+        (is (= [:gravity/integer :gravity/integer]
+               (mapv #(get-in operation-by-id [% :type])
+                     [left-id right-id])) label)
+        (is (empty? (:effects operation)) label)
+        (is (empty? (:capabilities operation)) label)
+        (is (= expected (:semantic-result artifact)
+               (:expected-exit-code artifact)) label)
+        (is (= expected-expression (:c-expression record)) label)
+        (is (= [{:assumption :defined-signed-i64-ordering
+                 :evidence
+                 :authenticated-ordered-two-integer-operands-and-boolean-result
+                 :c-site :generated-integer-ordering-expressions
+                 :outcome :proven-safe}]
+               ordering-entries)
+            label)
+        (is (not-any? #(= :defined-signed-i64-equality (:assumption %))
+                      proof-entries)
+            label)
+        (is (= :unsupported-mir-opcode
+               (bootstrap/p15-s23-b3-llvm-operation-rejection
+                operations operation)) label)
+        (is (contains? #{".gravity" ".qst"} extension) label)
+        (doseq [key [:whole-b2? :public? :release? :self-hosted?]]
+          (is (false? (get artifact key)) [label key]))))
+    (doseq [[source-operation grouped]
+            (group-by :source-operation rows)]
+      (is (= #{".gravity" ".qst"} (set (map :extension grouped)))
+          source-operation))
+    (let [left (:artifact composite-left)
+          right (:artifact composite-right)
+          left-upstream (:upstream composite-left)
+          right-upstream (:upstream composite-right)
+          left-operations
+          (bootstrap/p15-s23-c11-mir-operation-sequence
+           (get-in left-upstream [:c11 :mir-module]))]
+      (is (= expected-operations
+             (set (keep #(when (contains? expected-operations (:opcode %))
+                          (:opcode %))
+                        left-operations))))
+      (is (= (:artifact-id (:checked-core left-upstream))
+             (:artifact-id (:checked-core right-upstream))))
+      (is (= (get-in left-upstream [:c11 :mir-id])
+             (get-in right-upstream [:c11 :mir-id])))
+      (is (= (:semantic-id left) (:semantic-id right)))
+      (is (= (:artifact-id left) (:artifact-id right)))
+      (is (not= (:actual-path-binding-id left)
+                (:actual-path-binding-id right)))
+      (is (= (:path composite-left)
+             (get-in left [:actual-path-provenance :source])))
+      (is (= (:path composite-right)
+             (get-in right [:actual-path-provenance :source]))))))
+
+(deftest authenticated-binary-integer-ordering-rejects-tamper-and-bad-input
+  (let [{:keys [rows before after]}
+        @authenticated-binary-integer-order-gate-a-proof
+        representative (first rows)
+        upstream (:upstream representative)
+        core (:checked-core upstream)
+        context (:context upstream)
+        module (get-in upstream [:c11 :mir-module])
+        operations (bootstrap/p15-s23-c11-mir-operation-sequence module)
+        operation (first (filter #(= :integer-lt (:opcode %)) operations))
+        operation-id (:op-id operation)
+        update-core
+        (fn [candidate transform]
+          (update candidate :core-nodes
+                  (fn [nodes]
+                    (mapv (fn [node]
+                            (if (= operation-id (:node-id node))
+                              (transform node)
+                              node))
+                          nodes))))
+        primitive-core
+        (update-core core #(assoc-in % [:attributes :primitive] '<=))
+        numeric-mode-core
+        (update-core
+         core #(assoc-in % [:attributes :numeric-mode] :unchecked))
+        mathematical-mode-core
+        (update-core
+         core #(assoc-in % [:attributes :mathematical-mode] :fast))
+        safety-core
+        (update-core core #(assoc-in % [:safety :basis] :forged-ordering))
+        reversed-core
+        (update-core
+         core
+         #(-> %
+              (update :operands (comp vec reverse))
+              (update-in [:safety :proof :operand-node-ids]
+                         (comp vec reverse))))
+        reversed-module
+        (c11-update-operation
+         module operation-id #(update % :operands (comp vec reverse)))
+        result-type-module
+        (c11-update-operation
+         module operation-id #(assoc % :type :gravity/integer))
+        arity-module
+        (c11-update-operation
+         module operation-id #(assoc % :operands [(first (:operands %))]))
+        mutation-data
+        [{:label :primitive
+          :data (c11-raw-diagnostic module primitive-core context)
+          :id "C11-TYPE"
+          :missing :exact-binary-integer-order-comparison-schema}
+         {:label :numeric-mode
+          :data (c11-raw-diagnostic module numeric-mode-core context)
+          :id "C11-TYPE"
+          :missing :exact-binary-integer-order-comparison-schema}
+         {:label :mathematical-mode
+          :data (c11-raw-diagnostic module mathematical-mode-core context)
+          :id "C11-TYPE"
+          :missing :exact-binary-integer-order-comparison-schema}
+         {:label :safety
+          :data (c11-raw-diagnostic module safety-core context)
+          :id "C11-SAFETY"
+          :missing :authenticated-pure-integer-order-comparison-proof}
+         {:label :ordered-operands
+          :data (c11-raw-diagnostic reversed-module reversed-core context)
+          :id "C11-SAFETY"
+          :missing :id-indexed-authenticated-safety-proof-certificates}
+         {:label :result-type
+          :data (c11-raw-diagnostic result-type-module core context)
+          :id "C11-TYPE"
+          :missing :exact-binary-integer-order-comparison-schema}
+         {:label :arity
+          :data (c11-raw-diagnostic arity-module core context)
+          :id "C11-MODULE"
+          :missing :checked-core-operation-parity}]
+        opcode-mutation-data
+        (mapv
+         (fn [{:keys [label source-operation upstream]}]
+           (let [candidate-module (get-in upstream [:c11 :mir-module])
+                 candidate-operations
+                 (bootstrap/p15-s23-c11-mir-operation-sequence
+                  candidate-module)
+                 candidate
+                 (first (filter #(= source-operation (:opcode %))
+                                candidate-operations))]
+             {:label label
+              :data
+              (c11-raw-diagnostic
+               (c11-update-operation
+                candidate-module (:op-id candidate)
+                #(assoc % :opcode :integer-eq))
+               (:checked-core upstream) (:context upstream))}))
+         (take-nth 2 rows))
+        c14-source
+        (slurp bootstrap/p15-s23-c14-source-relative-path)
+        c14-plan
+        (bootstrap/p15-s23-stage2-compiler-artifact-plan
+         (:emitter
+          (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+           bootstrap/p15-s23-c14-source-relative-path :c))
+         bootstrap/p15-s23-c14-source-relative-path c14-source)
+        c14-invoke
+        (fn [candidate operations-by-id seen]
+          (bootstrap/p15-s23-stage2-runtime-execute-function
+           {:engine :integer-order-c14-hostile-validator-test
+            :compiler-artifact-plan? true}
+           c14-plan 'c14-c-operation-valid?
+           [candidate operations-by-id seen]))
+        b2-source
+        (slurp bootstrap/p15-s23-b2-c17-source-relative-path)
+        b2-plan
+        (bootstrap/p15-s23-stage2-compiler-artifact-plan
+         (:emitter
+          (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+           bootstrap/p15-s23-b2-c17-source-relative-path :c))
+         bootstrap/p15-s23-b2-c17-source-relative-path b2-source)
+        b2-invoke
+        (fn [candidate candidate-operations operation-index block-order]
+          (bootstrap/p15-s23-stage2-runtime-execute-function
+           {:engine :integer-order-b2-hostile-validator-test
+            :compiler-artifact-plan? true}
+           b2-plan 'b2-operation-reason
+           [candidate candidate-operations operation-index block-order]))
+        compiled-validator-results
+        (mapv
+         (fn [{:keys [label source-operation upstream]}]
+           (let [candidate-module (get-in upstream [:c11 :mir-module])
+                 function (get-in candidate-module [:functions 'main])
+                 block-order
+                 (bootstrap/p15-s23-b3-llvm-block-order
+                  candidate-module function)
+                 candidate-operations
+                 (bootstrap/p15-s23-b3-llvm-operation-sequence
+                  function block-order)
+                 candidate
+                 (first (filter #(= source-operation (:opcode %))
+                                candidate-operations))
+                 candidate-id (:op-id candidate)
+                 operations-by-id
+                 (into {} (map (juxt :op-id identity))
+                       candidate-operations)
+                 operation-index
+                 (into {}
+                       (map-indexed
+                        (fn [index item] [(:op-id item) index]))
+                       candidate-operations)
+                 seen
+                 (set (map :op-id
+                           (take-while #(not= candidate-id (:op-id %))
+                                       candidate-operations)))
+                 mutations
+                 [{:kind :source-operation
+                   :candidate (assoc candidate
+                                     :source-operation :integer-eq)
+                   :c14-reason :integer-order-source-operation
+                   :b2-reason :source-operation-opcode-parity}
+                  {:kind :arity
+                   :candidate
+                   (assoc candidate :operands [(first (:operands candidate))])
+                   :c14-reason :integer-order-requires-two-operands
+                   :b2-reason :integer-order-arity}
+                  {:kind :result-type
+                   :candidate (assoc candidate :type :gravity/integer)
+                   :c14-reason :integer-order-result-type
+                   :b2-reason :integer-order-result-type}
+                  {:kind :dominance
+                   :candidate
+                   (assoc candidate
+                          :operands
+                          [candidate-id (second (:operands candidate))])
+                   :c14-reason :integer-order-left-dominance
+                   :b2-reason
+                   :integer-order-prior-definition-or-dominance}]]
+             {:label label
+              :genuine-c14
+              (c14-invoke candidate operations-by-id seen)
+              :genuine-b2
+              (b2-invoke candidate candidate-operations
+                         operation-index block-order)
+              :mutations
+              (mapv
+               (fn [{:keys [candidate] :as mutation}]
+                 (assoc
+                  mutation
+                  :compiled-c14
+                  (c14-invoke candidate operations-by-id seen)
+                  :host-c14
+                  (bootstrap/p15-s23-c14-c-operation-rejection
+                   candidate-operations candidate)
+                  :compiled-b2
+                  (b2-invoke candidate candidate-operations
+                             operation-index block-order)))
+               mutations)}))
+         (take-nth 2 rows))
+        source-for
+        (fn [body] (closed-pure-source-with-main body {:exports '[main]}))
+        bad-cases
+        (mapcat
+         (fn [{:keys [operator source-operation]}]
+           (let [operator-text (str operator)]
+             [{:label [source-operation :zero]
+               :body (str "(" operator-text ")")
+               :id "L2-BUILTIN-ARITY"
+               :stage :core-language-semantics
+               :missing :at-least-two-comparison-arguments}
+              {:label [source-operation :unary]
+               :body (str "(" operator-text " 1)")
+               :id "L2-BUILTIN-ARITY"
+               :stage :core-language-semantics
+               :missing :at-least-two-comparison-arguments}
+              {:label [source-operation :nary]
+               :body (str "(" operator-text " 1 2 3)")
+               :id "C6-LOWERING-GAP" :stage :core-lowering
+               :missing :bounded-binary-integer-order-comparison}
+              {:label [source-operation :mixed]
+               :body (str "(" operator-text " true 1)")
+               :id "C7-TYPE-MISMATCH" :stage :type-check
+               :missing :binary-integer-order-comparison-operands}]))
+         (take-nth 2 authenticated-binary-integer-order-cases))
+        reject-before
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+        bad-results
+        (vec
+         (for [{:keys [label body] :as case} bad-cases
+               extension [".gravity" ".qst"]]
+           (assoc
+            case :extension extension
+            :data
+            (diagnostic-data
+             #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+               (str "integer-order-" (name (first label)) "-"
+                    (name (second label)) extension)
+               (source-for body))))))
+        below
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+           "integer-order-below-i64.qst"
+           (authenticated-binary-integer-order-source
+            '< "-9223372036854775809" "0")))
+        above
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-b2-c17-gate-b-source-artifact!
+           "integer-order-above-i64.gravity"
+           (authenticated-binary-integer-order-source
+            '>= "0" "9223372036854775808")))
+        reject-after
+        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+    (is (= before after reject-before reject-after))
+    (doseq [{:keys [label data id missing]} mutation-data]
+      (is (= id (:id data)) [label data])
+      (is (= missing (:missing-fact data)) [label data]))
+    (doseq [{:keys [label data]} opcode-mutation-data]
+      (is (= "C11-MODULE" (:id data)) [label data])
+      (is (= :checked-core-operation-parity (:missing-fact data))
+          [label data]))
+    (doseq [{:keys [label genuine-c14 genuine-b2 mutations]}
+            compiled-validator-results]
+      (is (true? genuine-c14) [label :genuine-c14 genuine-c14])
+      (is (nil? genuine-b2) [label :genuine-b2 genuine-b2])
+      (doseq [{:keys [kind compiled-c14 host-c14 compiled-b2
+                      c14-reason b2-reason]}
+              mutations]
+        (is (false? compiled-c14)
+            [label kind :compiled-c14 compiled-c14])
+        (is (= c14-reason host-c14)
+            [label kind :host-c14 host-c14])
+        (is (= b2-reason compiled-b2)
+            [label kind :compiled-b2 compiled-b2])))
+    (doseq [{:keys [label id stage missing data]} bad-results]
+      (is (= id (:id data) (:rule data)) [label data])
+      (is (= stage (:stage data)) [label data])
+      (is (= missing (:missing-fact data)) [label data])
+      (is (not (str/includes? (pr-str data) "NumberFormatException"))
+          [label data]))
+    (doseq [label (set (map :label bad-results))]
+      (let [pair (filter #(= label (:label %)) bad-results)]
+        (is (= 2 (count pair)) label)
+        (is (apply = (map #(get-in % [:data :diagnostic-id]) pair)) label)
+        (is (apply = (map #(get-in % [:data :facts]) pair)) label)))
+    (doseq [[label data] [[:below below] [:above above]]]
+      (is (= "C14-UNSUPPORTED" (:id data) (:rule data)) [label data])
+      (is (= :c14-target-lowering (:stage data)) [label data])
+      (is (= :bounded-scalar-constant-payload (:missing-fact data))
+          [label data])
+      (is (not (str/includes? (pr-str data) "NumberFormatException"))
+          [label data])
+      (is (not (str/includes? (pr-str data) "ArithmeticException"))
+          [label data]))))
+
+(def ^:private authenticated-binary-integer-order-gate-b-proof
+  (delay
+    (authenticated-b2-gate-b-with-home-temp-directory
+      "gravity-authenticated-integer-order-native-"
+      (fn [root]
+        (let [selected-labels
+              [:lt-true :lte-false :gt-true :gte-false]
+              row-by-label
+              (into {} (map (juxt :label identity))
+                    (:rows @authenticated-binary-integer-order-gate-a-proof))
+              before
+              (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)
+              runs
+              (loop [labels selected-labels
+                     result []
+                     previous before]
+                (if (empty? labels)
+                  result
+                  (let [label (first labels)
+                        row (get row-by-label label)
+                        options
+                        (if (empty? result)
+                          {:output-directory
+                           (.toString (.resolve root "ordering-bundle"))}
+                          {})
+                        artifact
+                        (bootstrap/p15-s23-stage2-b2-c17-gate-b-artifact-from-c11!
+                         (get-in row [:upstream :c11])
+                         (get-in row [:upstream :checked-core])
+                         (get-in row [:upstream :context]) options)
+                        snapshot
+                        (bootstrap/p15-s23-b2-c17-gate-b-tool-execution-snapshot)]
+                    (recur (rest labels)
+                           (conj result
+                                 {:label label :row row :artifact artifact
+                                  :before previous :after snapshot})
+                           snapshot))))]
+          {:runs runs
+           :names
+           (set (seq (.list (.toFile (.resolve root "ordering-bundle")))))})))))
+
+(deftest authenticated-binary-integer-ordering-runs-real-c17-every-predicate
+  (let [{:keys [runs names]}
+        @authenticated-binary-integer-order-gate-b-proof]
+    (is (= 4 (count runs)))
+    (is (= #{{:label :lt-true :expected 9}
+             {:label :lte-false :expected 3}
+             {:label :gt-true :expected 9}
+             {:label :gte-false :expected 3}}
+           (set (map (fn [{:keys [label row]}]
+                       {:label label :expected (:expected row)})
+                     runs))))
+    (doseq [{:keys [label row artifact before after]} runs]
+      (let [expected (:expected row)
+            process (get-in artifact [:toolchain-evidence :process-evidence])
+            ordering-entries
+            (filterv #(= :defined-signed-i64-ordering
+                         (:assumption %))
+                     (get-in artifact
+                             [:gate-a-artifact
+                              :proof-to-c-assumption-map :entries]))]
+        (is (= 20 (- (:total after) (:total before))) label)
+        (is (= {:expected-exit-code expected
+                :observed-exit-code expected
+                :stdout-byte-count 0 :stderr-byte-count 0 :matched? true}
+               process) label)
+        (is (= [expected expected]
+               ((juxt #(get-in % [:c18-record :semantic-bindings
+                                  :expected-result])
+                      #(get-in % [:c18-record :semantic-bindings
+                                  :observed-result]))
+                artifact)) label)
+        (is (= (if (= :lt-true label)
+                 :published-atomically-after-final-verification
+                 :ephemeral-conformance-artifacts)
+               (get-in artifact [:publication-receipt :status]))
+            label)
+        (is (= [{:assumption :defined-signed-i64-ordering
+                 :evidence
+                 :authenticated-ordered-two-integer-operands-and-boolean-result
+                 :c-site :generated-integer-ordering-expressions
+                 :outcome :proven-safe}]
+               ordering-entries)
+            label)
+        (doseq [key [:whole-b2? :public? :release? :self-hosted?]]
+          (is (false? (get artifact key)) [label key]))))
+    (is (= #{"program.c" "program.h" "program.o" "program"
+             "manifest.edn" "provenance.edn" "conformance.edn"}
+           names))))
 
 (defn- with-p18-t04-verified-mir-target-root
   [f]

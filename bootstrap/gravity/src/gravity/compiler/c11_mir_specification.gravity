@@ -139,7 +139,8 @@
    :risk :bootstrap-seed-tcb
    :scope {:operation-set
            [:literal :implicit-nil :quote :local :let-binding :truthy
-            :integer-eq :do :if :let :str :println :function
+            :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+            :do :if :let :str :println :function
             :runtime-check]
            :maximum-conditionals 1
            :maximum-module-carrier-nodes 16384
@@ -815,7 +816,15 @@
                 :truthiness
                 (if (= operation :integer-eq)
                   :integer-eq
-                  (if (= operation :do)
+                  (if (= operation :integer-lt)
+                    :integer-lt
+                    (if (= operation :integer-lte)
+                      :integer-lte
+                      (if (= operation :integer-gt)
+                        :integer-gt
+                        (if (= operation :integer-gte)
+                          :integer-gte
+                          (if (= operation :do)
                   :sequence
                   (if (= operation :if)
                     :conditional-join
@@ -827,7 +836,7 @@
                           :call
                           (if (= operation :function)
                             :function-boundary
-                            :unsupported-checked-core-operation)))))))))))))))
+                            :unsupported-checked-core-operation)))))))))))))))))))
 
 (defn c11-operation-result
   [node]
@@ -1796,7 +1805,8 @@
        :scope
        {:operation-set
         [:literal :implicit-nil :quote :local :let-binding :truthy
-         :integer-eq :do :if :let :str :println :function
+         :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+         :do :if :let :str :println :function
          :runtime-check]
         :maximum-conditionals 1
         :maximum-module-carrier-nodes 16384

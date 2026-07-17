@@ -581,17 +581,17 @@
              :self-hosted?})
       (if (= (get rule :artifact) :gravity/c11-pinned-source-rule)
         (if (= (get rule :owner) :gravity-source)
-          (if (= (get rule :source-byte-count) 68287)
+          (if (= (get rule :source-byte-count) 68768)
             (if (= (get rule :source-content-hash)
-                   "sha256:8b0a83f86c45f4eb407c5beeca20ab252992e95cf0ef583b863c4be3379e0eed")
+                   "sha256:ad5af43542edfcd19e15ea20eacd0590f914884c8c06d22ba14c8a07f6ed98f8")
               (if (= (get rule :plan-semantic-hash)
-                     "sha256:0b5e74eb394de93ac02fabcb532623d88e03ac5f336da52b98daac8c6d3c964a")
+                     "sha256:a72c4b7dcf4bb602c274f4f0c4f793d11cc5085fb85a36d74d43359ff365f2b5")
                 (if (= (get rule :functions-semantic-hash)
-                       "sha256:8557c268eda62aca487ed797a1a82a4169dc0b0eec80fe6b737e421337c2ba7a")
+                       "sha256:fcfab1f2f150291fdefa26045059eade72fac930d345ca94082614ee9b8fe143")
                   (if (= (get rule :builder-function)
                          'c11-build-target-independent-mir)
                     (if (= (get rule :builder-semantic-hash)
-                           "sha256:b1f42efc29f2d66237c2491c13b092065059e623792776b27bb9965eabb6ca00")
+                           "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8")
                       (if (= (get rule :function-shapes)
                              '{c11-nodes-before-id
                                {:arity 3 :params [nodes node-id result]}
@@ -1701,8 +1701,11 @@
               (= source-operation :function)
               (if (= opcode :truthiness)
                 (= source-operation :truthy)
-                (if (= opcode :integer-eq)
-                  (= source-operation :integer-eq)
+                (if (contains?
+                     #{:integer-eq :integer-lt :integer-lte
+                       :integer-gt :integer-gte}
+                     opcode)
+                  (= source-operation opcode)
                   (if (= opcode :conditional-join)
                   (= source-operation :if)
                   false))))))))))
@@ -1767,7 +1770,10 @@
                                 (= type :gravity/bool)
                                 false))
                             false)
-                          (if (= opcode :integer-eq)
+                          (if (contains?
+                               #{:integer-eq :integer-lt :integer-lte
+                                 :integer-gt :integer-gte}
+                               opcode)
                             (if (= (count operands) 2)
                               (let [left
                                     (get operations-by-id (first operands))
@@ -1847,11 +1853,23 @@
           (if (= opcode :integer-eq)
             (= (get values (first operands))
                (get values (first (rest operands))))
-            (if (= opcode :conditional-join)
+            (if (= opcode :integer-lt)
+              (< (get values (first operands))
+                 (get values (first (rest operands))))
+              (if (= opcode :integer-lte)
+                (<= (get values (first operands))
+                    (get values (first (rest operands))))
+                (if (= opcode :integer-gt)
+                  (> (get values (first operands))
+                     (get values (first (rest operands))))
+                  (if (= opcode :integer-gte)
+                    (>= (get values (first operands))
+                        (get values (first (rest operands))))
+                    (if (= opcode :conditional-join)
             (if (get values (first operands))
               (get values (first (rest operands)))
               (get values (c14-c-last operands)))
-            nil)))))))
+            nil)))))))))))
 
 (defn c14-c-evaluate-operations
   [operations operations-by-id values]
@@ -2065,7 +2083,7 @@
 (defn c14-c-policy-scope-valid?
   [policy]
   (if (= (get policy :target-policy)
-         {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-eq
+         {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
           :maximum-operation-count 128
           :dialect :c17
           :whole-c14? false :whole-b1? false :whole-b2? false
@@ -2186,7 +2204,8 @@
             :proof-assumptions []
             :explainability-record
             {:decision :accepted
-             :bounded-surface :pure-scalar-forwarding-do-let-if-integer-eq
+             :bounded-surface
+             :pure-scalar-forwarding-do-let-if-integer-comparisons
              :dialect :c17
              :unsupported-diagnostic "C14-UNSUPPORTED"
              :no-hidden-runtime? true
@@ -2238,7 +2257,7 @@
            :status :rejected
            :diagnostic "C14-UNSUPPORTED"
            :missing-fact
-           :bounded-pure-scalar-forwarding-do-let-if-integer-eq
+           :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
            :diagnostics ["C14-UNSUPPORTED"]})
         {:artifact :gravity/c14-bounded-c-lowering-record
          :schema-version 1

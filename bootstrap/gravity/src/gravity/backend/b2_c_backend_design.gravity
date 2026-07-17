@@ -578,7 +578,9 @@
    :raw-structural-validator-is-seal-verifier? false
    :supported-opcodes
    [:constant :local :local-binding :sequence :lexical-scope
-    :function-boundary :truthiness :integer-eq :conditional-join]
+    :function-boundary :truthiness :integer-eq
+    :integer-lt :integer-lte :integer-gt :integer-gte
+    :conditional-join]
    :whole-b2? false
    :public? false
    :release? false
@@ -667,10 +669,10 @@
         (get rule :compiled-by) (get rule :executed-by)
         (get rule :self-hosted?)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.backend/b1-backend-interface 110026
-        "sha256:5565b4dfcded4596e33be9e8890f1e7398f0acf0b64e0300c370f91f07e0b0c2"
-        "sha256:91c349a17fe2d7cbed438796c7365010c98bec0d67a6daffbab11f4db884a044"
-        "sha256:4688d8f6a8049b931b0ffab1dcf1d0c3a0535418f22d0dd24822f5a48cc796e3"
+        :gravity.backend/b1-backend-interface 110046
+        "sha256:03aa7b021c53376b5e6dae228f72125a304ba22299114cc1b446400eea62c417"
+        "sha256:ed24ac1c1339cdb2d3e6e3990c83462978430bb1d35847fb211f177eca25689b"
+        "sha256:bc68a8be72666614261d92239120eef218a97601caa7c3fc00d75cea3c286b06"
         'b1-build-bounded-c-authenticated-packet
         "sha256:9fa86940d7874c4260fea5e6c38bc6d01a5bbd3115bdd1e2c8c8d2bbf4d82760"
         '{b1-bounded-c14-c-input-valid?
@@ -1044,7 +1046,8 @@
            [:gravity/c14-target-eligibility-report :gravity.backend/c
             :hosted target true [] [] [] providers []
             {:decision :accepted
-             :bounded-surface :pure-scalar-forwarding-do-let-if-integer-eq
+             :bounded-surface
+             :pure-scalar-forwarding-do-let-if-integer-comparisons
              :dialect :c17
              :unsupported-diagnostic "C14-UNSUPPORTED"
              :no-hidden-runtime? true
@@ -1948,8 +1951,11 @@
                 (= source :function)
                 (if (= opcode :truthiness)
                   (= source :truthy)
-                  (if (= opcode :integer-eq)
-                    (= source :integer-eq)
+                  (if (contains?
+                       #{:integer-eq :integer-lt :integer-lte
+                         :integer-gt :integer-gte}
+                       opcode)
+                    (= source opcode)
                     (if (= opcode :conditional-join)
                     (= source :if)
                     false)))))))))))
@@ -2089,7 +2095,10 @@
                         :truthiness-source-type))
                     :truthiness-prior-definition-or-dominance)
                   :truthiness-arity)
-                (if (= opcode :integer-eq)
+                (if (contains?
+                     #{:integer-eq :integer-lt :integer-lte
+                       :integer-gt :integer-gte}
+                     opcode)
                   (if (= (count operands) 2)
                     (let [left
                           (b2-find-operation operations (first operands))
@@ -2102,11 +2111,22 @@
                         (if (= (get left :type) :gravity/integer)
                           (if (= (get right :type) :gravity/integer)
                             (if (= (get operation :type) :gravity/bool)
-                              nil :integer-eq-result-type)
-                            :integer-eq-right-operand-type)
-                          :integer-eq-left-operand-type)
-                        :integer-eq-prior-definition-or-dominance))
-                    :integer-eq-arity)
+                              nil
+                              (if (= opcode :integer-eq)
+                                :integer-eq-result-type
+                                :integer-order-result-type))
+                            (if (= opcode :integer-eq)
+                              :integer-eq-right-operand-type
+                              :integer-order-right-operand-type))
+                          (if (= opcode :integer-eq)
+                            :integer-eq-left-operand-type
+                            :integer-order-left-operand-type))
+                        (if (= opcode :integer-eq)
+                          :integer-eq-prior-definition-or-dominance
+                          :integer-order-prior-definition-or-dominance)))
+                    (if (= opcode :integer-eq)
+                      :integer-eq-arity
+                      :integer-order-arity))
                   (if (= opcode :conditional-join)
                   (if (= (count operands) 3)
                     (let [condition
@@ -2484,10 +2504,21 @@
                 (str "(" value-name
                      " == INT64_C(0) ? INT64_C(0) : INT64_C(1))")
                 "INT64_C(1)")))
-          (if (= opcode :integer-eq)
+          (if (contains?
+               #{:integer-eq :integer-lt :integer-lte
+                 :integer-gt :integer-gte}
+               opcode)
             (str "("
                  (b2-c-value-name operation-index (first operands))
-                 " == "
+                 " "
+                 (if (= opcode :integer-eq)
+                   "=="
+                   (if (= opcode :integer-lt)
+                     "<"
+                     (if (= opcode :integer-lte)
+                       "<="
+                       (if (= opcode :integer-gt) ">" ">="))))
+                 " "
                  (b2-c-value-name
                   operation-index (first (rest operands)))
                  " ? INT64_C(1) : INT64_C(0))")
@@ -2556,11 +2587,23 @@
           (if (= opcode :integer-eq)
             (= (get values (first operands))
                (get values (first (rest operands))))
-            (if (= opcode :conditional-join)
+            (if (= opcode :integer-lt)
+              (< (get values (first operands))
+                 (get values (first (rest operands))))
+              (if (= opcode :integer-lte)
+                (<= (get values (first operands))
+                    (get values (first (rest operands))))
+                (if (= opcode :integer-gt)
+                  (> (get values (first operands))
+                     (get values (first (rest operands))))
+                  (if (= opcode :integer-gte)
+                    (>= (get values (first operands))
+                        (get values (first (rest operands))))
+                    (if (= opcode :conditional-join)
             (if (get values (first operands))
               (get values (second operands))
               (get values (b2-last operands)))
-            nil)))))))
+            nil)))))))))))
 
 (defn b2-evaluate-operations
   [remaining operations values]
@@ -2765,7 +2808,7 @@
           :evidence :independent-pure-mir-evaluation-in-0-to-255
           :c-site (str "return (int)" return-value-name ";")
           :outcome :proven-safe}]
-        entries
+        equality-entries
         (if (> (b2-count-opcode operations :integer-eq 0) 0)
           (conj
            base-entries
@@ -2774,7 +2817,21 @@
             :authenticated-two-integer-operands-and-boolean-result
             :c-site :generated-integer-eq-expressions
             :outcome :proven-safe})
-          base-entries)]
+          base-entries)
+        entries
+        (if (> (+ (b2-count-opcode operations :integer-lt 0)
+                  (b2-count-opcode operations :integer-lte 0)
+                  (b2-count-opcode operations :integer-gt 0)
+                  (b2-count-opcode operations :integer-gte 0))
+               0)
+          (conj
+           equality-entries
+           {:assumption :defined-signed-i64-ordering
+            :evidence
+            :authenticated-ordered-two-integer-operands-and-boolean-result
+            :c-site :generated-integer-ordering-expressions
+            :outcome :proven-safe})
+          equality-entries)]
    {:artifact :gravity/b2-proof-to-c-assumption-map
    :proof-certificate-binding
    {:content-id (get certificates :content-id)

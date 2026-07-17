@@ -82,6 +82,7 @@
    :source-targets [:jvm]
    :source-operations [:literal :quote :local :let :let-binding
                        :do :if :truthy :integer-eq
+                       :integer-lt :integer-lte :integer-gt :integer-gte
                        :implicit-nil :function]
    :scalar-literals [:nil :string :boolean :integer
                      :character :keyword :symbol]
@@ -807,7 +808,11 @@
             :gravity-truthiness
             (if (= source-operation :integer-eq)
               :exact-signed-integer-equality
-              (if (= source-operation :if)
+              (if (contains?
+                   #{:integer-lt :integer-lte :integer-gt :integer-gte}
+                   source-operation)
+                :exact-integer-ordering
+                (if (= source-operation :if)
               :closed-conditional
               (if (= source-operation :do)
                 :ordered-sequence
@@ -815,7 +820,7 @@
                   :sequential-lexical-scope
                   (if (= source-operation :function)
                     :authenticated-closed-function
-                    :compiler-generated-nil)))))))))))
+                    :compiler-generated-nil))))))))))))
 
 (defn c6c10-persistent-ownership [role extra]
   (c6c10-merge-maps
@@ -977,7 +982,7 @@
         (c6c10-add-digest-request
          (get node-request :state) ownership-input)
         ownership-digest (get ownership-request :ref)
-        proof-input
+        proof-input-base
         {:domain :gravity/c10-pure-safety-proof-v1
          :artifact :gravity/c6-c10-pure-safety-proof
          :rule-version "c6-c10-pure-safety-v1"
@@ -1007,6 +1012,14 @@
           :ownership-change :profile-change :source-target-change
           :rule-version-change]
          :status :proved-for-bounded-pure-slice}
+        proof-input
+        (c6c10-merge-maps
+         proof-input-base
+         (if (contains? attributes :numeric-mode)
+           {:numeric-mode (get attributes :numeric-mode)
+            :mathematical-mode (get attributes :mathematical-mode)
+            :numeric-semantics (get attributes :numeric-semantics)}
+           {}))
         proof-request
         (c6c10-add-digest-request
          (get ownership-request :state) proof-input)
@@ -1680,28 +1693,57 @@
         :plan-path path}
        :regenerate-fresh-c2-c3-and-stage2-plan))))
 
-(defn c6c10-map-integer-eq
+(defn c6c10-map-integer-comparison
   [state envelope instruction form path env depth]
   (let [arguments (get instruction :args)
         child-form-ids (rest (get form :children))
-        argument-count (count arguments)]
-    (if (= (get instruction :function) '=)
-      (if (= argument-count 0)
+        argument-count (count arguments)
+        function (get instruction :function)
+        source-operation
+        (if (= function '=)
+          :integer-eq
+          (if (= function '<)
+            :integer-lt
+            (if (= function '<=)
+              :integer-lte
+              (if (= function '>)
+                :integer-gt
+                (if (= function '>=) :integer-gte nil)))))
+        equality? (= source-operation :integer-eq)
+        minimum-arity (if equality? 1 2)]
+    (if (= source-operation nil)
+      (c6c10-form-rejection
+       state envelope form :C6-LOWERING-GAP :lower-to-core
+       :diagnostic/c6-lowering-gap
+       {:missing-fact :bounded-source-operation
+        :observed-operation :builtin-call
+        :observed-function function
+        :plan-path path}
+       :remove-out-of-scope-operation)
+      (if (< argument-count minimum-arity)
         (c6c10-form-rejection
          state envelope form :L2-BUILTIN-ARITY :core-semantics
          :diagnostic/l2-builtin-arity
-         {:missing-fact :at-least-one-equality-argument
-          :function '=
-          :expected-arity :at-least-one
-          :actual-arity 0
+         {:missing-fact
+          (if equality?
+            :at-least-one-equality-argument
+            :at-least-two-comparison-arguments)
+          :function function
+          :expected-arity (if equality? :at-least-one :at-least-two)
+          :actual-arity argument-count
           :bounded-binary-slice? true
           :plan-path path}
-         :supply-at-least-one-equality-argument)
+         (if equality?
+           :supply-at-least-one-equality-argument
+           :supply-at-least-two-comparison-arguments))
         (if (= argument-count 2)
           (let [arguments-product
                 (c6c10-map-sequence
                  state envelope arguments child-form-ids path :args env depth
-                 form :unreachable-empty-equality-arguments)]
+                 form
+                 (if equality?
+                   :unreachable-empty-equality-arguments
+                   :unreachable-short-order-comparison-arguments))]
             (if (= (get arguments-product :status) :rejected)
               arguments-product
               (let [operand-ids
@@ -1719,15 +1761,23 @@
                       false)
                   (c6c10-add-node
                    arguments-product envelope form path
-                   :comparison :integer-eq true depth operand-ids
-                   {:primitive '=
-                    :arity 2
-                    :evaluation-order :left-to-right
-                    :operand-types
-                    [:gravity/integer :gravity/integer]
-                    :result-type :gravity/bool
-                    :numeric-semantics :exact-signed-integer-equality
-                    :overflow :not-applicable}
+                   :comparison source-operation true depth operand-ids
+                   (c6c10-merge-maps
+                    {:primitive function
+                     :arity 2
+                     :evaluation-order :left-to-right
+                     :operand-types
+                     [:gravity/integer :gravity/integer]
+                     :result-type :gravity/bool
+                     :numeric-semantics
+                     (if equality?
+                       :exact-signed-integer-equality
+                       :exact-integer-ordering)
+                     :overflow :not-applicable}
+                    (if equality?
+                      {}
+                      {:numeric-mode :proof-required
+                       :mathematical-mode :integer-exact}))
                    :gravity/bool :comparison-result
                    {:storage :static-value
                     :derived-from operand-ids}
@@ -1736,7 +1786,10 @@
                    (get arguments-product :state) envelope form
                    :C7-TYPE-MISMATCH :type-check
                    :diagnostic/c7-type-mismatch
-                   {:missing-fact :binary-integer-equality-operands
+                   {:missing-fact
+                    (if equality?
+                      :binary-integer-equality-operands
+                      :binary-integer-order-comparison-operands)
                     :expected-type :gravity/integer
                     :actual-type
                     (if (= left-type :gravity/integer)
@@ -1746,26 +1799,24 @@
                     :plan-path path
                     :plan-depth depth
                     :prospective-kind :comparison
-                    :prospective-source-operation :integer-eq
+                    :prospective-source-operation source-operation
                     :observed-form-kind :list}
-                   :use-two-integer-equality-operands)))))
+                   (if equality?
+                     :use-two-integer-equality-operands
+                     :use-two-integer-order-comparison-operands))))))
           (c6c10-form-rejection
            state envelope form :C6-LOWERING-GAP :lower-to-core
            :diagnostic/c6-lowering-gap
-           {:missing-fact :bounded-binary-integer-equality
-            :function '=
-            :language-arity :variadic-at-least-one
+           {:missing-fact
+            (if equality?
+              :bounded-binary-integer-equality
+              :bounded-binary-integer-order-comparison)
+            :function function
+            :language-arity
+            (if equality? :variadic-at-least-one :undecided-at-least-two)
             :observed-arity argument-count
             :plan-path path}
-           :use-two-integer-operands-for-this-bounded-slice)))
-      (c6c10-form-rejection
-       state envelope form :C6-LOWERING-GAP :lower-to-core
-       :diagnostic/c6-lowering-gap
-       {:missing-fact :bounded-source-operation
-        :observed-operation :builtin-call
-        :observed-function (get instruction :function)
-        :plan-path path}
-       :remove-out-of-scope-operation))))
+           :use-two-integer-operands-for-this-bounded-slice))))))
 
 (defn c6c10-map-instruction
   [state envelope instruction form-id path env depth]
@@ -1806,7 +1857,7 @@
                       (c6c10-map-let
                        state envelope instruction form path env depth)
                       (if (= operation :builtin-call)
-                        (c6c10-map-integer-eq
+                        (c6c10-map-integer-comparison
                          state envelope instruction form path env depth)
                         (c6c10-form-rejection
                          state envelope form :C6-LOWERING-GAP :lower-to-core
@@ -2041,13 +2092,17 @@
               :truthiness-bool
               (if (= source-operation :integer-eq)
                 :binary-integer-equality-bool
-                (if (= source-operation :if)
+                (if (contains?
+                     #{:integer-lt :integer-lte :integer-gt :integer-gte}
+                     source-operation)
+                  :binary-integer-order-comparison-bool
+                  (if (= source-operation :if)
                 :branch-type-join
                 (if (= source-operation :do)
                   :sequence-result-type
                   (if (= source-operation :let)
                     :lexical-scope-result-type
-                    :closed-function-type)))))))))))
+                    :closed-function-type))))))))))))
 
 (defn c6c10-source-value-ids [node]
   (let [operation (get node :source-operation)
@@ -2058,7 +2113,10 @@
         [(first operands)]
         (if (= operation :truthy)
           [(first operands)]
-          (if (= operation :integer-eq)
+          (if (contains?
+               #{:integer-eq :integer-lt :integer-lte
+                 :integer-gt :integer-gte}
+               operation)
             (c6c10-copy-vector operands [])
             (if (= operation :if)
             (c6c10-copy-vector (rest operands) [])
@@ -2077,7 +2135,10 @@
       :from-initializer
       (if (= source-operation :truthy)
         :derived-from-test
-        (if (= source-operation :integer-eq)
+        (if (contains?
+             #{:integer-eq :integer-lt :integer-lte
+               :integer-gt :integer-gte}
+             source-operation)
           :derived-from-binary-integer-operands
           (if (= source-operation :if)
           :from-conditional-incoming-values
@@ -2578,6 +2639,7 @@
    :source-targets [:jvm]
    :source-operations [:literal :quote :local :let :let-binding
                        :do :if :truthy :integer-eq
+                       :integer-lt :integer-lte :integer-gt :integer-gte
                        :implicit-nil :function]
    :scalar-literals [:nil :string :boolean :integer
                      :character :keyword :symbol]
