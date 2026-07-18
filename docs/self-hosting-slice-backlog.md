@@ -146,7 +146,7 @@ Status meanings:
 | `SH-00` | Stabilize the current authenticated Wasm comparison work and restore a clean baseline | none | complete | The current bounded C11-C14-B1-B4 comparison path is committed, externally executed, adversarially reviewed, and the worktree is clean. |
 | `SH-01` | Establish parallel-safe module and test ownership boundaries | `SH-00` | complete | Central routing, compiler modules, target modules, fixtures, tests, generated evidence, and coverage accounting have explicit single owners; new tests no longer require unrelated edits to the monolithic bootstrap test file. |
 | `SH-02` | Generalize authenticated pass and artifact envelopes | `SH-00` | complete | One reusable contract verifies source revision, semantic inputs, preserved facts, artifact lineage, deterministic identity, graph bounds, and stale or substituted inputs across at least two different compiler stages. |
-| `SH-03` | Complete the bootstrap reader and literal policy | `SH-01`, `SH-02` | partial | The Gravity reader, rather than a Clojure reread, handles the complete claimed bootstrap syntax and literal subset with Unicode, newline, delimiter, abbreviation, metadata, extension, and malformed-literal diagnostics. |
+| `SH-03` | Complete the bootstrap reader and literal policy | `SH-01`, `SH-02` | complete | The Gravity reader, rather than a Clojure reread, handles the complete claimed bootstrap syntax and literal subset with Unicode, newline, delimiter, abbreviation, metadata, extension, and malformed-literal diagnostics. |
 | `SH-04` | Complete syntax objects, hygiene, and origin chains | `SH-03` | partial | Gravity constructs and serializes syntax objects with stable identity, scopes, marks, metadata, source spans, generated origins, and adversarial graph validation. |
 | `SH-05` | Implement the bootstrap macroexpander in Gravity | `SH-04` | queued | Gravity expands the macro subset required by all compiler sources, preserves hygiene and origins, rejects phase/profile/capability violations, and matches accepted stage0 diagnostics. |
 | `SH-06` | Implement namespace and binding resolution in Gravity | `SH-05` | queued | Gravity resolves compiler namespaces, aliases, vars, lexical bindings, imports, visibility, cycles, and unresolved references for the complete bootstrap source set. |
@@ -214,14 +214,14 @@ The coordinator should also report the highest continuous completed prefix.
 For example, completion of `SH-18` does not advance the prefix past `SH-07` if
 `SH-08` remains incomplete.
 
-Current reviewed accounting after `SH-02`:
+Current reviewed accounting after `SH-03`:
 
 ```text
-complete slices: 3 / 30
-executable Gravity-owned slices: 2 / 30
-slices with Clojure in their claimed execution boundary: 3 / 30
+complete slices: 4 / 30
+executable Gravity-owned slices: 3 / 30
+slices with Clojure in their claimed execution boundary: 4 / 30
 blocked slices: 4 / 30
-highest continuous completed prefix: SH-00 through SH-02
+highest continuous completed prefix: SH-00 through SH-03
 ```
 
 `SH-02` credit is intentionally bounded to envelopes whose explicit reference
@@ -231,6 +231,22 @@ fresh template replay for both C13 and B1. Canonical encoding, SHA-256 request
 resolution, identity equality enforcement, source reads, and final contextual
 reconstruction remain in the declared Clojure stage0 boundary; `SH-02` does not
 retire that seed or claim release-signature or verifier-correctness proof.
+
+`SH-03` credit is bounded to the bootstrap reader and literal subset exercised
+by its co-canonical fixture matrix and authoritative reader-source proof. The
+Gravity reader owns Unicode-scalar decoding, newline and delimiter structure,
+the ordered token stream, recursive form graph, bootstrap literals,
+abbreviations, metadata, registered `inst` and `uuid` extensions, bounded
+semantic-value reconstruction, and structured rejection. The public read, C2,
+C3, P15, and check ingress consumes the authenticated Gravity result without a
+second target-source read. The Clojure stage0 boundary still owns the initial
+byte snapshot, compiler-plan execution, canonical digest resolution, the C2
+compatibility adapter, central routing, and final artifact construction. The
+compatibility facade is explicitly uncredited, and the remaining C2 boundaries
+are the full-language literal surface, full-language abbreviation surface,
+full-language extension registry, and host/seed retirement. This slice does not
+claim overall C2 completion, compiler self-hosting, seed retirement, or release
+readiness.
 
 ## Beyond First Self-Hosting
 

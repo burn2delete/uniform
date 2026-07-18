@@ -1,0 +1,70 @@
+; SH-03 complete claimed bootstrap reader surface.
+(ns self-hosting.sh03.complete-reader-surface
+  (:profile :meta)
+  (:profiles #{:meta :hosted})
+  (:target :jvm)
+  (:targets #{:jvm :wasm32})
+  (:requires [gravity.reader :as reader])
+  (:imports [gravity.reader.SourceUnit])
+  (:exports [complete-reader-surface])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:providers [])
+  (:doc "Bootstrap reader surface fixture")
+  (:metadata {:slice :SH-03}))
+
+; Commas are reader whitespace, and comments are retained in tooling mode.
+(def scalar-literals
+  [nil, true false
+   0 42 -7 +9
+   0xFF 0X2a -0x2A 0b1010 0B11
+   123456789012345678901234567890
+   1.25 -0.5 .5 -.5 1. 1.e2 6e3 -2.5E-4
+   1e1000000000000000000
+   3/4 -5/7 1/0
+   "Unicode: Grüße λ 😀"
+   "escapes:\n\r\t\b\f\\\""
+   "unicode escape: \u03bb"
+   \a \λ \newline \return \space \tab \backspace \formfeed
+   \u03bb \o141 \) \] \} \\ \"
+   reader/value :reader/value])
+
+(def collection-literals
+  ((reader/value :reader/value)
+   [1 {:nested [true nil]} #{:alpha :beta}]
+   {:list '(a b)
+    :vector [1 2 3]
+    :map {:key "value"}
+    :set #{1 2 3}}))
+
+(def abbreviation-literals
+  ['reader/value
+   `(reader/template ~input ~@more)
+   @state])
+
+^{:doc "Map metadata" compiler/owner :reader}
+(def metadata-map-form 1)
+
+^:private
+(def metadata-keyword-form 2)
+
+^ReaderTag
+(def metadata-symbol-form 3)
+
+(def registered-inst
+  #inst "2026-07-18T12:34:56.000-00:00")
+
+(def registered-uuid
+  #uuid "123e4567-e89b-12d3-a456-426614174000")
+
+(def deferred-ratio 1/0)
+(def metadata-wrapped-deferred-ratio ^:exact 1/0)
+(def deferred-host-independent-decimal 1e1000000000000000000)
+
+(defn complete-reader-surface []
+  {:scalars scalar-literals
+   :collections collection-literals
+   :abbreviations abbreviation-literals
+   :tagged [registered-inst registered-uuid]
+   :deferred deferred-ratio})

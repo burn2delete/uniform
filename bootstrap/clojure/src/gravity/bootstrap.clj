@@ -5,6 +5,7 @@
   implementation. It is intentionally small and records unsupported behavior
   as diagnostics instead of pretending to be the final compiler."
   (:require [clojure.edn :as edn]
+            [clojure.instant :as instant]
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
@@ -27,6 +28,7 @@
              target))
 (def max-macro-expansion-depth 16)
 (def max-reader-form-depth 512)
+(def max-reader-form-graph-depth (inc max-reader-form-depth))
 (def co-canonical-source-extensions #{".qst" ".gravity"})
 
 (defn gravity-source-extension
@@ -193,6 +195,16 @@
       ["L1-MAP-ARITY"
        "map literal contains an odd number of forms"]
 
+      (or (str/includes? lower "invalid number")
+          (str/includes? lower "invalid numeric")
+          (str/includes? lower "number format"))
+      ["L1-NUMERIC"
+       "numeric candidate fails every enabled numeric literal grammar"]
+
+      (str/includes? lower "invalid token")
+      ["L1-IDENTIFIER"
+       "symbol or keyword has an invalid surface spelling"]
+
       (or (str/includes? lower "unsupported escape character")
           (str/includes? lower "invalid unicode escape")
           (str/includes? lower "string"))
@@ -207,7 +219,7 @@
       ["C2-READER"
        "source could not be read by the stage0 bootstrap reader"])))
 
-(defn read-source-form-records
+(defn read-source-form-records-host-oracle
   [source-path source-text]
   (try
     (let [eof (Object.)
@@ -252,6 +264,24 @@
                 :reader-state {:stage :read-source-forms}
                 :cause-message (.getMessage ex)
                 :remediation "Fix delimiter, string, collection, metadata, or reader-extension syntax before compilation."})))))
+
+(def ^:dynamic *authenticated-source-form-records* nil)
+
+(defn read-source-form-records
+  [source-path source-text]
+  (let [authenticated *authenticated-source-form-records*
+        same-source?
+        (and (map? authenticated)
+             (string? (:source-path authenticated))
+             (= source-text (:source-text authenticated))
+             (try
+               (= (.getCanonicalPath (java.io.File. source-path))
+                  (.getCanonicalPath
+                   (java.io.File. (:source-path authenticated))))
+               (catch Exception _ false)))]
+    (if same-source?
+      (:records authenticated)
+      (read-source-form-records-host-oracle source-path source-text))))
 
 (defn read-forms
   "Read source into Lisp forms. Stage 0 delegates lexical reading to Clojure's
@@ -375,7 +405,8 @@
               :output :syntax-object-stream
               :preserves [:source-spans :metadata :reader-origin
                           :profile-context :source-unit-identity]
-              :rejects ["L1-DELIMITER" "L1-STRING" "L1-MAP-ARITY"
+              :rejects ["L1-DELIMITER" "L1-STRING" "L1-NUMERIC"
+                        "L1-IDENTIFIER" "L1-MAP-ARITY"
                         "L1-METADATA" "L1-NS-SHAPE"
                         "L1-READER-EXTENSION" "L1-SOURCE-ENCODING"
                         "L1-SOURCE-EXTENSION"]}
@@ -802,10 +833,9 @@
               :declared-capabilities (:capabilities module)
               :remediation "Add :io/stdout to the namespace capabilities."}))))
 
-(defn module-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
+(defn module-source-artifact-from-records
+  [source-path source-text records]
+  (let [forms (mapv :form records)
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
         syntax (syntax-object-stream source-path records module)
@@ -881,6 +911,12 @@
      :definitions definitions
      :syntax-object-stream syntax
      :diagnostics []}))
+
+(defn module-source-artifact
+  [source-path source-text]
+  (module-source-artifact-from-records
+   source-path source-text
+   (read-source-form-records source-path source-text)))
 
 (defn form-op?
   [op form]
@@ -1369,10 +1405,9 @@
       :else
       (assoc syntax :phase :macro-expanded))))
 
-(defn macro-source-artifact
-  [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
+(defn macro-source-artifact-from-records
+  [source-path source-text records]
+  (let [forms (mapv :form records)
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
         syntax (syntax-object-stream source-path records module)
@@ -1431,6 +1466,12 @@
      :expanded-syntax-object-stream expanded-syntax
      :expanded-forms body-forms
      :diagnostics []}))
+
+(defn macro-source-artifact
+  [source-path source-text]
+  (macro-source-artifact-from-records
+   source-path source-text
+   (read-source-form-records source-path source-text)))
 
 (declare compiler-c3-syntax-source-artifact)
 
@@ -43601,6 +43642,7 @@
 
 (declare compile-source compile-file module-file-artifact core-file-artifact
          runtime-selection-file-artifact managed-runtime-file-artifact
+         runtime-selection-source-artifact managed-runtime-source-artifact
          compiler-c2-reader-source-artifact read-gravity-source-text)
 
 (def b14-public-check-basenames
@@ -43701,11 +43743,51 @@
       (get-in artifact [:module-artifact :module])
       (get-in artifact [:namespace-table 0 :name])))
 
+(declare compiler-c2-reader-file-artifact c2-reader-fail!
+         compile-source-from-records)
+
+(defn c2-reader-artifact-source-text
+  [path artifact]
+  (let [source-text (apply str (map :raw (:token-stream artifact)))
+        expected-hash (get-in artifact [:source-unit-record :bytes-hash])
+        observed-hash (str "sha256:" (sha256-hex source-text))]
+    (when-not (= expected-hash observed-hash)
+      (c2-reader-fail!
+       "C2-HASH" path
+       {:source-id (get-in artifact [:source-unit-record :source-id])
+        :source-span (source-span path 0)
+        :reader-options standard-reader-options}
+       {:missing-fields [:complete-token-source-reconstruction]
+        :facts {:expected-bytes-hash expected-hash
+                :observed-bytes-hash observed-hash}}))
+    source-text))
+
+(defn c2-reader-artifact-top-level-records
+  [artifact]
+  (let [forms-by-id (into {} (map (juxt :form-id identity)
+                                  (:form-tree artifact)))]
+    (mapv
+     (fn [root-index form-id]
+       (let [form (forms-by-id form-id)]
+         {:form (:value form)
+          :kind (:kind form)
+          :form-id form-id
+          :span (assoc (:span form) :form-index root-index)
+          :metadata (:metadata form)
+          :reader-origin
+          {:kind :source
+           :raw-form-kind (:kind form)
+           :raw-excerpt (:raw form)
+           :abbreviation (:abbrev form)}
+          :generated-origin (:generated-origin form)}))
+     (range) (:top-level-form-ids artifact))))
+
 (defn check-file-artifact
   [path]
-  (let [source-text (read-gravity-source-text path)
-        reader-artifact (read-source-artifact path source-text)
-        forms (mapv :form (read-source-form-records path source-text))
+  (let [reader-artifact (compiler-c2-reader-file-artifact path)
+        source-text (c2-reader-artifact-source-text path reader-artifact)
+        records (c2-reader-artifact-top-level-records reader-artifact)
+        forms (mapv :form records)
         module (when (ns-form? (first forms))
                  (parse-module path forms))
         bootstrap-metadata (get-in module [:metadata :bootstrap])
@@ -43713,24 +43795,26 @@
         (and (= :gravity-source (:owner bootstrap-metadata))
              (= :gravity (:source-language bootstrap-metadata)))
         basename (.getName (java.io.File. path))]
-    (cond
+    (binding [*authenticated-source-form-records*
+              {:source-path path :source-text source-text :records records}]
+     (cond
       gravity-owned-module?
-      (module-source-artifact path source-text)
+      (module-source-artifact-from-records path source-text records)
 
       (contains? b14-public-check-basenames basename)
-      (b14-document-file-artifact path)
+      (b14-document-source-artifact path source-text)
 
       (contains? core-public-check-basenames basename)
-      (core-file-artifact path)
+      (core-source-artifact path source-text)
 
       (contains? runtime-selection-public-check-basenames basename)
-      (runtime-selection-file-artifact path)
+      (runtime-selection-source-artifact path source-text)
 
       (contains? managed-runtime-public-check-basenames basename)
-      (managed-runtime-file-artifact path)
+      (managed-runtime-source-artifact path source-text)
 
       :else
-      (compile-source path source-text))))
+      (compile-source-from-records path source-text records)))))
 
 (def runtime-selection-governing-documents
   ["docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
@@ -57920,9 +58004,7 @@
     :raw raw
     :cause-message cause
     :facts {:literal-kind :numeric
-            :raw-spelling raw
-            :normative-c2-mapping :unassigned
-            :catalog-gap true}}))
+            :raw-spelling raw}}))
 
 (defn stage1-reader-decode-atom
   [source-path kind raw span token-id]
@@ -74067,6 +74149,8 @@
      :representation-status :genuine-lexical-token-and-recursive-form-tree
      :status :partial}))
 
+(declare c2-reader-extension-invocations)
+
 (defn p15-s23-source-syntax-c2-artifact
   ([source-path source-text]
    (p15-s23-source-syntax-c2-artifact
@@ -74084,9 +74168,13 @@
         form-tree (:form-tree products)
         top-level-form-ids (:root-form-ids products)
         syntax-seeds (c2-syntax-seed-stream source-path products module-context)
-        deferred-literals (c2-deferred-semantic-literals form-tree)
-        literal-records (c2-literal-records form-tree)
-        extension-invocations []
+        deferred-literals (or (:deferred-literal-records products)
+                              (c2-deferred-semantic-literals form-tree))
+        literal-records (or (:literal-decoding-records products)
+                            (c2-literal-records form-tree))
+        extension-invocations
+        (or (:reader-extension-invocation-records products)
+            (c2-reader-extension-invocations form-tree))
         diagnostics []
         lexical-validation (c2-lexical-product-validation
                             source-text token-stream form-tree
@@ -74147,6 +74235,7 @@
          :syntax-seed-stream syntax-seeds
          :reader-source-map (mapv #(select-keys % [:syntax-id :form-id :span])
                                   syntax-seeds)
+         :gravity-reader-source-map (:gravity-reader-source-map products)
          :literal-decoding-records literal-records
          :trivia-retention-records (c2-trivia-records token-stream)
          :reader-extension-invocation-records extension-invocations
@@ -90126,6 +90215,9 @@
           :do (:body instruction)
           :if [(:test instruction) (:then instruction) (:else instruction)]
           :let (concat (map :expr (:bindings instruction)) (:body instruction))
+          :loop (concat (map :expr (:bindings instruction))
+                        (:body instruction))
+          :recur (:args instruction)
           :builtin-call (:args instruction)
           :function-call (:args instruction)
           :vector-literal (:items instruction)
@@ -93181,6 +93273,192 @@
 
 (declare p15-s23-stage2-seed-compile-expr)
 
+(declare p15-s23-stage2-seed-validate-recur!)
+
+(defn p15-s23-stage2-seed-recur-fail!
+  [module form target-arity actual-arity reason]
+  (fail! "L2-RECUR-TARGET"
+         "recur has no compatible loop or function target"
+         {:source-span {:source (:source-path module)}
+          :form form
+          :target-arity target-arity
+          :actual-arity actual-arity
+          :reason reason
+          :remediation
+          "Use recur only in tail position inside a compatible loop or function with matching arity."}))
+
+(defn p15-s23-stage2-seed-validate-tail-body!
+  [module forms target-arity tail-position?]
+  (let [forms (vec forms)
+        last-index (dec (count forms))]
+    (doseq [[index form] (map-indexed vector forms)]
+      (p15-s23-stage2-seed-validate-recur!
+       module form target-arity
+       (and tail-position? (= index last-index)))))
+  :passed)
+
+(defn p15-s23-stage2-seed-validate-binding-expressions!
+  [module bindings target-arity diagnostic]
+  (when-not (and (vector? bindings) (even? (count bindings)))
+    (if (= diagnostic "L2-LET-BINDING")
+      (fail! diagnostic
+             "let requires an even binding vector"
+             {:source-span {:source (:source-path module)}
+              :bindings bindings
+              :remediation
+              "Use pairs of local names and expressions in let."})
+      (p15-s23-stage2-seed-recur-fail!
+       module (list 'loop bindings) nil nil :invalid-loop-bindings)))
+  (doseq [[name expr] (partition 2 bindings)]
+    (when-not (symbol? name)
+      (if (= diagnostic "L2-LET-BINDING")
+        (fail! diagnostic
+               "let binding name must be a symbol"
+               {:source-span {:source (:source-path module)}
+                :binding name
+                :remediation "Bind symbols in stage2 let forms."})
+        (p15-s23-stage2-seed-recur-fail!
+         module (list 'loop bindings) nil nil :invalid-loop-binding-name)))
+    (p15-s23-stage2-seed-validate-recur!
+     module expr target-arity false))
+  :passed)
+
+(defn p15-s23-stage2-seed-validate-recur!
+  [module form target-arity tail-position?]
+  ;; Source forms are untrusted at this boundary.  Carry tail context on an
+  ;; explicit worklist so deeply nested rejected input cannot consume the host
+  ;; call stack before producing a structured diagnostic.
+  (loop [pending [[form target-arity tail-position?]]
+         observed 0]
+    (when (> observed 262144)
+      (p15-s23-stage2-seed-recur-fail!
+       module form target-arity nil :validation-form-limit))
+    (if (empty? pending)
+      :passed
+      (let [[current current-target current-tail?] (peek pending)
+            pending (pop pending)
+            tasks
+            (cond
+              (seq? current)
+              (let [callee (first current)]
+                (cond
+                  (= callee 'quote)
+                  []
+
+                  (= callee 'recur)
+                  (let [arguments (vec (rest current))
+                        actual-arity (count arguments)]
+                    (when (or (nil? current-target)
+                              (not current-tail?)
+                              (not= current-target actual-arity))
+                      (p15-s23-stage2-seed-recur-fail!
+                       module current current-target actual-arity
+                       (cond
+                         (nil? current-target) :missing-target
+                         (not current-tail?) :non-tail-position
+                         :else :arity-mismatch)))
+                    (mapv #(vector % current-target false) arguments))
+
+                  (= callee 'if)
+                  (let [[_ test then else] current]
+                    [[test current-target false]
+                     [then current-target current-tail?]
+                     [else current-target current-tail?]])
+
+                  (= callee 'do)
+                  (let [body (vec (rest current))
+                        last-index (dec (count body))]
+                    (mapv (fn [index body-form]
+                            [body-form current-target
+                             (and current-tail? (= index last-index))])
+                          (range)
+                          body))
+
+                  (= callee 'let)
+                  (let [[_ bindings & raw-body] current
+                        body (vec raw-body)]
+                    (when-not (and (vector? bindings)
+                                   (even? (count bindings)))
+                      (fail! "L2-LET-BINDING"
+                             "let requires an even binding vector"
+                             {:source-span {:source (:source-path module)}
+                              :bindings bindings
+                              :remediation
+                              "Use pairs of local names and expressions in let."}))
+                    (doseq [[name _] (partition 2 bindings)]
+                      (when-not (symbol? name)
+                        (fail! "L2-LET-BINDING"
+                               "let binding name must be a symbol"
+                               {:source-span
+                                {:source (:source-path module)}
+                                :binding name
+                                :remediation
+                                "Bind symbols in stage2 let forms."})))
+                    (let [binding-tasks
+                          (mapv (fn [[_ expression]]
+                                  [expression current-target false])
+                                (partition 2 bindings))
+                          last-index (dec (count body))
+                          body-tasks
+                          (mapv (fn [index body-form]
+                                  [body-form current-target
+                                   (and current-tail?
+                                        (= index last-index))])
+                                (range)
+                                body)]
+                      (into binding-tasks body-tasks)))
+
+                  (= callee 'loop)
+                  (let [[_ bindings & raw-body] current
+                        body (vec raw-body)]
+                    (when-not (and (vector? bindings)
+                                   (even? (count bindings)))
+                      (p15-s23-stage2-seed-recur-fail!
+                       module current nil nil :invalid-loop-bindings))
+                    (doseq [[name _] (partition 2 bindings)]
+                      (when-not (symbol? name)
+                        (p15-s23-stage2-seed-recur-fail!
+                         module current nil nil
+                         :invalid-loop-binding-name)))
+                    (let [nested-target (quot (count bindings) 2)]
+                      (when (empty? body)
+                        (p15-s23-stage2-seed-recur-fail!
+                         module current nested-target nil
+                         :missing-loop-body))
+                      (let [binding-tasks
+                            (mapv (fn [[_ expression]]
+                                    [expression current-target false])
+                                  (partition 2 bindings))
+                            last-index (dec (count body))
+                            body-tasks
+                            (mapv (fn [index body-form]
+                                    [body-form nested-target
+                                     (= index last-index)])
+                                  (range)
+                                  body)]
+                        (into binding-tasks body-tasks))))
+
+                  :else
+                  (mapv #(vector % current-target false)
+                        (rest current))))
+
+              (vector? current)
+              (mapv #(vector % current-target false) current)
+
+              (map? current)
+              (mapv #(vector % current-target false)
+                    (mapcat identity (sort-by pr-str current)))
+
+              (set? current)
+              (mapv #(vector % current-target false)
+                    (sort-by pr-str current))
+
+              :else
+              [])]
+        ;; `pending` is a LIFO vector.  Reverse newly discovered tasks so
+        ;; diagnostics retain deterministic left-to-right source order.
+        (recur (into pending (reverse tasks)) (inc observed))))))
+
 (defn p15-s23-stage2-seed-compile-collection
   [emitter module locals form]
   (let [collection-rules (:collection-rules emitter)]
@@ -93239,6 +93517,32 @@
                      emitter module scope %)
                    body)})))
 
+(defn p15-s23-stage2-seed-compile-loop
+  [emitter module locals bindings body]
+  (when-not (and (vector? bindings) (even? (count bindings)))
+    (p15-s23-stage2-seed-recur-fail!
+     module (list 'loop bindings) nil nil :invalid-loop-bindings))
+  (loop [scope locals
+         compiled []
+         pairs (partition 2 bindings)]
+    (if-let [[name expr] (first pairs)]
+      (do
+        (when-not (symbol? name)
+          (p15-s23-stage2-seed-recur-fail!
+           module (list 'loop bindings) nil nil :invalid-loop-binding-name))
+        (recur (conj scope name)
+               (conj compiled
+                     {:name name
+                      :expr (p15-s23-stage2-seed-compile-expr
+                             emitter module scope expr)})
+               (rest pairs)))
+      {:op :loop
+       :bindings compiled
+       :binding-count (count compiled)
+       :body (mapv #(p15-s23-stage2-seed-compile-expr
+                     emitter module scope %)
+                   body)})))
+
 (defn p15-s23-stage2-seed-compile-expr
   [emitter module locals form]
   (cond
@@ -93282,6 +93586,16 @@
         (let [[_ bindings & body] form]
           (p15-s23-stage2-seed-compile-let emitter module locals bindings body))
 
+        (= callee 'loop)
+        (let [[_ bindings & body] form]
+          (p15-s23-stage2-seed-compile-loop emitter module locals bindings body))
+
+        (= callee 'recur)
+        {:op :recur
+         :args (mapv #(p15-s23-stage2-seed-compile-expr
+                       emitter module locals %)
+                     (rest form))}
+
         (= callee 'quote)
         {:op (:op special-rule) :value (second form)}
 
@@ -93312,7 +93626,7 @@
                "stage2 plan emitter cannot compile this form"
                {:source-span {:source (:source-path module)}
                 :operator callee
-                :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage2 hosted-core subset."})))
+                :remediation "Use defn, println, do, if, let, loop, recur, quote, supported core builtins, or local function calls in the stage2 hosted-core subset."})))
 
     (or (vector? form) (map? form) (set? form))
     (p15-s23-stage2-seed-compile-collection emitter module locals form)
@@ -93323,22 +93637,28 @@
 
 (defn p15-s23-stage2-seed-compile-function
   [emitter module {:keys [name params body] :as definition}]
-  (assoc definition
-         :binding {:name name
-                   :kind :function
-                   :namespace (:module module)
-                   :profile (:profile module)
-                   :target (:target module)
-                   :visibility (if (seq (:exports module))
-                                 (if (contains? (set (:exports module)) name)
-                                   :public
-                                   :private)
-                                 :stage2-local)
-                   :effects (:effects module)
-                   :capabilities (:capabilities module)}
-         :instructions (mapv #(p15-s23-stage2-seed-compile-expr
-                               emitter module (set params) %)
-                             body)))
+  (let [body (vec body)
+        last-index (dec (count body))
+        target-arity (count params)]
+    (doseq [[index form] (map-indexed vector body)]
+      (p15-s23-stage2-seed-validate-recur!
+       module form target-arity (= index last-index)))
+    (assoc definition
+           :binding {:name name
+                     :kind :function
+                     :namespace (:module module)
+                     :profile (:profile module)
+                     :target (:target module)
+                     :visibility (if (seq (:exports module))
+                                   (if (contains? (set (:exports module)) name)
+                                     :public
+                                     :private)
+                                   :stage2-local)
+                     :effects (:effects module)
+                     :capabilities (:capabilities module)}
+           :instructions (mapv #(p15-s23-stage2-seed-compile-expr
+                                 emitter module (set params) %)
+                               body))))
 
 (def p15-s23-stage2-compiler-artifact-source-relative-path
   "bootstrap/gravity/p15_s23/emitter.gravity")
@@ -94748,13 +95068,77 @@
 (declare p15-s23-stage2-runtime-artifact-println-function)
 (declare p15-s23-stage2-runtime-artifact-println-two-function)
 
+(def ^:private p15-s23-stage2-runtime-recur-token
+  (Object.))
+
+(defn p15-s23-stage2-runtime-recur-signal
+  [values]
+  {:p15-s23/recur-token p15-s23-stage2-runtime-recur-token
+   :values (vec values)})
+
+(defn- p15-s23-stage2-runtime-map-entry
+  [value requested-key]
+  (when (map? value)
+    (some (fn [entry]
+            (when (= requested-key (key entry)) entry))
+          value)))
+
+(defn- p15-s23-stage2-runtime-recur-values
+  [value]
+  (some-> (p15-s23-stage2-runtime-map-entry value :values) val))
+
+(defn p15-s23-stage2-runtime-recur-signal?
+  [value]
+  (let [token-entry
+        (p15-s23-stage2-runtime-map-entry value :p15-s23/recur-token)
+        values (p15-s23-stage2-runtime-recur-values value)]
+    (boolean
+     (and token-entry
+          (identical? p15-s23-stage2-runtime-recur-token (val token-entry))
+          (vector? values)))))
+
+(defn p15-s23-stage2-runtime-recur-fail!
+  [plan target-arity actual-arity reason]
+  (fail! "L2-RECUR-TARGET"
+         "recur has no compatible loop or function target"
+         {:source-span {:source (get-in plan [:source :path])}
+          :target-arity target-arity
+          :actual-arity actual-arity
+          :reason reason
+          :remediation
+          "Use recur only in tail position inside a compatible loop or function with matching arity."}))
+
+(defn p15-s23-stage2-runtime-nontail-value!
+  [plan value reason]
+  (when (p15-s23-stage2-runtime-recur-signal? value)
+    (p15-s23-stage2-runtime-recur-fail!
+     plan nil (count (p15-s23-stage2-runtime-recur-values value)) reason))
+  value)
+
+(defn p15-s23-stage2-runtime-execute-values
+  [runtime plan env instructions reason]
+  (mapv (fn [instruction]
+          (p15-s23-stage2-runtime-nontail-value!
+           plan
+           (p15-s23-stage2-runtime-execute-instruction
+            runtime plan env instruction)
+           reason))
+        instructions))
+
 (defn p15-s23-stage2-runtime-execute-instructions
   [runtime plan env instructions]
-  (reduce (fn [_ instruction]
-            (p15-s23-stage2-runtime-execute-instruction
-             runtime plan env instruction))
-          nil
-          instructions))
+  (loop [remaining (seq instructions)
+         result nil]
+    (if-let [instruction (first remaining)]
+      (let [value (p15-s23-stage2-runtime-execute-instruction
+                   runtime plan env instruction)
+            more (next remaining)]
+        (if (and (p15-s23-stage2-runtime-recur-signal? value) more)
+          (p15-s23-stage2-runtime-recur-fail!
+           plan nil (count (p15-s23-stage2-runtime-recur-values value))
+           :non-tail-sequential-position)
+          (recur more value)))
+      result)))
 
 (defn p15-s23-stage2-runtime-execute-instruction
   [runtime plan env instruction]
@@ -94769,26 +95153,30 @@
                      :symbol (:name instruction)
                      :remediation "Regenerate the stage2 instruction plan from a valid source module."}))
     :vector-literal
-    (mapv #(p15-s23-stage2-runtime-execute-instruction
-            runtime plan env %)
-          (:items instruction))
+    (p15-s23-stage2-runtime-execute-values
+     runtime plan env (:items instruction) :recur-inside-vector)
     :set-literal
-    (set (map #(p15-s23-stage2-runtime-execute-instruction
-                runtime plan env %)
-              (:items instruction)))
+    (set (p15-s23-stage2-runtime-execute-values
+          runtime plan env (:items instruction) :recur-inside-set))
     :map-literal
     (into {}
           (map (fn [{:keys [key value]}]
-                 [(p15-s23-stage2-runtime-execute-instruction
-                   runtime plan env key)
-                  (p15-s23-stage2-runtime-execute-instruction
-                   runtime plan env value)]))
+                 [(p15-s23-stage2-runtime-nontail-value!
+                   plan
+                   (p15-s23-stage2-runtime-execute-instruction
+                    runtime plan env key)
+                   :recur-inside-map-key)
+                  (p15-s23-stage2-runtime-nontail-value!
+                   plan
+                   (p15-s23-stage2-runtime-execute-instruction
+                    runtime plan env value)
+                   :recur-inside-map-value)]))
           (:entries instruction))
     :println
     (let [module (:module plan)
-          args (mapv #(p15-s23-stage2-runtime-execute-instruction
-                       runtime plan env %)
-                     (:args instruction))]
+          args (p15-s23-stage2-runtime-execute-values
+                runtime plan env (:args instruction)
+                :recur-inside-println-argument)]
       (validate-module-effects! module)
       (if (and (= 1 (count args))
                (:runtime-artifact-plan runtime))
@@ -94819,8 +95207,11 @@
     (p15-s23-stage2-runtime-execute-instructions
      runtime plan env (:body instruction))
     :if
-    (if (p15-s23-stage2-runtime-execute-instruction
-         runtime plan env (:test instruction))
+    (if (p15-s23-stage2-runtime-nontail-value!
+         plan
+         (p15-s23-stage2-runtime-execute-instruction
+          runtime plan env (:test instruction))
+         :recur-inside-if-test)
       (p15-s23-stage2-runtime-execute-instruction
        runtime plan env (:then instruction))
       (p15-s23-stage2-runtime-execute-instruction
@@ -94830,15 +95221,49 @@
            bindings (:bindings instruction)]
       (if-let [{:keys [name expr]} (first bindings)]
         (recur (assoc env name
-                      (p15-s23-stage2-runtime-execute-instruction
-                       runtime plan env expr))
+                      (p15-s23-stage2-runtime-nontail-value!
+                       plan
+                       (p15-s23-stage2-runtime-execute-instruction
+                        runtime plan env expr)
+                       :recur-inside-let-binding))
                (rest bindings))
         (p15-s23-stage2-runtime-execute-instructions
          runtime plan env (:body instruction))))
+    :loop
+    (let [bindings (:bindings instruction)
+          binding-names (mapv :name bindings)
+          target-arity (count binding-names)
+          initial-env
+          (loop [scope env
+                 remaining bindings]
+            (if-let [{:keys [name expr]} (first remaining)]
+              (let [value
+                    (p15-s23-stage2-runtime-nontail-value!
+                     plan
+                     (p15-s23-stage2-runtime-execute-instruction
+                      runtime plan scope expr)
+                     :recur-inside-loop-initializer)]
+                (recur (assoc scope name value) (rest remaining)))
+              scope))]
+      (loop [loop-env initial-env]
+        (let [result
+              (p15-s23-stage2-runtime-execute-instructions
+               runtime plan loop-env (:body instruction))]
+          (if (p15-s23-stage2-runtime-recur-signal? result)
+            (let [values (p15-s23-stage2-runtime-recur-values result)]
+              (when-not (= target-arity (count values))
+                (p15-s23-stage2-runtime-recur-fail!
+                 plan target-arity (count values) :loop-arity-mismatch))
+              (recur (merge env (zipmap binding-names values))))
+            result))))
+    :recur
+    (p15-s23-stage2-runtime-recur-signal
+     (p15-s23-stage2-runtime-execute-values
+      runtime plan env (:args instruction) :recur-inside-recur-argument))
     :builtin-call
-    (let [args (mapv #(p15-s23-stage2-runtime-execute-instruction
-                       runtime plan env %)
-                     (:args instruction))]
+    (let [args (p15-s23-stage2-runtime-execute-values
+                runtime plan env (:args instruction)
+                :recur-inside-builtin-argument)]
       (if (and (= 'str (:function instruction))
                (:runtime-artifact-plan runtime))
         (case (count args)
@@ -94853,9 +95278,9 @@
         (p15-s23-stage2-runtime-invoke-builtin
          plan (:function instruction) args)))
     :function-call
-    (let [args (mapv #(p15-s23-stage2-runtime-execute-instruction
-                       runtime plan env %)
-                     (:args instruction))]
+    (let [args (p15-s23-stage2-runtime-execute-values
+                runtime plan env (:args instruction)
+                :recur-inside-function-argument)]
       (p15-s23-stage2-runtime-execute-function
        runtime plan (:function instruction) args))
     (fail! "L2-UNKNOWN-CORE-FORM"
@@ -94877,8 +95302,18 @@
     (when-not (= (count params) (count args))
       (p15-s23-stage2-runtime-fail-call-arity!
        "L2-FUNCTION-ARITY" plan callee args (count params)))
-    (p15-s23-stage2-runtime-execute-instructions
-     runtime plan (zipmap params args) (:instructions definition))))
+    (loop [env (zipmap params args)]
+      (let [result
+            (p15-s23-stage2-runtime-execute-instructions
+             runtime plan env (:instructions definition))]
+        (if (p15-s23-stage2-runtime-recur-signal? result)
+          (let [values (p15-s23-stage2-runtime-recur-values result)]
+            (when-not (= (count params) (count values))
+              (p15-s23-stage2-runtime-recur-fail!
+               plan (count params) (count values)
+               :function-arity-mismatch))
+            (recur (zipmap params values)))
+          result)))))
 
 (defn p15-s23-stage2-runtime-artifact-invoke
   "Generic host runner for a Gravity-authored runtime function plan.
@@ -96772,29 +97207,40 @@
   {"STAGE1READER001"
    {:c2-id "C2-DELIMITER"
     :remapped-from "L1-DELIMITER"
-    :reader-state-stage :recursive-form-building
+    :reader-state-stages #{:recursive-form-building :read-source}
     :fact-key-sets #{#{:actual-delimiter}
-                     #{:expected-delimiter :actual-delimiter}}}
+                     #{:expected-delimiter :actual-delimiter}
+                     #{:observed-close-codepoint :token-id :form-id}
+                     #{:observed-close-codepoint :expected-close-codepoint
+                       :token-id :form-id}}}
    "STAGE1READER002"
    {:c2-id "C2-DELIMITER"
     :remapped-from "L1-DELIMITER"
-    :reader-state-stage :recursive-form-building
-    :fact-key-sets #{#{:expected-delimiter :open-token}}}
+    :reader-state-stages #{:recursive-form-building :read-source}
+    :fact-key-sets #{#{:expected-delimiter :open-token}
+                     #{:open-form-id :token-id :form-id}}}
    "STAGE1READER003"
    {:c2-id "C2-STRING"
     :remapped-from "L1-STRING"
-    :reader-state-stage :lexical-tokenization
+    :reader-state-stages #{:lexical-tokenization :read-source}
     :fact-key-sets #{#{}}}
    "STAGE1READER004"
    {:c2-id "C2-EXTENSION"
     :remapped-from "L1-READER-EXTENSION"
-    :reader-state-stage :lexical-tokenization
-    :fact-key-sets #{#{}}}
+    :reader-state-stages #{:lexical-tokenization :read-source}
+    :fact-key-sets #{#{}
+                     #{:tag-codepoints :token-id :form-id}}}
    "STAGE1READER005"
    {:c2-id "C2-MAP"
     :remapped-from "L1-MAP-ARITY"
-    :reader-state-stage :recursive-form-building
-    :fact-key-sets #{#{:entry-count}}}})
+    :reader-state-stages #{:recursive-form-building :read-source}
+    :fact-key-sets #{#{:entry-count}
+                     #{:observed-child-count :token-id :form-id}}}
+   "STAGE1READER007"
+   {:c2-id "C2-NUMERIC"
+    :remapped-from "L1-NUMERIC"
+    :reader-state-stages #{:lexical-tokenization :read-source}
+    :fact-key-sets #{#{:literal-kind :raw-spelling}}}})
 
 (defn p15-s23-stage2-reader-replayed-diagnostic
   [source-path source-text]
@@ -96819,6 +97265,37 @@
       (assoc :start (p15-s23-stage2-reader-safe-location (:start span)))
       (:end span)
       (assoc :end (p15-s23-stage2-reader-safe-location (:end span))))))
+
+(def p15-s23-stage2-legacy-reader-state-keys
+  #{:artifact :stage :byte-offset :line :column :token-id :form-id})
+
+(def p15-s23-stage2-gravity-reader-state-keys
+  #{:artifact :owner :stage :reason :byte-offset :char-position
+    :line :column :column-unit :token-id :form-id :result-committed?})
+
+(defn p15-s23-stage2-reader-state-authentic?
+  [reader-state span data allowed-stages]
+  (let [keys (set (keys reader-state))
+        common?
+        (and (= :gravity/reader-state (:artifact reader-state))
+             (contains? allowed-stages (:stage reader-state))
+             (= (:byte-start span) (:byte-offset reader-state))
+             (= (get-in span [:start :line]) (:line reader-state))
+             (= (get-in span [:start :column]) (:column reader-state))
+             (= (:token-id data) (:token-id reader-state))
+             (= (:form-id data) (:form-id reader-state)))]
+    (and
+     common?
+     (or
+      (= p15-s23-stage2-legacy-reader-state-keys keys)
+      (and
+       (= p15-s23-stage2-gravity-reader-state-keys keys)
+       (= :gravity-source (:owner reader-state))
+       (keyword? (:reason reader-state))
+       (= :unicode-scalar (:column-unit reader-state))
+       (integer? (:char-position reader-state))
+       (= (get-in span [:start :char]) (:char-position reader-state))
+       (false? (:result-committed? reader-state)))))))
 
 (defn p15-s23-stage2-reader-diagnostic-authentic?
   [source-path source-text data replayed-data]
@@ -96889,24 +97366,15 @@
               (= :unicode-scalar (get-in span [:end :column-unit]))
               (= (:byte-start span) (get-in span [:start :byte]))
               (= (:byte-end span) (get-in span [:end :byte]))
-              (= #{:artifact :stage :byte-offset :line :column
-                   :token-id :form-id}
-                 (set (keys reader-state)))
-              (= :gravity/reader-state (:artifact reader-state))
-              (= (:reader-state-stage contract) (:stage reader-state))
-              (= (:byte-start span) (:byte-offset reader-state))
-              (= (get-in span [:start :line]) (:line reader-state))
-              (= (get-in span [:start :column]) (:column reader-state))
-              (= (:token-id data) (:token-id reader-state))
-              (= (:form-id data) (:form-id reader-state))))))
+              (p15-s23-stage2-reader-state-authentic?
+               reader-state span data (:reader-state-stages contract))))))
     (catch Exception _
       false)))
 
 (defn p15-s23-stage2-canonical-c2-diagnostic-authentic?
   "Authenticate every canonical C2 reader rejection by exact bounded replay.
-  Compatibility-mapped stage1 diagnostics receive the stricter legacy checks
-  as well; native C2 diagnostics and the documented numeric catalog gap do not
-  depend on that older five-entry compatibility table."
+  Internal engine labels remain provenance only; the replayed canonical C2
+  record is the authority after the Gravity reader cutover."
   [source-path source-text data replayed-data]
   (try
     (let [id (:id data)
@@ -96934,8 +97402,7 @@
        (map? data)
        (map? replayed-data)
        (= replayed-data data)
-       (or (contains? (set c2-reader-diagnostic-ids) id)
-           (= "STAGE1READER007" id))
+       (contains? (set c2-reader-diagnostic-ids) id)
        (= :gravity/diagnostic (:artifact data))
        (= (keyword id) (:rule data))
        (= (c2-reader-message id) (:message data))
@@ -96956,12 +97423,12 @@
        (= standard-reader-options (:reader-options data))
        (= :stage0 (:bootstrap-stage data))
        (map? reader-state)
-       (= :gravity/reader-state (:artifact reader-state))
-       (= (:byte-start span) (:byte-offset reader-state))
-       (= (get-in span [:start :line]) (:line reader-state))
-       (= (get-in span [:start :column]) (:column reader-state))
-       (= (:token-id data) (:token-id reader-state))
-       (= (:form-id data) (:form-id reader-state))
+       (p15-s23-stage2-reader-state-authentic?
+        reader-state span data
+        (or (get-in p15-s23-stage2-reader-compatibility-diagnostic-map
+                    [(:reader-engine-diagnostic data) :reader-state-stages])
+            #{:lexical-tokenization :recursive-form-building
+              :source-unit-policy :source-decoding}))
        (or (not compatibility-engine?)
            (p15-s23-stage2-reader-diagnostic-authentic?
             source-path source-text data replayed-data))))
@@ -97013,7 +97480,7 @@
         (if (and
              (contains? p15-s23-stage2-reader-compatibility-diagnostic-map
                         (:reader-engine-diagnostic data))
-             (p15-s23-stage2-reader-diagnostic-authentic?
+             (p15-s23-stage2-canonical-c2-diagnostic-authentic?
               source-path source-text data
               (p15-s23-stage2-reader-replayed-diagnostic
                source-path source-text)))
@@ -110802,7 +111269,7 @@
                  c8-effect-diagnostic-ids
                  c15-diagnostics-diagnostic-ids
                  stage1-reader-execution-diagnostic-ids
-                 ["STAGE1READER007"]
+                 ["C2-NUMERIC"]
                  p15-s23-reference-runtime-preserved-diagnostic-ids))
         bounded-keyword?
         (fn [value]
@@ -118043,11 +118510,11 @@
   #{"clojure.lang.PersistentList"
     "clojure.lang.PersistentList$EmptyList"})
 
-(def p15-s23-c6c10-max-carrier-nodes 65536)
-(def p15-s23-c6c10-max-carrier-depth 64)
-(def p15-s23-c6c10-max-container-width 128)
-(def p15-s23-c6c10-max-scalar-bytes 65536)
-(def p15-s23-c6c10-max-total-scalar-bytes (* 8 1024 1024))
+(def ^:dynamic p15-s23-c6c10-max-carrier-nodes 65536)
+(def ^:dynamic p15-s23-c6c10-max-carrier-depth 64)
+(def ^:dynamic p15-s23-c6c10-max-container-width 128)
+(def ^:dynamic p15-s23-c6c10-max-scalar-bytes 65536)
+(def ^:dynamic p15-s23-c6c10-max-total-scalar-bytes (* 8 1024 1024))
 (def p15-s23-c6c10-max-integer-bits 256)
 (def p15-s23-c6c10-max-digest-requests 2048)
 (def p15-s23-c6c10-max-source-bytes (* 1024 1024))
@@ -132379,9 +132846,9 @@
 
 (def p15-s23-sh02-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
-(def p15-s23-sh02-source-byte-count 59369)
+(def p15-s23-sh02-source-byte-count 59495)
 (def p15-s23-sh02-expected-source-content-hash
-  "sha256:8bde715b0bd0059a4ffd90c463fd473a64aa68909ef497c9a1506541d9d7fbfc")
+  "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71")
 (def p15-s23-sh02-expected-plan-semantic-hash
   "sha256:125e012806bddf996f23e357bd33309c9bbd40927ce0f2c841e69b39c1740922")
 (def p15-s23-sh02-expected-functions-semantic-hash
@@ -135356,6 +135823,60 @@
      (catch AssertionError _ false)
      (catch LinkageError _ false)
      (catch Exception _ false))))
+
+(defn p15-s23-stage2-sh02-descriptor-envelope
+  "Build one reusable SH-02 envelope directly from a bounded stage descriptor.
+
+  This is the narrow reuse seam for later bootstrap slices.  The caller may
+  choose the stage label and artifact kind, but never supplies executable
+  Gravity code, a compiled plan, a digest resolver, or construction authority.
+  The pinned SH-02 source is reloaded and reauthenticated on every call."
+  [stage artifact-kind descriptor source-path]
+  (try
+    (when-not (and (keyword? stage) (keyword? artifact-kind))
+      (p15-s23-sh02-fail!
+       source-path descriptor :sh02-descriptor-envelope-stage-contract
+       {:stage stage :artifact-kind artifact-kind}))
+    (let [binding
+          (p15-s23-sh02-source-binding!
+           p15-s23-c13-c14-b1-authority-token source-path)
+          packet {stage {:artifact artifact-kind}}]
+      (p15-s23-sh02-build-stage-envelope!
+       p15-s23-c13-c14-b1-authority-token
+       stage packet descriptor binding source-path))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError _
+      (p15-s23-sh02-fail!
+       source-path {} :bounded-sh02-descriptor-envelope-host-stack {}))
+    (catch AssertionError error
+      (p15-s23-b3-llvm-contain-exception!
+       source-path :contained-sh02-descriptor-envelope-assertion error))
+    (catch LinkageError error
+      (p15-s23-b3-llvm-contain-exception!
+       source-path :contained-sh02-descriptor-envelope-linkage error))
+    (catch clojure.lang.ExceptionInfo exception
+      (p15-s23-b3-llvm-contain-exception!
+       source-path :contained-sh02-descriptor-envelope-diagnostic exception))
+    (catch Exception exception
+      (p15-s23-b3-llvm-contain-exception!
+       source-path :contained-sh02-descriptor-envelope-host-failure exception))))
+
+(defn p15-s23-stage2-sh02-descriptor-envelope-verify!
+  "Reconstruct a descriptor envelope from current pinned source and inputs."
+  [artifact stage artifact-kind descriptor source-path]
+  (let [expected
+        (p15-s23-stage2-sh02-descriptor-envelope
+         stage artifact-kind descriptor source-path)]
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path expected artifact
+     :fresh-sh02-descriptor-envelope-reconstruction)
+    (when-not (= expected artifact)
+      (p15-s23-sh02-fail!
+       source-path artifact :fresh-sh02-descriptor-envelope-equality
+       {:stage stage :artifact-kind artifact-kind}))
+    :passed))
 
 (def p15-s23-c-backend-diagnostic-rules
   (into
@@ -147230,9 +147751,10 @@
    (jvm-backend-source-artifact
     path (read-gravity-source-text path) options)))
 
-(defn compile-source
-  [source-path source-text]
-  (let [macro-artifact (macro-source-artifact source-path source-text)
+(defn compile-source-from-records
+  [source-path source-text records]
+  (let [macro-artifact (macro-source-artifact-from-records
+                        source-path source-text records)
         module (assoc (:module macro-artifact) :forms (:expanded-forms macro-artifact))
         _ (executable-profile! source-path module (:forms module))
         _ (validate-module-effects! module)]
@@ -147247,6 +147769,12 @@
                         :runtime :clojure/jvm
                         :effects (:effects module)
                         :capabilities (:capabilities module)}}))
+
+(defn compile-source
+  [source-path source-text]
+  (compile-source-from-records
+   source-path source-text
+   (read-source-form-records source-path source-text)))
 
 (defn source-path-policy-fail!
   ([source-path]
@@ -147796,6 +148324,9 @@
   ["C2-ENCODING"
    "C2-DELIMITER"
    "C2-STRING"
+   "C2-NUMERIC"
+   "C2-IDENTIFIER"
+   "C2-NS-SHAPE"
    "C2-MAP"
    "C2-SET"
    "C2-METADATA"
@@ -147816,6 +148347,15 @@
    {:diagnostic "C2-STRING"
     :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-string.gravity"
     :rejected-design :lost-string-escape-facts}
+   {:diagnostic "C2-NUMERIC"
+    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/malformed-numeric.gravity"
+    :rejected-design :malformed-numeric-reclassified-or-host-parsed}
+   {:diagnostic "C2-IDENTIFIER"
+    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/malformed-identifier.gravity"
+    :rejected-design :malformed-symbol-or-keyword-spelling}
+   {:diagnostic "C2-NS-SHAPE"
+    :fixture "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/namespace-missing-name.gravity"
+    :rejected-design :host-owned-or-malformed-namespace-clause-shape}
    {:diagnostic "C2-MAP"
     :fixture "bootstrap/clojure/fixtures/rejected/compiler-c2-map.gravity"
     :rejected-design :odd-map-literal}
@@ -147850,13 +148390,15 @@
     "C2-ENCODING" "source decoding failed or used an undeclared encoding"
     "C2-DELIMITER" "reader delimiter structure is malformed"
     "C2-STRING" "string or character literal is malformed"
+    "C2-NUMERIC" "numeric candidate fails every enabled numeric literal grammar"
+    "C2-IDENTIFIER" "symbol or keyword has an invalid surface spelling"
+    "C2-NS-SHAPE" "namespace clause has invalid reader-level syntax shape"
     "C2-MAP" "map literal has odd arity"
     "C2-SET" "literal set contains duplicate entries decidable at read time"
     "C2-METADATA" "metadata is unattached or has invalid reader shape"
     "C2-ABBREV" "reader abbreviation placement is invalid"
     "C2-EXTENSION" "source extension is noncanonical or reader extension is unknown, disallowed, or effect-violating"
     "C2-HASH" "reader artifact identity is unstable or incomplete"
-    "STAGE1READER007" "numeric literal lexical shape is malformed; normative C2 mapping is unassigned"
     "reader document coverage failed"))
 
 (defn c2-reader-fail!
@@ -147961,12 +148503,16 @@
                    "STAGE1READER003" "L1-STRING"
                    "STAGE1READER004" "L1-READER-EXTENSION"
                    "STAGE1READER005" "L1-MAP-ARITY"
+                   "STAGE1READER007" "L1-NUMERIC"
                    old-id)
         id (cond
              (= "L1-SOURCE-ENCODING" owner-id) "C2-ENCODING"
              (= "L1-SOURCE-EXTENSION" owner-id) "C2-EXTENSION"
              (= "L1-DELIMITER" owner-id) "C2-DELIMITER"
              (= "L1-STRING" owner-id) "C2-STRING"
+             (= "L1-NUMERIC" owner-id) "C2-NUMERIC"
+             (= "L1-IDENTIFIER" owner-id) "C2-IDENTIFIER"
+             (= "L1-NS-SHAPE" owner-id) "C2-NS-SHAPE"
              (= "L1-MAP-ARITY" owner-id) "C2-MAP"
              (= "L1-METADATA" owner-id) "C2-METADATA"
              (= "L1-READER-EXTENSION" owner-id) "C2-EXTENSION"
@@ -147977,7 +148523,8 @@
         (or (:reader-state data)
             {:artifact :gravity/reader-state
              :stage (if (contains? #{"STAGE1READER003"
-                                     "STAGE1READER004"}
+                                     "STAGE1READER004"
+                                     "STAGE1READER007"}
                                    old-id)
                       :lexical-tokenization
                       :recursive-form-building)
@@ -147986,8 +148533,7 @@
              :column (get-in span [:start :column])
              :token-id (:token-id data)
              :form-id (:form-id data)})]
-    (if (or (contains? (set c2-reader-diagnostic-ids) id)
-            (= "STAGE1READER007" id))
+    (if (contains? (set c2-reader-diagnostic-ids) id)
       (let [preserved-fields
             (dissoc data :id :message :diagnostic-family :reader-options)]
         (c2-reader-fail!
@@ -148362,9 +148908,20 @@
 
 (defn c2-extension-hash-input
   [extension-invocations]
-  (mapv #(cond-> (dissoc % :source-path)
-           (contains? % :span) (update :span c2-path-neutral-span))
-        extension-invocations))
+  (mapv
+   (fn [invocation]
+     (cond-> (dissoc invocation :source-path)
+       (contains? invocation :span)
+       (update :span c2-path-neutral-span)
+
+       (contains? invocation :invocations)
+       (update :invocations
+               (fn [records]
+                 (mapv #(cond-> %
+                          (contains? % :span)
+                          (update :span c2-path-neutral-span))
+                       records)))))
+   extension-invocations))
 
 (defn c2-diagnostic-hash-input
   [diagnostics]
@@ -148409,7 +148966,7 @@
               :reader-options (:reader-options source-unit)}
              {:missing-fields [:acyclic-reader-form-graph]
               :facts {:failure-kind :reader-form-cycle}}))
-        _ (when (> max-depth max-reader-form-depth)
+        _ (when (> max-depth max-reader-form-graph-depth)
             (c2-reader-fail!
              "C2-HASH" (:path source-unit)
              {:stage :read-source
@@ -148419,7 +148976,7 @@
               :reader-options (:reader-options source-unit)}
              {:missing-fields [:bounded-reader-form-depth]
               :facts {:observed-form-depth max-depth
-                      :maximum-form-depth max-reader-form-depth
+                      :maximum-form-depth max-reader-form-graph-depth
                       :failure-kind :reader-resource-depth-limit}}))
         retain-trivia? (true? (get-in source-unit
                                       [:reader-options :retain-comments]))
@@ -148509,10 +149066,2293 @@
         (recur (next tokens) next-depth))))
   :complete)
 
-(defn c2-reader-products
+;; SH-03 executes only this exact Gravity-authored reader closure.  The pinned
+;; values are filled after the leaf source and its independent review freeze.
+;; Keeping these separate from the builder makes the source/plan tripwire
+;; explicit and prevents a rebuild from silently authorizing changed code.
+(def sh03-reader-expected-source-byte-count 257152)
+(def sh03-reader-uncredited-source-model-entrypoints
+  ['stage1-read-source-formal-release-governance-seed-retirement
+   'stage1-read-source-release-attestation-seed-retirement
+   'stage1-read-source-diverse-bootstrap-verification
+   'stage1-read-source-verified-boot-chain
+   'stage1-read-source-runtime-image
+   'stage1-read-source-runtime-entrypoint
+   'stage1-read-source-compiler-driver
+   'stage1-read-source-core-bootstrap
+   'stage1-read-source-self-hosted-runtime])
+(def sh03-reader-expected-source-content-hash
+  "sha256:7e4f9817de20209f005ea3616bcc2c7948fde14f13166be3d3a378fe3884388a")
+(def sh03-reader-expected-plan-semantic-hash
+  "sha256:a701682ed04f35d7e884f33ad5b79c2bcd2f8b37df20559964d962b0ae20c0a6")
+(def sh03-reader-expected-functions-semantic-hash
+  "sha256:a1a62c4b0ea5e58ca1efb3ea4c6c6e8ed01c10089181bae4304545166f73dcd3")
+(def sh03-reader-expected-function-count 231)
+(def sh03-reader-expected-function-names-hash
+  "sha256:27c0e98eec6e92acdf9d4c5a9db966374136f1c8084f7e9f13bea1610d6bf868")
+(def sh03-reader-expected-function-shapes-hash
+  "sha256:af3f655c92eb88945c6a46cdc8f0dcc157c92a8e7f9cd80cc2595129bd088e07")
+(def sh03-reader-expected-entrypoint-semantic-hash
+  "sha256:9ea6a927c2f25fa80b123af18d3a6824bd9e2863e8c55fbc9f02839d882eb0cc")
+(def sh03-reader-expected-verifier-semantic-hash
+  "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7")
+(def sh03-reader-expected-builtin-functions-hash
+  "sha256:03394c173b55bcb279070adc77d0494ee334c42505d814593f46109000dc1400")
+
+(declare sh03-reader-canonical-maximum-scalar-bytes
+         sh03-reader-canonical-maximum-total-scalar-bytes)
+
+(def sh03-reader-source-relative-path
+  "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+(def sh03-reader-entrypoint 'sh03-read-source-unit)
+(def sh03-reader-verifier 'sh03-verify-reader-result)
+(def sh03-reader-function-prefix "sh03-")
+(def sh03-reader-plan-maximum-nodes 524288)
+(def sh03-reader-plan-maximum-depth 512)
+(def sh03-reader-plan-maximum-width 131072)
+(def sh03-reader-result-maximum-nodes 83886080)
+(def sh03-reader-result-maximum-depth 2048)
+(def sh03-reader-result-maximum-width 1048576)
+(def sh03-reader-input-maximum-identity-utf8-bytes 4096)
+(def sh03-reader-input-maximum-identity-code-units 1024)
+
+(def sh03-reader-plan-keys
+  #{:kind :compiler-artifact-plan? :entrypoint :source :compiler :module
+    :functions :instruction-summary :effect-summary :sh03-reader :plan-id})
+
+(def sh03-reader-function-keys
+  #{:name :params :arity :body-form-count :binding :instructions})
+
+(def sh03-reader-binding-keys
+  #{:name :kind :namespace :profile :target :visibility :effects
+    :capabilities})
+
+(def sh03-reader-instruction-keysets
+  {:literal #{:op :value}
+   :quote #{:op :value}
+   :local #{:op :name}
+   :vector-literal #{:op :items}
+   :set-literal #{:op :items}
+   :map-literal #{:op :entries}
+   :do #{:op :body}
+   :if #{:op :test :then :else}
+   :let #{:op :bindings :body}
+   :loop #{:op :bindings :binding-count :body}
+   :recur #{:op :args}
+   :builtin-call #{:op :function :args}
+   :function-call #{:op :function :args}})
+
+(def sh03-reader-allowed-opcodes
+  (set (keys sh03-reader-instruction-keysets)))
+
+(def sh03-reader-allowed-builtins
+  (set/union stage0-builtin-functions
+             p15-s23-stage2-compiler-artifact-builtins))
+
+(defn sh03-reader-boundary-fail!
+  [source-path missing-fact subject facts]
+  (c2-reader-fail!
+   "C2-HASH" source-path
+   {:stage :read-source
+    :source-span (source-span source-path 0)
+    :reader-options standard-reader-options}
+   {:missing-fields [missing-fact]
+    :facts (merge {:sh03-boundary :gravity-reader-plan}
+                  facts)
+    :observed subject}))
+
+(defn sh03-reader-resolve-source-path
+  []
+  (let [anchor (java.io.File.
+                (p15-s23-stage2-compiler-artifact-source-path))
+        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
+    (or
+     (loop [directory start]
+       (when directory
+         (let [candidate (java.io.File. directory
+                                        sh03-reader-source-relative-path)]
+           (if (.isFile candidate)
+             (.getPath candidate)
+             (recur (.getParentFile directory))))))
+     sh03-reader-source-relative-path)))
+
+(defn sh03-reader-read-pinned-source-bytes!
+  [request-source]
+  (let [source-path (sh03-reader-resolve-source-path)
+        path (.toPath (java.io.File. source-path))
+        nofollow (into-array java.nio.file.LinkOption
+                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (try
+          (java.nio.file.Files/readAttributes
+           path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception error
+            (sh03-reader-boundary-fail!
+             request-source :pinned-sh03-reader-source-readable
+             source-path {:cause-message (.getMessage error)})))]
+    (when-not (and attributes
+                   (.isRegularFile attributes)
+                   (= (long sh03-reader-expected-source-byte-count)
+                      (.size attributes)))
+      (sh03-reader-boundary-fail!
+       request-source :exact-regular-pinned-sh03-reader-source
+       source-path
+       {:expected-source-byte-count sh03-reader-expected-source-byte-count
+        :observed-source-byte-count (when attributes (.size attributes))
+        :regular-file? (boolean (and attributes
+                                     (.isRegularFile attributes)))}))
+    (let [limit (inc sh03-reader-expected-source-byte-count)
+          buffer (byte-array limit)
+          observed
+          (try
+            (with-open [input
+                        (java.nio.file.Files/newInputStream
+                         path
+                         (into-array java.nio.file.OpenOption
+                                     [java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+              (loop [offset 0]
+                (if (= offset limit)
+                  offset
+                  (let [n (.read input buffer offset (- limit offset))]
+                    (if (= -1 n) offset (recur (+ offset n)))))))
+            (catch Exception error
+              (sh03-reader-boundary-fail!
+               request-source :stable-pinned-sh03-reader-source-read
+               source-path {:cause-message (.getMessage error)})))
+          bytes (java.util.Arrays/copyOf
+                 buffer sh03-reader-expected-source-byte-count)
+          content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+      (when-not (and (= sh03-reader-expected-source-byte-count observed)
+                     (= sh03-reader-expected-source-content-hash content-hash))
+        (sh03-reader-boundary-fail!
+         request-source :pinned-sh03-reader-source-identity
+         source-path
+         {:expected-source-byte-count sh03-reader-expected-source-byte-count
+          :observed-source-byte-count observed
+          :expected-source-content-hash
+          sh03-reader-expected-source-content-hash
+          :observed-source-content-hash content-hash}))
+      {:source-path source-path
+       :bytes bytes
+       :source-byte-count observed
+       :source-content-hash content-hash})))
+
+(defn sh03-reader-strict-source-text!
+  [request-source source-path bytes]
+  (try
+    (str
+     (.decode
+      (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+        (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+        (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+      (java.nio.ByteBuffer/wrap bytes)))
+    (catch java.nio.charset.CharacterCodingException error
+      (sh03-reader-boundary-fail!
+       request-source :valid-utf8-pinned-sh03-reader-source
+       source-path {:cause-message (.getMessage error)}))))
+
+(defn sh03-reader-plan-instruction-summary
+  [source-path functions]
+  (loop [pending
+         (reduce
+          (fn [tasks [_ function]]
+            (into tasks (map #(vector % 1) (:instructions function))))
+          [] functions)
+         summary {}
+         builtins #{}
+         observed-nodes 0
+         observed-depth 0]
+    (when (> observed-nodes sh03-reader-plan-maximum-nodes)
+      (sh03-reader-boundary-fail!
+       source-path :bounded-sh03-reader-plan-instructions
+       observed-nodes {:maximum-nodes sh03-reader-plan-maximum-nodes}))
+    (if (empty? pending)
+      {:instruction-summary summary
+       :builtin-functions builtins
+       :observed-nodes observed-nodes
+       :observed-depth observed-depth}
+      (let [[instruction depth] (peek pending)
+            pending (pop pending)
+            op (:op instruction)
+            children
+            (case op
+              (:literal :quote :local) []
+              (:vector-literal :set-literal) (:items instruction)
+              :map-literal
+              (mapcat (juxt :key :value) (:entries instruction))
+              :do (:body instruction)
+              :if [(:test instruction) (:then instruction) (:else instruction)]
+              (:let :loop)
+              (concat (map :expr (:bindings instruction))
+                      (:body instruction))
+              :recur (:args instruction)
+              (:builtin-call :function-call) (:args instruction)
+              [])]
+        (recur
+         (into pending (map #(vector % (inc depth)) children))
+         (update summary op (fnil inc 0))
+         (cond-> builtins (= :builtin-call op)
+           (conj (:function instruction)))
+         (inc observed-nodes)
+         (max observed-depth depth))))))
+
+(defn sh03-reader-build-plan!
+  [request-source {:keys [source-path bytes source-byte-count
+                          source-content-hash]}]
+  (let [source-text
+        (sh03-reader-strict-source-text!
+         request-source source-path bytes)
+        macro-artifact (macro-source-artifact source-path source-text)
+        module-base (assoc (:module macro-artifact)
+                           :forms (:expanded-forms macro-artifact))
+        all-functions (stage0-function-table module-base)
+        selected-functions
+        (into
+         (sorted-map)
+         (filter (fn [[function-name _]]
+                   (str/starts-with? (name function-name)
+                                     sh03-reader-function-prefix)))
+         all-functions)
+        module (assoc module-base :function-table selected-functions)
+        emitter-binding
+        (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
+        emitter
+        (p15-s23-stage2-compiler-artifact-augmented-emitter
+         (:emitter emitter-binding))
+        functions
+        (into
+         (sorted-map)
+         (map
+          (fn [[name definition]]
+            [name
+             (select-keys
+              (p15-s23-stage2-seed-compile-function
+               emitter module definition)
+              sh03-reader-function-keys)]))
+         selected-functions)
+        audit (sh03-reader-plan-instruction-summary source-path functions)
+        plan-base
+        {:kind :gravity/stage2-compiler-artifact-plan
+         :compiler-artifact-plan? true
+         :entrypoint sh03-reader-entrypoint
+         :source {:sha256 source-content-hash
+                  :byte-count source-byte-count}
+         :compiler
+         {:owner :gravity-source
+          :stage :p15-s23-stage2-expression-lowering
+          :compiled-by :clojure-stage0-seed
+          :executed-by :clojure-stage2-generic-rule-runner
+          :emitter-source-content-hash
+          p15-s23-stage2-compiler-artifact-expected-source-content-hash
+          :emitter-semantic-hash
+          p15-s23-stage2-compiler-artifact-expected-semantic-hash
+          :emitter-source-rule-hash (:source-rule-hash emitter-binding)
+          :generic-bridge-residual? true
+          :self-hosted? false}
+         :module (select-keys module
+                              [:module :profile :target :effects
+                               :capabilities :exports :safety])
+         :functions functions
+         :instruction-summary (:instruction-summary audit)
+         :effect-summary {:declared (:effects module)
+                          :inferred #{}
+                          :capabilities (:capabilities module)}
+         :sh03-reader
+         {:slice :SH-03
+          :source-language :gravity
+          :entrypoint sh03-reader-entrypoint
+          :verifier sh03-reader-verifier
+          :target-source-reread? false
+          :clojure-seed-boundary? true
+          :self-hosted? false}}
+        plan (assoc plan-base :plan-id (reader-canonical-hash plan-base))]
+    {:plan plan
+     :source-path source-path
+     :source-byte-count source-byte-count
+     :source-content-hash source-content-hash
+     :builtin-functions (:builtin-functions audit)}))
+
+(defn sh03-reader-plan-identities
+  [plan]
+  (let [functions (:functions plan)
+        function-names (vec (sort-by str (keys functions)))
+        function-shapes
+        (into (sorted-map)
+              (map (fn [[name function]]
+                     [name (select-keys function [:arity :params])]))
+              functions)
+        audit
+        (sh03-reader-plan-instruction-summary
+         "<sh03-reader-plan>" functions)]
+    {:plan-semantic-hash
+     (reader-canonical-hash (dissoc plan :plan-id))
+     :functions-semantic-hash (reader-canonical-hash functions)
+     :function-count (count functions)
+     :function-names-hash (reader-canonical-hash function-names)
+     :function-shapes-hash (reader-canonical-hash function-shapes)
+     :entrypoint-semantic-hash
+     (reader-canonical-hash (get functions sh03-reader-entrypoint))
+     :verifier-semantic-hash
+     (reader-canonical-hash (get functions sh03-reader-verifier))
+     :builtin-functions-hash
+     (reader-canonical-hash
+      (vec (sort-by str (:builtin-functions audit))))
+     :instruction-summary (:instruction-summary audit)
+     :observed-instruction-nodes (:observed-nodes audit)
+     :observed-instruction-depth (:observed-depth audit)}))
+
+(defn sh03-reader-plan-task
+  [instruction locals target tail? depth]
+  {:instruction instruction :locals locals :target target
+   :tail? tail? :depth depth})
+
+(defn sh03-reader-plan-sequence-tasks
+  [instructions locals target tail? depth]
+  (let [instructions (vec instructions)
+        last-index (dec (count instructions))]
+    (mapv (fn [index instruction]
+            (sh03-reader-plan-task
+             instruction locals target
+             (and tail? (= index last-index)) (inc depth)))
+          (range) instructions)))
+
+(defn sh03-reader-plan-static-audit!
+  [source-path plan]
+  (let [functions (:functions plan)
+        function-arities
+        (into {} (map (fn [[name function]] [name (:arity function)]))
+              functions)
+        initial-tasks
+        (reduce
+         (fn [tasks [_ function]]
+           (let [params (:params function)
+                 target {:kind :function :arity (:arity function)}]
+             (into tasks
+                   (sh03-reader-plan-sequence-tasks
+                    (:instructions function) (set params) target true 0))))
+         [] functions)]
+    (loop [pending initial-tasks
+           observed 0
+           summary {}
+           builtins #{}
+           maximum-depth 0]
+      (when (> observed sh03-reader-plan-maximum-nodes)
+        (sh03-reader-boundary-fail!
+         source-path :bounded-static-sh03-reader-plan
+         observed {:maximum-nodes sh03-reader-plan-maximum-nodes}))
+      (if (empty? pending)
+        {:instruction-summary summary
+         :builtin-functions builtins
+         :observed-nodes observed
+         :observed-depth maximum-depth}
+        (let [{:keys [instruction locals target tail? depth]} (peek pending)
+              pending (pop pending)
+              op (:op instruction)
+              expected-keys (get sh03-reader-instruction-keysets op)]
+          (when-not (and (map? instruction)
+                         (contains? sh03-reader-allowed-opcodes op)
+                         (= expected-keys (set (keys instruction)))
+                         (<= depth sh03-reader-plan-maximum-depth))
+            (sh03-reader-boundary-fail!
+             source-path :exact-bounded-sh03-reader-instruction
+             instruction {:opcode op :depth depth}))
+          (let [tasks
+                (case op
+                  (:literal :quote) []
+
+                  :local
+                  (do
+                    (when-not (contains? locals (:name instruction))
+                      (sh03-reader-boundary-fail!
+                       source-path :lexically-bound-sh03-reader-local
+                       instruction {:local (:name instruction)}))
+                    [])
+
+                  (:vector-literal :set-literal)
+                  (mapv #(sh03-reader-plan-task
+                          % locals target false (inc depth))
+                        (:items instruction))
+
+                  :map-literal
+                  (reduce
+                   (fn [result entry]
+                     (when-not (and (map? entry)
+                                    (= #{:key :value} (set (keys entry))))
+                       (sh03-reader-boundary-fail!
+                        source-path :exact-sh03-reader-map-entry
+                        entry {:opcode op}))
+                     (conj result
+                           (sh03-reader-plan-task
+                            (:key entry) locals target false (inc depth))
+                           (sh03-reader-plan-task
+                            (:value entry) locals target false (inc depth))))
+                   [] (:entries instruction))
+
+                  :do
+                  (sh03-reader-plan-sequence-tasks
+                   (:body instruction) locals target tail? depth)
+
+                  :if
+                  [(sh03-reader-plan-task
+                    (:test instruction) locals target false (inc depth))
+                   (sh03-reader-plan-task
+                    (:then instruction) locals target tail? (inc depth))
+                   (sh03-reader-plan-task
+                    (:else instruction) locals target tail? (inc depth))]
+
+                  (:let :loop)
+                  (let [bindings (:bindings instruction)
+                        body (:body instruction)]
+                    (when-not (and (vector? bindings)
+                                   (vector? body)
+                                   (seq body)
+                                   (every? #(and (map? %)
+                                                 (= #{:name :expr}
+                                                    (set (keys %)))
+                                                 (symbol? (:name %)))
+                                           bindings)
+                                   (= (count bindings)
+                                      (count (distinct (map :name bindings))))
+                                   (if (= :loop op)
+                                     (= (:binding-count instruction)
+                                        (count bindings))
+                                     true))
+                      (sh03-reader-boundary-fail!
+                       source-path :exact-sh03-reader-local-bindings
+                       instruction {:opcode op}))
+                    (let [[binding-tasks body-locals]
+                          (reduce
+                           (fn [[result scope] binding]
+                             [(conj result
+                                    (sh03-reader-plan-task
+                                     (:expr binding) scope target false
+                                     (inc depth)))
+                              (conj scope (:name binding))])
+                           [[] locals] bindings)
+                          body-target
+                          (if (= :loop op)
+                            {:kind :loop :arity (count bindings)}
+                            target)
+                          body-tail? (if (= :loop op) true tail?)]
+                      (into binding-tasks
+                            (sh03-reader-plan-sequence-tasks
+                             body body-locals body-target body-tail? depth))))
+
+                  :recur
+                  (do
+                    (when-not (and target tail?
+                                   (= (:arity target)
+                                      (count (:args instruction))))
+                      (sh03-reader-boundary-fail!
+                       source-path :valid-tail-sh03-reader-recur
+                       instruction
+                       {:target target :tail-position? tail?
+                        :actual-arity (count (:args instruction))}))
+                    (mapv #(sh03-reader-plan-task
+                            % locals target false (inc depth))
+                          (:args instruction)))
+
+                  :builtin-call
+                  (do
+                    (when-not (contains? sh03-reader-allowed-builtins
+                                         (:function instruction))
+                      (sh03-reader-boundary-fail!
+                       source-path :approved-pure-sh03-reader-builtin
+                       instruction {:function (:function instruction)}))
+                    (mapv #(sh03-reader-plan-task
+                            % locals target false (inc depth))
+                          (:args instruction)))
+
+                  :function-call
+                  (let [callee (:function instruction)
+                        arity (get function-arities callee ::missing)]
+                    (when-not (and (not= ::missing arity)
+                                   (= arity (count (:args instruction))))
+                      (sh03-reader-boundary-fail!
+                       source-path :exact-sh03-reader-function-call
+                       instruction
+                       {:function callee :expected-arity
+                        (when-not (= ::missing arity) arity)
+                        :actual-arity (count (:args instruction))}))
+                    (mapv #(sh03-reader-plan-task
+                            % locals target false (inc depth))
+                          (:args instruction))))]
+            (recur (into pending (reverse tasks))
+                   (inc observed)
+                   (update summary op (fnil inc 0))
+                   (cond-> builtins (= :builtin-call op)
+                     (conj (:function instruction)))
+                   (max maximum-depth depth))))))))
+
+(defn sh03-reader-plan-validate!
+  [source-path plan]
+  (let [carrier
+        (p15-s23-trusted-carrier-validation
+         plan :default-only sh03-reader-plan-maximum-nodes
+         sh03-reader-plan-maximum-depth sh03-reader-plan-maximum-width)]
+    (when-not (= :passed (:status carrier))
+      (sh03-reader-boundary-fail!
+       source-path :trusted-bounded-sh03-reader-plan
+       plan (select-keys carrier [:reason :observed-nodes :observed-depth
+                                  :maximum-nodes :maximum-depth
+                                  :maximum-width])))
+    (let [functions (:functions plan)]
+      (when-not
+       (and (map? plan)
+            (= sh03-reader-plan-keys (set (keys plan)))
+            (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+            (true? (:compiler-artifact-plan? plan))
+            (= sh03-reader-entrypoint (:entrypoint plan))
+            (= 'gravity.bootstrap.reader (get-in plan [:module :module]))
+            (= :meta (get-in plan [:module :profile]))
+            (= :jvm (get-in plan [:module :target]))
+            (= #{} (get-in plan [:module :effects]))
+            (= #{} (get-in plan [:module :capabilities]))
+            (= :safe (get-in plan [:module :safety]))
+            (= :gravity-source (get-in plan [:compiler :owner]))
+            (= :p15-s23-stage2-expression-lowering
+               (get-in plan [:compiler :stage]))
+            (= :clojure-stage0-seed
+               (get-in plan [:compiler :compiled-by]))
+            (= :clojure-stage2-generic-rule-runner
+               (get-in plan [:compiler :executed-by]))
+            (true? (get-in plan [:compiler :generic-bridge-residual?]))
+            (false? (get-in plan [:compiler :self-hosted?]))
+            (map? functions)
+            (= sh03-reader-expected-function-count (count functions))
+            (contains? functions sh03-reader-entrypoint)
+            (contains? functions sh03-reader-verifier)
+            (every?
+             (fn [[function-name function]]
+               (and (str/starts-with? (name function-name)
+                                      sh03-reader-function-prefix)
+                    (= sh03-reader-function-keys
+                       (set (keys function)))
+                    (= function-name (:name function))
+                    (vector? (:params function))
+                    (= (:arity function) (count (:params function)))
+                    (= (count (:params function))
+                       (count (distinct (:params function))))
+                    (every? symbol? (:params function))
+                    (pos-int? (:body-form-count function))
+                    (vector? (:instructions function))
+                    (seq (:instructions function))
+                    (= sh03-reader-binding-keys
+                       (set (keys (:binding function))))
+                    (= function-name (get-in function [:binding :name]))
+                    (= :function (get-in function [:binding :kind]))
+                    (= 'gravity.bootstrap.reader
+                       (get-in function [:binding :namespace]))
+                    (= :meta (get-in function [:binding :profile]))
+                    (= :jvm (get-in function [:binding :target]))
+                    (= #{} (get-in function [:binding :effects]))
+                    (= #{} (get-in function [:binding :capabilities]))))
+             functions))
+        (sh03-reader-boundary-fail!
+         source-path :exact-sh03-reader-plan-envelope
+         plan {:observed-keys (when (map? plan) (set (keys plan)))}))
+      (let [static-audit (sh03-reader-plan-static-audit! source-path plan)
+            identities (sh03-reader-plan-identities plan)
+            expected-plan-id
+            (reader-canonical-hash (dissoc plan :plan-id))]
+        (when-not
+         (and (= expected-plan-id (:plan-id plan))
+              (= sh03-reader-expected-plan-semantic-hash
+                 (:plan-semantic-hash identities))
+              (= sh03-reader-expected-functions-semantic-hash
+                 (:functions-semantic-hash identities))
+              (= sh03-reader-expected-function-count
+                 (:function-count identities))
+              (= sh03-reader-expected-function-names-hash
+                 (:function-names-hash identities))
+              (= sh03-reader-expected-function-shapes-hash
+                 (:function-shapes-hash identities))
+              (= sh03-reader-expected-entrypoint-semantic-hash
+                 (:entrypoint-semantic-hash identities))
+              (= sh03-reader-expected-verifier-semantic-hash
+                 (:verifier-semantic-hash identities))
+              (= sh03-reader-expected-builtin-functions-hash
+                 (:builtin-functions-hash identities))
+              (= (:instruction-summary plan)
+                 (:instruction-summary static-audit)
+                 (:instruction-summary identities))
+              (= (:builtin-functions static-audit)
+                 (:builtin-functions
+                  (sh03-reader-plan-instruction-summary
+                   source-path functions))))
+          (sh03-reader-boundary-fail!
+           source-path :pinned-recomputable-sh03-reader-plan-identities
+           identities {:observed-plan-id (:plan-id plan)}))
+        identities))))
+
+(defn sh03-reader-build-pinned-binding!
+  [request-source]
+  (let [source (sh03-reader-read-pinned-source-bytes! request-source)
+        built (sh03-reader-build-plan! request-source source)
+        identities
+        (sh03-reader-plan-validate! (:source-path source) (:plan built))]
+    (merge
+     (dissoc built :builtin-functions)
+     identities
+     {:artifact :gravity/sh03-pinned-reader-plan-binding
+      :status :complete
+      :semantic-authority :gravity-source
+      :compiled-by :clojure-stage0-seed
+      :executed-by :clojure-stage2-generic-rule-runner
+      :generic-bridge-residual? true
+      :self-hosted? false})))
+
+(def ^:private sh03-reader-cached-binding
+  (delay (sh03-reader-build-pinned-binding! "<sh03-reader-bootstrap>")))
+
+(defn sh03-reader-current-binding!
+  [request-source]
+  (let [current-source
+        (sh03-reader-read-pinned-source-bytes! request-source)
+        binding @sh03-reader-cached-binding
+        identities
+        (sh03-reader-plan-validate! request-source (:plan binding))]
+    (when-not
+     (and (= (:source-byte-count current-source)
+             (:source-byte-count binding))
+          (= (:source-content-hash current-source)
+             (:source-content-hash binding))
+          (= (select-keys identities
+                          [:plan-semantic-hash
+                           :functions-semantic-hash
+                           :function-count
+                           :function-names-hash
+                           :function-shapes-hash
+                           :entrypoint-semantic-hash
+                           :verifier-semantic-hash
+                           :builtin-functions-hash])
+             (select-keys binding
+                          [:plan-semantic-hash
+                           :functions-semantic-hash
+                           :function-count
+                           :function-names-hash
+                           :function-shapes-hash
+                           :entrypoint-semantic-hash
+                           :verifier-semantic-hash
+                           :builtin-functions-hash])))
+      (sh03-reader-boundary-fail!
+       request-source :fresh-sh03-reader-source-and-plan-binding
+       binding {:current-source-content-hash
+                (:source-content-hash current-source)}))
+    binding))
+
+(def sh03-reader-result-keys
+  #{:artifact :schema-version :status :source-unit :actual-path-provenance
+    :token-stream :form-tree :top-level-form-ids :top-level-parsed-records
+    :parsed-semantic-values :semantic-value-table :literal-decoding-records
+    :semantic-error-deferment-record
+    :reader-extension-invocation-records :reader-source-map
+    :incremental-reader-hashes :semantic-reader-template :digest-requests
+    :diagnostics :bounds :execution-boundary})
+
+(def sh03-reader-verification-report-keys
+  #{:artifact :schema-version :status :verified? :reader-result-status
+    :semantic-reader-template :digest-requests :diagnostics :bounds
+    :execution-boundary})
+
+(def sh03-reader-digest-request-keys
+  #{:algorithm :depends-on :encoding :key :ordinal :preimage})
+
+(def sh03-reader-source-digest-request-keys
+  (conj sh03-reader-digest-request-keys :observed-id))
+
+(def sh03-reader-accepted-digest-request-names
+  [:source-content :source-unit :token-stream :form-tree
+   :extension-invocation-set :reader-result])
+
+(def sh03-reader-rejected-digest-request-names
+  [:source-content :source-unit])
+
+(def sh03-reader-source-slice-keys
+  #{:artifact :schema-version :encoding :source-content-id
+    :byte-start :byte-end :scalar-start :scalar-end})
+
+(def sh03-reader-semantic-value-entry-keys
+  #{:artifact :schema-version :value-id :form-id :token-id :kind
+    :descriptor :semantic-key})
+
+(def sh03-reader-semantic-value-reference-keys
+  #{:artifact :schema-version :value-id :field})
+
+(def sh03-reader-form-value-reference-keys
+  #{:artifact :schema-version :form-id})
+
+(defn sh03-reader-byte-vector
+  [bytes]
+  (mapv #(bit-and (int %) 0xff) bytes))
+
+(defn sh03-reader-byte-array
+  [values]
+  (byte-array (map #(unchecked-byte (int %)) values)))
+
+(defn sh03-reader-tag-codepoints
+  [tag]
+  (let [value (name tag)]
+    (vec (.toArray (.codePoints value)))))
+
+(defn sh03-reader-input-source-unit
+  [source-path source-bytes project-context]
+  (let [context (reader-explicit-project-context project-context)
+        extension (gravity-source-extension source-path)
+        identity-fields
+        {:project-root-id (:project-root-id context)
+         :logical-source-id (:project-relative-path context)
+         :actual-path source-path}]
+    (doseq [[field value] identity-fields]
+      (let [utf8-byte-count
+            (when (string? value)
+              (alength (.getBytes ^String value
+                                 java.nio.charset.StandardCharsets/UTF_8)))]
+        (when-not (and (string? value)
+                       (<= (.length ^String value)
+                           sh03-reader-input-maximum-identity-code-units)
+                       (<= utf8-byte-count
+                           sh03-reader-input-maximum-identity-utf8-bytes))
+          (sh03-reader-boundary-fail!
+           "<sh03-source-identity>" :bounded-sh03-reader-source-identity
+           {:field field}
+           {:maximum-code-units
+            sh03-reader-input-maximum-identity-code-units
+            :maximum-utf8-bytes
+            sh03-reader-input-maximum-identity-utf8-bytes
+            :observed-code-units
+            (when (string? value) (.length ^String value))
+            :observed-utf8-bytes utf8-byte-count}))))
+    {:artifact :gravity/sh03-source-unit
+     :schema-version 1
+     :project-root-id (:project-root-id context)
+     :logical-source-id (:project-relative-path context)
+     :source-content-hash
+     (str "sha256:" (sha256-bytes-hex source-bytes))
+     :source-byte-count (alength source-bytes)
+     :encoding :utf-8
+     :actual-path-provenance
+     {:path source-path
+      :extension extension
+      :source-kind (case extension ".gravity" :gravity ".qst" :qst nil)}}))
+
+(defn sh03-reader-input-policy
+  [reader-options]
+  (reader-validate-options! reader-options)
+  {:artifact :gravity/sh03-reader-policy
+   :schema-version 1
+   :retain-trivia (true? (:retain-comments reader-options))
+   :enabled-reader-tags
+   (mapv sh03-reader-tag-codepoints (:registered-tags standard-reader-policy))})
+
+(defn sh03-reader-require-result-carrier!
+  [source-path carrier value]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         value :default-only sh03-reader-result-maximum-nodes
+         sh03-reader-result-maximum-depth sh03-reader-result-maximum-width)]
+    (when-not (= :passed (:status validation))
+      (sh03-reader-boundary-fail!
+       source-path :trusted-bounded-sh03-reader-result
+       {} (merge {:carrier carrier}
+                 (select-keys validation
+                              [:reason :observed-nodes :observed-depth
+                               :maximum-nodes :maximum-depth
+                               :maximum-width]))))
+    validation))
+
+(defn sh03-reader-result-preflight!
+  [source-path source-unit reader-policy result]
+  (sh03-reader-require-result-carrier!
+   source-path :gravity-reader-result result)
+  (let [bounds (:bounds result)
+        carrier-responsibility
+        (get-in result
+                [:execution-boundary :clojure-boundary-responsibility])
+        input-responsibility
+        (get-in result [:execution-boundary :gravity-input-responsibility])
+        accepted? (= :accepted (:status result))]
+    (when-not
+     (and (map? result)
+          (= sh03-reader-result-keys (set (keys result)))
+          (= :gravity/sh03-reader-result (:artifact result))
+          (= 1 (:schema-version result))
+          (contains? #{:accepted :rejected} (:status result))
+          (= (:actual-path-provenance source-unit)
+             (:actual-path-provenance result))
+          (= reader-policy
+             (get-in result [:source-unit :reader-options]))
+          (= (:source-content-hash source-unit)
+             (get-in result [:source-unit :bytes-hash]))
+          (= (:source-byte-count source-unit)
+             (get-in result [:source-unit :source-byte-count]))
+          (vector? (:token-stream result))
+          (vector? (:form-tree result))
+          (vector? (:top-level-form-ids result))
+          (vector? (:top-level-parsed-records result))
+          (vector? (:parsed-semantic-values result))
+          (vector? (:semantic-value-table result))
+          (vector? (:literal-decoding-records result))
+          (vector? (:reader-extension-invocation-records result))
+          (vector? (:digest-requests result))
+          (vector? (:diagnostics result))
+          (map? bounds)
+          (= sh03-reader-result-maximum-nodes
+             (:maximum-result-carrier-nodes bounds))
+          (= sh03-reader-result-maximum-depth
+             (:maximum-result-carrier-depth bounds))
+          (= sh03-reader-result-maximum-width
+             (:maximum-result-carrier-width bounds))
+          (= sh03-reader-canonical-maximum-scalar-bytes
+             (:maximum-canonical-scalar-bytes bounds))
+          (= sh03-reader-canonical-maximum-total-scalar-bytes
+             (:maximum-canonical-total-scalar-bytes bounds))
+          (= sh03-reader-input-maximum-identity-utf8-bytes
+             (:maximum-source-identity-utf8-bytes bounds))
+          (map? carrier-responsibility)
+          (= sh03-reader-result-maximum-nodes
+             (:maximum-nodes carrier-responsibility))
+          (= sh03-reader-result-maximum-depth
+             (:maximum-depth carrier-responsibility))
+          (= sh03-reader-result-maximum-width
+             (:maximum-width carrier-responsibility))
+          (= sh03-reader-canonical-maximum-scalar-bytes
+             (:maximum-canonical-scalar-bytes carrier-responsibility))
+          (= sh03-reader-canonical-maximum-total-scalar-bytes
+             (:maximum-canonical-total-scalar-bytes
+              carrier-responsibility))
+          (map? input-responsibility)
+          (= sh03-reader-input-maximum-identity-utf8-bytes
+             (:maximum-source-identity-utf8-bytes
+              input-responsibility))
+          (= sh03-reader-input-maximum-identity-code-units
+             (:maximum-logical-source-id-code-units
+              input-responsibility))
+          (= sh03-reader-input-maximum-identity-code-units
+             (:maximum-actual-path-code-units input-responsibility))
+          (= (:maximum-source-bytes bounds)
+             (:maximum-source-bytes input-responsibility))
+          (= :bounded-summary
+             (:invalid-input-carrier-policy input-responsibility))
+          (integer? (:maximum-tokens bounds))
+          (integer? (:maximum-forms bounds))
+          (pos-int? (:maximum-semantic-work-units bounds))
+          (pos-int? (:maximum-numeric-semantic-scalars bounds))
+          (pos-int? (:maximum-numeric-semantic-work-units bounds))
+          (map? (:result-carrier-node-budget bounds))
+          (<= (get-in bounds
+                      [:result-carrier-node-budget :derived-maximum-nodes])
+              (:maximum-result-carrier-nodes bounds))
+          (<= (count (:token-stream result)) (:maximum-tokens bounds))
+          (<= (count (:form-tree result)) (:maximum-forms bounds))
+          (<= (count (:digest-requests result)) 6)
+          (if accepted?
+            (and (empty? (:diagnostics result))
+                 (= 6 (count (:digest-requests result)))
+                 (= (count (:enabled-reader-tags reader-policy))
+                    (count (:reader-extension-invocation-records result)))
+                 (= (count (:top-level-form-ids result))
+                    (count (:top-level-parsed-records result))
+                    (count (:parsed-semantic-values result))))
+            (and (= 1 (count (:diagnostics result)))
+                 (= 2 (count (:digest-requests result)))
+                 (empty? (:token-stream result))
+                 (empty? (:form-tree result))
+                 (empty? (:top-level-form-ids result))
+                 (empty? (:semantic-value-table result))
+                 (empty? (:reader-extension-invocation-records result)))))
+      (sh03-reader-boundary-fail!
+       source-path :exact-sh03-reader-result-envelope
+       result {:observed-keys (when (map? result) (set (keys result)))}))
+    result))
+
+(defn sh03-reader-verifier-preflight!
+  [source-path raw-result report]
+  (sh03-reader-require-result-carrier!
+   source-path :gravity-reader-verification-report report)
+  (when-not
+   (and (map? report)
+        (= sh03-reader-verification-report-keys (set (keys report)))
+        (= :gravity/sh03-reader-verification-report (:artifact report))
+        (= 1 (:schema-version report))
+        (= :accepted (:status report))
+        (true? (:verified? report))
+        (= (:status raw-result) (:reader-result-status report))
+        (= (:semantic-reader-template raw-result)
+           (:semantic-reader-template report))
+        (= (mapv #(select-keys
+                   % [:key :ordinal :algorithm :encoding :depends-on])
+                 (:digest-requests raw-result))
+           (:digest-requests report))
+        (= [] (:diagnostics report))
+        (= (:bounds raw-result) (:bounds report))
+        (= (:execution-boundary raw-result)
+           (:execution-boundary report)))
+    (sh03-reader-boundary-fail!
+     source-path :fresh-gravity-sh03-reader-result-replay
+     report {:reader-result-status (:status raw-result)}))
+  report)
+
+(defn sh03-reader-execute-plan!
+  [source-path plan function arguments]
+  (try
+    (p15-s23-stage2-runtime-execute-function
+     {:engine :gravity-sh03-pinned-reader-host-runner
+      :compiler-artifact-plan? true}
+     plan function arguments)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (sh03-reader-boundary-fail!
+       source-path :bounded-sh03-reader-host-stack
+       function {:contained-host-error (.getName (class error))}))
+    (catch AssertionError error
+      (sh03-reader-boundary-fail!
+       source-path :contained-sh03-reader-assertion
+       function {:contained-host-error (.getName (class error))}))
+    (catch LinkageError error
+      (sh03-reader-boundary-fail!
+       source-path :contained-sh03-reader-linkage
+       function {:contained-host-error (.getName (class error))}))
+    (catch clojure.lang.ExceptionInfo error
+      (sh03-reader-boundary-fail!
+       source-path :contained-sh03-reader-runtime-diagnostic
+       function {:contained-diagnostic (:id (ex-data error))
+                 :cause-message (.getMessage error)}))
+    (catch Exception error
+      (sh03-reader-boundary-fail!
+       source-path :contained-sh03-reader-host-failure
+       function {:contained-host-error (.getName (class error))
+                 :cause-message (.getMessage error)}))))
+
+(def sh03-reader-canonical-maximum-nodes 83886080)
+(def sh03-reader-canonical-maximum-depth 2048)
+(def sh03-reader-canonical-maximum-width 1048576)
+(def sh03-reader-canonical-maximum-scalar-bytes 1048576)
+(def sh03-reader-canonical-maximum-total-scalar-bytes 67108864)
+
+(defn sh03-reader-canonical-identity
+  [source-path value]
+  (binding [p15-s23-c6c10-max-carrier-nodes
+            sh03-reader-canonical-maximum-nodes
+            p15-s23-c6c10-max-carrier-depth
+            sh03-reader-canonical-maximum-depth
+            p15-s23-c6c10-max-container-width
+            sh03-reader-canonical-maximum-width
+            p15-s23-c6c10-max-scalar-bytes
+            sh03-reader-canonical-maximum-scalar-bytes
+            p15-s23-c6c10-max-total-scalar-bytes
+            sh03-reader-canonical-maximum-total-scalar-bytes]
+    (p15-s23-c6c10-canonical-identity source-path value)))
+
+(defn sh03-reader-canonical-digest
+  [source-path value]
+  (binding [p15-s23-c6c10-max-carrier-nodes
+            sh03-reader-canonical-maximum-nodes
+            p15-s23-c6c10-max-carrier-depth
+            sh03-reader-canonical-maximum-depth
+            p15-s23-c6c10-max-container-width
+            sh03-reader-canonical-maximum-width
+            p15-s23-c6c10-max-scalar-bytes
+            sh03-reader-canonical-maximum-scalar-bytes
+            p15-s23-c6c10-max-total-scalar-bytes
+            sh03-reader-canonical-maximum-total-scalar-bytes]
+    (p15-s23-c6c10-canonical-digest source-path value)))
+
+(defn sh03-reader-resolve-digest-requests!
+  [source-path raw-result source-bytes]
+  (let [requests (:digest-requests raw-result)
+        request-count (count requests)
+        expected-names
+        (if (= :accepted (:status raw-result))
+          sh03-reader-accepted-digest-request-names
+          sh03-reader-rejected-digest-request-names)]
+    (when-not (= expected-names (mapv :key requests))
+      (sh03-reader-boundary-fail!
+       source-path :exact-sh03-reader-digest-request-set
+       (mapv :key requests) {:expected expected-names}))
+    (loop [ordinal 0
+           digests []
+           resolved-identities []
+           resolved-requests []]
+      (if (= ordinal request-count)
+        (let [resolve-complete
+              (fn [value]
+                (p15-s23-c6c10-resolve-digest-references!
+                 source-path value request-count nil digests))
+              resolved-result (resolve-complete raw-result)
+              resolved-result
+              (assoc resolved-result
+                     :digest-requests resolved-requests
+                     :incremental-reader-hashes
+                     (assoc (:incremental-reader-hashes resolved-result)
+                            :status (if (= :accepted (:status raw-result))
+                                      :stable :rejected)))]
+          {:result resolved-result
+           :resolved-digests digests
+           :resolved-requests resolved-requests
+           :reader-result-id (last digests)})
+        (let [request (get requests ordinal)
+              expected-keys (if (zero? ordinal)
+                              sh03-reader-source-digest-request-keys
+                              sh03-reader-digest-request-keys)]
+          (when-not
+           (and (map? request)
+                (= expected-keys (set (keys request)))
+                (= ordinal (:ordinal request))
+                (= (get expected-names ordinal) (:key request))
+                (= :sha256 (:algorithm request))
+                (vector? (:depends-on request)))
+            (sh03-reader-boundary-fail!
+             source-path :exact-sh03-reader-digest-request-schema
+             (dissoc request :preimage) {:ordinal ordinal}))
+          (let [references
+                (p15-s23-c6c10-collect-digest-ref-ordinals!
+                 source-path (:preimage request) request-count ordinal)
+                dependencies (:depends-on request)]
+            (when-not
+             (and (= dependencies (vec (sort (distinct dependencies))))
+                  (= (set dependencies) (set references))
+                  (every? #(and (integer? %) (<= 0 %) (< % ordinal))
+                          dependencies))
+              (sh03-reader-boundary-fail!
+               source-path :prior-only-sh03-reader-digest-dependencies
+               request {:ordinal ordinal :references references}))
+            (let [resolved-preimage
+                  (p15-s23-c6c10-resolve-digest-references!
+                   source-path (:preimage request) request-count ordinal digests)
+                  raw-request? (zero? ordinal)
+                  _
+                  (when-not (= (if raw-request?
+                                 :raw-byte-vector-v1
+                                 :gravity-canonical-edn-v1)
+                               (:encoding request))
+                    (sh03-reader-boundary-fail!
+                     source-path :declared-sh03-reader-digest-encoding
+                     request {:ordinal ordinal}))
+                  _
+                  (when (and raw-request?
+                             (not= (sh03-reader-byte-vector source-bytes)
+                                   resolved-preimage))
+                    (sh03-reader-boundary-fail!
+                     source-path :source-bound-sh03-reader-digest-request
+                     request {:ordinal ordinal}))
+                  resolved-identity
+                  (if raw-request?
+                    [:raw-byte-vector-v1 resolved-preimage]
+                    (sh03-reader-canonical-identity
+                     source-path resolved-preimage))
+                  digest
+                  (if raw-request?
+                    (str "sha256:"
+                         (sha256-bytes-hex
+                          (sh03-reader-byte-array resolved-preimage)))
+                    (sh03-reader-canonical-digest
+                     source-path resolved-preimage))]
+              (when (or (some #{resolved-identity} resolved-identities)
+                        (some #{digest} digests)
+                        (and raw-request? (not= digest (:observed-id request))))
+                (sh03-reader-boundary-fail!
+                 source-path :unique-bound-sh03-reader-digest
+                 request {:ordinal ordinal :digest digest}))
+              (recur
+               (inc ordinal)
+               (conj digests digest)
+               (conj resolved-identities resolved-identity)
+               (conj resolved-requests
+                     (assoc request
+                            :preimage resolved-preimage
+                            :digest digest))))))))))
+
+(defn sh03-reader-resolve-diagnostic-id
+  [source-path diagnostic]
+  (let [request (:diagnostic-id-request diagnostic)]
+    (when-not (map? request)
+      (sh03-reader-boundary-fail!
+       source-path :sh03-reader-diagnostic-id-request
+       diagnostic {}))
+    (-> diagnostic
+        (dissoc :diagnostic-id-request)
+        (assoc :diagnostic-id
+               (sh03-reader-canonical-digest source-path request)))))
+
+(defn sh03-reader-resolved-result!
+  [source-path source-bytes project-context reader-options]
+  (when-not (qst-or-gravity-source? source-path)
+    (try
+      (source-path-policy-fail! source-path source-bytes)
+      (catch clojure.lang.ExceptionInfo ex
+        (c2-reader-remap-exception! source-path ex))))
+  (when (> (alength source-bytes) 1048576)
+    (sh03-reader-boundary-fail!
+     source-path :bounded-sh03-reader-source-bytes
+     (alength source-bytes) {:maximum-source-bytes 1048576}))
+  (let [binding (sh03-reader-current-binding! source-path)
+        plan (:plan binding)
+        source-unit
+        (sh03-reader-input-source-unit
+         source-path source-bytes project-context)
+        reader-policy (sh03-reader-input-policy reader-options)
+        source-byte-vector (sh03-reader-byte-vector source-bytes)
+        arguments [source-unit source-byte-vector reader-policy]
+        raw-result
+        (sh03-reader-execute-plan!
+         source-path plan sh03-reader-entrypoint arguments)
+        _ (sh03-reader-result-preflight!
+           source-path source-unit reader-policy raw-result)
+        verifier-result
+        (sh03-reader-execute-plan!
+         source-path plan sh03-reader-verifier
+         [source-unit source-byte-vector reader-policy raw-result])
+        _ (sh03-reader-verifier-preflight!
+           source-path raw-result verifier-result)
+        resolved
+        (sh03-reader-resolve-digest-requests!
+         source-path raw-result source-bytes)
+        result
+        (update (:result resolved) :diagnostics
+                #(mapv (partial sh03-reader-resolve-diagnostic-id source-path)
+                       %))]
+    (assoc resolved
+           :result result
+           :raw-result raw-result
+           :verification-report verifier-result
+           :plan-binding (dissoc binding :plan))))
+
+(defn sh03-reader-decode-raw-bytes!
+  [source-path raw bytes]
+  (try
+    (str
+     (.decode
+      (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+        (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+        (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+      (java.nio.ByteBuffer/wrap bytes)))
+    (catch java.nio.charset.CharacterCodingException error
+      (sh03-reader-boundary-fail!
+       source-path :valid-sh03-reader-raw-utf8 raw
+       {:cause-message (.getMessage error)}))))
+
+(defn sh03-reader-source-scalar-boundaries!
+  [source-path source-text source-bytes]
+  (loop [utf16-index 0
+         byte-index 0
+         scalar-index 0
+         boundaries {0 0}]
+    (if (= utf16-index (.length source-text))
+      (do
+        (when-not (= byte-index (alength source-bytes))
+          (sh03-reader-boundary-fail!
+           source-path :complete-sh03-reader-source-scalar-index
+           {:observed-byte-count byte-index}
+           {:expected-byte-count (alength source-bytes)}))
+        boundaries)
+      (let [codepoint (.codePointAt source-text utf16-index)
+            utf16-width (Character/charCount codepoint)
+            utf8-width (cond
+                         (<= codepoint 0x7f) 1
+                         (<= codepoint 0x7ff) 2
+                         (<= codepoint 0xffff) 3
+                         :else 4)
+            next-byte (+ byte-index utf8-width)]
+        (recur (+ utf16-index utf16-width)
+               next-byte
+               (inc scalar-index)
+               (assoc boundaries next-byte (inc scalar-index)))))))
+
+(defn sh03-reader-source-slice-text!
+  [source-path source-bytes source-content-id scalar-boundaries raw]
+  (let [byte-count (alength source-bytes)
+        start (:byte-start raw)
+        end (:byte-end raw)
+        scalar-start (:scalar-start raw)
+        scalar-end (:scalar-end raw)]
+    (when-not
+     (and (map? raw)
+          (= sh03-reader-source-slice-keys (set (keys raw)))
+          (= :gravity/source-slice (:artifact raw))
+          (= 1 (:schema-version raw))
+          (= :utf-8 (:encoding raw))
+          (= source-content-id (:source-content-id raw))
+          (integer? start) (integer? end)
+          (<= 0 start end byte-count)
+          (integer? scalar-start) (integer? scalar-end)
+          (<= 0 scalar-start scalar-end)
+          (= scalar-start (get scalar-boundaries start ::missing))
+          (= scalar-end (get scalar-boundaries end ::missing)))
+      (sh03-reader-boundary-fail!
+       source-path :source-bound-sh03-reader-slice raw
+       {:source-byte-count byte-count
+        :expected-source-content-id source-content-id}))
+    (let [bytes (java.util.Arrays/copyOfRange source-bytes start end)
+          text (sh03-reader-decode-raw-bytes! source-path raw bytes)
+          observed-scalars (.codePointCount text 0 (.length text))]
+      (when-not (= observed-scalars (- scalar-end scalar-start))
+        (sh03-reader-boundary-fail!
+         source-path :unicode-scalar-bound-sh03-reader-slice raw
+         {:observed-scalar-count observed-scalars}))
+      text)))
+
+(defn sh03-reader-raw-text!
+  ([source-path raw]
+   (when-not (and (map? raw)
+                  (= :utf-8 (:encoding raw))
+                  (vector? (:bytes raw))
+                  (every? #(and (integer? %) (<= 0 % 255)) (:bytes raw)))
+     (sh03-reader-boundary-fail!
+      source-path :sh03-reader-inline-raw-utf8 raw {}))
+   (sh03-reader-decode-raw-bytes!
+    source-path raw (sh03-reader-byte-array (:bytes raw))))
+  ([source-path source-bytes source-content-id raw]
+   (if (= :gravity/source-slice (:artifact raw))
+     (sh03-reader-source-slice-text!
+      source-path source-bytes source-content-id
+      (sh03-reader-source-scalar-boundaries!
+       source-path
+       (sh03-reader-decode-raw-bytes! source-path raw source-bytes)
+       source-bytes)
+      raw)
+     (sh03-reader-raw-text! source-path raw))))
+
+(defn sh03-reader-accepted-raw-text!
+  [source-path source-bytes source-content-id scalar-boundaries raw span]
+  (when-not
+   (and (= :gravity/source-slice (:artifact raw))
+        (= (:byte-start raw) (:byte-start span))
+        (= (:byte-end raw) (:byte-end span)))
+    (sh03-reader-boundary-fail!
+     source-path :span-bound-sh03-reader-source-slice raw
+     {:owner-span span}))
+  (sh03-reader-source-slice-text!
+   source-path source-bytes source-content-id scalar-boundaries raw))
+
+(defn sh03-reader-codepoints-text!
+  [source-path codepoints]
+  (when-not (and (vector? codepoints)
+                 (every? #(and (integer? %)
+                               (<= 0 % 0x10ffff)
+                               (not (<= 0xd800 % 0xdfff)))
+                         codepoints))
+    (sh03-reader-boundary-fail!
+     source-path :valid-sh03-reader-unicode-scalars codepoints {}))
+  (let [builder (StringBuilder.)]
+    (doseq [codepoint codepoints]
+      (.appendCodePoint builder codepoint))
+    (.toString builder)))
+
+(defn sh03-reader-semantic-value-index!
+  [source-path entries]
+  (when-not (vector? entries)
+    (sh03-reader-boundary-fail!
+     source-path :sh03-reader-semantic-value-table entries {}))
+  (let [valid-entry?
+        (fn [entry]
+          (and (map? entry)
+               (= sh03-reader-semantic-value-entry-keys
+                  (set (keys entry)))
+               (= :gravity/semantic-value (:artifact entry))
+               (= 1 (:schema-version entry))
+               (string? (:value-id entry))
+               (string? (:form-id entry))
+               (string? (:token-id entry))
+               (keyword? (:kind entry))))
+        value-ids (mapv :value-id entries)
+        form-ids (mapv :form-id entries)
+        token-ids (mapv :token-id entries)]
+    (when-not
+     (and (every? valid-entry? entries)
+          (= (count value-ids) (count (distinct value-ids)))
+          (= (count form-ids) (count (distinct form-ids)))
+          (= (count token-ids) (count (distinct token-ids))))
+      (sh03-reader-boundary-fail!
+       source-path :exact-unique-sh03-reader-semantic-values entries {}))
+    {:by-value-id (into {} (map (juxt :value-id identity) entries))
+     :by-form-id (into {} (map (juxt :form-id identity) entries))
+     :by-token-id (into {} (map (juxt :token-id identity) entries))}))
+
+(defn sh03-reader-semantic-reference-value!
+  [source-path semantic-index reference expected-field]
+  (when-not
+   (and (map? reference)
+        (= sh03-reader-semantic-value-reference-keys
+           (set (keys reference)))
+        (= :gravity/semantic-value-reference (:artifact reference))
+        (= 1 (:schema-version reference))
+        (= expected-field (:field reference)))
+    (sh03-reader-boundary-fail!
+     source-path :exact-sh03-reader-semantic-value-reference reference
+     {:expected-field expected-field}))
+  (let [entry (get-in semantic-index [:by-value-id (:value-id reference)])]
+    (when-not entry
+      (sh03-reader-boundary-fail!
+       source-path :resolving-sh03-reader-semantic-value-reference reference {}))
+    (get entry expected-field)))
+
+(defn sh03-reader-form-value-reference!
+  [source-path reference expected-form-id]
+  (when-not
+   (and (map? reference)
+        (= sh03-reader-form-value-reference-keys (set (keys reference)))
+        (= :gravity/form-value-reference (:artifact reference))
+        (= 1 (:schema-version reference))
+        (= expected-form-id (:form-id reference)))
+    (sh03-reader-boundary-fail!
+     source-path :exact-sh03-reader-form-value-reference reference
+     {:expected-form-id expected-form-id}))
+  reference)
+
+(def sh03-reader-atomic-kinds
+  #{:nil :boolean :integer :ratio :decimal :string :character :symbol :keyword})
+
+(defn sh03-reader-semantic-value-closure!
+  [source-path source-bytes source-content-id scalar-boundaries
+   tokens forms semantic-index]
+  (let [tokens-by-id (into {} (map (juxt :token-id identity) tokens))
+        forms-by-id (into {} (map (juxt :form-id identity) forms))
+        atomic-forms (filterv #(contains? sh03-reader-atomic-kinds (:kind %))
+                              forms)
+        entries (vals (:by-value-id semantic-index))]
+    (when-not (= (count atomic-forms) (count entries))
+      (sh03-reader-boundary-fail!
+       source-path :complete-sh03-reader-semantic-value-closure entries
+       {:expected-atomic-form-count (count atomic-forms)}))
+    (doseq [entry entries]
+      (let [form (forms-by-id (:form-id entry))
+            token (tokens-by-id (:token-id entry))
+            _ (sh03-reader-semantic-reference-value!
+               source-path semantic-index (:value form) :descriptor)
+            _ (sh03-reader-semantic-reference-value!
+               source-path semantic-index (:semantic-key form) :semantic-key)
+            _ (sh03-reader-semantic-reference-value!
+               source-path semantic-index (:descriptor token) :descriptor)]
+        (when (and (map? (:descriptor entry))
+                   (contains? (:descriptor entry) :raw))
+          (sh03-reader-accepted-raw-text!
+           source-path source-bytes source-content-id scalar-boundaries
+           (get-in entry [:descriptor :raw]) (:span form)))
+        (when-not
+         (and form token
+              (= (:kind entry) (:kind form) (:kind token))
+              (= (:token-id entry) (:open-token form))
+              (= (:value-id entry) (get-in form [:value :value-id]))
+              (= :descriptor (get-in form [:value :field]))
+              (= (:value-id entry) (get-in form [:semantic-key :value-id]))
+              (= :semantic-key (get-in form [:semantic-key :field]))
+              (= (:value-id entry) (get-in token [:descriptor :value-id]))
+              (= :descriptor (get-in token [:descriptor :field])))
+          (sh03-reader-boundary-fail!
+           source-path :owned-sh03-reader-semantic-value-reference
+           entry {:form form :token token}))))
+    :complete))
+
+(defn sh03-reader-path-span
+  [source-path source-id span]
+  (when-not (map? span)
+    (sh03-reader-boundary-fail!
+     source-path :sh03-reader-span span {}))
+  (assoc span :source source-path :file source-id))
+
+(defn sh03-reader-host-bigint!
+  [source-path value]
+  (cond
+    (integer? value)
+    value
+
+    (and (map? value)
+         (= :gravity/arbitrary-precision-integer (:artifact value))
+         (contains? #{:negative :positive} (:sign value))
+         (contains? #{2 10 16} (:radix value))
+         (vector? (:digit-codepoints value)))
+    (let [digits (sh03-reader-codepoints-text!
+                  source-path (:digit-codepoints value))
+          magnitude (java.math.BigInteger. digits (int (:radix value)))
+          signed (if (= :negative (:sign value))
+                   (.negate magnitude)
+                   magnitude)]
+      (clojure.lang.BigInt/fromBigInteger signed))
+
+    :else
+    (sh03-reader-boundary-fail!
+     source-path :sh03-reader-integer-descriptor value {})))
+
+(defn sh03-reader-host-decimal-value!
+  [source-path raw descriptor]
+  (try
+    (bigdec raw)
+    (catch NumberFormatException _
+      {:artifact :gravity/decimal-literal
+       :kind :decimal
+       :raw raw
+       :integer-spelling
+       (sh03-reader-codepoints-text!
+        source-path (:integer-spelling descriptor))
+       :fraction-spelling
+       (sh03-reader-codepoints-text!
+        source-path (:fraction-spelling descriptor))
+       :exponent-spelling
+       (sh03-reader-codepoints-text!
+        source-path (:exponent-spelling descriptor))
+       :semantic-key (:semantic-key descriptor)
+       :semantic-validation :deferred
+       :reason :host-independent-decimal-range})))
+
+(defn sh03-reader-normalization-deferred?
+  [descriptor]
+  (and (= :deferred (:semantic-validation descriptor))
+       (= :reader-semantic-work-boundary
+          (:normalization-reason descriptor))))
+
+(defn sh03-reader-host-deferred-numeric-value
+  [kind raw descriptor]
+  {:artifact :gravity/deferred-numeric-literal
+   :kind kind
+   :raw raw
+   :descriptor (assoc descriptor :raw raw)
+   :semantic-validation :deferred
+   :reason :reader-semantic-work-boundary
+   :normalization-reason :reader-semantic-work-boundary
+   :numeric-semantic-work (:numeric-semantic-work descriptor)})
+
+(defn sh03-reader-host-character-value!
+  [source-path descriptor]
+  (let [codepoint (:codepoint descriptor)]
+    (when-not (and (integer? codepoint)
+                   (<= 0 codepoint 0x10ffff)
+                   (not (<= 0xd800 codepoint 0xdfff)))
+      (sh03-reader-boundary-fail!
+       source-path :sh03-reader-character-value descriptor {}))
+    (if (<= codepoint 0xffff)
+      (char codepoint)
+      {:artifact :gravity/unicode-scalar-character
+       :schema-version 1
+       :codepoint codepoint
+       :text (String. (Character/toChars (int codepoint)))})))
+
+(defn sh03-reader-host-atomic-value!
+  [source-path source-bytes source-content-id scalar-boundaries form descriptor]
+  (let [kind (:kind form)
+        raw (sh03-reader-accepted-raw-text!
+             source-path source-bytes source-content-id scalar-boundaries
+             (:raw form) (:span form))]
+    (if (and (contains? #{:integer :ratio :decimal} kind)
+             (sh03-reader-normalization-deferred? descriptor))
+      (sh03-reader-host-deferred-numeric-value kind raw descriptor)
+      (case kind
+      :nil nil
+      :boolean (:value descriptor)
+      :integer (sh03-reader-host-bigint! source-path (:value descriptor))
+      :ratio
+      (let [numerator (sh03-reader-host-bigint!
+                       source-path (:numerator descriptor))
+            denominator (sh03-reader-host-bigint!
+                         source-path (:denominator descriptor))]
+        (if (zero? denominator)
+          {:artifact :gravity/deferred-ratio-literal
+           :kind :ratio
+           :raw raw
+           :numerator-spelling
+           (sh03-reader-codepoints-text!
+            source-path (:numerator-spelling descriptor))
+           :denominator-spelling
+           (sh03-reader-codepoints-text!
+            source-path (:denominator-spelling descriptor))
+           :numerator numerator
+           :denominator denominator
+           :semantic-validation :deferred
+           :reason :zero-denominator}
+          (/ numerator denominator)))
+      :decimal (sh03-reader-host-decimal-value!
+                source-path raw descriptor)
+      :string (sh03-reader-codepoints-text!
+               source-path (:decoded-codepoints descriptor))
+      :character (sh03-reader-host-character-value! source-path descriptor)
+      :symbol (symbol (sh03-reader-codepoints-text!
+                       source-path (:name-codepoints descriptor)))
+      :keyword (keyword (sh03-reader-codepoints-text!
+                         source-path (:name-codepoints descriptor)))
+      (sh03-reader-boundary-fail!
+       source-path :sh03-reader-atomic-kind form {:kind kind})))))
+
+(defn sh03-reader-metadata-map!
+  [source-path metadata-value metadata-form]
+  (cond
+    (map? metadata-value) metadata-value
+    (keyword? metadata-value) {metadata-value true}
+    (or (symbol? metadata-value) (string? metadata-value))
+    {:tag metadata-value}
+    :else
+    (sh03-reader-boundary-fail!
+     source-path :sh03-reader-metadata-value metadata-form
+     {:metadata-value metadata-value})))
+
+(defn sh03-reader-host-values!
+  [source-path source-bytes source-content-id scalar-boundaries
+   form-tree semantic-index]
+  (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))]
+    (loop [remaining (reverse form-tree)
+           values {}]
+      (if (empty? remaining)
+        values
+        (let [form (first remaining)
+              kind (:kind form)
+              child-values (mapv values (:children form))
+              _ (when (some nil? (map #(get forms-by-id %) (:children form)))
+                  (sh03-reader-boundary-fail!
+                   source-path :sh03-reader-form-child-link form {}))
+              value
+              (case kind
+                (:nil :boolean :integer :ratio :decimal :string
+                 :character :symbol :keyword)
+                (let [reference (:value form)
+                      descriptor
+                      (sh03-reader-semantic-reference-value!
+                       source-path semantic-index reference :descriptor)
+                      entry (get-in semantic-index
+                                    [:by-value-id (:value-id reference)])]
+                  (when-not
+                   (and (= (:form-id form) (:form-id entry))
+                        (= (:open-token form) (:token-id entry))
+                        (= kind (:kind entry)))
+                    (sh03-reader-boundary-fail!
+                     source-path :form-bound-sh03-reader-semantic-value
+                     entry {:form-id (:form-id form)}))
+                  (sh03-reader-host-atomic-value!
+                   source-path source-bytes source-content-id
+                   scalar-boundaries form descriptor))
+
+                :list (apply list child-values)
+                :vector (vec child-values)
+                :map (apply hash-map child-values)
+                :set (set child-values)
+
+                :abbreviation
+                (let [operator ({:quote 'quote
+                                 :syntax-quote 'syntax-quote
+                                 :unquote 'unquote
+                                 :splice-unquote 'splice-unquote
+                                 :deref 'deref}
+                                (:abbrev form))]
+                  (when-not (and operator (= 1 (count child-values)))
+                    (sh03-reader-boundary-fail!
+                     source-path :sh03-reader-abbreviation-value form {}))
+                  (list operator (first child-values)))
+
+                :metadata-wrapper
+                (let [[metadata-value target] child-values
+                      metadata (sh03-reader-metadata-map!
+                                source-path metadata-value form)]
+                  (when-not (and (= 2 (count child-values))
+                                 (instance? clojure.lang.IObj target))
+                    (sh03-reader-boundary-fail!
+                     source-path :sh03-reader-metadata-target form {}))
+                  (with-meta target (merge (meta target) metadata)))
+
+                :tagged-literal
+                (let [tag (sh03-reader-codepoints-text!
+                           source-path (:tag-codepoints form))
+                      payload (first child-values)]
+                  (when-not (= 1 (count child-values))
+                    (sh03-reader-boundary-fail!
+                     source-path :sh03-reader-tag-payload form {}))
+                  (case tag
+                    "inst" (instant/read-instant-date payload)
+                    "uuid" (java.util.UUID/fromString payload)
+                    (sh03-reader-boundary-fail!
+                     source-path :sh03-reader-registered-tag form
+                     {:tag tag})))
+
+                (sh03-reader-boundary-fail!
+                 source-path :sh03-reader-form-kind form {:kind kind}))]
+          (recur (rest remaining) (assoc values (:form-id form) value)))))))
+
+(defn sh03-reader-legacy-trivia-hash
+  [token-ids tokens-by-id]
+  (reader-canonical-hash
+   (mapv (fn [token-id]
+           (let [token (tokens-by-id token-id)]
+             {:kind (:kind token)
+              :raw (:raw token)
+              :span (dissoc (:span token) :source :file)}))
+         token-ids)))
+
+(defn sh03-reader-contiguous-trivia
+  [tokens position direction token-id-map]
+  (loop [cursor (+ position direction)
+         result []]
+    (if (and (<= 0 cursor) (< cursor (count tokens))
+             (true? (:trivia? (nth tokens cursor))))
+      (recur (+ cursor direction)
+             (conj result (token-id-map (:token-id (nth tokens cursor)))))
+      (if (neg? direction) (vec (reverse result)) (vec result)))))
+
+(defn sh03-reader-legacy-id
+  [value]
+  (if (string? value)
+    (if-let [[_ family ordinal] (re-matches #"(token|form)/([0-9]+)" value)]
+      (keyword (str (if (= family "token") "tok-" "form-") ordinal))
+      value)
+    value))
+
+(defn sh03-reader-related-records
+  [source-path source-id related]
+  (mapv
+   (fn [record]
+     (cond-> record
+       (:span record)
+       (update :span #(sh03-reader-path-span source-path source-id %))
+
+       (:artifact record)
+       (update :artifact sh03-reader-legacy-id)))
+   (or related [])))
+
+(defn sh03-reader-raise-rejection!
+  [source-path source-bytes reader-options project-context result]
+  (when (= :rejected (:status result))
+    (let [diagnostic (first (:diagnostics result))
+          owner-id (str (:id diagnostic))
+          id (case owner-id
+               "L1-NS-SHAPE" "C2-NS-SHAPE"
+               owner-id)
+          reader-engine-diagnostic
+          (:reader-engine-diagnostic diagnostic)
+          reader-stage
+          (if (contains? #{"STAGE1READER003"
+                           "STAGE1READER004"
+                           "STAGE1READER007"}
+                         reader-engine-diagnostic)
+            :lexical-tokenization
+            :recursive-form-building)
+          diagnostic-facts
+          (let [facts (:facts diagnostic)
+                failure-kind (or (:failure-kind facts)
+                                 (:reason diagnostic)
+                                 (get-in diagnostic [:reader-state :reason]))]
+            (if (and (= id "C2-HASH")
+                     (contains? #{:delimiter-depth-limit
+                                  :reader-frame-depth-limit}
+                                failure-kind))
+              (assoc facts
+                     :failure-kind :reader-resource-depth-limit
+                     :gravity-failure-kind failure-kind)
+              facts))
+          _
+          (case id
+            "C2-EXTENSION"
+            (when-not (qst-or-gravity-source? source-path)
+              (try
+                (source-path-policy-fail! source-path source-bytes)
+                (catch clojure.lang.ExceptionInfo ex
+                  (c2-reader-remap-exception! source-path ex))))
+
+            "C2-ENCODING"
+            (try
+              (decode-gravity-source-bytes source-path source-bytes)
+              (catch clojure.lang.ExceptionInfo ex
+                (c2-reader-remap-exception! source-path ex)))
+
+            nil)
+          source-id
+          (try
+            (:source-id
+             (c2-source-unit-record
+              source-path
+              (sh03-reader-strict-source-text!
+               source-path source-path source-bytes)
+              reader-options project-context))
+            (catch clojure.lang.ExceptionInfo _
+              (get-in result [:source-unit :source-id])))
+          source-content-id (get-in result [:source-unit :bytes-hash])
+          raw (when-let [raw-spelling (:raw-spelling diagnostic)]
+                (try
+                  (if (= :gravity/source-slice (:artifact raw-spelling))
+                    (let [source-text
+                          (sh03-reader-strict-source-text!
+                           source-path source-path source-bytes)
+                          scalar-boundaries
+                          (sh03-reader-source-scalar-boundaries!
+                           source-path source-text source-bytes)]
+                      (sh03-reader-accepted-raw-text!
+                       source-path source-bytes source-content-id
+                       scalar-boundaries raw-spelling
+                       (get-in diagnostic [:primary :span])))
+                    (sh03-reader-raw-text! source-path raw-spelling))
+                  (catch clojure.lang.ExceptionInfo _ nil)))]
+      (let [span (sh03-reader-path-span
+                  source-path source-id
+                  (get-in diagnostic [:primary :span]))
+            token-id (sh03-reader-legacy-id
+                      (get-in diagnostic [:reader-state :token-id]))
+            form-id (sh03-reader-legacy-id
+                     (get-in diagnostic [:reader-state :form-id]))
+            related (sh03-reader-related-records
+                     source-path source-id (:related diagnostic))]
+        (if (str/starts-with? id "L1-")
+          (throw
+           (ex-info
+            (or (:message diagnostic) id)
+            (-> diagnostic
+                (assoc :id id
+                       :rule id
+                       :source-id source-id
+                       :source-span span
+                       :primary {:span span :artifact source-id}
+                       :related related
+                       :token-id token-id
+                       :form-id form-id
+                       :raw-spelling raw
+                       :reader-options reader-options)
+                (update :reader-state
+                        merge {:token-id token-id :form-id form-id}))))
+          (c2-reader-fail!
+           id source-path
+           {:source-id source-id
+            :source-span span
+            :token-id token-id
+            :form-id form-id
+            :raw raw
+            :reader-options reader-options
+            :facts (:facts diagnostic)}
+           {:related related
+            :reader-engine-diagnostic
+            reader-engine-diagnostic
+            :remapped-from
+            (or (when (not= owner-id id) owner-id)
+                (:remapped-from diagnostic))
+            :reader-state
+            (merge (:reader-state diagnostic)
+                   {:artifact :gravity/reader-state
+                    :stage reader-stage
+                    :token-id token-id
+                    :form-id form-id})
+            :cause-message
+            (or (:message diagnostic) (c2-reader-message id))
+            :facts diagnostic-facts}))))))
+
+(defn sh03-reader-sh02-descriptor
+  [source-path project-context resolved summary]
+  (let [binding (:plan-binding resolved)
+        projection-name :reader-product-identities
+        fact-name :reader-product-binding
+        identity-name :reader-result
+        identity-domain :gravity/sh03-reader-result-identity-v2
+        evidence-id
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/sh03-reader-envelope-evidence-v2
+          :summary summary
+          :plan-semantic-hash (:plan-semantic-hash binding)})
+        identity-preimage {:summary summary}
+        observed-id
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain identity-domain :semantic-input identity-preimage})
+        fact-value {:family fact-name :entries []}
+        artifact-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:reader-result (:reader-result-id summary)})]
+    {:artifact :gravity/private-authenticated-envelope-descriptor
+     :schema-version 1
+     :stage :c2-reader
+     :artifact-kind :gravity/sh03-reader-products
+     :source-revision
+     {:owner :sh03-reader
+      :source-language :gravity
+      :logical-source-path sh03-reader-source-relative-path
+      :source-content-hash (:source-content-hash binding)
+      :source-byte-count (:source-byte-count binding)
+      :plan-semantic-hash (:plan-semantic-hash binding)
+      :functions-semantic-hash (:functions-semantic-hash binding)
+      :builder-function sh03-reader-entrypoint
+      :builder-semantic-hash (:entrypoint-semantic-hash binding)
+      :function-shapes
+      {sh03-reader-entrypoint {:arity 3}
+       sh03-reader-verifier {:arity 4}}}
+     :projection-contract
+     {:contract-kind :gravity/sh03-reader-product-envelope-contract
+      :contract-version 1
+      :profile :meta
+      :target :jvm
+      :required-semantic-projections [projection-name]
+      :required-fact-families [fact-name]
+      :required-identity-subjects [identity-name]}
+     :semantic-projections
+     [{:name projection-name
+       :role :complete-reader-product-identity-projection
+       :entry-count (count summary)
+       :value summary}]
+     :fact-transitions
+     [{:name fact-name
+       :disposition :preserved
+       :input fact-value
+       :output fact-value
+       :input-count (count fact-value)
+       :output-count (count fact-value)
+       :evidence-ids [evidence-id]}]
+     :effect-capability-relation
+     {:effect-facts {:declared #{} :observed #{}}
+      :capability-facts {:required #{} :granted #{}}
+      :capability-proof-facts {:proof-ids [evidence-id]}
+      :effect-order []
+      :provider-selections []
+      :grant-scopes []}
+     :proof-composite
+     {:proof-records [{:proof-id evidence-id :status :checked}]
+      :proof-certificate-table {evidence-id {:status :checked}}
+      :proof-summary {:required 1 :checked 1}
+      :proof-usage [{:proof-id evidence-id :used-by :reader-products}]}
+     :preservation
+     {:requires [fact-name]
+      :preserves [fact-name]
+      :invalidates []
+      :regenerates []
+      :residual-checks [:identity-subject-equality
+                        :digest-graph-reachability]}
+     :identity-subjects
+     [{:name identity-name
+       :domain identity-domain
+       :preimage identity-preimage
+       :observed-id observed-id}]
+     :lineage
+     [{:stage :sh03-reader
+       :artifact-kind :gravity/sh03-reader-result
+       :semantic-id (:reader-result-id summary)
+       :artifact-id artifact-id
+       :verification-id evidence-id
+       :relation :produced-from-gravity-reader}]
+     :reference-closure
+     {:root-id "sh03-reader-result"
+      :node-ids ["sh03-reader-result"]
+      :edges []
+      :fact-reference-ids [evidence-id]
+      :origin-reference-ids []
+      :proof-reference-ids [evidence-id]
+      :runtime-check-reference-ids []
+      :observed-node-count 1
+      :observed-edge-count 0
+      :observed-maximum-depth 0}
+     :actual-path-provenance
+     {:source-path source-path
+      :workspace-root (or (:project-root-path project-context)
+                          (System/getProperty "user.dir"))
+      :invocation-root (System/getProperty "user.dir")}
+     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+
+(defn sh03-reader-adapt-evidence!
+  [source-path source-id source-bytes source-content-id scalar-boundaries result
+   form-id-map token-id-map token-stream form-tree]
+  (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))
+        literal-records (c2-literal-records form-tree)
+        literal-by-form (into {} (map (juxt :form-id identity)
+                                     literal-records))
+        gravity-literal-projection
+        (mapv
+         (fn [record]
+           (let [form-id (form-id-map (:form-id record))
+                 _ (sh03-reader-form-value-reference!
+                    source-path (:decoded record) (:form-id record))
+                 literal (literal-by-form form-id)]
+             (when-not
+              (and literal
+                   (= (:kind record) (:kind literal))
+                   (= (sh03-reader-accepted-raw-text!
+                       source-path source-bytes source-content-id
+                       scalar-boundaries (:raw record) (:span record))
+                      (:raw literal))
+                   (= (dissoc (:span record) :source :file)
+                      (dissoc (:span literal) :source :file)))
+               (sh03-reader-boundary-fail!
+                source-path :sh03-reader-literal-projection record
+                {:adapted-form-id form-id}))
+             literal))
+         (:literal-decoding-records result))
+        _ (when-not (= literal-records gravity-literal-projection)
+            (sh03-reader-boundary-fail!
+             source-path :complete-sh03-reader-literal-projection
+             gravity-literal-projection
+             {:expected-literal-count (count literal-records)}))
+        deferred-records (c2-deferred-semantic-literals form-tree)
+        deferred-by-form (into {} (map (juxt :form-id identity)
+                                      deferred-records))
+        gravity-deferred
+        (get-in result [:semantic-error-deferment-record
+                        :deferred-literal-records])
+        gravity-deferred-projection
+        (mapv
+         (fn [record]
+           (let [form-id (form-id-map (:form-id record))
+                 _ (sh03-reader-form-value-reference!
+                    source-path (:descriptor record) (:form-id record))
+                 deferred (deferred-by-form form-id)]
+             (when-not
+              (and deferred
+                   (= (:kind record) (:kind deferred))
+                   (= (sh03-reader-accepted-raw-text!
+                       source-path source-bytes source-content-id
+                       scalar-boundaries (:raw record) (:span deferred))
+                      (:raw deferred))
+                   (= :deferred (:semantic-validation record)))
+               (sh03-reader-boundary-fail!
+                source-path :sh03-reader-deferred-literal-projection record
+                {:adapted-form-id form-id}))
+             deferred))
+         gravity-deferred)
+        _ (when-not (= deferred-records gravity-deferred-projection)
+            (sh03-reader-boundary-fail!
+             source-path :complete-sh03-reader-deferment-projection
+             gravity-deferred-projection
+             {:expected-deferred-count (count deferred-records)}))
+        extension-records (c2-reader-extension-invocations form-tree)
+        gravity-extension-projection
+        (mapv
+         (fn [record]
+           (let [tag (symbol (sh03-reader-codepoints-text!
+                              source-path (:tag-codepoints record)))
+                 handler
+                 (symbol (sh03-reader-codepoints-text!
+                          source-path
+                          (get-in record [:handler :name-codepoints])))]
+             {:artifact :gravity/reader-extension-invocation
+              :tag tag
+              :handler handler
+              :build-effects (:build-effects record)
+              :capabilities (:capabilities record)
+              :profiles (:profiles record)
+              :invocations
+              (mapv
+               (fn [invocation]
+                 {:form-id (form-id-map (:form-id invocation))
+                  :span (sh03-reader-path-span
+                         source-path source-id (:span invocation))
+                  :raw (sh03-reader-accepted-raw-text!
+                        source-path source-bytes source-content-id
+                        scalar-boundaries (:raw invocation)
+                        (:span invocation))})
+               (:invocations record))
+              :status (:status record)}))
+         (:reader-extension-invocation-records result))
+        _ (when-not (= extension-records gravity-extension-projection)
+            (sh03-reader-boundary-fail!
+             source-path :complete-sh03-reader-extension-projection
+             gravity-extension-projection
+             {:expected-extension-records extension-records}))
+        source-map (:reader-source-map result)
+        projected-token-spans
+        (mapv (fn [record]
+                {:token-id (token-id-map (:token-id record))
+                 :span (sh03-reader-path-span source-path source-id
+                                               (:span record))})
+              (:token-spans source-map))
+        expected-token-spans
+        (mapv #(select-keys % [:token-id :span]) token-stream)
+        projected-form-spans
+        (mapv (fn [record]
+                {:form-id (form-id-map (:form-id record))
+                 :span (sh03-reader-path-span source-path source-id
+                                               (:span record))
+                 :parent-form-id
+                 (form-id-map (:parent-form-id record))})
+              (:form-spans source-map))
+        expected-form-spans
+        (mapv #(select-keys % [:form-id :span :parent-form-id]) form-tree)]
+    (when-not (and (= expected-token-spans projected-token-spans)
+                   (= expected-form-spans projected-form-spans))
+      (sh03-reader-boundary-fail!
+       source-path :complete-sh03-reader-source-map-projection source-map
+       {:expected-token-span-count (count expected-token-spans)
+        :expected-form-span-count (count expected-form-spans)}))
+    {:literal-decoding-records literal-records
+     :deferred-literal-records deferred-records
+     :reader-extension-invocation-records extension-records
+     :reader-source-map
+     {:artifact :gravity/reader-source-map
+      :token-spans projected-token-spans
+      :form-spans projected-form-spans}}))
+
+(defn- sh03-reader-adapter-summary
+  [result source-unit token-stream form-tree extension-records
+   token-id-map form-id-map]
+  {:slice :SH-03
+   :status :accepted
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :source-unit-id (get-in result [:incremental-reader-hashes :source-unit])
+   :token-stream-id (get-in result [:incremental-reader-hashes :token-stream])
+   :form-tree-id (get-in result [:incremental-reader-hashes :form-tree])
+   :extension-invocation-set-id
+   (get-in result [:incremental-reader-hashes :extension-invocation-set])
+   :reader-result-id
+   (get-in result [:incremental-reader-hashes :reader-result])
+   :semantic-value-table-id
+   (reader-canonical-hash (:semantic-value-table result))
+   :adapted-source-unit-id (:source-id source-unit)
+   :adapted-token-stream-id
+   (reader-canonical-hash (c2-token-hash-input token-stream))
+   :adapted-form-tree-id
+   (reader-canonical-hash (c2-form-hash-input form-tree))
+   :adapted-extension-invocation-set-id
+   (reader-canonical-hash (c2-extension-hash-input extension-records))
+   :token-id-projection-id (reader-canonical-hash token-id-map)
+   :form-id-projection-id (reader-canonical-hash form-id-map)})
+
+(defn sh03-reader-adapt-products!
+  [source-path source-text source-bytes reader-options project-context
+   resolved]
+  (let [result (:result resolved)]
+    (sh03-reader-raise-rejection!
+     source-path source-bytes reader-options project-context result)
+    (when-not (= :accepted (:status result))
+      (sh03-reader-boundary-fail!
+       source-path :accepted-sh03-reader-result result {}))
+    (let [source-unit (c2-source-unit-record
+                       source-path source-text reader-options project-context)
+          source-id (:source-id source-unit)
+          source-content-id (get-in result [:source-unit :bytes-hash])
+          _ (when-not (= source-content-id (:bytes-hash source-unit))
+              (sh03-reader-boundary-fail!
+               source-path :snapshot-bound-sh03-reader-source-unit
+               (:source-unit result)
+               {:expected-source-content-id (:bytes-hash source-unit)}))
+          scalar-boundaries
+          (sh03-reader-source-scalar-boundaries!
+           source-path source-text source-bytes)
+          raw-tokens (:token-stream result)
+          raw-forms (:form-tree result)
+          semantic-index
+          (sh03-reader-semantic-value-index!
+           source-path (:semantic-value-table result))
+          _ (sh03-reader-semantic-value-closure!
+             source-path source-bytes source-content-id scalar-boundaries
+             raw-tokens raw-forms semantic-index)
+          token-id-map
+          (into {} (map-indexed
+                    (fn [index token]
+                      [(:token-id token) (keyword (str "tok-" index))])
+                    raw-tokens))
+          form-id-map
+          (into {} (map-indexed
+                    (fn [index form]
+                      [(:form-id form) (keyword (str "form-" index))])
+                    raw-forms))
+          _ (doseq [[form-id record reference]
+                    (map vector (:top-level-form-ids result)
+                         (:top-level-parsed-records result)
+                         (:parsed-semantic-values result))]
+              (when-not (= form-id (:form-id record))
+                (sh03-reader-boundary-fail!
+                 source-path :form-bound-sh03-reader-top-level-record
+                 record {:expected-form-id form-id}))
+              (sh03-reader-form-value-reference!
+               source-path (:value record) form-id)
+              (sh03-reader-form-value-reference!
+               source-path reference form-id))
+          host-values
+          (try
+            (sh03-reader-host-values!
+             source-path source-bytes source-content-id scalar-boundaries
+             raw-forms semantic-index)
+            (catch InterruptedException interrupted
+              (.interrupt (Thread/currentThread))
+              (throw interrupted))
+            (catch clojure.lang.ExceptionInfo error
+              (throw error))
+            (catch StackOverflowError error
+              (sh03-reader-boundary-fail!
+               source-path :bounded-sh03-reader-adapter-host-stack {}
+               {:contained-host-error (.getName (class error))}))
+            (catch Throwable error
+              (sh03-reader-boundary-fail!
+               source-path :contained-sh03-reader-adapter-value-failure {}
+               {:contained-host-error (.getName (class error))
+                :cause-message (.getMessage error)})))
+          token-stream
+          (mapv
+           (fn [token]
+             (let [kind (:kind token)
+                   raw (sh03-reader-accepted-raw-text!
+                        source-path source-bytes source-content-id
+                        scalar-boundaries (:raw token) (:span token))
+                   descriptor
+                   (if (= :gravity/semantic-value-reference
+                          (:artifact (:descriptor token)))
+                     (sh03-reader-semantic-reference-value!
+                      source-path semantic-index (:descriptor token)
+                      :descriptor)
+                     (:descriptor token))
+                   decoded
+                   (cond
+                     (contains? #{:whitespace :comment} kind) nil
+                     (contains? #{:list-open :vector-open :map-open :close}
+                                kind) raw
+                     (= :set-open kind) :set
+                     (= :abbreviation kind) (:abbreviation token)
+                     (= :reader-tag kind)
+                     (symbol (sh03-reader-codepoints-text!
+                              source-path (:tag-codepoints token)))
+                     :else
+                     (sh03-reader-host-atomic-value!
+                      source-path source-bytes source-content-id
+                      scalar-boundaries token descriptor))]
+               (cond->
+                {:token-id (token-id-map (:token-id token))
+                 :source-id source-id
+                 :source-path source-path
+                 :kind (if (= :reader-tag kind) :tag kind)
+                 :raw raw
+                 :lexeme (if (contains? #{:string :character} kind)
+                           decoded raw)
+                 :decoded decoded
+                 :span (sh03-reader-path-span source-path source-id
+                                               (:span token))
+                 :trivia-before []
+                 :reader-origin :source}
+                 (true? (:trivia? token)) (assoc :trivia? true)
+                 (= :abbreviation kind) (assoc :abbrev (:abbreviation token))
+                 (= :reader-tag kind) (assoc :tag decoded)
+                 (contains? #{:list-open :vector-open :map-open :set-open}
+                            kind)
+                 (assoc :close-token ({:list-open ")" :vector-open "]"
+                                       :map-open "}" :set-open "}"} kind))
+                 (= :set-open kind) (assoc :dispatch "#"))))
+           raw-tokens)
+          tokens-by-id (into {} (map (juxt :token-id identity) token-stream))
+          raw-token-position
+          (into {} (map-indexed (fn [index token]
+                                  [(:token-id token) index]) raw-tokens))
+          form-tree
+          (mapv
+           (fn [form]
+             (let [value (host-values (:form-id form))
+                   kind (:kind form)
+                   open-position (raw-token-position (:open-token form))
+                   close-position (raw-token-position (:close-token form))
+                   leading (if (integer? open-position)
+                             (sh03-reader-contiguous-trivia
+                              raw-tokens open-position -1 token-id-map)
+                             [])
+                   trailing (if (and (:collection-kind form)
+                                     (integer? close-position))
+                              (sh03-reader-contiguous-trivia
+                               raw-tokens close-position -1 token-id-map)
+                              [])
+                   child-ids (mapv form-id-map (:children form))
+                   target-child-id
+                   (when (contains? #{:abbreviation :metadata-wrapper} kind)
+                     (if (= :metadata-wrapper kind)
+                       (second child-ids)
+                       (first child-ids)))
+                   prefix-span
+                   (when (contains? #{:abbreviation :metadata-wrapper} kind)
+                     (:span (tokens-by-id (token-id-map (:open-token form)))))
+                   metadata
+                   (if (= :metadata-wrapper kind)
+                     (or (meta value) {})
+                     (or (meta value) {}))]
+               (cond->
+                {:form-id (form-id-map (:form-id form))
+                 :source-id source-id
+                 :source-path source-path
+                 :kind kind
+                 :parent-form-id (form-id-map (:parent-form-id form))
+                 :children child-ids
+                 :open-token (token-id-map (:open-token form))
+                 :close-token (token-id-map (:close-token form))
+                 :span (sh03-reader-path-span source-path source-id
+                                               (:span form))
+                 :metadata metadata
+                 :origin {:kind :source
+                          :reader :gravity-sh03-reader
+                          :projection :clojure-c2-compatibility-adapter
+                          :source-id source-id
+                          :source-path source-path}
+                 :leading-trivia-token-ids leading
+                 :leading-trivia-hash
+                 (sh03-reader-legacy-trivia-hash leading tokens-by-id)
+                 :raw (sh03-reader-accepted-raw-text!
+                       source-path source-bytes source-content-id
+                       scalar-boundaries (:raw form) (:span form))
+                 :value value}
+                 (empty? (:children form))
+                 (assoc :token-id (token-id-map (:open-token form)))
+                 (:collection-kind form)
+                 (assoc :collection-kind (:collection-kind form)
+                        :trailing-trivia-token-ids trailing
+                        :trailing-trivia-hash
+                        (sh03-reader-legacy-trivia-hash trailing tokens-by-id))
+                 (= :tagged-literal kind)
+                 (assoc :tag (symbol (sh03-reader-codepoints-text!
+                                      source-path (:tag-codepoints form))))
+                 (contains? #{:abbreviation :metadata-wrapper} kind)
+                 (assoc :abbrev (:abbrev form)
+                        :surface-span prefix-span
+                        :expanded-form value
+                        :generated-origin
+                        [{:kind :generated
+                          :producer :reader-abbreviation
+                          :reason (:abbrev form)
+                          :from prefix-span
+                          :child-form-id target-child-id}]))))
+           raw-forms)
+          forms-by-id (into {} (map (juxt :form-id identity) form-tree))
+          root-form-ids (mapv form-id-map (:top-level-form-ids result))
+          parsed-records
+          (mapv (fn [root-index form-id]
+                  (let [form (forms-by-id form-id)]
+                    {:form (:value form)
+                     :kind (:kind form)
+                     :form-id form-id
+                     :span (assoc (:span form) :form-index root-index)
+                     :parent-form-id nil}))
+                (range) root-form-ids)
+          adapted-evidence
+          (sh03-reader-adapt-evidence!
+           source-path source-id source-bytes source-content-id
+           scalar-boundaries result form-id-map token-id-map
+           token-stream form-tree)
+          descriptor
+          (sh03-reader-adapter-summary
+           result source-unit token-stream form-tree
+           (:reader-extension-invocation-records adapted-evidence)
+           token-id-map form-id-map)
+          envelope-descriptor
+          (sh03-reader-sh02-descriptor
+           source-path project-context resolved descriptor)
+          envelope
+          (p15-s23-stage2-sh02-descriptor-envelope
+           :c2-reader :gravity/sh03-reader-products envelope-descriptor
+           source-path)
+          _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
+             envelope :c2-reader :gravity/sh03-reader-products
+             envelope-descriptor source-path)]
+      {:source-unit source-unit
+       :token-stream token-stream
+       :form-tree form-tree
+       :root-form-ids root-form-ids
+       :parsed-records parsed-records
+       :parsed-values (mapv :form parsed-records)
+       :literal-decoding-records
+       (:literal-decoding-records adapted-evidence)
+       :deferred-literal-records
+       (:deferred-literal-records adapted-evidence)
+       :reader-extension-invocation-records
+       (:reader-extension-invocation-records adapted-evidence)
+       :gravity-reader-source-map (:reader-source-map adapted-evidence)
+       :sh03-reader-raw-result (:raw-result resolved)
+       :sh03-reader-result result
+       :sh03-reader-verification-report (:verification-report resolved)
+       :sh03-reader-plan-binding (:plan-binding resolved)
+       :sh03-reader-adapter-contract
+       :gravity/sh03-to-c2-reader-products-v2
+       :sh03-reader-adapter-descriptor descriptor
+       :sh03-semantic-value-table-id
+       (:semantic-value-table-id descriptor)
+       :sh02-reader-envelope-descriptor envelope-descriptor
+       :sh02-reader-envelope envelope})))
+
+(defn c2-reader-products-clojure-oracle
   ([source-path source-text reader-options]
-   (c2-reader-products source-path source-text reader-options
-                       (reader-project-context-for-source source-path)))
+   (c2-reader-products-clojure-oracle
+    source-path source-text reader-options
+    (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
    (let [source-unit (c2-source-unit-record source-path source-text
                                             reader-options project-context)
@@ -148554,6 +151394,19 @@
                           (ex-data ex))
                    ex)))))))
 
+(defn c2-reader-products
+  ([source-path source-text reader-options]
+   (c2-reader-products source-path source-text reader-options
+                       (reader-project-context-for-source source-path)))
+  ([source-path source-text reader-options project-context]
+   (let [source-bytes (.getBytes source-text
+                                 java.nio.charset.StandardCharsets/UTF_8)
+         resolved (sh03-reader-resolved-result!
+                   source-path source-bytes project-context reader-options)]
+     (sh03-reader-adapt-products!
+      source-path source-text source-bytes reader-options project-context
+      resolved))))
+
 (defn c2-syntax-seed-stream
   [source-path products module-context]
   (let [forms-by-id (into {} (map (juxt :form-id identity)
@@ -148585,8 +151438,14 @@
   [form-tree]
   (mapv #(select-keys % [:form-id :kind :raw :value :span])
         (filter (fn [form]
-                  (= :gravity/deferred-ratio-literal
-                     (get-in form [:value :artifact])))
+                  (and (contains? #{:integer :ratio :decimal} (:kind form))
+                       (= :deferred
+                          (get-in form [:value :semantic-validation]))
+                       (contains?
+                        #{:gravity/deferred-ratio-literal
+                          :gravity/decimal-literal
+                          :gravity/deferred-numeric-literal}
+                        (get-in form [:value :artifact]))))
                 form-tree)))
 
 (defn c2-top-level-products
@@ -149016,15 +151875,182 @@
         metadata (second metadata-clause)]
     (get-in metadata [:compiler :c2-reader] {})))
 
+(defn c2-reader-extension-invocations
+  [form-tree]
+  (mapv
+   (fn [tag]
+     (let [forms (filterv #(= tag (:tag %)) form-tree)]
+       {:artifact :gravity/reader-extension-invocation
+        :tag tag
+        :handler ({'inst 'gravity.reader.standard/read-inst
+                   'uuid 'gravity.reader.standard/read-uuid}
+                  tag)
+        :build-effects #{}
+        :capabilities #{}
+        :profiles #{:kernel :core :hosted :meta}
+        :invocations (mapv #(select-keys % [:form-id :span :raw]) forms)
+        :status (if (seq forms) :invoked :registered-not-invoked)}))
+   (:registered-tags standard-reader-policy)))
+
+(def ^:private sh03-reader-internal-product-authority (Object.))
+
+(defn- sh03-reader-precomputed-products-payload-valid?
+  [source-path source-text project-context products]
+  (let [result (:sh03-reader-result products)
+        raw-tokens (:token-stream result)
+        raw-forms (:form-tree result)
+        token-stream (:token-stream products)
+        form-tree (:form-tree products)
+        token-id-map
+        (when (= (count raw-tokens) (count token-stream))
+          (into {} (map vector (map :token-id raw-tokens)
+                               (map :token-id token-stream))))
+        form-id-map
+        (when (= (count raw-forms) (count form-tree))
+          (into {} (map vector (map :form-id raw-forms)
+                               (map :form-id form-tree))))
+        root-form-ids (mapv form-id-map (:top-level-form-ids result))
+        forms-by-id (into {} (map (juxt :form-id identity) form-tree))
+        parsed-records
+        (mapv (fn [root-index form-id]
+                (let [form (forms-by-id form-id)]
+                  {:form (:value form)
+                   :kind (:kind form)
+                   :form-id form-id
+                   :span (assoc (:span form) :form-index root-index)
+                   :parent-form-id nil}))
+              (range) root-form-ids)
+        literal-records (c2-literal-records form-tree)
+        deferred-records (c2-deferred-semantic-literals form-tree)
+        extension-records (c2-reader-extension-invocations form-tree)
+        source-map
+        {:artifact :gravity/reader-source-map
+         :token-spans (mapv #(select-keys % [:token-id :span]) token-stream)
+         :form-spans
+         (mapv #(select-keys % [:form-id :span :parent-form-id]) form-tree)}
+        source-unit
+        (c2-source-unit-record source-path source-text standard-reader-options
+                               project-context)
+        summary
+        (when (and token-id-map form-id-map)
+          (sh03-reader-adapter-summary
+           result source-unit token-stream form-tree extension-records
+           token-id-map form-id-map))
+        descriptor (:sh02-reader-envelope-descriptor products)
+        descriptor-summary
+        (:value
+         (some #(when (= :reader-product-identities (:name %)) %)
+               (:semantic-projections descriptor)))]
+    (and token-id-map
+         form-id-map
+         (= source-unit (:source-unit products))
+         (= root-form-ids (:root-form-ids products))
+         (= parsed-records (:parsed-records products))
+         (= (mapv :form parsed-records) (:parsed-values products))
+         (= literal-records (:literal-decoding-records products))
+         (= deferred-records (:deferred-literal-records products))
+         (= extension-records
+            (:reader-extension-invocation-records products))
+         (= source-map (:gravity-reader-source-map products))
+         (= (:semantic-value-table-id summary)
+            (:sh03-semantic-value-table-id products))
+         (= summary (:sh03-reader-adapter-descriptor products))
+         (= summary descriptor-summary))))
+
+(defn- sh03-reader-precomputed-products-verify!
+  [candidate source-path source-text project-context products]
+  (when-not (identical? candidate sh03-reader-internal-product-authority)
+    (c2-reader-fail!
+     "C2-HASH" source-path
+     {:stage :read-source
+      :source-span (source-span source-path 0)
+      :reader-options standard-reader-options}
+     {:missing-fields [:internal-sh03-precomputed-product-authority]}))
+  (let [expected-binding
+        (dissoc (sh03-reader-current-binding! source-path) :plan)
+        source-bytes
+        (.getBytes source-text java.nio.charset.StandardCharsets/UTF_8)
+        input-source-unit
+        (sh03-reader-input-source-unit source-path source-bytes project-context)
+        input-reader-policy
+        (sh03-reader-input-policy standard-reader-options)
+        raw-result (:sh03-reader-raw-result products)
+        result (:sh03-reader-result products)
+        report (:sh03-reader-verification-report products)
+        descriptor (:sh02-reader-envelope-descriptor products)
+        envelope (:sh02-reader-envelope products)
+        _ (sh03-reader-result-preflight!
+           source-path input-source-unit input-reader-policy raw-result)
+        replayed (sh03-reader-resolve-digest-requests!
+                  source-path raw-result source-bytes)
+        replayed-result
+        (update (:result replayed) :diagnostics
+                #(mapv (partial sh03-reader-resolve-diagnostic-id source-path)
+                       %))]
+    (when-not
+     (and (= :gravity/sh03-to-c2-reader-products-v2
+             (:sh03-reader-adapter-contract products))
+          (= expected-binding (:sh03-reader-plan-binding products))
+          (= :gravity/sh03-reader-result (:artifact raw-result))
+          (= :accepted (:status raw-result))
+          (= :gravity/sh03-reader-result (:artifact result))
+          (= :accepted (:status result))
+          (= replayed-result result)
+          (= :gravity/sh03-reader-verification-report (:artifact report))
+          (= :accepted (:status report))
+          (true? (:verified? report))
+          (= p15-s23-sh02-stage-envelope-keys (set (keys envelope)))
+          (= :accepted (:status envelope))
+          (= :c2-reader (:stage envelope))
+          (= :gravity/sh03-reader-products
+             (get-in envelope [:sealed-artifact :artifact-kind]))
+          (map? descriptor)
+          (try
+            (sh03-reader-precomputed-products-payload-valid?
+             source-path source-text project-context products)
+            (catch InterruptedException interrupted
+              (.interrupt (Thread/currentThread))
+              (throw interrupted))
+            (catch Throwable _ false)))
+      (c2-reader-fail!
+       "C2-HASH" source-path
+       {:stage :read-source
+        :source-span (source-span source-path 0)
+        :reader-options standard-reader-options}
+       {:missing-fields [:authenticated-sh03-precomputed-products]}))
+    (sh03-reader-verifier-preflight! source-path raw-result report)
+    (p15-s23-stage2-sh02-descriptor-envelope-verify!
+     envelope :c2-reader :gravity/sh03-reader-products descriptor source-path)
+    products))
+
 (defn compiler-c2-reader-source-artifact
   ([source-path source-text]
    (compiler-c2-reader-source-artifact
     source-path source-text (reader-project-context-for-source source-path)))
   ([source-path source-text project-context]
+   (compiler-c2-reader-source-artifact
+    source-path source-text project-context nil))
+  ([source-path source-text project-context precomputed-products]
+   (if precomputed-products
+     (c2-reader-fail!
+      "C2-HASH" source-path
+      {:stage :read-source
+       :source-span (source-span source-path 0)
+       :reader-options standard-reader-options}
+      {:missing-fields [:internal-sh03-precomputed-product-authority]})
+     (compiler-c2-reader-source-artifact
+      source-path source-text project-context nil
+      sh03-reader-internal-product-authority)))
+  ([source-path source-text project-context precomputed-products candidate]
    (try
     (let [reader-options standard-reader-options
-          products (c2-reader-products source-path source-text reader-options
-                                       project-context)
+          products
+          (if precomputed-products
+            (sh03-reader-precomputed-products-verify!
+             candidate source-path source-text project-context
+             precomputed-products)
+            (c2-reader-products source-path source-text
+                                reader-options project-context))
           source-unit (:source-unit products)
           token-stream (:token-stream products)
           form-tree (:form-tree products)
@@ -149038,16 +152064,13 @@
                                            token-stream)
           syntax-seeds (c2-syntax-seed-stream source-path products
                                               module-context)
-          deferred-literals (c2-deferred-semantic-literals form-tree)
-          literal-records (c2-literal-records form-tree)
+          deferred-literals (or (:deferred-literal-records products)
+                                (c2-deferred-semantic-literals form-tree))
+          literal-records (or (:literal-decoding-records products)
+                              (c2-literal-records form-tree))
           extension-invocations
-          [{:artifact :gravity/reader-extension-invocation
-            :tag 'gravity/schema
-            :handler 'gravity.reader.schema/read
-            :build-effects #{}
-            :capabilities #{}
-            :profiles #{:meta}
-            :status :registered-not-invoked}]
+          (or (:reader-extension-invocation-records products)
+              (c2-reader-extension-invocations form-tree))
           diagnostics []
           lexical-validation (c2-lexical-product-validation
                               source-text token-stream form-tree
@@ -149096,15 +152119,41 @@
            :module (assoc (dissoc module-context :namespace-clause-syntax)
                           :source-path source-path)
            :source-unit-record source-unit
+           :gravity-reader-boundary
+           {:slice :SH-03
+            :owner :gravity-source
+            :plan-binding (:sh03-reader-plan-binding products)
+            :resolved-reader-result
+            (select-keys (:sh03-reader-result products)
+                         [:artifact :schema-version :status
+                          :actual-path-provenance
+                          :incremental-reader-hashes
+                          :semantic-reader-template
+                          :bounds :execution-boundary])
+            :adapter-contract (:sh03-reader-adapter-contract products)
+            :uncredited-source-models
+            {:status :not-executed
+             :entrypoints sh03-reader-uncredited-source-model-entrypoints
+             :self-hosting-credit? false
+             :seed-retirement-credit? false
+             :release-credit? false}
+            :semantic-value-table-id
+            (:sh03-semantic-value-table-id products)
+            :authenticated-envelope (:sh02-reader-envelope products)
+            :target-source-reread? false
+            :clojure-adapter-residual? true
+            :self-hosted? false}
            :representation-boundary
            {:token-stream :ordered-utf8-lexical-token-stream
             :form-tree :recursive-delimiter-linked-form-tree
             :lexical-token-stream? lexical-token-stream?
             :nested-form-tree? nested-form-tree?
             :remaining-reader-boundaries
-            [:complete-literal-policy :complete-reader-abbreviations
-             :complete-reader-extension-execution
-             :complete-public-and-host-retirement-gates]
+            [:full-language-literal-surface
+             :full-language-reader-abbreviation-surface
+             :full-language-reader-extension-registry
+             :host-and-seed-retirement]
+            :sh03-bootstrap-subset-status :complete
             :status (if (and lexical-token-stream? nested-form-tree?)
                       :complete-for-slice
                       :failed)}
@@ -149116,22 +152165,31 @@
            :syntax-seed-stream syntax-seeds
            :reader-source-map (mapv #(select-keys % [:syntax-id :form-id :span])
                                     syntax-seeds)
+           :gravity-reader-source-map (:gravity-reader-source-map products)
            :literal-decoding-records literal-records
            :trivia-retention-records (c2-trivia-records token-stream)
            :reader-extension-policy
            {:artifact :gravity/reader-extension-policy
-            :extensions [{:tag 'gravity/schema
-                          :handler 'gravity.reader.schema/read
-                          :build-effects #{}
-                          :capabilities #{}
-                          :profiles #{:meta}
-                          :output :syntax-seed}]
+            :extensions
+            [{:tag 'inst
+              :handler 'gravity.reader.standard/read-inst
+              :build-effects #{}
+              :capabilities #{}
+              :profiles #{:kernel :core :hosted :meta}
+              :output :syntax-seed}
+             {:tag 'uuid
+              :handler 'gravity.reader.standard/read-uuid
+              :build-effects #{}
+              :capabilities #{}
+              :profiles #{:kernel :core :hosted :meta}
+              :output :syntax-seed}]
             :status :registered}
            :reader-extension-invocation-records extension-invocations
            :semantic-error-deferment-record
            {:artifact :gravity/semantic-error-deferment
             :forms-retained [:unknown-symbol :profile-illegal-form
-                             :zero-denominator-ratio]
+                             :zero-denominator-ratio
+                             :host-independent-decimal-range]
             :deferred-literal-records deferred-literals
             :semantic-analysis-in-reader? false
             :module-parser-invoked? false
@@ -149152,12 +152210,12 @@
                        :token-stream-status :complete-for-slice
                        :form-tree-status :complete-for-slice
                        :span-status :exact-utf8-byte-and-line-column
-                       :abbreviation-status :representative-l1-slice
-                       :literal-status :representative-l1-slice
+                       :abbreviation-status :complete-bootstrap-subset
+                       :literal-status :complete-bootstrap-subset
                        :trivia-status :reader-option-sensitive
-                       :extension-status :partial
+                       :extension-status :complete-bootstrap-subset
                        :incremental-hash-status :complete-for-slice
-                       :diagnostic-status :stable-l1-c2-slice
+                       :diagnostic-status :complete-bootstrap-subset
                        :semantic-deferment-status :complete-for-slice
                        :status :partial}
           artifact (assoc artifact-base
@@ -149167,14 +152225,94 @@
      (catch clojure.lang.ExceptionInfo ex
        (c2-reader-remap-exception! source-path ex)))))
 
+(def sh03-reader-maximum-source-bytes 1048576)
+
+(defn sh03-reader-read-target-source-bytes!
+  [path]
+  (let [nio-path (.toPath (java.io.File. path))
+        nofollow (into-array java.nio.file.LinkOption
+                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (try
+          (java.nio.file.Files/readAttributes
+           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception error
+            (c2-reader-fail!
+             "C2-ENCODING" path
+             {:stage :read-source
+              :source-span (source-span path 0)
+              :reader-options standard-reader-options}
+             {:facts {:failure-kind :source-file-attributes
+                      :contained-host-error (.getName (class error))}
+              :cause-message (.getMessage error)})))]
+    (when-not (and attributes
+                   (.isRegularFile attributes)
+                   (<= (.size attributes)
+                       sh03-reader-maximum-source-bytes))
+      (c2-reader-fail!
+       "C2-HASH" path
+       {:stage :read-source
+        :source-span (source-span path 0)
+        :reader-options standard-reader-options}
+       {:missing-fields [:bounded-regular-source-file]
+        :facts {:regular-file? (boolean (and attributes
+                                             (.isRegularFile attributes)))
+                :observed-source-byte-count
+                (when attributes (.size attributes))
+                :maximum-source-bytes sh03-reader-maximum-source-bytes}}))
+    (let [limit (inc sh03-reader-maximum-source-bytes)
+          buffer (byte-array limit)
+          observed
+          (try
+            (with-open [input
+                        (java.nio.file.Files/newInputStream
+                         nio-path
+                         (into-array java.nio.file.OpenOption
+                                     [java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+              (loop [offset 0]
+                (if (= offset limit)
+                  offset
+                  (let [count (.read input buffer offset (- limit offset))]
+                    (if (= -1 count)
+                      offset
+                      (recur (+ offset count)))))))
+            (catch Exception error
+              (c2-reader-fail!
+               "C2-ENCODING" path
+               {:stage :read-source
+                :source-span (source-span path 0)
+                :reader-options standard-reader-options}
+               {:facts {:failure-kind :bounded-source-byte-read
+                        :contained-host-error (.getName (class error))}
+                :cause-message (.getMessage error)})))]
+      (when (> observed sh03-reader-maximum-source-bytes)
+        (c2-reader-fail!
+         "C2-HASH" path
+         {:stage :read-source
+          :source-span (source-span path 0)
+          :reader-options standard-reader-options}
+         {:missing-fields [:bounded-source-byte-snapshot]
+          :facts {:observed-source-byte-count observed
+                  :maximum-source-bytes sh03-reader-maximum-source-bytes}}))
+      (java.util.Arrays/copyOf buffer observed))))
+
 (defn compiler-c2-reader-file-artifact
   [path]
-  (let [source-text
-        (try
-          (read-gravity-source-text path)
-          (catch clojure.lang.ExceptionInfo ex
-            (c2-reader-remap-exception! path ex)))]
-    (compiler-c2-reader-source-artifact path source-text)))
+  (let [source-bytes (sh03-reader-read-target-source-bytes! path)
+        project-context (reader-project-context-for-source path)
+        resolved (sh03-reader-resolved-result!
+                  path source-bytes project-context standard-reader-options)
+        result (:result resolved)
+        _ (sh03-reader-raise-rejection!
+           path source-bytes standard-reader-options project-context result)
+        source-text (sh03-reader-strict-source-text!
+                     path path source-bytes)
+        products (sh03-reader-adapt-products!
+                  path source-text source-bytes standard-reader-options
+                  project-context resolved)]
+    (compiler-c2-reader-source-artifact
+     path source-text project-context products
+     sh03-reader-internal-product-authority)))
 
 (def c3-syntax-diagnostic-ids
   ["C3-SHAPE"
@@ -149338,7 +152476,7 @@
           graph-valid? (true? (:graph-valid? lexical))
           depth-valid? (and (integer? (:max-form-depth lexical))
                             (<= (:max-form-depth lexical)
-                                max-reader-form-depth))
+                                max-reader-form-graph-depth))
           recomputed-hashes
           (when (and graph-valid? depth-valid?)
             (c2-incremental-hashes source-unit token-stream form-tree
@@ -149394,6 +152532,15 @@
           source-path (:path source-unit)
           expected-source-map
           (mapv #(select-keys % [:syntax-id :form-id :span]) syntax-seeds)
+          expected-parsed-values
+          (mapv #(get-in forms-by-id [% :value]) top-level-form-ids)
+          parsed-semantic-values-valid?
+          (and (= expected-parsed-values
+                  (:parsed-semantic-values c2-artifact))
+               (= expected-parsed-values (mapv :form syntax-seeds))
+               (= (count top-level-form-ids)
+                  (count (:parsed-semantic-values c2-artifact))
+                  (count syntax-seeds)))
           stable-token-ids?
           (= (mapv :token-id token-stream)
              (mapv #(keyword (str "tok-" %)) (range (count token-stream))))
@@ -149456,6 +152603,8 @@
            :product-provenance-valid? product-provenance-valid?
            :reader-source-map-valid?
            (= expected-source-map (:reader-source-map c2-artifact))
+           :parsed-semantic-values-valid?
+           parsed-semantic-values-valid?
            :incremental-hashes-valid?
            (= recomputed-hashes (:incremental-reader-hashes c2-artifact))
            :literal-records-valid?
@@ -150062,7 +153211,8 @@
    [:kind :artifact-id :task :document-set :source-overrides
     :representation-boundary :capability-based-proof
     :source-unit-record :token-stream :form-tree
-    :top-level-form-ids :syntax-seed-stream :reader-source-map
+    :top-level-form-ids :parsed-semantic-values
+    :syntax-seed-stream :reader-source-map
     :literal-decoding-records :semantic-error-deferment-record
     :reader-extension-invocation-records :reader-diagnostics
     :incremental-reader-hashes :reader-product-integrity]))
@@ -150077,6 +153227,7 @@
       (update :token-stream c2-token-hash-input)
       (update :form-tree c2-form-hash-input)
       (update :syntax-seed-stream c2-syntax-seed-hash-input)
+      (update :reader-extension-invocation-records c2-extension-hash-input)
       (update :reader-source-map
               (fn [records]
                 (mapv #(update % :span c2-path-neutral-span) records)))
@@ -150118,13 +153269,59 @@
   [artifact]
   (reader-canonical-hash (c3-artifact-identity-input artifact)))
 
+(defn- sh03-c3-precomputed-c2-verify!
+  [candidate source-path c2-artifact]
+  (let [boundary (:gravity-reader-boundary c2-artifact)
+        envelope (:authenticated-envelope boundary)
+        expected-binding
+        (dissoc (sh03-reader-current-binding! source-path) :plan)]
+    (when-not
+     (and (identical? candidate sh03-reader-internal-product-authority)
+          (= :gravity/stage0-c2-reader-document-artifact
+             (:kind c2-artifact))
+          (= :SH-03 (:slice boundary))
+          (= :gravity-source (:owner boundary))
+          (= :gravity/sh03-to-c2-reader-products-v2
+             (:adapter-contract boundary))
+          (= expected-binding (:plan-binding boundary))
+          (= p15-s23-sh02-stage-envelope-keys (set (keys envelope)))
+          (= :accepted (:status envelope))
+          (= :c2-reader (:stage envelope))
+          (= :gravity/sh03-reader-products
+             (get-in envelope [:sealed-artifact :artifact-kind])))
+      (c2-reader-fail!
+       "C2-HASH" source-path
+       {:stage :read-source
+        :source-span (source-span source-path 0)
+        :reader-options standard-reader-options}
+       {:missing-fields [:authenticated-sh03-c3-precomputed-c2]}))
+    c2-artifact))
+
 (defn compiler-c3-syntax-source-artifact
   ([source-path source-text]
    (compiler-c3-syntax-source-artifact
     source-path source-text (reader-project-context-for-source source-path)))
   ([source-path source-text project-context]
-  (let [c2-artifact (compiler-c2-reader-source-artifact
-                     source-path source-text project-context)
+   (compiler-c3-syntax-source-artifact
+    source-path source-text project-context nil))
+  ([source-path source-text project-context precomputed-c2-artifact]
+   (if precomputed-c2-artifact
+     (c2-reader-fail!
+      "C2-HASH" source-path
+      {:stage :read-source
+       :source-span (source-span source-path 0)
+       :reader-options standard-reader-options}
+      {:missing-fields [:internal-sh03-precomputed-product-authority]})
+     (compiler-c3-syntax-source-artifact
+      source-path source-text project-context nil
+      sh03-reader-internal-product-authority)))
+  ([source-path source-text project-context precomputed-c2-artifact candidate]
+  (let [c2-artifact
+        (if precomputed-c2-artifact
+          (sh03-c3-precomputed-c2-verify!
+           candidate source-path precomputed-c2-artifact)
+          (compiler-c2-reader-source-artifact
+           source-path source-text project-context))
         integrity-report
         (c3-validate-c2-reader-artifact! source-path c2-artifact)
         forms (:parsed-semantic-values c2-artifact)
@@ -150207,7 +153404,11 @@
 
 (defn compiler-c3-syntax-file-artifact
   [path]
-  (compiler-c3-syntax-source-artifact path (slurp path)))
+  (let [c2-artifact (compiler-c2-reader-file-artifact path)
+        source-text (c2-reader-artifact-source-text path c2-artifact)]
+    (compiler-c3-syntax-source-artifact
+     path source-text (reader-project-context-for-source path) c2-artifact
+     sh03-reader-internal-product-authority)))
 
 (defn macro-file-artifact
   [path]
@@ -157310,7 +160511,7 @@
         "version" (prn (p18-cli-version-record))
         "--assert-seedless-release" (p18-seedless-overclaim!)
         "assert-seedless-release" (p18-seedless-overclaim!)
-        "read" (prn (read-file-artifact path))
+        "read" (prn (compiler-c2-reader-file-artifact path))
         "module" (prn (module-file-artifact path))
         "macro" (prn (macro-file-artifact path))
         "core" (prn (core-file-artifact path))

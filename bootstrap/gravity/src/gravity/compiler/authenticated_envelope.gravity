@@ -34,7 +34,9 @@
                              :separate-physical-provenance-root
                              :digest-request-dag
                              :fresh-template-replay]
-               :preserves #{:type-facts :effect-facts :ownership-facts
+               :preserves #{:source-spans :syntax-identity
+                            :diagnostic-codes :artifact-provenance
+                            :type-facts :effect-facts :ownership-facts
                             :capability-facts :safety-outcomes
                             :runtime-check-records :capability-proofs
                             :proof-certificates :source-map

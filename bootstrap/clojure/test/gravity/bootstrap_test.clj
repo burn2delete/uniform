@@ -3013,6 +3013,12 @@
         backend-interface
         (first (filter #(= :backend-interface (:component %))
                        (:modules artifact)))
+        authenticated-envelope
+        (first (filter #(= :authenticated-envelope (:component %))
+                       (:modules artifact)))
+        c6-c10-checked-core
+        (first (filter #(= :c6-c10-checked-core (:component %))
+                       (:modules artifact)))
         c-backend
         (first (filter #(= :c-backend (:component %))
                        (:modules artifact)))
@@ -3071,6 +3077,8 @@
              :compiler-plugin-pass-api
              :compiler-verification
              :backend-interface
+             :authenticated-envelope
+             :c6-c10-checked-core
              :c-backend
              :llvm-backend
              :wasm-backend
@@ -3083,7 +3091,17 @@
              :query-backend
              :mobile-backend}
            components))
-    (is (= 33 (count (:modules artifact))))
+    (is (= 35 (count (:modules artifact))))
+    (is (= "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+           (:source-path authenticated-envelope)))
+    (is (some #{"D9"} (:documents authenticated-envelope)))
+    (is (some #{'authenticated-envelope-build-template}
+              (map :name (:definitions authenticated-envelope))))
+    (is (= "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+           (:source-path c6-c10-checked-core)))
+    (is (some #{"C6"} (:documents c6-c10-checked-core)))
+    (is (some #{'c6-c10-build-checked-core-template}
+              (map :name (:definitions c6-c10-checked-core))))
     (is (= "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
            (:source-path source-frontend)))
     (is (some #{"L1"} (:documents source-frontend)))
@@ -7746,6 +7764,14 @@
 	    (is (contains? (set (map :diagnostic (:diagnostics overclaim)))
 	                   "P15S23Q008"))))
 
+(deftest p15-s23-stage2-runtime-recur-signal-rejects-mixed-key-maps-safely
+  (is (false?
+       (bootstrap/p15-s23-stage2-runtime-recur-signal?
+        (sorted-map 'artifact :unrelated))))
+  (is (true?
+       (bootstrap/p15-s23-stage2-runtime-recur-signal?
+        (bootstrap/p15-s23-stage2-runtime-recur-signal [1 2 3])))))
+
 	(deftest p15-s23-stage2-runtime-kernel-records-executable-proof
 	  (let [artifact
 	        (bootstrap/p15-s23-stage2-runtime-kernel-file-artifact
@@ -8476,7 +8502,7 @@
 
 (deftest p15-s23-stage2-source-front-end-ingress-preserves-rejections
   (doseq [suffix [".gravity" ".qst"]
-          [source expected] [["1e2e3" "STAGE1READER007"]
+          [source expected] [["1e2e3" "C2-NUMERIC"]
                              ["#{:dup :dup}" "C2-SET"]
                              ["{:a 1 :b}" "C2-MAP"]]]
     (with-temp-source
@@ -8855,15 +8881,15 @@
                                           (set (keys upstream)))))
             (is (set/subset? forbidden-upstream-keys
                              (set (:redactions upstream))))))))
-    (doseq [[source expected]
-            [["1e2e3" "STAGE1READER007"]
-             ["#{:dup :dup}" "C2-SET"]]]
+    (doseq [[source expected wrapped?]
+            [["1e2e3" "P15S23F009" true]
+             ["#{:dup :dup}" "C2-SET" false]]]
       (let [data
             (diagnostic-data
              #(bootstrap/p15-s23-stage2-front-end-source-module-record
                front-end "/not-wrapped.gravity" source))]
         (is (= expected (:id data)))
-        (is (not= "P15S23F009" (:id data)))))
+        (is (= wrapped? (= "P15S23F009" (:id data))))))
     (let [forged
           {:id "C2-DELIMITER"
            :artifact :gravity/diagnostic
@@ -10385,7 +10411,7 @@
                       (run-thin-bin-in-directory
                        working-directory bin-path "compiler-c2-reader" path)]
                   (is (not (zero? (:exit rejected))))
-                  (is (str/includes? (:err rejected) "STAGE1READER007"))
+                  (is (str/includes? (:err rejected) "C2-NUMERIC"))
                   (is (not (str/includes? (:err rejected)
                                           "FileNotFoundException"))))))))))
     (let [diagnostic
@@ -10782,7 +10808,7 @@
                           (:tokens fallback-stream)))
                 forms (:form-tree artifact)]
             (swap! artifacts assoc suffix artifact)
-            (is (= (+ 2 (* ordinal 2)) @index-builds))
+            (is (= (inc ordinal) @index-builds))
             (is (= reference-values (:parsed-semantic-values artifact)))
             (is (= reference-values (:parsed-values fallback-products)))
             (is (not-any? #(contains? % :token-id)
@@ -10887,7 +10913,7 @@
                                   (:form-tree artifact)))
         last-root (forms-by-id (last (:top-level-form-ids artifact)))]
     (is (< 50000 (alength source-bytes) 150000))
-    (is (= 1 @index-builds))
+    (is (zero? @index-builds))
     (is (= (inc definition-count)
            (count (:top-level-form-ids artifact))))
     (is (> (count (:token-stream artifact)) 10000))
@@ -10911,7 +10937,7 @@
                 :expected {:id "C2-MAP"
                            :remapped-from "L1-MAP-ARITY"
                            :reader-engine-diagnostic "STAGE1READER005"}
-                :index-builds 1}
+                :index-builds 0}
                {:name :unexpected-close
                 :source "]"
                 :expected {:id "C2-DELIMITER"
@@ -10920,7 +10946,8 @@
                 :index-builds 0}
                {:name :malformed-number
                 :source "1e2e3"
-                :expected {:id "STAGE1READER007"
+                :expected {:id "C2-NUMERIC"
+                           :remapped-from "L1-NUMERIC"
                            :reader-engine-diagnostic "STAGE1READER007"}
                 :index-builds 0}]]
     (doseq [{:keys [name source expected index-builds]} cases]
@@ -11327,18 +11354,24 @@
                 :remapped-from "L1-MAP-ARITY"
                 :engine-diagnostic "STAGE1READER005"}
                {:name :duplicate-set :source "#{:dup :dup}"
-                :id "C2-SET" :token-id? true :related? true}
+                :id "C2-SET" :token-id? true :related? true
+                :remapped-from "L1-SET"}
                {:name :duplicate-composite-set :source "#{[1] [1]}"
-                :id "C2-SET" :token-id? true :related? true}
+                :id "C2-SET" :token-id? true :related? true
+                :remapped-from "L1-SET"}
                {:name :duplicate-nested-set
                 :source "#{{:a [1]} {:a [1]}}"
-                :id "C2-SET" :token-id? true :related? true}
+                :id "C2-SET" :token-id? true :related? true
+                :remapped-from "L1-SET"}
                {:name :duplicate-quoted-set :source "#{'x 'x}"
-                :id "C2-SET" :token-id? true :related? true}
+                :id "C2-SET" :token-id? true :related? true
+                :remapped-from "L1-SET"}
                {:name :duplicate-metadata-set :source "#{^:a x ^:a x}"
-                :id "C2-SET" :token-id? true :related? true}
+                :id "C2-SET" :token-id? true :related? true
+                :remapped-from "L1-SET"}
                {:name :duplicate-deref-set :source "#{@x @x}"
-                :id "C2-SET" :token-id? true :related? true}]]
+                :id "C2-SET" :token-id? true :related? true
+                :remapped-from "L1-SET"}]]
     (doseq [{:keys [name source id token-id? related? byte-start byte-end
                     remapped-from engine-diagnostic]}
             cases]
@@ -11435,6 +11468,7 @@
 (deftest c2-reader-contains-malformed-numbers-and-defers-zero-ratios
   (is (not (contains? (set bootstrap/c2-reader-diagnostic-ids)
                       "STAGE1READER007")))
+  (is (contains? (set bootstrap/c2-reader-diagnostic-ids) "C2-NUMERIC"))
   (doseq [suffix [".gravity" ".qst"]]
     (with-temp-source
       suffix "1e2e3"
@@ -11454,14 +11488,13 @@
                      path "1e2e3"))]
           (is (= "STAGE1READER007" (:id upstream)))
           (is (= "1e2e3" (:raw upstream)))
-          (is (= :unassigned
-                 (get-in upstream [:facts :normative-c2-mapping])))
-          (is (true? (get-in upstream [:facts :catalog-gap])))
-          (is (= "STAGE1READER007" (:id c2) (:id p15)))
+          (is (nil? (get-in upstream [:facts :normative-c2-mapping])))
+          (is (nil? (get-in upstream [:facts :catalog-gap])))
+          (is (= "C2-NUMERIC" (:id c2) (:id p15)))
+          (is (= "L1-NUMERIC" (:remapped-from c2)))
           (is (= "STAGE1READER007" (:reader-engine-diagnostic c2)))
-          (is (= :unassigned
-                 (get-in c2 [:facts :normative-c2-mapping])))
-          (is (true? (get-in c2 [:facts :catalog-gap])))
+          (is (nil? (get-in c2 [:facts :normative-c2-mapping])))
+          (is (nil? (get-in c2 [:facts :catalog-gap])))
           (is (= "1e2e3" (:raw-spelling c2)))
           (is (= path (get-in c2 [:source-span :source])))
           (is (= [0 5]
@@ -11533,7 +11566,7 @@
         (let [rejected (run-thin-bin "bin/gravity"
                                      "compiler-c2-reader" path)]
           (is (not (zero? (:exit rejected))))
-          (is (str/includes? (:err rejected) "STAGE1READER007"))
+          (is (str/includes? (:err rejected) "C2-NUMERIC"))
           (is (not (str/includes? (:err rejected)
                                   "NumberFormatException"))))))))
 
@@ -11711,10 +11744,11 @@
               repeated
               (diagnostic-data
                #(bootstrap/compiler-c3-syntax-source-artifact path "1e2e3"))]
-          (is (= "STAGE1READER007" (:id diagnostic)))
+          (is (= "C2-NUMERIC" (:id diagnostic)))
           (is (= :gravity/diagnostic (:artifact diagnostic)))
           (is (= "STAGE1READER007"
                  (:reader-engine-diagnostic diagnostic)))
+          (is (= "L1-NUMERIC" (:remapped-from diagnostic)))
           (is (= "1e2e3" (:raw-spelling diagnostic)))
           (is (= path (get-in diagnostic [:source-span :source])))
           (is (= [0 5]
@@ -11722,9 +11756,9 @@
                   (get-in diagnostic [:source-span :byte-end])]))
           (is (= (:source-span diagnostic)
                  (get-in diagnostic [:primary :span])))
-          (is (= :unassigned
-                 (get-in diagnostic [:facts :normative-c2-mapping])))
-          (is (true? (get-in diagnostic [:facts :catalog-gap])))
+          (is (nil? (get-in diagnostic
+                            [:facts :normative-c2-mapping])))
+          (is (nil? (get-in diagnostic [:facts :catalog-gap])))
           (is (= bootstrap/standard-reader-options
                  (:reader-options diagnostic)))
           (is (vector? (:related diagnostic)))
@@ -11805,7 +11839,7 @@
         (let [rejected (run-thin-bin "bin/gravity"
                                      "compiler-c3-syntax" path)]
           (is (not (zero? (:exit rejected))))
-          (is (str/includes? (:err rejected) "STAGE1READER007"))
+          (is (str/includes? (:err rejected) "C2-NUMERIC"))
           (is (not (str/includes? (:err rejected)
                                   "NumberFormatException")))
           (is (not (str/includes? (:err rejected)
@@ -12376,8 +12410,11 @@
     (with-temp-source
       suffix lexical-reader-nested-source
       (fn [path]
-        (let [accepted (run-thin-bin "bin/gravity" "compiler-c2-reader" path)]
+        (let [accepted (run-thin-bin "bin/gravity" "compiler-c2-reader" path)
+              public-read (run-thin-bin "bin/gravity" "read" path)]
           (is (zero? (:exit accepted)) (str (:out accepted) (:err accepted)))
+          (is (zero? (:exit public-read))
+              (str (:out public-read) (:err public-read)))
           (is (str/includes? (:out accepted)
                              ":ordered-utf8-lexical-token-stream"))
           (is (str/includes? (:out accepted)
@@ -12385,9 +12422,12 @@
     (with-temp-source
       suffix "{:a 1 :b}"
       (fn [path]
-        (let [rejected (run-thin-bin "bin/gravity" "compiler-c2-reader" path)]
+        (let [rejected (run-thin-bin "bin/gravity" "compiler-c2-reader" path)
+              public-read (run-thin-bin "bin/gravity" "read" path)]
           (is (not (zero? (:exit rejected))))
-          (is (str/includes? (:err rejected) "C2-MAP")))))))
+          (is (str/includes? (:err rejected) "C2-MAP"))
+          (is (not (zero? (:exit public-read))))
+          (is (str/includes? (:err public-read) "C2-MAP")))))))
 
 (deftest public-check-routes-gravity-owned-module-by-parsed-bootstrap-metadata
   (let [source-path
@@ -14648,12 +14688,12 @@
     (is (= :complete-for-slice
            (:form-tree-status conformance)))
     (is (= :exact-utf8-byte-and-line-column (:span-status conformance)))
-    (is (= :representative-l1-slice (:abbreviation-status conformance)))
-    (is (= :representative-l1-slice (:literal-status conformance)))
+    (is (= :complete-bootstrap-subset (:abbreviation-status conformance)))
+    (is (= :complete-bootstrap-subset (:literal-status conformance)))
     (is (= :reader-option-sensitive (:trivia-status conformance)))
-    (is (= :partial (:extension-status conformance)))
+    (is (= :complete-bootstrap-subset (:extension-status conformance)))
     (is (= :complete-for-slice (:incremental-hash-status conformance)))
-    (is (= :stable-l1-c2-slice (:diagnostic-status conformance)))
+    (is (= :complete-bootstrap-subset (:diagnostic-status conformance)))
     (is (= :complete-for-slice (:semantic-deferment-status conformance)))
     (is (= :partial (:status conformance)))))
 
@@ -39049,7 +39089,7 @@
          [:metadata "^" "C2-METADATA" nil]
          [:set "#{1 1}" "C2-SET" nil]
          [:abbrev "'" "C2-ABBREV" nil]
-         [:numeric "1e2e3" "STAGE1READER007" "STAGE1READER007"]]
+         [:numeric "1e2e3" "C2-NUMERIC" "STAGE1READER007"]]
         reader-data
         (vec
          (for [[label source expected-id expected-engine] reader-cases
@@ -39071,9 +39111,29 @@
           [label data])
       (is (= path (get-in data [:source-span :source])) [label data])
       (when (= label :numeric)
-        (is (= :unassigned
-               (get-in data [:facts :normative-c2-mapping])) data)
-        (is (true? (get-in data [:facts :catalog-gap])) data))
+        (let [reader-state (:reader-state data)]
+          (is (= "L1-NUMERIC" (:remapped-from data)) data)
+          (is (nil? (get-in data [:facts :normative-c2-mapping])) data)
+          (is (nil? (get-in data [:facts :catalog-gap])) data)
+          (is (= bootstrap/p15-s23-stage2-gravity-reader-state-keys
+                 (set (keys reader-state))) data)
+          (is (bootstrap/p15-s23-stage2-reader-diagnostic-authentic?
+               path "1e2e3" data data) data)
+          (is (bootstrap/p15-s23-stage2-canonical-c2-diagnostic-authentic?
+               path "1e2e3" data data) data)
+          (doseq [candidate
+                  [(assoc-in data [:reader-state :owner] :host)
+                   (assoc-in data [:reader-state :reason] "malformed")
+                   (assoc-in data [:reader-state :column-unit] :utf-16)
+                   (update-in data [:reader-state :char-position] inc)
+                   (assoc-in data [:reader-state :result-committed?] true)
+                   (assoc-in data [:reader-state :unexpected] true)]]
+            (is (false?
+                 (bootstrap/p15-s23-stage2-reader-diagnostic-authentic?
+                  path "1e2e3" candidate candidate)) candidate)
+            (is (false?
+                 (bootstrap/p15-s23-stage2-canonical-c2-diagnostic-authentic?
+                  path "1e2e3" candidate candidate)) candidate))))
       (is (not (str/includes? (pr-str data)
                               "contained-b2-c17-source-diagnostic"))
           [label data])
