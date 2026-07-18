@@ -132377,6 +132377,30 @@
    'b1-build-bounded-wasm-authenticated-packet
    {:arity 2 :params ['lowering 'backend-manifest]}})
 
+(def p15-s23-sh02-source-relative-path
+  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+(def p15-s23-sh02-source-byte-count 59369)
+(def p15-s23-sh02-expected-source-content-hash
+  "sha256:8bde715b0bd0059a4ffd90c463fd473a64aa68909ef497c9a1506541d9d7fbfc")
+(def p15-s23-sh02-expected-plan-semantic-hash
+  "sha256:125e012806bddf996f23e357bd33309c9bbd40927ce0f2c841e69b39c1740922")
+(def p15-s23-sh02-expected-functions-semantic-hash
+  "sha256:e88f53c2994f5d8d4577f6df9f6531a750c2808ef0a2b4b5d297f64e7b45e26e")
+(def p15-s23-sh02-expected-builder-semantic-hash
+  "sha256:19b21ed1e94563631c25b502f5297fa1e33070f0a62fefc480bcba5984b02a7a")
+(def p15-s23-sh02-expected-verifier-semantic-hash
+  "sha256:e52b201a81ef82f857aaabc68cb2d6a8f0f4505f853c555816023f5dad294a77")
+(def p15-s23-sh02-expected-function-count 72)
+(def p15-s23-sh02-builder-function
+  'authenticated-envelope-build-template)
+(def p15-s23-sh02-verifier-function
+  'authenticated-envelope-verify-template)
+(def p15-s23-sh02-required-functions
+  {'authenticated-envelope-build-template
+   {:arity 1 :params ['descriptor]}
+   'authenticated-envelope-verify-template
+   {:arity 3 :params ['descriptor 'artifact-template 'digest-requests]}})
+
 (declare p15-s23-b2-c17-source-relative-path
          p15-s23-b2-c17-source-byte-count
          p15-s23-b2-c17-expected-source-content-hash
@@ -132687,6 +132711,50 @@
      :builder-function p15-s23-b1-builder-function
      :required-functions p15-s23-b1-required-functions})})
 
+(defn- p15-s23-sh02-source-binding!
+  [candidate source-path]
+  (let [binding
+        (p15-s23-c13-c14-b1-source-binding!
+         candidate source-path
+         {:owner :gravity.compiler/authenticated-envelope
+          :relative-path p15-s23-sh02-source-relative-path
+          :source-byte-count p15-s23-sh02-source-byte-count
+          :source-content-hash p15-s23-sh02-expected-source-content-hash
+          :plan-semantic-hash p15-s23-sh02-expected-plan-semantic-hash
+          :functions-semantic-hash
+          p15-s23-sh02-expected-functions-semantic-hash
+          :builder-semantic-hash
+          p15-s23-sh02-expected-builder-semantic-hash
+          :builder-function p15-s23-sh02-builder-function
+          :required-functions p15-s23-sh02-required-functions
+          :emitter-target :jvm})
+        functions (get-in binding [:plan :functions])
+        verifier-hash
+        (p15-s23-c11-mir-digest
+         (get functions p15-s23-sh02-verifier-function))
+        complete-shapes
+        (into
+         (sorted-map)
+         (map (fn [[name function]]
+                [name (select-keys function [:arity :params])]))
+         functions)]
+    (when-not
+     (and (= p15-s23-sh02-expected-function-count (count functions))
+          (= p15-s23-sh02-expected-verifier-semantic-hash verifier-hash)
+          (= p15-s23-sh02-required-functions
+             (select-keys complete-shapes
+                          (keys p15-s23-sh02-required-functions))))
+      (p15-s23-b3-llvm-fail!
+       "B1-METADATA" source-path {}
+       {:missing-fact :pinned-sh02-gravity-function-identity
+        :sh02-boundary :authenticated-envelope
+        :observed-function-count (count functions)
+        :observed-verifier-semantic-hash verifier-hash}))
+    (assoc binding
+           :verifier-function p15-s23-sh02-verifier-function
+           :verifier-semantic-hash verifier-hash
+           :function-shapes complete-shapes)))
+
 (defn- p15-s23-c13-c14-b1-c-source-bindings!
   [candidate source-path]
   {:c13
@@ -132819,6 +132887,1030 @@
    (p15-s23-c11-mir-digest
     (p15-s23-c11-mir-path-neutral-value value))
    :entry-count (if (coll? value) (count value) 1)})
+
+(def p15-s23-sh02-authenticated-envelope-bounds
+  {:maximum-semantic-projections 64
+   :maximum-fact-transitions 64
+   :maximum-identity-subjects 64
+   :maximum-lineage-records 32
+   :maximum-reference-nodes 128
+   :maximum-reference-edges 128
+   :maximum-reference-depth 64
+   :maximum-logical-source-path-code-units 128
+   :maximum-reference-id-code-units 128
+   :maximum-digest-requests 2048
+   :maximum-carrier-nodes 65536
+   :maximum-carrier-depth 64
+   :maximum-container-width 128
+   :maximum-scalar-bytes 65536
+   :maximum-integer-bits 256})
+
+(def p15-s23-sh02-fact-families
+  [[:type :type-table]
+   [:effect :effect-table]
+   [:ownership :ownership-table]
+   [:capability :capability-table]
+   [:capability-proof :capability-proof-table]
+   [:safety :safety-table]
+   [:runtime-check :runtime-check-table]
+   [:proof-certificate :proof-certificate-table]
+   [:source-map :source-map]
+   [:effect-order :effect-order-graph]])
+
+(defn p15-s23-sh02-value-entry-count
+  [value]
+  (cond
+    (nil? value) 0
+    (coll? value) (count value)
+    :else 1))
+
+(defn p15-s23-sh02-sha256-id?
+  [value]
+  (and (string? value)
+       (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
+
+(defn p15-s23-sh02-contained-values
+  [value]
+  (tree-seq
+   coll?
+   (fn [item]
+     (if (map? item)
+       (mapcat identity item)
+       item))
+   value))
+
+(defn p15-s23-sh02-sha256-ids
+  [value]
+  (->> (p15-s23-sh02-contained-values value)
+       (filter p15-s23-sh02-sha256-id?)
+       distinct
+       sort
+       vec))
+
+(defn p15-s23-sh02-stage-source-revision
+  [stage-record logical-source-path]
+  (let [rule (:source-rule stage-record)]
+    {:owner (:owner rule)
+     :source-language :gravity
+     :logical-source-path logical-source-path
+     :source-content-hash (:source-content-hash rule)
+     :source-byte-count (:source-byte-count rule)
+     :plan-semantic-hash (:plan-semantic-hash rule)
+     :functions-semantic-hash (:functions-semantic-hash rule)
+     :builder-function (:builder-function rule)
+     :builder-semantic-hash (:builder-semantic-hash rule)
+     :function-shapes (:function-shapes rule)}))
+
+(defn p15-s23-sh02-projection
+  [name role value]
+  (let [value (p15-s23-c13-c14-b1-path-neutral-value value)]
+    {:name name :role role
+     :entry-count (p15-s23-sh02-value-entry-count value)
+     :value value}))
+
+(defn p15-s23-sh02-stage-semantic-projections
+  [stage packet]
+  (let [record (get packet stage)]
+    (case stage
+      :c13
+      [(p15-s23-sh02-projection :stage-input :pass-input (:input record))
+       (p15-s23-sh02-projection
+        :optimized-mir :pass-output (:optimized-mir record))
+       (p15-s23-sh02-projection
+        :pass-contract :pass-contract (:pass-contract record))
+       (p15-s23-sh02-projection
+        :decision-record :decision (:decision-record record))
+       (p15-s23-sh02-projection
+        :verifier-replay :verification (:verifier-replay record))]
+
+      :b1
+      [(p15-s23-sh02-projection :stage-input :backend-input (:input record))
+       (p15-s23-sh02-projection
+        :profile-contract :compile-time-contract (:profile record))
+       (p15-s23-sh02-projection
+        :target-contract :target-selection (:target record))
+       (p15-s23-sh02-projection :abi-contract :abi (:abi record))
+       (p15-s23-sh02-projection
+        :runtime-contract :runtime (:runtime record))
+       (p15-s23-sh02-projection
+        :provider-selection :providers (:providers record))
+       (p15-s23-sh02-projection
+        :backend-manifest :backend-contract (:backend-manifest record))
+       (p15-s23-sh02-projection
+        :contract-bindings :preserved-facts (:contract-bindings record))]
+
+      (throw (ex-info "Unsupported SH-02 envelope stage"
+                      {:stage stage})))))
+
+(defn p15-s23-sh02-stage-evidence-ids
+  [stage packet]
+  (let [record (get packet stage)]
+    (case stage
+      :c13
+      [(get-in record [:input :verifier-report-id])
+       (get-in record [:decision-record :decision-id])
+       (:artifact-id record)]
+
+      :b1
+      [(get-in packet [:c14 :artifact-id])
+       (get-in packet [:c14 :request :request-id])
+       (:artifact-id record)])))
+
+(defn p15-s23-sh02-fact-transitions
+  [stage packet]
+  (let [mir (:optimized-mir packet)
+        evidence-ids (p15-s23-sh02-stage-evidence-ids stage packet)]
+    (mapv
+     (fn [[name mir-key]]
+       (let [value
+             (p15-s23-c13-c14-b1-path-neutral-value (get mir mir-key))
+             entry-count (p15-s23-sh02-value-entry-count value)]
+         {:name name
+          :disposition :preserved
+          :input value :output value
+          :input-count entry-count :output-count entry-count
+          :evidence-ids evidence-ids}))
+     p15-s23-sh02-fact-families)))
+
+(defn p15-s23-sh02-effect-capability-relation
+  [stage packet]
+  (let [mir (:optimized-mir packet)
+        record (get packet stage)]
+    (p15-s23-c13-c14-b1-path-neutral-value
+     {:effect-facts (:effect-table mir)
+      :capability-facts (:capability-table mir)
+      :capability-proof-facts (:capability-proof-table mir)
+      :effect-order (:effect-order-graph mir)
+      :provider-selections (if (= stage :b1) (:providers record) {})
+      :grant-scopes (if (= stage :b1) (:capabilities record) #{})})))
+
+(defn p15-s23-sh02-proof-composite
+  [stage packet]
+  (let [mir (:optimized-mir packet)
+        record (get packet stage)
+        proof-records
+        (if (= stage :b1)
+          (:proofs record)
+          (get-in record [:decision-record :proofs-used]))]
+    (p15-s23-c13-c14-b1-path-neutral-value
+     {:proof-records proof-records
+      :proof-certificate-table (:proof-certificate-table mir)
+      :proof-summary
+      (p15-s23-c13-c14-b1-content-binding
+       {:capability-proofs (:capability-proof-table mir)
+        :proof-certificates (:proof-certificate-table mir)})
+      :proof-usage
+      {:stage stage
+       :identity-pass? (= stage :c13)
+       :backend-admission? (= stage :b1)}})))
+
+(defn p15-s23-sh02-identity-subject
+  [name domain preimage]
+  (let [preimage (p15-s23-c13-c14-b1-path-neutral-value preimage)]
+    {:name name :domain domain :preimage preimage
+     :observed-id
+     (p15-s23-c6c10-canonical-digest
+      "<sh02-identity-subject>"
+      {:domain domain :semantic-input preimage})}))
+
+(defn p15-s23-sh02-stage-identity-subjects
+  [stage packet]
+  (let [record (get packet stage)
+        semantic-preimage
+        {:kind (:artifact record)
+         :record (p15-s23-c13-c14-b1-stage-semantic-input record)}
+        artifact-preimage
+        {:kind (:artifact record) :schema-version (:schema-version record)
+         :semantic-id (:semantic-id record)}]
+    (case stage
+      :c13
+      [(p15-s23-sh02-identity-subject
+        :stage-semantic-seal :gravity/sh02-c13-semantic-seal-v1
+        {:preimage semantic-preimage :observed-id (:semantic-id record)})
+       (p15-s23-sh02-identity-subject
+        :stage-artifact-seal :gravity/sh02-c13-artifact-seal-v1
+        {:preimage artifact-preimage :observed-id (:artifact-id record)})
+       (p15-s23-sh02-identity-subject
+        :optimization-decision :gravity/sh02-c13-decision-v1
+        {:decision-record (:decision-record record)
+         :decision-id (get-in record [:decision-record :decision-id])})]
+
+      :b1
+      [(p15-s23-sh02-identity-subject
+        :stage-semantic-seal :gravity/sh02-b1-semantic-seal-v1
+        {:preimage semantic-preimage :observed-id (:semantic-id record)})
+       (p15-s23-sh02-identity-subject
+        :stage-artifact-seal :gravity/sh02-b1-artifact-seal-v1
+        {:preimage artifact-preimage :observed-id (:artifact-id record)})
+       (p15-s23-sh02-identity-subject
+        :backend-manifest :gravity/sh02-b1-backend-manifest-v1
+        (:backend-manifest record))
+       (p15-s23-sh02-identity-subject
+        :target-lowering-request :gravity/sh02-c14-request-v1
+        {:request
+         (dissoc (get-in packet [:c14 :request]) :request-id)
+         :observed-id (get-in packet [:c14 :request :request-id])})])))
+
+(defn p15-s23-sh02-stage-lineage
+  [stage packet]
+  (case stage
+    :c13
+    [{:stage :c11-mir
+      :artifact-kind :gravity/mir
+      :semantic-id (get-in packet [:c11 :mir-id])
+      :artifact-id (get-in packet [:c11 :artifact-id])
+      :verification-id (get-in packet [:c13 :input :verifier-report-id])
+      :relation :optimized-from}]
+
+    :b1
+    [{:stage :c14-target-lowering
+      :artifact-kind (get-in packet [:c14 :artifact])
+      :semantic-id (get-in packet [:c14 :semantic-id])
+      :artifact-id (get-in packet [:c14 :artifact-id])
+      :verification-id (get-in packet [:c14 :request :request-id])
+      :relation :backend-admitted-from}]))
+
+(defn p15-s23-sh02-reference-depth
+  [root-id edges]
+  (let [adjacency (group-by :from edges)
+        maximum (:maximum-reference-depth
+                 p15-s23-sh02-authenticated-envelope-bounds)]
+    (loop [pending (conj clojure.lang.PersistentQueue/EMPTY
+                         [root-id 0])
+           discovered #{root-id}
+           observed 0]
+      (if (empty? pending)
+        observed
+        (let [[node depth] (peek pending)
+              pending (pop pending)
+              next-depth (inc depth)
+              targets (map :to (get adjacency node []))
+              unseen (remove discovered targets)]
+          (if (and (seq unseen) (> next-depth maximum))
+            next-depth
+            (recur
+             (into pending (map #(vector % next-depth) unseen))
+             (into discovered unseen)
+             (max observed depth))))))))
+
+(defn p15-s23-sh02-reference-reachable-ids
+  [root-id edges]
+  (let [adjacency (group-by :from edges)]
+    (loop [pending (conj clojure.lang.PersistentQueue/EMPTY root-id)
+           discovered #{root-id}]
+      (if (empty? pending)
+        discovered
+        (let [node (peek pending)
+              pending (pop pending)
+              unseen (remove discovered
+                             (map :to (get adjacency node [])))]
+          (recur (into pending unseen) (into discovered unseen)))))))
+
+(defn p15-s23-sh02-reference-closure
+  [stage packet]
+  (let [record (get packet stage)
+        mir (:optimized-mir packet)
+        root-id (:artifact-id record)
+        operations (p15-s23-c11-mir-operation-sequence mir)
+        operand-edges
+        (mapcat
+         (fn [operation]
+           (map-indexed
+            (fn [ordinal operand]
+              {:from (:op-id operation)
+               :role (keyword (str "operand-" ordinal))
+               :to operand})
+            (:operands operation)))
+         operations)
+        cfg-edges
+        (for [[_ function] (:functions mir)
+              [block-id block] (:blocks function)
+              successor (:successors block)]
+          {:from block-id :role :cfg-successor :to successor})
+        block-ids
+        (->> (for [[_ function] (:functions mir)
+                   [block-id _] (:blocks function)]
+               block-id)
+             distinct
+             (sort-by pr-str))
+        root-operation-edges
+        (map (fn [operation]
+               {:from root-id :role :contains-operation
+                :to (:op-id operation)})
+             operations)
+        root-block-edges
+        (map (fn [block-id]
+               {:from root-id :role :contains-block :to block-id})
+             block-ids)
+        edges
+        (->> (concat root-operation-edges root-block-edges
+                     cfg-edges operand-edges)
+             (sort-by #(pr-str [(:from %) (:role %) (:to %)]))
+             vec)
+        node-ids
+        (->> (concat [root-id]
+                     (mapcat (juxt :from :to) edges))
+             distinct
+             (sort-by pr-str)
+             vec)]
+    {:root-id root-id
+     :node-ids node-ids
+     :edges edges
+     :fact-reference-ids
+     (p15-s23-sh02-sha256-ids
+      (select-keys mir
+                   [:type-table :effect-table :ownership-table
+                    :capability-table :safety-table]))
+     :origin-reference-ids
+     (p15-s23-sh02-sha256-ids (:source-map mir))
+     :proof-reference-ids
+     (p15-s23-sh02-sha256-ids
+      {:capability (:capability-proof-table mir)
+       :certificates (:proof-certificate-table mir)})
+     :runtime-check-reference-ids
+     (p15-s23-sh02-sha256-ids (:runtime-check-table mir))
+     :observed-node-count (count node-ids)
+     :observed-edge-count (count edges)
+     :observed-maximum-depth
+     (p15-s23-sh02-reference-depth root-id edges)}))
+
+(defn p15-s23-sh02-authenticated-envelope-descriptor
+  [stage packet workspace-root invocation-root]
+  (let [record (get packet stage)
+        projections (p15-s23-sh02-stage-semantic-projections stage packet)
+        facts (p15-s23-sh02-fact-transitions stage packet)
+        identities (p15-s23-sh02-stage-identity-subjects stage packet)
+        logical-source-path
+        (case stage :c13 p15-s23-c13-source-relative-path
+                    :b1 p15-s23-b1-source-relative-path)
+        actual-source-path
+        (case stage
+          :c13 (get-in record [:actual-path-provenance :c13-source])
+          :b1 (get-in record [:actual-path-provenance :b1-source]))]
+    {:artifact :gravity/private-authenticated-envelope-descriptor
+     :schema-version 1
+     :stage (case stage :c13 :c13-mir-optimization
+                        :b1 :b1-backend-interface)
+     :artifact-kind (:artifact record)
+     :source-revision
+     (p15-s23-sh02-stage-source-revision record logical-source-path)
+     :projection-contract
+     {:contract-kind (case stage :c13 :identity-optimization-pass
+                                 :b1 :backend-input-admission)
+      :contract-version 1 :profile :hosted :target :llvm
+      :required-semantic-projections (mapv :name projections)
+      :required-fact-families (mapv :name facts)
+      :required-identity-subjects (mapv :name identities)}
+     :semantic-projections projections
+     :fact-transitions facts
+     :effect-capability-relation
+     (p15-s23-sh02-effect-capability-relation stage packet)
+     :proof-composite (p15-s23-sh02-proof-composite stage packet)
+     :preservation
+     {:requires (mapv :name facts)
+      :preserves (mapv :name facts)
+      :invalidates [] :regenerates [] :residual-checks []}
+     :identity-subjects identities
+     :lineage (p15-s23-sh02-stage-lineage stage packet)
+     :reference-closure (p15-s23-sh02-reference-closure stage packet)
+     :actual-path-provenance
+     {:source-path actual-source-path
+      :workspace-root workspace-root
+      :invocation-root invocation-root}
+     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+
+(def p15-s23-sh02-builder-result-keys
+  #{:status :artifact-template :digest-requests :digest-graph-root
+    :digest-graph-roots :semantic-envelope-root
+    :provenance-binding-root :identity-checks :diagnostics :authority})
+
+(def p15-s23-sh02-builder-authority
+  {:semantic-owner :gravity-source
+   :host-role :bounded-validation-hashing-and-instantiation
+   :scope :reusable-authenticated-envelope
+   :semantic-root-path-neutral? true
+   :physical-provenance-separate? true
+   :self-hosted? false})
+
+(def p15-s23-sh02-verifier-result-keys
+  #{:status :artifact-template :digest-graph-root :digest-graph-roots
+    :semantic-envelope-root :provenance-binding-root :identity-checks
+    :identity-enforcement :eligible-for-contextual-acceptance?
+    :request-count :semantic-authority :checks :diagnostics})
+
+(def p15-s23-sh02-verifier-checks
+  [:fresh-descriptor-replay
+   :exact-artifact-template-replay
+   :exact-digest-request-replay
+   :path-neutral-semantic-root
+   :separate-physical-provenance-root])
+
+(def p15-s23-sh02-stage-envelope-keys
+  #{:artifact :schema-version :status :stage :sealed-artifact
+    :semantic-envelope-id
+    :provenance-binding-id :identity-checks :request-count
+    :request-graph-id :gravity-template-replay :source-rule
+    :diagnostics :semantic-authority :host-tcb :self-hosted?})
+
+(def p15-s23-sh02-template-replay-summary-keys
+  #{:status :identity-enforcement :eligible-for-contextual-acceptance?
+    :request-count :semantic-authority :checks :diagnostics})
+
+(defn- p15-s23-sh02-fail!
+  [source-path subject missing-fact facts]
+  (p15-s23-b3-llvm-fail!
+   "B1-METADATA" source-path subject
+   (merge {:missing-fact missing-fact
+           :sh02-boundary :authenticated-envelope}
+          facts)))
+
+(defn- p15-s23-sh02-require-bounded-carrier!
+  [source-path carrier value]
+  (let [bounds p15-s23-sh02-authenticated-envelope-bounds
+        validation
+        (p15-s23-trusted-carrier-validation
+         value :default-only
+         (:maximum-carrier-nodes bounds)
+         (:maximum-carrier-depth bounds)
+         (:maximum-digest-requests bounds))]
+    (when-not (= :passed (:status validation))
+      (p15-s23-sh02-fail!
+       source-path {} :trusted-bounded-sh02-carrier
+       (merge {:carrier carrier}
+              (select-keys
+               validation
+               [:reason :observed-nodes :observed-depth
+                :maximum-nodes :maximum-depth :maximum-width]))))
+    validation))
+
+(defn- p15-s23-sh02-validate-builder-carrier!
+  [source-path raw-result]
+  (p15-s23-sh02-require-bounded-carrier!
+   source-path :gravity-builder-result raw-result)
+  ;; Reuse the canonical C6/C10 carrier walker because it gives the request
+  ;; vector its declared 2,048-entry exception while retaining the shared
+  ;; depth, scalar, integer, and per-container width limits everywhere else.
+  (try
+    (p15-s23-c6c10-validate-builder-result-canonical-carrier!
+     source-path raw-result)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError _
+      (p15-s23-sh02-fail!
+       source-path {} :bounded-sh02-builder-host-stack {}))
+    (catch clojure.lang.ExceptionInfo exception
+      (p15-s23-sh02-fail!
+       source-path {} :canonical-sh02-builder-carrier
+       {:bounded-reason (:missing-fact (ex-data exception))})))
+  raw-result)
+
+(defn- p15-s23-sh02-validate-builder-envelope!
+  [source-path raw-result]
+  (p15-s23-sh02-validate-builder-carrier! source-path raw-result)
+  (when-not
+   (and (map? raw-result)
+        (= p15-s23-sh02-builder-result-keys
+           (set (keys raw-result)))
+        (= :accepted (:status raw-result))
+        (map? (:artifact-template raw-result))
+        (vector? (:digest-requests raw-result))
+        (pos? (count (:digest-requests raw-result)))
+        (<= (count (:digest-requests raw-result))
+            (:maximum-digest-requests
+             p15-s23-sh02-authenticated-envelope-bounds))
+        (vector? (:digest-graph-roots raw-result))
+        (= 2 (count (:digest-graph-roots raw-result)))
+        (= (:digest-graph-root raw-result)
+           (:semantic-envelope-root raw-result)
+           (first (:digest-graph-roots raw-result)))
+        (= (:provenance-binding-root raw-result)
+           (second (:digest-graph-roots raw-result)))
+        (vector? (:identity-checks raw-result))
+        (<= (count (:identity-checks raw-result))
+            (:maximum-identity-subjects
+             p15-s23-sh02-authenticated-envelope-bounds))
+        (= [] (:diagnostics raw-result))
+        (= p15-s23-sh02-builder-authority (:authority raw-result)))
+    (p15-s23-sh02-fail!
+     source-path raw-result :exact-sh02-gravity-builder-envelope
+     {:observed-status (:status raw-result)
+      :observed-keys (when (map? raw-result)
+                       (set (keys raw-result)))}))
+  raw-result)
+
+(defn- p15-s23-sh02-path-values
+  [actual-path-provenance]
+  (->> (vals actual-path-provenance)
+       (filter string?)
+       set))
+
+(defn- p15-s23-sh02-semantic-root-path-neutral?
+  [semantic-preimage actual-path-provenance]
+  (let [path-values (p15-s23-sh02-path-values actual-path-provenance)]
+    (and
+     (not-any?
+      (fn [item]
+        (and (map? item) (contains? item :actual-path-provenance)))
+      (p15-s23-sh02-contained-values semantic-preimage))
+     (empty?
+      (set/intersection
+       path-values
+       (->> (p15-s23-sh02-contained-values semantic-preimage)
+            (filter string?)
+            set))))))
+
+(defn- p15-s23-sh02-resolve-builder-result!
+  [source-path descriptor raw-result]
+  (p15-s23-sh02-validate-builder-envelope! source-path raw-result)
+  (let [requests (:digest-requests raw-result)
+        roots (:digest-graph-roots raw-result)
+        request-count (count requests)
+        preimage-identities
+        (mapv
+         (fn [ordinal request]
+           (when-not
+            (and (map? request)
+                 (= p15-s23-c6c10-digest-request-keys
+                    (set (keys request)))
+                 (= ordinal (:key request) (:ordinal request))
+                 (= :sha256 (:algorithm request))
+                 (= :gravity/canonical-edn-v1 (:encoding request))
+                 (vector? (:depends-on request)))
+            (p15-s23-sh02-fail!
+             source-path request :exact-sh02-digest-request-schema
+             {:request-ordinal ordinal}))
+           (let [references
+                 (p15-s23-c6c10-collect-digest-ref-ordinals!
+                  source-path (:preimage request) request-count ordinal)
+                 dependencies (:depends-on request)]
+             (when-not
+              (and (every? #(and (integer? %)
+                                 (<= 0 %)
+                                 (< % ordinal))
+                            dependencies)
+                   (= dependencies
+                      (vec (sort (distinct dependencies))))
+                   (= (set dependencies) (set references)))
+              (p15-s23-sh02-fail!
+               source-path request
+               :prior-only-sh02-digest-request-dependencies
+               {:request-ordinal ordinal
+                :declared-dependencies dependencies
+                :observed-references (vec (sort (set references)))})))
+           (p15-s23-c6c10-canonical-identity
+            source-path (:preimage request)))
+         (range request-count) requests)
+        root-ordinals
+        (mapv
+         #(p15-s23-c6c10-exact-digest-ref-ordinal!
+           source-path % request-count nil)
+         roots)
+        semantic-ordinal (first root-ordinals)
+        provenance-ordinal (second root-ordinals)
+        semantic-request (get requests semantic-ordinal)
+        provenance-request (get requests provenance-ordinal)
+        semantic-preimage (:preimage semantic-request)
+        provenance-preimage (:preimage provenance-request)]
+    (when-not
+     (and (= 2 (count (distinct root-ordinals)))
+          (= semantic-ordinal (- request-count 2))
+          (= provenance-ordinal (dec request-count))
+          (= request-count (count (distinct preimage-identities)))
+          (map? semantic-preimage)
+          (= #{:domain :semantic-envelope}
+             (set (keys semantic-preimage)))
+          (= :gravity/authenticated-envelope-semantic-root-v1
+             (:domain semantic-preimage))
+          (map? provenance-preimage)
+          (= #{:domain :semantic-envelope-id :actual-path-provenance}
+             (set (keys provenance-preimage)))
+          (= :gravity/authenticated-envelope-provenance-binding-v1
+             (:domain provenance-preimage))
+          (= (:semantic-envelope-root raw-result)
+             (:semantic-envelope-id provenance-preimage))
+          (= (:actual-path-provenance descriptor)
+             (:actual-path-provenance provenance-preimage))
+          (p15-s23-sh02-semantic-root-path-neutral?
+           semantic-preimage (:actual-path-provenance descriptor))
+          (= (set (range request-count))
+             (p15-s23-c6c10-request-graph-reachable-ordinals
+              requests root-ordinals)))
+      (p15-s23-sh02-fail!
+       source-path raw-result :rooted-path-separated-sh02-digest-graph
+       {:request-count request-count
+        :root-ordinals root-ordinals}))
+    (loop [ordinal 0
+           resolved-digests []
+           resolved-identities []]
+      (if (= ordinal request-count)
+        (let [resolve-complete
+              (fn [value]
+                (p15-s23-c6c10-resolve-digest-references!
+                 source-path value request-count nil resolved-digests))
+              sealed-artifact
+              (resolve-complete (:artifact-template raw-result))
+              resolved-roots (resolve-complete roots)
+              resolved-checks
+              (resolve-complete (:identity-checks raw-result))
+              residual-references
+              (p15-s23-c6c10-collect-digest-ref-ordinals!
+               source-path
+               {:artifact sealed-artifact
+                :roots resolved-roots
+                :identity-checks resolved-checks}
+               request-count nil)]
+          (when-not
+           (and (empty? residual-references)
+                (= 2 (count resolved-roots))
+                (= (first resolved-roots)
+                   (get sealed-artifact :semantic-envelope-id))
+                (= (second resolved-roots)
+                   (get sealed-artifact :provenance-binding-id))
+                (= (first resolved-roots)
+                   (get resolved-digests semantic-ordinal))
+                (= (second resolved-roots)
+                   (get resolved-digests provenance-ordinal))
+                (every?
+                 (fn [check]
+                   (and (map? check)
+                        (= #{:name :domain :computed-id :observed-id}
+                           (set (keys check)))
+                        (p15-s23-sh02-sha256-id? (:computed-id check))
+                        (= (:computed-id check) (:observed-id check))))
+                 resolved-checks))
+            (p15-s23-sh02-fail!
+             source-path raw-result
+             :resolved-sh02-envelope-and-identity-consistency
+             {:request-count request-count
+              :residual-reference-count (count residual-references)}))
+          {:sealed-artifact sealed-artifact
+           :semantic-envelope-id (first resolved-roots)
+           :provenance-binding-id (second resolved-roots)
+           :identity-checks resolved-checks
+           :resolved-digests resolved-digests
+           :request-count request-count
+           :request-graph-id
+           (p15-s23-c6c10-canonical-digest
+            source-path
+            {:domain :gravity/sh02-resolved-digest-graph-v1
+             :request-count request-count
+             :root-digests resolved-roots
+             :resolved-digests resolved-digests})})
+        (let [request (get requests ordinal)
+              resolved-preimage
+              (p15-s23-c6c10-resolve-digest-references!
+               source-path (:preimage request) request-count ordinal
+               resolved-digests)
+              resolved-identity
+              (p15-s23-c6c10-canonical-identity
+               source-path resolved-preimage)
+              digest
+              (p15-s23-c6c10-canonical-digest
+               source-path resolved-preimage)]
+          (when (or (some #{resolved-identity} resolved-identities)
+                    (some #{digest} resolved-digests))
+            (p15-s23-sh02-fail!
+             source-path request
+             :unique-sh02-resolved-preimages-and-digests
+             {:request-ordinal ordinal :digest digest}))
+          (recur (inc ordinal)
+                 (conj resolved-digests digest)
+                 (conj resolved-identities resolved-identity)))))))
+
+(declare ^:private p15-s23-sh02-source-binding!)
+
+(defn- p15-s23-sh02-source-rule
+  [binding]
+  (assoc
+   (p15-s23-c13-c14-b1-source-rule
+    :gravity.compiler/authenticated-envelope binding
+    'authenticated-envelope-build-template)
+   :artifact :gravity/pinned-authenticated-envelope-source-rule
+   :verifier-function 'authenticated-envelope-verify-template
+   :verifier-semantic-hash (:verifier-semantic-hash binding)))
+
+(defn- p15-s23-sh02-validate-verifier-result!
+  [source-path raw-result verifier-result]
+  (p15-s23-sh02-require-bounded-carrier!
+   source-path :gravity-verifier-result verifier-result)
+  (p15-s23-c11-mir-bounded-value!
+   source-path :sh02-gravity-verifier-result verifier-result
+   (:maximum-carrier-nodes p15-s23-sh02-authenticated-envelope-bounds)
+   (:maximum-carrier-depth p15-s23-sh02-authenticated-envelope-bounds))
+  (when-not
+   (and (map? verifier-result)
+        (= p15-s23-sh02-verifier-result-keys
+           (set (keys verifier-result)))
+        (= :template-replay-passed (:status verifier-result))
+        (= (:artifact-template raw-result)
+           (:artifact-template verifier-result))
+        (= (:digest-graph-root raw-result)
+           (:digest-graph-root verifier-result))
+        (= (:digest-graph-roots raw-result)
+           (:digest-graph-roots verifier-result))
+        (= (:semantic-envelope-root raw-result)
+           (:semantic-envelope-root verifier-result))
+        (= (:provenance-binding-root raw-result)
+           (:provenance-binding-root verifier-result))
+        (= (:identity-checks raw-result)
+           (:identity-checks verifier-result))
+        (= (count (:digest-requests raw-result))
+           (:request-count verifier-result))
+        (= :pending-host-resolution
+           (:identity-enforcement verifier-result))
+        (false? (:eligible-for-contextual-acceptance? verifier-result))
+        (= :gravity-source (:semantic-authority verifier-result))
+        (= p15-s23-sh02-verifier-checks (:checks verifier-result))
+        (= [] (:diagnostics verifier-result)))
+    (p15-s23-sh02-fail!
+     source-path verifier-result :exact-sh02-gravity-verifier-replay
+     {:observed-status (:status verifier-result)
+      :observed-keys (when (map? verifier-result)
+                       (set (keys verifier-result)))}))
+  verifier-result)
+
+(defn- p15-s23-sh02-descriptor-preflight!
+  [source-path descriptor]
+  (let [bounds p15-s23-sh02-authenticated-envelope-bounds
+        closure (:reference-closure descriptor)
+        node-ids (:node-ids closure)
+        edges (:edges closure)
+        reachable
+        (when (and (map? closure) (vector? edges))
+          (p15-s23-sh02-reference-reachable-ids
+           (:root-id closure) edges))
+        logical-path (get-in descriptor
+                             [:source-revision :logical-source-path])]
+    (when-not
+     (and (= bounds (:bounds descriptor))
+          (vector? (:semantic-projections descriptor))
+          (<= (count (:semantic-projections descriptor))
+              (:maximum-semantic-projections bounds))
+          (vector? (:fact-transitions descriptor))
+          (<= (count (:fact-transitions descriptor))
+              (:maximum-fact-transitions bounds))
+          (vector? (:identity-subjects descriptor))
+          (<= (count (:identity-subjects descriptor))
+              (:maximum-identity-subjects bounds))
+          (vector? (:lineage descriptor))
+          (<= (count (:lineage descriptor))
+              (:maximum-lineage-records bounds))
+          (string? logical-path)
+          (<= (count logical-path)
+              (:maximum-logical-source-path-code-units bounds))
+          (map? closure)
+          (vector? node-ids)
+          (vector? edges)
+          (= (count node-ids) (:observed-node-count closure))
+          (= (count edges) (:observed-edge-count closure))
+          (= (count node-ids) (count (distinct node-ids)))
+          (= (count edges) (count (distinct edges)))
+          (= (set node-ids) reachable)
+          (every? (fn [edge]
+                    (and (map? edge)
+                         (= #{:from :role :to} (set (keys edge)))
+                         (contains? reachable (:from edge))
+                         (contains? reachable (:to edge))))
+                  edges)
+          (<= (count node-ids) (:maximum-reference-nodes bounds))
+          (<= (count edges) (:maximum-reference-edges bounds))
+          (integer? (:observed-maximum-depth closure))
+          (<= 0 (:observed-maximum-depth closure)
+              (:maximum-reference-depth bounds))
+          (= (:observed-maximum-depth closure)
+             (p15-s23-sh02-reference-depth (:root-id closure) edges))
+          (not-any? p15-s23-c6c10-digest-ref-shape?
+                    (p15-s23-sh02-contained-values descriptor)))
+      (p15-s23-sh02-fail!
+       source-path descriptor :bounded-sh02-descriptor-subset
+       {:stage (:stage descriptor)
+        :observed-semantic-projections
+        (when (vector? (:semantic-projections descriptor))
+          (count (:semantic-projections descriptor)))
+        :observed-fact-transitions
+        (when (vector? (:fact-transitions descriptor))
+          (count (:fact-transitions descriptor)))
+        :observed-identity-subjects
+        (when (vector? (:identity-subjects descriptor))
+          (count (:identity-subjects descriptor)))
+        :observed-reference-nodes
+        (when (vector? node-ids) (count node-ids))
+        :observed-reference-edges
+        (when (vector? edges) (count edges))
+        :observed-reference-depth (:observed-maximum-depth closure)
+        :maximum-reference-nodes (:maximum-reference-nodes bounds)
+        :maximum-reference-edges (:maximum-reference-edges bounds)
+        :maximum-reference-depth (:maximum-reference-depth bounds)}))
+    descriptor))
+
+(defn- p15-s23-sh02-build-stage-envelope!
+  [candidate stage packet descriptor binding source-path]
+  (p15-s23-sh02-descriptor-preflight! source-path descriptor)
+  (let [raw-result
+        (p15-s23-c13-c14-b1-invoke!
+         candidate source-path binding
+         'authenticated-envelope-build-template
+         [descriptor] "B1-METADATA")
+        resolved
+        (p15-s23-sh02-resolve-builder-result!
+         source-path descriptor raw-result)
+        verifier-result
+        (p15-s23-c13-c14-b1-invoke!
+         candidate source-path binding
+         'authenticated-envelope-verify-template
+         [descriptor (:artifact-template raw-result)
+          (:digest-requests raw-result)]
+         "B1-METADATA")
+        _ (p15-s23-sh02-validate-verifier-result!
+           source-path raw-result verifier-result)
+        stage-envelope
+        {:artifact :gravity/sh02-stage-authenticated-envelope
+         :schema-version 1 :status :accepted
+         :stage stage
+         :sealed-artifact (:sealed-artifact resolved)
+         :semantic-envelope-id (:semantic-envelope-id resolved)
+         :provenance-binding-id (:provenance-binding-id resolved)
+         :identity-checks (:identity-checks resolved)
+         :request-count (:request-count resolved)
+         :request-graph-id (:request-graph-id resolved)
+         :gravity-template-replay
+         (select-keys
+          verifier-result p15-s23-sh02-template-replay-summary-keys)
+         :source-rule (p15-s23-sh02-source-rule binding)
+         :diagnostics []
+         :semantic-authority :gravity-source
+         :host-tcb
+         {:carrier-validation :clojure-stage0
+          :canonical-encoding :clojure-stage0
+          :sha256 :clojure-stage0
+          :digest-graph-resolution :clojure-stage0
+          :template-instantiation :clojure-stage0
+          :fresh-contextual-replay :clojure-stage0}
+         :self-hosted? false}]
+    (when-not
+     (and (= p15-s23-sh02-stage-envelope-keys
+             (set (keys stage-envelope)))
+          (= stage (:stage stage-envelope))
+          (= (:artifact (get packet stage))
+             (get-in stage-envelope [:sealed-artifact :artifact-kind])))
+      (p15-s23-sh02-fail!
+       source-path stage-envelope :exact-sh02-stage-envelope
+       {:stage stage}))
+    stage-envelope))
+
+(def p15-s23-sh02-final-artifact-keys
+  #{:artifact :schema-version :status :packet-id :packet-semantic-id
+    :envelopes :source-rule :actual-path-provenance :diagnostics
+    :semantic-authority :host-tcb :scope :semantic-id :artifact-id
+    :actual-path-binding-id})
+
+(def p15-s23-sh02-final-scope
+  {:reusable-envelope? true
+   :stages [:c13 :b1]
+   :semantic-root-path-neutral? true
+   :physical-provenance-separate? true
+   :whole-compiler? false
+   :public-release? false
+   :self-hosted? false})
+
+(defn p15-s23-sh02-final-semantic-input
+  [artifact]
+  {:artifact :gravity/sh02-reusable-authenticated-envelopes
+   :schema-version 1
+   :packet-id (:packet-id artifact)
+   :packet-semantic-id (:packet-semantic-id artifact)
+   :envelopes
+   (into
+    (sorted-map)
+    (map
+     (fn [[stage envelope]]
+       [stage
+        {:stage (:stage envelope)
+         :artifact-kind (get-in envelope [:sealed-artifact :artifact-kind])
+         :semantic-envelope-id (:semantic-envelope-id envelope)}]))
+    (:envelopes artifact))
+   :source-rule (:source-rule artifact)
+   :semantic-authority (:semantic-authority artifact)
+   :host-tcb (:host-tcb artifact)
+   :scope (:scope artifact)})
+
+(defn- p15-s23-sh02-final-semantic-id
+  [artifact]
+  (p15-s23-c6c10-canonical-digest
+   "<sh02-final-artifact>"
+   {:domain :gravity/sh02-reusable-envelope-set-v1
+    :semantic-input (p15-s23-sh02-final-semantic-input artifact)}))
+
+(defn- p15-s23-sh02-final-artifact-id
+  [semantic-id]
+  (p15-s23-c6c10-canonical-digest
+   "<sh02-final-artifact>"
+   {:domain :gravity/sh02-reusable-envelope-artifact-v1
+    :schema-version 1 :semantic-id semantic-id}))
+
+(defn- p15-s23-sh02-final-actual-path-binding-id
+  [semantic-id actual-path-provenance]
+  (p15-s23-c6c10-canonical-digest
+   "<sh02-final-artifact>"
+   {:domain :gravity/sh02-reusable-envelope-provenance-v1
+    :semantic-id semantic-id
+    :actual-path-provenance actual-path-provenance}))
+
+(defn- p15-s23-sh02-workspace-root
+  [candidate source-path]
+  (let [deps-path
+        (p15-s23-c13-c14-b1-resolve-source-path
+         candidate source-path "deps.edn")]
+    (.getCanonicalPath (.getParentFile (java.io.File. deps-path)))))
+
+(defn- p15-s23-sh02-invocation-root
+  []
+  (.getCanonicalPath (java.io.File. (System/getProperty "user.dir"))))
+
+(defn- p15-s23-sh02-final-record
+  [packet binding source-path workspace-root invocation-root envelopes]
+  (let [actual-path-provenance
+        {:source source-path
+         :workspace-root workspace-root
+         :invocation-root invocation-root
+         :envelope-source (:source-path binding)
+         :c13-source (get-in packet
+                             [:c13 :actual-path-provenance :c13-source])
+         :b1-source (get-in packet
+                            [:b1 :actual-path-provenance :b1-source])}
+        base
+        {:artifact :gravity/sh02-reusable-authenticated-envelopes
+         :schema-version 1 :status :accepted
+         :packet-id (:artifact-id packet)
+         :packet-semantic-id (:semantic-id packet)
+         :envelopes envelopes
+         :source-rule (p15-s23-sh02-source-rule binding)
+         :actual-path-provenance actual-path-provenance
+         :diagnostics []
+         :semantic-authority :gravity-source
+         :host-tcb
+         {:boundary :clojure-stage0
+          :responsibilities
+          [:bound-carriers :authenticate-gravity-source
+           :canonical-encode :sha256 :resolve-request-dag
+           :instantiate-template :fresh-contextual-replay]
+          :release-signature? false
+          :verifier-correctness-proof? false}
+         :scope p15-s23-sh02-final-scope}
+        semantic-id (p15-s23-sh02-final-semantic-id base)]
+    (assoc
+     base
+     :semantic-id semantic-id
+     :artifact-id (p15-s23-sh02-final-artifact-id semantic-id)
+     :actual-path-binding-id
+     (p15-s23-sh02-final-actual-path-binding-id
+      semantic-id actual-path-provenance))))
+
+(defn- p15-s23-sh02-build-verified-packet-internal!
+  [candidate packet context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (p15-s23-c13-c14-b1-require-authority!
+     candidate source-path :construct-sh02-authenticated-envelopes)
+    (let [binding (p15-s23-sh02-source-binding! candidate source-path)
+          workspace-root (p15-s23-sh02-workspace-root candidate source-path)
+          invocation-root (p15-s23-sh02-invocation-root)
+          descriptors
+          (into
+           (sorted-map)
+           (map
+            (fn [stage]
+              [stage
+               (p15-s23-sh02-authenticated-envelope-descriptor
+                stage packet workspace-root invocation-root)]))
+           [:c13 :b1])
+          envelopes
+          (into
+           (sorted-map)
+           (map
+            (fn [stage]
+              [stage
+               (p15-s23-sh02-build-stage-envelope!
+                candidate stage packet (get descriptors stage)
+                binding source-path)]))
+           [:c13 :b1])]
+      (p15-s23-sh02-final-record
+       packet binding source-path workspace-root invocation-root
+       envelopes))))
+
+(defn- p15-s23-sh02-build-internal!
+  [candidate packet checked-core context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (p15-s23-c13-c14-b1-require-authority!
+     candidate source-path :verify-sh02-stage-packet)
+    (let [packet-report
+          (p15-s23-stage2-c13-c14-b1-verification-report
+           packet checked-core context)]
+      (when-not (= :passed (:status packet-report))
+        (p15-s23-sh02-fail!
+         source-path packet :fresh-sh02-stage-packet-replay {}))
+      (p15-s23-sh02-build-verified-packet-internal!
+       candidate packet context))))
 
 (defn p15-s23-c13-evidence-for-target
   [c11-artifact c11-report target]
@@ -134006,6 +135098,260 @@
          packet checked-core context))
      (catch InterruptedException interrupted
        (.interrupt (Thread/currentThread)) (throw interrupted))
+     (catch StackOverflowError _ false)
+     (catch AssertionError _ false)
+     (catch LinkageError _ false)
+     (catch Exception _ false))))
+
+(defn- p15-s23-sh02-final-preflight!
+  [source-path artifact]
+  ;; Establish exact built-in carrier classes before equality, hashing, or
+  ;; contextual source replay. Request vectors receive their explicit 2,048
+  ;; entry exception in the per-stage canonical carrier validation below.
+  (p15-s23-sh02-require-bounded-carrier!
+   source-path :sh02-final-artifact artifact)
+  (p15-s23-c11-mir-bounded-value!
+   source-path :sh02-final-artifact
+   artifact
+   (:maximum-carrier-nodes p15-s23-sh02-authenticated-envelope-bounds)
+   (:maximum-carrier-depth p15-s23-sh02-authenticated-envelope-bounds))
+  (let [envelopes (:envelopes artifact)
+        source-rule (:source-rule artifact)
+        actual-paths (:actual-path-provenance artifact)]
+    (when-not
+     (and (map? artifact)
+          (= p15-s23-sh02-final-artifact-keys
+             (set (keys artifact)))
+          (= :gravity/sh02-reusable-authenticated-envelopes
+             (:artifact artifact))
+          (= 1 (:schema-version artifact))
+          (= :accepted (:status artifact))
+          (= :gravity-source (:semantic-authority artifact))
+          (= [] (:diagnostics artifact))
+          (= p15-s23-sh02-final-scope (:scope artifact))
+          (map? (:host-tcb artifact))
+          (map? source-rule)
+          (= :gravity/pinned-authenticated-envelope-source-rule
+             (:artifact source-rule))
+          (= p15-s23-sh02-expected-source-content-hash
+             (:source-content-hash source-rule))
+          (= p15-s23-sh02-source-byte-count
+             (:source-byte-count source-rule))
+          (= p15-s23-sh02-expected-plan-semantic-hash
+             (:plan-semantic-hash source-rule))
+          (= p15-s23-sh02-expected-functions-semantic-hash
+             (:functions-semantic-hash source-rule))
+          (= p15-s23-sh02-builder-function
+             (:builder-function source-rule))
+          (= p15-s23-sh02-expected-builder-semantic-hash
+             (:builder-semantic-hash source-rule))
+          (= p15-s23-sh02-verifier-function
+             (:verifier-function source-rule))
+          (= p15-s23-sh02-expected-verifier-semantic-hash
+             (:verifier-semantic-hash source-rule))
+          (map? (:function-shapes source-rule))
+          (= p15-s23-sh02-expected-function-count
+             (count (:function-shapes source-rule)))
+          (map? envelopes)
+          (= #{:c13 :b1} (set (keys envelopes)))
+          (map? actual-paths)
+          (= #{:source :workspace-root :invocation-root
+               :envelope-source :c13-source :b1-source}
+             (set (keys actual-paths)))
+          (every? #(and (string? %) (not (empty? %)))
+                  (vals actual-paths))
+          (every? p15-s23-sh02-sha256-id?
+                  ((juxt :packet-id :packet-semantic-id
+                         :semantic-id :artifact-id
+                         :actual-path-binding-id)
+                   artifact)))
+      (p15-s23-sh02-fail!
+       source-path artifact :exact-sh02-final-envelope
+       {:observed-keys (when (map? artifact)
+                         (set (keys artifact)))}))
+    (doseq [stage [:c13 :b1]]
+      (let [envelope (get envelopes stage)
+            replay (:gravity-template-replay envelope)]
+        (when-not
+         (and (map? envelope)
+              (= p15-s23-sh02-stage-envelope-keys
+                 (set (keys envelope)))
+              (= :gravity/sh02-stage-authenticated-envelope
+                 (:artifact envelope))
+              (= 1 (:schema-version envelope))
+              (= :accepted (:status envelope))
+              (= stage (:stage envelope))
+              (map? (:sealed-artifact envelope))
+              (vector? (:identity-checks envelope))
+              (integer? (:request-count envelope))
+              (pos? (:request-count envelope))
+              (= (:request-count envelope)
+                 (:request-count replay))
+              (every? p15-s23-sh02-sha256-id?
+                      ((juxt :semantic-envelope-id
+                             :provenance-binding-id :request-graph-id)
+                       envelope))
+              (= [] (:diagnostics envelope))
+              (= :gravity-source (:semantic-authority envelope))
+              (map? (:host-tcb envelope))
+              (false? (:self-hosted? envelope))
+              (= source-rule (:source-rule envelope))
+              (map? replay)
+              (= p15-s23-sh02-template-replay-summary-keys
+                 (set (keys replay)))
+              (= :template-replay-passed (:status replay))
+              (= :pending-host-resolution
+                 (:identity-enforcement replay))
+              (false? (:eligible-for-contextual-acceptance? replay))
+              (= :gravity-source (:semantic-authority replay))
+              (= p15-s23-sh02-verifier-checks (:checks replay))
+              (= [] (:diagnostics replay)))
+          (p15-s23-sh02-fail!
+           source-path envelope :exact-sh02-stage-envelope-preflight
+           {:stage stage}))
+        ;; The public carrier stores only the resolved semantic envelope and
+        ;; the leaf replay summary. The request graph is reconstructed from
+        ;; current inputs before strict equality, never interpreted from the
+        ;; candidate carrier.
+        ))
+    (let [semantic-id (p15-s23-sh02-final-semantic-id artifact)
+          artifact-id (p15-s23-sh02-final-artifact-id semantic-id)
+          path-binding-id
+          (p15-s23-sh02-final-actual-path-binding-id
+           semantic-id actual-paths)]
+      (when-not
+       (= [semantic-id artifact-id path-binding-id]
+          ((juxt :semantic-id :artifact-id :actual-path-binding-id)
+           artifact))
+        (p15-s23-sh02-fail!
+         source-path artifact :recomputable-sh02-final-identities {})))
+    :passed))
+
+(defn p15-s23-stage2-sh02-authenticated-envelope-artifact
+  [packet checked-core context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (try
+      (p15-s23-sh02-build-internal!
+       p15-s23-c13-c14-b1-authority-token
+       packet checked-core context)
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch StackOverflowError _
+        (p15-s23-sh02-fail!
+         source-path {} :bounded-sh02-constructor-host-stack {}))
+      (catch AssertionError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-constructor-assertion error))
+      (catch LinkageError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-constructor-linkage error))
+      (catch clojure.lang.ExceptionInfo exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-constructor-diagnostic exception))
+      (catch Exception exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-constructor-host-failure exception)))))
+
+(defn p15-s23-stage2-sh02-authenticated-envelope-verification-report
+  [artifact checked-core context]
+  (let [source-path (p15-s23-c11-ingress-source-path context)]
+    (try
+      (p15-s23-sh02-final-preflight! source-path artifact)
+      (let [fresh-c11
+            (p15-s23-stage2-c11-mir-artifact checked-core context)
+            fresh-packet
+            (p15-s23-c13-c14-b1-build-internal!
+             p15-s23-c13-c14-b1-authority-token
+             fresh-c11 checked-core context)
+            expected
+            (p15-s23-sh02-build-verified-packet-internal!
+             p15-s23-c13-c14-b1-authority-token
+             fresh-packet context)]
+        (p15-s23-c11-mir-require-strict-structure!
+         source-path expected artifact
+         :fresh-contextual-sh02-envelope-reconstruction)
+        (when-not (= expected artifact)
+          (p15-s23-sh02-fail!
+           source-path artifact :fresh-context-bound-sh02-envelope {}))
+        (let [base
+              {:artifact :gravity/sh02-contextual-verification-report
+               :schema-version 1 :status :passed
+               :artifact-id (:artifact-id artifact)
+               :semantic-id (:semantic-id artifact)
+               :packet-id (:packet-id artifact)
+               :fresh-c11 :passed
+               :fresh-c13 :passed
+               :fresh-c14 :passed
+               :fresh-b1 :passed
+               :gravity-envelope-template-replay
+               :template-replay-passed
+               :host-digest-resolution :passed
+               :identity-subject-equality :passed
+               :fresh-envelope-reconstruction :passed
+               :stages
+               (into
+                (sorted-map)
+                (map
+                 (fn [[stage envelope]]
+                   [stage
+                    {:semantic-envelope-id
+                     (:semantic-envelope-id envelope)
+                     :provenance-binding-id
+                     (:provenance-binding-id envelope)
+                     :identity-check-count
+                     (count (:identity-checks envelope))
+                     :request-count (:request-count envelope)}]))
+                (:envelopes artifact))
+               :external-tool-execution :not-performed
+               :clojure-seed-boundary? true
+               :self-hosted? false}]
+          (assoc
+           base :report-id
+           (p15-s23-c6c10-canonical-digest
+            source-path
+            {:domain :gravity/sh02-contextual-verification-report-v1
+             :report base}))))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch StackOverflowError _
+        (p15-s23-sh02-fail!
+         source-path {} :bounded-sh02-verifier-host-stack {}))
+      (catch AssertionError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-verifier-assertion error))
+      (catch LinkageError error
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-verifier-linkage error))
+      (catch clojure.lang.ExceptionInfo exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-verifier-diagnostic exception))
+      (catch Exception exception
+        (p15-s23-b3-llvm-contain-exception!
+         source-path :contained-sh02-verifier-host-failure exception)))))
+
+(defn p15-s23-stage2-sh02-authenticated-envelope-verify!
+  [artifact checked-core context]
+  (let [report
+        (p15-s23-stage2-sh02-authenticated-envelope-verification-report
+         artifact checked-core context)]
+    (when-not (= :passed (:status report))
+      (p15-s23-sh02-fail!
+       (p15-s23-c11-ingress-source-path context)
+       artifact :sh02-contextual-verification-status {}))
+    :passed))
+
+(defn p15-s23-stage2-sh02-authenticated-envelope-authentic?
+  ([artifact] false)
+  ([artifact checked-core context]
+   (try
+     (= :passed
+        (p15-s23-stage2-sh02-authenticated-envelope-verify!
+         artifact checked-core context))
+     (catch InterruptedException interrupted
+       (.interrupt (Thread/currentThread))
+       (throw interrupted))
      (catch StackOverflowError _ false)
      (catch AssertionError _ false)
      (catch LinkageError _ false)

@@ -66,7 +66,7 @@
       (is (= :master-coordinator (:integration-owner record)))
       (is (= expected-slice-ids slice-ids))
       (is (= actual-modules declared-modules))
-      (is (= 34 (count module-owners)))
+      (is (= 35 (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator-only integration modules are not assigned to a leaf"
       (doseq [module

@@ -145,7 +145,7 @@ Status meanings:
 | --- | --- | --- | --- | --- |
 | `SH-00` | Stabilize the current authenticated Wasm comparison work and restore a clean baseline | none | complete | The current bounded C11-C14-B1-B4 comparison path is committed, externally executed, adversarially reviewed, and the worktree is clean. |
 | `SH-01` | Establish parallel-safe module and test ownership boundaries | `SH-00` | complete | Central routing, compiler modules, target modules, fixtures, tests, generated evidence, and coverage accounting have explicit single owners; new tests no longer require unrelated edits to the monolithic bootstrap test file. |
-| `SH-02` | Generalize authenticated pass and artifact envelopes | `SH-00` | partial | One reusable contract verifies source revision, semantic inputs, preserved facts, artifact lineage, deterministic identity, graph bounds, and stale or substituted inputs across at least two different compiler stages. |
+| `SH-02` | Generalize authenticated pass and artifact envelopes | `SH-00` | complete | One reusable contract verifies source revision, semantic inputs, preserved facts, artifact lineage, deterministic identity, graph bounds, and stale or substituted inputs across at least two different compiler stages. |
 | `SH-03` | Complete the bootstrap reader and literal policy | `SH-01`, `SH-02` | partial | The Gravity reader, rather than a Clojure reread, handles the complete claimed bootstrap syntax and literal subset with Unicode, newline, delimiter, abbreviation, metadata, extension, and malformed-literal diagnostics. |
 | `SH-04` | Complete syntax objects, hygiene, and origin chains | `SH-03` | partial | Gravity constructs and serializes syntax objects with stable identity, scopes, marks, metadata, source spans, generated origins, and adversarial graph validation. |
 | `SH-05` | Implement the bootstrap macroexpander in Gravity | `SH-04` | queued | Gravity expands the macro subset required by all compiler sources, preserves hygiene and origins, rejects phase/profile/capability violations, and matches accepted stage0 diagnostics. |
@@ -214,15 +214,23 @@ The coordinator should also report the highest continuous completed prefix.
 For example, completion of `SH-18` does not advance the prefix past `SH-07` if
 `SH-08` remains incomplete.
 
-Current reviewed accounting after `SH-01`:
+Current reviewed accounting after `SH-02`:
 
 ```text
-complete slices: 2 / 30
-executable Gravity-owned slices: 1 / 30
-slices with Clojure in their claimed execution boundary: 2 / 30
+complete slices: 3 / 30
+executable Gravity-owned slices: 2 / 30
+slices with Clojure in their claimed execution boundary: 3 / 30
 blocked slices: 4 / 30
-highest continuous completed prefix: SH-00 through SH-01
+highest continuous completed prefix: SH-00 through SH-02
 ```
+
+`SH-02` credit is intentionally bounded to envelopes whose explicit reference
+closure has at most 128 nodes, 128 edges, and shortest-discovery depth 64. The
+Gravity module owns descriptor validation, semantic template construction, and
+fresh template replay for both C13 and B1. Canonical encoding, SHA-256 request
+resolution, identity equality enforcement, source reads, and final contextual
+reconstruction remain in the declared Clojure stage0 boundary; `SH-02` does not
+retire that seed or claim release-signature or verifier-correctness proof.
 
 ## Beyond First Self-Hosting
 

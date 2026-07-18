@@ -71,6 +71,7 @@
   "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity" :sh-incremental
   "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity" :sh-pass-api
   "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity" :sh-verification
+  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity" :sh-envelope
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity" :sh-syntax
   "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
   "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
@@ -82,8 +83,7 @@
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core}
 
- :reserved-leaf-modules
- {"bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity" :sh-envelope}
+ :reserved-leaf-modules {}
 
  :future-path-conventions
  {:fixture-root-template
