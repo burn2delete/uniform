@@ -34168,6 +34168,7 @@
 (deftest authenticated-c13-c14-b1-source-plans-are-pinned-and-bounded
   (let [specs
         [{:owner :c13
+          :emitter-target :llvm
           :path bootstrap/p15-s23-c13-source-relative-path
           :bytes bootstrap/p15-s23-c13-source-byte-count
           :source-hash bootstrap/p15-s23-c13-expected-source-content-hash
@@ -34178,6 +34179,7 @@
           :builder-hash bootstrap/p15-s23-c13-expected-builder-semantic-hash
           :required bootstrap/p15-s23-c13-required-functions}
          {:owner :c14
+          :emitter-target :llvm
           :path bootstrap/p15-s23-c14-source-relative-path
           :bytes bootstrap/p15-s23-c14-source-byte-count
           :source-hash bootstrap/p15-s23-c14-expected-source-content-hash
@@ -34188,6 +34190,7 @@
           :builder-hash bootstrap/p15-s23-c14-expected-builder-semantic-hash
           :required bootstrap/p15-s23-c14-required-functions}
          {:owner :b1
+          :emitter-target :llvm
           :path bootstrap/p15-s23-b1-source-relative-path
           :bytes bootstrap/p15-s23-b1-source-byte-count
           :source-hash bootstrap/p15-s23-b1-expected-source-content-hash
@@ -34195,14 +34198,47 @@
           :functions-hash bootstrap/p15-s23-b1-expected-functions-semantic-hash
           :builder bootstrap/p15-s23-b1-builder-function
           :builder-hash bootstrap/p15-s23-b1-expected-builder-semantic-hash
-          :required bootstrap/p15-s23-b1-required-functions}]]
+          :required bootstrap/p15-s23-b1-required-functions}
+         {:owner :c13-wasm
+          :emitter-target :wasm
+          :path bootstrap/p15-s23-c13-source-relative-path
+          :bytes bootstrap/p15-s23-c13-source-byte-count
+          :source-hash bootstrap/p15-s23-c13-expected-source-content-hash
+          :plan-hash bootstrap/p15-s23-c13-expected-plan-semantic-hash
+          :functions-hash
+          bootstrap/p15-s23-c13-expected-functions-semantic-hash
+          :builder bootstrap/p15-s23-c13-builder-function
+          :builder-hash bootstrap/p15-s23-c13-expected-builder-semantic-hash
+          :required bootstrap/p15-s23-c13-required-functions}
+         {:owner :c14-wasm
+          :emitter-target :wasm
+          :path bootstrap/p15-s23-c14-source-relative-path
+          :bytes bootstrap/p15-s23-c14-source-byte-count
+          :source-hash bootstrap/p15-s23-c14-expected-source-content-hash
+          :plan-hash bootstrap/p15-s23-c14-expected-plan-semantic-hash
+          :functions-hash
+          bootstrap/p15-s23-c14-expected-functions-semantic-hash
+          :builder bootstrap/p15-s23-c14-wasm-builder-function
+          :builder-hash
+          bootstrap/p15-s23-c14-wasm-expected-builder-semantic-hash
+          :required bootstrap/p15-s23-c14-wasm-required-functions}
+         {:owner :b1-wasm
+          :emitter-target :wasm
+          :path bootstrap/p15-s23-b1-source-relative-path
+          :bytes bootstrap/p15-s23-b1-source-byte-count
+          :source-hash bootstrap/p15-s23-b1-expected-source-content-hash
+          :plan-hash bootstrap/p15-s23-b1-expected-plan-semantic-hash
+          :functions-hash bootstrap/p15-s23-b1-expected-functions-semantic-hash
+          :builder bootstrap/p15-s23-b1-wasm-builder-function
+          :builder-hash bootstrap/p15-s23-b1-wasm-expected-builder-semantic-hash
+          :required bootstrap/p15-s23-b1-wasm-required-functions}]]
     (doseq [{:keys [owner path bytes source-hash plan-hash functions-hash
-                    builder builder-hash required]} specs]
+                    builder builder-hash required emitter-target]} specs]
       (let [source (slurp path)
             emitter
             (:emitter
              (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-              path :llvm))
+              path emitter-target))
             plan
             (bootstrap/p15-s23-stage2-compiler-artifact-plan
              emitter path source)
@@ -36624,9 +36660,15 @@
            (bootstrap/p15-s23-b4-wasm-actual-path-binding-id
             semantic-id (:actual-path-provenance with-ids)))))
 
+(defn- authenticated-wasm-repository-source-path [relative]
+  (.toString
+   (.normalize
+    (.resolve (bootstrap/p18-t04-repository-root-path) relative))))
+
 (deftest authenticated-wasm-source-plan-target-and-node-pins-are-exact
-  (let [path (str (java.io.File.
-                   "../gravity/src/gravity/backend/b4_wasm_backend_design.gravity"))
+  (let [path
+        (authenticated-wasm-repository-source-path
+         bootstrap/p15-s23-b4-wasm-source-relative-path)
         source (slurp path)
         rule (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :wasm)
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
@@ -36651,7 +36693,7 @@
          #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
            "effectful-wasm.gravity" effectful :wasm))]
     (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
-    (is (= 52967 (alength (.getBytes
+    (is (= 117920 (alength (.getBytes
                            source java.nio.charset.StandardCharsets/UTF_8))))
     (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source))))
@@ -36664,7 +36706,7 @@
            (bootstrap/p15-s23-c11-mir-digest
             (get functions bootstrap/p15-s23-b4-wasm-builder-function))))
     (is (= bootstrap/p15-s23-b4-wasm-required-functions shapes))
-    (is (= 38 (count functions)))
+    (is (= 61 (count functions)))
     (is (= bootstrap/p15-s23-b4-wasm-node-byte-count
            (alength node-bytes)))
     (is (= bootstrap/p15-s23-b4-wasm-node-content-hash
@@ -36793,6 +36835,28 @@
              [0x04 0x7f 0x04] 0 3 [:i32] #{} #{0x0b} 0))]
       (is (= "B4-MANIFEST" (:id data)))
       (is (= :at-most-one-structured-if (:missing-fact data))))
+    (doseq [[opcode stack]
+            (for [opcode [0x46 0x48 0x4c 0x4a 0x4e]
+                  stack [[] [:i32] [:i32 :not-i32]]]
+              [opcode stack])]
+      (let [data
+            (diagnostic-data
+             #(bootstrap/p15-s23-b4-wasm-parse-instructions!
+               [opcode 0x0b] 0 2 stack #{} #{0x0b} 0))]
+        (is (= "B4-MANIFEST" (:id data)) [opcode stack data])
+        (is (= :i32-comparison-two-stack-operands
+               (:missing-fact data)) [opcode stack data])
+        (is (= opcode (get-in data [:facts :opcode]))
+            [opcode stack data])))
+    (doseq [[opcode ast-op]
+            [[0x46 :i32.eq] [0x48 :i32.lt-s] [0x4c :i32.le-s]
+             [0x4a :i32.gt-s] [0x4e :i32.ge-s]]]
+      (let [parsed
+            (bootstrap/p15-s23-b4-wasm-parse-instructions!
+             [opcode 0x0b] 0 2 [:i32 :i32] #{} #{0x0b} 0)]
+        (is (= 0x0b (:stop parsed)) opcode)
+        (is (= [:i32] (:stack parsed)) opcode)
+        (is (= [ast-op] (mapv :op (:ast parsed))) opcode)))
     (is (= "B4-MANIFEST"
            (:id (diagnostic-data
                  #(bootstrap/p15-s23-b4-wasm-parse-module! padded expected)))))
@@ -37469,12 +37533,15 @@
             (assoc-in [:b14-record :observed-result] 43)
             authenticated-wasm-rehash)
         repeated-id-paths
-        [[:b1-record :contract-binding-id]
-         [:c14-request :contract-binding-id]
-         [:b4-record :contract-binding-id]
+        [[:b4-record :contract-binding-id]
          [:b13-record :contract-binding-id]
          [:b14-record :contract-binding-id]
          [:c18-record :contract-binding-id]]
+        packet-id-paths
+        [[:c13-c14-b1-packet :semantic-id]
+         [:c13-c14-b1-packet :c13 :semantic-id]
+         [:c13-c14-b1-packet :c14 :semantic-id]
+         [:c13-c14-b1-packet :b1 :semantic-id]]
         cheap-cases
         (vec
          (concat
@@ -37527,7 +37594,13 @@
                   :artifact (-> artifact
                                 (assoc-in path zero-hash)
                                 authenticated-wasm-rehash)})
-               repeated-id-paths)))]
+               repeated-id-paths)
+          (map (fn [path]
+                 {:label path :expected "B1-METADATA"
+                  :artifact (-> artifact
+                                (assoc-in path zero-hash)
+                                authenticated-wasm-rehash)})
+               packet-id-paths)))]
     (doseq [{:keys [label expected artifact]} cheap-cases]
       (let [before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
             data
@@ -37665,7 +37738,7 @@
     (is (identical? verification-fatal verification-observed))
     (is (identical? authenticity-fatal authenticity-observed))))
 
-(deftest authenticated-wasm-public-wrapper-preserves-b1-unsupported
+(deftest authenticated-wasm-public-wrapper-preserves-c14-signed-i32-admission
   (let [source (closed-pure-source-with-main
                 "2147483648" {:exports '[main]})
         before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
@@ -37674,9 +37747,926 @@
          #(bootstrap/p15-s23-stage2-b4-wasm-source-artifact!
            "i32-overflow.gravity" source))
         after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
-    (is (= "B1-UNSUPPORTED" (:id data)))
-    (is (= :bounded-pure-i32-mir-operation (:missing-fact data)))
+    (is (= "C14-UNSUPPORTED" (:id data)))
+    (is (= :bounded-scalar-constant-payload (:missing-fact data)))
+    (is (= :c14-target-lowering (:stage data)))
     (is (= before after))))
+
+(def ^:private authenticated-binary-integer-wasm-cases
+  [{:label :eq-true :operator '= :source-operation :integer-eq
+    :left "-2147483648" :right "-2147483648" :expected true
+    :extension ".gravity" :ast-op :i32.eq :opcode-byte 0x46}
+   {:label :eq-false :operator '= :source-operation :integer-eq
+    :left "-2147483648" :right "2147483647" :expected false
+    :extension ".qst" :ast-op :i32.eq :opcode-byte 0x46}
+   {:label :lt-true :operator '< :source-operation :integer-lt
+    :left "-2147483648" :right "2147483647" :expected true
+    :extension ".gravity" :ast-op :i32.lt-s :opcode-byte 0x48}
+   {:label :lt-equal-false :operator '< :source-operation :integer-lt
+    :left "7" :right "7" :expected false
+    :extension ".qst" :ast-op :i32.lt-s :opcode-byte 0x48}
+   {:label :lte-equal-true :operator '<= :source-operation :integer-lte
+    :left "7" :right "7" :expected true
+    :extension ".gravity" :ast-op :i32.le-s :opcode-byte 0x4c}
+   {:label :lte-false :operator '<= :source-operation :integer-lte
+    :left "2147483647" :right "-2147483648" :expected false
+    :extension ".qst" :ast-op :i32.le-s :opcode-byte 0x4c}
+   {:label :gt-true :operator '> :source-operation :integer-gt
+    :left "2147483647" :right "-2147483648" :expected true
+    :extension ".gravity" :ast-op :i32.gt-s :opcode-byte 0x4a}
+   {:label :gt-equal-false :operator '> :source-operation :integer-gt
+    :left "7" :right "7" :expected false
+    :extension ".qst" :ast-op :i32.gt-s :opcode-byte 0x4a}
+   {:label :gte-equal-true :operator '>= :source-operation :integer-gte
+    :left "7" :right "7" :expected true
+    :extension ".gravity" :ast-op :i32.ge-s :opcode-byte 0x4e}
+   {:label :gte-false :operator '>= :source-operation :integer-gte
+    :left "-2147483648" :right "2147483647" :expected false
+    :extension ".qst" :ast-op :i32.ge-s :opcode-byte 0x4e}])
+
+(defn- authenticated-binary-integer-wasm-source
+  [{:keys [operator left right]}]
+  (closed-pure-source-with-main
+   (str "(let [x " left " y " right "] (" operator " x y))")
+   {:exports '[main]}))
+
+(def ^:private authenticated-binary-integer-wasm-nested-source
+  (closed-pure-source-with-main
+   "(if (< -7 3) (>= 11 -7) (= 12 3))"
+   {:exports '[main]}))
+
+(defn- authenticated-binary-integer-wasm-decoded-nodes
+  [artifact]
+  (letfn [(walk [nodes]
+            (vec
+             (mapcat
+              (fn [node]
+                (if (= :if-i32 (:op node))
+                  (concat [node] (walk (:then node)) (walk (:else node)))
+                  [node]))
+              nodes)))]
+    (walk (get-in artifact [:independent-parser :decoded-ast]))))
+
+(defn- authenticated-binary-integer-wasm-build-row
+  [root {:keys [label extension source] :as case}]
+  (let [source (or source (authenticated-binary-integer-wasm-source case))
+        file (.resolve root (str (name label) extension))
+        _ (spit (.toFile file) source)
+        path (.toString
+              (.toRealPath file (make-array java.nio.file.LinkOption 0)))]
+    (binding
+     [bootstrap/*p15-s23-c11-mir-diagnostic-context*
+      {:requested-target :wasm}
+      bootstrap/*additional-bootstrap-targets*
+      bootstrap/stage2-runtime-derived-source-targets]
+      (let [context
+            (bootstrap/p15-s23-stage2-gravity-checked-core-context
+             path source :wasm)
+            checked-core
+            (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+             context)
+            c11
+            (bootstrap/p15-s23-stage2-c11-mir-artifact
+             checked-core context)
+            artifact
+            (bootstrap/p15-s23-stage2-b4-wasm-artifact-from-c11!
+             c11 checked-core context)]
+        (assoc case :source source :path path :context context
+               :checked-core checked-core :c11 c11 :artifact artifact)))))
+
+(def ^:private authenticated-binary-integer-wasm-b4-plan
+  (delay
+    (let [path
+          (authenticated-wasm-repository-source-path
+           bootstrap/p15-s23-b4-wasm-source-relative-path)
+          source (slurp path)]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (:emitter
+        (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :wasm))
+       path source))))
+
+(def ^:private authenticated-binary-integer-wasm-c14-plan
+  (delay
+    (let [path
+          (authenticated-wasm-repository-source-path
+           bootstrap/p15-s23-c14-source-relative-path)
+          source (slurp path)]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (:emitter
+        (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :wasm))
+       path source))))
+
+(def ^:private authenticated-binary-integer-wasm-b1-plan
+  (delay
+    (let [path
+          (authenticated-wasm-repository-source-path
+           bootstrap/p15-s23-b1-source-relative-path)
+          source (slurp path)]
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (:emitter
+        (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :wasm))
+       path source))))
+
+(defn- authenticated-binary-integer-wasm-execute-source-function
+  [plan engine function arguments]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine engine :compiler-artifact-plan? true}
+   plan function arguments))
+
+(def ^:private authenticated-binary-integer-wasm-live-proof
+  (delay
+    (with-temp-directory
+      "gravity-authenticated-integer-wasm-left-"
+      (fn [left-root]
+        (with-temp-directory
+          "gravity-authenticated-integer-wasm-right-"
+          (fn [right-root]
+            (let [before
+                  (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+                  rows
+                  (mapv #(authenticated-binary-integer-wasm-build-row
+                          left-root %)
+                        authenticated-binary-integer-wasm-cases)
+                  mirror
+                  (authenticated-binary-integer-wasm-build-row
+                   right-root
+                   (assoc (first authenticated-binary-integer-wasm-cases)
+                          :label :eq-true-mirror :extension ".qst"))
+                  nested
+                  (authenticated-binary-integer-wasm-build-row
+                   left-root
+                   {:label :nested-diamond :extension ".gravity"
+                    :source authenticated-binary-integer-wasm-nested-source
+                    :expected true})
+                  after
+                  (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+              {:rows rows :mirror mirror :nested nested
+               :before before :after after})))))))
+
+(deftest authenticated-binary-integer-comparisons-reach-gravity-b4-wasm
+  (let [{:keys [rows mirror]} @authenticated-binary-integer-wasm-live-proof
+        ast-ops
+        {:integer-eq :i32.eq :integer-lt :i32.lt-s
+         :integer-lte :i32.le-s :integer-gt :i32.gt-s
+         :integer-gte :i32.ge-s}]
+    (is (= 10 (count rows)))
+    (doseq [{:keys [label source-operation expected ast-op opcode-byte
+                    extension artifact c11]} rows]
+      (let [packet (:c13-c14-b1-packet artifact)
+            b1 (:b1 packet)
+            mir (get-in b1 [:bounded-lowering-payload :mir])
+            operations (bootstrap/p15-s23-c11-mir-operation-sequence mir)
+            comparison
+            (first (filter #(= source-operation (:opcode %)) operations))
+            decoded
+            (first
+             (filter #(= ast-op (:op %))
+                     (authenticated-binary-integer-wasm-decoded-nodes
+                      artifact)))
+            byte-record
+            (first
+             (filter #(= source-operation (:opcode %))
+                     (get-in artifact
+                             [:independent-parser :operation-byte-map])))
+            numeric-expected (if expected 1 0)
+            lowering-with-bytes
+            (assoc (:lowering artifact) :wasm-bytes
+                   (get-in artifact [:raw-wasm :bytes]))
+            reconstruction (:independent-reconstruction artifact)]
+        (is (= :gravity/p15-s23-c13-c14-b1-wasm-authenticated-packet
+               (:kind packet)) label)
+        (is (= :accepted-for-bounded-wasm (:status packet)) label)
+        (is (= :accepted (get-in packet [:c14 :status])) label)
+        (is (= :accepted-for-bounded-wasm (:status b1)) label)
+        (is (= :gravity.backend/wasm
+               (get-in b1 [:backend-manifest :backend])) label)
+        (is (= [source-operation source-operation :gravity/bool 2
+                :not-applicable]
+               ((juxt :opcode :source-operation :type
+                      #(count (:operands %)) :constant-payload)
+                comparison)) label)
+        (is (= (get ast-ops source-operation) ast-op) label)
+        (is (= ast-op (:op decoded)) label)
+        (is (= opcode-byte
+               ({:i32.eq 0x46 :i32.lt-s 0x48 :i32.le-s 0x4c
+                 :i32.gt-s 0x4a :i32.ge-s 0x4e}
+                (:op decoded))) label)
+        (is (<= (:byte-start byte-record) (:offset decoded)
+                (dec (:end decoded)) (dec (:byte-end byte-record))) label)
+        (is (= numeric-expected
+               (:expected-result reconstruction)
+               (get-in artifact [:independent-parser :decoded-result])
+               (get-in artifact [:node-conformance :observed-result])) label)
+        (is (= lowering-with-bytes
+               (bootstrap/p15-s23-b4-wasm-expected-gravity-lowering
+                mir reconstruction)) label)
+        (is (= (:artifact-id c11) (get-in packet [:c11 :artifact-id])) label)
+        (is (contains? #{".gravity" ".qst"} extension) label)
+        (is (= packet (:c13-c14-b1-packet artifact)) label)
+        (is (not (contains? artifact :b1-record)) label)
+        (is (not (contains? artifact :c14-request)) label)))
+    (doseq [[source-operation grouped] (group-by :source-operation rows)]
+      (is (= #{true false} (set (map :expected grouped))) source-operation)
+      (is (= #{".gravity" ".qst"} (set (map :extension grouped)))
+          source-operation))
+    (let [left (first rows)
+          right mirror
+          left-artifact (:artifact left)
+          right-artifact (:artifact right)
+          left-packet (:c13-c14-b1-packet left-artifact)
+          right-packet (:c13-c14-b1-packet right-artifact)]
+      (is (= (:source left) (:source right)))
+      (is (= (get-in left [:checked-core :artifact-id])
+             (get-in right [:checked-core :artifact-id])))
+      (is (= (get-in left [:c11 :mir-id]) (get-in right [:c11 :mir-id])))
+      (doseq [path [[] [:c13] [:c14] [:b1]]]
+        (is (= (get-in left-packet (conj path :semantic-id))
+               (get-in right-packet (conj path :semantic-id))) path)
+        (is (= (get-in left-packet (conj path :artifact-id))
+               (get-in right-packet (conj path :artifact-id))) path))
+      (is (= (:semantic-id left-artifact) (:semantic-id right-artifact)))
+      (is (= (:artifact-id left-artifact) (:artifact-id right-artifact)))
+      (is (= (:raw-wasm left-artifact) (:raw-wasm right-artifact)))
+      (is (= (:independent-parser left-artifact)
+             (:independent-parser right-artifact)))
+      (is (= (:contract-bindings left-artifact)
+             (:contract-bindings right-artifact)))
+      (is (not= (:actual-path-binding-id left-packet)
+                (:actual-path-binding-id right-packet)))
+      (is (not= (:actual-path-binding-id left-artifact)
+                (:actual-path-binding-id right-artifact)))
+      (is (= (:path left)
+             (get-in left-packet [:actual-path-provenance :source])
+             (get-in left-artifact [:actual-path-provenance :source])))
+      (is (= (:path right)
+             (get-in right-packet [:actual-path-provenance :source])
+             (get-in right-artifact [:actual-path-provenance :source]))))))
+
+(deftest authenticated-binary-integer-comparisons-run-real-wasm
+  (let [{:keys [rows mirror nested before after]}
+        @authenticated-binary-integer-wasm-live-proof
+        all-runs (conj rows mirror nested)
+        nested-artifact (:artifact nested)
+        nested-ops
+        (mapv :op
+              (authenticated-binary-integer-wasm-decoded-nodes
+               nested-artifact))]
+    (is (= (count all-runs) (- (:starts after) (:starts before))))
+    (doseq [{:keys [label expected artifact]} all-runs]
+      (let [numeric-expected (if expected 1 0)]
+        (is (= numeric-expected
+               (get-in artifact [:independent-reconstruction
+                                 :expected-result])
+               (get-in artifact [:independent-parser :decoded-result])
+               (get-in artifact [:node-conformance :expected-result])
+               (get-in artifact [:node-conformance :observed-result])
+               (get-in artifact [:node-conformance :repeat-result])) label)
+        (is (= 1 (get-in artifact
+                         [:node-conformance :invocation-local-start-count]))
+            label)
+        (is (= :passed (get-in artifact [:node-conformance :validate])) label)
+        (is (= :passed (get-in artifact [:node-conformance :compile])) label)
+        (is (= :passed (get-in artifact [:node-conformance :instantiate]))
+            label)
+        (is (= [] (get-in artifact [:node-conformance :imports])) label)))
+    (is (= 1 (get-in nested-artifact
+                     [:node-conformance :observed-result])))
+    (is (some #{:if-i32} nested-ops))
+    (is (some #{:i32.lt-s} nested-ops))
+    (is (some #{:i32.ge-s} nested-ops))
+    (is (some #{:i32.eq} nested-ops))
+    (is (= #{:integer-lt :integer-gte :integer-eq}
+           (set
+            (filter #{:integer-lt :integer-gte :integer-eq}
+                    (map :opcode
+                         (get-in nested-artifact
+                                 [:independent-parser
+                                  :operation-byte-map]))))))
+    (doseq [key [:whole-b4? :public? :release? :component-model?
+                 :wit? :wasi? :memory? :self-hosted?
+                 :compile-to-any-target?]]
+      (is (false? (get-in nested-artifact [:scope key])) key))))
+
+(defn- authenticated-binary-integer-wasm-replace-operation
+  [operations operation-id transform]
+  (mapv (fn [operation]
+          (if (= operation-id (:op-id operation))
+            (transform operation)
+            operation))
+        operations))
+
+(declare authenticated-binary-integer-wasm-c14-base)
+
+(deftest authenticated-binary-integer-comparisons-fail-closed-at-b4
+  (let [{:keys [packet]} @authenticated-binary-integer-wasm-c14-base
+        b1 (:b1 packet)
+        mir (get-in b1 [:bounded-lowering-payload :mir])
+        operations (bootstrap/p15-s23-c11-mir-operation-sequence mir)
+        comparison
+        (first (filter #(= :integer-eq (:opcode %)) operations))
+        comparison-id (:op-id comparison)
+        [left-id right-id] (:operands comparison)
+        future-id (:op-id (last operations))
+        operation-index
+        (into {} (map-indexed (fn [index operation]
+                               [(:op-id operation) index])
+                             operations))
+        block-order
+        (bootstrap/p15-s23-b3-llvm-block-order
+         mir (get-in mir [:functions 'main]))
+        block-labels (bootstrap/p15-s23-b3-llvm-block-labels block-order)
+        replace-comparison
+        (fn [candidate]
+          (authenticated-binary-integer-wasm-replace-operation
+           operations comparison-id (constantly candidate)))
+        cases
+        [{:label :source
+          :operations
+          (replace-comparison
+           (assoc comparison :source-operation :integer-gte))
+          :reason :source-operation-opcode-parity}
+         {:label :payload
+          :operations
+          (replace-comparison
+           (assoc comparison :constant-payload
+                  {:present? true :value 1}))
+          :reason :nonconstant-payload-must-be-not-applicable}
+         {:label :arity
+          :operations
+          (replace-comparison (assoc comparison :operands [left-id]))
+          :reason :integer-comparison-requires-two-operands}
+         {:label :undefined
+          :operations
+          (replace-comparison
+           (assoc comparison :operands ["missing-value" right-id]))
+          :reason :integer-comparison-left-definition}
+         {:label :self
+          :operations
+          (replace-comparison
+           (assoc comparison :operands [comparison-id right-id]))
+          :reason :integer-comparison-prior-definition-or-dominance}
+         {:label :future
+          :operations
+          (replace-comparison
+           (assoc comparison :operands [future-id right-id]))
+          :reason :integer-comparison-prior-definition-or-dominance}
+         {:label :left-type
+          :operations
+          (authenticated-binary-integer-wasm-replace-operation
+           operations left-id #(assoc % :type :gravity/bool))
+          :reason :integer-comparison-left-operand-type}
+         {:label :right-type
+          :operations
+          (authenticated-binary-integer-wasm-replace-operation
+           operations right-id #(assoc % :type :gravity/bool))
+          :reason :integer-comparison-right-operand-type}
+         {:label :result-type
+          :operations
+          (replace-comparison (assoc comparison :type :gravity/integer))
+          :reason :integer-comparison-result-type}
+         {:label :opaque-block
+          :operations
+          (replace-comparison (assoc comparison :block-id "opaque-block"))
+          :reason :integer-comparison-prior-definition-or-dominance}
+         {:label :sibling-branch
+          :operations
+          (-> operations
+              (authenticated-binary-integer-wasm-replace-operation
+               left-id #(assoc % :block-id "synthetic-then"))
+              (authenticated-binary-integer-wasm-replace-operation
+               comparison-id #(assoc % :block-id "synthetic-else")))
+          :block-labels
+          (assoc block-labels
+                 "synthetic-then" "then"
+                 "synthetic-else" "else")
+          :reason :integer-comparison-prior-definition-or-dominance}]
+        before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+        observations
+        (mapv
+         (fn [{:keys [operations reason] :as case}]
+           (let [candidate
+                 (first (filter #(= comparison-id (:op-id %)) operations))
+                 labels (or (:block-labels case) block-labels)]
+             (assoc
+              case
+              :gravity
+              (authenticated-binary-integer-wasm-execute-source-function
+               @authenticated-binary-integer-wasm-b4-plan
+               :authenticated-integer-wasm-hostile-operation
+               'b4-operation-reason
+               [candidate operations operation-index labels])
+              :host
+              (bootstrap/p15-s23-c14-wasm-host-operation-rejection
+               operations candidate labels))))
+         cases)
+        source-mismatch
+        (assoc comparison :source-operation :integer-gte)
+        hostile-mir
+        (c11-update-operation mir comparison-id (constantly source-mismatch))
+        hostile-b1
+        (assoc-in b1 [:bounded-lowering-payload :mir] hostile-mir)
+        full-gravity
+        (authenticated-binary-integer-wasm-execute-source-function
+         @authenticated-binary-integer-wasm-b4-plan
+         :authenticated-integer-wasm-hostile-builder
+         'b4-build-bounded-wasm32-core [hostile-b1])
+        cfg-b1
+        (assoc-in b1
+                  [:bounded-lowering-payload :mir
+                   :control-flow-graph :dominance]
+                  {})
+        cfg-gravity
+        (authenticated-binary-integer-wasm-execute-source-function
+         @authenticated-binary-integer-wasm-b4-plan
+         :authenticated-integer-wasm-hostile-cfg
+         'b4-build-bounded-wasm32-core [cfg-b1])
+        substituted-id
+        "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        scalar-carrier-cases
+        (mapv
+         (fn [[label path]]
+           {:label label :candidate (assoc-in b1 path :not-a-map)
+            :valid? false})
+         [[:scalar-source-rule [:source-rule]]
+          [:scalar-provenance [:actual-path-provenance]]
+          [:scalar-input [:input]]
+          [:scalar-payload [:bounded-lowering-payload]]
+          [:scalar-optimization [:input :optimization-report]]
+          [:scalar-fact-bindings
+           [:bounded-lowering-payload :fact-bindings]]
+          [:scalar-contract-bindings [:contract-bindings]]
+          [:scalar-manifest [:backend-manifest]]
+          [:scalar-c14-eligibility [:c14-eligibility]]
+          [:scalar-eligibility [:eligibility]]
+          [:scalar-unsupported [:unsupported-feature-report]]
+          [:scalar-dependencies [:dependencies]]])
+        envelope-cases
+        (into
+         [{:label :genuine :candidate b1 :valid? true}
+         {:label :incomplete-packet
+          :candidate
+          {:artifact :gravity/b1-verified-backend-input-packet
+           :status :accepted-for-bounded-wasm
+           :backend-manifest {:backend :gravity.backend/wasm}
+           :bounded-lowering-payload {:mir mir}}
+          :valid? false}
+         {:label :missing-contract-bindings
+          :candidate (dissoc b1 :contract-bindings)
+          :valid? false}
+         {:label :substituted-c13-link
+          :candidate
+          (assoc-in b1 [:bounded-lowering-payload :c13-artifact-id]
+                    substituted-id)
+          :valid? false}
+         {:label :mismatched-source-owner
+          :candidate
+          (assoc-in b1 [:source-rule :owner] :gravity.backend/mismatch)
+          :valid? false}
+         {:label :substituted-source-hash
+          :candidate
+          (assoc-in b1 [:source-rule :source-content-hash] substituted-id)
+          :valid? false}
+         {:label :substituted-profile-binding
+         :candidate
+          (assoc-in b1 [:contract-bindings :profile :content-id] substituted-id)
+          :valid? false}]
+         scalar-carrier-cases)
+        envelope-observations
+        (mapv
+         (fn [{:keys [label candidate] :as case}]
+           (assoc
+            case
+            :predicate
+            (authenticated-binary-integer-wasm-execute-source-function
+             @authenticated-binary-integer-wasm-b4-plan
+             (keyword "authenticated-integer-wasm-b1-envelope"
+                      (name label))
+             'b4-b1-packet-valid? [candidate])
+            :result
+            (authenticated-binary-integer-wasm-execute-source-function
+             @authenticated-binary-integer-wasm-b4-plan
+             (keyword "authenticated-integer-wasm-b1-builder"
+                      (name label))
+             'b4-build-bounded-wasm32-core [candidate])))
+         envelope-cases)
+        after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+    (is (= before after))
+    (is (< (get operation-index left-id)
+           (get operation-index comparison-id)))
+    (doseq [{:keys [label reason gravity host]} observations]
+      (is (= reason gravity) [label :gravity gravity])
+      (is (= reason host) [label :host host]))
+    (is (= [:rejected "B1-UNSUPPORTED"
+            :source-operation-opcode-parity comparison-id]
+           ((juxt :status :diagnostic :missing-fact :operation-id)
+            full-gravity)))
+    (is (= [:rejected "B1-UNSUPPORTED" :linear-cfg-envelope]
+           ((juxt :status :diagnostic :missing-fact) cfg-gravity)))
+    (is (not (contains? full-gravity :wasm-bytes)))
+    (is (not (contains? cfg-gravity :wasm-bytes)))
+    (doseq [{:keys [label valid? predicate result]} envelope-observations]
+      (is (= valid? predicate) [label predicate])
+      (if valid?
+        (do
+          (is (= :constructed-unverified (:status result)) [label result])
+          (is (seq (:wasm-bytes result)) [label result]))
+        (do
+          (is (= [:rejected "B1-INPUT"
+                  :verified-bounded-wasm-b1-packet]
+                 ((juxt :status :diagnostic :missing-fact) result))
+              [label result])
+          (is (not (contains? result :wasm-bytes)) [label result]))))))
+
+(def ^:private authenticated-binary-integer-wasm-c14-base
+  (delay
+    (let [case (first authenticated-binary-integer-wasm-cases)
+          source (authenticated-binary-integer-wasm-source case)]
+      (with-temp-source
+        ".gravity" source
+        (fn [path]
+          (binding
+           [bootstrap/*p15-s23-c11-mir-diagnostic-context*
+            {:requested-target :wasm}
+            bootstrap/*additional-bootstrap-targets*
+            bootstrap/stage2-runtime-derived-source-targets]
+            (let [context
+                  (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                   path source :wasm)
+                  checked-core
+                  (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                   context)
+                  c11
+                  (bootstrap/p15-s23-stage2-c11-mir-artifact
+                   checked-core context)
+                  packet
+                  (bootstrap/p15-s23-stage2-c13-c14-b1-wasm-packet-from-c11!
+                   c11 checked-core context)
+                  c11-report
+                  (bootstrap/p15-s23-stage2-c11-mir-verification-report
+                   c11 checked-core context)]
+              {:source source :path path :context context
+               :checked-core checked-core :c11 c11
+               :c11-report c11-report :packet packet})))))))
+
+(deftest authenticated-wasm-stage-contracts-reject-mismatched-inputs
+  (let [{:keys [checked-core c11 c11-report packet]}
+        @authenticated-binary-integer-wasm-c14-base
+        c13 (:c13 packet)
+        c14 (:c14 packet)
+        b1 (:b1 packet)
+        b1-entry
+        (get-in b1
+                [:bounded-lowering-payload :mir :functions 'main :entry])
+        policy
+        (bootstrap/p15-s23-c14-wasm-policy
+         c11 checked-core c11-report c13 (:source-rule c13))
+        substituted-id
+        "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        c14-cases
+        [[:genuine policy true]
+         [:proof
+          (assoc-in policy [:proofs :capability :content-id] substituted-id)
+          false]
+         [:fact
+          (assoc-in policy [:fact-bindings :type :content-id] substituted-id)
+          false]
+         [:effect-fact
+          (assoc-in policy [:fact-bindings :effect :content-id]
+                    substituted-id)
+          false]
+         [:runtime-fact
+          (assoc-in policy [:fact-bindings :runtime-checks :content-id]
+                    substituted-id)
+          false]
+         [:dependency
+          (assoc-in policy [:dependencies :backend-contract]
+                    :gravity.backend/mismatch)
+          false]
+         [:source-map (assoc-in policy [:source-map :id] substituted-id)
+          false]
+         [:verifier (assoc policy :c11-verifier-id substituted-id) false]]
+        b1-cases
+        [[:genuine c14 true]
+         [:proof
+          (assoc-in c14 [:request :proofs :capability :content-id]
+                    substituted-id)
+          false]
+         [:fact
+          (assoc-in c14
+                    [:bounded-lowering-payload :fact-bindings
+                     :type :content-id]
+                    substituted-id)
+          false]
+         [:runtime-fact
+          (assoc-in c14
+                    [:bounded-lowering-payload :fact-bindings
+                     :runtime-checks :content-id]
+                    substituted-id)
+          false]
+         [:dependency
+          (assoc-in c14
+                    [:request :dependency-provenance :backend-contract]
+                    :gravity.backend/mismatch)
+          false]
+         [:source-rule
+          (assoc-in c14 [:source-rule :source-content-hash] substituted-id)
+          false]
+         [:verifier
+          (assoc-in c14 [:request :input :verifier-report-id]
+                    substituted-id)
+          false]]
+        b4-cases
+        [[:genuine b1 true]
+         [:proof
+          (assoc-in b1 [:proofs :capability :content-id] substituted-id)
+          false]
+         [:fact
+          (assoc-in b1
+                    [:bounded-lowering-payload :fact-bindings
+                     :type :content-id]
+                    substituted-id)
+          false]
+         [:runtime-fact
+          (assoc-in b1
+                    [:bounded-lowering-payload :fact-bindings
+                     :runtime-checks :content-id]
+                    substituted-id)
+          false]
+         [:operation-order
+          (assoc-in b1 [:bounded-lowering-payload :operation-order] [])
+          false]
+         [:mir-preflight
+          (assoc-in b1
+                    [:bounded-lowering-payload :mir :b1-preflight :status]
+                    :mismatch)
+          false]
+         [:mir-schema
+          (assoc-in b1 [:bounded-lowering-payload :mir :schema-version] 2)
+          false]
+         [:verifier-status
+          (assoc-in b1 [:input :verifier-report :status] :failed)
+          false]
+         [:verifier-replay
+          (assoc-in b1
+                    [:input :verifier-report :semantic-replay-parity]
+                    :failed)
+          false]
+         [:verifier-tcb
+          (assoc-in b1 [:input :verifier-report :execution-tcb]
+                    :mismatch)
+          false]
+         [:scalar-blocks
+          (assoc-in b1
+                    [:bounded-lowering-payload :mir :functions 'main :blocks]
+                    7)
+          false]
+         [:scalar-instructions
+          (assoc-in b1
+                    [:bounded-lowering-payload :mir :functions 'main :blocks
+                     b1-entry :instructions]
+                    7)
+          false]
+         [:scalar-type-table
+          (assoc-in b1 [:bounded-lowering-payload :mir :type-table] 7)
+          false]
+         [:scalar-capability-proof-table
+          (assoc-in b1
+                    [:bounded-lowering-payload :mir
+                     :capability-proof-table]
+                    7)
+          false]
+         [:effect-binding-count
+          (assoc-in b1 [:contract-bindings :effects :entry-count] 999)
+          false]
+         [:capability-binding-count
+          (assoc-in b1 [:contract-bindings :capabilities :entry-count] 999)
+          false]
+         [:dependency-binding-count
+          (assoc-in b1 [:contract-bindings :dependencies :entry-count] 999)
+          false]
+         [:verifier-binding-count
+          (assoc-in b1 [:contract-bindings :c11-verifier :entry-count] 999)
+          false]
+         [:optimization-binding-count
+          (assoc-in b1
+                    [:contract-bindings :c13-optimization :entry-count]
+                    999)
+          false]
+         [:c11-function-shapes
+          (assoc-in b1 [:dependencies :c11-source-rule :function-shapes] {})
+          false]
+         [:c13-function-shapes
+          (assoc-in b1 [:dependencies :c13-source-rule :function-shapes] {})
+          false]
+         [:c14-explainability
+          (assoc-in b1
+                    [:c14-eligibility :explainability-record :decision]
+                    :mismatch)
+          false]
+         [:c14-checks (assoc-in b1 [:c14-eligibility :checks] []) false]
+         [:b1-checks (assoc-in b1 [:eligibility :checks] []) false]
+         [:unsupported-policy
+          (assoc-in b1 [:unsupported-feature-report :policy] [])
+          false]
+         [:dependency
+          (assoc-in b1 [:dependencies :backend-contract]
+                    :gravity.backend/mismatch)
+          false]
+         [:source-rule
+          (assoc-in b1 [:source-rule :source-content-hash] substituted-id)
+          false]
+         [:verifier
+          (assoc-in b1 [:input :verifier-report-id] substituted-id)
+          false]]
+        execute
+        (fn [plan engine function arguments]
+          (authenticated-binary-integer-wasm-execute-source-function
+           plan engine function arguments))
+        before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+        c14-observations
+        (mapv
+         (fn [[label candidate expected]]
+           [label expected
+            (execute @authenticated-binary-integer-wasm-c14-plan
+                     :authenticated-wasm-c14-input-consistency
+                     'c14-wasm-policy-valid? [c13 candidate])])
+         c14-cases)
+        b1-observations
+        (mapv
+         (fn [[label candidate expected]]
+           [label expected
+            (execute @authenticated-binary-integer-wasm-b1-plan
+                     :authenticated-wasm-b1-input-consistency
+                     'b1-bounded-c14-wasm-input-valid? [candidate])])
+         b1-cases)
+        b4-observations
+        (mapv
+         (fn [[label candidate expected]]
+           [label expected
+            (execute @authenticated-binary-integer-wasm-b4-plan
+                     :authenticated-wasm-b4-input-consistency
+                     'b4-b1-packet-valid? [candidate])])
+         b4-cases)
+        after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+    (is (= before after))
+    (doseq [[stage observations]
+            [[:c14 c14-observations]
+             [:b1 b1-observations]
+             [:b4 b4-observations]]]
+      (doseq [[label expected observed] observations]
+        (is (= expected observed) [stage label observed])))))
+
+(deftest authenticated-binary-integer-wasm-c14-owns-signed-i32-admission
+  (let [{:keys [checked-core c11 c11-report packet]}
+        @authenticated-binary-integer-wasm-c14-base
+        valid-c13 (:c13 packet)
+        valid-policy
+        (bootstrap/p15-s23-c14-wasm-policy
+         c11 checked-core c11-report valid-c13 (:source-rule valid-c13))
+        execute
+        (fn [function arguments]
+          (authenticated-binary-integer-wasm-execute-source-function
+           @authenticated-binary-integer-wasm-c14-plan
+           :authenticated-integer-wasm-c14-admission
+           function arguments))
+        valid-surface
+        (execute 'c14-wasm-bounded-mir-surface-valid?
+                 [valid-c13 valid-policy])
+        valid-mir (:optimized-mir valid-c13)
+        constants
+        (filterv #(and (= :constant (:opcode %))
+                       (= :gravity/integer (:type %)))
+                 (bootstrap/p15-s23-c11-mir-operation-sequence valid-mir))
+        constant (first constants)
+        comparison
+        (first
+         (filter #(contains? #{:integer-eq :integer-lt :integer-lte
+                               :integer-gt :integer-gte}
+                             (:opcode %))
+                 (bootstrap/p15-s23-c11-mir-operation-sequence valid-mir)))
+        payload-mir
+        (c11-update-operation
+         valid-mir (:op-id comparison)
+         #(assoc % :constant-payload {:present? true :value 1}))
+        payload-c13 (assoc valid-c13 :optimized-mir payload-mir)
+        payload-policy
+        (bootstrap/p15-s23-c14-wasm-policy
+         c11 checked-core c11-report payload-c13 (:source-rule payload-c13))
+        payload-surface
+        (execute 'c14-wasm-bounded-mir-surface-valid?
+                 [payload-c13 payload-policy])
+        payload-record
+        (execute 'c14-build-bounded-wasm-lowering-record
+                 [payload-c13 payload-policy])
+        mutate
+        (fn [value]
+          (let [mutated-mir
+                (c11-update-operation
+                 valid-mir (:op-id constant)
+                 #(assoc-in % [:constant-payload :value] (bigint value)))
+                mutated-c13 (assoc valid-c13 :optimized-mir mutated-mir)
+                policy
+                (bootstrap/p15-s23-c14-wasm-policy
+                 c11 checked-core c11-report mutated-c13
+                 (:source-rule mutated-c13))]
+            {:value value :operation-id (:op-id constant)
+             :surface
+             (execute 'c14-wasm-bounded-mir-surface-valid?
+                      [mutated-c13 policy])
+             :record
+             (execute 'c14-build-bounded-wasm-lowering-record
+                      [mutated-c13 policy])}))
+        endpoints (mapv mutate ["-2147483648" "2147483647"])
+        outside (mapv mutate ["-2147483649" "2147483648"])
+        public-cases
+        (for [[label value]
+              [[:below "-2147483649"] [:above "2147483648"]]
+              extension [".gravity" ".qst"]]
+          {:label label :value value :extension extension})
+        before (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)
+        public
+        (mapv
+         (fn [{:keys [label value extension] :as case}]
+           (let [source
+                 (closed-pure-source-with-main value {:exports '[main]})
+                 path (str "wasm-c14-" (name label) extension)
+                 data
+                 (binding
+                  [bootstrap/*p15-s23-c11-mir-diagnostic-context*
+                   {:requested-target :wasm}
+                   bootstrap/*additional-bootstrap-targets*
+                   bootstrap/stage2-runtime-derived-source-targets]
+                   (let [context
+                         (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                          path source :wasm)
+                         checked-core
+                         (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                          context)
+                         c11
+                         (bootstrap/p15-s23-stage2-c11-mir-artifact
+                          checked-core context)]
+                     (diagnostic-data
+                      #(bootstrap/p15-s23-stage2-c13-c14-b1-wasm-packet-from-c11!
+                        c11 checked-core context))))]
+             (assoc case :data data)))
+         public-cases)
+        after (bootstrap/p15-s23-b4-wasm-node-execution-snapshot)]
+    (is (true? valid-surface))
+    (is (= before after))
+    (is (false? payload-surface))
+    (is (= [:rejected "C14-UNSUPPORTED"
+            :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons]
+           ((juxt :status :diagnostic :missing-fact) payload-record)))
+    (is (not (contains? payload-record :bounded-lowering-payload)))
+    (doseq [{:keys [value surface record]} endpoints]
+      (is (true? surface) value)
+      (is (= :accepted (:status record)) value)
+      (is (= :gravity/c14-bounded-wasm-lowering-record
+             (:artifact record)) value))
+    (doseq [{:keys [value operation-id surface record]} outside]
+      (is (false? surface) value)
+      (is (= [:rejected "C14-UNSUPPORTED"
+              :bounded-scalar-constant-payload operation-id]
+             ((juxt :status :diagnostic :missing-fact :operation-id)
+              record)) value)
+      (is (= [:constant :literal :gravity/integer]
+             ((juxt :opcode :source-operation :observed-type) record))
+          value)
+      (is (not (contains? record :value)) value))
+    (doseq [{:keys [label value extension data]} public]
+      (is (= "C14-UNSUPPORTED" (:id data) (:rule data)) [label data])
+      (is (= :c14-target-lowering (:stage data)) [label data])
+      (is (= :wasm (:target data)) [label data])
+      (is (= :repair-bounded-wasm-input
+             (get-in data [:remediation 0 :kind])) [label data])
+      (is (= :bounded-scalar-constant-payload
+             (:missing-fact data)) [label data])
+      (is (= (get-in data [:primary :mir-operation-id])
+             (get-in data [:facts :operation-id])) [label data])
+      (let [operation-id (get-in data [:facts :operation-id])]
+        (is (and (string? operation-id)
+                 (re-matches #"sha256:[0-9a-f]{64}" operation-id))
+            [label data]))
+      (is (= [:constant :literal :gravity/integer]
+             ((juxt #(get-in % [:facts :opcode])
+                    #(get-in % [:facts :source-operation])
+                    #(get-in % [:facts :observed-type])) data))
+          [label data])
+      (is (contains? #{".gravity" ".qst"} extension) [label extension])
+      (is (not (str/includes? (pr-str data) value)) [label data])
+      (is (not (re-find
+                #"NumberFormatException|ArithmeticException|ClassCastException"
+                (pr-str data))) [label data])
+      (is (every? (set (keys data))
+                  bootstrap/c15-diagnostic-required-fields)
+          [label data]))
+    (doseq [[label cases] (group-by :label public)]
+      (is (= #{".gravity" ".qst"}
+             (set (map :extension cases))) label)
+      (is (= 1 (count (set (map #(get-in % [:data :diagnostic-id])
+                                cases)))) label)
+      (is (= 1 (count (set (map #(get-in % [:data :facts]) cases))))
+          label))))
 
 (def ^:private authenticated-b2-gate-a-source
   (closed-pure-source-with-main

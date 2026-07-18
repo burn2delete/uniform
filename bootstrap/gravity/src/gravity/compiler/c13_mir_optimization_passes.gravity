@@ -781,7 +781,7 @@
                   (if (= (get evidence :verifier-status) :passed)
                     (if (= (get evidence :semantic-replay-parity) :passed)
                       (if (= (get evidence :profile) :hosted)
-                        (if (contains? #{:llvm :c}
+                        (if (contains? #{:llvm :c :wasm}
                                        (get evidence :target))
                           (if (= (get evidence :target)
                                  (get mir :target-request))

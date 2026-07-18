@@ -14,6 +14,7 @@
              build-c14-target-artifact
              c14-build-bounded-llvm-lowering-record
              c14-build-bounded-c-lowering-record
+             c14-build-bounded-wasm-lowering-record
              verify-c14-target-lowering])
   (:effects #{})
   (:capabilities #{})
@@ -702,13 +703,13 @@
                :gravity.compiler/c13-mir-optimization)
           (if (= (get rule :builder-function)
                  'c13-build-bounded-identity-optimized-mir)
-              (if (= (get rule :source-byte-count) 43665)
+              (if (= (get rule :source-byte-count) 43671)
                 (if (= (get rule :source-content-hash)
-                       "sha256:7615b0197494b67da129ebabb3e4598d1d38a1fff3b19a2169cdea8008b79abb")
+                       "sha256:2a506b694a6a3546049a184b45c6ba5db31681fc143bd710f9a597fe26a39161")
                   (if (= (get rule :plan-semantic-hash)
-                         "sha256:7b2d572a5aaf2713d714377de0bcde855fe3f01490346743eb33cb789e6c2a74")
+                         "sha256:e657eb03ba9d3ce749709b9e13f0a2cdb3dc4f023eaacf1e6b940ed2f09df823")
                     (if (= (get rule :functions-semantic-hash)
-                           "sha256:c2ca9ddda5f8d5ecc64accc8a96339f06fe37c7c213822b062d68d163f21bd24")
+                           "sha256:1c53543b144e3a016a35cd7f9022d4e79302a442b28cdea0eb26fcae16dd12c7")
                     (if (= (get rule :builder-semantic-hash)
                            "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
                       (if (= (get rule :function-shapes)
@@ -2387,3 +2388,676 @@
      :diagnostic "C14-INPUT"
      :missing-fact :verified-optimized-mir
      :diagnostics ["C14-INPUT"]}))
+
+(defn c14-wasm-signed-i32?
+  [value]
+  (if (integer? value)
+    (if (<= -2147483648 value) (<= value 2147483647) false)
+    false))
+
+(defn c14-wasm-block-order
+  [mir]
+  (let [source-core (get mir :source-core)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        function (get (get mir :functions) (quote main))
+        blocks (get function :blocks)]
+    (if (contains? blocks join-id)
+      [entry-id then-id else-id join-id]
+      [entry-id])))
+
+(defn c14-wasm-block-labels
+  [block-order]
+  (if (= (count block-order) 1)
+    {(first block-order) :entry}
+    {(first block-order) :entry
+     (second block-order) :then
+     (first (rest (rest block-order))) :else
+     (c14-c-last block-order) :join}))
+
+(defn c14-wasm-operation-index
+  [operations index result]
+  (if (= (count operations) 0)
+    result
+    (c14-wasm-operation-index
+     (rest operations) (+ index 1)
+     (assoc result (get (first operations) :op-id) index))))
+
+(defn c14-wasm-reference-allowed?
+  [operation reference-id operations-by-id operation-index block-labels]
+  (let [reference (get operations-by-id reference-id)
+        operation-position (get operation-index (get operation :op-id))
+        reference-position (get operation-index reference-id)
+        operation-label (get block-labels (get operation :block-id))
+        reference-label (get block-labels (get reference :block-id))]
+    (if (= reference nil)
+      false
+      (if (< reference-position operation-position)
+        (if (= operation-label :entry)
+          (= reference-label :entry)
+          (if (= operation-label :then)
+            (if (= reference-label :entry) true (= reference-label :then))
+            (if (= operation-label :else)
+              (if (= reference-label :entry) true (= reference-label :else))
+              (if (= operation-label :join)
+                (if (= reference-label :entry) true (= reference-label :join))
+                false))))
+        false))))
+
+(defn c14-wasm-references-allowed?
+  [operation references operations-by-id operation-index block-labels]
+  (if (= (count references) 0)
+    true
+    (if (c14-wasm-reference-allowed?
+         operation (first references) operations-by-id operation-index
+         block-labels)
+      (c14-wasm-references-allowed?
+       operation (rest references) operations-by-id operation-index
+       block-labels)
+      false)))
+
+(defn c14-wasm-conditional-references-allowed?
+  [operation operands operations-by-id operation-index block-labels]
+  (let [condition (get operations-by-id (first operands))
+        then-value (get operations-by-id (second operands))
+        else-value
+        (get operations-by-id (first (rest (rest operands))))
+        operation-position (get operation-index (get operation :op-id))]
+    (if (if (= condition nil) true
+            (if (= then-value nil) true (= else-value nil)))
+      false
+      (if (= (get block-labels (get operation :block-id)) :join)
+        (if (= (get block-labels (get condition :block-id)) :entry)
+          (if (contains? #{:entry :then}
+                         (get block-labels (get then-value :block-id)))
+            (if (contains? #{:entry :else}
+                           (get block-labels (get else-value :block-id)))
+              (if (< (get operation-index (get condition :op-id))
+                     operation-position)
+                (if (< (get operation-index (get then-value :op-id))
+                       operation-position)
+                  (< (get operation-index (get else-value :op-id))
+                     operation-position)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn c14-wasm-constant-valid?
+  [operation]
+  (let [type (get operation :type)
+        payload (get operation :constant-payload)
+        value (get payload :value)]
+    (if (= (set (keys payload)) #{:present? :value})
+      (if (= (get payload :present?) true)
+        (if (= type :gravity/integer)
+          (c14-wasm-signed-i32? value)
+          (if (= type :gravity/bool)
+            (contains? #{true false} value)
+            (if (= type :gravity/nil) (= value nil) false)))
+        false)
+      false)))
+
+(defn c14-wasm-operation-valid?
+  [operation operations-by-id operation-index block-labels]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)
+        type (get operation :type)]
+    (if (= (get operation :artifact) :gravity/mir-operation)
+      (if (= (get operation :verifier-status) :passed)
+        (if (= (get operation :effects) #{})
+          (if (= (get operation :capabilities) #{})
+            (if (= (get operation :domain-anchor) nil)
+              (if (c14-c-source-operation-valid?
+                   opcode (get operation :source-operation))
+                (if (= opcode :constant)
+                  (if (= operands []) (c14-wasm-constant-valid? operation) false)
+                  (if (= (get operation :constant-payload) :not-applicable)
+                   (if (c14-c-forwarded-opcode? opcode)
+                    (if (> (count operands) 0)
+                      (c14-wasm-references-allowed?
+                       operation operands operations-by-id operation-index
+                       block-labels)
+                      false)
+                    (if (= opcode :truthiness)
+                      (if (= (count operands) 1)
+                        (if (c14-wasm-reference-allowed?
+                             operation (first operands) operations-by-id
+                             operation-index block-labels)
+                          (if (c14-c-scalar-type?
+                               (get (get operations-by-id (first operands))
+                                    :type))
+                            (= type :gravity/bool)
+                            false)
+                          false)
+                        false)
+                      (if (contains?
+                           #{:integer-eq :integer-lt :integer-lte
+                             :integer-gt :integer-gte}
+                           opcode)
+                        (if (= (count operands) 2)
+                          (if (c14-wasm-references-allowed?
+                               operation operands operations-by-id
+                               operation-index block-labels)
+                            (if (= (get (get operations-by-id (first operands))
+                                        :type)
+                                   :gravity/integer)
+                              (if (= (get (get operations-by-id
+                                               (first (rest operands))) :type)
+                                     :gravity/integer)
+                                (= type :gravity/bool)
+                                false)
+                              false)
+                            false)
+                          false)
+                        (if (= opcode :conditional-join)
+                          (if (= (count operands) 3)
+                            (if (c14-wasm-conditional-references-allowed?
+                                 operation operands operations-by-id
+                                 operation-index block-labels)
+                              (let [condition (get operations-by-id
+                                                   (first operands))
+                                    then-value (get operations-by-id
+                                                    (second operands))
+                                    else-value
+                                    (get operations-by-id
+                                         (first (rest (rest operands))))]
+                                (if (= (get condition :type) :gravity/bool)
+                                  (if (= (get then-value :type)
+                                         (get else-value :type))
+                                    (= type (get then-value :type))
+                                    false)
+                                  false))
+                              false)
+                            false)
+                          false))))
+                   false))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-wasm-operations-valid?
+  [remaining operations-by-id operation-index block-labels]
+  (if (= (count remaining) 0)
+    true
+    (if (c14-wasm-operation-valid?
+         (first remaining) operations-by-id operation-index block-labels)
+      (c14-wasm-operations-valid?
+       (rest remaining) operations-by-id operation-index block-labels)
+      false)))
+
+(defn c14-wasm-cfg-valid?
+  [mir function block-order]
+  (let [cfg (get mir :control-flow-graph)
+        blocks (get function :blocks)
+        entry-id (first block-order)]
+    (if (= (set (keys cfg)) #{:entry :edges :dominance :join})
+      (if (= (get cfg :entry) entry-id)
+        (if (= (set (keys blocks)) (set block-order))
+          (if (= (count block-order) 1)
+            (if (= (get cfg :edges) [])
+              (if (= (get cfg :dominance) {entry-id [entry-id]})
+                (= (get cfg :join) nil)
+                false)
+              false)
+            (let [then-id (second block-order)
+                  else-id (first (rest (rest block-order)))
+                  join-id (c14-c-last block-order)]
+              (if (= (get cfg :edges)
+                     [{:from entry-id :to then-id :kind :true}
+                      {:from entry-id :to else-id :kind :false}
+                      {:from then-id :to join-id :kind :join}
+                      {:from else-id :to join-id :kind :join}])
+                (= (get cfg :dominance)
+                   {entry-id [entry-id]
+                    then-id [entry-id then-id]
+                    else-id [entry-id else-id]
+                    join-id [entry-id join-id]})
+                false)))
+          false)
+        false)
+      false)))
+
+(defn c14-wasm-process-result-valid?
+  [mir operations operations-by-id]
+  (let [function (get (get mir :functions) (quote main))
+        block-order (c14-wasm-block-order mir)
+        return-id
+        (first (get (get (get (get function :blocks)
+                              (c14-c-last block-order)) :terminator)
+                    :operands))
+        values (c14-c-evaluate-operations operations operations-by-id {})
+        result (get values return-id)]
+    (if (contains? values return-id)
+      (if (integer? result)
+        (c14-wasm-signed-i32? result)
+        (contains? #{true false nil} result))
+      false)))
+
+(defn c14-wasm-bounded-mir-surface-valid?
+  [optimized policy]
+  (let [mir (get optimized :optimized-mir)
+        function (get (get mir :functions) (quote main))
+        block-order (c14-wasm-block-order mir)
+        operations (c14-c-operation-sequence mir)
+        operations-by-id (c14-c-operation-map operations {})
+        operation-index (c14-wasm-operation-index operations 0 {})
+        block-labels (c14-wasm-block-labels block-order)]
+    (if (= (get mir :profile) :hosted)
+      (if (= (get mir :target-request) :wasm)
+        (if (= (get mir :target-independent?) true)
+          (if (= (set (keys (get mir :functions))) #{(quote main)})
+            (if (= (get function :params) [])
+              (if (= (get function :latent-effects) #{})
+                (if (= (get function :capabilities) #{})
+                  (if (contains? #{1 4} (count (get function :blocks)))
+                    (if (if (> (count operations) 0)
+                          (if (<= (count operations) 127)
+                            (= (count operation-index) (count operations))
+                            false)
+                          false)
+                      (if (c14-wasm-cfg-valid? mir function block-order)
+                        (if (c14-wasm-operations-valid?
+                             operations operations-by-id operation-index
+                             block-labels)
+                          (c14-wasm-process-result-valid?
+                           mir operations operations-by-id)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-wasm-target-valid?
+  [target]
+  (= target
+     {:request :wasm
+      :triple "wasm32-unknown-unknown"
+      :architecture :wasm32
+      :object-format :webassembly
+      :backend :gravity.backend/wasm
+      :target-kind :core-module
+      :memory-width :wasm32
+      :features #{}
+      :imports []
+      :runtime-helpers []
+      :profile-eligibility [:hosted]
+      :tier :experimental
+      :exposure :internal
+      :source-declaration-target :jvm
+      :requested-lowering-target :wasm
+      :selection :explicit-bootstrap-seed-target-override
+      :reason :checked-core-seed-contract
+      :direct-source-declared-wasm? false}))
+
+(defn c14-wasm-dependencies-valid?
+  [optimized dependencies]
+  (if (map? dependencies)
+    (if (= (set (keys dependencies))
+           #{:source-core :c11-source-rule :c11-pass
+             :c13-artifact :c13-source-rule :backend-contract})
+      (if (= (get dependencies :source-core)
+             (get (get optimized :input) :source-core))
+        (if (c14-sha256-id? (get dependencies :source-core))
+          (if (c14-c11-source-rule-valid?
+               (get dependencies :c11-source-rule))
+            (if (= (get dependencies :c11-pass)
+                   (get (get optimized :input) :pass-execution-record-id))
+              (if (c14-sha256-id? (get dependencies :c11-pass))
+                (if (= (get dependencies :c13-artifact)
+                       (get optimized :artifact-id))
+                  (if (= (get dependencies :c13-source-rule)
+                         (get optimized :source-rule))
+                    (if (c14-c13-source-rule-valid?
+                         (get dependencies :c13-source-rule))
+                      (= (get dependencies :backend-contract)
+                         :gravity.backend/b4-bounded-wasm32-core-v1)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-wasm-contract-bindings-match?
+  [optimized policy]
+  (let [mir (get optimized :optimized-mir)
+        bindings (get policy :contract-bindings)]
+    (if (c14-contract-bindings-valid? bindings)
+      (if (c14-contract-bindings-match? mir policy)
+        (if (= [(get bindings :profile)
+                (get bindings :target)
+                (get bindings :abi)
+                (get bindings :runtime)
+                (get bindings :providers)]
+               [{:content-id
+                 "sha256:9adfa444f9f2790518c7a0d55bd1ecf97f117c723a8c82e1ee37c08d2eed2082"
+                 :entry-count 2}
+                {:content-id
+                 "sha256:829a8b18ab8fae4be3af1d01d73c2ce602172448aa393e5093e4dd4c54dbe2c4"
+                 :entry-count 18}
+                {:content-id
+                 "sha256:7a0eb1c4e55c3858d7232226cf8e7603a0e21a3ae76f138c21c996a12afc6432"
+                 :entry-count 8}
+                {:content-id
+                 "sha256:c2e9efb295d12d298aa8a7550f2826c622d9d566fbce43f1f04e40727e74ae97"
+                 :entry-count 4}
+                {:content-id
+                 "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+                 :entry-count 0}])
+          (if (= (get (get bindings :dependencies) :entry-count) 6)
+            (if (= (get (get bindings :c11-verifier) :content-id)
+                   (get policy :c11-verifier-id))
+              (= (get (get bindings :c13-optimization) :entry-count) 4)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-wasm-policy-evidence-valid?
+  [optimized policy]
+  (let [mir (get optimized :optimized-mir)
+        bindings (get policy :fact-bindings)
+        proofs (get policy :proofs)]
+    (if (= bindings
+           (get (get optimized :semantic-identity) :fact-bindings))
+      (if (c14-fact-bindings-valid? bindings)
+        (if (c14-fact-bindings-match-mir? mir bindings)
+          (if (c14-safety-valid? mir (get policy :safety) bindings)
+            (if (c14-proofs-valid? mir proofs)
+              (if (= (get proofs :capability)
+                     {:content-id
+                      "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+                      :entry-count 0 :proof-ids []})
+                (if (= (get (get proofs :certificates) :content-id)
+                       (get (get bindings :proofs) :content-id))
+                  (if (c14-wasm-dependencies-valid?
+                       optimized (get policy :dependencies))
+                    (if (= (get policy :required-evidence)
+                           [:authenticated-c11-replay
+                            :independent-lowering-reconstruction
+                            :gravity-b4-byte-reconstruction
+                            :independent-raw-module-parser
+                            :pinned-node-differential-result
+                            :content-hash-and-provenance])
+                      (if (c14-c11-verifier-valid?
+                           optimized (get policy :c11-verifier)
+                           (get policy :c11-verifier-id))
+                        (if (c14-wasm-contract-bindings-match? optimized policy)
+                          (c14-source-map-valid? policy)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c14-wasm-policy-valid?
+  [optimized policy]
+  (if (= (set (keys policy))
+         #{:expected-c11-artifact-id :expected-c13-artifact-id
+           :profile :profile-contract :target :source-target-selection
+           :abi :runtime :providers :effects :capabilities :safety
+           :proofs :contract-bindings :required-evidence :source-map
+           :expected-source-map-binding :dependencies :target-policy
+           :unsupported-surface :proof-target-metadata :fact-bindings
+           :supported-operation-ids :c11-verifier :c11-verifier-id
+           :request-id})
+    (if (= (get policy :expected-c13-artifact-id)
+           (get optimized :artifact-id))
+      (if (= (get policy :profile) :hosted)
+        (if (= (get policy :profile-contract)
+               {:name :hosted :validated? true})
+          (if (c14-wasm-target-valid? (get policy :target))
+            (if (= (get policy :source-target-selection)
+                   {:source-declaration-target :jvm
+                    :requested-lowering-target :wasm
+                    :selection :explicit-bootstrap-seed-target-override
+                    :reason :checked-core-seed-contract
+                    :direct-source-declared-wasm? false})
+              (if (= (get policy :abi)
+                     {:calling-convention :wasm-core
+                      :parameters [] :result :i32
+                      :integer-representation :signed-i32
+                      :boolean-representation :i32-0-or-1
+                      :nil-representation :i32-zero
+                      :memory-model :none :multi-value? false})
+                (if (= (get policy :runtime)
+                       {:runtime :none :helpers [] :imports []
+                        :hidden-services? false})
+                  (if (= (get policy :providers) [])
+                    (if (= (get policy :effects) #{})
+                      (if (= (get policy :capabilities) #{})
+                        (if (= (get policy :supported-operation-ids)
+                               (get (get optimized :semantic-identity)
+                                    :operation-order))
+                          (if (= (get policy :target-policy)
+                                 {:scope
+                                  :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
+                                  :maximum-operation-count 127
+                                  :target-kind :core-module
+                                  :whole-c14? false :whole-b1? false
+                                  :whole-b4? false :public? false
+                                  :release? false :self-hosted? false})
+                            (if (= (get policy :unsupported-surface)
+                                   [:strings :quote :str :println
+                                    :runtime-checks :effects
+                                    :program-capabilities :domain-anchors
+                                    :multiple-functions :multiple-conditionals
+                                    :non-scalar-types
+                                    :integer-outside-signed-i32
+                                    :imports :memory :tables :globals
+                                    :components :wit :wasi :simd :atomics])
+                              (if (= (get policy :required-evidence)
+                                     [:authenticated-c11-replay
+                                      :independent-lowering-reconstruction
+                                      :gravity-b4-byte-reconstruction
+                                      :independent-raw-module-parser
+                                      :pinned-node-differential-result
+                                      :content-hash-and-provenance])
+                                (if (= (get policy :proof-target-metadata)
+                                       {:entries []
+                                        :proofless-metadata-rejected? true})
+                                  (if (c14-sha256-id? (get policy :request-id))
+                                    (if (c14-wasm-policy-evidence-valid?
+                                         optimized policy)
+                                      (c14-wasm-bounded-mir-surface-valid?
+                                       optimized policy)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn c14-wasm-first-invalid-constant
+  [operations]
+  (if (= (count operations) 0)
+    nil
+    (let [operation (first operations)]
+      (if (if (= (get operation :opcode) :constant)
+            (if (c14-wasm-constant-valid? operation) false true)
+            false)
+        operation
+        (c14-wasm-first-invalid-constant (rest operations))))))
+
+(defn c14-build-bounded-wasm-lowering-record
+  [optimized policy]
+  (let [mir (get optimized :optimized-mir)
+        operations (if (= mir nil) [] (c14-c-operation-sequence mir))
+        invalid-constant (c14-wasm-first-invalid-constant operations)]
+    (if (c14-bounded-optimized-input-valid? optimized policy)
+      (if (= (get policy :profile) :hosted)
+        (if (c14-wasm-target-valid? (get policy :target))
+          (if (c14-wasm-policy-valid? optimized policy)
+            (let [request
+                  {:artifact :gravity/c14-internal-target-lowering-request
+                   :schema-version 1 :status :accepted
+                   :input
+                   {:kind :gravity/mir
+                    :id (get optimized :semantic-id)
+                    :artifact-id (get optimized :artifact-id)
+                    :c11-artifact-id (get policy :expected-c11-artifact-id)
+                    :verified? true
+                    :verifier-report (get policy :c11-verifier)
+                    :verifier-report-id (get policy :c11-verifier-id)
+                    :optimization-status :identity-pass-complete
+                    :optimization-report
+                    {:artifact-id (get optimized :artifact-id)
+                     :semantic-id (get optimized :semantic-id)
+                     :decision-id
+                     (get (get optimized :decision-record) :decision-id)
+                     :verifier-result
+                     (get (get optimized :verifier-replay) :result)}
+                    :domain-status :not-applicable}
+                   :request-id (get policy :request-id)
+                   :profile (get policy :profile)
+                   :profile-contract (get policy :profile-contract)
+                   :target (get policy :target)
+                   :source-target-selection
+                   (get policy :source-target-selection)
+                   :abi (get policy :abi)
+                   :runtime (get policy :runtime)
+                   :providers (get policy :providers)
+                   :effects (get policy :effects)
+                   :capabilities (get policy :capabilities)
+                   :safety (get policy :safety)
+                   :proofs (get policy :proofs)
+                   :contract-bindings (get policy :contract-bindings)
+                   :required-evidence (get policy :required-evidence)
+                   :source-map (get policy :source-map)
+                   :dependency-provenance (get policy :dependencies)
+                   :c13-optimization-status :identity-pass-complete
+                   :domain-ir-status :not-applicable
+                   :fusion-status :not-run
+                   :target-policy (get policy :target-policy)
+                   :proof-to-target-metadata
+                   (get policy :proof-target-metadata)
+                   :unsupported-feature-report
+                   {:status :bounded-surface-only
+                    :policy (get policy :unsupported-surface)
+                    :diagnostic "C14-UNSUPPORTED"
+                    :fallback-status :rejected}
+                   :diagnostics []}
+                  payload
+                  {:artifact :gravity/c14-bounded-wasm-lowering-payload
+                   :c11-artifact-id (get policy :expected-c11-artifact-id)
+                   :c13-artifact-id (get optimized :artifact-id)
+                   :c13-semantic-id (get optimized :semantic-id)
+                   :mir mir
+                   :operation-order
+                   (get (get optimized :semantic-identity) :operation-order)
+                   :fact-bindings (get policy :fact-bindings)}]
+              {:artifact :gravity/c14-bounded-wasm-lowering-record
+               :schema-version 1 :status :accepted
+               :request request
+               :bounded-lowering-payload payload
+               :eligibility
+               {:artifact :gravity/c14-target-eligibility-report
+                :backend :gravity.backend/wasm
+                :profile (get policy :profile)
+                :target (get policy :target)
+                :accepted? true :rejections [] :fallbacks []
+                :missing-features []
+                :required-providers (get policy :providers)
+                :proof-assumptions []
+                :explainability-record
+                {:decision :accepted
+                 :bounded-surface
+                 :pure-scalar-forwarding-do-let-if-integer-comparisons
+                 :unsupported-diagnostic "C14-UNSUPPORTED"
+                 :no-hidden-runtime? true
+                 :no-hidden-effect-or-capability? true}
+                :checks
+                [:profile-allows-backend
+                 :target-supports-required-mir-families
+                 :runtime-services-explicit :abi-represents-exports
+                 :effects-have-authority-preserving-providers
+                 :proof-assumptions-valid-for-target]}
+               :abi-layout
+               {:artifact :gravity/c14-abi-layout-record
+                :abi (get policy :abi) :target (get policy :target)
+                :type-facts (get (get policy :fact-bindings) :type)
+                :ownership-facts (get (get policy :fact-bindings) :ownership)
+                :safety-facts (get (get policy :fact-bindings) :safety)
+                :profile-contract (get policy :profile-contract)
+                :source-map (get policy :source-map)}
+               :runtime-provider
+               {:artifact :gravity/c14-runtime-provider-record
+                :runtime (get policy :runtime)
+                :providers (get policy :providers)
+                :effects (get policy :effects)
+                :capabilities (get policy :capabilities)}
+               :proof-target-metadata
+               {:artifact :gravity/c14-proof-target-metadata-map
+                :entries (get (get policy :proof-target-metadata) :entries)
+                :proofless-metadata-rejected?
+                (get (get policy :proof-target-metadata)
+                     :proofless-metadata-rejected?)
+                :proofs (get policy :proofs)}
+               :dependency-provenance (get policy :dependencies)
+               :diagnostics [] :semantic-authority :gravity-source
+               :execution-tcb :clojure-stage0-rule-runner
+               :clojure-seed-boundary? true :self-hosted? false})
+            {:artifact :gravity/c14-bounded-wasm-lowering-record
+             :schema-version 1 :status :rejected
+             :diagnostic "C14-UNSUPPORTED"
+             :missing-fact
+             (if (= invalid-constant nil)
+               :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
+               :bounded-scalar-constant-payload)
+             :operation-id (get invalid-constant :op-id)
+             :opcode (get invalid-constant :opcode)
+             :source-operation (get invalid-constant :source-operation)
+             :observed-type (get invalid-constant :type)
+             :diagnostics ["C14-UNSUPPORTED"]})
+          {:artifact :gravity/c14-bounded-wasm-lowering-record
+           :schema-version 1 :status :rejected
+           :diagnostic "C14-TARGET"
+           :missing-fact :explicit-bounded-wasm32-core-target
+           :diagnostics ["C14-TARGET"]})
+        {:artifact :gravity/c14-bounded-wasm-lowering-record
+         :schema-version 1 :status :rejected
+         :diagnostic "C14-PROFILE"
+         :missing-fact :hosted-profile-eligibility
+         :diagnostics ["C14-PROFILE"]})
+      {:artifact :gravity/c14-bounded-wasm-lowering-record
+       :schema-version 1 :status :rejected
+       :diagnostic "C14-INPUT"
+       :missing-fact :verified-optimized-mir
+       :diagnostics ["C14-INPUT"]})))

@@ -14,6 +14,7 @@
              build-b1-emitted-artifact-record
              b1-build-bounded-llvm-authenticated-packet
              b1-build-bounded-c-authenticated-packet
+             b1-build-bounded-wasm-authenticated-packet
              verify-b1-backend-interface])
   (:effects #{})
   (:capabilities #{})
@@ -864,10 +865,10 @@
         (get rule :executed-by) (get rule :self-hosted?)
         (get rule :function-shapes)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.compiler/c13-mir-optimization 43665
-        "sha256:7615b0197494b67da129ebabb3e4598d1d38a1fff3b19a2169cdea8008b79abb"
-        "sha256:7b2d572a5aaf2713d714377de0bcde855fe3f01490346743eb33cb789e6c2a74"
-        "sha256:c2ca9ddda5f8d5ecc64accc8a96339f06fe37c7c213822b062d68d163f21bd24"
+        :gravity.compiler/c13-mir-optimization 43671
+        "sha256:2a506b694a6a3546049a184b45c6ba5db31681fc143bd710f9a597fe26a39161"
+        "sha256:e657eb03ba9d3ce749709b9e13f0a2cdb3dc4f023eaacf1e6b940ed2f09df823"
+        "sha256:1c53543b144e3a016a35cd7f9022d4e79302a442b28cdea0eb26fcae16dd12c7"
         'c13-build-bounded-identity-optimized-mir
         "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
         :gravity-source :clojure-stage0-seed
@@ -1086,10 +1087,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 105031
-          "sha256:3619d38e50fc908b2b52927b5eb76e2338704fb24e88ec9f356d6980242acbb0"
-          "sha256:33ded37cf2f533a0ae89204b67d3ec0bd215d30ce2b5c660283bcddbaf06a5bf"
-          "sha256:9cbed7211819b0305b445716202ab18a42f06c6a1b6ff9572810ecd0b8477fa3"
+          :gravity.compiler/c14-target-lowering 135834
+          "sha256:bbf94f73e4c6314649753b83b2409a1a44512a0a153cd099b5fa4f9daf4456cb"
+          "sha256:0746787abc9c151273636421ea2ce15a0d402e90fa72b2192d901cf5091ad5bf"
+          "sha256:e807d8256eb926f7086904887622e42a9584d285459f2c4680464370aef1cb46"
           'c14-build-bounded-llvm-lowering-record
           "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7"
           '{c14-bounded-optimized-input-valid?
@@ -1666,10 +1667,10 @@
           (get rule :compiled-by) (get rule :executed-by)
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
-          :gravity.compiler/c14-target-lowering 105031
-          "sha256:3619d38e50fc908b2b52927b5eb76e2338704fb24e88ec9f356d6980242acbb0"
-          "sha256:33ded37cf2f533a0ae89204b67d3ec0bd215d30ce2b5c660283bcddbaf06a5bf"
-          "sha256:9cbed7211819b0305b445716202ab18a42f06c6a1b6ff9572810ecd0b8477fa3"
+          :gravity.compiler/c14-target-lowering 135834
+          "sha256:bbf94f73e4c6314649753b83b2409a1a44512a0a153cd099b5fa4f9daf4456cb"
+          "sha256:0746787abc9c151273636421ea2ce15a0d402e90fa72b2192d901cf5091ad5bf"
+          "sha256:e807d8256eb926f7086904887622e42a9584d285459f2c4680464370aef1cb46"
           'c14-build-bounded-c-lowering-record
           "sha256:3209bb1605d40c7a466a53eb01d6cf7a4d243210ce6a0c189ceb3b15564f09ee"
           '{c14-bounded-optimized-input-valid?
@@ -2381,4 +2382,611 @@
      :status :rejected
      :diagnostic "B1-INPUT"
      :missing-fact :accepted-c14-c-lowering-record
+     :diagnostics ["B1-INPUT"]}))
+
+(defn b1-wasm-content-bindings-valid?
+  [remaining bindings]
+  (if (= (count remaining) 0)
+    true
+    (if (b1-content-binding-valid? (get bindings (first remaining)))
+      (b1-wasm-content-bindings-valid? (rest remaining) bindings)
+      false)))
+
+(defn b1-c14-wasm-target-valid?
+  [target]
+  (= target
+     {:request :wasm
+      :triple "wasm32-unknown-unknown"
+      :architecture :wasm32
+      :object-format :webassembly
+      :backend :gravity.backend/wasm
+      :target-kind :core-module
+      :memory-width :wasm32
+      :features #{}
+      :imports []
+      :runtime-helpers []
+      :profile-eligibility [:hosted]
+      :tier :experimental
+      :exposure :internal
+      :source-declaration-target :jvm
+      :requested-lowering-target :wasm
+      :selection :explicit-bootstrap-seed-target-override
+      :reason :checked-core-seed-contract
+      :direct-source-declared-wasm? false}))
+
+(defn b1-c14-wasm-contract-bindings-valid?
+  [request]
+  (let [bindings (get request :contract-bindings)
+        safety (get request :safety)
+        proofs (get request :proofs)
+        source-map (get request :source-map)]
+    (if (map? bindings)
+      (if (= (set (keys bindings))
+             #{:profile :target :abi :runtime :providers :effects
+               :capabilities :type :ownership :safety :proofs
+               :source-map :dependencies :c11-verifier
+               :c13-optimization})
+        (if (b1-wasm-content-bindings-valid?
+             [:profile :target :abi :runtime :providers :effects
+              :capabilities :type :ownership :safety :proofs
+              :source-map :dependencies :c11-verifier :c13-optimization]
+             bindings)
+          (if (= [(get bindings :profile)
+                  (get bindings :target)
+                  (get bindings :abi)
+                  (get bindings :runtime)
+                  (get bindings :providers)]
+                 [{:content-id
+                   "sha256:9adfa444f9f2790518c7a0d55bd1ecf97f117c723a8c82e1ee37c08d2eed2082"
+                   :entry-count 2}
+                  {:content-id
+                   "sha256:829a8b18ab8fae4be3af1d01d73c2ce602172448aa393e5093e4dd4c54dbe2c4"
+                   :entry-count 18}
+                  {:content-id
+                   "sha256:7a0eb1c4e55c3858d7232226cf8e7603a0e21a3ae76f138c21c996a12afc6432"
+                   :entry-count 8}
+                  {:content-id
+                   "sha256:c2e9efb295d12d298aa8a7550f2826c622d9d566fbce43f1f04e40727e74ae97"
+                   :entry-count 4}
+                  {:content-id
+                   "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+                   :entry-count 0}])
+            (if (= [(get (get bindings :effects) :entry-count)
+                    (get (get bindings :capabilities) :entry-count)
+                    (get (get bindings :proofs) :entry-count)
+                    (get (get bindings :dependencies) :entry-count)
+                    (get (get bindings :c11-verifier) :entry-count)
+                    (get (get bindings :c13-optimization) :entry-count)]
+                   [2 3 2 6 1 4])
+              (if (= (get bindings :safety) (get safety :binding))
+                (if (= (get (get bindings :proofs) :entry-count)
+                       (count proofs))
+                  (if (= (get (get bindings :proofs) :content-id)
+                         (get (get proofs :certificates) :content-id))
+                    false
+                    (if (= (get (get bindings :proofs) :content-id)
+                           (get (get proofs :capability) :content-id))
+                      false
+                      (if (= (get (get bindings :source-map) :content-id)
+                             (get source-map :id))
+                        (= (get (get bindings :c11-verifier) :content-id)
+                           (get (get request :input) :verifier-report-id))
+                        false)))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b1-c14-wasm-dependencies-valid?
+  [request]
+  (let [dependencies (get request :dependency-provenance)
+        input (get request :input)]
+    (if (map? dependencies)
+      (if (= (set (keys dependencies))
+             #{:source-core :c11-source-rule :c11-pass
+               :c13-artifact :c13-source-rule :backend-contract})
+        (if (b1-sha256-id? (get dependencies :source-core))
+          (if (b1-c11-source-rule-valid?
+               (get dependencies :c11-source-rule))
+            (if (b1-sha256-id? (get dependencies :c11-pass))
+              (if (= (get dependencies :c13-artifact)
+                     (get input :artifact-id))
+                (if (b1-c13-source-rule-valid?
+                     (get dependencies :c13-source-rule))
+                  (if (= (get dependencies :source-core)
+                         (get (get (get (get input :verifier-report)
+                                            :b1-preflight)
+                                   :binding)
+                              :checked-core-artifact-id))
+                    (if (= (get dependencies :c11-pass)
+                           (get (get (get (get input :verifier-report)
+                                              :b1-preflight)
+                                     :binding)
+                                :pass-execution-record-id))
+                      (= (get dependencies :backend-contract)
+                         :gravity.backend/b4-bounded-wasm32-core-v1)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b1-bounded-c14-wasm-request-valid?
+  [request]
+  (if (map? request)
+    (if (= (set (keys request))
+           #{:artifact :schema-version :status :input :request-id
+             :profile :profile-contract :target :source-target-selection
+             :abi :runtime :providers :effects :capabilities :safety
+             :proofs :contract-bindings :required-evidence :source-map
+             :dependency-provenance :c13-optimization-status
+             :domain-ir-status :fusion-status :target-policy
+             :proof-to-target-metadata :unsupported-feature-report
+             :diagnostics})
+      (if (= [(get request :artifact) (get request :schema-version)
+              (get request :status) (get request :profile)
+              (get request :profile-contract) (get request :effects)
+              (get request :capabilities)
+              (get request :c13-optimization-status)
+              (get request :domain-ir-status) (get request :fusion-status)
+              (get request :diagnostics)]
+             [:gravity/c14-internal-target-lowering-request 1 :accepted
+              :hosted {:name :hosted :validated? true} #{} #{}
+              :identity-pass-complete :not-applicable :not-run []])
+        (if (b1-sha256-id? (get request :request-id))
+          (if (b1-c14-c-input-valid? (get request :input))
+            (if (b1-c14-wasm-target-valid? (get request :target))
+              (if (= (get request :source-target-selection)
+                     {:source-declaration-target :jvm
+                      :requested-lowering-target :wasm
+                      :selection :explicit-bootstrap-seed-target-override
+                      :reason :checked-core-seed-contract
+                      :direct-source-declared-wasm? false})
+                (if (= (get request :abi)
+                       {:calling-convention :wasm-core
+                        :parameters [] :result :i32
+                        :integer-representation :signed-i32
+                        :boolean-representation :i32-0-or-1
+                        :nil-representation :i32-zero
+                        :memory-model :none :multi-value? false})
+                  (if (= (get request :runtime)
+                         {:runtime :none :helpers [] :imports []
+                          :hidden-services? false})
+                    (if (= (get request :providers) [])
+                      (if (b1-c14-safety-valid? (get request :safety))
+                        (if (= [(get (get request :safety) :outcomes)
+                                (get (get request :safety) :runtime-checks)]
+                               [(get (get (get (get request :input)
+                                               :verifier-report)
+                                          :independent-verifier)
+                                     :operation-count)
+                                (get (get (get (get (get request :input)
+                                                         :verifier-report)
+                                                :independent-verifier)
+                                           :runtime-checks)
+                                     :runtime-check-count)])
+                          (if (b1-c14-proofs-valid? (get request :proofs))
+                            (if (b1-c14-wasm-contract-bindings-valid? request)
+                              (if (= (get request :required-evidence)
+                                     [:authenticated-c11-replay
+                                      :independent-lowering-reconstruction
+                                      :gravity-b4-byte-reconstruction
+                                      :independent-raw-module-parser
+                                      :pinned-node-differential-result
+                                      :content-hash-and-provenance])
+                                (if (= (get request :source-map)
+                                       {:id (get (get request :source-map) :id)
+                                        :preserved? true})
+                                  (if (b1-sha256-id?
+                                       (get (get request :source-map) :id))
+                                    (if (b1-c14-wasm-dependencies-valid? request)
+                                      (if (= (get request :target-policy)
+                                             {:scope
+                                              :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
+                                              :maximum-operation-count 127
+                                              :target-kind :core-module
+                                              :whole-c14? false
+                                              :whole-b1? false
+                                              :whole-b4? false
+                                              :public? false :release? false
+                                              :self-hosted? false})
+                                        (if (= (get request
+                                                    :proof-to-target-metadata)
+                                               {:entries []
+                                                :proofless-metadata-rejected?
+                                                true})
+                                          (= (get request
+                                                  :unsupported-feature-report)
+                                             {:status :bounded-surface-only
+                                              :policy
+                                              [:strings :quote :str :println
+                                               :runtime-checks :effects
+                                               :program-capabilities
+                                               :domain-anchors
+                                               :multiple-functions
+                                               :multiple-conditionals
+                                               :non-scalar-types
+                                               :integer-outside-signed-i32
+                                               :imports :memory :tables
+                                               :globals :components :wit
+                                               :wasi :simd :atomics]
+                                              :diagnostic "C14-UNSUPPORTED"
+                                              :fallback-status :rejected})
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-bounded-c14-wasm-eligibility-valid?
+  [eligibility]
+  (if (map? eligibility)
+    (if (= (set (keys eligibility))
+           #{:artifact :backend :profile :target :accepted? :rejections
+             :fallbacks :missing-features :required-providers
+             :proof-assumptions :explainability-record :checks})
+      (if (= [(get eligibility :artifact) (get eligibility :backend)
+              (get eligibility :profile) (get eligibility :accepted?)
+              (get eligibility :rejections) (get eligibility :fallbacks)
+              (get eligibility :missing-features)
+              (get eligibility :required-providers)
+              (get eligibility :proof-assumptions)
+              (get eligibility :explainability-record)
+              (get eligibility :checks)]
+             [:gravity/c14-target-eligibility-report
+              :gravity.backend/wasm :hosted true [] [] [] [] []
+              {:decision :accepted
+               :bounded-surface
+               :pure-scalar-forwarding-do-let-if-integer-comparisons
+               :unsupported-diagnostic "C14-UNSUPPORTED"
+               :no-hidden-runtime? true
+               :no-hidden-effect-or-capability? true}
+              [:profile-allows-backend
+               :target-supports-required-mir-families
+               :runtime-services-explicit :abi-represents-exports
+               :effects-have-authority-preserving-providers
+               :proof-assumptions-valid-for-target]])
+        (b1-c14-wasm-target-valid? (get eligibility :target))
+        false)
+      false)
+    false))
+
+(defn b1-c14-wasm-source-rule-valid?
+  [rule]
+  (if (map? rule)
+    (if (= (set (keys rule))
+           #{:artifact :owner :source-content-hash :source-byte-count
+             :plan-semantic-hash :functions-semantic-hash
+             :builder-function :builder-semantic-hash :function-shapes
+             :semantic-authority :compiled-by :executed-by :self-hosted?})
+      (= [(get rule :artifact) (get rule :owner)
+          (get rule :source-byte-count) (get rule :source-content-hash)
+          (get rule :plan-semantic-hash)
+          (get rule :functions-semantic-hash)
+          (get rule :builder-function) (get rule :builder-semantic-hash)
+          (get rule :function-shapes) (get rule :semantic-authority)
+          (get rule :compiled-by) (get rule :executed-by)
+          (get rule :self-hosted?)]
+         [:gravity/pinned-gravity-source-rule
+          :gravity.compiler/c14-target-lowering 135834
+          "sha256:bbf94f73e4c6314649753b83b2409a1a44512a0a153cd099b5fa4f9daf4456cb"
+          "sha256:0746787abc9c151273636421ea2ce15a0d402e90fa72b2192d901cf5091ad5bf"
+          "sha256:e807d8256eb926f7086904887622e42a9584d285459f2c4680464370aef1cb46"
+          'c14-build-bounded-wasm-lowering-record
+          "sha256:fe20574f102acb55063e64223715adf2e2fa40a25e9e147616ee554f9989b3fa"
+          '{c14-bounded-optimized-input-valid?
+            {:arity 2 :params [optimized policy]}
+            c14-wasm-target-valid? {:arity 1 :params [target]}
+            c14-wasm-bounded-mir-surface-valid?
+            {:arity 2 :params [optimized policy]}
+            c14-wasm-dependencies-valid?
+            {:arity 2 :params [optimized dependencies]}
+            c14-wasm-contract-bindings-match?
+            {:arity 2 :params [optimized policy]}
+            c14-wasm-policy-evidence-valid?
+            {:arity 2 :params [optimized policy]}
+            c14-wasm-policy-valid? {:arity 2 :params [optimized policy]}
+            c14-wasm-first-invalid-constant
+            {:arity 1 :params [operations]}
+            c14-build-bounded-wasm-lowering-record
+            {:arity 2 :params [optimized policy]}}
+          :gravity-source :clojure-stage0-seed
+          :clojure-stage0-rule-runner false])
+      false)
+    false))
+
+(defn b1-c14-wasm-payload-valid?
+  [lowering]
+  (let [payload (get lowering :bounded-lowering-payload)
+        request (get lowering :request)
+        input (get request :input)
+        mir (get payload :mir)
+        facts (get payload :fact-bindings)
+        bindings (get request :contract-bindings)
+        dependencies (get request :dependency-provenance)
+        operation-order (b1-c14-c-bounded-operation-order mir)]
+    (if (map? payload)
+      (if (= (set (keys payload))
+             #{:artifact :c11-artifact-id :c13-artifact-id
+               :c13-semantic-id :mir :operation-order :fact-bindings})
+        (if (= [(get payload :artifact)
+                (get payload :c11-artifact-id)
+                (get payload :c13-artifact-id)
+                (get payload :c13-semantic-id)]
+               [:gravity/c14-bounded-wasm-lowering-payload
+                (get input :c11-artifact-id)
+                (get input :artifact-id)
+                (get input :id)])
+          (if (map? mir)
+            (if (= [(get mir :artifact) (get mir :schema-version)
+                    (get mir :profile) (get mir :source-target)
+                    (get mir :target-request)
+                    (get mir :verification-status)
+                    (get mir :target-independent?)]
+                   [:gravity/mir-module 1 :hosted :jvm :wasm :passed true])
+              (if (= (get payload :operation-order) operation-order)
+                (if (> (count operation-order) 0)
+                  (if (<= (count operation-order) 127)
+                    (if (= (count operation-order) (count (set operation-order)))
+                      (if (map? facts)
+                        (if (= (set (keys facts))
+                               #{:type :effect :ownership :capability :safety
+                                 :runtime-checks :proofs :source-map})
+                          (if (b1-wasm-content-bindings-valid?
+                               [:type :effect :ownership :capability :safety
+                                :runtime-checks :proofs :source-map]
+                               facts)
+                            (if (= (get facts :runtime-checks)
+                                   {:content-id
+                                    "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+                                    :entry-count 0})
+                              (if (b1-c14-c-fact-binding-counts-valid? mir facts)
+                                (if (b1-c14-c-fact-projections-valid?
+                                     mir request facts)
+                                  (if (b1-c14-c-contract-preimages-valid?
+                                       mir request)
+                                    (if (= [(get facts :type)
+                                            (get facts :ownership)
+                                            (get facts :safety)
+                                            (get facts :source-map)]
+                                           [(get bindings :type)
+                                            (get bindings :ownership)
+                                            (get bindings :safety)
+                                            (get bindings :source-map)])
+                                      (if (= (get mir :source-core)
+                                             (get dependencies :source-core)
+                                             (get (get (get (get input
+                                                                   :verifier-report)
+                                                          :b1-preflight)
+                                                     :binding)
+                                                :checked-core-artifact-id))
+                                        (if (= (get mir :b1-preflight)
+                                               (get (get input :verifier-report)
+                                                    :b1-preflight))
+                                          (= (get (get mir
+                                                       :pass-execution-record)
+                                                  :record-id)
+                                             (get dependencies :c11-pass))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn b1-bounded-c14-wasm-input-valid?
+  [lowering]
+  (if (map? lowering)
+    (if (= (set (keys lowering))
+           #{:artifact :schema-version :status :request
+             :bounded-lowering-payload :eligibility
+             :abi-layout :runtime-provider :proof-target-metadata
+             :dependency-provenance :diagnostics :semantic-authority
+             :execution-tcb :clojure-seed-boundary? :self-hosted?
+             :source-rule :actual-path-provenance :semantic-id
+             :artifact-id :actual-path-binding-id})
+      (if (= [(get lowering :artifact) (get lowering :schema-version)
+              (get lowering :status) (get lowering :diagnostics)
+              (get lowering :semantic-authority)
+              (get lowering :execution-tcb)
+              (get lowering :clojure-seed-boundary?)
+              (get lowering :self-hosted?)]
+             [:gravity/c14-bounded-wasm-lowering-record 1 :accepted []
+              :gravity-source :clojure-stage0-rule-runner true false])
+        (if (b1-sha256-id? (get lowering :semantic-id))
+          (if (b1-sha256-id? (get lowering :artifact-id))
+            (if (b1-sha256-id? (get lowering :actual-path-binding-id))
+              (if (b1-c14-wasm-source-rule-valid?
+                   (get lowering :source-rule))
+                (if (map? (get lowering :actual-path-provenance))
+                  (if (= (set (keys (get lowering :actual-path-provenance)))
+                         #{:source :c11-source :c13-source :c14-source})
+                    (if (b1-bounded-c14-wasm-request-valid?
+                         (get lowering :request))
+                      (if (b1-bounded-c14-wasm-eligibility-valid?
+                           (get lowering :eligibility))
+                        (if (= (get (get lowering :request) :target)
+                               (get (get lowering :eligibility) :target))
+                          (if (= (get (get lowering :request) :providers)
+                                 (get (get lowering :eligibility)
+                                      :required-providers))
+                            (if (b1-c14-projected-records-valid? lowering)
+                              (b1-c14-wasm-payload-valid? lowering)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-bounded-wasm-manifest-valid?
+  [backend-manifest]
+  (if (map? backend-manifest)
+    (if (= (set (keys backend-manifest))
+           #{:artifact :backend :version :accepts :emits :requires
+             :supports-profiles :rejects :target-kind :memory-width
+             :features :imports :runtime-helpers
+             :c14-request-id :c14-artifact-id})
+      (if (= [(get backend-manifest :artifact)
+              (get backend-manifest :backend)
+              (get backend-manifest :version)
+              (get backend-manifest :accepts)
+              (get backend-manifest :emits)
+              (get backend-manifest :requires)
+              (get backend-manifest :supports-profiles)
+              (get backend-manifest :rejects)
+              (get backend-manifest :target-kind)
+              (get backend-manifest :memory-width)
+              (get backend-manifest :features)
+              (get backend-manifest :imports)
+              (get backend-manifest :runtime-helpers)]
+             [:gravity/backend-manifest
+              :gravity.backend/wasm
+              :bounded-authenticated-wasm32-core-v1
+              [:gravity/mir]
+              [:wasm-core-module]
+              [:profile-manifest :target-manifest :wasm-feature-policy
+               :abi-policy :runtime-provider-selection :effect-summary
+               :capability-proof-summary :safety-bundle :proof-table
+               :source-map :dependency-graph]
+              [:hosted]
+              [:unverified-ir :unsupported-op :missing-proof
+               :implicit-ub :ambient-capability :profile-violation
+               :unsupported-wasm-feature]
+              :core-module :wasm32 #{} [] []])
+        (if (b1-sha256-id? (get backend-manifest :c14-request-id))
+          (b1-sha256-id? (get backend-manifest :c14-artifact-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn b1-build-bounded-wasm-authenticated-packet
+  [lowering backend-manifest]
+  (if (b1-bounded-c14-wasm-input-valid? lowering)
+    (if (b1-bounded-wasm-manifest-valid? backend-manifest)
+      (if (= (get backend-manifest :c14-request-id)
+             (get (get lowering :request) :request-id))
+        (if (= (get backend-manifest :c14-artifact-id)
+               (get lowering :artifact-id))
+          (let [request (get lowering :request)]
+            {:artifact :gravity/b1-verified-backend-input-packet
+             :schema-version 1
+             :status :accepted-for-bounded-wasm
+             :input (get request :input)
+             :bounded-lowering-payload
+             (get lowering :bounded-lowering-payload)
+             :profile (get request :profile-contract)
+             :target (get request :target)
+             :source-target-selection
+             (get request :source-target-selection)
+             :target-kind :core-module
+             :memory-width :wasm32
+             :features #{}
+             :abi (get request :abi)
+             :runtime (get request :runtime)
+             :providers (get request :providers)
+             :effects (get request :effects)
+             :capabilities (get request :capabilities)
+             :safety (get request :safety)
+             :proofs (get request :proofs)
+             :proof-to-target-metadata
+             (get request :proof-to-target-metadata)
+             :source-map (get request :source-map)
+             :dependencies (get request :dependency-provenance)
+             :contract-bindings (get request :contract-bindings)
+             :c14-eligibility (get lowering :eligibility)
+             :eligibility
+             {:artifact :gravity/b1-backend-eligibility-report
+              :backend :gravity.backend/wasm
+              :input-artifact (get (get request :input) :artifact-id)
+              :profile (get request :profile)
+              :target (get request :target)
+              :accepted? true :rejections [] :fallbacks []
+              :missing-evidence [] :unsupported-operations []
+              :remediation []
+              :checks
+              [:profile-backend-compatibility
+               :target-feature-support
+               :runtime-availability-or-no-runtime-proof
+               :abi-representability :layout-representability
+               :provider-availability :effect-preservation
+               :capability-preservation :safety-bundle-completeness
+               :proof-validity-for-target-assumptions
+               :source-debug-map-preservation
+               :wasm32-core-module-closure]}
+             :backend-manifest backend-manifest
+             :unsupported-feature-report
+             {:status :bounded-surface-only
+              :policy
+              (get (get request :unsupported-feature-report) :policy)
+              :diagnostic "B1-UNSUPPORTED"
+              :fallback-status :rejected}
+             :diagnostics []
+             :semantic-authority :gravity-source
+             :execution-tcb :clojure-stage0-rule-runner
+             :clojure-seed-boundary? true
+             :whole-b1? false :whole-b4? false :self-hosted? false})
+          {:artifact :gravity/b1-verified-backend-input-packet
+           :schema-version 1 :status :rejected
+           :diagnostic "B1-INPUT"
+           :missing-fact :c14-artifact-manifest-binding
+           :diagnostics ["B1-INPUT"]})
+        {:artifact :gravity/b1-verified-backend-input-packet
+         :schema-version 1 :status :rejected
+         :diagnostic "B1-INPUT"
+         :missing-fact :c14-request-manifest-binding
+         :diagnostics ["B1-INPUT"]})
+      {:artifact :gravity/b1-verified-backend-input-packet
+       :schema-version 1 :status :rejected
+       :diagnostic "B1-TARGET"
+       :missing-fact :exact-hosted-wasm32-core-backend-manifest
+       :diagnostics ["B1-TARGET"]})
+    {:artifact :gravity/b1-verified-backend-input-packet
+     :schema-version 1 :status :rejected
+     :diagnostic "B1-INPUT"
+     :missing-fact :accepted-c14-wasm-lowering-record
      :diagnostics ["B1-INPUT"]}))
