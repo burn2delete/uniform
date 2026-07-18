@@ -1,0 +1,151 @@
+{:schema :gravity/self-hosting-slice-ownership-v1
+ :slice "SH-01"
+ :coordination-plan "docs/self-hosting-slice-backlog.md"
+ :integration-owner :master-coordinator
+ :status :complete
+
+ :coordinator-owned
+ {:central-routing
+  ["deps.edn"
+   "bin/gravity"
+   "bin/gravity-bootstrap"
+   "bootstrap/clojure/java/gravity/cli/Main.java"
+   "bootstrap/clojure/src/gravity/bootstrap.clj"
+   "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"]
+  :host-boundary-modules
+  ["bootstrap/clojure/src/gravity/cli.clj"
+   "bootstrap/clojure/src/gravity/darwin_publication.clj"
+   "bootstrap/clojure/src/gravity/diagnostics.clj"]
+  :host-boundary-tests
+  ["bootstrap/clojure/test/gravity/cli_test.clj"
+   "bootstrap/clojure/test/gravity/darwin_publication_test.clj"
+   "bootstrap/clojure/test/gravity/diagnostics_test.clj"]
+  :legacy-fixture-prefixes
+  ["bootstrap/clojure/fixtures/accepted/"
+   "bootstrap/clojure/fixtures/rejected/"]
+  :integration-surfaces
+  ["bootstrap/gravity/p15_s23/compiler.gravity"
+   "bootstrap/gravity/p15_s23/emitter.gravity"
+   "bootstrap/gravity/p15_s23/runtime.gravity"
+   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"]
+  :coordination-state
+  ["docs/self-hosting-slice-backlog.md"
+   "docs/self-hosting-slice-ownership.edn"]
+  :generated-evidence-prefixes
+  ["docs/artifacts/" "target/phase-18/" "target/validation/"]
+  :coverage-prefixes
+  ["docs/artifacts/full-language/coverage/"
+   "docs/artifacts/full-language/reports/full-language-coverage-"]
+  :coverage-generator-paths
+  ["tools/generate_full_language_coverage_matrix.py"
+   "tools/validate_full_language_roadmap.py"]
+  :completion-state-paths
+  ["docs/artifacts/full-language/coverage/full-language-completion-attestations.json"
+   "docs/self-hosting-slice-backlog.md"]}
+
+ :module-owners
+ {"bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
+  "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
+  "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity" :sh-target-mobile
+  "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity" :sh-target-c
+  "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity" :sh-target-llvm
+  "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity" :sh-target-wasm
+  "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity" :sh-target-jvm
+  "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity" :sh-target-js
+  "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity" :sh-target-mlir
+  "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity" :sh-target-gpu
+  "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity" :sh-target-hdl
+  "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
+  "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
+  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity" :sh-safety
+  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
+  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir
+  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity" :sh-optimization
+  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity" :sh-incremental
+  "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity" :sh-pass-api
+  "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity" :sh-verification
+  "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity" :sh-syntax
+  "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
+  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
+  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity" :sh-types
+  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity" :sh-effects
+  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity" :sh-ownership
+  "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity" :sh-reader
+  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core}
+
+ :reserved-leaf-modules
+ {"bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity" :sh-envelope}
+
+ :future-path-conventions
+ {:fixture-root-template
+  "bootstrap/clojure/fixtures/self-hosting/sh-NN/{accepted,rejected}/"
+  :fixture-owner-template :sh-NN-leaf
+  :test-file-template
+  "bootstrap/clojure/test/gravity/self_hosting/shNN_*_test.clj"
+  :test-namespace-template "gravity.self-hosting.shNN-*-test"
+  :test-owner-template :sh-NN-leaf
+  :test-runner gravity.self-hosting-test-runner
+  :discovery-resource "gravity/self_hosting"
+  :worker-may-create [:reserved-leaf-module :new-fixture :dedicated-test]
+  :worker-must-not-edit
+  [:central-routing :integration-surface :generated-evidence
+   :coverage-accounting :completion-state :another-leaf-owner]}
+
+ :slice-owners
+ {"SH-00" {:integration-owner :master-coordinator :leaf-owner :sh-target-wasm}
+  "SH-01" {:integration-owner :master-coordinator :leaf-owner :sh-01-leaf}
+  "SH-02" {:integration-owner :master-coordinator :leaf-owner :sh-envelope}
+  "SH-03" {:integration-owner :master-coordinator :leaf-owner :sh-reader}
+  "SH-04" {:integration-owner :master-coordinator :leaf-owner :sh-syntax}
+  "SH-05" {:integration-owner :master-coordinator :leaf-owner :sh-macro}
+  "SH-06" {:integration-owner :master-coordinator :leaf-owner :sh-resolution}
+  "SH-07" {:integration-owner :master-coordinator :leaf-owner :sh-core}
+  "SH-08" {:integration-owner :master-coordinator :leaf-owner :sh-types}
+  "SH-09" {:integration-owner :master-coordinator :leaf-owner :sh-effects}
+  "SH-10" {:integration-owner :master-coordinator :leaf-owner :sh-ownership}
+  "SH-11" {:integration-owner :master-coordinator :leaf-owner :sh-safety}
+  "SH-12" {:integration-owner :master-coordinator :leaf-owner :sh-mir}
+  "SH-13" {:integration-owner :master-coordinator :leaf-owner :sh-mir}
+  "SH-14" {:integration-owner :master-coordinator :leaf-owner :sh-domain-ir}
+  "SH-15" {:integration-owner :master-coordinator :leaf-owner :master-coordinator}
+  "SH-16" {:integration-owner :master-coordinator :leaf-owner :sh-optimization}
+  "SH-17" {:integration-owner :master-coordinator :leaf-owner :master-coordinator}
+  "SH-18" {:integration-owner :master-coordinator :leaf-owner :sh-target-native}
+  "SH-19" {:integration-owner :master-coordinator :leaf-owner :sh-runtime}
+  "SH-20" {:integration-owner :master-coordinator :leaf-owner :sh-artifact-emission}
+  "SH-21" {:integration-owner :master-coordinator :leaf-owner :sh-meta-compiler}
+  "SH-22" {:integration-owner :master-coordinator :leaf-owner :sh-standard-library}
+  "SH-23" {:integration-owner :master-coordinator :leaf-owner :sh-package-build}
+  "SH-24" {:integration-owner :master-coordinator :leaf-owner :master-coordinator}
+  "SH-25" {:integration-owner :master-coordinator :leaf-owner :sh-component-build}
+  "SH-26" {:integration-owner :master-coordinator :leaf-owner :sh-stage-rebuild}
+  "SH-27" {:integration-owner :master-coordinator :leaf-owner :sh-stage-equivalence}
+  "SH-28" {:integration-owner :master-coordinator :leaf-owner :sh-provenance}
+  "SH-29" {:integration-owner :master-coordinator :leaf-owner :master-coordinator}}
+
+ :first-parallel-wave
+ [{:owner :sh-reader
+   :eligible-after ["SH-01" "SH-02"]
+   :paths
+   ["bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+    "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"]}
+  {:owner :sh-syntax
+   :eligible-after ["SH-01" "SH-02" "SH-03"]
+   :paths
+   ["bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
+    "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"]}
+  {:owner :sh-target-native
+   :eligible-after ["SH-01"]
+   :paths [:new-native-fixtures :dedicated-native-tests]
+   :forbidden-paths
+   ["bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+    "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"]}]}
