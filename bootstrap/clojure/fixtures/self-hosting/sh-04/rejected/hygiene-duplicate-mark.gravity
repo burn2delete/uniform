@@ -1,0 +1,5 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:hygiene :marks]
+ :value [:reader-mark :reader-mark]
+ :expected-rule "C3-HYGIENE"}

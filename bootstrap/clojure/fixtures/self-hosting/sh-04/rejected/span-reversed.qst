@@ -1,0 +1,5 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:span :byte-end]
+ :value -1
+ :expected-rule "C3-SPAN"}

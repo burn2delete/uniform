@@ -74149,189 +74149,95 @@
      :representation-status :genuine-lexical-token-and-recursive-form-tree
      :status :partial}))
 
-(declare c2-reader-extension-invocations)
+(declare c2-reader-extension-invocations compiler-c2-reader-source-artifact)
 
 (defn p15-s23-source-syntax-c2-artifact
   ([source-path source-text]
    (p15-s23-source-syntax-c2-artifact
     source-path source-text (reader-project-context-for-source source-path)))
   ([source-path source-text project-context]
-   (try
-    (let [reader-options standard-reader-options
-        products (c2-reader-products source-path source-text reader-options
-                                     project-context)
-        forms (:parsed-values products)
-        _ (validate-ns-syntax! source-path forms)
-        module-context (reader-module-context forms)
-        source-unit (:source-unit products)
-        token-stream (:token-stream products)
-        form-tree (:form-tree products)
-        top-level-form-ids (:root-form-ids products)
-        syntax-seeds (c2-syntax-seed-stream source-path products module-context)
-        deferred-literals (or (:deferred-literal-records products)
-                              (c2-deferred-semantic-literals form-tree))
-        literal-records (or (:literal-decoding-records products)
-                            (c2-literal-records form-tree))
-        extension-invocations
-        (or (:reader-extension-invocation-records products)
-            (c2-reader-extension-invocations form-tree))
-        diagnostics []
-        lexical-validation (c2-lexical-product-validation
-                            source-text token-stream form-tree
-                            top-level-form-ids)
-        lexical-token-stream?
-        (every? true?
-                (map lexical-validation
-                     [:ordered-token-ids-unique?
-                      :token-raw-slices-exact?
-                      :token-provenance-complete?
-                      :no-token-contains-top-level-form?]))
-        nested-form-tree?
-        (every? true?
-                (map lexical-validation
-                     [:form-ids-unique?
-                      :graph-valid?
-                      :root-form-ids-resolve?
-                      :form-raw-slices-exact?
-                      :form-links-resolve?
-                      :parent-spans-enclose-children?
-                      :collection-delimiters-resolve?]))
-        incremental-hashes (c2-incremental-hashes
-                            source-unit token-stream form-tree syntax-seeds
-                            extension-invocations diagnostics)
-        integrity-record (c2-reader-product-integrity-record
-                          source-unit top-level-form-ids incremental-hashes
-                          literal-records deferred-literals)
-        artifact-base
-        {:kind :gravity/stage0-c2-reader-document-artifact
-         :task "P15-S23"
-         :document-set ["C2"]
-         :governing-document
-         "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
-         :pass {:name :p15-s23-source-unit-reader-proof
-                :input :gravity-source-bytes
-                :output :source-unit-and-reader-source-map
-                :requires [:source-bytes :reader-options]
-                :preserves [:source-spans :source-unit-identity
-                            :reader-origin :literal-facts]
-                :emits [:source-unit-record :token-stream :form-tree
-                        :reader-source-map :incremental-reader-hashes]
-                :rejects p15-s23-source-syntax-serialization-diagnostic-ids}
-         :status :partial
-         :source-unit-record source-unit
-         :representation-boundary
-         {:token-stream :ordered-utf8-lexical-token-stream
-          :form-tree :recursive-delimiter-linked-form-tree
-          :lexical-token-stream? lexical-token-stream?
-          :nested-form-tree? nested-form-tree?
-          :status (if (and lexical-token-stream? nested-form-tree?)
-                    :complete-for-slice
-                    :failed)}
-         :token-stream token-stream
-         :form-tree form-tree
-         :top-level-form-ids top-level-form-ids
-         :parsed-semantic-values (:parsed-values products)
-         :lexical-product-validation lexical-validation
-         :syntax-seed-stream syntax-seeds
-         :reader-source-map (mapv #(select-keys % [:syntax-id :form-id :span])
-                                  syntax-seeds)
-         :gravity-reader-source-map (:gravity-reader-source-map products)
-         :literal-decoding-records literal-records
-         :trivia-retention-records (c2-trivia-records token-stream)
-         :reader-extension-invocation-records extension-invocations
-         :semantic-error-deferment-record
-         {:artifact :gravity/semantic-error-deferment
-          :forms-retained [:unknown-symbol :profile-illegal-form
-                           :zero-denominator-ratio]
-          :deferred-literal-records deferred-literals
-          :semantic-analysis-in-reader? false
-          :module-parser-invoked? false
-          :deferred? true
-          :owner-phases [:namespace-analysis :type-check :profile-validate
-                         :numeric-mode-validation]}
-         :reader-diagnostics diagnostics
-         :incremental-reader-hashes incremental-hashes
-         :reader-product-integrity integrity-record
-         :p15-s23-source-syntax-reader-results
-         {:source-unit-status :complete
-          :source-map-status :complete
-          :incremental-hash-status :complete
-          :token-stream-status :complete-for-slice
-          :form-tree-status :complete-for-slice
-          :abbreviation-fixture-status :not-required-for-p15-source-proof
-          :status :partial}
-         :diagnostics []}
-        proof (p15-s23-source-syntax-c2-capability-proof artifact-base)
-        _ (when-not (and (:lexical-token-stream? proof)
-                         (:nested-form-tree? proof))
-            (p15-s23-source-syntax-serialization-fail!
-             "P15S23S003" source-path lexical-validation
-             {:missing-fields [:lexical-token-stream :nested-form-tree]}))
-        artifact (assoc artifact-base :capability-based-proof proof)]
-      (assoc artifact :artifact-id (c2-reader-artifact-id artifact)))
-     (catch clojure.lang.ExceptionInfo ex
-       (c2-reader-remap-exception! source-path ex)))))
+   (let [authoritative
+         (compiler-c2-reader-source-artifact source-path source-text
+                                             project-context)
+         proof (p15-s23-source-syntax-c2-capability-proof authoritative)
+         lexical-validation (:lexical-product-validation authoritative)
+         _ (when-not (and (:lexical-token-stream? proof)
+                          (:nested-form-tree? proof))
+             (p15-s23-source-syntax-serialization-fail!
+              "P15S23S003" source-path lexical-validation
+              {:missing-fields [:lexical-token-stream :nested-form-tree]}))
+         artifact
+         (assoc authoritative
+                :task "P15-S23"
+                :p15-compatibility-pass
+                {:name :p15-s23-source-unit-reader-proof
+                 :input :gravity-source-bytes
+                 :output :authenticated-sh03-c2-reader-products
+                 :authoritative-result? true
+                 :legacy-reader-constructor-invoked? false}
+                :p15-s23-source-syntax-reader-results
+                {:source-unit-status :complete
+                 :source-map-status :complete
+                 :incremental-hash-status :complete
+                 :token-stream-status :complete-for-slice
+                 :form-tree-status :complete-for-slice
+                 :abbreviation-fixture-status
+                 :not-required-for-p15-source-proof
+                 :status :partial}
+                :p15-s23-capability-based-proof proof)]
+     (assoc artifact :artifact-id (c2-reader-artifact-id artifact)))))
 
-(declare c2-top-level-products)
+(declare c2-top-level-products compiler-c3-syntax-source-artifact
+         sh03-reader-internal-product-authority c3-syntax-fail!)
 
 (defn p15-s23-source-syntax-c3-artifact
   [source-path c2-artifact]
-  (let [integrity-report
-        (c3-validate-c2-reader-artifact! source-path c2-artifact)
+  (let [_ (c3-validate-c2-reader-artifact! source-path c2-artifact)
+        source-text (c2-reader-artifact-source-text source-path c2-artifact)
         source-unit (:source-unit-record c2-artifact)
-        top-level-products (c2-top-level-products c2-artifact)
-        base-syntax (mapv (fn [seed {:keys [form-record token-record]}]
-                            (c3-syntax-object seed form-record token-record
-                                              source-unit c2-artifact
-                                              integrity-report))
-                          (:syntax-seed-stream c2-artifact)
-                          top-level-products)
-        generated (c3-generated-syntax-object
-                   (or (some #(when (seq (:origin %)) %) base-syntax)
-                       (first base-syntax)))
-        syntax-stream (conj base-syntax generated)
-        serialization (c3-syntax-serialization-fixture syntax-stream)
-        verifier (c3-syntax-verification-report syntax-stream serialization
-                                                c2-artifact)
-        artifact-base
-        {:kind :gravity/stage0-c3-syntax-object-artifact
-         :task "P15-S23"
-         :document-set ["C3"]
-         :governing-document c3-syntax-governing-document
-         :pass {:name :p15-s23-source-syntax-serialization-proof
-                :input :source-unit-and-reader-source-map
-                :output :syntax-object-serialization-proof
-                :requires [:source-unit-record :syntax-seed-stream
-                           :reader-source-map]
-                :preserves [:source-spans :syntax-identity :origin-chain
-                            :metadata :hygiene]
-                :emits [:syntax-object-stream
-                        :syntax-verification-report
-                        :syntax-serialization-fixture
-                        :origin-chain-graph]
-                :rejects c3-syntax-diagnostic-ids}
-         :c2-reader-artifact
-         (c3-reader-artifact-view c2-artifact)
-         :syntax-object-schema (c3-syntax-schema)
-         :syntax-object-stream syntax-stream
-         :hygiene-context-map (c3-hygiene-context-map syntax-stream)
-         :origin-chain-graph (c3-origin-chain-graph syntax-stream)
-         :metadata-ledger (c3-metadata-ledger syntax-stream)
-         :generated-syntax-report (c3-generated-syntax-report syntax-stream)
-         :fact-ledger (c3-fact-ledger syntax-stream)
-         :syntax-serialization-fixture serialization
-         :syntax-verification-report verifier
-         :rejected-design-coverage c3-syntax-rejected-designs
-         :p15-s23-source-syntax-results
-         {:syntax-object-count (count syntax-stream)
-          :serialization-status :complete
-          :verifier-status (:status verifier)
-          :status (if (= :passed (:status verifier)) :complete :failed)}
-         :diagnostics []}
-        _ (c3-syntax-validate! source-path artifact-base)
-        capability-proof (c3-syntax-capability-proof artifact-base)
-        artifact (assoc artifact-base
-                        :capability-based-proof capability-proof)]
+        project-context
+        {:project-root-id (:project-root source-unit)
+         :project-root-path (get-in source-unit [:project-root-record :path])
+         :project-relative-path (:project-relative-path source-unit)}
+        fresh-c2-artifact
+        (p15-s23-source-syntax-c2-artifact source-path source-text
+                                           project-context)
+        _ (when-not (= fresh-c2-artifact c2-artifact)
+            (c3-syntax-fail!
+             "C3-FACT-STALE" source-path
+             {:stage :syntax-object-model :producer :p15-compatibility}
+             {:missing-fields
+              [:fresh-authenticated-sh03-c2-artifact-equality]}))
+        authoritative
+        (compiler-c3-syntax-source-artifact source-path source-text
+                                            project-context c2-artifact
+                                            sh03-reader-internal-product-authority)
+        _ (when-not (= (:artifact-id c2-artifact)
+                       (get-in authoritative
+                               [:c2-reader-artifact :artifact-id]))
+            (c3-syntax-fail!
+             "C3-FACT-STALE" source-path
+             {:stage :syntax-object-model :producer :p15-compatibility}
+             {:missing-fields [:exact-precomputed-c2-artifact-binding]}))
+        verifier (:syntax-verification-report authoritative)
+        artifact
+        (assoc authoritative
+               :task "P15-S23"
+               :p15-compatibility-boundary
+               {:status :routed-through-gravity-sh04
+                :supplied-c2-artifact-id (:artifact-id c2-artifact)
+                :authoritative-c2-artifact-id
+                (get-in authoritative [:c2-reader-artifact :artifact-id])
+                :exact-precomputed-c2-consumed? true
+                :legacy-c3-constructor-invoked? false
+                :authoritative-result? true}
+               :p15-s23-source-syntax-results
+               {:syntax-object-count
+                (count (:syntax-object-stream authoritative))
+                :serialization-status :complete
+                :verifier-status (:status verifier)
+                :status (if (= :passed (:status verifier))
+                          :complete :failed)})]
     (assoc artifact :artifact-id (c3-artifact-id artifact))))
 
 (defn p15-s23-source-syntax-serialization-roundtrip-record
@@ -74625,12 +74531,21 @@
                       [:kind :artifact-id :status :source-unit-record
                        :reader-source-map :incremental-reader-hashes
                        :representation-boundary
+                       :gravity-reader-boundary
                        :p15-s23-source-syntax-reader-results
-                       :capability-based-proof])
+                       :capability-based-proof
+                       :p15-s23-capability-based-proof])
          :c3-syntax-artifact
          (select-keys c3-artifact
                       [:kind :artifact-id :syntax-serialization-fixture
-                       :syntax-verification-report :capability-based-proof])
+                       :syntax-verification-report :capability-based-proof
+                       :gravity-syntax-boundary
+                       :gravity-hygiene-context-map
+                       :gravity-metadata-ledger
+                       :gravity-fact-invalidation-ledger
+                       :gravity-origin-chain-graph
+                       :gravity-syntax-ownership-product
+                       :p15-compatibility-boundary])
          :source-unit-record (:source-unit-record c2-artifact)
          :syntax-object-stream (:syntax-object-stream c3-artifact)
          :syntax-object-summary
@@ -150847,7 +150762,12 @@
         (p15-s23-c6c10-canonical-digest
          source-path
          {:domain identity-domain :semantic-input identity-preimage})
-        fact-value {:family fact-name :entries []}
+        fact-entries
+        [{:syntax-result-id (:syntax-result-id summary)
+          :syntax-stream-id (:syntax-stream-id summary)
+          :serialization-id (:serialization-set-id summary)
+          :graph-id (:graph-id summary)}]
+        fact-value {:family fact-name :entries fact-entries}
         artifact-id
         (p15-s23-c6c10-canonical-digest
          source-path {:reader-result (:reader-result-id summary)})]
@@ -152139,6 +152059,8 @@
              :release-credit? false}
             :semantic-value-table-id
             (:sh03-semantic-value-table-id products)
+            :authenticated-envelope-descriptor
+            (:sh02-reader-envelope-descriptor products)
             :authenticated-envelope (:sh02-reader-envelope products)
             :target-source-reread? false
             :clojure-adapter-residual? true
@@ -152682,6 +152604,34 @@
            :reason :zero-denominator}))
       (catch NumberFormatException _ nil))))
 
+(defn c3-ratio-descriptor-from-raw
+  [raw]
+  (when-let [[_ numerator-spelling denominator-spelling]
+             (and (string? raw)
+                  (re-matches #"([+-]?[0-9]+)/([+-]?[0-9]+)" raw))]
+    (try
+      (let [numerator (bigint numerator-spelling)
+            denominator (bigint denominator-spelling)]
+        (if (zero? denominator)
+          {:artifact :gravity/deferred-ratio-literal
+           :kind :ratio
+           :raw raw
+           :numerator-spelling numerator-spelling
+           :denominator-spelling denominator-spelling
+           :numerator numerator
+           :denominator denominator
+           :semantic-validation :deferred
+           :reason :zero-denominator}
+          {:artifact :gravity/ratio-literal
+           :kind :ratio
+           :raw raw
+           :numerator-spelling numerator-spelling
+           :denominator-spelling denominator-spelling
+           :numerator numerator
+           :denominator denominator
+           :semantic-validation :accepted}))
+      (catch NumberFormatException _ nil))))
+
 (defn c3-lossless-literal-descriptor
   [seed form-record c2-artifact integrity-report]
   (let [integrity-report (or integrity-report
@@ -152703,8 +152653,7 @@
         ratio-token (when ratio-form
                       (tokens-by-id (:open-token ratio-form)))
         descriptor (when ratio-token
-                     (c3-deferred-ratio-descriptor-from-raw
-                      (:raw ratio-token)))
+                     (c3-ratio-descriptor-from-raw (:raw ratio-token)))
         literal-records
         (filterv #(= (:form-id ratio-form) (:form-id %))
                  (:literal-decoding-records c2-artifact))
@@ -152722,8 +152671,10 @@
      (and (:authentic? integrity-report)
           descriptor ratio-form ratio-token
           (= root-form-id (:form-id seed))
-          (= descriptor (:form seed))
-          (= descriptor (:value ratio-form) (:decoded ratio-token))
+          (if (= :deferred (:semantic-validation descriptor))
+            (and (= descriptor (:form seed))
+                 (= descriptor (:value ratio-form) (:decoded ratio-token)))
+            (= (:form seed) (:value ratio-form) (:decoded ratio-token)))
           (= :ratio (:kind ratio-form) (:kind ratio-token))
           (= (:open-token ratio-form) (:close-token ratio-form)
              (:token-id ratio-token))
@@ -152731,17 +152682,24 @@
              (:raw descriptor))
           (= (:span ratio-form) (:span ratio-token))
           (= 1 (count literal-records))
-          (= descriptor (:decoded (first literal-records)))
+          (= (if (= :deferred (:semantic-validation descriptor))
+               descriptor
+               (:form seed))
+             (:decoded (first literal-records)))
           (= (:raw descriptor) (:raw (first literal-records)))
           (= (:span ratio-form) (:span (first literal-records)))
           (= {:numerator-spelling (:numerator-spelling descriptor)
               :denominator-spelling (:denominator-spelling descriptor)
               :exact? true}
              (:facts (first literal-records)))
-          (= 1 (count deferred-records))
-          (= descriptor (:value (first deferred-records)))
-          (= (:raw descriptor) (:raw (first deferred-records)))
-          (= (:span ratio-form) (:span (first deferred-records)))
+          (if (= :deferred (:semantic-validation descriptor))
+            (and (= 1 (count deferred-records))
+                 (= descriptor (:value (first deferred-records)))
+                 (= (:raw descriptor) (:raw (first deferred-records)))
+                 (= (:span ratio-form) (:span (first deferred-records))))
+            (and (empty? deferred-records)
+                 (= (:form seed) (:decoded (first literal-records))
+                    (:value ratio-form) (:decoded ratio-token))))
           (= expected-seed-span (:span seed))
           (= (:raw form-record) (get-in seed [:reader-origin :raw-excerpt]))
           (= (:kind form-record)
@@ -152749,7 +152707,10 @@
           (if wrapper?
             (and (= :metadata (:abbrev form-record)
                     (get-in seed [:reader-origin :abbreviation]))
-                 (= descriptor (:value form-record)
+                 (= (if (= :deferred (:semantic-validation descriptor))
+                      descriptor
+                      (:form seed))
+                    (:value form-record)
                     (:expanded-form form-record)
                     (get-in seed [:generated-origin 0 :expanded-form]))
                  (= :metadata
@@ -152760,7 +152721,10 @@
                  (= (:form-id ratio-form)
                     (get-in form-record
                             [:generated-origin 0 :child-form-id])))
-            (and (= descriptor (:value form-record))
+            (and (= (if (= :deferred (:semantic-validation descriptor))
+                      descriptor
+                      (:form seed))
+                    (:value form-record))
                  (nil? (:abbrev form-record))
                  (empty? (:generated-origin seed)))))
      descriptor)))
@@ -152935,7 +152899,8 @@
   {:artifact :gravity/syntax-object-schema
    :required-fields [:artifact :syntax/id :form :span :source :namespace
                      :phase :profile :metadata :hygiene :origin :facts
-                     :version]
+                     :reader-binding :reader-source-revision :ownership
+                     :version :prior-syntax-ids :immutable?]
    :form-kinds c3-required-form-kinds
    :identity :content-derived
    :mutation :immutable
@@ -153024,9 +152989,13 @@
    (mapv (fn [syntax]
            {:syntax-id (:syntax/id syntax)
             :producer (get-in syntax [:origin 0 :producer])
-            :input-syntax-ids (get-in syntax [:origin 0 :inputs])
+            :input-syntax-ids (or (get-in syntax
+                                          [:origin 0 :input-syntax-ids])
+                                  (get-in syntax [:origin 0 :inputs]))
             :expansion-step 1
-            :generated-span (get-in syntax [:origin 0 :generated-span])
+            :generated-span (or (get-in syntax [:origin 0 :span])
+                                (get-in syntax
+                                        [:origin 0 :generated-span]))
             :caller-profile (:profile syntax)
             :hygiene (:hygiene syntax)})
          (filter #(= :generated-form (get-in % [:form :kind])) syntax-stream))
@@ -153044,12 +153013,20 @@
                  :reader-facts (mapv :facts syntax-stream)
                  :versions (mapv :version syntax-stream)}
         serialized (pr-str payload)
+        semantic-payload
+        (-> payload
+            (update :source-links
+                    #(mapv (fn [source]
+                             (dissoc source :actual-path :path))
+                           (or % []))))
         round-trip (read-string serialized)]
     {:artifact :gravity/syntax-serialization-fixture
      :format :edn
      :payload payload
      :canonical serialized
-     :hash (str "sha256:" (sha256-hex serialized))
+     :hash (reader-canonical-hash
+            {:domain :gravity/c3-syntax-serialization-fixture-v2
+             :semantic-payload semantic-payload})
      :roundtrip? (= payload round-trip)}))
 
 (defn c3-resolvable-span?
@@ -153060,35 +153037,222 @@
              (contains? primary :byte-start)
              (contains? primary :byte-end))
         (and (string? primary)
-             (str/starts-with? primary "generated:")))))
+             (str/starts-with? primary "generated:"))
+        (and (map? primary)
+             (= :generated (:kind primary))
+             (string? (:producer-id primary))
+             (re-find #"^sha256:[0-9a-f]{64}$" (:producer-id primary))
+             (integer? (:ordinal primary))
+             (not (neg? (:ordinal primary)))))))
+
+(declare sh04-syntax-current-binding!
+         sh04-syntax-execute!
+         sh04-syntax-rich-object
+         sh04-syntax-semantic-source-id
+         sh04-syntax-reader-binding
+         sh04-syntax-current-sh03-product-binding
+         sh04-syntax-descriptor-sh03-product-binding
+         sh04-syntax-sh02-descriptor
+         sh04-syntax-adapter-contract)
 
 (defn c3-syntax-stream-reader-products-authentic?
-  [syntax-stream c2-artifact]
-  (try
-    (let [integrity-report
-          (c3-c2-reader-integrity-report c2-artifact)
-          source-unit (:source-unit-record c2-artifact)
-          top-level-products (c2-top-level-products c2-artifact)
-          expected-base
-          (mapv (fn [seed {:keys [form-record token-record]}]
-                  (c3-syntax-object seed form-record token-record source-unit
-                                    c2-artifact integrity-report))
-                (:syntax-seed-stream c2-artifact)
-                top-level-products)
-          expected-generated
-          (c3-generated-syntax-object
-           (or (some #(when (seq (:origin %)) %) expected-base)
-               (first expected-base)))
-          expected-stream (conj expected-base expected-generated)]
-      (and (:authentic? integrity-report)
-           (= expected-stream syntax-stream)))
-    (catch StackOverflowError _ false)
-    (catch Exception _ false)))
+  ([syntax-stream c2-artifact]
+   (c3-syntax-stream-reader-products-authentic?
+    syntax-stream c2-artifact nil))
+  ([syntax-stream c2-artifact gravity-boundary]
+   (try
+     (let [integrity-report (c3-c2-reader-integrity-report c2-artifact)]
+       (if gravity-boundary
+         (let [result (:resolved-syntax-result gravity-boundary)
+               result-stream (:syntax-object-stream result)
+               source-path (get-in c2-artifact
+                                   [:source-unit-record :path])
+               semantic-source-id
+               (sh04-syntax-semantic-source-id
+                source-path (:source-unit-record c2-artifact))
+               expected-reader-authentication
+               (sh04-syntax-reader-binding
+                source-path c2-artifact semantic-source-id)
+               sh03-authentication
+               (or (:sh03-reader-authentication c2-artifact)
+                   (let [reader-boundary
+                         (:gravity-reader-boundary c2-artifact)]
+                     {:reader-result-id
+                      (get-in reader-boundary
+                              [:resolved-reader-result
+                               :incremental-reader-hashes
+                               :reader-result])
+                      :semantic-envelope-id
+                      (get-in reader-boundary
+                              [:authenticated-envelope
+                               :semantic-envelope-id])
+                      :provenance-binding-id
+                      (get-in reader-boundary
+                              [:authenticated-envelope
+                               :provenance-binding-id])}))
+               reader-authentication-provenance
+               (:reader-authentication-provenance gravity-boundary)
+               actual-sh03-envelope
+               (:actual-sh03-authenticated-envelope
+                reader-authentication-provenance)
+               actual-sh03-envelope-descriptor
+               (:actual-sh03-envelope-descriptor
+                reader-authentication-provenance)
+               expected-sh03-product-binding
+               (sh04-syntax-current-sh03-product-binding c2-artifact)
+               actual-sh03-product-binding
+               (sh04-syntax-descriptor-sh03-product-binding
+                actual-sh03-envelope-descriptor)
+               actual-sh03-envelope-verification
+               (p15-s23-stage2-sh02-descriptor-envelope-verify!
+                actual-sh03-envelope :c2-reader
+                :gravity/sh03-reader-products
+                actual-sh03-envelope-descriptor source-path)
+               binding (sh04-syntax-current-binding! source-path)
+               requests (:stream-digest-requests gravity-boundary)
+               digests (:stream-resolved-digests gravity-boundary)
+               fresh-stream-verification
+               (sh04-syntax-execute!
+                source-path binding 'c3-syntax-stream-verify-resolved
+                [result requests digests])
+               fresh-serialization
+               (sh04-syntax-execute!
+                source-path binding 'c3-syntax-serialize-template
+                [result requests digests])
+               fresh-deserialization
+               (sh04-syntax-execute!
+                source-path binding 'c3-syntax-deserialize-template
+                [(:carrier fresh-serialization)])
+               serialization-id
+               (p15-s23-c6c10-canonical-digest
+                source-path
+                (get-in gravity-boundary
+                        [:gravity-syntax-serialization
+                         :payload-id-request]))
+               expected-rich-stream
+               (mapv sh04-syntax-rich-object result-stream
+                     (repeat serialization-id))
+               source-syntax
+               (filterv #(not= :generated-form (get-in % [:form :kind]))
+                        syntax-stream)
+               generated-syntax
+               (filterv #(= :generated-form (get-in % [:form :kind]))
+                        syntax-stream)
+               expected-form-ids
+               (mapv :form-id (:syntax-seed-stream c2-artifact))
+               observed-form-ids
+               (mapv #(get-in % [:source :form-id]) source-syntax)
+               envelope (:authenticated-envelope gravity-boundary)
+               envelope-descriptor
+               (:authenticated-envelope-descriptor gravity-boundary)
+               expected-summary
+               {:slice :SH-04 :status :accepted
+                :adapter-contract sh04-syntax-adapter-contract
+                :semantic-source-id semantic-source-id
+                :reader-binding-id
+                (reader-canonical-hash
+                 (:reader-binding expected-reader-authentication))
+                :reader-source-revision-id
+                (get-in expected-reader-authentication
+                        [:reader-source-revision :revision-id])
+                :syntax-stream-id (:artifact-id result)
+                :serialization-set-id serialization-id
+                :graph-id
+                (reader-canonical-hash
+                 (:graph-verification-report result))
+                :syntax-result-id (:artifact-id result)}
+               expected-envelope-descriptor
+               (sh04-syntax-sh02-descriptor source-path binding
+                                            expected-summary)
+               expected-envelope
+               (p15-s23-stage2-sh02-descriptor-envelope
+                :c3-syntax :gravity/sh04-syntax-products
+                expected-envelope-descriptor source-path)
+               envelope-verification
+               (p15-s23-stage2-sh02-descriptor-envelope-verify!
+                envelope :c3-syntax :gravity/sh04-syntax-products
+                envelope-descriptor source-path)]
+           (and (:authentic? integrity-report)
+                (= :SH-04 (:slice gravity-boundary))
+                (= :gravity-source (:owner gravity-boundary))
+                (= :accepted (:status result))
+                (= syntax-stream expected-rich-stream)
+                (= (:reader-binding expected-reader-authentication)
+                   (:reader-semantic-binding gravity-boundary))
+                (= (:reader-source-revision
+                    expected-reader-authentication)
+                   (:reader-source-revision gravity-boundary))
+                (= (:reader-result-id sh03-authentication)
+                   (:actual-sh03-reader-result-id
+                    reader-authentication-provenance))
+                (= (:semantic-envelope-id sh03-authentication)
+                   (:actual-sh03-semantic-envelope-id
+                    reader-authentication-provenance))
+                (= (:provenance-binding-id sh03-authentication)
+                   (:actual-sh03-provenance-binding-id
+                    reader-authentication-provenance))
+                (= :passed actual-sh03-envelope-verification)
+                (= expected-sh03-product-binding
+                   actual-sh03-product-binding)
+                (= expected-sh03-product-binding
+                   (:actual-sh03-semantic-product-binding
+                    reader-authentication-provenance))
+                (= (:semantic-envelope-id actual-sh03-envelope)
+                   (:actual-sh03-semantic-envelope-id
+                    reader-authentication-provenance))
+                (= (:provenance-binding-id actual-sh03-envelope)
+                   (:actual-sh03-provenance-binding-id
+                    reader-authentication-provenance))
+                (= expected-form-ids observed-form-ids)
+                (= 1 (count generated-syntax))
+                (= (:reader-semantic-binding gravity-boundary)
+                   (:reader-binding result))
+                (= (:reader-source-revision gravity-boundary)
+                   (:reader-source-revision result))
+                (= :passed (:status fresh-stream-verification))
+                (= fresh-stream-verification
+                   (:resolved-stream-verification gravity-boundary))
+                (= :accepted (:status fresh-serialization))
+                (= fresh-serialization
+                   (:gravity-syntax-serialization gravity-boundary))
+                (= :accepted (:status fresh-deserialization))
+                (= fresh-deserialization
+                   (:gravity-syntax-deserialization gravity-boundary))
+                (= (:semantic-payload fresh-serialization)
+                   (:semantic-payload fresh-deserialization))
+                (= expected-envelope-descriptor envelope-descriptor)
+                (= expected-envelope envelope)
+                (= :passed
+                   (get-in result [:graph-verification-report :status]))
+                (= :accepted (:status envelope))
+                (= :c3-syntax (:stage envelope))
+                (= :passed envelope-verification)))
+         (let [source-unit (:source-unit-record c2-artifact)
+               top-level-products (c2-top-level-products c2-artifact)
+               expected-base
+               (mapv (fn [seed {:keys [form-record token-record]}]
+                       (c3-syntax-object seed form-record token-record
+                                         source-unit c2-artifact
+                                         integrity-report))
+                     (:syntax-seed-stream c2-artifact)
+                     top-level-products)
+               expected-generated
+               (c3-generated-syntax-object
+                (or (some #(when (seq (:origin %)) %) expected-base)
+                    (first expected-base)))
+               expected-stream (conj expected-base expected-generated)]
+           (and (:authentic? integrity-report)
+                (= expected-stream syntax-stream)))))
+     (catch StackOverflowError _ false)
+     (catch Exception _ false))))
 
 (defn c3-syntax-verification-report
   ([syntax-stream serialization]
    (c3-syntax-verification-report syntax-stream serialization nil))
   ([syntax-stream serialization c2-artifact]
+   (c3-syntax-verification-report
+    syntax-stream serialization c2-artifact nil))
+  ([syntax-stream serialization c2-artifact gravity-boundary]
    (let [required-fields (set (:required-fields (c3-syntax-schema)))
          checks
          {:required-fields-present?
@@ -153098,8 +153262,12 @@
           (every? #(c3-resolvable-span? (:span %)) syntax-stream)
           :generated-origins-valid?
           (every? #(and (get-in % [:origin 0 :producer])
-                        (seq (get-in % [:origin 0 :inputs]))
-                        (get-in % [:origin 0 :generated-span]))
+                        (seq (or (get-in %
+                                         [:origin 0 :input-syntax-ids])
+                                 (get-in % [:origin 0 :inputs])))
+                        (or (get-in % [:origin 0 :span])
+                            (get-in %
+                                    [:origin 0 :generated-span])))
                   (filter #(= :generated-form (get-in % [:form :kind]))
                           syntax-stream))
           :hygiene-visible? (every? #(map? (:hygiene %)) syntax-stream)
@@ -153114,7 +153282,7 @@
           :reader-products-authentic?
           (if c2-artifact
             (c3-syntax-stream-reader-products-authentic?
-             syntax-stream c2-artifact)
+             syntax-stream c2-artifact gravity-boundary)
             true)}]
      (assoc checks
             :artifact :gravity/syntax-verification-report
@@ -153136,9 +153304,14 @@
         fresh-serialization (c3-syntax-serialization-fixture syntax-stream)
         generated-report (:generated-syntax-report artifact)
         verifier (:syntax-verification-report artifact)
+        gravity-result
+        (get-in artifact
+                [:gravity-syntax-boundary :resolved-syntax-result])
+        gravity-ownership (:gravity-syntax-ownership-product artifact)
         fresh-verifier
         (c3-syntax-verification-report syntax-stream fresh-serialization
-                                       (:c2-reader-artifact artifact))
+                                       (:c2-reader-artifact artifact)
+                                       (:gravity-syntax-boundary artifact))
         checks
         {:construction-from-reader-seeds?
      (boolean (and (seq syntax-stream)
@@ -153178,6 +153351,21 @@
      (true? (:reader-products-authentic? fresh-verifier))
      :syntax-verifier-current? (= verifier fresh-verifier)
      :syntax-verifier-passed? (= :passed (:status fresh-verifier))
+     :gravity-authoritative-products-current?
+     (boolean
+      (and (= (:gravity-hygiene-context-map artifact)
+              (:hygiene-context-map gravity-result))
+           (= (:gravity-metadata-ledger artifact)
+              (:metadata-ledger gravity-result))
+           (= (:gravity-fact-invalidation-ledger artifact)
+              (:fact-invalidation-ledger gravity-result))
+           (= (:gravity-origin-chain-graph artifact)
+              (:origin-chain-graph gravity-result))
+           (= gravity-ownership (:ownership-product gravity-result))
+           (= :gravity-source (:owner gravity-ownership))
+           (= 'gravity.bootstrap.syntax (:module gravity-ownership))
+           (= (mapv :ownership (:syntax-object-stream gravity-result))
+              (:syntax-ownership gravity-ownership))))
      :diagnostics-covered?
      (= (set c3-syntax-diagnostic-ids) diagnostics)}]
     (assoc checks :status (if (every? true? (vals checks))
@@ -153198,6 +153386,8 @@
                         [:reader-products-authentic? "C3-FACT-STALE"]
                         [:syntax-verifier-current? "C3-FACT-STALE"]
                         [:syntax-verifier-passed? "C3-SHAPE"]
+                        [:gravity-authoritative-products-current?
+                         "C3-FACT-STALE"]
                         [:diagnostics-covered? "C3-SHAPE"]]]
       (when-not (get proof field)
         (c3-syntax-fail! id source-path {:stage :syntax-object-model}
@@ -153206,20 +153396,34 @@
 
 (defn c3-reader-artifact-view
   [c2-artifact]
-  (select-keys
-   c2-artifact
-   [:kind :artifact-id :task :document-set :source-overrides
-    :representation-boundary :capability-based-proof
-    :source-unit-record :token-stream :form-tree
-    :top-level-form-ids :parsed-semantic-values
-    :syntax-seed-stream :reader-source-map
-    :literal-decoding-records :semantic-error-deferment-record
-    :reader-extension-invocation-records :reader-diagnostics
-    :incremental-reader-hashes :reader-product-integrity]))
+  (let [boundary (:gravity-reader-boundary c2-artifact)]
+    (assoc
+     (select-keys
+      c2-artifact
+      [:kind :artifact-id :task :document-set :source-overrides
+       :representation-boundary :capability-based-proof
+       :source-unit-record :token-stream :form-tree
+       :top-level-form-ids :parsed-semantic-values
+       :syntax-seed-stream :reader-source-map
+       :literal-decoding-records :semantic-error-deferment-record
+       :reader-extension-invocation-records :reader-diagnostics
+       :incremental-reader-hashes :reader-product-integrity])
+     :sh03-reader-authentication
+     {:reader-result-id
+      (get-in boundary
+              [:resolved-reader-result :incremental-reader-hashes
+               :reader-result])
+     :semantic-envelope-id
+      (get-in boundary [:authenticated-envelope :semantic-envelope-id])
+      :provenance-binding-id
+      (get-in boundary
+              [:authenticated-envelope :provenance-binding-id])})))
 
 (defn c3-path-neutral-reader-artifact-view
   [c2-view]
   (-> c2-view
+      (update :sh03-reader-authentication
+              #(dissoc % :provenance-binding-id))
       (update :source-unit-record
               #(-> %
                    (dissoc :path)
@@ -153250,20 +153454,77 @@
                             #(mapv c2-path-neutral-span (or % []))))))
       (update :origin #(mapv c3-path-neutral-origin (or % [])))))
 
+(defn c3-gravity-syntax-boundary-identity-view
+  [boundary]
+  (let [binding (:plan-binding boundary)
+        result (:resolved-syntax-result boundary)
+        envelope (:authenticated-envelope boundary)]
+    {:slice (:slice boundary)
+     :owner (:owner boundary)
+     :adapter-contract (:adapter-contract boundary)
+     :plan-binding
+     (select-keys
+      binding
+      [:artifact :status :semantic-authority :source-byte-count
+       :source-content-hash :plan-semantic-hash
+       :functions-semantic-hash :function-count
+       :function-names-hash :function-shapes-hash
+       :public-function-hashes :public-function-shapes])
+     :reader-semantic-binding (:reader-semantic-binding boundary)
+     :reader-source-revision (:reader-source-revision boundary)
+     :resolved-syntax-result
+     (select-keys
+      result
+      [:artifact :kind :schema-version :status :artifact-id
+       :semantic-source-id
+       :reader-binding :root-syntax-ids :graph-verification-report
+       :syntax-serialization :authority :trusted-boundary])
+     :semantic-envelope-id (:semantic-envelope-id envelope)
+     :resolved-stream-verification
+     (select-keys (:resolved-stream-verification boundary)
+                  [:artifact :schema-version :status :checks])
+     :stream-digest-requests (:stream-digest-requests boundary)
+     :stream-resolved-digests (:stream-resolved-digests boundary)
+     :gravity-syntax-serialization
+     (select-keys (:gravity-syntax-serialization boundary)
+                  [:artifact :schema-version :status :encoding
+                   :payload-id-request])
+     :gravity-syntax-deserialization
+     (select-keys (:gravity-syntax-deserialization boundary)
+                  [:artifact :schema-version :status :encoding])
+     :uncredited-compatibility-facade
+     (:uncredited-compatibility-facade boundary)
+     :target-source-reread? (:target-source-reread? boundary)
+     :clojure-adapter-residual? (:clojure-adapter-residual? boundary)
+     :self-hosted? (:self-hosted? boundary)}))
+
 (defn c3-artifact-identity-input
   [artifact]
-  (-> artifact
-      (dissoc :artifact-id)
-      (update :c2-reader-artifact c3-path-neutral-reader-artifact-view)
-      (update :syntax-object-stream
-              #(mapv c3-path-neutral-syntax-object (or % [])))
-      (update-in [:origin-chain-graph :nodes]
-                 (fn [nodes]
-                   (mapv #(update % :origin
-                                  (fn [origins]
-                                    (mapv c3-path-neutral-origin
-                                          (or origins []))))
-                         (or nodes []))))))
+  (let [boundary (:gravity-syntax-boundary artifact)]
+    (cond->
+     (-> artifact
+         (dissoc :artifact-id)
+         (update :c2-reader-artifact c3-path-neutral-reader-artifact-view)
+         (update :syntax-object-stream
+                 #(mapv c3-path-neutral-syntax-object (or % [])))
+         (update-in [:origin-chain-graph :nodes]
+                    (fn [nodes]
+                      (mapv #(update % :origin
+                                     (fn [origins]
+                                       (mapv c3-path-neutral-origin
+                                             (or origins []))))
+                            (or nodes []))))
+         (update-in [:gravity-origin-chain-graph :nodes]
+                    (fn [nodes]
+                      (mapv #(update % :origin
+                                     (fn [origins]
+                                       (mapv c3-path-neutral-origin
+                                             (or origins []))))
+                            (or nodes [])))))
+      boundary
+      (assoc :c2-reader-artifact (:reader-semantic-binding boundary)
+             :gravity-syntax-boundary
+             (c3-gravity-syntax-boundary-identity-view boundary)))))
 
 (defn c3-artifact-id
   [artifact]
@@ -153273,6 +153534,8 @@
   [candidate source-path c2-artifact]
   (let [boundary (:gravity-reader-boundary c2-artifact)
         envelope (:authenticated-envelope boundary)
+        envelope-descriptor
+        (:authenticated-envelope-descriptor boundary)
         expected-binding
         (dissoc (sh03-reader-current-binding! source-path) :plan)]
     (when-not
@@ -153288,7 +153551,12 @@
           (= :accepted (:status envelope))
           (= :c2-reader (:stage envelope))
           (= :gravity/sh03-reader-products
-             (get-in envelope [:sealed-artifact :artifact-kind])))
+             (get-in envelope [:sealed-artifact :artifact-kind]))
+          (map? envelope-descriptor)
+          (= :passed
+             (p15-s23-stage2-sh02-descriptor-envelope-verify!
+              envelope :c2-reader :gravity/sh03-reader-products
+              envelope-descriptor source-path)))
       (c2-reader-fail!
        "C2-HASH" source-path
        {:stage :read-source
@@ -153296,6 +153564,989 @@
         :reader-options standard-reader-options}
        {:missing-fields [:authenticated-sh03-c3-precomputed-c2]}))
     c2-artifact))
+
+;; SH-04 executes the pinned Gravity syntax leaf and adapts only its verified
+;; products into the compatibility-rich C3 artifact below.  Clojure remains the
+;; declared plan runner, digest resolver, envelope binder, and provenance host.
+(def sh04-syntax-source-relative-path
+  "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+(def sh04-syntax-facade-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity")
+(def sh04-syntax-expected-source-byte-count 78419)
+(def sh04-syntax-expected-source-content-hash
+  "sha256:4f8c0bb33929da886191f8049fd3c3a22ff3e604262b22ade62ca6f78508130a")
+(def sh04-syntax-expected-plan-semantic-hash
+  "sha256:3b377cb5e05bc7a147cfbf302048960ebc490e5283907d5c5be4eae0c61135dd")
+(def sh04-syntax-expected-functions-semantic-hash
+  "sha256:277876dd2cc1683c6df495482ce79903bb45a581524adcd16e8a21889a84e0b4")
+(def sh04-syntax-expected-function-count 101)
+(def sh04-syntax-expected-function-names-hash
+  "sha256:8b81ebb52d1887a599d93ea0ab3ded3ab5a4609f6866ae35069ea4860e3a02dc")
+(def sh04-syntax-expected-function-shapes-hash
+  "sha256:78fc7ad64b443108531f0bdc8d25463b57dc63a73e27554b76e845da47ca9111")
+(def sh04-syntax-public-function-hashes
+   {'c3-syntax-build-template
+   "sha256:357fbc856a887303d79f89630c2a753a060e20e82c2cd2cf0c99f193d1cae1c2"
+   'c3-generated-syntax-template
+   "sha256:49d6cd154963531ec8e3e5b3b96d054ea2ed4dd01f26cd567e03ad303f2d467b"
+   'c3-syntax-verify-template
+   "sha256:9da610b70369c51fc0417f1d0eaf022e5c17dd66d0e77908ec47455bb620e0e6"
+   'c3-syntax-verify-resolved
+   "sha256:9c636df1fd6be6bb288794aeda88c18b52ad6ecf1f67b93bea2a9deea11def75"
+   'c3-syntax-stream-build-template
+   "sha256:6d8d7c7cbc6332c9593dd44a23fcf635f51bfd38beedcacf75ca4383c5e854b8"
+   'c3-syntax-stream-verify-resolved
+   "sha256:012f527a03a4e89c55a81399d4ac6f4ec581f3c192d57d860913f89ee416a249"
+   'c3-syntax-serialize-template
+   "sha256:cb2efa8fb02f79e0665d0682ada4d10b39e2467b0b77275b251ce925f1e10ef2"
+   'c3-syntax-deserialize-template
+   "sha256:37c6865345d142ba9b357ca086ce193ee89d72c5a2e3a3765486268bbfb7a784"
+   'c3-syntax-graph-verify-template
+   "sha256:d20f7492852b225dbe2c8f50e1a2d456a5596828b42368d5260aa2985b2f2650"})
+(def sh04-syntax-public-function-shapes
+  {'c3-syntax-build-template {:arity 1 :params ['descriptor]}
+   'c3-generated-syntax-template
+   {:arity 12
+    :params ['base-syntax-id 'form 'generated-span 'producer
+             'generation-reason 'namespace-context 'profile 'metadata
+             'hygiene 'facts 'reader-binding
+             'reader-source-revision]}
+   'c3-syntax-verify-template
+   {:arity 2 :params ['syntax 'digest-requests]}
+   'c3-syntax-verify-resolved
+   {:arity 5
+    :params ['syntax 'digest-requests 'resolved-digests
+             'reader-binding 'reader-source-revision]}
+   'c3-syntax-stream-build-template
+   {:arity 4
+    :params ['resolved-products 'reader-binding
+             'reader-source-revision 'root-syntax-ids]}
+   'c3-syntax-stream-verify-resolved
+   {:arity 3
+    :params ['resolved-stream 'digest-requests 'resolved-digests]}
+   'c3-syntax-serialize-template
+   {:arity 3
+    :params ['resolved-stream 'digest-requests 'resolved-digests]}
+   'c3-syntax-deserialize-template
+   {:arity 1 :params ['carrier]}
+   'c3-syntax-graph-verify-template
+   {:arity 1 :params ['syntax-objects]}})
+
+(def sh04-syntax-adapter-contract
+  :gravity/sh04-to-c3-syntax-products-v1)
+(def sh04-syntax-sealed-artifact-kind
+  :gravity/sh04-syntax-products)
+(def sh04-syntax-envelope-stage :c3-syntax)
+
+(defn sh04-syntax-boundary-fail!
+  [rule source-path missing-field observed facts]
+  (c3-syntax-fail!
+   rule source-path
+   {:source-span (source-span source-path 0)
+    :producer :gravity.bootstrap.syntax
+    :form-kind :syntax-object}
+   {:missing-fields [missing-field]
+    :facts (merge {:sh04-boundary :gravity-syntax-plan} facts)
+    :observed observed}))
+
+(defn sh04-syntax-resolve-source-path
+  []
+  (let [anchor (java.io.File.
+                (p15-s23-stage2-compiler-artifact-source-path))
+        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
+    (or
+     (loop [directory start]
+       (when directory
+         (let [candidate
+               (java.io.File. directory sh04-syntax-source-relative-path)]
+           (if (.isFile candidate)
+             (.getPath candidate)
+             (recur (.getParentFile directory))))))
+     sh04-syntax-source-relative-path)))
+
+(defn sh04-syntax-read-pinned-source!
+  [request-source]
+  (let [source-path (sh04-syntax-resolve-source-path)
+        nio-path (.toPath (java.io.File. source-path))
+        nofollow (into-array java.nio.file.LinkOption
+                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (try
+          (java.nio.file.Files/readAttributes
+           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception error
+            (sh04-syntax-boundary-fail!
+             "C3-ID" request-source :pinned-syntax-source-readable
+             source-path {:cause-message (.getMessage error)})))
+        _ (when-not (and attributes
+                         (.isRegularFile attributes)
+                         (= (long sh04-syntax-expected-source-byte-count)
+                            (.size attributes)))
+            (sh04-syntax-boundary-fail!
+             "C3-ID" request-source :exact-pinned-syntax-source
+             source-path
+             {:expected-byte-count sh04-syntax-expected-source-byte-count
+              :observed-byte-count (when attributes (.size attributes))}))
+        bytes
+        (try
+          (java.nio.file.Files/readAllBytes nio-path)
+          (catch Exception error
+            (sh04-syntax-boundary-fail!
+             "C3-ID" request-source :pinned-syntax-source-bytes
+             source-path {:cause-message (.getMessage error)})))
+        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+    (when-not (and (= sh04-syntax-expected-source-byte-count
+                      (alength bytes))
+                   (= sh04-syntax-expected-source-content-hash content-hash))
+      (sh04-syntax-boundary-fail!
+       "C3-ID" request-source :pinned-syntax-source-identity
+       source-path {:observed-content-hash content-hash
+                    :observed-byte-count (alength bytes)}))
+    {:source-path source-path
+     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
+     :source-byte-count (alength bytes)
+     :source-content-hash content-hash}))
+
+(defn sh04-syntax-plan-identities
+  [plan]
+  (let [functions (:functions plan)
+        shapes
+        (into (sorted-map)
+              (map (fn [[name function]]
+                     [name (select-keys function [:arity :params])]))
+              functions)]
+    {:plan-semantic-hash
+     (p15-s23-c11-mir-digest
+      (p15-s23-stage2-compiler-artifact-semantic-input plan))
+     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
+     :function-count (count functions)
+     :function-names-hash
+     (p15-s23-c11-mir-digest (vec (keys functions)))
+     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
+     :public-function-hashes
+     (into (sorted-map)
+           (map (fn [name]
+                  [name (p15-s23-c11-mir-digest (get functions name))]))
+           (keys sh04-syntax-public-function-hashes))
+     :public-function-shapes
+     (select-keys shapes (keys sh04-syntax-public-function-shapes))}))
+
+(defn sh04-syntax-build-binding!
+  [request-source]
+  (let [source (sh04-syntax-read-pinned-source! request-source)
+        emitter
+        (:emitter
+         (c-backend-stage2-plan-emitter-source-rule!
+          (:source-path source) :jvm))
+        plan
+        (p15-s23-stage2-compiler-artifact-plan
+         emitter (:source-path source) (:source-text source))
+        identities (sh04-syntax-plan-identities plan)]
+    (when-not
+     (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+          (true? (:compiler-artifact-plan? plan))
+          (= 'gravity.bootstrap.syntax (get-in plan [:module :module]))
+          (= :meta (get-in plan [:module :profile]))
+          (= :jvm (get-in plan [:module :target]))
+          (= #{} (get-in plan [:module :effects]))
+          (= #{} (get-in plan [:module :capabilities]))
+          (= :safe (get-in plan [:module :safety]))
+          (= sh04-syntax-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh04-syntax-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh04-syntax-expected-function-count
+             (:function-count identities))
+          (= sh04-syntax-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh04-syntax-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh04-syntax-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh04-syntax-public-function-shapes
+             (:public-function-shapes identities)))
+      (sh04-syntax-boundary-fail!
+       "C3-ID" request-source :pinned-syntax-plan-and-functions
+       identities {}))
+    (merge source identities
+           {:artifact :gravity/sh04-pinned-syntax-plan-binding
+            :status :complete
+            :semantic-authority :gravity-source
+            :compiled-by :clojure-stage0-seed
+            :executed-by :clojure-stage2-generic-rule-runner
+            :generic-bridge-residual? true
+            :self-hosted? false
+            :plan plan})))
+
+(def ^:private sh04-syntax-cached-binding
+  (delay (sh04-syntax-build-binding! "<sh04-syntax-bootstrap>")))
+
+(defn sh04-syntax-current-binding!
+  [request-source]
+  (let [fresh (sh04-syntax-read-pinned-source! request-source)
+        binding @sh04-syntax-cached-binding
+        identities (sh04-syntax-plan-identities (:plan binding))]
+    (when-not
+     (and (= (:source-byte-count fresh) (:source-byte-count binding))
+          (= (:source-content-hash fresh) (:source-content-hash binding))
+          (= (select-keys binding
+                          [:plan-semantic-hash :functions-semantic-hash
+                           :function-count :function-names-hash
+                           :function-shapes-hash :public-function-hashes
+                           :public-function-shapes])
+             identities))
+      (sh04-syntax-boundary-fail!
+       "C3-ID" request-source :fresh-syntax-source-and-plan-binding
+       binding {}))
+    binding))
+
+(declare sh04-syntax-strip-host-metadata)
+
+(defn sh04-syntax-execute!
+  [source-path binding function arguments]
+  (try
+    (let [clean-arguments
+          (sh04-syntax-strip-host-metadata arguments)]
+      (sh04-syntax-strip-host-metadata
+       (p15-s23-stage2-runtime-execute-function
+        {:engine :gravity-sh04-pinned-syntax-runner
+         :compiler-artifact-plan? true}
+        (:plan binding) function clean-arguments)))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (sh04-syntax-boundary-fail!
+       "C3-SHAPE" source-path :bounded-syntax-host-stack function
+       {:contained-host-error (.getName (class error))}))
+    (catch AssertionError error
+      (sh04-syntax-boundary-fail!
+       "C3-SHAPE" source-path :contained-syntax-assertion function
+       {:contained-host-error (.getName (class error))}))
+    (catch LinkageError error
+      (sh04-syntax-boundary-fail!
+       "C3-SHAPE" source-path :contained-syntax-linkage function
+       {:contained-host-error (.getName (class error))}))
+    (catch clojure.lang.ExceptionInfo error
+      (sh04-syntax-boundary-fail!
+       "C3-SHAPE" source-path :contained-syntax-runtime-diagnostic
+       function {:contained-diagnostic (:id (ex-data error))}))
+    (catch Exception error
+      (sh04-syntax-boundary-fail!
+       "C3-SHAPE" source-path :contained-syntax-host-failure function
+       {:contained-host-error (.getName (class error))
+        :cause-message (.getMessage error)}))))
+
+(defn sh04-syntax-require-carrier!
+  [source-path carrier value]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         value :default-only 1048576 256 4096)]
+    (when-not (= :passed (:status validation))
+      (sh04-syntax-boundary-fail!
+       "C3-SHAPE" source-path :bounded-syntax-result-carrier
+       carrier (select-keys validation [:reason :observed-nodes
+                                        :observed-depth :maximum-nodes
+                                        :maximum-depth :maximum-width])))
+    value))
+
+(defn sh04-syntax-raise-result!
+  [source-path result]
+  (sh04-syntax-require-carrier! source-path :gravity-syntax-result result)
+  (when-not (= :accepted (:status result))
+    (let [diagnostic (first (:diagnostics result))
+          rule (or (:rule diagnostic) "C3-SHAPE")]
+      (c3-syntax-fail!
+       rule source-path
+       {:source-span (or (get-in diagnostic [:primary :span])
+                         (source-span source-path 0))
+        :syntax-id (get-in diagnostic [:primary :syntax-id])
+        :producer :gravity.bootstrap.syntax
+        :form-kind (get-in diagnostic [:facts :form-kind])}
+       {:missing-fields (or (get-in diagnostic [:facts :missing-fields])
+                            [:accepted-gravity-syntax-result])
+        :facts {:gravity-diagnostic diagnostic}})))
+  result)
+
+(defn sh04-syntax-resolve-template!
+  [source-path binding raw reader-binding reader-source-revision]
+  (sh04-syntax-raise-result! source-path raw)
+  (let [requests (:digest-requests raw)
+        request-count (count requests)
+        _ (when-not (and (= :gravity/sh04-syntax-template-result
+                            (:artifact raw))
+                         (= 1 (:schema-version raw))
+                         (= 2 request-count)
+                         (= false
+                            (get-in raw
+                                    [:containment
+                                     :downstream-artifacts-forbidden])))
+            (sh04-syntax-boundary-fail!
+             "C3-SHAPE" source-path :exact-syntax-template-result raw {}))
+        verification
+        (sh04-syntax-execute!
+         source-path binding 'c3-syntax-verify-template
+         [(:syntax-template raw) requests])
+        _ (when-not (and (= :gravity/sh04-syntax-verification-report
+                            (:artifact verification))
+                         (= :passed (:status verification))
+                         (= false
+                            (get-in verification
+                                    [:containment
+                                     :downstream-artifacts-forbidden])))
+            (sh04-syntax-boundary-fail!
+             "C3-ID" source-path :fresh-gravity-syntax-template-replay
+             verification {}))
+        digests
+        (reduce
+         (fn [resolved request]
+           (let [ordinal (:ordinal request)
+                 resolved-preimage
+                 (p15-s23-c6c10-resolve-digest-references!
+                  source-path (:preimage request) request-count ordinal
+                  resolved)]
+             (when-not (= ordinal (count resolved))
+               (sh04-syntax-boundary-fail!
+                "C3-ID" source-path :ordered-syntax-digest-requests
+                request {:resolved-count (count resolved)}))
+             (conj resolved
+                   (p15-s23-c6c10-canonical-digest
+                    source-path resolved-preimage))))
+         [] requests)
+        syntax
+        (p15-s23-c6c10-resolve-digest-references!
+         source-path (:syntax-template raw) request-count nil digests)
+        resolved-verification
+        (sh04-syntax-execute!
+         source-path binding 'c3-syntax-verify-resolved
+         [syntax requests digests reader-binding reader-source-revision])
+        _ (when-not (and (= :gravity/sh04-resolved-syntax-verification-report
+                            (:artifact resolved-verification))
+                         (= :passed (:status resolved-verification))
+                         (= (:semantic-binding-id reader-binding)
+                            (first digests))
+                         (= (:syntax-id syntax) (second digests))
+                         (= false
+                            (get-in resolved-verification
+                                    [:containment
+                                     :downstream-artifacts-forbidden])))
+            (sh04-syntax-boundary-fail!
+             "C3-ID" source-path :fresh-resolved-syntax-verification
+             resolved-verification {}))]
+    {:raw-result raw
+     :verification-report verification
+     :resolved-verification-report resolved-verification
+     :resolved-digests digests
+     :syntax syntax
+     :serialization-id (:syntax-id syntax)}))
+
+(defn sh04-syntax-logical-stem
+  [source-path source-unit]
+  (-> (or (:project-relative-path source-unit)
+          (.getName (java.io.File. source-path)))
+      reader-normalize-relative-path
+      (str/replace #"\.(gravity|qst)$" "")))
+
+(defn sh04-syntax-semantic-source-id
+  [source-path source-unit]
+  (reader-canonical-hash
+   {:domain :gravity/sh04-co-canonical-source-v1
+    :logical-source-stem (sh04-syntax-logical-stem source-path source-unit)
+    :encoding (:encoding source-unit)
+    :bytes-hash (:bytes-hash source-unit)
+    :reader-options (:reader-options source-unit)}))
+
+(defn sh04-syntax-semantic-span
+  [span semantic-source-id]
+  {:source (:source span)
+   :file semantic-source-id
+   :byte-start (:byte-start span)
+   :byte-end (:byte-end span)
+   :scalar-start (or (:scalar-start span) (get-in span [:start :char]))
+   :scalar-end (or (:scalar-end span) (get-in span [:end :char]))
+   :line-start (or (:line-start span) (get-in span [:start :line]))
+   :column-start (or (:column-start span) (get-in span [:start :column]))
+   :line-end (or (:line-end span) (get-in span [:end :line]))
+   :column-end (or (:column-end span) (get-in span [:end :column]))})
+
+(def sh04-syntax-sh03-product-binding-keys
+  [:adapter-contract :adapted-source-unit-id :adapted-token-stream-id
+   :adapted-form-tree-id :adapted-extension-invocation-set-id])
+
+(defn sh04-syntax-current-sh03-product-binding
+  [c2-artifact]
+  {:adapter-contract
+   (or (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+       :gravity/sh03-to-c2-reader-products-v2)
+   :adapted-source-unit-id
+   (get-in c2-artifact [:source-unit-record :source-id])
+   :adapted-token-stream-id
+   (reader-canonical-hash (c2-token-hash-input (:token-stream c2-artifact)))
+   :adapted-form-tree-id
+   (reader-canonical-hash (c2-form-hash-input (:form-tree c2-artifact)))
+   :adapted-extension-invocation-set-id
+   (reader-canonical-hash
+    (c2-extension-hash-input
+     (:reader-extension-invocation-records c2-artifact)))})
+
+(defn sh04-syntax-descriptor-sh03-product-binding
+  [descriptor]
+  (let [summary
+        (:value
+         (some #(when (= :reader-product-identities (:name %)) %)
+               (:semantic-projections descriptor)))]
+    (when (map? summary)
+      (select-keys summary sh04-syntax-sh03-product-binding-keys))))
+
+(defn sh04-syntax-reader-binding
+  [source-path c2-artifact semantic-source-id]
+  (let [source-unit (:source-unit-record c2-artifact)
+        token-stream (:token-stream c2-artifact)
+        form-tree (:form-tree c2-artifact)
+        seeds (:syntax-seed-stream c2-artifact)
+        span-input
+        (fn [span]
+          (select-keys span [:byte-start :byte-end :scalar-start :scalar-end
+                             :line-start :column-start :line-end :column-end]))
+        semantic-core
+        {:semantic-source-id semantic-source-id
+         :source-bytes-hash (:bytes-hash source-unit)
+         :reader-options (:reader-options source-unit)
+         :token-stream-id
+         (reader-canonical-hash
+          (mapv (fn [token]
+                  {:token-id (:token-id token) :kind (:kind token)
+                   :raw (:raw token) :span (span-input (:span token))})
+                token-stream))
+         :form-tree-id
+         (reader-canonical-hash
+          (mapv (fn [form]
+                  {:form-id (:form-id form) :kind (:kind form)
+                   :children (:children form)
+                   :parent-form-id (:parent-form-id form)
+                   :raw (:raw form) :span (span-input (:span form))})
+                form-tree))
+         :syntax-seed-stream-id
+         (reader-canonical-hash
+          (mapv (fn [seed]
+                  {:form-id (:form-id seed) :form (:form seed)
+                   :span (span-input (:span seed))
+                   :metadata (:metadata seed) :phase (:phase seed)
+                   :profile (:profile seed)})
+                seeds))
+         :literal-records-id
+         (reader-canonical-hash
+          (mapv #(update % :span span-input)
+                (:literal-decoding-records c2-artifact)))
+         :deferment-records-id
+         (reader-canonical-hash
+          (mapv #(update % :span span-input)
+                (get-in c2-artifact
+                        [:semantic-error-deferment-record
+                         :deferred-literal-records])))
+         :extension-records-id
+         (reader-canonical-hash
+          (c2-extension-hash-input
+           (:reader-extension-invocation-records c2-artifact)))}
+        reader-result-id
+        (reader-canonical-hash
+         {:domain :gravity/sh04-semantic-sh03-reader-result-v1
+          :semantic-reader-products semantic-core})
+        c2-artifact-id
+        (reader-canonical-hash
+         {:domain :gravity/sh04-semantic-c2-adapter-v1
+          :adapter-contract
+          (or (get-in c2-artifact
+                      [:gravity-reader-boundary :adapter-contract])
+              :gravity/sh03-to-c2-reader-products-v2)
+          :semantic-reader-products semantic-core})
+        envelope-id
+        (reader-canonical-hash
+         {:domain :gravity/sh04-semantic-sh03-envelope-v1
+          :source-content-hash sh03-reader-expected-source-content-hash
+          :plan-semantic-hash sh03-reader-expected-plan-semantic-hash
+          :reader-result-id reader-result-id
+          :c2-artifact-id c2-artifact-id})
+        binding-base
+        (merge {:artifact :gravity/sh04-reader-semantic-binding
+                :schema-version 1}
+               semantic-core
+               {:reader-result-id reader-result-id
+                :c2-artifact-id c2-artifact-id
+                :authenticated-envelope-id envelope-id})
+        binding-preimage
+        (assoc binding-base
+               :domain :gravity/sh04-reader-semantic-binding-v1)
+        semantic-binding-id
+        (p15-s23-c6c10-canonical-digest source-path binding-preimage)
+        revision-base
+        {:artifact :gravity/sh03-reader-source-revision
+         :schema-version 1
+         :owner :sh03-reader
+         :source-language :gravity
+         :logical-source-path sh03-reader-source-relative-path
+         :source-content-hash sh03-reader-expected-source-content-hash
+         :source-byte-count sh03-reader-expected-source-byte-count
+         :plan-semantic-hash sh03-reader-expected-plan-semantic-hash
+         :functions-semantic-hash
+         sh03-reader-expected-functions-semantic-hash
+         :entry-function sh03-reader-entrypoint
+         :entry-semantic-hash sh03-reader-expected-entrypoint-semantic-hash
+         :verifier-function sh03-reader-verifier
+         :verifier-semantic-hash sh03-reader-expected-verifier-semantic-hash
+         :reader-result-id reader-result-id
+         :c2-artifact-id c2-artifact-id
+         :authenticated-envelope-id envelope-id
+         :semantic-binding-id semantic-binding-id}
+        revision
+        (assoc revision-base :revision-id
+               (p15-s23-c6c10-canonical-digest
+                source-path
+                {:domain :gravity/sh03-reader-source-revision-v1
+                 :revision revision-base}))
+        binding (assoc binding-base
+                       :semantic-binding-id semantic-binding-id
+                       :source-revision-id (:revision-id revision))]
+    {:reader-binding binding
+     :reader-source-revision revision}))
+
+(defn sh04-syntax-empty-hygiene
+  [namespace]
+  {:marks [] :lexical-scopes [] :renames {}
+   :introduced-identifiers [] :captures []
+   :macro-definition-namespace nil
+   :macro-call-site-namespace namespace})
+
+(defn sh04-syntax-strip-host-metadata
+  [value]
+  (let [clean
+        (cond
+          (map? value)
+          (into (empty value)
+                (map (fn [[key item]]
+                       [(sh04-syntax-strip-host-metadata key)
+                        (sh04-syntax-strip-host-metadata item)]))
+                value)
+
+          (vector? value)
+          (mapv sh04-syntax-strip-host-metadata value)
+
+          (set? value)
+          (into #{} (map sh04-syntax-strip-host-metadata) value)
+
+          (seq? value)
+          (apply list (map sh04-syntax-strip-host-metadata value))
+
+          :else value)]
+    (if (instance? clojure.lang.IObj clean)
+      (with-meta clean nil)
+      clean)))
+
+(defn sh04-syntax-source-descriptor
+  [seed form-record c2-artifact integrity-report semantic-source-id
+   reader-binding reader-source-revision]
+  (let [span (sh04-syntax-semantic-span (:span seed) semantic-source-id)
+        source-namespace (or (:namespace seed) 'gravity.user)
+        namespace-context {:current source-namespace :aliases {} :imports []}
+        literal-descriptor
+        (c3-lossless-literal-descriptor seed form-record c2-artifact
+                                        integrity-report)
+        kind (if literal-descriptor
+               (:kind form-record)
+               (form-kind (:form seed)))
+        host-facts (c3-source-facts seed form-record c2-artifact
+                                    integrity-report)
+        facts
+        (cond-> (dissoc host-facts :reader-product-integrity-hash
+                        :reader-source-id)
+          (seq host-facts)
+          (assoc :semantic-source-id semantic-source-id
+                 :reader-result-id (:reader-result-id reader-binding)
+                 :c2-artifact-id (:c2-artifact-id reader-binding)
+                 :authenticated-envelope-id
+                 (:authenticated-envelope-id reader-binding)))]
+    (sh04-syntax-strip-host-metadata
+     {:form {:kind kind :value (or literal-descriptor (:form seed))
+             :raw (or (get-in seed [:reader-origin :raw-excerpt]) "")}
+      :span span
+      :source {:source-id semantic-source-id
+               :form-id (:form-id form-record)
+               :token-range [(:open-token form-record)
+                             (:close-token form-record)]}
+      :namespace namespace-context
+      :phase (:phase seed)
+      :profile (or (:profile seed) :meta)
+      :metadata (or (:metadata seed) {})
+      :hygiene (sh04-syntax-empty-hygiene source-namespace)
+      :origin
+      [{:kind :source
+        :span span
+        :producer {:kind :reader :name 'gravity.bootstrap.reader
+                   :identity (:reader-result-id reader-binding)
+                   :source-id semantic-source-id
+                   :generated-form-id nil}
+        :producer-version "SH-03"
+        :input-syntax-ids []
+        :generation-reason :source-read
+        :build-effects []}]
+      :facts
+      [{:producer-stage :reader
+        :fact-kind :authenticated-reader-products
+        :value facts
+        :version 1
+        :invalidated-by [:macro-expansion :metadata-change
+                         :namespace-change]}]
+      :reader-binding reader-binding
+      :reader-source-revision reader-source-revision
+      :version 1})))
+
+(defn sh04-syntax-rich-object
+  [syntax serialization-id]
+  (-> syntax
+      (assoc :syntax/id (:syntax-id syntax)
+             :identity {:algorithm :sha256
+                        :authority :gravity.bootstrap.syntax
+                        :domain :gravity/sh04-syntax-object-v1
+                        :input-hash (:syntax-id syntax)
+                        :serialization-id serialization-id}
+             :authority {:slice :SH-04
+                         :owner :gravity-source
+                         :module 'gravity.bootstrap.syntax
+                         :clojure-adapter-residual? true})
+      (dissoc :syntax-id :schema-version)))
+
+(defn sh04-syntax-generated-products!
+  [source-path binding base semantic-source-id reader-binding
+   reader-source-revision]
+  (let [producer-id
+        (reader-canonical-hash
+         {:domain :gravity/sh04-generated-producer-v1
+          :semantic-source-id semantic-source-id
+          :input-syntax-id (:syntax-id base)})
+        producer {:kind :macro
+                  :name 'gravity.bootstrap.syntax/generated-conformance
+                  :identity producer-id
+                  :version "SH-04"
+                  :source-id semantic-source-id
+                  :generated-form-id :generated-form-0}
+        generated-span {:kind :generated :producer-id producer-id :ordinal 0}
+        namespace-context (:namespace base)
+        hygiene
+        {:marks [:sh04/generated-mark]
+         :lexical-scopes [:caller-scope :introduced-scope]
+         :renames {'tmp__auto__ 'tmp__sh04__1}
+         :introduced-identifiers ['tmp__sh04__1]
+         :captures [{:identifier 'captured-binding
+                     :macro-api 'gravity.syntax/capture
+                     :call-site-namespace (:current namespace-context)
+                     :intentional? true
+                     :authority-bearing? false
+                     :policy-result :not-required}]
+         :macro-definition-namespace 'gravity.bootstrap.syntax
+         :macro-call-site-namespace (:current namespace-context)}
+        raw
+        (sh04-syntax-execute!
+         source-path binding 'c3-generated-syntax-template
+         [(:syntax-id base)
+          {:kind :generated-form :value '(do tmp__sh04__1)
+           :raw "(do tmp__sh04__1)"}
+          generated-span producer :generated-syntax-conformance
+          namespace-context (:profile base)
+          {:generated true :source-metadata (:metadata base)}
+          hygiene
+          [{:producer-stage :macro-expansion
+            :fact-kind :generated-origin-checked
+            :value true :version 1
+            :invalidated-by [:name-resolution]}]
+          reader-binding reader-source-revision])]
+    (sh04-syntax-resolve-template!
+     source-path binding raw reader-binding reader-source-revision)))
+
+(defn sh04-syntax-sh02-descriptor
+  [source-path binding summary]
+  (let [projection-name :syntax-product-identities
+        fact-name :syntax-product-binding
+        identity-name :syntax-result
+        identity-domain :gravity/sh04-syntax-result-identity-v1
+        evidence-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:domain :gravity/sh04-syntax-envelope-evidence-v1
+                      :summary summary
+                      :plan-semantic-hash (:plan-semantic-hash binding)})
+        identity-preimage {:summary summary}
+        observed-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:domain identity-domain
+                      :semantic-input identity-preimage})
+        fact-entries
+        [{:syntax-result-id (:syntax-result-id summary)
+          :syntax-stream-id (:syntax-stream-id summary)
+          :serialization-id (:serialization-set-id summary)
+          :graph-id (:graph-id summary)}]
+        fact-value {:family fact-name :entries fact-entries}
+        artifact-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:syntax-result (:syntax-result-id summary)})]
+    {:artifact :gravity/private-authenticated-envelope-descriptor
+     :schema-version 1
+     :stage :c3-syntax
+     :artifact-kind sh04-syntax-sealed-artifact-kind
+     :source-revision
+     {:owner :sh04-syntax
+      :source-language :gravity
+      :logical-source-path sh04-syntax-source-relative-path
+      :source-content-hash (:source-content-hash binding)
+      :source-byte-count (:source-byte-count binding)
+      :plan-semantic-hash (:plan-semantic-hash binding)
+      :functions-semantic-hash (:functions-semantic-hash binding)
+      :builder-function 'c3-syntax-stream-build-template
+      :builder-semantic-hash
+      (get sh04-syntax-public-function-hashes
+           'c3-syntax-stream-build-template)
+      :function-shapes sh04-syntax-public-function-shapes}
+     :projection-contract
+     {:contract-kind :gravity/sh04-syntax-product-envelope-contract
+      :contract-version 1 :profile :meta :target :jvm
+      :required-semantic-projections [projection-name]
+      :required-fact-families [fact-name]
+      :required-identity-subjects [identity-name]}
+     :semantic-projections
+     [{:name projection-name :role :complete-syntax-product-identities
+       :entry-count (count summary) :value summary}]
+     :fact-transitions
+     [{:name fact-name :disposition :preserved
+       :input fact-value :output fact-value
+       :input-count (count fact-value)
+       :output-count (count fact-value)
+       :evidence-ids [evidence-id]}]
+     :effect-capability-relation
+     {:effect-facts {:declared #{} :observed #{}}
+      :capability-facts {:required #{} :granted #{}}
+      :capability-proof-facts {:proof-ids [evidence-id]}
+      :effect-order [] :provider-selections [] :grant-scopes []}
+     :proof-composite
+     {:proof-records [{:proof-id evidence-id :status :checked}]
+      :proof-certificate-table {evidence-id {:status :checked}}
+      :proof-summary {:required 1 :checked 1}
+      :proof-usage [{:proof-id evidence-id :used-by :syntax-products}]}
+     :preservation
+     {:requires [fact-name] :preserves [fact-name]
+      :invalidates [] :regenerates []
+      :residual-checks [:identity-subject-equality
+                        :digest-graph-reachability]}
+     :identity-subjects
+     [{:name identity-name :domain identity-domain
+       :preimage identity-preimage :observed-id observed-id}]
+     :lineage
+     [{:stage :sh04-syntax
+       :artifact-kind :gravity/sh04-syntax-object-artifact
+       :semantic-id (:syntax-result-id summary)
+       :artifact-id artifact-id :verification-id evidence-id
+       :relation :produced-from-gravity-syntax}]
+     :reference-closure
+     {:root-id "sh04-syntax-result" :node-ids ["sh04-syntax-result"]
+      :edges [] :fact-reference-ids [evidence-id]
+      :origin-reference-ids [] :proof-reference-ids [evidence-id]
+      :runtime-check-reference-ids [] :observed-node-count 1
+      :observed-edge-count 0 :observed-maximum-depth 0}
+     :actual-path-provenance
+     {:source-path source-path
+      :workspace-root (System/getProperty "user.dir")
+      :invocation-root (System/getProperty "user.dir")}
+     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+
+(defn sh04-syntax-resolved-result!
+  [source-path c2-artifact]
+  (let [integrity-report
+        (c3-validate-c2-reader-artifact! source-path c2-artifact)
+        binding (sh04-syntax-current-binding! source-path)
+        source-unit (:source-unit-record c2-artifact)
+        semantic-source-id
+        (sh04-syntax-semantic-source-id source-path source-unit)
+        reader-authentication
+        (sh04-syntax-reader-binding
+         source-path c2-artifact semantic-source-id)
+        reader-binding (:reader-binding reader-authentication)
+        reader-source-revision
+        (:reader-source-revision reader-authentication)
+        top-level-products (c2-top-level-products c2-artifact)
+        seeds (:syntax-seed-stream c2-artifact)
+        base-products
+        (mapv
+         (fn [seed {:keys [form-record]}]
+           (let [descriptor
+                 (sh04-syntax-source-descriptor
+                  seed form-record c2-artifact integrity-report
+                  semantic-source-id reader-binding reader-source-revision)
+                 raw
+                 (sh04-syntax-execute!
+                  source-path binding 'c3-syntax-build-template [descriptor])]
+             (sh04-syntax-resolve-template!
+              source-path binding raw reader-binding
+              reader-source-revision)))
+         seeds top-level-products)
+        _ (when (empty? base-products)
+            (sh04-syntax-boundary-fail!
+             "C3-SHAPE" source-path :nonempty-syntax-object-stream
+             base-products {}))
+        generated-product
+        (sh04-syntax-generated-products!
+         source-path binding (:syntax (first base-products))
+         semantic-source-id reader-binding reader-source-revision)
+        all-products (conj base-products generated-product)
+        resolved-products
+        (mapv (fn [product]
+                {:syntax-object (:syntax product)
+                 :digest-requests
+                 (get-in product [:raw-result :digest-requests])
+                 :resolved-digests (:resolved-digests product)})
+              all-products)
+        root-syntax-ids (mapv #(get-in % [:syntax :syntax-id])
+                              base-products)
+        stream-template-result
+        (sh04-syntax-execute!
+         source-path binding 'c3-syntax-stream-build-template
+         [resolved-products reader-binding reader-source-revision
+          root-syntax-ids])
+        _ (when-not (and (= :gravity/sh04-syntax-stream-template-result
+                            (:artifact stream-template-result))
+                         (= :accepted (:status stream-template-result))
+                         (= 1 (count (:digest-requests
+                                     stream-template-result)))
+                         (= false
+                            (get-in stream-template-result
+                                    [:containment
+                                     :downstream-artifacts-forbidden])))
+            (sh04-syntax-boundary-fail!
+             "C3-ID" source-path :gravity-syntax-stream-template
+             stream-template-result {}))
+        stream-requests (:digest-requests stream-template-result)
+        stream-digests
+        (reduce
+         (fn [resolved request]
+           (let [ordinal (:ordinal request)
+                 resolved-preimage
+                 (p15-s23-c6c10-resolve-digest-references!
+                  source-path (:preimage request) (count stream-requests)
+                  ordinal resolved)]
+             (when-not (= ordinal (count resolved))
+               (sh04-syntax-boundary-fail!
+                "C3-ID" source-path :ordered-syntax-stream-digest-requests
+                request {:resolved-count (count resolved)}))
+             (conj resolved
+                   (p15-s23-c6c10-canonical-digest
+                    source-path resolved-preimage))))
+         [] stream-requests)
+        resolved-stream
+        (p15-s23-c6c10-resolve-digest-references!
+         source-path (:stream-template stream-template-result)
+         (count stream-requests) nil stream-digests)
+        stream-verification
+        (sh04-syntax-execute!
+         source-path binding 'c3-syntax-stream-verify-resolved
+         [resolved-stream stream-requests stream-digests])
+        _ (when-not (and
+                     (= :gravity/sh04-resolved-syntax-stream-verification-report
+                        (:artifact stream-verification))
+                     (= :passed (:status stream-verification))
+                     (= false
+                        (get-in stream-verification
+                                [:containment
+                                 :downstream-artifacts-forbidden])))
+            (sh04-syntax-boundary-fail!
+             "C3-ID" source-path :fresh-resolved-syntax-stream-verification
+             stream-verification {}))
+        serialization
+        (sh04-syntax-execute!
+         source-path binding 'c3-syntax-serialize-template
+         [resolved-stream stream-requests stream-digests])
+        _ (when-not (= :accepted (:status serialization))
+            (sh04-syntax-boundary-fail!
+             "C3-SERIALIZE" source-path :gravity-syntax-stream-serialization
+             serialization {}))
+        deserialization
+        (sh04-syntax-execute!
+         source-path binding 'c3-syntax-deserialize-template
+         [(:carrier serialization)])
+        _ (when-not (and (= :accepted (:status deserialization))
+                         (= (:semantic-payload serialization)
+                            (:semantic-payload deserialization)))
+            (sh04-syntax-boundary-fail!
+             "C3-SERIALIZE" source-path :gravity-syntax-stream-round-trip
+             deserialization {}))
+        serialization-id
+        (p15-s23-c6c10-canonical-digest
+         source-path (:payload-id-request serialization))
+        resolved-syntax (:syntax-object-stream resolved-stream)
+        rich-syntax
+        (mapv sh04-syntax-rich-object resolved-syntax
+              (repeat serialization-id))
+        graph-report (:graph-verification-report resolved-stream)
+        syntax-result-id (:artifact-id resolved-stream)
+        summary
+        {:slice :SH-04 :status :accepted
+         :adapter-contract sh04-syntax-adapter-contract
+         :semantic-source-id semantic-source-id
+         :reader-binding-id (reader-canonical-hash reader-binding)
+         :reader-source-revision-id (:revision-id reader-source-revision)
+         :syntax-stream-id syntax-result-id
+         :serialization-set-id serialization-id
+         :graph-id (reader-canonical-hash graph-report)
+         :syntax-result-id syntax-result-id}
+        descriptor (sh04-syntax-sh02-descriptor source-path binding summary)
+        envelope
+        (p15-s23-stage2-sh02-descriptor-envelope
+         sh04-syntax-envelope-stage sh04-syntax-sealed-artifact-kind
+         descriptor source-path)
+        _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
+           envelope sh04-syntax-envelope-stage
+           sh04-syntax-sealed-artifact-kind descriptor source-path)
+        reader-authentication-provenance
+        {:actual-c2-artifact-id (:artifact-id c2-artifact)
+         :actual-reader-source-id (:source-id source-unit)
+         :actual-sh03-semantic-product-binding
+         (sh04-syntax-descriptor-sh03-product-binding
+          (get-in c2-artifact
+                  [:gravity-reader-boundary
+                   :authenticated-envelope-descriptor]))
+         :actual-sh03-reader-result-id
+         (get-in c2-artifact
+                 [:gravity-reader-boundary :resolved-reader-result
+                  :incremental-reader-hashes :reader-result])
+         :actual-sh03-semantic-envelope-id
+         (get-in c2-artifact
+                 [:gravity-reader-boundary :authenticated-envelope
+                  :semantic-envelope-id])
+         :actual-sh03-provenance-binding-id
+         (get-in c2-artifact
+                 [:gravity-reader-boundary :authenticated-envelope
+                  :provenance-binding-id])
+         :actual-sh03-authenticated-envelope
+         (get-in c2-artifact
+                 [:gravity-reader-boundary :authenticated-envelope])
+         :actual-sh03-envelope-descriptor
+         (get-in c2-artifact
+                 [:gravity-reader-boundary
+                  :authenticated-envelope-descriptor])
+         :semantic-source-id semantic-source-id}]
+    {:resolved-result resolved-stream
+     :summary summary
+     :descriptor descriptor
+     :envelope envelope
+     :plan-binding (dissoc binding :plan :source-text)
+     :rich-syntax rich-syntax
+     :raw-template-results (mapv :raw-result all-products)
+     :stream-template-result stream-template-result
+     :stream-digest-requests stream-requests
+     :stream-resolved-digests stream-digests
+     :stream-verification stream-verification
+     :serialization serialization
+     :deserialization deserialization
+     :serialization-id serialization-id
+     :reader-binding reader-binding
+     :reader-source-revision reader-source-revision
+     :reader-authentication-provenance
+     reader-authentication-provenance}))
 
 (defn compiler-c3-syntax-source-artifact
   ([source-path source-text]
@@ -153327,18 +154578,42 @@
         forms (:parsed-semantic-values c2-artifact)
         overrides (c3-syntax-overrides-from-forms forms)
         _ (c3-syntax-validate-overrides! source-path overrides)
-        source-unit (:source-unit-record c2-artifact)
-        top-level-products (c2-top-level-products c2-artifact)
-        base-syntax (mapv (fn [seed {:keys [form-record token-record]}]
-                            (c3-syntax-object seed form-record token-record
-                                              source-unit c2-artifact
-                                              integrity-report))
-                          (:syntax-seed-stream c2-artifact)
-                          top-level-products)
-        generated (c3-generated-syntax-object
-                   (or (some #(when (seq (:origin %)) %) base-syntax)
-                       (first base-syntax)))
-        syntax-stream (conj base-syntax generated)
+        sh04-products (sh04-syntax-resolved-result! source-path c2-artifact)
+        syntax-stream (:rich-syntax sh04-products)
+        sh04-result (:resolved-result sh04-products)
+        gravity-boundary
+        {:slice :SH-04
+         :owner :gravity-source
+         :plan-binding (:plan-binding sh04-products)
+         :reader-semantic-binding (:reader-binding sh04-products)
+         :reader-source-revision
+         (:reader-source-revision sh04-products)
+         :reader-authentication-provenance
+         (:reader-authentication-provenance sh04-products)
+         :resolved-syntax-result sh04-result
+         :resolved-stream-verification
+         (:stream-verification sh04-products)
+         :stream-digest-requests
+         (:stream-digest-requests sh04-products)
+         :stream-resolved-digests
+         (:stream-resolved-digests sh04-products)
+         :gravity-syntax-serialization (:serialization sh04-products)
+         :gravity-syntax-deserialization (:deserialization sh04-products)
+         :adapter-contract sh04-syntax-adapter-contract
+         :authenticated-envelope (:envelope sh04-products)
+         :authenticated-envelope-descriptor (:descriptor sh04-products)
+         :uncredited-compatibility-facade
+         {:module 'gravity.compiler.c3-syntax-object-model
+          :source-path sh04-syntax-facade-relative-path
+          :status :compatibility-only
+          :authentication-credit? false
+          :authoritative-result? false
+          :self-hosting-credit? false
+          :seed-retirement-credit? false
+          :release-credit? false}
+         :target-source-reread? false
+         :clojure-adapter-residual? true
+         :self-hosted? false}
         serialization (c3-syntax-serialization-fixture syntax-stream)
         artifact-base {:kind :gravity/stage0-c3-syntax-object-artifact
                        :task "P06-D082"
@@ -153363,10 +154638,21 @@
                                       :syntax-serialization-fixture]
                               :rejects c3-syntax-diagnostic-ids}
                        :source-overrides overrides
+                       :gravity-syntax-boundary gravity-boundary
                        :c2-reader-artifact
                        (c3-reader-artifact-view c2-artifact)
                        :syntax-object-schema (c3-syntax-schema)
                        :syntax-object-stream syntax-stream
+                       :gravity-hygiene-context-map
+                       (:hygiene-context-map sh04-result)
+                       :gravity-metadata-ledger
+                       (:metadata-ledger sh04-result)
+                       :gravity-fact-invalidation-ledger
+                       (:fact-invalidation-ledger sh04-result)
+                       :gravity-origin-chain-graph
+                       (:origin-chain-graph sh04-result)
+                       :gravity-syntax-ownership-product
+                       (:ownership-product sh04-result)
                        :hygiene-context-map (c3-hygiene-context-map
                                              syntax-stream)
                        :origin-chain-graph (c3-origin-chain-graph
@@ -153379,7 +154665,8 @@
                        :syntax-verification-report
                        (c3-syntax-verification-report syntax-stream
                                                       serialization
-                                                      c2-artifact)
+                                                      c2-artifact
+                                                      gravity-boundary)
                        :rejected-design-coverage c3-syntax-rejected-designs
                        :diagnostics []}
         _ (c3-syntax-validate! source-path artifact-base)

@@ -147,7 +147,7 @@ Status meanings:
 | `SH-01` | Establish parallel-safe module and test ownership boundaries | `SH-00` | complete | Central routing, compiler modules, target modules, fixtures, tests, generated evidence, and coverage accounting have explicit single owners; new tests no longer require unrelated edits to the monolithic bootstrap test file. |
 | `SH-02` | Generalize authenticated pass and artifact envelopes | `SH-00` | complete | One reusable contract verifies source revision, semantic inputs, preserved facts, artifact lineage, deterministic identity, graph bounds, and stale or substituted inputs across at least two different compiler stages. |
 | `SH-03` | Complete the bootstrap reader and literal policy | `SH-01`, `SH-02` | complete | The Gravity reader, rather than a Clojure reread, handles the complete claimed bootstrap syntax and literal subset with Unicode, newline, delimiter, abbreviation, metadata, extension, and malformed-literal diagnostics. |
-| `SH-04` | Complete syntax objects, hygiene, and origin chains | `SH-03` | partial | Gravity constructs and serializes syntax objects with stable identity, scopes, marks, metadata, source spans, generated origins, and adversarial graph validation. |
+| `SH-04` | Complete syntax objects, hygiene, and origin chains | `SH-03` | complete | Gravity constructs and serializes syntax objects with stable identity, scopes, marks, metadata, source spans, generated origins, and adversarial graph validation. |
 | `SH-05` | Implement the bootstrap macroexpander in Gravity | `SH-04` | queued | Gravity expands the macro subset required by all compiler sources, preserves hygiene and origins, rejects phase/profile/capability violations, and matches accepted stage0 diagnostics. |
 | `SH-06` | Implement namespace and binding resolution in Gravity | `SH-05` | queued | Gravity resolves compiler namespaces, aliases, vars, lexical bindings, imports, visibility, cycles, and unresolved references for the complete bootstrap source set. |
 | `SH-07` | Implement core-form semantics and lowering in Gravity | `SH-06` | partial | Every core form required to compile the compiler lowers to a canonical core artifact with stable evaluation order, arity, mutation, recursion, exception, and pattern diagnostics. |
@@ -214,14 +214,14 @@ The coordinator should also report the highest continuous completed prefix.
 For example, completion of `SH-18` does not advance the prefix past `SH-07` if
 `SH-08` remains incomplete.
 
-Current reviewed accounting after `SH-03`:
+Current reviewed accounting after `SH-04`:
 
 ```text
-complete slices: 4 / 30
-executable Gravity-owned slices: 3 / 30
-slices with Clojure in their claimed execution boundary: 4 / 30
+complete slices: 5 / 30
+executable Gravity-owned slices: 4 / 30
+slices with Clojure in their claimed execution boundary: 5 / 30
 blocked slices: 4 / 30
-highest continuous completed prefix: SH-00 through SH-03
+highest continuous completed prefix: SH-00 through SH-04
 ```
 
 `SH-02` credit is intentionally bounded to envelopes whose explicit reference
@@ -247,6 +247,20 @@ are the full-language literal surface, full-language abbreviation surface,
 full-language extension registry, and host/seed retirement. This slice does not
 claim overall C2 completion, compiler self-hosting, seed retirement, or release
 readiness.
+
+`SH-04` credit is bounded to the syntax-object, hygiene, metadata, source-span,
+generated-origin, serialization, and graph-validation subset exercised by its
+co-canonical fixture matrix. The Gravity syntax module constructs and verifies
+the claimed products, preserves deferred ratio descriptors and exact SH-03/P15
+reader lineage, and emits checkout-path-neutral syntax and artifact identities
+while retaining actual paths in provenance. The SH-03 descriptor is freshly
+verified through the reusable SH-02 envelope contract and independently bound
+back to the current C2 semantic products; paired provenance alteration,
+same-path cross-source replacement, stale-input, and malformed-graph probes
+fail closed. The Clojure stage0 boundary still owns compiler-plan execution,
+digest resolution, envelope binding, the C2/C3 compatibility adapter, and
+central routing. This slice does not claim overall C3 completion, full compiler
+self-hosting, seed retirement, package refresh, or release readiness.
 
 ## Beyond First Self-Hosting
 

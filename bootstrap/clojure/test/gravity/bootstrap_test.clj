@@ -11650,26 +11650,31 @@
           (is (= 0N (:denominator descriptor)))
           (is (= :deferred (:semantic-validation descriptor)))
           (is (= descriptor
-                 (get-in syntax [:facts :reader-literal-descriptor])))
-          (is (= :ratio (get-in syntax [:facts :reader-literal-kind])))
+                 (get-in syntax
+                         [:facts 0 :value :reader-literal-descriptor])))
+          (is (= :ratio
+                 (get-in syntax [:facts 0 :value :reader-literal-kind])))
           (is (= (select-keys descriptor
                               [:raw :numerator-spelling
                                :denominator-spelling :numerator :denominator
                                :semantic-validation :reason])
-                 (get-in syntax [:facts :reader-literal-facts])))
+                 (get-in syntax
+                         [:facts 0 :value :reader-literal-facts])))
           (is (= {:numerator-spelling "1"
                   :denominator-spelling "0"
                   :exact? true}
                  (:facts literal-record)))
-          (is (= (get-in c2-view [:source-unit-record :source-id])
+          (is (= (get-in syntax [:reader-binding :semantic-source-id])
                  (get-in syntax [:source :source-id])))
           (is (= path (get-in syntax [:span :primary :source])))
-          (is (= (dissoc (get-in syntax [:span :primary]) :form-index)
-                 (:span form-record)))
+          (is (= (select-keys (get-in syntax [:span :primary])
+                              [:byte-start :byte-end])
+                 (select-keys (:span form-record)
+                              [:byte-start :byte-end])))
           (is (= [(:open-token form-record) (:close-token form-record)]
                  [open-id close-id]))
           (is (= (:open-token form-record)
-                 (get-in syntax [:source :token-id])))
+                 (get-in syntax [:source :token-range 0])))
           (is (= 1 (count (filter #(= (:form-id form-record) (:form-id %))
                                   (:form-tree c2-view)))))
           (is (= 1 (count (filter #(= open-id (:token-id %))
@@ -11679,7 +11684,8 @@
           (is (= open-id (:token-id (tokens-by-id open-id))))
           (is (= close-id (:token-id (tokens-by-id close-id))))
           (is (= :source (:kind origin)))
-          (is (= (get-in syntax [:source :source-id]) (:source-id origin)))
+          (is (= (get-in syntax [:source :source-id])
+                 (get-in origin [:producer :source-id])))
           (is (= (get-in syntax [:span :primary]) (:span origin)))
           (is (true? (get-in c2-view
                              [:semantic-error-deferment-record :deferred?])))
@@ -11691,8 +11697,10 @@
                  (mapv :syntax/id (:syntax-object-stream repeated))))
           (is (= :ratio (get-in p15-syntax [:form :kind])))
           (is (= descriptor (get-in p15-syntax
-                                    [:facts :reader-literal-descriptor])))
-          (is (= (:source-id (:source-unit-record p15-c2))
+                                    [:facts 0 :value
+                                     :reader-literal-descriptor])))
+          (is (= (get-in p15-syntax
+                         [:reader-binding :semantic-source-id])
                  (get-in p15-syntax [:source :source-id])))
           (is (= :metadata-wrapper
                  (get-in metadata-syntax [:form :kind])))
@@ -11700,11 +11708,13 @@
           (is (= descriptor (get-in metadata-syntax [:form :value])))
           (is (= descriptor
                  (get-in metadata-syntax
-                         [:facts :reader-literal-descriptor])))
+                         [:facts 0 :value :reader-literal-descriptor])))
           (is (= :ratio
-                 (get-in metadata-syntax [:facts :reader-literal-kind])))
+                 (get-in metadata-syntax
+                         [:facts 0 :value :reader-literal-kind])))
           (is (= :metadata-wrapper
-                 (get-in metadata-syntax [:facts :reader-container-kind])))
+                 (get-in metadata-syntax
+                         [:facts 0 :value :reader-container-kind])))
           (is (= {:a true} (:metadata metadata-syntax)))
           (is (= :metadata-wrapper (:kind metadata-form)))
           (is (= (:form-id metadata-form)
@@ -11715,23 +11725,24 @@
                  (get-in metadata-p15-syntax [:form :kind])))
           (is (= descriptor
                  (get-in metadata-p15-syntax
-                         [:facts :reader-literal-descriptor])))
+                         [:facts 0 :value :reader-literal-descriptor])))
           (is (= :metadata-wrapper
                  (get-in empty-metadata-syntax [:form :kind])))
           (is (= empty-metadata-source
                  (get-in empty-metadata-syntax [:form :raw])))
           (is (= descriptor
                  (get-in empty-metadata-syntax
-                         [:facts :reader-literal-descriptor])))
+                         [:facts 0 :value :reader-literal-descriptor])))
           (is (= :metadata-wrapper
                  (get-in empty-metadata-syntax
-                         [:facts :reader-container-kind])))
+                         [:facts 0 :value :reader-container-kind])))
           (is (= {} (:metadata empty-metadata-syntax)))
           (is (= :metadata-wrapper
                  (get-in empty-metadata-p15-syntax [:form :kind])))
           (is (= descriptor
                  (get-in empty-metadata-p15-syntax
-                         [:facts :reader-literal-descriptor]))))))))
+                         [:facts 0 :value
+                          :reader-literal-descriptor]))))))))
 
 (deftest c3-syntax-propagates-malformed-numeric-reader-diagnostics
   (doseq [suffix [".gravity" ".qst"]]
@@ -11795,8 +11806,18 @@
             syntax (first (:syntax-object-stream artifact))]
         (is (= expected-kind (get-in syntax [:form :kind])) source)
         (when (= :map expected-kind)
-          (is (= {} (:facts syntax)))
-          (is (= source (get-in syntax [:form :raw]))))))
+          (is (= :authenticated-reader-products
+                 (get-in syntax [:facts 0 :fact-kind])))
+          (is (= {} (get-in syntax [:facts 0 :value])))
+          (is (= source (get-in syntax [:form :raw]))))
+        (when (= :ratio expected-kind)
+          (is (= :gravity/ratio-literal
+                 (get-in syntax [:form :value :artifact])))
+          (is (= 1N (get-in syntax [:form :value :numerator])))
+          (is (= 2N (get-in syntax [:form :value :denominator])))
+          (is (= :accepted
+                 (get-in syntax
+                         [:form :value :semantic-validation]))))))
     (with-temp-source
       suffix
       (str "(ns semantic.defer (:profile :unknown-profile)"
@@ -11911,10 +11932,12 @@
              p15-c2-b p15-c3-b)]
         (is (= (:incremental-reader-hashes c2-a)
                (:incremental-reader-hashes c2-b)))
-        (is (= (identity-fields c2-a) (identity-fields c2-b)))
-        (is (= (identity-fields c3-a) (identity-fields c3-b)))
-        (is (= (identity-fields p15-c2-a) (identity-fields p15-c2-b)))
-        (is (= (identity-fields p15-c3-a) (identity-fields p15-c3-b)))
+        (is (= (:artifact-id c2-a) (:artifact-id c2-b)))
+        (is (= (mapv :syntax/id (:syntax-object-stream c3-a))
+               (mapv :syntax/id (:syntax-object-stream c3-b))))
+        (is (= (:artifact-id p15-c2-a) (:artifact-id p15-c2-b)))
+        (is (= (mapv :syntax/id (:syntax-object-stream p15-c3-a))
+               (mapv :syntax/id (:syntax-object-stream p15-c3-b))))
         (is (= (identity-fields roundtrip-a)
                (identity-fields roundtrip-b)))
         (is (= (:artifact-id c3-a) (:artifact-id c3-b)))
@@ -12207,7 +12230,9 @@
                     (str "/p/ordinary-map" suffix) source)
           syntax (first (:syntax-object-stream artifact))]
       (is (= :map (get-in syntax [:form :kind])))
-      (is (= {} (:facts syntax)))
+      (is (= :authenticated-reader-products
+             (get-in syntax [:facts 0 :fact-kind])))
+      (is (= {} (get-in syntax [:facts 0 :value])))
       (is (= :passed (get-in artifact
                              [:syntax-verification-report :status])))
       (is (= :complete (get-in artifact
@@ -12219,9 +12244,9 @@
                     (str "/p/post-mutation" suffix) "1/0")
           mutated
           (-> artifact
-              (assoc-in [:syntax-object-stream 0 :facts
+              (assoc-in [:syntax-object-stream 0 :facts 0 :value
                          :reader-literal-descriptor :numerator] 999N)
-              (assoc-in [:syntax-object-stream 0 :facts
+              (assoc-in [:syntax-object-stream 0 :facts 0 :value
                          :reader-literal-descriptor :reason] :spoof))
           serialization
           (bootstrap/c3-syntax-serialization-fixture

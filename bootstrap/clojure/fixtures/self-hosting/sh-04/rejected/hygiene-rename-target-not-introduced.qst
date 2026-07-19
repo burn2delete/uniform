@@ -1,0 +1,4 @@
+{:phase :build
+ :path [:hygiene :renames]
+ :value {fixture-value renamed-fixture-value}
+ :expected-rule "C3-HYGIENE"}

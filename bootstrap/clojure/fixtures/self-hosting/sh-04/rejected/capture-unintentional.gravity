@@ -1,0 +1,10 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:hygiene :captures]
+ :value [{:identifier captured-value
+          :macro-api gravity.syntax/capture
+          :call-site-namespace self-hosting.sh04.template-descriptor
+          :intentional? false
+          :authority-bearing? false
+          :policy-result :not-required}]
+ :expected-rule "C3-CAPTURE"}

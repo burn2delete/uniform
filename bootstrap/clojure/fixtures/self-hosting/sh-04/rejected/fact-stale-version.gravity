@@ -1,0 +1,5 @@
+{:phase :build
+ :operation :assoc-in
+ :path [:facts 0 :version]
+ :value 0
+ :expected-rule "C3-FACT-STALE"}
