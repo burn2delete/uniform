@@ -1,0 +1,10 @@
+(ns self-hosting.sh05.reject.trace
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05
+              :compiler {:sh05-request
+                         {:context {:trace-replay-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+                          :policy {:recorded-trace-replay-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}}
+              :sh05 {:expected-rule "C4-TRACE" :expected-stage :macro-expansion
+                     :expected-severity :error :expected-remediation :rebuild-expansion-trace}}))
+(defn candidate [x] x)

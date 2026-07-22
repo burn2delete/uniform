@@ -148,7 +148,7 @@ Status meanings:
 | `SH-02` | Generalize authenticated pass and artifact envelopes | `SH-00` | complete | One reusable contract verifies source revision, semantic inputs, preserved facts, artifact lineage, deterministic identity, graph bounds, and stale or substituted inputs across at least two different compiler stages. |
 | `SH-03` | Complete the bootstrap reader and literal policy | `SH-01`, `SH-02` | complete | The Gravity reader, rather than a Clojure reread, handles the complete claimed bootstrap syntax and literal subset with Unicode, newline, delimiter, abbreviation, metadata, extension, and malformed-literal diagnostics. |
 | `SH-04` | Complete syntax objects, hygiene, and origin chains | `SH-03` | complete | Gravity constructs and serializes syntax objects with stable identity, scopes, marks, metadata, source spans, generated origins, and adversarial graph validation. |
-| `SH-05` | Implement the bootstrap macroexpander in Gravity | `SH-04` | queued | Gravity expands the macro subset required by all compiler sources, preserves hygiene and origins, rejects phase/profile/capability violations, and matches accepted stage0 diagnostics. |
+| `SH-05` | Implement the bootstrap macroexpander in Gravity | `SH-04` | complete | Gravity expands the macro subset required by all compiler sources, preserves hygiene and origins, rejects phase/profile/capability violations, and matches accepted stage0 diagnostics. |
 | `SH-06` | Implement namespace and binding resolution in Gravity | `SH-05` | queued | Gravity resolves compiler namespaces, aliases, vars, lexical bindings, imports, visibility, cycles, and unresolved references for the complete bootstrap source set. |
 | `SH-07` | Implement core-form semantics and lowering in Gravity | `SH-06` | partial | Every core form required to compile the compiler lowers to a canonical core artifact with stable evaluation order, arity, mutation, recursion, exception, and pattern diagnostics. |
 | `SH-08` | Implement the bootstrap type checker in Gravity | `SH-07` | partial | Compiler sources receive genuine type facts for primitives, functions, collections, control flow, calls, records/unions, and required meta-programming values; ill-typed variants fail closed. |
@@ -214,14 +214,14 @@ The coordinator should also report the highest continuous completed prefix.
 For example, completion of `SH-18` does not advance the prefix past `SH-07` if
 `SH-08` remains incomplete.
 
-Current reviewed accounting after `SH-04`:
+Current reviewed accounting after `SH-05`:
 
 ```text
-complete slices: 5 / 30
-executable Gravity-owned slices: 4 / 30
-slices with Clojure in their claimed execution boundary: 5 / 30
+complete slices: 6 / 30
+executable Gravity-owned slices: 5 / 30
+slices with Clojure in their claimed execution boundary: 6 / 30
 blocked slices: 4 / 30
-highest continuous completed prefix: SH-00 through SH-04
+highest continuous completed prefix: SH-00 through SH-05
 ```
 
 `SH-02` credit is intentionally bounded to envelopes whose explicit reference
@@ -261,6 +261,24 @@ fail closed. The Clojure stage0 boundary still owns compiler-plan execution,
 digest resolution, envelope binding, the C2/C3 compatibility adapter, and
 central routing. This slice does not claim overall C3 completion, full compiler
 self-hosting, seed retirement, package refresh, or release readiness.
+
+`SH-05` credit is bounded to the compiler-required `defn` expansion subset
+executed across the 36 authoritative compiler modules and their measured 1,276
+top-level function definitions. The Gravity macro module owns expansion
+recipes, hygiene marks, generated origins, build-effect and capability policy,
+ordered expansion traces, and all ten structured C4 rejection families. Exact
+stage0 body comparison, both source extensions, path-neutral identities,
+literal-map preservation, replay and substitution checks, and complete
+first/middle/last stream reconstruction passed. SH-04's implementation-local
+syntax-stream ceiling is now 2,048 products, the exact capacity of its current
+16-item chunks under the canonical width limit of 128; 2,049 is rejected before
+downstream use, and aggregate stream carriers are checked separately. The
+Clojure stage0 boundary still owns source reads, compiler-plan execution,
+canonical digest resolution, envelope binding, compatibility routing, and final
+artifact assembly. User-defined `defmacro`, the full macro surface, hierarchical
+syntax-stream paging beyond 2,048 products, retained standalone carrier-audit
+records, compiler self-hosting, seed retirement, packaged CLI refresh, and
+release readiness remain outside this credit.
 
 ## Beyond First Self-Hosting
 

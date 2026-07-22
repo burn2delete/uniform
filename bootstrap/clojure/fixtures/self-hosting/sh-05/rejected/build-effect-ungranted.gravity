@@ -1,0 +1,19 @@
+(ns self-hosting.sh05.reject.build-effect
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05
+              :compiler {:sh05-request
+                         {:policy {:requested-build-effects [:build/read-file]
+                                   :declared-build-effects []
+                                   :granted-build-effects []
+                                   :requested-capabilities [:fs/read]
+                                   :granted-capabilities []}}}
+              :sh05 {:expected-rule "C4-BUILD-EFFECT" :expected-stage :macro-expansion
+                     :expected-severity :error :expected-remediation :declare-and-grant-build-effect
+                     :expected-facts
+                     {:reason :missing-build-authority
+                      :missing-declaration :build/read-file
+                      :missing-capability :fs/read
+                      :missing-grant :build/read-file
+                      :catalog-mapping ["L15" "SAFE10"]}}}))
+(defn candidate [x] x)

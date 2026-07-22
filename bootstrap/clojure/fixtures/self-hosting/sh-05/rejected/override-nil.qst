@@ -1,0 +1,10 @@
+(ns self-hosting.sh05.reject.override-nil
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05
+              :compiler {:sh05-request nil}
+              :sh05 {:expected-rule "C4-RETURN"
+                     :expected-stage :macro-expansion
+                     :expected-severity :error
+                     :expected-remediation :return-syntax-object}}))
+(defn candidate [x] x)

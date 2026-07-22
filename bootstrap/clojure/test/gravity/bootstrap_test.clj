@@ -25129,7 +25129,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:206dd4a3ac401d95c21fdfdbff4af4f9c040084ff734b8d063b4362278222d50"
+    (is (= "sha256:61314a0d94bace963758efb740859fdf7bb8214b22e1c69fe6de5478386cc574"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c4-macro-expansion-engine\n"

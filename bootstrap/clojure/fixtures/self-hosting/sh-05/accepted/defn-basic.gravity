@@ -1,0 +1,13 @@
+; SH-05 smallest executable macro expansion input.
+(ns self-hosting.sh05.defn-basic
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05}))
+
+^{:doc "Increment one value."
+  :sh05/fixture true}
+(defn add-one [x]
+  (+ x 1))

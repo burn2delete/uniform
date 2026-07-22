@@ -1,0 +1,13 @@
+(ns self-hosting.sh05.defn-multiple
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05 :fixture :multiple-defn}))
+
+(defn add-one [x]
+  (+ x 1))
+
+(defn double-value [x]
+  (+ x x))

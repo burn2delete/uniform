@@ -1,37 +1,23 @@
-; Stage1 Gravity-owned C4 macro expansion engine contract.
+; Compatibility-only C4 source inventory facade for the SH-05 macro authority.
 (ns gravity.compiler.c4-macro-expansion-engine
   (:profile :meta)
   (:target :jvm)
-  (:exports [c4-macro-input-contract
-             c4-expansion-trace-contract
-             c4-macro-diagnostic-catalog
-             build-c4-expansion-step
-             verify-c4-expansion])
+  (:exports [c4-macro-expansion-compatibility-contract
+             c4-package-macro-result
+             c4-compatible-macro-result?])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
   (:metadata {:bootstrap
               {:stage :stage1
-               :component :macro-expansion
+               :component :macro-expansion-compatibility-facade
                :owner :gravity-source
                :source-language :gravity
                :seed :clojure-stage0
-               :retirement-objective :replace-clojure-seed
+               :retirement-objective :replace-clojure-c4-facade-subset
                :ambient-authority-denied true
-               :documents ["C4" "L4" "L12" "L15" "SAFE6" "SAFE12"
-                           "C2" "C3" "C5" "C15" "BOOT1" "BOOT2"
-                           "BOOT3" "BOOT4" "BOOT5" "BOOT6"
-                           "BOOT7" "BOOT8" "TEST2"]
-               :implements [:syntax-object-input-output-contract
-                             :deterministic-macro-environment
-                             :hygiene-by-default-contract
-                             :explicit-capture-records
-                             :build-effect-authorization
-                             :generated-origin-source-map
-                             :macro-safety-declaration-record
-                             :expansion-cache-key
-                             :trace-replay-record
-                             :macro-expansion-diagnostic-catalog]
+               :documents ["C4" "C15" "BOOT1" "BOOT3"]
+               :implements [:macro-result-compatibility-package]
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
                             :origin-chains :hygiene-context
@@ -42,108 +28,73 @@
                :lineage {:verified-by :clojure-stage0
                          :compiled-by :clojure-stage0
                          :next-stage :stage1
-                         :replaces [:clojure-c4-macro-contract-subset
-                                    :clojure-c4-diagnostic-catalog]}
-               :conformance {:accepted-fixture
-                             "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
-                             :accepted-source-extensions [".gravity"]
-                             :rejected-fixtures
-                             ["compiler-c4-not-macro.gravity"
-                              "compiler-c4-return.gravity"
-                              "compiler-c4-depth.gravity"
-                              "compiler-c4-size.gravity"
-                              "compiler-c4-build-effect.gravity"
-                              "compiler-c4-hygiene.gravity"
-                              "compiler-c4-capture.gravity"
-                              "compiler-c4-generated-unsafe.gravity"
-                              "compiler-c4-profile.gravity"
-                              "compiler-c4-trace.gravity"]}}}))
+                         :replaces [:clojure-c4-package-facade]}
+               :claim-boundary [:compatibility-only
+                                :authentication-credit-denied
+                                :authoritative-result-denied
+                                :authoritative-route :gravity.macro]}}))
 
-(def c4-macro-input-contract
-  {:artifact :gravity/c4-macro-input-contract
-   :input-fields [:syntax-object-stream :macro-environment
-                  :package-graph :build-grants :target-manifest
-                  :profile :replay-inputs]
-   :output-fields [:expanded-syntax-stream :macro-expansion-trace
-                   :hygiene-records :capture-records
-                   :build-effect-log :macro-safety-declarations
-                   :generated-origin-source-map
-                   :expansion-cache-key :expansion-diagnostics]
-   :determinism-inputs [:source-unit-identity :syntax-object-identities
-                        :macro-name :macro-version :package-graph-id
-                        :build-grant-id :target-manifest-id
-                        :replay-input-id]
-   :forbidden [:raw-form-expansion
-               :ambient-build-authority
-               :implicit-capture
-               :untracked-generated-unsafe]})
+(def c4-macro-expansion-compatibility-contract
+  {:artifact :gravity/sh05-c4-compatibility-contract
+   :schema-version 1
+   :compatibility-only? true
+   :authentication-credit? false
+   :authoritative-macro-result? false
+   :authoritative-route :gravity.macro
+   :accepted-statuses [:accepted :rejected]
+   :required-fields [:artifact :schema-version :status
+                     :expansion-template :digest-requests :diagnostics
+                     :bounds :containment :execution-boundary]})
 
-(def c4-expansion-trace-contract
-  {:artifact :gravity/c4-expansion-trace-contract
-   :trace-step-fields [:step-id :macro-name :macro-version
-                       :definition-span :call-site-span
-                       :input-syntax-ids :output-syntax-ids
-                       :hygiene-context :build-effects
-                       :generated-spans :cache-key]
-   :replay-fields [:deterministic-inputs :expansion-limit
-                   :size-limit :phase-limit :trace-hash]
-   :safety-fields [:generated-unsafe? :unsafe-island
-                   :runtime-checked :proven-safe
-                   :safe-api-boundary]
-   :preserves [:source-spans :syntax-identity
-               :origin-chains :hygiene-context
-               :capture-records :build-effect-log
-               :generated-origin :artifact-provenance]})
+(defn c4-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
 
-(def c4-macro-diagnostic-catalog
-  {:diagnostics ["C4-NOT-MACRO" "C4-RETURN" "C4-DEPTH"
-                 "C4-SIZE" "C4-BUILD-EFFECT" "C4-HYGIENE"
-                 "C4-CAPTURE" "C4-GENERATED-UNSAFE"
-                 "C4-PROFILE" "C4-TRACE"]
-   :stable-diagnostic-fields [:diagnostic-id :severity
-                              :macro-name :macro-version
-                              :definition-span :call-site-span
-                              :generated-span :profile :target
-                              :build-effects :capabilities
-                              :hygiene-context :remediation]
-   :stops [:macro-expansion :name-resolution :analysis]
-   :must-not-depend-on [:host-runtime-order
-                        :wall-clock-time
-                        :unrecorded-build-effects
-                        :backend-only-legality]})
+(defn c4-compatible-macro-result? [result]
+  (if (c4-exact-keys?
+       result
+       #{:artifact :schema-version :status :expansion-template
+         :digest-requests :diagnostics :bounds :containment
+         :execution-boundary})
+    (if (= (get result :artifact) :gravity/sh05-macro-template-result)
+      (if (= (get result :schema-version) 1)
+        (if (contains? #{:accepted :rejected} (get result :status))
+          (if (vector? (get result :digest-requests))
+            (if (vector? (get result :diagnostics))
+              (if (map? (get result :bounds))
+                (if (map? (get result :containment))
+                  (if (map? (get result :execution-boundary))
+                    (if (= (get result :status) :accepted)
+                      (map? (get result :expansion-template))
+                      (= (get result :expansion-template) nil))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
 
-(defn build-c4-expansion-step
-  [step-id macro-name macro-version definition-span call-site-span input-syntax-ids output-syntax-ids hygiene-context build-effects generated-spans cache-key]
-  (quote {:artifact :gravity/c4-expansion-step
-          :step-id step-id
-          :macro-name macro-name
-          :macro-version macro-version
-          :definition-span definition-span
-          :call-site-span call-site-span
-          :input-syntax-ids input-syntax-ids
-          :output-syntax-ids output-syntax-ids
-          :hygiene-context hygiene-context
-          :build-effects build-effects
-          :generated-spans generated-spans
-          :cache-key cache-key
-          :contract c4-expansion-trace-contract}))
-
-(defn verify-c4-expansion [expansion-artifact]
-  (quote {:status :stage1-source-owned
-          :expansion-artifact expansion-artifact
-          :checks [:syntax-object-input-output
-                   :deterministic-environment
-                   :macro-version-recorded
-                   :hygiene-by-default
-                   :explicit-capture-recorded
-                   :build-effects-authorized
-                   :generated-origin-linked
-                   :generated-unsafe-declared
-                   :profile-target-legality
-                   :cache-key-replayable]
-          :diagnostics c4-macro-diagnostic-catalog
-          :preserves [:source-spans :syntax-identity
-                      :origin-chains :hygiene-context
-                      :capture-records :build-effect-log
-                      :generated-origin :macro-expansion-trace
-                      :safety-metadata :artifact-provenance]}))
+(defn c4-package-macro-result [result]
+  (if (c4-compatible-macro-result? result)
+    {:artifact :gravity/sh05-c4-compatibility-package
+     :schema-version 1
+     :status :compatible
+     :compatibility-only? true
+     :authentication-credit? false
+     :authoritative-macro-result? false
+     :authoritative-route :gravity.macro
+     :macro-result result}
+    {:artifact :gravity/sh05-c4-compatibility-package
+     :schema-version 1
+     :status :rejected
+     :compatibility-only? true
+     :authentication-credit? false
+     :authoritative-macro-result? false
+     :authoritative-route :gravity.macro
+     :macro-result nil}))

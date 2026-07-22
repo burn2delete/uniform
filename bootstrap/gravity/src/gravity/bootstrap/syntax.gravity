@@ -76,7 +76,7 @@
    :clojure-seed-boundary? true})
 
 (def c3-syntax-bounds
-  {:maximum-syntax-objects 256
+  {:maximum-syntax-objects 2048
    :maximum-reference-depth 64
    :maximum-origin-entries 32
    :maximum-references-per-object 32
@@ -98,7 +98,7 @@
    :stops [:macro-expansion :name-resolution :analysis]})
 
 (defn c3-bounds-record []
-  {:maximum-syntax-objects 256
+  {:maximum-syntax-objects 2048
    :maximum-reference-depth 64
    :maximum-origin-entries 32
    :maximum-references-per-object 32
@@ -1668,38 +1668,94 @@
                        (get node :prior-syntax-ids)})))))} )
 
 (defn c3-path-neutral-resolved-products [products]
-  (loop [remaining products result []]
+  (loop [remaining products ordinal 0 chunk-index 0
+         current-chunk [] result []]
     (if (= (count remaining) 0)
-      result
-      (let [product (first remaining)]
-        (recur
-         (rest remaining)
-         (conj result
-               {:syntax-object
-                (c3-path-neutral-syntax (get product :syntax-object))
-                :identity-proof-record
-                {:semantic-binding-id
-                 (first (get product :resolved-digests))
-                 :syntax-id
-                 (get (get product :syntax-object) :syntax-id)}
-                :resolved-digests (get product :resolved-digests)}))))))
+      (if (= (count current-chunk) 0)
+        result
+        (conj result
+              {:chunk-index chunk-index
+               :start-ordinal (- ordinal (count current-chunk))
+               :item-count (count current-chunk)
+               :items current-chunk}))
+      (let [product (first remaining)
+            item
+            {:ordinal ordinal
+             :syntax-id
+             (get (get product :syntax-object) :syntax-id)
+             :semantic-binding-id
+             (first (get product :resolved-digests))
+             :resolved-digests (get product :resolved-digests)}
+            next-chunk (conj current-chunk item)]
+        (if (= (count next-chunk) 16)
+          (recur
+           (rest remaining) (+ ordinal 1) (+ chunk-index 1) []
+           (conj result
+                 {:chunk-index chunk-index
+                  :start-ordinal (- (+ ordinal 1) (count next-chunk))
+                  :item-count (count next-chunk)
+                  :items next-chunk}))
+          (recur (rest remaining) (+ ordinal 1) chunk-index
+                 next-chunk result))))))
+
+(defn c3-stream-ordered-id-chunks [identifiers]
+  (loop [remaining identifiers ordinal 0 chunk-index 0
+         current-chunk [] result []]
+    (if (= (count remaining) 0)
+      (if (= (count current-chunk) 0)
+        result
+        (conj result
+              {:chunk-index chunk-index
+               :start-ordinal (- ordinal (count current-chunk))
+               :item-count (count current-chunk)
+               :items current-chunk}))
+      (let [item {:ordinal ordinal :id (first remaining)}
+            next-chunk (conj current-chunk item)]
+        (if (= (count next-chunk) 16)
+          (recur
+           (rest remaining) (+ ordinal 1) (+ chunk-index 1) []
+           (conj result
+                 {:chunk-index chunk-index
+                  :start-ordinal (- (+ ordinal 1) (count next-chunk))
+                  :item-count (count next-chunk)
+                  :items next-chunk}))
+          (recur (rest remaining) (+ ordinal 1) chunk-index
+                 next-chunk result))))))
 
 (defn c3-stream-identity-preimage
   [products binding revision root-ids graph hygiene metadata facts origins
    ownership]
-  {:domain :gravity/sh04-resolved-syntax-stream-v1
-   :resolved-products (c3-path-neutral-resolved-products products)
-   :reader-binding binding
-   :reader-source-revision revision
-   :root-syntax-ids root-ids
+  {:domain :gravity/sh04-resolved-syntax-stream-v2
+   :resolved-product-count (count products)
+   :resolved-product-identity-chunks
+   (c3-path-neutral-resolved-products products)
+   :reader-binding-identity
+   {:semantic-binding-id (get binding :semantic-binding-id)
+    :reader-result-id (get binding :reader-result-id)
+    :c2-artifact-id (get binding :c2-artifact-id)
+    :authenticated-envelope-id (get binding :authenticated-envelope-id)
+    :source-revision-id (get binding :source-revision-id)}
+   :reader-source-revision-identity
+   {:revision-id (get revision :revision-id)
+    :source-content-hash (get revision :source-content-hash)
+    :plan-semantic-hash (get revision :plan-semantic-hash)
+    :functions-semantic-hash (get revision :functions-semantic-hash)
+    :reader-result-id (get revision :reader-result-id)
+    :c2-artifact-id (get revision :c2-artifact-id)
+    :authenticated-envelope-id (get revision :authenticated-envelope-id)
+    :semantic-binding-id (get revision :semantic-binding-id)}
+   :root-syntax-id-count (count root-ids)
+   :root-syntax-id-chunks (c3-stream-ordered-id-chunks root-ids)
    :graph-verification
    {:object-count (get graph :object-count)
     :maximum-reference-depth (get graph :maximum-reference-depth)}
-   :hygiene-context-map hygiene
-   :metadata-ledger metadata
-   :fact-invalidation-ledger facts
-   :origin-chain-graph (c3-path-neutral-origin-graph origins)
-   :ownership-product ownership})
+   :derived-product-counts
+   {:hygiene-context-count (count (get hygiene :contexts))
+    :metadata-entry-count (count (get metadata :entries))
+    :fact-entry-count (count (get facts :entries))
+    :origin-node-count (count (get origins :nodes))
+    :syntax-ownership-count
+    (count (get ownership :syntax-ownership))}})
 
 (defn c3-stream-rejection [rule reason subject]
   {:artifact :gravity/sh04-syntax-stream-template-result
@@ -1872,7 +1928,9 @@
          "C3-SERIALIZE"
          (if (map? resolved-stream)
            (let [syntaxes (get resolved-stream :syntax-object-stream)]
-             (if (c3-bounded-vector? syntaxes 256)
+             (if (c3-bounded-vector?
+                  syntaxes
+                  (get (c3-bounds-record) :maximum-syntax-objects))
                (if (> (count syntaxes) 0)
                  (c3-template-descriptor (first syntaxes))
                  {})
@@ -1882,23 +1940,23 @@
                        [:resolved-syntax-stream])]})))
 
 (defn c3-path-neutral-stream [stream]
-  (assoc
-   (assoc
-    (assoc stream
-           :resolved-object-products
-           (c3-path-neutral-resolved-products
-            (get stream :resolved-object-products)))
-    :syntax-object-stream
-    (loop [remaining (get stream :syntax-object-stream) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur (rest remaining)
-               (conj result
-                     (c3-path-neutral-syntax
-                      (first remaining)))))))
-   :origin-chain-graph
-   (c3-path-neutral-origin-graph
-    (get stream :origin-chain-graph))))
+  {:domain :gravity/sh04-path-neutral-syntax-stream-v2
+   :artifact (get stream :artifact)
+   :schema-version (get stream :schema-version)
+   :status (get stream :status)
+   :artifact-id (get stream :artifact-id)
+   :identity-preimage
+   (c3-stream-identity-preimage
+    (get stream :resolved-object-products)
+    (get stream :reader-binding)
+    (get stream :reader-source-revision)
+    (get stream :root-syntax-ids)
+    (get stream :graph-verification-report)
+    (get stream :hygiene-context-map)
+    (get stream :metadata-ledger)
+    (get stream :fact-invalidation-ledger)
+    (get stream :origin-chain-graph)
+    (get stream :ownership-product))})
 
 (defn c3-syntax-deserialize-template [carrier]
   (if (vector? carrier)

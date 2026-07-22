@@ -565,7 +565,7 @@
     (is (= :safe (get-in plan [:module :safety])))
     (is (= 'gravity.bootstrap.syntax
            (get-in plan [:module :module])))
-    (is (= "sha256:4f8c0bb33929da886191f8049fd3c3a22ff3e604262b22ade62ca6f78508130a"
+    (is (= "sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553"
            (get-in plan [:source :sha256])))))
 
 (deftest sh04-gravity-build-verify-and-serialize-are-stable-and-path-neutral
@@ -963,6 +963,137 @@
                      [:containment :downstream-artifacts-forbidden]))
           (str label)))))
 
+(deftest sh04-stream-v2-identity-is-bounded-and-order-sensitive-at-declared-capacity
+  (let [descriptor @accepted-descriptor
+        product-id (fn [index]
+                     (canonical-id {:domain :sh04-synthetic-product
+                                    :index index}))
+        products
+        (fn [size]
+          (mapv (fn [index]
+                  (let [syntax-id (product-id index)]
+                    {:syntax-object {:syntax-id syntax-id}
+                     :resolved-digests
+                     [(canonical-id {:domain :sh04-synthetic-binding
+                                     :index index})
+                      syntax-id]}))
+                (range size)))
+        preimage
+        (fn [candidate-products candidate-root-ids size]
+          (invoke-syntax
+           'c3-stream-identity-preimage
+           [candidate-products
+            (:reader-binding descriptor)
+            (:reader-source-revision descriptor)
+            candidate-root-ids
+            {:object-count size :maximum-reference-depth 1}
+            {:contexts (vec (repeat size {}))}
+            {:entries (vec (repeat size {}))}
+            {:entries (vec (repeat size {}))}
+            {:nodes (vec (repeat size {}))}
+            {:syntax-ownership (vec (repeat size {}))}]))
+        substitute-id
+        (fn [candidate-products index label]
+          (let [syntax-id
+                (canonical-id {:domain :sh04-synthetic-substitution
+                               :position label})]
+            (-> candidate-products
+                (assoc-in [index :syntax-object :syntax-id] syntax-id)
+                (assoc-in [index :resolved-digests 1] syntax-id))))
+        substitute-root-id
+        (fn [candidate-root-ids index label]
+          (assoc candidate-root-ids index
+                 (canonical-id {:domain :sh04-synthetic-root-substitution
+                                :position label})))
+        products-300 (products 300)
+        root-ids-300
+        (mapv #(get-in % [:syntax-object :syntax-id]) products-300)
+        baseline-300 (preimage products-300 root-ids-300 300)
+        baseline-300-digest
+        (bootstrap/p15-s23-c6c10-canonical-digest
+         "<sh04-stream-v2-identity-test-300>" baseline-300)
+        chunks-300 (:resolved-product-identity-chunks baseline-300)
+        root-chunks-300 (:root-syntax-id-chunks baseline-300)
+        products-2048 (products 2048)
+        root-ids-2048
+        (mapv #(get-in % [:syntax-object :syntax-id]) products-2048)
+        baseline-2048 (preimage products-2048 root-ids-2048 2048)
+        baseline-2048-record
+        (bootstrap/p15-s23-c6c10-canonical-record
+         "<sh04-stream-v2-identity-test-2048>" baseline-2048)
+        baseline-2048-digest
+        (bootstrap/p15-s23-c6c10-canonical-digest
+         "<sh04-stream-v2-identity-test-2048>" baseline-2048)
+        chunks-2048 (:resolved-product-identity-chunks baseline-2048)
+        root-chunks-2048 (:root-syntax-id-chunks baseline-2048)
+        middle 150
+        candidates
+        {:product-reordered [(vec (reverse products-300)) root-ids-300]
+         :product-deleted [(pop products-300) root-ids-300]
+         :product-duplicate
+         [(assoc products-300 middle (first products-300)) root-ids-300]
+         :product-first-id
+         [(substitute-id products-300 0 :first) root-ids-300]
+         :product-middle-id
+         [(substitute-id products-300 middle :middle) root-ids-300]
+         :product-last-id
+         [(substitute-id products-300 299 :last) root-ids-300]
+         :root-reordered [products-300 (vec (reverse root-ids-300))]
+         :root-deleted [products-300 (pop root-ids-300)]
+         :root-duplicate
+         [products-300 (assoc root-ids-300 middle (first root-ids-300))]
+         :root-first-id
+         [products-300 (substitute-root-id root-ids-300 0 :first)]
+         :root-middle-id
+         [products-300 (substitute-root-id root-ids-300 middle :middle)]
+         :root-last-id
+         [products-300 (substitute-root-id root-ids-300 299 :last)]}]
+    (is (= :gravity/sh04-resolved-syntax-stream-v2
+           (:domain baseline-300)))
+    (is (= 300 (:resolved-product-count baseline-300)))
+    (is (= 19 (count chunks-300)))
+    (is (= 19 (count root-chunks-300)))
+    (is (= 12 (:item-count (last chunks-300))))
+    (is (= 12 (:item-count (last root-chunks-300))))
+    (is (= (vec (range 300))
+           (mapv :ordinal (mapcat :items chunks-300))))
+    (is (= root-ids-300
+           (mapv :id (mapcat :items root-chunks-300))))
+    (is (= :gravity/sh04-resolved-syntax-stream-v2
+           (:domain baseline-2048)))
+    (is (= 2048 (:resolved-product-count baseline-2048)))
+    (is (= 128 (count chunks-2048)))
+    (is (= 128 (count root-chunks-2048)))
+    (is (= (vec (range 128)) (mapv :chunk-index chunks-2048)))
+    (is (= (mapv #(* 16 %) (range 128))
+           (mapv :start-ordinal chunks-2048)))
+    (is (every? #(= 16 (:item-count %)) chunks-2048))
+    (is (every? #(= 16 (:item-count %)) root-chunks-2048))
+    (is (= (vec (range 2048))
+           (mapv :ordinal (mapcat :items chunks-2048))))
+    (is (= root-ids-2048
+           (mapv :id (mapcat :items root-chunks-2048))))
+    (let [{:keys [nodes maximum-depth maximum-width scalar-bytes
+                  maximum-scalar-bytes maximum-integer-bits]}
+          (:stats baseline-2048-record)]
+      (is (<= nodes 65536))
+      (is (<= maximum-depth 64))
+      (is (<= maximum-width 128))
+      (is (<= scalar-bytes (* 8 1024 1024)))
+      (is (<= maximum-scalar-bytes 65536))
+      (is (<= maximum-integer-bits 256)))
+    (is (= baseline-2048-digest
+           (bootstrap/p15-s23-c6c10-canonical-digest
+            "<sh04-stream-v2-identity-test-2048>"
+            (preimage products-2048 root-ids-2048 2048))))
+    (doseq [[label [candidate-products candidate-root-ids]] candidates]
+      (is (not= baseline-300-digest
+                (bootstrap/p15-s23-c6c10-canonical-digest
+                 "<sh04-stream-v2-identity-test-300>"
+                 (preimage candidate-products candidate-root-ids
+                           (count candidate-products))))
+          (name label)))))
+
 (deftest sh04-gravity-rejects-each-structural-scenario-with-stable-rules
   (let [descriptor
         @accepted-descriptor]
@@ -1068,24 +1199,30 @@
 (deftest sh04-graph-validation-is-bounded-and-fails-closed
   (let [descriptor
         @accepted-descriptor
-        base (:syntax (build-and-resolve! descriptor))
+        base-build (build-and-resolve! descriptor)
+        base (:syntax base-build)
         base (assoc base :syntax-id (stable-test-id :base 0))
+        base-product (:product base-build)
+        synthetic-product
+        (fn [index]
+          (let [syntax-id (stable-test-id :node index)]
+            {:syntax-object (assoc (:syntax-object base-product)
+                                   :syntax-id syntax-id)
+             :digest-requests (:digest-requests base-product)
+             :resolved-digests
+             [(first (:resolved-digests base-product)) syntax-id]}))
+        products-2049 (mapv synthetic-product (range 2049))
+        syntaxes-2049 (mapv :syntax-object products-2049)
+        exact-nodes (subvec syntaxes-2049 0 2048)
+        accepted-300 (subvec syntaxes-2049 0 300)
+        over-nodes syntaxes-2049
+        exact-products (subvec products-2049 0 2048)
+        accepted-products-300 (subvec products-2049 0 300)
+        exact-root-ids (mapv :syntax-id exact-nodes)
+        accepted-root-ids-300 (mapv :syntax-id accepted-300)
+        over-root-ids (mapv :syntax-id over-nodes)
         chain-64 (reference-chain base 64)
         chain-65 (reference-chain base 65)
-        exact-nodes
-        (mapv (fn [index]
-                (let [form-id (keyword (str "form-" index))]
-                  (-> base
-                      (assoc :syntax-id (stable-test-id :node index))
-                      (assoc-in [:source :form-id] form-id)
-                      (assoc-in [:ownership :form-id] form-id))))
-              (range 256))
-        over-nodes
-        (conj exact-nodes
-              (-> base
-                  (assoc :syntax-id (stable-test-id :node 256))
-                  (assoc-in [:source :form-id] :form-256)
-                  (assoc-in [:ownership :form-id] :form-256)))
         dangling-id (stable-test-id :dangling 0)
         generated (generated-object base 1 (:syntax-id base))
         dangling
@@ -1110,13 +1247,37 @@
         cases
         [[:exact-depth chain-64 :passed nil]
          [:over-depth chain-65 :failed "C3-ORIGIN"]
+         [:accepted-300 accepted-300 :passed nil]
          [:exact-nodes exact-nodes :passed nil]
          [:over-nodes over-nodes :failed "C3-SHAPE"]
          [:dangling [base dangling] :failed "C3-ORIGIN"]
          [:duplicate-id [base duplicate-id] :failed "C3-ID"]
          [:self-reference [self-reference] :failed "C3-ORIGIN"]
          [:unresolved-id [unresolved] :failed "C3-ID"]
-         [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]]]
+         [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]]
+        bounds (invoke-syntax 'c3-bounds-record [])
+        stream-300
+        (invoke-syntax
+         'c3-syntax-stream-build-template
+         [accepted-products-300
+          (:reader-binding descriptor)
+          (:reader-source-revision descriptor)
+          accepted-root-ids-300])
+        stream-at-limit
+        (invoke-syntax
+         'c3-syntax-stream-build-template
+         [exact-products
+          (:reader-binding descriptor)
+          (:reader-source-revision descriptor)
+          exact-root-ids])
+        stream-over-limit
+        (invoke-syntax
+         'c3-syntax-stream-build-template
+         [products-2049
+          (:reader-binding descriptor)
+          (:reader-source-revision descriptor)
+          over-root-ids])]
+    (is (= 2048 (:maximum-syntax-objects bounds)))
     (doseq [[label objects expected-status expected-rule] cases]
       (let [invocation
             (captured-invocation 'c3-syntax-graph-verify-template [objects])
@@ -1131,9 +1292,30 @@
     (is (= 64
            (:maximum-reference-depth
             (invoke-syntax 'c3-syntax-graph-verify-template [chain-64]))))
-    (is (= 256
+    (is (= 300
            (:object-count
-            (invoke-syntax 'c3-syntax-graph-verify-template [exact-nodes]))))))
+            (invoke-syntax 'c3-syntax-graph-verify-template
+                           [accepted-300]))))
+    (is (= 2048
+           (:object-count
+            (invoke-syntax 'c3-syntax-graph-verify-template [exact-nodes]))))
+    (doseq [[label result expected-status]
+            [[:stream-300 stream-300 :accepted]
+             [:stream-at-limit stream-at-limit :accepted]
+             [:stream-over-limit stream-over-limit :rejected]]]
+      (is (= expected-status (:status result)) (str label " " result))
+      (is (= (= expected-status :rejected)
+             (get-in result
+                     [:containment :downstream-artifacts-forbidden]))
+          (str label " " result)))
+    (is (= "C3-SHAPE" (result-rule stream-over-limit)))
+    (is (= :syntax-node-limit
+           (get-in stream-over-limit [:diagnostics 0 :facts :reason])))
+    (let [graph-over
+          (invoke-syntax 'c3-syntax-graph-verify-template [over-nodes])]
+      (is (= "C3-SHAPE" (result-rule graph-over)))
+      (is (= :syntax-node-limit
+             (get-in graph-over [:diagnostics 0 :facts :reason]))))))
 
 (deftest sh04-width-bounds-accept-the-limit-and-reject-the-next-value
   (let [descriptor
@@ -1289,6 +1471,69 @@
            (get-in qst
                    [:gravity-syntax-boundary :authenticated-envelope
                     :provenance-binding-id]))))))
+
+(deftest sh04-c3-preserves-an-ordinary-digest-reference-shaped-map
+  (let [source-text
+        (str "(ns sh04.digest-reference-map"
+             " (:profile :meta) (:target :jvm))\n"
+             "(defn preserve-digest-reference-map [] {:digest-ref 0})\n")
+        body-form
+        '(defn preserve-digest-reference-map [] {:digest-ref 0})
+        gravity-path "/sh04/exact-map/source.gravity"
+        qst-path "/sh04/exact-map/source.qst"
+        gravity-first
+        (bootstrap/compiler-c3-syntax-source-artifact
+         gravity-path source-text)
+        gravity-second
+        (bootstrap/compiler-c3-syntax-source-artifact
+         gravity-path source-text)
+        qst-artifact
+        (bootstrap/compiler-c3-syntax-source-artifact qst-path source-text)]
+    (doseq [[extension artifact]
+            [[".gravity" gravity-first] [".qst" qst-artifact]]]
+      (is (= :gravity/stage0-c3-syntax-object-artifact (:kind artifact))
+          extension)
+      (is (= body-form
+             (get-in artifact [:c2-reader-artifact
+                               :parsed-semantic-values 1]))
+          extension)
+      (is (= body-form
+             (get-in artifact [:syntax-object-stream 1 :form :value]))
+          extension)
+      (is (= {:digest-ref 0}
+             (last (get-in artifact
+                           [:syntax-object-stream 1 :form :value])))
+          extension)
+      (is (= :passed
+             (get-in artifact [:syntax-verification-report :status]))
+          extension)
+      (is (= :complete
+             (get-in artifact [:capability-based-proof :status]))
+          extension)
+      (is (sha256-id? (:artifact-id artifact)) extension)
+      (is (sha256-id?
+           (get-in artifact
+                   [:gravity-syntax-boundary :resolved-syntax-result
+                    :artifact-id]))
+          extension))
+    (is (= gravity-first gravity-second))
+    (is (= (:artifact-id gravity-first) (:artifact-id qst-artifact)))
+    (is (= (get-in gravity-first
+                   [:gravity-syntax-boundary :resolved-syntax-result
+                    :artifact-id])
+           (get-in qst-artifact
+                   [:gravity-syntax-boundary :resolved-syntax-result
+                    :artifact-id])))
+    (is (= gravity-path
+           (get-in gravity-first
+                   [:gravity-syntax-boundary
+                    :authenticated-envelope-descriptor
+                    :actual-path-provenance :source-path])))
+    (is (= qst-path
+           (get-in qst-artifact
+                   [:gravity-syntax-boundary
+                    :authenticated-envelope-descriptor
+                    :actual-path-provenance :source-path])))))
 
 (deftest sh04-public-c3-is-checkout-path-neutral-with-actual-path-provenance
   (let [checkout-a

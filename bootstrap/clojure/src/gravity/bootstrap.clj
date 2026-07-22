@@ -89,7 +89,8 @@
 
 (defn utf8-byte-count
   [text]
-  (alength (.getBytes text "UTF-8")))
+  (alength (.getBytes ^String text
+                      java.nio.charset.StandardCharsets/UTF_8)))
 
 (defn source-location
   [source-text line-starts line column]
@@ -152729,17 +152730,49 @@
                  (empty? (:generated-origin seed)))))
      descriptor)))
 
+(defn c3-tagged-literal-descriptor
+  [seed form-record c2-artifact integrity-report]
+  (when (= :tagged-literal (:kind form-record))
+    (let [integrity-report
+          (or integrity-report (c3-c2-reader-integrity-report c2-artifact))
+          forms-by-id
+          (into {} (map (juxt :form-id identity) (:form-tree c2-artifact)))
+          payload-record (get forms-by-id (first (:children form-record)))
+          literal-record
+          (first
+           (filter #(= (:form-id form-record) (:form-id %))
+                   (:literal-decoding-records c2-artifact)))
+          tag (:tag form-record)]
+      (when (and (:authentic? integrity-report)
+                 (= (:form-id seed) (:form-id form-record))
+                 (= 1 (count (:children form-record)))
+                 (= :string (:kind payload-record))
+                 (= tag (get-in literal-record [:facts :tag]))
+                 (= (:raw form-record) (:raw literal-record))
+                 (= (:span form-record) (:span literal-record)))
+        {:artifact :gravity/tagged-literal-descriptor
+         :kind :tagged-literal
+         :tag tag
+         :raw (:raw form-record)
+         :payload (:value payload-record)
+         :semantic-validation :accepted}))))
+
 (defn c3-source-form-kind
   [seed form-record c2-artifact integrity-report]
-  (if (c3-lossless-literal-descriptor seed form-record c2-artifact
-                                      integrity-report)
+  (if (or (c3-lossless-literal-descriptor seed form-record c2-artifact
+                                          integrity-report)
+          (c3-tagged-literal-descriptor seed form-record c2-artifact
+                                        integrity-report))
     (:kind form-record)
     (form-kind (:form seed))))
 
 (defn c3-source-facts
   [seed form-record c2-artifact integrity-report]
-  (if-let [descriptor (c3-lossless-literal-descriptor
-                       seed form-record c2-artifact integrity-report)]
+  (if-let [descriptor
+           (or (c3-lossless-literal-descriptor
+                seed form-record c2-artifact integrity-report)
+               (c3-tagged-literal-descriptor
+                seed form-record c2-artifact integrity-report))]
     {:reader-literal-kind (:kind descriptor)
      :reader-literal-descriptor descriptor
      :reader-product-integrity-hash
@@ -152752,7 +152785,8 @@
      :reader-literal-facts
      (select-keys descriptor
                   [:raw :numerator-spelling :denominator-spelling
-                   :numerator :denominator :semantic-validation :reason])}
+                   :numerator :denominator :tag :payload
+                   :semantic-validation :reason])}
     {}))
 
 (defn c3-path-neutral-origin
@@ -153572,18 +153606,18 @@
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
 (def sh04-syntax-facade-relative-path
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity")
-(def sh04-syntax-expected-source-byte-count 78419)
+(def sh04-syntax-expected-source-byte-count 81241)
 (def sh04-syntax-expected-source-content-hash
-  "sha256:4f8c0bb33929da886191f8049fd3c3a22ff3e604262b22ade62ca6f78508130a")
+  "sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553")
 (def sh04-syntax-expected-plan-semantic-hash
-  "sha256:3b377cb5e05bc7a147cfbf302048960ebc490e5283907d5c5be4eae0c61135dd")
+  "sha256:be302e17f542733b5e0078f451b11ea6b8efa43b9761fb6c4035f9bb527083db")
 (def sh04-syntax-expected-functions-semantic-hash
-  "sha256:277876dd2cc1683c6df495482ce79903bb45a581524adcd16e8a21889a84e0b4")
-(def sh04-syntax-expected-function-count 101)
+  "sha256:d78a2353d0f93d5b0d5438c8fdca4b18202627bb63290522e8aea29df24c0f9b")
+(def sh04-syntax-expected-function-count 102)
 (def sh04-syntax-expected-function-names-hash
-  "sha256:8b81ebb52d1887a599d93ea0ab3ded3ab5a4609f6866ae35069ea4860e3a02dc")
+  "sha256:890db57cf9eaf955afd12bf69f2f68f6be637c6c21abde8b0ac726a4fab5ee4a")
 (def sh04-syntax-expected-function-shapes-hash
-  "sha256:78fc7ad64b443108531f0bdc8d25463b57dc63a73e27554b76e845da47ca9111")
+  "sha256:33d929948fd0803b6b5c48eeed9ee5c1de6c52f40b81e96693a4db8685fb0b4a")
 (def sh04-syntax-public-function-hashes
    {'c3-syntax-build-template
    "sha256:357fbc856a887303d79f89630c2a753a060e20e82c2cd2cf0c99f193d1cae1c2"
@@ -153598,7 +153632,7 @@
    'c3-syntax-stream-verify-resolved
    "sha256:012f527a03a4e89c55a81399d4ac6f4ec581f3c192d57d860913f89ee416a249"
    'c3-syntax-serialize-template
-   "sha256:cb2efa8fb02f79e0665d0682ada4d10b39e2467b0b77275b251ce925f1e10ef2"
+   "sha256:f7dd9496917431b9bb2632f10f65beaa8b37577cff65951f4bb03a8de1162ae1"
    'c3-syntax-deserialize-template
    "sha256:37c6865345d142ba9b357ca086ce193ee89d72c5a2e3a3765486268bbfb7a784"
    'c3-syntax-graph-verify-template
@@ -153868,6 +153902,74 @@
         :facts {:gravity-diagnostic diagnostic}})))
   result)
 
+(defn sh04-syntax-resolve-object-template!
+  [source-path syntax-template resolved-digests]
+  ;; Digest references are control data only in schema-declared identity
+  ;; slots.  Semantic forms may legitimately contain an ordinary map such as
+  ;; {:digest-ref 0}; recursively walking the artifact would reinterpret that
+  ;; source data and change the program being compiled.
+  (when-not (and (= 2 (count resolved-digests))
+                 (= {:digest-ref 1} (:syntax-id syntax-template)))
+    (sh04-syntax-boundary-fail!
+     "C3-ID" source-path :declared-syntax-id-reference
+     (:syntax-id syntax-template)
+     {:resolved-digest-count (count resolved-digests)}))
+  (assoc syntax-template :syntax-id (second resolved-digests)))
+
+(defn sh04-syntax-resolve-stream-template!
+  [source-path stream-template resolved-digests]
+  (when-not (and (= 1 (count resolved-digests))
+                 (= {:digest-ref 0} (:artifact-id stream-template)))
+    (sh04-syntax-boundary-fail!
+     "C3-ID" source-path :declared-stream-artifact-id-reference
+     (:artifact-id stream-template)
+     {:resolved-digest-count (count resolved-digests)}))
+  (assoc stream-template :artifact-id (first resolved-digests)))
+
+(defn sh04-syntax-resolve-request-preimage!
+  [source-path request resolved-digests]
+  (let [ordinal (:ordinal request)
+        dependencies (:depends-on request)
+        preimage (:preimage request)]
+    (case ordinal
+      0
+      (do
+        (when-not (and (= [] dependencies) (empty? resolved-digests))
+          (sh04-syntax-boundary-fail!
+           "C3-ID" source-path :exact-syntax-request-zero-dependencies
+           dependencies {:resolved-digest-count (count resolved-digests)}))
+        preimage)
+
+      1
+      (do
+        (when-not (and (= [0] dependencies)
+                       (= 1 (count resolved-digests))
+                       (= {:digest-ref 0}
+                          (get-in preimage
+                                  [:reader-binding
+                                   :semantic-binding-id])))
+          (sh04-syntax-boundary-fail!
+           "C3-ID" source-path :declared-reader-binding-reference
+           (get-in preimage [:reader-binding :semantic-binding-id])
+           {:dependencies dependencies
+            :resolved-digest-count (count resolved-digests)}))
+        (assoc-in preimage [:reader-binding :semantic-binding-id]
+                  (first resolved-digests)))
+
+      (sh04-syntax-boundary-fail!
+       "C3-ID" source-path :known-syntax-request-ordinal
+       ordinal {:dependencies dependencies}))))
+
+(defn sh04-syntax-resolve-stream-request-preimage!
+  [source-path request resolved-digests]
+  (when-not (and (= 0 (:ordinal request))
+                 (= [] (:depends-on request))
+                 (empty? resolved-digests))
+    (sh04-syntax-boundary-fail!
+     "C3-ID" source-path :exact-syntax-stream-request-dependencies
+     request {:resolved-digest-count (count resolved-digests)}))
+  (:preimage request))
+
 (defn sh04-syntax-resolve-template!
   [source-path binding raw reader-binding reader-source-revision]
   (sh04-syntax-raise-result! source-path raw)
@@ -153902,9 +154004,8 @@
          (fn [resolved request]
            (let [ordinal (:ordinal request)
                  resolved-preimage
-                 (p15-s23-c6c10-resolve-digest-references!
-                  source-path (:preimage request) request-count ordinal
-                  resolved)]
+                 (sh04-syntax-resolve-request-preimage!
+                  source-path request resolved)]
              (when-not (= ordinal (count resolved))
                (sh04-syntax-boundary-fail!
                 "C3-ID" source-path :ordered-syntax-digest-requests
@@ -153914,8 +154015,8 @@
                     source-path resolved-preimage))))
          [] requests)
         syntax
-        (p15-s23-c6c10-resolve-digest-references!
-         source-path (:syntax-template raw) request-count nil digests)
+        (sh04-syntax-resolve-object-template!
+         source-path (:syntax-template raw) digests)
         resolved-verification
         (sh04-syntax-execute!
          source-path binding 'c3-syntax-verify-resolved
@@ -154149,8 +154250,10 @@
         source-namespace (or (:namespace seed) 'gravity.user)
         namespace-context {:current source-namespace :aliases {} :imports []}
         literal-descriptor
-        (c3-lossless-literal-descriptor seed form-record c2-artifact
-                                        integrity-report)
+        (or (c3-lossless-literal-descriptor seed form-record c2-artifact
+                                            integrity-report)
+            (c3-tagged-literal-descriptor seed form-record c2-artifact
+                                          integrity-report))
         kind (if literal-descriptor
                (:kind form-record)
                (form-kind (:form seed)))
@@ -154408,6 +154511,9 @@
          source-path binding 'c3-syntax-stream-build-template
          [resolved-products reader-binding reader-source-revision
           root-syntax-ids])
+        _ (sh04-syntax-require-carrier!
+           source-path :gravity-syntax-stream-template
+           stream-template-result)
         _ (when-not (and (= :gravity/sh04-syntax-stream-template-result
                             (:artifact stream-template-result))
                          (= :accepted (:status stream-template-result))
@@ -154426,9 +154532,8 @@
          (fn [resolved request]
            (let [ordinal (:ordinal request)
                  resolved-preimage
-                 (p15-s23-c6c10-resolve-digest-references!
-                  source-path (:preimage request) (count stream-requests)
-                  ordinal resolved)]
+                 (sh04-syntax-resolve-stream-request-preimage!
+                  source-path request resolved)]
              (when-not (= ordinal (count resolved))
                (sh04-syntax-boundary-fail!
                 "C3-ID" source-path :ordered-syntax-stream-digest-requests
@@ -154438,13 +154543,18 @@
                     source-path resolved-preimage))))
          [] stream-requests)
         resolved-stream
-        (p15-s23-c6c10-resolve-digest-references!
+        (sh04-syntax-resolve-stream-template!
          source-path (:stream-template stream-template-result)
-         (count stream-requests) nil stream-digests)
+         stream-digests)
+        _ (sh04-syntax-require-carrier!
+           source-path :resolved-gravity-syntax-stream resolved-stream)
         stream-verification
         (sh04-syntax-execute!
          source-path binding 'c3-syntax-stream-verify-resolved
          [resolved-stream stream-requests stream-digests])
+        _ (sh04-syntax-require-carrier!
+           source-path :gravity-syntax-stream-verification
+           stream-verification)
         _ (when-not (and
                      (= :gravity/sh04-resolved-syntax-stream-verification-report
                         (:artifact stream-verification))
@@ -154460,6 +154570,8 @@
         (sh04-syntax-execute!
          source-path binding 'c3-syntax-serialize-template
          [resolved-stream stream-requests stream-digests])
+        _ (sh04-syntax-require-carrier!
+           source-path :gravity-syntax-stream-serialization serialization)
         _ (when-not (= :accepted (:status serialization))
             (sh04-syntax-boundary-fail!
              "C3-SERIALIZE" source-path :gravity-syntax-stream-serialization
@@ -154468,6 +154580,8 @@
         (sh04-syntax-execute!
          source-path binding 'c3-syntax-deserialize-template
          [(:carrier serialization)])
+        _ (sh04-syntax-require-carrier!
+           source-path :gravity-syntax-stream-deserialization deserialization)
         _ (when-not (and (= :accepted (:status deserialization))
                          (= (:semantic-payload serialization)
                             (:semantic-payload deserialization)))
@@ -154696,6 +154810,1532 @@
     (compiler-c3-syntax-source-artifact
      path source-text (reader-project-context-for-source path) c2-artifact
      sh03-reader-internal-product-authority)))
+
+;; SH-05 executes the pinned Gravity macro leaf over authenticated SH-04
+;; syntax.  Clojure remains the declared plan runner, digest resolver,
+;; envelope binder, compatibility packager, and central route host.
+(def sh05-macro-source-relative-path
+  "bootstrap/gravity/src/gravity/macro.gravity")
+(def sh05-macro-facade-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")
+(def sh05-macro-expected-source-byte-count 56488)
+(def sh05-macro-expected-source-content-hash
+  "sha256:19fe589efb27228b8788347439381b61c907a7b6a562a2a3ac3f7256ae77e549")
+(def sh05-macro-expected-plan-semantic-hash
+  "sha256:fa8d1c27377204ab134d47ab217b39638acd6eb5a1580276d899850f3fd3d1da")
+(def sh05-macro-expected-functions-semantic-hash
+  "sha256:50d131f8146232fc09929e5fbcfab4f9db011f720b785d05fe40029bd01ce407")
+(def sh05-macro-expected-function-count 46)
+(def sh05-macro-expected-function-names-hash
+  "sha256:42e599bb9b50599135695c0eb6bf39c4ceb0c79884ad6fcd7b08537871b15dbe")
+(def sh05-macro-expected-function-shapes-hash
+  "sha256:4a49b16738264948c46c15674b9a96fbc32cb473054bebe3893b5a871d156c1a")
+(def sh05-macro-public-function-hashes
+  {'sh05-expand-macro-template
+   "sha256:7bdb4f2ffebbb9519065e005210f5f2fca2efe90017996d82db9fdd807030b04"
+   'sh05-verify-macro-template
+   "sha256:599304043c490982bb4c58b919cac16d3e18172f348d4359d62a0e3d9630d241"
+   'sh05-verify-macro-resolved
+   "sha256:0d3f61ce19a0093d674f5411189dcfd3aebf4ae20a7151c227dbdff15a79b432"})
+(def sh05-macro-public-function-shapes
+  {'sh05-expand-macro-template {:arity 1 :params ['request]}
+   'sh05-verify-macro-template
+   {:arity 2 :params ['expansion-template 'digest-requests]}
+   'sh05-verify-macro-resolved
+   {:arity 3
+    :params ['resolved-expansion 'digest-requests 'resolved-digests]}})
+(def sh05-macro-adapter-contract
+  :gravity/sh05-to-c4-macro-products-v1)
+(def sh05-macro-version
+  (get sh05-macro-public-function-hashes 'sh05-expand-macro-template))
+(def sh05-macro-envelope-stage :c4-macro)
+(def sh05-macro-sealed-artifact-kind :gravity/sh05-macro-products)
+
+(defn sh05-macro-boundary-fail!
+  [rule source-path missing-field observed facts]
+  (c4-macro-fail!
+   rule source-path
+   {:source-span (source-span source-path 0)
+    :macro 'gravity.core/defn
+    :macro-version sh05-macro-version
+    :profile :meta
+    :target :jvm
+    :build-effects []
+    :capabilities []
+    :hygiene {:marks [] :lexical-scopes []}}
+   {:severity :error
+    :missing-fields [missing-field]
+    :facts (merge {:sh05-boundary :gravity-macro-plan} facts)
+    :observed observed}))
+
+(defn sh05-macro-resolve-source-path
+  []
+  (let [anchor (java.io.File.
+                (p15-s23-stage2-compiler-artifact-source-path))
+        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
+    (or
+     (loop [directory start]
+       (when directory
+         (let [candidate
+               (java.io.File. directory sh05-macro-source-relative-path)]
+           (if (.isFile candidate)
+             (.getPath candidate)
+             (recur (.getParentFile directory))))))
+     sh05-macro-source-relative-path)))
+
+(defn sh05-macro-read-pinned-source!
+  [request-source]
+  (let [source-path (sh05-macro-resolve-source-path)
+        nio-path (.toPath (java.io.File. source-path))
+        nofollow (into-array java.nio.file.LinkOption
+                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (try
+          (java.nio.file.Files/readAttributes
+           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception error
+            (sh05-macro-boundary-fail!
+             "C4-TRACE" request-source :pinned-macro-source-readable
+             source-path {:cause-message (.getMessage error)})))
+        _ (when-not (and attributes (.isRegularFile attributes)
+                         (= (long sh05-macro-expected-source-byte-count)
+                            (.size attributes)))
+            (sh05-macro-boundary-fail!
+             "C4-TRACE" request-source :exact-pinned-macro-source
+             source-path
+             {:expected-byte-count sh05-macro-expected-source-byte-count
+              :observed-byte-count (when attributes (.size attributes))}))
+        bytes
+        (try
+          (java.nio.file.Files/readAllBytes nio-path)
+          (catch Exception error
+            (sh05-macro-boundary-fail!
+             "C4-TRACE" request-source :pinned-macro-source-bytes
+             source-path {:cause-message (.getMessage error)})))
+        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+    (when-not (and (= sh05-macro-expected-source-byte-count
+                      (alength bytes))
+                   (= sh05-macro-expected-source-content-hash content-hash))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE" request-source :pinned-macro-source-identity
+       source-path {:observed-content-hash content-hash
+                    :observed-byte-count (alength bytes)}))
+    {:source-path source-path
+     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
+     :source-byte-count (alength bytes)
+     :source-content-hash content-hash}))
+
+(defn sh05-macro-plan-identities
+  [plan]
+  (let [functions (:functions plan)
+        shapes
+        (into (sorted-map)
+              (map (fn [[name function]]
+                     [name (select-keys function [:arity :params])]))
+              functions)]
+    {:plan-semantic-hash
+     (p15-s23-c11-mir-digest
+      (p15-s23-stage2-compiler-artifact-semantic-input plan))
+     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
+     :function-count (count functions)
+     :function-names-hash
+     (p15-s23-c11-mir-digest (vec (keys functions)))
+     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
+     :public-function-hashes
+     (into (sorted-map)
+           (map (fn [name]
+                  [name (p15-s23-c11-mir-digest (get functions name))]))
+           (keys sh05-macro-public-function-hashes))
+     :public-function-shapes
+     (select-keys shapes (keys sh05-macro-public-function-shapes))}))
+
+(defn sh05-macro-build-binding!
+  [request-source]
+  (let [source (sh05-macro-read-pinned-source! request-source)
+        emitter
+        (:emitter
+         (c-backend-stage2-plan-emitter-source-rule!
+          (:source-path source) :jvm))
+        plan
+        (p15-s23-stage2-compiler-artifact-plan
+         emitter (:source-path source) (:source-text source))
+        identities (sh05-macro-plan-identities plan)]
+    (when-not
+     (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+          (true? (:compiler-artifact-plan? plan))
+          (= 'gravity.macro (get-in plan [:module :module]))
+          (= :meta (get-in plan [:module :profile]))
+          (= :jvm (get-in plan [:module :target]))
+          (= #{} (get-in plan [:module :effects]))
+          (= #{} (get-in plan [:module :capabilities]))
+          (= :safe (get-in plan [:module :safety]))
+          (= sh05-macro-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh05-macro-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh05-macro-expected-function-count (:function-count identities))
+          (= sh05-macro-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh05-macro-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh05-macro-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh05-macro-public-function-shapes
+             (:public-function-shapes identities)))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE" request-source :pinned-macro-plan-and-functions
+       identities {}))
+    (merge source identities
+           {:artifact :gravity/sh05-pinned-macro-plan-binding
+            :status :complete
+            :semantic-authority :gravity-source
+            :compiled-by :clojure-stage0-seed
+            :executed-by :clojure-stage2-generic-rule-runner
+            :generic-bridge-residual? true
+            :self-hosted? false
+            :plan plan})))
+
+(def ^:private sh05-macro-cached-binding
+  (delay (sh05-macro-build-binding! "<sh05-macro-bootstrap>")))
+
+(defn sh05-macro-current-binding!
+  [request-source]
+  (let [fresh (sh05-macro-read-pinned-source! request-source)
+        binding @sh05-macro-cached-binding
+        identities (sh05-macro-plan-identities (:plan binding))]
+    (when-not
+     (and (= (:source-byte-count fresh) (:source-byte-count binding))
+          (= (:source-content-hash fresh) (:source-content-hash binding))
+          (= (select-keys
+              binding
+              [:plan-semantic-hash :functions-semantic-hash
+               :function-count :function-names-hash
+               :function-shapes-hash :public-function-hashes
+               :public-function-shapes])
+             identities))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE" request-source :fresh-macro-source-and-plan-binding
+       binding {}))
+    binding))
+
+(defn sh05-macro-execute!
+  [source-path binding function arguments]
+  (try
+    (sh04-syntax-strip-host-metadata
+     (p15-s23-stage2-runtime-execute-function
+      {:engine :gravity-sh05-pinned-macro-runner
+       :compiler-artifact-plan? true}
+      (:plan binding) function
+      (sh04-syntax-strip-host-metadata arguments)))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (sh05-macro-boundary-fail!
+       "C4-DEPTH" source-path :bounded-macro-host-stack function
+       {:contained-host-error (.getName (class error))}))
+    (catch AssertionError error
+      (sh05-macro-boundary-fail!
+       "C4-RETURN" source-path :contained-macro-assertion function
+       {:contained-host-error (.getName (class error))}))
+    (catch LinkageError error
+      (sh05-macro-boundary-fail!
+       "C4-RETURN" source-path :contained-macro-linkage function
+       {:contained-host-error (.getName (class error))}))
+    (catch clojure.lang.ExceptionInfo error
+      (sh05-macro-boundary-fail!
+       "C4-RETURN" source-path :contained-macro-runtime-diagnostic
+       function {:contained-diagnostic (:id (ex-data error))}))
+    (catch Exception error
+      (sh05-macro-boundary-fail!
+       "C4-RETURN" source-path :contained-macro-host-failure function
+       {:contained-host-error (.getName (class error))
+        :cause-message (.getMessage error)}))))
+
+(defn sh05-resolve-request-preimage!
+  [source-path request resolved-digests]
+  (let [ordinal (:ordinal request)
+        purpose (:purpose request)
+        preimage (:preimage request)]
+    (case purpose
+      :sh05-expanded-syntax-id
+      (do
+        (when-not (and (= 0 ordinal) (empty? resolved-digests))
+          (sh05-macro-boundary-fail!
+           "C4-TRACE" source-path :exact-expanded-syntax-request
+           request {:resolved-digest-count (count resolved-digests)}))
+        preimage)
+
+      :sh05-expansion-provenance-binding-id
+      (do
+        (when-not (and (= 1 ordinal)
+                       (= 1 (count resolved-digests))
+                       (= {:digest-ref 0}
+                          (:semantic-artifact-id preimage)))
+          (sh05-macro-boundary-fail!
+           "C4-TRACE" source-path :declared-provenance-artifact-reference
+           (:semantic-artifact-id preimage)
+           {:resolved-digest-count (count resolved-digests)}))
+        (assoc preimage :semantic-artifact-id (first resolved-digests)))
+
+      :sh05-macro-diagnostic-id
+      (do
+        (when-not (and (= 0 ordinal) (empty? resolved-digests))
+          (sh05-macro-boundary-fail!
+           "C4-TRACE" source-path :exact-macro-diagnostic-request
+           request {:resolved-digest-count (count resolved-digests)}))
+        preimage)
+
+      (sh05-macro-boundary-fail!
+       "C4-TRACE" source-path :known-macro-digest-request-purpose
+       purpose {:ordinal ordinal}))))
+
+(defn sh05-macro-resolve-digests!
+  [source-path digest-requests]
+  (reduce
+   (fn [resolved request]
+     (let [ordinal (:ordinal request)
+           preimage
+           (sh05-resolve-request-preimage!
+            source-path request resolved)]
+       (when-not (= ordinal (count resolved))
+         (sh05-macro-boundary-fail!
+          "C4-TRACE" source-path :ordered-macro-digest-requests
+          request {:resolved-count (count resolved)}))
+       (conj resolved
+             (p15-s23-c6c10-canonical-digest source-path preimage))))
+   [] digest-requests))
+
+(defn sh05-deep-merge
+  [left right]
+  (merge-with (fn [left-value right-value]
+                (if (and (map? left-value) (map? right-value))
+                  (sh05-deep-merge left-value right-value)
+                  right-value))
+              left right))
+
+(defn sh05-defn-form?
+  [form]
+  (and (seq? form) (= 'defn (first form))))
+
+(defn sh05-defmacro-form?
+  [form]
+  (and (seq? form) (= 'defmacro (first form))))
+
+(defn sh05-semantic-component-id
+  [call-site-syntax-id role value]
+  (reader-canonical-hash
+   {:domain :gravity/sh05-input-syntax-component-v1
+    :call-site-syntax-id call-site-syntax-id
+    :role role
+    :semantic-value (sh04-syntax-strip-host-metadata value)}))
+
+(defn sh05-default-macro-request
+  [source-path c3-artifact module syntax form]
+  (let [[_ name parameters & body] form
+        call-site-syntax-id (:syntax/id syntax)
+        reader-binding
+        (get-in c3-artifact
+                [:gravity-syntax-boundary :reader-semantic-binding])
+        reader-source-revision
+        (get-in c3-artifact
+                [:gravity-syntax-boundary :reader-source-revision])
+        macro-environment-id
+        (reader-canonical-hash
+         {:domain :gravity/sh05-bootstrap-macro-environment-v1
+          :macros [{:name 'defn :version sh05-macro-version
+                    :phase :macro-expansion
+                    :build-effects [] :capabilities []}]})
+        base-policy
+        {:macro-return-kind :syntax
+         :expansion-depth 0
+         :output-node-count (+ 4 (count body))
+         :requested-build-effects []
+         :declared-build-effects []
+         :granted-build-effects []
+         :requested-capabilities []
+         :granted-capabilities []
+         :hidden-captures []
+         :capture-policy :explicit-only
+         :generated-unsafe? false
+         :unsafe-declared? false
+         :allowed-profiles [(:profile module)]
+         :generated-profile (:profile module)}
+        build-policy-id
+        (reader-canonical-hash
+         {:domain :gravity/sh05-build-policy-v1 :policy base-policy})
+        trace-replay-id
+        (reader-canonical-hash
+         {:domain :gravity/sh05-trace-replay-v1
+          :call-site-syntax-id call-site-syntax-id
+          :macro-environment-id macro-environment-id
+          :build-policy-id build-policy-id})
+        semantic-span
+        (let [span
+              (select-keys (:span syntax)
+                           [:file :byte-start :byte-end
+                            :scalar-start :scalar-end :line-start
+                            :column-start :line-end :column-end])]
+          ;; SH-04 retains the physical source in :source for diagnostics.
+          ;; Macro semantic identity uses only its co-canonical source id.
+          (assoc span :source (:file span)))]
+    {:artifact :gravity/sh05-authenticated-c3-macro-request
+     :schema-version 1
+     :call
+     {:macro-name 'defn
+      :macro-version sh05-macro-version
+      :call-site-syntax-id call-site-syntax-id
+      :definition-syntax-id
+      (reader-canonical-hash
+       {:domain :gravity/sh05-defn-macro-definition-v1
+        :macro-version sh05-macro-version})
+      :name-syntax-id
+      (sh05-semantic-component-id call-site-syntax-id :name name)
+      :parameter-vector-syntax-id
+      (sh05-semantic-component-id call-site-syntax-id
+                                  :parameters parameters)
+      :body-syntax-ids
+      (mapv #(sh05-semantic-component-id call-site-syntax-id
+                                         [:body %1] %2)
+            (range) body)
+      :semantic-call-span semantic-span
+      :metadata (or (:metadata syntax) {})
+      :hygiene (select-keys (:hygiene syntax)
+                            [:marks :lexical-scopes])
+      :origin-chain (vec (:origin syntax))
+      :call-site-span (:span syntax)
+      :definition-span
+      {:source sh05-macro-source-relative-path
+       :byte-start 0 :byte-end sh05-macro-expected-source-byte-count}}
+     :context
+     {:phase :macro-expansion
+      :profile (:profile module)
+      :target (:target module)
+      :macro-environment-id macro-environment-id
+      :build-policy-id build-policy-id
+      :trace-replay-id trace-replay-id}
+     :policy (assoc base-policy
+                    :recorded-trace-replay-id trace-replay-id)
+     :provenance {:actual-source-path source-path}
+     :reader-binding reader-binding
+     :reader-source-revision reader-source-revision
+     :reader-semantic-binding-id (:semantic-binding-id reader-binding)
+     :source-revision-id (:revision-id reader-source-revision)}))
+
+(defn sh05-macro-raise-rejection!
+  [source-path raw resolved-digests]
+  (let [diagnostic
+        (let [template (first (:diagnostics raw))]
+          (when-not (and (= 1 (count resolved-digests))
+                         (= {:digest-ref 0}
+                            (:diagnostic-id-request template)))
+            (sh05-macro-boundary-fail!
+             "C4-TRACE" source-path :declared-diagnostic-id-reference
+             (:diagnostic-id-request template)
+             {:resolved-digest-count (count resolved-digests)}))
+          (assoc template :diagnostic-id-request
+                 (first resolved-digests)))
+        rule (:rule diagnostic)]
+    (c4-macro-fail!
+     rule source-path
+     {:source-span (source-span source-path 0)
+      :macro (:macro-name diagnostic)
+      :macro-version (:macro-version diagnostic)
+      :profile (:profile diagnostic)
+      :target (:target diagnostic)
+      :build-effects (:build-effects diagnostic)
+      :capabilities (:capabilities diagnostic)
+      :hygiene (:hygiene-context diagnostic)}
+     {:severity (:severity diagnostic)
+      :diagnostic-family :c4-macro-expansion
+      :stage :macro-expansion
+      :facts (:facts diagnostic)
+      :remediation (:remediation diagnostic)
+      :gravity-diagnostic diagnostic
+      :diagnostic-id (get diagnostic :diagnostic-id-request)})))
+
+(defn sh05-contain-coordinator-operation!
+  [source-path responsibility operation]
+  (try
+    (operation)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (sh05-macro-boundary-fail!
+       "C4-DEPTH" source-path responsibility nil
+       {:contained-host-error (.getName (class error))}))
+    (catch clojure.lang.ExceptionInfo error
+      (if (contains? (set c4-macro-diagnostic-ids)
+                     (:id (ex-data error)))
+        (throw error)
+        (sh05-macro-boundary-fail!
+         "C4-TRACE" source-path responsibility nil
+         {:contained-diagnostic (:id (ex-data error))})))
+    (catch Throwable error
+      (sh05-macro-boundary-fail!
+       "C4-RETURN" source-path responsibility nil
+       {:contained-host-error (.getName (class error))
+        :cause-message (.getMessage error)}))))
+
+(defn sh05-resolve-expansion-template!
+  [source-path expansion-template resolved-digests]
+  ;; Only these schema-declared positions carry coordinator digest controls.
+  ;; Macro input and generated semantic forms remain opaque data, including
+  ;; ordinary maps whose shape happens to resemble a digest reference.
+  (let [output-reference {:digest-ref 0}
+        provenance-reference {:digest-ref 1}
+        output-reference-slots
+        [[:artifact-id]
+         [:output-syntax-id]
+         [:macro-expansion-trace 0 :output-syntax-ids 0]
+         [:metadata-ledger 0 :output-syntax-id]
+         [:generated-origin-source-map 0 :output-syntax-id]]]
+    (when-not
+     (and (= 2 (count resolved-digests))
+          (every? #(= output-reference (get-in expansion-template %))
+                  output-reference-slots)
+          (= provenance-reference
+             (:provenance-binding-id expansion-template)))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE" source-path :declared-macro-output-reference-slots
+       {:output-references
+        (mapv #(get-in expansion-template %) output-reference-slots)
+        :provenance-reference
+        (:provenance-binding-id expansion-template)}
+       {:resolved-digest-count (count resolved-digests)}))
+    (-> (reduce (fn [template slot]
+                  (assoc-in template slot (first resolved-digests)))
+                expansion-template output-reference-slots)
+        (assoc :provenance-binding-id (second resolved-digests)))))
+
+(defn sh05-run-macro-request!
+  [source-path binding request]
+  (let [raw
+        (sh05-macro-execute!
+         source-path binding 'sh05-expand-macro-template [request])
+        digest-requests (:digest-requests raw)
+        resolved-digests
+        (sh05-contain-coordinator-operation!
+         source-path :bounded-ordered-macro-digest-resolution
+         #(sh05-macro-resolve-digests! source-path digest-requests))]
+    (if (= :rejected (:status raw))
+      (sh05-contain-coordinator-operation!
+       source-path :structured-macro-rejection-packaging
+       #(sh05-macro-raise-rejection! source-path raw resolved-digests))
+      (let [template-verification
+            (sh05-macro-execute!
+             source-path binding 'sh05-verify-macro-template
+             [(:expansion-template raw) digest-requests])
+            resolved-expansion
+            (sh05-contain-coordinator-operation!
+             source-path :bounded-macro-reference-resolution
+             #(sh05-resolve-expansion-template!
+               source-path (:expansion-template raw) resolved-digests))
+            resolved-verification
+            (sh05-macro-execute!
+             source-path binding 'sh05-verify-macro-resolved
+             [resolved-expansion digest-requests resolved-digests])]
+        (when-not (and (= :passed (:status template-verification))
+                       (= :passed (:status resolved-verification)))
+          (sh05-macro-boundary-fail!
+           "C4-TRACE" source-path :fresh-gravity-macro-verification
+           {:template template-verification
+            :resolved resolved-verification} {}))
+        {:raw-template-result
+         (select-keys raw
+                      [:artifact :schema-version :status
+                       :expansion-template])
+         :digest-requests digest-requests
+         :resolved-digests resolved-digests
+         :resolved-expansion resolved-expansion
+         :template-verification
+         (select-keys template-verification
+                      [:artifact :schema-version :status :rule])
+         :resolved-verification
+         (select-keys resolved-verification
+                      [:artifact :schema-version :status :rule])}))))
+
+(defn sh05-source-syntax-stream
+  [c3-artifact]
+  (filterv #(not= :generated-form (get-in % [:form :kind]))
+           (:syntax-object-stream c3-artifact)))
+
+(defn sh05-expanded-form
+  [form]
+  (if (sh05-defn-form? form)
+    (let [[_ name parameters & body] form]
+      (list 'def name (apply list 'fn parameters body)))
+    form))
+
+(defn sh05-package-trace
+  [run profile target]
+  (let [expansion (:resolved-expansion run)
+        trace (first (:macro-expansion-trace expansion))
+        origin (get-in expansion [:generated-origin-source-map 0 :origin])]
+    {:artifact :gravity/macro-expansion-step
+     :step (:step trace)
+     :macro 'defn
+     :macro-version (:macro-version trace)
+     :definition-span (:definition-span trace)
+     :call-site-span (:call-site-span trace)
+     :input-syntax-id (first (:input-syntax-ids trace))
+     :output-syntax-id (first (:output-syntax-ids trace))
+     :hygiene (:hygiene trace)
+     :build-effects (:build-effects trace)
+     :capabilities (:capabilities trace)
+     :generated-origin [origin]
+     :profile profile
+     :target target
+     :trace-replay-id (:trace-replay-id trace)
+     :diagnostics []}))
+
+(defn sh05-expanded-syntax-object
+  [syntax form run]
+  (if run
+    (let [expansion (:resolved-expansion run)
+          output-id (:output-syntax-id expansion)
+          origin (get-in expansion [:generated-origin-source-map 0 :origin])]
+      (-> syntax
+          (assoc :artifact :gravity/expanded-syntax-object
+                 :form (sh05-expanded-form form)
+                 :syntax/id output-id
+                 :expanded-syntax-id output-id
+                 :phase :macro-expanded)
+          (update :origin #(conj (vec %) origin))))
+    (assoc syntax
+           :artifact :gravity/expanded-syntax-object
+           :form form
+           :expanded-syntax-id (:syntax/id syntax)
+           :phase :macro-expanded)))
+
+(defn sh05-expanded-graph
+  [expanded-stream trace]
+  (let [nodes
+        (mapv (fn [syntax]
+                {:id (:expanded-syntax-id syntax)
+                 :kind :expanded-syntax
+                 :form (:form syntax)})
+              expanded-stream)
+        node-ids (set (map :id nodes))
+        edges
+        (mapv (fn [step]
+                {:from (:input-syntax-id step)
+                 :to (:output-syntax-id step)})
+              trace)]
+    {:artifact :gravity/sh05-expanded-syntax-graph
+     :nodes nodes
+     :edges edges
+     :node-ids node-ids
+     :status :complete}))
+
+(defn sh05-expanded-graph-valid?
+  [graph]
+  (let [node-ids (set (map :id (:nodes graph)))]
+    (and (= node-ids (:node-ids graph))
+         (every? (fn [edge]
+                   (and (contains? node-ids (:to edge))
+                        (or (contains? node-ids (:from edge))
+                            (string? (:from edge)))))
+                 (:edges graph)))))
+
+(defn sh05-macro-sh02-descriptor
+  [source-path binding summary]
+  (let [projection-name :macro-product-identities
+        fact-name :macro-product-binding
+        identity-name :macro-result
+        identity-domain :gravity/sh05-macro-result-identity-v2
+        evidence-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:domain :gravity/sh05-macro-envelope-evidence-v2
+                      :summary summary
+                      :plan-semantic-hash (:plan-semantic-hash binding)})
+        identity-preimage {:summary summary}
+        observed-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:domain identity-domain
+                      :semantic-input identity-preimage})
+        fact-value {:family fact-name :entries [summary]}
+        artifact-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:macro-result (:artifact-id summary)})]
+    {:artifact :gravity/private-authenticated-envelope-descriptor
+     :schema-version 1
+     :stage sh05-macro-envelope-stage
+     :artifact-kind sh05-macro-sealed-artifact-kind
+     :source-revision
+     {:owner :sh05-macro
+      :source-language :gravity
+      :logical-source-path sh05-macro-source-relative-path
+      :source-content-hash (:source-content-hash binding)
+      :source-byte-count (:source-byte-count binding)
+      :plan-semantic-hash (:plan-semantic-hash binding)
+      :functions-semantic-hash (:functions-semantic-hash binding)
+      :builder-function 'sh05-expand-macro-template
+      :builder-semantic-hash
+      (get sh05-macro-public-function-hashes
+           'sh05-expand-macro-template)
+      :function-shapes sh05-macro-public-function-shapes}
+     :projection-contract
+     {:contract-kind :gravity/sh05-macro-product-envelope-contract
+      :contract-version 1 :profile :meta :target :jvm
+      :required-semantic-projections [projection-name]
+      :required-fact-families [fact-name]
+      :required-identity-subjects [identity-name]}
+     :semantic-projections
+     [{:name projection-name :role :complete-macro-product-identities
+       :entry-count (count summary) :value summary}]
+     :fact-transitions
+     [{:name fact-name :disposition :preserved
+       :input fact-value :output fact-value
+       :input-count (count fact-value)
+       :output-count (count fact-value)
+       :evidence-ids [evidence-id]}]
+     :effect-capability-relation
+     {:effect-facts {:declared #{} :observed #{}}
+      :capability-facts {:required #{} :granted #{}}
+      :capability-proof-facts {:proof-ids [evidence-id]}
+      :effect-order [] :provider-selections [] :grant-scopes []}
+     :proof-composite
+     {:proof-records [{:proof-id evidence-id :status :checked}]
+      :proof-certificate-table {evidence-id {:status :checked}}
+      :proof-summary {:required 1 :checked 1}
+      :proof-usage [{:proof-id evidence-id :used-by :macro-products}]}
+     :preservation
+     {:requires [fact-name] :preserves [fact-name]
+      :invalidates [] :regenerates []
+      :residual-checks [:identity-subject-equality
+                        :digest-graph-reachability]}
+     :identity-subjects
+     [{:name identity-name :domain identity-domain
+       :preimage identity-preimage :observed-id observed-id}]
+     :lineage
+     [{:stage :sh05-macro
+       :artifact-kind :gravity/sh05-macro-expansion-artifact
+       :semantic-id (:artifact-id summary)
+       :artifact-id artifact-id :verification-id evidence-id
+       :relation :produced-from-gravity-macro}]
+     :reference-closure
+     {:root-id "sh05-macro-result" :node-ids ["sh05-macro-result"]
+      :edges [] :fact-reference-ids [evidence-id]
+      :origin-reference-ids [] :proof-reference-ids [evidence-id]
+      :runtime-check-reference-ids [] :observed-node-count 1
+      :observed-edge-count 0 :observed-maximum-depth 0}
+     :actual-path-provenance
+     {:source-path source-path
+      :workspace-root (System/getProperty "user.dir")
+      :invocation-root (System/getProperty "user.dir")}
+     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+
+(def sh05-macro-artifact-keys
+  #{:kind :status :slice :task :document-set :governing-document
+    :artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id
+    :expanded-defn-count :expanded-syntax-stream :expanded-forms
+    :macro-expansion-trace :macro-environment
+    :generated-origin-source-map :expanded-syntax-graph
+    :sh04-syntax-artifact :gravity-macro-boundary :provenance
+    :pass :capability-based-proof :execution-boundary :diagnostics})
+
+(defn sh05-path-neutral-semantic-value
+  [value]
+  (cond
+    (map? value)
+    (let [clean
+          (into {}
+                (keep (fn [[key item]]
+                        (when-not (contains? #{:actual-source-path
+                                               :workspace-root
+                                               :invocation-root}
+                                             key)
+                          [key (sh05-path-neutral-semantic-value item)])))
+                value)]
+      (if (and (contains? clean :byte-start)
+               (or (contains? clean :source) (contains? clean :file)))
+        (let [semantic-source (or (:file clean) (:source clean))]
+          (cond-> clean
+            (contains? clean :source) (assoc :source semantic-source)
+            (contains? clean :file) (assoc :file semantic-source)))
+        clean))
+
+    (vector? value) (mapv sh05-path-neutral-semantic-value value)
+    (set? value) (into #{} (map sh05-path-neutral-semantic-value) value)
+    (seq? value) (apply list (map sh05-path-neutral-semantic-value value))
+    :else value))
+
+(def sh05-identity-chunk-width 16)
+
+(defn sh05-ordered-identity-chunks
+  [values projector]
+  (->> values
+       (map-indexed vector)
+       (partition-all sh05-identity-chunk-width)
+       (map-indexed
+        (fn [chunk-index entries]
+          {:chunk-index chunk-index
+           :start-ordinal (first (first entries))
+           :item-count (count entries)
+           :items
+           (mapv (fn [[ordinal value]]
+                   (projector ordinal value))
+                 entries)}))
+       vec))
+
+(defn sh05-macro-run-semantic-summary
+  [run]
+  (let [raw (:raw-template-result run)
+        resolved (:resolved-expansion run)
+        trace (first (:macro-expansion-trace resolved))]
+    {:raw-result {:artifact (:artifact raw)
+                  :schema-version (:schema-version raw)
+                  :status (:status raw)}
+     :digest-contract
+     (mapv #(select-keys % [:ordinal :purpose]) (:digest-requests run))
+     :semantic-resolved-digest (first (:resolved-digests run))
+     :resolved-expansion
+     (select-keys
+      resolved
+      [:artifact :schema-version :artifact-id :status :macro
+       :macro-version :input-syntax-id :output-syntax-id
+       :semantic-binding :profile :target :phase :bounds])
+     :trace-replay-id (:trace-replay-id trace)
+     :template-verification
+     (:template-verification run)
+     :resolved-verification
+     (:resolved-verification run)}))
+
+(defn sh05-macro-artifact-semantic-payload
+  [artifact]
+  (let [boundary (:gravity-macro-boundary artifact)]
+    (sh05-path-neutral-semantic-value
+     {:domain :gravity/sh05-macro-source-artifact-v2
+      :kind (:kind artifact)
+      :status (:status artifact)
+      :slice (:slice artifact)
+      :task (:task artifact)
+      :document-set (:document-set artifact)
+      :governing-document (:governing-document artifact)
+      :sh04-syntax-artifact (:sh04-syntax-artifact artifact)
+      :expanded-syntax-stream-id (:expanded-syntax-stream-id artifact)
+      :macro-expansion-trace-id (:macro-expansion-trace-id artifact)
+      :expanded-defn-count (:expanded-defn-count artifact)
+      :macro-environment (:macro-environment artifact)
+      :pass (:pass artifact)
+      :execution-boundary (:execution-boundary artifact)
+      :diagnostics (:diagnostics artifact)
+      :boundary-contract
+      (select-keys boundary
+                   [:slice :owner :adapter-contract
+                    :target-source-reread? :clojure-adapter-residual?
+                    :self-hosted?])
+      :plan-binding
+      (select-keys
+       (:plan-binding boundary)
+       [:artifact :status :semantic-authority :compiled-by :executed-by
+        :generic-bridge-residual? :self-hosted? :source-language
+        :source-byte-count :source-content-hash :plan-semantic-hash
+        :functions-semantic-hash :function-count :function-names-hash
+        :function-shapes-hash :public-function-hashes
+        :public-function-shapes])
+      :expansion-run-count (count (:expansion-runs boundary))
+      :expansion-run-chunks
+      (sh05-ordered-identity-chunks
+       (:expansion-runs boundary)
+       (fn [ordinal run]
+         {:ordinal ordinal
+          :summary (sh05-macro-run-semantic-summary run)}))})))
+
+(defn sh05-macro-artifact-identity-input
+  [artifact]
+  (sh05-macro-artifact-semantic-payload artifact))
+
+(defn sh05-macro-artifact-id
+  [artifact]
+  (p15-s23-c6c10-canonical-digest
+   "<sh05-macro-artifact>"
+   (sh05-macro-artifact-identity-input artifact)))
+
+(defn sh05-expanded-syntax-stream-identity-input
+  [expanded-stream]
+  {:domain :gravity/sh05-expanded-syntax-stream-v2
+   :item-count (count expanded-stream)
+   :item-chunks
+   (sh05-ordered-identity-chunks
+    expanded-stream
+    (fn [ordinal syntax]
+      {:ordinal ordinal
+       :expanded-syntax-id (:expanded-syntax-id syntax)}))})
+
+(defn sh05-expanded-syntax-stream-id
+  [source-path expanded-stream]
+  (p15-s23-c6c10-canonical-digest
+   source-path
+   (sh05-expanded-syntax-stream-identity-input expanded-stream)))
+
+(defn sh05-macro-trace-identity-input
+  [trace]
+  {:domain :gravity/sh05-macro-expansion-trace-v2
+   :item-count (count trace)
+   :item-chunks
+   (sh05-ordered-identity-chunks
+    trace
+    (fn [ordinal step]
+      {:ordinal ordinal
+       :input-syntax-id (:input-syntax-id step)
+       :output-syntax-id (:output-syntax-id step)
+       :macro (:macro step)
+       :macro-version (:macro-version step)
+       :trace-replay-id (:trace-replay-id step)}))})
+
+(defn sh05-macro-trace-id
+  [source-path trace]
+  (p15-s23-c6c10-canonical-digest
+   source-path (sh05-macro-trace-identity-input trace)))
+
+(defn sh05-macro-envelope-summary
+  [artifact]
+  {:slice :SH-05
+   :status (:status artifact)
+   :artifact-id (:artifact-id artifact)
+   :semantic-payload-id (:artifact-id artifact)
+   :expanded-syntax-stream-id (:expanded-syntax-stream-id artifact)
+   :macro-expansion-trace-id (:macro-expansion-trace-id artifact)
+   :expanded-defn-count (:expanded-defn-count artifact)
+   :sh04-artifact-id (get-in artifact [:sh04-syntax-artifact :artifact-id])
+   :ordered-run-count
+   (count (get-in artifact [:gravity-macro-boundary :expansion-runs]))
+   :ordered-run-identity-chunks
+   (sh05-ordered-identity-chunks
+    (get-in artifact [:gravity-macro-boundary :expansion-runs])
+    (fn [ordinal run]
+      {:ordinal ordinal
+       :artifact-id (get-in run [:resolved-expansion :artifact-id])
+       :input-syntax-id
+       (get-in run [:resolved-expansion :input-syntax-id])
+       :output-syntax-id
+       (get-in run [:resolved-expansion :output-syntax-id])
+       :macro-version
+       (get-in run [:resolved-expansion :macro-version])
+       :trace-replay-id
+       (get-in run [:resolved-expansion
+                    :macro-expansion-trace 0 :trace-replay-id])}))})
+
+(defn sh05-macro-gravity-verifier-report
+  [source-path boundary]
+  (let [binding (sh05-macro-current-binding! source-path)
+        reports
+        (mapv
+         (fn [run]
+           (let [raw (:raw-template-result run)
+                 resolved (:resolved-expansion run)
+                 requests (:digest-requests run)
+                 digests (:resolved-digests run)]
+             {:template
+              (sh05-macro-execute!
+               source-path binding 'sh05-verify-macro-template
+               [(:expansion-template raw) requests])
+              :resolved
+              (sh05-macro-execute!
+               source-path binding 'sh05-verify-macro-resolved
+               [resolved requests digests])}))
+         (:expansion-runs boundary))
+        template-passed?
+        (every? #(= :passed (get-in % [:template :status])) reports)
+        resolved-passed?
+        (every? #(= :passed (get-in % [:resolved :status])) reports)]
+    {:template {:status (if template-passed? :passed :failed)
+                :verified-run-count (count reports)}
+     :resolved {:status (if resolved-passed? :passed :failed)
+                :verified-run-count (count reports)}
+     :runs reports}))
+
+(defn sh05-macro-artifact-verification*
+  [artifact allow-missing-proof?]
+  (let [source-path (get-in artifact [:provenance :source-path])
+        boundary (:gravity-macro-boundary artifact)
+        c3-artifact (:authenticated-sh04-artifact boundary)
+        c3-boundary (:gravity-syntax-boundary c3-artifact)
+        gravity-verifiers
+        (try
+          (sh05-macro-gravity-verifier-report source-path boundary)
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _
+            {:template {:status :failed}
+             :resolved {:status :failed}}))
+        output-envelope-ok?
+        (try
+          (= :passed
+             (p15-s23-stage2-sh02-descriptor-envelope-verify!
+              (:authenticated-envelope boundary)
+              sh05-macro-envelope-stage sh05-macro-sealed-artifact-kind
+              (:authenticated-envelope-descriptor boundary) source-path))
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _ false))
+        binding (sh05-macro-current-binding! source-path)
+        embedded-descriptor (:authenticated-envelope-descriptor boundary)
+        expected-descriptor
+        (try
+          (sh05-macro-sh02-descriptor
+           source-path binding (sh05-macro-envelope-summary artifact))
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _ nil))
+        descriptor-current? (= expected-descriptor embedded-descriptor)
+        sh03-current?
+        (try
+          (true?
+           (c3-syntax-stream-reader-products-authentic?
+            (:syntax-object-stream c3-artifact)
+            (:c2-reader-artifact c3-artifact) c3-boundary))
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _ false))
+        sh04-current?
+        (try
+          (and (= (:artifact-id c3-artifact) (c3-artifact-id c3-artifact))
+               (= :complete (:status (c3-syntax-capability-proof c3-artifact))))
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _ false))
+        template-passed?
+        (= :passed (get-in gravity-verifiers [:template :status]))
+        resolved-passed?
+        (= :passed (get-in gravity-verifiers [:resolved :status]))
+        runs (:expansion-runs boundary)
+        input-forms
+        (get-in c3-artifact [:c2-reader-artifact :parsed-semantic-values])
+        input-syntax (sh05-source-syntax-stream c3-artifact)
+        input-module (parse-module source-path input-forms)
+        expected-expanded-stream
+        (loop [forms input-forms
+               syntaxes input-syntax
+               remaining-runs runs
+               result []]
+          (if-let [form (first forms)]
+            (let [syntax (first syntaxes)
+                  run (when (sh05-defn-form? form) (first remaining-runs))]
+              (recur (rest forms)
+                     (rest syntaxes)
+                     (if run (rest remaining-runs) remaining-runs)
+                     (conj result
+                           (sh05-expanded-syntax-object syntax form run))))
+            (when (and (empty? syntaxes) (empty? remaining-runs))
+              result)))
+        expected-trace
+        (mapv #(sh05-package-trace % (:profile input-module)
+                                   (:target input-module))
+              runs)
+        first-run (first runs)
+        first-run-shortcuts-current?
+        (if first-run
+          (= (select-keys
+              boundary
+              [:raw-template-result :resolved-expansion
+               :digest-requests :resolved-digests])
+             (select-keys
+              first-run
+              [:raw-template-result :resolved-expansion
+               :digest-requests :resolved-digests]))
+          (every? nil?
+                  ((juxt :raw-template-result :resolved-expansion
+                         :digest-requests :resolved-digests)
+                   boundary)))
+        run-count-current?
+        (= (:expanded-defn-count artifact) (count runs))
+        run-storage-exact?
+        (every?
+         (fn [run]
+           (and
+            (= #{:raw-template-result :digest-requests
+                 :resolved-digests :resolved-expansion
+                 :template-verification :resolved-verification}
+               (set (keys run)))
+            (= #{:artifact :schema-version :status :expansion-template}
+               (set (keys (:raw-template-result run))))
+            (= #{:artifact :schema-version :status :rule}
+               (set (keys (:template-verification run))))
+            (= #{:artifact :schema-version :status :rule}
+               (set (keys (:resolved-verification run))))))
+         runs)
+        plan-binding-current?
+        (= (select-keys
+            (:plan-binding boundary)
+            [:source-byte-count :source-content-hash :plan-semantic-hash
+             :functions-semantic-hash :function-count :function-names-hash
+             :function-shapes-hash :public-function-hashes
+             :public-function-shapes])
+           (select-keys
+            binding
+            [:source-byte-count :source-content-hash :plan-semantic-hash
+             :functions-semantic-hash :function-count :function-names-hash
+             :function-shapes-hash :public-function-hashes
+             :public-function-shapes]))
+        pinned-version?
+        (every? #(= sh05-macro-version
+                    (get-in % [:resolved-expansion :macro-version])) runs)
+        grants-current?
+        (every?
+         (fn [run]
+           (let [log (get-in run [:resolved-expansion :build-effect-log])]
+             (and (set/subset? (set (:requested log))
+                               (set (:declared log)))
+                  (set/subset? (set (:declared log))
+                               (set (:granted log))))))
+         runs)
+        trace-current?
+        (and template-passed? resolved-passed?
+             (= expected-trace (:macro-expansion-trace artifact))
+             (= (:macro-expansion-trace-id artifact)
+                (sh05-macro-trace-id
+                 source-path (:macro-expansion-trace artifact))))
+        output-current?
+        (and template-passed? resolved-passed?
+             (= expected-expanded-stream
+                (:expanded-syntax-stream artifact))
+             (= (:expanded-defn-count artifact) (count runs))
+             (= (:expanded-forms artifact)
+                (mapv :form
+                      (subvec (:expanded-syntax-stream artifact) 1)))
+             (= (:expanded-syntax-stream-id artifact)
+                (sh05-expanded-syntax-stream-id
+                 source-path (:expanded-syntax-stream artifact))))
+        generated-origins-current?
+        (= (:generated-origin-source-map artifact)
+           (mapv #(select-keys % [:output-syntax-id :generated-origin])
+                 (:macro-expansion-trace artifact)))
+        input-lineage-current?
+        (= (get-in artifact [:sh04-syntax-artifact :artifact-id])
+           (:artifact-id c3-artifact))
+        c3-syntax-by-id
+        (into {} (map (juxt :syntax/id identity)
+                      (:syntax-object-stream c3-artifact)))
+        expected-reader-binding (:reader-semantic-binding c3-boundary)
+        expected-reader-revision (:reader-source-revision c3-boundary)
+        expected-definition-span
+        {:source sh05-macro-source-relative-path
+         :byte-start 0 :byte-end sh05-macro-expected-source-byte-count}
+        run-provenance-current?
+        (every?
+         (fn [run]
+           (let [raw-expansion
+                 (get-in run [:raw-template-result :expansion-template])
+                 resolved (:resolved-expansion run)
+                 input-id (:input-syntax-id resolved)
+                 input-syntax (get c3-syntax-by-id input-id)
+                 raw-provenance (:provenance raw-expansion)
+                 resolved-provenance (:provenance resolved)
+                 digest-provenance
+                 (get-in run [:digest-requests 1 :preimage :provenance])]
+             (and input-syntax
+                  (= source-path
+                     (:actual-source-path raw-provenance)
+                     (:actual-source-path resolved-provenance)
+                     (:actual-source-path digest-provenance))
+                  (= (:span input-syntax)
+                     (:call-site-span raw-provenance)
+                     (:call-site-span resolved-provenance)
+                     (:call-site-span digest-provenance))
+                  (= (:origin input-syntax)
+                     (:input-origin-chain raw-provenance)
+                     (:input-origin-chain resolved-provenance)
+                     (:input-origin-chain digest-provenance))
+                  (= expected-definition-span
+                     (:definition-span raw-provenance)
+                     (:definition-span resolved-provenance)
+                     (:definition-span digest-provenance))
+                  (= expected-reader-binding
+                     (:reader-binding raw-expansion)
+                     (:reader-binding resolved)
+                     (:reader-binding raw-provenance)
+                     (:reader-binding resolved-provenance)
+                     (:reader-binding digest-provenance))
+                  (= expected-reader-revision
+                     (:reader-source-revision raw-expansion)
+                     (:reader-source-revision resolved)
+                     (:reader-source-revision raw-provenance)
+                     (:reader-source-revision resolved-provenance)
+                     (:reader-source-revision digest-provenance)))))
+         runs)
+        provenance-current?
+        (and (= source-path (get-in artifact [:provenance :source-path]))
+             (= (get-in c3-artifact
+                        [:c2-reader-artifact :source-unit-record :source-id])
+                (get-in artifact [:provenance :source-id])))
+        graph-valid? (sh05-expanded-graph-valid?
+                      (:expanded-syntax-graph artifact))
+        graph-current?
+        (= (:expanded-syntax-graph artifact)
+           (sh05-expanded-graph (:expanded-syntax-stream artifact)
+                                (:macro-expansion-trace artifact)))
+        exact-shape?
+        (and (= sh05-macro-artifact-keys (set (keys artifact)))
+             template-passed? resolved-passed?)
+        artifact-id-current?
+        (= (:artifact-id artifact) (sh05-macro-artifact-id artifact))
+        base-checks
+        {:fresh-sh02-envelope-verified? output-envelope-ok?
+         :sh02-envelope-descriptor-current? descriptor-current?
+         :sh03-reader-lineage-current? sh03-current?
+         :sh04-syntax-lineage-current? sh04-current?
+         :macro-run-count-current? run-count-current?
+         :macro-run-storage-exact? run-storage-exact?
+         :first-run-compatibility-view-current? first-run-shortcuts-current?
+         :macro-plan-binding-current? plan-binding-current?
+         :macro-output-current? output-current?
+         :generated-origins-current? generated-origins-current?
+         :trace-replay-current? trace-current?
+         :build-grants-current? grants-current?
+         :macro-version-current? pinned-version?
+         :input-lineage-current? input-lineage-current?
+         :macro-run-provenance-current? run-provenance-current?
+         :actual-path-provenance-current? provenance-current?
+         :expanded-graph-valid? graph-valid?
+         :expanded-graph-current? graph-current?
+         :exact-artifact-shape? exact-shape?
+         :artifact-id-current? artifact-id-current?}
+        base-failed-checks
+        (vec
+         (keep (fn [[check-name passed?]]
+                 (when-not passed?
+                   (keyword
+                    (str/replace (clojure.core/name check-name) #"\?$" ""))))
+               base-checks))
+        expected-embedded-proof
+        (assoc base-checks
+               :embedded-capability-proof-current? true
+               :artifact :gravity/sh05-macro-capability-proof
+               :status (if (empty? base-failed-checks) :complete :failed)
+               :failed-checks base-failed-checks)
+        embedded-proof-current?
+        (or (and allow-missing-proof?
+                 (nil? (:capability-based-proof artifact)))
+            (= expected-embedded-proof (:capability-based-proof artifact)))
+        checks
+        (assoc base-checks
+               :embedded-capability-proof-current?
+               embedded-proof-current?)
+        failed-checks
+        (vec
+         (keep (fn [[check-name passed?]]
+                 (when-not passed?
+                   (keyword
+                    (str/replace (clojure.core/name check-name) #"\?$" ""))))
+               checks))]
+    {:artifact :gravity/sh05-macro-artifact-verification
+     :status (if (empty? failed-checks) :passed :failed)
+     :checks checks
+     :failed-checks failed-checks
+     :gravity-verifiers gravity-verifiers}))
+
+(defn sh05-macro-artifact-verification
+  [artifact]
+  (sh05-macro-artifact-verification* artifact false))
+
+(defn sh05-macro-capability-based-proof-for-construction
+  [artifact]
+  (let [report (sh05-macro-artifact-verification* artifact true)
+        checks (:checks report)]
+    (assoc checks
+           :artifact :gravity/sh05-macro-capability-proof
+           :status (if (= :passed (:status report)) :complete :failed)
+           :failed-checks (:failed-checks report))))
+
+(defn sh05-macro-capability-based-proof
+  [artifact]
+  (let [report (sh05-macro-artifact-verification artifact)
+        checks (:checks report)]
+    (assoc checks
+           :artifact :gravity/sh05-macro-capability-proof
+           :status (if (= :passed (:status report)) :complete :failed)
+           :failed-checks (:failed-checks report))))
+
+(defn sh05-macro-source-artifact
+  [source-path source-text]
+  (let [c3-artifact
+        (compiler-c3-syntax-source-artifact source-path source-text)
+        _ (c3-syntax-validate! source-path c3-artifact)
+        c2-artifact (:c2-reader-artifact c3-artifact)
+        forms (:parsed-semantic-values c2-artifact)
+        module (parse-module source-path forms)
+        binding (sh05-macro-current-binding! source-path)
+        source-syntax (sh05-source-syntax-stream c3-artifact)
+        _ (when-not (= (count forms) (count source-syntax))
+            (sh05-macro-boundary-fail!
+             "C4-RETURN" source-path :complete-sh04-source-syntax-lockstep
+             {:forms (count forms) :syntaxes (count source-syntax)} {}))
+        compiler-metadata (get-in module [:metadata :compiler])
+        request-overrides
+        (if (and (map? compiler-metadata)
+                 (contains? compiler-metadata :sh05-request))
+          (:sh05-request compiler-metadata)
+          {})
+        _ (when-not (map? request-overrides)
+            (sh05-macro-boundary-fail!
+             "C4-RETURN" source-path :map-shaped-macro-request-overrides
+             request-overrides
+             {:observed-type (some-> request-overrides class .getName)}))
+        pairs
+        (mapv
+         (fn [form syntax]
+           (if (sh05-defn-form? form)
+             (let [request
+                   (sh05-deep-merge
+                    (sh05-default-macro-request
+                     source-path c3-artifact module syntax form)
+                    request-overrides)]
+               {:form form :syntax syntax
+                :run (sh05-run-macro-request!
+                      source-path binding request)})
+             {:form form :syntax syntax :run nil}))
+         forms source-syntax)
+        runs (mapv :run (filter :run pairs))
+        expanded-stream
+        (mapv (fn [{:keys [syntax form run]}]
+                (sh05-expanded-syntax-object syntax form run))
+              pairs)
+        ;; C4's compatibility projection is the expanded namespace body.  The
+        ;; authenticated syntax stream retains the namespace declaration for
+        ;; C5, while :expanded-forms matches the established stage0 boundary.
+        expanded-forms (mapv :form (subvec expanded-stream 1))
+        trace
+        (mapv #(sh05-package-trace % (:profile module) (:target module))
+              runs)
+        stream-id
+        (sh05-expanded-syntax-stream-id source-path expanded-stream)
+        trace-id
+        (sh05-macro-trace-id source-path trace)
+        graph (sh05-expanded-graph expanded-stream trace)
+        sh04-view
+        {:artifact :gravity/sh04-syntax-object-artifact
+         :artifact-id (:artifact-id c3-artifact)
+         :status :accepted
+         :syntax-stream-id
+         (get-in c3-artifact
+                 [:gravity-syntax-boundary :resolved-syntax-result
+                  :artifact-id])}
+        plan-binding (dissoc binding :plan :source-text)
+        boundary-base
+        {:slice :SH-05
+         :owner :gravity-source
+         :adapter-contract sh05-macro-adapter-contract
+         :plan-binding plan-binding
+         :authenticated-sh04-artifact c3-artifact
+         :expansion-runs runs
+         :raw-template-result (:raw-template-result (first runs))
+         :resolved-expansion (:resolved-expansion (first runs))
+         :digest-requests (:digest-requests (first runs))
+         :resolved-digests (:resolved-digests (first runs))
+         :target-source-reread? false
+         :clojure-adapter-residual? true
+         :self-hosted? false}
+        artifact-base
+        {:kind :gravity/sh05-macro-expansion-artifact
+         :status :accepted
+         :slice :SH-05
+         :task "SH-05"
+         :document-set ["L4" "C4"]
+         :governing-document c4-macro-governing-document
+         :artifact-id nil
+         :expanded-syntax-stream-id stream-id
+         :macro-expansion-trace-id trace-id
+         :expanded-defn-count (count runs)
+         :expanded-syntax-stream expanded-stream
+         :expanded-forms expanded-forms
+         :macro-expansion-trace trace
+         :macro-environment
+         {:artifact :gravity/sh05-macro-environment
+          :macros [{:name 'defn :version sh05-macro-version
+                    :phase :macro-expansion}]
+          :status :complete}
+         :generated-origin-source-map
+         (mapv #(select-keys % [:output-syntax-id :generated-origin]) trace)
+         :expanded-syntax-graph graph
+         :sh04-syntax-artifact sh04-view
+         :gravity-macro-boundary boundary-base
+         :provenance {:source-path source-path
+                      :source-id (get-in c2-artifact
+                                         [:source-unit-record :source-id])}
+         :pass {:name :sh05-gravity-macro-expansion
+                :input :authenticated-sh04-syntax
+                :output :authenticated-sh05-expanded-syntax
+                :preserves [:syntax-identity :metadata :hygiene
+                            :origins :reader-lineage]
+                :rejects c4-macro-diagnostic-ids}
+         :capability-based-proof nil
+         :execution-boundary
+         {:macro-authority :gravity
+          :gravity-module 'gravity.macro
+          :plan-runner :clojure-stage0
+          :digest-resolver :clojure-stage0
+          :envelope-binder :clojure-stage0
+          :c4-stage0-adapter :compatibility-only
+          :self-hosted? false}
+         :diagnostics []}
+        artifact-id (sh05-macro-artifact-id artifact-base)
+        summary
+        (sh05-macro-envelope-summary
+         (assoc artifact-base :artifact-id artifact-id))
+        descriptor
+        (sh05-macro-sh02-descriptor source-path binding summary)
+        envelope
+        (p15-s23-stage2-sh02-descriptor-envelope
+         sh05-macro-envelope-stage sh05-macro-sealed-artifact-kind
+         descriptor source-path)
+        _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
+           envelope sh05-macro-envelope-stage
+           sh05-macro-sealed-artifact-kind descriptor source-path)
+        artifact-with-envelope
+        (-> artifact-base
+            (assoc :artifact-id artifact-id)
+            (assoc-in [:gravity-macro-boundary
+                       :authenticated-envelope-descriptor] descriptor)
+            (assoc-in [:gravity-macro-boundary
+                       :authenticated-envelope] envelope))
+        proof
+        (sh05-macro-capability-based-proof-for-construction
+         artifact-with-envelope)
+        artifact (assoc artifact-with-envelope :capability-based-proof proof)
+        final-report (sh05-macro-artifact-verification artifact)]
+    (when-not (= :passed (:status final-report))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE" source-path :final-authenticated-macro-artifact
+       (:failed-checks final-report) {}))
+    artifact))
+
+(defn sh05-macro-file-artifact
+  [source-path]
+  (let [c2-artifact (compiler-c2-reader-file-artifact source-path)
+        source-text (c2-reader-artifact-source-text source-path c2-artifact)]
+    (sh05-macro-source-artifact source-path source-text)))
+
+;; Preserve the broader stage0 user-macro oracle outside SH-05 credit.  The
+;; public C4 compatibility entrypoint uses Gravity for the compiler-required
+;; defn subset and falls back only for source that actually defines user macros.
+(def compiler-c4-stage0-legacy-source-artifact
+  compiler-c4-macro-source-artifact)
+
+(defn sh05-c4-compatibility-identity-input
+  [artifact]
+  {:domain :gravity/sh05-c4-compatibility-artifact-v1
+   :kind (:kind artifact)
+   :task (:task artifact)
+   :document-set (:document-set artifact)
+   :governing-document (:governing-document artifact)
+   :sh05-artifact-id
+   (get-in artifact [:sh05-macro-expansion-artifact :artifact-id])
+   :macro-expansion-input (:macro-expansion-input artifact)
+   :macro-environment (:macro-environment artifact)
+   :expanded-syntax-stream-id
+   (get-in artifact
+           [:sh05-macro-expansion-artifact :expanded-syntax-stream-id])
+   :macro-expansion-trace-id
+   (get-in artifact
+           [:sh05-macro-expansion-artifact :macro-expansion-trace-id])
+   :hygiene-capture-records (:hygiene-capture-records artifact)
+   :build-effect-log (:build-effect-log artifact)
+   :macro-safety-declarations (:macro-safety-declarations artifact)
+   :capability-based-proof (:capability-based-proof artifact)
+   :execution-boundary (:execution-boundary artifact)
+   :diagnostics (:diagnostics artifact)})
+
+(defn sh05-c4-compatibility-artifact-id
+  [artifact]
+  (reader-canonical-hash (sh05-c4-compatibility-identity-input artifact)))
+
+(defn sh05-c4-compatibility-artifact
+  [source-path sh05]
+  (let [artifact-base
+        {:kind :gravity/stage0-c4-macro-expansion-artifact
+         :task "P06-D083"
+         :document-set ["C4"]
+         :governing-document c4-macro-governing-document
+         :sh05-macro-expansion-artifact sh05
+         :c3-syntax-object-artifact (:sh04-syntax-artifact sh05)
+         :macro-expansion-input
+         {:artifact :gravity/macro-expansion-input
+          :syntax-root (get-in sh05
+                               [:sh04-syntax-artifact :syntax-stream-id])
+          :profile :meta :target :jvm :hermetic true}
+         :macro-environment (:macro-environment sh05)
+         :expanded-syntax-stream (:expanded-syntax-stream sh05)
+         :macro-expansion-trace (:macro-expansion-trace sh05)
+         :generated-origin-source-map (:generated-origin-source-map sh05)
+         :hygiene-capture-records []
+         :build-effect-log {:artifact :gravity/macro-build-effect-log
+                            :records [] :status :complete}
+         :macro-safety-declarations
+         {:artifact :gravity/macro-safety-declaration-records
+          :records [] :status :complete}
+         :capability-based-proof (:capability-based-proof sh05)
+         :execution-boundary
+         {:macro-authority :gravity
+          :c4-stage0-adapter :compatibility-only
+          :target-source-reread? false
+          :self-hosting-credit? false}
+         :diagnostics []}
+        artifact-id (sh05-c4-compatibility-artifact-id artifact-base)]
+    (assoc artifact-base :artifact-id artifact-id)))
+
+(defn sh05-authoritative-compiler-source-path?
+  [source-path]
+  (let [anchor (io/file (sh05-macro-resolve-source-path))
+        repository-root
+        (loop [directory (.getParentFile anchor)]
+          (cond
+            (nil? directory) nil
+            (.isFile (io/file directory "deps.edn")) directory
+            :else (recur (.getParentFile directory))))
+        root
+        (.toPath
+         (.getCanonicalFile
+          (io/file (or repository-root (io/file "."))
+                   "bootstrap/gravity/src")))
+        candidate (.toPath (.getCanonicalFile (io/file source-path)))]
+    (.startsWith candidate root)))
+
+(defn sh05-form-contains-legacy-macro-position?
+  [form]
+  (cond
+    (seq? form)
+    (or (contains? '#{when -> defmacro} (first form))
+        (some sh05-form-contains-legacy-macro-position? form))
+
+    (map? form)
+    (some sh05-form-contains-legacy-macro-position?
+          (mapcat identity form))
+
+    (coll? form)
+    (some sh05-form-contains-legacy-macro-position? form)
+
+    :else false))
+
+(defn sh05-bounded-authoritative-source?
+  [source-path module forms]
+  (and (sh05-authoritative-compiler-source-path? source-path)
+       (empty? (:requires module))
+       (empty? (:imports module))
+       (every?
+        (fn [form]
+          (and (seq? form)
+               (contains? '#{ns def defn} (first form))))
+        forms)
+       (not-any? sh05-form-contains-legacy-macro-position? forms)))
+
+(defn compiler-c4-macro-source-artifact
+  [source-path source-text]
+  (let [c2 (compiler-c2-reader-source-artifact source-path source-text)
+        forms (:parsed-semantic-values c2)
+        module (parse-module source-path forms)]
+    (if (sh05-bounded-authoritative-source? source-path module forms)
+      (sh05-c4-compatibility-artifact
+       source-path (sh05-macro-source-artifact source-path source-text))
+      (compiler-c4-stage0-legacy-source-artifact source-path source-text))))
 
 (defn macro-file-artifact
   [path]

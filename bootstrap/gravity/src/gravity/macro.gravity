@@ -1,0 +1,1295 @@
+; Gravity-owned SH-05 bootstrap macroexpansion leaf.
+(ns gravity.macro
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh05-macro-contract
+             sh05-macro-bounds
+             sh05-macro-diagnostic-catalog
+             sh05-expand-macro-template
+             sh05-verify-macro-template
+             sh05-verify-macro-resolved])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:bootstrap
+              {:stage :stage1
+               :component :macroexpander
+               :owner :gravity-source
+               :source-language :gravity
+               :seed :clojure-stage0
+               :retirement-objective :replace-clojure-c4-expansion-subset
+               :ambient-authority-denied true
+               :documents ["D0" "D1" "D2" "D3" "D8" "D9"
+                           "L4" "L12" "L16" "SAFE12" "C2" "C3"
+                           "C4" "C5" "C15" "BOOT1" "BOOT3"]
+               :implements [:defn-to-def-fn-expansion
+                             :syntax-object-input-output
+                             :hygiene-by-default
+                             :generated-origin-chain
+                             :metadata-preservation
+                             :phase-profile-capability-policy
+                             :deterministic-expansion-trace
+                             :structured-c4-diagnostics]
+               :preserves #{:source-spans :syntax-identity :reader-binding
+                            :origin-chains :hygiene-context :metadata
+                            :profile :target :build-effect-policy
+                            :capability-policy :artifact-provenance}
+               :lineage {:verified-by :clojure-stage0
+                         :compiled-by :clojure-stage0
+                         :next-stage :stage1
+                         :replaces [:clojure-c4-defn-expansion-subset]}
+               :claim-boundary [:sh05-bootstrap-defn-subset
+                                :not-user-defmacro-evaluation
+                                :not-general-syntax-quote
+                                :not-name-resolution
+                                :not-type-or-effect-checking
+                                :not-seed-retirement]}}))
+
+(def sh05-macro-contract
+  {:artifact :gravity/sh05-macro-contract
+   :schema-version 1
+   :owner :gravity-source
+   :input :gravity/sh05-authenticated-c3-macro-request
+   :output :gravity/sh05-macro-template-result
+   :resolved-output :gravity/sh05-macro-expansion-artifact
+   :coordinator-adapter :gravity/sh05-to-c4-macro-products-v1
+   :identity-domain :gravity/sh05-defn-expansion-v1
+   :authoritative-entry 'sh05-expand-macro-template
+   :verifier-entry 'sh05-verify-macro-resolved
+   :supported-macros ['defn]
+   :supported-expansion '(def name (fn parameters body))
+   :identity-inputs [:call-site-syntax-id :definition-syntax-id
+                     :name-syntax-id :parameter-vector-syntax-id
+                     :body-syntax-ids :reader-semantic-binding-id
+                     :source-revision-id :profile :target
+                     :macro-version :metadata :semantic-call-span
+                     :macro-environment-id :build-policy-id
+                     :trace-replay-id]
+   :physical-provenance-excluded-from-identity
+   [:actual-source-path :call-site-span :definition-span]
+   :hygiene :introduced-core-symbols-marked
+   :capture :explicit-only
+   :build-authority :deny-by-default
+   :self-hosted? false
+   :whole-language? false
+   :clojure-seed-boundary? true})
+
+(def sh05-macro-bounds
+  {:maximum-expansion-depth 64
+   :maximum-output-nodes 4096
+   :maximum-body-forms 256
+   :maximum-build-effects 32
+   :maximum-capabilities 32
+   :maximum-hygiene-marks 64
+   :maximum-origin-entries 32})
+
+(defn sh05-macro-bounds-value []
+  {:maximum-expansion-depth 64
+   :maximum-output-nodes 4096
+   :maximum-body-forms 256
+   :maximum-build-effects 32
+   :maximum-capabilities 32
+   :maximum-hygiene-marks 64
+   :maximum-origin-entries 32})
+
+(def sh05-macro-diagnostic-catalog
+  {:diagnostics ["C4-NOT-MACRO" "C4-RETURN" "C4-DEPTH"
+                 "C4-SIZE" "C4-BUILD-EFFECT" "C4-HYGIENE"
+                 "C4-CAPTURE" "C4-GENERATED-UNSAFE"
+                 "C4-PROFILE" "C4-TRACE"]
+   :stable-fields [:rule :severity :stage :macro-name :macro-version
+                   :definition-span :call-site-span :generated-span
+                   :profile :target :build-effects :capabilities
+                   :hygiene-context :origin-chain :facts :remediation]
+   :stops [:macro-expansion :name-resolution :analysis]})
+
+(defn sh05-exact-keys? [value expected]
+  (if (map? value)
+    (if (= (count value) (count expected))
+      (= (set (keys value)) expected)
+      false)
+    false))
+
+(defn sh05-vector-contains? [values value]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      false
+      (if (= (first remaining) value)
+        true
+        (recur (rest remaining))))))
+
+(defn sh05-vector-subset? [requested granted]
+  (loop [remaining requested]
+    (if (= (count remaining) 0)
+      true
+      (if (sh05-vector-contains? granted (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn sh05-first-missing [requested available]
+  (loop [remaining requested]
+    (if (= (count remaining) 0)
+      nil
+      (if (sh05-vector-contains? available (first remaining))
+        (recur (rest remaining))
+        (first remaining)))))
+
+(defn sh05-lowercase-hex? [characters]
+  (loop [remaining characters]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                       \a \b \c \d \e \f}
+                     (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn sh05-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh05-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh05-digest-reference? [value ordinal]
+  (if (sh05-exact-keys? value #{:digest-ref})
+    (= (get value :digest-ref) ordinal)
+    false))
+
+(defn sh05-path-get [value path]
+  (loop [current value remaining path]
+    (if (= (count remaining) 0)
+      current
+      (recur (get current (first remaining)) (rest remaining)))))
+
+(defn sh05-request-exact? [request]
+  (if (sh05-exact-keys?
+       request
+       #{:artifact :schema-version :call :context :policy :provenance
+         :reader-binding :reader-source-revision
+         :reader-semantic-binding-id :source-revision-id})
+    (if (sh05-exact-keys?
+         (get request :call)
+         #{:macro-name :macro-version :call-site-syntax-id
+           :definition-syntax-id :name-syntax-id
+           :parameter-vector-syntax-id :body-syntax-ids
+           :semantic-call-span :metadata :hygiene :origin-chain
+           :call-site-span :definition-span})
+      (if (sh05-exact-keys?
+           (get request :context)
+           #{:phase :profile :target :macro-environment-id
+             :build-policy-id :trace-replay-id})
+        (if (sh05-exact-keys?
+             (get request :policy)
+             #{:macro-return-kind :expansion-depth :output-node-count
+               :requested-build-effects :declared-build-effects
+               :granted-build-effects :requested-capabilities
+               :granted-capabilities :hidden-captures :capture-policy
+               :generated-unsafe? :unsafe-declared? :allowed-profiles
+               :generated-profile :recorded-trace-replay-id})
+          (if (sh05-exact-keys?
+               (get request :provenance) #{:actual-source-path})
+            (if (sh05-exact-keys?
+                 (sh05-path-get request [:call :hygiene])
+                 #{:marks :lexical-scopes})
+              (if (sh05-exact-keys?
+                   (get request :reader-binding)
+                   #{:artifact :schema-version :semantic-source-id
+                     :semantic-binding-id :source-bytes-hash
+                     :reader-options :token-stream-id :form-tree-id
+                     :syntax-seed-stream-id :literal-records-id
+                     :deferment-records-id :extension-records-id
+                     :reader-result-id :c2-artifact-id
+                     :authenticated-envelope-id :source-revision-id})
+                (sh05-exact-keys?
+                 (get request :reader-source-revision)
+                 #{:artifact :schema-version :revision-id :owner
+                   :source-language :logical-source-path
+                   :source-content-hash :source-byte-count
+                   :plan-semantic-hash :functions-semantic-hash
+                   :entry-function :entry-semantic-hash
+                   :verifier-function :verifier-semantic-hash
+                   :reader-result-id :c2-artifact-id
+                   :authenticated-envelope-id :semantic-binding-id})
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh05-request-shape? [request]
+  (if (map? request)
+    (if (sh05-request-exact? request)
+    (if (= (get request :artifact)
+           :gravity/sh05-authenticated-c3-macro-request)
+      (if (= (get request :schema-version) 1)
+        (if (map? (get request :call))
+          (if (map? (get request :context))
+            (if (map? (get request :policy))
+              (if (map? (get request :provenance))
+                (if (map? (get request :reader-binding))
+                  (map? (get request :reader-source-revision))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+    false))
+
+(defn sh05-id-vector? [values maximum]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (loop [remaining values]
+        (if (= (count remaining) 0)
+          true
+          (if (sh05-sha256-id? (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh05-nonnegative-integer? [value]
+  (if (integer? value) (>= value 0) false))
+
+(defn sh05-request-validation-fields? [request]
+  (let [call (get request :call)
+        context (get request :context)
+        policy (get request :policy)]
+    (if (symbol? (get call :macro-name))
+      (if (string? (get call :macro-version))
+        (if (map? (get call :metadata))
+          (if (map? (get call :hygiene))
+            (if (vector? (sh05-path-get call [:hygiene :marks]))
+              (if (vector? (sh05-path-get call [:hygiene :lexical-scopes]))
+                (if (vector? (get call :origin-chain))
+                  (if (keyword? (get context :phase))
+                    (if (keyword? (get context :profile))
+                      (if (keyword? (get context :target))
+                        (if (vector? (get policy :requested-build-effects))
+                          (if (vector? (get policy :declared-build-effects))
+                          (if (vector? (get policy :granted-build-effects))
+                            (if (vector?
+                                 (get policy :requested-capabilities))
+                              (if (vector?
+                                   (get policy :granted-capabilities))
+                                (if (vector? (get policy :hidden-captures))
+                                  (if (vector?
+                                       (get policy :allowed-profiles))
+                                    (if (keyword?
+                                         (get policy :capture-policy))
+                                      (if (keyword?
+                                           (get policy :macro-return-kind))
+                                        (if (contains?
+                                             #{true false}
+                                             (get policy
+                                                  :generated-unsafe?))
+                                          (if (contains?
+                                               #{true false}
+                                               (get policy
+                                                    :unsafe-declared?))
+                                            (if (keyword?
+                                                 (get policy
+                                                      :generated-profile))
+                                              (if (sh05-nonnegative-integer?
+                                                   (get policy
+                                                        :expansion-depth))
+                                                (if (sh05-nonnegative-integer?
+                                                     (get policy
+                                                          :output-node-count))
+                                                  (if (string?
+                                                       (get context
+                                                            :trace-replay-id))
+                                                    (string?
+                                                     (get policy
+                                                          :recorded-trace-replay-id))
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh05-request-identity-fields-valid? [request]
+  (let [call (get request :call)
+        context (get request :context)]
+    (if (sh05-sha256-id? (get call :call-site-syntax-id))
+      (if (sh05-sha256-id? (get call :definition-syntax-id))
+        (if (sh05-sha256-id? (get call :name-syntax-id))
+          (if (sh05-sha256-id? (get call :parameter-vector-syntax-id))
+            (if (sh05-id-vector? (get call :body-syntax-ids) 256)
+              (if (sh05-sha256-id?
+                   (get request :reader-semantic-binding-id))
+                (if (sh05-sha256-id? (get request :source-revision-id))
+                  (if (sh05-sha256-id?
+                       (get context :macro-environment-id))
+                    (if (sh05-sha256-id? (get context :build-policy-id))
+                      (sh05-sha256-id? (get context :trace-replay-id))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh05-first-rejection-rule [request]
+  (if (sh05-request-shape? request)
+    (if (sh05-request-validation-fields? request)
+    (let [call (get request :call)
+          context (get request :context)
+          policy (get request :policy)]
+      (if (= (get call :macro-name) 'defn)
+        (if (= (get policy :macro-return-kind) :syntax)
+          (if (= (get context :phase) :macro-expansion)
+            (if (<= (get policy :expansion-depth) 64)
+              (if (<= (get policy :output-node-count) 4096)
+                (if (<= (count (get call :body-syntax-ids)) 256)
+                  (if (sh05-vector-subset?
+                       (get policy :requested-build-effects)
+                       (get policy :declared-build-effects))
+                    (if (sh05-vector-subset?
+                         (get policy :declared-build-effects)
+                         (get policy :granted-build-effects))
+                    (if (sh05-vector-subset?
+                         (get policy :requested-capabilities)
+                         (get policy :granted-capabilities))
+                      (if (= (count (get policy :hidden-captures)) 0)
+                        (if (= (get policy :capture-policy) :explicit-only)
+                          (if (if (= (get policy :generated-unsafe?) false)
+                                true
+                                (= (get policy :unsafe-declared?) true))
+                            (if (sh05-vector-contains?
+                                 (get policy :allowed-profiles)
+                                 (get context :profile))
+                              (if (= (get policy :generated-profile)
+                                     (get context :profile))
+                                (if (= (get context :trace-replay-id)
+                                       (get policy
+                                            :recorded-trace-replay-id))
+                                  nil
+                                  "C4-TRACE")
+                                "C4-PROFILE")
+                              "C4-PROFILE")
+                            "C4-GENERATED-UNSAFE")
+                          "C4-CAPTURE")
+                        "C4-HYGIENE")
+                      "C4-BUILD-EFFECT")
+                    "C4-BUILD-EFFECT")
+                    "C4-BUILD-EFFECT")
+                  "C4-SIZE")
+                "C4-SIZE")
+              "C4-DEPTH")
+            "C4-NOT-MACRO")
+          "C4-RETURN")
+        "C4-NOT-MACRO"))
+      "C4-RETURN")
+    "C4-RETURN"))
+
+(defn sh05-input-reference [syntax-id role]
+  {:kind :input-syntax-reference
+   :syntax-id syntax-id
+   :role role})
+
+(defn sh05-body-references [syntax-ids]
+  (loop [remaining syntax-ids references []]
+    (if (= (count remaining) 0)
+      references
+      (recur (rest remaining)
+             (conj references
+                   (sh05-input-reference (first remaining) :body-form))))))
+
+(defn sh05-generated-mark [request]
+  {:kind :deterministic-hygiene-mark
+   :domain :gravity/sh05-defn-core-mark-v1
+   :call-site-syntax-id (sh05-path-get request [:call :call-site-syntax-id])
+   :macro-version (sh05-path-get request [:call :macro-version])})
+
+(defn sh05-introduced-symbol [request symbol role]
+  {:kind :introduced-core-symbol
+   :symbol symbol
+   :role role
+   :namespace 'gravity.core
+   :mark (sh05-generated-mark request)
+   :capture :forbidden})
+
+(defn sh05-defn-expansion-recipe [request]
+  (let [call (get request :call)]
+    {:kind :generated-list
+     :children
+     [(sh05-introduced-symbol request 'def :core-definition)
+      (sh05-input-reference (get call :name-syntax-id) :definition-name)
+      {:kind :generated-list
+       :children
+       [(sh05-introduced-symbol request 'fn :core-function)
+        (sh05-input-reference
+         (get call :parameter-vector-syntax-id)
+         :parameters)
+        {:kind :input-syntax-sequence
+         :syntax-references
+         (sh05-body-references (get call :body-syntax-ids))}]}]}))
+
+(defn sh05-semantic-identity-preimage [request recipe]
+  {:domain :gravity/sh05-defn-expansion-v1
+   :macro 'gravity.core/defn
+   :macro-version (sh05-path-get request [:call :macro-version])
+   :input-syntax-id (sh05-path-get request [:call :call-site-syntax-id])
+   :output-syntax-slot :self
+   :expanded-syntax-recipe recipe
+   :macro-expansion-trace
+   {:step 0
+    :macro 'gravity.core/defn
+    :macro-version (sh05-path-get request [:call :macro-version])
+    :semantic-call-span (sh05-path-get request [:call :semantic-call-span])
+    :input-syntax-ids [(sh05-path-get request [:call :call-site-syntax-id])]
+    :output-syntax-slot :self
+    :hygiene (sh05-hygiene-record request)
+    :build-effects (sh05-path-get request [:policy :requested-build-effects])
+    :capabilities (sh05-path-get request [:policy :requested-capabilities])
+    :safety {:generated-unsafe false :preserves-taint true}
+    :profile-check :pending-downstream
+    :trace-replay-id (sh05-path-get request [:context :trace-replay-id])
+    :diagnostics []}
+   :hygiene-records [(sh05-hygiene-record request)]
+   :capture-records []
+   :metadata-ledger
+   [{:input-syntax-id (sh05-path-get request [:call :call-site-syntax-id])
+     :output-syntax-slot :self
+     :operation :preserved
+     :metadata (sh05-path-get request [:call :metadata])}]
+   :generated-origin-source-map
+   [{:output-syntax-slot :self
+     :origin
+     {:kind :generated
+      :producer {:kind :macro
+                 :name 'gravity.core/defn
+                 :version (sh05-path-get request [:call :macro-version])
+                 :definition-syntax-id
+                 (sh05-path-get request [:call :definition-syntax-id])}
+      :inputs [(sh05-path-get request [:call :call-site-syntax-id])]
+      :generated-span
+      {:kind :generated
+       :producer 'gravity.core/defn
+       :call-site-syntax-id
+       (sh05-path-get request [:call :call-site-syntax-id])
+       :ordinal 0}
+      :reason :defn-to-def-fn
+      :build-effects (sh05-path-get request [:policy :requested-build-effects])}}]
+   :build-effect-log
+   {:requested (sh05-path-get request [:policy :requested-build-effects])
+    :declared (sh05-path-get request [:policy :declared-build-effects])
+    :granted (sh05-path-get request [:policy :granted-build-effects])
+    :events [] :status :complete}
+   :capability-check
+   {:requested (sh05-path-get request [:policy :requested-capabilities])
+    :granted (sh05-path-get request [:policy :granted-capabilities])
+    :status :complete}
+   :semantic-binding
+   {:reader-semantic-binding-id (get request :reader-semantic-binding-id)
+    :source-revision-id (get request :source-revision-id)
+    :macro-environment-id
+    (sh05-path-get request [:context :macro-environment-id])
+    :build-policy-id (sh05-path-get request [:context :build-policy-id])}
+   :profile (sh05-path-get request [:context :profile])
+   :target (sh05-path-get request [:context :target])
+   :phase :macro-expanded
+   :bounds (sh05-macro-bounds-value)})
+
+(defn sh05-hygiene-record [request]
+  {:artifact :gravity/sh05-hygiene-record
+   :mode :hygienic
+   :introduced-marks [(sh05-generated-mark request)]
+   :introduced-identifiers
+   [(sh05-introduced-symbol request 'def :core-definition)
+    (sh05-introduced-symbol request 'fn :core-function)]
+   :preserved-call-site-marks
+   (sh05-path-get request [:call :hygiene :marks])
+   :preserved-lexical-scopes
+   (sh05-path-get request [:call :hygiene :lexical-scopes])
+   :captures []
+   :hidden-captures []})
+
+(defn sh05-generated-origin [request]
+  {:kind :generated
+   :producer {:kind :macro
+              :name 'gravity.core/defn
+              :version (sh05-path-get request [:call :macro-version])
+              :definition-syntax-id
+              (sh05-path-get request [:call :definition-syntax-id])}
+   :inputs [(sh05-path-get request [:call :call-site-syntax-id])]
+   :definition-span (sh05-path-get request [:call :definition-span])
+   :call-site-span (sh05-path-get request [:call :call-site-span])
+   :generated-span
+   {:kind :generated
+    :producer 'gravity.core/defn
+    :call-site-syntax-id (sh05-path-get request [:call :call-site-syntax-id])
+    :ordinal 0}
+   :reason :defn-to-def-fn
+   :build-effects (sh05-path-get request [:policy :requested-build-effects])})
+
+(defn sh05-trace-template [request output-id-request]
+  {:artifact :gravity/sh05-macro-expansion-step
+   :schema-version 1
+   :step 0
+   :macro 'gravity.core/defn
+   :macro-version (sh05-path-get request [:call :macro-version])
+   :definition-span (sh05-path-get request [:call :definition-span])
+   :call-site-span (sh05-path-get request [:call :call-site-span])
+   :input-syntax-ids [(sh05-path-get request [:call :call-site-syntax-id])]
+   :output-syntax-ids [output-id-request]
+   :hygiene (sh05-hygiene-record request)
+   :build-effects (sh05-path-get request [:policy :requested-build-effects])
+   :capabilities (sh05-path-get request [:policy :requested-capabilities])
+   :safety {:generated-unsafe false
+            :preserves-taint true}
+   :profile-check :pending-downstream
+   :trace-replay-id (sh05-path-get request [:context :trace-replay-id])
+   :diagnostics []})
+
+(defn sh05-accepted-result [request]
+  (let [recipe (sh05-defn-expansion-recipe request)
+        output-id-request {:digest-ref 0}
+        provenance-id-request {:digest-ref 1}
+        identity-preimage (sh05-semantic-identity-preimage request recipe)
+        provenance
+        {:actual-source-path
+         (sh05-path-get request [:provenance :actual-source-path])
+         :call-site-span (sh05-path-get request [:call :call-site-span])
+         :definition-span (sh05-path-get request [:call :definition-span])
+         :input-origin-chain (sh05-path-get request [:call :origin-chain])
+         :reader-binding (get request :reader-binding)
+         :reader-source-revision (get request :reader-source-revision)}
+        digest-requests
+        [{:ordinal 0
+          :purpose :sh05-expanded-syntax-id
+          :preimage identity-preimage}
+         {:ordinal 1
+          :purpose :sh05-expansion-provenance-binding-id
+          :preimage
+          {:domain :gravity/sh05-expansion-provenance-binding-v1
+           :semantic-artifact-id output-id-request
+           :provenance provenance}}]]
+    {:artifact :gravity/sh05-macro-template-result
+     :schema-version 1
+     :status :accepted
+     :expansion-template
+     {:artifact :gravity/sh05-macro-expansion-artifact
+      :schema-version 1
+      :artifact-id output-id-request
+      :identity-preimage identity-preimage
+      :provenance-binding-id provenance-id-request
+      :status :accepted
+      :macro 'gravity.core/defn
+      :macro-version (sh05-path-get request [:call :macro-version])
+      :input-syntax-id (sh05-path-get request [:call :call-site-syntax-id])
+      :output-syntax-id output-id-request
+      :semantic-call-span (sh05-path-get request [:call :semantic-call-span])
+      :expanded-syntax-recipe recipe
+      :macro-expansion-trace
+      [(sh05-trace-template request output-id-request)]
+      :hygiene-records [(sh05-hygiene-record request)]
+      :capture-records []
+      :metadata-ledger
+      [{:input-syntax-id (sh05-path-get request [:call :call-site-syntax-id])
+        :output-syntax-id output-id-request
+        :operation :preserved
+        :metadata (sh05-path-get request [:call :metadata])}]
+      :generated-origin-source-map
+      [{:output-syntax-id output-id-request
+        :origin (sh05-generated-origin request)}]
+      :build-effect-log
+      {:requested (sh05-path-get request [:policy :requested-build-effects])
+       :declared (sh05-path-get request [:policy :declared-build-effects])
+       :granted (sh05-path-get request [:policy :granted-build-effects])
+       :events []
+       :status :complete}
+      :capability-check
+      {:requested (sh05-path-get request [:policy :requested-capabilities])
+       :granted (sh05-path-get request [:policy :granted-capabilities])
+       :status :complete}
+      :reader-binding (get request :reader-binding)
+      :reader-source-revision (get request :reader-source-revision)
+      :semantic-binding
+      {:reader-semantic-binding-id
+       (get request :reader-semantic-binding-id)
+       :source-revision-id (get request :source-revision-id)
+       :macro-environment-id
+       (sh05-path-get request [:context :macro-environment-id])
+       :build-policy-id (sh05-path-get request [:context :build-policy-id])}
+      :provenance provenance
+      :profile (sh05-path-get request [:context :profile])
+      :target (sh05-path-get request [:context :target])
+      :phase :macro-expanded
+      :bounds (sh05-macro-bounds-value)}
+     :digest-requests digest-requests
+     :diagnostics []
+     :bounds (sh05-macro-bounds-value)
+     :containment {:downstream-artifacts-forbidden false
+                   :host-exception-contained true}
+     :execution-boundary
+     {:source-language :gravity
+      :owner :gravity.macro
+      :entry 'sh05-expand-macro-template
+      :digest-resolution :clojure-stage0
+      :artifact-binding :clojure-stage0
+      :clojure-seed-boundary? true}}))
+
+(defn sh05-diagnostic-remediation [rule]
+  (if (= rule "C4-NOT-MACRO")
+    "Invoke an available macro during the macro-expansion phase."
+    (if (= rule "C4-RETURN")
+      "Return a valid syntax object from the macro."
+      (if (= rule "C4-DEPTH")
+        "Reduce recursive expansion depth below the declared bound."
+        (if (= rule "C4-SIZE")
+          "Reduce generated syntax size below the declared bound."
+          (if (= rule "C4-BUILD-EFFECT")
+            "Declare and grant every macro build effect and capability."
+            (if (= rule "C4-HYGIENE")
+              "Use hygienic introduced identifiers without hidden capture."
+              (if (= rule "C4-CAPTURE")
+                "Use the explicit capture API and satisfy capture policy."
+                (if (= rule "C4-GENERATED-UNSAFE")
+                  "Declare generated unsafe behavior and emit complete safety metadata."
+                  (if (= rule "C4-PROFILE")
+                    "Generate syntax legal for the active caller profile."
+                    "Replay with the exact macro, syntax, policy, and trace inputs."))))))))))
+
+(defn sh05-rule-specific-facts [request rule]
+  (let [call (get request :call)
+        context (get request :context)
+        policy (get request :policy)
+        missing-declaration
+        (= (sh05-vector-subset?
+            (get policy :requested-build-effects)
+            (get policy :declared-build-effects)) false)
+        missing-grant
+        (= (sh05-vector-subset?
+            (get policy :declared-build-effects)
+            (get policy :granted-build-effects)) false)
+        missing-capability
+        (= (sh05-vector-subset?
+            (get policy :requested-capabilities)
+            (get policy :granted-capabilities)) false)]
+    (if (= rule "C4-NOT-MACRO")
+      (if (= (get context :phase) :macro-expansion)
+        {:reason :macro-binding-unavailable
+         :requested-macro (get call :macro-name)
+         :available-macros ['defn]
+         :catalog-mapping {:c4-rule "C4-NOT-MACRO"
+                           :owner-rules ["L4-MACRO-NOT-SYNTAX"]}}
+        {:reason :phase-mismatch
+         :requested-phase :macro-expansion
+         :available-phase (get context :phase)
+         :catalog-mapping
+         ["L12-PHASE-CAPTURE" "SAFE12-PHASE"]})
+      (if (= rule "C4-BUILD-EFFECT")
+        {:reason :missing-build-authority
+         :missing-declaration
+         (sh05-first-missing (get policy :requested-build-effects)
+                             (get policy :declared-build-effects))
+         :missing-capability
+         (sh05-first-missing (get policy :requested-capabilities)
+                             (get policy :granted-capabilities))
+         :missing-grant
+         (sh05-first-missing (get policy :requested-build-effects)
+                             (get policy :granted-build-effects))
+         :requested-build-effects (get policy :requested-build-effects)
+         :declared-build-effects (get policy :declared-build-effects)
+         :granted-build-effects (get policy :granted-build-effects)
+         :requested-capabilities (get policy :requested-capabilities)
+         :granted-capabilities (get policy :granted-capabilities)
+         :catalog-mapping
+         ["L15" "SAFE10"]}
+        {:reason
+         (if (= rule "C4-RETURN")
+           :macro-return-not-syntax
+           (if (= rule "C4-DEPTH")
+             :expansion-depth-exhausted
+             (if (= rule "C4-SIZE")
+               :expansion-size-exhausted
+               (if (= rule "C4-HYGIENE")
+                 :hidden-hygiene-capture
+                 (if (= rule "C4-CAPTURE")
+                   :capture-policy-denied
+                   (if (= rule "C4-GENERATED-UNSAFE")
+                     :generated-unsafe-undeclared
+                     (if (= rule "C4-PROFILE")
+                       :generated-profile-illegal
+                       :trace-replay-mismatch)))))))
+         :expansion-depth (get policy :expansion-depth)
+         :output-node-count (get policy :output-node-count)
+         :generated-profile (get policy :generated-profile)
+         :caller-profile (get context :profile)
+         :generated-unsafe? (get policy :generated-unsafe?)
+         :trace-replay-id (get context :trace-replay-id)
+         :recorded-trace-replay-id
+         (get policy :recorded-trace-replay-id)
+         :catalog-mapping {:c4-rule rule :owner-rules []}}))))
+
+(defn sh05-rejected-result [request rule]
+  (let [call (get request :call)
+        context (get request :context)
+        policy (get request :policy)
+        diagnostic-preimage
+        {:domain :gravity/sh05-c4-diagnostic-v1
+         :rule rule
+         :macro-name (get call :macro-name)
+         :macro-version (get call :macro-version)
+         :call-site-syntax-id (get call :call-site-syntax-id)
+         :definition-syntax-id (get call :definition-syntax-id)
+         :reader-semantic-binding-id
+         (get request :reader-semantic-binding-id)
+         :source-revision-id (get request :source-revision-id)
+         :profile (get context :profile)
+         :target (get context :target)
+         :semantic-call-span (get call :semantic-call-span)
+         :requested-build-effects (get policy :requested-build-effects)
+         :requested-capabilities (get policy :requested-capabilities)}
+        diagnostic
+        {:artifact :gravity/sh05-macro-diagnostic
+         :rule rule
+         :severity :error
+         :lifecycle :active
+         :stage :macro-expansion
+         :macro-name (get call :macro-name)
+         :macro-version (get call :macro-version)
+         :definition-span (get call :definition-span)
+         :call-site-span (get call :call-site-span)
+         :generated-span nil
+         :profile (get context :profile)
+         :target (get context :target)
+         :build-effects (get policy :requested-build-effects)
+         :capabilities (get policy :requested-capabilities)
+         :hygiene-context (get call :hygiene)
+         :origin-chain (get call :origin-chain)
+         :facts (sh05-rule-specific-facts request rule)
+         :remediation (sh05-diagnostic-remediation rule)
+         :diagnostic-id-request {:digest-ref 0}}]
+    {:artifact :gravity/sh05-macro-template-result
+     :schema-version 1
+     :status :rejected
+     :expansion-template nil
+     :digest-requests
+     [{:ordinal 0
+       :purpose :sh05-macro-diagnostic-id
+       :preimage diagnostic-preimage}]
+     :diagnostics [diagnostic]
+     :bounds (sh05-macro-bounds-value)
+     :containment {:downstream-artifacts-forbidden true
+                   :host-exception-contained true}
+     :execution-boundary
+     {:source-language :gravity
+      :owner :gravity.macro
+      :entry 'sh05-expand-macro-template
+      :digest-resolution :clojure-stage0
+      :artifact-binding :forbidden
+      :clojure-seed-boundary? true}}))
+
+(defn sh05-expand-macro-template [request]
+  (let [rule (sh05-first-rejection-rule request)]
+    (if (= rule nil)
+      (if (sh05-request-identity-fields-valid? request)
+        (sh05-accepted-result request)
+        (sh05-rejected-result request "C4-RETURN"))
+      (sh05-rejected-result request rule))))
+
+(defn sh05-template-result-shape? [result]
+  (if (sh05-exact-keys?
+       result
+       #{:artifact :schema-version :status :expansion-template
+         :digest-requests :diagnostics :bounds :containment
+         :execution-boundary})
+    (if (= (get result :artifact) :gravity/sh05-macro-template-result)
+      (if (= (get result :schema-version) 1)
+        (if (if (= (get result :status) :accepted)
+              (= (count (get result :digest-requests)) 2)
+              (= (count (get result :digest-requests)) 1))
+          (if (= (sh05-path-get result [:digest-requests 0 :ordinal]) 0)
+            (if (= (get result :bounds) (sh05-macro-bounds-value))
+              true
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh05-expansion-records-exact? [expansion]
+  (let [trace (sh05-path-get expansion [:macro-expansion-trace 0])
+        hygiene (sh05-path-get expansion [:hygiene-records 0])
+        metadata (sh05-path-get expansion [:metadata-ledger 0])
+        origin-entry (sh05-path-get expansion
+                                    [:generated-origin-source-map 0])
+        origin (get origin-entry :origin)]
+    (if (sh05-exact-keys?
+         trace
+         #{:artifact :schema-version :step :macro :macro-version
+           :definition-span :call-site-span :input-syntax-ids
+           :output-syntax-ids :hygiene :build-effects :capabilities
+           :safety :profile-check :trace-replay-id :diagnostics})
+      (if (sh05-exact-keys?
+           hygiene
+           #{:artifact :mode :introduced-marks :introduced-identifiers
+             :preserved-call-site-marks :preserved-lexical-scopes
+             :captures :hidden-captures})
+        (if (= (get trace :hygiene) hygiene)
+          (if (sh05-exact-keys?
+               metadata
+               #{:input-syntax-id :output-syntax-id
+                 :operation :metadata})
+            (if (sh05-exact-keys?
+                 origin-entry #{:output-syntax-id :origin})
+              (if (sh05-exact-keys?
+                   origin
+                   #{:kind :producer :inputs :definition-span
+                     :call-site-span :generated-span :reason
+                     :build-effects})
+                (if (sh05-exact-keys?
+                     (get origin :producer)
+                     #{:kind :name :version :definition-syntax-id})
+                  (if (sh05-exact-keys?
+                       (get origin :generated-span)
+                       #{:kind :producer :call-site-syntax-id :ordinal})
+                    (if (sh05-exact-keys?
+                         (get expansion :build-effect-log)
+                         #{:requested :declared :granted :events :status})
+                      (if (sh05-exact-keys?
+                           (get expansion :capability-check)
+                           #{:requested :granted :status})
+                        (if (sh05-exact-keys?
+                             (get expansion :semantic-binding)
+                             #{:reader-semantic-binding-id
+                               :source-revision-id :macro-environment-id
+                               :build-policy-id})
+                          (sh05-exact-keys?
+                           (get expansion :provenance)
+                           #{:actual-source-path :call-site-span
+                             :definition-span :input-origin-chain
+                             :reader-binding :reader-source-revision})
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh05-expansion-template-shape? [expansion]
+  (if (map? expansion)
+    (if (sh05-exact-keys?
+         expansion
+         #{:artifact :schema-version :artifact-id :identity-preimage
+           :provenance-binding-id :status :macro :macro-version
+           :input-syntax-id :output-syntax-id :semantic-call-span
+           :expanded-syntax-recipe :macro-expansion-trace
+           :hygiene-records :capture-records :metadata-ledger
+           :generated-origin-source-map :build-effect-log
+           :capability-check :reader-binding :reader-source-revision
+           :semantic-binding :provenance :profile :target :phase
+           :bounds})
+    (if (= (get expansion :artifact)
+           :gravity/sh05-macro-expansion-artifact)
+      (if (= (get expansion :schema-version) 1)
+        (if (= (get expansion :status) :accepted)
+          (if (= (get expansion :macro) 'gravity.core/defn)
+            (if (map? (get expansion :identity-preimage))
+              (if (= (get expansion :expanded-syntax-recipe)
+                     (sh05-path-get expansion
+                             [:identity-preimage :expanded-syntax-recipe]))
+                (if (= (count (get expansion :macro-expansion-trace)) 1)
+                  (if (= (count (get expansion :hygiene-records)) 1)
+                    (if (= (count (get expansion :capture-records)) 0)
+                      (if (= (count (get expansion
+                                      :generated-origin-source-map)) 1)
+                        (sh05-expansion-records-exact? expansion)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+    false))
+
+(defn sh05-reader-products-bound? [expansion]
+  (let [preimage (get expansion :identity-preimage)]
+    (if (= (sh05-path-get expansion [:reader-binding :semantic-binding-id])
+           (get preimage :reader-semantic-binding-id))
+      (= (sh05-path-get expansion [:reader-source-revision :revision-id])
+         (get preimage :source-revision-id))
+      false)))
+
+(defn sh05-output-references-bound? [expansion]
+  (if (= (sh05-path-get expansion [:metadata-ledger 0 :output-syntax-id])
+         (get expansion :output-syntax-id))
+    (if (= (sh05-path-get expansion
+                   [:generated-origin-source-map 0 :output-syntax-id])
+           (get expansion :output-syntax-id))
+      (= (sh05-path-get expansion
+                 [:macro-expansion-trace 0 :output-syntax-ids 0])
+         (get expansion :output-syntax-id))
+      false)
+    false))
+
+(defn sh05-origin-and-hygiene-bound? [expansion]
+  (let [trace (sh05-path-get expansion [:macro-expansion-trace 0])
+        origin (sh05-path-get expansion [:generated-origin-source-map 0 :origin])
+        provenance (get expansion :provenance)
+        introduced-mark
+        (sh05-path-get expansion [:expanded-syntax-recipe :children 0 :mark])]
+    (if (= (get trace :definition-span)
+           (get provenance :definition-span))
+      (if (= (get trace :call-site-span)
+             (get provenance :call-site-span))
+        (if (= (get origin :definition-span)
+               (get provenance :definition-span))
+          (if (= (get origin :call-site-span)
+                 (get provenance :call-site-span))
+            (if (= (sh05-path-get trace [:hygiene :introduced-marks 0])
+                   introduced-mark)
+              (= (sh05-path-get expansion
+                         [:hygiene-records 0 :introduced-marks 0])
+                 introduced-mark)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh05-legacy-expansion-cross-fields? [expansion]
+  (let [preimage (get expansion :identity-preimage)
+        trace (sh05-path-get expansion [:macro-expansion-trace 0])]
+    (if (= (get expansion :macro-version)
+           (get preimage :macro-version))
+      (if (= (get expansion :input-syntax-id)
+             (get preimage :call-site-syntax-id))
+        (if (= (get expansion :profile) (get preimage :profile))
+          (if (= (get expansion :target) (get preimage :target))
+            (if (= (sh05-path-get expansion
+                           [:semantic-binding
+                            :reader-semantic-binding-id])
+                   (get preimage :reader-semantic-binding-id))
+              (if (= (sh05-path-get expansion
+                             [:semantic-binding :source-revision-id])
+                     (get preimage :source-revision-id))
+                (if (= (get trace :macro) 'gravity.core/defn)
+                  (if (= (get trace :macro-version)
+                         (get preimage :macro-version))
+                    (if (= (get trace :input-syntax-ids)
+                           [(get preimage :call-site-syntax-id)])
+                      (if (= (get trace :trace-replay-id)
+                             (get preimage :trace-replay-id))
+                        (if (= (sh05-path-get expansion [:hygiene-records 0])
+                               (get trace :hygiene))
+                          (if (= (sh05-path-get expansion
+                                       [:metadata-ledger 0 :metadata])
+                                 (get preimage :metadata))
+                            (if (= (sh05-path-get expansion
+                                         [:metadata-ledger 0
+                                          :input-syntax-id])
+                                   (get preimage :call-site-syntax-id))
+                              (if (= (sh05-path-get expansion
+                                           [:build-effect-log :requested])
+                                     (get preimage
+                                          :requested-build-effects))
+                                (if (= (sh05-path-get expansion
+                                             [:build-effect-log :declared])
+                                       (get preimage
+                                            :declared-build-effects))
+                                  (if (= (sh05-path-get expansion
+                                               [:build-effect-log :granted])
+                                         (get preimage
+                                              :granted-build-effects))
+                                    (if (= (sh05-path-get expansion
+                                                 [:capability-check
+                                                  :requested])
+                                           (get preimage
+                                                :requested-capabilities))
+                                      (if (= (sh05-path-get expansion
+                                                   [:capability-check
+                                                    :granted])
+                                             (get preimage
+                                                  :granted-capabilities))
+                                        (if (= (sh05-path-get expansion
+                                                     [:generated-origin-source-map
+                                                      0 :origin :producer
+                                                      :version])
+                                               (get preimage :macro-version))
+                                          (if (= (sh05-path-get expansion
+                                                       [:generated-origin-source-map
+                                                        0 :origin :inputs])
+                                                  [(get preimage
+                                                        :call-site-syntax-id)])
+                                            (if (sh05-reader-products-bound?
+                                                 expansion)
+                                              (if (sh05-output-references-bound?
+                                                   expansion)
+                                                (sh05-origin-and-hygiene-bound?
+                                                 expansion)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh05-semantic-payload-from-expansion [expansion]
+  (let [trace (sh05-path-get expansion [:macro-expansion-trace 0])
+        origin (sh05-path-get expansion [:generated-origin-source-map 0 :origin])]
+    {:domain :gravity/sh05-defn-expansion-v1
+     :macro (get expansion :macro)
+     :macro-version (get expansion :macro-version)
+     :input-syntax-id (get expansion :input-syntax-id)
+     :output-syntax-slot :self
+     :expanded-syntax-recipe (get expansion :expanded-syntax-recipe)
+     :macro-expansion-trace
+     {:step (get trace :step)
+      :macro (get trace :macro)
+      :macro-version (get trace :macro-version)
+      :semantic-call-span (get expansion :semantic-call-span)
+      :input-syntax-ids (get trace :input-syntax-ids)
+      :output-syntax-slot :self
+      :hygiene (get trace :hygiene)
+      :build-effects (get trace :build-effects)
+      :capabilities (get trace :capabilities)
+      :safety (get trace :safety)
+      :profile-check (get trace :profile-check)
+      :trace-replay-id (get trace :trace-replay-id)
+      :diagnostics (get trace :diagnostics)}
+     :hygiene-records (get expansion :hygiene-records)
+     :capture-records (get expansion :capture-records)
+     :metadata-ledger
+     [{:input-syntax-id
+       (sh05-path-get expansion [:metadata-ledger 0 :input-syntax-id])
+       :output-syntax-slot :self
+       :operation (sh05-path-get expansion [:metadata-ledger 0 :operation])
+       :metadata (sh05-path-get expansion [:metadata-ledger 0 :metadata])}]
+     :generated-origin-source-map
+     [{:output-syntax-slot :self
+       :origin
+       {:kind (get origin :kind)
+        :producer (get origin :producer)
+        :inputs (get origin :inputs)
+        :generated-span (get origin :generated-span)
+        :reason (get origin :reason)
+        :build-effects (get origin :build-effects)}}]
+     :build-effect-log (get expansion :build-effect-log)
+     :capability-check (get expansion :capability-check)
+     :semantic-binding (get expansion :semantic-binding)
+     :profile (get expansion :profile)
+     :target (get expansion :target)
+     :phase (get expansion :phase)
+     :bounds (get expansion :bounds)}))
+
+(defn sh05-expansion-cross-fields? [expansion]
+  (if (= (get expansion :identity-preimage)
+         (sh05-semantic-payload-from-expansion expansion))
+    (if (= (get expansion :reader-binding)
+           (sh05-path-get expansion [:provenance :reader-binding]))
+      (if (= (get expansion :reader-source-revision)
+             (sh05-path-get expansion [:provenance :reader-source-revision]))
+        (if (sh05-output-references-bound? expansion)
+          (sh05-origin-and-hygiene-bound? expansion)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh05-provenance-request-matches? [expansion digest-requests]
+  (= (sh05-path-get digest-requests [1 :preimage])
+     {:domain :gravity/sh05-expansion-provenance-binding-v1
+      :semantic-artifact-id {:digest-ref 0}
+      :provenance (get expansion :provenance)}))
+
+(defn sh05-digest-requests-exact? [digest-requests]
+  (if (= (count digest-requests) 2)
+    (if (sh05-exact-keys?
+         (first digest-requests) #{:ordinal :purpose :preimage})
+      (if (sh05-exact-keys?
+           (second digest-requests) #{:ordinal :purpose :preimage})
+        (sh05-exact-keys?
+         (get (second digest-requests) :preimage)
+         #{:domain :semantic-artifact-id :provenance})
+        false)
+      false)
+    false))
+
+(defn sh05-template-request-header-valid? [digest-requests]
+  (if (sh05-digest-requests-exact? digest-requests)
+    (if (= (sh05-path-get digest-requests [0 :ordinal]) 0)
+      (if (= (sh05-path-get digest-requests [0 :purpose])
+             :sh05-expanded-syntax-id)
+        (if (= (sh05-path-get digest-requests [1 :ordinal]) 1)
+          (= (sh05-path-get digest-requests [1 :purpose])
+             :sh05-expansion-provenance-binding-id)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh05-template-semantic-valid? [expansion-template digest-requests]
+  (if (sh05-expansion-template-shape? expansion-template)
+    (if (sh05-expansion-cross-fields? expansion-template)
+      (if (sh05-provenance-request-matches?
+           expansion-template digest-requests)
+        (= (sh05-path-get digest-requests [0 :preimage])
+           (get expansion-template :identity-preimage))
+        false)
+      false)
+    false))
+
+(defn sh05-template-references-valid? [expansion-template]
+  (if (sh05-digest-reference? (get expansion-template :artifact-id) 0)
+    (if (sh05-digest-reference?
+         (get expansion-template :output-syntax-id) 0)
+      (if (sh05-digest-reference?
+           (sh05-path-get expansion-template
+                          [:macro-expansion-trace 0
+                           :output-syntax-ids 0]) 0)
+        (sh05-digest-reference?
+         (get expansion-template :provenance-binding-id) 1)
+        false)
+      false)
+    false))
+
+(defn sh05-verify-macro-template [expansion-template digest-requests]
+  (if (sh05-template-request-header-valid? digest-requests)
+    (if (sh05-template-semantic-valid?
+         expansion-template digest-requests)
+      (if (sh05-template-references-valid? expansion-template)
+        {:artifact :gravity/sh05-macro-template-verification
+         :schema-version 1
+         :status :passed
+         :rule nil}
+        {:artifact :gravity/sh05-macro-template-verification
+         :schema-version 1
+         :status :failed
+         :rule "C4-TRACE"})
+      {:artifact :gravity/sh05-macro-template-verification
+       :schema-version 1
+       :status :failed
+       :rule "C4-TRACE"})
+    {:artifact :gravity/sh05-macro-template-verification
+     :schema-version 1
+     :status :failed
+     :rule "C4-TRACE"}))
+
+(defn sh05-verify-macro-resolved
+  [resolved-expansion digest-requests resolved-digests]
+  (if (sh05-digest-requests-exact? digest-requests)
+    (if (= (count resolved-digests) 2)
+      (if (sh05-sha256-id? (first resolved-digests))
+        (if (sh05-sha256-id? (second resolved-digests))
+        (if (sh05-expansion-template-shape? resolved-expansion)
+          (if (sh05-expansion-cross-fields? resolved-expansion)
+          (if (sh05-provenance-request-matches?
+               resolved-expansion digest-requests)
+          (if (= (get resolved-expansion :artifact-id)
+                 (first resolved-digests))
+            (if (= (get resolved-expansion :output-syntax-id)
+                   (first resolved-digests))
+              (if (= (sh05-path-get digest-requests [0 :preimage])
+                     (get resolved-expansion :identity-preimage))
+                (if (= (get resolved-expansion :provenance-binding-id)
+                       (second resolved-digests))
+                {:artifact :gravity/sh05-macro-resolved-verification
+                 :schema-version 1
+                 :status :passed
+                 :rule nil}
+                {:artifact :gravity/sh05-macro-resolved-verification
+                 :schema-version 1
+                 :status :failed
+                 :rule "C4-TRACE"})
+                {:artifact :gravity/sh05-macro-resolved-verification
+                 :schema-version 1
+                 :status :failed
+                 :rule "C4-TRACE"})
+              {:artifact :gravity/sh05-macro-resolved-verification
+               :schema-version 1
+               :status :failed
+               :rule "C4-TRACE"})
+            {:artifact :gravity/sh05-macro-resolved-verification
+             :schema-version 1
+             :status :failed
+             :rule "C4-TRACE"})
+          {:artifact :gravity/sh05-macro-resolved-verification
+           :schema-version 1
+           :status :failed
+           :rule "C4-RETURN"})
+          {:artifact :gravity/sh05-macro-resolved-verification
+           :schema-version 1
+           :status :failed
+           :rule "C4-TRACE"})
+          {:artifact :gravity/sh05-macro-resolved-verification
+           :schema-version 1
+           :status :failed
+           :rule "C4-TRACE"})
+        {:artifact :gravity/sh05-macro-resolved-verification
+         :schema-version 1
+         :status :failed
+         :rule "C4-TRACE"})
+        {:artifact :gravity/sh05-macro-resolved-verification
+         :schema-version 1
+         :status :failed
+         :rule "C4-TRACE"})
+      {:artifact :gravity/sh05-macro-resolved-verification
+       :schema-version 1
+       :status :failed
+       :rule "C4-TRACE"})
+    {:artifact :gravity/sh05-macro-resolved-verification
+     :schema-version 1
+     :status :failed
+     :rule "C4-TRACE"}))

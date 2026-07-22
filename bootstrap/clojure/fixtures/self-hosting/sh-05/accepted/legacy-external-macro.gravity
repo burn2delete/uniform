@@ -1,0 +1,11 @@
+(ns self-hosting.sh05.legacy-external-macro
+  (:profile :hosted)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-05 :fixture :legacy-routing}))
+
+(defn legacy-external [value]
+  (when value
+    (-> value external.macros/legacy-call)))
