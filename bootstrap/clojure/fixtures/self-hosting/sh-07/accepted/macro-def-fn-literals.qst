@@ -1,0 +1,22 @@
+; SH-07-A macro-expanded def, fn, quote, and literal input.
+(ns self-hosting.sh07.macro-def-fn-literals
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [literal-body quoted-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07 :fixture :macro-def-fn-literals}))
+
+(def nil-value nil)
+(def boolean-value true)
+(def integer-value 42)
+(def decimal-value 1.25)
+(def ratio-value 3/4)
+(def character-value \G)
+(def string-value "gravity")
+(def keyword-value :gravity)
+(def quoted-value '(alpha 7 :quoted))
+
+(defn literal-body [ignored]
+  "latent literal")

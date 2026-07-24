@@ -31640,7 +31640,8 @@
         supplementary (String. (Character/toChars 0x1f642))
         unicode (str "A" (char 0x00e9) (char 0x03bb) supplementary)
         values
-        [nil false true -17 0 9223372036854775807N unicode
+        [nil false true -17 0 9223372036854775807N
+         3/4 1.25M 1.250M unicode
          (char 0x03bb) :plain :ns/key 'plain 'ns/name
          [1 :a unicode]
          (list :x 2 false)
@@ -31672,7 +31673,25 @@
           {:nodes 7 :maximum-depth 2 :maximum-width 2
            :scalar-bytes 2 :maximum-scalar-bytes 1
            :maximum-integer-bits 2}
-          "sha256:6c9fff304a6ee4cc0c09447bad2635be8ce935f7b40e6300ff6396f795e660cf"]]]
+          "sha256:6c9fff304a6ee4cc0c09447bad2635be8ce935f7b40e6300ff6396f795e660cf"]
+         [3/4
+          [:ratio "3" "4"]
+          {:nodes 1 :maximum-depth 0 :maximum-width 0
+           :scalar-bytes 0 :maximum-scalar-bytes 0
+           :maximum-integer-bits 3}
+          "sha256:136fca634515e46d4f471a02028fa6e2ac66f0e028a018a0d7cd1d3a1ddcba22"]
+         [1.25M
+          [:decimal "125" 2]
+          {:nodes 1 :maximum-depth 0 :maximum-width 0
+           :scalar-bytes 0 :maximum-scalar-bytes 0
+           :maximum-integer-bits 7}
+          "sha256:fea0d759927adb8d7ad9233778c6e1ed396405fdf6852e5af998595d6d31a583"]
+         [1.250M
+          [:decimal "1250" 3]
+          {:nodes 1 :maximum-depth 0 :maximum-width 0
+           :scalar-bytes 0 :maximum-scalar-bytes 0
+           :maximum-integer-bits 11}
+          "sha256:f5249bd4eb34a6e71c29e205411b32dee4e1dada0118f0468ed0b72ee5471c99"]]]
     (doseq [value values]
       (let [record
             (bootstrap/p15-s23-c6c10-canonical-record source-path value)
@@ -31740,6 +31759,11 @@
               :bounded-canonical-carrier]
              [(.shiftLeft java.math.BigInteger/ONE 256)
               :maximum-integer-bits]
+             [(/ (.shiftLeft java.math.BigInteger/ONE 256) 3N)
+              :maximum-integer-bits]
+             [(java.math.BigDecimal.
+               java.math.BigInteger/ONE 65537)
+              :bounded-decimal-scale]
              [(str "invalid-" (char 0xd800))
               :well-formed-unicode-scalar-string]]]
       (let [data
@@ -31751,7 +31775,134 @@
             [expected-missing data])
         (is (re-matches #"sha256:[0-9a-f]{64}"
                         (:diagnostic-id data))
-            [expected-missing data])))))
+            [expected-missing data])))
+    (is (not=
+         (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.25M)
+         (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.250M))
+        "decimal scale is part of exact canonical identity")))
+
+(deftest p15-s23-stage2-compiler-only-list-predicate-is-contained
+  (let [source-path "/tmp/p15-s23-compiler-list-predicate.gravity"
+        compiler-plan
+        {:compiler-artifact-plan? true
+         :kind :gravity/stage2-compiler-artifact-plan
+         :module {:profile :meta}
+         :compiler {:stage :p15-s23-stage2-expression-lowering}
+         :source {:path source-path}}
+        invoke
+        #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+          compiler-plan 'list? [%])
+        outside
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           {:source {:path source-path}} 'list? [(list :value)]))
+        wrong-arity
+        (diagnostic-data
+         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+           compiler-plan 'list? []))]
+    (is (true? (invoke (list :value))))
+    (is (false? (invoke [:value])))
+    (is (= "L2-BUILTIN-ERROR" (:id outside)))
+    (is (= 'list? (:function outside)))
+    (is (= "L2-BUILTIN-ARITY" (:id wrong-arity)))
+    (is (= 1 (:expected-arity wrong-arity)))
+    (is (= 0 (:actual-arity wrong-arity)))))
+
+(deftest sh04-registered-literals-project-to-immutable-authenticated-values
+  (let [source-path
+        (.getCanonicalPath
+         (java.io.File.
+          "bootstrap/clojure/fixtures/self-hosting/sh-03/accepted/complete-reader-surface.gravity"))
+        artifact
+        (bootstrap/compiler-c3-syntax-file-artifact source-path)
+        embedded-c2 (:c2-reader-artifact artifact)
+        projection (:registered-literal-projection embedded-c2)
+        bindings (:bindings projection)
+        host-registered-values
+        (filter #(or (= java.util.Date (class %))
+                     (= java.util.UUID (class %)))
+                (tree-seq coll? seq artifact))
+        inst-binding (first (filter #(= 'inst (:tag %)) bindings))
+        uuid-binding (first (filter #(= 'uuid (:tag %)) bindings))
+        mutable-c2
+        (bootstrap/compiler-c2-reader-file-artifact source-path)
+        mutable-date
+        (:value
+         (first
+          (filter #(= 'inst (:tag %)) (:form-tree mutable-c2))))
+        source-text (slurp source-path)]
+    (is (= :complete
+           (get-in artifact [:capability-based-proof :status])))
+    (is (= :gravity/sh04-registered-literal-projection
+           (:artifact projection)))
+    (is (= 2 (count bindings)))
+    (is (empty? host-registered-values)
+        "C3 retains only immutable registered-literal descriptors")
+    (is (= {:kind :instant
+            :epoch-milliseconds "1784378096000"}
+           (get-in inst-binding [:descriptor :canonical-value])))
+    (is (= {:kind :uuid
+            :canonical-text "123e4567-e89b-12d3-a456-426614174000"}
+           (get-in uuid-binding [:descriptor :canonical-value])))
+    (is (true?
+         (bootstrap/sh04-syntax-registered-literal-projection-authentic?
+          embedded-c2 (:gravity-syntax-boundary artifact))))
+    (let [left-root
+          (java.nio.file.Files/createTempDirectory
+           "gravity-sh04-registered-left-"
+           (make-array java.nio.file.attribute.FileAttribute 0))
+          right-root
+          (java.nio.file.Files/createTempDirectory
+           "gravity-sh04-registered-right-"
+           (make-array java.nio.file.attribute.FileAttribute 0))
+          left-path (.resolve left-root "complete-reader-surface.gravity")
+          right-path (.resolve right-root "complete-reader-surface.qst")]
+      (try
+        (java.nio.file.Files/writeString
+         left-path source-text
+         (make-array java.nio.file.OpenOption 0))
+        (java.nio.file.Files/writeString
+         right-path source-text
+         (make-array java.nio.file.OpenOption 0))
+        (let [left
+              (bootstrap/compiler-c3-syntax-file-artifact
+               (.toString left-path))
+              right
+              (bootstrap/compiler-c3-syntax-file-artifact
+               (.toString right-path))]
+          (is (= (:artifact-id left) (:artifact-id right)))
+          (is (= (mapv :syntax/id (:syntax-object-stream left))
+                 (mapv :syntax/id (:syntax-object-stream right))))
+          (is (= (get-in left
+                         [:gravity-syntax-boundary
+                          :reader-semantic-binding])
+                 (get-in right
+                         [:gravity-syntax-boundary
+                          :reader-semantic-binding])))
+          (is (= (get-in left
+                         [:c2-reader-artifact
+                          :registered-literal-projection :projection-id])
+                 (get-in right
+                         [:c2-reader-artifact
+                          :registered-literal-projection :projection-id])))
+          (is (not=
+               (get-in left
+                       [:c2-reader-artifact :source-unit-record :path])
+               (get-in right
+                       [:c2-reader-artifact :source-unit-record :path]))))
+        (finally
+          (java.nio.file.Files/deleteIfExists left-path)
+          (java.nio.file.Files/deleteIfExists right-path)
+          (java.nio.file.Files/deleteIfExists left-root)
+          (java.nio.file.Files/deleteIfExists right-root))))
+    (.setTime ^java.util.Date mutable-date 0)
+    (let [data
+          (diagnostic-data
+           #(bootstrap/sh04-syntax-registered-literal-registry
+             source-path mutable-c2))]
+      (is (= "C3-FACT-STALE" (:id data)))
+      (is (some #{:authenticated-registered-literal-occurrence}
+                (:missing-fields data))))))
 
 (deftest gravity-c6c10-compiled-binding-cache-is-authenticated-and-nonsemantic
   (let [clear-cache!

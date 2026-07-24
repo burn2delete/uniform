@@ -93645,7 +93645,7 @@
   'p15-s23-assemble-plan-products)
 
 (def p15-s23-stage2-compiler-artifact-builtins
-  '#{symbol? keyword? char? seq? vector? map? set? string? contains? even? set sort-by-pr-str
+  '#{symbol? keyword? char? list? seq? vector? map? set? string? contains? even? set sort-by-pr-str
      vec quot subvec integer? boolean? keys})
 
 (def p15-s23-stage2-compiler-artifact-required-functions
@@ -94917,6 +94917,13 @@
                (throw (IllegalArgumentException.
                        "compiler-only predicate outside compiler artifact")))
              (seq? (first args)))
+      list? (do
+              (p15-s23-stage2-runtime-assert-exact-arity!
+               plan callee args 1)
+              (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                (throw (IllegalArgumentException.
+                        "compiler-only predicate outside compiler artifact")))
+              (list? (first args)))
       vector? (do
                 (p15-s23-stage2-runtime-assert-exact-arity!
                  plan callee args 1)
@@ -118766,6 +118773,24 @@
     (integer? value)
     (do (p15-s23-c6c10-bounded-integer! source-path stats value)
         [:integer (.toString (biginteger value))])
+    (ratio? value)
+    (let [numerator (numerator value)
+          denominator (denominator value)]
+      (p15-s23-c6c10-bounded-integer! source-path stats numerator)
+      (p15-s23-c6c10-bounded-integer! source-path stats denominator)
+      [:ratio
+       (.toString (biginteger numerator))
+       (.toString (biginteger denominator))])
+    (instance? java.math.BigDecimal value)
+    (let [decimal ^java.math.BigDecimal value
+          unscaled (.unscaledValue decimal)
+          scale (long (.scale decimal))]
+      (p15-s23-c6c10-bounded-integer! source-path stats unscaled)
+      (when (> (Math/abs scale) 65536)
+        (p15-s23-c6c10-host-fail!
+         "C6-VERIFY" source-path :bounded-decimal-scale
+         {:scale scale :maximum-absolute-scale 65536}))
+      [:decimal (.toString unscaled) scale])
     (string? value)
     (do (p15-s23-c6c10-bounded-string-bytes! source-path stats value)
         [:string value])
@@ -119166,7 +119191,8 @@
              (= (:artifact-id authenticated-c3)
                 (c3-artifact-id authenticated-c3))
              (c3-syntax-stream-reader-products-authentic?
-              authenticated-c3-stream embedded-c2)
+              authenticated-c3-stream embedded-c2
+              (:gravity-syntax-boundary authenticated-c3))
              (= :complete (:status fresh-c3-proof))
              (= fresh-c3-proof
                 (:capability-based-proof authenticated-c3))
@@ -148874,20 +148900,25 @@
 
 (defn c2-extension-hash-input
   [extension-invocations]
-  (mapv
-   (fn [invocation]
-     (cond-> (dissoc invocation :source-path)
-       (contains? invocation :span)
-       (update :span c2-path-neutral-span)
+  (let [semantic-span
+        (fn [span]
+          (if (map? span)
+            (dissoc span :source :file)
+            span))]
+    (mapv
+     (fn [invocation]
+       (cond-> (dissoc invocation :source-path)
+         (contains? invocation :span)
+         (update :span semantic-span)
 
-       (contains? invocation :invocations)
-       (update :invocations
-               (fn [records]
-                 (mapv #(cond-> %
-                          (contains? % :span)
-                          (update :span c2-path-neutral-span))
-                       records)))))
-   extension-invocations))
+         (contains? invocation :invocations)
+         (update :invocations
+                 (fn [records]
+                   (mapv #(cond-> %
+                            (contains? % :span)
+                            (update :span semantic-span))
+                         records)))))
+     extension-invocations)))
 
 (defn c2-diagnostic-hash-input
   [diagnostics]
@@ -153137,6 +153168,8 @@
          sh04-syntax-current-sh03-product-binding
          sh04-syntax-descriptor-sh03-product-binding
          sh04-syntax-sh02-descriptor
+         sh04-syntax-strip-host-metadata
+         sh04-syntax-registered-literal-projection-authentic?
          sh04-syntax-adapter-contract)
 
 (defn c3-syntax-stream-reader-products-authentic?
@@ -153145,8 +153178,38 @@
     syntax-stream c2-artifact nil))
   ([syntax-stream c2-artifact gravity-boundary]
    (try
-     (let [integrity-report (c3-c2-reader-integrity-report c2-artifact)]
+     (if (:registered-literal-projection c2-artifact)
        (if gravity-boundary
+         (let [result (:resolved-syntax-result gravity-boundary)
+               result-stream (:syntax-object-stream result)
+               source-path
+               (get-in c2-artifact [:source-unit-record :path])
+               serialization-id
+               (p15-s23-c6c10-canonical-digest
+                source-path
+                (get-in gravity-boundary
+                        [:gravity-syntax-serialization
+                         :payload-id-request]))
+               expected-rich-stream
+               (mapv sh04-syntax-rich-object result-stream
+                     (repeat serialization-id))]
+           (and
+            (sh04-syntax-registered-literal-projection-authentic?
+             c2-artifact gravity-boundary)
+            (= :accepted (:status result))
+            (= syntax-stream expected-rich-stream)
+            (= :passed
+               (get-in gravity-boundary
+                       [:resolved-stream-verification :status]))
+            (= :accepted
+               (get-in gravity-boundary
+                       [:gravity-syntax-serialization :status]))
+            (= :accepted
+               (get-in gravity-boundary
+                       [:gravity-syntax-deserialization :status]))))
+         false)
+       (let [integrity-report (c3-c2-reader-integrity-report c2-artifact)]
+        (if gravity-boundary
          (let [result (:resolved-syntax-result gravity-boundary)
                result-stream (:syntax-object-stream result)
                source-path (get-in c2-artifact
@@ -153326,7 +153389,7 @@
                     (first expected-base)))
                expected-stream (conj expected-base expected-generated)]
            (and (:authentic? integrity-report)
-                (= expected-stream syntax-stream)))))
+                (= expected-stream syntax-stream))))))
      (catch StackOverflowError _ false)
      (catch Exception _ false))))
 
@@ -153478,30 +153541,318 @@
                          {:missing-fields [field]}))))
   :complete)
 
+(defn sh04-syntax-registered-literal-fail!
+  [source-path form-record missing-fields facts]
+  (c3-syntax-fail!
+   "C3-FACT-STALE" source-path
+   {:source-span (or (:span form-record) (source-span source-path 0))
+    :producer :gravity.bootstrap.reader
+    :form-kind :tagged-literal}
+   {:missing-fields missing-fields
+    :facts facts}))
+
+(defn sh04-syntax-registered-literal-registry
+  [source-path c2-artifact]
+  (let [forms (:form-tree c2-artifact)
+        forms-by-id (into {} (map (juxt :form-id identity)) forms)
+        tagged-forms
+        (filterv #(and (= :tagged-literal (:kind %))
+                       (contains? #{'inst 'uuid} (:tag %)))
+                 forms)
+        literals-by-form
+        (group-by :form-id (:literal-decoding-records c2-artifact))
+        invocations-by-form
+        (group-by
+         :form-id
+         (for [extension (:reader-extension-invocation-records c2-artifact)
+               invocation (:invocations extension)]
+           (assoc invocation :tag (:tag extension))))
+        entries
+        (mapv
+         (fn [form-record]
+           (let [tag (:tag form-record)
+                 payload-record
+                 (get forms-by-id (first (:children form-record)))
+                 literal-records
+                 (get literals-by-form (:form-id form-record) [])
+                 invocation-records
+                 (get invocations-by-form (:form-id form-record) [])
+                 literal-record (first literal-records)
+                 invocation-record (first invocation-records)
+                 decoded (:value form-record)
+                 payload (:value payload-record)
+                 canonical-text
+                 (case tag
+                   inst
+                   (when (= java.util.Date (class decoded))
+                     (let [expected
+                           (try
+                             (.toEpochMilli
+                              (.toInstant
+                               (java.time.OffsetDateTime/parse payload)))
+                             (catch Exception _ nil))
+                           observed (.getTime ^java.util.Date decoded)]
+                       (when (= expected observed)
+                         (Long/toString observed))))
+                   uuid
+                   (when (= java.util.UUID (class decoded))
+                     (let [expected
+                           (try
+                             (java.util.UUID/fromString payload)
+                             (catch Exception _ nil))
+                           observed (.toString ^java.util.UUID decoded)]
+                       (when (= expected decoded)
+                         observed)))
+                   nil)
+                 descriptor
+                 (case tag
+                   inst
+                   {:artifact :gravity/registered-literal-value
+                    :kind :tagged-literal
+                    :tag 'inst
+                    :canonical-value
+                    {:kind :instant
+                     :epoch-milliseconds canonical-text}
+                    :semantic-validation :accepted}
+                   uuid
+                   {:artifact :gravity/registered-literal-value
+                    :kind :tagged-literal
+                    :tag 'uuid
+                    :canonical-value
+                    {:kind :uuid :canonical-text canonical-text}
+                    :semantic-validation :accepted})]
+             (when-not
+              (and (= 1 (count (:children form-record)))
+                   (= :string (:kind payload-record))
+                   (string? payload)
+                   (= 1 (count literal-records))
+                   (= 1 (count invocation-records))
+                   (= tag (get-in literal-record [:facts :tag])
+                      (:tag invocation-record))
+                   (= decoded (:decoded literal-record))
+                   (= (:raw form-record) (:raw literal-record)
+                      (:raw invocation-record))
+                   (= (:span form-record) (:span literal-record)
+                      (:span invocation-record))
+                   (string? canonical-text))
+               (sh04-syntax-registered-literal-fail!
+                source-path form-record
+                [:authenticated-registered-literal-occurrence]
+                {:tag tag :form-id (:form-id form-record)}))
+             {:lookup-key [tag canonical-text]
+              :descriptor descriptor
+              :binding
+              {:form-id (:form-id form-record)
+               :literal-id (:literal-id literal-record)
+               :tag tag
+               :raw (:raw form-record)
+               :payload payload
+               :descriptor descriptor}}))
+         tagged-forms)
+        expected-form-ids (set (map :form-id tagged-forms))
+        invoked-form-ids
+        (set
+         (for [[form-id records] invocations-by-form
+               :when (some #(contains? #{'inst 'uuid} (:tag %)) records)]
+           form-id))]
+    (when-not (= expected-form-ids invoked-form-ids)
+      (sh04-syntax-registered-literal-fail!
+       source-path nil [:registered-literal-invocation-bijection]
+       {:expected-form-ids expected-form-ids
+        :invoked-form-ids invoked-form-ids}))
+    {:lookup
+     (reduce
+      (fn [lookup {:keys [lookup-key descriptor]}]
+        (if-let [current (get lookup lookup-key)]
+          (if (= current descriptor)
+            lookup
+            (sh04-syntax-registered-literal-fail!
+             source-path nil [:unambiguous-registered-literal-descriptor]
+             {:lookup-key lookup-key}))
+          (assoc lookup lookup-key descriptor)))
+      {} entries)
+     :bindings (mapv :binding entries)}))
+
+(defn sh04-syntax-project-registered-literal-values
+  [source-path registry value]
+  (letfn [(project [item]
+            (cond
+              (= java.util.Date (class item))
+              (or (get-in registry
+                          [:lookup
+                           ['inst
+                            (Long/toString
+                             (.getTime ^java.util.Date item))]])
+                  (sh04-syntax-registered-literal-fail!
+                   source-path nil
+                   [:registered-instant-bound-to-reader-occurrence] {}))
+
+              (= java.util.UUID (class item))
+              (or (get-in registry
+                          [:lookup ['uuid (.toString ^java.util.UUID item)]])
+                  (sh04-syntax-registered-literal-fail!
+                   source-path nil
+                   [:registered-uuid-bound-to-reader-occurrence] {}))
+
+              (map? item)
+              (into (empty item)
+                    (map (fn [[key child]]
+                           [(project key) (project child)]))
+                    item)
+
+              (vector? item) (mapv project item)
+              (set? item) (into #{} (map project) item)
+              (seq? item) (apply list (map project item))
+              :else item))]
+    (project value)))
+
+(defn sh04-syntax-registered-literal-projection-authentic?
+  [c2-view gravity-boundary]
+  (try
+    (let [projection (:registered-literal-projection c2-view)
+          bindings (:bindings projection)
+          source-path (get-in c2-view [:source-unit-record :path])
+          expected-projection-id
+          (p15-s23-c6c10-canonical-digest
+           source-path
+           {:domain :gravity/sh04-registered-literal-projection-v1
+            :bindings bindings})
+          forms-by-id
+          (into {} (map (juxt :form-id identity)) (:form-tree c2-view))
+          literals-by-form
+          (group-by :form-id (:literal-decoding-records c2-view))
+          invocations-by-form
+          (group-by
+           :form-id
+           (for [extension
+                 (:reader-extension-invocation-records c2-view)
+                 invocation (:invocations extension)]
+             (assoc invocation :tag (:tag extension))))
+          tagged-form-ids
+          (set
+           (map :form-id
+                (filter #(and (= :tagged-literal (:kind %))
+                              (contains? #{'inst 'uuid} (:tag %)))
+                        (:form-tree c2-view))))
+          binding-form-ids (set (map :form-id bindings))
+          provenance
+          (:reader-authentication-provenance gravity-boundary)
+          carrier-validation
+          (p15-s23-trusted-carrier-validation
+           (sh04-syntax-strip-host-metadata c2-view)
+           :default-only 1048576 256 4096)]
+      (and
+       (= #{:artifact :schema-version :projection-id :bindings
+            :upstream-artifact-id :upstream-integrity-hash
+            :upstream-product-binding :reader-binding
+            :reader-source-revision}
+          (set (keys projection)))
+       (= :gravity/sh04-registered-literal-projection
+          (:artifact projection))
+       (= 1 (:schema-version projection))
+       (= expected-projection-id (:projection-id projection))
+       (= :passed (:status carrier-validation))
+       (= tagged-form-ids binding-form-ids)
+       (= (count bindings) (count binding-form-ids))
+       (every?
+        (fn [{:keys [form-id literal-id tag raw payload descriptor]}]
+          (let [form-record (get forms-by-id form-id)
+                payload-record
+                (get forms-by-id (first (:children form-record)))
+                literal-records (get literals-by-form form-id [])
+                invocation-records (get invocations-by-form form-id [])
+                literal-record (first literal-records)
+                invocation-record (first invocation-records)]
+            (and (= :tagged-literal (:kind form-record))
+                 (= tag (:tag form-record)
+                    (get-in literal-record [:facts :tag])
+                    (:tag invocation-record))
+                 (= 1 (count (:children form-record)))
+                 (= :string (:kind payload-record))
+                 (= payload (:value payload-record))
+                 (= 1 (count literal-records))
+                 (= literal-id (:literal-id literal-record))
+                 (= 1 (count invocation-records))
+                 (= raw (:raw form-record) (:raw literal-record)
+                    (:raw invocation-record))
+                 (= descriptor (:value form-record)
+                    (:decoded literal-record)))))
+        bindings)
+       (= (:upstream-artifact-id projection)
+          (:actual-c2-artifact-id provenance))
+       (= (:upstream-integrity-hash projection)
+          (:actual-reader-product-integrity-hash provenance))
+       (= (:upstream-product-binding projection)
+          (:actual-sh03-semantic-product-binding provenance))
+       (= (:reader-binding projection)
+          (:reader-semantic-binding gravity-boundary))
+       (= (:reader-source-revision projection)
+          (:reader-source-revision gravity-boundary))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Throwable _ false)))
+
 (defn c3-reader-artifact-view
   [c2-artifact]
-  (let [boundary (:gravity-reader-boundary c2-artifact)]
-    (assoc
-     (select-keys
-      c2-artifact
-      [:kind :artifact-id :task :document-set :source-overrides
-       :representation-boundary :capability-based-proof
-       :source-unit-record :token-stream :form-tree
-       :top-level-form-ids :parsed-semantic-values
-       :syntax-seed-stream :reader-source-map
-       :literal-decoding-records :semantic-error-deferment-record
-       :reader-extension-invocation-records :reader-diagnostics
-       :incremental-reader-hashes :reader-product-integrity])
-     :sh03-reader-authentication
-     {:reader-result-id
-      (get-in boundary
-              [:resolved-reader-result :incremental-reader-hashes
-               :reader-result])
-     :semantic-envelope-id
-      (get-in boundary [:authenticated-envelope :semantic-envelope-id])
-      :provenance-binding-id
-      (get-in boundary
-              [:authenticated-envelope :provenance-binding-id])})))
+  (let [boundary (:gravity-reader-boundary c2-artifact)
+        source-path (get-in c2-artifact [:source-unit-record :path])
+        registry
+        (sh04-syntax-registered-literal-registry source-path c2-artifact)
+        semantic-source-id
+        (sh04-syntax-semantic-source-id
+         source-path (:source-unit-record c2-artifact))
+        reader-authentication
+        (sh04-syntax-reader-binding
+         source-path c2-artifact semantic-source-id)
+        projection-bindings (:bindings registry)
+        projection-id
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/sh04-registered-literal-projection-v1
+          :bindings projection-bindings})
+        projection
+        {:artifact :gravity/sh04-registered-literal-projection
+         :schema-version 1
+         :projection-id projection-id
+         :bindings projection-bindings
+         :upstream-artifact-id (:artifact-id c2-artifact)
+         :upstream-integrity-hash
+         (get-in c2-artifact
+                 [:reader-product-integrity :integrity-hash])
+         :upstream-product-binding
+         (sh04-syntax-current-sh03-product-binding c2-artifact)
+         :reader-binding (:reader-binding reader-authentication)
+         :reader-source-revision
+         (:reader-source-revision reader-authentication)}
+        base
+        (assoc
+         (select-keys
+          c2-artifact
+          [:kind :artifact-id :task :document-set :source-overrides
+           :representation-boundary :capability-based-proof
+           :source-unit-record :token-stream :form-tree
+           :top-level-form-ids :parsed-semantic-values
+           :syntax-seed-stream :reader-source-map
+           :literal-decoding-records :semantic-error-deferment-record
+           :reader-extension-invocation-records :reader-diagnostics
+           :incremental-reader-hashes :reader-product-integrity])
+         :sh03-reader-authentication
+         {:reader-result-id
+          (get-in boundary
+                  [:resolved-reader-result :incremental-reader-hashes
+                   :reader-result])
+          :semantic-envelope-id
+          (get-in boundary
+                  [:authenticated-envelope :semantic-envelope-id])
+          :provenance-binding-id
+          (get-in boundary
+                  [:authenticated-envelope :provenance-binding-id])})]
+    (if (seq projection-bindings)
+      (sh04-syntax-project-registered-literal-values
+       source-path registry
+       (assoc base :registered-literal-projection projection))
+      base)))
 
 (defn c3-path-neutral-reader-artifact-view
   [c2-view]
@@ -154293,12 +154644,32 @@
       (with-meta clean nil)
       clean)))
 
+(defn sh04-syntax-descendant-form-ids
+  [forms-by-id root-form-id]
+  (loop [pending [root-form-id]
+         visited #{}]
+    (if-let [form-id (peek pending)]
+      (if (contains? visited form-id)
+        (recur (pop pending) visited)
+        (let [record (get forms-by-id form-id)]
+          (recur (into (pop pending) (:children record))
+                 (conj visited form-id))))
+      visited)))
+
 (defn sh04-syntax-source-descriptor
   [seed form-record c2-artifact integrity-report semantic-source-id
-   reader-binding reader-source-revision]
+   reader-binding reader-source-revision registered-literals]
   (let [span (sh04-syntax-semantic-span (:span seed) semantic-source-id)
         source-namespace (or (:namespace seed) 'gravity.user)
         namespace-context {:current source-namespace :aliases {} :imports []}
+        forms-by-id
+        (into {} (map (juxt :form-id identity)) (:form-tree c2-artifact))
+        descendant-form-ids
+        (sh04-syntax-descendant-form-ids
+         forms-by-id (:form-id form-record))
+        registered-literal-bindings
+        (filterv #(contains? descendant-form-ids (:form-id %))
+                 (:bindings registered-literals))
         literal-descriptor
         (or (c3-lossless-literal-descriptor seed form-record c2-artifact
                                             integrity-report)
@@ -154309,6 +154680,11 @@
                (form-kind (:form seed)))
         host-facts (c3-source-facts seed form-record c2-artifact
                                     integrity-report)
+        host-facts
+        (cond-> host-facts
+          (seq registered-literal-bindings)
+          (assoc :registered-literal-bindings
+                 registered-literal-bindings))
         facts
         (cond-> (dissoc host-facts :reader-product-integrity-hash
                         :reader-source-id)
@@ -154319,39 +154695,42 @@
                  :authenticated-envelope-id
                  (:authenticated-envelope-id reader-binding)))]
     (sh04-syntax-strip-host-metadata
-     {:form {:kind kind :value (or literal-descriptor (:form seed))
-             :raw (or (get-in seed [:reader-origin :raw-excerpt]) "")}
-      :span span
-      :source {:source-id semantic-source-id
-               :form-id (:form-id form-record)
-               :token-range [(:open-token form-record)
-                             (:close-token form-record)]}
-      :namespace namespace-context
-      :phase (:phase seed)
-      :profile (or (:profile seed) :meta)
-      :metadata (or (:metadata seed) {})
-      :hygiene (sh04-syntax-empty-hygiene source-namespace)
-      :origin
-      [{:kind :source
-        :span span
-        :producer {:kind :reader :name 'gravity.bootstrap.reader
-                   :identity (:reader-result-id reader-binding)
-                   :source-id semantic-source-id
-                   :generated-form-id nil}
-        :producer-version "SH-03"
-        :input-syntax-ids []
-        :generation-reason :source-read
-        :build-effects []}]
-      :facts
-      [{:producer-stage :reader
-        :fact-kind :authenticated-reader-products
-        :value facts
-        :version 1
-        :invalidated-by [:macro-expansion :metadata-change
-                         :namespace-change]}]
-      :reader-binding reader-binding
-      :reader-source-revision reader-source-revision
-      :version 1})))
+     (sh04-syntax-project-registered-literal-values
+      (get-in c2-artifact [:source-unit-record :path])
+      registered-literals
+      {:form {:kind kind :value (or literal-descriptor (:form seed))
+              :raw (or (get-in seed [:reader-origin :raw-excerpt]) "")}
+       :span span
+       :source {:source-id semantic-source-id
+                :form-id (:form-id form-record)
+                :token-range [(:open-token form-record)
+                              (:close-token form-record)]}
+       :namespace namespace-context
+       :phase (:phase seed)
+       :profile (or (:profile seed) :meta)
+       :metadata (or (:metadata seed) {})
+       :hygiene (sh04-syntax-empty-hygiene source-namespace)
+       :origin
+       [{:kind :source
+         :span span
+         :producer {:kind :reader :name 'gravity.bootstrap.reader
+                    :identity (:reader-result-id reader-binding)
+                    :source-id semantic-source-id
+                    :generated-form-id nil}
+         :producer-version "SH-03"
+         :input-syntax-ids []
+         :generation-reason :source-read
+         :build-effects []}]
+       :facts
+       [{:producer-stage :reader
+         :fact-kind :authenticated-reader-products
+         :value facts
+         :version 1
+         :invalidated-by [:macro-expansion :metadata-change
+                          :namespace-change]}]
+       :reader-binding reader-binding
+       :reader-source-revision reader-source-revision
+       :version 1}))))
 
 (defn sh04-syntax-rich-object
   [syntax serialization-id]
@@ -154522,6 +154901,9 @@
         reader-binding (:reader-binding reader-authentication)
         reader-source-revision
         (:reader-source-revision reader-authentication)
+        registered-literals
+        (sh04-syntax-registered-literal-registry
+         source-path c2-artifact)
         top-level-products (c2-top-level-products c2-artifact)
         seeds (:syntax-seed-stream c2-artifact)
         base-products
@@ -154529,8 +154911,9 @@
          (fn [seed {:keys [form-record]}]
            (let [descriptor
                  (sh04-syntax-source-descriptor
-                  seed form-record c2-artifact integrity-report
-                  semantic-source-id reader-binding reader-source-revision)
+                 seed form-record c2-artifact integrity-report
+                  semantic-source-id reader-binding reader-source-revision
+                  registered-literals)
                  raw
                  (sh04-syntax-execute!
                   source-path binding 'c3-syntax-build-template [descriptor])]
@@ -154667,6 +155050,9 @@
            sh04-syntax-sealed-artifact-kind descriptor source-path)
         reader-authentication-provenance
         {:actual-c2-artifact-id (:artifact-id c2-artifact)
+         :actual-reader-product-integrity-hash
+         (get-in c2-artifact
+                 [:reader-product-integrity :integrity-hash])
          :actual-reader-source-id (:source-id source-unit)
          :actual-sh03-semantic-product-binding
          (sh04-syntax-descriptor-sh03-product-binding
@@ -158402,6 +158788,1335 @@
   (if (sh06-resolution-slice-source? source-path source-text)
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
+
+;; SH-07-A is the first checked-core projection owned by Gravity source.  The
+;; coordinator authenticates the verified SH-06 carrier, projects the bounded
+;; core subset, resolves declared digest requests, and keeps physical paths out
+;; of semantic identity.
+(def sh07-core-source-relative-path
+  "bootstrap/gravity/src/gravity/checked_core.gravity")
+
+(def sh07-core-adapter-contract
+  :gravity/sh07-to-c6-core-products-v1)
+
+(def sh07-core-governing-document
+  "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
+
+(def sh07-core-public-function-shapes
+  {'sh07-build-core-template {:arity 1 :params '[request]}
+   'sh07-verify-core-template
+   {:arity 3 :params '[request template digest-requests]}
+   'sh07-verify-core-resolved
+   {:arity 4
+    :params '[request resolved-core digest-requests resolved-digests]}})
+
+(def sh07-core-expected-source-byte-count 87115)
+(def sh07-core-expected-source-content-hash
+  "sha256:5d5d27d7b59364be5699a7ad52fad707582e0a67cbf1635a4c884da3e36ac175")
+(def sh07-core-expected-plan-semantic-hash
+  "sha256:526a218f953ed57ce18e6dc0a4a0f615c24958f1e0127efa2b5ed67873573496")
+(def sh07-core-expected-functions-semantic-hash
+  "sha256:90396062fe1a6d91c873b6d3a2dd1f4fdb9c75032a11a9366e4bed0943e30ca7")
+(def sh07-core-expected-function-count 95)
+(def sh07-core-expected-function-names-hash
+  "sha256:321d1d4b3d470ce4823250a4ea54d7a30b4c4d75e235b27f1c29ac5bad5d888d")
+(def sh07-core-expected-function-shapes-hash
+  "sha256:661a1fba43d3b489725361ba79d371611cd578777e5c9354d7c1f50ca42d64d5")
+(def sh07-core-public-function-hashes
+  {'sh07-build-core-template
+   "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
+   'sh07-verify-core-template
+   "sha256:6584a24a5dc29be042346ab1c759480f0fb0aa77aac0e1e360f1d6f3ca9e7aed"
+   'sh07-verify-core-resolved
+   "sha256:3fe6f507785d160fb4cb778dd0d3f0bb542e603e4e366a83f79fe92bdc322410"})
+
+(defn sh07-core-source-path
+  []
+  (let [anchor (java.io.File.
+                (p15-s23-stage2-compiler-artifact-source-path))
+        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
+    (or
+     (loop [directory start]
+       (when directory
+         (let [candidate
+               (java.io.File. directory sh07-core-source-relative-path)]
+           (if (.isFile candidate)
+             (.getPath candidate)
+             (recur (.getParentFile directory))))))
+     sh07-core-source-relative-path)))
+
+(defn sh07-core-plan-identities
+  [plan]
+  (let [functions (:functions plan)
+        shapes
+        (into (sorted-map)
+              (map (fn [[name function]]
+                     [name (select-keys function [:arity :params])]))
+              functions)]
+    {:plan-semantic-hash
+     (p15-s23-c11-mir-digest
+      (p15-s23-stage2-compiler-artifact-semantic-input plan))
+     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
+     :function-count (count functions)
+     :function-names-hash
+     (p15-s23-c11-mir-digest (vec (keys functions)))
+     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
+     :public-function-hashes
+     (into (sorted-map)
+           (map (fn [name]
+                  [name (p15-s23-c11-mir-digest (get functions name))]))
+           (keys sh07-core-public-function-shapes))
+     :public-function-shapes
+     (select-keys shapes (keys sh07-core-public-function-shapes))}))
+
+(defn sh07-core-build-binding!
+  []
+  (let [source-path (sh07-core-source-path)
+        bytes (java.nio.file.Files/readAllBytes
+               (.toPath (java.io.File. source-path)))
+        source-text
+        (String. bytes java.nio.charset.StandardCharsets/UTF_8)
+        source-hash (str "sha256:" (sha256-bytes-hex bytes))
+        emitter
+        (:emitter
+         (c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan
+        (p15-s23-stage2-compiler-artifact-plan
+         emitter source-path source-text)
+        identities (sh07-core-plan-identities plan)]
+    (when-not
+     (and (= sh07-core-expected-source-byte-count (alength bytes))
+          (= sh07-core-expected-source-content-hash source-hash)
+          (= sh07-core-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh07-core-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh07-core-expected-function-count
+             (:function-count identities))
+          (= sh07-core-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh07-core-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh07-core-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh07-core-public-function-shapes
+             (:public-function-shapes identities))
+          (= 'gravity.checked-core (get-in plan [:module :module]))
+          (= :meta (get-in plan [:module :profile]))
+          (= :jvm (get-in plan [:module :target]))
+          (= #{} (get-in plan [:module :effects]))
+          (= #{} (get-in plan [:module :capabilities]))
+          (= :safe (get-in plan [:module :safety])))
+      (throw
+       (ex-info "Pinned SH-07 checked-core source or plan changed"
+                {:id "C6-VERIFY"
+                 :stage :core-lowering
+                 :missing-fields [:pinned-sh07-core-plan]
+                 :observed
+                 (merge {:source-byte-count (alength bytes)
+                         :source-content-hash source-hash}
+                        identities)})))
+    (merge
+     {:artifact :gravity/sh07-pinned-core-plan-binding
+      :source-path source-path
+      :source-byte-count (alength bytes)
+      :source-content-hash source-hash
+      :plan plan
+      :semantic-authority :gravity-source
+      :compiled-by :clojure-stage0-seed
+      :executed-by :clojure-stage2-generic-rule-runner
+      :generic-bridge-residual? true
+      :self-hosted? false}
+     identities)))
+
+(def ^:private sh07-core-cached-binding
+  (delay (sh07-core-build-binding!)))
+
+(defn sh07-core-execute!
+  [source-path function arguments]
+  (try
+    (sh04-syntax-strip-host-metadata
+     (p15-s23-stage2-runtime-execute-function
+      {:engine :gravity-sh07-pinned-core-runner
+       :compiler-artifact-plan? true}
+      (:plan @sh07-core-cached-binding)
+      function
+      (sh04-syntax-strip-host-metadata arguments)))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (throw (ex-info "SH-07 core boundary rejected host stack exhaustion"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :source-path source-path
+                       :contained-host-error (.getName (class error))})))
+    (catch OutOfMemoryError error
+      (throw (ex-info "SH-07 core boundary rejected host memory exhaustion"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :source-path source-path
+                       :contained-host-error (.getName (class error))})))
+    (catch AssertionError error
+      (throw (ex-info "SH-07 core boundary contained an assertion"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :source-path source-path
+                       :contained-host-error (.getName (class error))})))
+    (catch LinkageError error
+      (throw (ex-info "SH-07 core boundary contained a linkage failure"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :source-path source-path
+                       :contained-host-error (.getName (class error))})))
+    (catch clojure.lang.ExceptionInfo error
+      (throw error))
+    (catch Exception error
+      (throw (ex-info "SH-07 core boundary contained a host failure"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :source-path source-path
+                       :contained-host-error (.getName (class error))}
+                      error)))))
+
+(defn sh07-core-source-path-from-resolution
+  [resolution-artifact]
+  (or (get-in resolution-artifact [:provenance :source-path])
+      (get-in resolution-artifact
+              [:gravity-resolution-boundary
+               :authenticated-resolution-request
+               :provenance :actual-source-path])
+      "<sh07-core-input>"))
+
+(defn sh07-core-semantic-span
+  [span]
+  (select-keys
+   (or (:primary span) span {})
+   [:byte-start :byte-end :line-start :column-start
+    :line-end :column-end :scalar-start :scalar-end]))
+
+(defn sh07-core-value-kind
+  [value]
+  (cond
+    (nil? value) :nil
+    (boolean? value) :boolean
+    (integer? value) :integer
+    (or (instance? java.math.BigDecimal value)
+        (instance? Double value)
+        (instance? Float value)) :decimal
+    (ratio? value) :ratio
+    (char? value) :character
+    (string? value) :string
+    (keyword? value) :keyword
+    (symbol? value) :symbol
+    (vector? value) :vector
+    (map? value) :map
+    (set? value) :set
+    (seq? value) :list
+    :else :unsupported))
+
+(defn sh07-core-children
+  [value]
+  (cond
+    (map? value) (vec (mapcat identity value))
+    (set? value) (vec (sort-by pr-str value))
+    (or (vector? value) (seq? value)) (vec value)
+    :else []))
+
+(defn sh07-core-decimal-descriptor
+  [source-path value evidence projection-form-id]
+  (let [decimal ^java.math.BigDecimal value
+        scale (long (.scale decimal))
+        unscaled (.unscaledValue decimal)]
+    (when-not
+     (and evidence
+          (= :decimal (:kind evidence))
+          (= value (:decoded evidence))
+          (<= (.bitLength ^java.math.BigInteger unscaled)
+              p15-s23-c6c10-max-integer-bits)
+          (<= (Math/abs scale) 65536))
+      (throw
+       (ex-info "Decimal literal is not exactly bound to bounded C2 evidence"
+                {:id "C6-ORIGIN" :stage :core-lowering
+                 :source-path source-path
+                 :reason :exact-bounded-decimal-c2-evidence})))
+    {:kind :gravity/arbitrary-decimal-literal
+     :unscaled-value (.toString unscaled)
+     :scale scale
+     :literal-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-c2-decimal-literal-evidence-v1
+       :literal-id (:literal-id evidence)
+       :form-id (:form-id evidence)})
+     :form-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-c2-decimal-form-evidence-v1
+       :form-id (:form-id evidence)
+       :literal-id (:literal-id evidence)})
+     :token-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-c2-decimal-token-evidence-v1
+       :token-id (:token-id evidence)
+       :literal-id (:literal-id evidence)
+       :form-id (:form-id evidence)})
+     :projection-form-id projection-form-id}))
+
+(defn sh07-core-decimal-evidence
+  [resolution-artifact]
+  (let [records
+        (get-in
+         resolution-artifact
+         [:sh05-macro-artifact :gravity-macro-boundary
+          :authenticated-sh04-artifact :c2-reader-artifact
+          :literal-decoding-records])]
+    {:records
+     (reduce
+      (fn [result record]
+        (if (instance? java.math.BigDecimal (:decoded record))
+          (update result
+                  (p15-s23-c6c10-literal-scalar-descriptor
+                   (:decoded record))
+                  (fnil conj []) record)
+          result))
+      {}
+      records)
+     :next (atom {})
+     :cache (atom {})}))
+
+(defn sh07-core-projected-form-id
+  [source-revision-id root-syntax-id path kind]
+  (reader-canonical-hash
+   {:domain :gravity/sh07-form-occurrence-v1
+    :source-revision-id source-revision-id
+    :root-syntax-id root-syntax-id
+    :path path
+    :kind kind}))
+
+(defn sh07-core-neutral-value
+  [source-path source-revision-id root-syntax-id path
+   decimal-evidence value]
+  (cond
+    (instance? java.math.BigDecimal value)
+    (let [descriptor (p15-s23-c6c10-literal-scalar-descriptor value)
+          cache-key [root-syntax-id path]
+          cached (get @(:cache decimal-evidence) cache-key)]
+      (or
+       cached
+       (let [ordinal (get @(:next decimal-evidence) descriptor 0)
+             evidence (get-in decimal-evidence
+                              [:records descriptor ordinal])
+             projection-form-id
+             (sh07-core-projected-form-id
+              source-revision-id root-syntax-id path :decimal)
+             result
+             (sh07-core-decimal-descriptor
+              source-path value evidence projection-form-id)]
+         (swap! (:next decimal-evidence) assoc descriptor (inc ordinal))
+         (swap! (:cache decimal-evidence) assoc cache-key result)
+         result)))
+    (map? value)
+    (into {}
+          (map-indexed
+           (fn [index [key child]]
+             [(sh07-core-neutral-value
+               source-path source-revision-id root-syntax-id
+               (conj path (* 2 index))
+               decimal-evidence key)
+              (sh07-core-neutral-value
+               source-path source-revision-id root-syntax-id
+               (conj path (inc (* 2 index)))
+               decimal-evidence child)]))
+          value)
+    (vector? value)
+    (mapv
+     (fn [index child]
+       (sh07-core-neutral-value
+        source-path source-revision-id root-syntax-id
+        (conj path index) decimal-evidence child))
+     (range) value)
+    (set? value)
+    (into #{}
+          (map-indexed
+           (fn [index child]
+             (sh07-core-neutral-value
+              source-path source-revision-id root-syntax-id
+              (conj path index) decimal-evidence child)))
+          (sort-by pr-str value))
+    (seq? value)
+    (apply list
+           (map-indexed
+            (fn [index child]
+              (sh07-core-neutral-value
+               source-path source-revision-id root-syntax-id
+               (conj path index) decimal-evidence child))
+            value))
+    :else value))
+
+(defn sh07-core-macro-trace
+  [lineage sh05-step]
+  (let [input-id (:input-syntax-id sh05-step)
+        output-id (:output-syntax-id sh05-step)
+        fn-id
+        (reader-canonical-hash
+         {:domain :gravity/sh07-introduced-fn-syntax-v1
+          :input-syntax-id input-id
+          :output-def-syntax-id output-id})
+        def-origin-id
+        (reader-canonical-hash
+         {:domain :gravity/sh07-def-generated-origin-v1
+          :input-syntax-id input-id :output-syntax-id output-id})
+        fn-origin-id
+        (reader-canonical-hash
+         {:domain :gravity/sh07-fn-generated-origin-v1
+          :input-syntax-id input-id :fn-syntax-id fn-id})]
+    {:macro 'defn
+     :input-syntax-id input-id
+     :output-def-syntax-id output-id
+     :introduced-fn-syntax-id fn-id
+     :def-generated-origin-id def-origin-id
+     :fn-generated-origin-id fn-origin-id
+     :source-revision-id (:source-revision-id lineage)
+     :sh05-artifact-id (:sh05-artifact-id lineage)
+     :macro-expansion-trace-id (:macro-expansion-trace-id lineage)}))
+
+(defn sh07-core-root-syntax-id
+  [source-revision-id ordinal form]
+  (reader-canonical-hash
+   {:domain :gravity/sh07-root-syntax-v1
+    :source-revision-id source-revision-id
+    :ordinal ordinal
+    :form
+    (sh05-path-neutral-semantic-value form)}))
+
+(defn sh07-core-decimal-evidence-complete!
+  [source-path decimal-evidence]
+  (doseq [[descriptor records] (:records decimal-evidence)]
+    (let [consumed (get @(:next decimal-evidence) descriptor 0)]
+      (when-not (= consumed (count records))
+        (throw
+         (ex-info "SH-07 decimal occurrence evidence is not bijective"
+                  {:id "C6-ORIGIN" :stage :core-lowering
+                   :source-path source-path
+                   :reason :decimal-c2-occurrence-bijection
+                   :descriptor descriptor
+                   :expected-occurrences (count records)
+                   :observed-occurrences consumed})))))
+  :passed)
+
+(defn sh07-core-semantic-macro-trace
+  [trace]
+  (mapv
+   (fn [ordinal step]
+     {:artifact :gravity/sh07-preserved-macro-expansion-step
+      :ordinal ordinal
+      :macro (:macro step)
+      :profile (:profile step)
+      :target (:target step)
+      :step (:step step)
+      :capabilities
+      (sh05-path-neutral-semantic-value (:capabilities step))
+      :build-effects
+      (sh05-path-neutral-semantic-value (:build-effects step))
+      :diagnostics
+      (sh05-path-neutral-semantic-value (:diagnostics step))})
+   (range)
+   trace))
+
+(defn sh07-core-build-form-tree
+  [source-path source-revision-id decimal-evidence syntax trace]
+  (let [root-id (:sh07/root-syntax-id syntax)
+        source-span (sh07-core-semantic-span (:span syntax))
+        trace? (and trace (= root-id (:output-def-syntax-id trace)))
+        records (atom [])]
+    (letfn [(walk [value path parent-form-id]
+              (let [kind (sh07-core-value-kind value)
+                    syntax-id
+                    (cond
+                      (empty? path) root-id
+                      (and trace? (= path [2]))
+                      (:introduced-fn-syntax-id trace)
+                      :else
+                      (reader-canonical-hash
+                       {:domain :gravity/sh07-form-syntax-v1
+                        :source-revision-id source-revision-id
+                        :root-syntax-id root-id :path path
+                        :kind kind}))
+                    form-id
+                    (sh07-core-projected-form-id
+                     source-revision-id root-id path kind)
+                    children (sh07-core-children value)
+                    child-records
+                    (mapv
+                     (fn [index child]
+                       (walk child (conj path index) form-id))
+                     (range) children)
+                    generated-origin
+                    (cond
+                      (and trace? (empty? path))
+                      [{:origin-id (:def-generated-origin-id trace)
+                        :kind :macro-expansion
+                        :from-syntax-id (:input-syntax-id trace)
+                        :role :introduced-def}]
+                      (and trace? (= path [2]))
+                      [{:origin-id (:fn-generated-origin-id trace)
+                        :kind :macro-expansion
+                        :from-syntax-id (:input-syntax-id trace)
+                        :role :introduced-fn}]
+                      :else [])
+                    record
+                    {:form-id form-id
+                     :syntax-id syntax-id
+                     :kind kind
+                     :value
+                     (sh07-core-neutral-value
+                      source-path source-revision-id root-id path
+                      decimal-evidence value)
+                     :parent-form-id parent-form-id
+                     :child-form-ids (mapv :form-id child-records)
+                     :source-span source-span
+                     :origin-chain []
+                     :generated-origin generated-origin
+                     :metadata
+                     (sh05-path-neutral-semantic-value
+                      (or (meta value) {}))
+                     :scope-id nil}]
+                (swap! records conj record)
+                record))]
+      (let [root (walk (:form syntax) [] nil)]
+        {:root root :records @records}))))
+
+(defn sh07-core-lineage
+  [resolution-artifact]
+  (let [boundary (:gravity-resolution-boundary resolution-artifact)
+        analysis (:resolved-analysis boundary)
+        sh05 (:sh05-macro-artifact resolution-artifact)
+        neutral sh05-path-neutral-semantic-value
+        source-unit
+        (get-in sh05
+                [:gravity-macro-boundary
+                 :authenticated-sh04-artifact
+                 :c2-reader-artifact :source-unit-record])
+        source-revision-id (:bytes-hash source-unit)
+        expanded-forms (mapv :form (:expanded-syntax-stream sh05))
+        semantic-trace
+        (sh07-core-semantic-macro-trace
+         (:macro-expansion-trace sh05))
+        semantic-module
+        (select-keys (:module-contract analysis)
+                     [:namespace :profile :target :safety
+                      :effects :capabilities :exports])
+        binding-semantics
+        (mapv #(select-keys
+                %
+                [:name :kind :namespace :binding-class :visibility
+                 :profile-set :target-set :type-ref :effects
+                 :capabilities :safety :semantic-span])
+              (:binding-table analysis))
+        resolution-semantics
+        (mapv #(select-keys
+                %
+                [:symbol :position :resolution-order :semantic-span
+                 :resolution-kind])
+              (:resolution-table analysis))]
+    {:sh06-artifact-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-semantic-sh06-artifact-v1
+       :source-revision-id source-revision-id
+       :module semantic-module
+       :expanded-forms (neutral expanded-forms)
+       :bindings binding-semantics
+       :resolutions resolution-semantics})
+     :sh06-analysis-artifact-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-semantic-sh06-analysis-v1
+       :source-revision-id source-revision-id
+       :module semantic-module
+       :bindings binding-semantics
+       :resolutions resolution-semantics})
+     :source-revision-id
+     source-revision-id
+     :sh05-artifact-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-semantic-sh05-artifact-v1
+       :source-revision-id source-revision-id
+       :expanded-forms (neutral expanded-forms)
+       :macro-trace semantic-trace})
+     :expanded-syntax-stream-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-semantic-expanded-stream-v1
+       :source-revision-id source-revision-id
+       :expanded-forms (neutral expanded-forms)})
+     :macro-expansion-trace-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-semantic-macro-trace-v1
+       :source-revision-id source-revision-id
+       :trace semantic-trace})
+     :binding-table-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-sh06-binding-table-v1
+       :bindings binding-semantics})
+     :resolution-table-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-sh06-resolution-table-v1
+       :resolutions resolution-semantics})
+     :lexical-scope-graph-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-sh06-lexical-scope-graph-v1
+       :source-revision-id source-revision-id
+       :graph
+       (neutral
+        (select-keys (:lexical-scope-graph analysis)
+                     [:scope-count :edge-count :status]))})
+     :authenticated-envelope-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-semantic-upstream-envelope-v1
+       :source-revision-id source-revision-id
+       :sh05-artifact-id
+       (reader-canonical-hash
+        {:domain :gravity/sh07-semantic-sh05-artifact-v1
+         :source-revision-id source-revision-id
+         :expanded-forms (neutral expanded-forms)
+         :macro-trace semantic-trace})})}))
+
+(defn sh07-core-projection-binding-input
+  [request]
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v1
+   :request
+   (-> request
+       (dissoc :projection-binding :provenance)
+       sh05-path-neutral-semantic-value)})
+
+(defn sh07-core-authenticated-request
+  [resolution-artifact]
+  (let [source-path
+        (sh07-core-source-path-from-resolution resolution-artifact)
+        upstream-verification
+        (sh06-resolution-artifact-verification resolution-artifact)]
+    (when-not
+     (and (= :gravity/sh06-resolution-artifact
+             (:kind resolution-artifact))
+          (= :passed (:status upstream-verification))
+          (= :complete
+             (get-in resolution-artifact
+                     [:capability-based-proof :status])))
+      (throw
+       (ex-info "SH-07 requires a fresh verified SH-06 artifact"
+                {:id "C6-VERIFY" :stage :core-lowering
+                 :source-path source-path
+                 :missing-fields [:fresh-authenticated-sh06-resolution]})))
+    (let [lineage (sh07-core-lineage resolution-artifact)
+          sh05 (:sh05-macro-artifact resolution-artifact)
+          module-contract
+          (get-in resolution-artifact
+                  [:gravity-resolution-boundary
+                   :resolved-analysis :module-contract])
+          module
+          {:namespace (:namespace module-contract)
+           :profile (:profile module-contract)
+           :target (:target module-contract)
+           :safety (:safety module-contract)
+           :effects (vec (:effects module-contract))
+           :capabilities (vec (:capabilities module-contract))
+           :exports (vec (:exports module-contract))}
+          decimal-evidence (sh07-core-decimal-evidence resolution-artifact)
+          executable-syntax
+          (->> (:expanded-syntax-stream sh05)
+               (remove #(and (seq? (:form %))
+                             (= 'ns (first (:form %)))))
+               (map-indexed
+                (fn [ordinal syntax]
+                  (assoc syntax :sh07/root-syntax-id
+                         (sh07-core-root-syntax-id
+                          (:source-revision-id lineage)
+                          ordinal (:form syntax)))))
+               vec)
+          root-id-by-upstream-id
+          (into {}
+                (map (fn [syntax]
+                       [(:syntax/id syntax)
+                        (:sh07/root-syntax-id syntax)]))
+                executable-syntax)
+          raw-traces
+          (filterv #(= 'defn (:macro %))
+                   (:macro-expansion-trace sh05))
+          traces
+          (mapv
+           (fn [ordinal step]
+             (sh07-core-macro-trace
+              lineage
+              (assoc step
+                     :input-syntax-id
+                     (reader-canonical-hash
+                      {:domain :gravity/sh07-macro-input-syntax-v1
+                       :source-revision-id
+                       (:source-revision-id lineage)
+                       :ordinal ordinal
+                       :macro (:macro step)})
+                     :output-syntax-id
+                     (get root-id-by-upstream-id
+                          (:output-syntax-id step)))))
+           (range)
+           raw-traces)
+          trace-by-output
+          (into {} (map (juxt :output-def-syntax-id identity)) traces)
+          trees
+          (mapv
+           #(sh07-core-build-form-tree
+             source-path (:source-revision-id lineage) decimal-evidence %
+             (get trace-by-output (:sh07/root-syntax-id %)))
+           executable-syntax)
+          _ (sh07-core-decimal-evidence-complete!
+             source-path decimal-evidence)
+          forms (vec (mapcat :records trees))
+          roots (mapv (comp :form-id :root) trees)
+          form-by-syntax (into {} (map (juxt :syntax-id identity)) forms)
+          root-by-upstream-syntax
+          (into {}
+                (map (fn [syntax tree]
+                       [(:syntax/id syntax) (:root tree)])
+                     executable-syntax trees))
+          sh06-bindings
+          (get-in resolution-artifact [:binding-table :bindings])
+          bindings
+          (vec
+           (keep
+            (fn [binding]
+              (when-let [root
+                         (get root-by-upstream-syntax
+                              (:definition-syntax-id binding))]
+                (let [name-form
+                      (get form-by-syntax
+                           (:syntax-id
+                            (get
+                             (into {} (map (juxt :form-id identity)) forms)
+                             (second (:child-form-ids root)))))]
+                  {:binding-id
+                   (reader-canonical-hash
+                    {:domain :gravity/sh07-projected-binding-v1
+                     :source-revision-id
+                     (:source-revision-id lineage)
+                     :name (:name binding)
+                     :namespace (:namespace binding)
+                     :binding-class (:binding-class binding)
+                     :definition-syntax-id (:syntax-id name-form)})
+                   :name (:name binding)
+                   :binding-class (:binding-class binding)
+                   :namespace (:namespace binding)
+                   :scope-id nil
+                   :definition-syntax-id (:syntax-id name-form)
+                   :visibility (:visibility binding)})))
+            sh06-bindings))
+          expectation
+          {:source-revision-id (:source-revision-id lineage)
+           :sh05-artifact-id (:sh05-artifact-id lineage)
+           :macro-expansion-trace-id (:macro-expansion-trace-id lineage)
+           :expanded-defn-count (count traces)
+           :expected-input-syntax-ids (mapv :input-syntax-id traces)
+           :expected-output-def-syntax-ids
+           (mapv :output-def-syntax-id traces)
+           :expected-introduced-fn-syntax-ids
+           (mapv :introduced-fn-syntax-id traces)}
+          request
+          {:artifact :gravity/sh07-authenticated-sh06-core-request
+           :schema-version 1
+           :lineage lineage
+           :module module
+           :forms forms
+           :top-level-form-ids roots
+           :binding-table bindings
+           :resolution-table []
+           :macro-expansion-trace
+           (sh07-core-semantic-macro-trace
+            (:macro-expansion-trace sh05))
+           :macro-origin-traces traces
+           :macro-origin-expectation expectation
+           :projection-binding nil
+           :provenance {:actual-source-path source-path}
+           :scope :sh07-a-meta-jvm-core}
+          binding
+          (reader-canonical-hash
+           (sh07-core-projection-binding-input request))]
+      (assoc request :projection-binding binding))))
+
+(defn sh07-core-digest-reference-ordinal
+  [value]
+  (when (and (map? value)
+             (= #{:artifact :schema-version :ordinal :authority}
+                (set (keys value)))
+             (= :gravity/sh07-internal-digest-reference
+                (:artifact value))
+             (= 1 (:schema-version value))
+             (= :sh07-digest-resolver (:authority value))
+             (integer? (:ordinal value))
+             (not (neg? (:ordinal value))))
+    (:ordinal value)))
+
+(defn sh07-core-resolve-reference!
+  [source-path value resolved-digests]
+  (let [ordinal (sh07-core-digest-reference-ordinal value)
+        resolved (when (some? ordinal)
+                   (get resolved-digests ordinal))]
+    (when-not (and (some? ordinal)
+                   (p15-s23-sh02-sha256-id? resolved))
+      (throw
+       (ex-info "SH-07 digest reference is unresolved"
+                {:id "C6-VERIFY" :stage :core-lowering
+                 :source-path source-path
+                 :digest-reference value
+                 :resolved-count (count resolved-digests)})))
+    resolved))
+
+(defn sh07-core-resolve-reference-vector!
+  [source-path values resolved-digests]
+  (mapv #(sh07-core-resolve-reference!
+          source-path % resolved-digests)
+        values))
+
+(defn sh07-core-resolve-digest-preimage!
+  [source-path purpose preimage resolved-digests]
+  (case purpose
+    :sh07-core-node-id
+    (-> preimage
+        (assoc :children
+               (sh07-core-resolve-reference-vector!
+                source-path (:children preimage) resolved-digests))
+        (assoc :evaluated-children
+               (sh07-core-resolve-reference-vector!
+                source-path (:evaluated-children preimage)
+                resolved-digests)))
+
+    :sh07-core-artifact-id
+    (let [result
+          (sh07-core-execute!
+           source-path 'sh07-resolve-identity-preimage
+           [preimage resolved-digests])]
+      (when-not (= :accepted (:status result))
+        (throw
+         (ex-info "SH-07 identity digest preimage did not resolve"
+                  {:id "C6-VERIFY" :stage :core-lowering
+                   :source-path source-path
+                   :reason (:reason result)})))
+      (:value result))
+
+    :sh07-core-provenance-binding-id
+    (let [result
+          (sh07-core-execute!
+           source-path 'sh07-resolve-provenance-preimage
+           [preimage resolved-digests])]
+      (when-not (= :accepted (:status result))
+        (throw
+         (ex-info "SH-07 provenance digest preimage did not resolve"
+                  {:id "C6-VERIFY" :stage :core-lowering
+                   :source-path source-path
+                   :reason (:reason result)})))
+      (:value result))
+
+    preimage))
+
+(defn sh07-core-digest-requests
+  [source-path digest-requests]
+  (loop [remaining digest-requests
+         ordinal 0
+         resolved []]
+    (if (empty? remaining)
+      resolved
+      (let [request (first remaining)]
+        (when-not
+         (and (= ordinal (:ordinal request))
+              (= #{:ordinal :purpose :preimage} (set (keys request)))
+              (<= 0 ordinal 1025))
+          (throw
+           (ex-info "Malformed SH-07 digest request sequence"
+                    {:id "C6-VERIFY" :stage :core-lowering
+                     :digest-request request :ordinal ordinal})))
+        (let [purpose (:purpose request)
+              preimage
+              (sh07-core-resolve-digest-preimage!
+               source-path purpose (:preimage request) resolved)
+              digest
+              (reader-canonical-hash
+               {:domain :gravity/sh07-declared-digest-v1
+                :purpose purpose
+                :preimage preimage})]
+          (recur (rest remaining)
+                 (inc ordinal)
+                 (conj resolved digest)))))))
+
+(defn sh07-core-resolve-result
+  [source-path template digest-requests resolved-digests]
+  (let [resolution
+        (sh07-core-execute!
+         source-path 'sh07-resolve-core-template
+         [template resolved-digests])]
+    (when-not (= :accepted (:status resolution))
+      (throw
+       (ex-info "SH-07 controlled digest-slot resolution failed"
+                {:id "C6-VERIFY" :stage :core-lowering
+                 :source-path source-path
+                 :reason (:reason resolution)})))
+    (:value resolution)))
+
+(defn sh07-core-public-decimal-presentation
+  [core]
+  (update
+   core :nodes
+   (fn [nodes]
+     (mapv
+      (fn [node]
+        (let [descriptor (get-in node [:attributes :value])]
+          (if (and (= :decimal
+                      (get-in node [:attributes :literal-kind]))
+                   (map? descriptor)
+                   (= :gravity/arbitrary-decimal-literal
+                      (:kind descriptor)))
+            (assoc-in
+             node [:attributes :value]
+             (java.math.BigDecimal.
+              (java.math.BigInteger. (:unscaled-value descriptor))
+              (int (:scale descriptor))))
+            node)))
+      nodes))))
+
+(defn sh07-core-canonical-artifact
+  [resolved-template]
+  (-> resolved-template
+      (assoc :artifact :gravity/sh07-canonical-core-artifact
+             :artifact-id (:artifact-id-request resolved-template)
+             :provenance-binding-id
+             (:provenance-binding-id-request resolved-template))
+      (dissoc :artifact-id-request :provenance-binding-id-request)
+      sh07-core-public-decimal-presentation))
+
+(defn sh07-core-raise-diagnostic!
+  [source-path template]
+  (let [diagnostic (first (:diagnostics template))
+        request (first (:digest-requests template))
+        diagnostic-id
+        (reader-canonical-hash
+         {:domain :gravity/sh07-declared-digest-v1
+          :purpose (:purpose request)
+          :preimage (:preimage request)})
+        resolved
+        (assoc diagnostic :diagnostic-id-request diagnostic-id)]
+    (throw (ex-info "Gravity checked-core lowering rejected the source"
+                    resolved))))
+
+(defn sh07-core-nested-depth
+  [value]
+  (loop [frontier [[value 0]]
+         maximum 0]
+    (if (empty? frontier)
+      maximum
+      (let [[item depth] (peek frontier)
+            frontier (pop frontier)]
+        (if (coll? item)
+          (let [next-depth (inc depth)
+                children (if (map? item) (vals item) item)]
+            (recur
+             (into frontier (map #(vector % next-depth)) children)
+             (max maximum next-depth)))
+          (recur frontier maximum))))))
+
+(defn sh07-core-request-diagnostic!
+  [request rule-specific]
+  (let [source-path (get-in request [:provenance :actual-source-path])
+        lineage (:lineage request)
+        module (:module request)
+        diagnostic
+        {:artifact :gravity/sh07-core-diagnostic
+         :rule "C6-VERIFY"
+         :severity :error
+         :stage :core-lowering
+         :syntax-id nil
+         :form-id nil
+         :core-node-id nil
+         :source-span {:source source-path}
+         :generated-origin-chain []
+         :namespace (:namespace module)
+         :profile (:profile module)
+         :target (:target module)
+         :lowering-rule :sh07-a-core-lowering
+         :facts {:reason :bounded-authenticated-core-request
+                 :rule-specific rule-specific
+                 :source-revision-id (:source-revision-id lineage)
+                 :sh06-artifact-id (:sh06-artifact-id lineage)
+                 :fail-closed true}
+         :remediation
+         "Replay the Gravity template and bind every digest ordinal exactly once."
+         :diagnostic-id-request
+         (reader-canonical-hash
+          {:domain :gravity/sh07-request-bound-diagnostic-v1
+           :source-revision-id (:source-revision-id lineage)
+           :rule-specific rule-specific})}]
+    (throw (ex-info "SH-07 authenticated request exceeded a bound"
+                    diagnostic))))
+
+(defn sh07-core-request-preflight!
+  [request]
+  (let [forms (count (:forms request))
+        trace-count (count (:macro-expansion-trace request))
+        trace-depth
+        (apply max 0
+               (map
+                (fn [event]
+                  (if (map? event)
+                    (apply max 0 (map sh07-core-nested-depth
+                                      (vals event)))
+                    (sh07-core-nested-depth event)))
+                (:macro-expansion-trace request)))]
+    (cond
+      (> forms 1024)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-forms
+        :maximum 1024
+        :observed forms
+        :projected-core-node-count forms
+        :projected-digest-request-count (+ forms 2)})
+
+      (> trace-count 1024)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-forms
+        :maximum 1024
+        :observed trace-count})
+
+      (> trace-depth 256)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-carrier-depth
+        :maximum 256
+        :observed trace-depth})
+
+      :else :passed)))
+
+(defn sh07-core-run-request-for-test
+  [authenticated-request]
+  (let [_ (sh07-core-request-preflight! authenticated-request)
+        source-path
+        (get-in authenticated-request [:provenance :actual-source-path])
+        result
+        (sh07-core-execute!
+         source-path 'sh07-build-core-template [authenticated-request])]
+    (case (:status result)
+      :rejected (sh07-core-raise-diagnostic! source-path result)
+      :accepted
+      (let [template (:core-template result)
+            digest-requests (:digest-requests result)
+            template-verification
+            (sh07-core-execute!
+             source-path 'sh07-verify-core-template
+             [authenticated-request template digest-requests])
+            _ (when-not (= :passed (:status template-verification))
+                (throw
+                 (ex-info "Gravity SH-07 template replay failed"
+                          {:id "C6-VERIFY" :stage :core-lowering
+                           :source-path source-path})))
+            resolved-digests
+            (sh07-core-digest-requests source-path digest-requests)
+            resolved-template
+            (sh07-core-resolve-result
+             source-path template digest-requests resolved-digests)
+            resolved-verification
+            (sh07-core-execute!
+             source-path 'sh07-verify-core-resolved
+             [authenticated-request resolved-template
+              digest-requests resolved-digests])
+            _ (when-not (= :passed (:status resolved-verification))
+                (throw
+                 (ex-info "Gravity SH-07 resolved replay failed"
+                          {:id "C6-VERIFY" :stage :core-lowering
+                           :source-path source-path})))]
+        {:raw-template-result result
+         :canonical-core-artifact
+         (sh07-core-canonical-artifact resolved-template)
+         :digest-requests digest-requests
+         :resolved-digests resolved-digests
+         :template-verification template-verification
+         :resolved-verification resolved-verification})
+      (throw
+       (ex-info "Gravity SH-07 returned an invalid result status"
+                {:id "C6-VERIFY" :stage :core-lowering
+                 :source-path source-path
+                 :status (:status result)})))))
+
+(defn sh07-core-projection-diagnostic!
+  [resolution-artifact reason]
+  (let [source-path
+        (sh07-core-source-path-from-resolution resolution-artifact)
+        diagnostic
+        {:artifact :gravity/sh07-core-diagnostic
+         :rule "C6-VERIFY"
+         :severity :error
+         :stage :core-lowering
+         :syntax-id nil
+         :form-id nil
+         :core-node-id nil
+         :source-span {:source source-path}
+         :generated-origin-chain []
+         :namespace
+         (get-in resolution-artifact [:namespace-analysis :namespace])
+         :profile
+         (get-in resolution-artifact [:namespace-analysis :profile])
+         :target
+         (get-in resolution-artifact [:namespace-analysis :target])
+         :lowering-rule :sh07-a-core-lowering
+         :facts {:reason reason
+                 :rule-specific {:reason reason}
+                 :source-revision-id
+                 (get-in resolution-artifact
+                         [:gravity-resolution-boundary
+                          :authenticated-resolution-request
+                          :module :source-revision-id])
+                 :sh06-artifact-id (:artifact-id resolution-artifact)
+                 :fail-closed true}
+         :remediation
+         "Replay the Gravity template and bind every digest ordinal exactly once."
+         :diagnostic-id-request
+         (reader-canonical-hash
+          {:domain :gravity/sh07-projection-diagnostic-v1
+           :reason reason
+           :sh06-artifact-id (:artifact-id resolution-artifact)})}]
+    (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
+
+(declare sh07-core-exact-comparison-value)
+
+(defn sh07-core-verification-checks
+  [artifact expected upstream-verification]
+  (let [core
+        (get-in artifact
+                [:gravity-core-boundary :canonical-core-artifact])
+        expected-core
+        (get-in expected
+                [:gravity-core-boundary :canonical-core-artifact])
+        source-path (get-in artifact [:provenance :source-path])]
+    {:wrapper-schema-current?
+     (= (set (keys expected)) (set (keys artifact)))
+     :wrapper-kind-current?
+     (= :gravity/sh07-core-artifact (:kind artifact))
+     :upstream-verification-passed?
+     (= :passed (:status upstream-verification))
+     :semantic-artifact-id-current?
+     (= (:artifact-id artifact)
+        (:artifact-id core)
+        (reader-canonical-hash
+         {:domain :gravity/sh07-declared-digest-v1
+          :purpose :sh07-core-artifact-id
+          :preimage (:identity-preimage core)}))
+     :authenticated-request-replays?
+     (= (get-in expected
+                [:gravity-core-boundary :authenticated-core-request])
+        (get-in artifact
+                [:gravity-core-boundary :authenticated-core-request]))
+     :gravity-template-replays?
+     (= (get-in expected
+                [:gravity-core-boundary :raw-template-result])
+        (get-in artifact
+                [:gravity-core-boundary :raw-template-result]))
+     :digest-sequence-replays?
+     (= (get-in expected
+                [:gravity-core-boundary :digest-requests])
+        (get-in artifact
+                [:gravity-core-boundary :digest-requests]))
+     :resolved-digests-replay?
+     (= (get-in expected
+                [:gravity-core-boundary :resolved-digests])
+        (get-in artifact
+                [:gravity-core-boundary :resolved-digests]))
+     :canonical-core-replays?
+     (= (sh07-core-exact-comparison-value expected-core)
+        (sh07-core-exact-comparison-value core))
+     :template-verification-passed?
+     (= :passed
+        (get-in artifact
+                [:gravity-core-boundary
+                 :template-verification :status]))
+     :resolved-verification-passed?
+     (= :passed
+        (get-in artifact
+                [:gravity-core-boundary
+                 :resolved-verification :status]))
+     :authoritative-products-replay?
+     (= (sh07-core-exact-comparison-value
+         (dissoc expected :capability-based-proof))
+        (sh07-core-exact-comparison-value
+         (dissoc artifact :capability-based-proof)))
+     :stored-capability-proof-current?
+     (= (:capability-based-proof expected)
+        (:capability-based-proof artifact))
+     :provenance-retained?
+     (= source-path
+        (get-in core [:provenance :actual-source-path]))}))
+
+(defn sh07-core-proof-from-checks
+  [checks]
+  (let [failed
+        (vec (for [[check passed?] checks
+                   :when (not (true? passed?))]
+               check))]
+    (assoc checks
+           :artifact :gravity/sh07-core-capability-proof
+           :status (if (empty? failed) :complete :failed)
+           :failed-checks failed)))
+
+(defn sh07-core-exact-comparison-value
+  [value]
+  (cond
+    (instance? java.math.BigDecimal value)
+    [:gravity/exact-big-decimal
+     (.toString (.unscaledValue ^java.math.BigDecimal value))
+     (.scale ^java.math.BigDecimal value)]
+    (map? value)
+    (into {}
+          (map (fn [[key child]]
+                 [(sh07-core-exact-comparison-value key)
+                  (sh07-core-exact-comparison-value child)]))
+          value)
+    (vector? value)
+    (mapv sh07-core-exact-comparison-value value)
+    (set? value)
+    (into #{} (map sh07-core-exact-comparison-value) value)
+    (list? value)
+    (apply list (map sh07-core-exact-comparison-value value))
+    :else value))
+
+(defn sh07-core-from-authenticated-request
+  [resolution-artifact authenticated-request]
+  (let [expected (sh07-core-authenticated-request resolution-artifact)]
+    (when-not (= expected authenticated-request)
+      (sh07-core-projection-diagnostic!
+       resolution-artifact :authenticated-sh06-projection-mismatch))
+    (let [run (sh07-core-run-request-for-test authenticated-request)
+          core (:canonical-core-artifact run)
+          source-path
+          (sh07-core-source-path-from-resolution resolution-artifact)
+          boundary
+          {:slice :SH-07
+           :owner :gravity-source
+           :adapter-contract sh07-core-adapter-contract
+           :plan-binding
+           (dissoc @sh07-core-cached-binding :plan :source-path)
+           :authenticated-sh06-resolution-artifact resolution-artifact
+           :authenticated-core-request authenticated-request
+           :raw-template-result (:raw-template-result run)
+           :canonical-core-artifact core
+           :digest-requests (:digest-requests run)
+           :resolved-digests (:resolved-digests run)
+           :template-verification (:template-verification run)
+           :resolved-verification (:resolved-verification run)
+           :authenticated-envelope-descriptor
+           {:artifact :gravity/sh07-authenticated-envelope-descriptor
+            :semantic-artifact-id (:artifact-id core)
+            :source-revision-id
+            (get-in authenticated-request
+                    [:lineage :source-revision-id])}
+           :authenticated-envelope
+           {:artifact :gravity/sh07-authenticated-envelope
+            :semantic-artifact-id (:artifact-id core)
+            :actual-source-path source-path}
+           :target-source-reread? false
+           :clojure-adapter-residual? true
+           :self-hosted? false}
+          artifact-base
+          {:kind :gravity/sh07-core-artifact
+           :status :accepted
+           :slice :SH-07
+           :task "SH-07-A"
+           :document-set ["L2" "C6"]
+           :governing-document sh07-core-governing-document
+           :artifact-id (:artifact-id core)
+           :sh06-resolution-artifact resolution-artifact
+           :gravity-core-boundary boundary
+           :provenance {:source-path source-path}
+           :pass
+           {:name :c6-gravity-core-lowering
+            :input :authenticated-sh06-resolution
+            :output :canonical-core
+            :owner :gravity.checked-core}
+           :execution-boundary
+           {:gravity-owned
+            [:core-template-construction :template-verification
+             :resolved-verification]
+            :clojure-seed-owned
+            [:plan-execution :sh06-projection-authentication
+             :digest-resolution :envelope-binding
+             :compatibility-routing :final-assembly]
+            :downstream-fact-statuses
+            {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
+            :sh07-complete? false
+            :self-hosted? false}
+           :capability-based-proof nil
+           :diagnostics []}
+          upstream-verification
+          (sh06-resolution-artifact-verification resolution-artifact)
+          proof
+          (sh07-core-proof-from-checks
+           (sh07-core-verification-checks
+            artifact-base artifact-base upstream-verification))]
+      (assoc artifact-base :capability-based-proof proof))))
+
+(defn sh07-core-from-resolution-artifact
+  [resolution-artifact]
+  (sh07-core-from-authenticated-request
+   resolution-artifact
+   (sh07-core-authenticated-request resolution-artifact)))
+
+(defn sh07-core-source-artifact
+  [source-path source-text]
+  (sh07-core-from-resolution-artifact
+   (sh06-resolution-source-artifact source-path source-text)))
+
+(defn sh07-core-file-artifact
+  [source-path]
+  (sh07-core-source-artifact source-path (slurp source-path)))
+
+(defn sh07-core-artifact-identity-input
+  [artifact]
+  (get-in artifact
+          [:gravity-core-boundary :canonical-core-artifact
+           :identity-preimage]))
+
+(defn sh07-core-artifact-verification
+  [artifact]
+  (let [source-path (or (get-in artifact [:provenance :source-path])
+                        "<sh07-core-verification>")
+        upstream (:sh06-resolution-artifact artifact)
+        upstream-verification
+        (try
+          (sh06-resolution-artifact-verification upstream)
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _
+            {:artifact :gravity/sh06-resolution-artifact-verification
+             :status :failed :failed-checks [:contained-failure]}))
+        checks
+        (try
+          (let [expected
+                (sh07-core-from-resolution-artifact upstream)]
+            (sh07-core-verification-checks
+             artifact expected upstream-verification))
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable _
+            {:contained-verification? false}))
+        failed (vec (for [[check passed?] checks
+                          :when (not (true? passed?))]
+                      check))
+        boundary (:gravity-core-boundary artifact)]
+    {:artifact :gravity/sh07-core-artifact-verification
+     :status (if (empty? failed) :passed :failed)
+     :checks checks
+     :failed-checks failed
+     :source-path source-path
+     :template-verification (:template-verification boundary)
+     :resolved-verification (:resolved-verification boundary)
+     :upstream-verification upstream-verification}))
+
+(defn sh07-core-capability-based-proof
+  [artifact]
+  (let [report (sh07-core-artifact-verification artifact)]
+    (assoc (:checks report)
+           :artifact :gravity/sh07-core-capability-proof
+           :status (if (= :passed (:status report))
+                     :complete :failed)
+           :failed-checks (:failed-checks report))))
 
 (defn macro-file-artifact
   [path]

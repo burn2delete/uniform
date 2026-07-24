@@ -1,0 +1,17 @@
+; SH-07-A function creation and latent body ordering input.
+(ns self-hosting.sh07.latent-function-order
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [latent-order quoted-body])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07 :fixture :latent-function-order}))
+
+(def surrounding-value 9)
+
+(defn latent-order [left right]
+  [1 {:middle [2 3]} '(left right)])
+
+(defn quoted-body [value]
+  '(value remains unevaluated))
