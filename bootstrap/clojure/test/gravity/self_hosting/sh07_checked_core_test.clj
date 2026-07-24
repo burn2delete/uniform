@@ -35,18 +35,20 @@
 
 (def ^:private accepted-fixtures
   #{"macro-def-fn-literals" "quoted-carrier-payloads"
-    "latent-function-order"})
+    "latent-function-order" "control-flow-order"
+    "control-flow-truthiness"})
 
 (def ^:private rejected-fixtures
   #{"lowering-gap" "core-shape" "missing-origin"
-    "unauthenticated-projection"})
+    "unauthenticated-projection" "empty-do"
+    "if-extra-branch" "if-missing-branch" "nested-def"})
 
 (def ^:private diagnostic-rules
   #{"C6-LOWERING-GAP" "C6-CORE-SHAPE" "C6-ORIGIN" "C6-VERIFY"})
 
 (def ^:private diagnostic-remediation
   {"C6-LOWERING-GAP"
-   "Use only the declared SH-07-A def, fn, quote, and literal subset."
+   "Use only the declared SH-07-B1 def, fn, quote, if, do, and literal subset."
    "C6-CORE-SHAPE"
    "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."
    "C6-ORIGIN"
@@ -72,7 +74,7 @@
 (def ^:private canonical-core-keys
   #{:artifact :schema-version :artifact-id :provenance-binding-id
     :module :lineage :projection-binding :root-core-node-ids
-    :definitions :nodes :evaluation-order :source-map
+    :definitions :nodes :evaluation-order :control-flow :source-map
     :preserved-resolution :macro-expansion-trace
     :macro-origin-traces :macro-origin-expectation
     :pending-fact-families :identity-preimage
@@ -347,7 +349,7 @@
            (:remediation diagnostic)))
     (is (map? (:source-span diagnostic)))
     (is (= expected-path (get-in diagnostic [:source-span :source])))
-    (is (= :sh07-a-core-lowering (:lowering-rule diagnostic)))
+    (is (= :sh07-b1-core-lowering (:lowering-rule diagnostic)))
     (is (nil? (:core-node-id diagnostic)))
     (is (map? (:facts diagnostic)))
     diagnostic))
@@ -460,8 +462,8 @@
   (is (= authenticated-request-keys (set (keys request))))
   (is (= :gravity/sh07-authenticated-sh06-core-request
          (:artifact request)))
-  (is (= 1 (:schema-version request)))
-  (is (= :sh07-a-meta-jvm-core (:scope request)))
+  (is (= 2 (:schema-version request)))
+  (is (= :sh07-b1-meta-jvm-core (:scope request)))
   (is (sha256-id? (:projection-binding request)))
   (is (= #{:actual-source-path}
          (set (keys (:provenance request))))))

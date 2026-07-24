@@ -8,7 +8,7 @@
               :sh07 {:expected-rule "C6-LOWERING-GAP"
                      :expected-stage :core-lowering
                      :expected-severity :error
-                     :expected-remediation "Use only the declared SH-07-A def, fn, quote, and literal subset."}}))
+                     :expected-remediation "Use only the declared SH-07-B1 def, fn, quote, if, do, and literal subset."}}))
 
-(def unsupported-conditional
-  (if true 1 2))
+(def unsupported-local-binding
+  (let [value 1] value))

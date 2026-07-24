@@ -1,0 +1,19 @@
+; SH-07-B1 explicit control-flow ordering and nesting input.
+(ns self-hosting.sh07.control-flow-order
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [nested-order])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B1 :fixture :control-flow-order}))
+
+(def nested-order
+  (do
+    1
+    (if true
+      (do
+        2
+        (if false 30 3))
+      (do 4 5))
+    6))

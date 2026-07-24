@@ -15,6 +15,10 @@ semantic core identity.
 - `latent-function-order` exercises a function body with nested collections.
   Body nodes belong to the function-body evaluation region; creation of the
   function does not evaluate the body.
+- `control-flow-order` exercises nested `if` and nonempty `do` lowering with
+  condition-first, branch-exclusive, and left-to-right evaluation records.
+- `control-flow-truthiness` exercises the L2 rule that only `nil` and `false`
+  are falsey.
 
 ## Rejected pairs
 
@@ -25,12 +29,16 @@ exercise the stated lowering or verifier boundary directly.
 
 | Base name | Expected rule | Rejection family |
 | --- | --- | --- |
-| `lowering-gap` | `C6-LOWERING-GAP` | unsupported `if` in the SH-07-A subset |
+| `lowering-gap` | `C6-LOWERING-GAP` | unsupported local binding in the SH-07-B1 subset |
 | `core-shape` | `C6-CORE-SHAPE` | function parameter form is not a vector |
 | `missing-origin` | `C6-ORIGIN` | generated `defn` output loses its origin |
 | `unauthenticated-projection` | `C6-VERIFY` | SH-06 projection authentication fails |
+| `if-missing-branch` | `C6-CORE-SHAPE` | `if` omits its else branch |
+| `if-extra-branch` | `C6-CORE-SHAPE` | `if` carries an extra branch |
+| `empty-do` | `C6-CORE-SHAPE` | empty `do` is outside the current subset |
+| `nested-def` | `C6-CORE-SHAPE` | `def` appears below the top-level boundary |
 
-These fixtures cover only the current SH-07-A `def`, `fn`, `quote`, literal,
-collection, evaluation-order, origin, and verifier boundary. They do not claim
-the remaining core forms, C7-C10 facts, MIR lowering, seed retirement, or
-release readiness.
+These fixtures cover only the current SH-07-A/B1 `def`, `fn`, `quote`, `if`,
+nonempty `do`, literal, collection, evaluation-order, control-flow, origin, and
+verifier boundary. They do not claim the remaining core forms, C7-C10 facts,
+MIR lowering, seed retirement, or release readiness.

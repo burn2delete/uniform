@@ -1,0 +1,22 @@
+; SH-07-B1 nil/false-only falsehood and truthy-shape input.
+(ns self-hosting.sh07.control-flow-truthiness
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [nil-is-false false-is-false zero-is-truthy
+             empty-vector-is-truthy])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B1 :fixture :control-flow-truthiness}))
+
+(def nil-is-false
+  (if nil :unexpected :nil-false))
+
+(def false-is-false
+  (if false :unexpected :false-false))
+
+(def zero-is-truthy
+  (if 0 :zero-truthy :unexpected))
+
+(def empty-vector-is-truthy
+  (if [] :vector-truthy :unexpected))
