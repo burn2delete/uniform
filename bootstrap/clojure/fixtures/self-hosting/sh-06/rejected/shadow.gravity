@@ -1,0 +1,11 @@
+(ns self-hosting.sh06.reject.shadow
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :namespace-bindings [{:name resolver :kind :var}]
+                                         :lexical-bindings [{:name resolver :kind :local}]
+                                         :shadow-policy {:forbidden [resolver]}}}
+              :sh06 {:expected-rule "C5-SHADOW" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :rename-local-binding}}))
+(def resolver 1)
+(defn candidate [resolver] resolver)

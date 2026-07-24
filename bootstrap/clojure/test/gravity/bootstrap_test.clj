@@ -25145,7 +25145,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:60d93fcf1549ad9a0e10c6351f92ff4ee51d4ede8b626e687262dad9d53fe631"
+    (is (= "sha256:9e8e57143fa1171e87c18cf03c40579fd91b522c22c5dcdd97d105e581ce174a"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c5-name-resolution-namespace-analyzer\n"

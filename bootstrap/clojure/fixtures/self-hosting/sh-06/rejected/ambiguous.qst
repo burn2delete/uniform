@@ -1,0 +1,11 @@
+(ns self-hosting.sh06.reject.ambiguous
+  (:profile :hosted) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :references [{:symbol shared :position :expression}]
+                                         :candidate-bindings
+                                         [{:name shared :visibility :public}
+                                          {:name shared :visibility :public}]}}
+              :sh06 {:expected-rule "C5-AMBIGUOUS" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :qualify-binding}}))
+(defn candidate [] shared)

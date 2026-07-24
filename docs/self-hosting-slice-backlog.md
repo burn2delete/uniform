@@ -149,7 +149,7 @@ Status meanings:
 | `SH-03` | Complete the bootstrap reader and literal policy | `SH-01`, `SH-02` | complete | The Gravity reader, rather than a Clojure reread, handles the complete claimed bootstrap syntax and literal subset with Unicode, newline, delimiter, abbreviation, metadata, extension, and malformed-literal diagnostics. |
 | `SH-04` | Complete syntax objects, hygiene, and origin chains | `SH-03` | complete | Gravity constructs and serializes syntax objects with stable identity, scopes, marks, metadata, source spans, generated origins, and adversarial graph validation. |
 | `SH-05` | Implement the bootstrap macroexpander in Gravity | `SH-04` | complete | Gravity expands the macro subset required by all compiler sources, preserves hygiene and origins, rejects phase/profile/capability violations, and matches accepted stage0 diagnostics. |
-| `SH-06` | Implement namespace and binding resolution in Gravity | `SH-05` | queued | Gravity resolves compiler namespaces, aliases, vars, lexical bindings, imports, visibility, cycles, and unresolved references for the complete bootstrap source set. |
+| `SH-06` | Implement namespace and binding resolution in Gravity | `SH-05` | complete | Gravity resolves compiler namespaces, aliases, vars, lexical bindings, imports, visibility, cycles, and unresolved references for the complete bootstrap source set. |
 | `SH-07` | Implement core-form semantics and lowering in Gravity | `SH-06` | partial | Every core form required to compile the compiler lowers to a canonical core artifact with stable evaluation order, arity, mutation, recursion, exception, and pattern diagnostics. |
 | `SH-08` | Implement the bootstrap type checker in Gravity | `SH-07` | partial | Compiler sources receive genuine type facts for primitives, functions, collections, control flow, calls, records/unions, and required meta-programming values; ill-typed variants fail closed. |
 | `SH-09` | Implement effect, capability, and profile checking in Gravity | `SH-08` | partial | The compiler's `:meta` and release-target paths reject undeclared effects, missing authority, ambient access, hidden services, and illegal profile/target assumptions before backend lowering. |
@@ -214,14 +214,14 @@ The coordinator should also report the highest continuous completed prefix.
 For example, completion of `SH-18` does not advance the prefix past `SH-07` if
 `SH-08` remains incomplete.
 
-Current reviewed accounting after `SH-05`:
+Current reviewed accounting after `SH-06`:
 
 ```text
-complete slices: 6 / 30
-executable Gravity-owned slices: 5 / 30
-slices with Clojure in their claimed execution boundary: 6 / 30
+complete slices: 7 / 30
+executable Gravity-owned slices: 6 / 30
+slices with Clojure in their claimed execution boundary: 7 / 30
 blocked slices: 4 / 30
-highest continuous completed prefix: SH-00 through SH-05
+highest continuous completed prefix: SH-00 through SH-06
 ```
 
 `SH-02` credit is intentionally bounded to envelopes whose explicit reference
@@ -279,6 +279,29 @@ artifact assembly. User-defined `defmacro`, the full macro surface, hierarchical
 syntax-stream paging beyond 2,048 products, retained standalone carrier-audit
 records, compiler self-hosting, seed retirement, packaged CLI refresh, and
 release readiness remain outside this credit.
+
+`SH-06` credit is bounded to the namespace and binding resolution subset
+executed across the 37-path authoritative compiler-source inventory and the
+co-canonical accepted/rejected fixture matrix. The Gravity
+`gravity.resolution` module owns namespace, alias, import, var, lexical
+binding, visibility, shadowing, dependency-cycle, profile, target, capability,
+and foreign-boundary policy; deterministic binding and product identities; and
+all ten structured C5 rejection families. Fresh authenticated SH-05 input,
+exact Gravity replay, complete resolution-product reconstruction,
+checkout-path-neutral identities with actual-path provenance, substitution and
+mutation rejection, public C6 consumption, and bounded serialization passed.
+The largest measured authentic artifact contained 13,219,191 carrier nodes at
+depth 33 and maximum width 43,713 and serialized to 197,618,995 UTF-8 bytes.
+Per-component transport limits are 8,388,608 nodes, depth 64, and width 65,536;
+whole-artifact limits are 16,777,216 nodes, depth 64, width 65,536, and
+268,435,456 serialized bytes. The Clojure stage0 boundary still owns initial
+source reads, compiler-plan execution, canonical digest resolution,
+authenticated-envelope binding, compatibility adaptation and central routing,
+and final artifact assembly. The 37-module inventory is the current bootstrap
+source set, not a broader full-language claim; the compatibility C5 facade
+receives no implementation-authority credit. This slice does not claim overall
+C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
+packaged CLI refresh, or release readiness.
 
 ## Beyond First Self-Hosting
 

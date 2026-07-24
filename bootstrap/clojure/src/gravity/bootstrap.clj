@@ -3499,9 +3499,10 @@
                    (= (get-in artifact [:module :capabilities])
                       (get-in artifact [:preserved-declarations
                                         :capabilities]))
-                   (some :unsafe-metadata flat)))
+                   (or (not= :unsafe (get-in artifact [:module :safety]))
+                       (some :unsafe-metadata flat))))
      :domain-boundaries-recorded?
-     (boolean (seq (:domain-boundary-records artifact)))
+     (true? (:domain-boundaries-valid? verifier))
      :core-verifier-passed?
      (= :passed (:status verifier))
      :versioned-rule-invalidation?
@@ -3527,19 +3528,44 @@
                            {:missing-fields [field]}))))
   :complete)
 
+(declare sh06-resolution-artifact-verification)
+
+(def ^:dynamic *compiler-c6-authenticated-resolution-input* nil)
+
 (defn compiler-c6-lowering-source-artifact
   [source-path source-text]
-  (let [records (read-source-form-records source-path source-text)
-        forms (mapv :form records)
+  (let [c5-artifact (or *compiler-c6-authenticated-resolution-input*
+                        (compiler-c5-resolution-source-artifact source-path
+                                                                source-text))
+        sh06-input? (= :gravity/sh06-resolution-artifact
+                       (:kind c5-artifact))
+        sh06-report (when sh06-input?
+                      (sh06-resolution-artifact-verification c5-artifact))
+        _ (when (and sh06-input? (not= :passed (:status sh06-report)))
+            (c6-lowering-fail!
+             "C6-VERIFY" source-path {:stage :core-lowering}
+             {:missing-fields [:fresh-authenticated-sh06-resolution]}))
+        expanded-stream
+        (if sh06-input?
+          (mapv
+           (fn [syntax]
+             (-> syntax
+                 (assoc :syntax-id (:syntax/id syntax)
+                        :generated-origin (:origin syntax))
+                 (dissoc :origin)))
+           (get-in c5-artifact
+                   [:sh05-macro-artifact :expanded-syntax-stream]))
+          (get-in c5-artifact
+                  [:c4-macro-expansion-artifact :expanded-syntax-stream]))
+        records (when-not sh06-input?
+                  (read-source-form-records source-path source-text))
+        forms (if sh06-input?
+                (mapv :form expanded-stream)
+                (mapv :form records))
         _ (validate-ns-syntax! source-path forms)
         module (parse-module source-path forms)
         overrides (c6-lowering-source-overrides module)
         _ (c6-lowering-validate-overrides! source-path module overrides)
-        c5-artifact (compiler-c5-resolution-source-artifact source-path
-                                                            source-text)
-        expanded-stream (get-in c5-artifact
-                                [:c4-macro-expansion-artifact
-                                 :expanded-syntax-stream])
         body-syntax (remove #(ns-form? (:form %)) expanded-stream)
         domain-boundaries (c6-domain-boundary-records module body-syntax
                                                       c5-artifact)
@@ -3621,6 +3647,22 @@
                         :capability-based-proof capability-proof
                         :c6-lowering-results conformance)]
     (assoc artifact :artifact-id (c4-artifact-id artifact))))
+
+(defn sh06-c6-lowering-from-resolution-artifact
+  [resolution-artifact]
+  (let [source-path (or (get-in resolution-artifact
+                                [:provenance :source-path])
+                        "<sh06-c6-resolution-input>")
+        report (sh06-resolution-artifact-verification resolution-artifact)]
+    (when-not (and (= :gravity/sh06-resolution-artifact
+                      (:kind resolution-artifact))
+                   (= :passed (:status report)))
+      (c6-lowering-fail!
+       "C6-VERIFY" source-path {:stage :core-lowering}
+       {:missing-fields [:fresh-authenticated-sh06-resolution]}))
+    (binding [*compiler-c6-authenticated-resolution-input*
+              resolution-artifact]
+      (compiler-c6-lowering-source-artifact source-path ""))))
 
 (defn compiler-c6-lowering-file-artifact
   [path]
@@ -43742,6 +43784,7 @@
   [artifact]
   (or (get-in artifact [:module :module])
       (get-in artifact [:module-artifact :module])
+      (get-in artifact [:namespace-analysis :namespace])
       (get-in artifact [:namespace-table 0 :name])))
 
 (declare compiler-c2-reader-file-artifact c2-reader-fail!
@@ -43783,6 +43826,8 @@
           :generated-origin (:generated-origin form)}))
      (range) (:top-level-form-ids artifact))))
 
+(declare sh06-resolution-source-artifact)
+
 (defn check-file-artifact
   [path]
   (let [reader-artifact (compiler-c2-reader-file-artifact path)
@@ -43792,6 +43837,8 @@
         module (when (ns-form? (first forms))
                  (parse-module path forms))
         bootstrap-metadata (get-in module [:metadata :bootstrap])
+        sh06-self-hosting-fixture?
+        (= :SH-06 (get-in module [:metadata :slice]))
         gravity-owned-module?
         (and (= :gravity-source (:owner bootstrap-metadata))
              (= :gravity (:source-language bootstrap-metadata)))
@@ -43799,6 +43846,9 @@
     (binding [*authenticated-source-form-records*
               {:source-path path :source-text source-text :records records}]
      (cond
+      sh06-self-hosting-fixture?
+      (sh06-resolution-source-artifact path source-text)
+
       gravity-owned-module?
       (module-source-artifact-from-records path source-text records)
 
@@ -156337,6 +156387,2022 @@
        source-path (sh05-macro-source-artifact source-path source-text))
       (compiler-c4-stage0-legacy-source-artifact source-path source-text))))
 
+;; SH-06 normalizes the verified SH-05 syntax product into the exact bounded
+;; request accepted by gravity.resolution.  This remains coordinator-owned
+;; transport code: resolution policy and result construction live in Gravity.
+(def sh06-resolution-special-symbols
+  '#{quote if do let loop recur fn def defn defconst var set! try catch
+     finally throw new syntax-quote unquote splice-unquote unsafe})
+
+(def sh06-resolution-core-symbols
+  '#{= not not= identical? < > <= >= + - * / mod quot rem inc dec min max
+     zero? pos? neg? compare
+     get get-in assoc assoc-in update update-in dissoc select-keys merge
+     merge-with conj disj into empty count first second last rest next nth
+     peek pop take drop take-while drop-while subvec vec vector list hash-map
+     set sorted-map sorted-set keys vals contains? find
+     nil? some? true? false? boolean? symbol? keyword? string? char? number?
+     integer? ratio? map? vector? set? seq? coll? sequential? empty? seq
+     map mapv map-indexed filter filterv remove keep keep-indexed reduce
+     reduce-kv some every? not-any? concat mapcat partition partition-all
+     range repeat repeatedly iterate zipmap frequencies group-by sort sort-by
+     sort-by-pr-str distinct reverse identity constantly comp complement
+     partial juxt apply
+     name namespace symbol keyword str subs pr-str println format hash
+     bit-and bit-or bit-xor bit-not bit-shift-left bit-shift-right
+     numerator denominator meta with-meta vary-meta atom deref reset! swap!
+     volatile! vreset! vswap! ex-info ex-data
+     read-string slurp spit load-file resolve ns-resolve
+     agent send send-off await promise deliver future future-call
+     realized? delay force time rand rand-int
+     transient persistent! conj! assoc! dissoc! pop!
+     bigint bigdec double float long int short byte boolean
+     even? odd? abs gcd lcm
+     starts-with? ends-with? includes? split join replace trim lower-case
+     upper-case blank?
+     uuid random-uuid inst? uuid? tagged-literal
+     type class instance? satisfies? extends?})
+
+(def sh06-resolution-type-symbols
+  '#{I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword
+     Dynamic Unit Never Any Object Class Throwable Exception RuntimeException
+     Map Vector Set List Seq Fn Ratio BigInt BigDecimal})
+
+(def sh06-resolution-all-core-symbols
+  (set/union sh06-resolution-special-symbols
+             sh06-resolution-core-symbols
+             sh06-resolution-type-symbols))
+
+(defn sh06-resolution-semantic-span
+  [span ordinal]
+  (merge
+   {:ordinal ordinal}
+   (select-keys (or span {})
+                [:byte-start :byte-end :line-start :column-start
+                 :line-end :column-end :scalar-start :scalar-end])))
+
+(defn sh06-resolution-source-revision-id
+  [sh05-artifact]
+  (or (get-in sh05-artifact
+              [:gravity-macro-boundary :authenticated-sh04-artifact
+               :gravity-syntax-boundary :reader-source-revision :revision-id])
+      (get-in sh05-artifact
+              [:gravity-macro-boundary :authenticated-sh04-artifact
+               :c2-reader-artifact :source-unit-record :source-id])
+      (reader-canonical-hash
+       {:domain :gravity/sh06-upstream-source-revision-v1
+        :syntax-stream-id (:expanded-syntax-stream-id sh05-artifact)
+        :macro-trace-id (:macro-expansion-trace-id sh05-artifact)})))
+
+(defn sh06-resolution-envelope-id
+  [sh05-artifact]
+  (or (get-in sh05-artifact
+              [:gravity-macro-boundary :authenticated-envelope
+               :semantic-envelope-id])
+      (reader-canonical-hash
+       {:domain :gravity/sh06-upstream-envelope-reference-v1
+        :artifact-id (:artifact-id sh05-artifact)
+        :syntax-stream-id (:expanded-syntax-stream-id sh05-artifact)
+        :macro-trace-id (:macro-expansion-trace-id sh05-artifact)})))
+
+(defn sh06-resolution-package
+  [namespace]
+  {:name (symbol (str namespace)) :version "workspace"})
+
+(defn sh06-resolution-definition-kind
+  [form]
+  (let [operator (when (seq? form) (first form))
+        value (when (and (seq? form) (> (count form) 2)) (nth form 2))]
+    (case operator
+      defconst :compile-time-constant
+      defn :function
+      defmacro :macro
+      defschema :schema
+      defprotocol :protocol
+      def (if (and (seq? value) (= 'fn (first value))) :function :var)
+      nil)))
+
+(defn sh06-resolution-definition-records
+  [module sh05-artifact]
+  (let [exports (set (:exports module))
+        module-namespace (:module module)
+        artifact-id (:artifact-id sh05-artifact)]
+    (->> (:expanded-syntax-stream sh05-artifact)
+         (map-indexed
+          (fn [ordinal syntax]
+            (let [form (:form syntax)
+                  kind (sh06-resolution-definition-kind form)
+                  declared-name (when kind (second form))]
+              (when (and kind (symbol? declared-name))
+                (let [simple-name (clojure.core/symbol (name declared-name))
+                      declared-namespace
+                      (some-> (namespace declared-name) clojure.core/symbol)
+                      binding-namespace
+                      (or declared-namespace module-namespace)]
+                 {:name simple-name
+                 :kind kind
+                 :namespace binding-namespace
+                 :package (sh06-resolution-package binding-namespace)
+                 :binding-class :namespace
+                 :visibility (if (or (contains? exports declared-name)
+                                     (contains? exports simple-name))
+                               :public
+                               :private)
+                 :profile-set [(:profile module)]
+                 :target-set [(:target module)]
+                 :type-ref (case kind
+                             :function :gravity.type/function
+                             :macro :gravity.syntax/macro
+                             :schema :gravity.type/schema
+                             :protocol :gravity.type/protocol
+                             :gravity.type/value)
+                 :effects (vec (sort (:effects module)))
+                 :capabilities (vec (sort (:capabilities module)))
+                 :safety (:safety module)
+                 :semantic-span
+                 (sh06-resolution-semantic-span (:span syntax) ordinal)
+                 :source-span (:span syntax)
+                 :definition-syntax-id (:syntax/id syntax)
+                 :definition-artifact-id artifact-id})))))
+         (remove nil?)
+         vec)))
+
+(defn sh06-resolution-core-record
+  [symbol kind ordinal]
+  {:name symbol
+   :kind kind
+   :namespace 'gravity.core
+   :package {:name 'gravity/core :version "bootstrap-contract-v1"}
+   :binding-class :core
+   :visibility :public
+   :profile-set (vec (sort known-source-profiles))
+   :target-set [:all]
+   :type-ref (case kind
+               :special-form :gravity.syntax/special-form
+               :type :gravity.type/type
+               :gravity.type/core-var)
+   :effects (if (= symbol 'println) [:io/write] [])
+   :capabilities (if (= symbol 'println) [:io/stdout] [])
+   :safety :safe
+   :semantic-span {:catalog :gravity/core :ordinal ordinal}
+   :source-span {:source "gravity.core" :form-index ordinal}
+   :definition-syntax-id
+   (reader-canonical-hash
+    {:domain :gravity/sh06-core-binding-syntax-v1
+     :name symbol :kind kind})
+   :definition-artifact-id
+   (reader-canonical-hash
+    {:domain :gravity/sh06-core-catalog-v1
+     :catalog-version 1})})
+
+(defn sh06-resolution-core-records
+  []
+  (mapv
+   (fn [ordinal symbol]
+     (sh06-resolution-core-record
+      symbol
+      (cond
+        (contains? sh06-resolution-special-symbols symbol) :special-form
+        (contains? sh06-resolution-type-symbols symbol) :type
+        :else :var)
+      ordinal))
+   (range)
+   (sort sh06-resolution-all-core-symbols)))
+
+(defn sh06-resolution-request-overrides
+  [module]
+  (let [candidate (get-in module [:metadata :compiler :sh06-request])]
+    (if (map? candidate) candidate {})))
+
+(defn sh06-resolution-candidate-for
+  [overrides namespace name]
+  (first
+   (filter
+    #(and (= namespace (:namespace %)) (= name (:name %)))
+    (:candidate-bindings overrides))))
+
+(defn sh06-resolution-dependency-record
+  [source-path module dependency overrides ordinal]
+  (let [namespace (:module dependency)
+        alias (:alias dependency)
+        referred (vec (:refer dependency))
+        candidate
+        (or (first (filter #(= namespace (:namespace %))
+                           (:candidate-bindings overrides)))
+            {})
+        declared-target (or (:target candidate)
+                            (first (:target-set candidate)))
+        targets (if declared-target
+                  [declared-target]
+                  [(:target module)])
+        foreign? (= :import (:kind dependency))
+        semantic-span {:dependency-ordinal ordinal
+                       :namespace namespace
+                       :alias alias}]
+    {:namespace namespace
+     :alias alias
+     :kind (if foreign? :foreign :namespace)
+     :profile (or (:profile dependency) (:profile module))
+     :targets targets
+     :visibility (or (:visibility candidate)
+                     (:visibility dependency) :public)
+     :refer referred
+     :effects (vec (sort (:effects dependency)))
+     :capabilities (vec (sort (or (:capabilities candidate)
+                                  (:capabilities dependency))))
+     :safety (if foreign? :boundary-checked :safe)
+     :boundary (or (:boundary dependency)
+                   (when (= :core (:profile dependency)) :pure-core-api))
+     :semantic-span semantic-span
+     :source-span (source-span source-path 0)
+     :dependency-artifact-id
+     (reader-canonical-hash
+      {:domain :gravity/sh06-dependency-artifact-v1
+       :namespace namespace :profile (:profile dependency)
+       :targets targets :boundary (:boundary dependency)})
+     :foreign-record-complete?
+     (if foreign?
+       (and (symbol? namespace) (symbol? alias)
+            (some? (:boundary dependency)))
+       true)}))
+
+(defn sh06-resolution-import-records
+  [source-path module overrides]
+  (mapv
+   (fn [ordinal dependency]
+     (sh06-resolution-dependency-record
+      source-path module dependency overrides ordinal))
+   (range)
+   (concat (:requires module) (:imports module))))
+
+(defn sh06-resolution-import-binding-records
+  [module imports overrides]
+  (vec
+   (mapcat
+    (fn [ordinal dependency]
+      (let [explicit
+            (filter #(= (:namespace dependency) (:namespace %))
+                    (:candidate-bindings overrides))
+            names (distinct
+                   (concat (:refer dependency)
+                           (map :name explicit)))
+            candidates-by-name (group-by :name explicit)]
+        (map-indexed
+         (fn [name-ordinal name]
+           (let [candidate (first (get candidates-by-name name))]
+             {:name name
+              :kind (if (= :foreign (:kind dependency)) :foreign :var)
+              :namespace (:namespace dependency)
+              :package (sh06-resolution-package (:namespace dependency))
+              :binding-class :import
+              :visibility (or (:visibility candidate)
+                              (:visibility dependency) :public)
+              :profile-set [(:profile dependency)]
+              :target-set (or (some-> candidate :target-set vec)
+                              (:targets dependency))
+              :type-ref (if (= :foreign (:kind dependency))
+                          :gravity.interop/foreign-value
+                          :gravity.type/imported-var)
+              :effects (:effects dependency)
+              :capabilities (or (some-> candidate :capabilities vec)
+                                (:capabilities dependency))
+              :safety (:safety dependency)
+              :semantic-span {:dependency-ordinal ordinal
+                              :binding-ordinal name-ordinal
+                              :namespace (:namespace dependency)
+                              :name name}
+              :source-span (:source-span dependency)
+              :definition-syntax-id
+              (reader-canonical-hash
+               {:domain :gravity/sh06-import-binding-syntax-v1
+                :dependency-id (:dependency-artifact-id dependency)
+                :name name})
+              :definition-artifact-id
+              (:dependency-artifact-id dependency)}))
+         names)))
+    (range)
+    imports)))
+
+(defn sh06-resolution-explicit-candidate-records
+  [module sh05-artifact overrides]
+  (let [existing-import-names
+        (set (mapcat :refer (concat (:requires module) (:imports module))))]
+    (->> (:candidate-bindings overrides)
+         (remove #(contains? existing-import-names (:name %)))
+         (map-indexed
+          (fn [ordinal candidate]
+            {:name (:name candidate)
+             :kind (or (:kind candidate) :var)
+             :namespace (or (:namespace candidate) (:module module))
+             :package (sh06-resolution-package
+                       (or (:namespace candidate) (:module module)))
+             :binding-class :namespace
+             :visibility (or (:visibility candidate) :public)
+             :profile-set [(or (:profile candidate) (:profile module))]
+             :target-set (vec (or (:target-set candidate)
+                                  [(:target module)]))
+             :type-ref :gravity.type/value
+             :effects (vec (or (:effects candidate) []))
+             :capabilities (vec (or (:capabilities candidate) []))
+             :safety :safe
+             :semantic-span {:explicit-candidate ordinal
+                             :name (:name candidate)
+                             :namespace (:namespace candidate)}
+             :source-span (source-span (:source-path module) 0)
+             :definition-syntax-id
+             (reader-canonical-hash
+              {:domain :gravity/sh06-explicit-candidate-v1
+               :ordinal ordinal :candidate candidate})
+             :definition-artifact-id
+             (reader-canonical-hash
+              {:domain :gravity/sh06-explicit-candidate-artifact-v1
+               :owner-artifact-id (:artifact-id sh05-artifact)
+               :ordinal ordinal
+               :candidate candidate})}))
+         vec)))
+
+(defn sh06-resolution-analysis-inputs
+  [module sh05-artifact overrides]
+  (let [scopes (atom [])
+        references (atom [])
+        next-scope (atom 0)
+        next-reference (atom 0)
+        shadow-forbidden (set (get-in overrides [:shadow-policy :forbidden]))
+        add-reference!
+        (fn [symbol scope-chain syntax position span]
+          (when (symbol? symbol)
+            (let [ordinal (swap! next-reference inc)
+                  namespace-part (namespace symbol)
+                  simple-name (clojure.core/symbol (name symbol))]
+              (swap!
+               references conj
+               {:syntax-id
+                (reader-canonical-hash
+                 {:domain :gravity/sh06-reference-syntax-v1
+                  :owner-syntax-id (:syntax/id syntax)
+                  :ordinal ordinal :symbol symbol :position position})
+                :symbol symbol
+                :qualifier (when namespace-part
+                             (clojure.core/symbol namespace-part))
+                :name simple-name
+                :position position
+                :scope-chain (vec scope-chain)
+                :semantic-span
+                (sh06-resolution-semantic-span span ordinal)
+                :source-span span}))))
+        add-scope!
+        (fn [owner-syntax-id parent-scope-id local-names span]
+          (let [ordinal (swap! next-scope inc)
+                scope-id
+                (reader-canonical-hash
+                 {:domain :gravity/sh06-lexical-scope-v1
+                  :owner-syntax-id owner-syntax-id
+                  :ordinal ordinal
+                  :parent-scope-id parent-scope-id})
+                bindings
+                (mapv
+                 (fn [binding-ordinal name]
+                   {:name name
+                    :kind :local
+                    :semantic-span
+                    {:scope-ordinal ordinal
+                     :binding-ordinal binding-ordinal}
+                    :source-span span
+                    :binding-syntax-id
+                    (reader-canonical-hash
+                     {:domain :gravity/sh06-local-binding-v1
+                      :scope-id scope-id :ordinal binding-ordinal
+                      :name name})
+                    :allow-shadow?
+                    (not (contains? shadow-forbidden name))})
+                 (range)
+                 local-names)]
+            (swap! scopes conj
+                   {:scope-id scope-id
+                    :parent-scope-id parent-scope-id
+                    :owner-syntax-id owner-syntax-id
+                    :bindings bindings})
+            scope-id))]
+    (letfn [(parameter-names [parameters]
+              (loop [remaining (seq parameters) names []]
+                (if (empty? remaining)
+                  names
+                  (let [item (first remaining)]
+                    (cond
+                      (= item ':-) (recur (nnext remaining) names)
+                      (= item '&) (recur (next remaining) names)
+                      (symbol? item) (recur (next remaining)
+                                            (conj names item))
+                      :else (recur (next remaining) names))))))
+            (walk-form [value scope-chain syntax position]
+              (cond
+                (symbol? value)
+                (add-reference! value scope-chain syntax position
+                                (:span syntax))
+
+                (seq? value)
+                (let [operator (first value)]
+                  (cond
+                    (= operator 'quote)
+                    (add-reference! 'quote scope-chain syntax :operator
+                                    (:span syntax))
+
+                    (contains? '#{syntax-quote} operator)
+                    (add-reference! operator scope-chain syntax :operator
+                                    (:span syntax))
+
+                    (contains? '#{def defconst} operator)
+                    (do
+                      (add-reference! operator scope-chain syntax :operator
+                                      (:span syntax))
+                      (doseq [item (drop 2 value)]
+                        (walk-form item scope-chain syntax :expression)))
+
+                    (= operator 'defn)
+                    (let [parameters (nth value 2 [])
+                          names (parameter-names parameters)
+                          scope-id (add-scope! (:syntax/id syntax)
+                                               (first scope-chain)
+                                               names (:span syntax))]
+                      (add-reference! 'defn scope-chain syntax :operator
+                                      (:span syntax))
+                      (doseq [item (drop 3 value)]
+                        (walk-form item (cons scope-id scope-chain)
+                                   syntax :expression)))
+
+                    (= operator 'fn)
+                    (let [named? (symbol? (second value))
+                          parameters (if named? (nth value 2 [])
+                                         (second value))
+                          body (if named? (drop 3 value) (drop 2 value))
+                          names (cond-> (parameter-names parameters)
+                                  named? (conj (second value)))
+                          scope-id (add-scope! (:syntax/id syntax)
+                                               (first scope-chain)
+                                               names (:span syntax))]
+                      (add-reference! 'fn scope-chain syntax :operator
+                                      (:span syntax))
+                      (doseq [item body]
+                        (walk-form item (cons scope-id scope-chain)
+                                   syntax :expression)))
+
+                    (contains? '#{let loop} operator)
+                    (let [binding-vector (second value)
+                          pairs (partition 2 binding-vector)
+                          _ (add-reference! operator scope-chain syntax
+                                            :operator (:span syntax))
+                          nested
+                          (loop [remaining pairs
+                                 active-scope-chain scope-chain]
+                            (if (empty? remaining)
+                              active-scope-chain
+                              (let [[binding-name initializer]
+                                    (first remaining)
+                                    _ (walk-form initializer
+                                                 active-scope-chain syntax
+                                                 :expression)
+                                    next-scope-chain
+                                    (if (symbol? binding-name)
+                                      (let [scope-id
+                                            (add-scope!
+                                             (:syntax/id syntax)
+                                             (first active-scope-chain)
+                                             [binding-name] (:span syntax))]
+                                        (cons scope-id active-scope-chain))
+                                      active-scope-chain)]
+                                (recur (next remaining)
+                                       next-scope-chain))))]
+                      (doseq [item (drop 2 value)]
+                        (walk-form item nested syntax :expression)))
+
+                    :else
+                    (doseq [item value]
+                      (walk-form item scope-chain syntax
+                                 (if (= item operator) :operator position)))))
+
+                (map? value)
+                (doseq [[key item] value]
+                  (walk-form key scope-chain syntax :expression)
+                  (walk-form item scope-chain syntax :expression))
+
+                (coll? value)
+                (doseq [item value]
+                  (walk-form item scope-chain syntax position))
+
+                :else nil))]
+      (doseq [syntax (:expanded-syntax-stream sh05-artifact)]
+        (let [form (:form syntax)]
+          (when-not (and (seq? form) (= 'ns (first form)))
+            (walk-form form [] syntax :expression))))
+      {:lexical-scopes @scopes :references @references})))
+
+(defn sh06-resolution-dependency-edges
+  [source-path module imports overrides]
+  (let [base
+        (mapv
+         (fn [ordinal dependency]
+           {:from (:module module)
+            :to (:namespace dependency)
+            :kind (:kind dependency)
+            :boundary (:boundary dependency)
+            :semantic-span {:dependency-edge ordinal}
+            :source-span (:source-span dependency)})
+         (range) imports)
+        explicit (get-in overrides [:module-graph :edges])]
+    (vec
+     (distinct
+      (concat
+       base
+       (map-indexed
+        (fn [ordinal edge]
+          (let [[from to] (when (vector? edge) edge)]
+            {:from (or (:from edge) from)
+             :to (or (:to edge) to)
+             :kind (or (:kind edge) :namespace)
+             :boundary (:boundary edge)
+             :semantic-span {:explicit-edge ordinal}
+             :source-span (source-span source-path 0)}))
+        explicit))))))
+
+(defn sh06-resolution-request
+  [source-path sh05-artifact]
+  (let [verification (sh05-macro-artifact-verification sh05-artifact)
+        _ (when-not (= :passed (:status verification))
+            (c5-resolution-fail!
+             "C5-UNRESOLVED" source-path
+             {:stage :name-resolution}
+             {:missing-fields [:verified-sh05-macro-artifact]}))
+        forms (mapv :form (:expanded-syntax-stream sh05-artifact))
+        module (parse-module source-path forms)
+        overrides (sh06-resolution-request-overrides module)
+        imports (sh06-resolution-import-records
+                 source-path module overrides)
+        explicit-definitions
+        (sh06-resolution-explicit-candidate-records
+         module sh05-artifact overrides)
+        analysis-inputs
+        (sh06-resolution-analysis-inputs
+         module sh05-artifact overrides)
+        source-revision-id
+        (sh06-resolution-source-revision-id sh05-artifact)]
+    {:artifact :gravity/sh06-authenticated-c4-resolution-request
+     :schema-version 1
+     :module
+     {:namespace (:module module)
+      :package (sh06-resolution-package (:module module))
+      :profile (:profile module)
+      :target (:target module)
+      :safety (:safety module)
+      :effects (vec (sort (:effects module)))
+      :capabilities (vec (sort (:capabilities module)))
+      :exports (vec (:exports module))
+      :source-revision-id source-revision-id
+      :c4-artifact-id (:artifact-id sh05-artifact)}
+     :definitions
+     (vec (concat
+           (sh06-resolution-definition-records module sh05-artifact)
+           explicit-definitions))
+     :imports imports
+     :import-bindings
+     (sh06-resolution-import-binding-records module imports overrides)
+     :lexical-scopes (:lexical-scopes analysis-inputs)
+     :references (:references analysis-inputs)
+     :core-bindings (sh06-resolution-core-records)
+     :dependency-edges
+     (sh06-resolution-dependency-edges source-path module imports overrides)
+     :macro-expansion-binding
+     {:artifact :gravity/sh05-macro-expansion-binding
+      :schema-version 1
+      :c4-artifact-id (:artifact-id sh05-artifact)
+      :source-revision-id source-revision-id
+      :macro-result-id (:expanded-syntax-stream-id sh05-artifact)
+      :authenticated-envelope-id
+      (sh06-resolution-envelope-id sh05-artifact)}
+     :provenance {:actual-source-path source-path}}))
+
+(def sh06-resolution-source-relative-path
+  "bootstrap/gravity/src/gravity/resolution.gravity")
+(def sh06-resolution-facade-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")
+(def sh06-resolution-adapter-contract
+  :gravity/sh06-to-c5-resolution-products-v1)
+(def sh06-resolution-envelope-stage :c5-resolution)
+(def sh06-resolution-sealed-artifact-kind
+  :gravity/sh06-resolution-products)
+
+;; Final source/plan pins are filled only after the leaf's semantic matrix is
+;; stable.  A nil pin is rejected, so an in-progress leaf cannot accidentally
+;; receive integration credit.
+(def sh06-resolution-expected-source-byte-count 77209)
+(def sh06-resolution-expected-source-content-hash
+  "sha256:33bf3a40925c7b2f5b3b4885e1264547f794eb27f5d37398f4194641ac02d1ee")
+(def sh06-resolution-expected-plan-semantic-hash
+  "sha256:738f2c3337ed9896c6401f91d605d572048f61b3009e21a60d22b0b8040ac3dc")
+(def sh06-resolution-expected-functions-semantic-hash
+  "sha256:5a83fea48ef3fbf54aff38c0f17b2c04f618120366895e1d8c6dd629b5be5183")
+(def sh06-resolution-expected-function-count 94)
+(def sh06-resolution-expected-function-names-hash
+  "sha256:1a12e29aea416d4df7c2904d366975ce240f5ecaee0b2b9c5aa95b1aa83d1ba4")
+(def sh06-resolution-expected-function-shapes-hash
+  "sha256:62aec401ab663019a10b63c1b91487f70b9756503d59e43879283afae8c02f57")
+(def sh06-resolution-public-function-hashes
+  {'sh06-build-resolution-template
+   "sha256:154d52c95bc0488e5ec302ce9219b57d72995f5f54f137816ca980d97bf71f38"
+   'sh06-verify-resolution-template
+   "sha256:de579ce14c12644979fe636d5f7b32d02c505753b85463b8a1994eb9de7a03ec"
+   'sh06-verify-resolution-resolved
+   "sha256:80e3c1e5313ffb38805eba60110dc80edccb50218eaabd5edba98b2025e99342"})
+(def sh06-resolution-public-function-shapes
+  {'sh06-build-resolution-template {:arity 1 :params ['request]}
+   'sh06-verify-resolution-template
+   {:arity 2 :params ['analysis 'digest-requests]}
+   'sh06-verify-resolution-resolved
+   {:arity 3
+    :params ['analysis 'digest-requests 'resolved-digests]}})
+
+(defn sh06-resolution-boundary-fail!
+  [rule source-path missing-field observed facts]
+  (c5-resolution-fail!
+   rule source-path
+   {:source-span (source-span source-path 0)
+    :symbol (:symbol facts)
+    :syntax-id (:syntax-id facts)
+    :namespace (:namespace facts)
+    :profile (:profile facts)
+    :target (:target facts)
+    :candidate-bindings (:candidate-bindings facts)
+    :dependency-edge (:dependency-edge facts)}
+   {:severity :error
+    :profile (:profile facts)
+    :missing-fields [missing-field]
+    :facts (merge {:sh06-boundary :gravity-resolution-plan} facts)
+    :observed observed}))
+
+(defn sh06-resolution-resolve-source-path
+  []
+  (let [anchor (java.io.File.
+                (p15-s23-stage2-compiler-artifact-source-path))
+        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
+    (or
+     (loop [directory start]
+       (when directory
+         (let [candidate
+               (java.io.File. directory sh06-resolution-source-relative-path)]
+           (if (.isFile candidate)
+             (.getPath candidate)
+             (recur (.getParentFile directory))))))
+     sh06-resolution-source-relative-path)))
+
+(defn sh06-resolution-read-pinned-source!
+  [request-source]
+  (let [source-path (sh06-resolution-resolve-source-path)
+        nio-path (.toPath (java.io.File. source-path))
+        nofollow (into-array java.nio.file.LinkOption
+                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        attributes
+        (try
+          (java.nio.file.Files/readAttributes
+           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
+          (catch Exception error
+            (sh06-resolution-boundary-fail!
+             "C5-UNRESOLVED" request-source :pinned-resolution-source-readable
+             source-path {:cause-message (.getMessage error)})))
+        bytes
+        (try
+          (java.nio.file.Files/readAllBytes nio-path)
+          (catch Exception error
+            (sh06-resolution-boundary-fail!
+             "C5-UNRESOLVED" request-source :pinned-resolution-source-bytes
+             source-path {:cause-message (.getMessage error)})))
+        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+    (when-not
+     (and (number? sh06-resolution-expected-source-byte-count)
+          (string? sh06-resolution-expected-source-content-hash)
+          attributes (.isRegularFile attributes)
+          (= (long sh06-resolution-expected-source-byte-count)
+             (.size attributes))
+          (= sh06-resolution-expected-source-byte-count (alength bytes))
+          (= sh06-resolution-expected-source-content-hash content-hash))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" request-source :exact-pinned-resolution-source
+       {:source-path source-path
+        :source-byte-count (alength bytes)
+        :source-content-hash content-hash}
+       {:expected-byte-count sh06-resolution-expected-source-byte-count
+        :expected-content-hash
+        sh06-resolution-expected-source-content-hash}))
+    {:source-path source-path
+     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
+     :source-byte-count (alength bytes)
+     :source-content-hash content-hash}))
+
+(defn sh06-resolution-plan-identities
+  [plan]
+  (let [functions (:functions plan)
+        shapes
+        (into (sorted-map)
+              (map (fn [[name function]]
+                     [name (select-keys function [:arity :params])]))
+              functions)]
+    {:plan-semantic-hash
+     (p15-s23-c11-mir-digest
+      (p15-s23-stage2-compiler-artifact-semantic-input plan))
+     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
+     :function-count (count functions)
+     :function-names-hash
+     (p15-s23-c11-mir-digest (vec (keys functions)))
+     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
+     :public-function-hashes
+     (into (sorted-map)
+           (map (fn [name]
+                  [name (p15-s23-c11-mir-digest (get functions name))]))
+           (keys sh06-resolution-public-function-shapes))
+     :public-function-shapes
+     (select-keys shapes (keys sh06-resolution-public-function-shapes))}))
+
+(defn sh06-resolution-build-binding!
+  [request-source]
+  (let [source (sh06-resolution-read-pinned-source! request-source)
+        emitter
+        (:emitter
+         (c-backend-stage2-plan-emitter-source-rule!
+          (:source-path source) :jvm))
+        plan
+        (p15-s23-stage2-compiler-artifact-plan
+         emitter (:source-path source) (:source-text source))
+        identities (sh06-resolution-plan-identities plan)]
+    (when-not
+     (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+          (true? (:compiler-artifact-plan? plan))
+          (= 'gravity.resolution (get-in plan [:module :module]))
+          (= :meta (get-in plan [:module :profile]))
+          (= :jvm (get-in plan [:module :target]))
+          (= #{} (get-in plan [:module :effects]))
+          (= #{} (get-in plan [:module :capabilities]))
+          (= :safe (get-in plan [:module :safety]))
+          (= sh06-resolution-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh06-resolution-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh06-resolution-expected-function-count
+             (:function-count identities))
+          (= sh06-resolution-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh06-resolution-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh06-resolution-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh06-resolution-public-function-shapes
+             (:public-function-shapes identities)))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" request-source :pinned-resolution-plan-and-functions
+       identities {}))
+    (merge source identities
+           {:artifact :gravity/sh06-pinned-resolution-plan-binding
+            :status :complete
+            :semantic-authority :gravity-source
+            :compiled-by :clojure-stage0-seed
+            :executed-by :clojure-stage2-generic-rule-runner
+            :generic-bridge-residual? true
+            :self-hosted? false
+            :plan plan})))
+
+(def ^:private sh06-resolution-cached-binding
+  (delay (sh06-resolution-build-binding!
+          "<sh06-resolution-bootstrap>")))
+
+(defn sh06-resolution-current-binding!
+  [request-source]
+  (let [fresh (sh06-resolution-read-pinned-source! request-source)
+        binding @sh06-resolution-cached-binding
+        identities (sh06-resolution-plan-identities (:plan binding))]
+    (when-not
+     (and (= (:source-byte-count fresh) (:source-byte-count binding))
+          (= (:source-content-hash fresh) (:source-content-hash binding))
+          (= (select-keys
+              binding
+              [:plan-semantic-hash :functions-semantic-hash
+               :function-count :function-names-hash
+               :function-shapes-hash :public-function-hashes
+               :public-function-shapes])
+             identities))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" request-source
+       :fresh-resolution-source-and-plan-binding binding {}))
+    binding))
+
+(defn sh06-resolution-execute!
+  [source-path binding function arguments]
+  (try
+    (sh04-syntax-strip-host-metadata
+     (p15-s23-stage2-runtime-execute-function
+      {:engine :gravity-sh06-pinned-resolution-runner
+       :compiler-artifact-plan? true}
+      (:plan binding) function
+      (sh04-syntax-strip-host-metadata arguments)))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :bounded-resolution-host-stack function
+       {:contained-host-error (.getName (class error))}))
+    (catch AssertionError error
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :contained-resolution-assertion function
+       {:contained-host-error (.getName (class error))}))
+    (catch LinkageError error
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :contained-resolution-linkage function
+       {:contained-host-error (.getName (class error))}))
+    (catch clojure.lang.ExceptionInfo error
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path
+       :contained-resolution-runtime-diagnostic function
+       {:contained-diagnostic (:id (ex-data error))}))
+    (catch Exception error
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :contained-resolution-host-failure
+       function {:contained-host-error (.getName (class error))
+                 :cause-message (.getMessage error)}))))
+
+(def sh06-resolution-transport-bounds
+  ;; Per-component request, replay, result, and upstream carrier limits.  These
+  ;; remain strict even though the aggregate artifact serializes several
+  ;; independently bounded products and projections together.
+  {:maximum-carrier-nodes 8388608
+   :maximum-carrier-depth 64
+   :maximum-container-width 65536})
+
+(def sh06-resolution-artifact-bounds
+  ;; The authentic reader module measures 13,219,191 aggregate nodes, depth 33,
+  ;; and width 43,713.  The next power-of-two node ceiling provides a finite
+  ;; 26.9% margin without widening any individual component allowance.
+  {:maximum-carrier-nodes 16777216
+   :maximum-carrier-depth 64
+   :maximum-container-width 65536
+   ;; The authentic reader artifact is 197,618,995 UTF-8 bytes.  A 256 MiB
+   ;; ceiling leaves 35.8% finite headroom and is checked before EDN parsing.
+   :maximum-serialized-bytes 268435456})
+
+(defmacro with-sh06-resolution-transport-bounds
+  [& body]
+  `(binding [p15-s23-c6c10-max-carrier-nodes
+             (:maximum-carrier-nodes sh06-resolution-transport-bounds)
+             p15-s23-c6c10-max-carrier-depth
+             (:maximum-carrier-depth sh06-resolution-transport-bounds)
+             p15-s23-c6c10-max-container-width
+             (:maximum-container-width sh06-resolution-transport-bounds)]
+     ~@body))
+
+(defn sh06-resolution-require-carrier!
+  [source-path carrier value]
+  (let [validation
+        (p15-s23-trusted-carrier-validation
+         value :default-only
+         (:maximum-carrier-nodes sh06-resolution-transport-bounds)
+         (:maximum-carrier-depth sh06-resolution-transport-bounds)
+         (:maximum-container-width sh06-resolution-transport-bounds))]
+    (when-not (= :passed (:status validation))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :bounded-sh06-resolution-carrier
+       (select-keys
+        validation
+        [:reason :class :observed-nodes :observed-depth
+         :maximum-nodes :maximum-depth :maximum-width])
+       {:carrier carrier
+        :transport-bounds sh06-resolution-transport-bounds}))
+    validation))
+
+(defn sh06-resolution-digest-reference
+  [value]
+  (when (and (map? value)
+             (= #{:digest-ref} (set (keys value)))
+             (integer? (:digest-ref value))
+             (not (neg? (:digest-ref value))))
+    (:digest-ref value)))
+
+(defn sh06-resolution-resolve-declared-id!
+  [source-path value resolved-digests slot]
+  (let [ordinal (sh06-resolution-digest-reference value)
+        resolved (when (some? ordinal) (get resolved-digests ordinal))]
+    (when-not (and (some? ordinal)
+                   (p15-s23-sh02-sha256-id? resolved))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path slot value
+       {:resolved-digest resolved :digest-ordinal ordinal}))
+    resolved))
+
+(defn sh06-resolution-resolve-record-binding-id!
+  [source-path record resolved-digests slot]
+  (assoc record :binding-id
+         (sh06-resolution-resolve-declared-id!
+          source-path (:binding-id record) resolved-digests slot)))
+
+(defn sh06-resolution-resolve-analysis!
+  ([source-path raw-analysis resolved-digests]
+   (sh06-resolution-resolve-analysis!
+    source-path raw-analysis resolved-digests false))
+  ([source-path raw-analysis resolved-digests allow-pending-artifact-id?]
+   (let [bindings
+        (mapv
+         #(sh06-resolution-resolve-record-binding-id!
+           source-path % resolved-digests :binding-table-binding-id)
+         (:binding-table raw-analysis))
+        resolutions
+        (mapv
+         #(sh06-resolution-resolve-record-binding-id!
+           source-path % resolved-digests :resolution-table-binding-id)
+         (:resolution-table raw-analysis))
+        binding-identities
+        (mapv
+         #(sh06-resolution-resolve-declared-id!
+           source-path % resolved-digests
+           :identity-preimage-binding-identity)
+         (get-in raw-analysis [:identity-preimage :binding-identities]))
+        invalidation-binding-ids
+        (mapv
+         #(sh06-resolution-resolve-declared-id!
+           source-path % resolved-digests
+           :incremental-invalidation-binding-id)
+         (get-in raw-analysis
+                 [:incremental-invalidation-inputs :binding-ids]))
+        identity-preimage
+        (-> (:identity-preimage raw-analysis)
+            (assoc :binding-identities binding-identities)
+            (assoc :resolutions
+                   (mapv #(dissoc % :source-span) resolutions)))
+        artifact-ordinal
+        (sh06-resolution-digest-reference (:artifact-id raw-analysis))
+        artifact-id
+        (if (and allow-pending-artifact-id?
+                 (= artifact-ordinal (count resolved-digests)))
+          (:artifact-id raw-analysis)
+          (sh06-resolution-resolve-declared-id!
+           source-path (:artifact-id raw-analysis) resolved-digests
+           :namespace-analysis-artifact-id))]
+    (-> raw-analysis
+        (assoc :artifact-id artifact-id)
+        (assoc :binding-table bindings)
+        (assoc :resolution-table resolutions)
+        (assoc :identity-preimage identity-preimage)
+        (assoc-in [:incremental-invalidation-inputs :binding-ids]
+                  invalidation-binding-ids)))))
+
+(defn sh06-resolution-resolve-digest-requests!
+  [source-path raw-analysis digest-requests]
+  (when-not (and (vector? digest-requests)
+                 (<= (count digest-requests) 2048)
+                 (seq digest-requests))
+    (sh06-resolution-boundary-fail!
+     "C5-UNRESOLVED" source-path :bounded-resolution-digest-requests
+     digest-requests {:maximum-digest-requests 2048}))
+  (let [binding-count (count (:binding-table raw-analysis))]
+    (when-not (= (inc binding-count) (count digest-requests))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :complete-resolution-digest-requests
+       digest-requests {:binding-count binding-count}))
+    (loop [remaining digest-requests resolved []]
+      (if (empty? remaining)
+        resolved
+        (let [request (first remaining)
+              ordinal (:ordinal request)
+              purpose (:purpose request)
+              preimage
+              (if (= purpose :sh06-namespace-analysis-id)
+                (:identity-preimage
+                 (sh06-resolution-resolve-analysis!
+                  source-path raw-analysis resolved true))
+                (:preimage request))]
+          (when-not (= ordinal (count resolved))
+            (sh06-resolution-boundary-fail!
+             "C5-UNRESOLVED" source-path
+             :ordered-resolution-digest-requests request
+             {:resolved-count (count resolved)}))
+          (recur
+           (rest remaining)
+           (conj resolved
+                 (reader-canonical-hash
+                  {:domain :gravity/sh06-declared-digest-v1
+                   :purpose purpose :preimage preimage}))))))))
+
+(defn sh06-resolution-raise-rejection!
+  [source-path template]
+  (let [diagnostic (first (:diagnostics template))
+        requests (:digest-requests template)
+        request (first requests)
+        diagnostic-id
+        (reader-canonical-hash
+         {:domain :gravity/sh06-declared-digest-v1
+          :purpose (:purpose request)
+          :preimage (:preimage request)})
+        rule (:rule diagnostic)]
+    (when-not (and (= :rejected (:status template))
+                   (= 1 (count (:diagnostics template)))
+                   (= 1 (count requests))
+                   (contains? (set c5-resolution-diagnostic-ids) rule)
+                   (= 0 (:ordinal request))
+                   (= :sh06-resolution-diagnostic-id (:purpose request))
+                   (= {:digest-ref 0}
+                      (:diagnostic-id-request diagnostic))
+                   (p15-s23-sh02-sha256-id? diagnostic-id))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path
+       :exact-gravity-resolution-rejection template {}))
+    (c5-resolution-fail!
+     rule source-path
+     (assoc diagnostic
+            :source-span
+            (assoc (or (:source-span diagnostic)
+                       (source-span source-path 0))
+                   :source source-path))
+     {:severity :error
+      :profile (:profile diagnostic)
+      :diagnostic-id diagnostic-id
+      :facts (:facts diagnostic)
+      :remediation (:remediation diagnostic)})))
+
+(defn sh06-resolution-run-request!
+  [source-path binding request]
+  (sh06-resolution-require-carrier!
+   source-path :authenticated-sh06-resolution-request request)
+  (let [template
+        (sh06-resolution-execute!
+         source-path binding 'sh06-build-resolution-template [request])]
+    (sh06-resolution-require-carrier!
+     source-path :gravity-resolution-template template)
+    (case (:status template)
+      :rejected (sh06-resolution-raise-rejection! source-path template)
+      :accepted
+      (let [raw-analysis (:namespace-analysis-template template)
+            digest-requests (:digest-requests template)
+            template-verification
+            (sh06-resolution-execute!
+             source-path binding 'sh06-verify-resolution-template
+             [raw-analysis digest-requests])
+            _ (when-not (= :passed (:status template-verification))
+                (sh06-resolution-boundary-fail!
+                 "C5-UNRESOLVED" source-path
+                 :fresh-gravity-resolution-template-verification
+                 template-verification {}))
+            resolved-digests
+            (sh06-resolution-resolve-digest-requests!
+             source-path raw-analysis digest-requests)
+            resolved-analysis
+            (sh06-resolution-resolve-analysis!
+             source-path raw-analysis resolved-digests)
+            resolved-verification
+            (sh06-resolution-execute!
+             source-path binding 'sh06-verify-resolution-resolved
+             [resolved-analysis digest-requests resolved-digests])]
+        (sh06-resolution-require-carrier!
+         source-path :resolved-gravity-resolution-analysis
+         resolved-analysis)
+        (when-not (= :passed (:status resolved-verification))
+          (sh06-resolution-boundary-fail!
+           "C5-UNRESOLVED" source-path
+           :fresh-gravity-resolution-resolved-verification
+           resolved-verification {}))
+        {:raw-template-result template
+         :raw-analysis raw-analysis
+         :resolved-analysis resolved-analysis
+         :digest-requests digest-requests
+         :resolved-digests resolved-digests
+         :template-verification template-verification
+         :resolved-verification resolved-verification})
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path :gravity-resolution-result-status
+       template {}))))
+
+(defn sh06-resolution-order-compatibility
+  [order]
+  (case order
+    :local-lexical-binding :local
+    :current-namespace-binding :namespace
+    :alias-qualified-required-binding :alias-qualified
+    :fully-qualified-namespace-binding :fully-qualified
+    :profile-allowed-core-binding :core-auto-import
+    :explicit-foreign-import-binding :foreign
+    order))
+
+(defn sh06-resolution-product-projections
+  [analysis]
+  (let [compatibility-resolutions
+        (mapv #(assoc % :resolution-kind
+                      (sh06-resolution-order-compatibility
+                       (:resolution-order %)))
+              (:resolution-table analysis))]
+    {:namespace-analysis
+     (assoc analysis :artifact :gravity/namespace-analysis)
+     :binding-table
+     {:artifact :gravity/c5-binding-table
+      :status :complete
+      :bindings (:binding-table analysis)
+      :resolution-table compatibility-resolutions}
+     :alias-table
+     {:artifact :gravity/c5-alias-table
+      :status :complete :aliases (:alias-table analysis)}
+     :import-export-table
+     {:artifact :gravity/c5-import-export-table
+      :status :complete
+      :imports (:dependency-records analysis)
+      :exports (:exports analysis)}
+     :lexical-scope-graph
+     {:artifact :gravity/c5-lexical-scope-graph
+      :status :complete :scopes (:lexical-scope-graph analysis)}
+     :dependency-graph
+     (assoc (:dependency-graph analysis)
+            :artifact :gravity/c5-module-dependency-graph
+            :status :complete)
+     :cross-profile-edge-report
+     {:artifact :gravity/c5-cross-profile-edge-report
+      :status :complete
+      :records (:cross-profile-edge-report analysis)}
+     :incremental-invalidation-keys
+     {:artifact :gravity/c5-incremental-invalidation-keys
+      :status :stable
+      :inputs (:incremental-invalidation-inputs analysis)
+      :invalidation-id
+      (reader-canonical-hash
+       {:domain :gravity/sh06-invalidation-identity-v1
+        :inputs (:incremental-invalidation-inputs analysis)})}
+     :resolution-table compatibility-resolutions}))
+
+(defn sh06-resolution-identity-chunks
+  [values]
+  (mapv
+   (fn [chunk-index chunk]
+     {:chunk-index chunk-index
+      :entry-count (count chunk)
+      :chunk-id
+      (reader-canonical-hash
+       {:domain :gravity/sh06-resolution-identity-chunk-v1
+        :chunk-index chunk-index :entries (vec chunk)})})
+   (range)
+   (partition-all 16 values)))
+
+(defn sh06-resolution-artifact-identity-input
+  [artifact]
+  {:domain :gravity/sh06-resolution-artifact-v1
+   :kind (:kind artifact)
+   :slice (:slice artifact)
+   :task (:task artifact)
+   :adapter-contract
+   (get-in artifact [:gravity-resolution-boundary :adapter-contract])
+   :analysis-artifact-id
+   (get-in artifact [:gravity-resolution-boundary :resolved-analysis
+                     :artifact-id])
+   :source-revision-id
+   (get-in artifact [:gravity-resolution-boundary
+                     :authenticated-resolution-request :module
+                     :source-revision-id])
+   :upstream-artifact-id
+   (get-in artifact [:sh05-macro-artifact :artifact-id])
+   :upstream-syntax-stream-id
+   (get-in artifact [:sh05-macro-artifact :expanded-syntax-stream-id])
+   :upstream-trace-id
+   (get-in artifact [:sh05-macro-artifact :macro-expansion-trace-id])
+   :binding-id-chunks
+   (sh06-resolution-identity-chunks
+    (mapv :binding-id (get-in artifact [:binding-table :bindings])))
+   :resolution-chunks
+   (sh06-resolution-identity-chunks
+    (mapv #(dissoc % :source-span) (:resolution-table artifact)))
+   :dependency-graph-id
+   (reader-canonical-hash
+    {:domain :gravity/sh06-dependency-graph-v1
+     :nodes (get-in artifact [:dependency-graph :nodes])
+     :edges (mapv #(dissoc % :source-span)
+                  (get-in artifact [:dependency-graph :edges]))})
+   :invalidation-id
+   (get-in artifact [:incremental-invalidation-keys :invalidation-id])})
+
+(defn sh06-resolution-artifact-id
+  [artifact]
+  (reader-canonical-hash
+   (sh06-resolution-artifact-identity-input artifact)))
+
+(defn sh06-resolution-envelope-summary
+  [artifact]
+  {:slice :SH-06
+   :artifact-id (:artifact-id artifact)
+   :analysis-artifact-id
+   (get-in artifact [:gravity-resolution-boundary :resolved-analysis
+                     :artifact-id])
+   :upstream-artifact-id (get-in artifact [:sh05-macro-artifact :artifact-id])
+   :source-revision-id
+   (get-in artifact [:gravity-resolution-boundary
+                     :authenticated-resolution-request :module
+                     :source-revision-id])
+   :binding-count (count (get-in artifact [:binding-table :bindings]))
+   :reference-count (count (:resolution-table artifact))
+   :dependency-edge-count (count (get-in artifact [:dependency-graph :edges]))
+   :binding-id-chunks
+   (sh06-resolution-identity-chunks
+    (mapv :binding-id (get-in artifact [:binding-table :bindings])))
+   :resolution-chunks
+   (sh06-resolution-identity-chunks
+    (mapv #(dissoc % :source-span) (:resolution-table artifact)))})
+
+(defn sh06-resolution-sh02-descriptor
+  [source-path binding summary]
+  (let [projection-name :resolution-product-identities
+        fact-name :resolution-product-binding
+        identity-name :resolution-result
+        identity-domain :gravity/sh06-resolution-result-identity-v1
+        evidence-id
+        (p15-s23-c6c10-canonical-digest
+         source-path
+         {:domain :gravity/sh06-resolution-envelope-evidence-v1
+          :summary summary
+          :plan-semantic-hash (:plan-semantic-hash binding)})
+        identity-preimage {:summary summary}
+        observed-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:domain identity-domain
+                      :semantic-input identity-preimage})
+        fact-value {:family fact-name :entries [summary]}
+        sealed-artifact-id
+        (p15-s23-c6c10-canonical-digest
+         source-path {:resolution-result (:artifact-id summary)})]
+    {:artifact :gravity/private-authenticated-envelope-descriptor
+     :schema-version 1
+     :stage sh06-resolution-envelope-stage
+     :artifact-kind sh06-resolution-sealed-artifact-kind
+     :source-revision
+     {:owner :sh06-resolution
+      :source-language :gravity
+      :logical-source-path sh06-resolution-source-relative-path
+      :source-content-hash (:source-content-hash binding)
+      :source-byte-count (:source-byte-count binding)
+      :plan-semantic-hash (:plan-semantic-hash binding)
+      :functions-semantic-hash (:functions-semantic-hash binding)
+      :builder-function 'sh06-build-resolution-template
+      :builder-semantic-hash
+      (get sh06-resolution-public-function-hashes
+           'sh06-build-resolution-template)
+      :function-shapes sh06-resolution-public-function-shapes}
+     :projection-contract
+     {:contract-kind :gravity/sh06-resolution-product-envelope-contract
+      :contract-version 1 :profile :meta :target :jvm
+      :required-semantic-projections [projection-name]
+      :required-fact-families [fact-name]
+      :required-identity-subjects [identity-name]}
+     :semantic-projections
+     [{:name projection-name :role :complete-resolution-product-identities
+       :entry-count (count summary) :value summary}]
+     :fact-transitions
+     [{:name fact-name :disposition :preserved
+       :input fact-value :output fact-value
+       :input-count (count fact-value)
+       :output-count (count fact-value)
+       :evidence-ids [evidence-id]}]
+     :effect-capability-relation
+     {:effect-facts {:declared #{} :observed #{}}
+      :capability-facts {:required #{} :granted #{}}
+      :capability-proof-facts {:proof-ids [evidence-id]}
+      :effect-order [] :provider-selections [] :grant-scopes []}
+     :proof-composite
+     {:proof-records [{:proof-id evidence-id :status :checked}]
+      :proof-certificate-table {evidence-id {:status :checked}}
+      :proof-summary {:required 1 :checked 1}
+      :proof-usage [{:proof-id evidence-id :used-by :resolution-products}]}
+     :preservation
+     {:requires [fact-name] :preserves [fact-name]
+      :invalidates [] :regenerates []
+      :residual-checks [:identity-subject-equality
+                        :digest-graph-reachability]}
+     :identity-subjects
+     [{:name identity-name :domain identity-domain
+       :preimage identity-preimage :observed-id observed-id}]
+     :lineage
+     [{:stage :sh06-resolution
+       :artifact-kind :gravity/sh06-resolution-artifact
+       :semantic-id (:artifact-id summary)
+       :artifact-id sealed-artifact-id
+       :verification-id evidence-id
+       :relation :produced-from-gravity-resolution}]
+     :reference-closure
+     {:root-id "sh06-resolution-result"
+      :node-ids ["sh06-resolution-result"]
+      :edges [] :fact-reference-ids [evidence-id]
+      :origin-reference-ids [] :proof-reference-ids [evidence-id]
+      :runtime-check-reference-ids [] :observed-node-count 1
+      :observed-edge-count 0 :observed-maximum-depth 0}
+     :actual-path-provenance
+     {:source-path source-path
+      :workspace-root (System/getProperty "user.dir")
+      :invocation-root (System/getProperty "user.dir")}
+     :bounds p15-s23-sh02-authenticated-envelope-bounds}))
+
+(def sh06-resolution-artifact-keys
+  #{:kind :status :slice :task :document-set :governing-document
+    :artifact-id :sh05-macro-artifact :gravity-resolution-boundary
+    :provenance :pass :execution-boundary :capability-based-proof
+    :diagnostics :namespace-analysis :binding-table :alias-table
+    :import-export-table :lexical-scope-graph :dependency-graph
+    :cross-profile-edge-report :incremental-invalidation-keys
+    :resolution-table})
+
+(def sh06-resolution-boundary-keys
+  #{:slice :owner :adapter-contract :plan-binding
+    :authenticated-resolution-request :raw-template-result :raw-analysis
+    :resolved-analysis :digest-requests :resolved-digests
+    :template-verification :resolved-verification
+    :authenticated-envelope-descriptor :authenticated-envelope
+    :target-source-reread? :clojure-adapter-residual? :self-hosted?})
+
+(def sh06-resolution-component-paths
+  [[:document-set [:document-set]]
+   [:provenance [:provenance]]
+   [:pass [:pass]]
+   [:execution-boundary [:execution-boundary]]
+   [:capability-based-proof [:capability-based-proof]]
+   [:diagnostics [:diagnostics]]
+   [:sh05-macro-artifact [:sh05-macro-artifact]]
+   [:plan-binding [:gravity-resolution-boundary :plan-binding]]
+   [:authenticated-resolution-request
+    [:gravity-resolution-boundary :authenticated-resolution-request]]
+   [:raw-template-result
+    [:gravity-resolution-boundary :raw-template-result]]
+   [:raw-analysis [:gravity-resolution-boundary :raw-analysis]]
+   [:resolved-analysis [:gravity-resolution-boundary :resolved-analysis]]
+   [:digest-requests [:gravity-resolution-boundary :digest-requests]]
+   [:resolved-digests [:gravity-resolution-boundary :resolved-digests]]
+   [:template-verification
+    [:gravity-resolution-boundary :template-verification]]
+   [:resolved-verification
+    [:gravity-resolution-boundary :resolved-verification]]
+   [:authenticated-envelope-descriptor
+    [:gravity-resolution-boundary :authenticated-envelope-descriptor]]
+   [:authenticated-envelope
+    [:gravity-resolution-boundary :authenticated-envelope]]
+   [:namespace-analysis [:namespace-analysis]]
+   [:binding-table [:binding-table]]
+   [:alias-table [:alias-table]]
+   [:import-export-table [:import-export-table]]
+   [:lexical-scope-graph [:lexical-scope-graph]]
+   [:dependency-graph [:dependency-graph]]
+   [:cross-profile-edge-report [:cross-profile-edge-report]]
+   [:incremental-invalidation-keys [:incremental-invalidation-keys]]
+   [:resolution-table [:resolution-table]]])
+
+(defn sh06-resolution-carrier-validation
+  [value bounds]
+  (p15-s23-trusted-carrier-validation
+   value :default-only
+   (:maximum-carrier-nodes bounds)
+   (:maximum-carrier-depth bounds)
+   (:maximum-container-width bounds)))
+
+(defn sh06-resolution-component-validations
+  [artifact]
+  (into
+   (sorted-map)
+   (map
+    (fn [[component path]]
+      [component
+       (sh06-resolution-carrier-validation
+        (get-in artifact path) sh06-resolution-transport-bounds)]))
+   sh06-resolution-component-paths))
+
+(def sh06-resolution-pass-contract
+  {:name :sh06-gravity-name-resolution
+   :input :authenticated-sh05-expanded-syntax
+   :output :authenticated-sh06-namespace-analysis
+   :preserves [:source-spans :syntax-ids :macro-lineage
+               :profile :target :effects :capabilities]
+   :rejects c5-resolution-diagnostic-ids})
+
+(def sh06-resolution-execution-boundary-contract
+  {:resolution-authority :gravity
+   :gravity-module 'gravity.resolution
+   :plan-runner :clojure-stage0
+   :digest-resolver :clojure-stage0
+   :envelope-binder :clojure-stage0
+   :compatibility-adapter :clojure-stage0
+   :component-transport-bounds sh06-resolution-transport-bounds
+   :aggregate-artifact-bounds sh06-resolution-artifact-bounds
+   :self-hosted? false})
+
+(defn sh06-resolution-artifact-verification-bounded*
+  [artifact construction?]
+  (with-sh06-resolution-transport-bounds
+   (let [source-path (or (get-in artifact [:provenance :source-path])
+                        "<sh06-resolution-artifact>")
+        boundary (:gravity-resolution-boundary artifact)
+        analysis (:resolved-analysis boundary)
+        sh05-artifact (:sh05-macro-artifact artifact)
+        sh05-report
+        (try
+          (sh05-macro-artifact-verification sh05-artifact)
+          (catch Throwable _ {:status :failed}))
+        binding
+        (try
+          (sh06-resolution-current-binding! source-path)
+          (catch Throwable _ nil))
+        expected-plan-binding
+        (when binding (dissoc binding :plan :source-text))
+        replay
+        (when (and binding (= :passed (:status sh05-report)))
+          (try
+            (let [request (sh06-resolution-request source-path sh05-artifact)
+                  run (sh06-resolution-run-request!
+                       source-path binding request)]
+              {:status :passed :request request :run run})
+            (catch InterruptedException interrupted
+              (.interrupt (Thread/currentThread))
+              (throw interrupted))
+            (catch Throwable error
+              {:status :failed
+               :contained-host-error (.getName (class error))
+               :contained-diagnostic
+               (when (instance? clojure.lang.ExceptionInfo error)
+                 (:id (ex-data error)))})))
+        expected-request (:request replay)
+        expected-run (:run replay)
+        gravity-report
+        (or (:resolved-verification expected-run) {:status :failed})
+        projections (when (map? analysis)
+                      (sh06-resolution-product-projections analysis))
+        summary (sh06-resolution-envelope-summary artifact)
+        expected-descriptor
+        (when binding
+          (sh06-resolution-sh02-descriptor source-path binding summary))
+        envelope-ok?
+        (and expected-descriptor
+             (= expected-descriptor
+                (:authenticated-envelope-descriptor boundary))
+             (try
+               (p15-s23-stage2-sh02-descriptor-envelope-verify!
+                (:authenticated-envelope boundary)
+                sh06-resolution-envelope-stage
+                sh06-resolution-sealed-artifact-kind
+                expected-descriptor source-path)
+               true
+               (catch Throwable _ false)))
+        base-checks
+        {:bounded-artifact-carrier? true
+         :bounded-semantic-components? true
+         :exact-kind? (= :gravity/sh06-resolution-artifact (:kind artifact))
+         :accepted-status? (= :accepted (:status artifact))
+         :document-set-current?
+         (= ["L3" "C5"] (:document-set artifact))
+         :governing-document-current?
+         (= c5-resolution-governing-document
+            (:governing-document artifact))
+         :fresh-upstream-sh05-verification?
+         (= :passed (:status sh05-report))
+         :plan-binding-current?
+         (and expected-plan-binding
+              (= expected-plan-binding (:plan-binding boundary)))
+         :fresh-gravity-request-replay?
+         (= :passed (:status replay))
+         :authenticated-resolution-request-current?
+         (and expected-request
+              (= expected-request
+                 (:authenticated-resolution-request boundary)))
+         :raw-template-result-current?
+         (and expected-run
+              (= (:raw-template-result expected-run)
+                 (:raw-template-result boundary)))
+         :raw-analysis-current?
+         (and expected-run
+              (= (:raw-analysis expected-run) (:raw-analysis boundary)))
+         :resolved-analysis-current?
+         (and expected-run
+              (= (:resolved-analysis expected-run)
+                 (:resolved-analysis boundary)))
+         :digest-requests-current?
+         (and expected-run
+              (= (:digest-requests expected-run)
+                 (:digest-requests boundary)))
+         :resolved-digests-current?
+         (and expected-run
+              (= (:resolved-digests expected-run)
+                 (:resolved-digests boundary)))
+         :template-verification-current?
+         (and expected-run
+              (= (:template-verification expected-run)
+                 (:template-verification boundary)))
+         :resolved-verification-current?
+         (and expected-run
+              (= (:resolved-verification expected-run)
+                 (:resolved-verification boundary)))
+         :upstream-request-binding?
+         (and (= (:artifact-id sh05-artifact)
+                 (get-in boundary
+                         [:authenticated-resolution-request :module
+                          :c4-artifact-id]))
+              (= (:expanded-syntax-stream-id sh05-artifact)
+                 (get-in boundary
+                         [:authenticated-resolution-request
+                          :macro-expansion-binding :macro-result-id])))
+         :fresh-gravity-verification?
+         (= :passed (:status gravity-report))
+         :namespace-analysis-current?
+         (= (:namespace-analysis projections) (:namespace-analysis artifact))
+         :binding-table-current?
+         (= (:binding-table projections) (:binding-table artifact))
+         :alias-table-current?
+         (= (:alias-table projections) (:alias-table artifact))
+         :import-export-current?
+         (= (:import-export-table projections) (:import-export-table artifact))
+         :lexical-scope-current?
+         (= (:lexical-scope-graph projections)
+            (:lexical-scope-graph artifact))
+         :dependency-graph-current?
+         (= (:dependency-graph projections) (:dependency-graph artifact))
+         :cross-profile-current?
+         (= (:cross-profile-edge-report projections)
+            (:cross-profile-edge-report artifact))
+         :invalidation-current?
+         (= (:incremental-invalidation-keys projections)
+            (:incremental-invalidation-keys artifact))
+         :resolution-table-current?
+         (= (:resolution-table projections) (:resolution-table artifact))
+         :artifact-identity-current?
+         (= (:artifact-id artifact) (sh06-resolution-artifact-id artifact))
+         :fresh-sh02-envelope-verified? envelope-ok?
+         :exact-artifact-shape?
+         (= sh06-resolution-artifact-keys (set (keys artifact)))
+         :exact-boundary-shape?
+         (= sh06-resolution-boundary-keys (set (keys boundary)))
+         :fixed-boundary-contract?
+         (= {:slice :SH-06
+             :owner :gravity-source
+             :adapter-contract sh06-resolution-adapter-contract
+             :target-source-reread? false
+             :clojure-adapter-residual? true
+             :self-hosted? false}
+            (select-keys
+             boundary
+             [:slice :owner :adapter-contract
+              :target-source-reread? :clojure-adapter-residual?
+              :self-hosted?]))
+         :pass-contract-current?
+         (= sh06-resolution-pass-contract (:pass artifact))
+         :execution-boundary-current?
+         (= sh06-resolution-execution-boundary-contract
+            (:execution-boundary artifact))
+         :component-transport-bounds-current?
+         (= sh06-resolution-transport-bounds
+            (get-in artifact
+                    [:execution-boundary :component-transport-bounds]))
+         :aggregate-artifact-bounds-current?
+         (= sh06-resolution-artifact-bounds
+            (get-in artifact
+                    [:execution-boundary :aggregate-artifact-bounds]))
+         :provenance-current?
+         (let [source-revision-id
+               (get-in boundary
+                       [:authenticated-resolution-request :module
+                        :source-revision-id])]
+           (and (= {:source-path source-path
+                    :source-revision-id source-revision-id}
+                   (:provenance artifact))
+                (= source-path
+                   (get-in boundary
+                           [:authenticated-resolution-request
+                            :provenance :actual-source-path]))))
+         :accepted-diagnostics-empty?
+         (empty? (:diagnostics artifact))}
+        base-failed
+        (->> base-checks (keep (fn [[key passed?]]
+                                (when-not passed? key))) vec)
+        expected-embedded-proof
+        (assoc base-checks
+               :embedded-capability-proof-current? true
+               :artifact :gravity/sh06-resolution-capability-proof
+               :status (if (empty? base-failed) :complete :failed)
+               :failed-checks base-failed)
+        embedded-proof-current?
+        (or (and construction?
+                 (nil? (:capability-based-proof artifact)))
+            (= expected-embedded-proof
+               (:capability-based-proof artifact)))
+        checks
+        (assoc base-checks
+               :embedded-capability-proof-current?
+               embedded-proof-current?)
+        failed (->> checks (keep (fn [[key passed?]]
+                                   (when-not passed? key))) vec)]
+    {:artifact :gravity/sh06-resolution-artifact-verification
+     :status (if (empty? failed) :passed :failed)
+     :checks checks
+     :failed-checks failed
+     :source-path source-path
+     :gravity-verification gravity-report
+     :upstream-verification sh05-report})))
+
+(defn sh06-resolution-artifact-verification*
+  [artifact construction?]
+  (with-sh06-resolution-transport-bounds
+   (let [aggregate-validation
+         (sh06-resolution-carrier-validation
+          artifact sh06-resolution-artifact-bounds)
+         carrier-ok? (= :passed (:status aggregate-validation))
+         boundary (when (and carrier-ok? (map? artifact))
+                    (:gravity-resolution-boundary artifact))
+         shape-checks
+         {:bounded-artifact-carrier? carrier-ok?
+          :top-level-artifact-map? (and carrier-ok? (map? artifact))
+          :exact-artifact-shape?
+          (and carrier-ok? (map? artifact)
+               (= sh06-resolution-artifact-keys (set (keys artifact))))
+          :resolution-boundary-map? (map? boundary)
+          :exact-boundary-shape?
+          (and (map? boundary)
+               (= sh06-resolution-boundary-keys (set (keys boundary))))}
+         shape-failed
+         (->> shape-checks
+              (keep (fn [[key passed?]] (when-not passed? key)))
+              vec)
+         component-validations
+         (when (empty? shape-failed)
+           (sh06-resolution-component-validations artifact))
+         components-ok?
+         (and component-validations
+              (every? #(= :passed (:status %))
+                      (vals component-validations)))
+         preflight-checks
+         (assoc shape-checks
+                :bounded-semantic-components? (boolean components-ok?))
+         preflight-failed
+         (->> preflight-checks
+              (keep (fn [[key passed?]] (when-not passed? key)))
+              vec)]
+     (if (empty? preflight-failed)
+       (sh06-resolution-artifact-verification-bounded* artifact construction?)
+       {:artifact :gravity/sh06-resolution-artifact-verification
+        :status :failed
+        :checks preflight-checks
+        :failed-checks preflight-failed
+        :source-path "<sh06-resolution-artifact>"
+        :carrier-validation aggregate-validation
+        :component-validations component-validations
+        :gravity-verification nil
+        :upstream-verification nil}))))
+
+(defn sh06-resolution-contained-verification-failure
+  [error]
+  {:artifact :gravity/sh06-resolution-artifact-verification
+   :status :failed
+   :checks {:contained-host-resource-failure? false}
+   :failed-checks [:contained-host-resource-failure?]
+   :source-path "<sh06-resolution-artifact>"
+   :contained-host-error (.getName (class error))
+   :gravity-verification nil
+   :upstream-verification nil})
+
+(defn sh06-resolution-artifact-verification-contained
+  [artifact construction?]
+  (try
+    (sh06-resolution-artifact-verification* artifact construction?)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch StackOverflowError error
+      (sh06-resolution-contained-verification-failure error))
+    (catch OutOfMemoryError error
+      (sh06-resolution-contained-verification-failure error))
+    (catch AssertionError error
+      (sh06-resolution-contained-verification-failure error))
+    (catch LinkageError error
+      (sh06-resolution-contained-verification-failure error))
+    (catch Exception error
+      (sh06-resolution-contained-verification-failure error))))
+
+(defn sh06-resolution-artifact-verification
+  [artifact]
+  (sh06-resolution-artifact-verification-contained artifact false))
+
+(defn sh06-resolution-capability-based-proof-for-construction
+  [artifact]
+  (let [report
+        (sh06-resolution-artifact-verification-contained artifact true)]
+    (assoc (:checks report)
+           :artifact :gravity/sh06-resolution-capability-proof
+           :status (if (= :passed (:status report)) :complete :failed)
+           :failed-checks (:failed-checks report))))
+
+(defn sh06-resolution-capability-based-proof
+  [artifact]
+  (let [report (sh06-resolution-artifact-verification artifact)]
+    (assoc (:checks report)
+           :artifact :gravity/sh06-resolution-capability-proof
+           :status (if (= :passed (:status report)) :complete :failed)
+           :failed-checks (:failed-checks report))))
+
+(defn sh06-resolution-source-artifact
+  [source-path source-text]
+  (with-sh06-resolution-transport-bounds
+   (let [sh05-artifact (sh05-macro-source-artifact source-path source-text)
+        upstream-report (sh05-macro-artifact-verification sh05-artifact)
+        _ (when-not (= :passed (:status upstream-report))
+            (sh06-resolution-boundary-fail!
+             "C5-UNRESOLVED" source-path
+             :fresh-authenticated-sh05-input upstream-report {}))
+        request (sh06-resolution-request source-path sh05-artifact)
+        binding (sh06-resolution-current-binding! source-path)
+        run (sh06-resolution-run-request! source-path binding request)
+        analysis (:resolved-analysis run)
+        projections (sh06-resolution-product-projections analysis)
+        plan-binding (dissoc binding :plan :source-text)
+        boundary-base
+        {:slice :SH-06
+         :owner :gravity-source
+         :adapter-contract sh06-resolution-adapter-contract
+         :plan-binding plan-binding
+         :authenticated-resolution-request request
+         :raw-template-result (:raw-template-result run)
+         :raw-analysis (:raw-analysis run)
+         :resolved-analysis analysis
+         :digest-requests (:digest-requests run)
+         :resolved-digests (:resolved-digests run)
+         :template-verification (:template-verification run)
+         :resolved-verification (:resolved-verification run)
+         :target-source-reread? false
+         :clojure-adapter-residual? true
+         :self-hosted? false}
+        artifact-base
+        (merge
+         {:kind :gravity/sh06-resolution-artifact
+          :status :accepted
+          :slice :SH-06
+          :task "SH-06"
+          :document-set ["L3" "C5"]
+          :governing-document c5-resolution-governing-document
+          :artifact-id nil
+          :sh05-macro-artifact sh05-artifact
+          :gravity-resolution-boundary boundary-base
+          :provenance
+          {:source-path source-path
+           :source-revision-id (get-in request
+                                       [:module :source-revision-id])}
+          :pass
+          {:name :sh06-gravity-name-resolution
+           :input :authenticated-sh05-expanded-syntax
+           :output :authenticated-sh06-namespace-analysis
+           :preserves [:source-spans :syntax-ids :macro-lineage
+                       :profile :target :effects :capabilities]
+           :rejects c5-resolution-diagnostic-ids}
+          :execution-boundary
+          {:resolution-authority :gravity
+           :gravity-module 'gravity.resolution
+           :plan-runner :clojure-stage0
+           :digest-resolver :clojure-stage0
+           :envelope-binder :clojure-stage0
+           :compatibility-adapter :clojure-stage0
+           :component-transport-bounds sh06-resolution-transport-bounds
+           :aggregate-artifact-bounds sh06-resolution-artifact-bounds
+           :self-hosted? false}
+          :capability-based-proof nil
+          :diagnostics []}
+         projections)
+        artifact-id (sh06-resolution-artifact-id artifact-base)
+        artifact-with-id (assoc artifact-base :artifact-id artifact-id)
+        summary (sh06-resolution-envelope-summary artifact-with-id)
+        descriptor
+        (sh06-resolution-sh02-descriptor source-path binding summary)
+        envelope
+        (p15-s23-stage2-sh02-descriptor-envelope
+         sh06-resolution-envelope-stage
+         sh06-resolution-sealed-artifact-kind descriptor source-path)
+        _ (p15-s23-stage2-sh02-descriptor-envelope-verify!
+           envelope sh06-resolution-envelope-stage
+           sh06-resolution-sealed-artifact-kind descriptor source-path)
+        artifact-with-envelope
+        (-> artifact-with-id
+            (assoc-in [:gravity-resolution-boundary
+                       :authenticated-envelope-descriptor] descriptor)
+            (assoc-in [:gravity-resolution-boundary
+                       :authenticated-envelope] envelope))
+        proof
+        (sh06-resolution-capability-based-proof-for-construction
+         artifact-with-envelope)
+        artifact
+        (assoc artifact-with-envelope :capability-based-proof proof)]
+    ;; The construction report above already replayed the exact authenticated
+    ;; request and every stored run product.  The only post-construction change
+    ;; is installing that report as the embedded proof, so a second identical
+    ;; Gravity replay here would add cost without checking a new semantic fact.
+    (when-not (and (= :complete (:status proof))
+                   (empty? (:failed-checks proof))
+                   (= proof (:capability-based-proof artifact)))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED" source-path
+       :final-authenticated-resolution-artifact
+       (:failed-checks proof) {}))
+    artifact)))
+
+(defn sh06-resolution-file-artifact
+  [source-path]
+  (let [c2-artifact (compiler-c2-reader-file-artifact source-path)
+        source-text (c2-reader-artifact-source-text source-path c2-artifact)]
+    (sh06-resolution-source-artifact source-path source-text)))
+
+(defn sh06-resolution-utf8-byte-count-up-to
+  [^String text maximum]
+  (let [length (.length text)]
+    (loop [index 0 byte-count 0]
+      (if (or (>= index length) (> byte-count maximum))
+        byte-count
+        (let [code (int (.charAt text index))]
+          (cond
+            (<= code 0x7f)
+            (recur (inc index) (inc byte-count))
+
+            (<= code 0x7ff)
+            (recur (inc index) (+ byte-count 2))
+
+            (and (<= 0xd800 code 0xdbff)
+                 (< (inc index) length)
+                 (let [low (int (.charAt text (inc index)))]
+                   (<= 0xdc00 low 0xdfff)))
+            (recur (+ index 2) (+ byte-count 4))
+
+            :else
+            (recur (inc index) (+ byte-count 3))))))))
+
+(defn sh06-resolution-bounded-pr-str
+  [source-path artifact]
+  (let [maximum (:maximum-serialized-bytes
+                 sh06-resolution-artifact-bounds)
+        builder (StringBuilder.)
+        byte-count (volatile! 0)
+        pending-high? (volatile! false)
+        char-array-class (Class/forName "[C")]
+    (letfn [(add-bytes! [amount]
+              (let [observed (vswap! byte-count + amount)]
+                (when (> observed maximum)
+                  (sh06-resolution-boundary-fail!
+                   "C5-UNRESOLVED" source-path
+                   :maximum-resolution-serialization-bytes
+                   {:observed-serialized-bytes observed
+                    :maximum-serialized-bytes maximum}
+                   {:aggregate-artifact-bounds
+                    sh06-resolution-artifact-bounds}))))
+            (consume-code! [code]
+              (if @pending-high?
+                (if (<= 0xdc00 code 0xdfff)
+                  (do (vreset! pending-high? false)
+                      (add-bytes! 4))
+                  (do (vreset! pending-high? false)
+                      (add-bytes! 3)
+                      (consume-code! code)))
+                (cond
+                  (<= code 0x7f) (add-bytes! 1)
+                  (<= code 0x7ff) (add-bytes! 2)
+                  (<= 0xd800 code 0xdbff) (vreset! pending-high? true)
+                  :else (add-bytes! 3))))
+            (append-range! [value offset length]
+              (dotimes [ordinal length]
+                (let [index (+ offset ordinal)
+                      code
+                      (if (string? value)
+                        (int (.charAt ^String value index))
+                        (int (aget ^chars value index)))]
+                  (consume-code! code)))
+              (if (string? value)
+                (.append builder ^String value offset (+ offset length))
+                (.append builder ^chars value offset length)))]
+      (let [writer
+            (proxy [java.io.Writer] []
+              (write
+                ([value]
+                 (cond
+                   (integer? value)
+                   (let [character (char value)]
+                     (consume-code! (int character))
+                     (.append builder character))
+
+                   (string? value)
+                   (append-range! value 0 (.length ^String value))
+
+                   (instance? char-array-class value)
+                   (append-range! value 0 (alength ^chars value))
+
+                   :else
+                   (throw
+                    (IllegalArgumentException.
+                     (str "unsupported writer value " (class value))))))
+                ([value offset length]
+                 (append-range! value offset length)))
+              (flush [])
+              (close []))]
+        (binding [*out* writer]
+          (pr artifact)
+          (.flush writer))
+        (when @pending-high?
+          (vreset! pending-high? false)
+          (add-bytes! 3))
+        (str builder)))))
+
+(defn sh06-resolution-serialize
+  [artifact]
+  (let [report (sh06-resolution-artifact-verification artifact)]
+    (when-not (= :passed (:status report))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED"
+       (or (get-in artifact [:provenance :source-path])
+           "<sh06-resolution-serialize>")
+       :verified-resolution-artifact-before-serialization
+       (:failed-checks report) {}))
+    (let [source-path
+          (or (get-in artifact [:provenance :source-path])
+              "<sh06-resolution-serialize>")]
+      (try
+        (sh06-resolution-bounded-pr-str source-path artifact)
+        (catch InterruptedException interrupted
+          (.interrupt (Thread/currentThread))
+          (throw interrupted))
+        (catch StackOverflowError error
+          (sh06-resolution-boundary-fail!
+           "C5-UNRESOLVED" source-path
+           :contained-resolution-serialization-resource
+           {:contained-host-error (.getName (class error))}
+           {:aggregate-artifact-bounds sh06-resolution-artifact-bounds}))
+        (catch OutOfMemoryError error
+          (sh06-resolution-boundary-fail!
+           "C5-UNRESOLVED" source-path
+           :contained-resolution-serialization-resource
+           {:contained-host-error (.getName (class error))}
+           {:aggregate-artifact-bounds
+            sh06-resolution-artifact-bounds}))))))
+
+(defn sh06-resolution-deserialize
+  [serialized]
+  (let [maximum (:maximum-serialized-bytes
+                 sh06-resolution-artifact-bounds)
+        serialized-byte-count
+        (cond
+          (string? serialized)
+          (sh06-resolution-utf8-byte-count-up-to serialized maximum)
+
+          (= (class serialized) (Class/forName "[B"))
+          (alength ^bytes serialized)
+
+          :else nil)
+        _
+        (when-not (and (some? serialized-byte-count)
+                       (<= serialized-byte-count maximum))
+          (sh06-resolution-boundary-fail!
+           "C5-UNRESOLVED" "<sh06-resolution-deserialize>"
+           :bounded-resolution-serialization-bytes
+           {:serialized-class
+            (when (some? serialized) (.getName (class serialized)))
+            :observed-serialized-bytes serialized-byte-count
+            :maximum-serialized-bytes maximum}
+           {:aggregate-artifact-bounds sh06-resolution-artifact-bounds}))
+        artifact
+        (try
+          (let [serialized-text
+                (if (string? serialized)
+                  serialized
+                  (String. ^bytes serialized
+                           java.nio.charset.StandardCharsets/UTF_8))]
+            (edn/read-string
+             {:readers *data-readers* :default tagged-literal}
+             serialized-text))
+          (catch InterruptedException interrupted
+            (.interrupt (Thread/currentThread))
+            (throw interrupted))
+          (catch Throwable error
+            (sh06-resolution-boundary-fail!
+             "C5-UNRESOLVED" "<sh06-resolution-deserialize>"
+             :canonical-resolution-serialization
+             {:serialized-class
+              (when (some? serialized) (.getName (class serialized)))}
+             {:contained-host-error (.getName (class error))})))
+        report (sh06-resolution-artifact-verification artifact)]
+    (when-not (= :passed (:status report))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED"
+       (or (get-in artifact [:provenance :source-path])
+           "<sh06-resolution-deserialize>")
+       :verified-resolution-artifact-after-deserialization
+       (:failed-checks report) {}))
+    artifact))
+
+(def compiler-c5-stage0-legacy-source-artifact
+  compiler-c5-resolution-source-artifact)
+
+(defn sh06-resolution-slice-source?
+  [source-path source-text]
+  (try
+    (let [c2 (compiler-c2-reader-source-artifact source-path source-text)
+          forms (:parsed-semantic-values c2)
+          module (parse-module source-path forms)]
+      (= :SH-06 (get-in module [:metadata :slice])))
+    (catch clojure.lang.ExceptionInfo _ false)))
+
+(defn compiler-c5-resolution-source-artifact
+  [source-path source-text]
+  (if (sh06-resolution-slice-source? source-path source-text)
+    (sh06-resolution-source-artifact source-path source-text)
+    (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
+
 (defn macro-file-artifact
   [path]
   (macro-source-artifact path (slurp path)))
@@ -163247,10 +165313,12 @@
           authentic-c-diagnostic
           (p15-s23-c-backend-sanitized-complete-diagnostic data)
           projection
-          (select-keys data [:id :rule :message :bootstrap-stage
+          (select-keys data [:id :rule :message :severity :bootstrap-stage
                                      :source-span
                                      :profile :active-profile :target
                                      :reader-state :analyzer-stage :alias :symbol
+                                     :syntax-id :candidate-bindings
+                                     :dependency-edge :namespace
                                      :module :macro :operator :function
                                      :expected-arity :actual-arity :effect
                                      :bootstrap-hosted? :packaged-jvm-cli?

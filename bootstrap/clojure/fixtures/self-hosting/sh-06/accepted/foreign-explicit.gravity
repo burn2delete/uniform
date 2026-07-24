@@ -1,0 +1,15 @@
+(ns self-hosting.sh06.foreign-explicit
+  (:profile :hosted)
+  (:target :jvm)
+  (:imports [java.time.Instant :as instant :profile :hosted
+             :boundary :interop :refer [now]
+             :effects #{:time/read} :capabilities #{:time/clock}
+             :visibility :public])
+  (:exports [read-instant])
+  (:effects #{:time/read})
+  (:capabilities #{:time/clock})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :fixture :foreign-explicit}))
+
+(defn read-instant []
+  (instant/now))

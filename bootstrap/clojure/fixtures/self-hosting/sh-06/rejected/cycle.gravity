@@ -1,0 +1,16 @@
+(ns self-hosting.sh06.reject.cycle
+  (:profile :meta) (:target :jvm)
+  (:requires [self-hosting.sh06.reject.cycle-peer :as peer :profile :meta])
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :module-graph
+                                         {:nodes [{:namespace self-hosting.sh06.reject.cycle :profile :meta :target :jvm}
+                                                  {:namespace self-hosting.sh06.reject.cycle-peer :profile :meta :target :jvm}]
+                                          :edges [{:from self-hosting.sh06.reject.cycle
+                                                   :to self-hosting.sh06.reject.cycle-peer}
+                                                  {:from self-hosting.sh06.reject.cycle-peer
+                                                   :to self-hosting.sh06.reject.cycle}]}}}
+              :sh06 {:expected-rule "C5-CYCLE" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :break-dependency-cycle}}))
+(defn candidate [] peer/value)

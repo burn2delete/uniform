@@ -1,0 +1,25 @@
+; SH-06 resolution-order conformance input.
+(ns self-hosting.sh06.resolution-order
+  (:profile :hosted)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]])
+  (:exports [resolve-all typed-value namespace-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :fixture :resolution-order}))
+
+(def namespace-value 17)
+
+(defn typed-value [value :- I64] :- I64
+  value)
+
+(defn resolve-all [argument]
+  (let [local-value argument]
+    (do local-value
+        namespace-value
+        shared/checksum
+        shared.core/checksum
+        checksum
+        (+ local-value namespace-value))))

@@ -1,0 +1,13 @@
+(ns self-hosting.sh06.reject.target
+  (:profile :hosted) (:target :jvm)
+  (:requires [gravity.wasm.only :as wasm-only :profile :hosted :target :wasm])
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-06
+              :compiler {:sh06-request {:request-version 1
+                                         :references [{:symbol wasm-only/value :position :expression}]
+                                         :candidate-bindings
+                                         [{:name value :namespace gravity.wasm.only :visibility :public
+                                           :target-set [:wasm]}]}}
+              :sh06 {:expected-rule "C5-TARGET" :expected-stage :name-resolution
+                     :expected-severity :error :expected-remediation :select-compatible-target}}))
+(defn candidate [] wasm-only/value)
