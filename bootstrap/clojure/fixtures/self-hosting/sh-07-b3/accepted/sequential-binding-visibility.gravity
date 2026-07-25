@@ -1,0 +1,16 @@
+; SH-07-B3 later initializers see only earlier bindings.
+(ns self-hosting.sh07-b3.sequential-binding-visibility
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sequential-values])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B3
+              :fixture :sequential-binding-visibility}))
+
+(def sequential-values
+  (let [first-value 1
+        second-value first-value
+        third-value second-value]
+    [first-value second-value third-value]))

@@ -9,7 +9,7 @@
                         :expected-stage :core-lowering
                         :expected-severity :error
                         :expected-reason :keyword-headed-call-deferred
-                        :expected-remediation "Use only the declared SH-07-B2 def, fn, quote, if, do, reference, symbol-headed call, and literal subset."}}))
+     :expected-remediation "Use only the declared SH-07-B3 def, fn, quote, if, do, simple-symbol sequential let, reference, symbol-headed call, and literal subset."}}))
 
 (def keyword-call
   (:answer {:answer 42}))
