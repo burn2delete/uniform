@@ -1,0 +1,15 @@
+(ns self-hosting.sh07-b2.reject.keyword-headed-call
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2
+              :sh07-b2 {:expected-rule "C6-LOWERING-GAP"
+                        :expected-stage :core-lowering
+                        :expected-severity :error
+                        :expected-reason :keyword-headed-call-deferred
+                        :expected-remediation "Use only the declared SH-07-B2 def, fn, quote, if, do, reference, symbol-headed call, and literal subset."}}))
+
+(def keyword-call
+  (:answer {:answer 42}))

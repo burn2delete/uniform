@@ -1,0 +1,13 @@
+; SH-07-B2 equal-valued operator/argument position distinction.
+(ns self-hosting.sh07-b2.operator-argument-same-symbol
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [apply-self])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2
+              :fixture :operator-argument-same-symbol}))
+
+(defn apply-self [f]
+  (f f))

@@ -1,0 +1,15 @@
+; SH-07-B2 fully qualified current-namespace declaration and call.
+(ns self-hosting.sh07-b2.qualified-symbol-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [qualified-identity qualified-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2 :fixture :qualified-symbol-call}))
+
+(defn self-hosting.sh07-b2.qualified-symbol-call/qualified-identity [value]
+  value)
+
+(def qualified-result
+  (self-hosting.sh07-b2.qualified-symbol-call/qualified-identity 11))

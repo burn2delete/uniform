@@ -157262,9 +157262,11 @@
                         (walk-form item nested syntax :expression)))
 
                     :else
-                    (doseq [item value]
+                    (doseq [[index item] (map-indexed vector value)]
                       (walk-form item scope-chain syntax
-                                 (if (= item operator) :operator position)))))
+                                 (if (zero? index)
+                                   :operator
+                                   position)))))
 
                 (map? value)
                 (doseq [[key item] value]
@@ -158789,7 +158791,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1 is the first checked-core projection owned by Gravity source.
+;; SH-07-A/B1/B2 is the first checked-core projection owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
 ;; requests, and keeps physical paths out of semantic identity.
@@ -158797,7 +158799,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v2)
+  :gravity/sh07-to-c6-core-products-v3)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158810,25 +158812,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 102496)
+(def sh07-core-expected-source-byte-count 125376)
 (def sh07-core-expected-source-content-hash
-  "sha256:54cb8dc922703b7d499dcd0ede6f7930517a4e55159c6aaa7035b6b494114853")
+  "sha256:7acea4f51437b9372db74cef5caafc61f10d1637f963a7ed497fb950dad2f4a1")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:84334c8203423fc7c776afd58bb7a5949a137a9f2397f235f85aa29f20697080")
+  "sha256:7bfc1b7b4c45b11108619c1eeef266c6d89e08268a220be1dc2f5fb1cf87547f")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:49d06942ece837744924d99bfae7a0ea91a8cea4eef0e369951de4cdc68e3f26")
-(def sh07-core-expected-function-count 104)
+  "sha256:b0eac94be84eb9e8f73d707779cb5038f488bf7f76e3de4f22115c72823c1b0e")
+(def sh07-core-expected-function-count 116)
 (def sh07-core-expected-function-names-hash
-  "sha256:ae695fccadbf0c3214341e1f2f2e5f3754d42b6b1b5c2f2961878f4542022f81")
+  "sha256:24f1c7261d2ec34f95535893695bd06aa6a3a67832c6a26d45b5646350d56eaf")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:293928033a9650039851b39860ab1fbd9fc66f3456087f26848eb9efbd3c760b")
+  "sha256:14804bfd544afcd09496eede46d2e6b61a7b4e2144a1194610734bf23bf0568b")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:156af1417b368c467968b6ccc121761c6d2be80b0a7a580c50e3c3135b63237e"
+   "sha256:b12a70366924b6f27b9d59bec94c55bd3c00c9970606ec6a39ed44dc00303395"
    'sh07-verify-core-resolved
-   "sha256:ea57688c4f50c10a4a59d0a2b3c727115aebe967aec3cd553e6c7029fccff207"})
+   "sha256:a78d04eea43057a73286f55bf02c6260ace68bef63beb6a6bc10fdba8a2f812c"})
 
 (defn sh07-core-source-path
   []
@@ -159087,6 +159089,23 @@
     :path path
     :kind kind}))
 
+(defn sh07-core-projected-syntax-id
+  [source-revision-id root-syntax-id path kind trace]
+  (cond
+    (empty? path)
+    root-syntax-id
+
+    (and trace (= path [2]))
+    (:introduced-fn-syntax-id trace)
+
+    :else
+    (reader-canonical-hash
+     {:domain :gravity/sh07-form-syntax-v1
+      :source-revision-id source-revision-id
+      :root-syntax-id root-syntax-id
+      :path path
+      :kind kind})))
+
 (defn sh07-core-neutral-value
   [source-path source-revision-id root-syntax-id path
    decimal-evidence value]
@@ -159226,16 +159245,9 @@
     (letfn [(walk [value path parent-form-id]
               (let [kind (sh07-core-value-kind value)
                     syntax-id
-                    (cond
-                      (empty? path) root-id
-                      (and trace? (= path [2]))
-                      (:introduced-fn-syntax-id trace)
-                      :else
-                      (reader-canonical-hash
-                       {:domain :gravity/sh07-form-syntax-v1
-                        :source-revision-id source-revision-id
-                        :root-syntax-id root-id :path path
-                        :kind kind}))
+                    (sh07-core-projected-syntax-id
+                     source-revision-id root-id path kind
+                     (when trace? trace))
                     form-id
                     (sh07-core-projected-form-id
                      source-revision-id root-id path kind)
@@ -159279,6 +159291,405 @@
                 record))]
       (let [root (walk (:form syntax) [] nil)]
         {:root root :records @records}))))
+
+(defn sh07-core-parameter-binding-paths
+  [parameters parameter-path]
+  (loop [remaining (seq parameters)
+         index 0
+         result []]
+    (if (empty? remaining)
+      result
+      (let [item (first remaining)]
+        (cond
+          (= item ':-)
+          (recur (nnext remaining) (+ index 2) result)
+
+          (= item '&)
+          (recur (next remaining) (inc index) result)
+
+          (symbol? item)
+          (recur
+           (next remaining)
+           (inc index)
+           (conj result
+                 {:name item
+                  :path (conj parameter-path index)}))
+
+          :else
+          (recur (next remaining) (inc index) result))))))
+
+(defn sh07-core-resolution-projection!
+  [source-path source-revision-id executable-syntax trees traces
+   authenticated-sh06-request resolved-analysis]
+  (let [upstream-scopes (vec (:lexical-scopes authenticated-sh06-request))
+        upstream-references (vec (:references authenticated-sh06-request))
+        resolved-references (vec (:resolution-table resolved-analysis))
+        resolved-by-reference
+        (into {} (map (juxt :syntax-id identity)) resolved-references)
+        resolved-binding-by-id
+        (into {} (map (juxt :binding-id identity))
+              (:binding-table resolved-analysis))
+        scope-index (atom 0)
+        reference-index (atom 0)
+        projected-scope-by-upstream (atom {})
+        scope-by-syntax-id (atom {})
+        declaration-syntax-by-upstream-id (atom {})
+        occurrences (atom [])
+        trace-by-root (into {} (map (juxt :output-def-syntax-id identity))
+                            traces)
+        root-by-upstream-id
+        (into {}
+              (map (fn [[syntax tree]]
+                     [(:syntax/id syntax) (:root tree)]))
+              (map vector executable-syntax trees))
+        projected-syntax-id
+        (fn [syntax path value]
+          (sh07-core-projected-syntax-id
+           source-revision-id
+           (:sh07/root-syntax-id syntax)
+           path
+           (sh07-core-value-kind value)
+           (get trace-by-root (:sh07/root-syntax-id syntax))))
+        remember-scope!
+        (fn [syntax path value scope-chain]
+          (swap! scope-by-syntax-id
+                 assoc
+                 (projected-syntax-id syntax path value)
+                 (get @projected-scope-by-upstream
+                      (first scope-chain))))
+        consume-scope!
+        (fn [syntax parent-scope-id bindings]
+          (let [index @scope-index
+                scope (get upstream-scopes index)
+                projected-scope-id
+                (reader-canonical-hash
+                 {:domain :gravity/sh07-projected-lexical-scope-v1
+                  :source-revision-id source-revision-id
+                  :ordinal index
+                  :parent-scope-id
+                  (get @projected-scope-by-upstream parent-scope-id)
+                  :binding-names (mapv :name bindings)})]
+            (when-not
+             (and scope
+                  (= (:syntax/id syntax) (:owner-syntax-id scope))
+                  (= parent-scope-id (:parent-scope-id scope))
+                  (= (mapv :name bindings)
+                     (mapv #(get-in % [:name]) (:bindings scope))))
+              (throw
+               (ex-info "SH-07 lexical scope projection is not bijective"
+                        {:id "C6-VERIFY" :stage :core-lowering
+                         :source-path source-path
+                         :reason :sh06-lexical-scope-projection-mismatch
+                         :scope-index index})))
+            (swap! scope-index inc)
+            (swap! projected-scope-by-upstream
+                   assoc (:scope-id scope) projected-scope-id)
+            (assoc scope :sh07/projected-scope-id projected-scope-id)))
+        add-reference!
+        (fn [syntax path symbol position scope-chain]
+          (let [index @reference-index
+                upstream (get upstream-references index)
+                resolved (get resolved-by-reference (:syntax-id upstream))
+                resolved-binding
+                (get resolved-binding-by-id (:binding-id resolved))
+                expected-upstream-id
+                (reader-canonical-hash
+                 {:domain :gravity/sh06-reference-syntax-v1
+                  :owner-syntax-id (:syntax/id syntax)
+                  :ordinal (inc index)
+                  :symbol symbol
+                  :position position})
+                projected-id (projected-syntax-id syntax path symbol)]
+            (when-not
+             (and upstream resolved
+                  (= expected-upstream-id (:syntax-id upstream))
+                  (= symbol (:symbol upstream) (:symbol resolved))
+                  (= position (:position upstream) (:position resolved))
+                  (= (:syntax-id upstream) (:syntax-id resolved))
+                  (= (vec scope-chain) (:scope-chain upstream))
+                  (= (:semantic-span upstream) (:semantic-span resolved))
+                  resolved-binding
+                  (or (not= :lexical (:binding-class resolved-binding))
+                      (some #{(:scope-id resolved-binding)}
+                            scope-chain)))
+              (throw
+               (ex-info "SH-07 reference projection is not bijective"
+                        {:id "C6-VERIFY" :stage :core-lowering
+                         :source-path source-path
+                         :reason :sh06-reference-projection-mismatch
+                         :reference-index index
+                         :symbol symbol :position position})))
+            (swap! reference-index inc)
+            (swap! occurrences conj
+                   {:reference-syntax-id projected-id
+                    :symbol symbol
+                    :position position
+                    :binding-id (:binding-id resolved)
+                    :resolution-order (:resolution-order resolved)
+                    :source-span
+                    (sh07-core-semantic-span (:source-span resolved))})))]
+    (letfn [(walk [syntax value path scope-chain position]
+              (remember-scope! syntax path value scope-chain)
+              (cond
+                (symbol? value)
+                (add-reference! syntax path value position scope-chain)
+
+                (seq? value)
+                (let [items (vec value)
+                      operator (first items)]
+                  (cond
+                    (= operator 'quote)
+                    (add-reference! syntax (conj path 0) 'quote
+                                    :operator scope-chain)
+
+                    (= operator 'syntax-quote)
+                    (add-reference! syntax (conj path 0) operator
+                                    :operator scope-chain)
+
+                    (contains? '#{def defconst} operator)
+                    (do
+                      (add-reference! syntax (conj path 0) operator
+                                      :operator scope-chain)
+                      (doseq [index (range 2 (count items))]
+                        (walk syntax (get items index) (conj path index)
+                              scope-chain :expression)))
+
+                    (= operator 'defn)
+                    (throw
+                     (ex-info "Unexpanded defn reached SH-07 projection"
+                              {:id "C6-VERIFY" :stage :core-lowering
+                               :source-path source-path
+                               :reason :unexpanded-defn}))
+
+                    (= operator 'fn)
+                    (let [named? (symbol? (second items))
+                          parameter-index (if named? 2 1)
+                          parameters (get items parameter-index [])
+                          binding-paths
+                          (cond-> (sh07-core-parameter-binding-paths
+                                   parameters
+                                   (conj path parameter-index))
+                            named?
+                            (conj {:name (second items)
+                                   :path (conj path 1)}))
+                          scope
+                          (consume-scope!
+                           syntax (first scope-chain) binding-paths)
+                          nested (cons (:scope-id scope) scope-chain)]
+                      (swap! scope-by-syntax-id
+                             assoc
+                             (projected-syntax-id syntax path value)
+                             (:sh07/projected-scope-id scope))
+                      (add-reference! syntax (conj path 0) 'fn
+                                      :operator scope-chain)
+                      (remember-scope!
+                       syntax (conj path parameter-index)
+                       parameters nested)
+                      (doseq [[binding projected]
+                              (map vector (:bindings scope) binding-paths)]
+                        (let [syntax-id
+                              (projected-syntax-id
+                               syntax (:path projected) (:name projected))]
+                          (swap! scope-by-syntax-id assoc syntax-id
+                                 (:sh07/projected-scope-id scope))
+                          (swap! declaration-syntax-by-upstream-id
+                                 assoc (:binding-syntax-id binding)
+                                 syntax-id)))
+                      (doseq [index
+                              (range (if named? 3 2) (count items))]
+                        (walk syntax (get items index) (conj path index)
+                              nested :expression)))
+
+                    (contains? '#{let loop} operator)
+                    (let [binding-vector (second items)
+                          pairs (partition 2 binding-vector)
+                          _ (add-reference! syntax (conj path 0) operator
+                                            :operator scope-chain)
+                          nested
+                          (loop [remaining (seq pairs)
+                                 binding-index 0
+                                 active scope-chain]
+                            (if (empty? remaining)
+                              active
+                              (let [[binding-name initializer]
+                                    (first remaining)
+                                    initializer-index
+                                    (+ 2 (* binding-index 2))
+                                    binding-path
+                                    (conj path 1 (* binding-index 2))
+                                    _ (walk syntax initializer
+                                            (conj path 1
+                                                  (inc (* binding-index 2)))
+                                            active :expression)
+                                    next-active
+                                    (if (symbol? binding-name)
+                                      (let [scope
+                                            (consume-scope!
+                                             syntax (first active)
+                                             [{:name binding-name
+                                               :path binding-path}])
+                                            syntax-id
+                                            (projected-syntax-id
+                                             syntax binding-path binding-name)]
+                                        (swap! scope-by-syntax-id assoc
+                                               syntax-id
+                                               (:sh07/projected-scope-id scope))
+                                        (swap!
+                                         declaration-syntax-by-upstream-id
+                                         assoc
+                                         (get-in scope
+                                                 [:bindings 0
+                                                  :binding-syntax-id])
+                                         syntax-id)
+                                        (cons (:scope-id scope) active))
+                                      active)]
+                                (recur (next remaining)
+                                       (inc binding-index)
+                                       next-active))))]
+                      (doseq [index (range 2 (count items))]
+                        (walk syntax (get items index) (conj path index)
+                              nested :expression)))
+
+                    :else
+                    (doseq [index (range (count items))]
+                      (let [item (get items index)]
+                        (walk syntax item (conj path index) scope-chain
+                              (if (zero? index)
+                                :operator
+                                position))))))
+
+                (map? value)
+                (doseq [[index [key child]] (map-indexed vector value)]
+                  (walk syntax key (conj path (* 2 index))
+                        scope-chain :expression)
+                  (walk syntax child (conj path (inc (* 2 index)))
+                        scope-chain :expression))
+
+                (set? value)
+                (let [ordered (vec (sort-by pr-str value))
+                      path-by-value
+                      (into {} (map-indexed (fn [index item] [item index]))
+                            ordered)]
+                  (doseq [item value]
+                    (walk syntax item (conj path (get path-by-value item))
+                          scope-chain position)))
+
+                (coll? value)
+                (doseq [index (range (count value))]
+                  (walk syntax (nth value index) (conj path index)
+                        scope-chain position))
+
+                :else nil))]
+      (doseq [syntax executable-syntax]
+        (walk syntax (:form syntax) [] [] :expression)))
+    (when-not
+     (and (= @scope-index (count upstream-scopes))
+          (= (count @projected-scope-by-upstream)
+             (count upstream-scopes))
+          (= @reference-index (count upstream-references))
+          (= (count upstream-references) (count resolved-references)))
+      (throw
+       (ex-info "SH-07 resolution projection did not consume SH-06 inputs"
+                {:id "C6-VERIFY" :stage :core-lowering
+                 :source-path source-path
+                 :reason :sh06-resolution-projection-incomplete
+                 :scopes [@scope-index (count upstream-scopes)]
+                 :references [@reference-index
+                              (count upstream-references)
+                              (count resolved-references)]})))
+    (let [all-records (vec (mapcat :records trees))
+          form-by-syntax (into {} (map (juxt :syntax-id identity))
+                               all-records)
+          namespace-definition-syntax
+          (into {}
+                (keep
+                 (fn [[upstream-id root]]
+                   (let [name-form
+                         (get
+                          (into {} (map (juxt :form-id identity))
+                                all-records)
+                          (second (:child-form-ids root)))]
+                     (when name-form
+                       [upstream-id (:syntax-id name-form)]))))
+                root-by-upstream-id)
+          binding-projections
+          (mapv
+           (fn [binding]
+             (let [definition-syntax-id
+                   (or
+                    (get @declaration-syntax-by-upstream-id
+                         (:definition-syntax-id binding))
+                    (get namespace-definition-syntax
+                         (:definition-syntax-id binding))
+                    (:definition-syntax-id binding))
+                   semantic-binding
+                   {:name (:name binding)
+                    :binding-class (:binding-class binding)
+                    :namespace (:namespace binding)
+                    :scope-id (when (= :lexical (:binding-class binding))
+                                (get @projected-scope-by-upstream
+                                     (:scope-id binding)))
+                    :definition-syntax-id definition-syntax-id
+                    :visibility (:visibility binding)}
+                   projected-binding-id
+                   (reader-canonical-hash
+                    {:domain :gravity/sh07-projected-sh06-binding-v1
+                     :source-revision-id source-revision-id
+                     :binding semantic-binding})]
+               {:upstream-binding-id (:binding-id binding)
+                :projected-binding
+                (assoc semantic-binding :binding-id projected-binding-id)}))
+           (:binding-table resolved-analysis))
+          projected-binding-id-by-upstream
+          (into {}
+                (map (juxt :upstream-binding-id
+                           (comp :binding-id :projected-binding)))
+                binding-projections)
+          bindings (mapv :projected-binding binding-projections)
+          forms
+          (mapv
+           (fn [form]
+             (assoc form :scope-id
+                    (get @scope-by-syntax-id (:syntax-id form))))
+           all-records)
+          resolutions
+          (mapv
+           (fn [resolution]
+             (let [projected-binding-id
+                   (get projected-binding-id-by-upstream
+                        (:binding-id resolution))
+                   projected-resolution
+                   (assoc resolution :binding-id projected-binding-id)]
+               (when-not
+                (and
+                 projected-binding-id
+                 (get form-by-syntax
+                      (:reference-syntax-id projected-resolution))
+                 (some #(= projected-binding-id (:binding-id %))
+                       bindings))
+                 (throw
+                  (ex-info "SH-07 projected resolution is dangling"
+                           {:id "C6-VERIFY" :stage :core-lowering
+                            :source-path source-path
+                            :reason :sh06-projected-resolution-dangling
+                            :resolution resolution})))
+               projected-resolution))
+           @occurrences)]
+      (when-not
+       (and (= (count binding-projections)
+               (count projected-binding-id-by-upstream))
+            (= (count bindings) (count (set (map :binding-id bindings)))))
+        (throw
+         (ex-info "SH-07 binding projection is not bijective"
+                  {:id "C6-VERIFY" :stage :core-lowering
+                   :source-path source-path
+                   :reason :sh06-binding-projection-not-bijective
+                   :binding-count (count bindings)
+                   :upstream-count
+                   (count projected-binding-id-by-upstream)})))
+      {:forms forms
+       :binding-table bindings
+       :resolution-table resolutions})))
 
 (defn sh07-core-lineage
   [resolution-artifact]
@@ -159375,7 +159786,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v2
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v3
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -159462,45 +159873,22 @@
            executable-syntax)
           _ (sh07-core-decimal-evidence-complete!
              source-path decimal-evidence)
-          forms (vec (mapcat :records trees))
+          authenticated-sh06-request
+          (get-in resolution-artifact
+                  [:gravity-resolution-boundary
+                   :authenticated-resolution-request])
+          resolved-analysis
+          (get-in resolution-artifact
+                  [:gravity-resolution-boundary :resolved-analysis])
+          projection
+          (sh07-core-resolution-projection!
+           source-path (:source-revision-id lineage)
+           executable-syntax trees traces
+           authenticated-sh06-request resolved-analysis)
+          forms (:forms projection)
           roots (mapv (comp :form-id :root) trees)
-          form-by-syntax (into {} (map (juxt :syntax-id identity)) forms)
-          root-by-upstream-syntax
-          (into {}
-                (map (fn [syntax tree]
-                       [(:syntax/id syntax) (:root tree)])
-                     executable-syntax trees))
-          sh06-bindings
-          (get-in resolution-artifact [:binding-table :bindings])
-          bindings
-          (vec
-           (keep
-            (fn [binding]
-              (when-let [root
-                         (get root-by-upstream-syntax
-                              (:definition-syntax-id binding))]
-                (let [name-form
-                      (get form-by-syntax
-                           (:syntax-id
-                            (get
-                             (into {} (map (juxt :form-id identity)) forms)
-                             (second (:child-form-ids root)))))]
-                  {:binding-id
-                   (reader-canonical-hash
-                    {:domain :gravity/sh07-projected-binding-v1
-                     :source-revision-id
-                     (:source-revision-id lineage)
-                     :name (:name binding)
-                     :namespace (:namespace binding)
-                     :binding-class (:binding-class binding)
-                     :definition-syntax-id (:syntax-id name-form)})
-                   :name (:name binding)
-                   :binding-class (:binding-class binding)
-                   :namespace (:namespace binding)
-                   :scope-id nil
-                   :definition-syntax-id (:syntax-id name-form)
-                   :visibility (:visibility binding)})))
-            sh06-bindings))
+          bindings (:binding-table projection)
+          resolutions (:resolution-table projection)
           expectation
           {:source-revision-id (:source-revision-id lineage)
            :sh05-artifact-id (:sh05-artifact-id lineage)
@@ -159513,13 +159901,13 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 2
+           :schema-version 3
            :lineage lineage
            :module module
            :forms forms
            :top-level-form-ids roots
            :binding-table bindings
-           :resolution-table []
+           :resolution-table resolutions
            :macro-expansion-trace
            (sh07-core-semantic-macro-trace
             (:macro-expansion-trace sh05))
@@ -159527,7 +159915,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b1-meta-jvm-core}
+           :scope :sh07-b2-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -159730,7 +160118,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b1-core-lowering
+         :lowering-rule :sh07-b2-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -159740,7 +160128,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v2
+          {:domain :gravity/sh07-request-bound-diagnostic-v3
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
     (throw (ex-info "SH-07 authenticated request exceeded a bound"
@@ -159749,6 +160137,8 @@
 (defn sh07-core-request-preflight!
   [request]
   (let [forms (count (:forms request))
+        bindings (count (:binding-table request))
+        resolutions (count (:resolution-table request))
         trace-count (count (:macro-expansion-trace request))
         trace-depth
         (apply max 0
@@ -159760,18 +160150,18 @@
                     (sh07-core-nested-depth event)))
                 (:macro-expansion-trace request)))]
     (cond
-      (not= 2 (:schema-version request))
+      (not= 3 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 2
+        :expected 3
         :observed (:schema-version request)})
 
-      (not= :sh07-b1-meta-jvm-core (:scope request))
+      (not= :sh07-b2-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b1-meta-jvm-core
+        :expected :sh07-b2-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -159782,6 +160172,20 @@
         :observed forms
         :projected-core-node-count forms
         :projected-digest-request-count (+ forms 2)})
+
+      (> bindings 1024)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-bindings
+        :maximum 1024
+        :observed bindings})
+
+      (> resolutions 2048)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-resolutions
+        :maximum 2048
+        :observed resolutions})
 
       (> trace-count 1024)
       (sh07-core-request-diagnostic!
@@ -159869,7 +160273,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b1-core-lowering
+         :lowering-rule :sh07-b2-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -159883,7 +160287,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-projection-diagnostic-v2
+          {:domain :gravity/sh07-projection-diagnostic-v3
            :reason reason
            :sh06-artifact-id (:artifact-id resolution-artifact)})}]
     (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
@@ -159940,6 +160344,16 @@
          (:control-flow expected-core))
         (sh07-core-exact-comparison-value
          (:control-flow core)))
+     :reference-uses-replay?
+     (= (sh07-core-exact-comparison-value
+         (:reference-uses expected-core))
+        (sh07-core-exact-comparison-value
+         (:reference-uses core)))
+     :calls-replay?
+     (= (sh07-core-exact-comparison-value
+         (:calls expected-core))
+        (sh07-core-exact-comparison-value
+         (:calls core)))
      :template-verification-passed?
      (= :passed
         (get-in artifact
@@ -160035,7 +160449,7 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B1"
+           :task "SH-07-B2"
            :document-set ["L2" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
@@ -160043,7 +160457,7 @@
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b1
+           {:name :c6-gravity-core-lowering-b2
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -160051,6 +160465,8 @@
            {:gravity-owned
             [:core-template-construction :template-verification
              :control-flow-construction :control-flow-verification
+             :reference-construction :reference-verification
+             :call-construction :call-verification
              :resolved-verification]
             :clojure-seed-owned
             [:plan-execution :sh06-projection-authentication
@@ -160058,6 +160474,9 @@
              :compatibility-routing :final-assembly]
             :downstream-fact-statuses
             {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
+            :pending-lowering-families
+            [:alias-qualified-references :keyword-headed-calls
+             :lexical-binding-forms :recursion]
             :sh07-complete? false
             :self-hosted? false}
            :capability-based-proof nil

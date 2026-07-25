@@ -1,0 +1,15 @@
+; SH-07-B2 direct current-namespace symbol call.
+(ns self-hosting.sh07-b2.direct-symbol-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [identity direct-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B2 :fixture :direct-symbol-call}))
+
+(defn identity [value]
+  value)
+
+(def direct-result
+  (identity 7))

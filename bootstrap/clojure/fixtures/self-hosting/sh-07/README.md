@@ -29,7 +29,7 @@ exercise the stated lowering or verifier boundary directly.
 
 | Base name | Expected rule | Rejection family |
 | --- | --- | --- |
-| `lowering-gap` | `C6-LOWERING-GAP` | unsupported local binding in the SH-07-B1 subset |
+| `lowering-gap` | `C6-LOWERING-GAP` | unsupported loop in the SH-07-B2 subset |
 | `core-shape` | `C6-CORE-SHAPE` | function parameter form is not a vector |
 | `missing-origin` | `C6-ORIGIN` | generated `defn` output loses its origin |
 | `unauthenticated-projection` | `C6-VERIFY` | SH-06 projection authentication fails |
@@ -38,7 +38,8 @@ exercise the stated lowering or verifier boundary directly.
 | `empty-do` | `C6-CORE-SHAPE` | empty `do` is outside the current subset |
 | `nested-def` | `C6-CORE-SHAPE` | `def` appears below the top-level boundary |
 
-These fixtures cover only the current SH-07-A/B1 `def`, `fn`, `quote`, `if`,
-nonempty `do`, literal, collection, evaluation-order, control-flow, origin, and
-verifier boundary. They do not claim the remaining core forms, C7-C10 facts,
-MIR lowering, seed retirement, or release readiness.
+These fixtures cover only the current SH-07-A/B1/B2 `def`, `fn`, `quote`,
+`if`, nonempty `do`, reference, symbol-headed call, literal, collection,
+evaluation-order, control-flow, origin, and verifier boundary. They do not
+claim the remaining core forms, C7-C10 facts, MIR lowering, seed retirement,
+or release readiness.
