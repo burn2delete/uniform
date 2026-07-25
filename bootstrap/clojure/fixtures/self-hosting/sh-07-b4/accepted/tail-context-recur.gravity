@@ -1,0 +1,17 @@
+; SH-07-B4 tail position propagates through do, let, and if.
+(ns self-hosting.sh07-b4.tail-context-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [tail-context])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B4 :fixture :tail-context-recur}))
+
+(defn tail-context [value]
+  (do
+    0
+    (let [next-value value]
+      (if false
+        (recur next-value)
+        next-value))))

@@ -1,0 +1,24 @@
+; SH-07-B4 rejects recur followed by another expression.
+(ns self-hosting.sh07-b4.recur-not-tail
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B4
+    :fixture :recur-not-tail
+    :sh07-b4
+    {:expected-rule "C6-VERIFY"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :recur-tail-position-required
+     :expected-semantic-rule "L2-RECUR-TARGET"
+     :expected-remediation
+     "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}}))
+
+(def invalid-loop
+  (loop [value 1]
+    (do
+      (recur value)
+      value)))

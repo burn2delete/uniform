@@ -118874,14 +118874,9 @@
                        :key-sort key-sort
                        :entry entry}))
                   value)
-            entries-with-sorts
-            (mapv #(assoc % :entry-sort
-                          (p15-s23-c6c10-canonical-sort-key
-                           (:entry %)))
-                  entries)
             key-sorts (mapv :key-sort entries)
             ordered (mapv :entry
-                          (sort-by :entry-sort entries-with-sorts))]
+                          (sort-by :key-sort entries))]
         (when-not (= (count key-sorts) (count (distinct key-sorts)))
           (p15-s23-c6c10-host-fail!
            "C6-VERIFY" source-path :unique-canonical-map-keys {}))
@@ -155361,7 +155356,7 @@
      :source-byte-count (alength bytes)
      :source-content-hash content-hash}))
 
-(defn sh05-macro-plan-identities
+(defn- sh05-macro-compute-plan-identities
   [plan]
   (let [functions (:functions plan)
         shapes
@@ -155385,6 +155380,16 @@
      :public-function-shapes
      (select-keys shapes (keys sh05-macro-public-function-shapes))}))
 
+(def ^:private sh05-macro-pinned-plan-identities
+  (atom nil))
+
+(defn sh05-macro-plan-identities
+  [plan]
+  (let [[pinned-plan pinned-identities] @sh05-macro-pinned-plan-identities]
+    (if (and pinned-plan (identical? pinned-plan plan))
+      pinned-identities
+      (sh05-macro-compute-plan-identities plan))))
+
 (defn sh05-macro-build-binding!
   [request-source]
   (let [source (sh05-macro-read-pinned-source! request-source)
@@ -155395,7 +155400,7 @@
         plan
         (p15-s23-stage2-compiler-artifact-plan
          emitter (:source-path source) (:source-text source))
-        identities (sh05-macro-plan-identities plan)]
+        identities (sh05-macro-compute-plan-identities plan)]
     (when-not
      (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
           (true? (:compiler-artifact-plan? plan))
@@ -155421,6 +155426,7 @@
       (sh05-macro-boundary-fail!
        "C4-TRACE" request-source :pinned-macro-plan-and-functions
        identities {}))
+    (reset! sh05-macro-pinned-plan-identities [plan identities])
     (merge source identities
            {:artifact :gravity/sh05-pinned-macro-plan-binding
             :status :complete
@@ -157170,7 +157176,9 @@
                     :bindings bindings})
             scope-id))]
     (letfn [(parameter-names [parameters]
-              (loop [remaining (seq parameters) names []]
+              (loop [remaining
+                     (seq (if (sequential? parameters) parameters []))
+                     names []]
                 (if (empty? remaining)
                   names
                   (let [item (first remaining)]
@@ -157234,7 +157242,10 @@
 
                     (contains? '#{let loop} operator)
                     (let [binding-vector (second value)
-                          pairs (partition 2 binding-vector)
+                          pairs
+                          (if (vector? binding-vector)
+                            (partition 2 binding-vector)
+                            [])
                           _ (add-reference! operator scope-chain syntax
                                             :operator (:span syntax))
                           nested
@@ -158791,7 +158802,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3 is the first checked-core projection owned by Gravity source.
+;; SH-07-A/B1/B2/B3/B4 is the first checked-core projection owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
 ;; requests, and keeps physical paths out of semantic identity.
@@ -158799,7 +158810,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v4)
+  :gravity/sh07-to-c6-core-products-v5)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158812,25 +158823,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 148278)
+(def sh07-core-expected-source-byte-count 181654)
 (def sh07-core-expected-source-content-hash
-  "sha256:38e33de8231d1912aa0b35475e35e7f4a837f1f8ebae98c8f13167366e026113")
+  "sha256:d771759c0ea2bff3e97f58c4205efab032ba029f5f7ad9afed3e52d945aacb4f")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:45c7b296eb865a1500106329d484da77ce458c752dba16b39fa310c59bac5aba")
+  "sha256:e6f3c943de921b184201a82c325a413cae46d4510c98b80dab3824a356ce5123")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:69f96527ef17dc766e1b7fe3b94f9bdb29c0a0e8c17930453ec6f5a953505930")
-(def sh07-core-expected-function-count 132)
+  "sha256:f09b3e1956e5f51146f543462060063d4a9b4f7dc2fbf4e4226caeb6f3b4761e")
+(def sh07-core-expected-function-count 148)
 (def sh07-core-expected-function-names-hash
-  "sha256:c133fde631c05edc4e1e9189d37bf09c4102f0f14fe108d2a1c0b66159e49bda")
+  "sha256:f45482d170b2d6495c80e12d9a866834961b20337c49970a714ad99c9a67a004")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:414bc20dc45e335f278e3f45b56087b7af5aee6e85d954237e17e7cf9ae32e9b")
+  "sha256:02832b0804194a4acdaa4b248ff67b0d0da1186db0eaef57c34ab1fbfa1f8041")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:51e880150ba00c3f0b6a8cfe60953db765c0bbc9bd3f46a9e8ca29882309b489"
+   "sha256:f654f6f2283fef6e396fc64567689f73f5b030cd67476f7ff4be625cd16c816c"
    'sh07-verify-core-resolved
-   "sha256:e8200bc1581b697966eb587edf4b00995c9b3ea070cd227ed96f1f5e3e20b983"})
+   "sha256:f888487cec8cb664a776cde821422a8a8e97a33fd095f8c648aa84dc1e02d78d"})
 
 (defn sh07-core-source-path
   []
@@ -159294,7 +159305,7 @@
 
 (defn sh07-core-parameter-binding-paths
   [parameters parameter-path]
-  (loop [remaining (seq parameters)
+  (loop [remaining (seq (if (sequential? parameters) parameters []))
          index 0
          result []]
     (if (empty? remaining)
@@ -159510,7 +159521,10 @@
 
                     (contains? '#{let loop} operator)
                     (let [binding-vector (second items)
-                          pairs (partition 2 binding-vector)
+                          pairs
+                          (if (vector? binding-vector)
+                            (partition 2 binding-vector)
+                            [])
                           _ (add-reference! syntax (conj path 0) operator
                                             :operator scope-chain)
                           nested
@@ -159794,7 +159808,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v4
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v5
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -159909,7 +159923,7 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 4
+           :schema-version 5
            :lineage lineage
            :module module
            :forms forms
@@ -159923,7 +159937,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b3-meta-jvm-core}
+           :scope :sh07-b4-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160126,7 +160140,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b3-core-lowering
+         :lowering-rule :sh07-b4-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160136,7 +160150,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v4
+          {:domain :gravity/sh07-request-bound-diagnostic-v5
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
     (throw (ex-info "SH-07 authenticated request exceeded a bound"
@@ -160158,18 +160172,18 @@
                     (sh07-core-nested-depth event)))
                 (:macro-expansion-trace request)))]
     (cond
-      (not= 4 (:schema-version request))
+      (not= 5 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 4
+        :expected 5
         :observed (:schema-version request)})
 
-      (not= :sh07-b3-meta-jvm-core (:scope request))
+      (not= :sh07-b4-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b3-meta-jvm-core
+        :expected :sh07-b4-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -160281,7 +160295,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b3-core-lowering
+         :lowering-rule :sh07-b4-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -160295,7 +160309,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-projection-diagnostic-v4
+          {:domain :gravity/sh07-projection-diagnostic-v5
            :reason reason
            :sh06-artifact-id (:artifact-id resolution-artifact)})}]
     (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
@@ -160367,6 +160381,21 @@
          (:lexical-bindings expected-core))
         (sh07-core-exact-comparison-value
          (:lexical-bindings core)))
+     :loop-bindings-replay?
+     (= (sh07-core-exact-comparison-value
+         (:loop-bindings expected-core))
+        (sh07-core-exact-comparison-value
+         (:loop-bindings core)))
+     :recur-targets-replay?
+     (= (sh07-core-exact-comparison-value
+         (:recur-targets expected-core))
+        (sh07-core-exact-comparison-value
+         (:recur-targets core)))
+     :recur-transfers-replay?
+     (= (sh07-core-exact-comparison-value
+         (:recur-transfers expected-core))
+        (sh07-core-exact-comparison-value
+         (:recur-transfers core)))
      :template-verification-passed?
      (= :passed
         (get-in artifact
@@ -160462,7 +160491,7 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B3"
+           :task "SH-07-B4"
            :document-set ["L2" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
@@ -160470,7 +160499,7 @@
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b3
+           {:name :c6-gravity-core-lowering-b4
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -160482,6 +160511,12 @@
              :call-construction :call-verification
              :lexical-binding-construction
              :lexical-binding-verification
+             :loop-binding-construction
+             :loop-binding-verification
+             :recur-target-construction
+             :recur-target-verification
+             :recur-transfer-construction
+             :recur-transfer-verification
              :resolved-verification]
             :clojure-seed-owned
             [:plan-execution :sh06-projection-authentication
@@ -160491,7 +160526,10 @@
             {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
             :pending-lowering-families
             [:alias-qualified-references :keyword-headed-calls
-             :destructuring-bindings :loop :recur :recursion]
+             :destructuring-bindings
+             :variadic-function-recur
+             :recur-type-compatibility
+             :general-recursion]
             :sh07-complete? false
             :self-hosted? false}
            :capability-based-proof nil

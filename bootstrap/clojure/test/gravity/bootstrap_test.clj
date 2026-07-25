@@ -31742,7 +31742,7 @@
       (with-redefs [bootstrap/p15-s23-c6c10-canonical-sort-key counted]
         (bootstrap/p15-s23-c6c10-canonical-record
          source-path width-128-map))
-      (is (= 256 @calls))
+      (is (= 128 @calls))
       (reset! calls 0)
       (with-redefs [bootstrap/p15-s23-c6c10-canonical-sort-key counted]
         (bootstrap/p15-s23-c6c10-canonical-record
@@ -31780,6 +31780,37 @@
          (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.25M)
          (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.250M))
         "decimal scale is part of exact canonical identity")))
+
+(deftest sh05-pinned-macro-plan-identities-reuse-only-the-exact-plan
+  (let [binding
+        (bootstrap/sh05-macro-current-binding!
+         "/tmp/sh05-pinned-plan-identity-cache.gravity")
+        plan (:plan binding)
+        copied-plan (with-meta plan {:identity-cache-probe true})
+        original bootstrap/p15-s23-c11-mir-digest
+        calls (atom 0)
+        counted
+        (fn [value]
+          (swap! calls inc)
+          (original value))]
+    (is (not (identical? plan copied-plan)))
+    (with-redefs [bootstrap/p15-s23-c11-mir-digest counted]
+      (is (identical?
+           plan
+           (:plan
+            (bootstrap/sh05-macro-current-binding!
+             "/tmp/sh05-pinned-plan-identity-cache.gravity"))))
+      (is (zero? @calls))
+      (let [copied-identities
+            (bootstrap/sh05-macro-plan-identities copied-plan)]
+        (is (pos? @calls))
+        (is (= (select-keys
+                binding
+                [:plan-semantic-hash :functions-semantic-hash
+                 :function-count :function-names-hash
+                 :function-shapes-hash :public-function-hashes
+                 :public-function-shapes])
+               copied-identities))))))
 
 (deftest p15-s23-stage2-compiler-only-list-predicate-is-contained
   (let [source-path "/tmp/p15-s23-compiler-list-predicate.gravity"

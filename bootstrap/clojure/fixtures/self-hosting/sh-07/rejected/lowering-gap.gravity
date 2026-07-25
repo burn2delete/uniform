@@ -8,7 +8,7 @@
               :sh07 {:expected-rule "C6-LOWERING-GAP"
                      :expected-stage :core-lowering
                      :expected-severity :error
-                     :expected-remediation "Use only the declared SH-07-B3 def, fn, quote, if, do, simple-symbol sequential let, reference, symbol-headed call, and literal subset."}}))
+                     :expected-remediation "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset."}}))
 
-(def unsupported-loop
-  (loop [] 1))
+(def unsupported-try
+  (try 1))

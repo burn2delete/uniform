@@ -1,0 +1,15 @@
+; SH-07-B4 zero-arity loop and unreachable recur transfer.
+(ns self-hosting.sh07-b4.zero-arity-loop-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [zero-arity-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B4 :fixture :zero-arity-loop-recur}))
+
+(def zero-arity-result
+  (loop []
+    (if false
+      (recur)
+      0)))

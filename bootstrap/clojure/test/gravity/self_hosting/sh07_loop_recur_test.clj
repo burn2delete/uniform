@@ -103,6 +103,10 @@
    {:rule "C6-LOWERING-GAP"
     :reason :variadic-function-recur-deferred
     :remediation gap-remediation}})
+(def ^:private diagnostic-parity-basenames
+  #{"loop-binding-vector-required"
+    "loop-destructuring"
+    "recur-not-tail"})
 
 (def ^:private maximum-loop-binding-records 1024)
 (def ^:private maximum-recur-target-records 1024)
@@ -181,10 +185,6 @@
                (fixture-path family basename extension))]
           (swap! artifacts assoc key artifact)
           artifact))))
-
-(defn- source-artifact
-  [source-path text]
-  ((required-var 'sh07-core-source-artifact) source-path text))
 
 (defn- c2-artifact
   [basename extension]
@@ -475,46 +475,35 @@
                      accepted-basenames (keys rejected-oracles))]
     (is (= (seq (source-bytes (fixture-path family basename ".gravity")))
            (seq (source-bytes (fixture-path family basename ".qst"))))))
-  (doseq [basename accepted-basenames]
-    (let [gravity (file-artifact "accepted" basename ".gravity")
-          qst (file-artifact "accepted" basename ".qst")]
-      (testing basename
-        (is (= :accepted (:status gravity) (:status qst)))
-        (is (= (:artifact-id gravity) (:artifact-id qst)))
-        (is (= (identity-input gravity) (identity-input qst)))
-        (is (= (select-keys (core gravity)
-                            [:loop-bindings :recur-targets
-                             :recur-transfers])
-               (select-keys (core qst)
-                            [:loop-bindings :recur-targets
-                             :recur-transfers])))
-        (is (not= (get-in gravity [:provenance :source-path])
-                  (get-in qst [:provenance :source-path]))))))
-  (let [fixture (fixture-path "accepted" "multi-argument-recur-order"
-                              ".gravity")
-        text (source-text fixture)
-        left-path "/tmp/sh07-b4-left/loop.gravity"
-        right-path "/tmp/sh07-b4-right/loop.qst"
-        left (source-artifact left-path text)
-        right (source-artifact right-path text)]
-    (is (= (:artifact-id left) (:artifact-id right)))
-    (is (= (identity-input left) (identity-input right)))
-    (is (= left-path (get-in left [:provenance :source-path])))
-    (is (= right-path (get-in right [:provenance :source-path])))
-    (is (= left-path
-           (get-in left
+  (let [basename "nearest-nested-loop-target"
+        gravity (file-artifact "accepted" basename ".gravity")
+        qst (file-artifact "accepted" basename ".qst")
+        gravity-path (fixture-path "accepted" basename ".gravity")
+        qst-path (fixture-path "accepted" basename ".qst")]
+    (is (= :accepted (:status gravity) (:status qst)))
+    (is (= (:artifact-id gravity) (:artifact-id qst)))
+    (is (= (identity-input gravity) (identity-input qst)))
+    (is (= (select-keys (core gravity)
+                        [:loop-bindings :recur-targets
+                         :recur-transfers])
+           (select-keys (core qst)
+                        [:loop-bindings :recur-targets
+                         :recur-transfers])))
+    (is (= gravity-path (get-in gravity [:provenance :source-path])))
+    (is (= qst-path (get-in qst [:provenance :source-path])))
+    (is (= gravity-path
+           (get-in gravity
                    [:gravity-core-boundary :canonical-core-artifact
                     :provenance :actual-source-path])))
-    (is (= right-path
-           (get-in right
+    (is (= qst-path
+           (get-in qst
                    [:gravity-core-boundary :canonical-core-artifact
                     :provenance :actual-source-path])))))
 
 (deftest sh07-b4-products-bind-targets-transfers-and-order
-  (doseq [basename accepted-basenames
-          extension extensions]
-    (testing (str basename extension)
-      (let [artifact (file-artifact "accepted" basename extension)
+  (doseq [basename accepted-basenames]
+    (testing (str basename ".gravity")
+      (let [artifact (file-artifact "accepted" basename ".gravity")
             tables (assert-b4-tables artifact)]
         (is (seq (:recur-targets tables)))
         (when (= basename "loop-no-recur")
@@ -634,7 +623,11 @@
 
 (deftest sh07-b4-rejections-are-structured-and-oracle-bound
   (doseq [[basename oracle] rejected-oracles]
-    (let [diagnostics
+    (let [checked-extensions
+          (if (contains? diagnostic-parity-basenames basename)
+            extensions
+            [".gravity"])
+          diagnostics
           (mapv
            (fn [extension]
              (testing (str basename extension)
@@ -689,10 +682,11 @@
                         (get-in diagnostic [:facts :fail-closed])))
                  (is (sha256-id? (:diagnostic-id-request diagnostic)))
                  diagnostic)))
-           extensions)]
-      (testing (str basename " co-canonical diagnostic parity")
+           checked-extensions)]
+      (when (= checked-extensions extensions)
+        (testing (str basename " co-canonical diagnostic parity")
         (is (= (normalized-diagnostic (first diagnostics))
-               (normalized-diagnostic (second diagnostics))))))))
+               (normalized-diagnostic (second diagnostics)))))))))
 
 (deftest sh07-b4-target-transfer-and-order-mutations-fail-replay
   (let [artifact

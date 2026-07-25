@@ -29,7 +29,7 @@ exercise the stated lowering or verifier boundary directly.
 
 | Base name | Expected rule | Rejection family |
 | --- | --- | --- |
-| `lowering-gap` | `C6-LOWERING-GAP` | unsupported loop in the SH-07-B3 subset |
+| `lowering-gap` | `C6-LOWERING-GAP` | unsupported `try` in the SH-07-B4 subset |
 | `core-shape` | `C6-CORE-SHAPE` | function parameter form is not a vector |
 | `missing-origin` | `C6-ORIGIN` | generated `defn` output loses its origin |
 | `unauthenticated-projection` | `C6-VERIFY` | SH-06 projection authentication fails |

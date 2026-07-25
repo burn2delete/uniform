@@ -44,7 +44,7 @@
    {:rule "C6-LOWERING-GAP"
     :reason :keyword-headed-call-deferred
     :remediation
-    "Use only the declared SH-07-B3 def, fn, quote, if, do, simple-symbol sequential let, reference, symbol-headed call, and literal subset."}})
+    "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset."}})
 (def ^:private maximum-reference-use-records 1024)
 (def ^:private maximum-call-records 1024)
 (def ^:private reference-use-keys
@@ -303,8 +303,8 @@
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result
                  :bounds :maximum-call-records])]
-    (is (= 4 (:schema-version (request artifact))))
-    (is (= :sh07-b3-meta-jvm-core (:scope (request artifact))))
+    (is (= 5 (:schema-version (request artifact))))
+    (is (= :sh07-b4-meta-jvm-core (:scope (request artifact))))
     (is (vector? reference-uses))
     (is (vector? calls))
     (is (= maximum-reference-use-records declared-reference-maximum))

@@ -1,0 +1,14 @@
+; SH-07-B4 fixed-arity function recur target.
+(ns self-hosting.sh07-b4.fixed-arity-function-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [function-recur])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B4 :fixture :fixed-arity-function-recur}))
+
+(defn function-recur [value]
+  (if false
+    (recur value)
+    value))

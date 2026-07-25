@@ -1,0 +1,13 @@
+; SH-07-B4 loop result without a control transfer.
+(ns self-hosting.sh07-b4.loop-no-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [loop-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B4 :fixture :loop-no-recur}))
+
+(def loop-result
+  (loop [value 7]
+    value))
