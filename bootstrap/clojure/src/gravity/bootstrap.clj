@@ -158848,7 +158848,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v9)
+  :gravity/sh07-to-c6-core-products-v10)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158861,25 +158861,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 293181)
+(def sh07-core-expected-source-byte-count 299320)
 (def sh07-core-expected-source-content-hash
-  "sha256:93478152f91d5ed740045dea8988d65a9b54d294dc7093d0fc26e07d9bb802bb")
+  "sha256:b6be206e658553a60bcb437fa26adbb1db5b9e1e282da2adf14806e7efb1ef00")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:13c086dde1e7344440cf0513476190e5a7d6c4a0ad90f325a4373a16a21299c1")
+  "sha256:5e8bd2a2bd63aa8ee3eab5082a73fc7152b7d9db19da6e1ee25bccb005c7db55")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:c0db27586e81b05e41b787ffa8fe392293efa4818a490ea1f735029d907d5ff9")
-(def sh07-core-expected-function-count 183)
+  "sha256:6844a77e03c39a4ad3787a38ebb5b3143a74314e6300d2f85d2be4edd065e601")
+(def sh07-core-expected-function-count 196)
 (def sh07-core-expected-function-names-hash
-  "sha256:c7a9aa488069cfc65b94c7cc8a1bb959b59c1a0866b62826d9caafbaa3a12027")
+  "sha256:08df763bd469820c46e251dc01ecf16578e0b53a82bab54b529be7629b08b6ee")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:a5083096869064d6b88760adfb31e06f3ef04ba274029c830cd932868b4f141d")
+  "sha256:78c3780471d3b2cb0469cc81e3a66b0170cdfd6e00fee3325698c854fee8c760")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:fc561c7efe36a2101fa80d14171a64887d153f22de3628a43f1603dc54161f93"
+   "sha256:b69e80473cc5f1664a31396233e6b6585aa09c14d237e863bbe4fc51151b344e"
    'sh07-verify-core-resolved
-   "sha256:ce7f1425e1fab35210ff5fb528dcb1bf8503bd3c37fea2be135668137c427e2b"})
+   "sha256:9728b46c40ee12cb13a3045e427275938b0a5e64e17379ad8f0fd9274ce5fa04"})
 
 (defn sh07-core-source-path
   []
@@ -159940,7 +159940,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v9
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v10
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -160055,7 +160055,7 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 9
+           :schema-version 10
            :lineage lineage
            :module module
            :forms forms
@@ -160069,7 +160069,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b8-meta-jvm-core}
+           :scope :sh07-b9-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160477,7 +160477,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b8-core-lowering
+         :lowering-rule :sh07-b9-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160491,7 +160491,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v9
+          {:domain :gravity/sh07-request-bound-diagnostic-v10
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
     (throw (ex-info "SH-07 authenticated request exceeded a bound"
@@ -160574,18 +160574,18 @@
               0)
             request-depth (sh07-core-nested-depth request)]
         (cond
-      (not= 9 (:schema-version request))
+      (not= 10 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 9
+        :expected 10
         :observed (:schema-version request)})
 
-      (not= :sh07-b8-meta-jvm-core (:scope request))
+      (not= :sh07-b9-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b8-meta-jvm-core
+        :expected :sh07-b9-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -160704,7 +160704,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b8-core-lowering
+         :lowering-rule :sh07-b9-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -160720,7 +160720,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-projection-diagnostic-v9
+          {:domain :gravity/sh07-projection-diagnostic-v10
            :reason reason
            :sh06-artifact-id (:artifact-id resolution-artifact)})}]
     (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
@@ -160798,6 +160798,99 @@
           (recur (into frontier (:children node))
                  (conj visited node-id)))))))
 
+(def ^:private sh07-b9-handler-descriptor-keys
+  [:clause-ordinal :handler-child-index
+   :catch-clause-form-id :catch-clause-syntax-id
+   :error-type-form-id :error-type-syntax-id
+   :error-type-binding-id
+   :catch-binding-form-id :catch-binding-syntax-id
+   :catch-binding-id :catch-binding-scope-id])
+
+(defn sh07-b9-handler-group-coherent?
+  [node-by-id transfers references try-node handlers]
+  (let [handlers (vec (sort-by :clause-ordinal handlers))
+        attributes (:attributes try-node)
+        protected-node-id (first (:children try-node))
+        handler-node-ids (mapv :handler-core-node-id handlers)
+        expected-children (into [protected-node-id] handler-node-ids)
+        expected-bindings
+        (vec
+         (mapcat
+          (juxt :error-type-binding-id :catch-binding-id)
+          handlers))
+        expected-indexes
+        (mapv inc (range (count handlers)))
+        expected-descriptors
+        (mapv #(select-keys % sh07-b9-handler-descriptor-keys)
+              handlers)
+        protected-tree
+        (sh07-core-descendant-node-ids node-by-id protected-node-id)
+        owner (:evaluation-owner-function-syntax-id (first handlers))
+        expected-candidates
+        (when protected-tree
+          (->> transfers
+               (filter
+                #(and (= owner
+                         (:evaluation-owner-function-syntax-id %))
+                      (contains? protected-tree (:core-node-id %))))
+               (mapv #(select-keys % [:ordinal :core-node-id]))))
+        shared-attribute-keys
+        [:runtime-reachability :selection-policy :result-policy
+         :authenticated-sh06-artifact-id
+         :sh06-semantic-projection-id
+         :type-coverage-legality :result-type-join-legality
+         :effect-registry-legality
+         :effect-profile-capability-legality
+         :profile-error-lowering-legality
+         :ownership-legality :safety-classification]]
+    (and
+     (seq handlers)
+     (= (range (count handlers))
+        (map :clause-ordinal handlers))
+     (every? #(= (count handlers) (:clause-count %)) handlers)
+     (= expected-indexes (mapv :handler-child-index handlers))
+     (= expected-children (:children try-node))
+     (= expected-bindings (:resolved-binding-ids try-node))
+     (= (count handler-node-ids) (count (distinct handler-node-ids)))
+     (= (count handlers)
+        (count (distinct (map :catch-binding-id handlers))))
+     (= (count handlers)
+        (count (distinct (map :catch-binding-scope-id handlers))))
+     (= :protected-then-ordered-typed-handler-candidates
+        (get-in try-node [:evaluation :kind]))
+     (= [{:index 0 :core-node-id protected-node-id}]
+        (get-in try-node [:evaluation :order]))
+     (= 0 (:protected-child-index attributes))
+     (= (count handlers) (:handler-count attributes))
+     (= expected-indexes (:handler-child-indexes attributes))
+     (= expected-descriptors (:handler-clauses attributes))
+     (= :protected-then-ordered-typed-handler-candidates
+        (:evaluation-order attributes))
+     (every?
+      (fn [handler]
+        (let [handler-tree
+              (sh07-core-descendant-node-ids
+               node-by-id (:handler-core-node-id handler))
+              expected-use-syntax-ids
+              (when handler-tree
+                (->> references
+                     (filter
+                      #(and (= (:catch-binding-id handler)
+                               (:binding-id %))
+                            (contains? handler-tree
+                                       (:core-node-id %))))
+                     (mapv :syntax-id)))]
+          (and
+           (= (:node-id try-node) (:core-node-id handler))
+           (= protected-node-id (:protected-core-node-id handler))
+           (= expected-candidates
+              (:candidate-error-transfers handler))
+           (= expected-use-syntax-ids
+              (:catch-binding-use-syntax-ids handler))
+           (= (select-keys attributes shared-attribute-keys)
+              (select-keys handler shared-attribute-keys)))))
+      handlers))))
+
 (defn sh07-core-error-handlers-coherent?
   [core]
   (let [nodes (:nodes core)
@@ -160813,20 +160906,9 @@
         try-by-id
         (when (vector? try-nodes)
           (into {} (map (juxt :node-id identity)) try-nodes))
-        shared-attribute-keys
-        [:runtime-reachability :selection-policy :result-policy
-         :catch-clause-form-id :catch-clause-syntax-id
-         :error-type-form-id :error-type-syntax-id
-         :error-type-binding-id
-         :catch-binding-form-id :catch-binding-syntax-id
-         :catch-binding-id :catch-binding-scope-id
-         :authenticated-sh06-artifact-id
-         :sh06-semantic-projection-id
-         :type-coverage-legality :result-type-join-legality
-         :effect-registry-legality
-         :effect-profile-capability-legality
-         :profile-error-lowering-legality
-         :ownership-legality :safety-classification]]
+        handlers-by-try
+        (when (vector? handlers)
+          (group-by :core-node-id handlers))]
     (and
      (vector? nodes)
      (vector? handlers)
@@ -160834,63 +160916,14 @@
      (vector? references)
      (= (count nodes) (count node-by-id))
      (= (count try-nodes) (count try-by-id))
-     (= (count try-nodes) (count handlers))
+     (= (mapv :ordinal handlers) (vec (range (count handlers))))
+     (= (set (keys try-by-id)) (set (keys handlers-by-try)))
      (every?
-      true?
-      (map-indexed
-       (fn [ordinal handler]
-         (let [node (get try-by-id (:core-node-id handler))
-               attributes (:attributes node)
-               protected-node-id (:protected-core-node-id handler)
-               handler-node-id (:handler-core-node-id handler)
-               protected-tree
-               (sh07-core-descendant-node-ids
-                node-by-id protected-node-id)
-               expected-candidates
-               (when protected-tree
-                 (->> transfers
-                      (filter
-                       #(and
-                         (= (:evaluation-owner-function-syntax-id %)
-                            (:evaluation-owner-function-syntax-id
-                             handler))
-                         (contains? protected-tree (:core-node-id %))))
-                      (mapv #(select-keys % [:ordinal :core-node-id]))))
-               handler-tree
-               (sh07-core-descendant-node-ids
-                node-by-id handler-node-id)
-               expected-use-syntax-ids
-               (when handler-tree
-                 (->> references
-                      (filter
-                       #(and (= (:binding-id %)
-                                (:catch-binding-id handler))
-                             (contains? handler-tree
-                                        (:core-node-id %))))
-                      (mapv :syntax-id)))]
-           (and
-            (map? handler)
-            (map? node)
-            (= ordinal (:ordinal handler))
-            (= [protected-node-id handler-node-id] (:children node))
-            (= [(:error-type-binding-id handler)
-                (:catch-binding-id handler)]
-               (:resolved-binding-ids node))
-            (= :protected-then-typed-handler-candidate
-               (get-in node [:evaluation :kind]))
-            (= [{:index 0 :core-node-id protected-node-id}]
-               (get-in node [:evaluation :order]))
-            (= 0 (:protected-child-index attributes))
-            (= 1 (:handler-child-index attributes))
-            (= :protected-then-typed-handler-candidate
-               (:evaluation-order attributes))
-            (= (select-keys handler shared-attribute-keys)
-               (select-keys attributes shared-attribute-keys))
-            (= expected-candidates
-               (:candidate-error-transfers handler))
-            (= expected-use-syntax-ids
-               (:catch-binding-use-syntax-ids handler)))))
-       handlers)))))
+      (fn [[try-id try-node]]
+        (sh07-b9-handler-group-coherent?
+         node-by-id transfers references try-node
+         (get handlers-by-try try-id)))
+      try-by-id))))
 
 (defn sh07-core-verification-checks
   [artifact expected upstream-verification]
@@ -161100,7 +161133,7 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B8"
+           :task "SH-07-B9"
            :document-set ["L2" "L6" "L9" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
@@ -161108,7 +161141,7 @@
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b8
+           {:name :c6-gravity-core-lowering-b9
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -161149,7 +161182,7 @@
              :variadic-function-recur
              :recur-type-compatibility
              :general-recursion
-             :try-finally :multiple-try-handlers
+             :try-finally
              :try-protected-sequencing
              :try-handler-sequencing
              :patterns]
@@ -161194,7 +161227,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b8-core-lowering
+               :lowering-rule :sh07-b9-core-lowering
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation

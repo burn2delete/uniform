@@ -12,7 +12,7 @@
      :expected-severity :error
      :expected-reason :finally-clause-deferred
      :expected-remediation
-     "Omit finally in SH-07-B8; defer cleanup lowering to its owning slice."}}))
+     "Omit finally in SH-07-B9; defer cleanup lowering to its owning slice."}}))
 
 (def invalid-handler
   (try

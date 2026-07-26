@@ -31,7 +31,7 @@
    "conditional-protected"
    "nested-typed-catches"])
 (def ^:private handler-shape-remediation
-  "Provide exactly one protected expression followed by exactly one typed catch clause.")
+  "Provide exactly one protected expression followed by one or more typed catch clauses.")
 (def ^:private catch-shape-remediation
   "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression.")
 (def ^:private rejected-oracles
@@ -43,7 +43,7 @@
    {:rule "C6-CORE-SHAPE"
     :reason :try-protected-expression-required
     :remediation
-    "Provide exactly one protected expression before the typed catch clause."}
+    "Provide exactly one protected expression before the typed catch clauses."}
    "empty-handler-expression"
    {:rule "C6-CORE-SHAPE"
     :reason :catch-handler-expression-required
@@ -61,24 +61,20 @@
    {:rule "C6-LOWERING-GAP"
     :reason :try-protected-sequencing-deferred
     :remediation
-    "Wrap protected sequencing in an explicit do form; SH-07-B8 accepts one protected expression."}
+    "Wrap protected sequencing in an explicit do form; SH-07-B9 accepts one protected expression."}
    "handler-sequencing-deferred"
    {:rule "C6-LOWERING-GAP"
     :reason :catch-handler-sequencing-deferred
     :remediation
-    "Wrap handler sequencing in an explicit do form; SH-07-B8 accepts one handler expression."}
-   "multiple-catches-deferred"
-   {:rule "C6-LOWERING-GAP"
-    :reason :multiple-catch-clauses-deferred
-    :remediation
-    "Use exactly one typed catch clause in SH-07-B8; defer handler chains to their owning slice."}
+    "Wrap handler sequencing in an explicit do form; SH-07-B9 accepts one handler expression per catch clause."}
    "finally-remains-deferred"
    {:rule "C6-LOWERING-GAP"
     :reason :finally-clause-deferred
     :remediation
-    "Omit finally in SH-07-B8; defer cleanup lowering to its owning slice."}})
+    "Omit finally in SH-07-B9; defer cleanup lowering to its owning slice."}})
 (def ^:private error-handler-record-keys
-  #{:ordinal :core-node-id :form-id :syntax-id
+  #{:ordinal :clause-ordinal :clause-count :handler-child-index
+    :core-node-id :form-id :syntax-id
     :protected-core-node-id :handler-core-node-id
     :catch-clause-form-id :catch-clause-syntax-id
     :error-type-form-id :error-type-syntax-id :error-type-binding-id
@@ -97,13 +93,9 @@
     :profile-error-lowering-legality
     :ownership-legality :safety-classification})
 (def ^:private error-handler-attribute-keys
-  #{:protected-child-index :handler-child-index
-    :evaluation-order :runtime-reachability
+  #{:protected-child-index :handler-count :handler-child-indexes
+    :handler-clauses :evaluation-order :runtime-reachability
     :selection-policy :result-policy
-    :catch-clause-form-id :catch-clause-syntax-id
-    :error-type-form-id :error-type-syntax-id :error-type-binding-id
-    :catch-binding-form-id :catch-binding-syntax-id
-    :catch-binding-id :catch-binding-scope-id
     :authenticated-sh06-artifact-id
     :sh06-semantic-projection-id
     :type-coverage-legality :result-type-join-legality
@@ -276,7 +268,7 @@
            (seq (source-bytes
                  (fixture-path family basename ".qst")))))))
 
-(deftest sh07-b8-accepted-pairs-use-v9-and-path-neutral-products
+(deftest sh07-b8-accepted-pairs-use-v10-and-path-neutral-products
   (doseq [basename accepted-basenames]
     (let [gravity (file-artifact "accepted" basename ".gravity")
           qst (file-artifact "accepted" basename ".qst")]
@@ -286,13 +278,13 @@
         (is (= (identity-input gravity) (identity-input qst)))
         (is (= (:error-handlers (core gravity))
                (:error-handlers (core qst))))
-        (is (= 9 (:schema-version (request gravity))
+        (is (= 10 (:schema-version (request gravity))
                (:schema-version (request qst))))
-        (is (= :sh07-b8-meta-jvm-core
+        (is (= :sh07-b9-meta-jvm-core
                (:scope (request gravity))
                (:scope (request qst))))
-        (is (= "SH-07-B8" (:task gravity) (:task qst)))
-        (is (= :c6-gravity-core-lowering-b8
+        (is (= "SH-07-B9" (:task gravity) (:task qst)))
+        (is (= :c6-gravity-core-lowering-b9
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))))))
 
@@ -347,11 +339,6 @@
                 catch-binding (get bindings (:catch-binding-id record))
                 shared-keys
                 [:runtime-reachability :selection-policy :result-policy
-                 :catch-clause-form-id :catch-clause-syntax-id
-                 :error-type-form-id :error-type-syntax-id
-                 :error-type-binding-id :catch-binding-id
-                 :catch-binding-form-id :catch-binding-syntax-id
-                 :catch-binding-scope-id
                  :authenticated-sh06-artifact-id
                  :sh06-semantic-projection-id
                  :type-coverage-legality :result-type-join-legality
@@ -369,11 +356,25 @@
             (is (= [protected-id handler-id] (:children node)))
             (is (= [{:index 0 :core-node-id protected-id}]
                    (get-in node [:evaluation :order])))
-            (is (= :protected-then-typed-handler-candidate
+            (is (= :protected-then-ordered-typed-handler-candidates
                    (get-in node [:evaluation :kind])
                    (:evaluation-order attributes)))
             (is (= 0 (:protected-child-index attributes)))
-            (is (= 1 (:handler-child-index attributes)))
+            (is (= 1 (:handler-count attributes)))
+            (is (= [1] (:handler-child-indexes attributes)))
+            (is (= [(select-keys
+                     record
+                     [:clause-ordinal :handler-child-index
+                      :catch-clause-form-id :catch-clause-syntax-id
+                      :error-type-form-id :error-type-syntax-id
+                      :error-type-binding-id
+                      :catch-binding-form-id
+                      :catch-binding-syntax-id
+                      :catch-binding-id :catch-binding-scope-id])]
+                   (:handler-clauses attributes)))
+            (is (= 0 (:clause-ordinal record)))
+            (is (= 1 (:clause-count record)
+                   (:handler-child-index record)))
             (is (= (:form-id record)
                    (get-in node [:source :form-id])
                    (:form-id source)))
@@ -381,17 +382,17 @@
                    (get-in node [:source :syntax-id])
                    (:syntax-id source)))
             (is (= [:evaluate-protected
-                    :conditionally-select-typed-handler]
+                    :conditionally-select-source-ordered-typed-handler]
                    (:ordered-steps record)))
-            (is (= :protected-then-handler-then-try
+            (is (= :protected-then-handlers-source-order-then-try
                    (:construction-order record)))
-            (is (= :protected-then-conditional-handler
+            (is (= :protected-then-conditional-handler-chain
                    (:runtime-evaluation record)))
-            (is (= :not-asserted-by-sh07-b8
+            (is (= :not-asserted-by-sh07-b9
                    (:runtime-reachability record)))
-            (is (= :typed-handler-candidate
+            (is (= :source-ordered-typed-handler-candidates
                    (:selection-policy record)))
-            (is (= :protected-or-handler-last
+            (is (= :protected-or-selected-handler-last
                    (:result-policy record)))
             (is (= (:authenticated-sh06-artifact-id lineage)
                    (:authenticated-sh06-artifact-id record)))
@@ -700,7 +701,7 @@
         (is (= :SH-07 (:slice artifact)))
         (is (= ["L2" "L6" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :gravity/sh07-to-c6-core-products-v9
+        (is (= :gravity/sh07-to-c6-core-products-v10
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

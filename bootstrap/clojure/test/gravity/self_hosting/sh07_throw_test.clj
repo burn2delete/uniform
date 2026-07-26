@@ -244,13 +244,13 @@
         (is (= (identity-input gravity) (identity-input qst)))
         (is (= (:error-transfers (core gravity))
                (:error-transfers (core qst))))
-        (is (= 9 (:schema-version (request gravity))
+        (is (= 10 (:schema-version (request gravity))
                (:schema-version (request qst))))
-        (is (= :sh07-b8-meta-jvm-core
+        (is (= :sh07-b9-meta-jvm-core
                (:scope (request gravity))
                (:scope (request qst))))
-        (is (= "SH-07-B8" (:task gravity) (:task qst)))
-        (is (= :c6-gravity-core-lowering-b8
+        (is (= "SH-07-B9" (:task gravity) (:task qst)))
+        (is (= :c6-gravity-core-lowering-b9
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))))))
 
@@ -576,7 +576,7 @@
         (is (= :SH-07 (:slice artifact)))
         (is (= ["L2" "L6" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :gravity/sh07-to-c6-core-products-v9
+        (is (= :gravity/sh07-to-c6-core-products-v10
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))
@@ -588,7 +588,7 @@
         (is (= :passed
                (get-in boundary [:resolved-verification :status])))
         (is (every? (set pending)
-                    [:try-finally :multiple-try-handlers
+                    [:try-finally
                      :try-protected-sequencing
                      :try-handler-sequencing]))
         (is (not-any? #{:try-handlers} pending))

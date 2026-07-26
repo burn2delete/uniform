@@ -1,0 +1,23 @@
+(ns self-hosting.sh07-b9.reject.later-catch-non-symbol-type
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B9
+    :sh07-b9
+    {:expected-rule "C6-CORE-SHAPE"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :catch-type-symbol-required
+     :expected-remediation
+     "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression."}}))
+
+(def invalid-handler
+  (try
+    (throw "invalid later type")
+    (catch Exception error
+      error)
+    (catch [Throwable] fallback
+      fallback)))

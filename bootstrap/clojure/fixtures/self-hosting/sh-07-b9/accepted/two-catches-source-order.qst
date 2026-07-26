@@ -1,0 +1,19 @@
+; SH-07-B9 preserves two typed handler candidates in source order.
+(ns self-hosting.sh07-b9.two-catches-source-order
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-two])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B9
+              :fixture :two-catches-source-order
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-two [value]
+  (try
+    (throw value)
+    (catch RuntimeException runtime-error
+      runtime-error)
+    (catch Exception general-error
+      general-error)))

@@ -1,0 +1,21 @@
+; SH-07-B9 records one shared protected transfer set for each handler candidate.
+(ns self-hosting.sh07-b9.shared-protected-candidates
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-selected])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B9
+              :fixture :shared-protected-candidates
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-selected [first?]
+  (try
+    (if first?
+      (throw "first")
+      (throw "second"))
+    (catch RuntimeException runtime-error
+      runtime-error)
+    (catch Exception general-error
+      general-error)))

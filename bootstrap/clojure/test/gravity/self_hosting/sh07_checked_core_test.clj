@@ -352,7 +352,7 @@
            (:remediation diagnostic)))
     (is (map? (:source-span diagnostic)))
     (is (= expected-path (get-in diagnostic [:source-span :source])))
-    (is (= :sh07-b8-core-lowering (:lowering-rule diagnostic)))
+    (is (= :sh07-b9-core-lowering (:lowering-rule diagnostic)))
     (is (nil? (:core-node-id diagnostic)))
     (is (map? (:facts diagnostic)))
     diagnostic))
@@ -465,8 +465,8 @@
   (is (= authenticated-request-keys (set (keys request))))
   (is (= :gravity/sh07-authenticated-sh06-core-request
          (:artifact request)))
-  (is (= 9 (:schema-version request)))
-  (is (= :sh07-b8-meta-jvm-core (:scope request)))
+  (is (= 10 (:schema-version request)))
+  (is (= :sh07-b9-meta-jvm-core (:scope request)))
   (is (sha256-id? (:projection-binding request)))
   (is (= #{:actual-source-path}
          (set (keys (:provenance request))))))

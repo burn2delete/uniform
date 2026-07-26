@@ -1,12 +1,12 @@
-(ns self-hosting.sh07-b8.reject.handler-sequencing-deferred
+(ns self-hosting.sh07-b9.reject.later-catch-handler-sequencing-deferred
   (:profile :meta)
   (:target :jvm)
   (:effects #{:error/throw})
   (:capabilities #{})
   (:safety :safe)
   (:metadata
-   {:slice :SH-07-B8
-    :sh07-b8
+   {:slice :SH-07-B9
+    :sh07-b9
     {:expected-rule "C6-LOWERING-GAP"
      :expected-stage :core-lowering
      :expected-severity :error
@@ -16,7 +16,9 @@
 
 (def invalid-handler
   (try
-    (throw "handler sequence")
+    (throw "later handler sequence")
     (catch Exception error
-      error
+      error)
+    (catch Throwable fallback
+      fallback
       "second")))

@@ -12,7 +12,7 @@
      :expected-severity :error
      :expected-reason :try-protected-expression-required
      :expected-remediation
-     "Provide exactly one protected expression before the typed catch clause."}}))
+     "Provide exactly one protected expression before the typed catch clauses."}}))
 
 (def invalid-handler
   (try

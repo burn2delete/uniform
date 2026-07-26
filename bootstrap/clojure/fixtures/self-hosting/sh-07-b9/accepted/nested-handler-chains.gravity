@@ -1,0 +1,24 @@
+; SH-07-B9 preserves nested handler chains without asserting runtime reachability.
+(ns self-hosting.sh07-b9.nested-handler-chains
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-nested])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B9
+              :fixture :nested-handler-chains
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-nested [value]
+  (try
+    (try
+      (throw value)
+      (catch RuntimeException inner-runtime
+        (throw inner-runtime))
+      (catch Exception inner-general
+        (throw inner-general)))
+    (catch RuntimeException outer-runtime
+      outer-runtime)
+    (catch Exception outer-general
+      outer-general)))
