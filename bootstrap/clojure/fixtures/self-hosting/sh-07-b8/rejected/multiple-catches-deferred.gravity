@@ -1,0 +1,23 @@
+(ns self-hosting.sh07-b8.reject.multiple-catches-deferred
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B8
+    :sh07-b8
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :multiple-catch-clauses-deferred
+     :expected-remediation
+     "Use exactly one typed catch clause in SH-07-B8; defer handler chains to their owning slice."}}))
+
+(def invalid-handler
+  (try
+    (throw "multiple")
+    (catch Exception first-error
+      first-error)
+    (catch Throwable second-error
+      second-error)))

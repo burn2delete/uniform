@@ -1,0 +1,19 @@
+; SH-07-B8 records ordered candidate transfers without claiming a selected branch.
+(ns self-hosting.sh07-b8.conditional-protected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover-selected])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B8
+              :fixture :conditional-protected
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover-selected [first?]
+  (try
+    (if first?
+      (throw "first")
+      (throw "second"))
+    (catch Exception error
+      error)))

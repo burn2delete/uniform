@@ -1,0 +1,21 @@
+; SH-07-B8 preserves the owning function across protected and handler regions.
+(ns self-hosting.sh07-b8.function-typed-catch
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [recover])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B8
+              :fixture :function-typed-catch
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn recover [value]
+  (try
+    (do
+      value
+      (throw value))
+    (catch Exception error
+      (do
+        error
+        "handled"))))

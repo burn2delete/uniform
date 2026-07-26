@@ -1,4 +1,4 @@
-(ns gravity.self-hosting.sh07-throw-test
+(ns gravity.self-hosting.sh07-try-catch-test
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
@@ -7,15 +7,15 @@
 (defn- repository-root
   []
   (let [resource
-        (io/resource "gravity/self_hosting/sh07_throw_test.clj")]
+        (io/resource "gravity/self_hosting/sh07_try_catch_test.clj")]
     (when-not resource
-      (throw (ex-info "SH-07-B7 test source is not on the classpath"
-                      {:id "SH07-B7-TEST-SOURCE"})))
+      (throw (ex-info "SH-07-B8 test source is not on the classpath"
+                      {:id "SH07-B8-TEST-SOURCE"})))
     (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
       (cond
         (nil? candidate)
         (throw (ex-info "Repository root could not be located"
-                        {:id "SH07-B7-REPOSITORY-ROOT"}))
+                        {:id "SH07-B8-REPOSITORY-ROOT"}))
         (.isFile (.toFile (.resolve candidate "deps.edn")))
         candidate
         :else
@@ -23,61 +23,91 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private fixture-root
-  "bootstrap/clojure/fixtures/self-hosting/sh-07-b7")
+  "bootstrap/clojure/fixtures/self-hosting/sh-07-b8")
 (def ^:private extensions [".gravity" ".qst"])
 (def ^:private accepted-basenames
-  ["top-level-throw"
-   "function-throw"
-   "conditional-throws"
-   "nested-throw-value"])
-(def ^:private shape-remediation
-  "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.")
-(def ^:private gap-remediation
-  "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices.")
-(def ^:private recur-remediation
-  "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity.")
+  ["top-level-typed-catch"
+   "function-typed-catch"
+   "conditional-protected"
+   "nested-typed-catches"])
+(def ^:private handler-shape-remediation
+  "Provide exactly one protected expression followed by exactly one typed catch clause.")
+(def ^:private catch-shape-remediation
+  "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression.")
 (def ^:private rejected-oracles
-  {"throw-zero-arity"
-   {:rule "C6-CORE-SHAPE"
-    :reason :throw-arity
-    :facts {:actual-operand-count 0
-            :required-operand-count 1}
-    :remediation shape-remediation}
-   "throw-many-arity"
-   {:rule "C6-CORE-SHAPE"
-    :reason :throw-arity
-    :facts {:actual-operand-count 2
-            :required-operand-count 1}
-    :remediation shape-remediation}
-   "recur-in-throw-value"
-   {:rule "C6-VERIFY"
-    :reason :recur-tail-position-required
-    :semantic-rule "L2-RECUR-TARGET"
-    :remediation recur-remediation}
-   "try-remains-deferred"
+  {"missing-catch"
    {:rule "C6-CORE-SHAPE"
     :reason :try-catch-required
+    :remediation handler-shape-remediation}
+   "empty-protected-expression"
+   {:rule "C6-CORE-SHAPE"
+    :reason :try-protected-expression-required
     :remediation
-    "Provide exactly one protected expression followed by exactly one typed catch clause."}})
-(def ^:private error-transfer-record-keys
+    "Provide exactly one protected expression before the typed catch clause."}
+   "empty-handler-expression"
+   {:rule "C6-CORE-SHAPE"
+    :reason :catch-handler-expression-required
+    :remediation
+    "Provide exactly one handler expression after the catch-local binding."}
+   "non-symbol-error-type"
+   {:rule "C6-CORE-SHAPE"
+    :reason :catch-type-symbol-required
+    :remediation catch-shape-remediation}
+   "non-symbol-catch-binding"
+   {:rule "C6-CORE-SHAPE"
+    :reason :catch-binding-symbol-required
+    :remediation catch-shape-remediation}
+   "protected-sequencing-deferred"
+   {:rule "C6-LOWERING-GAP"
+    :reason :try-protected-sequencing-deferred
+    :remediation
+    "Wrap protected sequencing in an explicit do form; SH-07-B8 accepts one protected expression."}
+   "handler-sequencing-deferred"
+   {:rule "C6-LOWERING-GAP"
+    :reason :catch-handler-sequencing-deferred
+    :remediation
+    "Wrap handler sequencing in an explicit do form; SH-07-B8 accepts one handler expression."}
+   "multiple-catches-deferred"
+   {:rule "C6-LOWERING-GAP"
+    :reason :multiple-catch-clauses-deferred
+    :remediation
+    "Use exactly one typed catch clause in SH-07-B8; defer handler chains to their owning slice."}
+   "finally-remains-deferred"
+   {:rule "C6-LOWERING-GAP"
+    :reason :finally-clause-deferred
+    :remediation
+    "Omit finally in SH-07-B8; defer cleanup lowering to its owning slice."}})
+(def ^:private error-handler-record-keys
   #{:ordinal :core-node-id :form-id :syntax-id
-    :value-core-node-id :evaluated-children
+    :protected-core-node-id :handler-core-node-id
+    :catch-clause-form-id :catch-clause-syntax-id
+    :error-type-form-id :error-type-syntax-id :error-type-binding-id
+    :catch-binding-form-id :catch-binding-syntax-id
+    :catch-binding-id :catch-binding-scope-id
+    :catch-binding-use-syntax-ids
+    :candidate-error-transfers
     :evaluation-region :evaluation-owner-function-syntax-id
-    :ordered-steps :construction-order :runtime-reachability
-    :transfer-policy :result-policy :required-effect
+    :ordered-steps :construction-order :runtime-evaluation
+    :runtime-reachability :selection-policy :result-policy
     :authenticated-sh06-artifact-id
     :sh06-semantic-projection-id
-    :type-legality :effect-registry-legality
+    :type-coverage-legality :result-type-join-legality
+    :effect-registry-legality
     :effect-profile-capability-legality
     :profile-error-lowering-legality
     :ownership-legality :safety-classification})
-(def ^:private error-transfer-attribute-keys
-  #{:value-child-index :evaluation-order
-    :construction-order :runtime-reachability
-    :transfer-policy :result-policy :required-effect
+(def ^:private error-handler-attribute-keys
+  #{:protected-child-index :handler-child-index
+    :evaluation-order :runtime-reachability
+    :selection-policy :result-policy
+    :catch-clause-form-id :catch-clause-syntax-id
+    :error-type-form-id :error-type-syntax-id :error-type-binding-id
+    :catch-binding-form-id :catch-binding-syntax-id
+    :catch-binding-id :catch-binding-scope-id
     :authenticated-sh06-artifact-id
     :sh06-semantic-projection-id
-    :type-legality :effect-registry-legality
+    :type-coverage-legality :result-type-join-legality
+    :effect-registry-legality
     :effect-profile-capability-legality
     :profile-error-lowering-legality
     :ownership-legality :safety-classification})
@@ -126,8 +156,8 @@
   (or (ns-resolve 'gravity.bootstrap symbol)
       (throw
        (ex-info
-        "Required SH-07-B7 coordinator adapter is absent"
-        {:id "SH07-B7-ADAPTER-ABSENT"
+        "Required SH-07-B8 coordinator adapter is absent"
+        {:id "SH07-B8-ADAPTER-ABSENT"
          :symbol symbol
          :required-signatures
          {'sh07-core-source-artifact '[source-path source-text]
@@ -169,7 +199,7 @@
         clause
         (some #(when (and (seq? %) (= :metadata (first %))) %)
               (drop 2 ns-form))]
-    (get (second clause) :sh07-b7)))
+    (get (second clause) :sh07-b8)))
 
 (defn- core
   [artifact]
@@ -188,8 +218,8 @@
   (let [index (into {} (map (juxt key-name identity)) records)]
     (when-not (= (count records) (count index))
       (throw
-       (ex-info "SH-07-B7 records are not uniquely identifiable"
-                {:id "SH07-B7-AMBIGUOUS-INDEX"
+       (ex-info "SH-07-B8 records are not uniquely identifiable"
+                {:id "SH07-B8-AMBIGUOUS-INDEX"
                  :key key-name
                  :record-count (count records)
                  :unique-count (count index)})))
@@ -218,7 +248,19 @@
                  (get-in value [:diagnostic :artifact]))
           (:diagnostic value)))))
 
-(deftest sh07-b7-fixtures-are-paired-complete-and-byte-identical
+(defn- node-descendants
+  [nodes root-id]
+  (loop [pending [root-id] seen #{}]
+    (if (empty? pending)
+      seen
+      (let [node-id (peek pending)
+            remaining (pop pending)]
+        (if (contains? seen node-id)
+          (recur remaining seen)
+          (recur (into remaining (:children (get nodes node-id)))
+                 (conj seen node-id)))))))
+
+(deftest sh07-b8-fixtures-are-paired-complete-and-byte-identical
   (doseq [family ["accepted" "rejected"]
           extension extensions]
     (is (= (if (= family "accepted")
@@ -234,7 +276,7 @@
            (seq (source-bytes
                  (fixture-path family basename ".qst")))))))
 
-(deftest sh07-b7-accepted-pairs-use-current-schema-and-path-neutral-products
+(deftest sh07-b8-accepted-pairs-use-v9-and-path-neutral-products
   (doseq [basename accepted-basenames]
     (let [gravity (file-artifact "accepted" basename ".gravity")
           qst (file-artifact "accepted" basename ".qst")]
@@ -242,8 +284,8 @@
         (is (= :accepted (:status gravity) (:status qst)))
         (is (= (:artifact-id gravity) (:artifact-id qst)))
         (is (= (identity-input gravity) (identity-input qst)))
-        (is (= (:error-transfers (core gravity))
-               (:error-transfers (core qst))))
+        (is (= (:error-handlers (core gravity))
+               (:error-handlers (core qst))))
         (is (= 9 (:schema-version (request gravity))
                (:schema-version (request qst))))
         (is (= :sh07-b8-meta-jvm-core
@@ -254,146 +296,233 @@
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))))))
 
-(deftest sh07-b7-throw-products-have-exact-shape-and-pending-legality
+(deftest sh07-b8-error-handler-products-have-exact-bidirectional-shape
   (doseq [basename accepted-basenames
           extension extensions]
     (let [artifact (file-artifact "accepted" basename extension)
           core-artifact (core artifact)
-          records (:error-transfers core-artifact)
-          bounds
-          (get-in artifact
-                  [:gravity-core-boundary
-                   :raw-template-result :bounds])
-          maximum-error-transfer-records
-          (:maximum-error-transfer-records bounds)
+          records (:error-handlers core-artifact)
+          transfers (:error-transfers core-artifact)
+          transfer-index (exactly-once-index transfers :ordinal)
           nodes (exactly-once-index (:nodes core-artifact) :node-id)
           source-map
           (exactly-once-index (:source-map core-artifact)
                               :core-node-id)
-          lineage (:lineage (request artifact))]
+          bindings
+          (exactly-once-index (:binding-table (request artifact))
+                              :binding-id)
+          forms
+          (exactly-once-index (:forms (request artifact)) :form-id)
+          resolutions (:resolution-table (request artifact))
+          lineage (:lineage (request artifact))
+          maximum
+          (get-in artifact
+                  [:gravity-core-boundary :raw-template-result
+                   :bounds :maximum-error-handler-records])]
       (testing (str basename extension)
         (is (seq records))
         (is (= (vec (range (count records)))
                (mapv :ordinal records)))
-        (is (= 1024 maximum-error-transfer-records))
-        (is (<= (count records)
-                maximum-error-transfer-records))
+        (is (= 1024 maximum))
+        (is (<= (count records) maximum))
+        (is (=
+             (mapv
+              #(assoc % :authenticated-sh06-artifact-id
+                      (:sh06-semantic-projection-id %))
+              records)
+             (:error-handlers (identity-input artifact))))
         (doseq [record records]
           (let [node (get nodes (:core-node-id record))
+                protected-id (:protected-core-node-id record)
+                handler-id (:handler-core-node-id record)
+                protected-tree (node-descendants nodes protected-id)
                 source (get source-map (:core-node-id record))
-                value-node-id (:value-core-node-id record)
                 attributes (:attributes node)
+                catch-clause (get forms (:catch-clause-form-id record))
+                error-type (get forms (:error-type-form-id record))
+                catch-binding-form
+                (get forms (:catch-binding-form-id record))
+                error-type-binding
+                (get bindings (:error-type-binding-id record))
+                catch-binding (get bindings (:catch-binding-id record))
                 shared-keys
-                [:construction-order :runtime-reachability
-                 :transfer-policy :result-policy :required-effect
+                [:runtime-reachability :selection-policy :result-policy
+                 :catch-clause-form-id :catch-clause-syntax-id
+                 :error-type-form-id :error-type-syntax-id
+                 :error-type-binding-id :catch-binding-id
+                 :catch-binding-form-id :catch-binding-syntax-id
+                 :catch-binding-scope-id
                  :authenticated-sh06-artifact-id
                  :sh06-semantic-projection-id
-                 :type-legality :effect-registry-legality
+                 :type-coverage-legality :result-type-join-legality
+                 :effect-registry-legality
                  :effect-profile-capability-legality
                  :profile-error-lowering-legality
                  :ownership-legality :safety-classification]]
-            (is (= error-transfer-record-keys
+            (is (= error-handler-record-keys
                    (set (keys record))))
-            (is (= error-transfer-attribute-keys
+            (is (= error-handler-attribute-keys
                    (set (keys attributes))))
             (is (= (select-keys record shared-keys)
                    (select-keys attributes shared-keys)))
-            (is (= :throw (:core-form node)))
+            (is (= :try (:core-form node)))
+            (is (= [protected-id handler-id] (:children node)))
+            (is (= [{:index 0 :core-node-id protected-id}]
+                   (get-in node [:evaluation :order])))
+            (is (= :protected-then-typed-handler-candidate
+                   (get-in node [:evaluation :kind])
+                   (:evaluation-order attributes)))
+            (is (= 0 (:protected-child-index attributes)))
+            (is (= 1 (:handler-child-index attributes)))
             (is (= (:form-id record)
                    (get-in node [:source :form-id])
                    (:form-id source)))
             (is (= (:syntax-id record)
                    (get-in node [:source :syntax-id])
                    (:syntax-id source)))
-            (is (= [value-node-id] (:children node)))
-            (is (= [{:index 0 :core-node-id value-node-id}]
-                   (get-in node [:evaluation :order])))
-            (is (= :value-then-transfer
-                   (get-in node [:evaluation :kind])
-                   (:evaluation-order attributes)))
-            (is (= (:evaluation-region record)
-                   (get-in node [:evaluation :region])))
-            (is (= (:evaluation-owner-function-syntax-id record)
-                   (get-in node
-                           [:evaluation
-                            :owner-function-syntax-id])))
-            (is (= [value-node-id] (:evaluated-children record)))
-            (is (= [:evaluate-value :transfer-error]
+            (is (= [:evaluate-protected
+                    :conditionally-select-typed-handler]
                    (:ordered-steps record)))
-            (is (= :postorder-after-value
+            (is (= :protected-then-handler-then-try
                    (:construction-order record)))
-            (is (= :not-asserted-by-sh07-b7
+            (is (= :protected-then-conditional-handler
+                   (:runtime-evaluation record)))
+            (is (= :not-asserted-by-sh07-b8
                    (:runtime-reachability record)))
-            (is (= :error-transfer
-                   (:transfer-policy record)))
-            (is (= :never (:result-policy record)))
-            (is (= :error/throw (:required-effect record)))
+            (is (= :typed-handler-candidate
+                   (:selection-policy record)))
+            (is (= :protected-or-handler-last
+                   (:result-policy record)))
             (is (= (:authenticated-sh06-artifact-id lineage)
                    (:authenticated-sh06-artifact-id record)))
             (is (= (:sh06-semantic-projection-id lineage)
                    (:sh06-semantic-projection-id record)))
-            (is (= :pending-sh08 (:type-legality record)))
+            (is (= :pending-sh08
+                   (:type-coverage-legality record)
+                   (:result-type-join-legality record)))
             (is (= :pending-sh09
                    (:effect-registry-legality record)
                    (:effect-profile-capability-legality record)
                    (:profile-error-lowering-legality record)))
             (is (= :pending-sh10 (:ownership-legality record)))
             (is (= :pending-sh11
-                   (:safety-classification record)))))))))
+                   (:safety-classification record)))
+            (is (= :list (:kind catch-clause)))
+            (is (= (:catch-clause-syntax-id record)
+                   (:syntax-id catch-clause)))
+            (is (= :symbol (:kind error-type)))
+            (is (= (:error-type-syntax-id record)
+                   (:syntax-id error-type)))
+            (is (= :type (:kind error-type-binding)))
+            (is (= :core (:binding-class error-type-binding)))
+            (is (= (:value error-type)
+                   (:name error-type-binding)))
+            (is (some
+                 #(and (= (:error-type-syntax-id record)
+                          (:reference-syntax-id %))
+                       (= :type (:position %))
+                       (= (:error-type-binding-id record)
+                          (:binding-id %)))
+                 resolutions))
+            (is (= :symbol (:kind catch-binding-form)))
+            (is (= (:catch-binding-syntax-id record)
+                   (:syntax-id catch-binding-form)))
+            (is (map? catch-binding))
+            (is (= :local (:kind catch-binding)))
+            (is (= :lexical (:binding-class catch-binding)))
+            (is (= (:value catch-binding-form)
+                   (:name catch-binding)))
+            (is (= (:catch-binding-syntax-id record)
+                   (:definition-syntax-id catch-binding)))
+            (is (= (:catch-binding-scope-id record)
+                   (:scope-id catch-binding)
+                   (:scope-id catch-binding-form)))
+            (doseq [use-syntax-id
+                    (:catch-binding-use-syntax-ids record)]
+              (is (some
+                   #(and (= use-syntax-id
+                            (:reference-syntax-id %))
+                         (= :expression (:position %))
+                         (= (:catch-binding-id record)
+                            (:binding-id %)))
+                   resolutions)))
+            (doseq [candidate (:candidate-error-transfers record)]
+              (let [transfer (get transfer-index (:ordinal candidate))]
+                (is (= #{:ordinal :core-node-id}
+                       (set (keys candidate))))
+                (is (= (:core-node-id candidate)
+                       (:core-node-id transfer)))
+                (is (contains? protected-tree
+                               (:core-node-id candidate)))))))))))
 
-(deftest sh07-b7-function-branch-and-nested-order-are-explicit
+(deftest sh07-b8-catch-locals-candidates-and-nested-order-are-explicit
   (doseq [extension extensions]
-    (let [function-artifact
-          (file-artifact "accepted" "function-throw" extension)
-          function-record
-          (first (:error-transfers (core function-artifact)))
-          conditional
-          (file-artifact "accepted" "conditional-throws" extension)
-          conditional-records (:error-transfers (core conditional))
-          nested
-          (file-artifact "accepted" "nested-throw-value" extension)
-          nested-core (core nested)
-          nested-records (:error-transfers nested-core)
-          nodes (exactly-once-index (:nodes nested-core) :node-id)
-          inner (first nested-records)
-          outer (second nested-records)
-          outer-node (get nodes (:core-node-id outer))]
+    (let [top (file-artifact "accepted"
+                             "top-level-typed-catch" extension)
+          function (file-artifact "accepted"
+                                  "function-typed-catch" extension)
+          conditional (file-artifact "accepted"
+                                     "conditional-protected" extension)
+          nested (file-artifact "accepted"
+                                "nested-typed-catches" extension)
+          function-record (first (:error-handlers (core function)))
+          function-nodes
+          (exactly-once-index (:nodes (core function)) :node-id)
+          function-protected
+          (get function-nodes
+               (:protected-core-node-id function-record))
+          function-handler
+          (get function-nodes
+               (:handler-core-node-id function-record))
+          conditional-record (first (:error-handlers (core conditional)))
+          nested-records (:error-handlers (core nested))]
+      (is (= [0]
+             (mapv :ordinal
+                   (:candidate-error-transfers
+                    (first (:error-handlers (core top)))))))
       (is (some? (:evaluation-owner-function-syntax-id
                   function-record)))
       (is (= :function-body
              (:evaluation-region function-record)))
-      (is (= [:then :else]
-             (mapv #(get-in % [:evaluation-region :role])
-                   conditional-records)))
-      (is (every?
-           #(= :conditional-branch
-               (get-in % [:evaluation-region :kind]))
-           conditional-records))
-      (is (every?
-           #(= :selected-exactly-once
-               (get-in % [:evaluation-region :execution]))
-           conditional-records))
+      (is (= :do (:core-form function-protected)
+             (:core-form function-handler)))
+      (is (= :left-to-right
+             (get-in function-protected [:evaluation :kind])
+             (get-in function-handler [:evaluation :kind])))
+      (is (= (:children function-protected)
+             (mapv :core-node-id
+                   (get-in function-protected
+                           [:evaluation :order]))))
+      (is (= (:children function-handler)
+             (mapv :core-node-id
+                   (get-in function-handler
+                           [:evaluation :order]))))
+      (is (= [0 1]
+             (mapv :ordinal
+                   (:candidate-error-transfers conditional-record))))
       (is (= [0 1] (mapv :ordinal nested-records)))
-      (is (= (:core-node-id inner)
-             (:value-core-node-id outer)))
-      (is (= [(:core-node-id inner)]
-             (:evaluated-children outer)
-             (:children outer-node)))
-      (is (= [:postorder-after-value :postorder-after-value]
-             (mapv :construction-order nested-records)))
-      (is (= [:not-asserted-by-sh07-b7
-              :not-asserted-by-sh07-b7]
-             (mapv :runtime-reachability nested-records))))))
+      (is (= [[0] [0 1]]
+             (mapv
+              #(mapv :ordinal (:candidate-error-transfers %))
+              nested-records)))
+      (doseq [record
+              (concat (:error-handlers (core top))
+                      (:error-handlers (core function))
+                      (:error-handlers (core conditional))
+                      nested-records)]
+        (is (= 1 (count (:catch-binding-use-syntax-ids record))))
+        (is (not= (:catch-binding-syntax-id record)
+                  (first (:catch-binding-use-syntax-ids record))))))))
 
-(deftest sh07-b7-fresh-cross-root-identity-retains-actual-path
+(deftest sh07-b8-fresh-cross-root-identity-retains-actual-path
   (let [fixture
-        (fixture-path "accepted" "nested-throw-value" ".gravity")
+        (fixture-path "accepted" "nested-typed-catches" ".gravity")
         temp-root
         (java.nio.file.Files/createTempDirectory
-         "gravity-sh07-b7-cross-root-"
+         "gravity-sh07-b8-cross-root-"
          (make-array java.nio.file.attribute.FileAttribute 0))
-        left-path (.resolve temp-root "left/throw.gravity")
-        right-path (.resolve temp-root "right/throw.qst")]
+        left-path (.resolve temp-root "left/handlers.gravity")
+        right-path (.resolve temp-root "right/handlers.qst")]
     (try
       (doseq [target [left-path right-path]]
         (java.nio.file.Files/createDirectories
@@ -410,8 +539,8 @@
         (is (= :accepted (:status left) (:status right)))
         (is (= (:artifact-id left) (:artifact-id right)))
         (is (= (identity-input left) (identity-input right)))
-        (is (= (count (:error-transfers (core left)))
-               (count (:error-transfers (core right)))))
+        (is (= (:error-handlers (core left))
+               (:error-handlers (core right))))
         (is (= (str left-path)
                (get-in left [:provenance :source-path])
                (get-in (core left)
@@ -425,7 +554,7 @@
       (finally
         (delete-tree! temp-root)))))
 
-(deftest sh07-b7-rejections-are-structured-and-oracle-bound
+(deftest sh07-b8-rejections-are-structured-and-oracle-bound
   (doseq [[basename oracle] rejected-oracles
           extension extensions]
     (testing (str basename extension)
@@ -448,21 +577,13 @@
         (is (= :error (:severity diagnostic)))
         (is (= (:reason oracle)
                (get-in diagnostic [:facts :reason])))
-        (doseq [[key expected] (:facts oracle)]
-          (is (= expected
-                 (get-in diagnostic
-                         [:facts :rule-specific key]))))
-        (when (:semantic-rule oracle)
-          (is (= (:semantic-rule oracle)
-                 (get-in diagnostic
-                         [:facts :semantic-rule]))))
         (is (= (:remediation oracle) (:remediation diagnostic)))
         (is (= source-path (get-in diagnostic [:source-span :source])))
         (is (true? (get-in diagnostic [:facts :fail-closed])))))))
 
-(deftest sh07-b7-authenticated-input-substitution-fails-before-lowering
+(deftest sh07-b8-authenticated-input-substitution-fails-before-lowering
   (let [artifact
-        (file-artifact "accepted" "top-level-throw" ".gravity")
+        (file-artifact "accepted" "top-level-typed-catch" ".gravity")
         authenticated (request artifact)
         substituted
         (assoc-in
@@ -484,17 +605,20 @@
            (get-in diagnostic [:facts :reason])))
     (is (true? (get-in diagnostic [:facts :fail-closed])))))
 
-(deftest sh07-b7-error-transfer-alterations-fail-replay
+(deftest sh07-b8-error-handler-alterations-fail-replay
   (let [artifact
-        (file-artifact "accepted" "nested-throw-value" ".gravity")
-        second-node-id
+        (file-artifact "accepted" "nested-typed-catches" ".gravity")
+        first-handler
         (get-in artifact
                 [:gravity-core-boundary :canonical-core-artifact
-                 :error-transfers 1 :value-core-node-id])
-        first-node-id
-        (get-in artifact
-                [:gravity-core-boundary :canonical-core-artifact
-                 :error-transfers 0 :core-node-id])
+                 :error-handlers 0])
+        first-node-id (:core-node-id first-handler)
+        handler-transfer
+        (select-keys
+         (get-in artifact
+                 [:gravity-core-boundary :canonical-core-artifact
+                  :error-transfers 1])
+         [:ordinal :core-node-id])
         node-index
         (first
          (keep-indexed
@@ -504,42 +628,42 @@
                   [:gravity-core-boundary
                    :canonical-core-artifact :nodes])))
         alterations
-        {"result policy"
+        {"selection policy"
          (assoc-in
           artifact
           [:gravity-core-boundary :canonical-core-artifact
-           :error-transfers 0 :result-policy]
-          :value)
-         "required effect"
+           :error-handlers 0 :selection-policy]
+          :always)
+         "catch binding"
          (assoc-in
           artifact
           [:gravity-core-boundary :canonical-core-artifact
-           :error-transfers 0 :required-effect]
-          :pure)
-         "construction ordinal"
+           :error-handlers 0 :catch-binding-id]
+          (:error-type-binding-id first-handler))
+         "candidate removal"
          (assoc-in
           artifact
           [:gravity-core-boundary :canonical-core-artifact
-           :error-transfers 0 :ordinal]
-          9)
-         "value child"
-         (assoc-in
-          artifact
-          [:gravity-core-boundary :canonical-core-artifact
-           :error-transfers 0 :value-core-node-id]
-          second-node-id)
-         "record removal"
+          :error-handlers 0 :candidate-error-transfers]
+          [])
+         "handler-body candidate injection"
          (update-in
           artifact
           [:gravity-core-boundary :canonical-core-artifact
-           :error-transfers]
+           :error-handlers 0 :candidate-error-transfers]
+          conj handler-transfer)
+         "handler removal"
+         (update-in
+          artifact
+          [:gravity-core-boundary :canonical-core-artifact
+           :error-handlers]
           pop)
-         "node transfer policy"
+         "node result policy"
          (assoc-in
           artifact
           [:gravity-core-boundary :canonical-core-artifact
-           :nodes node-index :attributes :transfer-policy]
-          :host-exception)}]
+           :nodes node-index :attributes :result-policy]
+          :protected-only)}]
     (doseq [[label altered] alterations]
       (testing label
         (let [checks
@@ -551,7 +675,7 @@
                      check))]
           (is (not= artifact altered))
           (is (contains? failed :canonical-core-replays?))
-          (is (contains? failed :error-transfers-replay?))
+          (is (contains? failed :error-handlers-replay?))
           (is (contains? failed :authoritative-products-replay?))
           (is (= :failed
                  (:status
@@ -559,7 +683,7 @@
                     'sh07-core-artifact-verification)
                    altered)))))))))
 
-(deftest sh07-b7-public-proof-is-bounded-and-does-not-claim-handlers
+(deftest sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts
   (doseq [basename accepted-basenames]
     (let [artifact (file-artifact "accepted" basename ".gravity")
           proof (:capability-based-proof artifact)
@@ -582,17 +706,12 @@
                (:artifact proof)))
         (is (= :complete (:status proof)))
         (is (= [] (:failed-checks proof)))
-        (is (true? (:error-transfers-replay? proof)))
+        (is (true? (:error-handlers-replay? proof)))
         (is (= :passed
                (get-in boundary [:template-verification :status])))
         (is (= :passed
                (get-in boundary [:resolved-verification :status])))
-        (is (every? (set pending)
-                    [:try-finally :multiple-try-handlers
-                     :try-protected-sequencing
-                     :try-handler-sequencing]))
         (is (not-any? #{:try-handlers} pending))
-        (is (not-any? #{:exceptions}
-                      pending))
+        (is (some #{:patterns} pending))
         (is (= [:types :effects :ownership :safety]
                (:pending-fact-families canonical)))))))

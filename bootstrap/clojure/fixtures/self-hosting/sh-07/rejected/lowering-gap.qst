@@ -10,5 +10,6 @@
                      :expected-severity :error
                      :expected-remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
 
-(def unsupported-try
-  (try 1))
+(def unsupported-destructuring
+  (let [[value] [1]]
+    2))

@@ -361,8 +361,8 @@
         bounds
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result :bounds])]
-    (is (= 8 (:schema-version (request artifact))))
-    (is (= :sh07-b7-meta-jvm-core (:scope (request artifact))))
+    (is (= 9 (:schema-version (request artifact))))
+    (is (= :sh07-b8-meta-jvm-core (:scope (request artifact))))
     (is (= maximum-loop-binding-records
            (:maximum-loop-binding-records bounds)))
     (is (= maximum-recur-target-records
@@ -564,10 +564,10 @@
         (is (= :gravity/sh07-core-artifact (:kind artifact)))
         (is (= :accepted (:status artifact)))
         (is (= :SH-07 (:slice artifact)))
-        (is (= "SH-07-B7" (:task artifact)))
+        (is (= "SH-07-B8" (:task artifact)))
         (is (= ["L2" "L6" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :c6-gravity-core-lowering-b7
+        (is (= :c6-gravity-core-lowering-b8
                (get-in artifact [:pass :name])))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact embedded-proof)))
@@ -659,7 +659,7 @@
                  (is (= (:rule oracle) (:rule diagnostic)))
                  (is (= :core-lowering (:stage diagnostic)))
                  (is (= :error (:severity diagnostic)))
-                 (is (= :sh07-b7-core-lowering
+                 (is (= :sh07-b8-core-lowering
                         (:lowering-rule diagnostic)))
                  (is (= (:reason oracle)
                         (get-in diagnostic [:facts :reason])))

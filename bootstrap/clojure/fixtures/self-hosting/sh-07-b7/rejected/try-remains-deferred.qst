@@ -7,12 +7,12 @@
   (:metadata
    {:slice :SH-07-B7
     :sh07-b7
-    {:expected-rule "C6-LOWERING-GAP"
+    {:expected-rule "C6-CORE-SHAPE"
      :expected-stage :core-lowering
      :expected-severity :error
-     :expected-reason :unsupported-list-core-form
+     :expected-reason :try-catch-required
      :expected-remediation
-     "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
+     "Provide exactly one protected expression followed by exactly one typed catch clause."}}))
 
 (def invalid-handler
   (try

@@ -1,4 +1,4 @@
-; Gravity-owned SH-07-A/B1/B2/B3/B4/B5/B6/B7 core-form lowering leaf.
+; Gravity-owned SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8 core-form lowering leaf.
 (ns gravity.checked-core
   (:profile :meta)
   (:target :jvm)
@@ -33,6 +33,7 @@
                              :same-namespace-var-object-reference
                              :same-namespace-top-level-set-mutation
                              :standalone-error-transfer
+                             :single-typed-error-handler
                              :resolved-symbol-references
                              :symbol-headed-general-calls
                              :scalar-literals
@@ -46,8 +47,10 @@
                             :macro-expansion-lineage :resolved-bindings
                             :evaluation-order :module-metadata
                             :artifact-provenance}
-               :pending [:types :effects :ownership :safety
-                         :try-handlers :patterns
+               :pending [:types :effects :ownership :safety :patterns
+                         :try-finally :multiple-try-handlers
+                         :try-protected-sequencing
+                         :try-handler-sequencing
                          :keyword-headed-calls
                          :alias-qualified-references
                          :destructuring-bindings :recursion
@@ -61,7 +64,7 @@
                          :throw-error-lowering-legality-sh09
                          :throw-ownership-legality-sh10
                          :throw-safety-classification-sh11]
-               :claim-boundary [:sh07-b7-meta-jvm-core-subset-v8
+               :claim-boundary [:sh07-b8-meta-jvm-core-subset-v9
                                 :coordinator-projected-sh06-input-required
                                 :not-complete-c6
                                 :not-checked-core
@@ -70,19 +73,19 @@
 
 (def sh07-core-contract
   {:artifact :gravity/sh07-core-contract
-   :schema-version 8
+   :schema-version 9
    :owner :gravity-source
    :governing-contracts ["L2" "L6" "L9" "C5" "C6"]
    :authenticated-dependencies ["SH-02" "SH-06"]
    :input :gravity/sh07-authenticated-sh06-core-request
    :output :gravity/sh07-core-template-result
    :resolved-output :gravity/sh07-canonical-core-artifact
-   :identity-domain :gravity/sh07-b7-core-v8
+   :identity-domain :gravity/sh07-b8-core-v9
    :authoritative-entry 'sh07-build-core-template
    :template-verifier-entry 'sh07-verify-core-template
    :resolved-verifier-entry 'sh07-verify-core-resolved
    :supported-core-forms
-   ['def 'fn 'quote 'if 'do 'let 'loop 'recur 'var 'set! 'throw]
+   ['def 'fn 'quote 'if 'do 'let 'loop 'recur 'var 'set! 'throw 'try]
    :supported-literal-kinds
    [:nil :boolean :integer :decimal :ratio :character :string
     :keyword :vector :map :set]
@@ -110,6 +113,17 @@
     :transfer-policy :error-transfer
     :result :never
     :required-effect :error/throw
+    :legality :pending-sh08-sh09-sh10-sh11}
+   :try-policy
+   {:protected-expression-count 1
+    :handler-count 1
+    :handler-expression-count 1
+    :typed-handler-required true
+    :construction-order :protected-then-handler-then-try
+    :evaluation-order :protected-then-conditional-handler
+    :runtime-reachability :not-asserted-by-sh07-b8
+    :selection-policy :typed-handler-candidate
+    :result-policy :protected-or-handler-result-pending-sh08
     :legality :pending-sh08-sh09-sh10-sh11}
    :carrier-bound-policy
    :independent-component-caps-with-effective-aggregate-limit
@@ -139,6 +153,7 @@
    :maximum-var-reference-records 1024
    :maximum-mutation-records 1024
    :maximum-error-transfer-records 1024
+   :maximum-error-handler-records 1024
    :maximum-call-records 1024
    :maximum-lexical-binding-records 1024
    :maximum-loop-binding-records 1024
@@ -159,7 +174,7 @@
                  "C6-EVAL-ORDER" "C6-ORIGIN"
                  "C6-EFFECT-DROP" "C6-UNSAFE-DROP"
                  "C6-DOMAIN-BOUNDARY" "C6-VERIFY"]
-   :emitted-in-sh07-b7 ["C6-CORE-SHAPE" "C6-LOWERING-GAP"
+   :emitted-in-sh07-b8 ["C6-CORE-SHAPE" "C6-LOWERING-GAP"
                         "C6-EVAL-ORDER" "C6-ORIGIN" "C6-VERIFY"]
    :stable-fields [:rule :severity :stage :syntax-id :form-id
                    :source-span :generated-origin-chain
@@ -187,6 +202,7 @@
    :maximum-var-reference-records 1024
    :maximum-mutation-records 1024
    :maximum-error-transfer-records 1024
+   :maximum-error-handler-records 1024
    :maximum-call-records 1024
    :maximum-lexical-binding-records 1024
    :maximum-loop-binding-records 1024
@@ -661,7 +677,7 @@
   (if (map? request)
     (if (= (get request :artifact)
            :gravity/sh07-authenticated-sh06-core-request)
-      (if (= (get request :schema-version) 8)
+      (if (= (get request :schema-version) 9)
         (if (contains? request :macro-origin-traces)
           (if (sh07-bounded-vector?
                (get request :macro-origin-traces)
@@ -691,8 +707,8 @@
          :projection-binding :provenance :scope})
     (if (= (get request :artifact)
            :gravity/sh07-authenticated-sh06-core-request)
-      (if (= (get request :schema-version) 8)
-        (if (= (get request :scope) :sh07-b7-meta-jvm-core)
+      (if (= (get request :schema-version) 9)
+        (if (= (get request :scope) :sh07-b8-meta-jvm-core)
           (if (sh07-lineage-shape? (get request :lineage))
             (if (sh07-module-shape? (get request :module))
               (if (sh07-bounded-vector?
@@ -869,10 +885,13 @@
                 (if (= (get reference :kind) :symbol)
                   (if (= (get reference :value)
                          (get resolution :symbol))
-                    (if (contains? #{:operator :expression}
+                    (if (contains? #{:operator :expression :type}
                                    (get resolution :position))
-                      (if (= (get resolution :upstream-binding-id)
-                             (get binding :upstream-binding-id))
+                      (if (if (= (get resolution :position) :type)
+                            (= (get binding :kind) :type)
+                            true)
+                        (if (= (get resolution :upstream-binding-id)
+                               (get binding :upstream-binding-id))
                         (if (= (get resolution :resolution-order)
                                :alias-qualified-required-binding)
                           (recur (rest remaining))
@@ -880,6 +899,7 @@
                                resolution binding)
                             (recur (rest remaining))
                             false))
+                          false)
                         false)
                       false)
                     false)
@@ -1254,20 +1274,40 @@
       preflight)))
 
 (defn sh07-remediation [rule facts]
-  (if (= rule "C6-CORE-SHAPE")
-    "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."
-    (if (= rule "C6-LOWERING-GAP")
-      "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."
-      (if (= rule "C6-EVAL-ORDER")
-        "Preserve child order and the required left-to-right evaluation sequence."
-        (if (= rule "C6-ORIGIN")
-          "Preserve exact syntax ids, semantic spans, and generated-origin chains."
-          (if (= (get facts :semantic-rule) "L2-RECUR-TARGET")
-            "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."
-            (if (= (get facts :reason)
-                   :var-top-level-namespace-binding-required)
-              "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."
-              "Replay the Gravity template and bind every digest ordinal exactly once.")))))))
+  (let [reason (get facts :reason)]
+    (if (= reason :try-catch-required)
+      "Provide exactly one protected expression followed by exactly one typed catch clause."
+      (if (= reason :try-protected-expression-required)
+        "Provide exactly one protected expression before the typed catch clause."
+        (if (= reason :catch-handler-expression-required)
+          "Provide exactly one handler expression after the catch-local binding."
+          (if (if (= reason :catch-type-symbol-required)
+                true
+                (= reason :catch-binding-symbol-required))
+            "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression."
+            (if (= reason :try-protected-sequencing-deferred)
+              "Wrap protected sequencing in an explicit do form; SH-07-B8 accepts one protected expression."
+              (if (= reason :catch-handler-sequencing-deferred)
+                "Wrap handler sequencing in an explicit do form; SH-07-B8 accepts one handler expression."
+                (if (= reason :multiple-catch-clauses-deferred)
+                  "Use exactly one typed catch clause in SH-07-B8; defer handler chains to their owning slice."
+                  (if (= reason :finally-clause-deferred)
+                    "Omit finally in SH-07-B8; defer cleanup lowering to its owning slice."
+                    (if (= rule "C6-CORE-SHAPE")
+                      "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."
+                      (if (= rule "C6-LOWERING-GAP")
+                        "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."
+                        (if (= rule "C6-EVAL-ORDER")
+                          "Preserve child order and the required left-to-right evaluation sequence."
+                          (if (= rule "C6-ORIGIN")
+                            "Preserve exact syntax ids, semantic spans, and generated-origin chains."
+                            (if (= (get facts :semantic-rule)
+                                   "L2-RECUR-TARGET")
+                              "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."
+                              (if (= reason
+                                     :var-top-level-namespace-binding-required)
+                                "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."
+                                "Replay the Gravity template and bind every digest ordinal exactly once."))))))))))))))))
 
 (defn sh07-diagnostic [request rule form facts]
   (let [module (if (map? (get request :module))
@@ -1288,7 +1328,7 @@
         generated-origin-chain
         (if (map? form) (get form :generated-origin) [])
         preimage
-        {:domain :gravity/sh07-b7-c6-diagnostic-v8
+        {:domain :gravity/sh07-b8-c6-diagnostic-v9
          :rule rule
          :syntax-id syntax-id
          :form-id form-id
@@ -1314,7 +1354,7 @@
       :namespace (get module :namespace)
       :profile (get module :profile)
       :target (get module :target)
-      :lowering-rule :sh07-b7-core-lowering
+      :lowering-rule :sh07-b8-core-lowering
       :facts {:reason (get facts :reason)
               :semantic-rule (get facts :semantic-rule)
               :rule-specific facts
@@ -1335,7 +1375,7 @@
 (defn sh07-rejected-result [request rule form facts]
   (let [built (sh07-diagnostic request rule form facts)]
     {:artifact :gravity/sh07-core-template-result
-     :schema-version 8
+     :schema-version 9
      :status :rejected
      :core-template nil
      :digest-requests [(get built :request)]
@@ -1362,6 +1402,7 @@
    :var-references []
    :mutations []
    :error-transfers []
+   :error-handlers []
    :calls []
    :lexical-bindings []
    :loop-bindings []
@@ -1404,7 +1445,10 @@
       []
       (if (= evaluation-kind :condition-then-exclusive-branch)
         [(first children)]
-        children))))
+        (if (= evaluation-kind
+               :protected-then-typed-handler-candidate)
+          [(first children)]
+          children)))))
 
 (defn sh07-add-node
   [request state form core-form children attributes binding-ids
@@ -1416,7 +1460,7 @@
         evaluation-owner
         (get state :evaluation-owner-function-syntax-id)
         preimage
-        {:domain :gravity/sh07-b7-core-node-v8
+        {:domain :gravity/sh07-b8-core-node-v9
          :core-form core-form
          :children children
          :attributes attributes
@@ -1474,7 +1518,7 @@
           :safety (get module :safety)}
          :pending-fact-families
          [:types :effects :ownership :safety]
-         :lowering-rule-version :sh07-b7-v8}
+         :lowering-rule-version :sh07-b8-v9}
         next-state
         (assoc
          (assoc
@@ -2497,6 +2541,350 @@
         :actual-operand-count
         (if (= (count children) 0) 0 (- (count children) 1))
         :required-operand-count 1}})))
+
+(defn sh07-handler-add-legality-facts [value]
+  (assoc
+   (assoc
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (assoc value :type-coverage-legality :pending-sh08)
+        :result-type-join-legality :pending-sh08)
+       :effect-registry-legality :pending-sh09)
+     :effect-profile-capability-legality :pending-sh09)
+    :profile-error-lowering-legality :pending-sh09)
+   :ownership-legality :pending-sh10)
+  :safety-classification :pending-sh11))
+
+(defn sh07-error-handler-region [outer-region form catch-form]
+  {:kind :typed-error-handler-candidate
+   :try-syntax-id (get form :syntax-id)
+   :try-form-id (get form :form-id)
+   :catch-syntax-id (get catch-form :syntax-id)
+   :catch-form-id (get catch-form :form-id)
+   :runtime-reachability :not-asserted-by-sh07-b8
+   :parent-region-kind
+   (if (map? outer-region) (get outer-region :kind) outer-region)})
+
+(defn sh07-candidate-error-transfers
+  [records start-ordinal owner-function-syntax-id]
+  (loop [remaining (subvec records start-ordinal (count records))
+         values []]
+    (if (= (count remaining) 0)
+      values
+      (let [record (first remaining)]
+        (if (= (get record :evaluation-owner-function-syntax-id)
+               owner-function-syntax-id)
+          (recur
+           (rest remaining)
+           (conj values
+                 {:ordinal (get record :ordinal)
+                  :core-node-id (get record :core-node-id)}))
+          (recur (rest remaining) values))))))
+
+(defn sh07-catch-binding-use-syntax-ids
+  [records start-ordinal binding-id]
+  (loop [remaining (subvec records start-ordinal (count records))
+         values []]
+    (if (= (count remaining) 0)
+      values
+      (let [record (first remaining)]
+        (if (= (get record :binding-id) binding-id)
+          (recur
+           (rest remaining)
+           (conj values (get record :syntax-id)))
+          (recur (rest remaining) values))))))
+
+(defn sh07-try-node-attributes
+  [request catch-form error-type-form error-type-binding
+   catch-binding-form catch-binding]
+  (sh07-handler-add-legality-facts
+   {:protected-child-index 0
+    :handler-child-index 1
+    :evaluation-order :protected-then-typed-handler-candidate
+    :runtime-reachability :not-asserted-by-sh07-b8
+    :selection-policy :typed-handler-candidate
+    :result-policy :protected-or-handler-last
+    :catch-clause-form-id (get catch-form :form-id)
+    :catch-clause-syntax-id (get catch-form :syntax-id)
+    :error-type-form-id (get error-type-form :form-id)
+    :error-type-syntax-id (get error-type-form :syntax-id)
+    :error-type-binding-id (get error-type-binding :binding-id)
+    :catch-binding-form-id (get catch-binding-form :form-id)
+    :catch-binding-syntax-id (get catch-binding-form :syntax-id)
+    :catch-binding-id (get catch-binding :binding-id)
+    :catch-binding-scope-id (get catch-binding :scope-id)
+    :authenticated-sh06-artifact-id
+    (get (get request :lineage)
+         :authenticated-sh06-artifact-id)
+    :sh06-semantic-projection-id
+    (get (get request :lineage)
+         :sh06-semantic-projection-id)}))
+
+(defn sh07-error-handler-record
+  [request state ordinal node-id form protected-node-id handler-node-id
+   catch-form error-type-form error-type-binding
+   catch-binding-form catch-binding binding-use-syntax-ids
+   candidate-error-transfers]
+  (sh07-handler-add-legality-facts
+   {:ordinal ordinal
+    :core-node-id node-id
+    :form-id (get form :form-id)
+    :syntax-id (get form :syntax-id)
+    :protected-core-node-id protected-node-id
+    :handler-core-node-id handler-node-id
+    :catch-clause-form-id (get catch-form :form-id)
+    :catch-clause-syntax-id (get catch-form :syntax-id)
+    :error-type-form-id (get error-type-form :form-id)
+    :error-type-syntax-id (get error-type-form :syntax-id)
+    :error-type-binding-id (get error-type-binding :binding-id)
+    :catch-binding-form-id (get catch-binding-form :form-id)
+    :catch-binding-syntax-id (get catch-binding-form :syntax-id)
+    :catch-binding-id (get catch-binding :binding-id)
+    :catch-binding-scope-id (get catch-binding :scope-id)
+    :catch-binding-use-syntax-ids binding-use-syntax-ids
+    :candidate-error-transfers candidate-error-transfers
+    :evaluation-region (get state :evaluation-region)
+    :evaluation-owner-function-syntax-id
+    (get state :evaluation-owner-function-syntax-id)
+    :ordered-steps
+    [:evaluate-protected :conditionally-select-typed-handler]
+    :construction-order :protected-then-handler-then-try
+    :runtime-evaluation :protected-then-conditional-handler
+    :runtime-reachability :not-asserted-by-sh07-b8
+    :selection-policy :typed-handler-candidate
+    :result-policy :protected-or-handler-last
+    :authenticated-sh06-artifact-id
+    (get (get request :lineage)
+         :authenticated-sh06-artifact-id)
+    :sh06-semantic-projection-id
+    (get (get request :lineage)
+         :sh06-semantic-projection-id)}))
+
+(defn sh07-list-clause-count [request form-ids operator]
+  (loop [remaining form-ids count-value 0]
+    (if (= (count remaining) 0)
+      count-value
+      (let [form
+            (sh07-find-form
+             (get request :internal-indexes) (first remaining))]
+        (recur
+         (rest remaining)
+         (if (if (= (get form :kind) :list)
+               (= (sh07-list-operator request form) operator)
+               false)
+           (+ count-value 1)
+           count-value))))))
+
+(defn sh07-try-noncanonical-shape [request form children]
+  (let [operands (vec (rest children))
+        catch-count (sh07-list-clause-count request operands 'catch)
+        finally-count (sh07-list-clause-count request operands 'finally)]
+    (if (> finally-count 0)
+      {:status :rejected
+       :rule "C6-LOWERING-GAP"
+       :form form
+       :facts {:reason :finally-clause-deferred}}
+      (if (> catch-count 1)
+        {:status :rejected
+         :rule "C6-LOWERING-GAP"
+         :form form
+         :facts {:reason :multiple-catch-clauses-deferred}}
+        (if (= catch-count 0)
+          {:status :rejected
+           :rule "C6-CORE-SHAPE"
+           :form form
+           :facts {:reason :try-catch-required}}
+          (if (= (count operands) 1)
+            {:status :rejected
+             :rule "C6-CORE-SHAPE"
+             :form form
+             :facts {:reason :try-protected-expression-required}}
+            {:status :rejected
+             :rule "C6-LOWERING-GAP"
+             :form form
+             :facts {:reason :try-protected-sequencing-deferred}}))))))
+
+(defn sh07-lower-try [request state form]
+  (let [indexes (get request :internal-indexes)
+        children (get form :child-form-ids)]
+    (if (= (count children) 3)
+      (let [protected-form (sh07-find-form indexes (get children 1))
+            catch-form (sh07-find-form indexes (get children 2))]
+        (if (if (= (get catch-form :kind) :list)
+              (= (sh07-list-operator request catch-form) 'catch)
+              false)
+          (let [catch-children (get catch-form :child-form-ids)]
+            (if (= (count catch-children) 4)
+              (let [error-type-form
+                    (sh07-find-form indexes (get catch-children 1))
+                    catch-binding-form
+                    (sh07-find-form indexes (get catch-children 2))
+                    handler-form
+                    (sh07-find-form indexes (get catch-children 3))]
+                (if (= (get error-type-form :kind) :symbol)
+                  (if (= (get catch-binding-form :kind) :symbol)
+                    (let [error-type-resolution
+                          (sh07-find-resolution
+                           indexes (get error-type-form :syntax-id))
+                          error-type-binding
+                          (sh07-find-binding
+                           indexes
+                           (get error-type-resolution :binding-id))
+                          catch-binding
+                          (sh07-definition-binding
+                           indexes
+                           (get catch-binding-form :syntax-id))]
+                      (if (if (map? error-type-resolution)
+                            (if (= (get error-type-resolution :position)
+                                   :type)
+                              (if (= (get error-type-resolution :symbol)
+                                     (get error-type-form :value))
+                                (if (map? error-type-binding)
+                                  (if (= (get error-type-binding :kind) :type)
+                                    (= (get error-type-binding :binding-class)
+                                       :core)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                        (if (if (map? catch-binding)
+                              (if (= (get catch-binding :kind) :local)
+                                (if (= (get catch-binding :binding-class)
+                                       :lexical)
+                                  (if (= (get catch-binding :name)
+                                         (get catch-binding-form :value))
+                                    (= (get catch-binding :scope-id)
+                                       (get catch-binding-form :scope-id))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                          (let [transfer-start
+                                (count (get state :error-transfers))
+                                protected-lowered
+                                (sh07-lower-form
+                                 request
+                                 (assoc
+                                  (assoc state
+                                         :definition-context
+                                         :nested-expression)
+                                  :tail-target-id nil)
+                                 protected-form)]
+                            (if (= (get protected-lowered :status) :accepted)
+                              (let [protected-state
+                                    (get protected-lowered :state)
+                                    protected-node-id
+                                    (get protected-lowered :node-id)
+                                    candidates
+                                    (sh07-candidate-error-transfers
+                                     (get protected-state :error-transfers)
+                                     transfer-start
+                                     (get state
+                                          :evaluation-owner-function-syntax-id))
+                                    reference-use-start
+                                    (count
+                                     (get protected-state :reference-uses))
+                                    handler-lowered
+                                    (sh07-lower-form
+                                     request
+                                     (assoc
+                                      (assoc
+                                       (assoc
+                                        protected-state
+                                        :definition-context
+                                        :nested-expression)
+                                       :tail-target-id nil)
+                                      :evaluation-region
+                                      (sh07-error-handler-region
+                                       (get state :evaluation-region)
+                                       form catch-form))
+                                     handler-form)]
+                                (if (= (get handler-lowered :status) :accepted)
+                                  (let [handler-state
+                                        (get handler-lowered :state)
+                                        handler-node-id
+                                        (get handler-lowered :node-id)
+                                        binding-use-syntax-ids
+                                        (sh07-catch-binding-use-syntax-ids
+                                         (get handler-state :reference-uses)
+                                         reference-use-start
+                                         (get catch-binding :binding-id))
+                                        restored-state
+                                        (assoc
+                                         (assoc
+                                          handler-state
+                                          :evaluation-region
+                                          (get state :evaluation-region))
+                                         :tail-target-id
+                                         (get state :tail-target-id))
+                                        added
+                                        (sh07-add-node
+                                         request restored-state form :try
+                                         [protected-node-id handler-node-id]
+                                         (sh07-try-node-attributes
+                                          request catch-form
+                                          error-type-form error-type-binding
+                                          catch-binding-form catch-binding)
+                                         [(get error-type-binding :binding-id)
+                                          (get catch-binding :binding-id)]
+                                         :protected-then-typed-handler-candidate)
+                                        ordinal
+                                        (count
+                                         (get (get added :state)
+                                              :error-handlers))
+                                        record
+                                        (sh07-error-handler-record
+                                         request state ordinal
+                                         (get added :node-id)
+                                         form protected-node-id handler-node-id
+                                         catch-form
+                                         error-type-form error-type-binding
+                                         catch-binding-form catch-binding
+                                         binding-use-syntax-ids candidates)
+                                        next-state
+                                        (assoc
+                                         (get added :state)
+                                         :error-handlers
+                                         (conj
+                                          (get (get added :state)
+                                               :error-handlers)
+                                          record))]
+                                    (assoc added :state next-state))
+                                  handler-lowered))
+                              protected-lowered))
+                          {:status :rejected
+                           :rule "C6-VERIFY"
+                           :form catch-binding-form
+                           :facts
+                           {:reason
+                            :catch-binding-resolution-mismatch}})
+                        {:status :rejected
+                         :rule "C6-VERIFY"
+                         :form error-type-form
+                         :facts
+                         {:reason :catch-type-resolution-mismatch}}))
+                    {:status :rejected
+                     :rule "C6-CORE-SHAPE"
+                     :form catch-binding-form
+                     :facts {:reason :catch-binding-symbol-required}})
+                  {:status :rejected
+                   :rule "C6-CORE-SHAPE"
+                   :form error-type-form
+                   :facts {:reason :catch-type-symbol-required}}))
+              (if (< (count catch-children) 4)
+                {:status :rejected
+                 :rule "C6-CORE-SHAPE"
+                 :form catch-form
+                 :facts {:reason :catch-handler-expression-required}}
+                {:status :rejected
+                 :rule "C6-LOWERING-GAP"
+                 :form catch-form
+                 :facts {:reason :catch-handler-sequencing-deferred}})))
+          (sh07-try-noncanonical-shape request form children)))
+      (sh07-try-noncanonical-shape request form children))))
 
 (defn sh07-binding-descriptors-for-symbol-vector
   [request vector-form destructuring-reason variadic-reason]
@@ -3535,17 +3923,17 @@
                             (sh07-lower-set request state form)
                             (if (= operator 'throw)
                               (sh07-lower-throw request state form)
-                              (if (contains?
-                                   '#{try match}
-                                   operator)
-                                {:status :rejected
-                                 :rule "C6-LOWERING-GAP"
-                                 :form form
-                                 :facts
-                                 {:reason :unsupported-list-core-form
-                                  :operator operator}}
-                                (sh07-lower-call
-                                 request state form))))))))))))))
+                              (if (= operator 'try)
+                                (sh07-lower-try request state form)
+                                (if (= operator 'match)
+                                  {:status :rejected
+                                   :rule "C6-LOWERING-GAP"
+                                   :form form
+                                   :facts
+                                   {:reason :unsupported-list-core-form
+                                    :operator operator}}
+                                  (sh07-lower-call
+                                   request state form)))))))))))))))
       (sh07-lower-literal request state form))
     {:status :rejected
      :rule "C6-CORE-SHAPE"
@@ -3567,11 +3955,13 @@
    symbol))
 
 (defn sh07-executable-resolution? [resolution]
-  (if (= (get resolution :position) :operator)
-    (if (sh07-special-operator? (get resolution :symbol))
-      false
-      true)
-    true))
+  (if (= (get resolution :position) :type)
+    false
+    (if (= (get resolution :position) :operator)
+      (if (sh07-special-operator? (get resolution :symbol))
+        false
+        true)
+      true)))
 
 (defn sh07-resolution-syntax-ids [request]
   (loop [remaining (get request :resolution-table) values #{}]
@@ -3601,9 +3991,12 @@
             (if (<= (count (get state :error-transfers))
                     (get (sh07-bounds-value)
                          :maximum-error-transfer-records))
-              (if (<= (count (get state :calls))
+              (if (<= (count (get state :error-handlers))
                       (get (sh07-bounds-value)
-                           :maximum-call-records))
+                           :maximum-error-handler-records))
+                (if (<= (count (get state :calls))
+                        (get (sh07-bounds-value)
+                             :maximum-call-records))
                 (if (if (<= (+ (count (get state :lexical-bindings))
                                (count (get state :loop-bindings)))
                             1024)
@@ -3620,11 +4013,11 @@
                    :rule "C6-VERIFY"
                    :form nil
                    :facts
-                   {:reason :b7-product-record-bound
+                   {:reason :b8-product-record-bound
                     :maximum
                     (get (sh07-bounds-value)
                          :maximum-lexical-binding-records)
-                    :observed
+                  :observed
                     (count (get state :lexical-bindings))}})
                 {:status :rejected
                  :rule "C6-VERIFY"
@@ -3635,6 +4028,16 @@
                   (get (sh07-bounds-value)
                        :maximum-call-records)
                   :observed (count (get state :calls))}})
+                {:status :rejected
+                 :rule "C6-VERIFY"
+                 :form nil
+                 :facts
+                 {:reason :error-handler-record-bound
+                  :maximum
+                  (get (sh07-bounds-value)
+                       :maximum-error-handler-records)
+                  :observed
+                  (count (get state :error-handlers))}})
               {:status :rejected
                :rule "C6-VERIFY"
                :form nil
@@ -3727,7 +4130,7 @@
         module (get request :module)
         lineage (get request :lineage)
         identity-preimage
-        {:domain :gravity/sh07-b7-canonical-core-v8
+        {:domain :gravity/sh07-b8-canonical-core-v9
          :lineage lineage
          :projection-binding (get request :projection-binding)
          :module module
@@ -3740,6 +4143,7 @@
          :var-references (get state :var-references)
          :mutations (get state :mutations)
          :error-transfers (get state :error-transfers)
+         :error-handlers (get state :error-handlers)
          :calls (get state :calls)
          :lexical-bindings (get state :lexical-bindings)
          :loop-bindings (get state :loop-bindings)
@@ -3759,7 +4163,7 @@
         added (sh07-add-digest-request
                state :sh07-core-artifact-id identity-preimage)
         provenance-preimage
-        {:domain :gravity/sh07-b7-core-provenance-binding-v8
+        {:domain :gravity/sh07-b8-core-provenance-binding-v9
          :core-artifact-id-request (get added :reference)
          :source-revision-id (get lineage :source-revision-id)
          :sh06-artifact-id (get lineage :sh06-artifact-id)
@@ -3772,7 +4176,7 @@
          provenance-preimage)
         template
         {:artifact :gravity/sh07-canonical-core-template
-         :schema-version 8
+         :schema-version 9
          :artifact-id-request (get added :reference)
          :provenance-binding-id-request
          (get provenance-added :reference)
@@ -3788,6 +4192,7 @@
          :var-references (get state :var-references)
          :mutations (get state :mutations)
          :error-transfers (get state :error-transfers)
+         :error-handlers (get state :error-handlers)
          :calls (get state :calls)
          :lexical-bindings (get state :lexical-bindings)
          :loop-bindings (get state :loop-bindings)
@@ -3810,7 +4215,7 @@
          :provenance (get request :provenance)
          :diagnostics []}]
     {:artifact :gravity/sh07-core-template-result
-     :schema-version 8
+     :schema-version 9
      :status :accepted
      :core-template template
      :digest-requests
@@ -3861,7 +4266,7 @@
          :execution-boundary})
     (if (= (get result :artifact)
            :gravity/sh07-core-template-result)
-      (if (= (get result :schema-version) 8)
+      (if (= (get result :schema-version) 9)
         (if (= (get result :bounds) (sh07-bounds-value))
           (if (= (get result :status) :accepted)
             (map? (get result :core-template))
@@ -3900,21 +4305,21 @@
           (if (= template (get rebuilt :core-template))
             (if (= digest-requests (get rebuilt :digest-requests))
               {:artifact :gravity/sh07-core-template-verification
-               :schema-version 8 :status :passed :rule nil}
+               :schema-version 9 :status :passed :rule nil}
               {:artifact :gravity/sh07-core-template-verification
-               :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+               :schema-version 9 :status :rejected :rule "C6-VERIFY"})
             {:artifact :gravity/sh07-core-template-verification
-             :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+             :schema-version 9 :status :rejected :rule "C6-VERIFY"})
           {:artifact :gravity/sh07-core-template-verification
-           :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+           :schema-version 9 :status :rejected :rule "C6-VERIFY"})
         {:artifact :gravity/sh07-core-template-verification
-         :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 9 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-template-verification
-       :schema-version 8 :status :rejected :rule "C6-VERIFY"}))
+       :schema-version 9 :status :rejected :rule "C6-VERIFY"}))
         {:artifact :gravity/sh07-core-template-verification
-         :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 9 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-template-verification
-       :schema-version 8 :status :rejected :rule "C6-VERIFY"})))
+       :schema-version 9 :status :rejected :rule "C6-VERIFY"})))
 
 (defn sh07-digest-reference? [value]
   (if (sh07-exact-keys?
@@ -4373,6 +4778,137 @@
         false))
     true))
 
+(defn sh07-resolved-b8-node-valid? [node]
+  (if (= (get node :core-form) :try)
+    (let [attributes (get node :attributes)
+          evaluation (get node :evaluation)
+          children (get node :children)
+          protected-node-id (first children)
+          handler-node-id (first (rest children))
+          binding-ids (get node :resolved-binding-ids)]
+      (if (sh07-exact-keys?
+           attributes
+           #{:protected-child-index :handler-child-index
+             :evaluation-order :runtime-reachability
+             :selection-policy :result-policy
+             :catch-clause-form-id :catch-clause-syntax-id
+             :error-type-form-id :error-type-syntax-id
+             :error-type-binding-id
+             :catch-binding-form-id :catch-binding-syntax-id
+             :catch-binding-id :catch-binding-scope-id
+             :authenticated-sh06-artifact-id
+             :sh06-semantic-projection-id
+             :type-coverage-legality :result-type-join-legality
+             :effect-registry-legality
+             :effect-profile-capability-legality
+             :profile-error-lowering-legality
+             :ownership-legality :safety-classification})
+        (if (= (get attributes :protected-child-index) 0)
+          (if (= (get attributes :handler-child-index) 1)
+            (if (= (get attributes :evaluation-order)
+                   :protected-then-typed-handler-candidate)
+              (if (= (get attributes :runtime-reachability)
+                     :not-asserted-by-sh07-b8)
+                (if (= (get attributes :selection-policy)
+                       :typed-handler-candidate)
+                  (if (= (get attributes :result-policy)
+                         :protected-or-handler-last)
+                    (if (if (sh07-sha256-id?
+                             (get attributes :catch-clause-form-id))
+                          (if (sh07-sha256-id?
+                               (get attributes :catch-clause-syntax-id))
+                            (if (sh07-sha256-id?
+                                 (get attributes :error-type-form-id))
+                              (if (sh07-sha256-id?
+                                   (get attributes :error-type-syntax-id))
+                                (if (sh07-sha256-id?
+                                     (get attributes
+                                          :error-type-binding-id))
+                                  (if (sh07-sha256-id?
+                                       (get attributes
+                                            :catch-binding-form-id))
+                                    (if (sh07-sha256-id?
+                                         (get attributes
+                                              :catch-binding-syntax-id))
+                                      (if (sh07-sha256-id?
+                                           (get attributes
+                                                :catch-binding-id))
+                                        (sh07-sha256-id?
+                                         (get attributes
+                                              :catch-binding-scope-id))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                      (if (if (sh07-sha256-id?
+                               (get attributes
+                                    :authenticated-sh06-artifact-id))
+                            (sh07-sha256-id?
+                             (get attributes
+                                  :sh06-semantic-projection-id))
+                            false)
+                        (if (if (= (get attributes
+                                        :type-coverage-legality)
+                                   :pending-sh08)
+                              (if (= (get attributes
+                                          :result-type-join-legality)
+                                     :pending-sh08)
+                                (if (= (get attributes
+                                            :effect-registry-legality)
+                                       :pending-sh09)
+                                  (if (= (get attributes
+                                              :effect-profile-capability-legality)
+                                         :pending-sh09)
+                                    (if (= (get attributes
+                                                :profile-error-lowering-legality)
+                                           :pending-sh09)
+                                      (if (= (get attributes
+                                                  :ownership-legality)
+                                             :pending-sh10)
+                                        (= (get attributes
+                                                :safety-classification)
+                                           :pending-sh11)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                          (if (= (count children) 2)
+                            (if (if (sh07-sha256-id? protected-node-id)
+                                  (sh07-sha256-id? handler-node-id)
+                                  false)
+                              (if (= binding-ids
+                                     [(get attributes
+                                           :error-type-binding-id)
+                                      (get attributes
+                                           :catch-binding-id)])
+                                (if (= (get evaluation :kind)
+                                       :protected-then-typed-handler-candidate)
+                                  (= (get evaluation :order)
+                                     [{:index 0
+                                       :core-node-id
+                                       protected-node-id}])
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    true))
+
 (defn sh07-resolve-node [node resolved-digests]
   (if (sh07-exact-keys?
        node
@@ -4413,8 +4949,12 @@
                       (if (sh07-resolved-b4-node-valid? resolved-node)
                         (if (sh07-resolved-b5-node-valid? resolved-node)
                           (if (sh07-resolved-b6-node-valid? resolved-node)
-                            (if (sh07-resolved-b7-node-valid? resolved-node)
-                              (sh07-resolution-success resolved-node)
+                          (if (sh07-resolved-b7-node-valid? resolved-node)
+                              (if (sh07-resolved-b8-node-valid?
+                                   resolved-node)
+                                (sh07-resolution-success resolved-node)
+                                (sh07-resolution-failure
+                                 :b8-core-node-contract))
                               (sh07-resolution-failure
                                :b7-core-node-contract))
                             (sh07-resolution-failure
@@ -4429,7 +4969,11 @@
                       (if (sh07-resolved-b5-node-valid? resolved-node)
                         (if (sh07-resolved-b6-node-valid? resolved-node)
                           (if (sh07-resolved-b7-node-valid? resolved-node)
-                            (sh07-resolution-success resolved-node)
+                            (if (sh07-resolved-b8-node-valid?
+                                 resolved-node)
+                              (sh07-resolution-success resolved-node)
+                              (sh07-resolution-failure
+                               :b8-core-node-contract))
                             (sh07-resolution-failure
                              :b7-core-node-contract))
                           (sh07-resolution-failure
@@ -4860,12 +5404,35 @@
 (defn sh07-mutation-region? [region]
   (if (contains? #{:module-initialization :function-body} region)
     true
-    (if (sh07-exact-keys?
-         region
-         #{:kind :if-syntax-id :if-form-id :role :execution
-           :parent-region-kind :parent-if-syntax-id
-           :parent-branch-role})
-      (if (= (get region :kind) :conditional-branch)
+    (if (= (get region :kind) :typed-error-handler-candidate)
+      (if (sh07-exact-keys?
+           region
+           #{:kind :try-syntax-id :try-form-id
+             :catch-syntax-id :catch-form-id
+             :runtime-reachability :parent-region-kind})
+        (if (sh07-sha256-id? (get region :try-syntax-id))
+          (if (sh07-sha256-id? (get region :try-form-id))
+            (if (sh07-sha256-id? (get region :catch-syntax-id))
+              (if (sh07-sha256-id? (get region :catch-form-id))
+                (if (= (get region :runtime-reachability)
+                       :not-asserted-by-sh07-b8)
+                  (contains?
+                   #{:module-initialization :function-body
+                     :conditional-branch
+                     :typed-error-handler-candidate}
+                   (get region :parent-region-kind))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      (if (sh07-exact-keys?
+           region
+           #{:kind :if-syntax-id :if-form-id :role :execution
+             :parent-region-kind :parent-if-syntax-id
+             :parent-branch-role})
+        (if (= (get region :kind) :conditional-branch)
         (if (sh07-sha256-id? (get region :if-syntax-id))
           (if (sh07-sha256-id? (get region :if-form-id))
             (if (contains? #{:then :else} (get region :role))
@@ -4893,8 +5460,8 @@
               false)
             false)
           false)
-        false)
-      false)))
+          false)
+        false))))
 
 (defn sh07-resolve-mutation-record [record resolved-digests]
   (if (sh07-exact-keys?
@@ -5217,6 +5784,261 @@
             resolved))))
     (sh07-resolution-failure
      :error-transfer-vector-required)))
+
+(defn sh07-resolve-error-handler-candidate
+  [candidate resolved-digests]
+  (if (sh07-exact-keys? candidate #{:ordinal :core-node-id})
+    (if (if (integer? (get candidate :ordinal))
+          (>= (get candidate :ordinal) 0)
+          false)
+      (let [node
+            (sh07-resolve-controlled-reference
+             (get candidate :core-node-id) resolved-digests)]
+        (if (= (get node :status) :accepted)
+          (sh07-resolution-success
+           (assoc candidate :core-node-id (get node :value)))
+          node))
+      (sh07-resolution-failure
+       :error-handler-candidate-ordinal))
+    (sh07-resolution-failure
+     :error-handler-candidate-shape)))
+
+(defn sh07-resolve-error-handler-candidates
+  [candidates resolved-digests]
+  (if (sh07-bounded-vector?
+       candidates
+       (get (sh07-bounds-value)
+            :maximum-error-transfer-records))
+    (loop [remaining candidates prior-ordinal -1 values []]
+      (if (= (count remaining) 0)
+        (sh07-resolution-success values)
+        (let [resolved
+              (sh07-resolve-error-handler-candidate
+               (first remaining) resolved-digests)]
+          (if (= (get resolved :status) :accepted)
+            (if (> (get (get resolved :value) :ordinal)
+                   prior-ordinal)
+              (recur
+               (rest remaining)
+               (get (get resolved :value) :ordinal)
+               (conj values (get resolved :value)))
+              (sh07-resolution-failure
+               :error-handler-candidate-order))
+            resolved))))
+    (sh07-resolution-failure
+     :error-handler-candidate-vector-required)))
+
+(defn sh07-resolve-error-handler-record
+  [record resolved-digests]
+  (if (sh07-exact-keys?
+       record
+       #{:ordinal :core-node-id :form-id :syntax-id
+         :protected-core-node-id :handler-core-node-id
+         :catch-clause-form-id :catch-clause-syntax-id
+         :error-type-form-id :error-type-syntax-id
+         :error-type-binding-id
+         :catch-binding-form-id :catch-binding-syntax-id
+         :catch-binding-id :catch-binding-scope-id
+         :catch-binding-use-syntax-ids
+         :candidate-error-transfers
+         :evaluation-region :evaluation-owner-function-syntax-id
+         :ordered-steps :construction-order :runtime-evaluation
+         :runtime-reachability :selection-policy :result-policy
+         :authenticated-sh06-artifact-id
+         :sh06-semantic-projection-id
+         :type-coverage-legality :result-type-join-legality
+         :effect-registry-legality
+         :effect-profile-capability-legality
+         :profile-error-lowering-legality
+         :ownership-legality :safety-classification})
+    (if (if (integer? (get record :ordinal))
+          (>= (get record :ordinal) 0)
+          false)
+      (if (if (sh07-sha256-id? (get record :form-id))
+            (if (sh07-sha256-id? (get record :syntax-id))
+              (if (sh07-sha256-id?
+                   (get record :catch-clause-form-id))
+                (if (sh07-sha256-id?
+                     (get record :catch-clause-syntax-id))
+                  (if (sh07-sha256-id?
+                       (get record :error-type-form-id))
+                    (if (sh07-sha256-id?
+                         (get record :error-type-syntax-id))
+                      (if (sh07-sha256-id?
+                           (get record :error-type-binding-id))
+                        (if (sh07-sha256-id?
+                             (get record :catch-binding-form-id))
+                          (if (sh07-sha256-id?
+                               (get record :catch-binding-syntax-id))
+                            (if (sh07-sha256-id?
+                                 (get record :catch-binding-id))
+                              (sh07-sha256-id?
+                               (get record :catch-binding-scope-id))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+        (if (if (sh07-bounded-vector?
+                 (get record :catch-binding-use-syntax-ids)
+                 (get (sh07-bounds-value)
+                      :maximum-reference-use-records))
+              (sh07-sha256-id-vector?
+               (get record :catch-binding-use-syntax-ids))
+              false)
+          (if (= (get record :ordered-steps)
+                 [:evaluate-protected
+                  :conditionally-select-typed-handler])
+            (if (= (get record :construction-order)
+                   :protected-then-handler-then-try)
+              (if (= (get record :runtime-evaluation)
+                     :protected-then-conditional-handler)
+                (if (= (get record :runtime-reachability)
+                       :not-asserted-by-sh07-b8)
+                  (if (= (get record :selection-policy)
+                         :typed-handler-candidate)
+                    (if (= (get record :result-policy)
+                           :protected-or-handler-last)
+                      (if (sh07-mutation-region?
+                           (get record :evaluation-region))
+                        (if (if (= (get record
+                                        :evaluation-owner-function-syntax-id)
+                                   nil)
+                              true
+                              (sh07-sha256-id?
+                               (get record
+                                    :evaluation-owner-function-syntax-id)))
+                          (if (if (sh07-sha256-id?
+                                   (get record
+                                        :authenticated-sh06-artifact-id))
+                                (sh07-sha256-id?
+                                 (get record
+                                      :sh06-semantic-projection-id))
+                                false)
+                            (if (if (= (get record
+                                          :type-coverage-legality)
+                                       :pending-sh08)
+                                  (if (= (get record
+                                            :result-type-join-legality)
+                                         :pending-sh08)
+                                    (if (= (get record
+                                              :effect-registry-legality)
+                                           :pending-sh09)
+                                      (if (= (get record
+                                                :effect-profile-capability-legality)
+                                             :pending-sh09)
+                                        (if (= (get record
+                                                  :profile-error-lowering-legality)
+                                               :pending-sh09)
+                                          (if (= (get record
+                                                    :ownership-legality)
+                                                 :pending-sh10)
+                                            (= (get record
+                                                    :safety-classification)
+                                               :pending-sh11)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                              (let [node
+                                    (sh07-resolve-controlled-reference
+                                     (get record :core-node-id)
+                                     resolved-digests)
+                                    protected
+                                    (sh07-resolve-controlled-reference
+                                     (get record :protected-core-node-id)
+                                     resolved-digests)
+                                    handler
+                                    (sh07-resolve-controlled-reference
+                                     (get record :handler-core-node-id)
+                                     resolved-digests)
+                                    candidates
+                                    (sh07-resolve-error-handler-candidates
+                                     (get record
+                                          :candidate-error-transfers)
+                                     resolved-digests)]
+                                (if (= (get node :status) :accepted)
+                                  (if (= (get protected :status) :accepted)
+                                    (if (= (get handler :status) :accepted)
+                                      (if (= (get candidates :status)
+                                             :accepted)
+                                        (sh07-resolution-success
+                                         (assoc
+                                          (assoc
+                                           (assoc
+                                            (assoc
+                                             record
+                                             :core-node-id
+                                             (get node :value))
+                                            :protected-core-node-id
+                                            (get protected :value))
+                                           :handler-core-node-id
+                                           (get handler :value))
+                                          :candidate-error-transfers
+                                          (get candidates :value)))
+                                        candidates)
+                                      handler)
+                                    protected)
+                                  node))
+                              (sh07-resolution-failure
+                               :error-handler-downstream-legality))
+                            (sh07-resolution-failure
+                             :error-handler-upstream-authentication))
+                          (sh07-resolution-failure
+                           :error-handler-owner))
+                        (sh07-resolution-failure
+                         :error-handler-region))
+                      (sh07-resolution-failure
+                       :error-handler-result-policy))
+                    (sh07-resolution-failure
+                     :error-handler-selection-policy))
+                  (sh07-resolution-failure
+                   :error-handler-reachability))
+                (sh07-resolution-failure
+                 :error-handler-runtime-evaluation))
+              (sh07-resolution-failure
+               :error-handler-construction-order))
+            (sh07-resolution-failure
+             :error-handler-ordered-steps))
+          (sh07-resolution-failure
+           :error-handler-binding-use-syntax-ids))
+        (sh07-resolution-failure
+         :error-handler-source-identity))
+      (sh07-resolution-failure
+       :error-handler-ordinal))
+    (sh07-resolution-failure
+     :error-handler-record-shape)))
+
+(defn sh07-resolve-error-handler-vector
+  [records resolved-digests]
+  (if (sh07-bounded-vector?
+       records
+       (get (sh07-bounds-value)
+            :maximum-error-handler-records))
+    (loop [remaining records ordinal 0 values []]
+      (if (= (count remaining) 0)
+        (sh07-resolution-success values)
+        (let [resolved
+              (sh07-resolve-error-handler-record
+               (first remaining) resolved-digests)]
+          (if (= (get resolved :status) :accepted)
+            (if (= (get (get resolved :value) :ordinal) ordinal)
+              (recur
+               (rest remaining)
+               (+ ordinal 1)
+               (conj values (get resolved :value)))
+              (sh07-resolution-failure
+               :error-handler-order))
+            resolved))))
+    (sh07-resolution-failure
+     :error-handler-vector-required)))
 
 (defn sh07-resolve-call-record [record resolved-digests]
   (if (sh07-exact-keys?
@@ -5612,11 +6434,12 @@
 
 (defn sh07-resolved-identity-value
   [preimage roots definitions nodes evaluation control-flow
-   reference-uses var-references mutations error-transfers calls
+   reference-uses var-references mutations error-transfers error-handlers calls
    lexical-bindings loop-bindings
    recur-targets recur-transfers source-map]
   (assoc
    (assoc
+    (assoc
     (assoc
      (assoc
       (assoc
@@ -5638,12 +6461,13 @@
          :var-references var-references)
          :mutations mutations)
         :error-transfers error-transfers)
-       :calls calls)
-      :lexical-bindings lexical-bindings)
-     :loop-bindings loop-bindings)
-    :recur-targets recur-targets)
-   :recur-transfers recur-transfers)
-   :source-map source-map))
+        :calls calls)
+       :lexical-bindings lexical-bindings)
+      :loop-bindings loop-bindings)
+     :recur-targets recur-targets)
+    :recur-transfers recur-transfers)
+   :source-map source-map)
+  :error-handlers error-handlers))
 
 (defn sh07-resolve-identity-preimage [preimage resolved-digests]
   (if (if (sh07-exact-keys?
@@ -5651,7 +6475,7 @@
            #{:domain :lineage :projection-binding :module
              :root-core-node-ids :definitions :nodes
              :evaluation-order :control-flow :reference-uses
-             :var-references :mutations :error-transfers :calls
+             :var-references :mutations :error-transfers :error-handlers :calls
              :lexical-bindings :loop-bindings
              :recur-targets :recur-transfers
              :source-map :binding-table
@@ -5660,7 +6484,7 @@
              :macro-origin-expectation
              :pending-fact-families})
         (= (get preimage :domain)
-           :gravity/sh07-b7-canonical-core-v8)
+           :gravity/sh07-b8-canonical-core-v9)
         false)
     (let [roots
           (sh07-resolve-reference-vector
@@ -5689,6 +6513,9 @@
           error-transfers
           (sh07-resolve-error-transfer-vector
            (get preimage :error-transfers) resolved-digests)
+          error-handlers
+          (sh07-resolve-error-handler-vector
+           (get preimage :error-handlers) resolved-digests)
           calls
           (sh07-resolve-call-vector
            (get preimage :calls) resolved-digests)
@@ -5716,7 +6543,8 @@
                   (if (= (get var-references :status) :accepted)
                     (if (= (get mutations :status) :accepted)
                       (if (= (get error-transfers :status) :accepted)
-                        (if (= (get calls :status) :accepted)
+                        (if (= (get error-handlers :status) :accepted)
+                          (if (= (get calls :status) :accepted)
                           (if (= (get lexical-bindings :status) :accepted)
                             (if (= (get loop-bindings :status) :accepted)
                               (if (= (get recur-targets :status) :accepted)
@@ -5734,6 +6562,7 @@
                                       (get var-references :value)
                                       (get mutations :value)
                                       (get error-transfers :value)
+                                      (get error-handlers :value)
                                       (get calls :value)
                                       (get lexical-bindings :value)
                                       (get loop-bindings :value)
@@ -5745,7 +6574,8 @@
                                 recur-targets)
                               loop-bindings)
                             lexical-bindings)
-                          calls)
+                            calls)
+                          error-handlers)
                         error-transfers)
                       mutations)
                     var-references)
@@ -5764,7 +6594,7 @@
            #{:domain :core-artifact-id-request :source-revision-id
              :sh06-artifact-id :actual-source-path})
         (= (get preimage :domain)
-           :gravity/sh07-b7-core-provenance-binding-v8)
+           :gravity/sh07-b8-core-provenance-binding-v9)
         false)
     (let [artifact-id
           (sh07-resolve-controlled-reference
@@ -5782,10 +6612,12 @@
 
 (defn sh07-resolved-template-value
   [template artifact-id provenance-id roots definitions nodes evaluation
-   control-flow reference-uses var-references mutations error-transfers calls
+   control-flow reference-uses var-references mutations error-transfers
+   error-handlers calls
    lexical-bindings loop-bindings
    recur-targets recur-transfers source-map identity provenance]
   (assoc
+   (assoc
    (assoc
     (assoc
      (assoc
@@ -5819,8 +6651,9 @@
     :recur-targets recur-targets)
    :recur-transfers recur-transfers)
    :source-map source-map)
-  :identity-preimage identity
-  :provenance-binding-preimage provenance))
+   :identity-preimage identity
+   :provenance-binding-preimage provenance)
+  :error-handlers error-handlers))
 
 (defn sh07-resolve-core-template [template resolved-digests]
   (if (sh07-exact-keys?
@@ -5829,7 +6662,7 @@
          :provenance-binding-id-request :module :lineage
          :projection-binding :root-core-node-ids :definitions
          :nodes :evaluation-order :control-flow :reference-uses
-         :var-references :mutations :error-transfers :calls
+         :var-references :mutations :error-transfers :error-handlers :calls
          :lexical-bindings :loop-bindings
          :recur-targets :recur-transfers :source-map
          :preserved-resolution :macro-expansion-trace
@@ -5839,7 +6672,7 @@
          :provenance-binding-preimage :provenance :diagnostics})
     (if (if (= (get template :artifact)
                :gravity/sh07-canonical-core-template)
-          (= (get template :schema-version) 8)
+          (= (get template :schema-version) 9)
           false)
       (let [artifact-id
             (sh07-resolve-controlled-reference
@@ -5882,6 +6715,10 @@
             error-transfers
             (sh07-resolve-error-transfer-vector
              (get template :error-transfers)
+             resolved-digests)
+            error-handlers
+            (sh07-resolve-error-handler-vector
+             (get template :error-handlers)
              resolved-digests)
             calls
             (sh07-resolve-call-vector
@@ -5926,7 +6763,8 @@
                         (if (= (get var-references :status) :accepted)
                           (if (= (get mutations :status) :accepted)
                             (if (= (get error-transfers :status) :accepted)
-                              (if (= (get calls :status) :accepted)
+                              (if (= (get error-handlers :status) :accepted)
+                                (if (= (get calls :status) :accepted)
                               (if (= (get lexical-bindings :status) :accepted)
                                 (if (= (get loop-bindings :status) :accepted)
                                   (if (= (get recur-targets :status) :accepted)
@@ -5948,6 +6786,7 @@
                                         (get var-references :value)
                                         (get mutations :value)
                                         (get error-transfers :value)
+                                        (get error-handlers :value)
                                         (get calls :value)
                                         (get lexical-bindings :value)
                                         (get loop-bindings :value)
@@ -5963,7 +6802,8 @@
                                     recur-targets)
                                   loop-bindings)
                                 lexical-bindings)
-                              calls)
+                                calls)
+                              error-handlers)
                               error-transfers)
                             mutations)
                           var-references)
@@ -6011,22 +6851,22 @@
               (if (= (get expected :status) :accepted)
                 (if (= resolved-core (get expected :value))
                   {:artifact :gravity/sh07-core-resolved-verification
-                   :schema-version 8 :status :passed :rule nil}
+                   :schema-version 9 :status :passed :rule nil}
                   {:artifact :gravity/sh07-core-resolved-verification
-                   :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+                   :schema-version 9 :status :rejected :rule "C6-VERIFY"})
                 {:artifact :gravity/sh07-core-resolved-verification
-                 :schema-version 8 :status :rejected :rule "C6-VERIFY"}))
+                 :schema-version 9 :status :rejected :rule "C6-VERIFY"}))
             {:artifact :gravity/sh07-core-resolved-verification
-             :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+             :schema-version 9 :status :rejected :rule "C6-VERIFY"})
           {:artifact :gravity/sh07-core-resolved-verification
-           :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+           :schema-version 9 :status :rejected :rule "C6-VERIFY"})
         {:artifact :gravity/sh07-core-resolved-verification
-         :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 9 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-resolved-verification
-       :schema-version 8 :status :rejected :rule "C6-VERIFY"}))
+       :schema-version 9 :status :rejected :rule "C6-VERIFY"}))
           {:artifact :gravity/sh07-core-resolved-verification
-           :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+           :schema-version 9 :status :rejected :rule "C6-VERIFY"})
         {:artifact :gravity/sh07-core-resolved-verification
-         :schema-version 8 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 9 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-resolved-verification
-       :schema-version 8 :status :rejected :rule "C6-VERIFY"})))
+       :schema-version 9 :status :rejected :rule "C6-VERIFY"})))
