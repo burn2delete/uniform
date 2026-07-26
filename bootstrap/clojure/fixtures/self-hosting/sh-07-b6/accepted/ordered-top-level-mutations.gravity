@@ -1,0 +1,17 @@
+; SH-07-B6 top-level var mutation preserves write and value order.
+(ns self-hosting.sh07-b6.ordered-top-level-mutations
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [first-target second-target ordered-writes])
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B6
+              :fixture :ordered-top-level-mutations}))
+
+(def first-target 0)
+(def second-target 0)
+
+(def ordered-writes
+  [(set! second-target 2)
+   (set! first-target first-target)])

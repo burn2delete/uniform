@@ -1,0 +1,20 @@
+(ns self-hosting.sh07-b6.reject.recur-in-set-value
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B6
+    :sh07-b6
+    {:expected-rule "C6-VERIFY"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :recur-tail-position-required
+     :expected-remediation
+     "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}}))
+
+(def target 0)
+(def invalid-write
+  (loop []
+    (set! target (recur))))

@@ -1,0 +1,18 @@
+; SH-07-B6 nested RHS mutation completes before the outer write.
+(ns self-hosting.sh07-b6.nested-value-mutation
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [inner-target outer-target nested-write])
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B6
+              :fixture :nested-value-mutation
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(def inner-target 0)
+(def outer-target 0)
+
+(def nested-write
+  (set! outer-target
+    (set! inner-target 1)))

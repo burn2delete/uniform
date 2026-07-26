@@ -1,0 +1,15 @@
+; SH-07-B6 function definitions also denote explicit top-level var locations.
+(ns self-hosting.sh07-b6.function-var-mutation
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [callable replace-callable])
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B6
+              :fixture :function-var-mutation}))
+
+(defn callable [] 1)
+
+(def replace-callable
+  (set! callable (fn [] 2)))

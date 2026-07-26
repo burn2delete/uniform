@@ -1,0 +1,19 @@
+(ns self-hosting.sh07-b6.reject.set-arity
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B6
+    :sh07-b6
+    {:expected-rule "C6-CORE-SHAPE"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :set-arity
+     :expected-remediation
+     "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}))
+
+(def target 0)
+(def invalid-write
+  (set! target))

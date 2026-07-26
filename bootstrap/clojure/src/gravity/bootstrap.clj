@@ -158802,7 +158802,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3/B4/B5 is the first checked-core projection owned by Gravity source.
+;; SH-07-A/B1/B2/B3/B4/B5/B6 is the first checked-core projection owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
 ;; requests, and keeps physical paths out of semantic identity.
@@ -158810,7 +158810,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v6)
+  :gravity/sh07-to-c6-core-products-v7)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158823,25 +158823,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 205779)
+(def sh07-core-expected-source-byte-count 234093)
 (def sh07-core-expected-source-content-hash
-  "sha256:334a17ec592b1c9845ebfbd0b1af0bef93e42515d7879877f6a51dca8c35a446")
+  "sha256:32676df9df898d10c7bf916dba1604c356b254abb347f807987b46a04a8a68de")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:c252bb95117501b6c387ed346a850d036c5456bbe4561320e2dbe620a14c9230")
+  "sha256:02f8a3a45812e734809dbb124808f044c6ba0cc9a66f98519baef8f86344b754")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:081c81627450e481df1556c2903f96f3ff4adffca776acac9af01cb4c844669d")
-(def sh07-core-expected-function-count 153)
+  "sha256:7fcf859a702c7595235f364214b4bc1e953648b8056f69298be4fb869da40d7f")
+(def sh07-core-expected-function-count 162)
 (def sh07-core-expected-function-names-hash
-  "sha256:2317c779292335b40a0e4a9b770061a4152f3870472f76f4cdd91483b5bd45cb")
+  "sha256:7e4a00469cb8b74e145fe3d606e5b39ac42f42c8afc648c5139fc35b6026f414")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:6234346fc89e3b0620d331353936ceb6ce5c76b7b4a686c19a8e356d620837a7")
+  "sha256:8f1d7d4bf2d5b4ee0727b285b64616a2f379d603d1ea0480e860ff09372c2383")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:57aa7dacfc634ffdf3f0b04ddf91c7f5dbcab72d083f67462b5cc850a72bb5d0"
+   "sha256:2ec4b499d0d746fce0d3411487f24bb903bed8056367868d9ae475492d1c98c0"
    'sh07-verify-core-resolved
-   "sha256:4519952feb810df9cfa4b06f330a548d1c6167c354e22e3424f4a415af2af9ec"})
+   "sha256:0700a1ff1bda44eb55298a260ac3d3ae0cf9980be3e69fae09d3d3f4ee68de83"})
 
 (defn sh07-core-source-path
   []
@@ -159831,7 +159831,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v6
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v7
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -159946,7 +159946,7 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 6
+           :schema-version 7
            :lineage lineage
            :module module
            :forms forms
@@ -159960,7 +159960,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b5-meta-jvm-core}
+           :scope :sh07-b6-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160039,11 +160039,36 @@
            (:authenticated-sh06-artifact-id reference))
       (assoc :authenticated-sh06-artifact-id semantic-projection-id))))
 
+(defn sh07-core-semantic-mutation
+  [semantic-projection-id mutation]
+  (let [semantic-projection-id
+        (or semantic-projection-id
+            (sh07-core-semantic-projection-id mutation))]
+    (cond-> mutation
+      (:target-upstream-binding-id mutation)
+      (assoc :target-upstream-binding-id
+             (:target-binding-id mutation))
+
+      (and semantic-projection-id
+           (:target-definition-artifact-id mutation))
+      (assoc :target-definition-artifact-id
+             semantic-projection-id)
+
+      (and semantic-projection-id
+           (:authenticated-sh06-artifact-id mutation))
+      (assoc :authenticated-sh06-artifact-id
+             semantic-projection-id))))
+
 (defn sh07-core-semantic-node
   [semantic-projection-id node]
-  (if (= :var (:core-form node))
+  (case (:core-form node)
+    :var
     (update node :attributes
             #(sh07-core-semantic-var-reference
+              semantic-projection-id %))
+    :set!
+    (update node :attributes
+            #(sh07-core-semantic-mutation
               semantic-projection-id %))
     node))
 
@@ -160080,6 +160105,13 @@
                          semantic-projection-id)
                 %))
 
+      (:mutations preimage)
+      (update :mutations
+              #(mapv
+                (partial sh07-core-semantic-mutation
+                         semantic-projection-id)
+                %))
+
       (:nodes preimage)
       (update :nodes
               #(mapv
@@ -160090,6 +160122,11 @@
       (= :var (:core-form preimage))
       (update :attributes
               #(sh07-core-semantic-var-reference
+                semantic-projection-id %))
+
+      (= :set! (:core-form preimage))
+      (update :attributes
+              #(sh07-core-semantic-mutation
                 semantic-projection-id %)))))
 
 (defn sh07-core-resolve-digest-preimage!
@@ -160244,8 +160281,8 @@
                 (if (map? item)
                   (mapcat (fn [[key value]] [key value]) item)
                   item)
-                bounded-children (vec (take 1025 children))]
-            (if (> (count bounded-children) 1024)
+                bounded-children (vec (take 2049 children))]
+            (if (> (count bounded-children) 2048)
               257
               (recur
                (into frontier
@@ -160277,7 +160314,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b5-core-lowering
+         :lowering-rule :sh07-b6-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160291,7 +160328,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v6
+          {:domain :gravity/sh07-request-bound-diagnostic-v7
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
     (throw (ex-info "SH-07 authenticated request exceeded a bound"
@@ -160303,6 +160340,7 @@
         bindings-value (:binding-table request)
         resolutions-value (:resolution-table request)
         trace-value (:macro-expansion-trace request)
+        origin-traces-value (:macro-origin-traces request)
         value-shape
         (fn [value]
           (cond
@@ -160367,20 +160405,24 @@
             bindings (count bindings-value)
             resolutions (count resolutions-value)
             trace-count (count trace-value)
+            origin-trace-count
+            (if (vector? origin-traces-value)
+              (count origin-traces-value)
+              0)
             request-depth (sh07-core-nested-depth request)]
         (cond
-      (not= 6 (:schema-version request))
+      (not= 7 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 6
+        :expected 7
         :observed (:schema-version request)})
 
-      (not= :sh07-b5-meta-jvm-core (:scope request))
+      (not= :sh07-b6-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b5-meta-jvm-core
+        :expected :sh07-b6-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -160412,6 +160454,13 @@
        {:bound :maximum-forms
         :maximum 1024
         :observed trace-count})
+
+      (> origin-trace-count 2048)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-carrier-origin-traces
+        :maximum 2048
+        :observed origin-trace-count})
 
       (> request-depth 256)
       (sh07-core-request-diagnostic!
@@ -160492,7 +160541,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b5-core-lowering
+         :lowering-rule :sh07-b6-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -160508,7 +160557,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-projection-diagnostic-v6
+          {:domain :gravity/sh07-projection-diagnostic-v7
            :reason reason
            :sh06-artifact-id (:artifact-id resolution-artifact)})}]
     (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
@@ -160600,6 +160649,11 @@
          (:recur-transfers expected-core))
         (sh07-core-exact-comparison-value
          (:recur-transfers core)))
+     :mutations-replay?
+     (= (sh07-core-exact-comparison-value
+         (:mutations expected-core))
+        (sh07-core-exact-comparison-value
+         (:mutations core)))
      :template-verification-passed?
      (= :passed
         (get-in artifact
@@ -160704,15 +160758,15 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B5"
-           :document-set ["L2" "C6"]
+           :task "SH-07-B6"
+           :document-set ["L2" "L6" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
            :sh06-resolution-artifact resolution-artifact
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b5
+           {:name :c6-gravity-core-lowering-b6
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -160732,6 +160786,8 @@
              :recur-target-verification
              :recur-transfer-construction
              :recur-transfer-verification
+             :mutation-construction
+             :mutation-verification
              :resolved-verification]
             :clojure-seed-owned
             [:plan-execution :sh06-projection-authentication
@@ -160747,7 +160803,7 @@
              :variadic-function-recur
              :recur-type-compatibility
              :general-recursion
-             :mutation :exceptions :patterns]
+             :exceptions :patterns]
             :sh07-complete? false
             :self-hosted? false}
            :capability-based-proof nil
@@ -160789,7 +160845,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b5-core-lowering
+               :lowering-rule :sh07-b6-core-lowering
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation
