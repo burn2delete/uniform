@@ -274,9 +274,9 @@
         (is (= (identity-input gravity) (identity-input qst)))
         (is (= (:mutations (core gravity))
                (:mutations (core qst))))
-        (is (= 7 (:schema-version (request gravity))
+        (is (= 8 (:schema-version (request gravity))
                (:schema-version (request qst))))
-        (is (= :sh07-b6-meta-jvm-core
+        (is (= :sh07-b7-meta-jvm-core
                (:scope (request gravity))
                (:scope (request qst)))))))
   (let [fixture

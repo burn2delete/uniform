@@ -1,0 +1,19 @@
+(ns self-hosting.sh07-b7.reject.try-remains-deferred
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B7
+    :sh07-b7
+    {:expected-rule "C6-LOWERING-GAP"
+     :expected-stage :core-lowering
+     :expected-severity :error
+     :expected-reason :unsupported-list-core-form
+     :expected-remediation
+     "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
+
+(def invalid-handler
+  (try
+    (throw "still-deferred")))

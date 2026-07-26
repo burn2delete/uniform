@@ -1,0 +1,14 @@
+; SH-07-B7 standalone throw evaluates one value and transfers control.
+(ns self-hosting.sh07-b7.top-level-throw
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [top-level-transfer])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B7
+              :fixture :top-level-throw
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(def top-level-transfer
+  (throw "top-level"))

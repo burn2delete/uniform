@@ -1,0 +1,16 @@
+; SH-07-B7 retains mutually exclusive branch regions for throw products.
+(ns self-hosting.sh07-b7.conditional-throws
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [raise-selected])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B7
+              :fixture :conditional-throws
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn raise-selected [first?]
+  (if first?
+    (throw "then")
+    (throw "else")))
