@@ -9,7 +9,7 @@
                         :expected-stage :core-lowering
                         :expected-severity :error
                         :expected-reason :keyword-headed-call-deferred
-     :expected-remediation "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset."}}))
+     :expected-remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
 
 (def keyword-call
   (:answer {:answer 42}))

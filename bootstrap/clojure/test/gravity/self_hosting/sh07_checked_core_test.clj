@@ -48,7 +48,7 @@
 
 (def ^:private diagnostic-remediation
   {"C6-LOWERING-GAP"
-   "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset."
+   "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."
    "C6-CORE-SHAPE"
    "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."
    "C6-ORIGIN"
@@ -75,7 +75,7 @@
   #{:artifact :schema-version :artifact-id :provenance-binding-id
     :module :lineage :projection-binding :root-core-node-ids
     :definitions :nodes :evaluation-order :control-flow
-    :reference-uses :calls :lexical-bindings
+    :reference-uses :var-references :calls :lexical-bindings
     :loop-bindings :recur-targets :recur-transfers :source-map
     :preserved-resolution :macro-expansion-trace
     :macro-origin-traces :macro-origin-expectation
@@ -351,7 +351,7 @@
            (:remediation diagnostic)))
     (is (map? (:source-span diagnostic)))
     (is (= expected-path (get-in diagnostic [:source-span :source])))
-    (is (= :sh07-b4-core-lowering (:lowering-rule diagnostic)))
+    (is (= :sh07-b5-core-lowering (:lowering-rule diagnostic)))
     (is (nil? (:core-node-id diagnostic)))
     (is (map? (:facts diagnostic)))
     diagnostic))
@@ -464,8 +464,8 @@
   (is (= authenticated-request-keys (set (keys request))))
   (is (= :gravity/sh07-authenticated-sh06-core-request
          (:artifact request)))
-  (is (= 5 (:schema-version request)))
-  (is (= :sh07-b4-meta-jvm-core (:scope request)))
+  (is (= 6 (:schema-version request)))
+  (is (= :sh07-b5-meta-jvm-core (:scope request)))
   (is (sha256-id? (:projection-binding request)))
   (is (= #{:actual-source-path}
          (set (keys (:provenance request))))))
@@ -1434,6 +1434,53 @@
                        [:facts :rule-specific :maximum])))
     (is (= 257 (get-in depth-diagnostic
                        [:facts :rule-specific :observed])))))
+
+(deftest sh07-untrusted-request-carriers-fail-closed-before-traversal
+  (let [source-path
+        (fixture-path "accepted" "macro-def-fn-literals" ".gravity")
+        resolution (sh06-file-artifact source-path)
+        request (sh07-request resolution)
+        mutations
+        [[:request-forms-vector-required
+          (assoc request :forms :scalar)]
+         [:request-binding-table-vector-required
+          (assoc request :binding-table :scalar)]
+         [:request-resolution-table-vector-required
+          (assoc request :resolution-table :scalar)]
+         [:request-macro-trace-vector-required
+          (assoc request :macro-expansion-trace :scalar)]
+         [:maximum-carrier-depth
+          (assoc request :macro-expansion-trace
+                 [{:unsupported-lazy-carrier (iterate inc 0)}])]
+         [:maximum-carrier-depth
+          (assoc-in request [:forms 0 :metadata :unsupported-lazy-carrier]
+                    (iterate inc 0))]]]
+    (doseq [[expected mutation] mutations]
+      (let [diagnostic
+            (assert-diagnostic
+             (diagnostic-result #(sh07-run-request mutation))
+             "C6-VERIFY" source-path)
+            rule-specific (get-in diagnostic [:facts :rule-specific])]
+        (if (= expected :maximum-carrier-depth)
+          (do
+            (is (= expected (:bound rule-specific)))
+            (is (= 257 (:observed rule-specific))))
+          (is (= expected (:reason rule-specific))))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))))
+
+(deftest sh07-file-read-failure-is-a-structured-core-diagnostic
+  (let [source-path
+        (str (.resolve @root
+                       "tmp/nonexistent/sh07-b5-missing-source.gravity"))
+        result (diagnostic-result #(fresh-sh07-file-artifact source-path))
+        diagnostic (diagnostic-data result)]
+    (is (nil? (:raw-host-error result)))
+    (is (= :gravity/sh07-core-diagnostic (:artifact diagnostic)))
+    (is (= "C6-VERIFY" (:rule diagnostic)))
+    (is (= :core-lowering (:stage diagnostic)))
+    (is (= source-path (get-in diagnostic [:source-span :source])))
+    (is (= :source-read-failed (get-in diagnostic [:facts :reason])))
+    (is (true? (get-in diagnostic [:facts :fail-closed])))))
 
 (deftest sh07-deterministic-path-neutral-identity-retains-provenance
   (doseq [basename accepted-fixtures]

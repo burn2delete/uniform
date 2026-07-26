@@ -12,7 +12,7 @@
      :expected-severity :error
      :expected-reason :var-top-level-namespace-binding-required
      :expected-remediation
-     "Preserve source spans, syntax identity, generated origins, and authenticated SH-06 binding identity."}}))
+     "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."}}))
 
 (defn invalid-var [value]
   (var value))

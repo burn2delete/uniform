@@ -29,8 +29,8 @@
   ["same-namespace-var-object" "ordered-var-objects"])
 (def ^:private shape-remediation
   "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.")
-(def ^:private verify-remediation
-  "Replay the Gravity template and bind every digest ordinal exactly once.")
+(def ^:private var-target-remediation
+  "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects.")
 (def ^:private gap-remediation
   "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices.")
 (def ^:private rejected-oracles
@@ -46,7 +46,7 @@
    "lexical-var-target"
    {:rule "C6-VERIFY"
     :reason :var-top-level-namespace-binding-required
-    :remediation verify-remediation}
+    :remediation var-target-remediation}
    "qualified-var-reference"
    {:rule "C6-LOWERING-GAP"
     :reason :qualified-var-reference-deferred
@@ -273,6 +273,8 @@
     (let [artifact (file-artifact "accepted" basename extension)
           core-artifact (core artifact)
           records (:var-references core-artifact)
+          identity-records
+          (:var-references (identity-input artifact))
           nodes (node-index artifact)
           bindings
           (exactly-once-index (:binding-table (request artifact))
@@ -284,7 +286,24 @@
         (is (seq records))
         (is (= 6 (:schema-version (request artifact))))
         (is (= :sh07-b5-meta-jvm-core (:scope (request artifact))))
-        (is (= records (:var-references (identity-input artifact))))
+        (is (=
+             (mapv #(dissoc
+                     % :upstream-binding-id :definition-artifact-id
+                     :authenticated-sh06-artifact-id)
+                   records)
+             (mapv #(dissoc
+                     % :upstream-binding-id :definition-artifact-id
+                     :authenticated-sh06-artifact-id)
+                   identity-records)))
+        (doseq [[record identity-record]
+                (map vector records identity-records)]
+          (let [semantic-projection-id
+                (:sh06-semantic-projection-id record)]
+            (is (= (:binding-id record)
+                   (:upstream-binding-id identity-record)))
+            (is (= semantic-projection-id
+                   (:definition-artifact-id identity-record)
+                   (:authenticated-sh06-artifact-id identity-record)))))
         (is (= (vec (range (count records))) (mapv :ordinal records)))
         (doseq [record records]
           (let [node (get nodes (:core-node-id record))
@@ -361,13 +380,35 @@
   (doseq [extension extensions]
     (let [artifact
           (file-artifact "accepted" "ordered-var-objects" extension)
-          records (:var-references (core artifact))]
+          records (:var-references (core artifact))
+          template-records
+          (get-in artifact
+                  [:gravity-core-boundary :raw-template-result
+                   :core-template :var-references])]
       (is (= ['second-target 'first-target] (mapv :symbol records)))
       (is (= [0 1] (mapv :ordinal records)))
-      (is (= (:var-references (core artifact))
-             (get-in artifact
-                     [:gravity-core-boundary :raw-template-result
-                      :core-template :var-references]))))))
+      (is (= (mapv #(dissoc % :core-node-id) records)
+             (mapv #(dissoc % :core-node-id) template-records)))
+      (is (every? #(re-matches #"sha256:[0-9a-f]{64}"
+                               (:core-node-id %))
+                  records))
+      (is (every?
+           #(= {:artifact :gravity/sh07-internal-digest-reference
+                :authority :sh07-digest-resolver
+                :schema-version 1}
+               (dissoc (:core-node-id %) :ordinal))
+           template-records))
+      (is (= (mapv #(get-in % [:core-node-id :ordinal])
+                   template-records)
+             (vec (range
+                   (first
+                    (map #(get-in % [:core-node-id :ordinal])
+                         template-records))
+                   (+
+                    (first
+                     (map #(get-in % [:core-node-id :ordinal])
+                           template-records))
+                    (count template-records)))))))))
 
 (deftest sh07-b5-rejections-are-structured-and-oracle-bound
   (doseq [[basename oracle] rejected-oracles
@@ -415,17 +456,7 @@
          "resolution identity substitution"
          (update-request-resolution
           authenticated (:operand-syntax-id record)
-          #(assoc % :upstream-binding-id wrong-id))
-         "qualified resolution substitution"
-         (update-request-resolution
-          authenticated (:operand-syntax-id record)
-          #(assoc % :resolution-order
-                  :fully-qualified-namespace-binding))
-         "alias resolution substitution"
-         (update-request-resolution
-          authenticated (:operand-syntax-id record)
-          #(assoc % :resolution-order
-                  :alias-qualified-required-binding))}]
+          #(assoc % :upstream-binding-id wrong-id))}]
     (doseq [[label mutation] mutations]
       (testing label
         (let [result
@@ -464,6 +495,34 @@
     (is (= :authenticated-sh06-projection-mismatch
            (get-in diagnostic [:facts :reason])))
     (is (= true (get-in diagnostic [:facts :fail-closed])))))
+
+(deftest sh07-b5-stale-resolution-order-fails-authenticated-projection-replay
+  (let [artifact
+        (file-artifact
+         "accepted" "same-namespace-var-object" ".gravity")
+        record (first (:var-references (core artifact)))
+        authenticated (request artifact)]
+    (doseq [resolution-order
+            [:fully-qualified-namespace-binding
+             :alias-qualified-required-binding]]
+      (let [mutation
+            (update-request-resolution
+             authenticated (:operand-syntax-id record)
+             #(assoc % :resolution-order resolution-order))
+            result
+            (diagnostic-result
+             #((required-var 'sh07-core-from-authenticated-request)
+               (:sh06-resolution-artifact artifact)
+               mutation))
+            diagnostic (diagnostic-data result)]
+        (is (not= authenticated mutation))
+        (is (nil? (:raw-host-error result)))
+        (is (= :gravity/sh07-core-diagnostic (:artifact diagnostic)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :core-lowering (:stage diagnostic)))
+        (is (= :authenticated-sh06-projection-mismatch
+               (get-in diagnostic [:facts :reason])))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))))
 
 (deftest sh07-b5-var-evidence-mutation-fails-replay
   (let [artifact

@@ -14,7 +14,7 @@
      :expected-severity :error
      :expected-reason :loop-destructuring-deferred
      :expected-remediation
-     "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset."}}))
+     "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}))
 
 (def invalid-loop
   (loop [[value] [1]]

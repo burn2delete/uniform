@@ -44,7 +44,7 @@
    {:rule "C6-LOWERING-GAP"
     :reason :let-destructuring-deferred
     :remediation
-    "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset."}
+    "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}
    "empty-let-body"
    {:rule "C6-CORE-SHAPE"
     :reason :let-body-required
@@ -287,8 +287,8 @@
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result
                  :bounds :maximum-lexical-binding-records])]
-    (is (= 5 (:schema-version (request artifact))))
-    (is (= :sh07-b4-meta-jvm-core (:scope (request artifact))))
+    (is (= 6 (:schema-version (request artifact))))
+    (is (= :sh07-b5-meta-jvm-core (:scope (request artifact))))
     (is (vector? lexical))
     (is (= maximum-lexical-binding-records declared-maximum))
     (is (<= (count lexical) declared-maximum))

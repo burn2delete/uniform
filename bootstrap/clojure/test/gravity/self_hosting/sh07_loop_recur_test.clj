@@ -49,7 +49,7 @@
 (def ^:private shape-remediation
   "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.")
 (def ^:private gap-remediation
-  "Use only the declared SH-07-B4 fixed-arity fn, simple-symbol sequential loop, tail recur, and previously supported core subset.")
+  "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices.")
 (def ^:private rejected-oracles
   {"loop-binding-vector-required"
    {:rule "C6-CORE-SHAPE"
@@ -361,8 +361,8 @@
         bounds
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result :bounds])]
-    (is (= 5 (:schema-version (request artifact))))
-    (is (= :sh07-b4-meta-jvm-core (:scope (request artifact))))
+    (is (= 6 (:schema-version (request artifact))))
+    (is (= :sh07-b5-meta-jvm-core (:scope (request artifact))))
     (is (= maximum-loop-binding-records
            (:maximum-loop-binding-records bounds)))
     (is (= maximum-recur-target-records
@@ -564,9 +564,9 @@
         (is (= :gravity/sh07-core-artifact (:kind artifact)))
         (is (= :accepted (:status artifact)))
         (is (= :SH-07 (:slice artifact)))
-        (is (= "SH-07-B4" (:task artifact)))
+        (is (= "SH-07-B5" (:task artifact)))
         (is (= ["L2" "C6"] (:document-set artifact)))
-        (is (= :c6-gravity-core-lowering-b4
+        (is (= :c6-gravity-core-lowering-b5
                (get-in artifact [:pass :name])))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact embedded-proof)))
@@ -658,7 +658,7 @@
                  (is (= (:rule oracle) (:rule diagnostic)))
                  (is (= :core-lowering (:stage diagnostic)))
                  (is (= :error (:severity diagnostic)))
-                 (is (= :sh07-b4-core-lowering
+                 (is (= :sh07-b5-core-lowering
                         (:lowering-rule diagnostic)))
                  (is (= (:reason oracle)
                         (get-in diagnostic [:facts :reason])))

@@ -240,7 +240,7 @@
       true
       (if (set? value)
         true
-        (list? value)))))
+        (seq? value)))))
 
 (defn sh07-aggregate-width [value]
   (if (map? value)
@@ -1232,7 +1232,10 @@
           "Preserve exact syntax ids, semantic spans, and generated-origin chains."
           (if (= (get facts :semantic-rule) "L2-RECUR-TARGET")
             "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."
-            "Replay the Gravity template and bind every digest ordinal exactly once."))))))
+            (if (= (get facts :reason)
+                   :var-top-level-namespace-binding-required)
+              "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."
+              "Replay the Gravity template and bind every digest ordinal exactly once.")))))))
 
 (defn sh07-diagnostic [request rule form facts]
   (let [module (if (map? (get request :module))
@@ -1580,8 +1583,6 @@
     (if (= skipped count-to-skip)
       remaining
       (recur (rest remaining) (+ skipped 1)))))
-
-(declare sh07-lower-form)
 
 (defn sh07-lower-form-ids [request state form-ids]
   (loop [remaining form-ids
@@ -4154,18 +4155,19 @@
                     false)
                   false)
               (if (if (= (get record :object-kind) :top-level-var)
-                    (= (get record :object-policy)
-                       :reference-without-dereference-or-execution)
-                    false)
-                    (if (= (get record :evaluated-children) [])
-                      (if (= (get record :evaluation-order) [])
-                        (if (= (get record :resolution-order)
-                               :current-namespace-binding)
-                          (= (get record :profile-legality)
-                             :pending-sh09)
+                    (if (= (get record :object-policy)
+                           :reference-without-dereference-or-execution)
+                      (if (= (get record :evaluated-children) [])
+                        (if (= (get record :evaluation-order) [])
+                          (if (= (get record :resolution-order)
+                                 :current-namespace-binding)
+                            (= (get record :profile-legality)
+                               :pending-sh09)
+                            false)
                           false)
                         false)
                       false)
+                    false)
                 (let [node-id
                       (sh07-resolve-controlled-reference
                        (get record :core-node-id)
