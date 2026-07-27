@@ -157120,6 +157120,52 @@
                :candidate candidate})}))
          vec)))
 
+(defn sh06-match-pattern-binding-paths
+  [pattern path]
+  (cond
+    (and (symbol? pattern)
+         (not= '_ pattern)
+         (not= '& pattern))
+    [{:name pattern :path path}]
+
+    (vector? pattern)
+    (vec
+     (mapcat
+      (fn [index item]
+        (sh06-match-pattern-binding-paths
+         item (conj path index)))
+      (range)
+      pattern))
+
+    :else
+    []))
+
+(defn sh06-fixed-vector-pattern?
+  [pattern]
+  (cond
+    (vector? pattern)
+    (every? sh06-fixed-vector-pattern? pattern)
+
+    (symbol? pattern)
+    (not= '& pattern)
+
+    :else
+    (or (nil? pattern)
+        (true? pattern)
+        (false? pattern)
+        (number? pattern)
+        (char? pattern)
+        (string? pattern)
+        (keyword? pattern))))
+
+(defn sh06-unique-match-binding-paths
+  [pattern path]
+  (let [binding-paths
+        (sh06-match-pattern-binding-paths pattern path)
+        names (mapv :name binding-paths)]
+    (when (= (count names) (count (set names)))
+      binding-paths)))
+
 (defn sh06-resolution-analysis-inputs
   [module sh05-artifact overrides]
   (let [scopes (atom [])
@@ -157265,6 +157311,25 @@
                             (walk-form branch
                                        (cons scope-id scope-chain)
                                        syntax :expression))
+
+                          (and (vector? pattern)
+                               (sh06-fixed-vector-pattern? pattern))
+                          (when-let
+                              [binding-paths
+                               (sh06-unique-match-binding-paths
+                                pattern [])]
+                            (if (empty? binding-paths)
+                              (walk-form branch scope-chain syntax
+                                         :expression)
+                              (let [scope-id
+                                    (add-scope!
+                                     (:syntax/id syntax)
+                                     (first scope-chain)
+                                     (mapv :name binding-paths)
+                                     (:span syntax))]
+                                (walk-form branch
+                                           (cons scope-id scope-chain)
+                                           syntax :expression))))
 
                           (or (= '_ pattern)
                               (nil? pattern)
@@ -158877,7 +158942,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10 is the checked-core projection
+;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11 is the checked-core projection
 ;; owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
@@ -158886,7 +158951,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v11)
+  :gravity/sh07-to-c6-core-products-v12)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158899,25 +158964,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 334954)
+(def sh07-core-expected-source-byte-count 360918)
 (def sh07-core-expected-source-content-hash
-  "sha256:236b43b19cc30d11fcc13c9709d9f20dd2509f79d38913974f1cfb3213a1be29")
+  "sha256:59b11b02246ba8d5a4793f314a63a5c6d791975c5f1e08fce4b70b3d7ffa28ca")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:eeed168b5895ea770a6ce843b09e1b57e90edb30cb10e5b2c83cff95c1a17e05")
+  "sha256:8dc930087c5a6eaa6823bcfbdfb2fe7b427076d3aeba533b0e30bc385facddf1")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:d1e1fffa93d00c179c4d931c3a604902b01f3d4fceffc20281fd62410f5fed28")
-(def sh07-core-expected-function-count 215)
+  "sha256:ab93e7646982f500e805313c4d65abe1d4c03e64fac0d3aa0b6bc4cd20722317")
+(def sh07-core-expected-function-count 232)
 (def sh07-core-expected-function-names-hash
-  "sha256:6e5aff2efd19c23ffd346432df144295742cfd93995a7d6cf831c8a88a39027d")
+  "sha256:460ceaf3c41389d55699c00a44f669b20fb75665e74f525641af79a004a94b7e")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:a43052fdb7649282855906999b57645792c45c98caf00fa989e01e2a04cf93a7")
+  "sha256:966a37a01545e78de21dfb5918b0e8000d25ac41aad033cb15ea9e9301ccc82b")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:e56b77f3b5e0aa2ea935f68b0b2dd6a82a462203b4eb67f33c5b00291ba76b90"
+   "sha256:8955419e595fdd915e9a56a660763e25d882de4ad810802d07aae3d54bf3a201"
    'sh07-verify-core-resolved
-   "sha256:996d99bd99dfe0a91104b76d1732165ceac7b3e786129c8dd84b678b205d8fba"})
+   "sha256:5d2beec431a3dab86544c7658a162e2989d5e45c01a1da12cdefddb999a731be"})
 
 (defn sh07-core-source-path
   []
@@ -159634,6 +159699,46 @@
                                       (conj path branch-index)
                                       nested :expression))
 
+                              (and (vector? pattern)
+                                   (sh06-fixed-vector-pattern? pattern))
+                              (when-let
+                                  [binding-paths
+                                   (sh06-unique-match-binding-paths
+                                    pattern pattern-path)]
+                                (if (empty? binding-paths)
+                                  (walk syntax branch
+                                        (conj path branch-index)
+                                        scope-chain :expression)
+                                  (let [scope
+                                        (consume-scope!
+                                         syntax
+                                         (first scope-chain)
+                                         binding-paths)
+                                        nested
+                                        (cons (:scope-id scope)
+                                              scope-chain)]
+                                    (doseq
+                                        [[binding projected]
+                                         (map vector
+                                              (:bindings scope)
+                                              binding-paths)]
+                                      (let [syntax-id
+                                            (projected-syntax-id
+                                             syntax
+                                             (:path projected)
+                                             (:name projected))]
+                                        (swap!
+                                         scope-by-syntax-id assoc syntax-id
+                                         (:sh07/projected-scope-id scope))
+                                        (swap!
+                                         declaration-syntax-by-upstream-id
+                                         assoc
+                                         (:binding-syntax-id binding)
+                                         syntax-id)))
+                                    (walk syntax branch
+                                          (conj path branch-index)
+                                          nested :expression))))
+
                               (or (= '_ pattern)
                                   (nil? pattern)
                                   (true? pattern)
@@ -160147,7 +160252,7 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 11
+           :schema-version 12
            :lineage lineage
            :module module
            :forms forms
@@ -160161,7 +160266,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b10-meta-jvm-core}
+           :scope :sh07-b11-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160569,7 +160674,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b10-core-lowering
+         :lowering-rule :sh07-b11-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160666,18 +160771,18 @@
               0)
             request-depth (sh07-core-nested-depth request)]
         (cond
-      (not= 11 (:schema-version request))
+      (not= 12 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 10
+        :expected 12
         :observed (:schema-version request)})
 
-      (not= :sh07-b10-meta-jvm-core (:scope request))
+      (not= :sh07-b11-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b10-meta-jvm-core
+        :expected :sh07-b11-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -160796,7 +160901,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b10-core-lowering
+         :lowering-rule :sh07-b11-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -161017,23 +161122,158 @@
          (get handlers-by-try try-id)))
       try-by-id))))
 
-(def ^:private sh07-b10-match-clause-keys
+(def ^:private sh07-b11-match-clause-keys
   [:clause-ordinal :branch-child-index
    :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value
    :branch-form-id :branch-syntax-id
-   :pattern-binding-id :pattern-binding-scope-id])
+   :pattern-binding-id :pattern-binding-scope-id
+   :pattern-binding-ids])
 
-(defn sh07-b10-match-group-coherent?
-  [node-by-id references match-node records skeleton]
+(def ^:private sh07-b11-match-pattern-record-keys
+  #{:ordinal :clause-ordinal :local-ordinal
+    :parent-local-ordinal :root-local-ordinal
+    :parent-ordinal :root-ordinal :core-node-id
+    :depth :path :pattern-kind
+    :pattern-form-id :pattern-syntax-id
+    :pattern-value :vector-width
+    :pattern-binding-id :pattern-binding-scope-id
+    :pattern-binding-use-syntax-ids
+    :authenticated-sh06-artifact-id
+    :sh06-semantic-projection-id})
+
+(defn sh07-b11-match-pattern-record-coherent?
+  [node-by-id references branch-by-clause record record-by-ordinal]
+  (let [parent (when-some [ordinal (:parent-ordinal record)]
+                 (get record-by-ordinal ordinal))
+        root (get record-by-ordinal (:root-ordinal record))
+        branch-record (get branch-by-clause (:clause-ordinal record))
+        branch-tree
+        (when branch-record
+          (sh07-core-descendant-node-ids
+           node-by-id (:branch-core-node-id branch-record)))
+        expected-uses
+        (if (:pattern-binding-id record)
+          (->> references
+               (filter
+                #(and (= (:pattern-binding-id record) (:binding-id %))
+                      (contains? branch-tree (:core-node-id %))))
+               (mapv :syntax-id))
+          [])]
+    (and
+     (= sh07-b11-match-pattern-record-keys
+        (set (keys record)))
+     (integer? (:ordinal record))
+     (not (neg? (:ordinal record)))
+     (integer? (:clause-ordinal record))
+     (not (neg? (:clause-ordinal record)))
+     (integer? (:local-ordinal record))
+     (not (neg? (:local-ordinal record)))
+     (= 0 (:root-local-ordinal record))
+     (integer? (:root-ordinal record))
+     (<= 0 (:root-ordinal record) (:ordinal record))
+     (= (:local-ordinal record)
+        (- (:ordinal record) (:root-ordinal record)))
+     (integer? (:depth record))
+     (<= 0 (:depth record) 64)
+     (vector? (:path record))
+     (= (:depth record) (count (:path record)))
+     (every? #(and (integer? %) (not (neg? %))) (:path record))
+     (contains? #{:literal :wildcard :binding :vector}
+                (:pattern-kind record))
+     (p15-s23-sh02-sha256-id? (:pattern-form-id record))
+     (p15-s23-sh02-sha256-id? (:pattern-syntax-id record))
+     (p15-s23-sh02-sha256-id? (:core-node-id record))
+     (p15-s23-sh02-sha256-id?
+      (:authenticated-sh06-artifact-id record))
+     (p15-s23-sh02-sha256-id?
+      (:sh06-semantic-projection-id record))
+     (= expected-uses (:pattern-binding-use-syntax-ids record))
+     (case (:pattern-kind record)
+       :vector
+       (and (nil? (:pattern-value record))
+            (integer? (:vector-width record))
+            (<= 0 (:vector-width record) 256)
+            (nil? (:pattern-binding-id record))
+            (nil? (:pattern-binding-scope-id record)))
+
+       :binding
+       (and (symbol? (:pattern-value record))
+            (not= '_ (:pattern-value record))
+            (p15-s23-sh02-sha256-id?
+             (:pattern-binding-id record))
+            (p15-s23-sh02-sha256-id?
+             (:pattern-binding-scope-id record))
+            (nil? (:vector-width record)))
+
+       :wildcard
+       (and (= '_ (:pattern-value record))
+            (nil? (:vector-width record))
+            (nil? (:pattern-binding-id record))
+            (nil? (:pattern-binding-scope-id record)))
+
+       :literal
+       (and (nil? (:vector-width record))
+            (nil? (:pattern-binding-id record))
+            (nil? (:pattern-binding-scope-id record))))
+     (if (nil? parent)
+       (and (= (:ordinal record) (:root-ordinal record))
+            (= 0 (:local-ordinal record))
+            (nil? (:parent-local-ordinal record))
+            (= 0 (:depth record))
+            (empty? (:path record)))
+       (and (= :vector (:pattern-kind parent))
+            (= (:core-node-id record) (:core-node-id parent))
+            (= (:clause-ordinal record) (:clause-ordinal parent))
+            (= (:root-ordinal record) (:root-ordinal parent))
+            (= (:parent-local-ordinal record)
+               (:local-ordinal parent))
+            (= (:depth record) (inc (:depth parent)))
+            (= (:path parent) (pop (:path record)))
+            (< (peek (:path record)) (:vector-width parent))))
+     (= (:core-node-id record) (:core-node-id root))
+     (= (:clause-ordinal record) (:clause-ordinal root)))))
+
+(defn sh07-b11-match-pattern-graph-complete?
+  [pattern-records]
+  (let [roots (filterv #(nil? (:parent-ordinal %)) pattern-records)
+        root-groups (group-by (juxt :core-node-id :clause-ordinal) roots)]
+    (and
+     (every? #(= 1 (count %)) (vals root-groups))
+     (every?
+      (fn [record]
+        (if (= :vector (:pattern-kind record))
+          (let [children
+                (filterv
+                 #(= (:ordinal record) (:parent-ordinal %))
+                 pattern-records)
+                child-indexes (mapv #(peek (:path %)) children)]
+            (and
+             (= (:vector-width record) (count children))
+             (= (count children) (count (set child-indexes)))
+             (every?
+              #(and (integer? %)
+                    (<= 0 %)
+                    (< % (:vector-width record)))
+              child-indexes)))
+          true))
+      pattern-records))))
+
+(defn sh07-b11-match-group-coherent?
+  [node-by-id references match-node records skeleton pattern-records]
   (let [records (vec (sort-by :clause-ordinal records))
+        pattern-records (vec (sort-by :ordinal pattern-records))
+        pattern-record-by-ordinal
+        (into {} (map (juxt :ordinal identity)) pattern-records)
+        branch-by-clause
+        (into {} (map (juxt :clause-ordinal identity)) records)
         attributes (:attributes match-node)
         scrutinee-node-id (first (:children match-node))
         branch-node-ids (vec (rest (:children match-node)))
         expected-indexes (mapv inc (range (count records)))
         expected-bindings
-        (vec (keep :pattern-binding-id records))
+        (vec (keep :pattern-binding-id pattern-records))
         expected-clauses
-        (mapv #(select-keys % sh07-b10-match-clause-keys) records)]
+        (mapv #(select-keys % sh07-b11-match-clause-keys) records)]
     (and
      (seq records)
      (= (range (count records)) (map :clause-ordinal records))
@@ -161047,9 +161287,17 @@
      (= (count records) (:branch-count attributes))
      (= expected-indexes (:branch-child-indexes attributes))
      (= expected-clauses (:branch-clauses attributes))
+     (= (set (range (count records)))
+        (set (map :clause-ordinal pattern-records)))
+     (sh07-b11-match-pattern-graph-complete? pattern-records)
+     (every?
+      #(sh07-b11-match-pattern-record-coherent?
+        node-by-id references branch-by-clause %
+        pattern-record-by-ordinal)
+      pattern-records)
      (= :scrutinee-then-source-ordered-pattern-candidates
         (:evaluation-order attributes))
-     (= :not-asserted-by-sh07-b10
+     (= :not-asserted-by-sh07-b11
         (:runtime-reachability attributes))
      (= :source-ordered-pattern-candidates
         (:selection-policy attributes))
@@ -161065,6 +161313,13 @@
         (let [branch-tree
               (sh07-core-descendant-node-ids
                node-by-id (:branch-core-node-id record))
+              expected-pattern-binding-ids
+              (->> pattern-records
+                   (filter
+                    #(= (:clause-ordinal record)
+                        (:clause-ordinal %)))
+                   (keep :pattern-binding-id)
+                   vec)
               expected-uses
               (if (:pattern-binding-id record)
                 (->> references
@@ -161077,6 +161332,8 @@
                 [])]
           (and
            (= (:node-id match-node) (:core-node-id record))
+           (= expected-pattern-binding-ids
+              (:pattern-binding-ids record))
            (= expected-uses
               (:pattern-binding-use-syntax-ids record))
            (= :evaluate-scrutinee-once
@@ -161099,7 +161356,7 @@
      (= branch-node-ids (:branch-core-node-ids skeleton))
      (= :source-ordered-pattern-candidates
         (:selection-policy skeleton))
-     (= :not-asserted-by-sh07-b10
+     (= :not-asserted-by-sh07-b11
         (:runtime-reachability skeleton))
      (= :pending-sh08
         (:result-type-join skeleton)
@@ -161114,6 +161371,7 @@
   (let [nodes (:nodes core)
         records (:match-branch-records core)
         skeletons (:match-decision-skeletons core)
+        pattern-records (:match-pattern-records core)
         references (:reference-uses core)
         node-by-id
         (when (vector? nodes)
@@ -161126,6 +161384,9 @@
           (into {} (map (juxt :node-id identity)) match-nodes))
         records-by-match
         (when (vector? records) (group-by :core-node-id records))
+        patterns-by-match
+        (when (vector? pattern-records)
+          (group-by :core-node-id pattern-records))
         skeleton-by-match
         (when (vector? skeletons)
           (into {} (map (juxt :core-node-id identity)) skeletons))]
@@ -161133,19 +161394,24 @@
      (vector? nodes)
      (vector? records)
      (vector? skeletons)
+     (vector? pattern-records)
      (vector? references)
      (= (count nodes) (count node-by-id))
      (= (mapv :ordinal records) (vec (range (count records))))
+     (= (mapv :ordinal pattern-records)
+        (vec (range (count pattern-records))))
      (= (count match-nodes) (count match-by-id))
      (= (count skeletons) (count skeleton-by-match))
      (= (set (keys match-by-id)) (set (keys records-by-match)))
      (= (set (keys match-by-id)) (set (keys skeleton-by-match)))
+     (= (set (keys match-by-id)) (set (keys patterns-by-match)))
      (every?
       (fn [[match-id match-node]]
-        (sh07-b10-match-group-coherent?
+        (sh07-b11-match-group-coherent?
          node-by-id references match-node
          (get records-by-match match-id)
-         (get skeleton-by-match match-id)))
+         (get skeleton-by-match match-id)
+         (get patterns-by-match match-id)))
       match-by-id))))
 
 (defn sh07-core-verification-checks
@@ -161266,6 +161532,13 @@
          (sh07-core-exact-comparison-value
           (:match-decision-skeletons core)))
       (sh07-core-match-products-coherent? core))
+     :match-pattern-records-replay?
+     (and
+      (= (sh07-core-exact-comparison-value
+          (:match-pattern-records expected-core))
+         (sh07-core-exact-comparison-value
+          (:match-pattern-records core)))
+      (sh07-core-match-products-coherent? core))
      :template-verification-passed?
      (= :passed
         (get-in artifact
@@ -161370,15 +161643,15 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B10"
-           :document-set ["L2" "L6" "L9" "C5" "C6"]
+           :task "SH-07-B11"
+           :document-set ["L2" "L6" "L7" "L9" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
            :sh06-resolution-artifact resolution-artifact
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b10
+           {:name :c6-gravity-core-lowering-b11
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -161408,6 +161681,8 @@
              :match-branch-verification
              :match-decision-skeleton-construction
              :match-decision-skeleton-verification
+             :match-pattern-record-construction
+             :match-pattern-record-verification
              :resolved-verification]
             :clojure-seed-owned
             [:plan-execution :sh06-projection-authentication
@@ -161426,7 +161701,9 @@
              :try-finally
              :try-protected-sequencing
              :try-handler-sequencing
-             :composite-patterns
+             :map-list-set-record-constructor-patterns
+             :variable-width-vector-patterns
+             :duplicate-pattern-binding-policy
              :guard-patterns
              :match-exhaustiveness
              :match-result-type-join]
@@ -161471,7 +161748,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b10-core-lowering
+               :lowering-rule :sh07-b11-core-lowering
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation

@@ -79,6 +79,7 @@
     :loop-bindings :recur-targets :recur-transfers :mutations
     :error-transfers :error-handlers :source-map
     :match-branch-records :match-decision-skeletons
+    :match-pattern-records
     :preserved-resolution :macro-expansion-trace
     :macro-origin-traces :macro-origin-expectation
     :pending-fact-families :identity-preimage
@@ -353,7 +354,7 @@
            (:remediation diagnostic)))
     (is (map? (:source-span diagnostic)))
     (is (= expected-path (get-in diagnostic [:source-span :source])))
-    (is (= :sh07-b10-core-lowering (:lowering-rule diagnostic)))
+    (is (= :sh07-b11-core-lowering (:lowering-rule diagnostic)))
     (is (nil? (:core-node-id diagnostic)))
     (is (map? (:facts diagnostic)))
     diagnostic))
@@ -466,8 +467,8 @@
   (is (= authenticated-request-keys (set (keys request))))
   (is (= :gravity/sh07-authenticated-sh06-core-request
          (:artifact request)))
-  (is (= 11 (:schema-version request)))
-  (is (= :sh07-b10-meta-jvm-core (:scope request)))
+  (is (= 12 (:schema-version request)))
+  (is (= :sh07-b11-meta-jvm-core (:scope request)))
   (is (sha256-id? (:projection-binding request)))
   (is (= #{:actual-source-path}
          (set (keys (:provenance request))))))

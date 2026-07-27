@@ -12,7 +12,7 @@
      :expected-severity :error
      :expected-reason :catch-handler-sequencing-deferred
      :expected-remediation
-     "Wrap handler sequencing in an explicit do form; SH-07-B10 accepts one handler expression per catch clause."}}))
+     "Wrap handler sequencing in an explicit do form; SH-07-B11 accepts one handler expression per catch clause."}}))
 
 (def invalid-handler
   (try

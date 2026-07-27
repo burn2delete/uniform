@@ -12,7 +12,7 @@
      :expected-severity :error
      :expected-reason :guard-pattern-deferred
      :expected-remediation
-     "Remove :when from the pattern in SH-07-B10; defer guarded patterns to their owning pattern slice."}}))
+     "Remove :when from the pattern in SH-07-B11; defer guarded patterns to their owning pattern slice."}}))
 
 (def invalid-match
   (match {:kind :value}

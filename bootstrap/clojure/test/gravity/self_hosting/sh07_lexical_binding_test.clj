@@ -287,8 +287,8 @@
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result
                  :bounds :maximum-lexical-binding-records])]
-    (is (= 11 (:schema-version (request artifact))))
-    (is (= :sh07-b10-meta-jvm-core (:scope (request artifact))))
+    (is (= 12 (:schema-version (request artifact))))
+    (is (= :sh07-b11-meta-jvm-core (:scope (request artifact))))
     (is (vector? lexical))
     (is (= maximum-lexical-binding-records declared-maximum))
     (is (<= (count lexical) declared-maximum))

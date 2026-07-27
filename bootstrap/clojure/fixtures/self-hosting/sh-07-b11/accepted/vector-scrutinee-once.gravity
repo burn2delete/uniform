@@ -1,0 +1,19 @@
+; SH-07-B11 records one scrutinee evaluation before conditional vector branches.
+(ns self-hosting.sh07-b11.vector-scrutinee-once
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [route-vector])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B11
+              :fixture :vector-scrutinee-once
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn route-vector [value fail-scrutinee?]
+  (match (if fail-scrutinee?
+           (throw "scrutinee")
+           value)
+    [0 _] (throw "zero-branch")
+    [head tail] (do tail head)
+    _ :other))

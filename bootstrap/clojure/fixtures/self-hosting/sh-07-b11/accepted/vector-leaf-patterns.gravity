@@ -1,0 +1,18 @@
+; SH-07-B11 lowers fixed-width vector patterns with scalar pattern leaves.
+(ns self-hosting.sh07-b11.vector-leaf-patterns
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [classify-vector])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B11
+              :fixture :vector-leaf-patterns
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn classify-vector [value]
+  (match value
+    [] :empty
+    [0 _] :zero-first
+    [left right] left
+    _ :other))

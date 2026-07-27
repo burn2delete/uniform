@@ -1,0 +1,17 @@
+; SH-07-B11 keeps vector-pattern bindings local to their selected branch.
+(ns self-hosting.sh07-b11.vector-branch-local-binding
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [select-local])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B11
+              :fixture :vector-branch-local-binding
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn select-local [value]
+  (let [head :outer]
+    (match value
+      [head tail] (do tail head)
+      _ head)))

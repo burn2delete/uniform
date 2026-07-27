@@ -46,8 +46,11 @@
     "sibling-branch-binding-use"})
 (def ^:private upstream-resolution-fixtures
   #{"outside-branch-binding-use" "sibling-branch-binding-use"})
+(def ^:private promoted-b11-fixtures
+  #{"composite-pattern-deferred"})
 (def ^:private core-lowering-fixtures
-  (set/difference rejected-fixtures upstream-resolution-fixtures))
+  (set/difference
+   rejected-fixtures upstream-resolution-fixtures promoted-b11-fixtures))
 
 (defn- path
   [relative]
@@ -265,7 +268,7 @@
                            "no-clauses" "odd-pattern-body-tail"]]
       (is (some #(str/includes? % required-name) rejected)))))
 
-(deftest sh07-b10-direct-and-public-routing-use-v11
+(deftest sh07-b10-direct-and-public-routing-use-v12
   (doseq [extension extensions]
     (let [basename "literal-clauses-wildcard"
           direct (direct-artifact "accepted" basename extension)
@@ -278,16 +281,16 @@
                (:match-branch-records (core public))))
         (is (= (:match-decision-skeletons (core direct))
                (:match-decision-skeletons (core public))))
-        (is (= 11 (:schema-version (request direct))
+        (is (= 12 (:schema-version (request direct))
                (:schema-version (request public))))
-        (is (= :sh07-b10-meta-jvm-core
+        (is (= :sh07-b11-meta-jvm-core
                (:scope (request direct))
                (:scope (request public))))
-        (is (= "SH-07-B10" (:task direct) (:task public)))
-        (is (= :c6-gravity-core-lowering-b10
+        (is (= "SH-07-B11" (:task direct) (:task public)))
+        (is (= :c6-gravity-core-lowering-b11
                (get-in direct [:pass :name])
                (get-in public [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v11
+        (is (= :gravity/sh07-to-c6-core-products-v12
                (get-in direct
                        [:gravity-core-boundary :adapter-contract])
                (get-in public
@@ -324,7 +327,7 @@
                    (:branch-child-indexes attributes)))
             (is (= :scrutinee-then-source-ordered-pattern-candidates
                    (:evaluation-order attributes)))
-            (is (= :not-asserted-by-sh07-b10
+            (is (= :not-asserted-by-sh07-b11
                    (:runtime-reachability attributes)))
             (is (= :source-ordered-pattern-candidates
                    (:selection-policy attributes)))
@@ -342,7 +345,7 @@
             (is (= branch-ids (:branch-core-node-ids skeleton)))
             (is (= :source-ordered-pattern-candidates
                    (:selection-policy skeleton)))
-            (is (= :not-asserted-by-sh07-b10
+            (is (= :not-asserted-by-sh07-b11
                    (:runtime-reachability skeleton)))
             (is (= :pending-sh08
                    (:result-type-join skeleton)
@@ -618,6 +621,19 @@
               @observed-reasons))
     (is (< 2 (count @observed-reasons)))))
 
+(deftest sh07-b10-fixed-vector-fixture-is-promoted-by-b11
+  (doseq [basename promoted-b11-fixtures
+          extension extensions]
+    (let [artifact
+          ((required-var 'sh07-core-file-artifact)
+           (fixture-path "rejected" basename extension))]
+      (testing (str basename extension)
+        (is (= :accepted (:status artifact)))
+        (is (= #{:vector :binding :wildcard}
+               (set
+                (map :pattern-kind
+                     (:match-pattern-records (core artifact))))))))))
+
 (deftest sh07-b10-branch-binding-escape-fails-at-name-resolution
   (doseq [basename upstream-resolution-fixtures
           extension extensions]
@@ -743,7 +759,7 @@
         (is (= :SH-07 (:slice artifact)))
         (is (= 1024 maximum))
         (is (<= (count (:match-branch-records canonical)) maximum))
-        (is (= :gravity/sh07-to-c6-core-products-v11
+        (is (= :gravity/sh07-to-c6-core-products-v12
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

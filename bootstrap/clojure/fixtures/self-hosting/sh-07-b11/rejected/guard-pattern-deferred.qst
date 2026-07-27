@@ -1,12 +1,15 @@
-(ns self-hosting.sh07-b10.reject.guard-pattern-deferred
+; SH-07-B11 keeps guarded patterns outside the fixed-vector slice.
+(ns self-hosting.sh07-b11.reject.guard-pattern-deferred
   (:profile :meta)
   (:target :jvm)
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
   (:metadata
-   {:slice :SH-07-B10
-    :sh07-b10
+   {:slice :SH-07-B11
+    :case :guarded-pattern-outside-fixed-vector-slice
+    :governing-contracts ["L7" "C6"]
+    :sh07-b11
     {:expected-rule "C6-LOWERING-GAP"
      :expected-stage :core-lowering
      :expected-severity :error

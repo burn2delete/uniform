@@ -1,0 +1,18 @@
+; SH-07-B11 preserves a loop recur target through a tail vector-pattern branch.
+(ns self-hosting.sh07-b11.vector-tail-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [loop-through-vector])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B11
+              :fixture :vector-tail-recur
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn loop-through-vector [initial]
+  (loop [state initial]
+    (match state
+      [0 result] result
+      [step next-state] (recur next-state)
+      _ state)))
