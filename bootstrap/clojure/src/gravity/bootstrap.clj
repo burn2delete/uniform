@@ -158942,7 +158942,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11 is the checked-core projection
+;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12 is the checked-core projection
 ;; owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
@@ -158951,7 +158951,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v12)
+  :gravity/sh07-to-c6-core-products-v13)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158964,25 +158964,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 360918)
+(def sh07-core-expected-source-byte-count 364910)
 (def sh07-core-expected-source-content-hash
-  "sha256:59b11b02246ba8d5a4793f314a63a5c6d791975c5f1e08fce4b70b3d7ffa28ca")
+  "sha256:0c1e807307f5021466f3c08c33c6b808b0aa49e8a3f56abc81796371c284c226")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:8dc930087c5a6eaa6823bcfbdfb2fe7b427076d3aeba533b0e30bc385facddf1")
+  "sha256:40c9e26b531e9e3e63bec15fed68a53f39a40dd17a130390d05c2fd482d6ea88")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:ab93e7646982f500e805313c4d65abe1d4c03e64fac0d3aa0b6bc4cd20722317")
-(def sh07-core-expected-function-count 232)
+  "sha256:9d8ebb00be3be73fa67ba1455a0b8f1eaac1d70d1a3fa6111de7239364344bbe")
+(def sh07-core-expected-function-count 236)
 (def sh07-core-expected-function-names-hash
-  "sha256:460ceaf3c41389d55699c00a44f669b20fb75665e74f525641af79a004a94b7e")
+  "sha256:a173723194a94bc09f9e32088fec26f75c332b7ad1a54420ed528e9a1d48e960")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:966a37a01545e78de21dfb5918b0e8000d25ac41aad033cb15ea9e9301ccc82b")
+  "sha256:e93889e78bf14cdadcc348f0feac42cac1d2860fb2d4e4994a20619f68d1c6ab")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:8955419e595fdd915e9a56a660763e25d882de4ad810802d07aae3d54bf3a201"
+   "sha256:d5d90050133ee69b16c97f606fee8c7f48a2c1ce5e0e17810cae07f72c70fc5e"
    'sh07-verify-core-resolved
-   "sha256:5d2beec431a3dab86544c7658a162e2989d5e45c01a1da12cdefddb999a731be"})
+   "sha256:fd9535396be4135c2ba17c1861984280f6a62cbd1b055c3e49a8de9a2596e809"})
 
 (defn sh07-core-source-path
   []
@@ -160034,6 +160034,7 @@
                    (count projected-binding-id-by-upstream)})))
       {:forms forms
        :binding-table bindings
+       :alias-table (vec (:alias-table resolved-analysis))
        :resolution-table resolutions})))
 
 (defn sh07-core-lineage
@@ -160069,7 +160070,8 @@
                 %
                 [:reference-syntax-id :symbol :position
                  :resolution-order :semantic-span :resolution-kind])
-              (:resolution-table analysis))]
+              (:resolution-table analysis))
+        alias-semantics (vec (:alias-table analysis))]
     (let [semantic-projection-id
           (reader-canonical-hash
            {:domain :gravity/sh07-semantic-sh06-artifact-v1
@@ -160077,6 +160079,7 @@
             :module semantic-module
             :expanded-forms (neutral expanded-forms)
             :bindings binding-semantics
+            :aliases alias-semantics
             :resolutions resolution-semantics})]
       {:authenticated-sh06-artifact-id (:artifact-id resolution-artifact)
        :sh06-semantic-projection-id semantic-projection-id
@@ -160089,6 +160092,7 @@
        :source-revision-id source-revision-id
        :module semantic-module
        :bindings binding-semantics
+       :aliases alias-semantics
        :resolutions resolution-semantics})
      :source-revision-id
      source-revision-id
@@ -160116,6 +160120,10 @@
      (reader-canonical-hash
       {:domain :gravity/sh07-sh06-resolution-table-v1
        :resolutions resolution-semantics})
+     :alias-table-id
+     (reader-canonical-hash
+      {:domain :gravity/sh07-sh06-alias-table-v1
+       :aliases alias-semantics})
      :lexical-scope-graph-id
      (reader-canonical-hash
       {:domain :gravity/sh07-sh06-lexical-scope-graph-v1
@@ -160137,7 +160145,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v11
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v12
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -160239,6 +160247,7 @@
           forms (:forms projection)
           roots (mapv (comp :form-id :root) trees)
           bindings (:binding-table projection)
+          aliases (:alias-table projection)
           resolutions (:resolution-table projection)
           expectation
           {:source-revision-id (:source-revision-id lineage)
@@ -160252,12 +160261,13 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 12
+           :schema-version 13
            :lineage lineage
            :module module
            :forms forms
            :top-level-form-ids roots
            :binding-table bindings
+           :alias-table aliases
            :resolution-table resolutions
            :macro-expansion-trace
            (sh07-core-semantic-macro-trace
@@ -160266,7 +160276,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b11-meta-jvm-core}
+           :scope :sh07-b12-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160674,7 +160684,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b11-core-lowering
+         :lowering-rule :sh07-b12-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160698,6 +160708,7 @@
   [request]
   (let [forms-value (:forms request)
         bindings-value (:binding-table request)
+        aliases-value (:alias-table request)
         resolutions-value (:resolution-table request)
         trace-value (:macro-expansion-trace request)
         origin-traces-value (:macro-origin-traces request)
@@ -160748,6 +160759,12 @@
        {:reason :request-binding-table-vector-required
         :observed-shape (value-shape bindings-value)})
 
+      (not (vector? aliases-value))
+      (sh07-core-request-diagnostic!
+       request
+       {:reason :request-alias-table-vector-required
+        :observed-shape (value-shape aliases-value)})
+
       (not (vector? resolutions-value))
       (sh07-core-request-diagnostic!
        request
@@ -160760,9 +160777,27 @@
        {:reason :request-macro-trace-vector-required
         :observed-shape (value-shape trace-value)})
 
+      (not=
+       (:projection-binding request)
+       (reader-canonical-hash
+        (sh07-core-projection-binding-input request)))
+      (sh07-core-request-diagnostic!
+       request
+       {:reason :request-projection-binding-mismatch})
+
+      (not=
+       (get-in request [:lineage :alias-table-id])
+       (reader-canonical-hash
+        {:domain :gravity/sh07-sh06-alias-table-v1
+         :aliases aliases-value}))
+      (sh07-core-request-diagnostic!
+       request
+       {:reason :request-alias-table-lineage-mismatch})
+
       :else
       (let [forms (count forms-value)
             bindings (count bindings-value)
+            aliases (count aliases-value)
             resolutions (count resolutions-value)
             trace-count (count trace-value)
             origin-trace-count
@@ -160771,18 +160806,18 @@
               0)
             request-depth (sh07-core-nested-depth request)]
         (cond
-      (not= 12 (:schema-version request))
+      (not= 13 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 12
+        :expected 13
         :observed (:schema-version request)})
 
-      (not= :sh07-b11-meta-jvm-core (:scope request))
+      (not= :sh07-b12-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b11-meta-jvm-core
+        :expected :sh07-b12-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -160800,6 +160835,13 @@
        {:bound :maximum-bindings
         :maximum 1024
         :observed bindings})
+
+      (> aliases 256)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-alias-records
+        :maximum 256
+        :observed aliases})
 
       (> resolutions 2048)
       (sh07-core-request-diagnostic!
@@ -160831,7 +160873,10 @@
 
           :else :passed)))))
 
-(defn sh07-core-run-request-for-test
+(defn sh07-core-run-structural-request-for-test
+  "Test-only structural runner. It does not authenticate SH-06 membership;
+  callers testing the executable boundary must use
+  sh07-core-run-request-for-test with the verified SH-06 artifact."
   [authenticated-request]
   (let [_ (sh07-core-request-preflight! authenticated-request)
         source-path
@@ -160881,6 +160926,24 @@
                  :source-path source-path
                  :status (:status result)})))))
 
+(defn sh07-core-run-request-for-test
+  [resolution-artifact authenticated-request]
+  (let [upstream-verification
+        (sh06-resolution-artifact-verification resolution-artifact)
+        expected-request
+        (when (= :passed (:status upstream-verification))
+          (sh07-core-authenticated-request resolution-artifact))]
+    (when-not (= :passed (:status upstream-verification))
+      (sh07-core-request-diagnostic!
+       authenticated-request
+       {:reason :authenticated-sh06-artifact-required
+        :failed-checks (:failed-checks upstream-verification)}))
+    (when-not (= expected-request authenticated-request)
+      (sh07-core-request-diagnostic!
+       authenticated-request
+       {:reason :authenticated-sh06-request-membership-mismatch}))
+    (sh07-core-run-structural-request-for-test authenticated-request)))
+
 (defn sh07-core-projection-diagnostic!
   [resolution-artifact reason]
   (let [source-path
@@ -160901,7 +160964,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b11-core-lowering
+         :lowering-rule :sh07-b12-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -161459,6 +161522,11 @@
      :canonical-core-replays?
      (= (sh07-core-exact-comparison-value expected-core)
         (sh07-core-exact-comparison-value core))
+     :declared-alias-table-replay?
+     (= (sh07-core-exact-comparison-value
+         (:declared-alias-table expected-core))
+        (sh07-core-exact-comparison-value
+         (:declared-alias-table core)))
      :control-flow-replays?
      (= (sh07-core-exact-comparison-value
          (:control-flow expected-core))
@@ -161595,11 +161663,8 @@
 
 (defn sh07-core-from-authenticated-request
   [resolution-artifact authenticated-request]
-  (let [expected (sh07-core-authenticated-request resolution-artifact)]
-    (when-not (= expected authenticated-request)
-      (sh07-core-projection-diagnostic!
-       resolution-artifact :authenticated-sh06-projection-mismatch))
-    (let [run (sh07-core-run-request-for-test authenticated-request)
+  (let [run (sh07-core-run-request-for-test
+             resolution-artifact authenticated-request)
           core (:canonical-core-artifact run)
           source-path
           (sh07-core-source-path-from-resolution resolution-artifact)
@@ -161643,15 +161708,15 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B11"
-           :document-set ["L2" "L6" "L7" "L9" "C5" "C6"]
+           :task "SH-07-B12"
+           :document-set ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
            :sh06-resolution-artifact resolution-artifact
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b11
+           {:name :c6-gravity-core-lowering-b12
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -161691,7 +161756,10 @@
             :downstream-fact-statuses
             {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
             :pending-lowering-families
-            [:alias-qualified-references :keyword-headed-calls
+            [:alias-qualified-type-references
+             :alias-qualified-var-references
+             :alias-qualified-set-mutations
+             :keyword-headed-calls
              :qualified-var-references
              :var-profile-legality-sh09
              :destructuring-bindings
@@ -161717,7 +161785,7 @@
           (sh07-core-proof-from-checks
            (sh07-core-verification-checks
             artifact-base artifact-base upstream-verification))]
-      (assoc artifact-base :capability-based-proof proof))))
+    (assoc artifact-base :capability-based-proof proof)))
 
 (defn sh07-core-from-resolution-artifact
   [resolution-artifact]
@@ -161748,7 +161816,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b11-core-lowering
+               :lowering-rule :sh07-b12-core-lowering
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation

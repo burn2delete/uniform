@@ -281,16 +281,16 @@
                (:match-branch-records (core public))))
         (is (= (:match-decision-skeletons (core direct))
                (:match-decision-skeletons (core public))))
-        (is (= 12 (:schema-version (request direct))
+        (is (= 13 (:schema-version (request direct))
                (:schema-version (request public))))
-        (is (= :sh07-b11-meta-jvm-core
+        (is (= :sh07-b12-meta-jvm-core
                (:scope (request direct))
                (:scope (request public))))
-        (is (= "SH-07-B11" (:task direct) (:task public)))
-        (is (= :c6-gravity-core-lowering-b11
+        (is (= "SH-07-B12" (:task direct) (:task public)))
+        (is (= :c6-gravity-core-lowering-b12
                (get-in direct [:pass :name])
                (get-in public [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v12
+        (is (= :gravity/sh07-to-c6-core-products-v13
                (get-in direct
                        [:gravity-core-boundary :adapter-contract])
                (get-in public
@@ -759,7 +759,7 @@
         (is (= :SH-07 (:slice artifact)))
         (is (= 1024 maximum))
         (is (<= (count (:match-branch-records canonical)) maximum))
-        (is (= :gravity/sh07-to-c6-core-products-v12
+        (is (= :gravity/sh07-to-c6-core-products-v13
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

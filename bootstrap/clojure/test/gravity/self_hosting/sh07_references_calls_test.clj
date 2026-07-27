@@ -303,8 +303,8 @@
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result
                  :bounds :maximum-call-records])]
-    (is (= 12 (:schema-version (request artifact))))
-    (is (= :sh07-b11-meta-jvm-core (:scope (request artifact))))
+    (is (= 13 (:schema-version (request artifact))))
+    (is (= :sh07-b12-meta-jvm-core (:scope (request artifact))))
     (is (vector? reference-uses))
     (is (vector? calls))
     (is (= maximum-reference-use-records declared-reference-maximum))
@@ -540,6 +540,7 @@
           changed-request-result
           (diagnostic-result
            #((required-var 'sh07-core-run-request-for-test)
+             (:sh06-resolution-artifact artifact)
              changed-request))
           changed-request-diagnostic
           (diagnostic-data changed-request-result)
@@ -550,6 +551,7 @@
           alias-result
           (diagnostic-result
            #((required-var 'sh07-core-run-request-for-test)
+             (:sh06-resolution-artifact artifact)
              alias-request))
           alias-diagnostic (diagnostic-data alias-result)]
       (testing extension

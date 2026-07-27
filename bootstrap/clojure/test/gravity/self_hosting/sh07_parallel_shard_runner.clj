@@ -11,6 +11,9 @@
 (def ^:private match-lowering-namespace
   'gravity.self-hosting.sh07-match-lowering-test)
 
+(def ^:private alias-reference-namespace
+  'gravity.self-hosting.sh07-alias-qualified-reference-test)
+
 (def ^:private shards
   (sorted-map
    "accepted"
@@ -39,6 +42,32 @@
        sh07-b11-pattern-resolvers-enforce-record-depth-width-and-count-bounds
        sh07-b11-pattern-resolver-rejects-invalid-parent-graphs
        sh07-b11-pattern-graph-completeness-rejects-structural-alterations]]]
+
+   "b12-contract-accepted"
+   [[alias-reference-namespace
+     '[sh07-b12-fixtures-are-dynamically-discovered-paired-and-bounded
+       sh07-b12-direct-and-public-routing-use-v13
+       sh07-b12-declared-alias-table-is-exact-bounded-and-projected
+       sh07-b12-alias-qualified-value-and-operator-references-bind-exactly
+       sh07-b12-alias-targets-may-be-a-binding-target-subset
+       sh07-b12-reference-and-call-record-contract-remains-b11-compatible
+       sh07-b12-alias-call-evaluates-operator-before-arguments
+       sh07-b12-alias-fully-qualified-and-core-controls-remain-distinct]]]
+
+   "b12-identity-verification"
+   [[alias-reference-namespace
+     '[sh07-b12-identities-are-deterministic-path-neutral-and-provenanced
+       sh07-b12-alias-products-retain-authenticated-sh06-lineage
+       sh07-b12-alias-table-alterations-fail-closed
+       sh07-b12-declared-alias-product-alterations-fail-replay
+       sh07-b12-resolution-order-and-binding-alterations-fail-closed
+       sh07-b12-public-replay-and-capability-proof-pass]]]
+
+   "b12-rejected-regression"
+   [[alias-reference-namespace
+     '[sh07-b12-rejected-fixtures-follow-their-declared-oracles
+       sh07-b12-preserves-b11-vector-pattern-products
+       sh07-b12-claim-boundary-remains-honest]]]
 
    "regression-a"
    [[match-lowering-namespace

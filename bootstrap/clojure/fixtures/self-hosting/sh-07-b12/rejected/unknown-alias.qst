@@ -1,0 +1,23 @@
+; SH-07-B12 rejects an undeclared namespace qualifier at the C5 boundary.
+(ns self-hosting.sh07-b12.reject.unknown-alias
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B12
+    :case :unknown-alias
+    :non-claims [:alias-table-carrier-validation
+                 :runtime-linking
+                 :whole-program-execution]
+    :sh07-b12
+    {:expected-rule "C5-ALIAS"
+     :expected-stage :name-resolution
+     :expected-severity :error
+     :expected-reason :unknown-namespace-alias
+     :expected-remediation
+     "Declare one unique alias and use only declared qualifiers."}}))
+
+(def invalid-reference
+  absent/value)

@@ -126,6 +126,8 @@
   {'sh07-core-authenticated-request
    '[resolution-artifact]
    'sh07-core-run-request-for-test
+   '[resolution-artifact authenticated-request]
+   'sh07-core-run-structural-request-for-test
    '[authenticated-request]
    'sh07-core-verification-checks
    '[artifact expected upstream-verification]
@@ -278,7 +280,7 @@
 
 (defn- sh07-run-request
   [request]
-  ((required-var 'sh07-core-run-request-for-test) request))
+  ((required-var 'sh07-core-run-structural-request-for-test) request))
 
 (def ^:private c2-artifacts (atom {}))
 
@@ -467,8 +469,8 @@
   (is (= authenticated-request-keys (set (keys request))))
   (is (= :gravity/sh07-authenticated-sh06-core-request
          (:artifact request)))
-  (is (= 12 (:schema-version request)))
-  (is (= :sh07-b11-meta-jvm-core (:scope request)))
+  (is (= 13 (:schema-version request)))
+  (is (= :sh07-b12-meta-jvm-core (:scope request)))
   (is (sha256-id? (:projection-binding request)))
   (is (= #{:actual-source-path}
          (set (keys (:provenance request))))))

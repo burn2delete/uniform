@@ -1,0 +1,31 @@
+; SH-07-B12 rejects an alias-qualified private binding from another module.
+(ns self-hosting.sh07-b12.reject.private-binding
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [private.core :as private-lib :profile :core
+              :boundary :pure-core :visibility :private])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B12
+    :case :private-binding
+    :compiler
+    {:sh06-request
+     {:request-version 1
+      :references [{:symbol private-lib/hidden :position :expression}]
+      :candidate-bindings
+      [{:name hidden :namespace private.core :visibility :private}]}}
+    :non-claims [:alias-table-carrier-validation
+                 :runtime-linking
+                 :whole-program-execution]
+    :sh07-b12
+    {:expected-rule "C5-PRIVATE"
+     :expected-stage :name-resolution
+     :expected-severity :error
+     :expected-reason :private-binding-access
+     :expected-remediation
+     "Export the binding or keep its use inside the defining namespace."}}))
+
+(def invalid-reference
+  private-lib/hidden)

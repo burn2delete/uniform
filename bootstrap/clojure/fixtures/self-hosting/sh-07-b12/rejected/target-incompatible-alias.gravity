@@ -1,0 +1,31 @@
+; SH-07-B12 rejects an alias dependency outside the active target set.
+(ns self-hosting.sh07-b12.reject.target-incompatible-alias
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.wasm :as wasm-lib :profile :meta :target :wasm])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B12
+    :case :target-incompatible-alias
+    :compiler
+    {:sh06-request
+     {:request-version 1
+      :references [{:symbol wasm-lib/value :position :expression}]
+      :candidate-bindings
+      [{:name value :namespace shared.wasm :visibility :public
+        :target-set [:wasm]}]}}
+    :non-claims [:target-adapter-synthesis
+                 :runtime-linking
+                 :whole-program-execution]
+    :sh07-b12
+    {:expected-rule "C5-TARGET"
+     :expected-stage :name-resolution
+     :expected-severity :error
+     :expected-reason :target-incompatible-import
+     :expected-remediation
+     "Select an import whose declared target set includes the active target."}}))
+
+(def invalid-reference
+  wasm-lib/value)

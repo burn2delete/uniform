@@ -112,7 +112,8 @@
           '[artifact expected upstream-verification]
           'sh07-core-from-authenticated-request
           '[resolution-artifact authenticated-request]
-          'sh07-core-run-request-for-test '[authenticated-request]}}))))
+          'sh07-core-run-request-for-test
+          '[resolution-artifact authenticated-request]}}))))
 
 (def ^:private artifacts (atom {}))
 (def ^:private c2-artifacts (atom {}))
@@ -284,8 +285,8 @@
                               :reference-syntax-id)]
       (testing (str basename extension)
         (is (seq records))
-        (is (= 12 (:schema-version (request artifact))))
-        (is (= :sh07-b11-meta-jvm-core (:scope (request artifact))))
+        (is (= 13 (:schema-version (request artifact))))
+        (is (= :sh07-b12-meta-jvm-core (:scope (request artifact))))
         (is (=
              (mapv #(dissoc
                      % :upstream-binding-id :definition-artifact-id
@@ -461,7 +462,8 @@
       (testing label
         (let [result
               (diagnostic-result
-               #((required-var 'sh07-core-run-request-for-test) mutation))
+               #((required-var 'sh07-core-run-request-for-test)
+                 (:sh06-resolution-artifact artifact) mutation))
               diagnostic (diagnostic-data result)]
           (is (nil? (:raw-host-error result)))
           (is (= "C6-VERIFY" (:rule diagnostic)))
