@@ -278,7 +278,7 @@
            (seq (source-bytes
                  (fixture-path family basename ".qst")))))))
 
-(deftest sh07-b9-accepted-pairs-use-v10-and-path-neutral-products
+(deftest sh07-b9-accepted-pairs-use-v11-and-path-neutral-products
   (doseq [basename accepted-basenames]
     (let [gravity (file-artifact "accepted" basename ".gravity")
           qst (file-artifact "accepted" basename ".qst")]
@@ -288,16 +288,16 @@
         (is (= (identity-input gravity) (identity-input qst)))
         (is (= (:error-handlers (core gravity))
                (:error-handlers (core qst))))
-        (is (= 10 (:schema-version (request gravity))
+        (is (= 11 (:schema-version (request gravity))
                (:schema-version (request qst))))
-        (is (= :sh07-b9-meta-jvm-core
+        (is (= :sh07-b10-meta-jvm-core
                (:scope (request gravity))
                (:scope (request qst))))
-        (is (= "SH-07-B9" (:task gravity) (:task qst)))
-        (is (= :c6-gravity-core-lowering-b9
+        (is (= "SH-07-B10" (:task gravity) (:task qst)))
+        (is (= :c6-gravity-core-lowering-b10
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v10
+        (is (= :gravity/sh07-to-c6-core-products-v11
                (get-in gravity
                        [:gravity-core-boundary :adapter-contract])
                (get-in qst
@@ -704,7 +704,7 @@
                (:document-set artifact)))
         (is (= 1024 maximum))
         (is (<= (count (:error-handlers canonical)) maximum))
-        (is (= :gravity/sh07-to-c6-core-products-v10
+        (is (= :gravity/sh07-to-c6-core-products-v11
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

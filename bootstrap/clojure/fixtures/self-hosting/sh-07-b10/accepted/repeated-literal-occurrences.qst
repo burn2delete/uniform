@@ -1,0 +1,17 @@
+; SH-07-B10 gives repeated literal occurrences independent source identities.
+(ns self-hosting.sh07-b10.repeated-literal-occurrences
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [repeat-literals])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :repeated-literal-occurrences
+              :coverage :pending-sh08-sh09-sh10-sh11}))
+
+(defn repeat-literals [value]
+  (match value
+    1 1
+    1 1
+    _ 1))

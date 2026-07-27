@@ -244,13 +244,13 @@
         (is (= (identity-input gravity) (identity-input qst)))
         (is (= (:error-transfers (core gravity))
                (:error-transfers (core qst))))
-        (is (= 10 (:schema-version (request gravity))
+        (is (= 11 (:schema-version (request gravity))
                (:schema-version (request qst))))
-        (is (= :sh07-b9-meta-jvm-core
+        (is (= :sh07-b10-meta-jvm-core
                (:scope (request gravity))
                (:scope (request qst))))
-        (is (= "SH-07-B9" (:task gravity) (:task qst)))
-        (is (= :c6-gravity-core-lowering-b9
+        (is (= "SH-07-B10" (:task gravity) (:task qst)))
+        (is (= :c6-gravity-core-lowering-b10
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))))))
 
@@ -576,7 +576,7 @@
         (is (= :SH-07 (:slice artifact)))
         (is (= ["L2" "L6" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :gravity/sh07-to-c6-core-products-v10
+        (is (= :gravity/sh07-to-c6-core-products-v11
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

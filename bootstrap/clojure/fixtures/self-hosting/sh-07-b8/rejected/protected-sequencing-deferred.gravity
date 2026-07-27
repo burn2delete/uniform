@@ -12,7 +12,7 @@
      :expected-severity :error
      :expected-reason :try-protected-sequencing-deferred
      :expected-remediation
-     "Wrap protected sequencing in an explicit do form; SH-07-B9 accepts one protected expression."}}))
+     "Wrap protected sequencing in an explicit do form; SH-07-B10 accepts one protected expression."}}))
 
 (def invalid-handler
   (try

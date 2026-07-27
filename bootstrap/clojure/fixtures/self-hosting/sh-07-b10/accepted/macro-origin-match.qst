@@ -1,0 +1,17 @@
+; SH-07-B10 preserves a match body through the supported defn expansion.
+(ns self-hosting.sh07-b10.macro-origin-match
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [classify-generated])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :fixture :macro-origin-match
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(defn classify-generated [value]
+  (match value
+    0 :zero
+    1 :one
+    _ :other))

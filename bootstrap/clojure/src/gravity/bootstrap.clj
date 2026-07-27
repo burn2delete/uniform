@@ -93645,7 +93645,7 @@
   'p15-s23-assemble-plan-products)
 
 (def p15-s23-stage2-compiler-artifact-builtins
-  '#{symbol? keyword? char? list? seq? vector? map? set? string? contains? even? set sort-by-pr-str
+  '#{symbol? keyword? char? number? list? seq? vector? map? set? string? contains? even? set sort-by-pr-str
      vec quot subvec integer? boolean? keys})
 
 (def p15-s23-stage2-compiler-artifact-required-functions
@@ -94910,6 +94910,13 @@
                 (throw (IllegalArgumentException.
                         "compiler-only predicate outside compiler artifact")))
               (char? (first args)))
+      number? (do
+                (p15-s23-stage2-runtime-assert-exact-arity!
+                 plan callee args 1)
+                (when-not (p15-s23-stage2-compiler-artifact-plan-context? plan)
+                  (throw (IllegalArgumentException.
+                          "compiler-only predicate outside compiler artifact")))
+                (number? (first args)))
       seq? (do
              (p15-s23-stage2-runtime-assert-exact-arity!
               plan callee args 1)
@@ -156784,7 +156791,7 @@
 ;; transport code: resolution policy and result construction live in Gravity.
 (def sh06-resolution-special-symbols
   '#{quote if do let loop recur fn def defn defconst var set! try catch
-     finally throw new syntax-quote unquote splice-unquote unsafe})
+     finally throw match new syntax-quote unquote splice-unquote unsafe})
 
 (def sh06-resolution-core-symbols
   '#{= not not= identical? < > <= >= + - * / mod quot rem inc dec min max
@@ -157239,6 +157246,37 @@
                       (doseq [item body]
                         (walk-form item (cons scope-id scope-chain)
                                    syntax :expression)))
+
+                    (= operator 'match)
+                    (do
+                      (add-reference! 'match scope-chain syntax :operator
+                                      (:span syntax))
+                      (when-let [scrutinee (second value)]
+                        (walk-form scrutinee scope-chain syntax :expression))
+                      (doseq [[pattern branch]
+                              (partition 2 (drop 2 value))]
+                        (cond
+                          (and (symbol? pattern) (not= '_ pattern))
+                          (let [scope-id
+                                (add-scope!
+                                 (:syntax/id syntax)
+                                 (first scope-chain)
+                                 [pattern] (:span syntax))]
+                            (walk-form branch
+                                       (cons scope-id scope-chain)
+                                       syntax :expression))
+
+                          (or (= '_ pattern)
+                              (nil? pattern)
+                              (true? pattern)
+                              (false? pattern)
+                              (number? pattern)
+                              (char? pattern)
+                              (string? pattern)
+                              (keyword? pattern))
+                          (walk-form branch scope-chain syntax :expression)
+
+                          :else nil)))
 
                     (= operator 'try)
                     (do
@@ -158839,7 +158877,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8 is the first checked-core projection
+;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10 is the checked-core projection
 ;; owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
@@ -158848,7 +158886,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v10)
+  :gravity/sh07-to-c6-core-products-v11)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158861,25 +158899,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 299320)
+(def sh07-core-expected-source-byte-count 334954)
 (def sh07-core-expected-source-content-hash
-  "sha256:b6be206e658553a60bcb437fa26adbb1db5b9e1e282da2adf14806e7efb1ef00")
+  "sha256:236b43b19cc30d11fcc13c9709d9f20dd2509f79d38913974f1cfb3213a1be29")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:5e8bd2a2bd63aa8ee3eab5082a73fc7152b7d9db19da6e1ee25bccb005c7db55")
+  "sha256:eeed168b5895ea770a6ce843b09e1b57e90edb30cb10e5b2c83cff95c1a17e05")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:6844a77e03c39a4ad3787a38ebb5b3143a74314e6300d2f85d2be4edd065e601")
-(def sh07-core-expected-function-count 196)
+  "sha256:d1e1fffa93d00c179c4d931c3a604902b01f3d4fceffc20281fd62410f5fed28")
+(def sh07-core-expected-function-count 215)
 (def sh07-core-expected-function-names-hash
-  "sha256:08df763bd469820c46e251dc01ecf16578e0b53a82bab54b529be7629b08b6ee")
+  "sha256:6e5aff2efd19c23ffd346432df144295742cfd93995a7d6cf831c8a88a39027d")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:78c3780471d3b2cb0469cc81e3a66b0170cdfd6e00fee3325698c854fee8c760")
+  "sha256:a43052fdb7649282855906999b57645792c45c98caf00fa989e01e2a04cf93a7")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:b69e80473cc5f1664a31396233e6b6585aa09c14d237e863bbe4fc51151b344e"
+   "sha256:e56b77f3b5e0aa2ea935f68b0b2dd6a82a462203b4eb67f33c5b00291ba76b90"
    'sh07-verify-core-resolved
-   "sha256:9728b46c40ee12cb13a3045e427275938b0a5e64e17379ad8f0fd9274ce5fa04"})
+   "sha256:996d99bd99dfe0a91104b76d1732165ceac7b3e786129c8dd84b678b205d8fba"})
 
 (defn sh07-core-source-path
   []
@@ -159557,6 +159595,60 @@
                         (walk syntax (get items index) (conj path index)
                               nested :expression)))
 
+                    (= operator 'match)
+                    (do
+                      (add-reference! syntax (conj path 0) 'match
+                                      :operator scope-chain)
+                      (when (< 1 (count items))
+                        (walk syntax (get items 1) (conj path 1)
+                              scope-chain :expression))
+                      (loop [pattern-index 2]
+                        (when (< (+ pattern-index 1) (count items))
+                          (let [pattern (get items pattern-index)
+                                branch-index (+ pattern-index 1)
+                                branch (get items branch-index)
+                                pattern-path (conj path pattern-index)]
+                            (cond
+                              (and (symbol? pattern) (not= '_ pattern))
+                              (let [scope
+                                    (consume-scope!
+                                     syntax
+                                     (first scope-chain)
+                                     [{:name pattern
+                                       :path pattern-path}])
+                                    syntax-id
+                                    (projected-syntax-id
+                                     syntax pattern-path pattern)
+                                    nested
+                                    (cons (:scope-id scope) scope-chain)]
+                                (swap! scope-by-syntax-id assoc syntax-id
+                                       (:sh07/projected-scope-id scope))
+                                (swap!
+                                 declaration-syntax-by-upstream-id
+                                 assoc
+                                 (get-in scope
+                                         [:bindings 0
+                                          :binding-syntax-id])
+                                 syntax-id)
+                                (walk syntax branch
+                                      (conj path branch-index)
+                                      nested :expression))
+
+                              (or (= '_ pattern)
+                                  (nil? pattern)
+                                  (true? pattern)
+                                  (false? pattern)
+                                  (number? pattern)
+                                  (char? pattern)
+                                  (string? pattern)
+                                  (keyword? pattern))
+                              (walk syntax branch
+                                    (conj path branch-index)
+                                    scope-chain :expression)
+
+                              :else nil)
+                            (recur (+ pattern-index 2))))))
+
                     (= operator 'try)
                     (do
                       (add-reference! syntax (conj path 0) 'try
@@ -159940,7 +160032,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v10
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v11
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -160055,7 +160147,7 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 10
+           :schema-version 11
            :lineage lineage
            :module module
            :forms forms
@@ -160069,7 +160161,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b9-meta-jvm-core}
+           :scope :sh07-b10-meta-jvm-core}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160477,7 +160569,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b9-core-lowering
+         :lowering-rule :sh07-b10-core-lowering
          :facts {:reason :bounded-authenticated-core-request
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160491,7 +160583,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v10
+          {:domain :gravity/sh07-request-bound-diagnostic-v11
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
     (throw (ex-info "SH-07 authenticated request exceeded a bound"
@@ -160574,18 +160666,18 @@
               0)
             request-depth (sh07-core-nested-depth request)]
         (cond
-      (not= 10 (:schema-version request))
+      (not= 11 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
         :expected 10
         :observed (:schema-version request)})
 
-      (not= :sh07-b9-meta-jvm-core (:scope request))
+      (not= :sh07-b10-meta-jvm-core (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b9-meta-jvm-core
+        :expected :sh07-b10-meta-jvm-core
         :observed (:scope request)})
 
       (> forms 1024)
@@ -160704,7 +160796,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b9-core-lowering
+         :lowering-rule :sh07-b10-core-lowering
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -160720,7 +160812,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-projection-diagnostic-v10
+          {:domain :gravity/sh07-projection-diagnostic-v11
            :reason reason
            :sh06-artifact-id (:artifact-id resolution-artifact)})}]
     (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
@@ -160925,6 +161017,137 @@
          (get handlers-by-try try-id)))
       try-by-id))))
 
+(def ^:private sh07-b10-match-clause-keys
+  [:clause-ordinal :branch-child-index
+   :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value
+   :branch-form-id :branch-syntax-id
+   :pattern-binding-id :pattern-binding-scope-id])
+
+(defn sh07-b10-match-group-coherent?
+  [node-by-id references match-node records skeleton]
+  (let [records (vec (sort-by :clause-ordinal records))
+        attributes (:attributes match-node)
+        scrutinee-node-id (first (:children match-node))
+        branch-node-ids (vec (rest (:children match-node)))
+        expected-indexes (mapv inc (range (count records)))
+        expected-bindings
+        (vec (keep :pattern-binding-id records))
+        expected-clauses
+        (mapv #(select-keys % sh07-b10-match-clause-keys) records)]
+    (and
+     (seq records)
+     (= (range (count records)) (map :clause-ordinal records))
+     (every? #(= (count records) (:clause-count %)) records)
+     (= expected-indexes (mapv :branch-child-index records))
+     (= branch-node-ids (mapv :branch-core-node-id records))
+     (= #{scrutinee-node-id}
+        (set (map :scrutinee-core-node-id records)))
+     (= expected-bindings (:resolved-binding-ids match-node))
+     (= 0 (:scrutinee-child-index attributes))
+     (= (count records) (:branch-count attributes))
+     (= expected-indexes (:branch-child-indexes attributes))
+     (= expected-clauses (:branch-clauses attributes))
+     (= :scrutinee-then-source-ordered-pattern-candidates
+        (:evaluation-order attributes))
+     (= :not-asserted-by-sh07-b10
+        (:runtime-reachability attributes))
+     (= :source-ordered-pattern-candidates
+        (:selection-policy attributes))
+     (= :pending-sh08
+        (:result-type-join attributes)
+        (:exhaustiveness attributes))
+     (= :scrutinee-then-source-ordered-pattern-candidates
+        (get-in match-node [:evaluation :kind]))
+     (= [{:index 0 :core-node-id scrutinee-node-id}]
+        (get-in match-node [:evaluation :order]))
+     (every?
+      (fn [record]
+        (let [branch-tree
+              (sh07-core-descendant-node-ids
+               node-by-id (:branch-core-node-id record))
+              expected-uses
+              (if (:pattern-binding-id record)
+                (->> references
+                     (filter
+                      #(and (= (:pattern-binding-id record)
+                               (:binding-id %))
+                            (contains? branch-tree
+                                       (:core-node-id %))))
+                     (mapv :syntax-id))
+                [])]
+          (and
+           (= (:node-id match-node) (:core-node-id record))
+           (= expected-uses
+              (:pattern-binding-use-syntax-ids record))
+           (= :evaluate-scrutinee-once
+              (:scrutinee-evaluation record))
+           (= :conditionally-evaluate-selected-branch
+              (:branch-evaluation record))
+           (= {:kind :match-branch
+               :match-syntax-id
+               (get-in record
+                       [:conditional-region :match-syntax-id])
+               :clause-ordinal (:clause-ordinal record)}
+              (:conditional-region record))
+           (= (:authenticated-sh06-artifact-id attributes)
+              (:authenticated-sh06-artifact-id record))
+           (= (:sh06-semantic-projection-id attributes)
+              (:sh06-semantic-projection-id record)))))
+      records)
+     (= (:node-id match-node) (:core-node-id skeleton))
+     (= scrutinee-node-id (:scrutinee-core-node-id skeleton))
+     (= branch-node-ids (:branch-core-node-ids skeleton))
+     (= :source-ordered-pattern-candidates
+        (:selection-policy skeleton))
+     (= :not-asserted-by-sh07-b10
+        (:runtime-reachability skeleton))
+     (= :pending-sh08
+        (:result-type-join skeleton)
+        (:exhaustiveness skeleton))
+     (= (:authenticated-sh06-artifact-id attributes)
+        (:authenticated-sh06-artifact-id skeleton))
+     (= (:sh06-semantic-projection-id attributes)
+        (:sh06-semantic-projection-id skeleton)))))
+
+(defn sh07-core-match-products-coherent?
+  [core]
+  (let [nodes (:nodes core)
+        records (:match-branch-records core)
+        skeletons (:match-decision-skeletons core)
+        references (:reference-uses core)
+        node-by-id
+        (when (vector? nodes)
+          (into {} (map (juxt :node-id identity)) nodes))
+        match-nodes
+        (when (vector? nodes)
+          (filterv #(and (map? %) (= :match (:core-form %))) nodes))
+        match-by-id
+        (when (vector? match-nodes)
+          (into {} (map (juxt :node-id identity)) match-nodes))
+        records-by-match
+        (when (vector? records) (group-by :core-node-id records))
+        skeleton-by-match
+        (when (vector? skeletons)
+          (into {} (map (juxt :core-node-id identity)) skeletons))]
+    (and
+     (vector? nodes)
+     (vector? records)
+     (vector? skeletons)
+     (vector? references)
+     (= (count nodes) (count node-by-id))
+     (= (mapv :ordinal records) (vec (range (count records))))
+     (= (count match-nodes) (count match-by-id))
+     (= (count skeletons) (count skeleton-by-match))
+     (= (set (keys match-by-id)) (set (keys records-by-match)))
+     (= (set (keys match-by-id)) (set (keys skeleton-by-match)))
+     (every?
+      (fn [[match-id match-node]]
+        (sh07-b10-match-group-coherent?
+         node-by-id references match-node
+         (get records-by-match match-id)
+         (get skeleton-by-match match-id)))
+      match-by-id))))
+
 (defn sh07-core-verification-checks
   [artifact expected upstream-verification]
   (let [core
@@ -161029,6 +161252,20 @@
          (sh07-core-exact-comparison-value
           (:error-handlers core)))
       (sh07-core-error-handlers-coherent? core))
+     :match-branch-records-replay?
+     (and
+      (= (sh07-core-exact-comparison-value
+          (:match-branch-records expected-core))
+         (sh07-core-exact-comparison-value
+          (:match-branch-records core)))
+      (sh07-core-match-products-coherent? core))
+     :match-decision-skeletons-replay?
+     (and
+      (= (sh07-core-exact-comparison-value
+          (:match-decision-skeletons expected-core))
+         (sh07-core-exact-comparison-value
+          (:match-decision-skeletons core)))
+      (sh07-core-match-products-coherent? core))
      :template-verification-passed?
      (= :passed
         (get-in artifact
@@ -161133,7 +161370,7 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B9"
+           :task "SH-07-B10"
            :document-set ["L2" "L6" "L9" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
@@ -161141,7 +161378,7 @@
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b9
+           {:name :c6-gravity-core-lowering-b10
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -161167,6 +161404,10 @@
              :error-transfer-verification
              :error-handler-construction
              :error-handler-verification
+             :match-branch-construction
+             :match-branch-verification
+             :match-decision-skeleton-construction
+             :match-decision-skeleton-verification
              :resolved-verification]
             :clojure-seed-owned
             [:plan-execution :sh06-projection-authentication
@@ -161185,7 +161426,10 @@
              :try-finally
              :try-protected-sequencing
              :try-handler-sequencing
-             :patterns]
+             :composite-patterns
+             :guard-patterns
+             :match-exhaustiveness
+             :match-result-type-join]
             :sh07-complete? false
             :self-hosted? false}
            :capability-based-proof nil
@@ -161227,7 +161471,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b9-core-lowering
+               :lowering-rule :sh07-b10-core-lowering
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation

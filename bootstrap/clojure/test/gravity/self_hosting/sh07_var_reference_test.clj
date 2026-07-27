@@ -284,8 +284,8 @@
                               :reference-syntax-id)]
       (testing (str basename extension)
         (is (seq records))
-        (is (= 10 (:schema-version (request artifact))))
-        (is (= :sh07-b9-meta-jvm-core (:scope (request artifact))))
+        (is (= 11 (:schema-version (request artifact))))
+        (is (= :sh07-b10-meta-jvm-core (:scope (request artifact))))
         (is (=
              (mapv #(dissoc
                      % :upstream-binding-id :definition-artifact-id
