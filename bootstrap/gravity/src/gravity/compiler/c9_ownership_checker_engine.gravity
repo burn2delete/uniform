@@ -11,7 +11,10 @@
              c9-ownership-diagnostic-catalog
              build-c9-borrow-record
              build-c9-linear-resource-record
-             verify-c9-ownership-checker])
+             verify-c9-ownership-checker
+             sh10-ownership-policy
+             sh10-check-ownership-request
+             sh10-verify-ownership-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -355,3 +358,525 @@
                       :unsafe-audit-references
                       :profile-target-metadata
                       :artifact-provenance]}))
+
+; SH-10 starts with a bounded owned-mutable state machine. It consumes ordered,
+; normalized ownership events. Region, arena, linear-resource, concurrency,
+; runtime-check, unsafe-audit, and authenticated typed-core adaptation remain
+; explicit later work.
+
+(defn sh10-ownership-policy []
+  {:artifact :gravity/sh10-ownership-policy
+   :version 1
+   :request-artifact :gravity/sh10-normalized-ownership-request
+   :result-artifact :gravity/sh10-ownership-analysis-result
+   :ownership-kind :owned-mutable
+   :initialization-states #{:uninitialized :initialized}
+   :availability-states #{:available :moved :consumed}
+   :events #{:initialize
+             :read
+             :borrow-immutable
+             :borrow-mutable
+             :end-borrow
+             :move
+             :consume
+             :escape-borrow}
+   :escape-destinations #{:function-return}
+   :diagnostics ["L10-UNINIT-READ"
+                 "C9-USE-AFTER-MOVE"
+                 "C9-USE-AFTER-CONSUME"
+                 "C9-BORROW-ESCAPE"
+                 "C9-MUT-ALIAS"
+                 "C9-MOVE-WHILE-BORROWED"
+                 "C9-UNSAFE"]
+   :pending [:persistent-copy-semantics
+             :field-and-range-splitting
+             :region-lifetimes
+             :arena-generations
+             :linear-resources
+             :task-actor-and-ffi-transfer
+             :runtime-borrow-checks
+             :unsafe-audit-records
+             :authenticated-sh08-sh09-adapter
+             :mir-preservation]})
+
+(defn sh10-not [value]
+  (if value false true))
+
+(defn sh10-and [left right]
+  (if left right false))
+
+(defn sh10-member? [values value]
+  (if (= nil value)
+    false
+    (= (get values value) value)))
+
+(defn sh10-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh10-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh10-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh10-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh10-unique-event-ids? [remaining seen]
+  (if (= (count remaining) 0)
+    true
+    (let [event-id (get (first remaining) :event-id)]
+      (if (= nil event-id)
+        false
+        (if (= true (get seen event-id))
+          false
+          (sh10-unique-event-ids?
+           (rest remaining)
+           (assoc seen event-id true)))))))
+
+(defn sh10-active-borrow? [state]
+  (if (> (get state :immutable-borrow-count) 0)
+    true
+    (sh10-not (= nil (get state :mutable-borrow-id)))))
+
+(defn sh10-active-borrow-id? [state borrow-id]
+  (if (= nil borrow-id)
+    false
+    (if (= borrow-id (get state :mutable-borrow-id))
+      true
+      (= true (get (get state :immutable-borrows) borrow-id)))))
+
+(defn sh10-valid-request-shape? [request]
+  (if (map? request)
+    (if (= :gravity/sh10-normalized-ownership-request
+           (get request :artifact))
+      (if (= nil (get request :request-id))
+        false
+        (if (= nil (get request :value-id))
+          false
+          (if (= nil (get request :owner-id))
+            false
+            (if (= :owned-mutable
+                   (get request :ownership-kind))
+              (if
+               (sh10-member?
+               #{:uninitialized :initialized}
+                (get request :initialization))
+               (if (= :available (get request :availability))
+                 (if (vector? (get request :events))
+                   (if (<= (count (get request :events)) 1024)
+                     (if (sh10-unique-event-ids?
+                          (get request :events) {})
+                       (if (number? (get request :owner-lifetime-end))
+                         (if
+                          (sh10-sha256-id?
+                           (get request :type-fact-id))
+                          (if
+                           (sh10-sha256-id?
+                            (get request :effect-fact-id))
+                           (if (map? (get request :source-span))
+                             (if (vector? (get request :origin-chain))
+                               (if (= nil (get request :profile))
+                                 false
+                                 (sh10-not
+                                  (= nil (get request :target))))
+                               false)
+                             false)
+                           false)
+                         false)
+                       false)
+                     false)
+                   false)
+                 false)
+               false)
+              false))))
+      false)
+    false)))
+
+(defn sh10-valid-event-shape? [event]
+  (if (map? event)
+    (if (= nil (get event :event-id))
+      false
+      (if
+       (sh10-member?
+        #{:initialize
+          :read
+          :borrow-immutable
+          :borrow-mutable
+          :end-borrow
+          :move
+          :consume
+          :escape-borrow}
+        (get event :op))
+       (if (map? (get event :source-span))
+         (if (vector? (get event :origin-chain))
+           (if (= :escape-borrow (get event :op))
+             (if (= nil (get event :borrow-id))
+               false
+               (if
+                (number? (get event :destination-lifetime-end))
+                 (sh10-member?
+                  #{:function-return}
+                  (get event :escape-destination))
+                 false))
+             true)
+           false)
+         false)
+       false))
+    false))
+
+(defn sh10-diagnostic
+  [request event rule reason remediation]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :ownership-checking
+   :reason reason
+   :request-id (get request :request-id)
+   :event-id (get event :event-id)
+   :operation (get event :op)
+   :value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :borrow-id (get event :borrow-id)
+   :lifetime-interval
+   {:owner-end (get request :owner-lifetime-end)
+    :destination-end (get event :destination-lifetime-end)}
+   :move-path (get event :destination-owner)
+   :escape-path (get event :escape-destination)
+   :region-id nil
+   :arena-generation nil
+   :resource-id nil
+   :control-path (get event :control-path)
+   :source-span
+   (if (map? (get event :source-span))
+     (get event :source-span)
+     (if (map? (get request :source-span))
+       (get request :source-span)
+       {}))
+   :generated-origin-chain
+   (if (vector? (get event :origin-chain))
+     (get event :origin-chain)
+     (if (vector? (get request :origin-chain))
+       (get request :origin-chain)
+       (if (vector? (get request :generated-origin-chain))
+         (get request :generated-origin-chain)
+         [])))
+   :profile (get request :profile)
+   :target (get request :target)
+   :remediation remediation})
+
+(defn sh10-rejected
+  [request event rule reason remediation state facts]
+  {:artifact :gravity/sh10-ownership-analysis-result
+   :status :rejected
+   :request-id (get request :request-id)
+   :value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :state state
+   :ownership-facts facts
+   :diagnostics
+   [(sh10-diagnostic request event rule reason remediation)]
+   :identity-input
+   {:request request
+    :policy-version 1}
+   :pending (get (sh10-ownership-policy) :pending)})
+
+(defn sh10-fact [request event state-before state-after]
+  {:artifact :gravity/c9-ownership-fact
+   :fact-id-request
+   {:domain :gravity/sh10-ownership-fact-v1
+    :request-id (get request :request-id)
+    :event-id (get event :event-id)
+    :value-id (get request :value-id)}
+   :event-id (get event :event-id)
+   :operation (get event :op)
+   :value-id (get request :value-id)
+   :owner-id (get request :owner-id)
+   :borrow-id (get event :borrow-id)
+   :destination-owner (get event :destination-owner)
+   :escape-destination (get event :escape-destination)
+   :state-before state-before
+   :state-after state-after
+   :source-span (get event :source-span)
+   :origin-chain (get event :origin-chain)
+   :profile (get request :profile)
+   :target (get request :target)})
+
+(defn sh10-transition-accepted [request event state state-after]
+  {:status :accepted
+   :state state-after
+   :fact (sh10-fact request event state state-after)})
+
+(defn sh10-transition-rejected [request event state rule reason remediation]
+  {:status :rejected
+   :state state
+   :diagnostic
+   (sh10-diagnostic request event rule reason remediation)})
+
+(defn sh10-transition-initialized
+  [request event state]
+  (let [operation (get event :op)
+        immutable-count (get state :immutable-borrow-count)
+        mutable-id (get state :mutable-borrow-id)]
+    (if (= operation :read)
+      (if (= nil mutable-id)
+        (sh10-transition-accepted request event state state)
+        (sh10-transition-rejected
+         request event state "C9-MUT-ALIAS"
+         :owner-read-during-active-mutable-borrow
+         :end-the-mutable-borrow-before-owner-access))
+      (if (= operation :borrow-immutable)
+        (if (= nil (get event :borrow-id))
+          (sh10-transition-rejected
+           request event state "C9-UNSAFE"
+           :immutable-borrow-without-identity
+           :supply-a-stable-borrow-identity)
+          (if (= true
+                 (get (get state :immutable-borrows)
+                      (get event :borrow-id)))
+            (sh10-transition-rejected
+             request event state "C9-UNSAFE"
+             :duplicate-active-borrow-identity
+             :use-a-distinct-borrow-identity)
+            (if (= nil mutable-id)
+              (sh10-transition-accepted
+               request event state
+               (assoc
+                (assoc state
+                       :immutable-borrow-count
+                       (+ immutable-count 1))
+                :immutable-borrows
+                (assoc
+                 (get state :immutable-borrows)
+                 (get event :borrow-id)
+                 true)))
+              (sh10-transition-rejected
+               request event state "C9-MUT-ALIAS"
+               :immutable-borrow-during-active-mutable-borrow
+               :end-the-mutable-borrow-before-sharing))))
+        (if (= operation :borrow-mutable)
+          (if (= nil (get event :borrow-id))
+            (sh10-transition-rejected
+             request event state "C9-UNSAFE"
+             :mutable-borrow-without-identity
+             :supply-a-stable-borrow-identity)
+            (if (= nil mutable-id)
+              (if (= immutable-count 0)
+                (sh10-transition-accepted
+                 request event state
+                 (assoc state
+                        :mutable-borrow-id
+                        (get event :borrow-id)))
+                (sh10-transition-rejected
+                 request event state "C9-MUT-ALIAS"
+                 :mutable-borrow-with-active-immutable-aliases
+                 :end-all-immutable-borrows-before-exclusive-access))
+              (sh10-transition-rejected
+               request event state "C9-MUT-ALIAS"
+               :multiple-active-mutable-borrows
+               :retain-only-one-mutable-borrow)))
+          (if (= operation :end-borrow)
+            (if (= (get event :borrow-id) mutable-id)
+              (sh10-transition-accepted
+               request event state
+               (assoc state :mutable-borrow-id nil))
+              (if (= true
+                     (get (get state :immutable-borrows)
+                          (get event :borrow-id)))
+                (sh10-transition-accepted
+                 request
+                 event
+                 state
+                 (assoc
+                  (assoc state
+                         :immutable-borrow-count
+                         (- immutable-count 1))
+                  :immutable-borrows
+                  (assoc
+                   (get state :immutable-borrows)
+                   (get event :borrow-id)
+                   false)))
+                (sh10-transition-rejected
+                 request event state "C9-UNSAFE"
+                 :end-of-inactive-borrow
+                 :end-only-an-active-borrow)))
+            (if (= operation :move)
+              (if (sh10-active-borrow? state)
+                (sh10-transition-rejected
+                 request event state "C9-MOVE-WHILE-BORROWED"
+                 :move-during-active-borrow
+                 :end-all-borrows-before-moving-the-owner)
+                (if (= nil (get event :destination-owner))
+                  (sh10-transition-rejected
+                   request event state "C9-UNSAFE"
+                   :move-without-destination-owner
+                   :record-the-explicit-destination-owner)
+                  (sh10-transition-accepted
+                   request event state
+                   (assoc state
+                          :availability :moved
+                          :current-owner
+                          (get event :destination-owner)))))
+              (if (= operation :consume)
+                (if (sh10-active-borrow? state)
+                  (sh10-transition-rejected
+                   request event state "C9-UNSAFE"
+                   :consume-during-active-borrow
+                   :end-all-borrows-before-consuming-the-owner)
+                  (sh10-transition-accepted
+                   request event state
+                   (assoc state :availability :consumed)))
+                (if (= operation :escape-borrow)
+                  (if
+                   (sh10-active-borrow-id?
+                    state (get event :borrow-id))
+                    (if
+                     (<= (get event :destination-lifetime-end)
+                         (get request :owner-lifetime-end))
+                     (sh10-transition-accepted
+                      request event state state)
+                     (sh10-transition-rejected
+                      request event state "C9-BORROW-ESCAPE"
+                      :borrow-outlives-owner
+                      :copy-move-or-bound-the-destination-lifetime))
+                    (sh10-transition-rejected
+                     request event state "C9-BORROW-ESCAPE"
+                     :escape-of-inactive-borrow
+                     :name-the-exact-active-borrow-before-escape-analysis))
+                  (if (= operation :initialize)
+                    (sh10-transition-rejected
+                     request event state "C9-UNSAFE"
+                     :double-initialization
+                     :initialize-owned-storage-exactly-once)
+                    (sh10-transition-rejected
+                     request event state "C9-UNSAFE"
+                     :unsupported-ownership-event
+                     :use-a-bounded-sh10-ownership-event)))))))))))
+
+(defn sh10-transition [request event state]
+  (if (sh10-valid-event-shape? event)
+    (if (= :moved (get state :availability))
+      (sh10-transition-rejected
+       request event state "C9-USE-AFTER-MOVE"
+       :operation-after-move
+       :use-the-destination-owner-after-an-explicit-move)
+      (if (= :consumed (get state :availability))
+        (sh10-transition-rejected
+         request event state "C9-USE-AFTER-CONSUME"
+         :operation-after-consume
+         :do-not-use-a-terminally-consumed-value)
+        (if (= :uninitialized (get state :initialization))
+          (if (= :initialize (get event :op))
+            (sh10-transition-accepted
+             request event state
+             (assoc state :initialization :initialized))
+            (sh10-transition-rejected
+             request event state "L10-UNINIT-READ"
+             :operation-before-initialization
+             :fully-initialize-the-value-before-use))
+          (sh10-transition-initialized
+           request event state))))
+    (sh10-transition-rejected
+     request event state "C9-UNSAFE"
+     :malformed-ownership-event
+     :provide-a-complete-normalized-ownership-event)))
+
+(defn sh10-run-events [request remaining state facts]
+  (if (= (count remaining) 0)
+    {:status :accepted
+     :state state
+     :ownership-facts facts
+     :diagnostics []}
+    (let [event (first remaining)
+          transition (sh10-transition request event state)]
+      (if (= :accepted (get transition :status))
+        (sh10-run-events
+         request
+         (rest remaining)
+         (get transition :state)
+         (conj facts (get transition :fact)))
+        {:status :rejected
+         :state (get transition :state)
+         :ownership-facts facts
+         :diagnostics [(get transition :diagnostic)]}))))
+
+(defn sh10-check-ownership-request [request]
+  (if (sh10-valid-request-shape? request)
+    (let [initial-state
+          {:initialization (get request :initialization)
+           :availability (get request :availability)
+           :current-owner (get request :owner-id)
+           :immutable-borrow-count 0
+           :immutable-borrows {}
+           :mutable-borrow-id nil}
+          analysis
+          (sh10-run-events
+           request (get request :events) initial-state [])
+          accepted
+          {:artifact :gravity/sh10-ownership-analysis-result
+           :status :accepted
+           :request-id (get request :request-id)
+           :value-id (get request :value-id)
+           :owner-id (get request :owner-id)
+           :state (get analysis :state)
+           :ownership-facts (get analysis :ownership-facts)
+           :diagnostics []
+           :preserves
+           {:value-id (get request :value-id)
+            :owner-id (get request :owner-id)
+            :type-fact-id (get request :type-fact-id)
+            :effect-fact-id (get request :effect-fact-id)
+            :capability-proof-id (get request :capability-proof-id)
+            :source-span (get request :source-span)
+            :origin-chain (get request :origin-chain)
+            :profile (get request :profile)
+            :target (get request :target)}
+           :identity-input
+           {:request request
+            :policy-version 1}
+           :scope :owned-mutable-initialization-borrow-move-consume
+           :pending (get (sh10-ownership-policy) :pending)}]
+      (if (= :accepted (get analysis :status))
+        accepted
+        {:artifact :gravity/sh10-ownership-analysis-result
+         :status :rejected
+         :request-id (get request :request-id)
+         :value-id (get request :value-id)
+         :owner-id (get request :owner-id)
+         :state (get analysis :state)
+         :ownership-facts (get analysis :ownership-facts)
+         :diagnostics (get analysis :diagnostics)
+         :identity-input
+         {:request request
+          :policy-version 1}
+         :pending (get (sh10-ownership-policy) :pending)}))
+    (sh10-rejected
+     request {} "C9-UNSAFE" :malformed-normalized-ownership-request
+     :provide-complete-owned-mutable-operation-facts
+     {} [])))
+
+(defn sh10-verify-ownership-result [request candidate]
+  (if (= candidate (sh10-check-ownership-request request))
+    {:artifact :gravity/sh10-ownership-result-verification
+     :status :passed
+     :request-id (get request :request-id)
+     :checks [:complete-recomputation
+              :event-order
+              :state-transition-identity
+              :ownership-fact-identity
+              :diagnostic-identity
+              :source-lineage-identity]}
+    {:artifact :gravity/sh10-ownership-result-verification
+     :status :rejected
+     :request-id (get request :request-id)
+     :diagnostics
+     [(sh10-diagnostic
+       request {} "C9-UNSAFE" :ownership-result-substitution
+       :recompute-from-the-normalized-ownership-request)]}))
