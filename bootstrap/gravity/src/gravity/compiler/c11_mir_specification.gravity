@@ -21,7 +21,10 @@
              build-c11-mir-value
              build-c11-mir-source-map
              verify-c11-mir-module
-             c11-build-target-independent-mir])
+             c11-build-target-independent-mir
+             sh13-control-flow-policy
+             sh13-run-module
+             sh13-verify-execution])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -1823,3 +1826,1199 @@
         :self-hosted? false}
        :clojure-seed-boundary? true
        :self-hosted? false})))
+
+; SH-13 bounded executable function and control-flow leaf. Authenticated SH-12
+; adaptation remains pending; this engine consumes normalized verified MIR.
+
+(defn sh13-control-flow-policy []
+  {:artifact :gravity/sh13-control-flow-policy
+   :version 1
+   :maximum-functions 32
+   :maximum-blocks-per-function 32
+   :maximum-operations-per-block 64
+   :maximum-parameters 8
+   :maximum-call-depth 32
+   :maximum-execution-steps 512
+   :operation-set #{:const :add :sub :mul :eq :lt :call}
+   :terminator-set
+   #{:return :error-return :throw :panic
+     :branch :conditional-branch}
+   :dispatch-set #{:direct :indirect}
+   :clojure-seed-boundary? true
+   :self-hosted? false
+   :diagnostics #{"C11-MODULE" "C11-BLOCK" "C11-DOMINANCE"
+                  "C11-TYPE" "C11-EFFECT" "C11-ORIGIN"
+                  "C11-VERIFY"}
+   :pending [:authenticated-sh12-mir-input
+             :closures-and-captured-environments
+             :mutual-recursion-analysis
+             :dynamic-and-vtable-dispatch
+             :whole-c11-operation-set
+             :seedless-runtime-execution]})
+
+(defn sh13-member? [values value]
+  (= (get values value) value))
+
+(defn sh13-source-span-valid? [source-span]
+  (if (map? source-span)
+    (if (= (set (keys source-span)) #{:source-id :start :end})
+      (if (= nil (get source-span :source-id))
+        false
+        (if (integer? (get source-span :start))
+          (if (integer? (get source-span :end))
+            (if (<= 0 (get source-span :start))
+              (<= (get source-span :start) (get source-span :end))
+              false)
+            false)
+          false))
+      false)
+    false))
+
+(defn sh13-origin-entry-valid? [origin]
+  (if (map? origin)
+    (if (= (set (keys origin)) #{:kind :source-id})
+      (if (= nil (get origin :kind))
+        false
+        (if (= nil (get origin :source-id)) false true))
+      false)
+    false))
+
+(defn sh13-origin-entries-valid? [origin-chain index]
+  (if (= index (count origin-chain))
+    true
+    (if (sh13-origin-entry-valid? (get origin-chain index))
+      (sh13-origin-entries-valid? origin-chain (+ index 1))
+      false)))
+
+(defn sh13-origin-chain-valid? [origin-chain]
+  (if (vector? origin-chain)
+    (if (> (count origin-chain) 0)
+      (if (<= (count origin-chain) 16)
+        (sh13-origin-entries-valid? origin-chain 0)
+        false)
+      false)
+    false))
+
+(defn sh13-i64? [value]
+  (if (integer? value)
+    (if (<= -9223372036854775808 value)
+      (<= value 9223372036854775807)
+      false)
+    false))
+
+(defn sh13-unique-by-key?
+  [records key index seen]
+  (if (= index (count records))
+    true
+    (let [value (get (get records index) key)]
+      (if (= nil value)
+        false
+        (if (contains? seen value)
+          false
+          (sh13-unique-by-key?
+           records key (+ index 1) (conj seen value)))))))
+
+(defn sh13-find-by-key [records key value index]
+  (if (= index (count records))
+    nil
+    (if (= value (get (get records index) key))
+      (get records index)
+      (sh13-find-by-key records key value (+ index 1)))))
+
+(defn sh13-function [module function-id]
+  (sh13-find-by-key (get module :functions) :fn-id function-id 0))
+
+(defn sh13-block [function block-id]
+  (sh13-find-by-key (get function :blocks) :block-id block-id 0))
+
+(defn sh13-set-subset? [values allowed]
+  (if (= 0 (count values))
+    true
+    (if (contains? allowed (first values))
+      (sh13-set-subset? (rest values) allowed)
+      false)))
+
+(defn sh13-present? [value]
+  (if (= nil value)
+    false
+    true))
+
+(defn sh13-vector-values-present?
+  [values available index]
+  (if (= index (count values))
+    true
+    (if (contains? available (get values index))
+      (sh13-vector-values-present? values available (+ index 1))
+      false)))
+
+(defn sh13-bind-values [names values index result]
+  (if (= index (count names))
+    result
+    (sh13-bind-values
+     names values (+ index 1)
+     (assoc result (get names index) (get values index)))))
+
+(defn sh13-types-by-name [names types index result]
+  (if (= index (count names))
+    result
+    (sh13-types-by-name
+     names types (+ index 1)
+     (assoc result (get names index) (get types index)))))
+
+(defn sh13-operation-common-valid? [operation]
+  (if (map? operation)
+    (if (= nil (get operation :op-id))
+      false
+      (if
+       (sh13-member?
+        #{:const :add :sub :mul :eq :lt :call}
+        (get operation :opcode))
+       (if (vector? (get operation :operands))
+         (if (= nil (get operation :type))
+           false
+           (if (= (get operation :result) (get operation :op-id))
+             (if (set? (get operation :effects))
+               (if (= :passed (get operation :verifier-status))
+                 (if (map? (get operation :facts))
+                   (if (sh13-operation-facts-valid?
+                        (get operation :facts))
+                     (if (sh13-source-span-valid?
+                          (get operation :source-span))
+                       (sh13-origin-chain-valid?
+                        (get operation :origin-chain))
+                       false)
+                     false)
+                   false)
+                 false)
+               false)
+             false))
+         false)
+       false))
+    false))
+
+(defn sh13-operation-facts-valid? [facts]
+  (if (= (set (keys facts))
+         #{:type :effect :ownership :capability :safety})
+    (if (= nil (get facts :type))
+      false
+      (if (= nil (get facts :effect))
+        false
+        (if (= nil (get facts :ownership))
+          false
+          (if (= nil (get facts :capability))
+            false
+            (if (= nil (get facts :safety)) false true)))))
+    false))
+
+(defn sh13-operation-facts-match-module? [module operation]
+  (let [facts (get operation :facts)]
+    (if (= (get facts :type) (get module :type-table-id))
+      (if (= (get facts :effect) (get module :effect-table-id))
+        (if (= (get facts :ownership)
+               (get module :ownership-table-id))
+          (if (= (get facts :capability)
+                 (get module :capability-table-id))
+            (= (get facts :safety) (get module :safety-table-id))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-operation-effect-order-valid? [operation]
+  (if (> (count (get operation :effects)) 0)
+    (= :sequence (get operation :ordering))
+    (= nil (get operation :ordering))))
+
+(defn sh13-operation-effect-family-valid? [operation]
+  (if (= :call (get operation :opcode))
+    true
+    (= 0 (count (get operation :effects)))))
+
+(defn sh13-literal-type-valid? [operation]
+  (if (= :const (get operation :opcode))
+    (if (= :i64 (get operation :type))
+      (sh13-i64? (get operation :literal))
+      (if (= :bool (get operation :type))
+        (sh13-member? #{true false} (get operation :literal))
+        (if (= :keyword (get operation :type))
+          (keyword? (get operation :literal))
+          false)))
+    true))
+
+(defn sh13-call-error [module function operation]
+  (if (= :call (get operation :opcode))
+    (let [callee (sh13-function module (get operation :callee))
+          dispatch (get operation :dispatch)]
+      (if (= nil callee)
+        :verify
+        (if (sh13-member? #{:direct :indirect} dispatch)
+          (if (= dispatch :indirect)
+            (if (set? (get operation :allowed-callees))
+              (if (> (count (get operation :allowed-callees)) 0)
+                (if
+                 (sh13-allowed-callees-valid?
+                  module (get operation :allowed-callees))
+                  (if (contains?
+                       (get operation :allowed-callees)
+                       (get operation :callee))
+                    (if (= (get operation :callee)
+                           (get function :fn-id))
+                      (if (= true (get function :recursive))
+                        nil
+                        :verify)
+                      nil)
+                    :verify)
+                  :verify)
+                :verify)
+              :verify)
+            (if (set? (get operation :allowed-callees))
+              (if (= 0 (count (get operation :allowed-callees)))
+                (if (= (get operation :callee) (get function :fn-id))
+                  (if (= true (get function :recursive)) nil :verify)
+                  nil)
+                :verify)
+              :verify))
+          :verify)))
+    nil))
+
+(defn sh13-allowed-callees-valid? [module callees]
+  (if (= 0 (count callees))
+    true
+    (if
+     (sh13-present? (sh13-function module (first callees)))
+      (sh13-allowed-callees-valid? module (rest callees))
+      false)))
+
+(defn sh13-call-argument-types-error
+  [operands parameter-types types index]
+  (if (= index (count operands))
+    nil
+    (if (= (get types (get operands index))
+           (get parameter-types index))
+      (sh13-call-argument-types-error
+       operands parameter-types types (+ index 1))
+      :type)))
+
+(defn sh13-call-signature-error [module function operation types]
+  (if (= :call (get operation :opcode))
+    (let [callee (sh13-function module (get operation :callee))]
+      (if (= nil callee)
+        :verify
+        (if (= (count (get operation :operands))
+               (count (get callee :params)))
+          (let [argument-error
+                (sh13-call-argument-types-error
+                 (get operation :operands)
+                 (get callee :param-types)
+                 types 0)]
+            (if (= nil argument-error)
+              (if (= (get operation :type) (get callee :return-type))
+                (if (= (get operation :effects)
+                       (get callee :latent-effects))
+                  (if
+                   (sh13-set-subset?
+                    (get callee :latent-effects)
+                    (get function :latent-effects))
+                    nil
+                    :effect)
+                  :effect)
+                :type)
+              argument-error))
+          :type)))
+    nil))
+
+(defn sh13-operation-type-error
+  [module function operation types]
+  (let [opcode (get operation :opcode)
+        operands (get operation :operands)]
+    (if (= opcode :const)
+      (if (sh13-literal-type-valid? operation) nil :type)
+      (if (= opcode :call)
+        (sh13-call-signature-error module function operation types)
+        (if (sh13-member? #{:add :sub :mul} opcode)
+          (if (= 2 (count operands))
+            (if (= :i64 (get types (get operands 0)))
+              (if (= :i64 (get types (get operands 1)))
+                (if (= :i64 (get operation :type)) nil :type)
+                :type)
+              :type)
+            :type)
+          (if (= :eq opcode)
+            (if (= 2 (count operands))
+              (if (= (get types (get operands 0))
+                     (get types (get operands 1)))
+                (if (= :bool (get operation :type)) nil :type)
+                :type)
+              :type)
+            (if (= :lt opcode)
+              (if (= 2 (count operands))
+                (if (= :i64 (get types (get operands 0)))
+                  (if (= :i64 (get types (get operands 1)))
+                    (if (= :bool (get operation :type)) nil :type)
+                    :type)
+                  :type)
+                :type)
+              :type)))))))
+
+(defn sh13-operations-error
+  [module function operations index available types]
+  (if (= index (count operations))
+    nil
+    (let [operation (get operations index)
+          operation-id (get operation :op-id)]
+      (if (sh13-operation-common-valid? operation)
+        (if (= (get operation :profile) (get module :profile))
+          (if (sh13-operation-facts-match-module? module operation)
+            (if (contains? available operation-id)
+          :dominance
+          (if (sh13-operation-effect-family-valid? operation)
+            (if (sh13-operation-effect-order-valid? operation)
+            (if
+             (sh13-vector-values-present?
+              (get operation :operands) available 0)
+              (if
+               (sh13-set-subset?
+                (get operation :effects)
+                (get function :latent-effects))
+                (let [call-error
+                      (sh13-call-error module function operation)
+                      type-error
+                      (sh13-operation-type-error
+                       module function operation types)]
+                  (if (= nil call-error)
+                    (if (= nil type-error)
+                      (sh13-operations-error
+                       module function operations (+ index 1)
+                       (conj available operation-id)
+                       (assoc types operation-id (get operation :type)))
+                      type-error)
+                    call-error))
+                :effect)
+              :dominance)
+            :effect)
+            :effect))
+            :verify)
+          :module)
+        :origin))))
+
+(defn sh13-block-available [block]
+  (set (get block :params)))
+
+(defn sh13-block-types [block]
+  (sh13-types-by-name
+   (get block :params) (get block :param-types) 0 {}))
+
+(defn sh13-block-result-types [block index result]
+  (if (= index (count (get block :operations)))
+    result
+    (let [operation (get (get block :operations) index)]
+      (sh13-block-result-types
+       block (+ index 1)
+       (assoc result (get operation :op-id) (get operation :type))))))
+
+(defn sh13-target-arguments-error
+  [function target-id arguments types]
+  (let [target (sh13-block function target-id)]
+    (if (= nil target)
+      :block
+      (if (= (count arguments) (count (get target :params)))
+        (if (sh13-vector-values-present?
+             arguments (set (keys types)) 0)
+          (sh13-target-argument-types-error
+           arguments (get target :param-types) types 0)
+          :dominance)
+        :type))))
+
+(defn sh13-target-argument-types-error
+  [arguments target-types types index]
+  (if (= index (count arguments))
+    nil
+    (if (= (get types (get arguments index))
+           (get target-types index))
+      (sh13-target-argument-types-error
+       arguments target-types types (+ index 1))
+      :type)))
+
+(defn sh13-terminator-error [function block]
+  (let [terminator (get block :terminator)
+        opcode (get terminator :opcode)
+        types
+        (sh13-block-result-types
+         block 0 (sh13-block-types block))]
+    (if (map? terminator)
+      (if
+       (sh13-member?
+        #{:return :error-return :throw :panic
+          :branch :conditional-branch}
+        opcode)
+       (if (sh13-source-span-valid? (get terminator :source-span))
+         (if (sh13-origin-chain-valid? (get terminator :origin-chain))
+           (if (= opcode :return)
+             (if (= (get types (get terminator :value))
+                    (get function :return-type))
+               nil
+               :type)
+             (if (sh13-member? #{:error-return :throw :panic} opcode)
+               (if (contains? types (get terminator :value))
+                 (if (= (get types (get terminator :value))
+                        (get function :return-type))
+                   (if (= opcode :throw)
+                     (if (contains?
+                          (get function :latent-effects) :error/throw)
+                       nil
+                       :effect)
+                     nil)
+                   :type)
+                 :dominance)
+               (if (= opcode :branch)
+                 (sh13-target-arguments-error
+                  function
+                  (get terminator :target)
+                  (get terminator :arguments)
+                  types)
+                 (if (= :bool (get types (get terminator :condition)))
+                   (let [then-error
+                         (sh13-target-arguments-error
+                          function
+                          (get terminator :then-target)
+                          (get terminator :then-arguments)
+                          types)
+                         else-error
+                         (sh13-target-arguments-error
+                          function
+                          (get terminator :else-target)
+                          (get terminator :else-arguments)
+                          types)]
+                     (if (= nil then-error) else-error then-error))
+                   :type))))
+           :origin)
+         :origin)
+       :block)
+      :block)))
+
+(defn sh13-block-common-valid? [block]
+  (if (map? block)
+    (if (= nil (get block :block-id))
+      false
+      (if (vector? (get block :params))
+        (if (vector? (get block :param-types))
+          (if (= (count (get block :params))
+                 (count (get block :param-types)))
+            (if (sh13-unique-values?
+                 (get block :params) 0 #{})
+              (if (<= (count (get block :params)) 8)
+              (if (vector? (get block :operations))
+                (if (<= (count (get block :operations)) 64)
+                  (if (sh13-source-span-valid? (get block :source-span))
+                    (sh13-origin-chain-valid?
+                     (get block :origin-chain))
+                    false)
+                  false)
+                false)
+              false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh13-unique-values? [values index seen]
+  (if (= index (count values))
+    true
+    (let [value (get values index)]
+      (if (= nil value)
+        false
+        (if (contains? seen value)
+          false
+          (sh13-unique-values?
+           values (+ index 1) (conj seen value)))))))
+
+(defn sh13-operation-ids-unique?
+  [blocks block-index operation-index seen]
+  (if (= block-index (count blocks))
+    true
+    (let [operations (get (get blocks block-index) :operations)]
+      (if (= operation-index (count operations))
+        (sh13-operation-ids-unique?
+         blocks (+ block-index 1) 0 seen)
+        (let [operation-id
+              (get (get operations operation-index) :op-id)]
+          (if (= nil operation-id)
+            false
+            (if (contains? seen operation-id)
+              false
+              (sh13-operation-ids-unique?
+               blocks block-index (+ operation-index 1)
+               (conj seen operation-id)))))))))
+
+(defn sh13-block-successors [block]
+  (let [terminator (get block :terminator)
+        opcode (get terminator :opcode)]
+    (if (= opcode :branch)
+      [(get terminator :target)]
+      (if (= opcode :conditional-branch)
+        [(get terminator :then-target)
+         (get terminator :else-target)]
+        []))))
+
+(defn sh13-conj-unseen [values index seen pending]
+  (if (= index (count values))
+    pending
+    (let [value (get values index)]
+      (if (contains? seen value)
+        (sh13-conj-unseen values (+ index 1) seen pending)
+        (sh13-conj-unseen
+         values (+ index 1) seen (conj pending value))))))
+
+(defn sh13-reachable-blocks [function pending seen]
+  (if (= 0 (count pending))
+    seen
+    (let [block-id (first pending)
+          remaining (vec (rest pending))]
+      (if (contains? seen block-id)
+        (sh13-reachable-blocks function remaining seen)
+        (let [block (sh13-block function block-id)]
+          (if (= nil block)
+            seen
+            (let [next-seen (conj seen block-id)]
+              (sh13-reachable-blocks
+               function
+               (sh13-conj-unseen
+                (sh13-block-successors block) 0
+                next-seen remaining)
+               next-seen))))))))
+
+(defn sh13-all-blocks-reachable? [function]
+  (= (count (sh13-reachable-blocks
+             function [(get function :entry-block)] #{}))
+     (count (get function :blocks))))
+
+(defn sh13-blocks-error [module function blocks index]
+  (if (= index (count blocks))
+    nil
+    (let [block (get blocks index)]
+      (if (sh13-block-common-valid? block)
+        (let [operations-error
+              (sh13-operations-error
+               module function (get block :operations) 0
+               (sh13-block-available block)
+               (sh13-block-types block))]
+          (if (= nil operations-error)
+            (let [terminator-error
+                  (sh13-terminator-error function block)]
+              (if (= nil terminator-error)
+                (sh13-blocks-error module function blocks (+ index 1))
+                terminator-error))
+            operations-error))
+        :block))))
+
+(defn sh13-entry-signature-valid? [function]
+  (let [entry (sh13-block function (get function :entry-block))]
+    (if (= nil entry)
+      false
+      (if (= (get entry :params) (get function :params))
+        (= (get entry :param-types) (get function :param-types))
+        false))))
+
+(defn sh13-function-common-valid? [function]
+  (if (map? function)
+    (if (= nil (get function :fn-id))
+      false
+      (if (vector? (get function :params))
+        (if (vector? (get function :param-types))
+          (if (= (count (get function :params))
+                 (count (get function :param-types)))
+            (if (sh13-unique-values?
+                 (get function :params) 0 #{})
+              (if (<= (count (get function :params)) 8)
+              (if (= nil (get function :return-type))
+                false
+                (if (set? (get function :latent-effects))
+                  (if (vector? (get function :blocks))
+                    (if (> (count (get function :blocks)) 0)
+                      (if (<= (count (get function :blocks)) 32)
+                        (if
+                         (sh13-unique-by-key?
+                          (get function :blocks) :block-id 0 #{})
+                          (if (sh13-entry-signature-valid? function)
+                              (if (sh13-member?
+                                     #{true false}
+                                     (get function :recursive))
+                                  (if (integer?
+                                 (get function :maximum-call-depth))
+                              (if (> (get function
+                                          :maximum-call-depth) 0)
+                                (if (<= (get function
+                                            :maximum-call-depth) 32)
+                                  (if
+                                   (sh13-source-span-valid?
+                                    (get function :source-span))
+                                    (sh13-origin-chain-valid?
+                                     (get function :origin-chain))
+                                    false)
+                                  false)
+                                false)
+                                    false)
+                                  false)
+                              false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false))
+              false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh13-module-fact-lineage-valid? [module]
+  (if (sh13-present? (get module :checked-core-id))
+    (if (sh13-present? (get module :type-table-id))
+      (if (sh13-present? (get module :effect-table-id))
+        (if (sh13-present? (get module :ownership-table-id))
+          (if (sh13-present? (get module :capability-table-id))
+            (if (sh13-present? (get module :safety-table-id))
+              (if (sh13-present? (get module :source-map-id))
+                true
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh13-mir-verifier-report-valid? [module]
+  (let [report (get module :mir-verifier-report)]
+    (if (map? report)
+      (if (= (set (keys report))
+             #{:artifact :status :module-id})
+        (if (= :gravity/c11-mir-verifier-report
+               (get report :artifact))
+          (if (= :passed (get report :status))
+            (= (get module :module-id) (get report :module-id))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh13-functions-error [module functions index]
+  (if (= index (count functions))
+    nil
+    (let [function (get functions index)]
+      (if (sh13-function-common-valid? function)
+        (if (sh13-operation-ids-unique?
+             (get function :blocks) 0 0 #{})
+          (let [block-error
+                (sh13-blocks-error
+                 module function (get function :blocks) 0)]
+            (if (= nil block-error)
+              (if (sh13-all-blocks-reachable? function)
+                (if (sh13-mutual-call-cycle-from?
+                     module (get function :fn-id))
+                  :verify
+                  (sh13-functions-error module functions (+ index 1)))
+                :dominance)
+              block-error))
+          :dominance)
+        :module))))
+
+(defn sh13-cross-callees-in-operations
+  [function-id operations index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)
+          callee (get operation :callee)]
+      (if (= :call (get operation :opcode))
+        (if (= callee function-id)
+          (sh13-cross-callees-in-operations
+           function-id operations (+ index 1) result)
+          (sh13-cross-callees-in-operations
+           function-id operations (+ index 1) (conj result callee)))
+        (sh13-cross-callees-in-operations
+         function-id operations (+ index 1) result)))))
+
+(defn sh13-cross-callees-in-blocks
+  [function-id blocks index result]
+  (if (= index (count blocks))
+    result
+    (sh13-cross-callees-in-blocks
+     function-id blocks (+ index 1)
+     (sh13-cross-callees-in-operations
+      function-id (get (get blocks index) :operations) 0 result))))
+
+(defn sh13-cross-callees [function]
+  (sh13-cross-callees-in-blocks
+   (get function :fn-id) (get function :blocks) 0 []))
+
+(defn sh13-append-values [values index result]
+  (if (= index (count values))
+    result
+    (sh13-append-values
+     values (+ index 1) (conj result (get values index)))))
+
+(defn sh13-call-path-reaches?
+  [module pending target visited]
+  (if (= 0 (count pending))
+    false
+    (let [function-id (first pending)
+          remaining (vec (rest pending))]
+      (if (= function-id target)
+        true
+        (if (contains? visited function-id)
+          (sh13-call-path-reaches?
+           module remaining target visited)
+          (let [function (sh13-function module function-id)]
+            (sh13-call-path-reaches?
+             module
+             (sh13-append-values
+              (sh13-cross-callees function) 0 remaining)
+             target
+             (conj visited function-id))))))))
+
+(defn sh13-mutual-call-cycle-from? [module function-id]
+  (let [function (sh13-function module function-id)]
+    (sh13-call-path-reaches?
+     module (sh13-cross-callees function) function-id #{})))
+
+(defn sh13-module-error [module]
+  (if (map? module)
+    (if (= :gravity/sh13-control-flow-module (get module :artifact))
+      (if (= true (get module :mir-verified))
+        (if (sh13-present? (get module :module-id))
+          (if (= :native (get module :profile))
+            (if (= :portable-mir (get module :target))
+              (if (vector? (get module :functions))
+                (if (> (count (get module :functions)) 0)
+                  (if (<= (count (get module :functions)) 32)
+                    (if
+                     (sh13-unique-by-key?
+                      (get module :functions) :fn-id 0 #{})
+                      (if (sh13-module-fact-lineage-valid? module)
+                        (if (sh13-mir-verifier-report-valid? module)
+                          (if (string? (get module :actual-source-path))
+                            (if (> (count (get module :actual-source-path)) 0)
+                              (if (<= (count (get module
+                                                  :actual-source-path)) 4096)
+                                (if
+                       (sh13-present?
+                        (sh13-function module (get module :entry-function)))
+                        (if (integer? (get module :maximum-execution-steps))
+                          (if (> (get module
+                                      :maximum-execution-steps) 0)
+                            (if (<= (get module
+                                        :maximum-execution-steps) 512)
+                              (if
+                               (sh13-source-span-valid?
+                                (get module :source-span))
+                                (if
+                                 (sh13-origin-chain-valid?
+                                  (get module :origin-chain))
+                                  (sh13-functions-error
+                                   module (get module :functions) 0)
+                                  :origin)
+                                :origin)
+                              :module)
+                            :module)
+                          :module)
+                                  :verify)
+                                :module)
+                              :module)
+                            :module)
+                          :verify)
+                        :module)
+                      :verify)
+                    :module)
+                  :module)
+                :module)
+              :module)
+            :module)
+          :module)
+        :module)
+      :module)
+    :module))
+
+(defn sh13-rule [error]
+  (if (= error :block)
+    "C11-BLOCK"
+    (if (= error :dominance)
+      "C11-DOMINANCE"
+      (if (= error :type)
+        "C11-TYPE"
+        (if (= error :effect)
+          "C11-EFFECT"
+          (if (= error :origin)
+            "C11-ORIGIN"
+            (if (= error :verify)
+              "C11-VERIFY"
+              "C11-MODULE")))))))
+
+(defn sh13-diagnostic [module error]
+  {:artifact :gravity/sh13-control-flow-diagnostic
+   :diagnostic-id (sh13-rule error)
+   :rule (sh13-rule error)
+   :reason error
+   :stage :execute-mir
+   :module-id (get module :module-id)
+   :entry-function (get module :entry-function)
+   :profile (get module :profile)
+   :target (get module :target)
+   :actual-source-path (get module :actual-source-path)
+   :source-span (get module :source-span)
+   :origin-chain (get module :origin-chain)
+   :remediation :supply-bounded-verified-typed-effect-ordered-mir})
+
+(defn sh13-resolve-values [references values index result]
+  (if (= index (count references))
+    result
+    (sh13-resolve-values
+     references values (+ index 1)
+     (conj result (get values (get references index))))))
+
+(defn sh13-execution-rejected [fuel trace reason]
+  {:status :rejected
+   :reason reason
+   :fuel fuel
+   :trace trace})
+
+(defn sh13-continued-value
+  [operation value fuel trace]
+  (if (= :i64 (get operation :type))
+    (if (sh13-i64? value)
+      {:status :continue
+       :value value
+       :fuel fuel
+       :trace trace}
+      (sh13-execution-rejected fuel trace :integer-range))
+    {:status :continue
+     :value value
+     :fuel fuel
+     :trace trace}))
+
+(defn sh13-add-safe? [left right]
+  (if (> right 0)
+    (<= left (- 9223372036854775807 right))
+    (if (< right 0)
+      (>= left (- -9223372036854775808 right))
+      true)))
+
+(defn sh13-sub-safe? [left right]
+  (if (> right 0)
+    (>= left (+ -9223372036854775808 right))
+    (if (< right 0)
+      (<= left (+ 9223372036854775807 right))
+      true)))
+
+(defn sh13-mul-safe? [left right]
+  (if (= left 0)
+    true
+    (if (= right 0)
+      true
+      (if (> left 0)
+        (if (> right 0)
+          (<= left (quot 9223372036854775807 right))
+          (>= right (quot -9223372036854775808 left)))
+        (if (> right 0)
+          (>= left (quot -9223372036854775808 right))
+          (>= left (quot 9223372036854775807 right)))))))
+
+(defn sh13-execute-operation
+  [module function operation values fuel depth trace]
+  (if (<= fuel 0)
+    (sh13-execution-rejected fuel trace :execution-step-bound)
+    (let [opcode (get operation :opcode)
+          operands
+          (sh13-resolve-values
+           (get operation :operands) values 0 [])
+          next-fuel (- fuel 1)
+          next-trace
+          (conj trace
+                {:function (get function :fn-id)
+                 :operation (get operation :op-id)
+                 :opcode opcode})]
+      (if (= opcode :const)
+        (sh13-continued-value
+         operation (get operation :literal) next-fuel next-trace)
+        (if (= opcode :add)
+          (if (sh13-add-safe? (get operands 0) (get operands 1))
+            (sh13-continued-value
+             operation (+ (get operands 0) (get operands 1))
+             next-fuel next-trace)
+            (sh13-execution-rejected
+             next-fuel next-trace :integer-range))
+          (if (= opcode :sub)
+            (if (sh13-sub-safe? (get operands 0) (get operands 1))
+              (sh13-continued-value
+               operation (- (get operands 0) (get operands 1))
+               next-fuel next-trace)
+              (sh13-execution-rejected
+               next-fuel next-trace :integer-range))
+            (if (= opcode :mul)
+              (if (sh13-mul-safe? (get operands 0) (get operands 1))
+                (sh13-continued-value
+                 operation (* (get operands 0) (get operands 1))
+                 next-fuel next-trace)
+                (sh13-execution-rejected
+                 next-fuel next-trace :integer-range))
+              (if (= opcode :eq)
+                {:status :continue
+                 :value (= (get operands 0) (get operands 1))
+                 :fuel next-fuel
+                 :trace next-trace}
+                (if (= opcode :lt)
+                  {:status :continue
+                   :value (< (get operands 0) (get operands 1))
+                   :fuel next-fuel
+                   :trace next-trace}
+                  (let [call-result
+                        (sh13-execute-function
+                         module (get operation :callee) operands
+                         (+ depth 1) next-fuel next-trace)]
+                    (if (= :returned (get call-result :status))
+                      {:status :continue
+                       :value (get call-result :value)
+                       :fuel (get call-result :fuel)
+                       :trace (get call-result :trace)}
+                      call-result)))))))))))
+
+(defn sh13-execute-operations
+  [module function operations index values fuel depth trace]
+  (if (= index (count operations))
+    {:status :continue
+     :values values
+     :fuel fuel
+     :trace trace}
+    (let [operation (get operations index)
+          result
+          (sh13-execute-operation
+           module function operation values fuel depth trace)]
+      (if (= :continue (get result :status))
+        (sh13-execute-operations
+         module function operations (+ index 1)
+         (assoc values (get operation :op-id) (get result :value))
+         (get result :fuel) depth (get result :trace))
+        result))))
+
+(defn sh13-execute-terminator
+  [module function block terminator values fuel depth trace]
+  (if (<= fuel 0)
+    (sh13-execution-rejected fuel trace :execution-step-bound)
+    (let [opcode (get terminator :opcode)
+          next-fuel (- fuel 1)
+          next-trace
+          (conj trace
+                {:function (get function :fn-id)
+                 :block (get block :block-id)
+                 :terminator opcode})]
+      (if (= opcode :return)
+        {:status :returned
+         :value (get values (get terminator :value))
+         :fuel next-fuel
+         :trace next-trace}
+        (if (= opcode :error-return)
+          {:status :error
+           :value (get values (get terminator :value))
+           :fuel next-fuel
+           :trace next-trace}
+          (if (= opcode :throw)
+            {:status :thrown
+             :value (get values (get terminator :value))
+             :fuel next-fuel
+             :trace next-trace}
+            (if (= opcode :panic)
+              {:status :panic
+               :value (get values (get terminator :value))
+               :fuel next-fuel
+               :trace next-trace}
+              (if (= opcode :branch)
+                (sh13-execute-block
+                 module function (get terminator :target)
+                 (sh13-resolve-values
+                  (get terminator :arguments) values 0 [])
+                 depth next-fuel next-trace)
+                (if (= true
+                       (get values (get terminator :condition)))
+                  (sh13-execute-block
+                   module function (get terminator :then-target)
+                   (sh13-resolve-values
+                    (get terminator :then-arguments) values 0 [])
+                   depth next-fuel next-trace)
+                  (sh13-execute-block
+                   module function (get terminator :else-target)
+                   (sh13-resolve-values
+                    (get terminator :else-arguments) values 0 [])
+                   depth next-fuel next-trace))))))))))
+
+(defn sh13-execute-block
+  [module function block-id arguments depth fuel trace]
+  (let [block (sh13-block function block-id)
+        values
+        (sh13-bind-values
+         (get block :params) arguments 0 {})
+        operations-result
+        (sh13-execute-operations
+         module function (get block :operations) 0
+         values fuel depth trace)]
+    (if (= :continue (get operations-result :status))
+      (sh13-execute-terminator
+       module function block (get block :terminator)
+       (get operations-result :values)
+       (get operations-result :fuel)
+       depth (get operations-result :trace))
+      operations-result)))
+
+(defn sh13-execute-function
+  [module function-id arguments depth fuel trace]
+  (let [function (sh13-function module function-id)]
+    (if (> depth (get function :maximum-call-depth))
+      (sh13-execution-rejected fuel trace :call-depth-bound)
+      (sh13-execute-block
+       module function (get function :entry-block)
+       arguments depth fuel
+       (conj trace
+             {:function function-id
+              :event :enter
+              :depth depth})))))
+
+(defn sh13-identity-input [module]
+  {:artifact (get module :artifact)
+   :module-id (get module :module-id)
+   :mir-verified (get module :mir-verified)
+   :mir-verifier-report (get module :mir-verifier-report)
+   :checked-core-id (get module :checked-core-id)
+   :type-table-id (get module :type-table-id)
+   :effect-table-id (get module :effect-table-id)
+   :ownership-table-id (get module :ownership-table-id)
+   :capability-table-id (get module :capability-table-id)
+   :safety-table-id (get module :safety-table-id)
+   :source-map-id (get module :source-map-id)
+   :profile (get module :profile)
+   :target (get module :target)
+   :entry-function (get module :entry-function)
+   :maximum-execution-steps (get module :maximum-execution-steps)
+   :source-span
+   {:source-id (get (get module :source-span) :source-id)
+    :start (get (get module :source-span) :start)
+    :end (get (get module :source-span) :end)}
+   :origin-chain (get module :origin-chain)
+   :functions (get module :functions)})
+
+(defn sh13-accepted-execution [module arguments]
+  (let [execution
+        (sh13-execute-function
+         module (get module :entry-function) arguments 0
+         (get module :maximum-execution-steps) [])]
+    (if (= :rejected (get execution :status))
+      {:artifact :gravity/sh13-control-flow-execution
+       :schema-version 1
+       :status :rejected
+       :module-id (get module :module-id)
+       :diagnostics
+       [(sh13-diagnostic module :verify)]
+       :execution execution
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :pending (get (sh13-control-flow-policy) :pending)}
+      {:artifact :gravity/sh13-control-flow-execution
+       :schema-version 1
+       :status :accepted
+       :module-id (get module :module-id)
+       :entry-function (get module :entry-function)
+       :arguments arguments
+       :execution execution
+       :call-graph
+       {:artifact :gravity/sh13-call-graph
+        :functions
+        (sh13-function-ids (get module :functions) 0 [])
+        :bounded-call-depth true}
+       :control-flow
+       {:artifact :gravity/sh13-control-flow-report
+        :structured-exit (get execution :status)
+        :steps-used
+        (- (get module :maximum-execution-steps)
+           (get execution :fuel))}
+       :identity-input (sh13-identity-input module)
+       :provenance
+       {:actual-source-path (get module :actual-source-path)
+        :source-span (get module :source-span)
+        :origin-chain (get module :origin-chain)}
+       :diagnostics []
+       :clojure-seed-boundary? true
+       :self-hosted? false
+       :pending (get (sh13-control-flow-policy) :pending)})))
+
+(defn sh13-function-ids [functions index result]
+  (if (= index (count functions))
+    result
+    (sh13-function-ids
+     functions (+ index 1)
+     (conj result (get (get functions index) :fn-id)))))
+
+(defn sh13-value-type-valid? [value value-type]
+  (if (= value-type :i64)
+    (sh13-i64? value)
+    (if (= value-type :bool)
+      (sh13-member? #{true false} value)
+      (if (= value-type :keyword)
+        (keyword? value)
+        false))))
+
+(defn sh13-argument-values-valid?
+  [arguments argument-types index]
+  (if (= index (count arguments))
+    true
+    (if (sh13-value-type-valid?
+         (get arguments index) (get argument-types index))
+      (sh13-argument-values-valid?
+       arguments argument-types (+ index 1))
+      false)))
+
+(defn sh13-run-module [module arguments]
+  (let [error (sh13-module-error module)
+        entry (sh13-function module (get module :entry-function))]
+    (if (= nil error)
+      (if (vector? arguments)
+        (if (= (count arguments) (count (get entry :params)))
+          (if (sh13-argument-values-valid?
+               arguments (get entry :param-types) 0)
+            (sh13-accepted-execution module arguments)
+            {:artifact :gravity/sh13-control-flow-execution
+             :schema-version 1
+             :status :rejected
+             :module-id (get module :module-id)
+             :diagnostics [(sh13-diagnostic module :type)]
+             :pending (get (sh13-control-flow-policy) :pending)})
+          {:artifact :gravity/sh13-control-flow-execution
+           :schema-version 1
+           :status :rejected
+           :module-id (get module :module-id)
+           :diagnostics [(sh13-diagnostic module :type)]
+           :pending (get (sh13-control-flow-policy) :pending)})
+        {:artifact :gravity/sh13-control-flow-execution
+         :schema-version 1
+         :status :rejected
+         :module-id (get module :module-id)
+         :diagnostics [(sh13-diagnostic module :type)]
+         :pending (get (sh13-control-flow-policy) :pending)})
+      {:artifact :gravity/sh13-control-flow-execution
+       :schema-version 1
+       :status :rejected
+       :module-id (get module :module-id)
+       :diagnostics [(sh13-diagnostic module error)]
+       :pending (get (sh13-control-flow-policy) :pending)})))
+
+(defn sh13-verify-execution [module arguments candidate]
+  (if (= (sh13-run-module module arguments) candidate)
+    {:artifact :gravity/sh13-control-flow-verification
+     :status :passed
+     :module-id (get module :module-id)}
+    {:artifact :gravity/sh13-control-flow-verification
+     :status :rejected
+     :module-id (get module :module-id)
+     :diagnostics
+     [{:artifact :gravity/sh13-control-flow-diagnostic
+       :diagnostic-id "C11-VERIFY"
+       :rule "C11-VERIFY"
+       :reason :execution-result-substitution}]}))
