@@ -11,7 +11,10 @@
              c10-safety-diagnostic-catalog
              build-c10-safety-operation
              build-c10-safety-outcome
-             verify-c10-safety-analysis])
+             verify-c10-safety-analysis
+             sh11-safety-policy
+             sh11-classify-operation
+             sh11-verify-safety-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -340,3 +343,1369 @@
                       :numeric-mode-facts
                       :optimization-invalidation-records
                       :artifact-provenance]}))
+
+; SH-11 begins with a bounded numeric and bounds classifier. It accepts one
+; normalized operation and produces exactly one SAFE1/D8 outcome. Authenticated
+; SH-09/SH-10 adaptation, nonnumeric safety families, and MIR integration remain
+; later work.
+
+(defn sh11-safety-policy []
+  {:artifact :gravity/sh11-safety-policy
+   :version 2
+   :request-artifact :gravity/sh11-normalized-safety-operation
+   :result-artifact :gravity/sh11-safety-classification-result
+   :operation-kinds #{:index
+                      :numeric-overflow
+                      :division
+                      :numeric-cast
+                      :shift}
+   :outcomes #{:proven-safe
+               :runtime-checked
+               :rejected
+               :unsafe-island}
+   :runtime-conditions
+   {:index :bounds
+    :numeric-overflow :overflow
+    :division :valid-divisor-and-quotient
+    :numeric-cast :representable-cast
+    :shift :shift-range}
+   :specialized-rules
+   {:index :bounds-safety
+    :numeric-overflow :SAFE9-OVERFLOW
+    :division :SAFE9-DIV-ZERO
+    :numeric-cast :SAFE9-NARROW
+    :shift :SAFE9-SHIFT}
+   :legal-modes
+   {:index #{:proof-required :checked :panic :unsafe-unchecked}
+    :numeric-overflow
+    #{:proof-required :checked :panic :wrapping :saturating
+      :arbitrary-precision :unsafe-unchecked}
+    :division #{:proof-required :checked :panic :unsafe-unchecked}
+    :numeric-cast
+    #{:proof-required :checked :panic :wrapping
+      :saturating :unsafe-unchecked}
+    :shift #{:proof-required :checked :panic
+             :wrapping :unsafe-unchecked}}
+   :structural-bounds
+   {:maximum-nodes 2048
+    :maximum-depth 16
+    :maximum-width 64
+    :maximum-scalars 1600
+    :maximum-scalar-units 16384
+    :maximum-collections 512}
+   :diagnostics ["C10-NO-OUTCOME"
+                 "C10-CHECK"
+                 "C10-UNSAFE"
+                 "C10-NUMERIC"]
+   :pending [:memory-safety
+             :ownership-and-lifetime-safety
+             :region-and-arena-safety
+             :linear-resource-safety
+             :ffi-safety
+             :concurrency-and-race-safety
+             :capability-and-taint-safety
+             :generated-code-safety
+             :elementary-and-floating-safety
+             :optimization-invalidation
+             :authenticated-sh09-sh10-adapter
+             :mir-preservation]})
+
+(defn sh11-not [value]
+  (if value false true))
+
+(defn sh11-and [left right]
+  (if left right false))
+
+(defn sh11-member? [values value]
+  (= (get values value) value))
+
+(defn sh11-boolean? [value]
+  (sh11-member? #{true false} value))
+
+(defn sh11-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh11-nonempty-string? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) 256)
+      false)
+    false))
+
+(defn sh11-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh11-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh11-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7)
+               [\s \h \a \2 \5 \6 \:])
+          (sh11-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh11-positive-integer? [value]
+  (if (integer? value)
+    (> value 0)
+    false))
+
+(defn sh11-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn sh11-bounded-positive-width? [value]
+  (sh11-member? #{8 16 32 64} value))
+
+(defn sh11-width-minimum [bit-width signedness]
+  (if (= signedness :unsigned)
+    0
+    (if (= bit-width 8)
+      -128
+      (if (= bit-width 16)
+        -32768
+        (if (= bit-width 32)
+          -2147483648
+          (if (= bit-width 64)
+            -9223372036854775808
+            nil))))))
+
+(defn sh11-width-maximum [bit-width signedness]
+  (if (= bit-width 8)
+    (if (= signedness :signed) 127 255)
+    (if (= bit-width 16)
+      (if (= signedness :signed) 32767 65535)
+      (if (= bit-width 32)
+        (if (= signedness :signed)
+          2147483647
+          4294967295)
+        (if (= bit-width 64)
+          (if (= signedness :signed)
+            9223372036854775807
+            18446744073709551615)
+          nil)))))
+
+(defn sh11-nonempty-keyword-set? [value]
+  (if (set? value)
+    (if (> (count value) 0)
+      (if (<= (count value) 32)
+        (loop [remaining (vec value)]
+          (if (= (count remaining) 0)
+            true
+            (if (keyword? (first remaining))
+              (recur (rest remaining))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh11-keyword-set? [value]
+  (if (set? value)
+    (if (<= (count value) 32)
+      (loop [remaining (vec value)]
+        (if (= (count remaining) 0)
+          true
+          (if (keyword? (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh11-nonempty-keyword-vector? [value]
+  (if (vector? value)
+    (if (> (count value) 0)
+      (if (<= (count value) 32)
+        (loop [remaining value]
+          (if (= (count remaining) 0)
+            true
+            (if (keyword? (first remaining))
+              (recur (rest remaining))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh11-sha-vector? [value]
+  (if (vector? value)
+    (if (> (count value) 0)
+      (if (<= (count value) 8)
+        (loop [remaining value]
+          (if (= (count remaining) 0)
+            true
+            (if (sh11-sha256-id? (first remaining))
+              (recur (rest remaining))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh11-subset? [required allowed]
+  (if (set? required)
+    (if (set? allowed)
+      (loop [remaining (vec required)]
+        (if (= (count remaining) 0)
+          true
+          (if (contains? allowed (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh11-valid-source-span? [span]
+  (if
+   (sh11-exact-keys?
+    span #{:source-id :start-byte :end-byte})
+   (if (sh11-sha256-id? (get span :source-id))
+     (if (sh11-nonnegative-integer? (get span :start-byte))
+       (if (sh11-positive-integer? (get span :end-byte))
+         (< (get span :start-byte) (get span :end-byte))
+         false)
+       false)
+     false)
+   false))
+
+(defn sh11-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh11-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh11-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh11-max [left right]
+  (if (> left right) left right))
+
+(defn sh11-structural-preflight [value]
+  (let [bounds (get (sh11-safety-policy) :structural-bounds)
+        maximum-nodes (get bounds :maximum-nodes)
+        maximum-depth (get bounds :maximum-depth)
+        maximum-width (get bounds :maximum-width)
+        maximum-scalars (get bounds :maximum-scalars)
+        maximum-scalar-units (get bounds :maximum-scalar-units)
+        maximum-collections (get bounds :maximum-collections)]
+    (loop [frontier [[value 0]]
+           nodes 0
+           scalars 0
+           scalar-units 0
+           collections 0
+           observed-depth 0
+           observed-width 0]
+      (if (= (count frontier) 0)
+        {:status :accepted
+         :nodes nodes
+         :scalars scalars
+         :scalar-units scalar-units
+         :collections collections
+         :maximum-depth observed-depth
+         :maximum-width observed-width}
+        (let [entry (first frontier)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :structure-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :structure-depth-bound}
+              (if (sh11-aggregate? current)
+                (let [width (sh11-aggregate-width current)
+                      next-collections (+ collections 1)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :structure-width-bound}
+                    (if (> next-collections maximum-collections)
+                      {:status :rejected
+                       :reason :structure-collection-bound}
+                      (let [components
+                            (sh11-aggregate-components current)
+                            next-frontier
+                            (loop [remaining components
+                                   result (rest frontier)]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj
+                                  result
+                                  [(first remaining)
+                                   (+ depth 1)]))))]
+                        (recur
+                         next-frontier next-nodes scalars
+                         scalar-units next-collections
+                         (sh11-max observed-depth depth)
+                         (sh11-max observed-width width))))))
+                (let [next-scalars (+ scalars 1)
+                      next-scalar-units
+                      (+ scalar-units (count (vec (str current))))]
+                  (if (> next-scalars maximum-scalars)
+                    {:status :rejected
+                     :reason :structure-scalar-count-bound}
+                    (if (> next-scalar-units maximum-scalar-units)
+                      {:status :rejected
+                       :reason :structure-scalar-unit-bound}
+                      (recur
+                       (rest frontier) next-nodes next-scalars
+                       next-scalar-units collections
+                       (sh11-max observed-depth depth)
+                       observed-width))))))))))))
+
+(defn sh11-in-range? [value minimum maximum]
+  (if (number? value)
+    (if (number? minimum)
+      (if (number? maximum)
+        (if (>= value minimum)
+          (<= value maximum)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-mode-valid-for-kind? [kind mode]
+  (sh11-member?
+   (get (get (sh11-safety-policy) :legal-modes) kind)
+   mode))
+
+(defn sh11-valid-bounds?
+  [minimum maximum bit-width signedness]
+  (if (integer? minimum)
+    (if (integer? maximum)
+      (if (< minimum maximum)
+        (if (sh11-bounded-positive-width? bit-width)
+          (if (sh11-member? #{:signed :unsigned} signedness)
+            (if (= minimum
+                   (sh11-width-minimum bit-width signedness))
+              (= maximum
+                 (sh11-width-maximum bit-width signedness))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-index-facts-valid? [facts]
+  (if
+   (sh11-exact-keys?
+    facts #{:numeric-mode :proof-id :index :length
+            :index-width :signedness})
+   (if (sh11-mode-valid-for-kind? :index (get facts :numeric-mode))
+     (if (sh11-sha256-id? (get facts :proof-id))
+       (if (integer? (get facts :index))
+         (if (sh11-nonnegative-integer? (get facts :length))
+           (if (sh11-bounded-positive-width? (get facts :index-width))
+             (sh11-member?
+              #{:signed :unsigned} (get facts :signedness))
+             false)
+           false)
+         false)
+       false)
+     false)
+   false))
+
+(defn sh11-overflow-facts-valid? [facts]
+  (if
+   (sh11-exact-keys?
+    facts #{:numeric-mode :proof-id :operator :left :right
+            :bit-width :signedness :result-min :result-max
+            :arbitrary-precision-supported})
+   (if
+    (sh11-mode-valid-for-kind?
+     :numeric-overflow (get facts :numeric-mode))
+    (if (sh11-sha256-id? (get facts :proof-id))
+      (if (sh11-member?
+           #{:add :subtract :multiply} (get facts :operator))
+        (if (integer? (get facts :left))
+          (if (integer? (get facts :right))
+            (if
+             (sh11-valid-bounds?
+              (get facts :result-min) (get facts :result-max)
+              (get facts :bit-width) (get facts :signedness))
+             (if
+              (sh11-in-range?
+               (get facts :left)
+               (get facts :result-min)
+               (get facts :result-max))
+              (if
+               (sh11-in-range?
+                (get facts :right)
+                (get facts :result-min)
+                (get facts :result-max))
+               (sh11-boolean?
+                (get facts :arbitrary-precision-supported))
+               false)
+              false)
+             false)
+            false)
+          false)
+        false)
+      false)
+    false)
+   false))
+
+(defn sh11-division-facts-valid? [facts]
+  (if
+   (sh11-exact-keys?
+    facts #{:numeric-mode :proof-id :operator
+            :dividend :divisor :bit-width :signedness
+            :result-min :result-max})
+   (if (sh11-mode-valid-for-kind? :division (get facts :numeric-mode))
+     (if (sh11-sha256-id? (get facts :proof-id))
+       (if (sh11-member?
+            #{:divide :remainder} (get facts :operator))
+         (if (integer? (get facts :dividend))
+           (if (integer? (get facts :divisor))
+             (if
+              (sh11-valid-bounds?
+               (get facts :result-min) (get facts :result-max)
+               (get facts :bit-width) (get facts :signedness))
+              (if
+               (sh11-in-range?
+                (get facts :dividend)
+                (get facts :result-min)
+                (get facts :result-max))
+               (sh11-in-range?
+                (get facts :divisor)
+                (get facts :result-min)
+                (get facts :result-max))
+               false)
+              false)
+             false)
+           false)
+         false)
+       false)
+     false)
+   false))
+
+(defn sh11-cast-mode-coherent? [facts]
+  (let [mode (get facts :numeric-mode)
+        conversion (get facts :conversion)
+        source-width (get facts :source-width)
+        target-width (get facts :target-width)]
+    (if (= conversion :widening)
+      (if (<= source-width target-width)
+        (sh11-member?
+         #{:proof-required :checked :panic} mode)
+        false)
+      (if (= conversion :narrowing)
+        (if (> source-width target-width)
+          (sh11-member?
+           #{:proof-required :checked :panic :unsafe-unchecked} mode)
+          false)
+        (if (= conversion :wrapping-narrowing)
+          (if (> source-width target-width)
+            (= mode :wrapping)
+            false)
+          (if (= conversion :saturating-narrowing)
+            (if (> source-width target-width)
+              (= mode :saturating)
+              false)
+            false))))))
+
+(defn sh11-cast-facts-valid? [facts]
+  (if
+   (sh11-exact-keys?
+    facts #{:numeric-mode :proof-id :conversion :value
+            :source-min :source-max :target-min :target-max
+            :source-width :target-width
+            :source-signedness :target-signedness})
+   (if (sh11-mode-valid-for-kind? :numeric-cast
+                                  (get facts :numeric-mode))
+     (if (sh11-sha256-id? (get facts :proof-id))
+       (if (integer? (get facts :value))
+         (if
+          (sh11-valid-bounds?
+           (get facts :source-min) (get facts :source-max)
+           (get facts :source-width) (get facts :source-signedness))
+          (if
+           (sh11-valid-bounds?
+            (get facts :target-min) (get facts :target-max)
+            (get facts :target-width) (get facts :target-signedness))
+           (if
+            (sh11-in-range?
+             (get facts :value)
+             (get facts :source-min)
+             (get facts :source-max))
+            (sh11-cast-mode-coherent? facts)
+            false)
+           false)
+          false)
+         false)
+       false)
+     false)
+   false))
+
+(defn sh11-shift-facts-valid? [facts]
+  (if
+   (sh11-exact-keys?
+    facts #{:numeric-mode :proof-id :operator :value
+            :shift-count :bit-width :signedness
+            :shift-semantics})
+   (if (sh11-mode-valid-for-kind? :shift (get facts :numeric-mode))
+     (if (sh11-sha256-id? (get facts :proof-id))
+       (if (sh11-member?
+            #{:shift-left :shift-right} (get facts :operator))
+         (if (integer? (get facts :value))
+           (if (integer? (get facts :shift-count))
+             (if (sh11-bounded-positive-width? (get facts :bit-width))
+               (if
+                (sh11-member?
+                 #{:signed :unsigned} (get facts :signedness))
+                (if (= :masked (get facts :shift-semantics))
+                  (= :wrapping (get facts :numeric-mode))
+                  (= :bounded (get facts :shift-semantics)))
+                false)
+               false)
+             false)
+           false)
+         false)
+       false)
+     false)
+   false))
+
+(defn sh11-operation-facts-valid? [kind facts]
+  (if (= kind :index)
+    (sh11-index-facts-valid? facts)
+    (if (= kind :numeric-overflow)
+      (sh11-overflow-facts-valid? facts)
+      (if (= kind :division)
+        (sh11-division-facts-valid? facts)
+        (if (= kind :numeric-cast)
+          (sh11-cast-facts-valid? facts)
+          (if (= kind :shift)
+            (sh11-shift-facts-valid? facts)
+            false))))))
+
+(defn sh11-valid-request-shape? [request]
+  (if
+   (sh11-exact-keys?
+    request
+    #{:artifact :operation-id :kind :core-node-id
+      :source-span :origin-chain :profile :target
+      :safety-mode :facts :runtime-check-support
+      :runtime-check :unsafe-audit :type-fact-id
+      :effect-fact-id :capability-proof-id
+      :ownership-fact-id})
+   (if (= :gravity/sh11-normalized-safety-operation
+          (get request :artifact))
+     (if (keyword? (get request :operation-id))
+       (if
+        (sh11-member?
+         #{:index :numeric-overflow :division
+           :numeric-cast :shift}
+         (get request :kind))
+        (if (sh11-sha256-id? (get request :core-node-id))
+          (if (sh11-valid-source-span? (get request :source-span))
+            (if (sh11-sha-vector? (get request :origin-chain))
+              (if (= :meta (get request :profile))
+                (if (= :jvm (get request :target))
+                  (if
+                   (sh11-member?
+                    #{:safe :safe-optimized :audited-unsafe
+                      :systems :trusted-runtime}
+                    (get request :safety-mode))
+                   (if (sh11-sha256-id?
+                        (get request :type-fact-id))
+                     (if (sh11-sha256-id?
+                          (get request :effect-fact-id))
+                       (if (sh11-sha256-id?
+                            (get request :capability-proof-id))
+                         (if (sh11-sha256-id?
+                              (get request :ownership-fact-id))
+                           (if
+                            (sh11-operation-facts-valid?
+                             (get request :kind)
+                             (get request :facts))
+                            (if (= nil (get request :runtime-check))
+                              (= nil
+                                 (get request
+                                      :runtime-check-support))
+                              (map?
+                               (get request
+                                    :runtime-check-support)))
+                            false)
+                           false)
+                         false)
+                       false)
+                     false)
+                   false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+   false)))
+
+(defn sh11-overflow-result [facts]
+  (let [operator (get facts :operator)
+        left (get facts :left)
+        right (get facts :right)]
+    (if (number? left)
+      (if (number? right)
+        (if (= operator :add)
+          (+ left right)
+          (if (= operator :subtract)
+            (- left right)
+            (if (= operator :multiply)
+              (* left right)
+              nil)))
+        nil)
+      nil)))
+
+(defn sh11-static-safe? [request]
+  (let [kind (get request :kind)
+        facts (get request :facts)
+        mode (get facts :numeric-mode)]
+    (if (= mode :unsafe-unchecked)
+      false
+      (if (= kind :index)
+      (let [index (get facts :index)
+            length (get facts :length)]
+        (if (integer? index)
+          (if (integer? length)
+            (if (>= index 0)
+              (< index length)
+              false)
+            false)
+          false))
+      (if (= kind :numeric-overflow)
+        (if (= mode :wrapping)
+          true
+          (if (= mode :saturating)
+            true
+            (if (= mode :arbitrary-precision)
+              (= true (get facts :arbitrary-precision-supported))
+              (sh11-in-range?
+               (sh11-overflow-result facts)
+               (get facts :result-min)
+               (get facts :result-max)))))
+        (if (= kind :division)
+          (if (= 0 (get facts :divisor))
+            false
+            (if (= :signed (get facts :signedness))
+              (sh11-not
+               (sh11-and
+                (= (get facts :dividend) (get facts :result-min))
+                (= (get facts :divisor) -1)))
+              true))
+          (if (= kind :numeric-cast)
+            (if
+             (sh11-member?
+              #{:wrapping-narrowing :saturating-narrowing}
+              (get facts :conversion))
+             true
+             (sh11-in-range?
+              (get facts :value)
+              (get facts :target-min)
+              (get facts :target-max)))
+            (if (= kind :shift)
+              (if (= :masked (get facts :shift-semantics))
+                true
+                (let [shift-count (get facts :shift-count)
+                      bit-width (get facts :bit-width)]
+                  (if (>= shift-count 0)
+                    (< shift-count bit-width)
+                    false)))
+              false))))))))
+
+(defn sh11-runtime-condition [kind]
+  (if (= kind :index)
+    :bounds
+      (if (= kind :numeric-overflow)
+      :overflow
+      (if (= kind :division)
+        :valid-divisor-and-quotient
+        (if (= kind :numeric-cast)
+          :representable-cast
+          (if (= kind :shift)
+            :shift-range
+            nil))))))
+
+(defn sh11-predicate-expression [kind]
+  (if (= kind :index)
+    :index-within-length
+    (if (= kind :numeric-overflow)
+      :result-within-declared-bounds
+      (if (= kind :division)
+        :divisor-nonzero-and-quotient-representable
+        (if (= kind :numeric-cast)
+          :value-representable-in-target
+          (if (= kind :shift)
+            :shift-count-within-width
+            nil))))))
+
+(defn sh11-predicate-operands [kind facts]
+  (if (= kind :index)
+    {:index (get facts :index)
+     :length (get facts :length)}
+    (if (= kind :numeric-overflow)
+      {:operator (get facts :operator)
+       :left (get facts :left)
+       :right (get facts :right)
+       :minimum (get facts :result-min)
+       :maximum (get facts :result-max)}
+      (if (= kind :division)
+        {:operator (get facts :operator)
+         :dividend (get facts :dividend)
+         :divisor (get facts :divisor)
+         :minimum (get facts :result-min)
+         :maximum (get facts :result-max)}
+        (if (= kind :numeric-cast)
+          {:conversion (get facts :conversion)
+           :value (get facts :value)
+           :minimum (get facts :target-min)
+           :maximum (get facts :target-max)}
+          (if (= kind :shift)
+            {:operator (get facts :operator)
+             :value (get facts :value)
+             :shift-count (get facts :shift-count)
+             :bit-width (get facts :bit-width)}
+            {}))))))
+
+(defn sh11-runtime-mode-valid? [mode]
+  (if (= mode :checked)
+    true
+    (= mode :panic)))
+
+(defn sh11-failure-and-effects-valid? [mode failure effects]
+  (if (= mode :checked)
+    (if (= failure :error/numeric)
+      (= effects #{:error/raise})
+      false)
+    (if (= mode :panic)
+      (if (= failure :panic/numeric)
+        (= effects #{:panic})
+        false)
+      false)))
+
+(defn sh11-runtime-support-valid? [request check]
+  (let [support (get request :runtime-check-support)]
+    (if
+     (sh11-exact-keys?
+      support #{:artifact :support-id :provider-id
+                :profile :target :conditions
+                :failure-behaviors :effects
+                :performance-classes :evidence})
+     (if (= :gravity/sh11-runtime-check-target-support
+            (get support :artifact))
+       (if (sh11-sha256-id? (get support :support-id))
+         (if (sh11-sha256-id? (get support :provider-id))
+           (if (= (get support :support-id)
+                  (get check :target-support-id))
+             (if (= (get support :provider-id)
+                    (get check :provider-id))
+               (if (= (get request :profile)
+                      (get support :profile))
+                 (if (= (get request :target)
+                        (get support :target))
+                   (if
+                    (sh11-nonempty-keyword-set?
+                     (get support :conditions))
+                    (if
+                     (contains?
+                      (get support :conditions)
+                      (get check :condition))
+                     (if
+                      (sh11-nonempty-keyword-set?
+                       (get support :failure-behaviors))
+                      (if
+                       (contains?
+                        (get support :failure-behaviors)
+                        (get check :failure-behavior))
+                       (if
+                        (sh11-nonempty-keyword-set?
+                         (get support :effects))
+                        (if
+                         (sh11-subset?
+                          (get check :effects-introduced)
+                          (get support :effects))
+                         (if
+                          (sh11-nonempty-keyword-set?
+                           (get support :performance-classes))
+                          (if
+                           (contains?
+                            (get support :performance-classes)
+                            (get check :performance-class))
+                           (sh11-nonempty-keyword-set?
+                            (get support :evidence))
+                           false)
+                          false)
+                         false)
+                        false)
+                       false)
+                      false)
+                     false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn sh11-specialized-rule [kind]
+  (if (= kind :index)
+    :bounds-safety
+    (if (= kind :numeric-overflow)
+      :SAFE9-OVERFLOW
+      (if (= kind :division)
+        :SAFE9-DIV-ZERO
+        (if (= kind :numeric-cast)
+          :SAFE9-NARROW
+          (if (= kind :shift)
+            :SAFE9-SHIFT
+            :SAFE1-NO-OUTCOME))))))
+
+(defn sh11-runtime-check-valid? [request]
+  (let [check (get request :runtime-check)
+        facts (get request :facts)
+        mode (get facts :numeric-mode)
+        kind (get request :kind)
+        predicate (get check :predicate)]
+    (if
+     (sh11-exact-keys?
+      check #{:artifact :check-id :condition :predicate
+              :emitted-location :profile :target
+              :failure-behavior :effects-introduced
+              :performance-class :invalidation-conditions
+              :target-support-id :provider-id})
+     (if (= :gravity/sh11-runtime-safety-check
+            (get check :artifact))
+       (if (sh11-sha256-id? (get check :check-id))
+         (if (sh11-runtime-mode-valid? mode)
+           (if (= (sh11-runtime-condition kind)
+                  (get check :condition))
+             (if
+              (sh11-exact-keys?
+               predicate
+               #{:expression :operation-id :kind :operands})
+              (if (= (sh11-predicate-expression kind)
+                     (get predicate :expression))
+                (if (= (get request :operation-id)
+                       (get predicate :operation-id))
+                  (if (= kind (get predicate :kind))
+                    (if (= (sh11-predicate-operands kind facts)
+                           (get predicate :operands))
+                      (if (= :before-operation
+                             (get check :emitted-location))
+                        (if (= (get request :profile)
+                               (get check :profile))
+                          (if (= (get request :target)
+                                 (get check :target))
+                            (if
+                             (sh11-failure-and-effects-valid?
+                              mode
+                              (get check :failure-behavior)
+                              (get check :effects-introduced))
+                             (if (keyword?
+                                  (get check :performance-class))
+                               (if
+                                (sh11-nonempty-keyword-vector?
+                                 (get check
+                                      :invalidation-conditions))
+                                (sh11-runtime-support-valid?
+                                 request check)
+                                false)
+                               false)
+                             false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn sh11-unsafe-mode? [mode]
+  (if (= mode :audited-unsafe)
+    true
+    (if (= mode :systems)
+      true
+      (= mode :trusted-runtime))))
+
+(defn sh11-unsafe-audit-valid? [request]
+  (let [audit (get request :unsafe-audit)
+        review (get audit :review)
+        policy (get audit :policy)
+        effects (get audit :effects)
+        capabilities (get audit :capabilities)]
+    (if
+     (sh11-exact-keys?
+      audit #{:artifact :audit-id :operation-id :operation
+              :owner :reason :source-span
+              :generated-origin-chain :profile :target
+              :safety-mode :effects :capabilities
+              :preconditions :postconditions :invariants
+              :evidence :safe-wrapper :review :policy
+              :re-review})
+     (if (= :gravity/sh11-unsafe-island-audit
+            (get audit :artifact))
+       (if (sh11-sha256-id? (get audit :audit-id))
+         (if (= (get request :operation-id)
+                (get audit :operation-id))
+           (if (= (get request :kind) (get audit :operation))
+             (if (sh11-nonempty-string? (get audit :owner))
+               (if (keyword? (get audit :reason))
+                 (if (= (get request :source-span)
+                        (get audit :source-span))
+                   (if (= (get request :origin-chain)
+                          (get audit :generated-origin-chain))
+                     (if (= (get request :profile)
+                            (get audit :profile))
+                       (if (= (get request :target)
+                              (get audit :target))
+                         (if (= (get request :safety-mode)
+                                (get audit :safety-mode))
+                           (if
+                            (sh11-nonempty-keyword-set?
+                             (get audit :preconditions))
+                            (if
+                             (sh11-nonempty-keyword-set?
+                              (get audit :postconditions))
+                             (if
+                              (sh11-nonempty-keyword-set?
+                               (get audit :invariants))
+                              (if
+                               (sh11-nonempty-keyword-set?
+                                (get audit :evidence))
+                               (if
+                                (sh11-nonempty-string?
+                                 (get audit :safe-wrapper))
+                                (if
+                                 (sh11-exact-keys?
+                                  review
+                                  #{:state :review-id :source-id
+                                    :policy})
+                                 (if (= :approved
+                                        (get review :state))
+                                   (if
+                                    (sh11-sha256-id?
+                                     (get review :review-id))
+                                    (if
+                                     (sh11-sha256-id?
+                                      (get review :source-id))
+                                     (if (keyword?
+                                          (get review :policy))
+                                       (if
+                                        (sh11-exact-keys?
+                                         policy
+                                         #{:safety-mode
+                                           :package-unsafe-approved
+                                           :empty-effects-approved
+                                           :empty-capabilities-approved})
+                                        (if
+                                         (= (get request :safety-mode)
+                                            (get policy :safety-mode))
+                                         (if
+                                          (= true
+                                             (get policy
+                                                  :package-unsafe-approved))
+                                          (if
+                                           (sh11-keyword-set? effects)
+                                           (if
+                                            (sh11-keyword-set?
+                                             capabilities)
+                                            (if
+                                             (if (= (count effects) 0)
+                                               (= true
+                                                  (get
+                                                   policy
+                                                   :empty-effects-approved))
+                                               true)
+                                             (if
+                                              (if
+                                               (= (count capabilities) 0)
+                                               (= true
+                                                  (get
+                                                   policy
+                                                   :empty-capabilities-approved))
+                                               true)
+                                              (keyword?
+                                               (get audit :re-review))
+                                              false)
+                                             false)
+                                            false)
+                                           false)
+                                          false)
+                                         false)
+                                        false)
+                                       false)
+                                     false)
+                                   false)
+                                 false)
+                                false)
+                               false)
+                              false)
+                             false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))))
+
+(defn sh11-evidence-count [request static-safe]
+  (+
+   (if static-safe 1 0)
+   (+
+    (if (= nil (get request :runtime-check)) 0 1)
+    (if (= nil (get request :unsafe-audit)) 0 1))))
+
+(defn sh11-diagnostic [request rule reason missing-fact remediation]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :safety-analysis
+   :reason reason
+   :operation-id (get request :operation-id)
+   :operation-kind (get request :kind)
+   :operands (get request :facts)
+   :numeric-mode (get (get request :facts) :numeric-mode)
+   :specialized-safe-rule
+   (sh11-specialized-rule (get request :kind))
+   :source-span (get request :source-span)
+   :generated-origin-chain (get request :origin-chain)
+   :profile (get request :profile)
+   :target (get request :target)
+   :safety-mode (get request :safety-mode)
+   :missing-fact missing-fact
+   :proof-id nil
+   :runtime-check-id
+   (get (get request :runtime-check) :check-id)
+   :remediation remediation})
+
+(defn sh11-outcome-record
+  [request outcome proof runtime-check unsafe-audit diagnostic]
+  {:artifact :gravity/safety-outcome
+   :operation-id (get request :operation-id)
+   :kind (get request :kind)
+   :source
+   {:core-node-id (get request :core-node-id)
+    :source-span (get request :source-span)
+    :origin-chain (get request :origin-chain)}
+   :profile (get request :profile)
+   :target (get request :target)
+   :safety-mode (get request :safety-mode)
+   :specialized-safe-rule
+   (sh11-specialized-rule (get request :kind))
+   :facts (get request :facts)
+   :outcome outcome
+   :proof proof
+   :runtime-check runtime-check
+   :unsafe-audit unsafe-audit
+   :diagnostic diagnostic})
+
+(defn sh11-result
+  [request outcome proof runtime-check unsafe-audit diagnostic]
+  (let [record
+        (sh11-outcome-record
+         request outcome proof runtime-check unsafe-audit diagnostic)]
+    {:artifact :gravity/sh11-safety-classification-result
+     :status (if (= outcome :rejected) :rejected :accepted)
+     :operation-id (get request :operation-id)
+     :outcome outcome
+     :outcomes [record]
+     :proofs (if (= nil proof) [] [proof])
+     :runtime-checks
+     (if (= nil runtime-check) [] [runtime-check])
+     :unsafe-islands
+     (if (= nil unsafe-audit) [] [unsafe-audit])
+     :diagnostics
+     (if (= nil diagnostic) [] [diagnostic])
+     :preserves
+     {:core-node-id (get request :core-node-id)
+      :type-fact-id (get request :type-fact-id)
+      :effect-fact-id (get request :effect-fact-id)
+      :capability-proof-id (get request :capability-proof-id)
+      :ownership-fact-id (get request :ownership-fact-id)
+      :source-span (get request :source-span)
+      :origin-chain (get request :origin-chain)
+      :profile (get request :profile)
+      :target (get request :target)}
+     :identity-input
+     {:request request
+      :policy-version 2}
+     :scope :bounds-overflow-division-narrowing-shift
+     :pending (get (sh11-safety-policy) :pending)}))
+
+(defn sh11-proven-result [request]
+  (let [facts (get request :facts)
+        proof
+        {:artifact :gravity/sh11-static-safety-proof
+         :proof-id (get facts :proof-id)
+         :proof-id-request
+         {:domain :gravity/sh11-static-safety-proof-v1
+          :operation-id (get request :operation-id)
+          :core-node-id (get request :core-node-id)
+          :facts facts
+          :profile (get request :profile)
+          :target (get request :target)}
+         :operation-id (get request :operation-id)
+         :core-node-id (get request :core-node-id)
+         :source-span (get request :source-span)
+         :generated-origin-chain (get request :origin-chain)
+         :claim
+         (sh11-runtime-condition (get request :kind))
+         :assumptions
+         #{:normalized-operation-schema
+           :typed-facts-linked
+           :numeric-mode-legal
+           :bounded-fact-evaluation}
+         :method :bounded-fact-evaluation
+         :provider
+         "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         :inputs
+         [(get request :type-fact-id)
+          (get request :effect-fact-id)
+          (get request :capability-proof-id)
+          (get request :ownership-fact-id)]
+         :facts facts
+         :profile (get request :profile)
+         :target (get request :target)
+         :invalidation-conditions
+         [:source-change :fact-link-change :profile-change
+          :target-change :numeric-mode-change
+          :operand-change :compiler-change]
+         :result :proven-safe}]
+    (sh11-result request :proven-safe proof nil nil nil)))
+
+(defn sh11-runtime-checked-result [request]
+  (let [check (get request :runtime-check)
+        record
+        {:artifact :gravity/runtime-safety-check
+         :check-id (get check :check-id)
+         :condition (get check :condition)
+         :operation-id (get request :operation-id)
+         :emitted-location (get check :emitted-location)
+         :profile (get request :profile)
+         :target (get request :target)
+         :failure-behavior (get check :failure-behavior)
+         :effects-introduced (get check :effects-introduced)
+         :performance-class (get check :performance-class)
+         :guard-proof
+         {:predicate (get check :predicate)
+          :operation-id (get request :operation-id)
+          :condition (get check :condition)
+          :guards-exact-operation true}
+         :invalidation-conditions
+         (get check :invalidation-conditions)
+         :target-support-id (get check :target-support-id)
+         :provider-id (get check :provider-id)}]
+    (sh11-result request :runtime-checked nil record nil nil)))
+
+(defn sh11-rejected-result
+  [request rule reason missing-fact remediation]
+  (let [diagnostic
+        (sh11-diagnostic
+         request rule reason missing-fact remediation)]
+    (sh11-result request :rejected nil nil nil diagnostic)))
+
+(defn sh11-unsafe-result [request]
+  (sh11-result
+   request :unsafe-island nil nil (get request :unsafe-audit) nil))
+
+(defn sh11-bounds-rejected [request preflight]
+  {:artifact :gravity/sh11-safety-classification-result
+   :status :rejected
+   :operation-id (get request :operation-id)
+   :outcome :rejected
+   :outcomes
+   [{:artifact :gravity/safety-outcome
+     :operation-id (get request :operation-id)
+     :outcome :rejected
+     :diagnostic
+     {:diagnostic-id "C10-NO-OUTCOME"
+      :rule "C10-NO-OUTCOME"
+      :severity :error
+      :stage :safety-analysis
+      :reason (get preflight :reason)
+      :missing-fact :bounded-normalized-operation
+      :remediation :supply-a-structurally-bounded-operation}}]
+   :proofs []
+   :runtime-checks []
+   :unsafe-islands []
+   :diagnostics
+   [{:diagnostic-id "C10-NO-OUTCOME"
+     :rule "C10-NO-OUTCOME"
+     :severity :error
+     :stage :safety-analysis
+     :reason (get preflight :reason)
+     :missing-fact :bounded-normalized-operation
+     :remediation :supply-a-structurally-bounded-operation}]
+   :identity-input
+   {:operation-id (get request :operation-id)
+    :policy-version 2
+    :structural-preflight preflight}
+   :scope :bounds-overflow-division-narrowing-shift
+   :pending (get (sh11-safety-policy) :pending)})
+
+(defn sh11-classify-operation [request]
+  (let [preflight (sh11-structural-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (if (sh11-valid-request-shape? request)
+        (let [static-safe (sh11-static-safe? request)
+              evidence-count
+              (sh11-evidence-count request static-safe)
+              mode (get (get request :facts) :numeric-mode)]
+          (if (> evidence-count 1)
+            (sh11-rejected-result
+             request "C10-NO-OUTCOME" :multiple-outcome-evidence
+             :exclusive-safety-path
+             :retain-exactly-one-proof-check-or-unsafe-path)
+            (if (= mode :unsafe-unchecked)
+              (if (sh11-not (= nil (get request :runtime-check)))
+                (sh11-rejected-result
+                 request "C10-UNSAFE"
+                 :unsafe-mode-cannot-use-runtime-check
+                 :complete-policy-approved-unsafe-audit
+                 :use-an-unsafe-island-not-a-runtime-check)
+                (if
+                 (sh11-and
+                  (sh11-unsafe-mode? (get request :safety-mode))
+                  (sh11-unsafe-audit-valid? request))
+                 (sh11-unsafe-result request)
+                 (sh11-rejected-result
+                  request "C10-UNSAFE"
+                  :unsafe-island-policy-or-metadata-gap
+                  :complete-policy-approved-unsafe-audit
+                  :supply-a-complete-audit-in-an-unsafe-capable-mode)))
+              (if static-safe
+                (sh11-proven-result request)
+                (if (sh11-not (= nil (get request :runtime-check)))
+                  (if (sh11-runtime-check-valid? request)
+                    (sh11-runtime-checked-result request)
+                    (sh11-rejected-result
+                     request "C10-CHECK" :invalid-runtime-check
+                     :defined-profile-legal-runtime-check
+                     :supply-an-exact-operand-bound-check))
+                  (if (sh11-not (= nil (get request :unsafe-audit)))
+                    (sh11-rejected-result
+                     request "C10-UNSAFE"
+                     :unsafe-island-without-unsafe-numeric-mode
+                     :unsafe-unchecked-numeric-mode
+                     :declare-the-unsafe-numeric-mode-explicitly)
+                    (if
+                     (sh11-not
+                      (= nil (get request :runtime-check-support)))
+                     (sh11-rejected-result
+                      request "C10-CHECK"
+                      :target-support-without-runtime-check
+                      :runtime-check
+                      :remove-unused-support-or-supply-a-check)
+                     (sh11-rejected-result
+                      request "C10-NUMERIC"
+                      :numeric-operation-lacks-proof-check-or-audit
+                      (sh11-specialized-rule (get request :kind))
+                      :prove-check-or-explicitly-audit-the-operation))))))))
+        (sh11-rejected-result
+         request "C10-NO-OUTCOME" :malformed-safety-operation
+         :complete-normalized-operation
+         :provide-all-operation-identity-profile-and-fact-fields))
+      (sh11-bounds-rejected request preflight))))
+
+(defn sh11-verify-safety-result [request candidate]
+  (let [request-preflight (sh11-structural-preflight request)
+        candidate-preflight (sh11-structural-preflight candidate)]
+    (if (sh11-not (= :accepted
+                      (get request-preflight :status)))
+      {:artifact :gravity/sh11-safety-result-verification
+       :status :rejected
+       :diagnostics
+       [{:diagnostic-id "C10-NO-OUTCOME"
+         :rule "C10-NO-OUTCOME"
+         :reason :request-structural-bound
+         :preflight request-preflight}]}
+      (if (sh11-not (= :accepted
+                        (get candidate-preflight :status)))
+        {:artifact :gravity/sh11-safety-result-verification
+         :status :rejected
+         :diagnostics
+         [{:diagnostic-id "C10-NO-OUTCOME"
+           :rule "C10-NO-OUTCOME"
+           :reason :candidate-structural-bound
+           :preflight candidate-preflight}]}
+        (let [expected (sh11-classify-operation request)
+              outcomes (get candidate :outcomes)
+              outcome (get candidate :outcome)]
+          (if (= expected candidate)
+            (if (= (count outcomes) 1)
+              (if
+               (sh11-member?
+                #{:proven-safe :runtime-checked
+                  :rejected :unsafe-island}
+                outcome)
+               {:artifact :gravity/sh11-safety-result-verification
+                :status :passed
+                :operation-id (get request :operation-id)
+                :checks [:bounded-request-and-candidate
+                         :complete-recomputation
+                         :exactly-one-outcome
+                         :legal-outcome
+                         :proof-check-audit-exclusivity
+                         :diagnostic-identity
+                         :source-lineage-identity]}
+               {:artifact :gravity/sh11-safety-result-verification
+                :status :rejected
+                :diagnostics
+                [(sh11-diagnostic
+                  request "C10-NO-OUTCOME" :illegal-outcome
+                  :one-of-four-safe1-outcomes
+                  :use-a-defined-safe1-outcome)]})
+              {:artifact :gravity/sh11-safety-result-verification
+               :status :rejected
+               :diagnostics
+               [(sh11-diagnostic
+                 request "C10-NO-OUTCOME"
+                 :outcome-count-mismatch
+                 :exactly-one-outcome
+                 :emit-one-and-only-one-outcome)]})
+            {:artifact :gravity/sh11-safety-result-verification
+             :status :rejected
+             :diagnostics
+             [(sh11-diagnostic
+               request "C10-NO-OUTCOME"
+               :safety-result-substitution
+               :complete-recomputed-result
+               :recompute-from-the-normalized-operation)]}))))))
