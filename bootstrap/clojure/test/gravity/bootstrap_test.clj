@@ -34298,12 +34298,12 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 68768 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:ad5af43542edfcd19e15ea20eacd0590f914884c8c06d22ba14c8a07f6ed98f8"
+    (is (= 112240 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:a72c4b7dcf4bb602c274f4f0c4f793d11cc5085fb85a36d74d43359ff365f2b5"
+    (is (= "sha256:7b2ebeb83629b52d2c0ed6030660eee0e797aebe705e8d3dbf48e523319eb5d4"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:fcfab1f2f150291fdefa26045059eade72fac930d345ca94082614ee9b8fe143"
+    (is (= "sha256:5b67f41f0ccbae3f331be74b68488e1fcec3ca43a9fa75f7765a2aa3320f8822"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
     (is (= "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
@@ -34319,7 +34319,7 @@
            (:builder-semantic-hash binding)))
     (is (= bootstrap/p15-s23-c11-mir-required-functions
            (:function-shapes binding)))
-    (is (= 65 (count (get-in binding [:plan :functions]))))
+    (is (= 139 (count (get-in binding [:plan :functions]))))
     (with-temp-directory
       "gravity-c11-unrelated-cwd-"
       (fn [directory]
@@ -36941,7 +36941,7 @@
          #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
            "effectful-wasm.gravity" effectful :wasm))]
     (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
-    (is (= 117920 (alength (.getBytes
+    (is (= 117921 (alength (.getBytes
                            source java.nio.charset.StandardCharsets/UTF_8))))
     (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source))))

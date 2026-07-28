@@ -1479,10 +1479,10 @@
               (get rule :compiled-by) (get rule :executed-by)
               (get rule :clojure-seed-boundary?)
               (get rule :self-hosted?)]
-             [:gravity/c11-pinned-source-rule :gravity-source 68768
-              "sha256:ad5af43542edfcd19e15ea20eacd0590f914884c8c06d22ba14c8a07f6ed98f8"
-              "sha256:a72c4b7dcf4bb602c274f4f0c4f793d11cc5085fb85a36d74d43359ff365f2b5"
-              "sha256:fcfab1f2f150291fdefa26045059eade72fac930d345ca94082614ee9b8fe143"
+             [:gravity/c11-pinned-source-rule :gravity-source 112240
+              "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06"
+              "sha256:7b2ebeb83629b52d2c0ed6030660eee0e797aebe705e8d3dbf48e523319eb5d4"
+              "sha256:5b67f41f0ccbae3f331be74b68488e1fcec3ca43a9fa75f7765a2aa3320f8822"
               (quote c11-build-target-independent-mir)
               "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
               :clojure-stage0-seed :clojure-stage0-rule-runner true false])
@@ -1939,12 +1939,12 @@
              {:artifact :gravity/pinned-gravity-source-rule
               :owner :gravity.backend/b1-backend-interface
               :source-content-hash
-              "sha256:5854b43f2855c1dd40a24c450975fd588f5c2bd2f41def822b67442dae7f8ee2"
-              :source-byte-count 140339
+              "sha256:2f8a07003d58b0d9448bd0f55b4fabb511018104b8107a5188b5c87ca862197e"
+              :source-byte-count 140340
               :plan-semantic-hash
-              "sha256:649d839aa702afd9e59b5cbfb1b215322b967d7534d2eba44cb428056b2745c6"
+              "sha256:340319f1215089681197530a4691f0e898ada9df8b03b2f21a66043735ccf99f"
               :functions-semantic-hash
-              "sha256:a0745d19acf86e836de891cd79e2fc072e2035d59fdf34a68af37e4d7f99128b"
+              "sha256:c67d02169ae516fd0a77cf6a172b53a4a2eba10521c34d563c16e55f5c581c46"
               :builder-function
               (quote b1-build-bounded-wasm-authenticated-packet)
               :builder-semantic-hash
