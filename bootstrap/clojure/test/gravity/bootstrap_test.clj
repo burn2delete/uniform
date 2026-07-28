@@ -35220,7 +35220,8 @@
                        (.toString root) env
                        [gravity-bin "check"
                         (.getCanonicalPath
-                         (java.io.File. repository-root relative))])})
+                         (java.io.File. repository-root relative))]
+                       300000)})
                    specifications)]
               {:root (.toString root) :results results})))]
     (is (false? (.exists (java.io.File. (:root proof)))))
