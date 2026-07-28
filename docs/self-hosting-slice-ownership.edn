@@ -62,6 +62,7 @@
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
+  "bootstrap/gravity/src/gravity/checked_core.gravity" :sh-core
   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity" :sh-safety
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir
@@ -81,7 +82,9 @@
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity" :sh-effects
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity" :sh-ownership
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity" :sh-reader
-  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core}
+  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/macro.gravity" :sh-macro
+  "bootstrap/gravity/src/gravity/resolution.gravity" :sh-resolution}
 
  :reserved-leaf-modules {}
 
