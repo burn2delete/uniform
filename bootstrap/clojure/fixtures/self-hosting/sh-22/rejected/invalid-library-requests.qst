@@ -1,0 +1,130 @@
+(ns gravity.self-hosting.sh22.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-malformed-request
+             sh22-out-of-bounds-request
+             sh22-oversized-collection-request
+             sh22-invalid-utf8-request
+             sh22-overflow-request
+             sh22-missing-capability-request
+             sh22-missing-encoding-request
+             sh22-invalid-artifact-request
+             sh22-missing-meta-origin-request
+             sh22-noncanonical-map-request
+             sh22-missing-allocation-effect-request
+             sh22-unexpected-capability-request
+             sh22-invalid-arity-request
+             sh22-missing-experimental-opt-in-request
+             sh22-allocation-policy-mismatch-request
+             sh22-duplicate-map-key-request
+             sh22-duplicate-set-value-request
+             sh22-spoofed-utf8-request
+             sh22-nested-physical-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-repeat-value [value count result]
+  (if (= count 0)
+    result
+    (sh22-repeat-value value (- count 1) (conj result value))))
+
+(defn sh22-malformed-request [request]
+  (assoc request :artifact :gravity/not-a-library-request))
+
+(defn sh22-out-of-bounds-request [request]
+  (assoc request :arguments [[1 2 3] 3 4]))
+
+(defn sh22-oversized-collection-request [request]
+  (assoc request :arguments [(sh22-repeat-value 0 257 []) 0 1]))
+
+(defn sh22-invalid-utf8-request [request]
+  (assoc
+   (assoc
+    (assoc request :operation :utf8-validate)
+    :allocation-policy :bounded-by-input)
+   :arguments [[192 128]]))
+
+(defn sh22-overflow-request [request]
+  (assoc
+   (assoc
+    (assoc
+     (assoc request :operation :checked-add-i64)
+     :effects #{})
+    :allocation-policy :none)
+   :arguments [9223372036854775807 1]))
+
+(defn sh22-missing-capability-request [request]
+  (assoc request :capabilities #{}))
+
+(defn sh22-missing-encoding-request [request]
+  (assoc request :arguments [:compiler/source-unit nil 1024]))
+
+(defn sh22-invalid-artifact-request [request]
+  (assoc
+   (assoc request :operation :artifact-data)
+   :arguments
+   [{:artifact-id "sha256:fixture"
+     :kind :compiler-module
+     :profile :meta
+     :provenance [:reader]}]))
+
+(defn sh22-missing-meta-origin-request [request]
+  (let [syntax (get (get request :arguments) 0)]
+    (assoc
+     (assoc request :operation :meta-view)
+     :arguments [(assoc syntax :origin-chain [])])))
+
+(defn sh22-noncanonical-map-request [request]
+  (assoc
+   (assoc request :operation :canonical-data)
+   :arguments [{:unordered :host-map}]))
+
+(defn sh22-missing-allocation-effect-request [request]
+  (assoc request :effects #{}))
+
+(defn sh22-unexpected-capability-request [request]
+  (assoc request :capabilities #{:fs/read}))
+
+(defn sh22-invalid-arity-request [request]
+  (assoc request :arguments []))
+
+(defn sh22-missing-experimental-opt-in-request [request]
+  (assoc request :experimental-opt-in false))
+
+(defn sh22-allocation-policy-mismatch-request [request]
+  (assoc request :allocation-policy :none))
+
+(defn sh22-duplicate-map-key-request [request]
+  (assoc
+   request
+   :arguments
+   [{:artifact :gravity/ordered-map
+     :entries [[:reader :ready] [:reader :duplicate]]}
+    :mir
+    :ready]))
+
+(defn sh22-duplicate-set-value-request [request]
+  (assoc
+   request
+   :arguments
+   [{:artifact :gravity/ordered-set
+     :values [:reader :reader]}
+    :mir]))
+
+(defn sh22-spoofed-utf8-request [request]
+  (assoc
+   request
+   :arguments
+   [{:artifact :gravity/validated-utf8
+     :bytes [192 128]
+     :byte-count 2
+     :scalar-count 1
+     :encoding :utf-8}]))
+
+(defn sh22-nested-physical-path-request [request]
+  (assoc
+   request
+   :arguments
+   [{:artifact :gravity/ordered-map
+     :entries [[:source {:actual-source-path "/checkout-a/input.gravity"}]]}]))

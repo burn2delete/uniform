@@ -1,0 +1,167 @@
+(ns gravity.self-hosting.sh22.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-vector-assoc-request
+             sh22-vector-nth-request
+             sh22-map-assoc-request
+             sh22-map-get-request
+             sh22-set-conj-request
+             sh22-utf8-request
+             sh22-checked-add-request
+             sh22-error-request
+             sh22-file-read-request
+             sh22-stdout-request
+             sh22-artifact-request
+             sh22-meta-request
+             sh22-canonical-request
+             sh22-canonical-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-span []
+  {:source-id :gravity.stdlib/sh22-fixture
+   :start 0
+   :end 64})
+
+(defn sh22-origin []
+  [{:kind :source
+    :source-id :gravity.stdlib/sh22-fixture}])
+
+(defn sh22-request
+  [request-id operation arguments effects capabilities
+   allocation-policy actual-source-path]
+  {:artifact :gravity/sh22-library-request
+   :request-id request-id
+   :profile :meta
+   :experimental-opt-in true
+   :operation operation
+   :arguments arguments
+   :effects effects
+   :capabilities capabilities
+   :allocation-policy allocation-policy
+   :source-span (sh22-span)
+   :origin-chain (sh22-origin)
+   :actual-source-path actual-source-path})
+
+(defn sh22-ordered-map []
+  {:artifact :gravity/ordered-map
+   :entries [[:reader :ready] [:syntax :ready]]})
+
+(defn sh22-ordered-set []
+  {:artifact :gravity/ordered-set
+   :values [:reader :syntax]})
+
+(defn sh22-validated-utf8 []
+  {:artifact :gravity/validated-utf8
+   :bytes [79 75]
+   :byte-count 2
+   :scalar-count 2
+   :encoding :utf-8})
+
+(defn sh22-vector-assoc-request []
+  (sh22-request
+   :vector-assoc :vector-assoc [[10 20 30] 1 99]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-vector-nth-request []
+  (sh22-request
+   :vector-nth :vector-nth [[10 20 30] 2]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-map-assoc-request []
+  (sh22-request
+   :map-assoc :ordered-map-assoc
+   [(sh22-ordered-map) :mir :ready]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-map-get-request []
+  (sh22-request
+   :map-get :ordered-map-get [(sh22-ordered-map) :syntax]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-set-conj-request []
+  (sh22-request
+   :set-conj :ordered-set-conj [(sh22-ordered-set) :mir]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-utf8-request []
+  (sh22-request
+   :utf8 :utf8-validate [[65 226 130 172]]
+   #{:memory/allocate} #{} :bounded-by-input
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-checked-add-request []
+  (sh22-request
+   :checked-add :checked-add-i64 [40 2]
+   #{} #{} :none "/checkout-a/compiler.gravity"))
+
+(defn sh22-error-request []
+  (sh22-request
+   :error-context :error-context
+   [:compiler/invalid-form {:form-id :form-7}
+    [:reader :syntax :lowering]]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-file-read-request []
+  (sh22-request
+   :file-read :io-file-read
+   [:compiler/source-unit :utf-8 1048576]
+   #{:filesystem/read} #{:fs/read} :provider-owned
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-stdout-request []
+  (sh22-request
+   :stdout :io-stdout [(sh22-validated-utf8)]
+   #{:io/write} #{:io/stdout} :provider-owned
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-artifact-request []
+  (sh22-request
+   :artifact-data :artifact-data
+   [{:artifact-id "sha256:fixture"
+     :kind :compiler-module
+     :profile :meta
+     :target :portable-mir
+     :provenance [:reader :syntax :checked-core]}]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-syntax []
+  {:syntax-id :syntax/fixture
+   :value '(if true 1 2)
+   :source-span (sh22-span)
+   :hygiene-marks [:mark/root]
+   :namespace-context :gravity.compiler
+   :phase :compile
+   :origin-chain (sh22-origin)})
+
+(defn sh22-meta-request []
+  (sh22-request
+   :meta-view :meta-view [(sh22-syntax)]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-canonical-value []
+  {:artifact :gravity/ordered-map
+   :entries
+   [[:modules [:reader :syntax :mir]]
+    [:statuses
+     {:artifact :gravity/ordered-set
+      :values [:ready :verified]}]]})
+
+(defn sh22-canonical-request []
+  (sh22-request
+   :canonical :canonical-data [(sh22-canonical-value)]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-a/compiler.gravity"))
+
+(defn sh22-canonical-alternate-path-request []
+  (sh22-request
+   :canonical :canonical-data [(sh22-canonical-value)]
+   #{:memory/allocate} #{} :bounded-by-result
+   "/checkout-b/compiler.gravity"))
