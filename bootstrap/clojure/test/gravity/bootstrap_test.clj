@@ -25177,7 +25177,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:3a5bb1d9140ce51f7c115e78a22192cc3b4f71f13b02fbcc0da6bcf0c1c8d4d0"
+    (is (= "sha256:f63601c8ea2359f785f6e5cc06610e93529cac13ca8844c7219ef4575deb1822"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c7-type-checker-engine\n"
@@ -25193,7 +25193,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:09dc6ea13509bbb5bc61aabccc61687929fbfea7f02eb28b8a9a93eab196eae1"
+    (is (= "sha256:2bf47aeaaeb87c9c74efa19594a2690cdd700f4ecd25290c9be81a26af82aa24"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c8-effect-checker-engine\n"
@@ -25209,7 +25209,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:34bca6f12bc8dcf9369a54d333fef6f0274ce43d67cc85381d88c11200225823"
+    (is (= "sha256:6127e0affc1f1e76616dac6295047fa3f5cb9221c0109d6258d1c231d3cfc0a0"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c9-ownership-checker-engine\n"
