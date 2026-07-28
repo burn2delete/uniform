@@ -361,8 +361,8 @@
         bounds
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result :bounds])]
-    (is (= 14 (:schema-version (request artifact))))
-    (is (= :sh07-b13-fragmented-meta-jvm-core (:scope (request artifact))))
+    (is (= 15 (:schema-version (request artifact))))
+    (is (= :sh07-b15-keyword-map-lookup (:scope (request artifact))))
     (is (= maximum-loop-binding-records
            (:maximum-loop-binding-records bounds)))
     (is (= maximum-recur-target-records
@@ -564,10 +564,10 @@
         (is (= :gravity/sh07-core-artifact (:kind artifact)))
         (is (= :accepted (:status artifact)))
         (is (= :SH-07 (:slice artifact)))
-        (is (= "SH-07-B13" (:task artifact)))
+        (is (= "SH-07-B15" (:task artifact)))
         (is (= ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :c6-gravity-core-lowering-b13
+        (is (= :c6-gravity-core-lowering-b15
                (get-in artifact [:pass :name])))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact embedded-proof)))

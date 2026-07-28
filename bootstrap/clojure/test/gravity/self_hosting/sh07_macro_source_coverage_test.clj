@@ -36,7 +36,7 @@
 (def ^:private expected-macro-source-revision-id
   "sha256:19fe589efb27228b8788347439381b61c907a7b6a562a2a3ac3f7256ae77e549")
 (def ^:private expected-coverage
-  ;; These values intentionally freeze full-source B13 coverage. A source
+  ;; These values intentionally freeze full-source B15 coverage. A source
   ;; change must update this census only after the new lowering is inspected.
   {:fragment-count 49
    :root-form-count 49
@@ -56,7 +56,7 @@
   (or (ns-resolve 'gravity.bootstrap symbol)
       (throw
        (ex-info
-        "Required SH-07-B13 coordinator adapter is absent"
+        "Required SH-07-B15 coordinator adapter is absent"
         {:id "SH07-MACRO-COVERAGE-ADAPTER-ABSENT"
          :symbol symbol}))))
 
@@ -175,16 +175,18 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B14" (:coverage-milestone contract)))
-    (is (= {:request-schema-version 14
-            :task "SH-07-B13"
-            :scope :sh07-b13-fragmented-meta-jvm-core
-            :adapter :gravity/sh07-to-c6-core-products-v14
+    (is (= "SH-07-B15" (:coverage-milestone contract)))
+    (is (= {:request-schema-version 15
+            :task "SH-07-B15"
+            :scope :sh07-b15-keyword-map-lookup
+            :adapter :gravity/sh07-to-c6-core-products-v15
             :fresh-authoritative-process-required true
             :iteration-cache-authoritative false}
            (:boundary contract)))
     (is (= {:diagnostics
             "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+            :b7-mlir
+            "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
             :macro macro-relative-path
             :syntax
             "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
@@ -211,9 +213,9 @@
              (:namespace %))
          (:binding-table authenticated-request))]
     (is (= :accepted (:status artifact)))
-    (is (= "SH-07-B13" (:task artifact)))
-    (is (= 14 (:schema-version authenticated-request)))
-    (is (= :sh07-b13-fragmented-meta-jvm-core
+    (is (= "SH-07-B15" (:task artifact)))
+    (is (= 15 (:schema-version authenticated-request)))
+    (is (= :sh07-b15-keyword-map-lookup
            (:scope authenticated-request)))
     (is (= expected-coverage (coverage artifact)))
     (is (= (:top-level-form-ids authenticated-request)

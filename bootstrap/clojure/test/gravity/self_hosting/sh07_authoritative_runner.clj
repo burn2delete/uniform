@@ -65,7 +65,15 @@
                    :canonical-core-artifact])
           capability-proof
           (bootstrap/sh07-core-capability-based-proof artifact)
-          required-products (:required-products contract)
+          required-request-products
+          (:required-request-products contract)
+          required-core-products
+          (:required-core-products contract)
+          required-core-product-counts
+          (get-in contract
+                  [:required-core-product-counts
+                   (keyword module-name)]
+                  {})
           required-verification-checks
           (:required-verification-checks contract)
           boundary (:boundary contract)
@@ -90,7 +98,7 @@
            :iteration-cache-non-authoritative?
            (false? (:iteration-cache-authoritative boundary))
            :coverage-milestone-current?
-           (= "SH-07-B14" (:coverage-milestone contract))
+           (= "SH-07-B15" (:coverage-milestone contract))
            :target-source-reread-disabled?
            (false?
             (get-in artifact
@@ -101,11 +109,19 @@
            (= (:sha256 source-binding-before)
               source-revision-id
               (get-in request [:module :source-revision-id]))
-           :required-products-present?
+           :required-request-products-present?
+           (every? #(contains? request %)
+                   required-request-products)
+           :required-core-products-present?
+           (every? #(contains? core %)
+                   required-core-products)
+           :required-core-product-counts-exact?
            (every?
-            #(and (contains? request %)
-                  (contains? core %))
-            required-products)
+            (fn [[product expected-count]]
+              (let [value (get core product)]
+                (and (coll? value)
+                     (= expected-count (count value)))))
+            required-core-product-counts)
            :required-verification-checks-present-and-passed?
            (every?
             #(and (contains? capability-proof %)
@@ -135,6 +151,7 @@
        :form-count (get-in core [:fragment-coverage :form-count])
        :resolution-count
        (get-in core [:fragment-coverage :resolution-count])
+       :keyword-lookup-count (count (:keyword-lookups core))
        :verification-status
        (if (= :complete (:status capability-proof))
          :passed :failed)

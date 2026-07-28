@@ -12,7 +12,7 @@
     (when-not resource
       (throw
        (ex-info
-        "SH-07-B13 test source is not on the classpath"
+        "SH-07-B15 test source is not on the classpath"
         {:id "SH07-B12-TEST-SOURCE"})))
     (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
       (cond
@@ -110,7 +110,7 @@
   (or (ns-resolve 'gravity.bootstrap symbol)
       (throw
        (ex-info
-        "Required SH-07-B13 coordinator adapter is absent"
+        "Required SH-07-B15 coordinator adapter is absent"
         {:id "SH07-B12-ADAPTER-ABSENT"
          :symbol symbol
          :required-signatures
@@ -186,7 +186,7 @@
     (when-not (= (count records) (count index))
       (throw
        (ex-info
-        "SH-07-B13 records are not uniquely identifiable"
+        "SH-07-B15 records are not uniquely identifiable"
         {:id "SH07-B12-AMBIGUOUS-INDEX"
          :key key-name
          :record-count (count records)
@@ -328,16 +328,16 @@
         (is (= :accepted (:status direct) (:status public)))
         (is (= (:artifact-id direct) (:artifact-id public)))
         (is (= (identity-input direct) (identity-input public)))
-        (is (= 14 (:schema-version (request direct))
+        (is (= 15 (:schema-version (request direct))
                (:schema-version (request public))))
-        (is (= :sh07-b13-fragmented-meta-jvm-core
+        (is (= :sh07-b15-keyword-map-lookup
                (:scope (request direct))
                (:scope (request public))))
-        (is (= "SH-07-B13" (:task direct) (:task public)))
-        (is (= :c6-gravity-core-lowering-b13
+        (is (= "SH-07-B15" (:task direct) (:task public)))
+        (is (= :c6-gravity-core-lowering-b15
                (get-in direct [:pass :name])
                (get-in public [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v14
+        (is (= :gravity/sh07-to-c6-core-products-v15
                (get-in direct
                        [:gravity-core-boundary :adapter-contract])
                (get-in public
@@ -847,7 +847,7 @@
           core-artifact (core artifact)]
       (testing extension
         (is (= :accepted (:status artifact)))
-        (is (= 14 (:schema-version (request artifact))))
+        (is (= 15 (:schema-version (request artifact))))
         (is (seq (:match-pattern-records core-artifact)))
         (is (some #(= :vector (:pattern-kind %))
                   (:match-pattern-records core-artifact)))
@@ -877,7 +877,8 @@
             [:alias-qualified-type-references
              :alias-qualified-var-references
              :alias-qualified-set-mutations
-             :keyword-headed-calls
+             :keyword-default-value-lookup
+             :general-callable-keywords
              :var-profile-legality-sh09
              :destructuring-bindings
              :variadic-function-recur

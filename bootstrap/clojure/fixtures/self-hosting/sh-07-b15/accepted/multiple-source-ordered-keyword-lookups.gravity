@@ -1,0 +1,23 @@
+; SH-07-B15 preserves source order for keyword lookups in map construction.
+(ns self-hosting.sh07-b15.multiple-source-ordered-keyword-lookups
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [contract contract-summary])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B15
+              :fixture :multiple-source-ordered-keyword-lookups
+              :non-claims [:keyword-default-value
+                           :general-callable-keywords
+                           :whole-program-execution]}))
+
+(def contract
+  {:name :checked-core
+   :profile :meta
+   :target :jvm})
+
+(def contract-summary
+  {:name (:name contract)
+   :profile (:profile contract)
+   :target (:target contract)})

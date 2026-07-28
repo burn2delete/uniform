@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B14"
+ :coverage-milestone "SH-07-B15"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
@@ -19,10 +19,10 @@
    "docs/artifacts"
    "tools"]}
  :boundary
- {:request-schema-version 14
-  :task "SH-07-B13"
-  :scope :sh07-b13-fragmented-meta-jvm-core
-  :adapter :gravity/sh07-to-c6-core-products-v14
+ {:request-schema-version 15
+  :task "SH-07-B15"
+  :scope :sh07-b15-keyword-map-lookup
+  :adapter :gravity/sh07-to-c6-core-products-v15
   :fresh-authoritative-process-required true
   :iteration-cache-authoritative false}
  :bounds
@@ -59,16 +59,24 @@
  :authoritative-modules
  {:diagnostics
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+  :b7-mlir
+  "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
   :macro
   "bootstrap/gravity/src/gravity/macro.gravity"
   :syntax
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
- :required-products
+ :required-request-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
+ :required-core-products
+ [:fragment-manifest :fragment-coverage :module-assembly-manifest
+  :keyword-lookups]
+ :required-core-product-counts
+ {:b7-mlir {:keyword-lookups 5}}
  :required-verification-checks
  [:fragment-manifest-replay?
   :fragment-coverage-replay?
   :module-assembly-manifest-replay?
+  :keyword-lookups-replay?
   :module-replay?]
  :nonclaims
  [:persistent-production-cache

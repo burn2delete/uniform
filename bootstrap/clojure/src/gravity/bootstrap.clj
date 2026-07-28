@@ -158942,7 +158942,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B13 is the checked-core projection
+;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B13/B15 is the checked-core projection
 ;; owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
@@ -158951,7 +158951,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v14)
+  :gravity/sh07-to-c6-core-products-v15)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -158964,25 +158964,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 390310)
+(def sh07-core-expected-source-byte-count 401742)
 (def sh07-core-expected-source-content-hash
-  "sha256:6e97093d2ec247bdf28220d8a987e2738dd8eab266ab22cf76c8b8568b31700e")
+  "sha256:33dbe976c891a09c70c7543bb3be4bbf200610a65f0a8c98c30c45e034b1f025")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:cfa4e2794b593f02fe7d63c3983484dc8a8683ff02089022e6a83367e1c7d781")
+  "sha256:8b0911c2b6a3f8626dc704b192292bbd9592f87e8148ad5da064de0325fe3b05")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:60705de6a8cb72d8f6584769ee7e81958e324beb9a893dca69f5841b43ebc497")
-(def sh07-core-expected-function-count 263)
+  "sha256:8d7d5d58d137ee904f01e751da28d02e97602a8895495e03dfcf63267f45c2d1")
+(def sh07-core-expected-function-count 267)
 (def sh07-core-expected-function-names-hash
-  "sha256:57f253265bafec0c1febada81b65df5b0f254fab815633a536d101777d4a50c9")
+  "sha256:b19e30cbf8600549846b4b36f0371ada09bd57e65706b16ebb6298e5e303a2a6")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:2a52c93ee51698beb681c80cf2c10e407883b01a974b399ff5ee9c0295b2a219")
+  "sha256:5ccf01c85cc3493ecc1592e138b5379b6004aaa6fde3c651197f24c4c7c9d578")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:fd321f416633fb6bcb60608281060416e4177dc3cd827f4b9c92d3ae7bb9b29a"
+   "sha256:c7d8ec5b2d4b123797878e4046d700b26a127370bbda95f48627ed0d79e8542c"
    'sh07-verify-core-resolved
-   "sha256:4fe28e43fd427c46c8c220a9e1fc2a1d8456326052c76cc39c35bc382627b4fb"})
+   "sha256:a9aa5548a3a8fc9c9f28dfb73ebbd6880c3425223f96695c539e049d4bda76b3"})
 
 (defn sh07-core-source-path
   []
@@ -160145,7 +160145,7 @@
 
 (defn sh07-core-projection-binding-input
   [request]
-  {:domain :gravity/sh07-authenticated-sh06-core-projection-v14
+  {:domain :gravity/sh07-authenticated-sh06-core-projection-v15
    :request
    (-> request
        (dissoc :projection-binding :provenance)
@@ -160400,7 +160400,7 @@
            (mapv :introduced-fn-syntax-id traces)}
           request
           {:artifact :gravity/sh07-authenticated-sh06-core-request
-           :schema-version 14
+           :schema-version 15
            :lineage lineage
            :module module
            :forms forms
@@ -160418,7 +160418,7 @@
            :macro-origin-expectation expectation
            :projection-binding nil
            :provenance {:actual-source-path source-path}
-           :scope :sh07-b13-fragmented-meta-jvm-core}
+           :scope :sh07-b15-keyword-map-lookup}
           binding
           (reader-canonical-hash
            (sh07-core-projection-binding-input request))]
@@ -160834,7 +160834,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b13-fragmented-core-lowering
+         :lowering-rule :sh07-b15-keyword-map-lookup
          :facts {:reason reason
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -160963,18 +160963,18 @@
               0)
             request-depth (sh07-core-nested-depth request)]
         (cond
-      (not= 14 (:schema-version request))
+      (not= 15 (:schema-version request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-schema-version
-        :expected 14
+        :expected 15
         :observed (:schema-version request)})
 
-      (not= :sh07-b13-fragmented-meta-jvm-core (:scope request))
+      (not= :sh07-b15-keyword-map-lookup (:scope request))
       (sh07-core-request-diagnostic!
        request
        {:reason :request-scope
-        :expected :sh07-b13-fragmented-meta-jvm-core
+        :expected :sh07-b15-keyword-map-lookup
         :observed (:scope request)})
 
       (> forms 65536)
@@ -161141,7 +161141,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b13-fragmented-core-lowering
+         :lowering-rule :sh07-b15-keyword-map-lookup
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -161755,6 +161755,11 @@
          (:calls expected-core))
         (sh07-core-exact-comparison-value
          (:calls core)))
+     :keyword-lookups-replay?
+     (= (sh07-core-exact-comparison-value
+         (:keyword-lookups expected-core))
+        (sh07-core-exact-comparison-value
+         (:keyword-lookups core)))
      :lexical-bindings-replay?
      (= (sh07-core-exact-comparison-value
          (:lexical-bindings expected-core))
@@ -161916,7 +161921,7 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B13"
+           :task "SH-07-B15"
            :document-set ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
@@ -161924,7 +161929,7 @@
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b13
+           {:name :c6-gravity-core-lowering-b15
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -161936,6 +161941,8 @@
              :var-reference-construction
              :var-reference-verification
              :call-construction :call-verification
+             :keyword-map-lookup-construction
+             :keyword-map-lookup-verification
              :lexical-binding-construction
              :lexical-binding-verification
              :loop-binding-construction
@@ -161976,9 +161983,10 @@
              :alias-qualified-type-references
              :alias-qualified-var-references
              :alias-qualified-set-mutations
-             :keyword-headed-calls
              :qualified-var-references
              :var-profile-legality-sh09
+             :keyword-default-value-lookup
+             :general-callable-keywords
              :destructuring-bindings
              :variadic-function-recur
              :recur-type-compatibility
@@ -162033,7 +162041,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b13-fragmented-core-lowering
+               :lowering-rule :sh07-b15-keyword-map-lookup
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation

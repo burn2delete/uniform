@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.sh07-cached-shard-runner
-  "Runs B13 iteration shards with process-local immutable artifact caches.
+  "Runs B15 iteration shards with process-local immutable artifact caches.
 
   Cache results are acceleration only and are never authoritative evidence.
   Use sh07-authoritative-runner for the fresh-process gate."
@@ -81,7 +81,7 @@
   [shard-name]
   (let [tests (resolve-tests shard-name)
         cache-context
-        {:request-schema-version 14
+        {:request-schema-version 15
          :adapter bootstrap/sh07-core-adapter-contract
          :checked-core-source-content-hash
          bootstrap/sh07-core-expected-source-content-hash

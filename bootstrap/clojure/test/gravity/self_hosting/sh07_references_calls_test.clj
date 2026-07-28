@@ -33,18 +33,14 @@
    "qualified-symbol-call"
    "higher-order-lexical-call"
    "call-evaluation-order"
-   "operator-argument-same-symbol"])
+   "operator-argument-same-symbol"
+   "keyword-headed-call"])
 (def ^:private rejected-oracles
   {"empty-call"
    {:rule "C6-CORE-SHAPE"
     :reason :call-operator-required
     :remediation
-    "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}
-   "keyword-headed-call"
-   {:rule "C6-LOWERING-GAP"
-    :reason :keyword-headed-call-deferred
-    :remediation
-    "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}})
+    "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}})
 (def ^:private maximum-reference-use-records 1024)
 (def ^:private maximum-call-records 1024)
 (def ^:private reference-use-keys
@@ -303,8 +299,8 @@
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result
                  :bounds :maximum-call-records])]
-    (is (= 14 (:schema-version (request artifact))))
-    (is (= :sh07-b13-fragmented-meta-jvm-core (:scope (request artifact))))
+    (is (= 15 (:schema-version (request artifact))))
+    (is (= :sh07-b15-keyword-map-lookup (:scope (request artifact))))
     (is (vector? reference-uses))
     (is (vector? calls))
     (is (= maximum-reference-use-records declared-reference-maximum))
@@ -432,11 +428,15 @@
   (doseq [basename accepted-basenames
           extension extensions]
     (testing (str basename extension)
-      (let [artifact (file-artifact "accepted" basename extension)
-            tables (assert-reference-and-call-tables artifact)]
-        (is (seq (:reference-uses tables)))
-        (when (not= basename "parameter-and-namespace-references")
-          (is (seq (:calls tables))))))))
+      (let [artifact (file-artifact "accepted" basename extension)]
+        (if (= basename "keyword-headed-call")
+          (do
+            (is (empty? (:reference-uses (core artifact))))
+            (is (empty? (:calls (core artifact)))))
+          (let [tables (assert-reference-and-call-tables artifact)]
+            (is (seq (:reference-uses tables)))
+            (when (not= basename "parameter-and-namespace-references")
+              (is (seq (:calls tables))))))))))
 
 (deftest sh07-b2-reference-classes-and-call-order-are-explicit
   (let [references
@@ -569,11 +569,11 @@
                   (:failed-checks changed-report)))
         (is (nil? (:raw-host-error changed-request-result)))
         (is (= "C6-VERIFY" (:rule changed-request-diagnostic)))
-        (is (= :authoritative-record-shape
+        (is (= :authenticated-sh06-request-membership-mismatch
                (get-in changed-request-diagnostic [:facts :reason])))
         (is (nil? (:raw-host-error alias-result)))
-        (is (= "C6-LOWERING-GAP" (:rule alias-diagnostic)))
-        (is (= :alias-qualified-reference-deferred
+        (is (= "C6-VERIFY" (:rule alias-diagnostic)))
+        (is (= :authenticated-sh06-request-membership-mismatch
                (get-in alias-diagnostic [:facts :reason])))))))
 
 (deftest sh07-b2-public-replay-and-capability-proof-pass
