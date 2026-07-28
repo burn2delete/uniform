@@ -10,7 +10,10 @@
              c8-effect-diagnostic-catalog
              build-c8-effect-node
              build-c8-capability-proof
-             verify-c8-effect-checker])
+             verify-c8-effect-checker
+             sh09-effect-policy
+             sh09-check-effect-request
+             sh09-verify-effect-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -245,3 +248,811 @@
                       :build-runtime-effect-separation
                       :residual-effects
                       :artifact-provenance]}))
+
+; SH-09 begins with a deliberately bounded legality kernel. It consumes one
+; normalized typed operation at a time. Transitive inference, handler analysis,
+; and the authenticated SH-08 adapter remain later integration work.
+
+(defn sh09-effect-registry [effect]
+  (if (= effect :compiler/read-ir)
+    {:capability :compiler/ir-read
+     :profiles #{:meta}
+     :phases #{:build}
+     :replay-sensitive false
+     :ordering :sequence}
+    (if (= effect :compiler/write-ir)
+      {:capability :compiler/ir-transform
+       :profiles #{:meta}
+       :phases #{:build}
+       :replay-sensitive false
+       :ordering :sequence}
+      (if (= effect :build/read-file)
+        {:capability :build/file-read
+         :profiles #{:meta}
+         :phases #{:build}
+         :replay-sensitive true
+         :ordering :sequence}
+        (if (= effect :build/write-artifact)
+          {:capability :build/artifact-write
+           :profiles #{:meta}
+           :phases #{:build}
+           :replay-sensitive false
+           :ordering :sequence}
+          (if (= effect :build/env)
+            {:capability :build/environment-read
+             :profiles #{:meta}
+             :phases #{:build}
+             :replay-sensitive true
+             :ordering :sequence}
+            (if (= effect :build/network)
+              {:capability :build/network
+               :profiles #{:meta}
+               :phases #{:build}
+               :replay-sensitive true
+               :ordering :sequence}
+              (if (= effect :build/exec)
+                {:capability :build/process
+                 :profiles #{:meta}
+                 :phases #{:build}
+                 :replay-sensitive true
+                 :ordering :sequence}
+                (if (= effect :build/time)
+                  {:capability :build/clock
+                   :profiles #{:meta}
+                   :phases #{:build}
+                   :replay-sensitive true
+                   :ordering :sequence}
+                  (if (= effect :build/random)
+                    {:capability :build/random
+                     :profiles #{:meta}
+                     :phases #{:build}
+                     :replay-sensitive true
+                     :ordering :sequence}
+                    (if (= effect :build/model-call)
+                      {:capability :build/model-call
+                       :profiles #{:meta}
+                       :phases #{:build}
+                       :replay-sensitive true
+                       :ordering :sequence}
+                      (if (= effect :build/tool-call)
+                        {:capability :build/tool-call
+                         :profiles #{:meta}
+                         :phases #{:build}
+                         :replay-sensitive true
+                         :ordering :sequence}
+                        (if (= effect :network/http)
+                          {:capability :http/client
+                           :profiles #{:hosted :native :distributed :ai}
+                           :phases #{:runtime}
+                           :replay-sensitive true
+                           :ordering :sequence}
+                          (if (= effect :filesystem/read)
+                            {:capability :fs/read
+                             :profiles #{:hosted :native}
+                             :phases #{:runtime}
+                             :replay-sensitive true
+                             :ordering :sequence}
+                            (if (= effect :shell/exec)
+                              {:capability :process/exec
+                               :profiles #{:hosted :native}
+                               :phases #{:runtime}
+                               :replay-sensitive true
+                               :ordering :sequence}
+                              (if (= effect :time/read)
+                                {:capability :time/read
+                                 :profiles #{:hosted :native
+                                            :distributed :ai}
+                                 :phases #{:runtime}
+                                 :replay-sensitive true
+                                 :ordering :sequence}
+                                nil))))))))))))))))
+
+(defn sh09-effect-policy []
+  {:artifact :gravity/sh09-effect-policy
+   :version 2
+   :request-artifact :gravity/sh09-normalized-effect-request
+   :result-artifact :gravity/sh09-effect-legality-result
+   :profiles #{:meta}
+   :targets #{:jvm}
+   :phases #{:build}
+   :effects
+   #{:compiler/read-ir :compiler/write-ir
+     :build/read-file :build/write-artifact
+     :build/env :build/network :build/exec
+     :build/time :build/random
+     :build/model-call :build/tool-call}
+   :structural-bounds
+   {:maximum-nodes 8192
+    :maximum-depth 32
+    :maximum-width 256
+    :maximum-scalars 7000
+    :maximum-scalar-units 32768
+    :maximum-collections 2048}
+   :authorities [:source-declaration
+                 :profile
+                 :package
+                 :deployment
+                 :build-policy
+                 :provider
+                 :grant
+                 :phase
+                 :safety]
+   :diagnostics ["C8-UNDECLARED" "C8-PROFILE"
+                 "C8-CAPABILITY" "C8-BUILD"
+                 "C8-REPLAY" "C8-ORDER"
+                 "C8-RUNTIME" "C8-UNKNOWN"
+                 "C8-VERIFY"]
+   :pending [:effect-inference
+             :function-latent-effects
+             :transitive-call-effects
+             :handled-effects
+             :namespace-and-module-summaries
+             :runtime-profile-policy
+             :authenticated-sh08-adapter
+             :mir-preservation]})
+
+(defn sh09-diagnostic
+  [request rule reason denied-layer remediation]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :effect-checking
+   :reason reason
+   :denied-layer denied-layer
+   :request-id (get request :request-id)
+   :core-node-id (get request :core-node-id)
+   :syntax-id (get request :syntax-id)
+   :source-span (get request :source-span)
+   :generated-origin-chain (get request :origin-chain)
+   :function (get request :function)
+   :namespace (get request :namespace)
+   :effect (get request :effect)
+   :capability (get request :required-capability)
+   :profile (get request :profile)
+   :target (get request :target)
+   :phase (get request :phase)
+   :provider (get (get request :provider) :id)
+   :grant (get (get request :grant) :id)
+   :remediation remediation})
+
+(defn sh09-rejected
+  [request rule reason denied-layer remediation]
+  {:artifact :gravity/sh09-effect-legality-result
+   :status :rejected
+   :request-id (get request :request-id)
+   :diagnostics
+   [(sh09-diagnostic
+     request rule reason denied-layer remediation)]
+   :identity-input
+   {:request request
+   :policy-version 2}
+   :pending (get (sh09-effect-policy) :pending)})
+
+(defn sh09-bounds-rejected [request preflight]
+  {:artifact :gravity/sh09-effect-legality-result
+   :status :rejected
+   :request-id (get request :request-id)
+   :diagnostics
+   [(sh09-diagnostic
+     request "C8-VERIFY" (get preflight :reason)
+     :structural-bounds :supply-a-bounded-normalized-request)]
+   :identity-input
+   {:request-id (get request :request-id)
+    :policy-version 2
+    :structural-preflight preflight}
+   :pending (get (sh09-effect-policy) :pending)})
+
+(defn sh09-not [value]
+  (if value false true))
+
+(defn sh09-and [left right]
+  (if left right false))
+
+(defn sh09-not-equal [left right]
+  (sh09-not (= left right)))
+
+(defn sh09-member? [values value]
+  (= (get values value) value))
+
+(defn sh09-phase-valid? [phase]
+  (if (= phase :build)
+    true
+    (= phase :runtime)))
+
+(defn sh09-authority-mode-valid? [mode]
+  (if (= mode :explicit)
+    true
+    (if (= mode :ambient)
+      true
+      (= mode :none))))
+
+(defn sh09-boolean? [value]
+  (if (= value true)
+    true
+    (= value false)))
+
+(defn sh09-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh09-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh09-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh09-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh09-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh09-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh09-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh09-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh09-max [left right]
+  (if (> left right) left right))
+
+(defn sh09-structural-preflight [value]
+  (let [bounds (get (sh09-effect-policy) :structural-bounds)
+        maximum-nodes (get bounds :maximum-nodes)
+        maximum-depth (get bounds :maximum-depth)
+        maximum-width (get bounds :maximum-width)
+        maximum-scalars (get bounds :maximum-scalars)
+        maximum-scalar-units (get bounds :maximum-scalar-units)
+        maximum-collections (get bounds :maximum-collections)]
+    (loop [frontier [[value 0]]
+           nodes 0
+           scalars 0
+           scalar-units 0
+           collections 0
+           observed-depth 0
+           observed-width 0]
+      (if (= (count frontier) 0)
+        {:status :accepted
+         :nodes nodes
+         :scalars scalars
+         :scalar-units scalar-units
+         :collections collections
+         :maximum-depth observed-depth
+         :maximum-width observed-width}
+        (let [entry (first frontier)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :request-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :request-depth-bound}
+              (if (sh09-aggregate? current)
+                (let [width (sh09-aggregate-width current)
+                      next-collections (+ collections 1)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :request-width-bound}
+                    (if (> next-collections maximum-collections)
+                      {:status :rejected :reason :request-collection-bound}
+                      (let [components
+                            (sh09-aggregate-components current)
+                            next-frontier
+                            (loop [remaining components
+                                   result (rest frontier)]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj
+                                  result
+                                  [(first remaining) (+ depth 1)]))))]
+                        (recur
+                         next-frontier
+                         next-nodes
+                         scalars
+                         scalar-units
+                         next-collections
+                         (sh09-max observed-depth depth)
+                         (sh09-max observed-width width))))))
+                (let [next-scalars (+ scalars 1)
+                      next-scalar-units
+                      (+ scalar-units (count (vec (str current))))]
+                  (if (> next-scalars maximum-scalars)
+                    {:status :rejected :reason :request-scalar-count-bound}
+                    (if (> next-scalar-units maximum-scalar-units)
+                      {:status :rejected :reason :request-scalar-bound}
+                      (recur
+                       (rest frontier)
+                       next-nodes
+                       next-scalars
+                       next-scalar-units
+                       collections
+                       (sh09-max observed-depth depth)
+                       observed-width))))))))))))
+
+(defn sh09-authority-collections-valid? [request]
+  (if (set? (get request :declared-effects))
+    (if (set? (get request :package-effects))
+      (if (set? (get request :deployment-effects))
+        (if (set? (get request :declared-capabilities))
+          (if (set? (get request :package-capabilities))
+            (if (set? (get request :deployment-capabilities))
+              (set?
+               (get (get request :build-policy) :allowed-effects))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-hermetic-build-policy? [request]
+  (let [policy (get request :build-policy)]
+    (if (sh09-exact-keys? policy #{:hermetic :allowed-effects})
+      (= true (get policy :hermetic))
+      false)))
+
+(defn sh09-valid-request-shape? [request]
+  (if (map? request)
+    (if (= :gravity/sh09-normalized-effect-request
+           (get request :artifact))
+      (if (= (get request :request-id) nil)
+        false
+        (if (= (get request :core-node-id) nil)
+          false
+          (if (= (get request :syntax-id) nil)
+            false
+            (if (map? (get request :source-span))
+              (if (vector? (get request :origin-chain))
+                (if (= (get request :function) nil)
+                  false
+                  (if (= (get request :namespace) nil)
+                    false
+                    (if (= (get request :profile) nil)
+                      false
+                      (if (= (get request :target) nil)
+                        false
+                        (if (sh09-phase-valid?
+                             (get request :phase))
+                          (if
+                           (sh09-hermetic-build-policy? request)
+                            (if
+                             (sh09-authority-collections-valid?
+                              request)
+                             (if
+                              (sh09-boolean?
+                               (get request :safety-allowed))
+                              (sh09-authority-mode-valid?
+                               (get request :authority-mode))
+                              false)
+                             false)
+                            false)
+                          false))))))))
+              false))
+      false)
+    false))
+
+(defn sh09-authority-allows? [request field value]
+  (= (get (get request field) value) value))
+
+(defn sh09-capability-authorities-allow?
+  [request capability]
+  (if
+   (sh09-authority-allows?
+    request :declared-capabilities capability)
+   (if
+    (sh09-authority-allows?
+     request :package-capabilities capability)
+    (sh09-authority-allows?
+     request :deployment-capabilities capability)
+    false)
+   false))
+
+(defn sh09-provider-allows?
+  [request effect capability]
+  (let [provider (get request :provider)]
+    (if (map? provider)
+      (if (= (get provider :id) nil)
+        false
+        (if (= (get (get provider :effects) effect) effect)
+          (if (= (get (get provider :capabilities) capability)
+                 capability)
+            (if (= (get (get provider :profiles)
+                        (get request :profile))
+                   (get request :profile))
+              (if (= (get (get provider :targets)
+                          (get request :target))
+                     (get request :target))
+                (= (get (get provider :phases)
+                        (get request :phase))
+                   (get request :phase))
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn sh09-grant-allows?
+  [request capability]
+  (let [grant (get request :grant)]
+    (if (map? grant)
+      (if (= (get grant :id) nil)
+        false
+        (if (= capability (get grant :capability))
+          (if (= (get (get request :provider) :id)
+                 (get grant :provider))
+            (if (= (get request :phase) (get grant :phase))
+              (if (= (get request :namespace)
+                     (get grant :principal))
+                (= (get request :resource-subject)
+                   (get grant :scope))
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn sh09-replay-record-valid? [request]
+  (let [record (get request :replay-record)]
+    (if
+     (sh09-exact-keys?
+      record
+      #{:artifact :record-id :request-id :core-node-id
+        :effect :provider :phase :subject :content-id})
+     (if (= :gravity/sh09-replay-record (get record :artifact))
+       (if (sh09-sha256-id? (get record :record-id))
+         (if (sh09-sha256-id? (get record :content-id))
+           (if (= (get request :request-id)
+                  (get record :request-id))
+             (if (= (get request :core-node-id)
+                    (get record :core-node-id))
+               (if (= (get request :effect) (get record :effect))
+                 (if (= (get (get request :provider) :id)
+                        (get record :provider))
+                   (if (= (get request :phase) (get record :phase))
+                     (if (= (get request :resource-subject)
+                            (get record :subject))
+                       (= (get (get request :resource-subject)
+                               :content-id)
+                          (get record :content-id))
+                       false)
+                     false)
+                   false)
+                 false)
+               false)
+             false)
+           false)
+         false)
+       false)
+     false)))
+
+(defn sh09-accepted
+  [request policy]
+  (let [effect (get request :effect)
+        capability (get request :required-capability)]
+    {:artifact :gravity/sh09-effect-legality-result
+     :status :accepted
+     :request-id (get request :request-id)
+     :effect effect
+     :direct-effects (if (= nil effect) #{} #{effect})
+     :residual-effects (if (= nil effect) #{} #{effect})
+     :legality
+     {:effect effect
+      :source (get request :core-node-id)
+      :allowed-by
+      {:source-declaration true
+       :profile true
+       :package true
+       :deployment true
+       :build-policy true
+       :provider true
+       :grant true
+       :phase true
+       :safety true}
+      :required-capability capability
+      :result :accepted}
+     :capability-proof
+     (if capability
+       {:artifact :gravity/c8-capability-proof
+        :effect effect
+        :source (get request :core-node-id)
+        :capability capability
+        :grant (get request :grant)
+        :provider (get (get request :provider) :id)
+        :phase (get request :phase)
+        :status :accepted}
+       nil)
+     :replay-obligation
+     (if (get policy :replay-sensitive)
+       {:effect effect
+        :core-node-id (get request :core-node-id)
+        :record (get request :replay-record)
+        :ordering (get request :ordering)
+        :status :recorded}
+       nil)
+     :ordering
+     {:effect effect
+      :core-node-id (get request :core-node-id)
+      :mode (get request :ordering)}
+     :preserves
+     {:core-node-id (get request :core-node-id)
+      :syntax-id (get request :syntax-id)
+      :source-span (get request :source-span)
+      :origin-chain (get request :origin-chain)
+      :profile (get request :profile)
+      :target (get request :target)}
+     :diagnostics []
+     :identity-input
+     {:request request
+      :policy-version 2}
+     :scope :single-normalized-typed-operation
+     :pending (get (sh09-effect-policy) :pending)}))
+
+(defn sh09-check-effect-request [request]
+  (let [preflight (sh09-structural-preflight request)]
+   (if (= :rejected (get preflight :status))
+    (sh09-bounds-rejected request preflight)
+    (if (sh09-not (sh09-valid-request-shape? request))
+    (sh09-rejected
+     request "C8-VERIFY" :malformed-normalized-effect-request
+     :request-shape :provide-complete-normalized-operation-facts)
+    (if (= nil (get request :effect))
+      (if
+       (sh09-and
+        (= :none (get request :authority-mode))
+        (= nil (get request :required-capability)))
+       (if (= nil (get request :provider))
+         (if (= nil (get request :grant))
+           (if (= nil (get request :resource-subject))
+             (if (= nil (get request :replay-record))
+               (if (= nil (get request :ordering))
+                 (if (= #{}
+                        (get request :declared-effects)
+                        (get request :package-effects)
+                        (get request :deployment-effects)
+                        (get request :declared-capabilities)
+                        (get request :package-capabilities)
+                        (get request :deployment-capabilities)
+                        (get (get request :build-policy)
+                             :allowed-effects))
+                   (sh09-accepted request nil)
+                   (sh09-rejected
+                    request "C8-VERIFY" :pure-operation-carries-authority
+                    :request-shape
+                    :remove-effect-authority-from-pure-operation))
+                 (sh09-rejected
+                  request "C8-VERIFY" :pure-operation-carries-authority
+                  :request-shape
+                  :remove-effect-authority-from-pure-operation))
+               (sh09-rejected
+                request "C8-VERIFY" :pure-operation-carries-authority
+                :request-shape
+                :remove-effect-authority-from-pure-operation))
+             (sh09-rejected
+              request "C8-VERIFY" :pure-operation-carries-authority
+              :request-shape
+              :remove-effect-authority-from-pure-operation))
+           (sh09-rejected
+            request "C8-VERIFY" :pure-operation-carries-authority
+            :request-shape
+            :remove-effect-authority-from-pure-operation))
+         (sh09-rejected
+          request "C8-VERIFY" :pure-operation-carries-authority
+          :request-shape
+          :remove-effect-authority-from-pure-operation))
+       (sh09-rejected
+        request "C8-VERIFY" :pure-operation-carries-authority
+        :request-shape :remove-effect-authority-from-pure-operation))
+      (let [effect (get request :effect)
+            capability (get request :required-capability)
+            policy (sh09-effect-registry effect)]
+        (if (sh09-not-equal :meta (get request :profile))
+          (sh09-rejected
+           request "C8-PROFILE" :slice-profile-mismatch
+           :profile :use-the-bounded-meta-profile-slice)
+          (if (sh09-not-equal :build (get request :phase))
+            (sh09-rejected
+             request "C8-PROFILE" :slice-phase-mismatch
+             :phase :use-the-bounded-build-phase-slice)
+            (if (sh09-not-equal :jvm (get request :target))
+              (sh09-rejected
+               request "C8-RUNTIME" :slice-target-mismatch
+               :target :use-the-supported-jvm-target)
+              (if (sh09-not-equal :explicit
+                                  (get request :authority-mode))
+                (sh09-rejected
+                 request "C8-CAPABILITY" :explicit-authority-required
+                 :grant :supply-an-explicit-scoped-capability-grant)
+                (if (= nil (get request :resource-subject))
+                  (sh09-rejected
+                   request "C8-CAPABILITY" :resource-subject-required
+                   :grant :bind-the-grant-to-an-exact-resource-subject)
+        (if (= nil policy)
+          (sh09-rejected
+           request "C8-UNKNOWN" :unregistered-effect
+           :effect-registry :register-effect-policy-before-use)
+          (if (sh09-not-equal capability (get policy :capability))
+            (sh09-rejected
+             request "C8-VERIFY" :capability-policy-mismatch
+             :effect-registry :use-the-registered-capability-requirement)
+            (if
+             (sh09-not
+              (sh09-member?
+               (get policy :profiles) (get request :profile)))
+             (sh09-rejected
+              request "C8-PROFILE" :effect-forbidden-by-profile
+              :profile :use-a-profile-legal-effect-or-explicit-boundary)
+             (if
+              (sh09-not
+               (sh09-member?
+                (get policy :phases) (get request :phase)))
+              (sh09-rejected
+               request "C8-CAPABILITY" :capability-phase-mismatch
+               :phase :use-a-grant-for-the-effect-phase)
+              (if
+               (sh09-not
+                (sh09-authority-allows?
+                 request :declared-effects effect))
+               (sh09-rejected
+                request "C8-UNDECLARED" :effect-not-declared
+                :source-declaration
+                :declare-the-effect-at-the-source-boundary)
+               (if
+                (sh09-not
+                 (sh09-authority-allows?
+                  request :package-effects effect))
+                (sh09-rejected
+                 request "C8-UNDECLARED" :effect-not-allowed-by-package
+                 :package
+                 :narrow-source-or-add-an-explicit-package-allowance)
+                (if
+                 (sh09-not
+                  (sh09-authority-allows?
+                   request :deployment-effects effect))
+                 (sh09-rejected
+                  request "C8-UNDECLARED"
+                  :effect-not-allowed-by-deployment
+                  :deployment
+                  :narrow-source-or-add-an-explicit-deployment-allowance)
+                 (if (sh09-not (get request :safety-allowed))
+                   (sh09-rejected
+                    request "C8-PROFILE"
+                    :effect-rejected-by-safety-policy
+                    :safety
+                    :use-a-safe-provider-or-explicit-reviewed-boundary)
+                   (if
+                    (sh09-and
+                     (= :build (get request :phase))
+                     (sh09-not
+                      (sh09-member?
+                       (get (get request :build-policy)
+                            :allowed-effects)
+                       effect)))
+                    (sh09-rejected
+                     request "C8-BUILD" :build-effect-not-granted
+                     :build-policy
+                     :declare-the-build-effect-and-hermetic-input)
+                    (if
+                     (= :ambient (get request :authority-mode))
+                     (sh09-rejected
+                      request "C8-CAPABILITY" :ambient-authority-denied
+                      :grant
+                      :supply-an-explicit-scoped-capability-grant)
+                     (if
+                      (sh09-not
+                       (sh09-capability-authorities-allow?
+                        request capability))
+                      (sh09-rejected
+                       request "C8-CAPABILITY"
+                       :capability-not-allowed-by-all-authorities
+                       :capability-intersection
+                       :declare-and-grant-the-capability-at-every-policy-layer)
+                      (if
+                       (sh09-not
+                        (sh09-provider-allows?
+                         request effect capability))
+                       (sh09-rejected
+                        request "C8-RUNTIME"
+                        :provider-does-not-support-request
+                        :provider
+                        :select-a-provider-with-matching-contract)
+                       (if
+                        (sh09-not
+                         (sh09-grant-allows? request capability))
+                        (sh09-rejected
+                         request "C8-CAPABILITY"
+                         :grant-does-not-authorize-request
+                         :grant
+                         :supply-a-matching-scoped-principal-phase-grant)
+                        (if (get policy :replay-sensitive)
+                          (if
+                           (sh09-not
+                            (sh09-replay-record-valid? request))
+                           (sh09-rejected
+                            request "C8-REPLAY"
+                            :replay-sensitive-effect-without-record
+                            :replay
+                            :supply-a-content-addressed-replay-record)
+                           (if
+                            (sh09-not-equal
+                             (get policy :ordering)
+                             (get request :ordering))
+                            (sh09-rejected
+                             request "C8-ORDER" :effect-ordering-mismatch
+                             :ordering
+                             :preserve-the-registered-effect-ordering)
+                            (sh09-accepted request policy)))
+                          (if (= nil (get request :replay-record))
+                            (if
+                             (sh09-not-equal
+                              (get policy :ordering)
+                              (get request :ordering))
+                             (sh09-rejected
+                              request "C8-ORDER" :effect-ordering-mismatch
+                              :ordering
+                              :preserve-the-registered-effect-ordering)
+                             (sh09-accepted request policy))
+                            (sh09-rejected
+                             request "C8-VERIFY"
+                             :unexpected-replay-record
+                             :request-shape
+                             :remove-replay-data-from-deterministic-effect)))))))))))))))))))))))))))
+
+(defn sh09-verify-effect-result [request candidate]
+  (let [request-preflight (sh09-structural-preflight request)
+        candidate-preflight (sh09-structural-preflight candidate)]
+    (if
+     (sh09-and
+      (= :accepted (get request-preflight :status))
+      (= :accepted (get candidate-preflight :status)))
+     (if (= candidate (sh09-check-effect-request request))
+       {:artifact :gravity/sh09-effect-result-verification
+        :status :passed
+        :request-id (get request :request-id)
+        :checks [:complete-recomputation
+                 :policy-identity
+                 :diagnostic-identity
+                 :capability-proof-identity
+                 :source-lineage-identity]}
+       {:artifact :gravity/sh09-effect-result-verification
+        :status :rejected
+        :request-id (get request :request-id)
+        :diagnostics
+        [(sh09-diagnostic
+          request "C8-VERIFY" :effect-result-substitution
+          :result-identity :recompute-from-the-normalized-request)]})
+     {:artifact :gravity/sh09-effect-result-verification
+      :status :rejected
+      :request-id (get request :request-id)
+      :diagnostics
+      [(sh09-diagnostic
+        request "C8-VERIFY" :effect-result-structural-bound
+        :structural-bounds :supply-a-bounded-result-candidate)]})))

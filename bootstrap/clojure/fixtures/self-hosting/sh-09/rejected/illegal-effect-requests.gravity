@@ -1,0 +1,175 @@
+(ns gravity.self-hosting.sh09.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh09-undeclared-request
+             sh09-profile-request
+             sh09-capability-request
+             sh09-ambient-request
+             sh09-build-request
+             sh09-replay-request
+             sh09-order-request
+             sh09-runtime-request
+             sh09-unknown-request
+             sh09-phase-request
+             sh09-malformed-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh09-valid-request []
+  {:artifact :gravity/sh09-normalized-effect-request
+   :request-id :valid-compiler-read
+   :core-node-id "core-node-rejected-control"
+   :syntax-id "syntax-rejected-control"
+   :source-span {:source "illegal-effect-requests.gravity"
+                 :start-byte 0
+                 :end-byte 1}
+   :origin-chain []
+   :function (quote gravity.self-hosting.sh09.rejected/check)
+   :namespace (quote gravity.self-hosting.sh09.rejected)
+   :profile :meta
+   :target :jvm
+   :phase :build
+   :effect :compiler/read-ir
+   :required-capability :compiler/ir-read
+   :declared-effects #{:compiler/read-ir}
+   :package-effects #{:compiler/read-ir}
+   :deployment-effects #{:compiler/read-ir}
+   :declared-capabilities #{:compiler/ir-read}
+   :package-capabilities #{:compiler/ir-read}
+   :deployment-capabilities #{:compiler/ir-read}
+   :provider
+   {:id :gravity.compiler/read-only-ir
+    :effects #{:compiler/read-ir}
+    :capabilities #{:compiler/ir-read}
+    :profiles #{:meta}
+    :targets #{:jvm}
+    :phases #{:build}}
+   :grant
+   {:id :compiler-read-grant
+    :principal (quote gravity.self-hosting.sh09.rejected)
+    :capability :compiler/ir-read
+    :provider :gravity.compiler/read-only-ir
+    :phase :build
+    :scope {:ir-level :typed-core}}
+   :resource-subject {:ir-level :typed-core}
+   :build-policy
+   {:hermetic true
+    :allowed-effects #{:compiler/read-ir}}
+   :safety-allowed true
+   :authority-mode :explicit
+   :replay-record nil
+   :ordering :sequence})
+
+(defn sh09-build-read-request []
+  {:artifact :gravity/sh09-normalized-effect-request
+   :request-id :build-read
+   :core-node-id "core-node-build-read"
+   :syntax-id "syntax-build-read"
+   :source-span {:source "illegal-effect-requests.gravity"
+                 :start-byte 2
+                 :end-byte 3}
+   :origin-chain []
+   :function (quote gravity.self-hosting.sh09.rejected/load)
+   :namespace (quote gravity.self-hosting.sh09.rejected)
+   :profile :meta
+   :target :jvm
+   :phase :build
+   :effect :build/read-file
+   :required-capability :build/file-read
+   :declared-effects #{:build/read-file}
+   :package-effects #{:build/read-file}
+   :deployment-effects #{:build/read-file}
+   :declared-capabilities #{:build/file-read}
+   :package-capabilities #{:build/file-read}
+   :deployment-capabilities #{:build/file-read}
+   :provider
+   {:id :gravity.build/hermetic-input
+    :effects #{:build/read-file}
+    :capabilities #{:build/file-read}
+    :profiles #{:meta}
+    :targets #{:jvm}
+    :phases #{:build}}
+   :grant
+   {:id :build-read-grant
+    :principal (quote gravity.self-hosting.sh09.rejected)
+    :capability :build/file-read
+    :provider :gravity.build/hermetic-input
+    :phase :build
+    :scope
+    {:content-id
+     "sha256:3333333333333333333333333333333333333333333333333333333333333333"}}
+   :resource-subject
+   {:content-id
+    "sha256:3333333333333333333333333333333333333333333333333333333333333333"}
+   :build-policy
+   {:hermetic true
+    :allowed-effects #{:build/read-file}}
+   :safety-allowed true
+   :authority-mode :explicit
+   :replay-record
+   {:artifact :gravity/sh09-replay-record
+    :record-id
+    "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+    :request-id :build-read
+    :core-node-id "core-node-build-read"
+    :effect :build/read-file
+    :provider :gravity.build/hermetic-input
+    :phase :build
+    :subject
+    {:content-id
+     "sha256:3333333333333333333333333333333333333333333333333333333333333333"}
+    :content-id
+    "sha256:3333333333333333333333333333333333333333333333333333333333333333"}
+   :ordering :sequence})
+
+(defn sh09-undeclared-request []
+  (assoc (sh09-valid-request) :declared-effects #{}))
+
+(defn sh09-profile-request []
+  (assoc
+   (assoc
+    (assoc
+     (assoc
+      (sh09-valid-request)
+      :effect :network/http)
+     :required-capability :http/client)
+    :phase :runtime)
+   :profile :hosted))
+
+(defn sh09-capability-request []
+  (assoc (sh09-valid-request) :deployment-capabilities #{}))
+
+(defn sh09-ambient-request []
+  (assoc (sh09-valid-request) :authority-mode :ambient))
+
+(defn sh09-build-request []
+  (assoc
+   (sh09-build-read-request)
+   :build-policy {:hermetic true :allowed-effects #{}}))
+
+(defn sh09-replay-request []
+  (assoc (sh09-build-read-request) :replay-record nil))
+
+(defn sh09-order-request []
+  (assoc (sh09-valid-request) :ordering :may-commute))
+
+(defn sh09-runtime-request []
+  (assoc
+   (sh09-valid-request)
+   :provider
+   {:id :gravity.compiler/incompatible
+    :effects #{}
+    :capabilities #{:compiler/ir-read}
+    :profiles #{:meta}
+    :targets #{:jvm}
+    :phases #{:build}}))
+
+(defn sh09-unknown-request []
+  (assoc (sh09-valid-request) :effect :future/ambient-service))
+
+(defn sh09-phase-request []
+  (assoc (sh09-valid-request) :phase :runtime))
+
+(defn sh09-malformed-request []
+  (assoc (sh09-valid-request) :artifact :gravity/not-an-effect-request))
