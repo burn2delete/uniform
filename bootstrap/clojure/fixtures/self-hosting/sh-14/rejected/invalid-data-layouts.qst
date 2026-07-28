@@ -1,0 +1,242 @@
+(ns gravity.self-hosting.sh14.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh14-missing-fact-request
+             sh14-duplicate-record-fields-request
+             sh14-duplicate-map-keys-request
+             sh14-duplicate-set-values-request
+             sh14-invalid-variant-tag-request
+             sh14-excessive-capacity-request
+             sh14-length-over-capacity-request
+             sh14-hidden-mutability-request
+             sh14-invalid-buffer-regime-request
+             sh14-wrong-size-request
+             sh14-invalid-alignment-request
+             sh14-invalid-byte-request
+             sh14-negative-byte-request
+             sh14-overlong-utf8-request
+             sh14-surrogate-utf8-request
+             sh14-truncated-utf8-request
+             sh14-over-max-utf8-request
+             sh14-empty-origin-request
+             sh14-invalid-generated-origin-request
+             sh14-invalid-source-span-request
+             sh14-reversed-source-span-request
+             sh14-malformed-fact-id-request
+             sh14-element-size-over-limit-request
+             sh14-total-size-over-limit-request
+             sh14-duplicate-variant-tags-request
+             sh14-variant-arity-request
+             sh14-nil-variant-tag-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh14-base-request []
+  {:artifact :gravity/sh14-data-layout-request
+   :value-id :invalid
+   :kind :vector
+   :payload [1 2]
+   :capacity 2
+   :length 2
+   :element-size 8
+   :size-bytes 16
+   :alignment 8
+   :allocation-regime :persistent
+   :mutable false
+   :profile :safe
+   :target :portable
+   :source-span
+   {:source-id :gravity.compiler/sh14-invalid-fixture
+    :actual-source-path "/checkout-a/invalid.gravity"
+    :start {:byte 0 :line 1 :column 1}
+    :end {:byte 8 :line 1 :column 9}}
+   :origin-chain
+   [{:kind :source
+     :source-id :gravity.compiler/sh14-invalid-fixture
+     :actual-source-path "/checkout-a/invalid.gravity"}]
+   :type-fact-id
+   "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id
+   "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :ownership-fact-id
+   "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+   :safety-fact-id
+   "sha256:4444444444444444444444444444444444444444444444444444444444444444"})
+
+(defn sh14-missing-fact-request []
+  (assoc (sh14-base-request) :ownership-fact-id nil))
+
+(defn sh14-duplicate-record-fields-request []
+  (assoc
+   (sh14-base-request)
+   :kind :record
+   :field-names [:field :field]))
+
+(defn sh14-duplicate-map-keys-request []
+  (assoc
+   (sh14-base-request)
+   :kind :map
+   :keys [:key :key]))
+
+(defn sh14-duplicate-set-values-request []
+  (assoc
+   (sh14-base-request)
+   :kind :set
+   :payload [:value :value]))
+
+(defn sh14-invalid-variant-tag-request []
+  (assoc
+   (sh14-base-request)
+   :kind :variant
+   :allowed-tags [:some :none]
+   :variant-arities {:some 1 :none 0}
+   :tag :other))
+
+(defn sh14-excessive-capacity-request []
+  (assoc
+   (sh14-base-request)
+   :capacity 4097
+   :size-bytes 32776))
+
+(defn sh14-length-over-capacity-request []
+  (assoc
+   (sh14-base-request)
+   :capacity 1
+   :length 2
+   :size-bytes 8))
+
+(defn sh14-hidden-mutability-request []
+  (assoc (sh14-base-request) :mutable true))
+
+(defn sh14-invalid-buffer-regime-request []
+  (assoc
+   (sh14-base-request)
+   :kind :mutable-buffer
+   :mutable true
+   :allocation-regime :persistent))
+
+(defn sh14-wrong-size-request []
+  (assoc (sh14-base-request) :size-bytes 15))
+
+(defn sh14-invalid-alignment-request []
+  (assoc (sh14-base-request) :alignment 3))
+
+(defn sh14-invalid-byte-request []
+  (assoc
+   (sh14-base-request)
+   :kind :bytes
+   :payload [300]
+   :capacity 1
+   :length 1
+   :size-bytes 8))
+
+(defn sh14-negative-byte-request []
+  (assoc
+   (sh14-base-request)
+   :kind :bytes
+   :payload [-1]
+   :capacity 1
+   :length 1
+   :size-bytes 8))
+
+(defn sh14-invalid-utf8-request [payload]
+  (assoc
+   (sh14-base-request)
+   :kind :string
+   :encoding :utf-8
+   :payload payload
+   :capacity (count payload)
+   :length (count payload)
+   :element-size 1
+   :size-bytes 8))
+
+(defn sh14-overlong-utf8-request []
+  (sh14-invalid-utf8-request [192 128]))
+
+(defn sh14-surrogate-utf8-request []
+  (sh14-invalid-utf8-request [237 160 128]))
+
+(defn sh14-truncated-utf8-request []
+  (sh14-invalid-utf8-request [240 159]))
+
+(defn sh14-over-max-utf8-request []
+  (sh14-invalid-utf8-request [244 144 128 128]))
+
+(defn sh14-empty-origin-request []
+  (assoc (sh14-base-request) :origin-chain []))
+
+(defn sh14-invalid-generated-origin-request []
+  (assoc
+   (sh14-base-request)
+   :origin-chain
+   [{:kind :generated
+     :source-id :gravity.compiler/generated
+     :actual-source-path "/checkout-a/generated.gravity"
+     :generated-origin
+     {:generator-id
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      :anchor-id "not-a-sha256-id"
+      :actual-source-path "/checkout-a/generated.gravity"}}]))
+
+(defn sh14-invalid-source-span-request []
+  (assoc
+   (sh14-base-request)
+   :source-span
+   {:source-id :gravity.compiler/sh14-invalid-fixture
+    :actual-source-path "/checkout-a/invalid.gravity"
+    :start {:byte 0 :line 1 :column 1}}))
+
+(defn sh14-reversed-source-span-request []
+  (assoc
+   (sh14-base-request)
+   :source-span
+   {:source-id :gravity.compiler/sh14-invalid-fixture
+    :actual-source-path "/checkout-a/invalid.gravity"
+    :start {:byte 8 :line 2 :column 9}
+    :end {:byte 0 :line 1 :column 1}}))
+
+(defn sh14-malformed-fact-id-request []
+  (assoc (sh14-base-request) :type-fact-id "sha256:xyz"))
+
+(defn sh14-element-size-over-limit-request []
+  (assoc
+   (sh14-base-request)
+   :element-size 65
+   :size-bytes 136))
+
+(defn sh14-total-size-over-limit-request []
+  (assoc
+   (sh14-base-request)
+   :payload [1 2]
+   :capacity 4096
+   :element-size 64
+   :size-bytes 262144))
+
+(defn sh14-duplicate-variant-tags-request []
+  (assoc
+   (sh14-base-request)
+   :kind :variant
+   :payload [1]
+   :capacity 1
+   :length 1
+   :size-bytes 8
+   :allowed-tags [:some :some]
+   :variant-arities {:some 1}
+   :tag :some))
+
+(defn sh14-variant-arity-request []
+  (assoc
+   (sh14-base-request)
+   :kind :variant
+   :allowed-tags [:pair :none]
+   :variant-arities {:pair 1 :none 0}
+   :tag :pair))
+
+(defn sh14-nil-variant-tag-request []
+  (assoc
+   (sh14-base-request)
+   :kind :variant
+   :allowed-tags [:some :none]
+   :variant-arities {:some 1 :none 0}
+   :tag nil))

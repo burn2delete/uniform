@@ -1,0 +1,146 @@
+(ns gravity.self-hosting.sh14.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh14-string-request
+             sh14-bytes-request
+             sh14-symbol-request
+             sh14-keyword-request
+             sh14-tuple-request
+             sh14-record-request
+             sh14-variant-request
+             sh14-vector-request
+             sh14-map-request
+             sh14-set-request
+             sh14-mutable-buffer-request
+             sh14-maximum-layout-request
+             sh14-record-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh14-base-request
+  [value-id kind payload capacity length element-size
+   allocation-regime mutable actual-source-path]
+  {:artifact :gravity/sh14-data-layout-request
+   :value-id value-id
+   :kind kind
+   :payload payload
+   :capacity capacity
+   :length length
+   :element-size element-size
+   :size-bytes
+   (* 8 (quot (+ (* capacity element-size) 7) 8))
+   :alignment 8
+   :allocation-regime allocation-regime
+   :mutable mutable
+   :profile :safe
+   :target :portable
+   :source-span
+   {:source-id :gravity.compiler/sh14-fixture
+    :actual-source-path actual-source-path
+    :start {:byte 0 :line 1 :column 1}
+    :end {:byte 16 :line 1 :column 17}}
+   :origin-chain
+   [{:kind :source
+     :source-id :gravity.compiler/sh14-fixture
+     :actual-source-path actual-source-path}
+    {:kind :generated
+     :source-id :gravity.compiler/sh14-generated
+     :actual-source-path actual-source-path
+     :generated-origin
+     {:generator-id
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      :anchor-id
+      "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      :actual-source-path actual-source-path
+      :parent-generated-origin
+      {:generator-id
+       "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+       :anchor-id
+       "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+       :actual-source-path actual-source-path}}}]
+   :type-fact-id
+   "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id
+   "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :ownership-fact-id
+   "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+   :safety-fact-id
+   "sha256:4444444444444444444444444444444444444444444444444444444444444444"})
+
+(defn sh14-string-request []
+  (assoc
+   (sh14-base-request
+    :string :string [71 114 97 118 105 116 121 240 159 152 128] 16 11 1
+    :persistent false "/checkout-a/data.gravity")
+   :encoding :utf-8))
+
+(defn sh14-bytes-request []
+  (sh14-base-request
+   :bytes :bytes [0 127 255] 4 3 1
+   :persistent false "/checkout-a/data.gravity"))
+
+(defn sh14-symbol-request []
+  (sh14-base-request
+   :symbol :symbol "gravity.core/map" 16 16 1
+   :persistent false "/checkout-a/data.gravity"))
+
+(defn sh14-keyword-request []
+  (sh14-base-request
+   :keyword :keyword "layout" 8 6 1
+   :static false "/checkout-a/data.gravity"))
+
+(defn sh14-tuple-request []
+  (sh14-base-request
+   :tuple :tuple [:x 42 true] 4 3 8
+   :stack false "/checkout-a/data.gravity"))
+
+(defn sh14-record-request []
+  (assoc
+   (sh14-base-request
+    :record :record ["map" 2] 2 2 8
+    :persistent false "/checkout-a/data.gravity")
+   :field-names [:name :arity]))
+
+(defn sh14-record-alternate-path-request []
+  (assoc
+   (sh14-base-request
+    :record :record ["map" 2] 2 2 8
+    :persistent false "/checkout-b/data.gravity")
+   :field-names [:name :arity]))
+
+(defn sh14-variant-request []
+  (assoc
+   (sh14-base-request
+    :variant :variant [42] 1 1 8
+    :persistent false "/checkout-a/data.gravity")
+   :allowed-tags [:some :none]
+   :variant-arities {:some 1 :none 0}
+   :tag :some))
+
+(defn sh14-vector-request []
+  (sh14-base-request
+   :vector :vector [1 2 3] 4 3 8
+   :persistent false "/checkout-a/data.gravity"))
+
+(defn sh14-map-request []
+  (assoc
+   (sh14-base-request
+    :map :map [1 2] 4 2 16
+    :persistent false "/checkout-a/data.gravity")
+   :keys [:a :b]))
+
+(defn sh14-set-request []
+  (sh14-base-request
+   :set :set [:a :b] 4 2 8
+   :persistent false "/checkout-a/data.gravity"))
+
+(defn sh14-mutable-buffer-request []
+  (sh14-base-request
+   :mutable-buffer :mutable-buffer [0 0] 64 2 1
+   :bounded true "/checkout-a/data.gravity"))
+
+(defn sh14-maximum-layout-request []
+  (sh14-base-request
+   :maximum-layout :vector [] 2048 0 64
+   :persistent false "/checkout-a/data.gravity"))
