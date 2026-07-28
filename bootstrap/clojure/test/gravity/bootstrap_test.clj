@@ -25225,7 +25225,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:ab3a6b845fdde70c55a9d174fe99608508007efb2289979a16dd86f66a3329bf"
+    (is (= "sha256:baf1d1c2d98b475ace5ce541662151ed03fdaa4ea544a8784d682393758e7007"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c10-safety-analysis-pipeline\n"
