@@ -1,7 +1,8 @@
 {:artifact :gravity/sh07-proof-process-contract
  :schema-version 1
  :status :active
- :scope :sh07-b13-proof-orchestration
+ :scope :sh07-proof-orchestration
+ :coverage-milestone "SH-07-B14"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
@@ -26,6 +27,7 @@
   :iteration-cache-authoritative false}
  :bounds
  {:maximum-module-forms 65536
+  :maximum-module-core-nodes 65536
   :maximum-fragments 1024
   :maximum-top-level-forms 1024
   :maximum-fragment-forms 1024
@@ -57,6 +59,8 @@
  :authoritative-modules
  {:diagnostics
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+  :macro
+  "bootstrap/gravity/src/gravity/macro.gravity"
   :syntax
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
  :required-products
@@ -71,5 +75,9 @@
   :cross-process-cache-trust
   :parallel-digest-resolution
   :incremental-fragment-compilation
+  :macro-expander-runtime-authority
+  :c4-adapter-retirement
+  :downstream-c6-compilation
+  :sh07-complete
   :seed-retirement
   :self-hosting-complete]}

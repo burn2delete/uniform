@@ -2,6 +2,7 @@
   "Runs cache-free SH-07 authoritative module acceptance and public replay."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as string]
             [gravity.bootstrap :as bootstrap]))
 
 (def ^:private contract-resource
@@ -29,6 +30,19 @@
   []
   (vec (keys (modules (proof-contract)))))
 
+(defn- source-bytes-sha256
+  [path]
+  (let [digest (java.security.MessageDigest/getInstance "SHA-256")
+        bytes (java.nio.file.Files/readAllBytes
+               (.toPath (io/file path)))]
+    (.update digest bytes)
+    {:byte-count (alength bytes)
+     :sha256
+     (str
+      "sha256:"
+      (apply str (map #(format "%02x" (bit-and % 0xff))
+                      (.digest digest))))}))
+
 (defn- run-module
   [contract module-name]
   (let [path (get (modules contract) module-name)]
@@ -39,6 +53,7 @@
                  :module module-name
                  :available (module-names)})))
     (let [started (System/nanoTime)
+          source-binding-before (source-bytes-sha256 path)
           artifact (bootstrap/sh07-core-file-artifact path)
           request
           (get-in artifact
@@ -54,6 +69,9 @@
           required-verification-checks
           (:required-verification-checks contract)
           boundary (:boundary contract)
+          source-binding-after (source-bytes-sha256 path)
+          source-revision-id
+          (get-in request [:lineage :source-revision-id])
           contract-checks
           {:request-schema-current?
            (= (:request-schema-version boundary)
@@ -71,6 +89,18 @@
            (true? (:fresh-authoritative-process-required boundary))
            :iteration-cache-non-authoritative?
            (false? (:iteration-cache-authoritative boundary))
+           :coverage-milestone-current?
+           (= "SH-07-B14" (:coverage-milestone contract))
+           :target-source-reread-disabled?
+           (false?
+            (get-in artifact
+                    [:gravity-core-boundary :target-source-reread?]))
+           :source-snapshot-stable?
+           (= source-binding-before source-binding-after)
+           :source-revision-bound-to-bytes?
+           (= (:sha256 source-binding-before)
+              source-revision-id
+              (get-in request [:module :source-revision-id]))
            :required-products-present?
            (every?
             #(and (contains? request %)
@@ -95,6 +125,9 @@
           (long (/ (- (System/nanoTime) started) 1000000))]
       {:module module-name
        :source-path path
+       :source-byte-count (:byte-count source-binding-before)
+       :source-bytes-sha256 (:sha256 source-binding-before)
+       :source-revision-id source-revision-id
        :status (:status artifact)
        :artifact-id (:artifact-id artifact)
        :schema-version (:schema-version request)
@@ -158,7 +191,8 @@
     :else
     (throw
      (ex-info
-      "Expected --list or --fresh diagnostics|syntax|all"
+      (str "Expected --list or --fresh <module|all>; available modules: "
+           (string/join "|" (module-names)))
       {:id "SH07-AUTHORITATIVE-USAGE"
        :arguments (vec arguments)
        :available (module-names)}))))

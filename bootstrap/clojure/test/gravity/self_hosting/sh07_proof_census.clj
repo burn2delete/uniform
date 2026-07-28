@@ -137,6 +137,7 @@
            :bound bound-key
            :maximum maximum})))
     {:forms :maximum-module-forms
+     :predicted-maximum-core-nodes :maximum-module-core-nodes
      :fragments :maximum-fragments
      :top-level-forms :maximum-top-level-forms
      :resolutions :maximum-module-resolutions
@@ -284,11 +285,15 @@
 (defn -main
   [& arguments]
   (when-not (= 1 (count arguments))
-    (throw
-     (ex-info
-      "Expected diagnostics, syntax, or one source path"
-      {:id "SH07-PROOF-CENSUS-USAGE"
-       :arguments (vec arguments)})))
+    (let [available (vec (sort (map name
+                                    (keys (:authoritative-modules
+                                           (contract))))))]
+      (throw
+       (ex-info
+        "Expected one authoritative module name or source path"
+        {:id "SH07-PROOF-CENSUS-USAGE"
+         :arguments (vec arguments)
+         :available available}))))
   (let [result (census (first arguments))]
     (println (pr-str result))
     (when-not (= :within-declared-bounds (:status result))
