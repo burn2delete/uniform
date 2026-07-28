@@ -303,8 +303,8 @@
         (get-in artifact
                 [:gravity-core-boundary :raw-template-result
                  :bounds :maximum-call-records])]
-    (is (= 13 (:schema-version (request artifact))))
-    (is (= :sh07-b12-meta-jvm-core (:scope (request artifact))))
+    (is (= 14 (:schema-version (request artifact))))
+    (is (= :sh07-b13-fragmented-meta-jvm-core (:scope (request artifact))))
     (is (vector? reference-uses))
     (is (vector? calls))
     (is (= maximum-reference-use-records declared-reference-maximum))

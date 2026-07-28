@@ -302,16 +302,16 @@
         (is (= (identity-input direct) (identity-input public)))
         (is (= (:match-pattern-records (core direct))
                (:match-pattern-records (core public))))
-        (is (= 13 (:schema-version (request direct))
+        (is (= 14 (:schema-version (request direct))
                (:schema-version (request public))))
-        (is (= :sh07-b12-meta-jvm-core
+        (is (= :sh07-b13-fragmented-meta-jvm-core
                (:scope (request direct))
                (:scope (request public))))
-        (is (= "SH-07-B12" (:task direct) (:task public)))
-        (is (= :c6-gravity-core-lowering-b12
+        (is (= "SH-07-B13" (:task direct) (:task public)))
+        (is (= :c6-gravity-core-lowering-b13
                (get-in direct [:pass :name])
                (get-in public [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v13
+        (is (= :gravity/sh07-to-c6-core-products-v14
                (get-in direct
                        [:gravity-core-boundary :adapter-contract])
                (get-in public
@@ -324,7 +324,7 @@
           core-artifact (core artifact)]
       (testing extension
         (is (= :accepted (:status artifact)))
-        (is (= 13 (:schema-version (request artifact))))
+        (is (= 14 (:schema-version (request artifact))))
         (is (seq (:match-branch-records core-artifact)))
         (is (seq (:match-decision-skeletons core-artifact)))
         (is (= (count (:match-branch-records core-artifact))
@@ -814,7 +814,7 @@
         (is (= 64 (:maximum-match-pattern-depth bounds)))
         (is (= 256 (:maximum-match-pattern-width bounds)))
         (is (<= (count (:match-pattern-records canonical)) 1024))
-        (is (= :gravity/sh07-to-c6-core-products-v13
+        (is (= :gravity/sh07-to-c6-core-products-v14
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

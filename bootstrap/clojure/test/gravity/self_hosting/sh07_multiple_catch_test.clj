@@ -288,16 +288,16 @@
         (is (= (identity-input gravity) (identity-input qst)))
         (is (= (:error-handlers (core gravity))
                (:error-handlers (core qst))))
-        (is (= 13 (:schema-version (request gravity))
+        (is (= 14 (:schema-version (request gravity))
                (:schema-version (request qst))))
-        (is (= :sh07-b12-meta-jvm-core
+        (is (= :sh07-b13-fragmented-meta-jvm-core
                (:scope (request gravity))
                (:scope (request qst))))
-        (is (= "SH-07-B12" (:task gravity) (:task qst)))
-        (is (= :c6-gravity-core-lowering-b12
+        (is (= "SH-07-B13" (:task gravity) (:task qst)))
+        (is (= :c6-gravity-core-lowering-b13
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v13
+        (is (= :gravity/sh07-to-c6-core-products-v14
                (get-in gravity
                        [:gravity-core-boundary :adapter-contract])
                (get-in qst
@@ -704,7 +704,7 @@
                (:document-set artifact)))
         (is (= 1024 maximum))
         (is (<= (count (:error-handlers canonical)) maximum))
-        (is (= :gravity/sh07-to-c6-core-products-v13
+        (is (= :gravity/sh07-to-c6-core-products-v14
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

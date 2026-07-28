@@ -1,0 +1,22 @@
+; SH-07-B13 deterministic assembly of source-ordered top-level fragments.
+(ns self-hosting.sh07-b13.deterministic-top-level-fragments
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [fragment-seed fragment-step assembled-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B13
+              :fixture :deterministic-top-level-fragments
+              :non-claims [:cross-file-linking
+                           :incremental-recompilation
+                           :whole-program-execution]}))
+
+(def fragment-seed
+  7)
+
+(defn fragment-step [value]
+  (+ value fragment-seed))
+
+(def assembled-value
+  (fragment-step 5))

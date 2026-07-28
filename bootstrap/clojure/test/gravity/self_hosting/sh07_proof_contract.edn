@@ -1,0 +1,75 @@
+{:artifact :gravity/sh07-proof-process-contract
+ :schema-version 1
+ :status :active
+ :scope :sh07-b13-proof-orchestration
+ :governing-documents
+ ["docs/self-hosting-slice-backlog.md"
+  "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
+ :ownership
+ {:leaf-only
+  ["bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_census.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"]
+  :forbidden
+  ["bootstrap/clojure/src/gravity/bootstrap.clj"
+   "bootstrap/gravity/src/gravity/checked_core.gravity"
+   "bootstrap/clojure/fixtures"
+   "docs/artifacts"
+   "tools"]}
+ :boundary
+ {:request-schema-version 14
+  :task "SH-07-B13"
+  :scope :sh07-b13-fragmented-meta-jvm-core
+  :adapter :gravity/sh07-to-c6-core-products-v14
+  :fresh-authoritative-process-required true
+  :iteration-cache-authoritative false}
+ :bounds
+ {:maximum-module-forms 65536
+  :maximum-fragments 1024
+  :maximum-top-level-forms 1024
+  :maximum-fragment-forms 1024
+  :maximum-form-children 1024
+  :maximum-form-depth 256
+  :maximum-bindings 1024
+  :maximum-alias-records 256
+  :maximum-fragment-resolutions 2048
+  :maximum-module-resolutions 65536
+  :maximum-origin-entries 256
+  :maximum-metadata-entries 256
+  :maximum-effects 128
+  :maximum-capabilities 128
+  :maximum-exports 1024
+  :maximum-module-carrier-nodes 8388608
+  :maximum-module-carrier-depth 256
+  :maximum-module-carrier-width 65536
+  :maximum-module-scalar-bytes 268435456
+  :maximum-module-digest-requests 65540}
+ :cache-key
+ [:source-path
+  :source-bytes-sha256
+  :request-schema-version
+  :adapter
+  :checked-core-source-content-hash
+  :checked-core-plan-semantic-hash
+  :java-runtime-version
+  :clojure-version]
+ :authoritative-modules
+ {:diagnostics
+  "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+  :syntax
+  "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
+ :required-products
+ [:fragment-manifest :fragment-coverage :module-assembly-manifest]
+ :required-verification-checks
+ [:fragment-manifest-replay?
+  :fragment-coverage-replay?
+  :module-assembly-manifest-replay?
+  :module-replay?]
+ :nonclaims
+ [:persistent-production-cache
+  :cross-process-cache-trust
+  :parallel-digest-resolution
+  :incremental-fragment-compilation
+  :seed-retirement
+  :self-hosting-complete]}

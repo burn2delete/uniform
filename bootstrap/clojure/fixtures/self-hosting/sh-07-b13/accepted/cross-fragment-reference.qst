@@ -1,0 +1,22 @@
+; SH-07-B13 a later root-aligned fragment references earlier definitions.
+(ns self-hosting.sh07-b13.cross-fragment-reference
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [source-value read-source final-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B13
+              :fixture :cross-fragment-reference
+              :non-claims [:cross-module-linking
+                           :fragment-cache-reuse
+                           :whole-program-execution]}))
+
+(def source-value
+  11)
+
+(defn read-source []
+  source-value)
+
+(def final-value
+  (read-source))
