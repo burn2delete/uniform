@@ -1,0 +1,199 @@
+(ns gravity.self-hosting.sh20.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh20-development-object-request
+             sh20-release-executable-request
+             sh20-release-executable-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh20-hash [digest]
+  {:algorithm :sha256
+   :digest digest
+   :canonical-input true})
+
+(defn sh20-reference [artifact-id digest]
+  {:artifact-id artifact-id
+   :content-hash (sh20-hash digest)})
+
+(defn sh20-base-request
+  [request-id artifact-id kind release-grade
+   actual-source-path actual-output-path]
+  {:artifact :gravity/sh20-artifact-emission-request
+   :request-id request-id
+   :artifact-id artifact-id
+   :artifact-node-id :artifact/root
+   :build-id :gravity-build/stage2
+   :schema-version 1
+   :kind kind
+   :backend :gravity.backend/c
+   :profile :native
+   :target :darwin-arm64
+   :release-grade release-grade
+   :content-hash
+   (sh20-hash
+    "0000000000000000000000000000000000000000000000000000000000000000")
+   :inputs
+   {:source
+    (sh20-hash
+     "1111111111111111111111111111111111111111111111111111111111111111")
+    :mir
+    (sh20-hash
+     "2222222222222222222222222222222222222222222222222222222222222222")
+    :lowering
+    (sh20-hash
+     "3333333333333333333333333333333333333333333333333333333333333333")}
+   :evidence
+   {:safety
+    {:artifact :gravity/safety-summary
+     :status :complete
+     :outcomes [:proven-safe :runtime-checked]
+     :residual-checks
+     [(sh20-reference
+       :safety/bounds-check
+       "4444444444444444444444444444444444444444444444444444444444444444")]
+     :unsafe-audits []}
+    :proofs
+    (sh20-reference
+     :evidence/proof-bundle
+     "5555555555555555555555555555555555555555555555555555555555555555")
+    :effects
+    (sh20-reference
+     :evidence/effect-summary
+     "6666666666666666666666666666666666666666666666666666666666666666")
+    :capabilities
+    (sh20-reference
+     :evidence/capability-summary
+     "7777777777777777777777777777777777777777777777777777777777777777")
+    :conformance
+    (sh20-reference
+     :evidence/backend-conformance
+     "8888888888888888888888888888888888888888888888888888888888888888")}
+   :provenance
+   {:compiler-id :gravityc-stage2
+    :compiler-hash
+    (sh20-hash
+     "9999999999999999999999999999999999999999999999999999999999999999")
+    :generator-id :gravity.backend/c
+    :pass-pipeline
+    (sh20-hash
+     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    :dependency-graph
+    (sh20-hash
+     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+    :build-recipe
+    (sh20-hash
+     "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+    :environment
+    (sh20-hash
+     "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+    :toolchain
+    (sh20-hash
+     "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")}
+   :source-map
+   [{:target-offset 0
+     :mir-node-id :mir/main-entry
+     :source-span
+     {:source actual-source-path
+      :source-id :gravity.compiler/main
+      :start-byte 0
+      :end-byte 4}
+     :generated-origin-chain
+     [{:kind :lowering
+       :generator :gravity.backend/c
+       :source-id :gravity.compiler/main}]}]
+   :target-metadata
+   {:target :darwin-arm64
+    :backend :gravity.backend/c
+    :abi :aapcs64-darwin
+    :layout :darwin-arm64-v1
+    :runtime-family :minimal-native
+    :runtime-providers [:startup :panic :stdout]
+    :target-features [:arm64 :little-endian]}
+   :dependencies
+   [{:node-id :dependency/runtime
+     :artifact-id :gravity-runtime
+     :topological-ordinal 1
+     :content-hash
+     (sh20-hash
+      "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")}
+    {:node-id :dependency/stdlib-core
+     :artifact-id :gravity-stdlib-core
+     :topological-ordinal 2
+     :content-hash
+     (sh20-hash
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")}]
+   :dependency-edges
+   [{:edge-id :edge/stdlib-runtime
+     :edge-ordinal 0
+     :from-node :dependency/stdlib-core
+     :to-node :dependency/runtime}
+    {:edge-id :edge/root-runtime
+     :edge-ordinal 1
+     :from-node :artifact/root
+     :to-node :dependency/runtime}
+    {:edge-id :edge/root-stdlib
+     :edge-ordinal 2
+     :from-node :artifact/root
+     :to-node :dependency/stdlib-core}]
+   :topological-ordinal 3
+   :reproducibility
+   {:canonical-encoding :gravity/canonical-edn-v1
+    :timestamp-policy :excluded-from-identity
+    :nondeterminism []
+    :declared-environment [:target :toolchain :compiler]
+    :reproducible true}
+   :release-evidence
+   (if release-grade
+     {:conformance-report
+      (sh20-reference
+       :release/backend-conformance
+       "13579bdf13579bdf13579bdf13579bdf13579bdf13579bdf13579bdf13579bdf")
+      :sbom
+      (sh20-reference
+       :release/compiler-sbom
+       "2468ace02468ace02468ace02468ace02468ace02468ace02468ace02468ace0")
+      :signing-policy
+      (sh20-reference
+       :release/signing-policy
+       "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd")
+      :provenance-attestation-policy
+      (sh20-reference
+       :release/provenance-policy
+       "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")}
+     nil)
+   :actual-source-path actual-source-path
+   :actual-output-path actual-output-path
+   :source-span
+   {:source actual-source-path
+    :source-id :gravity.compiler/main
+    :start-byte 0
+    :end-byte 4}
+   :origin-chain []})
+
+(defn sh20-development-object-request []
+  (assoc
+   (sh20-base-request
+    :development-object :compiler-object :object false
+    "/checkout-a/compiler/main.gravity"
+    "/checkout-a/target/main.o")
+   :reproducibility
+   {:canonical-encoding :gravity/canonical-edn-v1
+    :timestamp-policy :recorded-outside-identity
+    :nondeterminism [:development-debug-path]
+    :declared-environment
+    [:target :toolchain :compiler :debug-path]
+    :reproducible false}))
+
+(defn sh20-release-executable-request []
+  (sh20-base-request
+   :release-executable :gravity-compiler :executable true
+   "/checkout-a/compiler/main.gravity"
+   "/checkout-a/target/gravity"))
+
+(defn sh20-release-executable-alternate-path-request []
+  (sh20-base-request
+   :release-executable :gravity-compiler :executable true
+   "/checkout-b/compiler/main.gravity"
+   "/checkout-b/target/gravity"))

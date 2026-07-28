@@ -1,0 +1,900 @@
+(ns gravity.self-hosting.sh20.artifact-bundle-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh20-artifact-policy
+             sh20-build-bundle
+             sh20-verify-bundle])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh20-member? [values value]
+  (= (get values value) value))
+
+(defn sh20-vector-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (sh20-vector-member-from? values value (+ index 1)))))
+
+(defn sh20-vector-member? [values value]
+  (if (vector? values)
+    (sh20-vector-member-from? values value 0)
+    false))
+
+(defn sh20-boolean? [value]
+  (sh20-member? #{true false} value))
+
+(defn sh20-different? [left right]
+  (if (= left right) false true))
+
+(defn sh20-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn sh20-artifact-policy []
+  {:artifact :gravity/sh20-artifact-policy
+   :version 1
+   :schema-version 1
+   :canonical-encoding :gravity/canonical-edn-v1
+   :artifact-kinds #{:object :executable}
+   :maximum-source-map-entries 128
+   :maximum-origin-entries 16
+   :maximum-dependencies 128
+   :maximum-dependency-edges 256
+   :diagnostics #{"B13-SCHEMA"
+                  "B13-HASH"
+                  "B13-PROVENANCE"
+                  "B13-SOURCEMAP"
+                  "B13-EVIDENCE"
+                  "B13-TARGET"
+                  "B13-CONFORMANCE"
+                  "B13-REPRODUCIBILITY"
+                  "B13-RELEASE"
+                  "B13-GRAPH"
+                  "B13-VERIFY"}
+   :pending [:authenticated-sh17-target-output
+             :target-byte-emission
+             :canonical-encoder
+             :cryptographic-digest-computation
+             :signature-and-sbom-emission
+             :external-consumer-verification
+             :generated-release-evidence]})
+
+(defn sh20-lower-hex-from? [value index]
+  (if (= index (count value))
+    true
+    (if
+     (contains?
+      #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+        \a \b \c \d \e \f}
+      (get value index))
+      (sh20-lower-hex-from? value (+ index 1))
+      false)))
+
+(defn sh20-digest-valid? [value]
+  (if (string? value)
+    (if (= 64 (count value))
+      (sh20-lower-hex-from? value 0)
+      false)
+    false))
+
+(defn sh20-hash-valid? [record]
+  (if (map? record)
+    (if (= 3 (count record))
+      (if (= :sha256 (get record :algorithm))
+        (if (sh20-digest-valid? (get record :digest))
+          (= true (get record :canonical-input))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-reference-valid? [reference]
+  (if (map? reference)
+    (if (= 2 (count reference))
+      (if (keyword? (get reference :artifact-id))
+        (sh20-hash-valid? (get reference :content-hash))
+        false)
+      false)
+    false))
+
+(defn sh20-origin-entry-valid? [entry]
+  (if (map? entry)
+    (if (= 3 (count entry))
+      (if
+       (contains?
+        #{:source :macro-expansion :lowering :generated}
+        (get entry :kind))
+        (if (keyword? (get entry :generator))
+          (keyword? (get entry :source-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-origin-chain-valid-from? [entries index]
+  (if (= index (count entries))
+    true
+    (if (sh20-origin-entry-valid? (get entries index))
+      (sh20-origin-chain-valid-from? entries (+ index 1))
+      false)))
+
+(defn sh20-origin-chain-valid? [entries]
+  (if (vector? entries)
+    (if (<= (count entries) 16)
+      (sh20-origin-chain-valid-from? entries 0)
+      false)
+    false))
+
+(defn sh20-source-span-valid? [span]
+  (if (map? span)
+    (if (= 4 (count span))
+      (if (sh20-nonempty-string? (get span :source))
+        (if (keyword? (get span :source-id))
+          (if (integer? (get span :start-byte))
+            (if (>= (get span :start-byte) 0)
+              (if (integer? (get span :end-byte))
+                (>= (get span :end-byte)
+                    (get span :start-byte))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-common-request-valid? [request]
+  (if (map? request)
+    (if (= 26 (count request))
+      (if (= :gravity/sh20-artifact-emission-request
+             (get request :artifact))
+        (if (keyword? (get request :request-id))
+          (if (keyword? (get request :artifact-id))
+            (if (keyword? (get request :artifact-node-id))
+              (if (keyword? (get request :build-id))
+                (if (= 1 (get request :schema-version))
+                  (if (sh20-member?
+                       #{:object :executable} (get request :kind))
+                    (if (keyword? (get request :backend))
+                      (if (sh20-member?
+                           #{:meta :native} (get request :profile))
+                        (if (keyword? (get request :target))
+                          (if (sh20-boolean?
+                               (get request :release-grade))
+                            (if
+                             (sh20-nonempty-string?
+                              (get request :actual-source-path))
+                              (if
+                               (sh20-nonempty-string?
+                                (get request :actual-output-path))
+                                (if
+                                 (sh20-source-span-valid?
+                                  (get request :source-span))
+                                  (sh20-origin-chain-valid?
+                                   (get request :origin-chain))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-inputs-valid? [request]
+  (let [inputs (get request :inputs)]
+    (if (map? inputs)
+      (if (= 3 (count inputs))
+        (if (sh20-hash-valid? (get inputs :source))
+          (if (sh20-hash-valid? (get inputs :mir))
+            (sh20-hash-valid? (get inputs :lowering))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh20-references-valid-from? [references index]
+  (if (= index (count references))
+    true
+    (if (sh20-reference-valid? (get references index))
+      (sh20-references-valid-from? references (+ index 1))
+      false)))
+
+(defn sh20-references-valid? [references]
+  (if (vector? references)
+    (if (<= (count references) 128)
+      (sh20-references-valid-from? references 0)
+      false)
+    false))
+
+(defn sh20-outcomes-valid-from? [outcomes index seen]
+  (if (= index (count outcomes))
+    true
+    (let [outcome (get outcomes index)]
+      (if
+       (contains?
+        #{:proven-safe :runtime-checked :rejected :unsafe-island}
+        outcome)
+        (if (contains? seen outcome)
+          false
+          (sh20-outcomes-valid-from?
+           outcomes (+ index 1) (conj seen outcome)))
+        false))))
+
+(defn sh20-outcomes-valid? [outcomes]
+  (if (vector? outcomes)
+    (if (> (count outcomes) 0)
+      (if (<= (count outcomes) 4)
+        (sh20-outcomes-valid-from? outcomes 0 #{})
+        false)
+      false)
+    false))
+
+(defn sh20-safety-valid? [safety]
+  (if (map? safety)
+    (if (= 5 (count safety))
+      (if (= :gravity/safety-summary (get safety :artifact))
+        (if (= :complete (get safety :status))
+          (if (sh20-outcomes-valid? (get safety :outcomes))
+            (if
+             (sh20-references-valid?
+              (get safety :residual-checks))
+              (sh20-references-valid?
+               (get safety :unsafe-audits))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-evidence-valid? [request]
+  (let [evidence (get request :evidence)]
+    (if (map? evidence)
+      (if (= 5 (count evidence))
+        (if (sh20-safety-valid? (get evidence :safety))
+          (if (sh20-reference-valid? (get evidence :proofs))
+            (if (sh20-reference-valid? (get evidence :effects))
+              (sh20-reference-valid?
+               (get evidence :capabilities))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh20-conformance-valid? [request]
+  (let [evidence (get request :evidence)]
+    (if (map? evidence)
+      (sh20-reference-valid? (get evidence :conformance))
+      false)))
+
+(defn sh20-provenance-valid? [request]
+  (let [provenance (get request :provenance)]
+    (if (map? provenance)
+      (if (= 8 (count provenance))
+        (if (keyword? (get provenance :compiler-id))
+          (if (sh20-hash-valid?
+               (get provenance :compiler-hash))
+            (if (keyword? (get provenance :generator-id))
+              (if (sh20-hash-valid?
+                   (get provenance :pass-pipeline))
+                (if (sh20-hash-valid?
+                     (get provenance :dependency-graph))
+                  (if (sh20-hash-valid?
+                       (get provenance :build-recipe))
+                    (if (sh20-hash-valid?
+                         (get provenance :environment))
+                      (sh20-hash-valid?
+                       (get provenance :toolchain))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh20-source-map-entry-valid? [entry]
+  (if (map? entry)
+    (if (= 4 (count entry))
+      (if (integer? (get entry :target-offset))
+        (if (>= (get entry :target-offset) 0)
+          (if (keyword? (get entry :mir-node-id))
+            (if (sh20-source-span-valid?
+                 (get entry :source-span))
+              (sh20-origin-chain-valid?
+               (get entry :generated-origin-chain))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-source-map-valid-from?
+  [entries index previous-offset]
+  (if (= index (count entries))
+    true
+    (let [entry (get entries index)
+          offset (get entry :target-offset)]
+      (if (sh20-source-map-entry-valid? entry)
+        (if (> offset previous-offset)
+          (sh20-source-map-valid-from?
+           entries (+ index 1) offset)
+          false)
+        false))))
+
+(defn sh20-source-map-valid? [request]
+  (let [entries (get request :source-map)]
+    (if (vector? entries)
+      (if (> (count entries) 0)
+        (if (<= (count entries) 128)
+          (sh20-source-map-valid-from? entries 0 -1)
+          false)
+        false)
+      false)))
+
+(defn sh20-neutral-source-map-from [entries index result]
+  (if (= index (count entries))
+    result
+    (let [entry (get entries index)
+          span (get entry :source-span)]
+      (sh20-neutral-source-map-from
+       entries (+ index 1)
+       (conj
+        result
+        {:target-offset (get entry :target-offset)
+         :mir-node-id (get entry :mir-node-id)
+         :source-span
+         {:source-id (get span :source-id)
+          :start-byte (get span :start-byte)
+          :end-byte (get span :end-byte)}
+         :generated-origin-chain
+         (get entry :generated-origin-chain)})))))
+
+(defn sh20-neutral-source-map [entries]
+  (sh20-neutral-source-map-from entries 0 []))
+
+(defn sh20-keywords-valid-from? [values index seen]
+  (if (= index (count values))
+    true
+    (let [value (get values index)]
+      (if (keyword? value)
+        (if (contains? seen value)
+          false
+          (sh20-keywords-valid-from?
+           values (+ index 1) (conj seen value)))
+        false))))
+
+(defn sh20-keywords-valid? [values maximum allow-empty]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (if allow-empty
+        (sh20-keywords-valid-from? values 0 #{})
+        (if (> (count values) 0)
+          (sh20-keywords-valid-from? values 0 #{})
+          false))
+      false)
+    false))
+
+(defn sh20-target-valid? [request]
+  (let [target (get request :target-metadata)]
+    (if (map? target)
+      (if (= 7 (count target))
+        (if (= (get request :target) (get target :target))
+          (if (= (get request :backend) (get target :backend))
+            (if (keyword? (get target :abi))
+              (if (keyword? (get target :layout))
+                (if (keyword? (get target :runtime-family))
+                  (if
+                   (sh20-keywords-valid?
+                    (get target :runtime-providers) 32 false)
+                    (sh20-keywords-valid?
+                     (get target :target-features) 32 false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh20-dependencies-valid-from?
+  [dependencies index seen-nodes seen-artifacts]
+  (if (= index (count dependencies))
+    true
+    (let [dependency (get dependencies index)
+          node-id (get dependency :node-id)
+          artifact-id (get dependency :artifact-id)
+          ordinal (get dependency :topological-ordinal)]
+      (if (map? dependency)
+        (if (= 4 (count dependency))
+          (if (keyword? node-id)
+            (if (keyword? artifact-id)
+              (if (contains? seen-nodes node-id)
+                false
+                (if (contains? seen-artifacts artifact-id)
+                  false
+                  (if (= ordinal (+ index 1))
+                    (if (sh20-hash-valid?
+                         (get dependency :content-hash))
+                      (sh20-dependencies-valid-from?
+                       dependencies (+ index 1)
+                       (conj seen-nodes node-id)
+                       (conj seen-artifacts artifact-id))
+                      false)
+                    false)))
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh20-dependencies-valid? [request]
+  (let [dependencies (get request :dependencies)]
+    (if (vector? dependencies)
+      (if (<= (count dependencies) 128)
+        (sh20-dependencies-valid-from?
+         dependencies 0
+         #{(get request :artifact-node-id)}
+         #{(get request :artifact-id)})
+        false)
+      false)))
+
+(defn sh20-dependency-node-from [dependencies node-id index]
+  (if (= index (count dependencies))
+    nil
+    (let [dependency (get dependencies index)]
+      (if (= node-id (get dependency :node-id))
+        dependency
+        (sh20-dependency-node-from
+         dependencies node-id (+ index 1))))))
+
+(defn sh20-node-ordinal [request node-id]
+  (if (= node-id (get request :artifact-node-id))
+    (get request :topological-ordinal)
+    (get
+     (sh20-dependency-node-from
+      (get request :dependencies) node-id 0)
+     :topological-ordinal)))
+
+(defn sh20-edge-valid?
+  [request edge index seen-edge-ids seen-pairs]
+  (if (map? edge)
+    (if (= 4 (count edge))
+      (let [edge-id (get edge :edge-id)
+            from-node (get edge :from-node)
+            to-node (get edge :to-node)
+            from-ordinal (sh20-node-ordinal request from-node)
+            to-ordinal (sh20-node-ordinal request to-node)
+            pair [from-node to-node]]
+        (if (keyword? edge-id)
+          (if (= index (get edge :edge-ordinal))
+            (if (contains? seen-edge-ids edge-id)
+              false
+              (if (contains? seen-pairs pair)
+                false
+                (if (= nil from-ordinal)
+                  false
+                  (if (= nil to-ordinal)
+                    false
+                    (if (= to-node
+                           (get request :artifact-node-id))
+                      false
+                      (> from-ordinal to-ordinal))))))
+            false)
+          false))
+      false)
+    false))
+
+(defn sh20-edges-valid-from?
+  [request edges index seen-edge-ids seen-pairs]
+  (if (= index (count edges))
+    true
+    (let [edge (get edges index)]
+      (if
+       (sh20-edge-valid?
+        request edge index seen-edge-ids seen-pairs)
+        (sh20-edges-valid-from?
+         request edges (+ index 1)
+         (conj seen-edge-ids (get edge :edge-id))
+         (conj seen-pairs
+               [(get edge :from-node) (get edge :to-node)]))
+        false))))
+
+(defn sh20-node-referenced-from? [edges node-id index]
+  (if (= index (count edges))
+    false
+    (if (= node-id (get (get edges index) :to-node))
+      true
+      (sh20-node-referenced-from?
+       edges node-id (+ index 1)))))
+
+(defn sh20-all-dependencies-referenced-from?
+  [dependencies edges index]
+  (if (= index (count dependencies))
+    true
+    (if
+     (sh20-node-referenced-from?
+      edges (get (get dependencies index) :node-id) 0)
+      (sh20-all-dependencies-referenced-from?
+       dependencies edges (+ index 1))
+      false)))
+
+(defn sh20-graph-valid? [request]
+  (let [dependencies (get request :dependencies)
+        edges (get request :dependency-edges)
+        artifact-ordinal (get request :topological-ordinal)]
+    (if (sh20-dependencies-valid? request)
+      (if (integer? artifact-ordinal)
+        (if (= artifact-ordinal (+ (count dependencies) 1))
+          (if (vector? edges)
+            (if (<= (count edges) 256)
+              (if
+               (sh20-edges-valid-from?
+                request edges 0 #{} #{})
+                (sh20-all-dependencies-referenced-from?
+                 dependencies edges 0)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh20-reproducibility-valid? [request]
+  (let [record (get request :reproducibility)]
+    (if (map? record)
+      (if (= 5 (count record))
+        (if (= :gravity/canonical-edn-v1
+               (get record :canonical-encoding))
+          (if
+           (contains?
+            #{:excluded-from-identity :recorded-outside-identity}
+            (get record :timestamp-policy))
+            (if
+             (sh20-keywords-valid?
+              (get record :nondeterminism) 32 true)
+              (if
+               (sh20-keywords-valid?
+                (get record :declared-environment) 32 false)
+                (sh20-boolean? (get record :reproducible))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh20-release-evidence-valid? [release]
+  (if (map? release)
+    (if (= 4 (count release))
+      (if
+       (sh20-reference-valid?
+        (get release :conformance-report))
+        (if (sh20-reference-valid? (get release :sbom))
+          (if
+           (sh20-reference-valid? (get release :signing-policy))
+            (sh20-reference-valid?
+             (get release :provenance-attestation-policy))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh20-release-valid? [request]
+  (if (= false (get request :release-grade))
+    (= nil (get request :release-evidence))
+    (let [release (get request :release-evidence)
+          reproducibility (get request :reproducibility)
+          declared (get reproducibility :declared-environment)]
+      (if (= true (get reproducibility :reproducible))
+        (if (= :excluded-from-identity
+               (get reproducibility :timestamp-policy))
+          (if (= 0 (count
+                    (get reproducibility :nondeterminism)))
+            (if (sh20-vector-member? declared :target)
+              (if (sh20-vector-member? declared :toolchain)
+                (if (sh20-vector-member? declared :compiler)
+                  (sh20-release-evidence-valid? release)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh20-validation-error [request]
+  (if (sh20-common-request-valid? request)
+    (if (sh20-hash-valid? (get request :content-hash))
+      (if (sh20-inputs-valid? request)
+        (if (sh20-provenance-valid? request)
+          (if (sh20-source-map-valid? request)
+            (if (sh20-evidence-valid? request)
+              (if (sh20-conformance-valid? request)
+                (if (sh20-target-valid? request)
+                  (if (sh20-graph-valid? request)
+                    (if (sh20-reproducibility-valid? request)
+                      (if (sh20-release-valid? request)
+                        nil
+                        :release-evidence-gap)
+                      :reproducibility-gap)
+                    :artifact-graph-invalid)
+                  :target-metadata-gap)
+                :conformance-gap)
+              :evidence-gap)
+            :source-map-gap)
+          :provenance-gap)
+        :input-hash-gap)
+      :content-hash-gap)
+    :schema-gap))
+
+(defn sh20-error-rule [error]
+  (if (= error :schema-gap)
+    "B13-SCHEMA"
+    (if (= error :content-hash-gap)
+      "B13-HASH"
+      (if (= error :input-hash-gap)
+        "B13-HASH"
+        (if (= error :provenance-gap)
+          "B13-PROVENANCE"
+          (if (= error :source-map-gap)
+            "B13-SOURCEMAP"
+            (if (= error :evidence-gap)
+              "B13-EVIDENCE"
+              (if (= error :conformance-gap)
+                "B13-CONFORMANCE"
+                (if (= error :target-metadata-gap)
+                  "B13-TARGET"
+                  (if (= error :artifact-graph-invalid)
+                    "B13-GRAPH"
+                    (if (= error :reproducibility-gap)
+                      "B13-REPRODUCIBILITY"
+                      "B13-RELEASE")))))))))))
+
+(defn sh20-error-field [error]
+  (if (= error :schema-gap)
+    :request
+    (if (= error :content-hash-gap)
+      :content-hash
+      (if (= error :input-hash-gap)
+        :inputs
+        (if (= error :provenance-gap)
+          :provenance
+          (if (= error :source-map-gap)
+            :source-map
+            (if (= error :evidence-gap)
+              :evidence
+              (if (= error :conformance-gap)
+                :conformance
+                (if (= error :target-metadata-gap)
+                  :target-metadata
+                  (if (= error :artifact-graph-invalid)
+                    :dependency-graph
+                    (if (= error :reproducibility-gap)
+                      :reproducibility
+                      :release-evidence)))))))))))
+
+(defn sh20-error-remediation [error]
+  (if (= error :schema-gap)
+    :supply-a-complete-versioned-artifact-request
+    (if (= error :content-hash-gap)
+      :supply-a-canonical-content-hash-record
+      (if (= error :input-hash-gap)
+        :supply-source-mir-and-lowering-hash-records
+        (if (= error :provenance-gap)
+          :supply-complete-compiler-and-build-provenance
+          (if (= error :source-map-gap)
+            :supply-bounded-source-and-origin-mappings
+            (if (= error :evidence-gap)
+              :supply-safety-proof-effect-capability-and-audit-evidence
+              (if (= error :conformance-gap)
+                :supply-a-canonical-conformance-evidence-reference
+                (if (= error :target-metadata-gap)
+                  :supply-target-abi-layout-runtime-and-provider-metadata
+                  (if (= error :artifact-graph-invalid)
+                    :supply-a-closed-acyclic-topologically-ordered-graph
+                    (if (= error :reproducibility-gap)
+                      :declare-canonical-environment-and-nondeterminism-policy
+                      :supply-release-conformance-sbom-signing-and-attestation-policy)))))))))))
+
+(defn sh20-diagnostic [request error]
+  {:artifact :gravity/artifact-emission-diagnostic
+   :diagnostic-id (sh20-error-rule error)
+   :rule (sh20-error-rule error)
+   :severity :error
+   :stage :artifact-emission
+   :reason error
+   :field (sh20-error-field error)
+   :artifact-id (get request :artifact-id)
+   :artifact-kind (get request :kind)
+   :backend (get request :backend)
+   :profile (get request :profile)
+   :target (get request :target)
+   :source-span (get request :source-span)
+   :generated-origin-chain (get request :origin-chain)
+   :remediation (sh20-error-remediation error)})
+
+(defn sh20-identity-input [request]
+  {:schema-version 1
+   :artifact-id (get request :artifact-id)
+   :artifact-node-id (get request :artifact-node-id)
+   :build-id (get request :build-id)
+   :kind (get request :kind)
+   :backend (get request :backend)
+   :profile (get request :profile)
+   :target (get request :target)
+   :content-hash (get request :content-hash)
+   :inputs (get request :inputs)
+   :evidence (get request :evidence)
+   :provenance (get request :provenance)
+   :source-map (sh20-neutral-source-map
+                (get request :source-map))
+   :target-metadata (get request :target-metadata)
+   :dependencies (get request :dependencies)
+   :dependency-edges (get request :dependency-edges)
+   :topological-ordinal (get request :topological-ordinal)
+   :reproducibility (get request :reproducibility)
+   :release-grade (get request :release-grade)
+   :release-evidence (get request :release-evidence)})
+
+(defn sh20-bundle [request]
+  (let [identity-input (sh20-identity-input request)
+        provenance (get request :provenance)]
+    {:artifact :gravity/sh20-artifact-bundle
+     :status :accepted
+     :manifest
+     {:artifact :gravity/artifact-manifest
+      :artifact-id (get request :artifact-id)
+      :build-id (get request :build-id)
+      :schema-version 1
+      :kind (get request :kind)
+      :backend (get request :backend)
+      :profile (get request :profile)
+      :target (get request :target)
+      :content-hash (get request :content-hash)
+      :inputs (get request :inputs)
+      :evidence (get request :evidence)
+      :runtime (get request :target-metadata)
+      :release-grade (get request :release-grade)}
+     :source-map
+     {:artifact :gravity/source-map
+      :entries (get request :source-map)}
+     :compiler-identity
+     {:artifact :gravity/compiler-identity
+      :compiler-id (get provenance :compiler-id)
+      :compiler-hash (get provenance :compiler-hash)
+      :generator-id (get provenance :generator-id)}
+     :dependency-graph
+     {:artifact :gravity/artifact-dependency-graph
+      :graph-id (get provenance :dependency-graph)
+      :artifact-id (get request :artifact-id)
+      :artifact-node-id (get request :artifact-node-id)
+      :topological-ordinal (get request :topological-ordinal)
+      :nodes (get request :dependencies)
+      :edges (get request :dependency-edges)}
+     :safety-summary
+     (get (get request :evidence) :safety)
+     :provenance
+     {:artifact :gravity/artifact-provenance
+      :semantic-record (get identity-input :provenance)
+      :actual-source-path (get request :actual-source-path)
+      :actual-output-path (get request :actual-output-path)
+      :source-span (get request :source-span)
+      :origin-chain (get request :origin-chain)}
+     :reproducibility (get request :reproducibility)
+     :release-evidence (get request :release-evidence)
+     :identity-input identity-input
+     :diagnostics []
+     :pending (get (sh20-artifact-policy) :pending)}))
+
+(defn sh20-build-bundle [request]
+  (let [error (sh20-validation-error request)]
+    (if (= nil error)
+      (sh20-bundle request)
+      {:artifact :gravity/sh20-artifact-bundle
+       :status :rejected
+       :artifact-id (get request :artifact-id)
+       :identity-input nil
+       :diagnostics [(sh20-diagnostic request error)]
+       :pending (get (sh20-artifact-policy) :pending)})))
+
+(defn sh20-first-changed-field [expected candidate]
+  (if (sh20-different?
+       (get expected :artifact) (get candidate :artifact))
+    :artifact
+    (if (sh20-different?
+         (get expected :status) (get candidate :status))
+      :status
+      (if (sh20-different?
+           (get expected :manifest) (get candidate :manifest))
+        :manifest
+        (if (sh20-different?
+             (get expected :source-map)
+             (get candidate :source-map))
+          :source-map
+          (if (sh20-different?
+               (get expected :compiler-identity)
+               (get candidate :compiler-identity))
+            :compiler-identity
+            (if (sh20-different?
+                 (get expected :dependency-graph)
+                 (get candidate :dependency-graph))
+              :dependency-graph
+              (if (sh20-different?
+                   (get expected :safety-summary)
+                   (get candidate :safety-summary))
+                :safety-summary
+                (if (sh20-different?
+                     (get expected :provenance)
+                     (get candidate :provenance))
+                  :provenance
+                  (if (sh20-different?
+                       (get expected :reproducibility)
+                       (get candidate :reproducibility))
+                    :reproducibility
+                    (if (sh20-different?
+                         (get expected :release-evidence)
+                         (get candidate :release-evidence))
+                      :release-evidence
+                      (if (sh20-different?
+                           (get expected :identity-input)
+                           (get candidate :identity-input))
+                        :identity-input
+                        (if (sh20-different?
+                             (get expected :diagnostics)
+                             (get candidate :diagnostics))
+                          :diagnostics
+                          :pending)))))))))))))
+
+(defn sh20-verification-diagnostic
+  [request expected candidate]
+  {:artifact :gravity/artifact-emission-diagnostic
+   :diagnostic-id "B13-VERIFY"
+   :rule "B13-VERIFY"
+   :severity :error
+   :stage :artifact-emission-verification
+   :reason :request-or-candidate-substitution
+   :field (sh20-first-changed-field expected candidate)
+   :artifact-id (get request :artifact-id)
+   :artifact-kind (get request :kind)
+   :backend (get request :backend)
+   :profile (get request :profile)
+   :target (get request :target)
+   :source-span (get request :source-span)
+   :generated-origin-chain (get request :origin-chain)
+   :remediation :recompute-request-and-supply-the-exact-artifact-bundle})
+
+(defn sh20-verify-bundle [request candidate]
+  (let [expected (sh20-build-bundle request)]
+    (if (= expected candidate)
+      {:artifact :gravity/sh20-artifact-bundle-verification
+       :status :passed
+       :artifact-id (get request :artifact-id)
+       :checks [:complete-recomputation
+                :canonical-hash-record-shape
+                :path-neutral-identity
+                :source-map-lineage
+                :closed-acyclic-dependency-order
+                :evidence-completeness
+                :release-policy]}
+      {:artifact :gravity/sh20-artifact-bundle-verification
+       :status :rejected
+       :artifact-id (get request :artifact-id)
+       :diagnostics
+       [(sh20-verification-diagnostic
+         request expected candidate)]})))

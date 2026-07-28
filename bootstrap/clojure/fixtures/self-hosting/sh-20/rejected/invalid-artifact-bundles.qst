@@ -1,0 +1,175 @@
+(ns gravity.self-hosting.sh20.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh20-schema-gap-request
+             sh20-content-hash-gap-request
+             sh20-input-hash-gap-request
+             sh20-provenance-gap-request
+             sh20-source-map-gap-request
+             sh20-evidence-gap-request
+             sh20-conformance-gap-request
+             sh20-target-gap-request
+             sh20-graph-cycle-request
+             sh20-reproducibility-gap-request
+             sh20-release-gap-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh20-hash []
+  {:algorithm :sha256
+   :digest
+   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+   :canonical-input true})
+
+(defn sh20-reference [artifact-id]
+  {:artifact-id artifact-id
+   :content-hash (sh20-hash)})
+
+(defn sh20-valid-request []
+  {:artifact :gravity/sh20-artifact-emission-request
+   :request-id :invalid-artifact-case
+   :artifact-id :gravity-compiler
+   :artifact-node-id :artifact/root
+   :build-id :gravity-build/stage2
+   :schema-version 1
+   :kind :executable
+   :backend :gravity.backend/c
+   :profile :native
+   :target :darwin-arm64
+   :release-grade true
+   :content-hash (sh20-hash)
+   :inputs
+   {:source (sh20-hash)
+    :mir (sh20-hash)
+    :lowering (sh20-hash)}
+   :evidence
+   {:safety
+    {:artifact :gravity/safety-summary
+     :status :complete
+     :outcomes [:proven-safe]
+     :residual-checks []
+     :unsafe-audits []}
+    :proofs (sh20-reference :evidence/proofs)
+    :effects (sh20-reference :evidence/effects)
+    :capabilities (sh20-reference :evidence/capabilities)
+    :conformance (sh20-reference :evidence/conformance)}
+   :provenance
+   {:compiler-id :gravityc-stage2
+    :compiler-hash (sh20-hash)
+    :generator-id :gravity.backend/c
+    :pass-pipeline (sh20-hash)
+    :dependency-graph (sh20-hash)
+    :build-recipe (sh20-hash)
+    :environment (sh20-hash)
+    :toolchain (sh20-hash)}
+   :source-map
+   [{:target-offset 0
+     :mir-node-id :mir/main
+     :source-span
+     {:source "gravity://compiler/main"
+      :source-id :gravity.compiler/main
+      :start-byte 0
+      :end-byte 4}
+     :generated-origin-chain []}]
+   :target-metadata
+   {:target :darwin-arm64
+    :backend :gravity.backend/c
+    :abi :aapcs64-darwin
+    :layout :darwin-arm64-v1
+    :runtime-family :minimal-native
+    :runtime-providers [:startup :panic]
+    :target-features [:arm64]}
+   :dependencies
+   [{:node-id :dependency/runtime
+     :artifact-id :gravity-runtime
+     :topological-ordinal 1
+     :content-hash (sh20-hash)}]
+   :dependency-edges
+   [{:edge-id :edge/root-runtime
+     :edge-ordinal 0
+     :from-node :artifact/root
+     :to-node :dependency/runtime}]
+   :topological-ordinal 2
+   :reproducibility
+   {:canonical-encoding :gravity/canonical-edn-v1
+    :timestamp-policy :excluded-from-identity
+    :nondeterminism []
+    :declared-environment [:target :toolchain :compiler]
+    :reproducible true}
+   :release-evidence
+   {:conformance-report
+    (sh20-reference :release/conformance)
+    :sbom (sh20-reference :release/sbom)
+    :signing-policy (sh20-reference :release/signing-policy)
+    :provenance-attestation-policy
+    (sh20-reference :release/provenance-policy)}
+   :actual-source-path "/checkout/compiler/main.gravity"
+   :actual-output-path "/checkout/target/gravity"
+   :source-span
+   {:source "gravity://compiler/main"
+    :source-id :gravity.compiler/main
+    :start-byte 0
+    :end-byte 4}
+   :origin-chain []})
+
+(defn sh20-schema-gap-request []
+  (assoc (sh20-valid-request) :schema-version 2))
+
+(defn sh20-content-hash-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc
+     request :content-hash
+     (assoc (get request :content-hash)
+            :digest "not-a-digest"))))
+
+(defn sh20-input-hash-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc request :inputs
+           (assoc (get request :inputs) :source nil))))
+
+(defn sh20-provenance-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc request :provenance
+           (assoc (get request :provenance) :compiler-id nil))))
+
+(defn sh20-source-map-gap-request []
+  (assoc (sh20-valid-request) :source-map []))
+
+(defn sh20-evidence-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc request :evidence
+           (assoc (get request :evidence) :proofs false))))
+
+(defn sh20-conformance-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc request :evidence
+           (assoc (get request :evidence) :conformance false))))
+
+(defn sh20-target-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc
+     request :target-metadata
+     (assoc (get request :target-metadata) :abi nil))))
+
+(defn sh20-graph-cycle-request []
+  (assoc
+   (sh20-valid-request)
+   :dependency-edges
+   [{:edge-id :edge/runtime-root
+     :edge-ordinal 0
+     :from-node :dependency/runtime
+     :to-node :artifact/root}]))
+
+(defn sh20-reproducibility-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc
+     request :reproducibility
+     (assoc
+      (get request :reproducibility)
+      :canonical-encoding :host-map-order))))
+
+(defn sh20-release-gap-request []
+  (let [request (sh20-valid-request)]
+    (assoc request :release-evidence
+           (assoc (get request :release-evidence) :sbom false))))
