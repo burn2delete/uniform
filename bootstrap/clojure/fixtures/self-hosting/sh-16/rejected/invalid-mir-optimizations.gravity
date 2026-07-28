@@ -1,0 +1,185 @@
+(ns gravity.self-hosting.sh16.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh16-unverified-request
+             sh16-duplicate-operation-request
+             sh16-missing-effect-order-request
+             sh16-effectful-dead-request
+             sh16-missing-dead-proof-request
+             sh16-used-dead-operation-request
+             sh16-missing-proof-request
+             sh16-nondominating-proof-request
+             sh16-invalidated-proof-request
+             sh16-policy-check-request
+             sh16-stale-safety-request
+             sh16-missing-origin-request
+             sh16-nondeterministic-request
+             sh16-unsupported-opcode-request
+             sh16-implicit-numeric-mode-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh16-span []
+  {:source-id :gravity.compiler/sh16-invalid-fixture
+   :actual-source-path "/checkout-a/invalid.gravity"
+   :start 0
+   :end 16})
+
+(defn sh16-operation [operation-id opcode safety-outcome]
+  {:op-id operation-id
+   :opcode opcode
+   :operands []
+   :result operation-id
+   :type :i64
+   :effects #{}
+   :ordering nil
+   :source-span (sh16-span)
+   :origin-chain
+   [{:kind :source :source-id :gravity.compiler/sh16-invalid-fixture}]
+   :safety-outcome safety-outcome})
+
+(defn sh16-base-request [operations]
+  {:artifact :gravity/sh16-optimization-request
+   :request-id :invalid
+   :input-mir-id :mir/sh16-invalid
+   :mir-verified true
+   :profile :native
+   :target :portable-mir
+   :source-span (sh16-span)
+   :origin-chain
+   [{:kind :source :source-id :gravity.compiler/sh16-invalid-fixture}]
+   :nondeterministic-choice false
+   :operations operations})
+
+(defn sh16-check-operation [operation-id check-class]
+  (assoc
+   (sh16-operation operation-id :runtime-check :runtime-checked)
+   :runtime-check-id :check/invalid
+   :check-class check-class
+   :elide-requested true))
+
+(defn sh16-proof [operation-id]
+  {:proof-id :proof/invalid
+   :certificate-id :certificate/invalid
+   :claim :bounds-safe
+   :operation-id operation-id
+   :check-id :check/invalid
+   :proof-dominates-use true
+   :certificate-status :verified
+   :result :proven-safe
+   :method :range-analysis
+   :provider :gravity.compiler/range
+   :assumptions #{:index-in-range}
+   :profile :native
+   :target :portable-mir
+   :invalidated-by #{}})
+
+(defn sh16-unverified-request []
+  (assoc
+   (sh16-base-request
+    [(sh16-operation :op/return :return :proven-safe)])
+   :mir-verified false))
+
+(defn sh16-duplicate-operation-request []
+  (sh16-base-request
+   [(sh16-operation :op/same :const :proven-safe)
+    (sh16-operation :op/same :return :proven-safe)]))
+
+(defn sh16-missing-effect-order-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-operation :op/write :compute :proven-safe)
+     :effects #{:io/write})]))
+
+(defn sh16-effectful-dead-request []
+  (sh16-base-request
+   [(assoc
+     (assoc
+      (sh16-operation :op/write :compute :proven-safe)
+      :effects #{:io/write}
+      :ordering :sequence)
+     :dead true)]))
+
+(defn sh16-missing-dead-proof-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-operation :op/dead :compute :proven-safe)
+    :dead true)]))
+
+(defn sh16-used-dead-operation-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-operation :op/live :compute :proven-safe)
+     :dead true
+     :dead-proof
+     {:proof-id :proof/incorrect-no-uses
+      :operation-id :op/live
+      :no-uses true
+      :effect-free true
+      :verified true})
+    (assoc
+     (sh16-operation :op/return :return :proven-safe)
+     :operands [:op/live])]))
+
+(defn sh16-missing-proof-request []
+  (sh16-base-request
+   [(sh16-check-operation :op/check :bounds)]))
+
+(defn sh16-nondominating-proof-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-check-operation :op/check :bounds)
+     :proof
+     (assoc
+      (sh16-proof :op/check)
+      :proof-dominates-use false))]))
+
+(defn sh16-invalidated-proof-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-check-operation :op/check :bounds)
+     :proof
+     (assoc
+      (sh16-proof :op/check)
+      :invalidated-by #{:control-flow-change}))]))
+
+(defn sh16-policy-check-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-check-operation :op/check :capability-effect)
+     :proof (sh16-proof :op/check))]))
+
+(defn sh16-stale-safety-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-operation :op/check :runtime-check :proven-safe)
+     :runtime-check-id :check/stale
+     :check-class :bounds
+     :elide-requested false)]))
+
+(defn sh16-missing-origin-request []
+  (assoc
+   (sh16-base-request
+    [(sh16-operation :op/return :return :proven-safe)])
+   :source-span
+   {:source-id :gravity.compiler/sh16-invalid-fixture
+    :actual-source-path "/checkout-a/invalid.gravity"
+    :end 16}))
+
+(defn sh16-nondeterministic-request []
+  (assoc
+   (sh16-base-request
+    [(sh16-operation :op/return :return :proven-safe)])
+   :nondeterministic-choice true))
+
+(defn sh16-unsupported-opcode-request []
+  (sh16-base-request
+   [(sh16-operation :op/target :x86-add :proven-safe)]))
+
+(defn sh16-implicit-numeric-mode-request []
+  (sh16-base-request
+   [(assoc
+     (sh16-operation :op/add :add :proven-safe)
+     :operands [1 2]
+     :constant-operands true)]))
