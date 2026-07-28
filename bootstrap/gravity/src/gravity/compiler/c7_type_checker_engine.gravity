@@ -9,6 +9,10 @@
              c7-type-diagnostic-catalog
              build-c7-type-fact
              build-c7-function-type
+             sh08-primitive-type-from-literal-kind
+             sh08-primitive-type-from-collection-kind
+             sh08-type-core-artifact
+             sh08-verify-type-result
              verify-c7-type-checker])
   (:effects #{})
   (:capabilities #{})
@@ -190,6 +194,759 @@
           :thrown-error-effects thrown-error-effects
           :source-span source-span
           :contract c7-type-environment-contract}))
+
+; SH-08-A is an executable local type template over structurally validated
+; SH-07-shaped canonical core records. It does not authenticate SH-07 lineage,
+; artifact identity, or an authenticated envelope; the coordinator-owned
+; adapter must establish those facts before this template becomes authoritative.
+; This leaf covers primitive literals, vector/map/set literal descriptors,
+; definitions, and equal-type conditional joins. Functions, calls, locals,
+; records, unions, protocols, generics, casts, ownership types, layout, dynamic
+; boundaries, and list lowering remain later SH-08 work.
+
+(defn sh08-local-bounds-value []
+  {:maximum-core-nodes 65536
+   :maximum-root-nodes 1024
+   :maximum-node-children 1024
+   :maximum-origin-entries 256
+   :maximum-metadata-entries 256
+   :maximum-effects 128
+   :maximum-capabilities 128
+   :maximum-exports 1024
+   :maximum-carrier-nodes 1048576
+   :maximum-carrier-depth 128
+   :maximum-carrier-width 65536
+   :maximum-scalar-units 16777216})
+
+(defn sh08-vector-contains? [values value]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      false
+      (if (= (first remaining) value)
+        true
+        (recur (rest remaining))))))
+
+(defn sh08-all-unique? [values observed]
+  (if (= (count values) 0)
+    true
+    (if (sh08-vector-contains? observed (first values))
+      false
+      (sh08-all-unique?
+       (rest values) (conj observed (first values))))))
+
+(defn sh08-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh08-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh08-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh08-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh08-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh08-bounded-vector? [value maximum]
+  (if (vector? value)
+    (<= (count value) maximum)
+    false))
+
+(defn sh08-keyword-vector? [values maximum]
+  (if (sh08-bounded-vector? values maximum)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (keyword? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn sh08-sha-vector? [values maximum]
+  (if (sh08-bounded-vector? values maximum)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (sh08-sha256-id? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn sh08-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh08-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh08-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh08-max [left right]
+  (if (> left right) left right))
+
+(defn sh08-carrier-preflight [value]
+  (let [maximum-nodes
+        (get (sh08-local-bounds-value) :maximum-carrier-nodes)
+        maximum-depth
+        (get (sh08-local-bounds-value) :maximum-carrier-depth)
+        maximum-width
+        (get (sh08-local-bounds-value) :maximum-carrier-width)
+        maximum-scalar-units
+        (get (sh08-local-bounds-value) :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           nodes 0
+           scalar-units 0
+           observed-depth 0
+           observed-width 0]
+      (if (= (count frontier) 0)
+        {:status :accepted
+         :nodes nodes
+         :scalar-units scalar-units
+         :maximum-depth observed-depth
+         :maximum-width observed-width}
+        (let [entry (first frontier)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :carrier-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :carrier-depth-bound}
+              (if (sh08-aggregate? current)
+                (let [width (sh08-aggregate-width current)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :carrier-width-bound}
+                    (let [components
+                          (sh08-aggregate-components current)
+                          next-frontier
+                          (loop [remaining components
+                                 result (rest frontier)]
+                            (if (= (count remaining) 0)
+                              result
+                              (recur
+                               (rest remaining)
+                               (conj
+                                result
+                                [(first remaining) (+ depth 1)]))))]
+                      (recur
+                       next-frontier
+                       next-nodes
+                       scalar-units
+                       (sh08-max observed-depth depth)
+                       (sh08-max observed-width width)))))
+                (let [next-scalar-units
+                      (+ scalar-units (count (vec (str current))))]
+                  (if (> next-scalar-units maximum-scalar-units)
+                    {:status :rejected :reason :carrier-scalar-bound}
+                    (recur
+                     (rest frontier)
+                     next-nodes
+                     next-scalar-units
+                     (sh08-max observed-depth depth)
+                     observed-width)))))))))))
+
+(defn sh08-origin-shape? [origin]
+  (if (sh08-exact-keys?
+       origin #{:origin-id :kind :from-syntax-id :role})
+    (if (sh08-sha256-id? (get origin :origin-id))
+      (sh08-sha256-id? (get origin :from-syntax-id))
+      false)
+    false))
+
+(defn sh08-origin-vector? [origins]
+  (if (sh08-bounded-vector?
+       origins (get (sh08-local-bounds-value) :maximum-origin-entries))
+    (loop [remaining origins]
+      (if (= (count remaining) 0)
+        true
+        (if (sh08-origin-shape? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn sh08-source-shape? [source]
+  (if (sh08-exact-keys?
+       source
+       #{:syntax-id :form-id :semantic-span
+         :origin-chain :generated-origin})
+    (if (sh08-sha256-id? (get source :syntax-id))
+      (if (sh08-sha256-id? (get source :form-id))
+        (if (map? (get source :semantic-span))
+          (if (<= (count (get source :semantic-span)) 16)
+            (if (sh08-origin-vector? (get source :origin-chain))
+              (sh08-origin-vector? (get source :generated-origin))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-module-shape? [module]
+  (if (sh08-exact-keys?
+       module
+       #{:namespace :profile :target :safety :effects
+         :capabilities :exports :source-revision-id})
+    (if (symbol? (get module :namespace))
+      (if (keyword? (get module :profile))
+        (if (keyword? (get module :target))
+          (if (keyword? (get module :safety))
+            (if (sh08-keyword-vector?
+                 (get module :effects)
+                 (get (sh08-local-bounds-value) :maximum-effects))
+              (if (sh08-keyword-vector?
+                   (get module :capabilities)
+                   (get (sh08-local-bounds-value) :maximum-capabilities))
+                (if (sh08-bounded-vector?
+                     (get module :exports)
+                     (get (sh08-local-bounds-value) :maximum-exports))
+                  (sh08-sha256-id?
+                   (get module :source-revision-id))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-node-module-matches? [node-module module]
+  (if (sh08-exact-keys?
+       node-module #{:namespace :profile :target})
+    (= node-module
+       {:namespace (get module :namespace)
+        :profile (get module :profile)
+        :target (get module :target)})
+    false))
+
+(defn sh08-preserved-declarations-match? [declarations module]
+  (if (sh08-exact-keys?
+       declarations #{:effects :capabilities :safety})
+    (= declarations
+       {:effects (get module :effects)
+        :capabilities (get module :capabilities)
+        :safety (get module :safety)})
+    false))
+
+(defn sh08-node-shape? [node module]
+  (if (sh08-exact-keys?
+       node
+       #{:artifact :node-id :core-form :children :attributes
+         :source :binding-context :generated? :resolved-binding-ids
+         :evaluation :module :metadata :preserved-declarations
+         :pending-fact-families :lowering-rule-version})
+    (if (= (get node :artifact) :gravity/sh07-core-node)
+      (if (sh08-sha256-id? (get node :node-id))
+        (if (keyword? (get node :core-form))
+          (if (sh08-sha-vector?
+               (get node :children)
+               (get (sh08-local-bounds-value) :maximum-node-children))
+            (if (map? (get node :attributes))
+              (if (<= (count (get node :attributes))
+                      (get (sh08-local-bounds-value)
+                           :maximum-metadata-entries))
+                (if (sh08-source-shape? (get node :source))
+                  (if (if (= (get node :binding-context) nil)
+                        true
+                        (sh08-sha256-id?
+                         (get node :binding-context)))
+                    (if (contains? #{true false} (get node :generated?))
+                      (if (sh08-sha-vector?
+                           (get node :resolved-binding-ids)
+                           (get (sh08-local-bounds-value)
+                                :maximum-node-children))
+                        (if (map? (get node :evaluation))
+                          (if (sh08-node-module-matches?
+                               (get node :module) module)
+                            (if (map? (get node :metadata))
+                              (if (<= (count (get node :metadata))
+                                      (get (sh08-local-bounds-value)
+                                           :maximum-metadata-entries))
+                                (if
+                                 (sh08-preserved-declarations-match?
+                                  (get node :preserved-declarations)
+                                  module)
+                                  (if (sh08-keyword-vector?
+                                       (get node
+                                            :pending-fact-families)
+                                       32)
+                                    (keyword?
+                                     (get node
+                                          :lowering-rule-version))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-children-seen? [children seen]
+  (loop [remaining children]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? seen (first remaining))
+        (recur (rest remaining))
+        false))))
+
+(defn sh08-validate-node-sequence [nodes module]
+  (loop [remaining nodes seen #{} table {}]
+    (if (= (count remaining) 0)
+      {:status :accepted :node-table table}
+      (let [node (first remaining)
+            node-id (if (map? node) (get node :node-id) nil)]
+        (if (sh08-node-shape? node module)
+          (if (contains? seen node-id)
+            {:status :rejected
+             :reason :duplicate-core-node-id
+             :node node}
+            (if (sh08-children-seen? (get node :children) seen)
+              (recur
+               (rest remaining)
+               (conj seen node-id)
+               (assoc table node-id node))
+              {:status :rejected
+               :reason :child-id-missing-or-not-before-parent
+               :node node}))
+          {:status :rejected
+           :reason :malformed-core-node
+           :node (if (map? node) node {})})))))
+
+(defn sh08-roots-valid? [roots node-table]
+  (if (sh08-sha-vector?
+       roots (get (sh08-local-bounds-value) :maximum-root-nodes))
+    (if (> (count roots) 0)
+      (if (sh08-all-unique? roots [])
+        (loop [remaining roots]
+          (if (= (count remaining) 0)
+            true
+            (if (contains? node-table (first remaining))
+              (recur (rest remaining))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh08-reachable-node-count [roots node-table]
+  (loop [frontier roots visited #{}]
+    (if (= (count frontier) 0)
+      (count visited)
+      (let [node-id (first frontier)]
+        (if (contains? visited node-id)
+          (recur (rest frontier) visited)
+          (let [node (get node-table node-id)]
+            (recur
+             (loop [children (get node :children)
+                    result (rest frontier)]
+               (if (= (count children) 0)
+                 result
+                 (recur
+                  (rest children)
+                  (conj result (first children)))))
+             (conj visited node-id))))))))
+
+(defn sh08-validate-core-shape [core-artifact]
+  (let [preflight (sh08-carrier-preflight core-artifact)]
+    (if (= (get preflight :status) :accepted)
+      (if (= (get core-artifact :artifact)
+             :gravity/sh07-canonical-core-artifact)
+        (if (sh08-sha256-id? (get core-artifact :artifact-id))
+          (let [module (get core-artifact :module)
+                nodes (get core-artifact :nodes)
+                roots (get core-artifact :root-core-node-ids)]
+            (if (sh08-module-shape? module)
+              (if (sh08-bounded-vector?
+                   nodes (get (sh08-local-bounds-value) :maximum-core-nodes))
+                (if (> (count nodes) 0)
+                  (let [validated
+                        (sh08-validate-node-sequence nodes module)]
+                    (if (= (get validated :status) :accepted)
+                      (let [node-table (get validated :node-table)]
+                        (if (sh08-roots-valid? roots node-table)
+                          (if (= (sh08-reachable-node-count
+                                  roots node-table)
+                                 (count nodes))
+                            {:status :accepted
+                             :module module
+                             :nodes nodes
+                             :roots roots}
+                            {:status :rejected
+                             :reason :orphan-core-node})
+                          {:status :rejected
+                           :reason :malformed-or-unresolved-roots}))
+                      validated))
+                  {:status :rejected :reason :empty-core-node-vector})
+                {:status :rejected
+                 :reason :core-node-vector-or-bound})
+              {:status :rejected :reason :malformed-core-module}))
+          {:status :rejected :reason :malformed-core-artifact-id})
+        {:status :rejected :reason :sh07-shaped-core-artifact-required})
+      preflight)))
+
+(defn sh08-primitive-type-from-literal-kind [literal-kind]
+  (if (= literal-kind :nil)
+    :gravity.type/nil
+    (if (= literal-kind :boolean)
+      :gravity.type/bool
+      (if (= literal-kind :integer)
+        :gravity.type/integer
+        (if (= literal-kind :decimal)
+          :gravity.type/decimal
+          (if (= literal-kind :ratio)
+            :gravity.type/ratio
+            (if (= literal-kind :character)
+              :gravity.type/character
+              (if (= literal-kind :string)
+                :gravity.type/string
+                (if (= literal-kind :keyword)
+                  :gravity.type/keyword
+                  (if (= literal-kind :symbol)
+                    :gravity.type/symbol
+                    nil))))))))))
+
+(defn sh08-primitive-type-from-collection-kind [literal-kind]
+  (if (= literal-kind :vector)
+    {:kind :gravity.type/vector
+     :element :gravity.type/unknown
+     :shape :literal}
+    (if (= literal-kind :map)
+      {:kind :gravity.type/map
+       :key :gravity.type/unknown
+       :value :gravity.type/unknown
+       :shape :literal}
+      (if (= literal-kind :set)
+        {:kind :gravity.type/set
+         :element :gravity.type/unknown
+         :shape :literal}
+        nil))))
+
+(defn sh08-third [values]
+  (first (rest (rest values))))
+
+(defn sh08-type-diagnostic
+  [rule node module expected-type actual-type reason]
+  (let [identity
+        {:domain :gravity/sh08-primitive-type-diagnostic-v2
+         :rule rule
+         :core-node-id (get node :node-id)
+         :syntax-id (get (get node :source) :syntax-id)
+         :source-span (get (get node :source) :semantic-span)
+         :binding-id (first (get node :resolved-binding-ids))
+         :expected-type expected-type
+         :actual-type actual-type
+         :profile (get module :profile)
+         :target (get module :target)
+         :origin-chain (get (get node :source) :origin-chain)
+         :generated-origin (get (get node :source) :generated-origin)
+         :reason reason}]
+    {:artifact :gravity/c7-type-diagnostic
+     :diagnostic-id-request identity
+     :rule rule
+     :severity :error
+     :stage :type-checking
+     :core-node-id (get node :node-id)
+     :syntax-id (get (get node :source) :syntax-id)
+     :source-span (get (get node :source) :semantic-span)
+     :binding-id (first (get node :resolved-binding-ids))
+     :expected-type expected-type
+     :actual-type actual-type
+     :profile (get module :profile)
+     :target (get module :target)
+     :origin-chain (get (get node :source) :origin-chain)
+     :generated-origin (get (get node :source) :generated-origin)
+     :reason reason
+     :remediation
+     "Provide a bounded structurally valid SH-07-shaped carrier and one supported primitive type for every node."}))
+
+(defn sh08-type-fact [node module type producer dependencies]
+  {:artifact :gravity/c7-type-fact
+   :fact-id-request
+   {:domain :gravity/sh08-primitive-type-fact-v1
+    :core-node-id (get node :node-id)
+    :type type
+    :producer producer
+    :dependencies dependencies
+    :profile (get module :profile)
+    :target (get module :target)
+    :effects (get (get node :preserved-declarations) :effects)
+    :capabilities
+    (get (get node :preserved-declarations) :capabilities)
+    :origin-chain (get (get node :source) :origin-chain)
+    :generated-origin (get (get node :source) :generated-origin)}
+   :core-node-id (get node :node-id)
+   :type type
+   :producer-rule producer
+   :dependencies dependencies
+   :syntax-id (get (get node :source) :syntax-id)
+   :source-span (get (get node :source) :semantic-span)
+   :origin-chain (get (get node :source) :origin-chain)
+   :generated-origin (get (get node :source) :generated-origin)
+   :binding-id (first (get node :resolved-binding-ids))
+   :profile (get module :profile)
+   :target (get module :target)
+   :effects (get (get node :preserved-declarations) :effects)
+   :capabilities
+   (get (get node :preserved-declarations) :capabilities)
+   :ownership :pending-sh10
+   :status :inferred})
+
+(defn sh08-accepted-node [node module type producer dependencies]
+  {:status :accepted
+   :type type
+   :fact (sh08-type-fact node module type producer dependencies)})
+
+(defn sh08-rejected-node
+  [rule node module expected-type actual-type reason]
+  {:status :rejected
+   :diagnostic
+   (sh08-type-diagnostic
+    rule node module expected-type actual-type reason)})
+
+(defn sh08-child-types [children type-table]
+  (loop [remaining children types []]
+    (if (= (count remaining) 0)
+      {:status :accepted :types types}
+      (let [type (get type-table (first remaining))]
+        (if (= type nil)
+          {:status :rejected :missing (first remaining)}
+          (recur (rest remaining) (conj types type)))))))
+
+(defn sh08-even-count? [values]
+  (if (= (count values) 0)
+    true
+    (if (= (count values) 1)
+      false
+      (sh08-even-count? (rest (rest values))))))
+
+(defn sh08-type-node [node type-table module]
+  (let [core-form (get node :core-form)
+        attributes (get node :attributes)
+        children (get node :children)]
+    (if (= core-form :literal)
+      (let [type
+            (sh08-primitive-type-from-literal-kind
+             (get attributes :literal-kind))]
+        (if (= type nil)
+          (sh08-rejected-node
+           "C7-ANNOTATION" node module :supported-primitive-literal
+           (get attributes :literal-kind) :unsupported-literal-kind)
+          (sh08-accepted-node node module type :literal [])))
+      (if (= core-form :collection-literal)
+        (let [base-type
+              (sh08-primitive-type-from-collection-kind
+               (get attributes :literal-kind))
+              child-types (sh08-child-types children type-table)]
+          (if (= base-type nil)
+            (sh08-rejected-node
+             "C7-ANNOTATION" node module :supported-collection-literal
+             (get attributes :literal-kind)
+             :unsupported-collection-literal-kind)
+            (if (= (get child-types :status) :accepted)
+              (if (if (= (get attributes :literal-kind) :map)
+                    (sh08-even-count? children)
+                    true)
+                (sh08-accepted-node
+                 node module
+                 (assoc base-type
+                        :member-types (get child-types :types))
+                 :collection-literal children)
+                (sh08-rejected-node
+                 "C7-VERIFY" node module :even-map-children
+                 (count children) :map-child-count))
+              (sh08-rejected-node
+               "C7-VERIFY" node module :typed-collection-child
+               (get child-types :missing)
+               :collection-child-type-fact-missing))))
+        (if (= core-form :if)
+          (if (= (count children) 3)
+            (let [condition-id (first children)
+                  then-id (second children)
+                  else-id (sh08-third children)
+                  condition-type (get type-table condition-id)
+                  then-type (get type-table then-id)
+                  else-type (get type-table else-id)]
+              (if (= condition-type nil)
+                (sh08-rejected-node
+                 "C7-VERIFY" node module :typed-condition nil
+                 :condition-type-fact-missing)
+                (if (= then-type nil)
+                  (sh08-rejected-node
+                   "C7-VERIFY" node module :typed-then-branch nil
+                   :then-type-fact-missing)
+                  (if (= else-type nil)
+                    (sh08-rejected-node
+                     "C7-VERIFY" node module :typed-else-branch nil
+                     :else-type-fact-missing)
+                    (if (= then-type else-type)
+                      (sh08-accepted-node
+                       node module then-type :equal-branch-type-join
+                       [condition-id then-id else-id])
+                      (sh08-rejected-node
+                       "C7-TYPE-MISMATCH" node module then-type else-type
+                       :conditional-branch-type-mismatch))))))
+            (sh08-rejected-node
+             "C7-VERIFY" node module :three-if-children
+             (count children) :conditional-child-count))
+          (if (= core-form :def)
+            (if (= (count children) 1)
+              (let [value-id (first children)
+                    value-type (get type-table value-id)]
+                (if (= value-type nil)
+                  (sh08-rejected-node
+                   "C7-VERIFY" node module :typed-definition-value nil
+                   :definition-value-type-fact-missing)
+                  (sh08-accepted-node
+                   node module value-type :definition-value [value-id])))
+              (sh08-rejected-node
+               "C7-VERIFY" node module :one-definition-child
+               (count children) :definition-child-count))
+            (sh08-rejected-node
+             "C7-ANNOTATION" node module
+             :supported-sh08-primitive-core-form core-form
+             :core-form-outside-bounded-slice)))))))
+
+(defn sh08-type-nodes [remaining type-table type-facts module]
+  (if (= (count remaining) 0)
+    {:status :accepted
+     :type-table type-table
+     :type-facts type-facts
+     :diagnostics []}
+    (let [node (first remaining)
+          node-result (sh08-type-node node type-table module)]
+      (if (= (get node-result :status) :accepted)
+        (sh08-type-nodes
+         (rest remaining)
+         (assoc type-table
+                (get node :node-id)
+                (get node-result :type))
+         (conj type-facts (get node-result :fact))
+         module)
+        {:status :rejected
+         :type-table type-table
+         :type-facts type-facts
+         :diagnostics [(get node-result :diagnostic)]}))))
+
+(defn sh08-type-core-artifact [core-artifact]
+  (if (map? core-artifact)
+    (let [validation (sh08-validate-core-shape core-artifact)
+          module (if (map? (get core-artifact :module))
+                   (get core-artifact :module) {})]
+      (if (= (get validation :status) :accepted)
+        (let [nodes (get validation :nodes)
+              typed (sh08-type-nodes nodes {} [] module)
+              identity-input
+              {:domain :gravity/sh08-primitive-typed-core-v2
+               :unauthenticated-sh07-shaped-artifact-id
+               (get core-artifact :artifact-id)
+               :module module
+               :roots (get validation :roots)
+               :types (get typed :type-table)
+               :type-facts (get typed :type-facts)
+               :diagnostics (get typed :diagnostics)}]
+          {:artifact :gravity/sh08-primitive-typed-core-template
+           :schema-version 2
+           :status (get typed :status)
+           :scope
+           :primitive-literals-vector-map-set-definitions-equal-if-joins
+           :authentication-status :coordinator-adapter-required
+           :module module
+           :sh07-shaped-artifact-id
+           (get core-artifact :artifact-id)
+           :type-table (get typed :type-table)
+           :type-facts (get typed :type-facts)
+           :typed-core
+           {:artifact :gravity/typed-core
+            :core-input (get core-artifact :artifact-id)
+            :module module
+            :types (get typed :type-table)
+            :constraints []
+            :dynamic-boundaries []
+            :casts []
+            :diagnostics (get typed :diagnostics)}
+           :diagnostics (get typed :diagnostics)
+           :artifact-id-request identity-input
+           :identity-input identity-input
+           :identity-resolution :coordinator-digest-required
+           :pending
+           [:authenticated-coordinator-adapter
+            :resolved-typed-artifact-digest
+            :functions :calls :locals :records :unions
+            :protocols :generics :casts :dynamic-boundaries
+            :ownership-types :layout-types :schema-types
+            :list-lowering]})
+        {:artifact :gravity/sh08-primitive-typed-core-template
+         :schema-version 2
+         :status :rejected
+         :authentication-status :coordinator-adapter-required
+         :diagnostics
+         [(sh08-type-diagnostic
+           "C7-VERIFY" (get validation :node) module
+           :bounded-structurally-valid-sh07-shaped-core
+           (get validation :reason)
+           (get validation :reason))]}))
+    {:artifact :gravity/sh08-primitive-typed-core-template
+     :schema-version 2
+     :status :rejected
+     :authentication-status :coordinator-adapter-required
+     :diagnostics
+     [(sh08-type-diagnostic
+       "C7-VERIFY" {} {} :map core-artifact
+       :sh07-shaped-core-map-required)]}))
+
+(defn sh08-verify-type-result [core-artifact candidate]
+  (let [expected (sh08-type-core-artifact core-artifact)]
+    {:artifact :gravity/sh08-primitive-type-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks
+     [:structurally-validated-sh07-shaped-core
+      :coordinator-authentication-still-required
+      :every-supported-node-typed-or-diagnosed
+      :child-types-precede-parent-types
+      :equal-conditional-branch-types
+      :source-syntax-origin-generated-origin-binding-links-preserved
+      :effect-capability-declarations-preserved
+      :deterministic-identity-request]
+     :expected expected
+     :candidate candidate}))
 
 (defn verify-c7-type-checker [typed-core-artifact]
   (quote {:status :stage1-source-owned

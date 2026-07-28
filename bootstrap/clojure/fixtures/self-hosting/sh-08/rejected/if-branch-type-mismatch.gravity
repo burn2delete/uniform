@@ -1,0 +1,10 @@
+(ns self-hosting.sh08.if-branch-type-mismatch
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [mismatched])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-08 :fixture :if-branch-type-mismatch}))
+
+(def mismatched (if true 1 :not-an-integer))
