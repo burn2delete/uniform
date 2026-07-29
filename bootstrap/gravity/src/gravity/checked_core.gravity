@@ -183,7 +183,7 @@
    :maximum-top-level-forms 1024
    :maximum-form-children 1024
    :maximum-form-depth 256
-   :maximum-bindings 1024
+   :maximum-bindings 2048
    :maximum-alias-records 256
    :maximum-resolutions 2048
    :maximum-module-resolutions 65536
@@ -259,7 +259,7 @@
    :maximum-top-level-forms 1024
    :maximum-form-children 1024
    :maximum-form-depth 256
-   :maximum-bindings 1024
+   :maximum-bindings 2048
    :maximum-alias-records 256
    :maximum-resolutions 2048
    :maximum-module-resolutions 65536
@@ -367,6 +367,26 @@
   (if (vector? value)
     (<= (count value) maximum)
     false))
+
+(defn sh07-binding-count-preflight [bindings]
+  (let [maximum
+        (get (sh07-bounds-value) :maximum-bindings)]
+    (if (vector? bindings)
+      (if (<= (count bindings) maximum)
+        {:status :accepted
+         :bound :maximum-bindings
+         :maximum maximum
+         :observed (count bindings)}
+        {:status :rejected
+         :reason :maximum-bindings
+         :bound :maximum-bindings
+         :maximum maximum
+         :observed (count bindings)})
+      {:status :rejected
+       :reason :binding-vector-required
+       :bound :maximum-bindings
+       :maximum maximum
+       :observed nil})))
 
 (defn sh07-utf8-byte-width [code]
   (if (<= code 127)
@@ -493,6 +513,14 @@
         (if (sh07-sha256-id? (first remaining))
           (recur (rest remaining))
           false)))
+    false))
+
+(defn sh07-binding-id-vector? [bindings]
+  (if (= (get (sh07-binding-count-preflight bindings) :status)
+         :accepted)
+    (sh07-sha-vector?
+     bindings
+     (get (sh07-bounds-value) :maximum-bindings))
     false))
 
 (defn sh07-lineage-shape? [lineage]
@@ -796,12 +824,10 @@
               (if (sh07-sha-vector?
                    (get fragment :form-ids)
                    (get (sh07-bounds-value) :maximum-fragment-forms))
-                (if (sh07-sha-vector?
-                     (get fragment :local-binding-ids)
-                     (get (sh07-bounds-value) :maximum-bindings))
-                  (if (sh07-sha-vector?
-                       (get fragment :external-binding-ids)
-                       (get (sh07-bounds-value) :maximum-bindings))
+                (if (sh07-binding-id-vector?
+                     (get fragment :local-binding-ids))
+                  (if (sh07-binding-id-vector?
+                       (get fragment :external-binding-ids))
                     (if (sh07-sha-vector?
                          (get fragment
                               :resolution-reference-syntax-ids)
@@ -1078,9 +1104,11 @@
                      (get request :top-level-form-ids)
                      (get (sh07-bounds-value)
                           :maximum-top-level-forms))
-                  (if (sh07-bounded-vector?
-                       (get request :binding-table)
-                       (get (sh07-bounds-value) :maximum-bindings))
+                  (if (= (get
+                          (sh07-binding-count-preflight
+                           (get request :binding-table))
+                          :status)
+                         :accepted)
                     (if (sh07-bounded-vector?
                          (get request :alias-table)
                          (get (sh07-bounds-value) :maximum-alias-records))
