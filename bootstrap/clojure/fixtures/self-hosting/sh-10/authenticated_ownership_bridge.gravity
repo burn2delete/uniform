@@ -1,0 +1,1204 @@
+(ns gravity.self-hosting.sh10.authenticated-ownership-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh10-authenticated-ownership-bridge-policy
+             sh10-build-authenticated-ownership-request
+             sh10-bind-authenticated-ownership-result
+             sh10-verify-authenticated-ownership-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh10-authenticated-ownership-bridge-policy []
+  {:artifact :gravity/sh10-authenticated-ownership-bridge-policy
+   :schema-version 1
+   :profile :meta
+   :target :jvm
+   :operations
+   [:initialized-read :immutable-borrow-move :mutable-alias]
+   :required-products
+   [:authenticated-sh08-typed-core
+    :reusable-authenticated-envelope
+    :fresh-c9-ownership-result
+    :fresh-c9-ownership-verification]
+   :pipeline-position
+   {:upstream :sh08-authenticated-typed-core
+    :parallel-consumer :sh09-authenticated-effect-bridge
+    :effect-ownership-safety-convergence :sh11}
+   :host-authority
+   [:bounded-source-snapshot
+    :compile-and-invoke-gravity-modules
+    :canonical-encode
+    :sha256
+    :resolve-declared-digest-requests]
+   :diagnostics
+   ["STD10-BRIDGE-SCHEMA"
+    "STD10-BRIDGE-SH08"
+    "STD10-BRIDGE-ENVELOPE"
+    "STD10-BRIDGE-OWNERSHIP"
+    "STD10-BRIDGE-VERIFY"]
+   :pending
+   [:persistent-copy-semantics
+    :field-and-range-splitting
+    :region-lifetimes
+    :arena-generations
+    :linear-resources
+    :task-actor-and-ffi-transfer
+    :runtime-borrow-checks
+    :unsafe-audit-records
+    :effect-result-convergence
+    :mir-preservation
+    :whole-compiler-source-set
+    :public-routing
+    :seedless-execution
+    :complete-ownership-checker]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh10-bridge-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh10-bridge-member? (rest values) value))))
+
+(defn sh10-bridge-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if
+     (sh10-bridge-member?
+      [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+      (first characters))
+      (sh10-bridge-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh10-bridge-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if
+         (= (subvec characters 0 7)
+            [\s \h \a \2 \5 \6 \:])
+          (sh10-bridge-lowercase-hex?
+           (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh10-bridge-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh10-bridge-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh10-bridge-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh10-bridge-max [left right]
+  (if (> left right) left right))
+
+(defn sh10-bridge-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh10-bridge-aggregate? current)
+              (let [width
+                    (sh10-bridge-aggregate-width current)]
+                (if (> width 65536)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh10-bridge-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj
+                              result
+                              [(first remaining) (+ depth 1)]))))]
+                    (recur
+                     next-frontier
+                     next-nodes
+                     scalar-units
+                     (sh10-bridge-max observed-depth depth)
+                     (sh10-bridge-max observed-width width)))))
+              (let [next-scalar-units
+                    (+ scalar-units (count (vec (str current))))]
+                (if (> next-scalar-units 16777216)
+                  {:status :rejected :reason :carrier-scalar-bound}
+                  (recur
+                   (rest frontier)
+                   next-nodes
+                   next-scalar-units
+                   (sh10-bridge-max observed-depth depth)
+                   observed-width))))))))))
+
+(defn sh10-bridge-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh10-bridge-projection-value [projections name]
+  (if (= (count projections) 0)
+    nil
+    (let [projection (first projections)]
+      (if (= name (get projection :name))
+        (get projection :value)
+        (sh10-bridge-projection-value
+         (rest projections) name)))))
+
+(defn sh10-bridge-identity-check [checks name]
+  (if (= (count checks) 0)
+    nil
+    (let [check (first checks)]
+      (if (= name (get check :name))
+        check
+        (sh10-bridge-identity-check (rest checks) name)))))
+
+(defn sh10-bridge-identity-subject [subjects name]
+  (if (= (count subjects) 0)
+    nil
+    (let [subject (first subjects)]
+      (if (= name (get subject :name))
+        subject
+        (sh10-bridge-identity-subject (rest subjects) name)))))
+
+(defn sh10-bridge-all-identity-checks-pass? [checks]
+  (if (= (count checks) 0)
+    true
+    (let [check (first checks)]
+      (if
+       (sh10-bridge-exact-keys?
+        check #{:name :domain :computed-id :observed-id})
+        (if
+         (sh10-bridge-sha256-id? (get check :computed-id))
+          (if (= (get check :computed-id)
+                 (get check :observed-id))
+            (sh10-bridge-all-identity-checks-pass?
+             (rest checks))
+            false)
+          false)
+        false))))
+
+(defn sh10-bridge-identity-pair-valid?
+  [checks subjects name domain preimage observed-id]
+  (let [check (sh10-bridge-identity-check checks name)
+        subject (sh10-bridge-identity-subject subjects name)]
+    (if
+     (sh10-bridge-exact-keys?
+      check #{:name :domain :computed-id :observed-id})
+      (if
+       (sh10-bridge-exact-keys?
+        subject #{:name :domain :preimage :observed-id})
+        (if (= domain (get check :domain))
+          (if (= domain (get subject :domain))
+            (if (= preimage (get subject :preimage))
+              (if
+               (if (= nil observed-id)
+                 (sh10-bridge-sha256-id?
+                  (get subject :observed-id))
+                 (= observed-id (get subject :observed-id)))
+                (= (get check :observed-id)
+                   (get subject :observed-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh10-bridge-identity-checks-valid?
+  [checks subjects typed ownership-result operation
+   expected-ownership-artifact-id operation-id
+   type-fact-id effect-fact-id capability-proof-id]
+  (if (vector? checks)
+    (if (vector? subjects)
+      (if (= 6 (count checks))
+        (if (= 6 (count subjects))
+          (if (sh10-bridge-all-identity-checks-pass? checks)
+            (let [fact (first (get typed :type-facts))]
+              (if
+               (sh10-bridge-identity-pair-valid?
+                checks subjects :sh08-typed-core
+                :gravity/sh10-sh08-typed-core-v1
+                {:typed-artifact-id (get typed :artifact-id)
+                 :identity-input (get typed :identity-input)}
+                nil)
+                (if
+                 (sh10-bridge-identity-pair-valid?
+                 checks subjects :sh10-ownership-result
+                  :gravity/sh10-ownership-result-v2
+                  ownership-result
+                  expected-ownership-artifact-id)
+                  (if
+                   (sh10-bridge-identity-pair-valid?
+                    checks subjects :sh10-type-fact-link
+                    :gravity/sh10-type-fact-link-v1
+                    {:fact fact} type-fact-id)
+                    (if
+                     (sh10-bridge-identity-pair-valid?
+                      checks subjects :sh10-effect-fact-link
+                      :gravity/sh10-effect-fact-link-v1
+                      {:effects (get fact :effects)}
+                      effect-fact-id)
+                      (if
+                       (sh10-bridge-identity-pair-valid?
+                        checks subjects
+                        :sh10-capability-proof-link
+                        :gravity/sh10-capability-proof-link-v1
+                        {:capabilities (get fact :capabilities)}
+                        capability-proof-id)
+                        (sh10-bridge-identity-pair-valid?
+                         checks subjects :sh10-ownership-operation
+                         :gravity/sh10-ownership-operation-v1
+                         operation operation-id)
+                        false)
+                      false)
+                    false))
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-type-fact-valid? [fact module]
+  (if
+   (sh10-bridge-exact-keys?
+    fact
+    #{:artifact :fact-id-request :core-node-id :type
+      :producer-rule :dependencies :syntax-id :source-span
+      :origin-chain :generated-origin :binding-id :profile
+      :target :effects :capabilities :ownership :status})
+    (if (= :gravity/c7-type-fact (get fact :artifact))
+      (if (= :inferred (get fact :status))
+        (if (= :pending-sh10 (get fact :ownership))
+          (if (= false (= nil (get fact :core-node-id)))
+            (if (map? (get fact :source-span))
+              (if (vector? (get fact :origin-chain))
+                (if (vector? (get fact :effects))
+                  (if (vector? (get fact :capabilities))
+                    (if (= (get module :profile)
+                           (get fact :profile))
+                      (if (= (get module :target)
+                             (get fact :target))
+                        (if (= (get module :effects)
+                               (get fact :effects))
+                          (= (get module :capabilities)
+                             (get fact :capabilities))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-sh08-binding-valid? [typed]
+  (if
+   (sh10-bridge-exact-keys?
+    typed
+    #{:artifact :schema-version :status :scope :artifact-id
+      :sh07-artifact-id :module :type-table :type-facts
+      :typed-core :identity-input :provenance :diagnostics
+      :pending :self-hosted? :clojure-seed-boundary?})
+    (let [identity (get typed :identity-input)
+          facts (get typed :type-facts)]
+      (if
+       (sh10-bridge-exact-keys?
+        identity
+        #{:artifact :scope :sh07-artifact-id :typed-artifact-id
+          :module :type-table :type-facts :typed-core :diagnostics
+          :semantic-envelope-id})
+        (if (= :gravity/sh08-authenticated-typed-core
+               (get identity :artifact))
+          (if (= (get typed :scope) (get identity :scope))
+            (if (= (get typed :artifact-id)
+                   (get identity :typed-artifact-id))
+              (if (= (get typed :sh07-artifact-id)
+                     (get identity :sh07-artifact-id))
+                (if (= (get typed :module)
+                       (get identity :module))
+                  (if (= (get typed :type-table)
+                         (get identity :type-table))
+                    (if (= facts (get identity :type-facts))
+                      (if (= (get typed :typed-core)
+                             (get identity :typed-core))
+                        (if (= (get typed :diagnostics)
+                               (get identity :diagnostics))
+                          (if (= [] (get typed :diagnostics))
+                            (if (vector? facts)
+                              (if (> (count facts) 0)
+                                (if
+                                 (sh10-bridge-type-fact-valid?
+                                  (first facts)
+                                  (get typed :module))
+                                  (if
+                                   (sh10-bridge-exact-keys?
+                                    (get typed :provenance)
+                                    #{:actual-source-path
+                                      :provenance-binding-id})
+                                    (if
+                                     (string?
+                                      (get
+                                       (get typed :provenance)
+                                       :actual-source-path))
+                                      (if
+                                       (sh10-bridge-sha256-id?
+                                        (get
+                                         (get typed :provenance)
+                                         :provenance-binding-id))
+                                        (if
+                                         (vector? (get typed :pending))
+                                          (if (= false
+                                                 (get typed
+                                                      :self-hosted?))
+                                            (= true
+                                               (get
+                                                typed
+                                                :clojure-seed-boundary?))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh10-bridge-sh08-valid? [typed verification]
+  (if
+   (sh10-bridge-sh08-binding-valid? typed)
+    (if (= :gravity/sh08-authenticated-typed-core
+           (get typed :artifact))
+      (if (= 1 (get typed :schema-version))
+        (if (= :accepted (get typed :status))
+          (if
+           (sh10-bridge-sha256-id? (get typed :artifact-id))
+            (if
+             (sh10-bridge-sha256-id?
+              (get typed :sh07-artifact-id))
+              (if (map? (get typed :module))
+                (if (map? (get typed :type-table))
+                  (if (vector? (get typed :type-facts))
+                    (if (> (count (get typed :type-facts)) 0)
+                      (if (map? (get typed :typed-core))
+                        (if (map? (get typed :identity-input))
+                          (if
+                           (= :accepted
+                              (get
+                               (sh10-bridge-carrier-preflight
+                                verification)
+                               :status))
+                            (if
+                           (sh10-bridge-exact-keys?
+                            verification
+                            #{:artifact :status :checks
+                              :expected :candidate})
+                            (if
+                             (=
+                              :gravity/sh08-authenticated-type-verification
+                              (get verification :artifact))
+                              (if (= :passed
+                                     (get verification :status))
+                                (if
+                                 (=
+                                  [:verified-sh07-canonical-core
+                                   :authenticated-input-and-output-identities
+                                   :fresh-c7-result-replay
+                                   :exact-typed-result
+                                   :path-neutral-identity
+                                   :separate-actual-path-provenance]
+                                  (get verification :checks))
+                                  (if
+                                   (= typed
+                                      (get verification :expected))
+                                    (= typed
+                                       (get verification :candidate))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-template-replay-valid? [replay]
+  (if
+   (sh10-bridge-exact-keys?
+    replay
+    #{:status
+      :artifact-template
+      :digest-graph-root
+      :digest-graph-roots
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :request-count
+      :semantic-authority
+      :checks
+      :diagnostics})
+    (if (= :template-replay-passed (get replay :status))
+      (if (= :pending-host-resolution
+             (get replay :identity-enforcement))
+        (if (= false
+               (get replay
+                    :eligible-for-contextual-acceptance?))
+          (if (= :gravity-source
+                 (get replay :semantic-authority))
+            (= [] (get replay :diagnostics))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-contextual-verification-valid?
+  [verification sh08-verification]
+  (if
+   (sh10-bridge-exact-keys?
+    verification
+    #{:artifact
+      :status
+      :artifact-template
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :host-digest-resolution
+      :identity-subject-equality
+      :fresh-envelope-reconstruction
+      :sh08-verification})
+    (if
+     (= :gravity/sh10-envelope-contextual-verification
+        (get verification :artifact))
+      (if (= :contextual-verification-passed
+             (get verification :status))
+        (if (= :passed
+               (get verification :host-digest-resolution))
+          (if (= :passed
+                 (get verification
+                      :identity-subject-equality))
+            (if (= :passed
+                   (get verification
+                        :fresh-envelope-reconstruction))
+              (= sh08-verification
+                 (get verification :sh08-verification))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-envelope-valid?
+  [descriptor envelope replay contextual typed
+   ownership-result ownership-verification
+   expected-ownership-artifact-id
+   ownership-operation ownership-operation-id
+   type-fact-id effect-fact-id capability-proof-id
+   sh08-verification]
+  (if
+   (sh10-bridge-exact-keys?
+    descriptor
+    #{:artifact :schema-version :stage :artifact-kind
+      :source-revision :projection-contract
+      :semantic-projections :fact-transitions
+      :effect-capability-relation :proof-composite
+      :preservation :identity-subjects :lineage
+      :reference-closure :actual-path-provenance :bounds})
+    (if
+     (= :gravity/private-authenticated-envelope-descriptor
+        (get descriptor :artifact))
+      (if (= 1 (get descriptor :schema-version))
+        (if (= :sh10-authenticated-ownership-bridge
+               (get descriptor :stage))
+          (if
+           (=
+            :gravity/sh10-authenticated-ownership-boundary
+            (get descriptor :artifact-kind))
+            (let [projections
+              (get descriptor :semantic-projections)]
+              (if (vector? projections)
+                (if (= 4 (count projections))
+                  (if
+                   (= {:typed-artifact-id
+                       (get typed :artifact-id)}
+                      (sh10-bridge-projection-value
+                       projections :sh08-typed-core))
+                    (if
+                     (= {:ownership-result-id
+                         expected-ownership-artifact-id}
+                        (sh10-bridge-projection-value
+                         projections :sh10-ownership-result))
+                      (if
+                       (= ownership-verification
+                          (sh10-bridge-projection-value
+                           projections
+                           :sh10-ownership-verification))
+                        (if
+                       (= ownership-operation
+                          (sh10-bridge-projection-value
+                           projections
+                           :sh10-ownership-operation))
+                        (if
+                       (sh10-bridge-template-replay-valid? replay)
+                        (if
+                         (sh10-bridge-contextual-verification-valid?
+                          contextual sh08-verification)
+                          (if (map? envelope)
+                            (if
+                             (= :gravity/authenticated-envelope
+                                (get envelope :artifact))
+                              (if
+                               (=
+                                :sh10-authenticated-ownership-bridge
+                                (get envelope :stage))
+                                (if
+                                 (=
+                                  :gravity/sh10-authenticated-ownership-boundary
+                                  (get envelope :artifact-kind))
+                                  (if
+                                   (sh10-bridge-sha256-id?
+                                    (get envelope
+                                         :semantic-envelope-id))
+                                    (if
+                                     (sh10-bridge-sha256-id?
+                                      (get envelope
+                                           :provenance-binding-id))
+                                      (if
+                                       (= envelope
+                                          (get contextual
+                                               :artifact-template))
+                                        (if
+                                         (=
+                                          (get envelope
+                                               :semantic-envelope-id)
+                                          (get contextual
+                                               :semantic-envelope-root))
+                                          (if
+                                           (=
+                                            (get envelope
+                                                 :provenance-binding-id)
+                                            (get contextual
+                                                 :provenance-binding-root))
+                                            (if
+                                             (= :passed
+                                                (get contextual
+                                                     :identity-enforcement))
+                                              (if
+                                               (= true
+                                                  (get
+                                                   contextual
+                                                   :eligible-for-contextual-acceptance?))
+                                                (sh10-bridge-identity-checks-valid?
+                                                 (get contextual
+                                                      :identity-checks)
+                                                 (get descriptor
+                                                      :identity-subjects)
+                                                 typed
+                                                 ownership-result
+                                                 ownership-operation
+                                                 expected-ownership-artifact-id
+                                                 ownership-operation-id
+                                                 type-fact-id
+                                                 effect-fact-id
+                                                 capability-proof-id)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                        false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-operation-valid? [operation]
+  (sh10-bridge-member?
+   [:initialized-read :immutable-borrow-move :mutable-alias]
+   operation))
+
+(defn sh10-bridge-ownership-operation-valid? [operation]
+  (if
+   (sh10-bridge-exact-keys?
+    operation
+    #{:operation :type-fact-index :owner-id :ownership-kind
+      :initialization :availability :owner-lifetime-end
+      :immutable-borrow-id :mutable-borrow-id
+      :destination-owner})
+    (if (sh10-bridge-operation-valid?
+         (get operation :operation))
+      (if (= 0 (get operation :type-fact-index))
+        (if (string? (get operation :owner-id))
+          (if (> (count (get operation :owner-id)) 0)
+            (if (= :owned-mutable
+                   (get operation :ownership-kind))
+              (if (= :uninitialized
+                     (get operation :initialization))
+                (if (= :available
+                       (get operation :availability))
+                  (if (number?
+                       (get operation :owner-lifetime-end))
+                    (if (> (get operation :owner-lifetime-end) 0)
+                      (if (= false
+                             (= nil
+                                (get operation
+                                     :immutable-borrow-id)))
+                        (if (= false
+                               (= nil
+                                  (get operation
+                                       :mutable-borrow-id)))
+                          (if (string?
+                               (get operation
+                                    :destination-owner))
+                            (> (count
+                                (get operation
+                                     :destination-owner))
+                               0)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-first-type-fact [typed]
+  (first (get typed :type-facts)))
+
+(defn sh10-bridge-event
+  [event-id operation borrow-id destination-owner fact]
+  {:event-id event-id
+   :op operation
+   :borrow-id borrow-id
+   :destination-owner destination-owner
+   :source-span (get fact :source-span)
+   :origin-chain (get fact :origin-chain)})
+
+(defn sh10-bridge-events [operation fact]
+  (let [initialize
+        (sh10-bridge-event
+         :initialize :initialize nil nil fact)
+        read
+        (sh10-bridge-event :read :read nil nil fact)
+        immutable
+        (sh10-bridge-event
+         :borrow-immutable :borrow-immutable
+         (get operation :immutable-borrow-id) nil fact)
+        mutable
+        (sh10-bridge-event
+         :borrow-mutable :borrow-mutable
+         (get operation :mutable-borrow-id) nil fact)
+        end-immutable
+        (sh10-bridge-event
+         :end-immutable :end-borrow
+         (get operation :immutable-borrow-id) nil fact)
+        move
+        (sh10-bridge-event
+         :move :move nil
+         (get operation :destination-owner) fact)]
+    (if (= (get operation :operation) :initialized-read)
+      [initialize read]
+      (if (= (get operation :operation)
+             :immutable-borrow-move)
+        [initialize immutable end-immutable move]
+        [initialize immutable mutable]))))
+
+(defn sh10-bridge-ownership-request
+  [typed ownership-operation type-fact-id effect-fact-id
+   capability-proof-id]
+  (let [fact (sh10-bridge-first-type-fact typed)]
+    {:artifact :gravity/sh10-normalized-ownership-request
+     :request-id (get typed :artifact-id)
+     :value-id (get fact :core-node-id)
+     :owner-id (get ownership-operation :owner-id)
+     :ownership-kind
+     (get ownership-operation :ownership-kind)
+     :initialization (get ownership-operation :initialization)
+     :availability (get ownership-operation :availability)
+     :events
+     (sh10-bridge-events ownership-operation fact)
+     :owner-lifetime-end
+     (get ownership-operation :owner-lifetime-end)
+     :type-fact-id type-fact-id
+     :effect-fact-id effect-fact-id
+     :capability-proof-id capability-proof-id
+     :source-span (get fact :source-span)
+     :origin-chain (get fact :origin-chain)
+     :profile (get (get typed :module) :profile)
+     :target (get (get typed :module) :target)}))
+
+(defn sh10-bridge-upstream-error [request]
+  (if
+   (= false
+      (= :accepted
+         (get (sh10-bridge-carrier-preflight request)
+              :status)))
+    [:schema :request-carrier-bound]
+    (if
+     (= false
+        (sh10-bridge-exact-keys?
+         request
+         #{:artifact
+           :schema-version
+           :ownership-operation
+           :ownership-operation-id
+           :sh08-typed-core
+           :sh08-verification
+           :type-fact-id
+           :effect-fact-id
+           :capability-proof-id
+           :expected-ownership-result
+           :expected-ownership-verification
+           :expected-ownership-artifact-id
+           :envelope-descriptor
+           :envelope
+           :template-replay
+           :envelope-verification
+           :actual-source-path}))
+      [:schema :request-keys]
+      (if
+       (= false
+          (=
+           :gravity/sh10-authenticated-ownership-bridge-request
+           (get request :artifact)))
+        [:schema :request-artifact]
+        (if (= false (= 1 (get request :schema-version)))
+          [:schema :request-schema]
+        (if
+         (= false
+            (sh10-bridge-ownership-operation-valid?
+             (get request :ownership-operation)))
+          [:schema :operation]
+          (if
+           (= false
+              (sh10-bridge-sha256-id?
+               (get request :ownership-operation-id)))
+            [:schema :ownership-operation-id]
+            (if
+           (= false
+              (sh10-bridge-sh08-valid?
+               (get request :sh08-typed-core)
+               (get request :sh08-verification)))
+            [:sh08 :invalid-authenticated-typed-core]
+            (if
+             (= false
+                (sh10-bridge-sha256-id?
+                 (get request :type-fact-id)))
+              [:schema :type-fact-id]
+              (if
+               (= false
+                  (sh10-bridge-sha256-id?
+                   (get request :effect-fact-id)))
+                [:schema :effect-fact-id]
+                (if
+                 (= false
+                    (sh10-bridge-sha256-id?
+                     (get request :capability-proof-id)))
+                  [:schema :capability-proof-id]
+                  (if
+                   (= false
+                      (map?
+                       (get request
+                            :expected-ownership-result)))
+                    [:schema :expected-ownership-result]
+                    (if
+                     (= false
+                        (= :accepted
+                           (get
+                            (sh10-bridge-carrier-preflight
+                             (get request
+                                  :expected-ownership-result))
+                            :status)))
+                      [:schema :expected-result-carrier-bound]
+                      (if
+                       (= false
+                          (sh10-bridge-sha256-id?
+                           (get
+                            request
+                            :expected-ownership-artifact-id)))
+                        [:schema
+                         :expected-ownership-artifact-id]
+                        (if
+                         (= false
+                            (sh10-bridge-envelope-valid?
+                             (get request :envelope-descriptor)
+                             (get request :envelope)
+                             (get request :template-replay)
+                             (get request :envelope-verification)
+                             (get request :sh08-typed-core)
+                             (get request
+                                  :expected-ownership-result)
+                             (get request
+                                  :expected-ownership-verification)
+                             (get
+                              request
+                              :expected-ownership-artifact-id)
+                             (get request :ownership-operation)
+                             (get request
+                                  :ownership-operation-id)
+                             (get request :type-fact-id)
+                             (get request :effect-fact-id)
+                             (get request
+                                  :capability-proof-id)
+                             (get request :sh08-verification)))
+                          [:envelope
+                           :invalid-authenticated-envelope]
+                          (if
+                         (string?
+                          (get request :actual-source-path))
+                          (if
+                           (> (count
+                               (get
+                                request
+                                :actual-source-path))
+                              0)
+                            (if
+                             (<=
+                              (count
+                               (get
+                                request
+                                :actual-source-path))
+                              4096)
+                              nil
+                              [:schema :actual-path-bound])
+                            [:schema :actual-path-required])
+                          [:schema
+                           :actual-path-required]))))))))))))))))
+
+(defn sh10-bridge-rule [family]
+  (if (= family :schema)
+    "STD10-BRIDGE-SCHEMA"
+    (if (= family :sh08)
+      "STD10-BRIDGE-SH08"
+      (if (= family :envelope)
+        "STD10-BRIDGE-ENVELOPE"
+        (if (= family :ownership)
+          "STD10-BRIDGE-OWNERSHIP"
+          "STD10-BRIDGE-VERIFY")))))
+
+(defn sh10-bridge-diagnostic
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh10-authenticated-ownership-diagnostic
+   :rule (sh10-bridge-rule family)
+   :severity :error
+   :stage :ownership-checking
+   :source-span {:source (get request :actual-source-path)}
+   :profile :meta
+   :target :jvm
+   :facts
+   {:reason reason
+    :upstream-diagnostics upstream-diagnostics
+    :fail-closed true}
+   :remediation
+   (str
+    "Provide the exact authenticated SH-08 input and freshly "
+    "verified C9 result.")})
+
+(defn sh10-bridge-rejected
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh10-authenticated-owned-core
+   :schema-version 1
+   :status :rejected
+   :diagnostics
+   [(sh10-bridge-diagnostic
+     request family reason upstream-diagnostics)]
+   :pending
+   (get
+    (sh10-authenticated-ownership-bridge-policy)
+    :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh10-build-authenticated-ownership-request [request]
+  (let [error (sh10-bridge-upstream-error request)]
+    (if (= error nil)
+      {:artifact :gravity/sh10-authenticated-c9-request
+       :schema-version 1
+       :status :accepted
+       :operation
+       (get (get request :ownership-operation) :operation)
+       :ownership-request
+       (sh10-bridge-ownership-request
+        (get request :sh08-typed-core)
+        (get request :ownership-operation)
+        (get request :type-fact-id)
+        (get request :effect-fact-id)
+        (get request :capability-proof-id))
+       :expected-ownership-result
+       (get request :expected-ownership-result)
+       :expected-ownership-verification
+       (get request :expected-ownership-verification)
+       :expected-ownership-artifact-id
+       (get request :expected-ownership-artifact-id)
+       :typed-artifact-id
+       (get
+        (get request :sh08-typed-core)
+        :artifact-id)
+       :semantic-envelope-id
+       (get
+        (get request :envelope)
+        :semantic-envelope-id)
+       :provenance-binding-id
+       (get
+        (get request :envelope)
+        :provenance-binding-id)
+       :actual-source-path
+       (get request :actual-source-path)
+       :diagnostics []}
+      (sh10-bridge-rejected
+       request (first error) (first (rest error)) []))))
+
+(defn sh10-bridge-ownership-result-valid?
+  [c9-request ownership-result ownership-verification]
+  (if
+   (= :accepted
+      (get (sh10-bridge-carrier-preflight c9-request) :status))
+    (if
+     (= :accepted
+        (get
+         (sh10-bridge-carrier-preflight ownership-result)
+         :status))
+      (if
+       (= :accepted
+          (get
+           (sh10-bridge-carrier-preflight
+            ownership-verification)
+           :status))
+        (if (= :accepted (get c9-request :status))
+    (if
+     (= (get c9-request :expected-ownership-result)
+        ownership-result)
+      (if
+       (= (get c9-request
+               :expected-ownership-verification)
+          ownership-verification)
+        (if
+       (sh10-bridge-exact-keys?
+        ownership-verification
+        #{:artifact :status :request-id :checks})
+        (if
+         (= :gravity/sh10-ownership-result-verification
+            (get ownership-verification :artifact))
+          (if (= :passed
+                 (get ownership-verification :status))
+            (if
+             (=
+              (get ownership-result :request-id)
+              (get ownership-verification :request-id))
+              (=
+               [:complete-recomputation
+                :event-order
+                :state-transition-identity
+                :ownership-fact-identity
+                :diagnostic-identity
+                :source-lineage-identity]
+               (get ownership-verification :checks))
+              false)
+            false)
+          false)
+        false)
+        false)
+      false)
+    false)
+        false)
+      false)
+    false))
+
+(defn sh10-bridge-identity-input
+  [request c9-request ownership-result]
+  {:artifact :gravity/sh10-authenticated-owned-core
+   :typed-artifact-id
+   (get c9-request :typed-artifact-id)
+   :ownership-artifact-id
+   (get c9-request :expected-ownership-artifact-id)
+   :operation
+   (get (get request :ownership-operation) :operation)
+   :state (get ownership-result :state)
+   :ownership-facts
+   (get ownership-result :ownership-facts)
+   :preserves (get ownership-result :preserves)
+   :semantic-envelope-id
+   (get c9-request :semantic-envelope-id)})
+
+(defn sh10-bind-authenticated-ownership-result
+  [request c9-request ownership-result ownership-verification]
+  (if
+   (= false
+      (= :accepted
+         (get (sh10-bridge-carrier-preflight c9-request)
+              :status)))
+    (sh10-bridge-rejected
+     request :verify :c9-request-carrier-bound [])
+    (if
+     (= false
+        (= :accepted
+           (get
+            (sh10-bridge-carrier-preflight ownership-result)
+            :status)))
+      (sh10-bridge-rejected
+       request :verify :c9-result-carrier-bound [])
+      (if
+       (= false
+          (= :accepted
+             (get
+              (sh10-bridge-carrier-preflight
+               ownership-verification)
+              :status)))
+        (sh10-bridge-rejected
+         request :verify :c9-verification-carrier-bound [])
+        (let [expected-request
+        (sh10-build-authenticated-ownership-request request)]
+    (if (= false (= expected-request c9-request))
+      (sh10-bridge-rejected
+       request :verify :c9-request-substitution [])
+      (if
+       (= false
+          (sh10-bridge-ownership-result-valid?
+           c9-request ownership-result ownership-verification))
+        (sh10-bridge-rejected
+         request :verify :invalid-fresh-c9-result [])
+        (if (= :accepted (get ownership-result :status))
+          {:artifact :gravity/sh10-authenticated-owned-core
+           :schema-version 1
+           :status :accepted
+           :artifact-id
+           (get
+            c9-request
+            :expected-ownership-artifact-id)
+           :typed-artifact-id
+           (get c9-request :typed-artifact-id)
+           :operation
+           (get (get request :ownership-operation) :operation)
+           :ownership-result ownership-result
+           :identity-input
+           (sh10-bridge-identity-input
+            request c9-request ownership-result)
+           :provenance
+           {:actual-source-path
+            (get request :actual-source-path)
+            :provenance-binding-id
+            (get c9-request :provenance-binding-id)}
+           :diagnostics []
+           :pending
+           (get
+            (sh10-authenticated-ownership-bridge-policy)
+            :pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true}
+          (sh10-bridge-rejected
+           request :ownership :c9-ownership-rejection
+           (get ownership-result :diagnostics))))))))))
+
+(defn sh10-verify-authenticated-ownership-result
+  [request c9-request ownership-result
+   ownership-verification candidate]
+  (let [expected
+        (sh10-bind-authenticated-ownership-result
+         request c9-request ownership-result
+         ownership-verification)
+        candidate-preflight
+        (sh10-bridge-carrier-preflight candidate)]
+    {:artifact
+     :gravity/sh10-authenticated-ownership-verification
+     :status
+     (if (= :accepted (get candidate-preflight :status))
+       (if (= expected candidate) :passed :rejected)
+       :rejected)
+     :checks
+     [:verified-sh08-typed-core
+      :authenticated-input-and-output-identities
+      :fresh-c9-result-replay
+      :exact-ownership-result
+      :path-neutral-identity
+      :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
