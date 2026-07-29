@@ -1,0 +1,895 @@
+(ns gravity.self-hosting.sh08.authenticated-type-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-authenticated-type-bridge-policy
+             sh08-build-authenticated-type-request
+             sh08-bind-authenticated-type-result
+             sh08-verify-authenticated-type-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh08-authenticated-type-bridge-policy []
+  {:artifact :gravity/sh08-authenticated-type-bridge-policy
+   :schema-version 1
+   :profile :meta
+   :target :jvm
+   :scope
+   :primitive-literals-vector-map-set-definitions-equal-if-joins
+   :required-products
+   [:verified-sh07-canonical-core
+    :reusable-authenticated-envelope
+    :fresh-c7-type-result
+    :fresh-c7-type-verification]
+   :host-authority
+   [:bounded-source-snapshot
+    :compile-and-invoke-gravity-modules
+    :canonical-encode
+    :sha256
+    :resolve-declared-digest-requests]
+   :diagnostics
+   ["STD08-BRIDGE-SCHEMA"
+    "STD08-BRIDGE-SH07"
+    "STD08-BRIDGE-ENVELOPE"
+    "STD08-BRIDGE-TYPE"
+    "STD08-BRIDGE-VERIFY"]
+   :pending
+   [:functions :calls :locals :records :unions
+    :protocols :generics :casts :dynamic-boundaries
+    :ownership-types :layout-types :schema-types
+    :list-lowering :whole-compiler-source-set
+    :public-routing :seedless-execution :complete-type-checker]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh08-bridge-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh08-bridge-member? (rest values) value))))
+
+(defn sh08-bridge-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if
+     (sh08-bridge-member?
+      [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+      (first characters))
+      (sh08-bridge-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh08-bridge-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if
+         (= (subvec characters 0 7)
+            [\s \h \a \2 \5 \6 \:])
+          (sh08-bridge-lowercase-hex?
+           (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh08-bridge-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh08-bridge-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh08-bridge-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh08-bridge-max [left right]
+  (if (> left right) left right))
+
+(defn sh08-bridge-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh08-bridge-aggregate? current)
+              (let [width
+                    (sh08-bridge-aggregate-width current)]
+                (if (> width 65536)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh08-bridge-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj
+                              result
+                              [(first remaining) (+ depth 1)]))))]
+                    (recur
+                     next-frontier
+                     next-nodes
+                     scalar-units
+                     (sh08-bridge-max observed-depth depth)
+                     (sh08-bridge-max observed-width width)))))
+              (let [next-scalar-units
+                    (+ scalar-units (count (vec (str current))))]
+                (if (> next-scalar-units 16777216)
+                  {:status :rejected :reason :carrier-scalar-bound}
+                  (recur
+                   (rest frontier)
+                   next-nodes
+                   next-scalar-units
+                   (sh08-bridge-max observed-depth depth)
+                   observed-width))))))))))
+
+(defn sh08-bridge-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh08-bridge-projection-value [projections name]
+  (if (= (count projections) 0)
+    nil
+    (let [projection (first projections)]
+      (if (= name (get projection :name))
+        (get projection :value)
+        (sh08-bridge-projection-value (rest projections) name)))))
+
+(defn sh08-bridge-identity-check [checks name]
+  (if (= (count checks) 0)
+    nil
+    (let [check (first checks)]
+      (if (= name (get check :name))
+        check
+        (sh08-bridge-identity-check (rest checks) name)))))
+
+(defn sh08-bridge-all-identity-checks-pass? [checks]
+  (if (= (count checks) 0)
+    true
+    (let [check (first checks)]
+      (if
+       (sh08-bridge-exact-keys?
+        check #{:name :domain :computed-id :observed-id})
+        (if (sh08-bridge-sha256-id? (get check :computed-id))
+          (if (= (get check :computed-id) (get check :observed-id))
+            (sh08-bridge-all-identity-checks-pass? (rest checks))
+            false)
+          false)
+        false))))
+
+(defn sh08-bridge-all-checks-pass? [checks]
+  (if (map? checks)
+    (loop [remaining (keys checks)]
+      (if (= (count remaining) 0)
+        true
+        (if (= true (get checks (first remaining)))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn sh08-bridge-identity-checks-valid? [checks]
+  (if (vector? checks)
+    (if (= 2 (count checks))
+        (if (sh08-bridge-all-identity-checks-pass? checks)
+          (let [sh07-check
+                (sh08-bridge-identity-check
+                 checks :sh07-canonical-core)
+                type-check
+                (sh08-bridge-identity-check
+                 checks :sh08-type-result)]
+            (if (= false (= nil sh07-check))
+              (if
+               (= :gravity/sh08-sh07-canonical-core-v1
+                  (get sh07-check :domain))
+                (if (= false (= nil type-check))
+                  (= :gravity/sh08-typed-result-v1
+                     (get type-check :domain))
+                  false)
+                false)
+              false))
+          false)
+      false)
+    false))
+
+(defn sh08-bridge-canonical-core [artifact]
+  (get
+   (get artifact :gravity-core-boundary)
+   :canonical-core-artifact))
+
+(defn sh08-bridge-sh07-verification-valid?
+  [artifact verification]
+  (if
+   (sh08-bridge-exact-keys?
+    verification
+    #{:artifact :status :checks :failed-checks :source-path
+      :template-verification :resolved-verification
+      :upstream-verification})
+    (let [checks (get verification :checks)
+          boundary (get artifact :gravity-core-boundary)
+          capability-proof (get artifact :capability-based-proof)]
+      (if
+       (= :gravity/sh07-core-artifact-verification
+          (get verification :artifact))
+        (if (= :passed (get verification :status))
+          (if (= [] (get verification :failed-checks))
+            (if (map? checks)
+              (if (> (count (keys checks)) 0)
+                (if (sh08-bridge-all-checks-pass? checks)
+                (if
+                 (= (get verification :source-path)
+                    (get (get artifact :provenance) :source-path))
+                  (if
+                   (= (get verification :template-verification)
+                      (get boundary :template-verification))
+                    (if
+                     (= (get verification :resolved-verification)
+                        (get boundary :resolved-verification))
+                      (if
+                       (= :gravity/sh07-core-template-verification
+                          (get
+                           (get verification :template-verification)
+                           :artifact))
+                        (if
+                         (= :passed
+                            (get
+                             (get verification
+                                  :template-verification)
+                             :status))
+                          (if
+                           (= :gravity/sh07-core-resolved-verification
+                              (get
+                               (get verification
+                                    :resolved-verification)
+                               :artifact))
+                            (if
+                             (= :passed
+                                (get
+                                 (get verification
+                                      :resolved-verification)
+                                 :status))
+                              (if
+                               (= :passed
+                                  (get
+                                   (get verification
+                                        :upstream-verification)
+                                   :status))
+                                (=
+                                 capability-proof
+                                 (assoc
+                                  (assoc
+                                   (assoc
+                                    checks
+                                    :artifact
+                                    :gravity/sh07-core-capability-proof)
+                                   :status :complete)
+                                  :failed-checks []))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh08-bridge-sh07-valid? [artifact verification]
+  (if (map? artifact)
+    (if (= :gravity/sh07-core-artifact (get artifact :kind))
+      (if (= :accepted (get artifact :status))
+        (if (= :SH-07 (get artifact :slice))
+          (if (sh08-bridge-sha256-id? (get artifact :artifact-id))
+            (let [core (sh08-bridge-canonical-core artifact)]
+              (if (map? core)
+                (if (= :gravity/sh07-canonical-core-artifact
+                       (get core :artifact))
+                  (if (= 15 (get core :schema-version))
+                    (if
+                     (sh08-bridge-sha256-id?
+                      (get core :artifact-id))
+                      (if (= (get artifact :artifact-id)
+                             (get core :artifact-id))
+                        (if (map? (get core :identity-preimage))
+                          (sh08-bridge-sh07-verification-valid?
+                           artifact verification)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-bridge-template-replay-valid? [replay]
+  (if
+   (sh08-bridge-exact-keys?
+    replay
+    #{:status
+      :artifact-template
+      :digest-graph-root
+      :digest-graph-roots
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :request-count
+      :semantic-authority
+      :checks
+      :diagnostics})
+    (if (= :template-replay-passed (get replay :status))
+      (if (= :pending-host-resolution
+             (get replay :identity-enforcement))
+        (if (= false
+               (get replay :eligible-for-contextual-acceptance?))
+          (if (= :gravity-source (get replay :semantic-authority))
+            (if (= [] (get replay :diagnostics))
+              (if (map? (get replay :artifact-template))
+                (if
+                 (= 2 (count (get replay :digest-graph-roots)))
+                  (if
+                   (= (get replay :digest-graph-root)
+                      (get replay :semantic-envelope-root)
+                      (first (get replay :digest-graph-roots)))
+                    (if
+                     (= (get replay :provenance-binding-root)
+                        (second (get replay :digest-graph-roots)))
+                      (if
+                       (= 2 (count (get replay :identity-checks)))
+                        (if (integer? (get replay :request-count))
+                          (if
+                           (> (get replay :request-count) 0)
+                            (if
+                             (<= (get replay :request-count) 2048)
+                              (=
+                               [:fresh-descriptor-replay
+                                :exact-artifact-template-replay
+                                :exact-digest-request-replay
+                                :path-neutral-semantic-root
+                                :separate-physical-provenance-root]
+                               (get replay :checks))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-bridge-contextual-verification-valid?
+  [verification sh07-verification]
+  (if
+   (sh08-bridge-exact-keys?
+    verification
+    #{:artifact
+      :status
+      :artifact-template
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :host-digest-resolution
+      :identity-subject-equality
+      :fresh-envelope-reconstruction
+      :sh07-verification})
+    (if
+     (= :gravity/sh08-envelope-contextual-verification
+        (get verification :artifact))
+      (if (= :contextual-verification-passed
+             (get verification :status))
+        (if (= :passed
+               (get verification :host-digest-resolution))
+          (if (= :passed
+                 (get verification :identity-subject-equality))
+            (if (= :passed
+                   (get verification
+                        :fresh-envelope-reconstruction))
+              (= sh07-verification
+                 (get verification :sh07-verification))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-bridge-envelope-valid?
+  [descriptor envelope replay contextual core
+   expected-type-artifact-id sh07-verification]
+  (if (map? descriptor)
+    (if
+     (= :gravity/private-authenticated-envelope-descriptor
+        (get descriptor :artifact))
+      (if (= 1 (get descriptor :schema-version))
+        (if (= :sh08-authenticated-type-bridge
+               (get descriptor :stage))
+          (if
+           (= :gravity/sh08-authenticated-type-boundary
+              (get descriptor :artifact-kind))
+            (let [projections
+                  (get descriptor :semantic-projections)]
+              (if (vector? projections)
+                (if (= 2 (count projections))
+                  (if
+                   (= {:artifact-id (get core :artifact-id)}
+                      (sh08-bridge-projection-value
+                       projections :sh07-canonical-core))
+                    (if
+                     (= {:typed-result-id expected-type-artifact-id}
+                        (sh08-bridge-projection-value
+                         projections :sh08-type-result))
+                      (if
+                       (sh08-bridge-template-replay-valid? replay)
+                        (if
+                         (sh08-bridge-contextual-verification-valid?
+                          contextual sh07-verification)
+                          (if (map? envelope)
+                            (if
+                             (= :gravity/authenticated-envelope
+                                (get envelope :artifact))
+                              (if
+                               (= :sh08-authenticated-type-bridge
+                                  (get envelope :stage))
+                                (if
+                                 (=
+                                  :gravity/sh08-authenticated-type-boundary
+                                  (get envelope :artifact-kind))
+                                  (if
+                                   (sh08-bridge-sha256-id?
+                                    (get envelope
+                                         :semantic-envelope-id))
+                                    (if
+                                     (sh08-bridge-sha256-id?
+                                      (get envelope
+                                           :provenance-binding-id))
+                                      (if
+                                       (= envelope
+                                          (get contextual
+                                               :artifact-template))
+                                        (if
+                                         (=
+                                          (get envelope
+                                               :semantic-envelope-id)
+                                          (get contextual
+                                               :semantic-envelope-root))
+                                          (if
+                                           (=
+                                            (get envelope
+                                                 :provenance-binding-id)
+                                            (get contextual
+                                                 :provenance-binding-root))
+                                            (if
+                                             (= :passed
+                                                (get contextual
+                                                     :identity-enforcement))
+                                              (if
+                                               (= true
+                                                  (get
+                                                   contextual
+                                                   :eligible-for-contextual-acceptance?))
+                                                (sh08-bridge-identity-checks-valid?
+                                                 (get contextual
+                                                      :identity-checks))
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-bridge-upstream-error [request]
+  (if
+   (= false
+      (= :accepted
+         (get (sh08-bridge-carrier-preflight request) :status)))
+    [:schema :request-carrier-bound]
+    (if
+     (= false
+        (sh08-bridge-exact-keys?
+         request
+         #{:artifact
+           :schema-version
+           :sh07-artifact
+           :sh07-verification
+           :expected-type-identity-input
+           :expected-type-artifact-id
+           :envelope-descriptor
+           :envelope
+           :template-replay
+           :envelope-verification
+           :actual-source-path}))
+      [:schema :request-keys]
+      (if
+     (= false
+        (= :gravity/sh08-authenticated-type-bridge-request
+           (get request :artifact)))
+      [:schema :request-artifact]
+      (if (= false (= 1 (get request :schema-version)))
+        [:schema :request-schema]
+        (if
+         (= false
+            (sh08-bridge-sh07-valid?
+             (get request :sh07-artifact)
+             (get request :sh07-verification)))
+          [:sh07 :invalid-canonical-core]
+          (let [core
+                (sh08-bridge-canonical-core
+                 (get request :sh07-artifact))]
+            (if
+             (= false
+                (map? (get request
+                           :expected-type-identity-input)))
+              [:schema :expected-type-identity]
+              (if
+               (= false
+                  (sh08-bridge-sha256-id?
+                   (get request :expected-type-artifact-id)))
+                [:schema :expected-type-artifact-id]
+                (if
+                 (= false
+                    (sh08-bridge-envelope-valid?
+                     (get request :envelope-descriptor)
+                     (get request :envelope)
+                     (get request :template-replay)
+                     (get request :envelope-verification)
+                     core
+                     (get request :expected-type-artifact-id)
+                     (get request :sh07-verification)))
+                  [:envelope :invalid-authenticated-envelope]
+                  (if (string?
+                       (get request :actual-source-path))
+                    (if (> (count
+                            (get request :actual-source-path))
+                           0)
+                      (if (<= (count
+                               (get request
+                                    :actual-source-path))
+                              4096)
+                        nil
+                        [:schema :actual-path-bound])
+                      [:schema :actual-path-required])
+                    [:schema :actual-path-required])))))))))))
+
+(defn sh08-bridge-rule [family]
+  (if (= family :schema)
+    "STD08-BRIDGE-SCHEMA"
+    (if (= family :sh07)
+      "STD08-BRIDGE-SH07"
+      (if (= family :envelope)
+        "STD08-BRIDGE-ENVELOPE"
+        (if (= family :type)
+          "STD08-BRIDGE-TYPE"
+          "STD08-BRIDGE-VERIFY")))))
+
+(defn sh08-bridge-diagnostic
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh08-authenticated-type-diagnostic
+   :rule (sh08-bridge-rule family)
+   :severity :error
+   :stage :type-checking
+   :source-span
+   {:source (get request :actual-source-path)}
+   :profile :meta
+   :target :jvm
+   :facts
+   {:reason reason
+    :upstream-diagnostics upstream-diagnostics
+    :fail-closed true}
+   :remediation
+   "Provide the exact verified SH-07 and C7 products bound by the authenticated envelope."})
+
+(defn sh08-bridge-rejected
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh08-authenticated-typed-core
+   :schema-version 1
+   :status :rejected
+   :diagnostics
+   [(sh08-bridge-diagnostic
+     request family reason upstream-diagnostics)]
+   :pending
+   (get (sh08-authenticated-type-bridge-policy) :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh08-build-authenticated-type-request [request]
+  (let [error (sh08-bridge-upstream-error request)]
+    (if (= error nil)
+      {:artifact :gravity/sh08-authenticated-c7-request
+       :schema-version 1
+       :status :accepted
+       :core-artifact
+       (sh08-bridge-canonical-core
+        (get request :sh07-artifact))
+       :expected-type-identity-input
+       (get request :expected-type-identity-input)
+       :expected-type-artifact-id
+       (get request :expected-type-artifact-id)
+       :semantic-envelope-id
+       (get (get request :envelope) :semantic-envelope-id)
+       :provenance-binding-id
+       (get (get request :envelope) :provenance-binding-id)
+       :actual-source-path (get request :actual-source-path)
+       :diagnostics []}
+      (sh08-bridge-rejected
+       request (first error) (first (rest error)) []))))
+
+(defn sh08-bridge-type-result-valid?
+  [c7-request type-template type-verification]
+  (if
+   (= false
+      (= :accepted
+         (get (sh08-bridge-carrier-preflight c7-request) :status)))
+    false
+    (if
+   (= false
+      (= :accepted
+         (get (sh08-bridge-carrier-preflight type-template) :status)))
+    false
+    (if
+   (= false
+      (= :accepted
+         (get
+          (sh08-bridge-carrier-preflight type-verification)
+          :status)))
+    false
+    (if
+   (sh08-bridge-exact-keys?
+    c7-request
+    #{:artifact :schema-version :status :core-artifact
+      :expected-type-identity-input :expected-type-artifact-id
+      :semantic-envelope-id :provenance-binding-id
+      :actual-source-path :diagnostics})
+    (if
+   (= :accepted (get c7-request :status))
+    (if (map? type-template)
+      (if
+       (sh08-bridge-exact-keys?
+        type-template
+        #{:artifact :schema-version :status :scope
+          :authentication-status :module
+          :sh07-shaped-artifact-id :type-table :type-facts
+          :typed-core :diagnostics :artifact-id-request
+          :identity-input :identity-resolution :pending})
+        (if
+       (= :gravity/sh08-primitive-typed-core-template
+          (get type-template :artifact))
+        (if (= 2 (get type-template :schema-version))
+          (if (= (get c7-request :expected-type-identity-input)
+                 (get type-template :identity-input))
+            (if (= (get type-template :identity-input)
+                   (get type-template :artifact-id-request))
+              (if (= (get
+                      (get c7-request :core-artifact)
+                      :artifact-id)
+                     (get type-template
+                          :sh07-shaped-artifact-id))
+                (if (map? type-verification)
+                  (if
+                   (sh08-bridge-exact-keys?
+                    type-verification
+                    #{:artifact :status :checks :expected :candidate})
+                    (if
+                   (= :gravity/sh08-primitive-type-verification
+                      (get type-verification :artifact))
+                    (if (= :passed
+                           (get type-verification :status))
+                      (if
+                       (= [:structurally-validated-sh07-shaped-core
+                           :coordinator-authentication-still-required
+                           :every-supported-node-typed-or-diagnosed
+                           :child-types-precede-parent-types
+                           :equal-conditional-branch-types
+                           :source-syntax-origin-generated-origin-binding-links-preserved
+                           :effect-capability-declarations-preserved
+                           :deterministic-identity-request]
+                          (get type-verification :checks))
+                        (if (= type-template
+                               (get type-verification :expected))
+                          (= type-template
+                             (get type-verification :candidate))
+                          false)
+                        false)
+                      false)
+                    false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)
+    false)
+    false)
+    false)
+    false)))
+
+(defn sh08-bridge-typed-artifact-id [request]
+  (get request :expected-type-artifact-id))
+
+(defn sh08-bridge-identity-input
+  [request type-template typed-artifact-id]
+  {:artifact :gravity/sh08-authenticated-typed-core
+   :scope
+   :primitive-literals-vector-map-set-definitions-equal-if-joins
+   :sh07-artifact-id
+   (get
+    (sh08-bridge-canonical-core
+     (get request :sh07-artifact))
+    :artifact-id)
+   :typed-artifact-id typed-artifact-id
+   :module (get type-template :module)
+   :type-table (get type-template :type-table)
+   :type-facts (get type-template :type-facts)
+   :typed-core (get type-template :typed-core)
+   :diagnostics (get type-template :diagnostics)
+   :semantic-envelope-id
+   (get (get request :envelope) :semantic-envelope-id)})
+
+(defn sh08-bind-authenticated-type-result
+  [request c7-request type-template type-verification]
+  (if
+   (= false
+      (= :accepted
+         (get (sh08-bridge-carrier-preflight c7-request) :status)))
+    (sh08-bridge-rejected
+     request :verify :c7-request-carrier-bound [])
+    (if
+     (= false
+        (= :accepted
+           (get
+            (sh08-bridge-carrier-preflight type-template)
+            :status)))
+      (sh08-bridge-rejected
+       request :verify :c7-result-carrier-bound [])
+      (if
+       (= false
+          (= :accepted
+             (get
+              (sh08-bridge-carrier-preflight type-verification)
+              :status)))
+        (sh08-bridge-rejected
+         request :verify :c7-verification-carrier-bound [])
+        (let [expected-request
+              (sh08-build-authenticated-type-request request)]
+          (if (= false (= expected-request c7-request))
+      (sh08-bridge-rejected
+       request :verify :c7-request-substitution [])
+      (if
+       (= false
+          (sh08-bridge-type-result-valid?
+           c7-request type-template type-verification))
+        (sh08-bridge-rejected
+         request :verify :invalid-fresh-c7-result [])
+        (if (= :accepted (get type-template :status))
+          (let [typed-artifact-id
+                (sh08-bridge-typed-artifact-id request)]
+            (if
+             (= false
+                (sh08-bridge-sha256-id? typed-artifact-id))
+              (sh08-bridge-rejected
+               request :envelope
+               :missing-typed-result-identity [])
+              {:artifact :gravity/sh08-authenticated-typed-core
+               :schema-version 1
+               :status :accepted
+               :scope
+               :primitive-literals-vector-map-set-definitions-equal-if-joins
+               :artifact-id typed-artifact-id
+               :sh07-artifact-id
+               (get
+                (get c7-request :core-artifact)
+                :artifact-id)
+               :module (get type-template :module)
+               :type-table (get type-template :type-table)
+               :type-facts (get type-template :type-facts)
+               :typed-core (get type-template :typed-core)
+               :identity-input
+               (sh08-bridge-identity-input
+                request type-template typed-artifact-id)
+               :provenance
+               {:actual-source-path
+                (get request :actual-source-path)
+                :provenance-binding-id
+                (get c7-request :provenance-binding-id)}
+               :diagnostics []
+               :pending
+               (get
+                (sh08-authenticated-type-bridge-policy)
+                :pending)
+               :self-hosted? false
+               :clojure-seed-boundary? true}))
+          (sh08-bridge-rejected
+           request :type :c7-type-rejection
+           (get type-template :diagnostics))))))))))
+
+(defn sh08-verify-authenticated-type-result
+  [request c7-request type-template type-verification candidate]
+  (let [expected
+        (sh08-bind-authenticated-type-result
+         request c7-request type-template type-verification)
+        candidate-preflight
+        (sh08-bridge-carrier-preflight candidate)]
+    {:artifact
+     :gravity/sh08-authenticated-type-verification
+     :status
+     (if (= :accepted (get candidate-preflight :status))
+       (if (= expected candidate) :passed :rejected)
+       :rejected)
+     :checks
+     [:verified-sh07-canonical-core
+      :authenticated-input-and-output-identities
+      :fresh-c7-result-replay
+      :exact-typed-result
+      :path-neutral-identity
+      :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
