@@ -1,0 +1,966 @@
+(ns gravity.self-hosting.hermetic-package-build
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh23-build-policy
+             sh23-build
+             sh23-verify-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; SH-23 fixed bootstrap package/build leaf. This module validates and plans a
+; declared, offline compiler build. It does not discover packages, execute
+; build actions, or replace the coordinator-owned compiler driver.
+
+(defn sh23-build-policy []
+  {:artifact :gravity/sh23-hermetic-build-policy
+   :schema-version 1
+   :maximum-packages 32
+   :maximum-components 32
+   :maximum-component-dependencies 128
+   :maximum-source-roots 16
+   :maximum-environment-variables 16
+   :maximum-build-authorities 16
+   :allowed-profiles #{:meta}
+   :allowed-targets #{:portable-mir}
+   :allowed-effects #{:build/read-file :build/write-artifact}
+   :effect-capabilities
+   {:build/read-file :build/read-file
+    :build/write-artifact :build/write-artifact}
+   :forbidden-effects
+   #{:build/network :build/exec :build/time :build/random
+     :build/package-index :shell/exec :network/http}
+   :diagnostics
+   #{"PKG1001" "PKG1002" "PKG1004" "PKG1005" "PKG1006"
+     "PKG2001" "PKG2004" "PKG2007"
+     "PKG3003" "PKG5002" "PKG5003" "PKG5004"
+     "PKG6004" "PKG7002" "PKG7003" "PKG7004" "PKG7005"
+     "PKG11001" "PKG11002" "BOOT3002" "BOOT8002"
+     "SH23-VERIFY"}
+   :pending
+   [:general-semver-resolution
+    :network-registry
+    :arbitrary-build-plugins
+    :shell-build-actions
+    :build-action-execution
+    :self-hosted-compiler-driver
+    :seedless-bootstrap]})
+
+(defn sh23-present? [value]
+  (if (= nil value) false true))
+
+(defn sh23-member? [values value]
+  (= value (get values value)))
+
+(defn sh23-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn sh23-content-id? [value]
+  (if (string? value)
+    (let [characters (vec value)]
+      (if (> (count characters) 7)
+        (if (= \s (get characters 0))
+          (if (= \h (get characters 1))
+            (if (= \a (get characters 2))
+              (if (= \2 (get characters 3))
+                (if (= \5 (get characters 4))
+                  (if (= \6 (get characters 5))
+                    (= \: (get characters 6))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh23-lower-hex-from? [value index]
+  (if (= index (count value))
+    true
+    (let [character (get value index)]
+      (if (sh23-member?
+           #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+             \a \b \c \d \e \f}
+           character)
+        (sh23-lower-hex-from? value (+ index 1))
+        false))))
+
+(defn sh23-sha256-digest? [value]
+  (if (string? value)
+    (let [characters (vec value)]
+      (if (= 64 (count characters))
+        (sh23-lower-hex-from? characters 0)
+        false))
+    false))
+
+(defn sh23-vector-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (sh23-vector-member-from? values value (+ index 1)))))
+
+(defn sh23-vector-member? [values value]
+  (if (vector? values)
+    (sh23-vector-member-from? values value 0)
+    false))
+
+(defn sh23-unique-vector-from? [values index seen]
+  (if (= index (count values))
+    true
+    (let [value (get values index)]
+      (if (contains? seen value)
+        false
+        (sh23-unique-vector-from?
+         values (+ index 1) (conj seen value))))))
+
+(defn sh23-keyword-vector? [values maximum allow-empty]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (if (if allow-empty true (> (count values) 0))
+        (sh23-keyword-vector-from? values 0 #{})
+        false)
+      false)
+    false))
+
+(defn sh23-keyword-vector-from? [values index seen]
+  (if (= index (count values))
+    true
+    (let [value (get values index)]
+      (if (keyword? value)
+        (if (contains? seen value)
+          false
+          (sh23-keyword-vector-from?
+           values (+ index 1) (conj seen value)))
+        false))))
+
+(defn sh23-string-vector-from? [values index seen]
+  (if (= index (count values))
+    true
+    (let [value (get values index)]
+      (if (sh23-nonempty-string? value)
+        (if (contains? seen value)
+          false
+          (sh23-string-vector-from?
+           values (+ index 1) (conj seen value)))
+        false))))
+
+(defn sh23-string-vector? [values maximum allow-empty]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (if (if allow-empty true (> (count values) 0))
+        (sh23-string-vector-from? values 0 #{})
+        false)
+      false)
+    false))
+
+(defn sh23-set-subset? [values allowed]
+  (if (= 0 (count values))
+    true
+    (if (contains? allowed (first values))
+      (sh23-set-subset? (rest values) allowed)
+      false)))
+
+(defn sh23-bounded-authority-set? [values]
+  (if (set? values)
+    (<= (count values)
+        (get (sh23-build-policy) :maximum-build-authorities))
+    false))
+
+(defn sh23-required-capabilities [effects result]
+  (if (= 0 (count effects))
+    result
+    (let [capability
+          (get
+           (get (sh23-build-policy) :effect-capabilities)
+           (first effects))]
+      (sh23-required-capabilities
+       (rest effects)
+       (if (= nil capability)
+         result
+         (conj result capability))))))
+
+(defn sh23-project-error [project]
+  (if (map? project)
+    (if (= :gravity/project-manifest (get project :artifact))
+      (if (keyword? (get project :package-id))
+        (if (sh23-nonempty-string? (get project :version))
+          (if (sh23-nonempty-string? (get project :edition))
+            (if (sh23-string-vector?
+                 (get project :source-roots)
+                 (get (sh23-build-policy) :maximum-source-roots)
+                 false)
+              (if (= :meta (get project :profile))
+                (if (sh23-member?
+                     (get (sh23-build-policy) :allowed-targets)
+                     (get project :target))
+                  (if (sh23-keyword-vector?
+                       (get project :entrypoints) 32 false)
+                    (if (sh23-keyword-vector?
+                         (get project :dependency-roots) 32 true)
+                      (if (sh23-bounded-authority-set?
+                           (get project :effects))
+                        (if (sh23-bounded-authority-set?
+                             (get project :capabilities))
+                          (if (= (get project :effects)
+                                 (get (sh23-build-policy)
+                                      :allowed-effects))
+                            (if (=
+                                 (sh23-required-capabilities
+                                  (get project :effects) #{})
+                                 (get project :capabilities))
+                              (if (= [:compiler-module]
+                                     (get project :artifact-kinds))
+                                (if (= :deny
+                                       (get project :unsafe-policy))
+                                  (if (= true
+                                         (get project
+                                              :release-lock-required))
+                                    nil
+                                    ["PKG1006"
+                                     :release-lockfile-policy-required])
+                                  ["PKG1001"
+                                   :unsafe-policy-must-deny])
+                                ["PKG1001"
+                                 :compiler-artifact-kind-required])
+                              ["PKG1005"
+                               :project-effect-capability-mismatch])
+                            ["PKG1005"
+                             :exact-project-build-effects-required])
+                          ["PKG1005"
+                           :bounded-capability-set-required])
+                        ["PKG1005" :bounded-effect-set-required])
+                      ["PKG1004" :dependency-root-vector-required])
+                    ["PKG1001" :entrypoint-vector-required])
+                  ["PKG1002" :unknown-project-target])
+                ["PKG1002" :bootstrap-profile-must-be-meta])
+              ["PKG1001" :source-root-vector-invalid])
+            ["PKG1001" :language-edition-required])
+          ["PKG1001" :package-version-required])
+        ["PKG1001" :package-identity-required])
+      ["PKG1001" :project-manifest-artifact-required])
+    ["PKG1001" :project-manifest-record-required]))
+
+(defn sh23-package-record-error [package]
+  (if (map? package)
+    (if (= :gravity/locked-package (get package :artifact))
+      (if (keyword? (get package :package-id))
+        (if (sh23-nonempty-string? (get package :version))
+          (if (sh23-content-id? (get package :content-id))
+            (if (sh23-content-id? (get package :provenance-id))
+              (if (= :verified (get package :provenance-status))
+                (if (= false (get package :revoked))
+                  (if (sh23-bounded-authority-set?
+                       (get package :effects))
+                    (if (sh23-bounded-authority-set?
+                         (get package :capabilities))
+                      (if (sh23-keyword-vector?
+                           (get package :targets) 1 false)
+                        nil
+                        ["PKG5003" :locked-target-vector-required])
+                      ["PKG5002" :locked-capability-set-invalid])
+                    ["PKG5002" :locked-effect-set-invalid])
+                  ["PKG5004" :revoked-locked-package])
+                ["PKG5004" :locked-provenance-not-verified])
+              ["PKG5004" :locked-provenance-required])
+            ["PKG5004" :locked-content-identity-required])
+          ["PKG5004" :locked-version-required])
+        ["PKG5004" :locked-package-identity-required])
+      ["PKG5004" :locked-package-artifact-required])
+    ["PKG5004" :locked-package-record-required]))
+
+(defn sh23-package-records-error [packages index seen]
+  (if (= index (count packages))
+    nil
+    (let [package (get packages index)
+          package-id (get package :package-id)
+          error (sh23-package-record-error package)]
+      (if (= nil error)
+        (if (contains? seen package-id)
+          ["PKG5004" :duplicate-locked-package]
+          (sh23-package-records-error
+           packages (+ index 1) (conj seen package-id)))
+        error))))
+
+(defn sh23-lockfile-error [lockfile]
+  (if (map? lockfile)
+    (if (= :gravity/bootstrap-lockfile (get lockfile :artifact))
+        (if (sh23-content-id? (get lockfile :lock-id))
+        (if (= true (get lockfile :complete))
+          (if (= true (get lockfile :offline))
+            (if (vector? (get lockfile :packages))
+              (if (<= (count (get lockfile :packages))
+                      (get (sh23-build-policy) :maximum-packages))
+                (sh23-package-records-error
+                 (get lockfile :packages) 0 #{})
+                ["PKG5004" :locked-package-bound-exceeded])
+              ["PKG5004" :locked-package-vector-required])
+            ["PKG7003" :offline-lockfile-required])
+          ["PKG5004" :lockfile-incomplete])
+        ["PKG5004" :lockfile-identity-required])
+      ["PKG5004" :bootstrap-lockfile-artifact-required])
+    ["PKG5004" :bootstrap-lockfile-record-required]))
+
+(defn sh23-find-package [packages package-id index]
+  (if (= index (count packages))
+    nil
+    (if (= package-id (get (get packages index) :package-id))
+      (get packages index)
+      (sh23-find-package packages package-id (+ index 1)))))
+
+(defn sh23-dependency-roots-error [roots packages index]
+  (if (= index (count roots))
+    nil
+    (if (sh23-present?
+         (sh23-find-package packages (get roots index) 0))
+      (sh23-dependency-roots-error roots packages (+ index 1))
+      ["PKG5004" :dependency-root-not-locked])))
+
+(defn sh23-locked-packages-complete-error
+  [roots packages index]
+  (if (= (count roots) (count packages))
+    (if (= index (count packages))
+      nil
+      (if (sh23-vector-member?
+           roots (get (get packages index) :package-id))
+        (sh23-locked-packages-complete-error
+         roots packages (+ index 1))
+        ["PKG5004" :unrequested-locked-package]))
+    ["PKG5004" :locked-package-set-mismatch]))
+
+(defn sh23-package-policy-error [packages project index]
+  (if (= index (count packages))
+    nil
+    (let [package (get packages index)
+          target (get project :target)
+          effects (get package :effects)
+          capabilities (get package :capabilities)]
+      (if (sh23-vector-member? (get package :targets) target)
+        (if (sh23-set-subset? effects (get project :effects))
+          (if (sh23-set-subset?
+               capabilities (get project :capabilities))
+            (sh23-package-policy-error
+             packages project (+ index 1))
+            ["PKG5002" :dependency-capability-expansion])
+          ["PKG5002" :dependency-effect-expansion])
+        ["PKG5003" :locked-target-variant-missing]))))
+
+(defn sh23-authority-error [request]
+  (let [effects (get request :effects)
+        capabilities (get request :capabilities)
+        policy (sh23-build-policy)]
+    (if (sh23-bounded-authority-set? effects)
+      (if (sh23-bounded-authority-set? capabilities)
+        (if (= effects (get policy :allowed-effects))
+          (if (= (sh23-required-capabilities effects #{})
+                 capabilities)
+            nil
+            ["PKG2001" :build-effect-capability-mismatch])
+          ["PKG2001" :undeclared-or-unsupported-build-effect])
+        ["PKG6004" :bounded-build-capability-set-required])
+      ["PKG2001" :bounded-build-effect-set-required])))
+
+(defn sh23-request-authority-error [request]
+  (let [error (sh23-authority-error request)
+        project (get request :project)]
+    (if (= nil error)
+      (if (= (get request :effects) (get project :effects))
+        (if (= (get request :capabilities)
+               (get project :capabilities))
+          nil
+          ["PKG1005" :request-project-capability-mismatch])
+        ["PKG1005" :request-project-effect-mismatch])
+      error)))
+
+(defn sh23-environment-error [environment]
+  (if (map? environment)
+    (if (= "C" (get environment :locale))
+      (if (= "UTC" (get environment :timezone))
+        (if (= :sorted (get environment :filesystem-order))
+          (if (= :fixed (get environment :timestamp-policy))
+            (if (= :disabled (get environment :network))
+              (if (integer? (get environment :random-seed))
+                (if (sh23-keyword-vector?
+                     (get environment :allowed-environment)
+                     (get (sh23-build-policy)
+                          :maximum-environment-variables)
+                     true)
+                  nil
+                  ["PKG7005" :environment-allowlist-invalid])
+                ["PKG7004" :random-seed-required])
+              ["PKG7003" :network-must-be-disabled])
+            ["PKG7005" :fixed-timestamp-policy-required])
+          ["PKG7005" :filesystem-order-must-be-sorted])
+        ["PKG7005" :timezone-must-be-utc])
+      ["PKG7005" :locale-must-be-c])
+    ["PKG7005" :environment-manifest-required]))
+
+(defn sh23-target-error [target project]
+  (if (map? target)
+    (if (= (get project :profile) (get target :profile))
+      (if (= (get project :target) (get target :target))
+        (if (sh23-member?
+             (get (sh23-build-policy) :allowed-targets)
+             (get target :target))
+          (if (= :gravity.backend/portable-mir
+                 (get target :backend))
+            (if (= :minimal-native (get target :runtime))
+              (if (sh23-member?
+                   #{:internal :build-only}
+                   (get target :support))
+                (if (= :compiler-module
+                       (get target :artifact-kind))
+                  nil
+                  ["PKG11001" :compiler-artifact-kind-required])
+                ["PKG11001" :bootstrap-support-level-invalid])
+              ["PKG11001" :unsupported-runtime-family])
+            ["PKG11001" :unsupported-bootstrap-backend])
+          ["PKG11001" :unsupported-bootstrap-target])
+        ["PKG11001" :project-target-mismatch])
+      ["PKG11001" :project-profile-mismatch])
+    ["PKG11002" :explicit-target-manifest-required]))
+
+(defn sh23-legality-error [legality]
+  (if (map? legality)
+    (if (= :gravity/sh21-meta-legality-result
+           (get legality :artifact))
+      (if (= :accepted (get legality :status))
+        (if (= :meta (get legality :profile))
+          (if (= true (get legality :hermetic))
+            (if (sh23-content-id? (get legality :program-id))
+              nil
+              ["BOOT8002" :compiler-program-identity-required])
+            ["BOOT3002" :compiler-program-not-hermetic])
+          ["BOOT3002" :compiler-program-not-meta])
+        ["BOOT3002" :compiler-program-not-legal])
+      ["BOOT3002" :sh21-legality-artifact-required])
+    ["BOOT3002" :sh21-legality-record-required]))
+
+(defn sh23-library-error [library]
+  (if (map? library)
+    (if (= :gravity/standard-library-module-manifest
+           (get library :artifact))
+      (if (sh23-present? (get library :module))
+        (if (= :experimental (get library :stability))
+          (if (sh23-content-id? (get library :conformance-id))
+            nil
+            ["PKG3003" :stdlib-conformance-identity-required])
+          ["PKG3003" :stdlib-bootstrap-stability-required])
+        ["PKG3003" :stdlib-module-identity-required])
+      ["PKG3003" :sh22-library-manifest-required])
+    ["PKG3003" :sh22-library-record-required]))
+
+(defn sh23-component-error [component]
+  (if (map? component)
+    (if (= :gravity/bootstrap-build-component
+           (get component :artifact))
+      (if (keyword? (get component :component-id))
+        (if (sh23-content-id?
+             (get component :source-content-id))
+          (if (keyword? (get component :compiler-module-id))
+            (if (vector? (get component :dependencies))
+              (if (<= (count (get component :dependencies))
+                      (get (sh23-build-policy)
+                           :maximum-component-dependencies))
+                (if (sh23-unique-vector-from?
+                     (get component :dependencies) 0 #{})
+                  (if (sh23-keyword-vector?
+                       (get component :stdlib-dependencies) 32 true)
+                    (if (keyword? (get component :output-id))
+                      (if (sh23-sha256-digest?
+                           (get component :output-content-hash))
+                        (if (integer?
+                             (get component :topological-ordinal))
+                          (if (> (get component
+                                      :topological-ordinal) 0)
+                            (if (sh23-nonempty-string?
+                                 (get component :actual-source-path))
+                              nil
+                              ["PKG7005"
+                               :actual-source-path-required])
+                            ["PKG2004"
+                             :component-ordinal-must-be-positive])
+                          ["PKG2004"
+                           :component-ordinal-must-be-integer])
+                        ["PKG3003"
+                         :component-output-content-hash-required])
+                      ["PKG3003" :component-output-identity-required])
+                    ["PKG3003" :stdlib-dependency-vector-invalid])
+                  ["PKG2004" :duplicate-component-dependency])
+                ["PKG2004" :component-dependency-bound-exceeded])
+              ["PKG2004" :component-dependency-vector-required])
+            ["BOOT8002" :compiler-module-identity-required])
+          ["PKG3003" :component-source-identity-required])
+        ["PKG2004" :component-identity-required])
+      ["PKG2004" :build-component-artifact-required])
+    ["PKG2004" :build-component-record-required]))
+
+(defn sh23-find-component [components component-id index]
+  (if (= index (count components))
+    nil
+    (if (= component-id
+           (get (get components index) :component-id))
+      (get components index)
+      (sh23-find-component components component-id (+ index 1)))))
+
+(defn sh23-dependencies-before?
+  [components dependencies index ordinal]
+  (if (= index (count dependencies))
+    true
+    (let [dependency
+          (sh23-find-component
+           components (get dependencies index) 0)]
+      (if (= nil dependency)
+        false
+        (if (< (get dependency :topological-ordinal) ordinal)
+          (sh23-dependencies-before?
+           components dependencies (+ index 1) ordinal)
+          false)))))
+
+(defn sh23-components-error [components order index seen]
+  (if (= index (count components))
+    nil
+    (let [component (get components index)
+          component-id (get component :component-id)
+          error (sh23-component-error component)]
+      (if (= nil error)
+        (if (contains? seen component-id)
+          ["PKG2004" :duplicate-component-identity]
+          (if (= component-id (get order index))
+            (if (= (+ index 1)
+                   (get component :topological-ordinal))
+              (if (sh23-dependencies-before?
+                   components
+                   (get component :dependencies)
+                   0 (+ index 1))
+                (sh23-components-error
+                 components order (+ index 1)
+                 (conj seen component-id))
+                ["PKG2004"
+                 :missing-cyclic-or-forward-component-dependency])
+              ["PKG2004" :component-ordinal-mismatch])
+            ["PKG2004" :component-order-mismatch]))
+        error))))
+
+(defn sh23-component-records-error [components index seen]
+  (if (= index (count components))
+    nil
+    (let [component (get components index)
+          component-id (get component :component-id)
+          error (sh23-component-error component)]
+      (if (= nil error)
+        (if (contains? seen component-id)
+          ["PKG2004" :duplicate-component-identity]
+          (sh23-component-records-error
+           components (+ index 1) (conj seen component-id)))
+        error))))
+
+(defn sh23-component-package-dependencies-error
+  [components packages component-index dependency-index]
+  (if (= component-index (count components))
+    nil
+    (let [dependencies
+          (get (get components component-index)
+               :stdlib-dependencies)]
+      (if (= dependency-index (count dependencies))
+        (sh23-component-package-dependencies-error
+         components packages (+ component-index 1) 0)
+        (if (sh23-present?
+             (sh23-find-package
+              packages (get dependencies dependency-index) 0))
+          (sh23-component-package-dependencies-error
+           components packages component-index (+ dependency-index 1))
+          ["PKG5004"
+           :component-standard-library-dependency-not-locked])))))
+
+(defn sh23-compiler-error [compiler]
+  (if (map? compiler)
+    (if (sh23-content-id? (get compiler :artifact-id))
+      (if (sh23-content-id? (get compiler :source-id))
+        (if (sh23-content-id? (get compiler :plan-id))
+          (if (= :meta (get compiler :profile))
+            (if (sh23-content-id?
+                 (get compiler :legal-result-id))
+              nil
+              ["BOOT8002" :legality-result-identity-required])
+            ["BOOT3002" :compiler-identity-profile-must-be-meta])
+          ["BOOT8002" :compiler-plan-identity-required])
+        ["BOOT8002" :compiler-source-identity-required])
+      ["BOOT8002" :compiler-artifact-identity-required])
+    ["BOOT8002" :compiler-identity-record-required]))
+
+(defn sh23-request-error [request]
+  (if (map? request)
+    (if (= :gravity/sh23-hermetic-build-request
+           (get request :artifact))
+      (if (sh23-content-id? (get request :build-id))
+        (let [project (get request :project)
+              lockfile (get request :lockfile)
+              components (get request :components)
+              order (get request :component-order)
+              project-error (sh23-project-error project)]
+          (if (= nil project-error)
+            (let [lock-error (sh23-lockfile-error lockfile)]
+              (if (= nil lock-error)
+                (let [root-error
+                      (sh23-dependency-roots-error
+                       (get project :dependency-roots)
+                       (get lockfile :packages) 0)]
+                  (if (= nil root-error)
+                    (let [complete-lock-error
+                          (sh23-locked-packages-complete-error
+                           (get project :dependency-roots)
+                           (get lockfile :packages) 0)]
+                      (if (= nil complete-lock-error)
+                        (let [policy-error
+                              (sh23-package-policy-error
+                               (get lockfile :packages) project 0)]
+                          (if (= nil policy-error)
+                        (let [authority-error
+                              (sh23-request-authority-error request)]
+                          (if (= nil authority-error)
+                            (let [environment-error
+                                  (sh23-environment-error
+                                   (get request :environment))]
+                              (if (= nil environment-error)
+                                (let [target-error
+                                      (sh23-target-error
+                                       (get request :target) project)]
+                                  (if (= nil target-error)
+                                    (let [compiler-error
+                                          (sh23-compiler-error
+                                           (get request :compiler))]
+                                      (if (= nil compiler-error)
+                                        (let [legality-error
+                                              (sh23-legality-error
+                                               (get request :legality))]
+                                          (if (= nil legality-error)
+                                            (let [library-error
+                                                  (sh23-library-error
+                                                   (get request :library))]
+                                              (if (= nil library-error)
+                                                (if (vector? components)
+                                                  (if (> (count components) 0)
+                                                    (if (<=
+                                                         (count components)
+                                                         (get
+                                                          (sh23-build-policy)
+                                                          :maximum-components))
+                                                      (if (vector? order)
+                                                        (if (=
+                                                             (count order)
+                                                             (count components))
+                                                          (let [records-error
+                                                                (sh23-component-records-error
+                                                                 components 0 #{})]
+                                                            (if (= nil records-error)
+                                                              (let [component-lock-error
+                                                                    (sh23-component-package-dependencies-error
+                                                                     components
+                                                                     (get lockfile :packages)
+                                                                     0 0)]
+                                                                (if (= nil component-lock-error)
+                                                                  (sh23-components-error
+                                                                   components order 0 #{})
+                                                                  component-lock-error))
+                                                              records-error))
+                                                          ["PKG2004"
+                                                           :component-order-size-mismatch])
+                                                        ["PKG2004"
+                                                         :component-order-vector-required])
+                                                      ["PKG2004"
+                                                       :component-bound-exceeded])
+                                                    ["PKG2004"
+                                                     :build-component-required])
+                                                  ["PKG2004"
+                                                   :component-vector-required])
+                                                library-error))
+                                            legality-error))
+                                        compiler-error))
+                                    target-error))
+                                environment-error))
+                            authority-error))
+                            policy-error))
+                        complete-lock-error))
+                    root-error))
+                lock-error))
+            project-error))
+        ["PKG3003" :build-identity-required])
+      ["PKG1001" :hermetic-build-request-artifact-required])
+    ["PKG1001" :hermetic-build-request-record-required]))
+
+(defn sh23-neutral-component [component]
+  {:artifact (get component :artifact)
+   :component-id (get component :component-id)
+   :source-content-id (get component :source-content-id)
+   :compiler-module-id (get component :compiler-module-id)
+   :dependencies (get component :dependencies)
+   :stdlib-dependencies (get component :stdlib-dependencies)
+   :output-id (get component :output-id)
+   :output-content-hash (get component :output-content-hash)
+   :topological-ordinal (get component :topological-ordinal)})
+
+(defn sh23-neutral-components [components index result]
+  (if (= index (count components))
+    result
+    (sh23-neutral-components
+     components (+ index 1)
+     (conj result (sh23-neutral-component (get components index))))))
+
+(defn sh23-hash [digest]
+  {:algorithm :sha256
+   :digest digest
+   :canonical-input true})
+
+(defn sh23-reference [artifact-id digest]
+  {:artifact-id artifact-id
+   :content-hash (sh23-hash digest)})
+
+(defn sh23-artifact-request [request component]
+  (let [actual-source-path (get component :actual-source-path)
+        output-id (get component :output-id)
+        ordinal (get component :topological-ordinal)]
+    {:artifact :gravity/sh20-artifact-emission-request
+     :request-id (get component :component-id)
+     :artifact-id output-id
+     :artifact-node-id :artifact/root
+     :build-id :gravity-build/sh23
+     :schema-version 1
+     :kind :object
+     :backend (get (get request :target) :backend)
+     :profile :meta
+     :target (get (get request :target) :target)
+     :release-grade false
+     :content-hash
+     (sh23-hash (get component :output-content-hash))
+     :inputs
+     {:source
+      (sh23-hash
+       "1111111111111111111111111111111111111111111111111111111123111111")
+      :mir
+      (sh23-hash
+       "2222222222222222222222222222222222222222222222222222222223222222")
+      :lowering
+      (sh23-hash
+       "3333333333333333333333333333333333333333333333333333333333332333")}
+     :evidence
+     {:safety
+      {:artifact :gravity/safety-summary
+       :status :complete
+       :outcomes [:proven-safe :runtime-checked]
+       :residual-checks []
+       :unsafe-audits []}
+      :proofs
+      (sh23-reference
+       :sh23/proof
+       "4444444444444444444444444444444444444444444444444444444444444444")
+      :effects
+      (sh23-reference
+       :sh23/effects
+       "5555555555555555555555555555555555555555555555555555555555555555")
+      :capabilities
+      (sh23-reference
+       :sh23/capabilities
+       "6666666666666666666666666666666666666666666666666666666666666666")
+      :conformance
+      (sh23-reference
+       :sh23/conformance
+       "7777777777777777777777777777777777777777777777777777777777777777")}
+     :provenance
+     {:compiler-id :gravityc-stage2
+      :compiler-hash
+      (sh23-hash
+       "8888888888888888888888888888888888888888888888888888888888888888")
+      :generator-id :gravity.self-hosting/hermetic-package-build
+      :pass-pipeline
+      (sh23-hash
+       "9999999999999999999999999999999999999999999999999999999999999999")
+      :dependency-graph
+      (sh23-hash
+       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+      :build-recipe
+      (sh23-hash
+       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+      :environment
+      (sh23-hash
+       "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+      :toolchain
+      (sh23-hash
+       "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")}
+     :source-map
+     [{:target-offset 0
+       :mir-node-id (get component :component-id)
+       :source-span
+       {:source actual-source-path
+        :source-id (get component :component-id)
+        :start-byte 0
+        :end-byte 1}
+       :generated-origin-chain []}]
+     :target-metadata
+     {:target (get (get request :target) :target)
+      :backend (get (get request :target) :backend)
+      :abi :gravity-meta-v1
+      :layout :portable-mir-v1
+      :runtime-family :minimal-native
+      :runtime-providers [:bounded-allocation]
+      :target-features [:canonical-edn]}
+     :dependencies []
+     :dependency-edges []
+     :topological-ordinal 1
+     :reproducibility
+     {:canonical-encoding :gravity/canonical-edn-v1
+      :timestamp-policy :excluded-from-identity
+      :nondeterminism []
+      :declared-environment [:target :toolchain :compiler]
+      :reproducible true}
+     :release-evidence nil
+     :actual-source-path actual-source-path
+     :actual-output-path "/declared-output/compiler-component.o"
+     :source-span
+     {:source actual-source-path
+      :source-id (get component :component-id)
+      :start-byte 0
+      :end-byte 1}
+     :origin-chain
+     [{:kind :lowering
+       :generator :gravity.self-hosting/hermetic-package-build
+       :source-id (get component :component-id)}]}))
+
+(defn sh23-actions [request components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)]
+      (sh23-actions
+       request components (+ index 1)
+       (conj
+        result
+        {:artifact :gravity/hermetic-build-action
+         :action-id (get component :component-id)
+         :ordinal (+ index 1)
+         :operation :compile-component
+         :inputs
+         {:source-content-id (get component :source-content-id)
+          :dependency-components (get component :dependencies)
+          :standard-library-packages
+          (get component :stdlib-dependencies)
+          :compiler-artifact-id
+          (get (get request :compiler) :artifact-id)
+          :lock-id (get (get request :lockfile) :lock-id)}
+         :effects (get request :effects)
+         :capabilities (get request :capabilities)
+         :output-id (get component :output-id)})))))
+
+(defn sh23-artifact-requests [request components index result]
+  (if (= index (count components))
+    result
+    (sh23-artifact-requests
+     request components (+ index 1)
+     (conj
+      result
+      (sh23-artifact-request request (get components index))))))
+
+(defn sh23-component-provenance [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)]
+      (sh23-component-provenance
+       components (+ index 1)
+       (conj
+        result
+        {:component-id (get component :component-id)
+         :source-content-id (get component :source-content-id)
+         :actual-source-path (get component :actual-source-path)})))))
+
+(defn sh23-diagnostic [request rule reason]
+  {:artifact :gravity/sh23-build-diagnostic
+   :diagnostic-id rule
+   :rule rule
+   :reason reason
+   :stage :hermetic-package-build
+   :build-id (get request :build-id)
+   :package-id (get (get request :project) :package-id)
+   :profile (get (get request :project) :profile)
+   :target (get (get request :project) :target)
+   :severity :error
+   :remediation
+   :supply-a-complete-locked-hermetic-authorized-ordered-build-request})
+
+(defn sh23-build [request]
+  (let [error (sh23-request-error request)]
+    (if (= nil error)
+      (let [components (get request :components)
+            identity-input
+            {:artifact (get request :artifact)
+             :build-id (get request :build-id)
+             :project (get request :project)
+             :lockfile (get request :lockfile)
+             :compiler (get request :compiler)
+             :legality (get request :legality)
+             :library (get request :library)
+             :environment (get request :environment)
+             :target (get request :target)
+             :effects (get request :effects)
+             :capabilities (get request :capabilities)
+             :component-order (get request :component-order)
+             :components
+             (sh23-neutral-components components 0 [])}]
+        {:artifact :gravity/sh23-hermetic-build-result
+         :schema-version 1
+         :status :accepted
+         :build-id (get request :build-id)
+         :package-id (get (get request :project) :package-id)
+         :resolution
+         {:artifact :gravity/bootstrap-resolution
+          :mode :fixed-lockfile
+          :offline true
+          :lock-id (get (get request :lockfile) :lock-id)
+          :packages (get (get request :lockfile) :packages)}
+         :build-graph
+         {:artifact :gravity/hermetic-build-graph
+          :acyclic true
+          :component-order (get request :component-order)
+          :component-count (count components)}
+         :actions (sh23-actions request components 0 [])
+         :artifact-requests
+         (sh23-artifact-requests request components 0 [])
+         :identity-input identity-input
+         :provenance
+         {:artifact :gravity/sh23-build-provenance
+          :compiler-artifact-id
+          (get (get request :compiler) :artifact-id)
+          :compiler-source-id
+          (get (get request :compiler) :source-id)
+          :lock-id (get (get request :lockfile) :lock-id)
+          :components
+          (sh23-component-provenance components 0 [])}
+         :diagnostics []
+         :pending (get (sh23-build-policy) :pending)})
+      {:artifact :gravity/sh23-hermetic-build-result
+       :schema-version 1
+       :status :rejected
+       :build-id (get request :build-id)
+       :diagnostics
+       [(sh23-diagnostic request (get error 0) (get error 1))]
+       :pending (get (sh23-build-policy) :pending)})))
+
+(defn sh23-verify-result [request candidate]
+  (if (= (sh23-build request) candidate)
+    {:artifact :gravity/sh23-build-verification
+     :status :passed
+     :build-id (get request :build-id)
+     :checks
+     [:complete-recomputation
+      :fixed-offline-resolution
+      :exact-effect-capability-authority
+      :deterministic-topological-order
+      :path-neutral-identity
+      :sh20-artifact-request-shape
+      :sh21-meta-legality-link
+      :sh22-library-link]}
+    {:artifact :gravity/sh23-build-verification
+     :status :rejected
+     :build-id (get request :build-id)
+     :diagnostics
+     [(sh23-diagnostic
+       request "SH23-VERIFY" :build-result-substitution)]}))
