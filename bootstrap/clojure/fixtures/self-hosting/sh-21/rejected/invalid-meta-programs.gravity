@@ -1,0 +1,235 @@
+(ns gravity.self-hosting.sh21.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh21-nonhermetic-program
+             sh21-wrong-profile-program
+             sh21-forbidden-effect-program
+             sh21-missing-capability-program
+             sh21-extra-capability-program
+             sh21-oversized-effect-set-program
+             sh21-nonreplayable-input-program
+             sh21-missing-input-program
+             sh21-malformed-dependencies-program
+             sh21-missing-dependency-program
+             sh21-cycle-program
+             sh21-duplicate-module-program
+             sh21-order-mismatch-program
+             sh21-nontopological-order-program
+             sh21-missing-pass-output-program
+             sh21-missing-regenerates-program
+             sh21-fact-overlap-program
+             sh21-oversized-pass-facts-program
+             sh21-invalid-generated-profile-program
+             sh21-unchecked-generated-code-program
+             sh21-missing-generated-safety-program
+             sh21-runtime-capture-program
+             sh21-missing-origin-program
+             sh21-runtime-assumption-program
+             sh21-missing-lineage-program
+             sh21-cyclic-lineage-program
+             sh21-oversized-program])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh21-module-at [program index]
+  (get (get program :modules) index))
+
+(defn sh21-replace-module [program index module]
+  (assoc
+   program :modules
+   (assoc (get program :modules) index module)))
+
+(defn sh21-nonhermetic-program [program]
+  (assoc program :hermetic false))
+
+(defn sh21-wrong-profile-program [program]
+  (sh21-replace-module
+   program 0 (assoc (sh21-module-at program 0) :profile :hosted)))
+
+(defn sh21-forbidden-effect-program [program]
+  (let [module (sh21-module-at program 0)]
+    (sh21-replace-module
+     program 0
+     (assoc module :effects (conj (get module :effects) :build/network)))))
+
+(defn sh21-missing-capability-program [program]
+  (let [module (sh21-module-at program 0)]
+    (sh21-replace-module
+     program 0 (assoc module :capabilities #{}))))
+
+(defn sh21-extra-capability-program [program]
+  (let [module (sh21-module-at program 0)]
+    (sh21-replace-module
+     program 0
+     (assoc
+      module :capabilities
+      (conj (get module :capabilities) :build/write-artifact)))))
+
+(defn sh21-oversized-effect-set-program [program]
+  (let [module (sh21-module-at program 0)]
+    (sh21-replace-module
+     program 0
+     (assoc
+      module :effects
+      #{:effect/e00 :effect/e01 :effect/e02 :effect/e03 :effect/e04
+        :effect/e05 :effect/e06 :effect/e07 :effect/e08 :effect/e09
+        :effect/e10 :effect/e11 :effect/e12 :effect/e13 :effect/e14
+        :effect/e15 :effect/e16}))))
+
+(defn sh21-nonreplayable-input-program [program]
+  (let [module (sh21-module-at program 0)
+        input (get (get module :build-inputs) 0)]
+    (sh21-replace-module
+     program 0
+     (assoc module :build-inputs [(assoc input :replayable false)]))))
+
+(defn sh21-missing-input-program [program]
+  (let [module (sh21-module-at program 0)]
+    (sh21-replace-module
+     program 0 (assoc module :build-inputs []))))
+
+(defn sh21-malformed-dependencies-program [program]
+  (let [module (sh21-module-at program 1)]
+    (sh21-replace-module
+     program 1 (assoc module :dependencies 0))))
+
+(defn sh21-missing-dependency-program [program]
+  (let [module (sh21-module-at program 2)]
+    (sh21-replace-module
+     program 2 (assoc module :dependencies [:compiler/missing]))))
+
+(defn sh21-cycle-program [program]
+  (let [module (sh21-module-at program 0)]
+    (sh21-replace-module
+     program 0 (assoc module :dependencies [:compiler/emitter]))))
+
+(defn sh21-duplicate-module-program [program]
+  (assoc
+   program :modules
+   (conj (get program :modules) (sh21-module-at program 0))))
+
+(defn sh21-order-mismatch-program [program]
+  (assoc
+   program :module-order
+   [:compiler/emitter :compiler/analyzer :compiler/reader]))
+
+(defn sh21-nontopological-order-program [program]
+  (let [reader
+        (assoc
+         (sh21-module-at program 0)
+         :dependencies [:compiler/analyzer])
+        analyzer
+        (assoc (sh21-module-at program 1) :dependencies [])]
+    (sh21-replace-module
+     (sh21-replace-module program 0 reader) 1 analyzer)))
+
+(defn sh21-missing-pass-output-program [program]
+  (let [module (sh21-module-at program 1)
+        contract (get module :pass-contract)]
+    (sh21-replace-module
+     program 1
+     (assoc module :pass-contract (assoc contract :output nil)))))
+
+(defn sh21-missing-regenerates-program [program]
+  (let [module (sh21-module-at program 1)
+        contract (get module :pass-contract)]
+    (sh21-replace-module
+     program 1
+     (assoc module :pass-contract (assoc contract :regenerates nil)))))
+
+(defn sh21-fact-overlap-program [program]
+  (let [module (sh21-module-at program 1)
+        contract (get module :pass-contract)]
+    (sh21-replace-module
+     program 1
+     (assoc
+      module :pass-contract
+      (assoc contract :invalidates #{:source-spans})))))
+
+(defn sh21-oversized-pass-facts-program [program]
+  (let [module (sh21-module-at program 1)
+        contract (get module :pass-contract)]
+    (sh21-replace-module
+     program 1
+     (assoc
+      module :pass-contract
+      (assoc
+       contract :preserves
+       #{0 1 2 3 4 5 6 7 8 9
+         10 11 12 13 14 15 16 17 18 19
+         20 21 22 23 24 25 26 27 28 29
+         30 31 32 33 34 35 36 37 38 39
+         40 41 42 43 44 45 46 47 48 49
+         50 51 52 53 54 55 56 57 58 59
+         60 61 62 63 64})))))
+
+(defn sh21-invalid-generated-profile-program [program]
+  (let [module (sh21-module-at program 1)
+        generated (get (get module :generated-code) 0)]
+    (sh21-replace-module
+     program 1
+     (assoc
+      module :generated-code
+      [(assoc generated :target-profile :unknown-profile)]))))
+
+(defn sh21-unchecked-generated-code-program [program]
+  (let [module (sh21-module-at program 1)
+        generated (get (get module :generated-code) 0)]
+    (sh21-replace-module
+     program 1
+     (assoc
+      module :generated-code
+      [(assoc generated :recheck-required false)]))))
+
+(defn sh21-missing-generated-safety-program [program]
+  (let [module (sh21-module-at program 1)
+        generated (get (get module :generated-code) 0)]
+    (sh21-replace-module
+     program 1
+     (assoc module :generated-code
+            [(assoc generated :safety-provenance nil)]))))
+
+(defn sh21-runtime-capture-program [program]
+  (let [module (sh21-module-at program 1)]
+    (sh21-replace-module
+     program 1
+     (assoc module :compile-time-captures [:runtime/socket]))))
+
+(defn sh21-missing-origin-program [program]
+  (let [module (sh21-module-at program 1)]
+    (sh21-replace-module
+     program 1 (assoc module :origin-chain []))))
+
+(defn sh21-runtime-assumption-program [program]
+  (let [module (sh21-module-at program 1)]
+    (sh21-replace-module
+     program 1
+     (assoc
+      module :runtime-assumptions
+      #{:bounded-allocation
+        :runtime-provider-descriptors-only
+        :ambient-host-globals}))))
+
+(defn sh21-missing-lineage-program [program]
+  (let [module (sh21-module-at program 1)]
+    (sh21-replace-module
+     program 1 (assoc module :compiler-lineage []))))
+
+(defn sh21-cyclic-lineage-program [program]
+  (let [module (sh21-module-at program 1)]
+    (sh21-replace-module
+     program 1
+     (assoc
+      module :compiler-lineage
+      ["sha256:compiler-stage" "sha256:compiler-stage"]))))
+
+(defn sh21-repeat-module [module count result]
+  (if (= count 0)
+    result
+    (sh21-repeat-module module (- count 1) (conj result module))))
+
+(defn sh21-oversized-program [program]
+  (assoc
+   program :modules
+   (sh21-repeat-module (sh21-module-at program 0) 65 [])))
