@@ -1,0 +1,1371 @@
+(ns gravity.self-hosting.sh11.authenticated-safety-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-authenticated-safety-bridge-policy
+             sh11-build-authenticated-safety-request
+             sh11-bind-authenticated-safety-result
+             sh11-verify-authenticated-safety-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-authenticated-safety-bridge-policy []
+  {:artifact :gravity/sh11-authenticated-safety-bridge-policy
+   :schema-version 1
+   :profile :meta
+   :target :jvm
+   :operations
+   [:proven-overflow
+    :runtime-division
+    :unresolved-division
+    :unsafe-overflow]
+   :outcomes
+   [:proven-safe :runtime-checked :rejected :unsafe-island]
+   :required-products
+   [:authenticated-sh09-effected-core
+    :authenticated-sh10-owned-core
+    :shared-sh08-typed-identity
+    :source-bound-normalized-c10-operation
+    :reusable-authenticated-envelope
+    :fresh-c10-safety-result
+    :fresh-c10-safety-verification]
+   :host-authority
+   [:bounded-source-snapshot
+    :compile-and-invoke-gravity-modules
+    :canonical-encode
+    :sha256
+    :resolve-declared-digest-requests]
+   :diagnostics
+   ["STD11-BRIDGE-SCHEMA"
+    "STD11-BRIDGE-LINEAGE"
+    "STD11-BRIDGE-ENVELOPE"
+    "STD11-BRIDGE-SAFETY"
+    "STD11-BRIDGE-VERIFY"]
+   :pending
+   [:memory-safety
+    :complete-ownership-and-lifetime-safety
+    :region-and-arena-safety
+    :linear-resource-safety
+    :ffi-safety
+    :concurrency-and-race-safety
+    :capability-and-taint-safety
+    :generated-code-safety
+    :floating-and-elementary-safety
+    :runtime-check-effect-authorization
+    :optimization-invalidation
+    :mir-preservation
+    :whole-compiler-source-set
+    :public-routing
+    :seedless-execution
+    :complete-safety-analysis]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh11-bridge-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh11-bridge-member? (rest values) value))))
+
+(defn sh11-bridge-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if
+     (sh11-bridge-member?
+      [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f]
+      (first characters))
+      (sh11-bridge-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh11-bridge-sha256-id? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7)
+               [\s \h \a \2 \5 \6 \:])
+          (sh11-bridge-lowercase-hex?
+           (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh11-bridge-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh11-bridge-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh11-bridge-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh11-bridge-max [left right]
+  (if (> left right) left right))
+
+(defn sh11-bridge-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= (count frontier) 0)
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (first frontier)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (sh11-bridge-aggregate? current)
+              (let [width
+                    (sh11-bridge-aggregate-width current)]
+                (if (> width 65536)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh11-bridge-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= (count remaining) 0)
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj
+                              result
+                              [(first remaining)
+                               (+ depth 1)]))))]
+                    (recur
+                     next-frontier next-nodes scalar-units
+                     (sh11-bridge-max observed-depth depth)
+                     (sh11-bridge-max observed-width width)))))
+              (let [next-scalar-units
+                    (+ scalar-units
+                       (count (vec (str current))))]
+                (if (> next-scalar-units 16777216)
+                  {:status :rejected
+                   :reason :carrier-scalar-bound}
+                  (recur
+                   (rest frontier) next-nodes
+                   next-scalar-units
+                   (sh11-bridge-max observed-depth depth)
+                   observed-width))))))))))
+
+(defn sh11-bridge-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh11-bridge-projection-value [projections name]
+  (if (= (count projections) 0)
+    nil
+    (let [projection (first projections)]
+      (if (= name (get projection :name))
+        (get projection :value)
+        (sh11-bridge-projection-value
+         (rest projections) name)))))
+
+(defn sh11-bridge-identity-check [checks name]
+  (if (= (count checks) 0)
+    nil
+    (let [check (first checks)]
+      (if (= name (get check :name))
+        check
+        (sh11-bridge-identity-check (rest checks) name)))))
+
+(defn sh11-bridge-identity-subject [subjects name]
+  (if (= (count subjects) 0)
+    nil
+    (let [subject (first subjects)]
+      (if (= name (get subject :name))
+        subject
+        (sh11-bridge-identity-subject
+         (rest subjects) name)))))
+
+(defn sh11-bridge-all-identity-checks-pass? [checks]
+  (if (= (count checks) 0)
+    true
+    (let [check (first checks)]
+      (if
+       (sh11-bridge-exact-keys?
+        check #{:name :domain :computed-id :observed-id})
+        (if
+         (sh11-bridge-sha256-id? (get check :computed-id))
+          (if (= (get check :computed-id)
+                 (get check :observed-id))
+            (sh11-bridge-all-identity-checks-pass?
+             (rest checks))
+            false)
+          false)
+        false))))
+
+(defn sh11-bridge-identity-pair-valid?
+  [checks subjects name domain preimage observed-id]
+  (let [check
+        (sh11-bridge-identity-check checks name)
+        subject
+        (sh11-bridge-identity-subject subjects name)]
+    (if
+     (sh11-bridge-exact-keys?
+      check #{:name :domain :computed-id :observed-id})
+      (if
+       (sh11-bridge-exact-keys?
+        subject #{:name :domain :preimage :observed-id})
+        (if (= domain (get check :domain))
+          (if (= domain (get subject :domain))
+            (if (= preimage (get subject :preimage))
+              (if (= observed-id
+                     (get subject :observed-id))
+                (= (get check :observed-id)
+                   (get subject :observed-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-bridge-identity-checks-valid?
+  [checks subjects effected owned safety-operation
+   expected-safety-operation-id
+   expected-safety-result expected-safety-verification
+   expected-safety-artifact-id]
+  (if (vector? checks)
+    (if (vector? subjects)
+      (if (= 4 (count checks))
+        (if (= 4 (count subjects))
+          (if (sh11-bridge-all-identity-checks-pass? checks)
+            (if
+             (sh11-bridge-identity-pair-valid?
+              checks subjects :sh09-effected-core
+              :gravity/sh11-effected-core-v1
+              {:effect-artifact-id
+               (get effected :artifact-id)}
+              (get
+               (sh11-bridge-identity-subject
+                subjects :sh09-effected-core)
+               :observed-id))
+              (if
+               (sh11-bridge-identity-pair-valid?
+                checks subjects :sh10-owned-core
+                :gravity/sh11-owned-core-v1
+                {:ownership-artifact-id
+                 (get owned :artifact-id)}
+                (get
+                 (sh11-bridge-identity-subject
+                  subjects :sh10-owned-core)
+                 :observed-id))
+                (if
+                 (sh11-bridge-identity-pair-valid?
+                  checks subjects :sh11-safety-operation
+                  :gravity/sh11-safety-operation-v1
+                  safety-operation
+                  expected-safety-operation-id)
+                  (sh11-bridge-identity-pair-valid?
+                   checks subjects :sh11-safety-result
+                   :gravity/sh11-safety-result-v3
+                   {:result expected-safety-result
+                    :verification
+                    expected-safety-verification}
+                   expected-safety-artifact-id)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-bridge-effect-binding-valid? [effected]
+  (let [effect-result (get effected :effect-result)
+        identity (get effected :identity-input)]
+    (if (map? effect-result)
+      (if
+       (=
+        {:artifact :gravity/sh09-authenticated-effected-core
+         :typed-artifact-id
+         (get effected :typed-artifact-id)
+         :effect-artifact-id
+         (get effected :artifact-id)
+         :operation (get effected :operation)
+         :effect (get effect-result :effect)
+         :direct-effects
+         (get effect-result :direct-effects)
+         :residual-effects
+         (get effect-result :residual-effects)
+         :legality (get effect-result :legality)
+         :capability-proof
+         (get effect-result :capability-proof)
+         :preserves (get effect-result :preserves)
+         :semantic-envelope-id
+         (get identity :semantic-envelope-id)}
+        identity)
+        (if
+         (sh11-bridge-sha256-id?
+          (get identity :semantic-envelope-id))
+          (if
+           (sh11-bridge-exact-keys?
+           (get effected :provenance)
+            #{:actual-source-path :provenance-binding-id})
+            (if
+             (string?
+              (get
+               (get effected :provenance)
+               :actual-source-path))
+              (if
+               (> (count
+                   (get
+                    (get effected :provenance)
+                    :actual-source-path))
+                  0)
+                (if
+                 (<= (count
+                      (get
+                       (get effected :provenance)
+                       :actual-source-path))
+                     4096)
+            (if
+             (sh11-bridge-sha256-id?
+              (get
+               (get effected :provenance)
+               :provenance-binding-id))
+              (if (= [] (get effected :diagnostics))
+                (if (vector? (get effected :pending))
+                  (if (= false (get effected :self-hosted?))
+                    (= true
+                       (get effected
+                            :clojure-seed-boundary?))
+                    false)
+                  false)
+                false)
+              false)
+                 false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-bridge-ownership-binding-valid? [owned]
+  (let [ownership-result (get owned :ownership-result)
+        identity (get owned :identity-input)]
+    (if (map? ownership-result)
+      (if
+       (=
+        {:artifact :gravity/sh10-authenticated-owned-core
+         :typed-artifact-id
+         (get owned :typed-artifact-id)
+         :ownership-artifact-id
+         (get owned :artifact-id)
+         :operation (get owned :operation)
+         :state (get ownership-result :state)
+         :ownership-facts
+         (get ownership-result :ownership-facts)
+         :preserves (get ownership-result :preserves)
+         :semantic-envelope-id
+         (get identity :semantic-envelope-id)}
+        identity)
+        (if
+         (sh11-bridge-sha256-id?
+          (get identity :semantic-envelope-id))
+          (if
+           (sh11-bridge-exact-keys?
+            (get owned :provenance)
+            #{:actual-source-path :provenance-binding-id})
+            (if
+             (string?
+              (get
+               (get owned :provenance)
+               :actual-source-path))
+              (if
+               (> (count
+                   (get
+                    (get owned :provenance)
+                    :actual-source-path))
+                  0)
+                (if
+                 (<= (count
+                      (get
+                       (get owned :provenance)
+                       :actual-source-path))
+                     4096)
+            (if
+             (sh11-bridge-sha256-id?
+              (get
+               (get owned :provenance)
+               :provenance-binding-id))
+              (if (= [] (get owned :diagnostics))
+                (if (vector? (get owned :pending))
+                  (if (= false (get owned :self-hosted?))
+                    (= true
+                       (get owned :clojure-seed-boundary?))
+                    false)
+                  false)
+                false)
+              false)
+                 false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-bridge-effect-valid? [effected verification]
+  (if (map? effected)
+    (if
+     (sh11-bridge-exact-keys?
+      effected
+      #{:artifact :schema-version :status :artifact-id
+        :typed-artifact-id :operation :effect-result
+        :identity-input :provenance :diagnostics :pending
+        :self-hosted? :clojure-seed-boundary?})
+    (if
+     (sh11-bridge-effect-binding-valid? effected)
+    (if (= :gravity/sh09-authenticated-effected-core
+           (get effected :artifact))
+      (if (= 1 (get effected :schema-version))
+        (if (= :accepted (get effected :status))
+          (if
+           (sh11-bridge-sha256-id? (get effected :artifact-id))
+            (if
+             (sh11-bridge-sha256-id?
+              (get effected :typed-artifact-id))
+              (if
+               (sh11-bridge-exact-keys?
+                verification
+                #{:artifact :status :checks
+                  :expected :candidate})
+                (if
+                 (=
+                  :gravity/sh09-authenticated-effect-verification
+                  (get verification :artifact))
+                  (if (= :passed (get verification :status))
+                    (if
+                     (=
+                      [:authenticated-sh08-typed-core
+                       :authenticated-input-and-output-identities
+                       :fresh-c8-result-replay
+                       :explicit-effect-capability-separation
+                       :ambient-authority-rejected
+                       :path-neutral-identity
+                       :separate-actual-path-provenance]
+                      (get verification :checks))
+                      (if (= effected
+                             (get verification :expected))
+                        (= effected
+                           (get verification :candidate))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+    false)
+    false))
+
+(defn sh11-bridge-ownership-valid? [owned verification]
+  (if (map? owned)
+    (if
+     (sh11-bridge-exact-keys?
+      owned
+      #{:artifact :schema-version :status :artifact-id
+        :typed-artifact-id :operation :ownership-result
+        :identity-input :provenance :diagnostics :pending
+        :self-hosted? :clojure-seed-boundary?})
+    (if
+     (sh11-bridge-ownership-binding-valid? owned)
+    (if (= :gravity/sh10-authenticated-owned-core
+           (get owned :artifact))
+      (if (= 1 (get owned :schema-version))
+        (if (= :accepted (get owned :status))
+          (if
+           (sh11-bridge-sha256-id? (get owned :artifact-id))
+            (if
+             (sh11-bridge-sha256-id?
+              (get owned :typed-artifact-id))
+              (if
+               (sh11-bridge-exact-keys?
+                verification
+                #{:artifact :status :checks
+                  :expected :candidate})
+                (if
+                 (=
+                  :gravity/sh10-authenticated-ownership-verification
+                  (get verification :artifact))
+                  (if (= :passed (get verification :status))
+                    (if
+                     (=
+                      [:verified-sh08-typed-core
+                       :authenticated-input-and-output-identities
+                       :fresh-c9-result-replay
+                       :exact-ownership-result
+                       :path-neutral-identity
+                       :separate-actual-path-provenance]
+                      (get verification :checks))
+                      (if (= owned
+                             (get verification :expected))
+                        (= owned
+                           (get verification :candidate))
+    false)
+    false)
+    false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+    false))
+
+(defn sh11-bridge-shared-lineage? [effected owned]
+  (let [effect-result (get effected :effect-result)
+        ownership-result (get owned :ownership-result)
+        effect-preserves (get effect-result :preserves)
+        ownership-preserves
+        (get ownership-result :preserves)]
+    (if (= (get effected :typed-artifact-id)
+           (get owned :typed-artifact-id))
+      (if
+       (= (get effected :typed-artifact-id)
+          (get
+           (get effected :identity-input)
+           :typed-artifact-id))
+        (if
+         (= (get owned :typed-artifact-id)
+            (get
+             (get owned :identity-input)
+             :typed-artifact-id))
+          (if
+           (= (get effect-preserves :core-node-id)
+              (get ownership-preserves :value-id))
+            (if
+             (= (get effect-preserves :source-span)
+                (get ownership-preserves :source-span))
+              (if
+               (= (get effect-preserves :origin-chain)
+                  (get ownership-preserves :origin-chain))
+                (if
+                 (= (get effect-preserves :profile)
+                    (get ownership-preserves :profile))
+                  (= (get effect-preserves :target)
+                     (get ownership-preserves :target))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh11-bridge-normalized-source-span [preserves]
+  (let [span (get preserves :source-span)]
+    (if (map? span)
+      {:source-id (get preserves :core-node-id)
+       :start-byte (get span :byte-start)
+       :end-byte (get span :byte-end)}
+      nil)))
+
+(defn sh11-bridge-normalized-origin-ids [preserves]
+  (let [origins (get preserves :origin-chain)]
+    (if (vector? origins)
+      (if (= (count origins) 0)
+        [(get preserves :core-node-id)]
+        (loop [remaining origins result []]
+          (if (= (count remaining) 0)
+            result
+            (let [origin (first remaining)]
+              (if (map? origin)
+                (recur
+                 (rest remaining)
+                 (conj result (get origin :origin-id)))
+                [])))))
+      [])))
+
+(defn sh11-bridge-operation-lineage-valid?
+  [operation expected-operation effected owned]
+  (let [effect-preserves
+        (get (get effected :effect-result) :preserves)
+        ownership-result (get owned :ownership-result)
+        ownership-preserves
+        (get ownership-result :preserves)]
+    (if (map? operation)
+      (if
+       (= :gravity/sh11-normalized-safety-operation
+          (get operation :artifact))
+        (if (= expected-operation
+               (get operation :operation-id))
+        (if
+         (= (get effect-preserves :core-node-id)
+            (get operation :core-node-id))
+          (if
+           (= (sh11-bridge-normalized-source-span
+               effect-preserves)
+              (get operation :source-span))
+            (if
+             (= (sh11-bridge-normalized-origin-ids
+                 effect-preserves)
+                (get operation :origin-chain))
+              (if
+               (= (get effect-preserves :profile)
+                  (get operation :profile))
+                (if
+                 (= (get effect-preserves :target)
+                    (get operation :target))
+                  (if
+                   (= (get ownership-preserves :type-fact-id)
+                      (get operation :type-fact-id))
+                    (if
+                     (= (get ownership-preserves
+                             :effect-fact-id)
+                        (get operation :effect-fact-id))
+                      (if
+                       (= (get ownership-preserves
+                               :capability-proof-id)
+                          (get operation
+                               :capability-proof-id))
+                        (= (get owned :artifact-id)
+                           (get operation
+                                :ownership-fact-id))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+        false)
+      false)))
+
+(defn sh11-bridge-subset? [required allowed]
+  (if (set? required)
+    (if (set? allowed)
+      (if (= (count required) 0)
+        true
+        (if (contains? allowed (first required))
+          (sh11-bridge-subset?
+           (set (rest required)) allowed)
+          false))
+      false)
+    false))
+
+(defn sh11-bridge-outcome-lineage-valid?
+  [effected safety-result]
+  (let [effect-result (get effected :effect-result)
+        allowed-effects (get effect-result :direct-effects)
+        capability-proof
+        (get effect-result :capability-proof)
+        allowed-capabilities
+        (if (= nil capability-proof)
+          #{}
+          #{(get capability-proof :capability)})
+        runtime-checks (get safety-result :runtime-checks)
+        unsafe-islands (get safety-result :unsafe-islands)
+        runtime-effects
+        (if (= (count runtime-checks) 0)
+          #{}
+          (get (first runtime-checks)
+               :effects-introduced))
+        unsafe-effects
+        (if (= (count unsafe-islands) 0)
+          #{}
+          (get (first unsafe-islands) :effects))
+        unsafe-capabilities
+        (if (= (count unsafe-islands) 0)
+          #{}
+          (get (first unsafe-islands) :capabilities))]
+    (if (set? allowed-effects)
+      (if
+       (sh11-bridge-subset?
+        runtime-effects allowed-effects)
+        (if
+         (sh11-bridge-subset?
+          unsafe-effects allowed-effects)
+          (sh11-bridge-subset?
+           unsafe-capabilities allowed-capabilities)
+          false)
+        false)
+      false)))
+
+(defn sh11-bridge-template-replay-valid? [replay]
+  (if
+   (sh11-bridge-exact-keys?
+    replay
+    #{:status
+      :artifact-template
+      :digest-graph-root
+      :digest-graph-roots
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :request-count
+      :semantic-authority
+      :checks
+      :diagnostics})
+    (if (= :template-replay-passed (get replay :status))
+      (if (= :pending-host-resolution
+             (get replay :identity-enforcement))
+        (if (= false
+               (get replay
+                    :eligible-for-contextual-acceptance?))
+          (if (= :gravity-source
+                 (get replay :semantic-authority))
+            (if
+             (=
+              [:fresh-descriptor-replay
+               :exact-artifact-template-replay
+               :exact-digest-request-replay
+               :path-neutral-semantic-root
+               :separate-physical-provenance-root]
+              (get replay :checks))
+              (if (= [] (get replay :diagnostics))
+                (if (map? (get replay :artifact-template))
+                  (if (= 2
+                         (count
+                          (get replay :digest-graph-roots)))
+                    (if
+                     (= (get replay :digest-graph-root)
+                        (get replay
+                             :semantic-envelope-root)
+                        (first
+                         (get replay
+                              :digest-graph-roots)))
+                      (=
+                       (get replay
+                            :provenance-binding-root)
+                       (second
+                        (get replay
+                             :digest-graph-roots)))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-bridge-contextual-verification-valid?
+  [verification effect-verification ownership-verification]
+  (if
+   (sh11-bridge-exact-keys?
+    verification
+    #{:artifact
+      :status
+      :artifact-template
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :host-digest-resolution
+      :identity-subject-equality
+      :fresh-envelope-reconstruction
+      :effect-verification
+      :ownership-verification})
+    (if
+     (= :gravity/sh11-envelope-contextual-verification
+        (get verification :artifact))
+      (if (= :contextual-verification-passed
+             (get verification :status))
+        (if (= :passed
+               (get verification :host-digest-resolution))
+          (if (= :passed
+                 (get verification
+                      :identity-subject-equality))
+            (if (= :passed
+                   (get verification
+                        :fresh-envelope-reconstruction))
+              (if (= effect-verification
+                     (get verification
+                          :effect-verification))
+                (= ownership-verification
+                   (get verification
+                        :ownership-verification))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-bridge-envelope-valid?
+  [descriptor envelope replay contextual effected owned
+   safety-operation expected-safety-operation-id
+   expected-safety-result expected-safety-verification
+   expected-safety-artifact-id
+   effect-verification ownership-verification]
+  (if (map? descriptor)
+    (if
+     (sh11-bridge-exact-keys?
+      descriptor
+      #{:artifact :schema-version :stage :artifact-kind
+        :source-revision :projection-contract
+        :semantic-projections :fact-transitions
+        :effect-capability-relation :proof-composite
+        :preservation :identity-subjects :lineage
+        :reference-closure :actual-path-provenance :bounds})
+    (if
+     (= :gravity/private-authenticated-envelope-descriptor
+        (get descriptor :artifact))
+      (if (= 1 (get descriptor :schema-version))
+        (if (= :sh11-authenticated-safety-bridge
+               (get descriptor :stage))
+          (if
+           (= :gravity/sh11-authenticated-safety-boundary
+              (get descriptor :artifact-kind))
+            (let [projections
+              (get descriptor :semantic-projections)]
+              (if (vector? projections)
+                (if (= 4 (count projections))
+                  (if
+                   (= {:effect-artifact-id
+                       (get effected :artifact-id)}
+                      (sh11-bridge-projection-value
+                       projections :sh09-effected-core))
+                    (if
+                     (= {:ownership-artifact-id
+                         (get owned :artifact-id)}
+                        (sh11-bridge-projection-value
+                         projections :sh10-owned-core))
+                      (if
+                       (= {:safety-operation-id
+                           expected-safety-operation-id}
+                          (sh11-bridge-projection-value
+                           projections
+                           :sh11-safety-operation))
+                        (if
+                         (= {:safety-result-id
+                             expected-safety-artifact-id}
+                          (sh11-bridge-projection-value
+                           projections :sh11-safety-result))
+                        (if
+                         (sh11-bridge-template-replay-valid? replay)
+                          (if
+                           (sh11-bridge-contextual-verification-valid?
+                            contextual effect-verification
+                            ownership-verification)
+                            (if (map? envelope)
+                              (if
+                               (= :gravity/authenticated-envelope
+                                  (get envelope :artifact))
+                                (if
+                                 (=
+                                  :sh11-authenticated-safety-bridge
+                                  (get envelope :stage))
+                                  (if
+                                   (=
+                                    :gravity/sh11-authenticated-safety-boundary
+                                    (get envelope :artifact-kind))
+                                    (if
+                                     (sh11-bridge-sha256-id?
+                                      (get envelope
+                                           :semantic-envelope-id))
+                                      (if
+                                       (sh11-bridge-sha256-id?
+                                        (get envelope
+                                             :provenance-binding-id))
+                                        (if
+                                         (= envelope
+                                            (get contextual
+                                                 :artifact-template))
+                                          (if
+                                           (=
+                                            (get envelope
+                                                 :semantic-envelope-id)
+                                            (get contextual
+                                                 :semantic-envelope-root))
+                                            (if
+                                             (=
+                                              (get envelope
+                                                   :provenance-binding-id)
+                                              (get contextual
+                                                   :provenance-binding-root))
+                                              (if
+                                               (= :passed
+                                                  (get
+                                                   contextual
+                                                   :identity-enforcement))
+                                                (if
+                                                 (= true
+                                                    (get
+                                                     contextual
+                                                     :eligible-for-contextual-acceptance?))
+                                                  (sh11-bridge-identity-checks-valid?
+                                                   (get contextual
+                                                        :identity-checks)
+                                                   (get descriptor
+                                                        :identity-subjects)
+                                                   effected owned
+                                                   safety-operation
+                                                   expected-safety-operation-id
+                                                   expected-safety-result
+                                                   expected-safety-verification
+                                                   expected-safety-artifact-id)
+                        false)
+                      false)
+                    false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false)
+    false))
+
+(defn sh11-bridge-operation-valid? [operation]
+  (sh11-bridge-member?
+   [:proven-overflow
+    :runtime-division
+    :unresolved-division
+    :unsafe-overflow]
+   operation))
+
+(defn sh11-bridge-safety-request [safety-operation]
+  safety-operation)
+
+(defn sh11-bridge-upstream-error [request]
+  (if
+   (= false
+      (= :accepted
+         (get
+          (sh11-bridge-carrier-preflight request)
+          :status)))
+    [:schema :request-carrier-bound]
+    (if
+     (= false
+        (sh11-bridge-exact-keys?
+       request
+       #{:artifact
+         :schema-version
+         :operation
+         :effected-core
+         :effect-verification
+         :owned-core
+         :ownership-verification
+         :safety-operation
+         :expected-safety-operation-id
+         :expected-safety-result
+         :expected-safety-verification
+         :expected-safety-artifact-id
+         :envelope-descriptor
+         :envelope
+         :template-replay
+         :envelope-verification
+         :actual-source-path}))
+      [:schema :request-keys]
+    (if
+     (= false
+        (=
+         :gravity/sh11-authenticated-safety-bridge-request
+         (get request :artifact)))
+      [:schema :request-artifact]
+      (if (= false (= 1 (get request :schema-version)))
+        [:schema :request-schema]
+        (if
+         (= false
+            (sh11-bridge-operation-valid?
+             (get request :operation)))
+          [:schema :operation]
+          (if
+           (= false
+              (sh11-bridge-effect-valid?
+               (get request :effected-core)
+               (get request :effect-verification)))
+            [:lineage :invalid-authenticated-effect]
+            (if
+             (= false
+                (sh11-bridge-ownership-valid?
+                 (get request :owned-core)
+                 (get request :ownership-verification)))
+              [:lineage :invalid-authenticated-ownership]
+              (if
+               (= false
+                  (sh11-bridge-shared-lineage?
+                   (get request :effected-core)
+                   (get request :owned-core)))
+                [:lineage :typed-identity-mismatch]
+                (if
+                 (= false
+                    (sh11-bridge-operation-lineage-valid?
+                     (get request :safety-operation)
+                     (get request :operation)
+                     (get request :effected-core)
+                     (get request :owned-core)))
+                  [:lineage :safety-operation-lineage]
+                  (if
+                   (= false
+                      (sh11-bridge-sha256-id?
+                       (get request
+                            :expected-safety-operation-id)))
+                    [:schema :expected-safety-operation-id]
+                    (if
+                     (= false
+                        (map?
+                         (get request
+                              :expected-safety-result)))
+                      [:schema :expected-safety-result]
+                      (if
+                       (= false
+                          (map?
+                           (get request
+                                :expected-safety-verification)))
+                        [:schema :expected-safety-verification]
+                        (if
+                         (= false
+                            (sh11-bridge-sha256-id?
+                             (get request
+                                  :expected-safety-artifact-id)))
+                          [:schema :expected-safety-artifact-id]
+                          (if
+                           (= false
+                              (sh11-bridge-envelope-valid?
+                               (get request :envelope-descriptor)
+                               (get request :envelope)
+                               (get request :template-replay)
+                               (get request :envelope-verification)
+                               (get request :effected-core)
+                               (get request :owned-core)
+                               (get request :safety-operation)
+                               (get request
+                                    :expected-safety-operation-id)
+                               (get request
+                                    :expected-safety-result)
+                               (get request
+                                    :expected-safety-verification)
+                               (get request
+                                    :expected-safety-artifact-id)
+                               (get request :effect-verification)
+                               (get request
+                                    :ownership-verification)))
+                            [:envelope
+                             :invalid-authenticated-envelope]
+                            (if
+                             (string?
+                              (get request :actual-source-path))
+                              (if
+                               (> (count
+                                   (get request
+                                        :actual-source-path))
+                                  0)
+                                (if
+                                 (<=
+                                  (count
+                                   (get request
+                                        :actual-source-path))
+                                  4096)
+                                  nil
+                                  [:schema :actual-path-bound])
+                                [:schema :actual-path-required])
+                              [:schema
+                               :actual-path-required]))))))))))))))))
+
+(defn sh11-bridge-rule [family]
+  (if (= family :schema)
+    "STD11-BRIDGE-SCHEMA"
+    (if (= family :lineage)
+      "STD11-BRIDGE-LINEAGE"
+      (if (= family :envelope)
+        "STD11-BRIDGE-ENVELOPE"
+        (if (= family :safety)
+          "STD11-BRIDGE-SAFETY"
+          "STD11-BRIDGE-VERIFY")))))
+
+(defn sh11-bridge-diagnostic
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh11-authenticated-safety-diagnostic
+   :rule (sh11-bridge-rule family)
+   :severity :error
+   :stage :safety-analysis
+   :source-span {:source (get request :actual-source-path)}
+   :profile :meta
+   :target :jvm
+   :facts
+   {:reason reason
+    :upstream-diagnostics upstream-diagnostics
+    :fail-closed true}
+   :remediation
+   "Provide same-lineage authenticated SH-09 and SH-10 products with a freshly verified C10 result."})
+
+(defn sh11-bridge-rejected
+  [request family reason upstream-diagnostics]
+  {:artifact :gravity/sh11-authenticated-safe-core
+   :schema-version 1
+   :status :rejected
+   :diagnostics
+   [(sh11-bridge-diagnostic
+     request family reason upstream-diagnostics)]
+   :pending
+   (get
+    (sh11-authenticated-safety-bridge-policy)
+    :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh11-build-authenticated-safety-request [request]
+  (let [error (sh11-bridge-upstream-error request)]
+    (if (= error nil)
+      {:artifact :gravity/sh11-authenticated-c10-request
+       :schema-version 1
+       :status :accepted
+       :operation (get request :operation)
+       :safety-request
+       (sh11-bridge-safety-request
+        (get request :safety-operation))
+       :expected-safety-operation-id
+       (get request :expected-safety-operation-id)
+       :expected-safety-result
+       (get request :expected-safety-result)
+       :expected-safety-verification
+       (get request :expected-safety-verification)
+       :expected-safety-artifact-id
+       (get request :expected-safety-artifact-id)
+       :typed-artifact-id
+       (get (get request :effected-core)
+            :typed-artifact-id)
+       :effect-artifact-id
+       (get (get request :effected-core) :artifact-id)
+       :ownership-artifact-id
+       (get (get request :owned-core) :artifact-id)
+       :semantic-envelope-id
+       (get (get request :envelope)
+            :semantic-envelope-id)
+       :provenance-binding-id
+       (get (get request :envelope)
+            :provenance-binding-id)
+       :actual-source-path (get request :actual-source-path)
+       :diagnostics []}
+      (sh11-bridge-rejected
+       request (first error) (first (rest error)) []))))
+
+(defn sh11-bridge-safety-result-valid?
+  [c10-request safety-result safety-verification]
+  (if
+   (= :accepted
+      (get
+       (sh11-bridge-carrier-preflight c10-request)
+       :status))
+   (if
+    (= :accepted
+       (get
+        (sh11-bridge-carrier-preflight safety-result)
+        :status))
+    (if
+     (= :accepted
+        (get
+         (sh11-bridge-carrier-preflight
+          safety-verification)
+         :status))
+  (if (= :accepted (get c10-request :status))
+    (if (= (get c10-request :expected-safety-result)
+           safety-result)
+      (if (= (get c10-request
+                  :expected-safety-verification)
+             safety-verification)
+      (if (map? safety-verification)
+        (if
+         (sh11-bridge-exact-keys?
+          safety-verification
+          #{:artifact :status :operation-id :checks})
+          (if
+           (= :gravity/sh11-safety-result-verification
+              (get safety-verification :artifact))
+          (if (= :passed (get safety-verification :status))
+            (if (= (get safety-result :operation-id)
+                   (get safety-verification :operation-id))
+              (=
+               [:bounded-request-and-candidate
+                :complete-recomputation
+                :exactly-one-outcome
+                :legal-outcome
+                :proof-check-audit-exclusivity
+                :diagnostic-identity
+                :source-lineage-identity]
+               (get safety-verification :checks))
+              false)
+            false)
+          false)
+          false)
+        false)
+      false)
+      false)
+    false)
+     false)
+    false)
+   false))
+
+(defn sh11-bridge-identity-input
+  [request c10-request safety-result]
+  {:artifact :gravity/sh11-authenticated-safe-core
+   :typed-artifact-id
+   (get c10-request :typed-artifact-id)
+   :effect-artifact-id
+   (get c10-request :effect-artifact-id)
+   :ownership-artifact-id
+   (get c10-request :ownership-artifact-id)
+   :safety-operation-id
+   (get c10-request :expected-safety-operation-id)
+   :safety-artifact-id
+   (get c10-request :expected-safety-artifact-id)
+   :operation (get request :operation)
+   :outcome (get safety-result :outcome)
+   :outcomes (get safety-result :outcomes)
+   :proofs (get safety-result :proofs)
+   :runtime-checks (get safety-result :runtime-checks)
+   :unsafe-islands (get safety-result :unsafe-islands)
+   :preserves (get safety-result :preserves)
+   :semantic-envelope-id
+   (get c10-request :semantic-envelope-id)})
+
+(defn sh11-bind-authenticated-safety-result
+  [request c10-request safety-result safety-verification]
+  (let [request-preflight
+        (sh11-bridge-carrier-preflight request)
+        c10-request-preflight
+        (sh11-bridge-carrier-preflight c10-request)
+        safety-result-preflight
+        (sh11-bridge-carrier-preflight safety-result)
+        verification-preflight
+        (sh11-bridge-carrier-preflight safety-verification)]
+    (if
+     (= false
+        (= :accepted
+           (get request-preflight :status)
+           (get c10-request-preflight :status)
+           (get safety-result-preflight :status)
+           (get verification-preflight :status)))
+      (sh11-bridge-rejected
+       request :verify :safety-result-carrier-bound [])
+  (let [expected-request
+        (sh11-build-authenticated-safety-request request)]
+    (if (= false (= expected-request c10-request))
+      (sh11-bridge-rejected
+       request :verify :c10-request-substitution [])
+      (if
+       (= false
+          (sh11-bridge-safety-result-valid?
+           c10-request safety-result safety-verification))
+        (sh11-bridge-rejected
+         request :verify :invalid-fresh-c10-result [])
+        (if
+         (= false
+            (sh11-bridge-outcome-lineage-valid?
+             (get request :effected-core)
+             safety-result))
+          (sh11-bridge-rejected
+           request :lineage
+           :safety-effect-capability-mismatch [])
+        (if (= :rejected (get safety-result :status))
+          (sh11-bridge-rejected
+           request :safety :c10-safety-rejection
+           (get safety-result :diagnostics))
+          {:artifact :gravity/sh11-authenticated-safe-core
+           :schema-version 1
+           :status :accepted
+           :artifact-id
+           (get c10-request :expected-safety-artifact-id)
+           :typed-artifact-id
+           (get c10-request :typed-artifact-id)
+           :effect-artifact-id
+           (get c10-request :effect-artifact-id)
+           :ownership-artifact-id
+           (get c10-request :ownership-artifact-id)
+           :operation (get request :operation)
+           :outcome (get safety-result :outcome)
+           :safety-result safety-result
+           :identity-input
+           (sh11-bridge-identity-input
+            request c10-request safety-result)
+           :provenance
+           {:actual-source-path
+            (get request :actual-source-path)
+            :provenance-binding-id
+            (get c10-request :provenance-binding-id)}
+           :diagnostics []
+           :pending
+           (get
+            (sh11-authenticated-safety-bridge-policy)
+            :pending)
+           :self-hosted? false
+           :clojure-seed-boundary? true}))))))))
+
+(defn sh11-verify-authenticated-safety-result
+  [request c10-request safety-result safety-verification candidate]
+  (let [candidate-preflight
+        (sh11-bridge-carrier-preflight candidate)
+        expected
+        (if (= :accepted (get candidate-preflight :status))
+          (sh11-bind-authenticated-safety-result
+           request c10-request safety-result
+           safety-verification)
+          (sh11-bridge-rejected
+           request :verify :candidate-result-carrier-bound []))]
+    {:artifact :gravity/sh11-authenticated-safety-verification
+     :status
+     (if (= :accepted (get candidate-preflight :status))
+       (if (= expected candidate) :passed :rejected)
+       :rejected)
+     :checks
+     [:same-sh08-typed-lineage
+      :authenticated-effect-and-ownership-identities
+      :source-bound-normalized-c10-operation
+      :fresh-c10-result-replay
+      :exactly-one-safe1-outcome
+      :path-neutral-identity
+      :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))
