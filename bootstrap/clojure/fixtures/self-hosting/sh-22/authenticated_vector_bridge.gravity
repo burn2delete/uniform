@@ -1,0 +1,959 @@
+(ns gravity.self-hosting.sh22.authenticated-vector-bridge
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-authenticated-vector-bridge-policy
+             sh22-build-authenticated-vector-request
+             sh22-bind-authenticated-vector-result
+             sh22-verify-authenticated-vector-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh22-authenticated-vector-bridge-policy []
+  {:artifact :gravity/sh22-authenticated-vector-bridge-policy
+   :schema-version 1
+   :profile :meta
+   :operation :vector-assoc
+   :maximum-vector-elements 256
+   :maximum-carrier-depth 32
+   :maximum-carrier-width 64
+   :maximum-carrier-nodes 16384
+   :maximum-scalar-units 131072
+   :operation-spec
+   {:operation :vector-assoc
+    :vector-source :sh14-payload
+    :index 1
+    :value-source :sh13-execution-result}
+   :required-upstream
+   [:authenticated-sh13-control-flow
+    :authenticated-sh14-vector-layout]
+   :host-authority
+   [:bounded-source-snapshot
+    :compile-and-invoke-gravity-modules
+    :canonical-encode
+    :sha256
+    :resolve-declared-digest-requests]
+   :diagnostics
+   ["STD22-BRIDGE-SCHEMA"
+    "STD22-BRIDGE-SH13"
+    "STD22-BRIDGE-SH14"
+    "STD22-BRIDGE-ENVELOPE"
+    "STD22-BRIDGE-LIBRARY"
+    "STD22-BRIDGE-VERIFY"]
+   :pending
+   [:authenticated-sh19-runtime-services
+    :gravity-owned-cross-module-verifier-orchestration
+    :complete-sh13-control-flow
+    :complete-sh14-layout
+    :public-routing
+    :seedless-execution
+    :complete-standard-library]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh22-bridge-member? [values value]
+  (if (= (count values) 0)
+    false
+    (if (= (first values) value)
+      true
+      (sh22-bridge-member? (rest values) value))))
+
+(defn sh22-bridge-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if
+     (sh22-bridge-member?
+      [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+       \a \b \c \d \e \f]
+      (first characters))
+      (sh22-bridge-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh22-bridge-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh22-bridge-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh22-bridge-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh22-bridge-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh22-bridge-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= 0 (count remaining))
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh22-bridge-carrier-preflight [value]
+  (let [policy (sh22-authenticated-vector-bridge-policy)
+        maximum-nodes (get policy :maximum-carrier-nodes)
+        maximum-depth (get policy :maximum-carrier-depth)
+        maximum-width (get policy :maximum-carrier-width)
+        maximum-scalar-units (get policy :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           nodes 0
+           scalar-units 0
+           maximum-observed-depth 0
+           maximum-observed-width 0]
+      (if (= 0 (count frontier))
+        {:status :accepted
+         :nodes nodes
+         :maximum-depth maximum-observed-depth
+         :maximum-width maximum-observed-width
+         :scalar-units scalar-units}
+        (let [entry (first frontier)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :carrier-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :carrier-depth-bound}
+              (if (sh22-bridge-aggregate? current)
+                (if (> (count current) maximum-width)
+                  {:status :rejected :reason :carrier-width-bound}
+                  (let [components
+                        (sh22-bridge-aggregate-components current)
+                        next-frontier
+                        (loop [remaining components
+                               result (rest frontier)]
+                          (if (= 0 (count remaining))
+                            result
+                            (recur
+                             (rest remaining)
+                             (conj
+                              result
+                              [(first remaining) (+ depth 1)]))))]
+                    (recur
+                     next-frontier
+                     next-nodes
+                     scalar-units
+                     (if (> depth maximum-observed-depth)
+                       depth
+                       maximum-observed-depth)
+                     (if (> (count current) maximum-observed-width)
+                       (count current)
+                       maximum-observed-width))))
+                (let [next-scalar-units
+                      (+ scalar-units (count (vec (str current))))]
+                  (if (> next-scalar-units maximum-scalar-units)
+                    {:status :rejected :reason :carrier-scalar-bound}
+                    (recur
+                     (rest frontier)
+                     next-nodes
+                     next-scalar-units
+                     (if (> depth maximum-observed-depth)
+                       depth
+                       maximum-observed-depth)
+                     maximum-observed-width)))))))))))
+
+(defn sh22-bridge-source-span-valid? [span]
+  (if
+   (sh22-bridge-exact-keys? span #{:source-id :start :end})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start))
+        (if (integer? (get span :end))
+          (if (<= 0 (get span :start))
+            (<= (get span :start) (get span :end))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-origin-valid? [origin]
+  (if
+   (sh22-bridge-exact-keys? origin #{:kind :source-id})
+    (if (= :source (get origin :kind))
+      (keyword? (get origin :source-id))
+      false)
+    false))
+
+(defn sh22-bridge-origins-valid? [origins]
+  (if (vector? origins)
+    (if (> (count origins) 0)
+      (if (<= (count origins) 32)
+        (sh22-bridge-origins-from-valid? origins 0)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-origins-from-valid? [origins index]
+  (if (= index (count origins))
+    true
+    (if (sh22-bridge-origin-valid? (get origins index))
+      (sh22-bridge-origins-from-valid? origins (+ index 1))
+      false)))
+
+(defn sh22-bridge-verification-passed?
+  [verification artifact identity-key identity-value]
+  (if
+   (sh22-bridge-exact-keys?
+    verification #{:artifact :status identity-key})
+    (if (= artifact (get verification :artifact))
+      (if (= :passed (get verification :status))
+        (= identity-value (get verification identity-key))
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-sh13-valid?
+  [module arguments execution verification]
+  (if (map? module)
+    (if (= :gravity/sh13-control-flow-module (get module :artifact))
+      (if (vector? arguments)
+        (if (= [true] arguments)
+          (if (map? execution)
+            (if
+             (= :gravity/sh13-control-flow-execution
+                (get execution :artifact))
+              (if (= :accepted (get execution :status))
+                (if (= (get module :module-id)
+                       (get execution :module-id))
+                  (if (= arguments (get execution :arguments))
+                    (if (= :returned
+                           (get (get execution :execution) :status))
+                      (if (integer?
+                           (get (get execution :execution) :value))
+                        (if (= [] (get execution :diagnostics))
+                          (if
+                           (=
+                            (sh22-bridge-verification-passed?
+                             verification
+                             :gravity/sh13-control-flow-verification
+                             :module-id
+                             (get module :module-id))
+                            true)
+                            (if
+                             (sh22-bridge-source-span-valid?
+                              (get (get execution :provenance)
+                                   :source-span))
+                              (sh22-bridge-origins-valid?
+                               (get (get execution :provenance)
+                                    :origin-chain))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-sh14-valid? [request layout verification]
+  (if (map? request)
+    (if (= :gravity/sh14-data-layout-request (get request :artifact))
+      (if (= :vector (get request :kind))
+        (if (vector? (get request :payload))
+          (if (> (count (get request :payload)) 0)
+            (if
+             (<=
+              (count (get request :payload))
+              (get
+               (sh22-authenticated-vector-bridge-policy)
+               :maximum-vector-elements))
+              (if (map? layout)
+                (if (= :gravity/sh14-data-layout (get layout :artifact))
+                  (if (= :accepted (get layout :status))
+                    (if (= :vector (get layout :kind))
+                      (if (= (get request :value-id)
+                             (get layout :value-id))
+                        (if
+                         (= (get request :capacity)
+                            (get (get layout :layout) :capacity))
+                          (if
+                           (= (get request :length)
+                              (get (get layout :layout) :length))
+                            (if
+                             (= (count (get request :payload))
+                                (get (get layout :layout) :length))
+                              (if
+                               (= (get request :element-size)
+                                  (get (get layout :layout) :element-size))
+                                (if
+                                 (= (get request :size-bytes)
+                                    (get (get layout :layout) :size-bytes))
+                                  (if
+                                   (= (get request :type-fact-id)
+                                      (get (get layout :facts)
+                                           :type-fact-id))
+                                    (if
+                                     (= (get request :effect-fact-id)
+                                        (get (get layout :facts)
+                                             :effect-fact-id))
+                                      (if
+                                       (= (get request :ownership-fact-id)
+                                          (get (get layout :facts)
+                                               :ownership-fact-id))
+                                        (if
+                                         (= (get request :safety-fact-id)
+                                            (get (get layout :facts)
+                                                 :safety-fact-id))
+                                          (sh22-bridge-verification-passed?
+                                           verification
+                                           :gravity/sh14-layout-verification
+                                           :value-id
+                                           (get request :value-id))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-projection-value [projections name]
+  (if (= (count projections) 0)
+    nil
+    (let [projection (first projections)]
+      (if (= name (get projection :name))
+        (get projection :value)
+        (sh22-bridge-projection-value (rest projections) name)))))
+
+(defn sh22-bridge-sh13-semantic-projection [execution]
+  {:artifact (get execution :artifact)
+   :schema-version (get execution :schema-version)
+   :status (get execution :status)
+   :module-id (get execution :module-id)
+   :entry-function (get execution :entry-function)
+   :arguments (get execution :arguments)
+   :execution (get execution :execution)
+   :call-graph (get execution :call-graph)
+   :control-flow (get execution :control-flow)
+   :identity-input (get execution :identity-input)
+   :diagnostics (get execution :diagnostics)
+   :clojure-seed-boundary?
+   (get execution :clojure-seed-boundary?)
+   :self-hosted? (get execution :self-hosted?)
+   :pending (get execution :pending)})
+
+(defn sh22-bridge-sh14-semantic-projection [layout]
+  {:artifact (get layout :artifact)
+   :status (get layout :status)
+   :value-id (get layout :value-id)
+   :kind (get layout :kind)
+   :layout (get layout :layout)
+   :facts (get layout :facts)
+   :identity-input (get layout :identity-input)
+   :diagnostics (get layout :diagnostics)
+   :pending (get layout :pending)})
+
+(defn sh22-bridge-library-request-identity [library-request]
+  {:artifact (get library-request :artifact)
+   :request-id (get library-request :request-id)
+   :profile (get library-request :profile)
+   :experimental-opt-in (get library-request :experimental-opt-in)
+   :operation (get library-request :operation)
+   :arguments (get library-request :arguments)
+   :effects (get library-request :effects)
+   :capabilities (get library-request :capabilities)
+   :allocation-policy (get library-request :allocation-policy)
+   :source-span (get library-request :source-span)
+   :origin-chain (get library-request :origin-chain)})
+
+(defn sh22-bridge-sh22-identity-input [library-request]
+  {:artifact (get library-request :artifact)
+   :request-id (get library-request :request-id)
+   :profile (get library-request :profile)
+   :operation (get library-request :operation)
+   :arguments (get library-request :arguments)
+   :effects (get library-request :effects)
+   :capabilities (get library-request :capabilities)
+   :allocation-policy (get library-request :allocation-policy)
+   :source-span (get library-request :source-span)
+   :origin-chain (get library-request :origin-chain)})
+
+(defn sh22-bridge-all-identity-checks-pass? [checks]
+  (if (= (count checks) 0)
+    true
+    (let [check (first checks)]
+      (if (sh22-bridge-sha256-id? (get check :computed-id))
+        (if (= (get check :computed-id) (get check :observed-id))
+          (sh22-bridge-all-identity-checks-pass? (rest checks))
+          false)
+        false))))
+
+(defn sh22-bridge-identity-checks-valid? [checks]
+  (if (vector? checks)
+    (if (> (count checks) 0)
+      (if (<= (count checks) 64)
+        (sh22-bridge-all-identity-checks-pass? checks)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-envelope-template-replay-valid? [replay]
+  (if
+   (sh22-bridge-exact-keys?
+    replay
+    #{:status
+      :artifact-template
+      :digest-graph-root
+      :digest-graph-roots
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :request-count
+      :semantic-authority
+      :checks
+      :diagnostics})
+    (if (= :template-replay-passed (get replay :status))
+      (if (= :pending-host-resolution
+             (get replay :identity-enforcement))
+        (if (= false
+               (get replay :eligible-for-contextual-acceptance?))
+          (if (= :gravity-source (get replay :semantic-authority))
+            (= [] (get replay :diagnostics))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-operation-spec-valid? [operation-spec]
+  (=
+   operation-spec
+   (get (sh22-authenticated-vector-bridge-policy)
+        :operation-spec)))
+
+(defn sh22-bridge-contextual-verification-valid?
+  [verification sh13-verification sh14-verification]
+  (if
+   (sh22-bridge-exact-keys?
+    verification
+    #{:artifact
+      :status
+      :artifact-template
+      :semantic-envelope-root
+      :provenance-binding-root
+      :identity-checks
+      :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :host-digest-resolution
+      :identity-subject-equality
+      :fresh-envelope-reconstruction
+      :sh13-verification
+      :sh14-verification})
+    (if
+     (= :gravity/sh22-envelope-contextual-verification
+        (get verification :artifact))
+      (if (= :contextual-verification-passed
+             (get verification :status))
+        (if (= :passed (get verification :host-digest-resolution))
+          (if (= :passed (get verification :identity-subject-equality))
+            (if (= :passed
+                   (get verification :fresh-envelope-reconstruction))
+              (if (= sh13-verification
+                     (get verification :sh13-verification))
+                (= sh14-verification
+                   (get verification :sh14-verification))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-verifier-evidence-valid?
+  [descriptor sh13-verification sh14-verification]
+  (let [records
+        (get (get descriptor :proof-composite) :proof-records)]
+    (if (vector? records)
+      (if (= 1 (count records))
+        (let [record (first records)]
+          (if
+           (sh22-bridge-exact-keys?
+            record
+            #{:proof-id
+              :status
+              :sh13-verification
+              :sh14-verification})
+            (if (sh22-bridge-sha256-id? (get record :proof-id))
+              (if (= :host-replayed (get record :status))
+                (if (= sh13-verification
+                       (get record :sh13-verification))
+                  (= sh14-verification
+                     (get record :sh14-verification))
+                  false)
+                false)
+              false)
+            false))
+        false)
+      false)))
+
+(defn sh22-bridge-envelope-valid?
+  [descriptor envelope envelope-verification sh13-execution sh14-layout]
+  (if (map? descriptor)
+    (if
+     (= :gravity/private-authenticated-envelope-descriptor
+        (get descriptor :artifact))
+      (if (= 1 (get descriptor :schema-version))
+        (if (= :sh22-authenticated-vector-bridge
+               (get descriptor :stage))
+          (if
+           (= :gravity/sh22-authenticated-vector-upstream
+              (get descriptor :artifact-kind))
+            (let [projections (get descriptor :semantic-projections)]
+              (if (vector? projections)
+                (if (= 2 (count projections))
+                  (if
+                   (= (sh22-bridge-sh13-semantic-projection sh13-execution)
+                      (sh22-bridge-projection-value
+                       projections :sh13-execution))
+                    (if
+                     (= (sh22-bridge-sh14-semantic-projection sh14-layout)
+                        (sh22-bridge-projection-value
+                         projections :sh14-layout))
+                      (if (map? envelope)
+                        (if (= :gravity/authenticated-envelope
+                               (get envelope :artifact))
+                          (if
+                           (= :sh22-authenticated-vector-bridge
+                              (get envelope :stage))
+                            (if
+                             (= :gravity/sh22-authenticated-vector-upstream
+                                (get envelope :artifact-kind))
+                              (if
+                               (sh22-bridge-sha256-id?
+                                (get envelope :semantic-id))
+                                (if
+                                 (sh22-bridge-sha256-id?
+                                  (get envelope :artifact-id))
+                                  (if
+                                   (sh22-bridge-sha256-id?
+                                    (get envelope
+                                         :semantic-envelope-id))
+                                    (if
+                                     (sh22-bridge-sha256-id?
+                                      (get envelope
+                                           :provenance-binding-id))
+                                      (if
+                                       (= :gravity-source
+                                          (get envelope
+                                               :semantic-authority))
+                                        (if
+                                         (map? envelope-verification)
+                                          (if
+                                           (=
+                                           :contextual-verification-passed
+                                            (get envelope-verification
+                                                 :status))
+                                            (if
+                                             (= envelope
+                                                (get
+                                                 envelope-verification
+                                                 :artifact-template))
+                                              (if
+                                               (=
+                                                (get envelope
+                                                     :semantic-envelope-id)
+                                                (get
+                                                 envelope-verification
+                                                 :semantic-envelope-root))
+                                                (if
+                                                 (=
+                                                  (get envelope
+                                                       :provenance-binding-id)
+                                                  (get
+                                                  envelope-verification
+                                                   :provenance-binding-root))
+                                                  (if
+                                                   (=
+                                                    :passed
+                                                    (get
+                                                     envelope-verification
+                                                     :identity-enforcement))
+                                                    (if
+                                                     (=
+                                                      true
+                                                      (get
+                                                       envelope-verification
+                                                       :eligible-for-contextual-acceptance?))
+                                                      (sh22-bridge-identity-checks-valid?
+                                                       (get
+                                                        envelope-verification
+                                                        :identity-checks))
+                                                      false)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh22-bridge-upstream-error [request]
+  (if
+   (= false
+    (= :accepted
+       (get (sh22-bridge-carrier-preflight request) :status)))
+    [:schema :request-carrier-bound]
+    (if
+     (= false
+      (sh22-bridge-exact-keys?
+     request
+     #{:artifact
+       :schema-version
+       :sh13-module
+       :sh13-arguments
+       :sh13-execution
+       :sh13-verification
+       :sh14-request
+       :sh14-layout
+       :sh14-verification
+       :envelope-descriptor
+       :envelope
+       :envelope-template-replay
+       :envelope-verification
+       :operation-spec
+       :actual-source-path}))
+      [:schema :request-keys]
+      (if
+     (= false
+      (= :gravity/sh22-authenticated-vector-bridge-request
+         (get request :artifact)))
+      [:schema :request-artifact]
+      (if (= false (= 1 (get request :schema-version)))
+        [:schema :request-schema]
+        (if
+         (= false
+          (sh22-bridge-sh13-valid?
+           (get request :sh13-module)
+           (get request :sh13-arguments)
+           (get request :sh13-execution)
+           (get request :sh13-verification)))
+          [:sh13 :invalid-control-flow-product]
+          (if
+           (= false
+            (sh22-bridge-sh14-valid?
+             (get request :sh14-request)
+             (get request :sh14-layout)
+             (get request :sh14-verification)))
+            [:sh14 :invalid-layout-product]
+            (if
+             (= false
+              (sh22-bridge-verifier-evidence-valid?
+               (get request :envelope-descriptor)
+               (get request :sh13-verification)
+               (get request :sh14-verification)))
+              [:envelope :invalid-verifier-evidence]
+              (if
+               (= false
+                (sh22-bridge-envelope-template-replay-valid?
+                 (get request :envelope-template-replay)))
+                [:envelope :invalid-template-replay]
+                (if
+                 (= false
+                  (sh22-bridge-contextual-verification-valid?
+                   (get request :envelope-verification)
+                   (get request :sh13-verification)
+                   (get request :sh14-verification)))
+                  [:envelope :invalid-contextual-verification]
+                  (if (string? (get request :actual-source-path))
+                    (if
+                     (= false
+                      (sh22-bridge-operation-spec-valid?
+                       (get request :operation-spec)))
+                      [:schema :operation-spec]
+                      (if
+                       (= false
+                        (sh22-bridge-envelope-valid?
+                         (get request :envelope-descriptor)
+                         (get request :envelope)
+                         (get request :envelope-verification)
+                         (get request :sh13-execution)
+                         (get request :sh14-layout)))
+                        [:envelope :invalid-authenticated-envelope]
+                        (if
+                         (> (count
+                             (get request :actual-source-path))
+                            0)
+                          (if
+                           (<=
+                            (count
+                             (get request :actual-source-path))
+                            4096)
+                            nil
+                            [:schema :actual-path-bound])
+                          [:schema :actual-path-required])))
+                    [:schema :actual-path-required])))))))))))
+
+(defn sh22-bridge-rule [family]
+  (if (= family :schema)
+    "STD22-BRIDGE-SCHEMA"
+    (if (= family :sh13)
+      "STD22-BRIDGE-SH13"
+      (if (= family :sh14)
+        "STD22-BRIDGE-SH14"
+        (if (= family :envelope)
+          "STD22-BRIDGE-ENVELOPE"
+          (if (= family :library)
+            "STD22-BRIDGE-LIBRARY"
+            "STD22-BRIDGE-VERIFY"))))))
+
+(defn sh22-bridge-diagnostic [request family reason]
+  {:artifact :gravity/sh22-authenticated-vector-bridge-diagnostic
+   :rule (sh22-bridge-rule family)
+   :reason reason
+   :stage :authenticated-standard-library-integration
+   :profile :meta
+   :operation :vector-assoc
+   :source-span
+   (get (get (get request :sh13-execution) :provenance)
+        :source-span)
+   :origin-chain
+   (get (get (get request :sh13-execution) :provenance)
+        :origin-chain)
+   :remediation
+   :replay-genuine-sh13-sh14-and-envelope-products})
+
+(defn sh22-bridge-rejected [request family reason]
+  {:artifact :gravity/sh22-authenticated-vector-bridge
+   :schema-version 1
+   :status :rejected
+   :diagnostics [(sh22-bridge-diagnostic request family reason)]
+   :pending
+   (get (sh22-authenticated-vector-bridge-policy) :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh22-build-authenticated-vector-request [request]
+  (let [error (sh22-bridge-upstream-error request)]
+    (if (= nil error)
+      (let [execution (get request :sh13-execution)
+            layout-request (get request :sh14-request)
+            operation-spec (get request :operation-spec)
+            source-span
+            (get (get execution :provenance) :source-span)
+            origin-chain
+            (get (get execution :provenance) :origin-chain)]
+        {:artifact :gravity/sh22-library-request
+         :request-id :authenticated-vector-assoc
+         :profile :meta
+         :experimental-opt-in true
+         :operation :vector-assoc
+         :arguments
+         [(get layout-request :payload)
+          (get operation-spec :index)
+          (get (get execution :execution) :value)]
+         :effects #{:memory/allocate}
+         :capabilities #{}
+         :allocation-policy :bounded-by-result
+         :source-span source-span
+         :origin-chain origin-chain
+         :actual-source-path (get request :actual-source-path)})
+      (sh22-bridge-rejected
+       request (get error 0) (get error 1)))))
+
+(defn sh22-bridge-library-result-valid?
+  [library-request library-result library-verification]
+  (if
+   (= :accepted
+      (get
+       (sh22-bridge-carrier-preflight
+        [library-request library-result library-verification])
+       :status))
+   (if (map? library-result)
+    (if (= :gravity/sh22-library-result
+           (get library-result :artifact))
+      (if (= :accepted (get library-result :status))
+        (if (= 1 (get library-result :schema-version))
+          (if (= :authenticated-vector-assoc
+               (get library-result :request-id))
+            (if (= :vector-assoc (get library-result :operation))
+              (if
+               (=
+                (assoc
+                 (get (get library-request :arguments) 0)
+                 (get (get library-request :arguments) 1)
+                 (get (get library-request :arguments) 2))
+                (get library-result :value))
+                (if
+                 (=
+                  {:collection-kind :vector
+                   :safety-outcome :proven-safe
+                   :allocation :bounded-by-result
+                   :persistent-value-semantics true}
+                  (get library-result :facts))
+                  (if
+                   (= (sh22-bridge-sh22-identity-input library-request)
+                      (get library-result :identity-input))
+                    (if
+                     (=
+                      {:actual-source-path
+                       (get library-request :actual-source-path)
+                       :source-span (get library-request :source-span)
+                       :origin-chain (get library-request :origin-chain)}
+                      (get library-result :provenance))
+                      (if (= [] (get library-result :diagnostics))
+                        (if
+                         (sh22-bridge-exact-keys?
+                          library-verification
+                          #{:artifact :status :request-id})
+                          (if
+                           (= :gravity/sh22-library-verification
+                              (get library-verification :artifact))
+                            (if (= :passed
+                                   (get library-verification :status))
+                              (= :authenticated-vector-assoc
+                                 (get library-verification :request-id))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)
+   false))
+
+(defn sh22-bridge-identity-input
+  [request library-request library-result]
+  {:artifact :gravity/sh22-authenticated-vector-bridge
+   :schema-version 1
+   :operation :vector-assoc
+   :upstream-semantic-id
+   (get (get request :envelope) :semantic-id)
+   :sh13-identity-input
+   (get (get request :sh13-execution) :identity-input)
+   :sh14-identity-input
+   (get (get request :sh14-layout) :identity-input)
+   :library-request
+   (sh22-bridge-library-request-identity library-request)
+   :library-result-identity-input
+   (get library-result :identity-input)})
+
+(defn sh22-bind-authenticated-vector-result
+  [request library-result library-verification]
+  (let [library-request
+        (sh22-build-authenticated-vector-request request)]
+    (if (= :gravity/sh22-library-request
+           (get library-request :artifact))
+      (if
+       (sh22-bridge-library-result-valid?
+        library-request library-result library-verification)
+        {:artifact :gravity/sh22-authenticated-vector-bridge
+         :schema-version 1
+         :status :accepted
+         :operation :vector-assoc
+         :upstream-envelope-identity
+         {:semantic-id
+          (get (get request :envelope) :semantic-id)
+          :artifact-id
+          (get (get request :envelope) :artifact-id)
+          :semantic-envelope-id
+          (get (get request :envelope) :semantic-envelope-id)}
+         :library-request library-request
+         :library-result library-result
+         :identity-input
+         (sh22-bridge-identity-input
+          request library-request library-result)
+         :provenance
+         {:actual-source-path (get request :actual-source-path)
+          :sh13 (get (get request :sh13-execution) :provenance)
+          :sh14 (get (get request :sh14-layout) :provenance)
+          :envelope
+          (get (get request :envelope) :actual-path-provenance)}
+         :diagnostics []
+         :pending
+         (get (sh22-authenticated-vector-bridge-policy) :pending)
+         :self-hosted? false
+         :clojure-seed-boundary? true}
+        (sh22-bridge-rejected
+         request :library :invalid-library-result))
+      library-request)))
+
+(defn sh22-verify-authenticated-vector-result
+  [request library-result library-verification candidate]
+  (if
+   (= :accepted
+      (get
+       (sh22-bridge-carrier-preflight
+        [request library-result library-verification candidate])
+       :status))
+    (if
+     (=
+      (sh22-bind-authenticated-vector-result
+       request library-result library-verification)
+      candidate)
+      {:artifact :gravity/sh22-authenticated-vector-bridge-verification
+       :status :passed
+       :operation :vector-assoc}
+      {:artifact :gravity/sh22-authenticated-vector-bridge-verification
+       :status :rejected
+       :operation :vector-assoc
+       :diagnostics
+       [(sh22-bridge-diagnostic
+         request :verify :bridge-result-substitution)]})
+    {:artifact :gravity/sh22-authenticated-vector-bridge-verification
+     :status :rejected
+     :operation :vector-assoc
+     :diagnostics
+     [(sh22-bridge-diagnostic
+       request :verify :verification-carrier-over-bound)]}))
