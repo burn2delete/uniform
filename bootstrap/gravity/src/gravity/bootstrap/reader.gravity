@@ -1344,9 +1344,9 @@
 
 (def sh03-reader-bounds
   {:maximum-source-bytes 1048576
-   :maximum-characters 262144
-   :maximum-tokens 65536
-   :maximum-forms 32768
+   :maximum-characters 1048576
+   :maximum-tokens 131072
+   :maximum-forms 65536
    :maximum-delimiter-depth 512
    :maximum-semantic-work-units 8437834
    :maximum-container-width 65536
@@ -1360,7 +1360,7 @@
    :maximum-actual-path-code-units 1024
    :maximum-reader-tags 32
    :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 83886080
+   :maximum-result-carrier-nodes 167772160
    :maximum-result-carrier-depth 2048
    :maximum-result-carrier-width 1048576
    :result-carrier-node-budget
@@ -1369,13 +1369,13 @@
     :nodes-per-token 320
     :nodes-per-form 1024
     :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 80805888}})
+    :derived-maximum-nodes 135331840}})
 
 (defn sh03-bounds-record []
   {:maximum-source-bytes 1048576
-   :maximum-characters 262144
-   :maximum-tokens 65536
-   :maximum-forms 32768
+   :maximum-characters 1048576
+   :maximum-tokens 131072
+   :maximum-forms 65536
    :maximum-delimiter-depth 512
    :maximum-semantic-work-units 8437834
    :maximum-container-width 65536
@@ -1389,7 +1389,7 @@
    :maximum-actual-path-code-units 1024
    :maximum-reader-tags 32
    :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 83886080
+   :maximum-result-carrier-nodes 167772160
    :maximum-result-carrier-depth 2048
    :maximum-result-carrier-width 1048576
    :result-carrier-node-budget
@@ -1398,7 +1398,7 @@
     :nodes-per-token 320
     :nodes-per-form 1024
     :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 80805888}})
+    :derived-maximum-nodes 135331840}})
 
 (defn sh03-execution-boundary-record []
   {:artifact :gravity/sh03-reader-execution-boundary
@@ -1422,7 +1422,7 @@
                            :stage2-instruction-runner]
    :clojure-boundary-responsibility
    {:responsibility :result-carrier-validation
-    :maximum-nodes 83886080
+    :maximum-nodes 167772160
     :maximum-depth 2048
     :maximum-width 1048576
     :maximum-canonical-scalar-bytes 1048576

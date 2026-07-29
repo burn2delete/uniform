@@ -95059,9 +95059,18 @@
 (defn- p15-s23-stage2-runtime-map-entry
   [value requested-key]
   (when (map? value)
-    (some (fn [entry]
-            (when (= requested-key (key entry)) entry))
-          value)))
+    (if (sorted? value)
+      ;; A sorted map can use a comparator that rejects a heterogeneous lookup
+      ;; key before equality is considered. Runtime records may legitimately
+      ;; be inspected for keyword control keys even when their own keys use a
+      ;; different comparable type, so retain the equality scan for that case.
+      (some (fn [entry]
+              (when (= requested-key (key entry)) entry))
+            value)
+      ;; Ordinary runtime records are persistent hash/array maps. `find`
+      ;; preserves their key equality and nil-value behavior without scanning
+      ;; every entry for every interpreted instruction.
+      (find value requested-key))))
 
 (defn- p15-s23-stage2-runtime-recur-values
   [value]
@@ -118496,7 +118505,7 @@
 (def ^:dynamic p15-s23-c6c10-max-scalar-bytes 65536)
 (def ^:dynamic p15-s23-c6c10-max-total-scalar-bytes (* 8 1024 1024))
 (def p15-s23-c6c10-max-integer-bits 256)
-(def p15-s23-c6c10-max-digest-requests 2048)
+(def ^:dynamic p15-s23-c6c10-max-digest-requests 2048)
 (def p15-s23-c6c10-max-source-bytes (* 1024 1024))
 
 (declare p15-s23-c6c10-canonical-digest)
@@ -133808,9 +133817,9 @@
   [source-path raw-result]
   (p15-s23-sh02-require-bounded-carrier!
    source-path :gravity-builder-result raw-result)
-  ;; Reuse the canonical C6/C10 carrier walker because it gives the request
-  ;; vector its declared 2,048-entry exception while retaining the shared
-  ;; depth, scalar, integer, and per-container width limits everywhere else.
+  ;; The SH-02 carrier preflight above enforces its 2,048-request contract
+  ;; before the shared canonical C6/C10 walker applies the remaining depth,
+  ;; scalar, integer, and per-container limits.
   (try
     (p15-s23-c6c10-validate-builder-result-canonical-carrier!
      source-path raw-result)
@@ -149069,7 +149078,7 @@
 ;; values are filled after the leaf source and its independent review freeze.
 ;; Keeping these separate from the builder makes the source/plan tripwire
 ;; explicit and prevents a rebuild from silently authorizing changed code.
-(def sh03-reader-expected-source-byte-count 257152)
+(def sh03-reader-expected-source-byte-count 257161)
 (def sh03-reader-uncredited-source-model-entrypoints
   ['stage1-read-source-formal-release-governance-seed-retirement
    'stage1-read-source-release-attestation-seed-retirement
@@ -149081,11 +149090,11 @@
    'stage1-read-source-core-bootstrap
    'stage1-read-source-self-hosted-runtime])
 (def sh03-reader-expected-source-content-hash
-  "sha256:7e4f9817de20209f005ea3616bcc2c7948fde14f13166be3d3a378fe3884388a")
+  "sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:a701682ed04f35d7e884f33ad5b79c2bcd2f8b37df20559964d962b0ae20c0a6")
+  "sha256:25689f7c0bf9c1872aab4f3e41ac930efdf8c350231b14b2573e23a6d76fc475")
 (def sh03-reader-expected-functions-semantic-hash
-  "sha256:a1a62c4b0ea5e58ca1efb3ea4c6c6e8ed01c10089181bae4304545166f73dcd3")
+  "sha256:2e7bd1504df9cac0451d391f4f20cd5fac524e4f289289d136ac43f279f759cb")
 (def sh03-reader-expected-function-count 231)
 (def sh03-reader-expected-function-names-hash
   "sha256:27c0e98eec6e92acdf9d4c5a9db966374136f1c8084f7e9f13bea1610d6bf868")
@@ -149109,7 +149118,7 @@
 (def sh03-reader-plan-maximum-nodes 524288)
 (def sh03-reader-plan-maximum-depth 512)
 (def sh03-reader-plan-maximum-width 131072)
-(def sh03-reader-result-maximum-nodes 83886080)
+(def sh03-reader-result-maximum-nodes 167772160)
 (def sh03-reader-result-maximum-depth 2048)
 (def sh03-reader-result-maximum-width 1048576)
 (def sh03-reader-input-maximum-identity-utf8-bytes 4096)
@@ -150025,7 +150034,7 @@
        function {:contained-host-error (.getName (class error))
                  :cause-message (.getMessage error)}))))
 
-(def sh03-reader-canonical-maximum-nodes 83886080)
+(def sh03-reader-canonical-maximum-nodes 167772160)
 (def sh03-reader-canonical-maximum-depth 2048)
 (def sh03-reader-canonical-maximum-width 1048576)
 (def sh03-reader-canonical-maximum-scalar-bytes 1048576)
@@ -157534,11 +157543,11 @@
 ;; receive integration credit.
 (def sh06-resolution-expected-source-byte-count 77209)
 (def sh06-resolution-expected-source-content-hash
-  "sha256:33bf3a40925c7b2f5b3b4885e1264547f794eb27f5d37398f4194641ac02d1ee")
+  "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56")
 (def sh06-resolution-expected-plan-semantic-hash
-  "sha256:738f2c3337ed9896c6401f91d605d572048f61b3009e21a60d22b0b8040ac3dc")
+  "sha256:ba8c292ffe3c703bbc220af0a7121496c134793d1e80a012f6fb0a0d9dc6b6fa")
 (def sh06-resolution-expected-functions-semantic-hash
-  "sha256:5a83fea48ef3fbf54aff38c0f17b2c04f618120366895e1d8c6dd629b5be5183")
+  "sha256:a1445872cda26a9aa0fb8959165eada593619de7a03f527a8ea8a8c216237b91")
 (def sh06-resolution-expected-function-count 94)
 (def sh06-resolution-expected-function-names-hash
   "sha256:1a12e29aea416d4df7c2904d366975ce240f5ecaee0b2b9c5aa95b1aa83d1ba4")
@@ -157769,20 +157778,27 @@
   ;; Per-component request, replay, result, and upstream carrier limits.  These
   ;; remain strict even though the aggregate artifact serializes several
   ;; independently bounded products and projections together.
-  {:maximum-carrier-nodes 8388608
+  {:maximum-carrier-nodes 33554432
    :maximum-carrier-depth 64
-   :maximum-container-width 65536})
+   :maximum-container-width 131072})
 
 (def sh06-resolution-artifact-bounds
-  ;; The authentic reader module measures 13,219,191 aggregate nodes, depth 33,
-  ;; and width 43,713.  The next power-of-two node ceiling provides a finite
-  ;; 26.9% margin without widening any individual component allowance.
-  {:maximum-carrier-nodes 16777216
+  ;; The checked-core self-input exceeds the earlier reader-sized envelope.
+  ;; Keep a finite power-of-two aggregate ceiling while retaining independent
+  ;; component, depth, and width checks.
+  {:maximum-carrier-nodes 67108864
    :maximum-carrier-depth 64
-   :maximum-container-width 65536
-   ;; The authentic reader artifact is 197,618,995 UTF-8 bytes.  A 256 MiB
-   ;; ceiling leaves 35.8% finite headroom and is checked before EDN parsing.
-   :maximum-serialized-bytes 268435456})
+   :maximum-container-width 131072
+   ;; The serialized ceiling is checked before EDN parsing.
+   :maximum-serialized-bytes 1073741824})
+
+(def sh06-resolution-diagnostic-measurement-bounds
+  ;; Failure-only measurement ceiling.  This never authorizes transport or
+  ;; artifact acceptance; it exists to replace blind resource-bound changes
+  ;; with an exact finite observation when the normal aggregate gate rejects.
+  {:maximum-carrier-nodes 134217728
+   :maximum-carrier-depth 64
+   :maximum-container-width 131072})
 
 (defmacro with-sh06-resolution-transport-bounds
   [& body]
@@ -157791,7 +157807,8 @@
              p15-s23-c6c10-max-carrier-depth
              (:maximum-carrier-depth sh06-resolution-transport-bounds)
              p15-s23-c6c10-max-container-width
-             (:maximum-container-width sh06-resolution-transport-bounds)]
+             (:maximum-container-width sh06-resolution-transport-bounds)
+             p15-s23-c6c10-max-digest-requests 8192]
      ~@body))
 
 (defn sh06-resolution-require-carrier!
@@ -157891,11 +157908,11 @@
 (defn sh06-resolution-resolve-digest-requests!
   [source-path raw-analysis digest-requests]
   (when-not (and (vector? digest-requests)
-                 (<= (count digest-requests) 2048)
+                 (<= (count digest-requests) 8192)
                  (seq digest-requests))
     (sh06-resolution-boundary-fail!
      "C5-UNRESOLVED" source-path :bounded-resolution-digest-requests
-     digest-requests {:maximum-digest-requests 2048}))
+     digest-requests {:maximum-digest-requests 8192}))
   (let [binding-count (count (:binding-table raw-analysis))]
     (when-not (= (inc binding-count) (count digest-requests))
       (sh06-resolution-boundary-fail!
@@ -158305,6 +158322,27 @@
         (get-in artifact path) sh06-resolution-transport-bounds)]))
    sh06-resolution-component-paths))
 
+(defn- sh06-resolution-candidate-measurements
+  [artifact]
+  (let [aggregate
+        (sh06-resolution-carrier-validation
+         artifact sh06-resolution-diagnostic-measurement-bounds)
+        trusted-aggregate? (= :passed (:status aggregate))
+        boundary (when (and trusted-aggregate? (map? artifact))
+                   (:gravity-resolution-boundary artifact))
+        exact-shape?
+        (and (map? artifact)
+             (= sh06-resolution-artifact-keys (set (keys artifact)))
+             (map? boundary)
+             (= sh06-resolution-boundary-keys (set (keys boundary))))]
+    {:aggregate aggregate
+     :components
+     (when exact-shape?
+       (sh06-resolution-component-validations artifact))
+     :trusted-exact-shape? (boolean exact-shape?)
+     :measurement-only? true
+     :authorizes-bound-change? false}))
+
 (def sh06-resolution-pass-contract
   {:name :sh06-gravity-name-resolution
    :input :authenticated-sh05-expanded-syntax
@@ -158324,7 +158362,7 @@
    :aggregate-artifact-bounds sh06-resolution-artifact-bounds
    :self-hosted? false})
 
-(defn sh06-resolution-artifact-verification-bounded*
+(defn- sh06-resolution-artifact-verification-bounded*
   [artifact construction?]
   (with-sh06-resolution-transport-bounds
    (let [source-path (or (get-in artifact [:provenance :source-path])
@@ -158534,7 +158572,7 @@
      :gravity-verification gravity-report
      :upstream-verification sh05-report})))
 
-(defn sh06-resolution-artifact-verification*
+(defn- sh06-resolution-artifact-verification*
   [artifact construction?]
   (with-sh06-resolution-transport-bounds
    (let [aggregate-validation
@@ -158570,7 +158608,17 @@
          preflight-failed
          (->> preflight-checks
               (keep (fn [[key passed?]] (when-not passed? key)))
-              vec)]
+              vec)
+         preflight-observations
+         (when (and construction?
+                    (seq preflight-failed)
+                    (= :maximum-carrier-nodes
+                       (:reason aggregate-validation)))
+           (merge
+            {:normal-aggregate-bounds sh06-resolution-artifact-bounds
+             :diagnostic-measurement-bounds
+             sh06-resolution-diagnostic-measurement-bounds}
+            (sh06-resolution-candidate-measurements artifact)))]
      (if (empty? preflight-failed)
        (sh06-resolution-artifact-verification-bounded* artifact construction?)
        {:artifact :gravity/sh06-resolution-artifact-verification
@@ -158579,6 +158627,7 @@
         :failed-checks preflight-failed
         :source-path "<sh06-resolution-artifact>"
         :carrier-validation aggregate-validation
+        :preflight-observations preflight-observations
         :component-validations component-validations
         :gravity-verification nil
         :upstream-verification nil}))))
@@ -158594,7 +158643,7 @@
    :gravity-verification nil
    :upstream-verification nil})
 
-(defn sh06-resolution-artifact-verification-contained
+(defn- sh06-resolution-artifact-verification-contained
   [artifact construction?]
   (try
     (sh06-resolution-artifact-verification* artifact construction?)
@@ -158616,14 +158665,23 @@
   [artifact]
   (sh06-resolution-artifact-verification-contained artifact false))
 
-(defn sh06-resolution-capability-based-proof-for-construction
+(defn- sh06-resolution-capability-based-proof-for-construction
   [artifact]
   (let [report
         (sh06-resolution-artifact-verification-contained artifact true)]
-    (assoc (:checks report)
-           :artifact :gravity/sh06-resolution-capability-proof
-           :status (if (= :passed (:status report)) :complete :failed)
-           :failed-checks (:failed-checks report))))
+    (cond->
+     (assoc (:checks report)
+            :artifact :gravity/sh06-resolution-capability-proof
+            :status (if (= :passed (:status report)) :complete :failed)
+            :failed-checks (:failed-checks report))
+      (and (= :failed (:status report))
+           (:preflight-observations report))
+      (assoc :preflight-observations
+             (:preflight-observations report))
+      (and (= :failed (:status report))
+           (:carrier-validation report))
+      (assoc :carrier-validation
+             (:carrier-validation report)))))
 
 (defn sh06-resolution-capability-based-proof
   [artifact]
@@ -158633,7 +158691,12 @@
            :status (if (= :passed (:status report)) :complete :failed)
            :failed-checks (:failed-checks report))))
 
-(defn sh06-resolution-source-artifact
+(defn- sh06-resolution-source-artifact-candidate
+  "Construct the authentic internal aggregate before its mandatory proof gate.
+
+  This private value is available to bounded diagnostics and tests only.  It is
+  not an accepted artifact and must never cross the public SH-06 boundary
+  without sh06-resolution-capability-based-proof-for-construction."
   [source-path source-text]
   (with-sh06-resolution-transport-bounds
    (let [sh05-artifact (sh05-macro-source-artifact source-path source-text)
@@ -158716,8 +158779,12 @@
             (assoc-in [:gravity-resolution-boundary
                        :authenticated-envelope-descriptor] descriptor)
             (assoc-in [:gravity-resolution-boundary
-                       :authenticated-envelope] envelope))
-        proof
+                       :authenticated-envelope] envelope))]
+    artifact-with-envelope)))
+
+(defn- sh06-resolution-finalize-candidate
+  [source-path artifact-with-envelope]
+  (let [proof
         (sh06-resolution-capability-based-proof-for-construction
          artifact-with-envelope)
         artifact
@@ -158732,8 +158799,22 @@
       (sh06-resolution-boundary-fail!
        "C5-UNRESOLVED" source-path
        :final-authenticated-resolution-artifact
-       (:failed-checks proof) {}))
-    artifact)))
+       (cond-> {:failed-checks (:failed-checks proof)}
+         (:preflight-observations proof)
+         (assoc :preflight-observations
+                (:preflight-observations proof))
+         (:carrier-validation proof)
+         (assoc :carrier-validation
+                (:carrier-validation proof)))
+       {}))
+    artifact))
+
+(defn sh06-resolution-source-artifact
+  [source-path source-text]
+  (with-sh06-resolution-transport-bounds
+   (sh06-resolution-finalize-candidate
+    source-path
+    (sh06-resolution-source-artifact-candidate source-path source-text))))
 
 (defn sh06-resolution-file-artifact
   [source-path]
@@ -158964,18 +159045,18 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 401742)
+(def sh07-core-expected-source-byte-count 402510)
 (def sh07-core-expected-source-content-hash
-  "sha256:33dbe976c891a09c70c7543bb3be4bbf200610a65f0a8c98c30c45e034b1f025")
+  "sha256:4607618874f1c0032c3e61bfa4b188e9045789339a7edfb2d520a04615be9671")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:8b0911c2b6a3f8626dc704b192292bbd9592f87e8148ad5da064de0325fe3b05")
+  "sha256:bfbfc7e68ae3891284a9d7ba99a0c7eb361c603c1fa01ec2dd83f42dbc06e5a6")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:8d7d5d58d137ee904f01e751da28d02e97602a8895495e03dfcf63267f45c2d1")
-(def sh07-core-expected-function-count 267)
+  "sha256:0373d4f50415119386a3170fe6d20e2c84b30cddacea8257d42959a63b6ee271")
+(def sh07-core-expected-function-count 269)
 (def sh07-core-expected-function-names-hash
-  "sha256:b19e30cbf8600549846b4b36f0371ada09bd57e65706b16ebb6298e5e303a2a6")
+  "sha256:67239d92428037733b729f2705ea53dd740dbedfb490570ae2f12fb6645900fc")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:5ccf01c85cc3493ecc1592e138b5379b6004aaa6fde3c651197f24c4c7c9d578")
+  "sha256:a42301c8946780b80ccfc40c145f2a36d5879871ba8a5184d08da99b111a2d51")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
@@ -161006,11 +161087,11 @@
           :ordinal (:ordinal fragment)
           :observed (count (:form-ids fragment))}))
 
-      (> bindings 1024)
+      (> bindings 2048)
       (sh07-core-request-diagnostic!
        request
        {:bound :maximum-bindings
-        :maximum 1024
+        :maximum 2048
         :observed bindings})
 
       (> aliases 256)

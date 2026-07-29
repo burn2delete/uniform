@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B15"
+ :coverage-milestone "SH-07-B16"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
@@ -33,7 +33,7 @@
   :maximum-fragment-forms 1024
   :maximum-form-children 1024
   :maximum-form-depth 256
-  :maximum-bindings 1024
+  :maximum-bindings 2048
   :maximum-alias-records 256
   :maximum-fragment-resolutions 2048
   :maximum-module-resolutions 65536
@@ -59,8 +59,24 @@
  :authoritative-modules
  {:diagnostics
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+  :b5-jvm
+  "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+  :b6-javascript-typescript
+  "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
   :b7-mlir
   "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+  :b8-gpu
+  "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+  :b9-hdl
+  "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+  :b10-workflow
+  "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+  :b11-query
+  "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+  :b12-mobile
+  "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+  :c11-mir
+  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
   :macro
   "bootstrap/gravity/src/gravity/macro.gravity"
   :syntax
@@ -71,7 +87,15 @@
  [:fragment-manifest :fragment-coverage :module-assembly-manifest
   :keyword-lookups]
  :required-core-product-counts
- {:b7-mlir {:keyword-lookups 5}}
+ {:b5-jvm {:keyword-lookups 9}
+  :b6-javascript-typescript {:keyword-lookups 8}
+  :b7-mlir {:keyword-lookups 5}
+  :b8-gpu {:keyword-lookups 8}
+  :b9-hdl {:keyword-lookups 10}
+  :b10-workflow {:keyword-lookups 7}
+  :b11-query {:keyword-lookups 8}
+  :b12-mobile {:keyword-lookups 8}
+  :c11-mir {:keyword-lookups 0}}
  :required-verification-checks
  [:fragment-manifest-replay?
   :fragment-coverage-replay?

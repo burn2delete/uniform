@@ -30,6 +30,15 @@
   [relative]
   (str (.resolve @root relative)))
 
+(defn- private-bootstrap-var
+  [symbol]
+  (or (ns-resolve 'gravity.bootstrap symbol)
+      (throw
+       (ex-info
+        "Required private SH-06 test seam is absent"
+        {:id "SH06-PRIVATE-TEST-SEAM"
+         :symbol symbol}))))
+
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-06")
 
@@ -46,10 +55,10 @@
     "C5-SHADOW" "C5-CYCLE" "C5-CROSS-PROFILE" "C5-CAPABILITY"
     "C5-TARGET" "C5-FOREIGN"})
 
-(def ^:private authoritative-compiler-module-count 37)
+(def ^:private authoritative-compiler-module-count 41)
 
 (def ^:private authoritative-compiler-path-inventory-sha256
-  "sha256:dd422643f5aa91848b5093284db10aad9c501b63dabab74efbe32d5dcb3ab2b1")
+  "sha256:8369be6c68114363b52af1922a5d0d521cee04f35bb865f5fa400090c7c02bfc")
 
 (defn- fixture-path
   [family basename extension]
@@ -139,6 +148,17 @@
 (defn- capability-proof
   [artifact]
   ((required-var 'sh06-resolution-capability-based-proof) artifact))
+
+(defn- internal-verification
+  [artifact construction?]
+  ((private-bootstrap-var 'sh06-resolution-artifact-verification*)
+   artifact construction?))
+
+(defn- construction-proof
+  [artifact]
+  ((private-bootstrap-var
+    'sh06-resolution-capability-based-proof-for-construction)
+   artifact))
 
 (defn- sha256-id?
   [value]
@@ -302,9 +322,17 @@
 
 (deftest sh06-coordinator-adapter-api-is-explicit
   (let [source-var (required-var 'sh06-resolution-source-artifact)
-        file-var (required-var 'sh06-resolution-file-artifact)]
+        file-var (required-var 'sh06-resolution-file-artifact)
+        construction-seams
+        ['sh06-resolution-artifact-verification-bounded*
+         'sh06-resolution-artifact-verification*
+         'sh06-resolution-artifact-verification-contained
+         'sh06-resolution-capability-based-proof-for-construction]]
     (is (= '([source-path source-text]) (:arglists (meta source-var))))
-    (is (= '([source-path]) (:arglists (meta file-var))))))
+    (is (= '([source-path]) (:arglists (meta file-var))))
+    (doseq [symbol construction-seams]
+      (is (true? (:private (meta (private-bootstrap-var symbol))))
+          (str symbol " must remain coordinator-private")))))
 
 (deftest sh06-resolution-order-is-real-stable-and-c4-bound
   (let [source-path (fixture-path "accepted" "resolution-order" ".gravity")
@@ -823,11 +851,12 @@
               {:raw-host-error (.getName (class error))
                :message (.getMessage error)})))
         verification-report
-        (with-redefs
-         [bootstrap/sh06-resolution-artifact-verification*
-          (fn [_ _]
-            (throw (OutOfMemoryError. "verification resource seam")))]
-          (verification {:bounded :artifact}))
+        (with-redefs-fn
+          {(private-bootstrap-var
+            'sh06-resolution-artifact-verification*)
+           (fn [_ _]
+             (throw (OutOfMemoryError. "verification resource seam")))}
+          #(verification {:bounded :artifact}))
         serialization-result
         (structured-result
          #(with-redefs
@@ -982,20 +1011,20 @@
     (is (zero? @source-read-attempts))))
 
 (deftest sh06-transport-width-bound-is-inclusive-and-contained
-  (let [bounds {:maximum-carrier-nodes 8388608
+  (let [bounds {:maximum-carrier-nodes 33554432
                 :maximum-carrier-depth 64
-                :maximum-container-width 65536}
+                :maximum-container-width 131072}
         accepted
         (bootstrap/sh06-resolution-require-carrier!
          "<sh06-transport-width-accepted>"
          :transport-width-boundary
-         (vec (range 65536)))
+         (vec (range 131072)))
         rejected
         (try
           (bootstrap/sh06-resolution-require-carrier!
            "<sh06-transport-width-rejected>"
            :transport-width-boundary
-           (vec (range 65537)))
+           (vec (range 131073)))
           {:unexpected-success true}
           (catch clojure.lang.ExceptionInfo error
             (ex-data error))
@@ -1007,7 +1036,11 @@
     (is (= [:bounded-sh06-resolution-carrier]
            (:missing-fields rejected)))
     (is (= bounds (get-in rejected [:facts :transport-bounds])))
-    (is (= 65536 (get-in rejected [:observed :maximum-width])))
+    (is (= 131072 (get-in rejected [:observed :maximum-width])))
+    (is (= 2048 bootstrap/p15-s23-c6c10-max-digest-requests))
+    (is (= 8192
+           (bootstrap/with-sh06-resolution-transport-bounds
+            bootstrap/p15-s23-c6c10-max-digest-requests)))
     (is (nil? (:unexpected-success rejected)))
     (is (nil? (:raw-host-error rejected)))))
 
@@ -1016,13 +1049,13 @@
         (path
          "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
         artifact (sh06-file-artifact source-path)
-        component-bounds {:maximum-carrier-nodes 8388608
+        component-bounds {:maximum-carrier-nodes 33554432
                           :maximum-carrier-depth 64
-                          :maximum-container-width 65536}
-        aggregate-bounds {:maximum-carrier-nodes 16777216
+                          :maximum-container-width 131072}
+        aggregate-bounds {:maximum-carrier-nodes 67108864
                           :maximum-carrier-depth 64
-                          :maximum-container-width 65536
-                          :maximum-serialized-bytes 268435456}]
+                          :maximum-container-width 131072
+                          :maximum-serialized-bytes 1073741824}]
     (is (= :gravity/sh06-resolution-artifact (:kind artifact)))
     (is (= :accepted (:status artifact)))
     (is (sha256-id? (:artifact-id artifact)))
@@ -1036,13 +1069,20 @@
     (is (= :complete (:status (capability-proof artifact))))))
 
 (deftest sh06-component-and-aggregate-node-bounds-are-distinct
-  (let [component-bounds {:maximum-carrier-nodes 8388608
+  (let [declared-component-bounds {:maximum-carrier-nodes 33554432
+                                    :maximum-carrier-depth 64
+                                    :maximum-container-width 131072}
+        declared-aggregate-bounds {:maximum-carrier-nodes 67108864
+                                   :maximum-carrier-depth 64
+                                   :maximum-container-width 131072
+                                   :maximum-serialized-bytes 1073741824}
+        component-bounds {:maximum-carrier-nodes 2048
                           :maximum-carrier-depth 64
-                          :maximum-container-width 65536}
-        aggregate-bounds {:maximum-carrier-nodes 16777216
+                          :maximum-container-width 1024}
+        aggregate-bounds {:maximum-carrier-nodes 4096
                           :maximum-carrier-depth 64
-                          :maximum-container-width 65536
-                          :maximum-serialized-bytes 268435456}
+                          :maximum-container-width 1024
+                          :maximum-serialized-bytes 65536}
         shared-vector-carrier
         (fn [node-count]
           (let [maximum-width (:maximum-container-width component-bounds)
@@ -1068,16 +1108,22 @@
         (shared-vector-carrier (dec component-limit))
         component-over-artifact
         (assoc artifact :binding-table over-component)
-        aggregate-over-artifact
-        (assoc artifact
-               :binding-table under-component
-               :alias-table under-component)
-        component-over-report (verification component-over-artifact)
-        aggregate-over-report (verification aggregate-over-artifact)
+        aggregate-over-carrier
+        {:binding-table under-component
+         :alias-table under-component}
+        verify-with-small-bounds
+        (fn [candidate]
+          (with-redefs
+           [bootstrap/sh06-resolution-transport-bounds component-bounds]
+            (verification candidate)))
+        component-over-report
+        (verify-with-small-bounds component-over-artifact)
         component-over-validation
         (get-in component-over-report
                 [:component-validations :binding-table])
-        aggregate-validation (:carrier-validation aggregate-over-report)
+        aggregate-validation
+        (bootstrap/sh06-resolution-carrier-validation
+         aggregate-over-carrier aggregate-bounds)
         under-component-validation
         (bootstrap/sh06-resolution-carrier-validation
          under-component component-bounds)]
@@ -1088,10 +1134,10 @@
              (get-in artifact [:capability-based-proof :status])))
       (is (= [] (get-in artifact
                         [:capability-based-proof :failed-checks])))
-      (is (= component-bounds
+      (is (= declared-component-bounds
              (get-in artifact
                      [:execution-boundary :component-transport-bounds])))
-      (is (= aggregate-bounds
+      (is (= declared-aggregate-bounds
              (get-in artifact
                      [:execution-boundary :aggregate-artifact-bounds])))
       (is (< component-limit aggregate-limit))
@@ -1101,9 +1147,9 @@
              (:maximum-container-width aggregate-bounds))))
     (testing "one over-limit semantic component fails below the aggregate cap"
       (is (= :passed
-             (:status
+              (:status
               (bootstrap/sh06-resolution-carrier-validation
-               component-over-artifact aggregate-bounds))))
+               component-over-artifact declared-aggregate-bounds))))
       (is (= :failed (:status component-over-report)))
       (is (true? (get-in component-over-report
                          [:checks :bounded-artifact-carrier?])))
@@ -1116,27 +1162,91 @@
       (is (= component-limit (:maximum-nodes component-over-validation)))
       (is (= (inc component-limit)
              (:observed-nodes component-over-validation))))
-    (testing "two valid components can exceed the aggregate artifact cap"
+    (testing "two valid components can exceed a distinct aggregate cap"
       (is (= :passed (:status under-component-validation)))
       (is (= (dec component-limit)
              (:observed-nodes under-component-validation)))
-      (is (= :failed (:status aggregate-over-report)))
-      (is (false? (get-in aggregate-over-report
-                          [:checks :bounded-artifact-carrier?])))
-      (is (contains? (set (:failed-checks aggregate-over-report))
-                     :bounded-artifact-carrier?))
-      (is (nil? (:component-validations aggregate-over-report)))
       (is (= :rejected (:status aggregate-validation)))
       (is (= :maximum-carrier-nodes (:reason aggregate-validation)))
       (is (= aggregate-limit (:maximum-nodes aggregate-validation)))
       (is (= (inc aggregate-limit)
              (:observed-nodes aggregate-validation))))))
 
+(deftest sh06-aggregate-node-rejection-reports-bounded-measurement
+  (let [normal-bounds {:maximum-carrier-nodes 10
+                       :maximum-carrier-depth 64
+                       :maximum-container-width 64
+                       :maximum-serialized-bytes 1024}
+        measurement-bounds {:maximum-carrier-nodes 100
+                            :maximum-carrier-depth 64
+                            :maximum-container-width 64}
+        candidate {:payload (vec (range 10))}
+        under-small-bounds
+        (fn [operation]
+          (with-redefs
+           [bootstrap/sh06-resolution-artifact-bounds normal-bounds
+            bootstrap/sh06-resolution-diagnostic-measurement-bounds
+            measurement-bounds]
+            (operation)))
+        public-report
+        (under-small-bounds
+         #(internal-verification candidate false))
+        construction-report
+        (under-small-bounds
+         #(internal-verification candidate true))
+        proof
+        (under-small-bounds
+         #(construction-proof candidate))
+        rejection
+        (under-small-bounds
+         #(try
+            ((private-bootstrap-var
+              'sh06-resolution-finalize-candidate)
+             "<sh06-measurement-propagation>" candidate)
+            {:unexpected-success true}
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))
+            (catch Throwable error
+              {:raw-host-error (.getName (class error))})))
+        observations (:preflight-observations construction-report)]
+    (is (= :failed (:status public-report)))
+    (is (= :maximum-carrier-nodes
+           (get-in public-report [:carrier-validation :reason])))
+    (is (nil? (:preflight-observations public-report)))
+    (is (= :failed (:status construction-report)))
+    (is (= 11
+           (get-in construction-report
+                   [:carrier-validation :observed-nodes])))
+    (is (= normal-bounds (:normal-aggregate-bounds observations)))
+    (is (= measurement-bounds
+           (:diagnostic-measurement-bounds observations)))
+    (is (= :passed (get-in observations [:aggregate :status])))
+    (is (= 13 (get-in observations [:aggregate :observed-nodes])))
+    (is (true? (:measurement-only? observations)))
+    (is (false? (:authorizes-bound-change? observations)))
+    (is (= :failed (:status proof)))
+    (is (= observations (:preflight-observations proof)))
+    (is (= (:carrier-validation construction-report)
+           (:carrier-validation proof)))
+    (is (= "C5-UNRESOLVED" (:id rejection)))
+    (is (= [:final-authenticated-resolution-artifact]
+           (:missing-fields rejection)))
+    (is (= (:failed-checks proof)
+           (get-in rejection [:observed :failed-checks])))
+    (is (= observations
+           (get-in rejection
+                   [:observed :preflight-observations])))
+    (is (= (:carrier-validation proof)
+           (get-in rejection
+                   [:observed :carrier-validation])))
+    (is (nil? (:unexpected-success rejection)))
+    (is (nil? (:raw-host-error rejection)))))
+
 (deftest sh06-serialization-byte-bound-is-exact-and-contained
-  (let [aggregate-bounds {:maximum-carrier-nodes 16777216
+  (let [aggregate-bounds {:maximum-carrier-nodes 67108864
                           :maximum-carrier-depth 64
-                          :maximum-container-width 65536
-                          :maximum-serialized-bytes 268435456}
+                          :maximum-container-width 131072
+                          :maximum-serialized-bytes 1073741824}
         unicode-value "A\u03bb\u4e2d\ud83d\ude00"
         expected-unicode-bytes 10
         with-maximum
@@ -1236,7 +1346,7 @@
     (is (= authoritative-compiler-module-count (count source-paths)))
     (is (= authoritative-compiler-path-inventory-sha256
            (sha256-text (str/join "\n" relative-paths))))
-    (doseq [shard-count [1 2 3 4 5 36 37]]
+    (doseq [shard-count [1 2 3 4 5 39 40 41]]
       (is (corpus-partition-valid? source-paths shard-count)
           (str shard-count " shards")))))
 

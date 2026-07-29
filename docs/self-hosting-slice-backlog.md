@@ -281,7 +281,7 @@ records, compiler self-hosting, seed retirement, packaged CLI refresh, and
 release readiness remain outside this credit.
 
 `SH-06` credit is bounded to the namespace and binding resolution subset
-executed across the 37-path authoritative compiler-source inventory and the
+executed across the 41-path authoritative compiler-source inventory and the
 co-canonical accepted/rejected fixture matrix. The Gravity
 `gravity.resolution` module owns namespace, alias, import, var, lexical
 binding, visibility, shadowing, dependency-cycle, profile, target, capability,
@@ -290,14 +290,14 @@ all ten structured C5 rejection families. Fresh authenticated SH-05 input,
 exact Gravity replay, complete resolution-product reconstruction,
 checkout-path-neutral identities with actual-path provenance, substitution and
 mutation rejection, public C6 consumption, and bounded serialization passed.
-The largest measured authentic artifact contained 13,219,191 carrier nodes at
-depth 33 and maximum width 43,713 and serialized to 197,618,995 UTF-8 bytes.
-Per-component transport limits are 8,388,608 nodes, depth 64, and width 65,536;
-whole-artifact limits are 16,777,216 nodes, depth 64, width 65,536, and
-268,435,456 serialized bytes. The Clojure stage0 boundary still owns initial
+The largest measured authentic artifact contained 19,445,399 carrier nodes at
+depth 45 and maximum width 66,339 and serialized to 284,437,819 UTF-8 bytes.
+Per-component transport limits are 33,554,432 nodes, depth 64, and width
+131,072; whole-artifact limits are 67,108,864 nodes, depth 64, width 131,072,
+and 1,073,741,824 serialized bytes. The Clojure stage0 boundary still owns initial
 source reads, compiler-plan execution, canonical digest resolution,
 authenticated-envelope binding, compatibility adaptation and central routing,
-and final artifact assembly. The 37-module inventory is the current bootstrap
+and final artifact assembly. The 41-module inventory is the current bootstrap
 source set, not a broader full-language claim; the compatibility C5 facade
 receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,

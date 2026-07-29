@@ -127,13 +127,13 @@
 (def ^:private sh03-facade-source-relative-path
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity")
 
-(def ^:private sh03-facade-source-byte-count 36589)
+(def ^:private sh03-facade-source-byte-count 36920)
 (def ^:private sh03-facade-source-content-hash
-  "sha256:ce473f5587d1eb8e1a629cd42133f5bbd82465e918db2a35c9b6867988f613d3")
+  "sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0")
 (def ^:private sh03-facade-plan-semantic-hash
-  "sha256:9c93c2048d85638adb10039766bf6b85fbd9ce1cf1bce7bda522afd6b8e658b0")
+  "sha256:1012a51721cd2c29e260a6f7bc3bc0b2ced5aefe1222cbbd95a155fc44f8977f")
 (def ^:private sh03-facade-functions-semantic-hash
-  "sha256:7eb60afe90602213e836163084b16aa996e4bf6ec5c69abbf545acebe02f15e9")
+  "sha256:1ac79857179b3729eb47c3ce364f990333799ffec49f5047e700be7e7a827123")
 
 (def ^:private sh03-facade-plan
   (delay
@@ -657,7 +657,7 @@
         (fixture-path "accepted" "complete-reader-surface" ".gravity")
         inputs (sh03-facade-inputs source-path)
         plan @sh03-facade-plan]
-    (is (= 29 (count (:functions plan))))
+    (is (= 30 (count (:functions plan))))
     (is (= sh03-facade-plan-semantic-hash
            (bootstrap/p15-s23-c11-mir-digest
             (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
@@ -671,6 +671,20 @@
       (is (false?
            (sh03-facade-execute
             'l1-c2-reader-result-compatible? candidate)) candidate))))
+
+(deftest sh03-gravity-facade-product-count-bounds-are-executable
+  (let [within?
+        (fn [token-count form-count]
+          (sh03-facade-execute
+           'l1-c2-reader-product-counts-within-bounds?
+           [token-count form-count]))]
+    (is (true? (within? 65537 32769)))
+    (is (true? (within? 131072 65536)))
+    (is (false? (within? 131073 65536)))
+    (is (false? (within? 131072 65537)))
+    (is (false? (within? -1 0)))
+    (is (false? (within? 0 -1)))
+    (is (false? (within? "131072" 65536)))))
 
 (deftest sh03-gravity-facade-package-boundary-fails-closed
   (let [accepted-path

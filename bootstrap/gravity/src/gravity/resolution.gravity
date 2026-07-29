@@ -85,8 +85,8 @@
    :maximum-effects 128
    :maximum-capabilities 128
    :maximum-candidates 32
-   :maximum-authoritative-bindings 2047
-   :maximum-digest-requests 2048})
+   :maximum-authoritative-bindings 8191
+   :maximum-digest-requests 8192})
 
 (def sh06-resolution-diagnostic-catalog
   {:diagnostics ["C5-UNRESOLVED" "C5-AMBIGUOUS" "C5-PRIVATE"
@@ -113,8 +113,8 @@
    :maximum-effects 128
    :maximum-capabilities 128
    :maximum-candidates 32
-   :maximum-authoritative-bindings 2047
-   :maximum-digest-requests 2048})
+   :maximum-authoritative-bindings 8191
+   :maximum-digest-requests 8192})
 
 (defn sh06-exact-keys? [value expected]
   (if (map? value)

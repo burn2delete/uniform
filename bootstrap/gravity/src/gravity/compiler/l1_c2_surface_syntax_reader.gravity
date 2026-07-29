@@ -239,9 +239,9 @@
 
 (defn l1-c2-reader-bounds-record []
   {:maximum-source-bytes 1048576
-   :maximum-characters 262144
-   :maximum-tokens 65536
-   :maximum-forms 32768
+   :maximum-characters 1048576
+   :maximum-tokens 131072
+   :maximum-forms 65536
    :maximum-delimiter-depth 512
    :maximum-semantic-work-units 8437834
    :maximum-container-width 65536
@@ -255,7 +255,7 @@
    :maximum-actual-path-code-units 1024
    :maximum-reader-tags 32
    :maximum-reader-tag-codepoints 4
-   :maximum-result-carrier-nodes 83886080
+   :maximum-result-carrier-nodes 167772160
    :maximum-result-carrier-depth 2048
    :maximum-result-carrier-width 1048576
    :result-carrier-node-budget
@@ -264,7 +264,7 @@
     :nodes-per-token 320
     :nodes-per-form 1024
     :nodes-per-reader-tag 2048
-    :derived-maximum-nodes 80805888}})
+    :derived-maximum-nodes 135331840}})
 
 (defn l1-c2-reader-execution-boundary-record []
   {:artifact :gravity/sh03-reader-execution-boundary
@@ -288,7 +288,7 @@
                            :stage2-instruction-runner]
    :clojure-boundary-responsibility
    {:responsibility :result-carrier-validation
-    :maximum-nodes 83886080
+    :maximum-nodes 167772160
     :maximum-depth 2048
     :maximum-width 1048576
     :maximum-canonical-scalar-bytes 1048576
@@ -585,6 +585,22 @@
       false)
     false))
 
+(defn l1-c2-reader-product-counts-within-bounds?
+  [token-count form-count]
+  (if (integer? token-count)
+    (if (integer? form-count)
+      (if (<= 0 token-count)
+        (if (<= 0 form-count)
+          (if (<= token-count
+                  (get (l1-c2-reader-bounds-record) :maximum-tokens))
+            (<= form-count
+                (get (l1-c2-reader-bounds-record) :maximum-forms))
+            false)
+          false)
+        false)
+      false)
+    false))
+
 (defn l1-c2-reader-result-products-valid? [reader-result]
   (let [status (get reader-result :status)
         tokens (get reader-result :token-stream)
@@ -599,64 +615,63 @@
         diagnostics (get reader-result :diagnostics)
         requests (get reader-result :digest-requests)]
     (if (vector? tokens)
-      (if (<= (count tokens) 65536)
+      (if (l1-c2-reader-product-counts-within-bounds?
+           (count tokens) (if (vector? forms) (count forms) -1))
         (if (vector? forms)
-          (if (<= (count forms) 32768)
-            (if (vector? semantic-values)
-              (if (<= (count semantic-values) (count forms))
-                (if (vector? top-level-form-ids)
-                  (if (<= (count top-level-form-ids) (count forms))
-                    (if (vector? top-level-records)
-                      (if (= (count top-level-records)
-                             (count top-level-form-ids))
-                        (if (vector? parsed-values)
-                          (if (= (count parsed-values)
-                                 (count top-level-form-ids))
-                            (if (vector? literals)
-                              (if (<= (count literals) (count forms))
-                                (if (l1-c2-semantic-deferment-record-valid?
-                                     (get reader-result
-                                          :semantic-error-deferment-record)
-                                     (count forms))
-                                  (if (vector? extensions)
-                                    (if (<= (count extensions) 32)
-                                      (if (l1-c2-reader-source-map-valid?
+          (if (vector? semantic-values)
+            (if (<= (count semantic-values) (count forms))
+              (if (vector? top-level-form-ids)
+                (if (<= (count top-level-form-ids) (count forms))
+                  (if (vector? top-level-records)
+                    (if (= (count top-level-records)
+                           (count top-level-form-ids))
+                      (if (vector? parsed-values)
+                        (if (= (count parsed-values)
+                               (count top-level-form-ids))
+                          (if (vector? literals)
+                            (if (<= (count literals) (count forms))
+                              (if (l1-c2-semantic-deferment-record-valid?
+                                   (get reader-result
+                                        :semantic-error-deferment-record)
+                                   (count forms))
+                                (if (vector? extensions)
+                                  (if (<= (count extensions) 32)
+                                    (if (l1-c2-reader-source-map-valid?
+                                         (get reader-result
+                                              :reader-source-map)
+                                         (count tokens) (count forms))
+                                      (if (l1-c2-incremental-hashes-valid?
                                            (get reader-result
-                                                :reader-source-map)
-                                           (count tokens) (count forms))
-                                        (if (l1-c2-incremental-hashes-valid?
-                                             (get reader-result
-                                                  :incremental-reader-hashes)
-                                             status)
-                                          (if (vector? diagnostics)
-                                            (if (vector? requests)
-                                              (if (= status :accepted)
-                                                (if (= (count diagnostics) 0)
-                                                  (if (= (count requests) 6)
-                                                    (l1-c2-accepted-semantic-template-valid?
-                                                     (get reader-result
-                                                          :semantic-reader-template)
-                                                     reader-result
-                                                     (count tokens)
-                                                     (count forms)
-                                                     (count semantic-values))
-                                                    false)
+                                                :incremental-reader-hashes)
+                                           status)
+                                        (if (vector? diagnostics)
+                                          (if (vector? requests)
+                                            (if (= status :accepted)
+                                              (if (= (count diagnostics) 0)
+                                                (if (= (count requests) 6)
+                                                  (l1-c2-accepted-semantic-template-valid?
+                                                   (get reader-result
+                                                        :semantic-reader-template)
+                                                   reader-result
+                                                   (count tokens)
+                                                   (count forms)
+                                                   (count semantic-values))
                                                   false)
-                                                (if (= status :rejected)
-                                                  (if (= (count tokens) 0)
-                                                    (if (= (count forms) 0)
-                                                      (if (= (count semantic-values) 0)
-                                                        (if (= (count top-level-form-ids) 0)
-                                                          (if (= (count top-level-records) 0)
-                                                            (if (= (count parsed-values) 0)
-                                                              (if (= (count literals) 0)
-                                                                (if (= (count extensions) 0)
-                                                                  (if (= (count diagnostics) 1)
-                                                                    (if (= (count requests) 2)
-                                                                      (l1-c2-rejected-semantic-template-valid?
-                                                                       (get reader-result
-                                                                            :semantic-reader-template))
-                                                                      false)
+                                                false)
+                                              (if (= status :rejected)
+                                                (if (= (count tokens) 0)
+                                                  (if (= (count forms) 0)
+                                                    (if (= (count semantic-values) 0)
+                                                      (if (= (count top-level-form-ids) 0)
+                                                        (if (= (count top-level-records) 0)
+                                                          (if (= (count parsed-values) 0)
+                                                            (if (= (count literals) 0)
+                                                              (if (= (count extensions) 0)
+                                                                (if (= (count diagnostics) 1)
+                                                                  (if (= (count requests) 2)
+                                                                    (l1-c2-rejected-semantic-template-valid?
+                                                                     (get reader-result
+                                                                          :semantic-reader-template))
                                                                     false)
                                                                   false)
                                                                 false)
@@ -666,8 +681,8 @@
                                                         false)
                                                       false)
                                                     false)
-                                                  false))
-                                              false)
+                                                  false)
+                                                false))
                                             false)
                                           false)
                                         false)

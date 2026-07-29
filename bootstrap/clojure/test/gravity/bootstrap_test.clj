@@ -7765,12 +7765,29 @@
 	                   "P15S23Q008"))))
 
 (deftest p15-s23-stage2-runtime-recur-signal-rejects-mixed-key-maps-safely
-  (is (false?
-       (bootstrap/p15-s23-stage2-runtime-recur-signal?
-        (sorted-map 'artifact :unrelated))))
-  (is (true?
-       (bootstrap/p15-s23-stage2-runtime-recur-signal?
-        (bootstrap/p15-s23-stage2-runtime-recur-signal [1 2 3])))))
+  (let [lookup
+        (var-get
+         (ns-resolve
+          'gravity.bootstrap
+          'p15-s23-stage2-runtime-map-entry))
+        large-map
+        (into {}
+              (map (fn [index] [(keyword (str "entry-" index)) index]))
+              (range 10000))
+        nil-entry (lookup (assoc large-map :requested nil) :requested)]
+    (is (false?
+         (bootstrap/p15-s23-stage2-runtime-recur-signal?
+          (sorted-map 'artifact :unrelated))))
+    (is (true?
+         (bootstrap/p15-s23-stage2-runtime-recur-signal?
+          (bootstrap/p15-s23-stage2-runtime-recur-signal [1 2 3]))))
+    (is (= :requested (key nil-entry)))
+    (is (nil? (val nil-entry)))
+    (is (nil? (lookup large-map :absent)))
+    (is (nil? (lookup [:not-a-map] :requested)))
+    (is (= ['artifact :unrelated]
+           (vec (lookup (sorted-map 'artifact :unrelated)
+                        'artifact))))))
 
 	(deftest p15-s23-stage2-runtime-kernel-records-executable-proof
 	  (let [artifact
@@ -25075,7 +25092,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:504f73315fb68e2059d34d4979d8eb6464f77761b322ec31b6d2a6c4cccf1ee4"
+    (is (= "sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.l1-c2-surface-syntax-reader\n"

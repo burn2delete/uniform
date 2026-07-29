@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B15" (:coverage-milestone contract)))
+    (is (= "SH-07-B16" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -185,8 +185,24 @@
            (:boundary contract)))
     (is (= {:diagnostics
             "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+            :b5-jvm
+            "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+            :b6-javascript-typescript
+            "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
             :b7-mlir
             "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+            :b8-gpu
+            "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+            :b9-hdl
+            "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+            :b10-workflow
+            "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+            :b11-query
+            "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+            :b12-mobile
+            "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+            :c11-mir
+            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
             :macro macro-relative-path
             :syntax
             "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
