@@ -2,17 +2,25 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B22"
+ :coverage-milestone "SH-07-B23"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
+  "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
   "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
   "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
   "docs/phase-01-core-language/012-l2-core-language-semantics.md"
-  "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
+  "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+  "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
+  "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
+  "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
+  "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md"
+  "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md"]
  :ownership
  {:leaf-only
   ["bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
@@ -96,6 +104,8 @@
   "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
   :c11-mir
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+  :c15-diagnostics
+  "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -127,6 +137,7 @@
   :b11-query {:keyword-lookups 8}
   :b12-mobile {:keyword-lookups 8}
   :c11-mir {:keyword-lookups 0}
+  :c15-diagnostics {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -147,6 +158,7 @@
   :c3-adapter-retirement
   :c4-adapter-retirement
   :c5-adapter-retirement
+  :c15-diagnostic-runtime-authority
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
