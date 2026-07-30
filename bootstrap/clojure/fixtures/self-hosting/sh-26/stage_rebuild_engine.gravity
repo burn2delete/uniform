@@ -1,0 +1,2534 @@
+(ns gravity.self-hosting.sh26.stage-rebuild-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh26-stage-rebuild-policy
+             sh26-authoritative-component-catalog
+             sh26-carrier-preflight
+             sh26-build-next-stage
+             sh26-verify-stage-rebuild])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh26-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn sh26-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn sh26-max [left right]
+  (if (> left right) left right))
+
+(defn sh26-aggregate? [value]
+  (if (map? value) true (if (vector? value) true (set? value))))
+
+(defn sh26-aggregate-width [value]
+  (if (map? value) (* 2 (count value)) (count value)))
+
+(defn sh26-aggregate-components [value]
+  (if (map? value)
+    (let [map-keys (vec (keys value))]
+      (loop [index 0 result []]
+        (if (= index (count map-keys))
+          result
+          (recur
+           (+ index 1)
+           (conj
+            (conj result (get map-keys index))
+            (get value (get map-keys index)))))))
+    (if (vector? value) value (vec value))))
+
+(defn sh26-scalar-units [value]
+  (if (= nil value)
+    3
+    (if (boolean? value)
+      5
+      (if (string? value)
+        (* 4 (count value))
+        (if (char? value)
+          4
+          (if (keyword? value)
+            64
+            (if (symbol? value)
+              64
+              (if (integer? value)
+                (if (if (>= value -9223372036854775808)
+                      (<= value 9223372036854775807)
+                      false)
+                  20
+                  -1)
+                -1))))))))
+
+(defn sh26-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         cursor 0
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= cursor (count frontier))
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (get frontier cursor)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (seq? current)
+              {:status :rejected :reason :carrier-sequence-unsupported}
+              (if (sh26-aggregate? current)
+                (let [width (sh26-aggregate-width current)]
+                  (if (> width 65536)
+                    {:status :rejected :reason :carrier-width-bound}
+                    (let [components
+                          (sh26-aggregate-components current)]
+                      (if (> (+ (- (count frontier) cursor)
+                                (count components))
+                             1048576)
+                        {:status :rejected :reason :carrier-node-bound}
+                        (let [next-frontier
+                              (loop [index 0 result frontier]
+                                (if (= index (count components))
+                                  result
+                                  (recur
+                                   (+ index 1)
+                                   (conj result
+                                         [(get components index)
+                                          (+ depth 1)]))))]
+                          (recur
+                           next-frontier
+                           (+ cursor 1)
+                           next-nodes
+                           scalar-units
+                           (sh26-max observed-depth depth)
+                           (sh26-max observed-width width)))))))
+                (let [units (sh26-scalar-units current)]
+                  (if (< units 0)
+                    {:status :rejected :reason :carrier-scalar-type}
+                    (if (> units 1048576)
+                      {:status :rejected :reason :carrier-scalar-bound}
+                      (let [next-units (+ scalar-units units)]
+                        (if (> next-units 16777216)
+                          {:status :rejected
+                           :reason :carrier-scalar-bound}
+                          (recur
+                           frontier
+                           (+ cursor 1)
+                           next-nodes
+                           next-units
+                           (sh26-max observed-depth depth)
+                           observed-width))))))))))))))
+
+(defn sh26-stage-rebuild-policy []
+  {:artifact :gravity/sh26-stage-rebuild-policy
+   :schema-version 2
+   :governing-documents [:BOOT1 :BOOT3 :BOOT6 :PKG7]
+   :required-component-count 42
+   :maximum-components 42
+   :maximum-dependencies-per-component 16
+   :carrier-limits
+   {:nodes 1048576 :depth 128 :width 65536
+    :scalar-units 16777216 :single-scalar-units 1048576}
+   :candidate-language :gravity
+   :forbidden-candidate-authority
+   [:clojure :shell :network :registry :ambient-filesystem]
+   :diagnostics
+   ["BOOT1001" "BOOT1003" "BOOT1005"
+    "BOOT3001" "BOOT3002" "BOOT6001" "BOOT6002"]
+   :pending
+   [:candidate-action-execution
+    :external-sh25-recomputation
+    :native-runtime-and-library-linkage
+    :independent-clean-rebuild
+    :external-output-hash-recomputation
+    :sh26-completion
+    :seed-retirement]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh26-authoritative-component-catalog []
+  [[:authenticated-envelope []]
+   [:surface-reader [:authenticated-envelope]]
+   [:bootstrap-reader [:surface-reader]]
+   [:syntax-model [:bootstrap-reader :authenticated-envelope]]
+   [:bootstrap-syntax [:syntax-model]]
+   [:macro-engine [:bootstrap-syntax]]
+   [:bootstrap-macro [:macro-engine]]
+   [:resolution-engine [:bootstrap-macro]]
+   [:bootstrap-resolution [:resolution-engine]]
+   [:core-semantics [:bootstrap-resolution]]
+   [:core-lowering [:core-semantics]]
+   [:checked-core [:core-lowering :authenticated-envelope]]
+   [:checked-core-pipeline [:checked-core]]
+   [:type-checker [:checked-core-pipeline]]
+   [:effect-checker [:type-checker]]
+   [:ownership-checker [:type-checker]]
+   [:safety-analysis [:effect-checker :ownership-checker]]
+   [:mir [:safety-analysis]]
+   [:domain-ir [:mir]]
+   [:compiler-diagnostics [:mir]]
+   [:bootstrap-diagnostics [:compiler-diagnostics]]
+   [:mir-optimization [:mir :bootstrap-diagnostics]]
+   [:compiler-verification [:mir-optimization]]
+   [:target-lowering [:compiler-verification :domain-ir]]
+   [:backend-interface [:target-lowering]]
+   [:backend-c [:backend-interface]]
+   [:backend-llvm [:backend-interface]]
+   [:backend-wasm [:backend-interface]]
+   [:backend-jvm [:backend-interface]]
+   [:backend-js [:backend-interface]]
+   [:backend-mlir [:backend-interface]]
+   [:backend-gpu [:backend-interface]]
+   [:backend-hdl [:backend-interface]]
+   [:backend-workflow [:backend-interface]]
+   [:backend-query [:backend-interface]]
+   [:backend-mobile [:backend-interface]]
+   [:incremental-compiler [:compiler-verification]]
+   [:compiler-pass-api [:compiler-verification]]
+   [:meta-legality [:effect-checker :target-lowering]]
+   [:standard-library-subset [:mir :meta-legality]]
+   [:package-build-subset
+    [:backend-c :meta-legality :standard-library-subset]]
+   [:runtime-subset [:backend-c :standard-library-subset]]])
+
+(defn sh26-environment-valid? [environment]
+  (if
+   (sh26-exact-keys?
+    environment
+    #{:environment-id :locked-dependencies :locale :timezone
+      :filesystem-order :timestamp-policy :random-seed :network
+      :allowed-environment})
+    (if (sh26-nonempty-string? (get environment :environment-id))
+      (if (= true (get environment :locked-dependencies))
+        (if (= "C" (get environment :locale))
+          (if (= "UTC" (get environment :timezone))
+            (if (= :sorted (get environment :filesystem-order))
+              (if (= :fixed (get environment :timestamp-policy))
+                (if (integer? (get environment :random-seed))
+                  (if (= :disabled (get environment :network))
+                    (= [] (get environment :allowed-environment))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-content-record-valid? [record artifact]
+  (if
+   (sh26-exact-keys?
+    record #{:artifact :schema-version :content-id :byte-count})
+    (if (= artifact (get record :artifact))
+      (if (= 1 (get record :schema-version))
+        (if (sh26-nonempty-string? (get record :content-id))
+          (if (integer? (get record :byte-count))
+            (> (get record :byte-count) 0)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-component-valid? [component expected ordinal]
+  (if
+   (sh26-exact-keys?
+    component
+    #{:component-id :source-id :output-id :topological-ordinal
+      :dependencies :profile :implementation-language
+      :conformance-status :sh25-verification-status
+      :actual-source-path})
+    (if (= (first expected) (get component :component-id))
+      (if (= (second expected) (get component :dependencies))
+        (if (= ordinal (get component :topological-ordinal))
+          (if (sh26-nonempty-string? (get component :source-id))
+            (if (sh26-nonempty-string? (get component :output-id))
+              (if (= :meta (get component :profile))
+                (if (= :gravity
+                       (get component :implementation-language))
+                  (if (= :passed
+                         (get component :conformance-status))
+                    (if (= :passed
+                           (get component :sh25-verification-status))
+                      (sh26-nonempty-string?
+                       (get component :actual-source-path))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-components-valid-from? [components catalog index]
+  (if (= index (count catalog))
+    true
+    (if (sh26-component-valid?
+         (get components index) (get catalog index) index)
+      (sh26-components-valid-from? components catalog (+ index 1))
+      false)))
+
+(defn sh26-component-identities-unique-from? [components index seen]
+  (if (= index (count components))
+    true
+    (let [component (get components index)
+          with-source
+          (sh26-unique-identities-from?
+           [(get component :source-id)
+            (get component :output-id)]
+           seen 0)]
+      (if (= false with-source)
+        false
+        (sh26-component-identities-unique-from?
+         components (+ index 1) with-source)))))
+
+(defn sh26-components-valid? [components]
+  (let [catalog (sh26-authoritative-component-catalog)]
+    (if (vector? components)
+      (if (= 42 (count components))
+        (if (sh26-components-valid-from? components catalog 0)
+          (sh26-component-identities-unique-from?
+           components 0 [])
+          false)
+        false)
+      false)))
+
+(defn sh26-sh25-template-match? [component template]
+  (if (= (get component :component-id)
+         (get template :component-id))
+    (if (= (get component :source-id)
+           (get template :source-id))
+      (if (= (get component :output-id)
+             (get template :output-id))
+        (if (= (get component :topological-ordinal)
+               (get template :topological-ordinal))
+          (if (= (get component :dependencies)
+                 (get template :dependencies))
+            (if (= (get component :profile)
+                   (get template :profile))
+              (if (= (get component :implementation-language)
+                     (get template :implementation-language))
+                (if (= :pending
+                       (get template :conformance-status))
+                  (= :pending
+                     (get template :sh25-verification-status))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-components-match-templates-from?
+  [components templates index]
+  (if (= index (count components))
+    true
+    (if (sh26-sh25-template-match?
+         (get components index) (get templates index))
+      (sh26-components-match-templates-from?
+       components templates (+ index 1))
+      false)))
+
+(defn sh26-sh25-action-match? [component action]
+  (if
+   (sh26-exact-keys?
+    action
+    #{:capabilities :artifact-id :dependency-components :action-id
+      :complete-output-records :source-identity :status :effects
+      :content-id :authenticated-input :component-id :executor
+      :profile})
+    (if (= (get component :component-id)
+           (get action :component-id))
+      (if (= (get component :output-id)
+             (get action :content-id))
+        (if (= (get component :source-id)
+               (get (get action :source-identity) :content-hash))
+          (if (= (get component :dependencies)
+                 (get action :dependency-components))
+            (if (= :bound-supplied-product (get action :status))
+              (if (= :gravity-sh24-driver (get action :executor))
+                (if (= #{} (get action :effects))
+                  (= #{} (get action :capabilities))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-actions-match-from? [components actions index]
+  (if (= index (count components))
+    true
+    (if (sh26-sh25-action-match?
+         (get components index) (get actions index))
+      (sh26-actions-match-from? components actions (+ index 1))
+      false)))
+
+(defn sh26-sh25-expected-actions-from?
+  [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)
+          product (get component :build-product)]
+      (sh26-sh25-expected-actions-from?
+       components (+ index 1)
+       (conj
+        result
+        {:action-id
+         (str "sh25:compile:" (get component :component-id))
+         :executor :gravity-sh24-driver
+         :component-id (get component :component-id)
+         :source-identity (get component :source-identity)
+         :authenticated-input (get component :authenticated-input)
+         :dependency-components (get component :dependencies)
+         :artifact-id (get product :artifact-id)
+         :content-id (get product :content-id)
+         :complete-output-records (get product :records)
+         :profile :meta
+         :effects #{}
+         :capabilities #{}
+         :status :bound-supplied-product})))))
+
+(defn sh26-sh25-request-valid? [request]
+  (if
+   (sh26-exact-keys?
+    request
+    #{:capabilities :recipe :sh24-driver :schema-version :build-id
+      :physical-provenance :components :sh22-standard-library
+      :effects :environment :artifact :profile :lock
+      :sh21-meta-legality})
+    (if (= :gravity/sh25-component-build-request
+           (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (keyword? (get request :build-id))
+          (if (= 42 (count (get request :components)))
+            (if (= :meta (get request :profile))
+              (if (= #{} (get request :effects))
+                (= #{} (get request :capabilities))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-sh25-identity-authenticated-input [descriptor]
+  {:artifact (get descriptor :artifact)
+   :schema-version (get descriptor :schema-version)
+   :descriptor-id (get descriptor :descriptor-id)
+   :subject (get descriptor :subject)
+   :semantic-root (get descriptor :semantic-root)
+   :verification (get descriptor :verification)})
+
+(defn sh26-sh25-identity-build-product [product]
+  {:artifact (get product :artifact)
+   :schema-version (get product :schema-version)
+   :component-id (get product :component-id)
+   :compiler-id (get product :compiler-id)
+   :source-content-hash (get product :source-content-hash)
+   :envelope-semantic-root (get product :envelope-semantic-root)
+   :legality-id (get product :legality-id)
+   :artifact-id (get product :artifact-id)
+   :content-id (get product :content-id)
+   :records
+   {:artifact (get (get product :records) :artifact)
+    :manifest (get (get product :records) :manifest)
+    :diagnostics (get (get product :records) :diagnostics)}
+   :verification (get product :verification)})
+
+(defn sh26-sh25-identity-component [component]
+  {:component-id (get component :component-id)
+   :category (get component :category)
+   :dependencies (get component :dependencies)
+   :source-identity (get component :source-identity)
+   :authenticated-input
+   (sh26-sh25-identity-authenticated-input
+    (get component :authenticated-input))
+   :meta-legality (get component :meta-legality)
+   :build-product
+   (sh26-sh25-identity-build-product
+    (get component :build-product))
+   :profile (get component :profile)
+   :implementation-language
+   (get component :implementation-language)})
+
+(defn sh26-sh25-identity-components-from?
+  [components index result]
+  (if (= index (count components))
+    result
+    (sh26-sh25-identity-components-from?
+     components (+ index 1)
+     (conj result
+           (sh26-sh25-identity-component
+            (get components index))))))
+
+(defn sh26-sh25-identity-prerequisite [descriptor]
+  {:artifact (get descriptor :artifact)
+   :schema-version (get descriptor :schema-version)
+   :product-id (get descriptor :product-id)
+   :source-revision (get descriptor :source-revision)
+   :semantic-root (get descriptor :semantic-root)
+   :verification (get descriptor :verification)})
+
+(defn sh26-sh25-expected-identity [request]
+  {:artifact :gravity/sh25-component-build-identity
+   :schema-version 1
+   :build-id (get request :build-id)
+   :components
+   (sh26-sh25-identity-components-from?
+    (get request :components) 0 [])
+   :sh21-meta-legality
+   (sh26-sh25-identity-prerequisite
+    (get request :sh21-meta-legality))
+   :sh22-standard-library
+   (sh26-sh25-identity-prerequisite
+    (get request :sh22-standard-library))
+   :sh24-driver
+   (sh26-sh25-identity-prerequisite
+    (get request :sh24-driver))
+   :environment (get request :environment)
+   :lock (get request :lock)
+   :recipe (get request :recipe)
+   :profile :meta
+   :effects #{}
+   :capabilities #{}})
+
+(defn sh26-sh25-source-paths-from? [components index result]
+  (if (= index (count components))
+    result
+    (sh26-sh25-source-paths-from?
+     components (+ index 1)
+     (conj result
+           (get (get components index) :actual-source-path)))))
+
+(defn sh26-sh25-provenance-roots-from?
+  [components index result]
+  (if (= index (count components))
+    result
+    (sh26-sh25-provenance-roots-from?
+     components (+ index 1)
+     (conj
+      result
+      {:component-id (get (get components index) :component-id)
+       :provenance-root
+       (get
+        (get (get components index) :authenticated-input)
+        :provenance-root)}))))
+
+(defn sh26-sh25-output-provenance-from?
+  [components index result]
+  (if (= index (count components))
+    result
+    (sh26-sh25-output-provenance-from?
+     components (+ index 1)
+     (conj
+      result
+      (get
+       (get
+        (get (get components index) :build-product)
+        :records)
+       :provenance)))))
+
+(defn sh26-sh25-expected-provenance [request]
+  (let [components (get request :components)]
+    {:physical (get request :physical-provenance)
+     :prerequisite-source-paths
+     {:sh21
+      (get (get request :sh21-meta-legality) :actual-source-path)
+      :sh22
+      (get (get request :sh22-standard-library)
+           :actual-source-path)
+      :sh24
+      (get (get request :sh24-driver) :actual-source-path)}
+     :actual-source-paths
+     (sh26-sh25-source-paths-from? components 0 [])
+     :authenticated-provenance-roots
+     (sh26-sh25-provenance-roots-from? components 0 [])
+     :output-provenance
+     (sh26-sh25-output-provenance-from? components 0 [])}))
+
+(defn sh26-sh25-result-boundary-valid? [result]
+  (if (= [] (get result :diagnostics))
+    (if (= false (get result :self-hosted?))
+      (if (= true (get result :clojure-seed-boundary?))
+        (= [:gravity-driver-execution
+            :external-sh02-envelope-recomputation
+            :external-sh21-legality-recomputation
+            :external-sh22-library-recomputation
+            :external-sh24-driver-recomputation
+            :authoritative-runtime-source-promotion
+            :independent-output-validation
+            :complete-sh25-exit-gate
+            :seed-retirement]
+           (get result :pending))
+        false)
+      false)
+    false))
+
+(defn sh26-sh25-result-valid? [request result]
+  (if
+   (sh26-exact-keys?
+    result
+    #{:diagnostics :sh26-component-templates :pending
+      :schema-version :identity-input :actions :self-hosted?
+      :request-census :build-id :status :component-count
+      :provenance :artifact :clojure-seed-boundary?})
+    (if (= :gravity/sh25-component-build-result
+           (get result :artifact))
+      (if (= 1 (get result :schema-version))
+        (if (= :accepted (get result :status))
+          (if (= (get request :build-id) (get result :build-id))
+            (if (= 42 (get result :component-count))
+              (if (= (sh26-carrier-preflight request)
+                     (get result :request-census))
+                (if (= (sh26-sh25-expected-identity request)
+                       (get result :identity-input))
+                  (if (= (sh26-sh25-expected-provenance request)
+                         (get result :provenance))
+                    (sh26-sh25-result-boundary-valid? result)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-sh25-verification-valid? [request result verification]
+  (if
+   (sh26-exact-keys?
+    verification
+    #{:schema-version :checks :build-id :candidate-census
+      :status :component-count :artifact})
+    (if (= :gravity/sh25-component-build-verification
+           (get verification :artifact))
+      (if (= 1 (get verification :schema-version))
+        (if (= :passed (get verification :status))
+          (if (= (get request :build-id)
+                 (get verification :build-id))
+            (if (= (get result :component-count)
+                   (get verification :component-count))
+              (if (= (sh26-carrier-preflight result)
+                     (get verification :candidate-census))
+                (= [:complete-catalog
+                  :dependency-order
+                  :pinned-source-revisions
+                  :contextual-envelope-subjects
+                  :contextual-meta-legality
+                  :bound-complete-output-records
+                  :bound-prerequisite-revisions
+                  :path-neutral-identity
+                  :physical-provenance
+                  :exact-result]
+                   (get verification :checks))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-sh25-projection-valid?
+  [request verification projection]
+  (if
+   (sh26-exact-keys?
+    projection
+    #{:schema-version :verification :build-id :components
+      :status :artifact})
+    (if (= :gravity/sh25-sh26-component-projection
+           (get projection :artifact))
+      (if (= 1 (get projection :schema-version))
+        (if (= :accepted (get projection :status))
+          (if (= (get request :build-id)
+                 (get projection :build-id))
+            (= verification (get projection :verification))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-projection-valid?
+  [projection name role value]
+  (if
+   (sh26-exact-keys?
+    projection #{:name :role :entry-count :value})
+    (if (= name (get projection :name))
+      (if (= role (get projection :role))
+        (if (= (count value) (get projection :entry-count))
+          (= value (get projection :value))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-subject-valid?
+  [subject name domain preimage]
+  (if
+   (sh26-exact-keys?
+    subject #{:name :domain :preimage :observed-id})
+    (if (= name (get subject :name))
+      (if (= domain (get subject :domain))
+        (if (= preimage (get subject :preimage))
+          (sh26-nonempty-string? (get subject :observed-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-check-valid? [check subject]
+  (if
+   (sh26-exact-keys?
+    check #{:name :domain :computed-id :observed-id})
+    (if (= (get subject :name) (get check :name))
+      (if (= (get subject :domain) (get check :domain))
+        (if (= (get subject :observed-id)
+               (get check :observed-id))
+          (= (get check :computed-id)
+             (get check :observed-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-checks-valid? [checks subjects index]
+  (if (= index (count subjects))
+    (= index (count checks))
+    (if (sh26-envelope-check-valid?
+         (get checks index) (get subjects index))
+      (sh26-envelope-checks-valid?
+       checks subjects (+ index 1))
+      false)))
+
+(defn sh26-envelope-descriptor-valid?
+  [descriptor request result verification projection
+   request-id result-id verification-id projection-id
+   provenance-root]
+  (if
+   (sh26-exact-keys?
+    descriptor
+    #{:artifact :schema-version :stage :artifact-kind
+      :source-revision :projection-contract :semantic-projections
+      :fact-transitions :effect-capability-relation :proof-composite
+      :preservation :identity-subjects :lineage :reference-closure
+      :actual-path-provenance :bounds})
+    (let [contract (get descriptor :projection-contract)
+          projections (get descriptor :semantic-projections)
+          subjects (get descriptor :identity-subjects)
+          context
+          {:sh25-request-id request-id
+           :complete-result-id result-id
+           :verification-id verification-id
+           :projection-id projection-id
+           :provenance-root provenance-root}]
+      (if (= :gravity/private-authenticated-envelope-descriptor
+             (get descriptor :artifact))
+        (if (= 1 (get descriptor :schema-version))
+          (if (= :sh26-stage-rebuild (get descriptor :stage))
+            (if (= :gravity/sh26-sh25-complete-context
+                   (get descriptor :artifact-kind))
+              (if
+               (sh26-exact-keys?
+                (get descriptor :source-revision)
+                #{:owner :source-language :logical-source-path
+                  :source-content-hash :source-byte-count
+                  :plan-semantic-hash :functions-semantic-hash
+                  :builder-function :builder-semantic-hash
+                  :function-shapes})
+                (if (= :sh-stage-rebuild
+                       (get (get descriptor :source-revision) :owner))
+                  (if (= :gravity
+                         (get
+                          (get descriptor :source-revision)
+                          :source-language))
+                    (if (= 'sh26-build-next-stage
+                           (get
+                            (get descriptor :source-revision)
+                            :builder-function))
+                      (if
+                       (sh26-exact-keys?
+                        contract
+                        #{:contract-kind :contract-version :profile
+                          :target :required-semantic-projections
+                          :required-fact-families
+                          :required-identity-subjects})
+                        (if
+                         (= :gravity/sh26-sh25-complete-context-contract
+                            (get contract :contract-kind))
+                          (if (= 1 (get contract :contract-version))
+                            (if (= :meta (get contract :profile))
+                              (if (= :jvm (get contract :target))
+                                (if (= 4 (count projections))
+                                  (if
+                                   (sh26-envelope-projection-valid?
+                                    (get projections 0)
+                                    :sh25-request :exact-request
+                                    {:content-id request-id})
+                                    (if
+                                     (sh26-envelope-projection-valid?
+                                      (get projections 1)
+                                      :sh25-result :exact-result
+                                      {:content-id result-id})
+                                      (if
+                                       (sh26-envelope-projection-valid?
+                                        (get projections 2)
+                                        :sh25-verification
+                                        :fresh-verification
+                                        {:content-id verification-id})
+                                        (if
+                                         (sh26-envelope-projection-valid?
+                                          (get projections 3)
+                                          :sh25-projection
+                                          :final-projection
+                                          {:content-id projection-id})
+                                          (if (= 5 (count subjects))
+                                            (if
+                                             (sh26-envelope-subject-valid?
+                                              (get subjects 0)
+                                              :sh25-request
+                                              :gravity/sh26-sh25-request-v1
+                                              {:content-id request-id})
+                                              (if
+                                               (sh26-envelope-subject-valid?
+                                                (get subjects 1)
+                                                :sh25-result
+                                                :gravity/sh26-sh25-result-v1
+                                                {:content-id result-id})
+                                                (if
+                                                 (sh26-envelope-subject-valid?
+                                                  (get subjects 2)
+                                                  :sh25-verification
+                                                  :gravity/sh26-sh25-verification-v1
+                                                  {:content-id
+                                                   verification-id})
+                                                  (if
+                                                   (sh26-envelope-subject-valid?
+                                                    (get subjects 3)
+                                                    :sh25-projection
+                                                    :gravity/sh26-sh25-projection-v1
+                                                    {:content-id
+                                                     projection-id})
+                                                    (sh26-envelope-subject-valid?
+                                                     (get subjects 4)
+                                                     :sh25-complete-context
+                                                     :gravity/sh26-sh25-complete-context-v1
+                                                     context)
+                                                    false)
+                                                  false)
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+
+(defn sh26-template-replay-valid? [replay]
+  (if
+   (sh26-exact-keys?
+    replay
+    #{:status :artifact-template :digest-graph-root
+      :digest-graph-roots :semantic-envelope-root
+      :provenance-binding-root :identity-checks
+      :identity-enforcement :eligible-for-contextual-acceptance?
+      :request-count :semantic-authority :checks :diagnostics})
+    (if (= :template-replay-passed (get replay :status))
+      (if (= :pending-host-resolution
+             (get replay :identity-enforcement))
+        (if (= false
+               (get replay :eligible-for-contextual-acceptance?))
+          (if (= :gravity-source (get replay :semantic-authority))
+            (if (= [] (get replay :diagnostics))
+              (= [:fresh-descriptor-replay
+                  :exact-artifact-template-replay
+                  :exact-digest-request-replay
+                  :path-neutral-semantic-root
+                  :separate-physical-provenance-root]
+                 (get replay :checks))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-authority-valid? [authority]
+  (if
+   (sh26-exact-keys?
+    authority
+    #{:host-role :physical-provenance-separate? :scope
+      :self-hosted? :semantic-owner
+      :semantic-root-path-neutral?})
+    (if (= :bounded-validation-hashing-and-instantiation
+           (get authority :host-role))
+      (if (= true
+             (get authority :physical-provenance-separate?))
+        (if (= :reusable-authenticated-envelope
+               (get authority :scope))
+          (if (= false (get authority :self-hosted?))
+            (if (= :gravity-source
+                   (get authority :semantic-owner))
+              (= true
+                 (get authority :semantic-root-path-neutral?))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-digest-request-contract []
+  [[:gravity/authenticated-envelope-contract-v1 []]
+   [:gravity/authenticated-envelope-source-revision-v1 []]
+   [:gravity/authenticated-envelope-projection-content-v1 []]
+   [:gravity/authenticated-envelope-projection-binding-v1 [0 2]]
+   [:gravity/authenticated-envelope-projection-content-v1 []]
+   [:gravity/authenticated-envelope-projection-binding-v1 [0 4]]
+   [:gravity/authenticated-envelope-projection-content-v1 []]
+   [:gravity/authenticated-envelope-projection-binding-v1 [0 6]]
+   [:gravity/authenticated-envelope-projection-content-v1 []]
+   [:gravity/authenticated-envelope-projection-binding-v1 [0 8]]
+   [:gravity/authenticated-envelope-projection-set-v1
+    [0 2 3 4 5 6 7 8 9]]
+   [:gravity/authenticated-envelope-fact-input-v1 []]
+   [:gravity/authenticated-envelope-fact-output-v1 []]
+   [:gravity/authenticated-envelope-fact-transition-v1 [0 11 12]]
+   [:gravity/authenticated-envelope-fact-input-v1 []]
+   [:gravity/authenticated-envelope-fact-output-v1 []]
+   [:gravity/authenticated-envelope-fact-transition-v1 [0 14 15]]
+   [:gravity/authenticated-envelope-fact-input-v1 []]
+   [:gravity/authenticated-envelope-fact-output-v1 []]
+   [:gravity/authenticated-envelope-fact-transition-v1 [0 17 18]]
+   [:gravity/authenticated-envelope-fact-input-v1 []]
+   [:gravity/authenticated-envelope-fact-output-v1 []]
+   [:gravity/authenticated-envelope-fact-transition-v1 [0 20 21]]
+   [:gravity/authenticated-envelope-fact-input-v1 []]
+   [:gravity/authenticated-envelope-fact-output-v1 []]
+   [:gravity/authenticated-envelope-fact-transition-v1 [0 23 24]]
+   [:gravity/authenticated-envelope-fact-transition-set-v1
+    [0 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25]]
+   [:gravity/authenticated-envelope-effect-capability-relation-v1
+    [26]]
+   [:gravity/authenticated-envelope-proof-composite-v1 [27]]
+   [:gravity/authenticated-envelope-preservation-v1 [26 28]]
+   [:gravity/sh26-sh25-request-v1 []]
+   [:gravity/authenticated-envelope-identity-binding-v1 [30]]
+   [:gravity/sh26-sh25-result-v1 []]
+   [:gravity/authenticated-envelope-identity-binding-v1 [32]]
+   [:gravity/sh26-sh25-verification-v1 []]
+   [:gravity/authenticated-envelope-identity-binding-v1 [34]]
+   [:gravity/sh26-sh25-projection-v1 []]
+   [:gravity/authenticated-envelope-identity-binding-v1 [36]]
+   [:gravity/sh26-sh25-complete-context-v1 []]
+   [:gravity/authenticated-envelope-identity-binding-v1 [38]]
+   [:gravity/authenticated-envelope-identity-set-v1
+    [0 30 31 32 33 34 35 36 37 38 39]]
+   [:gravity/authenticated-envelope-lineage-v1 []]
+   [:gravity/authenticated-envelope-reference-closure-v1 []]
+   [:gravity/authenticated-envelope-semantic-identity-v1
+    [0 1 10 26 27 28 29 40 41 42]]
+   [:gravity/authenticated-envelope-artifact-v1 [43]]
+   [:gravity/authenticated-envelope-semantic-root-v1
+    [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+     20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+     37 38 39 40 41 42 43 44]]
+   [:gravity/authenticated-envelope-provenance-binding-v1 [45]]])
+
+(defn sh26-digest-ref-map? [value]
+  (if (sh26-exact-keys? value #{:digest-ref})
+    (let [ordinal (get value :digest-ref)]
+      (if (integer? ordinal) (>= ordinal 0) false))
+    false))
+
+(defn sh26-collect-digest-refs [value result]
+  (if (sh26-digest-ref-map? value)
+    (conj result (get value :digest-ref))
+    (if (map? value)
+      (let [map-keys (vec (keys value))]
+        (loop [index 0 observed result]
+          (if (= index (count map-keys))
+            observed
+            (let [map-key (get map-keys index)]
+              (recur
+               (+ index 1)
+               (sh26-collect-digest-refs
+                (get value map-key)
+                (sh26-collect-digest-refs map-key observed)))))))
+      (if (vector? value)
+        (loop [index 0 observed result]
+          (if (= index (count value))
+            observed
+            (recur
+             (+ index 1)
+             (sh26-collect-digest-refs
+              (get value index) observed))))
+        (if (set? value)
+          (let [values (vec value)]
+            (loop [index 0 observed result]
+              (if (= index (count values))
+                observed
+                (recur
+                 (+ index 1)
+                 (sh26-collect-digest-refs
+                  (get values index) observed)))))
+          result)))))
+
+(defn sh26-digest-request-valid?
+  [request ordinal purpose dependencies]
+  (if
+   (sh26-exact-keys?
+    request
+    #{:algorithm :depends-on :encoding :key :ordinal :preimage})
+    (if (= :sha256 (get request :algorithm))
+      (if (= :gravity/canonical-edn-v1 (get request :encoding))
+        (if (= ordinal (get request :key))
+          (if (= ordinal (get request :ordinal))
+            (if (= dependencies (get request :depends-on))
+              (if (map? (get request :preimage))
+                (if (= purpose
+                       (get (get request :preimage) :domain))
+                  (= (set dependencies)
+                     (sh26-collect-digest-refs
+                      (get request :preimage) #{}))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-digest-requests-valid-from?
+  [requests contract index]
+  (if (= index (count contract))
+    true
+    (let [expected (get contract index)]
+      (if
+       (sh26-digest-request-valid?
+        (get requests index) index
+        (first expected) (second expected))
+        (sh26-digest-requests-valid-from?
+         requests contract (+ index 1))
+        false))))
+
+(defn sh26-digest-requests-valid? [requests]
+  (let [contract (sh26-digest-request-contract)]
+    (if (vector? requests)
+      (if (= (count contract) (count requests))
+        (sh26-digest-requests-valid-from?
+         requests contract 0)
+        false)
+      false)))
+
+(defn sh26-builder-result-valid? [builder]
+  (if
+   (sh26-exact-keys?
+    builder
+    #{:digest-graph-root :semantic-envelope-root :diagnostics
+      :digest-requests :authority :status :digest-graph-roots
+      :provenance-binding-root :artifact-template
+      :identity-checks})
+    (if (= :accepted (get builder :status))
+      (if (= [] (get builder :diagnostics))
+        (if (sh26-envelope-authority-valid?
+             (get builder :authority))
+          (if (sh26-digest-requests-valid?
+               (get builder :digest-requests))
+            (if (= 47 (count (get builder :digest-requests)))
+              (if (<= (count (get builder :digest-requests)) 2048)
+                (if (= 2 (count (get builder :digest-graph-roots)))
+                  (if (= (get builder :digest-graph-root)
+                         (get builder :semantic-envelope-root)
+                         (first (get builder :digest-graph-roots)))
+                    (= (get builder :provenance-binding-root)
+                       (second (get builder :digest-graph-roots)))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-replay-builder-bound? [replay builder]
+  (if (= (get builder :artifact-template)
+         (get replay :artifact-template))
+    (if (= (get builder :digest-graph-root)
+           (get replay :digest-graph-root))
+      (if (= (get builder :digest-graph-roots)
+             (get replay :digest-graph-roots))
+        (if (= (get builder :semantic-envelope-root)
+               (get replay :semantic-envelope-root))
+          (if (= (get builder :provenance-binding-root)
+                 (get replay :provenance-binding-root))
+            (if (= (get builder :identity-checks)
+                   (get replay :identity-checks))
+              (= (count (get builder :digest-requests))
+                 (get replay :request-count))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-resolution-pairs-valid-from?
+  [pairs requests resolved contract index]
+  (if (= index (count contract))
+    true
+    (let [pair (get pairs index)
+          expected (get contract index)]
+      (if
+       (sh26-exact-keys?
+        pair #{:ordinal :purpose :request :resolved-digest})
+        (if (= index (get pair :ordinal))
+          (if (= (first expected) (get pair :purpose))
+            (if (= (get requests index)
+                   (get pair :request))
+              (if (= (get resolved index)
+                     (get pair :resolved-digest))
+                (if (sh26-nonempty-string?
+                     (get pair :resolved-digest))
+                  (sh26-resolution-pairs-valid-from?
+                   pairs requests resolved contract (+ index 1))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh26-host-resolution-binding-valid?
+  [binding trusted-binding trusted-root requests resolved]
+  (let [contract (sh26-digest-request-contract)
+        pairs (get binding :request-resolved-pairs)
+        expected-preimage
+        {:domain :gravity/sh26-host-digest-resolution-binding-v1
+         :request-count 47
+         :request-resolved-pairs pairs}]
+    (if
+     (sh26-exact-keys?
+      binding
+      #{:artifact :schema-version :boundary :request-count
+        :request-resolved-pairs :binding-preimage :binding-root})
+      (if (= :gravity/sh26-host-digest-resolution-binding
+             (get binding :artifact))
+        (if (= binding trusted-binding)
+          (if (= 1 (get binding :schema-version))
+            (if (= :trusted-clojure-seed (get binding :boundary))
+              (if (= 47 (get binding :request-count))
+                (if (vector? pairs)
+                  (if (= 47 (count pairs))
+                    (if (= expected-preimage
+                           (get binding :binding-preimage))
+                      (if (sh26-nonempty-string?
+                           (get binding :binding-root))
+                        (if (= trusted-root
+                               (get binding :binding-root))
+                          (sh26-resolution-pairs-valid-from?
+                           pairs requests resolved contract 0)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh26-resolution-context-subjects-valid?
+  [subjects binding sealed]
+  (if
+   (sh26-exact-keys?
+    subjects
+    #{:host-resolution-binding-root :request-count
+      :semantic-envelope-root :provenance-binding-root})
+    (if (= (get binding :binding-root)
+           (get subjects :host-resolution-binding-root))
+      (if (= 47 (get subjects :request-count))
+        (if (= (get sealed :semantic-root)
+               (get subjects :semantic-envelope-root))
+          (= (get sealed :provenance-root)
+             (get subjects :provenance-binding-root))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-sealed-record-valid?
+  [sealed trusted-binding trusted-root builder envelope contextual]
+  (if
+   (sh26-exact-keys?
+    sealed
+    #{:resolved-digests :requests :template :roots
+      :provenance-root :identity-checks :semantic-root
+      :host-resolution-binding :context-subjects})
+    (if (= (get builder :digest-requests)
+           (get sealed :requests))
+      (if (= (count (get sealed :requests))
+             (count (get sealed :resolved-digests)))
+        (if
+         (sh26-host-resolution-binding-valid?
+          (get sealed :host-resolution-binding)
+          trusted-binding
+          trusted-root
+          (get sealed :requests)
+          (get sealed :resolved-digests))
+          (if
+           (sh26-resolution-context-subjects-valid?
+            (get sealed :context-subjects)
+            (get sealed :host-resolution-binding)
+            sealed)
+            (if (= envelope (get sealed :template))
+              (if (= 2 (count (get sealed :roots)))
+                (if (= (get sealed :semantic-root)
+                       (first (get sealed :roots)))
+                  (if (= (get sealed :provenance-root)
+                         (second (get sealed :roots)))
+                    (if (= (get sealed :semantic-root)
+                           (get contextual :semantic-envelope-root))
+                      (if (= (get sealed :provenance-root)
+                             (get contextual
+                                  :provenance-binding-root))
+                        (= (get sealed :identity-checks)
+                           (get contextual :identity-checks))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-contextual-verification-valid?
+  [contextual builder replay sealed envelope subjects]
+  (if
+   (sh26-exact-keys?
+    contextual
+    #{:artifact :schema-version :status :builder-result
+      :template-replay :sealed-record :artifact-template
+      :semantic-envelope-root :provenance-binding-root
+      :identity-checks :host-resolution-binding
+      :context-subjects :identity-enforcement
+      :eligible-for-contextual-acceptance?
+      :host-digest-resolution :identity-subject-equality
+      :fresh-envelope-reconstruction})
+    (if (= :gravity/sh26-envelope-contextual-verification
+           (get contextual :artifact))
+      (if (= 1 (get contextual :schema-version))
+        (if (= :contextual-verification-passed
+               (get contextual :status))
+          (if (= builder (get contextual :builder-result))
+            (if (= replay (get contextual :template-replay))
+              (if (= sealed (get contextual :sealed-record))
+                (if (= (get sealed :host-resolution-binding)
+                       (get contextual
+                            :host-resolution-binding))
+                  (if (= (get sealed :context-subjects)
+                         (get contextual :context-subjects))
+                    (if (= envelope
+                           (get contextual :artifact-template))
+                      (if (= :passed
+                             (get contextual
+                                  :identity-enforcement))
+                        (if (= true
+                               (get
+                                contextual
+                                :eligible-for-contextual-acceptance?))
+                          (if (= :passed
+                                 (get
+                                  contextual
+                                  :host-digest-resolution))
+                            (if (= :passed
+                                   (get
+                                    contextual
+                                    :identity-subject-equality))
+                              (if (= :passed
+                                     (get
+                                      contextual
+                                      :fresh-envelope-reconstruction))
+                                (sh26-envelope-checks-valid?
+                                 (get contextual :identity-checks)
+                                 subjects 0)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-function-shapes []
+  {'ae-actual-path-provenance-valid?
+   {:arity 1 :params ['provenance]}
+   'ae-add-digest-request
+   {:arity 2 :params ['state 'preimage]}
+   'ae-all-unique?
+   {:arity 2 :params ['values 'observed]}
+   'ae-append
+   {:arity 2 :params ['left 'right]}
+   'ae-bounded-vector?
+   {:arity 2 :params ['values 'maximum]}
+   'ae-bounds-record
+   {:arity 0 :params []}
+   'ae-build-accepted-template
+   {:arity 1 :params ['descriptor]}
+   'ae-build-fact-transition-bindings
+   {:arity 4 :params ['facts 'contract-id 'state 'result]}
+   'ae-build-identity-bindings
+   {:arity 4 :params ['subjects 'state 'result 'checks]}
+   'ae-build-projection-bindings
+   {:arity 4 :params ['projections 'contract-id 'state 'result]}
+   'ae-collect-digest-refs
+   {:arity 2 :params ['value 'result]}
+   'ae-collect-ref-map
+   {:arity 3 :params ['map-keys 'value 'result]}
+   'ae-collect-ref-sequence
+   {:arity 2 :params ['values 'result]}
+   'ae-conj-unique
+   {:arity 2 :params ['values 'value]}
+   'ae-copy-vector
+   {:arity 2 :params ['values 'result]}
+   'ae-descriptor-shape-valid?
+   {:arity 1 :params ['descriptor]}
+   'ae-descriptor-validation
+   {:arity 1 :params ['descriptor]}
+   'ae-digest-intern-key
+   {:arity 1 :params ['value]}
+   'ae-digest-intern-map-entries
+   {:arity 3 :params ['map-keys 'value 'result]}
+   'ae-digest-intern-sequence
+   {:arity 2 :params ['values 'result]}
+   'ae-digest-ref
+   {:arity 1 :params ['ordinal]}
+   'ae-drive-absolute-reference-id?
+   {:arity 1 :params ['characters]}
+   'ae-effect-capability-relation-valid?
+   {:arity 1 :params ['relation]}
+   'ae-exact-digest-ref?
+   {:arity 1 :params ['value]}
+   'ae-exact-keys?
+   {:arity 2 :params ['value 'expected]}
+   'ae-fact-disposition-valid?
+   {:arity 1 :params ['fact]}
+   'ae-fact-transition-valid?
+   {:arity 1 :params ['fact]}
+   'ae-fact-transitions-valid?
+   {:arity 2 :params ['facts 'names]}
+   'ae-identity-subject-valid?
+   {:arity 1 :params ['subject]}
+   'ae-identity-subjects-valid?
+   {:arity 2 :params ['subjects 'names]}
+   'ae-insert-ordinal
+   {:arity 4 :params ['values 'value 'result 'inserted?]}
+   'ae-keyword-vector?
+   {:arity 1 :params ['values]}
+   'ae-lineage-record-valid?
+   {:arity 1 :params ['record]}
+   'ae-lineage-valid?
+   {:arity 2 :params ['lineage 'artifact-ids]}
+   'ae-logical-path-characters-valid?
+   {:arity 2 :params ['characters 'index]}
+   'ae-logical-path-segment-valid?
+   {:arity 1 :params ['segment]}
+   'ae-logical-path-segments-valid?
+   {:arity 2 :params ['characters 'segment]}
+   'ae-logical-reference-id?
+   {:arity 1 :params ['value]}
+   'ae-logical-source-path?
+   {:arity 1 :params ['value]}
+   'ae-lowercase-hex?
+   {:arity 1 :params ['characters]}
+   'ae-names-for-disposition
+   {:arity 3 :params ['facts 'disposition 'result]}
+   'ae-nonnegative-integer?
+   {:arity 1 :params ['value]}
+   'ae-path-neutral-map?
+   {:arity 2 :params ['map-keys 'value]}
+   'ae-path-neutral-semantic-value?
+   {:arity 1 :params ['value]}
+   'ae-path-neutral-sequence?
+   {:arity 1 :params ['values]}
+   'ae-physical-semantic-key?
+   {:arity 2 :params ['map-key 'value]}
+   'ae-positive-integer?
+   {:arity 1 :params ['value]}
+   'ae-preservation-valid?
+   {:arity 3 :params ['preservation 'facts 'fact-names]}
+   'ae-projection-contract-valid?
+   {:arity 1 :params ['contract]}
+   'ae-projection-valid?
+   {:arity 1 :params ['projection]}
+   'ae-projections-valid?
+   {:arity 2 :params ['projections 'names]}
+   'ae-proof-composite-valid?
+   {:arity 1 :params ['proof]}
+   'ae-reference-add-pending
+   {:arity 3 :params ['neighbors 'depth 'pending]}
+   'ae-reference-closure-valid?
+   {:arity 1 :params ['closure]}
+   'ae-reference-edge-valid?
+   {:arity 2 :params ['edge 'node-ids]}
+   'ae-reference-edges-valid?
+   {:arity 2 :params ['edges 'node-ids]}
+   'ae-reference-graph-validation
+   {:arity 2 :params ['root-id 'edges]}
+   'ae-reference-graph-walk
+   {:arity 4 :params ['pending 'edges 'reachable 'maximum-depth]}
+   'ae-reference-id-characters-valid?
+   {:arity 2 :params ['characters 'index]}
+   'ae-reference-neighbors
+   {:arity 3 :params ['edges 'node-id 'result]}
+   'ae-rejection
+   {:arity 3 :params ['descriptor 'reason 'phase]}
+   'ae-request-key-for-preimage
+   {:arity 2 :params ['requests 'preimage]}
+   'ae-scalar-identity-vector?
+   {:arity 1 :params ['values]}
+   'ae-scalar-identity?
+   {:arity 1 :params ['value]}
+   'ae-sha256-id?
+   {:arity 1 :params ['value]}
+   'ae-sha256-vector?
+   {:arity 1 :params ['values]}
+   'ae-sort-ordinals
+   {:arity 2 :params ['values 'result]}
+   'ae-source-revision-valid?
+   {:arity 1 :params ['revision]}
+   'ae-value-entry-count
+   {:arity 1 :params ['value]}
+   'ae-vector-contains?
+   {:arity 2 :params ['values 'value]}
+   'authenticated-envelope-build-template
+   {:arity 1 :params ['descriptor]}
+   'authenticated-envelope-verify-template
+   {:arity 3
+    :params ['descriptor 'artifact-template 'digest-requests]}})
+
+(defn sh26-envelope-function-shapes-valid? [shapes]
+  (= (sh26-envelope-function-shapes) shapes))
+
+(defn sh26-envelope-source-valid? [source]
+  (if
+   (sh26-exact-keys?
+    source
+    #{:owner :source-language :logical-source-path
+      :source-content-hash :source-byte-count :plan-semantic-hash
+      :functions-semantic-hash :builder-function
+      :builder-semantic-hash :function-shapes})
+    (if (= :sh-envelope (get source :owner))
+      (if (= :gravity (get source :source-language))
+        (if (= "gravity/compiler/authenticated-envelope"
+               (get source :logical-source-path))
+          (if (= 'authenticated-envelope-build-template
+                 (get source :builder-function))
+            (if (= "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71"
+                   (get source :source-content-hash))
+              (if (= 59495 (get source :source-byte-count))
+                (if (= "sha256:125e012806bddf996f23e357bd33309c9bbd40927ce0f2c841e69b39c1740922"
+                       (get source :plan-semantic-hash))
+                  (if (= "sha256:e88f53c2994f5d8d4577f6df9f6531a750c2808ef0a2b4b5d297f64e7b45e26e"
+                         (get source :functions-semantic-hash))
+                    (if (= "sha256:19b21ed1e94563631c25b502f5297fa1e33070f0a62fefc480bcba5984b02a7a"
+                           (get source :builder-semantic-hash))
+                      (sh26-envelope-function-shapes-valid?
+                       (get source :function-shapes))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-revision-pin-valid? [pin source]
+  (if
+   (sh26-exact-keys?
+    pin
+    #{:artifact :schema-version :source-revision
+      :verifier-function :verifier-semantic-hash})
+    (if (= :gravity/sh26-envelope-revision-pin
+           (get pin :artifact))
+      (if (= 1 (get pin :schema-version))
+        (if (= source (get pin :source-revision))
+          (if (= 'authenticated-envelope-verify-template
+                 (get pin :verifier-function))
+            (= "sha256:e52b201a81ef82f857aaabc68cb2d6a8f0f4505f853c555816023f5dad294a77"
+               (get pin :verifier-semantic-hash))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-contract-valid? [contract]
+  (if
+   (sh26-exact-keys?
+    contract
+    #{:contract-kind :contract-version :profile :target
+      :required-semantic-projections :required-fact-families
+      :required-identity-subjects})
+    (if (= :gravity/sh26-sh25-complete-context-contract
+           (get contract :contract-kind))
+      (if (= 1 (get contract :contract-version))
+        (if (= :meta (get contract :profile))
+          (if (= :jvm (get contract :target))
+            (if (= [:sh25-request :sh25-result
+                    :sh25-verification :sh25-projection]
+                   (get contract
+                        :required-semantic-projections))
+              (if (= [:type :effect :ownership :capability :safety]
+                     (get contract :required-fact-families))
+                (= [:sh25-request :sh25-result
+                    :sh25-verification :sh25-projection
+                    :sh25-complete-context]
+                   (get contract :required-identity-subjects))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-envelope-descriptor-valid2?
+  [descriptor request result verification projection
+   request-id result-id verification-id projection-id
+   provenance-root]
+  (let [projections (get descriptor :semantic-projections)
+        subjects (get descriptor :identity-subjects)
+        context
+        {:sh25-request-id request-id
+         :complete-result-id result-id
+         :verification-id verification-id
+         :projection-id projection-id
+         :provenance-root provenance-root}]
+    (if
+     (sh26-exact-keys?
+      descriptor
+      #{:artifact :schema-version :stage :artifact-kind
+        :source-revision :projection-contract :semantic-projections
+        :fact-transitions :effect-capability-relation :proof-composite
+        :preservation :identity-subjects :lineage
+        :reference-closure :actual-path-provenance :bounds})
+      (if (= :gravity/private-authenticated-envelope-descriptor
+             (get descriptor :artifact))
+        (if (= 1 (get descriptor :schema-version))
+          (if (= :sh26-stage-rebuild (get descriptor :stage))
+            (if (= :gravity/sh26-sh25-complete-context
+                   (get descriptor :artifact-kind))
+              (if (sh26-envelope-source-valid?
+                   (get descriptor :source-revision))
+                (if (sh26-envelope-contract-valid?
+                     (get descriptor :projection-contract))
+                  (if (= 4 (count projections))
+                    (if
+                     (sh26-envelope-projection-valid?
+                      (get projections 0) :sh25-request
+                      :exact-request {:content-id request-id})
+                      (if
+                       (sh26-envelope-projection-valid?
+                        (get projections 1) :sh25-result
+                        :exact-result {:content-id result-id})
+                        (if
+                         (sh26-envelope-projection-valid?
+                          (get projections 2) :sh25-verification
+                          :fresh-verification
+                          {:content-id verification-id})
+                          (if
+                           (sh26-envelope-projection-valid?
+                            (get projections 3) :sh25-projection
+                            :final-projection
+                            {:content-id projection-id})
+                            (if (= 5 (count subjects))
+                              (if
+                               (sh26-envelope-subject-valid?
+                                (get subjects 0) :sh25-request
+                                :gravity/sh26-sh25-request-v1
+                                {:content-id request-id})
+                                (if
+                                 (sh26-envelope-subject-valid?
+                                  (get subjects 1) :sh25-result
+                                  :gravity/sh26-sh25-result-v1
+                                  {:content-id result-id})
+                                  (if
+                                   (sh26-envelope-subject-valid?
+                                    (get subjects 2)
+                                    :sh25-verification
+                                    :gravity/sh26-sh25-verification-v1
+                                    {:content-id verification-id})
+                                    (if
+                                     (sh26-envelope-subject-valid?
+                                      (get subjects 3)
+                                      :sh25-projection
+                                      :gravity/sh26-sh25-projection-v1
+                                      {:content-id projection-id})
+                                      (sh26-envelope-subject-valid?
+                                       (get subjects 4)
+                                       :sh25-complete-context
+                                       :gravity/sh26-sh25-complete-context-v1
+                                       context)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh26-trusted-context-valid? [trusted authentication]
+  (let [descriptor (get authentication :descriptor)
+        sealed (get authentication :sealed-record)
+        replay (get authentication :template-replay)
+        contextual
+        (get authentication :contextual-verification)
+        binding (get trusted :resolution-binding)
+        preimage
+        {:domain :gravity/sh26-coordinator-trusted-context-v1
+         :resolution-binding-root
+         (get trusted :resolution-binding-root)
+         :descriptor-id (get trusted :descriptor-id)
+         :sealed-record-id (get trusted :sealed-record-id)
+         :template-replay-id (get trusted :template-replay-id)
+         :contextual-verification-id
+         (get trusted :contextual-verification-id)}]
+    (if
+     (sh26-exact-keys?
+      trusted
+      #{:artifact :schema-version :authority
+        :resolution-binding :resolution-binding-root
+        :descriptor :descriptor-id :sealed-record :sealed-record-id
+        :template-replay :template-replay-id
+        :contextual-verification :contextual-verification-id
+        :trusted-context-preimage :trusted-context-id})
+      (if (= :gravity/sh26-coordinator-trusted-context
+             (get trusted :artifact))
+        (if (= 1 (get trusted :schema-version))
+          (if (= :coordinator-held-clojure-seed
+                 (get trusted :authority))
+            (if (= descriptor (get trusted :descriptor))
+              (if (= sealed (get trusted :sealed-record))
+                (if (= replay (get trusted :template-replay))
+                  (if (= contextual
+                         (get trusted :contextual-verification))
+                    (if (= binding
+                           (get sealed :host-resolution-binding))
+                      (if (= (get binding :binding-root)
+                             (get trusted
+                                  :resolution-binding-root))
+                        (if (= preimage
+                               (get trusted
+                                    :trusted-context-preimage))
+                          (if
+                           (sh26-nonempty-string?
+                            (get trusted :descriptor-id))
+                            (if
+                             (sh26-nonempty-string?
+                              (get trusted :sealed-record-id))
+                              (if
+                               (sh26-nonempty-string?
+                                (get trusted
+                                     :template-replay-id))
+                                (if
+                                 (sh26-nonempty-string?
+                                  (get
+                                   trusted
+                                   :contextual-verification-id))
+                                  (sh26-nonempty-string?
+                                   (get trusted
+                                        :trusted-context-id))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh26-sh25-authentication-valid?
+  [authentication trusted-context
+   request result verification projection
+   request-id result-id verification-id projection-id
+   provenance-root]
+  (if
+   (sh26-exact-keys?
+    authentication
+    #{:descriptor :envelope-revision-pin
+      :builder-result :sealed-record :envelope
+      :template-replay :contextual-verification})
+    (let [descriptor (get authentication :descriptor)
+          revision-pin
+          (get authentication :envelope-revision-pin)
+          trusted-binding
+          (get trusted-context :resolution-binding)
+          trusted-root
+          (get trusted-context :resolution-binding-root)
+          builder (get authentication :builder-result)
+          sealed (get authentication :sealed-record)
+          envelope (get authentication :envelope)
+          replay (get authentication :template-replay)
+          contextual
+          (get authentication :contextual-verification)]
+      (if
+       (sh26-trusted-context-valid?
+        trusted-context authentication)
+        (if
+         (sh26-envelope-descriptor-valid2?
+          descriptor request result verification projection
+          request-id result-id verification-id projection-id
+          provenance-root)
+          (if
+           (sh26-envelope-revision-pin-valid?
+            revision-pin (get descriptor :source-revision))
+            (if (sh26-builder-result-valid? builder)
+              (if (sh26-template-replay-valid? replay)
+            (if (sh26-replay-builder-bound? replay builder)
+              (if (map? envelope)
+            (if (= :gravity/authenticated-envelope
+                   (get envelope :artifact))
+              (if (= :sh26-stage-rebuild (get envelope :stage))
+                (if (= :gravity/sh26-sh25-complete-context
+                       (get envelope :artifact-kind))
+                  (if (= false (get envelope :self-hosted?))
+                    (if (= true
+                           (get envelope :clojure-seed-boundary?))
+                      (if (= (get envelope :semantic-envelope-id)
+                             (get contextual
+                                  :semantic-envelope-root))
+                        (if (= (get envelope
+                                    :provenance-binding-id)
+                               (get contextual
+                                    :provenance-binding-root))
+                          (if
+                           (sh26-contextual-verification-valid?
+                            contextual builder replay sealed envelope
+                            (get descriptor :identity-subjects))
+                            (sh26-sealed-record-valid?
+                             sealed trusted-binding trusted-root
+                             builder envelope contextual)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+            false)
+          false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh26-sh25-ingress-valid? [ingress trusted-context]
+  (if
+   (sh26-exact-keys?
+    ingress
+    #{:artifact :schema-version :request :complete-result
+      :verification :projection :request-id :complete-result-id
+      :verification-id :projection-id :sh25-provenance-root
+      :authentication})
+    (let [request (get ingress :request)
+          result (get ingress :complete-result)
+          verification (get ingress :verification)
+          projection (get ingress :projection)
+          components (get projection :components)
+          templates (get result :sh26-component-templates)
+          actions (get result :actions)]
+      (if (= :gravity/sh25-complete-ingress (get ingress :artifact))
+        (if (= 1 (get ingress :schema-version))
+          (if (sh26-sh25-request-valid? request)
+            (if (sh26-nonempty-string? (get ingress :request-id))
+              (if (sh26-nonempty-string?
+                   (get ingress :complete-result-id))
+                (if (sh26-nonempty-string?
+                     (get ingress :verification-id))
+                  (if (sh26-nonempty-string?
+                       (get ingress :projection-id))
+                    (if (sh26-sh25-authentication-valid?
+                         (get ingress :authentication)
+                         trusted-context
+                         request result verification projection
+                         (get ingress :request-id)
+                         (get ingress :complete-result-id)
+                         (get ingress :verification-id)
+                         (get ingress :projection-id)
+                         (get ingress :sh25-provenance-root))
+                      (if (sh26-sh25-result-valid? request result)
+                        (if
+                         (sh26-sh25-verification-valid?
+                          request result verification)
+                          (if
+                           (sh26-sh25-projection-valid?
+                            request verification projection)
+                            (if (= 42 (get result :component-count))
+                    (if (= 42 (count actions))
+                      (if (= 42 (count templates))
+                        (if (sh26-components-valid? components)
+                          (if
+                           (sh26-components-match-templates-from?
+                            components templates 0)
+                            (if
+                             (sh26-actions-match-from?
+                              components actions 0)
+                              (= actions
+                                 (sh26-sh25-expected-actions-from?
+                                  (get request :components) 0 []))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh26-stage-node-valid? [node ordinal]
+  (if
+   (sh26-exact-keys?
+    node
+    #{:stage-id :ordinal :compiler-id :compiler-content-id
+      :source-id :parent-compiler-id :input-stage-output-id
+      :stage-output-id :transition})
+    (if (keyword? (get node :stage-id))
+      (if (= ordinal (get node :ordinal))
+        (if (sh26-nonempty-string? (get node :compiler-id))
+          (if (sh26-nonempty-string?
+               (get node :compiler-content-id))
+            (if (sh26-nonempty-string? (get node :source-id))
+              (if (sh26-nonempty-string?
+                   (get node :stage-output-id))
+                (= :compiled-by-prior-stage
+                   (get node :transition))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-value-seen-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (sh26-value-seen-from? values value (+ index 1)))))
+
+(defn sh26-node-identities [node]
+  [(get node :stage-id)
+   (get node :compiler-id)
+   (get node :compiler-content-id)
+   (get node :source-id)
+   (get node :stage-output-id)])
+
+(defn sh26-unique-identities-from?
+  [identities seen index]
+  (if (= index (count identities))
+    seen
+    (let [identity (get identities index)]
+      (if (sh26-value-seen-from? seen identity 0)
+        false
+        (sh26-unique-identities-from?
+         identities (conj seen identity) (+ index 1))))))
+
+(defn sh26-lineage-identities-unique-from? [lineage index seen]
+  (if (= index (count lineage))
+    true
+    (let [next-seen
+          (sh26-unique-identities-from?
+           (sh26-node-identities (get lineage index)) seen 0)]
+      (if (= false next-seen)
+        false
+        (sh26-lineage-identities-unique-from?
+         lineage (+ index 1) next-seen)))))
+
+(defn sh26-lineage-from? [lineage index]
+  (if (= index (count lineage))
+    true
+    (let [node (get lineage index)]
+      (if (sh26-stage-node-valid? node index)
+        (if (= index 0)
+          (if (= nil (get node :parent-compiler-id))
+            (if (= nil (get node :input-stage-output-id))
+              (sh26-lineage-from? lineage (+ index 1))
+              false)
+            false)
+          (let [parent (get lineage (- index 1))]
+            (if (= (get parent :compiler-id)
+                   (get node :parent-compiler-id))
+              (if (= (get parent :stage-output-id)
+                     (get node :input-stage-output-id))
+                (sh26-lineage-from? lineage (+ index 1))
+                false)
+              false)))
+        false))))
+
+(defn sh26-stage-lineage-valid? [lineage]
+  (if (vector? lineage)
+    (if (>= (count lineage) 2)
+      (if (<= (count lineage) 16)
+        (if (sh26-lineage-identities-unique-from?
+             lineage 0 [])
+          (sh26-lineage-from? lineage 0)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-stage-compiler-valid? [compiler lineage sh25]
+  (if
+   (sh26-exact-keys?
+    compiler
+    #{:stage-id :compiler-id :compiler-content-id :source-id
+      :lineage-terminal-stage-id :implementation-language :profile
+      :sh25-request-id :sh25-complete-result-id
+      :sh25-verification-id :sh25-projection-id
+      :sh25-provenance-root :sh25-context-root
+      :actual-compiler-path})
+    (let [terminal (get lineage (- (count lineage) 1))]
+      (if (= (get terminal :stage-id)
+             (get compiler :lineage-terminal-stage-id))
+        (if (= (get terminal :stage-id)
+               (get compiler :stage-id))
+          (if (= (get terminal :compiler-id)
+                 (get compiler :compiler-id))
+            (if (= (get terminal :compiler-content-id)
+                   (get compiler :compiler-content-id))
+              (if (= (get terminal :source-id)
+                     (get compiler :source-id))
+                (if (= :gravity
+                       (get compiler :implementation-language))
+                  (if (= :meta (get compiler :profile))
+                    (if (= (get sh25 :request-id)
+                           (get compiler :sh25-request-id))
+                      (if (= (get sh25 :complete-result-id)
+                             (get compiler :sh25-complete-result-id))
+                        (if (= (get sh25 :verification-id)
+                               (get compiler :sh25-verification-id))
+                          (if (= (get sh25 :projection-id)
+                                 (get compiler :sh25-projection-id))
+                            (if (= (get sh25
+                                        :sh25-provenance-root)
+                                   (get compiler
+                                        :sh25-provenance-root))
+                              (if
+                             (= (get
+                                 (get
+                                  (get sh25 :authentication)
+                                  :contextual-verification)
+                                 :semantic-envelope-root)
+                                (get compiler :sh25-context-root))
+                              (sh26-nonempty-string?
+                               (get compiler
+                                    :actual-compiler-path))
+                              false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh26-pending-stream-valid? [stream artifact]
+  (if
+   (sh26-exact-keys?
+    stream #{:artifact :schema-version :status :content-id})
+    (if (= artifact (get stream :artifact))
+      (if (= 1 (get stream :schema-version))
+        (if (= :pending (get stream :status))
+          (= nil (get stream :content-id))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-pending-exit-valid? [exit]
+  (if
+   (sh26-exact-keys?
+    exit #{:artifact :schema-version :status :exit-code})
+    (if (= :gravity/process-exit-status (get exit :artifact))
+      (if (= 1 (get exit :schema-version))
+        (if (= :pending (get exit :status))
+          (= nil (get exit :exit-code))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-target-valid? [target]
+  (if
+   (sh26-exact-keys?
+    target
+    #{:profile :backend :target-id :runtime-id :target-hash})
+    (if (= :meta (get target :profile))
+      (if (= :jvm (get target :backend))
+        (if (sh26-nonempty-string? (get target :target-id))
+          (if (sh26-nonempty-string? (get target :runtime-id))
+            (sh26-nonempty-string? (get target :target-hash))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-output-identity-distinct?
+  [output-id lineage components]
+  (let [lineage-identities
+        (loop [index 0 result []]
+          (if (= index (count lineage))
+            result
+            (recur
+             (+ index 1)
+             (conj
+              result
+              (get (get lineage index) :stage-output-id)))))
+        component-output-identities
+        (loop [index 0 result []]
+          (if (= index (count components))
+            result
+            (recur
+             (+ index 1)
+             (conj
+              result
+              (get (get components index) :output-id)))))]
+    (if (sh26-value-seen-from?
+         lineage-identities output-id 0)
+      false
+      (if (sh26-value-seen-from?
+           component-output-identities output-id 0)
+        false
+        true))))
+
+(defn sh26-toolchain-valid? [toolchain compiler target]
+  (if
+   (sh26-exact-keys?
+    toolchain #{:toolchain-id :family :version :target})
+    (if (= (get compiler :compiler-id)
+           (get toolchain :toolchain-id))
+      (if (= :gravity (get toolchain :family))
+        (if (sh26-nonempty-string? (get toolchain :version))
+          (= (get target :target-id) (get toolchain :target))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-build-logs-valid? [logs]
+  (if
+   (sh26-exact-keys?
+    logs #{:stdout :stderr :exit :action-count :execution-status})
+    (if (= 42 (get logs :action-count))
+      (if (= :pending (get logs :execution-status))
+        (if
+         (sh26-pending-stream-valid?
+          (get logs :stdout) :gravity/process-stdout)
+          (if
+           (sh26-pending-stream-valid?
+            (get logs :stderr) :gravity/process-stderr)
+            (sh26-pending-exit-valid? (get logs :exit))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-conformance-valid? [conformance]
+  (if
+   (sh26-exact-keys?
+    conformance
+    #{:catalog-status :lineage-status :environment-status
+      :output-status :execution-status})
+    (if (= :passed (get conformance :catalog-status))
+      (if (= :passed (get conformance :lineage-status))
+        (if (= :passed (get conformance :environment-status))
+          (if (= :pending (get conformance :output-status))
+            (= :pending (get conformance :execution-status))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-evidence-valid?
+  [evidence environment compiler lock target]
+  (if
+   (sh26-exact-keys?
+    evidence
+    #{:source-hash :compiler-hash :lock-hash :target-hash
+      :output-hash :environment :toolchain :build-logs
+      :conformance})
+    (if (= (get compiler :source-id)
+           (get evidence :source-hash))
+      (if (= (get compiler :compiler-content-id)
+             (get evidence :compiler-hash))
+        (if (= (get lock :content-id)
+               (get evidence :lock-hash))
+          (if (= (get target :target-hash)
+                 (get evidence :target-hash))
+            (if (sh26-nonempty-string? (get evidence :output-hash))
+              (if (= environment (get evidence :environment))
+                (if
+                 (sh26-toolchain-valid?
+                  (get evidence :toolchain) compiler target)
+                  (if
+                   (sh26-build-logs-valid?
+                    (get evidence :build-logs))
+                    (sh26-conformance-valid?
+                     (get evidence :conformance))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh26-request-error [request trusted-context]
+  (if
+   (sh26-exact-keys?
+    request
+    #{:artifact :schema-version :rebuild-id :stage-lineage
+      :stage-compiler :sh25-ingress :environment :candidate-language
+      :candidate-effects :candidate-capabilities :lock :recipe
+      :target :rebuild-evidence :actual-rebuild-root})
+    (if (= :gravity/sh26-stage-rebuild-request
+           (get request :artifact))
+      (if (= 2 (get request :schema-version))
+        (if (keyword? (get request :rebuild-id))
+          (if (sh26-stage-lineage-valid?
+               (get request :stage-lineage))
+            (if (sh26-sh25-ingress-valid?
+                 (get request :sh25-ingress)
+                 trusted-context)
+              (if
+               (sh26-stage-compiler-valid?
+                (get request :stage-compiler)
+                (get request :stage-lineage)
+                (get request :sh25-ingress))
+                (if (sh26-environment-valid?
+                     (get request :environment))
+                  (if (= :gravity
+                         (get request :candidate-language))
+                    (if (= #{} (get request :candidate-effects))
+                      (if (= #{}
+                             (get request :candidate-capabilities))
+                        (if
+                         (sh26-content-record-valid?
+                          (get request :lock)
+                          :gravity/bootstrap-lock)
+                          (if
+                           (sh26-content-record-valid?
+                            (get request :recipe)
+                            :gravity/bootstrap-recipe)
+                            (if
+                             (sh26-target-valid?
+                              (get request :target))
+                              (if
+                               (sh26-evidence-valid?
+                                (get request :rebuild-evidence)
+                                (get request :environment)
+                                (get request :stage-compiler)
+                                (get request :lock)
+                                (get request :target))
+                                (if
+                                 (sh26-output-identity-distinct?
+                                  (get
+                                   (get request :rebuild-evidence)
+                                   :output-hash)
+                                  (get request :stage-lineage)
+                                  (get
+                                   (get
+                                    (get request :sh25-ingress)
+                                    :projection)
+                                   :components))
+                                  (if
+                                   (sh26-nonempty-string?
+                                    (get request
+                                         :actual-rebuild-root))
+                                    nil
+                                    :physical-provenance)
+                                  :rebuild-evidence)
+                                :rebuild-evidence)
+                              :target)
+                            :recipe)
+                          :lock)
+                        :candidate-host-authority)
+                      :candidate-host-authority)
+                    :candidate-host-authority)
+                  :uncontrolled-environment)
+                :invalid-compiler-lineage)
+              :invalid-sh25-ingress)
+            :invalid-compiler-lineage)
+          :invalid-rebuild-request)
+        :invalid-rebuild-request)
+      :invalid-rebuild-request)
+    :invalid-rebuild-request))
+
+(defn sh26-rule-for-reason [reason]
+  (if (= reason :uncontrolled-environment)
+    "BOOT6001"
+    (if (= reason :invalid-compiler-lineage)
+      "BOOT6002"
+      (if (= reason :candidate-host-authority)
+        "BOOT3002"
+        (if (if (= reason :invalid-sh25-ingress)
+              true
+              (= reason :invalid-trusted-context))
+          "BOOT3001"
+          (if (= reason :lock)
+            "BOOT1005"
+            (if (= reason :recipe)
+              "BOOT1003"
+              "BOOT1001")))))))
+
+(defn sh26-diagnostic [request rule reason]
+  {:artifact :gravity/sh26-stage-rebuild-diagnostic
+   :schema-version 2
+   :rule rule
+   :severity :error
+   :stage :bootstrap-rebuild
+   :source-span
+   {:source
+    (if (map? request) (get request :actual-rebuild-root) nil)}
+   :facts {:reason reason :fail-closed true}
+   :remediation
+   "Provide bounded, contextual SH-25 products and a controlled rebuild."})
+
+(defn sh26-rejected [request reason]
+  {:artifact :gravity/sh26-stage-rebuild-result
+   :schema-version 2
+   :status :rejected
+   :diagnostics
+   [(sh26-diagnostic request (sh26-rule-for-reason reason) reason)]
+   :pending (get (sh26-stage-rebuild-policy) :pending)
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh26-build-actions-from? [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)]
+      (sh26-build-actions-from?
+       components (+ index 1)
+       (conj
+        result
+        {:action-id
+         (str "sh26:compile:" (get component :component-id))
+         :executor :gravity
+         :component-id (get component :component-id)
+         :source-id (get component :source-id)
+         :dependency-components (get component :dependencies)
+         :output-id (get component :output-id)
+         :topological-ordinal
+         (get component :topological-ordinal)
+         :effects #{}
+         :capabilities #{}
+         :execution-status :pending})))))
+
+(defn sh26-identity-components-from? [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)]
+      (sh26-identity-components-from?
+       components (+ index 1)
+       (conj
+        result
+        {:component-id (get component :component-id)
+         :source-id (get component :source-id)
+         :output-id (get component :output-id)
+         :topological-ordinal
+         (get component :topological-ordinal)
+         :dependencies (get component :dependencies)
+         :profile (get component :profile)
+         :implementation-language
+         (get component :implementation-language)})))))
+
+(defn sh26-component-paths-from? [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)]
+      (sh26-component-paths-from?
+       components (+ index 1)
+       (conj
+        result
+        {:component-id (get component :component-id)
+         :actual-source-path
+         (get component :actual-source-path)})))))
+
+(defn sh26-build-accepted [request census trusted-context]
+  (let [ingress (get request :sh25-ingress)
+        components (get (get ingress :projection) :components)
+        compiler (get request :stage-compiler)
+        evidence (get request :rebuild-evidence)
+        actions (sh26-build-actions-from? components 0 [])
+        output-ids
+        (loop [index 0 result []]
+          (if (= index (count components))
+            result
+            (recur (+ index 1)
+                   (conj result
+                         (get (get components index) :output-id)))))]
+    {:artifact :gravity/sh26-stage-rebuild-result
+     :schema-version 2
+     :status :accepted
+     :rebuild-id (get request :rebuild-id)
+     :trusted-context-id
+     (get trusted-context :trusted-context-id)
+     :prior-stage-lineage (get request :stage-lineage)
+     :stage-transition
+     {:semantics :compiled-by-prior-stage
+      :from-stage-id (get compiler :stage-id)
+      :from-compiler-id (get compiler :compiler-id)
+      :to-stage-id :stage/n-plus-one
+      :input-stage-output-id
+      (get
+       (get (get request :stage-lineage)
+            (- (count (get request :stage-lineage)) 1))
+       :stage-output-id)
+      :output-stage-id (get evidence :output-hash)}
+     :actions actions
+     :stage-manifest
+     {:artifact :gravity/sh26-stage-manifest
+      :schema-version 1
+      :rebuild-id (get request :rebuild-id)
+      :source-hash (get evidence :source-hash)
+      :compiler-hash (get evidence :compiler-hash)
+      :lock-hash (get evidence :lock-hash)
+      :target-hash (get evidence :target-hash)
+      :output-hash (get evidence :output-hash)
+      :component-output-ids output-ids
+      :environment (get evidence :environment)
+      :toolchain (get evidence :toolchain)
+      :build-logs (get evidence :build-logs)
+      :conformance (get evidence :conformance)}
+     :rebuild-record
+     {:artifact :gravity/sh26-rebuild-record
+      :schema-version 1
+      :sh25-request-id (get ingress :request-id)
+      :sh25-complete-result-id (get ingress :complete-result-id)
+      :sh25-verification-id (get ingress :verification-id)
+      :sh25-projection-id (get ingress :projection-id)
+      :sh25-provenance-root (get ingress :sh25-provenance-root)
+      :sh25-context-root
+      (get
+       (get (get ingress :authentication)
+            :contextual-verification)
+       :semantic-envelope-root)
+      :trusted-context-id
+      (get trusted-context :trusted-context-id)
+      :component-count 42
+      :execution-status :pending
+      :candidate-language :gravity
+      :effects #{}
+      :capabilities #{}}
+     :identity-input
+     {:rebuild-id (get request :rebuild-id)
+      :stage-lineage (get request :stage-lineage)
+      :compiler-id (get compiler :compiler-id)
+      :compiler-content-id (get compiler :compiler-content-id)
+      :sh25-request-id (get ingress :request-id)
+      :sh25-complete-result-id (get ingress :complete-result-id)
+      :sh25-verification-id (get ingress :verification-id)
+      :sh25-projection-id (get ingress :projection-id)
+      :sh25-provenance-root (get ingress :sh25-provenance-root)
+      :sh25-context-root
+      (get
+       (get (get ingress :authentication)
+            :contextual-verification)
+       :semantic-envelope-root)
+      :components
+      (sh26-identity-components-from? components 0 [])
+      :environment (get request :environment)
+      :lock (get request :lock)
+      :recipe (get request :recipe)
+      :target (get request :target)
+      :output-hash (get evidence :output-hash)}
+     :provenance
+     {:actual-rebuild-root (get request :actual-rebuild-root)
+      :actual-stage-compiler-path
+      (get compiler :actual-compiler-path)
+      :sh25-provenance-root
+      (get ingress :sh25-provenance-root)
+      :sh02-envelope-provenance-root
+      (get
+       (get (get ingress :authentication)
+            :contextual-verification)
+       :provenance-binding-root)
+      :component-sources
+      (sh26-component-paths-from? components 0 [])}
+     :request-census census
+     :diagnostics []
+     :pending (get (sh26-stage-rebuild-policy) :pending)
+     :self-hosted? false
+     :clojure-seed-boundary? true}))
+
+(defn sh26-build-next-stage [request trusted-context]
+  (let [preflight (sh26-carrier-preflight request)
+        trusted-preflight
+        (sh26-carrier-preflight trusted-context)]
+    (if (= :accepted (get preflight :status))
+      (if (= :accepted (get trusted-preflight :status))
+        (let [reason
+              (sh26-request-error request trusted-context)]
+          (if (= nil reason)
+            (sh26-build-accepted
+             request preflight trusted-context)
+            (sh26-rejected request reason)))
+        (sh26-rejected request :invalid-trusted-context))
+      (sh26-rejected request (get preflight :reason)))))
+
+(defn sh26-verify-stage-rebuild
+  [request trusted-context candidate]
+  (let [request-preflight (sh26-carrier-preflight request)
+        trusted-preflight
+        (sh26-carrier-preflight trusted-context)
+        candidate-preflight (sh26-carrier-preflight candidate)]
+    (if (= :accepted (get request-preflight :status))
+      (if (= :accepted (get trusted-preflight :status))
+        (if (= :accepted (get candidate-preflight :status))
+          (let [expected
+                (sh26-build-next-stage request trusted-context)]
+            (if (= expected candidate)
+            {:artifact :gravity/sh26-stage-rebuild-verification
+             :schema-version 2
+             :status :passed
+             :rebuild-id (get request :rebuild-id)
+             :trusted-context-id
+             (get trusted-context :trusted-context-id)
+             :candidate-census candidate-preflight
+             :checks
+             [:bounded-request-carrier
+              :bounded-candidate-carrier
+              :exact-sh25-complete-result
+              :exact-sh25-verification
+              :exact-sh25-projection
+              :complete-42-component-catalog
+              :component-source-output-binding
+              :acyclic-stage-lineage
+              :stage-transition-semantics
+              :complete-physical-provenance
+              :manifest-and-rebuild-record
+              :exact-result]}
+              {:artifact :gravity/sh26-stage-rebuild-verification
+               :schema-version 2
+               :status :rejected
+               :diagnostics
+               [(sh26-diagnostic
+                 request "BOOT3001"
+                 :stage-rebuild-result-altered)]}))
+          {:artifact :gravity/sh26-stage-rebuild-verification
+           :schema-version 2
+           :status :rejected
+           :diagnostics
+           [(sh26-diagnostic
+             request "BOOT3001"
+             (get candidate-preflight :reason))]})
+        {:artifact :gravity/sh26-stage-rebuild-verification
+         :schema-version 2
+         :status :rejected
+         :diagnostics
+         [(sh26-diagnostic
+           request "BOOT3001" :invalid-trusted-context)]})
+      {:artifact :gravity/sh26-stage-rebuild-verification
+       :schema-version 2
+       :status :rejected
+       :diagnostics
+       [(sh26-diagnostic
+         request "BOOT1001" (get request-preflight :reason))]})))

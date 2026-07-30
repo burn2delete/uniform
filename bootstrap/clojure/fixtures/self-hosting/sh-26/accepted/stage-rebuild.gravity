@@ -1,0 +1,129 @@
+(ns gravity.self-hosting.sh26.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh26-stage-rebuild-request
+             sh26-stage-rebuild-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh26-lineage []
+  [{:stage-id :stage/n-minus-one
+    :ordinal 0
+    :compiler-id "gravityc:stage-n-minus-one"
+    :compiler-content-id "sha256:stage-n-minus-one-compiler"
+    :source-id "sha256:stage-n-minus-one-source"
+    :parent-compiler-id nil
+    :input-stage-output-id nil
+    :stage-output-id "sha256:stage-n-minus-one-output"
+    :transition :compiled-by-prior-stage}
+   {:stage-id :stage/n
+    :ordinal 1
+    :compiler-id "gravityc:stage-n"
+    :compiler-content-id "sha256:stage-n-compiler"
+    :source-id "sha256:stage-n-source"
+    :parent-compiler-id "gravityc:stage-n-minus-one"
+    :input-stage-output-id "sha256:stage-n-minus-one-output"
+    :stage-output-id "sha256:stage-n-output"
+    :transition :compiled-by-prior-stage}])
+
+(defn sh26-environment []
+  {:environment-id "sha256:sh26-environment"
+   :locked-dependencies true
+   :locale "C"
+   :timezone "UTC"
+   :filesystem-order :sorted
+   :timestamp-policy :fixed
+   :random-seed 26
+   :network :disabled
+   :allowed-environment []})
+
+(defn sh26-request [ingress checkout]
+  (let [environment (sh26-environment)]
+    {:artifact :gravity/sh26-stage-rebuild-request
+     :schema-version 2
+     :rebuild-id :rebuild/stage-n-plus-one
+     :stage-lineage (sh26-lineage)
+     :stage-compiler
+     {:stage-id :stage/n
+      :compiler-id "gravityc:stage-n"
+      :compiler-content-id "sha256:stage-n-compiler"
+      :source-id "sha256:stage-n-source"
+      :lineage-terminal-stage-id :stage/n
+      :implementation-language :gravity
+      :profile :meta
+      :sh25-request-id (get ingress :request-id)
+      :sh25-complete-result-id (get ingress :complete-result-id)
+      :sh25-verification-id (get ingress :verification-id)
+      :sh25-projection-id (get ingress :projection-id)
+      :sh25-provenance-root (get ingress :sh25-provenance-root)
+      :sh25-context-root
+      (get
+       (get (get ingress :authentication)
+            :contextual-verification)
+       :semantic-envelope-root)
+      :actual-compiler-path (str checkout "/bin/gravity-stage-n")}
+     :sh25-ingress ingress
+     :environment environment
+     :candidate-language :gravity
+     :candidate-effects #{}
+     :candidate-capabilities #{}
+     :lock
+     {:artifact :gravity/bootstrap-lock
+      :schema-version 1
+      :content-id "sha256:bootstrap-lock"
+      :byte-count 4096}
+     :recipe
+     {:artifact :gravity/bootstrap-recipe
+      :schema-version 1
+      :content-id "sha256:bootstrap-recipe"
+      :byte-count 2048}
+     :target
+     {:profile :meta
+      :backend :jvm
+      :target-id "jvm:bootstrap"
+      :runtime-id "gravity:bootstrap-runtime"
+      :target-hash "sha256:sh26-target"}
+     :rebuild-evidence
+     {:source-hash "sha256:stage-n-source"
+      :compiler-hash "sha256:stage-n-compiler"
+      :lock-hash "sha256:bootstrap-lock"
+      :target-hash "sha256:sh26-target"
+      :output-hash "sha256:stage-n-plus-one-output"
+      :environment environment
+      :toolchain
+      {:toolchain-id "gravityc:stage-n"
+       :family :gravity
+       :version "stage-n"
+       :target "jvm:bootstrap"}
+      :build-logs
+      {:stdout
+       {:artifact :gravity/process-stdout
+        :schema-version 1
+        :status :pending
+        :content-id nil}
+       :stderr
+       {:artifact :gravity/process-stderr
+        :schema-version 1
+        :status :pending
+        :content-id nil}
+       :exit
+       {:artifact :gravity/process-exit-status
+        :schema-version 1
+        :status :pending
+        :exit-code nil}
+       :action-count 42
+       :execution-status :pending}
+      :conformance
+      {:catalog-status :passed
+       :lineage-status :passed
+       :environment-status :passed
+       :output-status :pending
+       :execution-status :pending}}
+     :actual-rebuild-root (str checkout "/rebuild")}))
+
+(defn sh26-stage-rebuild-request [ingress]
+  (sh26-request ingress "/checkout-a"))
+
+(defn sh26-stage-rebuild-alternate-path-request [ingress]
+  (sh26-request ingress "/checkout-b"))

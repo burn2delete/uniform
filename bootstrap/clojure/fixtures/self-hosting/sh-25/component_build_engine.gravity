@@ -1,0 +1,1682 @@
+(ns gravity.self-hosting.sh25.component-build-engine
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh25-component-build-policy
+             sh25-authoritative-component-catalog
+             sh25-build-authoritative-components
+             sh25-verify-component-build
+             sh25-project-verified-sh26-components])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh25-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn sh25-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (sh25-member-from? values value (+ index 1)))))
+
+(defn sh25-member? [values value]
+  (if (vector? values)
+    (sh25-member-from? values value 0)
+    false))
+
+(defn sh25-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh25-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh25-aggregate-components [value]
+  (if (map? value)
+    (let [map-keys (vec (keys value))]
+      (loop [index 0 result []]
+      (if (= index (count map-keys))
+        result
+        (recur
+         (+ index 1)
+         (conj
+          (conj result (get map-keys index))
+          (get value (get map-keys index)))))))
+    (if (vector? value)
+      value
+      (vec value))))
+
+(defn sh25-max [left right]
+  (if (> left right) left right))
+
+(defn sh25-scalar-units [value]
+  (if (= nil value)
+    3
+    (if (boolean? value)
+      5
+      (if (string? value)
+        (* 4 (count value))
+        (if (char? value)
+          4
+          (if (keyword? value)
+            64
+            (if (symbol? value)
+              64
+              (if (integer? value)
+                (if (if (>= value -9223372036854775808)
+                      (<= value 9223372036854775807)
+                      false)
+                  20
+                  -1)
+                -1))))))))
+
+(defn sh25-carrier-preflight [value]
+  (loop [frontier [[value 0]]
+         cursor 0
+         nodes 0
+         scalar-units 0
+         observed-depth 0
+         observed-width 0]
+    (if (= cursor (count frontier))
+      {:status :accepted
+       :nodes nodes
+       :scalar-units scalar-units
+       :maximum-depth observed-depth
+       :maximum-width observed-width}
+      (let [entry (get frontier cursor)
+            current (first entry)
+            depth (second entry)
+            next-nodes (+ nodes 1)]
+        (if (> next-nodes 1048576)
+          {:status :rejected :reason :carrier-node-bound}
+          (if (> depth 128)
+            {:status :rejected :reason :carrier-depth-bound}
+            (if (seq? current)
+              {:status :rejected :reason :carrier-sequence-unsupported}
+              (if (sh25-aggregate? current)
+                (let [width (sh25-aggregate-width current)]
+                  (if (> width 65536)
+                    {:status :rejected :reason :carrier-width-bound}
+                    (let [components
+                          (sh25-aggregate-components current)]
+                      (if (> (+ (- (count frontier) cursor)
+                                (count components))
+                             1048576)
+                        {:status :rejected
+                         :reason :carrier-node-bound}
+                        (let [next-frontier
+                              (loop [index 0
+                                     result frontier]
+                                (if (= index (count components))
+                                  result
+                                  (recur
+                                   (+ index 1)
+                                   (conj
+                                    result
+                                    [(get components index)
+                                     (+ depth 1)]))))]
+                          (recur
+                           next-frontier
+                           (+ cursor 1)
+                           next-nodes
+                           scalar-units
+                           (sh25-max observed-depth depth)
+                           (sh25-max observed-width width)))))))
+                (let [current-scalar-units
+                      (sh25-scalar-units current)]
+                  (if (< current-scalar-units 0)
+                    {:status :rejected
+                     :reason :carrier-scalar-type}
+                    (if (> current-scalar-units 1048576)
+                      {:status :rejected
+                       :reason :carrier-scalar-bound}
+                      (let [next-scalar-units
+                            (+ scalar-units current-scalar-units)]
+                        (if (> next-scalar-units 16777216)
+                          {:status :rejected
+                           :reason :carrier-scalar-bound}
+                          (recur
+                           frontier
+                           (+ cursor 1)
+                           next-nodes
+                           next-scalar-units
+                           (sh25-max observed-depth depth)
+                           observed-width))))))))))))))
+
+(defn sh25-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh25-authoritative-component-catalog []
+  [{:component-id :authenticated-envelope
+    :category :compiler
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+    :dependencies []}
+   {:component-id :surface-reader
+    :category :reader
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+    :dependencies [:authenticated-envelope]}
+   {:component-id :bootstrap-reader
+    :category :reader
+    :source-path
+    "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+    :dependencies [:surface-reader]}
+   {:component-id :syntax-model
+    :category :syntax
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+    :dependencies [:bootstrap-reader :authenticated-envelope]}
+   {:component-id :bootstrap-syntax
+    :category :syntax
+    :source-path
+    "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
+    :dependencies [:syntax-model]}
+   {:component-id :macro-engine
+    :category :macro
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+    :dependencies [:bootstrap-syntax]}
+   {:component-id :bootstrap-macro
+    :category :macro
+    :source-path "bootstrap/gravity/src/gravity/macro.gravity"
+    :dependencies [:macro-engine]}
+   {:component-id :resolution-engine
+    :category :analyzer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+    :dependencies [:bootstrap-macro]}
+   {:component-id :bootstrap-resolution
+    :category :analyzer
+    :source-path "bootstrap/gravity/src/gravity/resolution.gravity"
+    :dependencies [:resolution-engine]}
+   {:component-id :core-semantics
+    :category :checked-core
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+    :dependencies [:bootstrap-resolution]}
+   {:component-id :core-lowering
+    :category :checked-core
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    :dependencies [:core-semantics]}
+   {:component-id :checked-core
+    :category :checked-core
+    :source-path "bootstrap/gravity/src/gravity/checked_core.gravity"
+    :dependencies [:core-lowering :authenticated-envelope]}
+   {:component-id :checked-core-pipeline
+    :category :checked-core
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    :dependencies [:checked-core]}
+   {:component-id :type-checker
+    :category :analyzer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    :dependencies [:checked-core-pipeline]}
+   {:component-id :effect-checker
+    :category :analyzer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+    :dependencies [:type-checker]}
+   {:component-id :ownership-checker
+    :category :analyzer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+    :dependencies [:type-checker]}
+   {:component-id :safety-analysis
+    :category :analyzer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+    :dependencies [:effect-checker :ownership-checker]}
+   {:component-id :mir
+    :category :mir
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    :dependencies [:safety-analysis]}
+   {:component-id :domain-ir
+    :category :mir
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+    :dependencies [:mir]}
+   {:component-id :compiler-diagnostics
+    :category :diagnostic
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
+    :dependencies [:mir]}
+   {:component-id :bootstrap-diagnostics
+    :category :diagnostic
+    :source-path
+    "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+    :dependencies [:compiler-diagnostics]}
+   {:component-id :mir-optimization
+    :category :optimizer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+    :dependencies [:mir :bootstrap-diagnostics]}
+   {:component-id :compiler-verification
+    :category :optimizer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+    :dependencies [:mir-optimization]}
+   {:component-id :target-lowering
+    :category :lowering
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+    :dependencies [:compiler-verification :domain-ir]}
+   {:component-id :backend-interface
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+    :dependencies [:target-lowering]}
+   {:component-id :backend-c
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-llvm
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-wasm
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-jvm
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-js
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-mlir
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-gpu
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-hdl
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-workflow
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-query
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :backend-mobile
+    :category :backend
+    :source-path
+    "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+    :dependencies [:backend-interface]}
+   {:component-id :incremental-compiler
+    :category :compiler
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+    :dependencies [:compiler-verification]}
+   {:component-id :compiler-pass-api
+    :category :compiler
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+    :dependencies [:compiler-verification]}
+   {:component-id :meta-legality
+    :category :compiler
+    :source-path
+    "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
+    :dependencies [:effect-checker :target-lowering]}
+   {:component-id :standard-library-subset
+    :category :standard-library
+    :source-path
+    "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
+    :dependencies [:mir :meta-legality]}
+   {:component-id :package-build-subset
+    :category :package-build
+    :source-path
+    "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"
+    :dependencies
+    [:backend-c :meta-legality :standard-library-subset]}
+   {:component-id :runtime-subset
+    :category :runtime
+    :source-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
+    :dependencies [:backend-c :standard-library-subset]}])
+
+(defn sh25-authoritative-source-revisions []
+  [{:component-id :authenticated-envelope
+    :byte-count 59495
+    :content-hash
+    "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71"}
+   {:component-id :surface-reader
+    :byte-count 36920
+    :content-hash
+    "sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0"}
+   {:component-id :bootstrap-reader
+    :byte-count 257161
+    :content-hash
+    "sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77"}
+   {:component-id :syntax-model
+    :byte-count 4149
+    :content-hash
+    "sha256:8f33d57ab88a8afd206b4a824dfaa38187afd74d9e2309626e10dbaa2b2a2d55"}
+   {:component-id :bootstrap-syntax
+    :byte-count 81241
+    :content-hash
+    "sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553"}
+   {:component-id :macro-engine
+    :byte-count 4053
+    :content-hash
+    "sha256:61314a0d94bace963758efb740859fdf7bb8214b22e1c69fe6de5478386cc574"}
+   {:component-id :bootstrap-macro
+    :byte-count 56488
+    :content-hash
+    "sha256:19fe589efb27228b8788347439381b61c907a7b6a562a2a3ac3f7256ae77e549"}
+   {:component-id :resolution-engine
+    :byte-count 4154
+    :content-hash
+    "sha256:9e8e57143fa1171e87c18cf03c40579fd91b522c22c5dcdd97d105e581ce174a"}
+   {:component-id :bootstrap-resolution
+    :byte-count 77209
+    :content-hash
+    "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56"}
+   {:component-id :core-semantics
+    :byte-count 17557
+    :content-hash
+    "sha256:25cf07308bf8a98f9933b56ea3555a7c7906fcda81dd73be883c55140a986284"}
+   {:component-id :core-lowering
+    :byte-count 9109
+    :content-hash
+    "sha256:d9d2acced4092f7e5c3244504351b6a4f6f2a90ce202400a48c3c1f690544afc"}
+   {:component-id :checked-core
+    :byte-count 406758
+    :content-hash
+    "sha256:583d8f194aee0588e22dc8e4d2882b5c5019167f9908b008e5be825a07f05b6b"}
+   {:component-id :checked-core-pipeline
+    :byte-count 141562
+    :content-hash
+    "sha256:0299511c26c8b2a191309a4a4358528de397c88551ed98a2aed03d172067b2a5"}
+   {:component-id :type-checker
+    :byte-count 39567
+    :content-hash
+    "sha256:f63601c8ea2359f785f6e5cc06610e93529cac13ca8844c7219ef4575deb1822"}
+   {:component-id :effect-checker
+    :byte-count 44080
+    :content-hash
+    "sha256:9174577132042d1772fb344023dd45566fe6a13f016be0425ab7f2628f776998"}
+   {:component-id :ownership-checker
+    :byte-count 35870
+    :content-hash
+    "sha256:6127e0affc1f1e76616dac6295047fa3f5cb9221c0109d6258d1c231d3cfc0a0"}
+   {:component-id :safety-analysis
+    :byte-count 66044
+    :content-hash
+    "sha256:baf1d1c2d98b475ace5ce541662151ed03fdaa4ea544a8784d682393758e7007"}
+   {:component-id :mir
+    :byte-count 112240
+    :content-hash
+    "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06"}
+   {:component-id :domain-ir
+    :byte-count 43537
+    :content-hash
+    "sha256:0e081b11d5d9a37f4ceb6c6d1775898245abba219b0ca8449575beeda306dbed"}
+   {:component-id :compiler-diagnostics
+    :byte-count 6580
+    :content-hash
+    "sha256:5c54c7b533237ac18d6217d0b5c65e63e72b66dd6b311a7ac7848eead7668258"}
+   {:component-id :bootstrap-diagnostics
+    :byte-count 1960
+    :content-hash
+    "sha256:a68e591f9e108051486d9f151f8a6682f9b3e76368dc310b106a38fc541ff5aa"}
+   {:component-id :mir-optimization
+    :byte-count 77983
+    :content-hash
+    "sha256:6566d1383daddd3d429a450113250364c117a77bdc74ad5fde17f3596db2a325"}
+   {:component-id :compiler-verification
+    :byte-count 30982
+    :content-hash
+    "sha256:52529a1a77290252567b1a7e0c7c87aede36d0e94e7ef8f2939151f1e183f4c0"}
+   {:component-id :target-lowering
+    :byte-count 135835
+    :content-hash
+    "sha256:25fb2bafbd145882b8fa39641c8465df262376eb15f199ac76c0915315e5e6a4"}
+   {:component-id :backend-interface
+    :byte-count 140340
+    :content-hash
+    "sha256:2f8a07003d58b0d9448bd0f55b4fabb511018104b8107a5188b5c87ca862197e"}
+   {:component-id :backend-c
+    :byte-count 122488
+    :content-hash
+    "sha256:e58d4d2e78ebc77094adeb03d4f47a3fabcc1e143e8644310e194f9fd3185c1e"}
+   {:component-id :backend-llvm
+    :byte-count 86185
+    :content-hash
+    "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3"}
+   {:component-id :backend-wasm
+    :byte-count 117921
+    :content-hash
+    "sha256:c456203e37a2baaf15b7fbc1952cf1fb3a67b3e6d984c134a147e93e62b77e8b"}
+   {:component-id :backend-jvm
+    :byte-count 23533
+    :content-hash
+    "sha256:9b2f49770852a7e9efd8772d64270290bb8d4ac443f68369abc2a4555418da2c"}
+   {:component-id :backend-js
+    :byte-count 24655
+    :content-hash
+    "sha256:1e21fe3d4259639419824047a53c817f552f3b9aafbf9793984c311c21421b8d"}
+   {:component-id :backend-mlir
+    :byte-count 20671
+    :content-hash
+    "sha256:f61b3f5c127cf7f644efd0d7c3702c113f811230ea1edad713049f43852f8c21"}
+   {:component-id :backend-gpu
+    :byte-count 21306
+    :content-hash
+    "sha256:db5c7329bb485d9f67cccd9e14b2e10200c4c69b5a0b22071a174509618b3923"}
+   {:component-id :backend-hdl
+    :byte-count 20584
+    :content-hash
+    "sha256:5fc612ccaefc092f3fdd5b47941a7a4d8a0da0f4dd0f361df8fea2c9f8a7b99c"}
+   {:component-id :backend-workflow
+    :byte-count 20151
+    :content-hash
+    "sha256:8316d942e726144c049f819fe9ca3e9aba6814a8907f90f57d7eea01a2403a59"}
+   {:component-id :backend-query
+    :byte-count 23295
+    :content-hash
+    "sha256:d9cd51e112a5ab5d570fbb02887fc4a11aeb97c0012bff00d202af1f45d6014a"}
+   {:component-id :backend-mobile
+    :byte-count 24232
+    :content-hash
+    "sha256:48b463cf87ecaf33b07b4d7200a8ed0bca535cfb74a9186e56aeed2d9c1cf59e"}
+   {:component-id :incremental-compiler
+    :byte-count 24810
+    :content-hash
+    "sha256:85c81af4feddf64783cea3da795d0a4652b8e0376a41df397b614ab744056d30"}
+   {:component-id :compiler-pass-api
+    :byte-count 25254
+    :content-hash
+    "sha256:ccf31cd25a79eb24667bc78385d5d82ee2eeba0cd5fa5918748bb888e57b2582"}
+   {:component-id :meta-legality
+    :byte-count 28374
+    :content-hash
+    "sha256:57184c6d8931d0beeadc5b4be56c47c09d1e0fce379c0d398dcd6ae15929aef0"}
+   {:component-id :standard-library-subset
+    :byte-count 45717
+    :content-hash
+    "sha256:6198d87e19ee86f72d51aa1253c2d438da6af8dea495f2dd5eb0e64ca3eff1e4"}
+   {:component-id :package-build-subset
+    :byte-count 39872
+    :content-hash
+    "sha256:70649e49d7130cf33e1d11ac226452ea908fee6731e0e49ca8e003e14cbabe1e"}
+   {:component-id :runtime-subset
+    :byte-count 31969
+    :content-hash
+    "sha256:0b5733f8322ae255324065f57ded23a30d397ef57391239326e304f960469fa7"}])
+
+(defn sh25-component-build-policy []
+  {:artifact :gravity/sh25-component-build-policy
+   :schema-version 1
+   :governing-documents [:D1 :D3 :D8 :D9 :BOOT1 :BOOT3 :BOOT5
+                         :BOOT7 :BOOT8 :TEST13]
+   :ownership-inventory
+   "docs/self-hosting-slice-ownership.edn"
+   :authoritative-owned-module-count 41
+   :required-component-count 42
+   :maximum-components 64
+   :maximum-dependencies-per-component 16
+   :maximum-outputs-per-component 8
+   :maximum-diagnostics-per-component 16
+   :maximum-source-bytes 16777216
+   :maximum-carrier-nodes 1048576
+   :maximum-carrier-depth 128
+   :maximum-carrier-width 65536
+   :maximum-carrier-scalar-units 16777216
+   :profile :meta
+   :effects #{}
+   :capabilities #{}
+   :diagnostics
+   ["BOOT1001" "BOOT1003" "BOOT3001" "BOOT3002"
+    "BOOT3003" "BOOT3004" "BOOT5002" "BOOT5003"]
+   :runtime-boundary
+   {:status :provisional-leaf-source
+    :authoritative-ownership-record? false}
+   :pending
+   [:gravity-driver-execution
+    :external-sh02-envelope-recomputation
+    :external-sh21-legality-recomputation
+    :external-sh22-library-recomputation
+    :external-sh24-driver-recomputation
+    :authoritative-runtime-source-promotion
+    :independent-output-validation
+    :complete-sh25-exit-gate
+    :seed-retirement]
+   :self-hosted? false
+   :clojure-seed-boundary? true})
+
+(defn sh25-source-identity-valid?
+  [identity expected catalog compiler-id ordinal]
+  (if
+   (sh25-exact-keys?
+    identity
+    #{:artifact :schema-version :component-id :catalog-ordinal
+      :compiler-id :logical-source-path :content-hash :byte-count})
+    (if (= :gravity/source-revision (get identity :artifact))
+      (if (= 1 (get identity :schema-version))
+        (if (= (get catalog :component-id)
+               (get identity :component-id))
+          (if (= ordinal (get identity :catalog-ordinal))
+            (if (= compiler-id (get identity :compiler-id))
+              (if (= (get catalog :source-path)
+                     (get identity :logical-source-path))
+                (if (= (get expected :content-hash)
+                       (get identity :content-hash))
+                  (= (get expected :byte-count)
+                     (get identity :byte-count))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-external-verifier-valid?
+  [verifier artifact subject-id semantic-root]
+  (if
+   (sh25-exact-keys?
+    verifier
+    #{:artifact :schema-version :status :subject-id
+      :semantic-root :external-recomputation})
+    (if (= artifact (get verifier :artifact))
+      (if (= 1 (get verifier :schema-version))
+        (if (= :passed (get verifier :status))
+          (if (= subject-id (get verifier :subject-id))
+            (if (= semantic-root (get verifier :semantic-root))
+              (= :pending (get verifier :external-recomputation))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-authenticated-input-valid?
+  [descriptor component-id source-hash compiler-id]
+  (let [subject
+        {:component-id component-id
+         :source-content-hash source-hash
+         :compiler-id compiler-id}]
+    (if
+     (sh25-exact-keys?
+      descriptor
+      #{:artifact :schema-version :descriptor-id :subject
+        :semantic-root :provenance-root :verification})
+      (if (= :gravity/sh02-authenticated-envelope
+             (get descriptor :artifact))
+        (if (= 1 (get descriptor :schema-version))
+          (if (sh25-nonempty-string? (get descriptor :descriptor-id))
+            (if (= subject (get descriptor :subject))
+              (if (sh25-nonempty-string?
+                   (get descriptor :semantic-root))
+                (if (sh25-nonempty-string?
+                     (get descriptor :provenance-root))
+                  (sh25-external-verifier-valid?
+                   (get descriptor :verification)
+                   :gravity/sh02-envelope-verification
+                   (get descriptor :descriptor-id)
+                   (get descriptor :semantic-root))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh25-meta-legality-valid?
+  [legality component-id source-hash compiler-id sh21-product-id]
+  (if
+   (sh25-exact-keys?
+    legality
+    #{:artifact :schema-version :component-id :source-content-hash
+      :compiler-id :sh21-product-id :legality-id :profile :status
+      :effects :capabilities :ambient-authority? :verification})
+    (if (= :gravity/sh21-component-legality
+           (get legality :artifact))
+      (if (= 1 (get legality :schema-version))
+        (if (= component-id (get legality :component-id))
+          (if (= source-hash (get legality :source-content-hash))
+            (if (= compiler-id (get legality :compiler-id))
+              (if (= sh21-product-id
+                     (get legality :sh21-product-id))
+                (if (sh25-nonempty-string?
+                     (get legality :legality-id))
+                  (if (= :meta (get legality :profile))
+                    (if (= :accepted (get legality :status))
+                      (if (= #{} (get legality :effects))
+                        (if (= #{} (get legality :capabilities))
+                          (if (= false
+                                 (get legality :ambient-authority?))
+                            (sh25-external-verifier-valid?
+                             (get legality :verification)
+                             :gravity/sh21-legality-verification
+                             (get legality :legality-id)
+                             source-hash)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-vector-of-keywords-from? [values index]
+  (if (= index (count values))
+    true
+    (if (keyword? (get values index))
+      (sh25-vector-of-keywords-from? values (+ index 1))
+      false)))
+
+(defn sh25-vector-of-keywords? [values maximum]
+  (if (vector? values)
+    (if (> (count values) 0)
+      (if (<= (count values) maximum)
+        (sh25-vector-of-keywords-from? values 0)
+        false)
+      false)
+    false))
+
+(defn sh25-vector-of-strings-from? [values index]
+  (if (= index (count values))
+    true
+    (if (sh25-nonempty-string? (get values index))
+      (sh25-vector-of-strings-from? values (+ index 1))
+      false)))
+
+(defn sh25-vector-of-strings? [values maximum]
+  (if (vector? values)
+    (if (> (count values) 0)
+      (if (<= (count values) maximum)
+        (sh25-vector-of-strings-from? values 0)
+        false)
+      false)
+    false))
+
+(defn sh25-output-records-valid?
+  [records component-id compiler-id source-hash semantic-root
+   provenance-root content-id]
+  (if
+   (sh25-exact-keys?
+    records #{:artifact :manifest :diagnostics :provenance})
+    (let [artifact (get records :artifact)
+          manifest (get records :manifest)
+          diagnostics (get records :diagnostics)
+          provenance (get records :provenance)]
+      (if
+       (sh25-exact-keys?
+        artifact
+        #{:artifact :schema-version :component-id :compiler-id
+          :source-content-hash :content-id})
+        (if
+         (sh25-exact-keys?
+          manifest
+          #{:artifact :schema-version :component-id :compiler-id
+            :content-id :source-content-hash})
+          (if
+           (sh25-exact-keys?
+            diagnostics
+            #{:artifact :schema-version :component-id :content-id
+              :catalog-id})
+            (if
+             (sh25-exact-keys?
+              provenance
+              #{:artifact :schema-version :component-id :compiler-id
+                :source-content-hash :envelope-provenance-root
+                :output-content-id})
+              (if (= {:artifact :gravity/compiler-component-artifact
+                      :schema-version 1
+                      :component-id component-id
+                      :compiler-id compiler-id
+                      :source-content-hash source-hash
+                      :content-id content-id}
+                     artifact)
+                (if (= {:artifact :gravity/compiler-component-manifest
+                        :schema-version 1
+                        :component-id component-id
+                        :compiler-id compiler-id
+                        :content-id content-id
+                        :source-content-hash source-hash}
+                       manifest)
+                  (if (= :gravity/compiler-diagnostic-bundle
+                         (get diagnostics :artifact))
+                    (if (= 1 (get diagnostics :schema-version))
+                      (if (= component-id
+                             (get diagnostics :component-id))
+                        (if (= content-id
+                               (get diagnostics :content-id))
+                          (if
+                           (sh25-nonempty-string?
+                            (get diagnostics :catalog-id))
+                            (= {:artifact
+                                :gravity/compiler-component-provenance
+                                :schema-version 1
+                                :component-id component-id
+                                :compiler-id compiler-id
+                                :source-content-hash source-hash
+                                :envelope-provenance-root provenance-root
+                                :output-content-id content-id}
+                               provenance)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh25-build-product-valid?
+  [product component-id compiler-id source-hash envelope legality]
+  (if
+   (sh25-exact-keys?
+    product
+    #{:artifact :schema-version :component-id :compiler-id
+      :source-content-hash :envelope-semantic-root :legality-id
+      :artifact-id :content-id :records :verification})
+    (if (= :gravity/sh25-component-output (get product :artifact))
+      (if (= 1 (get product :schema-version))
+        (if (= component-id (get product :component-id))
+          (if (= compiler-id (get product :compiler-id))
+            (if (= source-hash (get product :source-content-hash))
+              (if (= (get envelope :semantic-root)
+                     (get product :envelope-semantic-root))
+                (if (= (get legality :legality-id)
+                       (get product :legality-id))
+                  (if (sh25-nonempty-string?
+                       (get product :artifact-id))
+                    (if (sh25-nonempty-string?
+                         (get product :content-id))
+                      (if
+                       (sh25-output-records-valid?
+                        (get product :records)
+                        component-id compiler-id source-hash
+                        (get envelope :semantic-root)
+                        (get envelope :provenance-root)
+                        (get product :content-id))
+                        (sh25-external-verifier-valid?
+                         (get product :verification)
+                         :gravity/sh25-output-verification
+                         (get product :artifact-id)
+                         (get product :content-id))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-component-valid?
+  [component expected revision compiler-id sh21-product-id ordinal]
+  (if
+   (sh25-exact-keys?
+    component
+    #{:component-id :category :actual-source-path :dependencies
+      :profile :implementation-language :source-identity
+      :authenticated-input :meta-legality :build-product})
+      (if (= (get expected :component-id)
+             (get component :component-id))
+        (if (= (get expected :category)
+               (get component :category))
+          (if (= (get expected :source-path)
+                 (get component :actual-source-path))
+            (if (= (get expected :dependencies)
+                   (get component :dependencies))
+              (if (= :meta (get component :profile))
+                (if (= :gravity (get component :implementation-language))
+                  (if (sh25-source-identity-valid?
+                       (get component :source-identity)
+                       revision expected compiler-id ordinal)
+                    (if (sh25-authenticated-input-valid?
+                         (get component :authenticated-input)
+                         (get component :component-id)
+                         (get revision :content-hash)
+                         compiler-id)
+                      (if (sh25-meta-legality-valid?
+                           (get component :meta-legality)
+                           (get component :component-id)
+                           (get revision :content-hash)
+                           compiler-id sh21-product-id)
+                        (sh25-build-product-valid?
+                         (get component :build-product)
+                         (get component :component-id)
+                         compiler-id
+                         (get revision :content-hash)
+                         (get component :authenticated-input)
+                         (get component :meta-legality))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))
+
+(defn sh25-seen-component? [components limit component-id index]
+  (if (= index limit)
+    false
+    (if (= component-id
+           (get (get components index) :component-id))
+      true
+      (sh25-seen-component?
+       components limit component-id (+ index 1)))))
+
+(defn sh25-dependencies-seen-from?
+  [components limit dependencies index]
+  (if (= index (count dependencies))
+    true
+    (if (sh25-seen-component?
+         components limit (get dependencies index) 0)
+      (sh25-dependencies-seen-from?
+       components limit dependencies (+ index 1))
+      false)))
+
+(defn sh25-components-valid-from?
+  [components catalog revisions compiler-id sh21-product-id index]
+  (if (= index (count catalog))
+    true
+    (let [component (get components index)
+          expected (get catalog index)
+          dependencies (get component :dependencies)]
+      (if (<= (count dependencies) 16)
+        (if (sh25-component-valid?
+             component expected (get revisions index)
+             compiler-id sh21-product-id index)
+          (if (sh25-seen-component?
+               components index (get component :component-id) 0)
+            false
+            (if (sh25-dependencies-seen-from?
+                 components index dependencies 0)
+              (sh25-components-valid-from?
+               components catalog revisions compiler-id
+               sh21-product-id (+ index 1))
+              false))
+          false)
+        false))))
+
+(defn sh25-components-valid? [components compiler-id sh21-product-id]
+  (let [catalog (sh25-authoritative-component-catalog)
+        revisions (sh25-authoritative-source-revisions)]
+    (if (vector? components)
+      (if (= (count catalog) (count components))
+        (if (<= (count components) 64)
+          (sh25-components-valid-from?
+           components catalog revisions compiler-id sh21-product-id 0)
+          false)
+        false)
+      false)))
+
+(defn sh25-prerequisite-valid?
+  [descriptor expected-artifact expected-verifier product-id
+   logical-path source-hash source-bytes semantic-root]
+  (if
+   (sh25-exact-keys?
+    descriptor
+    #{:artifact :schema-version :product-id :source-revision
+      :semantic-root :verification :actual-source-path})
+    (let [revision (get descriptor :source-revision)]
+      (if (= expected-artifact (get descriptor :artifact))
+        (if (= 1 (get descriptor :schema-version))
+          (if (sh25-nonempty-string? (get descriptor :product-id))
+            (if
+             (sh25-exact-keys?
+              revision
+              #{:artifact :schema-version :logical-source-path
+                :content-hash :byte-count})
+              (if (= :gravity/source-revision
+                     (get revision :artifact))
+                (if (= 1 (get revision :schema-version))
+                  (if (sh25-nonempty-string?
+                       (get revision :logical-source-path))
+                    (if (sh25-nonempty-string?
+                         (get revision :content-hash))
+                      (if (integer? (get revision :byte-count))
+                        (if (> (get revision :byte-count) 0)
+                          (if (sh25-nonempty-string?
+                               (get descriptor :semantic-root))
+                            (if (sh25-external-verifier-valid?
+                                 (get descriptor :verification)
+                                 expected-verifier
+                                 (get descriptor :product-id)
+                                 (get descriptor :semantic-root))
+                              (if
+                               (sh25-prerequisite-context-valid?
+                                descriptor product-id logical-path
+                                source-hash source-bytes semantic-root)
+                                (sh25-nonempty-string?
+                                 (get descriptor :actual-source-path))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh25-content-record-valid? [record expected-artifact]
+  (if
+   (sh25-exact-keys?
+    record
+    #{:artifact :schema-version :content-id :byte-count})
+    (if (= expected-artifact (get record :artifact))
+      (if (= 1 (get record :schema-version))
+        (if (sh25-nonempty-string? (get record :content-id))
+          (if (integer? (get record :byte-count))
+            (> (get record :byte-count) 0)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-prerequisite-context-valid?
+  [descriptor product-id logical-path source-hash source-bytes semantic-root]
+  (if (= product-id (get descriptor :product-id))
+    (if (= logical-path
+           (get (get descriptor :source-revision)
+                :logical-source-path))
+      (if (= source-hash
+             (get (get descriptor :source-revision) :content-hash))
+        (if (= source-bytes
+               (get (get descriptor :source-revision) :byte-count))
+          (= semantic-root (get descriptor :semantic-root))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-environment-valid? [environment]
+  (if
+   (sh25-exact-keys?
+    environment
+    #{:locale :timezone :filesystem-order :timestamp-policy
+      :network :allowed-environment :locked-dependencies})
+      (if (= "C" (get environment :locale))
+        (if (= "UTC" (get environment :timezone))
+          (if (= :sorted (get environment :filesystem-order))
+            (if (= :fixed (get environment :timestamp-policy))
+              (if (= :disabled (get environment :network))
+                (if (= [] (get environment :allowed-environment))
+                  (= true (get environment :locked-dependencies))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))
+
+(defn sh25-physical-provenance-valid? [provenance]
+  (if
+   (sh25-exact-keys?
+    provenance
+    #{:actual-build-root :actual-compiler-path :actual-output-root
+      :actual-lock-path :actual-recipe-path})
+    (if (sh25-nonempty-string? (get provenance :actual-build-root))
+      (if (sh25-nonempty-string?
+           (get provenance :actual-compiler-path))
+        (if (sh25-nonempty-string?
+             (get provenance :actual-output-root))
+          (if (sh25-nonempty-string?
+               (get provenance :actual-lock-path))
+            (sh25-nonempty-string?
+             (get provenance :actual-recipe-path))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh25-request-valid? [request]
+  (if
+   (sh25-exact-keys?
+    request
+    #{:artifact :schema-version :build-id :components
+      :sh21-meta-legality :sh22-standard-library :sh24-driver
+      :environment :lock :recipe :profile :effects :capabilities
+      :physical-provenance})
+      (if (= :gravity/sh25-component-build-request
+             (get request :artifact))
+        (if (= 1 (get request :schema-version))
+          (if (keyword? (get request :build-id))
+            (if (sh25-prerequisite-valid?
+                 (get request :sh21-meta-legality)
+                 :gravity/sh21-meta-legality
+                 :gravity/sh21-meta-legality-verification
+                 "gravity:sh21:bounded"
+                 "gravity/self-hosting/meta-legality"
+                 "sha256:prerequisite-source-21" 1021
+                 "sha256:prerequisite-semantic-21")
+              (if (sh25-prerequisite-valid?
+                   (get request :sh22-standard-library)
+                   :gravity/sh22-standard-library
+                   :gravity/sh22-standard-library-verification
+                   "gravity:sh22:bounded"
+                   "gravity/stdlib/self-hosting-core"
+                   "sha256:prerequisite-source-22" 1022
+                   "sha256:prerequisite-semantic-22")
+                (if (sh25-prerequisite-valid?
+                     (get request :sh24-driver)
+                     :gravity/sh24-compiler-driver
+                     :gravity/sh24-compiler-driver-verification
+                     "gravityc:sh24:bounded"
+                     "gravity/self-hosting/compiler-driver"
+                     "sha256:prerequisite-source-24" 1024
+                     "sha256:prerequisite-semantic-24")
+                  (if (sh25-components-valid?
+                       (get request :components)
+                       (get (get request :sh24-driver) :product-id)
+                       (get
+                        (get request :sh21-meta-legality)
+                        :product-id))
+                    (if (sh25-environment-valid?
+                         (get request :environment))
+                      (if (sh25-content-record-valid?
+                           (get request :lock)
+                           :gravity/bootstrap-lock)
+                        (if (sh25-content-record-valid?
+                             (get request :recipe)
+                             :gravity/bootstrap-recipe)
+                          (if (= :meta (get request :profile))
+                            (if (= #{} (get request :effects))
+                              (if (= #{} (get request :capabilities))
+                                (sh25-physical-provenance-valid?
+                                 (get request :physical-provenance))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false))
+
+(defn sh25-component-error
+  [component expected revision compiler-id sh21-product-id ordinal]
+  (if
+   (sh25-exact-keys?
+    component
+    #{:component-id :category :actual-source-path :dependencies
+      :profile :implementation-language :source-identity
+      :authenticated-input :meta-legality :build-product})
+      (if (= (get expected :component-id)
+             (get component :component-id))
+        (if (= (get expected :category)
+               (get component :category))
+          (if (= (get expected :source-path)
+                 (get component :actual-source-path))
+            (if (= (get expected :dependencies)
+                   (get component :dependencies))
+              (if (sh25-source-identity-valid?
+                   (get component :source-identity)
+                   revision expected compiler-id ordinal)
+                (if (sh25-authenticated-input-valid?
+                     (get component :authenticated-input)
+                     (get component :component-id)
+                     (get revision :content-hash)
+                     compiler-id)
+                  (if (sh25-meta-legality-valid?
+                       (get component :meta-legality)
+                       (get component :component-id)
+                       (get revision :content-hash)
+                       compiler-id sh21-product-id)
+                    (if (= :meta (get component :profile))
+                      (if (= :gravity
+                             (get component :implementation-language))
+                        (if (sh25-build-product-valid?
+                             (get component :build-product)
+                             (get component :component-id)
+                             compiler-id
+                             (get revision :content-hash)
+                             (get component :authenticated-input)
+                             (get component :meta-legality))
+                          nil
+                          :complete-output)
+                        :meta-legality)
+                      :meta-legality)
+                    :meta-legality)
+                  :authenticated-input)
+                :source-identity)
+              :dependency-order)
+            :catalog-mismatch)
+          :catalog-mismatch)
+        :catalog-mismatch)
+      :component-schema))
+
+(defn sh25-components-error-from?
+  [components catalog revisions compiler-id sh21-product-id index]
+  (if (= index (count catalog))
+    nil
+    (let [component (get components index)
+          error
+          (sh25-component-error
+           component (get catalog index) (get revisions index)
+           compiler-id sh21-product-id index)]
+      (if (= nil error)
+        (if (sh25-dependencies-seen-from?
+             components index (get component :dependencies) 0)
+          (sh25-components-error-from?
+           components catalog revisions compiler-id
+           sh21-product-id (+ index 1))
+          :dependency-order)
+        error))))
+
+(defn sh25-components-error [components compiler-id sh21-product-id]
+  (let [catalog (sh25-authoritative-component-catalog)
+        revisions (sh25-authoritative-source-revisions)]
+    (if (vector? components)
+      (if (<= (count components) 64)
+        (if (= (count catalog) (count components))
+          (sh25-components-error-from?
+           components catalog revisions compiler-id sh21-product-id 0)
+          :incomplete-catalog)
+        :component-bound)
+      :component-schema)))
+
+(defn sh25-request-error [request]
+  (let [preflight (sh25-carrier-preflight request)]
+    (if (= :rejected (get preflight :status))
+      (get preflight :reason)
+      (if
+       (sh25-exact-keys?
+        request
+        #{:artifact :schema-version :build-id :components
+          :sh21-meta-legality :sh22-standard-library :sh24-driver
+          :environment :lock :recipe :profile :effects :capabilities
+          :physical-provenance})
+        (if (= :gravity/sh25-component-build-request
+               (get request :artifact))
+          (if (= 1 (get request :schema-version))
+            (if (keyword? (get request :build-id))
+              (if
+               (sh25-prerequisite-valid?
+                (get request :sh21-meta-legality)
+                :gravity/sh21-meta-legality
+                :gravity/sh21-meta-legality-verification
+                "gravity:sh21:bounded"
+                "gravity/self-hosting/meta-legality"
+                "sha256:prerequisite-source-21" 1021
+                "sha256:prerequisite-semantic-21")
+                (if
+                 (sh25-prerequisite-valid?
+                  (get request :sh22-standard-library)
+                  :gravity/sh22-standard-library
+                  :gravity/sh22-standard-library-verification
+                  "gravity:sh22:bounded"
+                  "gravity/stdlib/self-hosting-core"
+                  "sha256:prerequisite-source-22" 1022
+                  "sha256:prerequisite-semantic-22")
+                  (if
+                   (sh25-prerequisite-valid?
+                    (get request :sh24-driver)
+                    :gravity/sh24-compiler-driver
+                    :gravity/sh24-compiler-driver-verification
+                    "gravityc:sh24:bounded"
+                    "gravity/self-hosting/compiler-driver"
+                    "sha256:prerequisite-source-24" 1024
+                    "sha256:prerequisite-semantic-24")
+                    (let [component-error
+                          (sh25-components-error
+                           (get request :components)
+                           (get (get request :sh24-driver) :product-id)
+                           (get
+                            (get request :sh21-meta-legality)
+                            :product-id))]
+                      (if (= nil component-error)
+                        (if (sh25-environment-valid?
+                             (get request :environment))
+                          (if (sh25-content-record-valid?
+                               (get request :lock)
+                               :gravity/bootstrap-lock)
+                            (if (sh25-content-record-valid?
+                                 (get request :recipe)
+                                 :gravity/bootstrap-recipe)
+                              (if (= :meta (get request :profile))
+                                (if (= #{} (get request :effects))
+                                  (if (= #{}
+                                         (get request :capabilities))
+                                    (if (sh25-physical-provenance-valid?
+                                         (get request
+                                              :physical-provenance))
+                                      nil
+                                      :physical-provenance)
+                                    :ambient-authority)
+                                  :ambient-authority)
+                                :meta-legality)
+                              :recipe)
+                            :lock)
+                          :environment)
+                        component-error))
+                    :prerequisite)
+                  :prerequisite)
+                :prerequisite)
+              :request-schema)
+            :request-schema)
+          :request-schema)
+        :request-schema))))
+
+(defn sh25-identity-authenticated-input [descriptor]
+  {:artifact (get descriptor :artifact)
+   :schema-version (get descriptor :schema-version)
+   :descriptor-id (get descriptor :descriptor-id)
+   :subject (get descriptor :subject)
+   :semantic-root (get descriptor :semantic-root)
+   :verification (get descriptor :verification)})
+
+(defn sh25-identity-build-product [product]
+  {:artifact (get product :artifact)
+   :schema-version (get product :schema-version)
+   :component-id (get product :component-id)
+   :compiler-id (get product :compiler-id)
+   :source-content-hash (get product :source-content-hash)
+   :envelope-semantic-root (get product :envelope-semantic-root)
+   :legality-id (get product :legality-id)
+   :artifact-id (get product :artifact-id)
+   :content-id (get product :content-id)
+   :records
+   {:artifact (get (get product :records) :artifact)
+    :manifest (get (get product :records) :manifest)
+    :diagnostics (get (get product :records) :diagnostics)}
+   :verification (get product :verification)})
+
+(defn sh25-identity-component [component]
+  {:component-id (get component :component-id)
+   :category (get component :category)
+   :dependencies (get component :dependencies)
+   :source-identity (get component :source-identity)
+   :authenticated-input
+   (sh25-identity-authenticated-input
+    (get component :authenticated-input))
+   :meta-legality (get component :meta-legality)
+   :build-product
+   (sh25-identity-build-product (get component :build-product))
+   :profile (get component :profile)
+   :implementation-language
+   (get component :implementation-language)})
+
+(defn sh25-identity-components-from? [components index result]
+  (if (= index (count components))
+    result
+    (sh25-identity-components-from?
+     components (+ index 1)
+     (conj result
+           (sh25-identity-component (get components index))))))
+
+(defn sh25-identity-components [components]
+  (sh25-identity-components-from? components 0 []))
+
+(defn sh25-actions-from? [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)
+          product (get component :build-product)]
+      (sh25-actions-from?
+       components (+ index 1)
+       (conj
+        result
+        {:action-id
+         (str "sh25:compile:" (get component :component-id))
+         :executor :gravity-sh24-driver
+         :component-id (get component :component-id)
+         :source-identity (get component :source-identity)
+         :authenticated-input
+         (get component :authenticated-input)
+         :dependency-components (get component :dependencies)
+         :artifact-id (get product :artifact-id)
+         :content-id (get product :content-id)
+         :complete-output-records (get product :records)
+         :profile :meta
+         :effects #{}
+         :capabilities #{}
+         :status :bound-supplied-product})))))
+
+(defn sh25-actions [components]
+  (sh25-actions-from? components 0 []))
+
+(defn sh25-sh26-components-from? [components index result]
+  (if (= index (count components))
+    result
+    (let [component (get components index)
+          product (get component :build-product)]
+      (sh25-sh26-components-from?
+       components (+ index 1)
+       (conj
+        result
+        {:component-id (get component :component-id)
+         :source-id
+         (get (get component :source-identity) :content-hash)
+         :output-id (get product :content-id)
+         :topological-ordinal index
+         :dependencies (get component :dependencies)
+         :profile :meta
+         :implementation-language :gravity
+         :conformance-status :pending
+         :sh25-verification-status :pending
+         :actual-source-path
+         (get component :actual-source-path)})))))
+
+(defn sh25-sh26-components [components]
+  (sh25-sh26-components-from? components 0 []))
+
+(defn sh25-source-paths-from? [components index result]
+  (if (= index (count components))
+    result
+    (sh25-source-paths-from?
+     components (+ index 1)
+     (conj result
+           (get (get components index) :actual-source-path)))))
+
+(defn sh25-source-paths [components]
+  (sh25-source-paths-from? components 0 []))
+
+(defn sh25-provenance-roots-from? [components index result]
+  (if (= index (count components))
+    result
+    (sh25-provenance-roots-from?
+     components (+ index 1)
+     (conj
+      result
+      {:component-id
+       (get (get components index) :component-id)
+       :provenance-root
+       (get
+        (get (get components index) :authenticated-input)
+        :provenance-root)}))))
+
+(defn sh25-provenance-roots [components]
+  (sh25-provenance-roots-from? components 0 []))
+
+(defn sh25-output-provenance-from? [components index result]
+  (if (= index (count components))
+    result
+    (sh25-output-provenance-from?
+     components (+ index 1)
+     (conj
+      result
+      (get
+       (get (get (get components index) :build-product) :records)
+       :provenance)))))
+
+(defn sh25-output-provenance [components]
+  (sh25-output-provenance-from? components 0 []))
+
+(defn sh25-identity-prerequisite [descriptor]
+  {:artifact (get descriptor :artifact)
+   :schema-version (get descriptor :schema-version)
+   :product-id (get descriptor :product-id)
+   :source-revision (get descriptor :source-revision)
+   :semantic-root (get descriptor :semantic-root)
+   :verification (get descriptor :verification)})
+
+(defn sh25-rule-for-reason [reason]
+  (if (= reason :source-identity)
+    "BOOT1003"
+    (if (= reason :authenticated-input)
+      "BOOT3004"
+      (if (= reason :complete-output)
+        "BOOT7005"
+        (if (= reason :meta-legality)
+          "BOOT3002"
+          (if (= reason :ambient-authority)
+            "BOOT3002"
+            (if (= reason :prerequisite)
+              "BOOT5003"
+              "BOOT3001")))))))
+
+(defn sh25-rejection [request reason]
+  {:artifact :gravity/sh25-component-build-result
+   :schema-version 1
+   :status :rejected
+   :build-id (get request :build-id)
+   :diagnostics
+   [{:rule (sh25-rule-for-reason reason)
+     :severity :error
+     :stage :bootstrap
+     :source
+     (get (get request :physical-provenance) :actual-build-root)
+     :facts {:reason reason}
+     :remediation
+     "Provide the complete ordered component set and authenticated inputs."}]
+   :pending
+   [:gravity-driver-execution
+    :authoritative-runtime-source-promotion
+    :complete-sh25-exit-gate]
+   :clojure-seed-boundary? true})
+
+(defn sh25-build-authoritative-components [request]
+  (let [preflight (sh25-carrier-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (if (sh25-request-valid? request)
+        (let [components (get request :components)]
+          {:artifact :gravity/sh25-component-build-result
+           :schema-version 1
+           :status :accepted
+           :build-id (get request :build-id)
+           :component-count (count components)
+           :request-census preflight
+           :actions (sh25-actions components)
+           :sh26-component-templates
+           (sh25-sh26-components components)
+           :identity-input
+           {:artifact :gravity/sh25-component-build-identity
+            :schema-version 1
+            :build-id (get request :build-id)
+            :components (sh25-identity-components components)
+            :sh21-meta-legality
+            (sh25-identity-prerequisite
+             (get request :sh21-meta-legality))
+            :sh22-standard-library
+            (sh25-identity-prerequisite
+             (get request :sh22-standard-library))
+            :sh24-driver
+            (sh25-identity-prerequisite
+             (get request :sh24-driver))
+            :environment (get request :environment)
+            :lock (get request :lock)
+            :recipe (get request :recipe)
+            :profile :meta
+            :effects #{}
+            :capabilities #{}}
+           :provenance
+           {:physical (get request :physical-provenance)
+            :prerequisite-source-paths
+            {:sh21
+             (get (get request :sh21-meta-legality)
+                  :actual-source-path)
+             :sh22
+             (get (get request :sh22-standard-library)
+                  :actual-source-path)
+             :sh24
+             (get (get request :sh24-driver)
+                  :actual-source-path)}
+            :actual-source-paths
+            (sh25-source-paths components)
+            :authenticated-provenance-roots
+            (sh25-provenance-roots components)
+            :output-provenance
+            (sh25-output-provenance components)}
+           :diagnostics []
+           :pending
+           [:gravity-driver-execution
+            :external-sh02-envelope-recomputation
+            :external-sh21-legality-recomputation
+            :external-sh22-library-recomputation
+            :external-sh24-driver-recomputation
+            :authoritative-runtime-source-promotion
+            :independent-output-validation
+            :complete-sh25-exit-gate
+            :seed-retirement]
+           :self-hosted? false
+           :clojure-seed-boundary? true})
+        (let [reason (sh25-request-error request)]
+          (sh25-rejection
+           request
+           (if (= nil reason)
+             :invalid-component-build-request
+             reason))))
+      (sh25-rejection request (get preflight :reason)))))
+
+(defn sh25-verify-component-build [request candidate]
+  (let [request-preflight (sh25-carrier-preflight request)
+        candidate-preflight (sh25-carrier-preflight candidate)]
+    (if (= :accepted (get request-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        (let [expected (sh25-build-authoritative-components request)]
+          (if (= expected candidate)
+            {:artifact :gravity/sh25-component-build-verification
+             :schema-version 1
+             :status :passed
+             :build-id (get request :build-id)
+             :component-count (get expected :component-count)
+             :candidate-census candidate-preflight
+             :checks
+             [:complete-catalog
+              :dependency-order
+              :pinned-source-revisions
+              :contextual-envelope-subjects
+              :contextual-meta-legality
+              :bound-complete-output-records
+              :bound-prerequisite-revisions
+              :path-neutral-identity
+              :physical-provenance
+              :exact-result]}
+            {:artifact :gravity/sh25-component-build-verification
+             :schema-version 1
+             :status :rejected
+             :build-id (get request :build-id)
+             :diagnostics
+             [{:rule "BOOT3001"
+               :severity :error
+               :stage :bootstrap
+               :source
+               (get
+                (get request :physical-provenance)
+                :actual-build-root)
+               :facts {:reason :component-build-result-altered}
+               :remediation
+               "Recompute the complete component build result."}]}))
+        {:artifact :gravity/sh25-component-build-verification
+         :schema-version 1
+         :status :rejected
+         :build-id (get request :build-id)
+         :diagnostics
+         [{:rule "BOOT3001"
+           :severity :error
+           :stage :bootstrap
+           :source
+           (get (get request :physical-provenance) :actual-build-root)
+           :facts {:reason (get candidate-preflight :reason)}
+           :remediation "Provide a bounded candidate carrier."}]})
+      {:artifact :gravity/sh25-component-build-verification
+       :schema-version 1
+       :status :rejected
+       :build-id (get request :build-id)
+       :diagnostics
+       [{:rule "BOOT3001"
+         :severity :error
+         :stage :bootstrap
+         :source nil
+         :facts {:reason (get request-preflight :reason)}
+         :remediation "Provide a bounded request carrier."}]})))
+
+(defn sh25-verified-sh26-from?
+  [templates index result]
+  (if (= index (count templates))
+    result
+    (sh25-verified-sh26-from?
+     templates (+ index 1)
+     (conj
+      result
+      (assoc
+       (assoc (get templates index)
+              :conformance-status :passed)
+       :sh25-verification-status :passed)))))
+
+(defn sh25-project-verified-sh26-components
+  [request candidate verification]
+  (let [request-preflight (sh25-carrier-preflight request)
+        candidate-preflight (sh25-carrier-preflight candidate)
+        verification-preflight (sh25-carrier-preflight verification)]
+    (if (= :accepted (get request-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        (if (= :accepted (get verification-preflight :status))
+          (let [expected-verification
+                (sh25-verify-component-build request candidate)]
+            (if (= expected-verification verification)
+              (if (= :passed (get verification :status))
+                {:artifact :gravity/sh25-sh26-component-projection
+                 :schema-version 1
+                 :status :accepted
+                 :build-id (get request :build-id)
+                 :verification verification
+                 :components
+                 (sh25-verified-sh26-from?
+                  (get candidate :sh26-component-templates) 0 [])}
+                (sh25-rejection request :sh25-verification-not-passed))
+              (sh25-rejection request :verification-record-altered)))
+          (sh25-rejection
+           request (get verification-preflight :reason)))
+        (sh25-rejection request (get candidate-preflight :reason)))
+      (sh25-rejection request (get request-preflight :reason)))))
