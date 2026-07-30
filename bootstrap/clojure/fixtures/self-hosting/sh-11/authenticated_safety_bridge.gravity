@@ -1343,29 +1343,143 @@
            :self-hosted? false
            :clojure-seed-boundary? true}))))))))
 
+(defn sh11-bridge-final-candidate-valid?
+  [expected candidate]
+  (if
+   (sh11-bridge-exact-keys?
+    candidate
+    #{:artifact :schema-version :status :artifact-id
+      :typed-artifact-id :effect-artifact-id
+      :ownership-artifact-id :operation :outcome
+      :safety-result :identity-input :provenance
+      :diagnostics :pending :self-hosted?
+      :clojure-seed-boundary?})
+    (if (= (get expected :artifact)
+           (get candidate :artifact))
+      (if (= (get expected :schema-version)
+             (get candidate :schema-version))
+        (if (= (get expected :status)
+               (get candidate :status))
+          (if (= (get expected :artifact-id)
+                 (get candidate :artifact-id))
+            (if (= (get expected :typed-artifact-id)
+                   (get candidate :typed-artifact-id))
+              (if (= (get expected :effect-artifact-id)
+                     (get candidate :effect-artifact-id))
+                (if (= (get expected :ownership-artifact-id)
+                       (get candidate :ownership-artifact-id))
+                  (if (= (get expected :operation)
+                         (get candidate :operation))
+                    (if (= (get expected :outcome)
+                           (get candidate :outcome))
+                      (if (= (get expected :safety-result)
+                             (get candidate :safety-result))
+                        (if (= (get expected :identity-input)
+                               (get candidate :identity-input))
+                          (if (= (get expected :provenance)
+                                 (get candidate :provenance))
+                            (if (= (get expected :diagnostics)
+                                   (get candidate :diagnostics))
+                              (if (= (get expected :pending)
+                                     (get candidate :pending))
+                                (if
+                                 (= (get expected :self-hosted?)
+                                    (get candidate :self-hosted?))
+                                  (=
+                                   (get expected
+                                        :clojure-seed-boundary?)
+                                   (get candidate
+                                        :clojure-seed-boundary?))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-bridge-rejected-candidate-valid?
+  [expected candidate]
+  (if
+   (sh11-bridge-exact-keys?
+    candidate
+    #{:artifact :schema-version :status
+      :diagnostics :pending :self-hosted?
+      :clojure-seed-boundary?})
+    (if (= :gravity/sh11-authenticated-safe-core
+           (get candidate :artifact))
+      (if (= 1 (get candidate :schema-version))
+        (if (= :rejected (get candidate :status))
+          (if (= (get expected :diagnostics)
+                 (get candidate :diagnostics))
+            (if (= (get expected :pending)
+                   (get candidate :pending))
+              (if (= false
+                     (get candidate :self-hosted?))
+                (= true
+                   (get candidate
+                        :clojure-seed-boundary?))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh11-bridge-candidate-bound-rejection
+  [request candidate-preflight]
+  {:artifact :gravity/sh11-authenticated-safety-verification
+   :status :rejected
+   :reason :candidate-carrier-bound
+   :checks [:bounded-candidate-carrier]
+   :candidate-preflight candidate-preflight
+   :candidate-echo :omitted
+   :diagnostics
+   [(sh11-bridge-diagnostic
+     request :verify :candidate-carrier-bound [])]})
+
 (defn sh11-verify-authenticated-safety-result
   [request c10-request safety-result safety-verification candidate]
   (let [candidate-preflight
-        (sh11-bridge-carrier-preflight candidate)
-        expected
-        (if (= :accepted (get candidate-preflight :status))
-          (sh11-bind-authenticated-safety-result
-           request c10-request safety-result
-           safety-verification)
-          (sh11-bridge-rejected
-           request :verify :candidate-result-carrier-bound []))]
-    {:artifact :gravity/sh11-authenticated-safety-verification
-     :status
-     (if (= :accepted (get candidate-preflight :status))
-       (if (= expected candidate) :passed :rejected)
-       :rejected)
-     :checks
-     [:same-sh08-typed-lineage
-      :authenticated-effect-and-ownership-identities
-      :source-bound-normalized-c10-operation
-      :fresh-c10-result-replay
-      :exactly-one-safe1-outcome
-      :path-neutral-identity
-      :separate-actual-path-provenance]
-     :expected expected
-     :candidate candidate}))
+        (sh11-bridge-carrier-preflight candidate)]
+    (if
+     (= false
+        (= :accepted
+           (get candidate-preflight :status)))
+      (sh11-bridge-candidate-bound-rejection
+       request candidate-preflight)
+      (let [expected
+            (sh11-bind-authenticated-safety-result
+             request c10-request safety-result
+             safety-verification)]
+        {:artifact
+         :gravity/sh11-authenticated-safety-verification
+         :status
+         (if
+          (if (= :rejected (get expected :status))
+            (sh11-bridge-rejected-candidate-valid?
+             expected candidate)
+            (sh11-bridge-final-candidate-valid?
+             expected candidate))
+           :passed
+           :rejected)
+         :checks
+         [:same-sh08-typed-lineage
+          :authenticated-effect-and-ownership-identities
+          :source-bound-normalized-c10-operation
+          :fresh-c10-result-replay
+          :exactly-one-safe1-outcome
+          :path-neutral-identity
+          :separate-actual-path-provenance]
+         :expected expected
+         :candidate candidate}))))

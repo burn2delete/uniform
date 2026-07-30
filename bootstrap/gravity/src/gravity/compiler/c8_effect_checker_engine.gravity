@@ -254,6 +254,12 @@
 ; and the authenticated SH-08 adapter remain later integration work.
 
 (defn sh09-effect-registry [effect]
+  (if (= effect :error/raise)
+    {:capability nil
+     :profiles #{:meta}
+     :phases #{:build}
+     :replay-sensitive false
+     :ordering :sequence}
   (if (= effect :compiler/read-ir)
     {:capability :compiler/ir-read
      :profiles #{:meta}
@@ -345,7 +351,7 @@
                                  :phases #{:runtime}
                                  :replay-sensitive true
                                  :ordering :sequence}
-                                nil))))))))))))))))
+                                nil)))))))))))))))))
 
 (defn sh09-effect-policy []
   {:artifact :gravity/sh09-effect-policy
@@ -356,7 +362,8 @@
    :targets #{:jvm}
    :phases #{:build}
    :effects
-   #{:compiler/read-ir :compiler/write-ir
+   #{:error/raise
+     :compiler/read-ir :compiler/write-ir
      :build/read-file :build/write-artifact
      :build/env :build/network :build/exec
      :build/time :build/random
@@ -464,7 +471,9 @@
     true
     (if (= mode :ambient)
       true
-      (= mode :none))))
+      (if (= mode :declared)
+        true
+        (= mode :none)))))
 
 (defn sh09-boolean? [value]
   (if (= value true)
@@ -665,20 +674,28 @@
 
 (defn sh09-capability-authorities-allow?
   [request capability]
-  (if
-   (sh09-authority-allows?
-    request :declared-capabilities capability)
-   (if
-    (sh09-authority-allows?
-     request :package-capabilities capability)
-    (sh09-authority-allows?
-     request :deployment-capabilities capability)
-    false)
-   false))
+  (if (= capability nil)
+    (=
+     #{}
+     (get request :declared-capabilities)
+     (get request :package-capabilities)
+     (get request :deployment-capabilities))
+    (if
+     (sh09-authority-allows?
+      request :declared-capabilities capability)
+     (if
+      (sh09-authority-allows?
+       request :package-capabilities capability)
+      (sh09-authority-allows?
+       request :deployment-capabilities capability)
+      false)
+     false)))
 
 (defn sh09-provider-allows?
   [request effect capability]
   (let [provider (get request :provider)]
+    (if (= capability nil)
+      (= provider nil)
     (if (map? provider)
       (if (= (get provider :id) nil)
         false
@@ -698,11 +715,13 @@
               false)
             false)
           false))
-      false)))
+      false))))
 
 (defn sh09-grant-allows?
   [request capability]
   (let [grant (get request :grant)]
+    (if (= capability nil)
+      (= grant nil)
     (if (map? grant)
       (if (= (get grant :id) nil)
         false
@@ -718,7 +737,7 @@
               false)
             false)
           false))
-      false)))
+      false))))
 
 (defn sh09-replay-record-valid? [request]
   (let [record (get request :replay-record)]
@@ -886,15 +905,36 @@
               (sh09-rejected
                request "C8-RUNTIME" :slice-target-mismatch
                :target :use-the-supported-jvm-target)
-              (if (sh09-not-equal :explicit
-                                  (get request :authority-mode))
+              (if
+               (sh09-not
+                (if (= capability nil)
+                  (= :declared
+                     (get request :authority-mode))
+                  (= :explicit
+                     (get request :authority-mode))))
                 (sh09-rejected
-                 request "C8-CAPABILITY" :explicit-authority-required
-                 :grant :supply-an-explicit-scoped-capability-grant)
-                (if (= nil (get request :resource-subject))
+                 request "C8-CAPABILITY"
+                 (if (= capability nil)
+                   :declared-authority-required
+                   :explicit-authority-required)
+                 :grant
+                 (if (= capability nil)
+                   :declare-the-language-effect-without-ambient-authority
+                   :supply-an-explicit-scoped-capability-grant))
+                (if
+                 (if (= capability nil)
+                   (sh09-not-equal
+                    nil (get request :resource-subject))
+                   (= nil (get request :resource-subject)))
                   (sh09-rejected
-                   request "C8-CAPABILITY" :resource-subject-required
-                   :grant :bind-the-grant-to-an-exact-resource-subject)
+                   request "C8-CAPABILITY"
+                   (if (= capability nil)
+                     :language-effect-resource-subject-forbidden
+                     :resource-subject-required)
+                   :grant
+                   (if (= capability nil)
+                     :omit-resource-subject-for-language-effect
+                     :bind-the-grant-to-an-exact-resource-subject))
         (if (= nil policy)
           (sh09-rejected
            request "C8-UNKNOWN" :unregistered-effect

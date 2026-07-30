@@ -191,7 +191,26 @@
 
 (defn- effect-authority
   [typed operation]
-  (let [effectful? (not= operation :pure)
+  (if (= operation :error-raise)
+    {:effect :error/raise
+     :required-capability nil
+     :declared-effects #{:error/raise}
+     :package-effects #{:error/raise}
+     :deployment-effects #{:error/raise}
+     :declared-capabilities #{}
+     :package-capabilities #{}
+     :deployment-capabilities #{}
+     :provider nil
+     :grant nil
+     :resource-subject nil
+     :build-policy
+     {:hermetic true
+      :allowed-effects #{:error/raise}}
+     :safety-allowed true
+     :authority-mode :declared
+     :replay-record nil
+     :ordering :sequence}
+    (let [effectful? (not= operation :pure)
         namespace (get-in typed [:module :namespace])
         subject
         (when effectful?
@@ -239,7 +258,7 @@
        (if (= operation :ambient-read) :ambient :explicit)
        :none)
      :replay-record nil
-     :ordering (when effectful? :sequence)}))
+     :ordering (when effectful? :sequence)})))
 
 (defn- c8-products
   [typed operation]
