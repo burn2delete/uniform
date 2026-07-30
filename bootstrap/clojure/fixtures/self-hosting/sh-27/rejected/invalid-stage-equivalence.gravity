@@ -1,0 +1,155 @@
+(ns gravity.self-hosting.sh27.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh27-missing-lineage-request
+             sh27-artifact-drift-request
+             sh27-diagnostic-drift-request
+             sh27-unreviewed-delta-request
+             sh27-conformance-failure-request
+             sh27-missing-output-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh27-base-request []
+  {:artifact :gravity/sh27-stage-equivalence-request
+   :schema-version 1
+   :comparison-id :comparison/rejected
+   :stage-a
+   {:stage-id :stage/n
+    :compiler-id "sha256:compiler-n"
+    :compiler-lineage-id "sha256:lineage-n"
+    :source-id "sha256:source"
+    :build-id "sha256:build-n"
+    :artifact-set-id "sha256:artifacts"
+    :actual-artifact-root "/checkout-a/stage-n"}
+   :stage-b
+   {:stage-id :stage/n-plus-one
+    :compiler-id "sha256:compiler-n-plus-one"
+    :compiler-lineage-id "sha256:lineage-n-plus-one"
+    :source-id "sha256:source"
+    :build-id "sha256:build-n-plus-one"
+    :artifact-set-id "sha256:artifacts"
+    :actual-artifact-root "/checkout-a/stage-n-plus-one"}
+   :environment-a
+   {:environment-id "sha256:environment-a"
+    :toolchain-id
+    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    :locked-dependencies true :locale "C" :timezone "UTC"
+    :filesystem-order :sorted :timestamp-policy :fixed
+    :random-seed 27 :network :disabled :allowed-environment []}
+   :environment-b
+   {:environment-id "sha256:environment-b"
+    :toolchain-id
+    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    :locked-dependencies true :locale "C" :timezone "UTC"
+    :filesystem-order :sorted :timestamp-policy :fixed
+    :random-seed 27 :network :disabled :allowed-environment []}
+   :modes
+   [:artifact :manifest :diagnostic :conformance
+    :runtime-output :ir-modulo-id :reviewed-delta]
+   :products
+   [{:product-id :product/compiler :mode :artifact
+     :left
+     "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     :right
+     "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     :canonical-form :canonical-content-hash :source-spans []}
+    {:product-id :product/manifest :mode :manifest
+     :left {:modules [:reader]} :right {:modules [:reader]}
+     :canonical-form :canonical-manifest :source-spans []}
+    {:product-id :product/diagnostics :mode :diagnostic
+     :left [] :right []
+     :canonical-form :stable-code-and-source-span :source-spans []}
+    {:product-id :product/conformance :mode :conformance
+     :left true :right true
+     :canonical-form :conformance-result :source-spans []}
+    {:product-id :product/runtime :mode :runtime-output
+     :left {:stdout "" :stderr "" :exit 0}
+     :right {:stdout "" :stderr "" :exit 0}
+     :canonical-form :canonical-runtime-output :source-spans []}
+    {:product-id :product/mir :mode :ir-modulo-id
+     :left {:normalized-operations
+            [{:ordinal 0 :opcode :return :operands []}]
+            :id-renaming [{:original "left:return" :ordinal 0}]
+            :target-independent true}
+     :right {:normalized-operations
+             [{:ordinal 0 :opcode :return :operands []}]
+             :id-renaming [{:original "right:return" :ordinal 0}]
+             :target-independent true}
+     :canonical-form :stable-id-renaming :source-spans []}
+    {:product-id :product/delta :mode :reviewed-delta
+     :left {:builder-note "same"} :right {:builder-note "same"}
+     :canonical-form :reviewed-provenance-delta :source-spans []}]
+   :accepted-deltas []
+   :recipe-id "sha256:recipe"
+   :lock-id "sha256:lock"
+   :actual-comparison-path "/checkout-a/reports/comparison.edn"})
+
+(defn sh27-replace-product [products mode replacement index result]
+  (if (= index (count products))
+    result
+    (if (= mode (get (get products index) :mode))
+      (sh27-replace-product
+       products mode replacement (+ index 1) (conj result replacement))
+      (sh27-replace-product
+       products mode replacement (+ index 1)
+       (conj result (get products index))))))
+
+(defn sh27-with-product [request mode replacement]
+  (assoc request :products
+         (sh27-replace-product
+          (get request :products) mode replacement 0 [])))
+
+(defn sh27-missing-lineage-request []
+  (let [request (sh27-base-request)]
+    (assoc
+     request
+     :stage-b
+     (assoc
+      (get request :stage-b)
+      :compiler-lineage-id
+      ""))))
+
+(defn sh27-artifact-drift-request []
+  (sh27-with-product
+   (sh27-base-request) :artifact
+   {:product-id :product/compiler :mode :artifact
+    :left
+    "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    :right
+    "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    :canonical-form :canonical-content-hash :source-spans []}))
+
+(defn sh27-diagnostic-drift-request []
+  (sh27-with-product
+   (sh27-base-request) :diagnostic
+   {:product-id :product/diagnostics :mode :diagnostic
+    :left
+    [{:code "C11-TYPE"
+      :source-span {:source-id :source :start-byte 0 :end-byte 1}
+      :severity :error}]
+    :right
+    [{:code "C11-EFFECT"
+      :source-span {:source-id :source :start-byte 0 :end-byte 1}
+      :severity :error}]
+    :canonical-form :stable-code-and-source-span
+    :source-spans []}))
+
+(defn sh27-unreviewed-delta-request []
+  (sh27-with-product
+   (sh27-base-request) :reviewed-delta
+   {:product-id :product/delta :mode :reviewed-delta
+    :left {:builder-note "stage-n"}
+    :right {:builder-note "stage-n-plus-one"}
+    :canonical-form :reviewed-provenance-delta :source-spans []}))
+
+(defn sh27-conformance-failure-request []
+  (sh27-with-product
+   (sh27-base-request) :conformance
+   {:product-id :product/conformance :mode :conformance
+    :left true :right false
+    :canonical-form :conformance-result :source-spans []}))
+
+(defn sh27-missing-output-request []
+  (assoc (sh27-base-request) :products []))
