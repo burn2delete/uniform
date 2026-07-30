@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B21"
+ :coverage-milestone "SH-07-B22"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
@@ -10,6 +10,7 @@
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
   "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
+  "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
   "docs/phase-01-core-language/012-l2-core-language-semantics.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
  :ownership
@@ -101,6 +102,8 @@
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
   :c4-compat
   "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+  :c5-compat
+  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
   :l2-core
   "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
   :macro
@@ -126,6 +129,7 @@
   :c11-mir {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
+  :c5-compat {:keyword-lookups 0}
   :c6-core {:keyword-lookups 0}
   :l2-core {:keyword-lookups 0}}
  :required-verification-checks
@@ -142,6 +146,7 @@
   :macro-expander-runtime-authority
   :c3-adapter-retirement
   :c4-adapter-retirement
+  :c5-adapter-retirement
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement

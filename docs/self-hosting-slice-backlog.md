@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 17 of the 41
+`SH-07` remains partial. Its current executable evidence covers 18 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -355,10 +355,18 @@ The cache-free proof passed with 29,439 request carrier nodes at depth 17,
 width 270, and 432,437 UTF-8 scalar bytes. The source remains explicitly
 compatibility-only: it grants no authentication credit, does not supply the
 authoritative syntax result, and retains the `gravity.bootstrap.syntax` route.
+The C5 compatibility source adds 4,154 authenticated bytes with the same
+4-fragment, 232-form, 270-binding, 70-resolution structure as C4. It lowers to
+201 canonical core nodes with 4 definitions, 31 calls, 50 references, 13
+conditionals, and 3 functions. Its 11 `get` operators are ordinary resolved
+calls with zero keyword-lookup products. Its cache-free proof passed with
+29,163 request carrier nodes at depth 17, width 270, and 428,299 UTF-8 scalar
+bytes. The source remains compatibility-only, denies authentication and
+authoritative resolution credit, and retains the `gravity.resolution` route.
 The B16 cohort remains unchanged. The
 Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 24 compiler
+central routing, and final artifact construction. The remaining 23 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
