@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 15 of the 41
+`SH-07` remains partial. Its current executable evidence covers 16 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -337,10 +337,19 @@ bindings, and 15 resolutions, then lower to 465 canonical core nodes with 9
 definitions and no calls, references, or keyword lookups. Its cache-free
 authoritative proof passed with 44,353 carrier nodes at depth 8, width 600, and
 706,674 UTF-8 scalar bytes; its co-canonical source-extension and provenance
-gates also passed. The B16 cohort remains unchanged. The
+gates also passed. The C4 compatibility source adds 4,053 authenticated source
+bytes in 4 fragments containing 232 forms, 270 bindings including 8 local
+bindings, and 70 resolutions. It lowers to 201 canonical core nodes with 4
+definitions, 31 calls, 50 references, 13 conditionals, and 3 functions. Its 11
+`get` operators are ordinary resolved symbol calls rather than keyword-headed
+map lookups, so its canonical keyword-lookup product count is zero. The
+cache-free authoritative proof passed with 29,163 request carrier nodes at
+depth 17, width 270, and 427,463 UTF-8 scalar bytes. Co-canonical extension,
+provenance, replay, and alteration gates passed, and the B16 cohort remains
+unchanged. The
 Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 26 compiler
+central routing, and final artifact construction. The remaining 25 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
