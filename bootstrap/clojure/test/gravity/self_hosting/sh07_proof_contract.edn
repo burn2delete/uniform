@@ -2,9 +2,10 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B18"
+ :coverage-milestone "SH-07-B19"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
+  "docs/phase-01-core-language/012-l2-core-language-semantics.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
  :ownership
  {:leaf-only
@@ -91,6 +92,8 @@
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
   :c6-core
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+  :l2-core
+  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
   :macro
   "bootstrap/gravity/src/gravity/macro.gravity"
   :reader
@@ -112,7 +115,8 @@
   :b11-query {:keyword-lookups 8}
   :b12-mobile {:keyword-lookups 8}
   :c11-mir {:keyword-lookups 0}
-  :c6-core {:keyword-lookups 0}}
+  :c6-core {:keyword-lookups 0}
+  :l2-core {:keyword-lookups 0}}
  :required-verification-checks
  [:fragment-manifest-replay?
   :fragment-coverage-replay?
