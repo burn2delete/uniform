@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 13 of the 41
+`SH-07` remains partial. Its current executable evidence covers 14 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -322,10 +322,18 @@ each generated product is checked before downstream recursive hashing,
 verification, or use. Stable path-neutral core identities, actual-path
 provenance, fresh digest resolution, replay, and altered input, graph, binding,
 resolution, template, digest, and resolved-product rejection are required by
-the authoritative proof. The
+the authoritative proof. The Gravity C6 core-lowering source is also covered
+directly: its 9,109 source bytes authenticate into 7 fragments containing 348
+forms, 289 bindings including 27 local bindings, and 13 resolutions, then lower
+to 220 canonical core nodes with 7 definitions and no calls, references, or
+keyword lookups. Its cache-free authoritative proof passed with 32,888 carrier
+nodes at depth 8, width 348, and 498,205 UTF-8 scalar bytes; co-canonical
+`.gravity` and `.qst` inputs retain equal semantic identities and distinct
+actual-path provenance. This independent zero-lookup source does not broaden
+the existing nine-module, 63-lookup B16 cohort. The
 Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 28 compiler
+central routing, and final artifact construction. The remaining 27 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

@@ -276,12 +276,14 @@
         (into {}
               (map (fn [[module counts]]
                      [module (:keyword-lookups counts)]))
-              (:required-core-product-counts contract))
+              (select-keys
+               (:required-core-product-counts contract)
+               (keys expected-module-counts)))
         contract-paths
         (select-keys
          (:authoritative-modules contract)
          (keys expected-module-counts))]
-    (is (= "SH-07-B17" (:coverage-milestone contract)))
+    (is (= "SH-07-B18" (:coverage-milestone contract)))
     (is (= 9 (count cohort)))
     (is (= expected-module-counts
            (into {}
