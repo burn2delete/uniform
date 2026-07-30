@@ -606,43 +606,79 @@
           :contract c11-mir-source-map-contract}))
 
 (defn verify-c11-mir-module [mir-module]
-  (quote {:status :stage1-source-owned
-          :mir-module mir-module
-          :checks [:module-identity-complete
-                   :checked-core-reference-present
-                   :profile-and-target-request-attached
-                   :every-function-has-entry-block
-                   :every-block-terminates
-                   :control-flow-edges-valid
-                   :definitions-dominate-uses
-                   :data-flow-edges-exposed
-                   :types-match-operation-schemas
-                   :effect-ordering-constraints-present
-                   :safety-sensitive-operations-have-outcomes
-                   :runtime-checks-dominate-guarded-operations
-                   :source-and-generated-origins-valid
-                   :ownership-resource-operations-match-c9-facts
-                   :domain-anchors-valid
-                   :target-specific-opcodes-rejected
-                   :diagnostics-follow-c15-shape]
-          :diagnostics c11-mir-diagnostic-catalog
-          :preserves [:source-spans :syntax-identity
-                      :checked-core-identity
-                      :core-node-identity
-                      :type-facts :effect-facts
-                      :capability-facts :ownership-facts
-                      :safe1-outcomes
-                      :runtime-check-records
-                      :proof-obligations
-                      :profile-target-metadata
-                      :source-origin-map
-                      :generated-origin-chains
-                      :control-flow-edges
-                      :data-flow-edges
-                      :dominance-facts
-                      :domain-anchor-links
-                      :target-independence
-                      :artifact-provenance]}))
+  (assoc
+   (quote
+    {:status :stage1-source-owned
+     :mir-module nil
+     :checks [:module-identity-complete
+              :checked-core-reference-present
+              :profile-and-target-request-attached
+              :every-function-has-entry-block
+              :every-block-terminates
+              :control-flow-edges-valid
+              :definitions-dominate-uses
+              :data-flow-edges-exposed
+              :types-match-operation-schemas
+              :effect-ordering-constraints-present
+              :safety-sensitive-operations-have-outcomes
+              :runtime-checks-dominate-guarded-operations
+              :source-and-generated-origins-valid
+              :ownership-resource-operations-match-c9-facts
+              :domain-anchors-valid
+              :target-specific-opcodes-rejected
+              :diagnostics-follow-c15-shape]
+     :diagnostics
+     {:diagnostics ["C11-MODULE"
+                    "C11-BLOCK"
+                    "C11-DOMINANCE"
+                    "C11-TYPE"
+                    "C11-EFFECT"
+                    "C11-SAFETY"
+                    "C11-ORIGIN"
+                    "C11-DOMAIN"
+                    "C11-TARGET-LEAK"
+                    "C11-VERIFY"]
+      :stable-diagnostic-fields
+      [:diagnostic-id :severity
+       :stage :mir-module
+       :function :block
+       :operation-id :value-id
+       :source-span
+       :origin-chain
+       :profile :target-request
+       :missing-fact
+       :provenance
+       :remediation]
+      :stops
+      [:domain-ir-lowering
+       :mir-optimization
+       :target-lowering
+       :artifact-emission
+       :bootstrap-source-inventory]
+      :must-not-depend-on
+      [:localized-rendering-text
+       :backend-legality
+       :target-lowering-state
+       :runtime-only-safety-state
+       :opaque-domain-ir]}
+     :preserves [:source-spans :syntax-identity
+                 :checked-core-identity
+                 :core-node-identity
+                 :type-facts :effect-facts
+                 :capability-facts :ownership-facts
+                 :safe1-outcomes
+                 :runtime-check-records
+                 :proof-obligations
+                 :profile-target-metadata
+                 :source-origin-map
+                 :generated-origin-chains
+                 :control-flow-edges
+                 :data-flow-edges
+                 :dominance-facts
+                 :domain-anchor-links
+                 :target-independence
+                 :artifact-provenance]})
+   :mir-module mir-module))
 
 ; This is the first executable C11 construction slice.  The bootstrap seed
 ; authenticates the checked-core artifact before this function is invoked;

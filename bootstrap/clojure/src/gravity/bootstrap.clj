@@ -123067,23 +123067,31 @@
 (def p15-s23-c11-mir-builder-function
   'c11-build-target-independent-mir)
 
-(def p15-s23-c11-mir-source-byte-count 112240)
+(def p15-s23-c11-mir-verifier-function
+  'verify-c11-mir-module)
+
+(def p15-s23-c11-mir-source-byte-count 113008)
 
 (def p15-s23-c11-mir-expected-source-content-hash
-  "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06")
+  "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3")
 
 (def p15-s23-c11-mir-expected-plan-semantic-hash
-  "sha256:7b2ebeb83629b52d2c0ed6030660eee0e797aebe705e8d3dbf48e523319eb5d4")
+  "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae")
 
 (def p15-s23-c11-mir-expected-functions-semantic-hash
-  "sha256:5b67f41f0ccbae3f331be74b68488e1fcec3ca43a9fa75f7765a2aa3320f8822")
+  "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5")
 
 (def p15-s23-c11-mir-expected-builder-semantic-hash
   "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8")
 
+(def p15-s23-c11-mir-expected-verifier-semantic-hash
+  "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079")
+
 (def p15-s23-c11-mir-required-functions
   {'c11-build-target-independent-mir
    {:arity 1 :params ['checked-core]}
+   'verify-c11-mir-module
+   {:arity 1 :params ['mir-module]}
    'c11-build-linear-mir
    {:arity 3 :params ['checked-core 'nodes 'return-value-id]}
    'c11-build-conditional-mir
@@ -123372,7 +123380,8 @@
                    :observed-source-content-hash
                    :observed-plan-semantic-hash
                    :observed-functions-semantic-hash
-                   :observed-builder-semantic-hash}
+                   :observed-builder-semantic-hash
+                   :observed-verifier-semantic-hash}
                  key)
       (if (sha256? value) value :redacted)
 
@@ -124082,7 +124091,10 @@
             (p15-s23-c11-mir-digest functions)
             builder-semantic-hash
             (p15-s23-c11-mir-digest
-             (get functions p15-s23-c11-mir-builder-function))]
+             (get functions p15-s23-c11-mir-builder-function))
+            verifier-semantic-hash
+            (p15-s23-c11-mir-digest
+             (get functions p15-s23-c11-mir-verifier-function))]
         (when-not (= p15-s23-c11-mir-required-functions observed-shapes)
           (p15-s23-c11-mir-fail!
            "C11-MODULE" request-source {}
@@ -124094,19 +124106,23 @@
               (= p15-s23-c11-mir-expected-functions-semantic-hash
                  functions-semantic-hash)
               (= p15-s23-c11-mir-expected-builder-semantic-hash
-                 builder-semantic-hash))
+                 builder-semantic-hash)
+              (= p15-s23-c11-mir-expected-verifier-semantic-hash
+                 verifier-semantic-hash))
           (p15-s23-c11-mir-fail!
            "C11-VERIFY" request-source {}
            {:missing-fact :pinned-gravity-c11-function-identity
             :observed-plan-semantic-hash plan-semantic-hash
             :observed-functions-semantic-hash functions-semantic-hash
-            :observed-builder-semantic-hash builder-semantic-hash}))
+            :observed-builder-semantic-hash builder-semantic-hash
+            :observed-verifier-semantic-hash verifier-semantic-hash}))
         {:source-path source-path
          :source-content-hash source-content-hash
          :source-byte-count source-bytes
          :plan-semantic-hash plan-semantic-hash
          :functions-semantic-hash functions-semantic-hash
          :builder-semantic-hash builder-semantic-hash
+         :verifier-semantic-hash verifier-semantic-hash
          :function-shapes observed-shapes
          :plan plan}))))
 
@@ -126101,6 +126117,8 @@
    :functions-semantic-hash (:functions-semantic-hash binding)
    :builder-function p15-s23-c11-mir-builder-function
    :builder-semantic-hash (:builder-semantic-hash binding)
+   :verifier-function p15-s23-c11-mir-verifier-function
+   :verifier-semantic-hash (:verifier-semantic-hash binding)
    :function-shapes (:function-shapes binding)
    :compiled-by :clojure-stage0-seed
    :executed-by :clojure-stage0-rule-runner
@@ -126436,6 +126454,8 @@
           p15-s23-c11-mir-expected-functions-semantic-hash
           :builder-semantic-hash
           p15-s23-c11-mir-expected-builder-semantic-hash
+          :verifier-semantic-hash
+          p15-s23-c11-mir-expected-verifier-semantic-hash
           :function-shapes p15-s23-c11-mir-required-functions})
         (:source-rule artifact))
      "C11-VERIFY" source-path artifact :pinned-c11-source-rule-record)
@@ -126451,6 +126471,8 @@
        p15-s23-c11-mir-expected-functions-semantic-hash
        :builder-semantic-hash
        p15-s23-c11-mir-expected-builder-semantic-hash
+       :verifier-semantic-hash
+       p15-s23-c11-mir-expected-verifier-semantic-hash
        :function-shapes p15-s23-c11-mir-required-functions})
      (:source-rule artifact)
      :type-sensitive-pinned-c11-source-rule)

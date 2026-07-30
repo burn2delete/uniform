@@ -33106,7 +33106,12 @@
                          left
                          [:mir-module :pass-execution-record :status]
                          :forged)
-                        :content-bound-build-mir-pass-contract-and-execution]]]
+                        :content-bound-build-mir-pass-contract-and-execution]
+                       [(assoc-in
+                         left
+                         [:source-rule :verifier-semantic-hash]
+                         "sha256:0000000000000000000000000000000000000000000000000000000000000000")
+                        :pinned-c11-source-rule-record]]]
                 (let [data (c11-final-diagnostic
                             candidate left-core left-context)]
                   (is (= "C11-VERIFY" (:id data)) data)
@@ -34315,15 +34320,17 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 112240 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06"
+    (is (= 113008 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:7b2ebeb83629b52d2c0ed6030660eee0e797aebe705e8d3dbf48e523319eb5d4"
+    (is (= "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:5b67f41f0ccbae3f331be74b68488e1fcec3ca43a9fa75f7765a2aa3320f8822"
+    (is (= "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
     (is (= "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
+    (is (= "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
+           bootstrap/p15-s23-c11-mir-expected-verifier-semantic-hash))
     (is (= bootstrap/p15-s23-c11-mir-source-byte-count
            (:source-byte-count binding)))
     (is (= bootstrap/p15-s23-c11-mir-expected-source-content-hash
@@ -34334,6 +34341,16 @@
            (:functions-semantic-hash binding)))
     (is (= bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash
            (:builder-semantic-hash binding)))
+    (is (= bootstrap/p15-s23-c11-mir-expected-verifier-semantic-hash
+           (:verifier-semantic-hash binding)))
+    (is (= bootstrap/p15-s23-c11-mir-verifier-function
+           (:verifier-function
+            (bootstrap/p15-s23-c11-mir-source-rule-record
+             binding))))
+    (is (= bootstrap/p15-s23-c11-mir-expected-verifier-semantic-hash
+           (:verifier-semantic-hash
+            (bootstrap/p15-s23-c11-mir-source-rule-record
+             binding))))
     (is (= bootstrap/p15-s23-c11-mir-required-functions
            (:function-shapes binding)))
     (is (= 139 (count (get-in binding [:plan :functions]))))
