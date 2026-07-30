@@ -1,0 +1,99 @@
+(ns gravity.self-hosting.sh18.accepted-native-c-emission
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh18-accepted-native-request
+             sh18-accepted-native-alternate-path-request])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh18-native-request [actual-source-path]
+  {:artifact :gravity/sh18-native-c-request
+   :schema-version 1
+   :request-id :argv-checked-sum
+   :input
+   {:kind :gravity/mir-module
+    :artifact-id :mir/argv-checked-sum
+    :semantic-hash
+    "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    :verified true
+    :verifier :gravity.mir/c11
+    :verifier-report :passed}
+   :profile :native
+   :target
+   {:backend :gravity.backend/c
+    :dialect :hosted-c11
+    :triple :host-native
+    :abi :c-main}
+   :runtime
+   {:family :minimal-native
+    :services
+    [:startup :runtime-checks :stdout :stderr :process-exit]
+    :forbidden [:gc :reflection :dynamic-eval :shell :network]}
+   :effects #{:io/write :process/exit}
+   :capabilities #{:io/stdout :io/stderr :process/exit}
+   :safety
+   {:numeric-mode :checked
+    :outcome :runtime-checked
+    :check-id :check/argv-add-overflow
+    :failure-exit 67}
+   :program
+   {:kind :argv-checked-sum
+    :entry :main
+    :functions
+    [:main :gravity-parse-i64 :gravity-checked-add]
+    :argument-count 2
+    :stdout-label "sum="
+    :operations
+    [:argv-parse-i64
+     :checked-add-i64
+     :direct-call
+     :stdout-write
+     :process-exit]
+    :source-span
+    {:source-id :gravity.example/argv-sum
+     :start-byte 0
+     :end-byte 128}
+    :origin-chain
+    [{:kind :source
+      :source-id :gravity.example/argv-sum}]}
+   :source-map
+   [{:target-symbol :gravity-parse-i64
+     :mir-operation :mir/argv-parse
+     :source-span
+     {:source-id :gravity.example/argv-sum
+      :start-byte 16
+      :end-byte 47}
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.example/argv-sum}]
+     :generated-helper true}
+    {:target-symbol :gravity-checked-add
+     :mir-operation :mir/checked-add
+     :source-span
+     {:source-id :gravity.example/argv-sum
+      :start-byte 48
+      :end-byte 64}
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.example/argv-sum}]
+     :generated-helper true}
+    {:target-symbol :main
+     :mir-operation :mir/main
+     :source-span
+     {:source-id :gravity.example/argv-sum
+      :start-byte 0
+      :end-byte 128}
+     :origin-chain
+     [{:kind :source
+       :source-id :gravity.example/argv-sum}]
+     :generated-helper false}]
+   :actual-source-path actual-source-path})
+
+(defn sh18-accepted-native-request []
+  (sh18-native-request
+   "/checkout-a/examples/argv-checked-sum.gravity"))
+
+(defn sh18-accepted-native-alternate-path-request []
+  (sh18-native-request
+   "/checkout-b/examples/argv-checked-sum.gravity"))

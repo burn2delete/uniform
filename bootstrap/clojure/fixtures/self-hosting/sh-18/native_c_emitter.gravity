@@ -1,0 +1,712 @@
+(ns gravity.self-hosting.sh18.native-c-emitter
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh18-native-c-policy
+             sh18-emit-native-c
+             sh18-verify-native-c-emission])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh18-member? [values value]
+  (= value (get values value)))
+
+(defn sh18-lowercase-hex-from? [characters index]
+  (if (= index (count characters))
+    true
+    (if
+     (contains?
+      #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+        \a \b \c \d \e \f}
+      (get characters index))
+      (sh18-lowercase-hex-from? characters (+ index 1))
+      false)))
+
+(defn sh18-sha256? [value]
+  (if (string? value)
+    (if (= 71 (count value))
+      (let [characters (vec value)]
+        (if (= [\s \h \a \2 \5 \6 \:]
+               (subvec characters 0 7))
+          (sh18-lowercase-hex-from? characters 7)
+          false))
+      false)
+    false))
+
+(defn sh18-native-c-policy []
+  {:artifact :gravity/sh18-native-c-emitter-policy
+   :version 1
+   :input-kind :gravity/mir-module
+   :profile :native
+   :backend :gravity.backend/c
+   :dialect :hosted-c11
+   :runtime-family :minimal-native
+   :program-kind :argv-checked-sum
+   :maximum-functions 3
+   :maximum-operation-families 5
+   :maximum-carrier-nodes 4096
+   :maximum-carrier-depth 64
+   :maximum-carrier-width 128
+   :maximum-scalar-units 65536
+   :maximum-origin-entries 8
+   :maximum-path-characters 4096
+   :supported-operations
+   [:argv-parse-i64
+    :checked-add-i64
+    :direct-call
+    :stdout-write
+    :process-exit]
+   :required-effects #{:io/write :process/exit}
+   :required-capabilities
+   #{:io/stdout :io/stderr :process/exit}
+   :required-runtime-services
+   [:startup :runtime-checks :stdout :stderr :process-exit]
+   :forbidden-runtime-services
+   [:gc :reflection :dynamic-eval :shell :network]
+   :diagnostics
+   #{"B1-INPUT"
+     "B1-PROFILE"
+     "B1-CAPABILITY"
+     "B1-UNSUPPORTED"
+     "B1-METADATA"
+     "B2-DIALECT"
+     "B2-UB"
+     "B2-RUNTIME"
+     "B2-MANIFEST"
+     "SH18-VERIFY"}
+   :pending
+   [:authenticated-sh17-input
+    :complete-c11-operation-coverage
+    :complete-data-layout
+    :collections
+    :artifact-content-hashing
+    :native-object-emission
+    :release-runtime-linking
+    :coordinator-routing
+    :seed-retirement]})
+
+(defn sh18-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh18-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (if (set? value)
+        true
+        (seq? value)))))
+
+(defn sh18-aggregate-width [value]
+  (if (map? value)
+    (* 2 (count value))
+    (count value)))
+
+(defn sh18-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (keys value) result []]
+      (if (= (count remaining) 0)
+        result
+        (recur
+         (rest remaining)
+         (conj
+          (conj result (first remaining))
+          (get value (first remaining))))))
+    (vec value)))
+
+(defn sh18-max [left right]
+  (if (> left right) left right))
+
+(defn sh18-carrier-preflight [value]
+  (let [policy (sh18-native-c-policy)
+        maximum-nodes (get policy :maximum-carrier-nodes)
+        maximum-depth (get policy :maximum-carrier-depth)
+        maximum-width (get policy :maximum-carrier-width)
+        maximum-scalar-units (get policy :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           nodes 0
+           scalar-units 0
+           observed-depth 0
+           observed-width 0]
+      (if (= (count frontier) 0)
+        {:status :accepted
+         :nodes nodes
+         :scalar-units scalar-units
+         :maximum-depth observed-depth
+         :maximum-width observed-width}
+        (let [entry (first frontier)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :carrier-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :carrier-depth-bound}
+              (if (sh18-aggregate? current)
+                (let [width (sh18-aggregate-width current)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :carrier-width-bound}
+                    (let [components (sh18-aggregate-components current)
+                          next-frontier
+                          (loop [remaining components
+                                 result (rest frontier)]
+                            (if (= (count remaining) 0)
+                              result
+                              (recur
+                               (rest remaining)
+                               (conj
+                                result
+                                [(first remaining) (+ depth 1)]))))]
+                      (recur
+                       next-frontier next-nodes scalar-units
+                       (sh18-max observed-depth depth)
+                       (sh18-max observed-width width)))))
+                (let [next-scalar-units
+                      (+ scalar-units (count (vec (str current))))]
+                  (if (> next-scalar-units maximum-scalar-units)
+                    {:status :rejected :reason :carrier-scalar-bound}
+                    (recur
+                     (rest frontier) next-nodes next-scalar-units
+                     (sh18-max observed-depth depth)
+                     observed-width)))))))))))
+
+(defn sh18-sequence-equal? [left right]
+  (if (= (count left) (count right))
+    (if (= (count left) 0)
+      true
+      (if (= (first left) (first right))
+        (sh18-sequence-equal? (rest left) (rest right))
+        false))
+    false))
+
+(defn sh18-source-span-valid? [span]
+  (if (sh18-exact-keys?
+       span #{:source-id :start-byte :end-byte})
+    (if (keyword? (get span :source-id))
+      (if (integer? (get span :start-byte))
+        (if (>= (get span :start-byte) 0)
+          (if (integer? (get span :end-byte))
+            (>= (get span :end-byte) (get span :start-byte))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh18-input-valid? [request]
+  (let [input (get request :input)]
+    (if (sh18-exact-keys?
+         input
+         #{:kind :artifact-id :semantic-hash
+           :verified :verifier :verifier-report})
+      (if (= :gravity/mir-module (get input :kind))
+        (if (keyword? (get input :artifact-id))
+          (if (sh18-sha256? (get input :semantic-hash))
+            (if (= true (get input :verified))
+              (if (= :gravity.mir/c11 (get input :verifier))
+                (= :passed (get input :verifier-report))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh18-target-valid? [request]
+  (let [target (get request :target)]
+    (if (sh18-exact-keys?
+         target #{:backend :dialect :triple :abi})
+      (if (= :gravity.backend/c (get target :backend))
+        (if (= :hosted-c11 (get target :dialect))
+          (if (= :host-native (get target :triple))
+            (= :c-main (get target :abi))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh18-runtime-valid? [request]
+  (let [runtime (get request :runtime)
+        policy (sh18-native-c-policy)]
+    (if (sh18-exact-keys?
+         runtime #{:family :services :forbidden})
+      (if (= :minimal-native (get runtime :family))
+        (if (vector? (get runtime :services))
+          (if (vector? (get runtime :forbidden))
+            (if
+             (sh18-sequence-equal?
+              (get policy :required-runtime-services)
+              (get runtime :services))
+              (sh18-sequence-equal?
+               (get policy :forbidden-runtime-services)
+               (get runtime :forbidden))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh18-authority-valid? [request]
+  (let [policy (sh18-native-c-policy)]
+    (if (= (get policy :required-effects)
+           (get request :effects))
+      (= (get policy :required-capabilities)
+         (get request :capabilities))
+      false)))
+
+(defn sh18-safety-valid? [request]
+  (let [safety (get request :safety)]
+    (if (sh18-exact-keys?
+         safety
+         #{:numeric-mode :outcome :check-id :failure-exit})
+      (if (= :checked (get safety :numeric-mode))
+        (if (= :runtime-checked (get safety :outcome))
+          (if (keyword? (get safety :check-id))
+            (= 67 (get safety :failure-exit))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh18-origin-valid? [origin]
+  (if (sh18-exact-keys? origin #{:kind :source-id})
+    (if (= :source (get origin :kind))
+      (keyword? (get origin :source-id))
+      false)
+    false))
+
+(defn sh18-origin-chain-valid? [origins source-id]
+  (let [maximum
+        (get (sh18-native-c-policy) :maximum-origin-entries)]
+    (if (vector? origins)
+      (if (> (count origins) 0)
+        (if (<= (count origins) maximum)
+          (loop [remaining origins]
+            (if (= (count remaining) 0)
+              true
+              (if (sh18-origin-valid? (first remaining))
+                (if (= source-id (get (first remaining) :source-id))
+                  (recur (rest remaining))
+                  false)
+                false)))
+          false)
+        false)
+      false)))
+
+(defn sh18-program-valid? [request]
+  (let [program (get request :program)
+        policy (sh18-native-c-policy)]
+    (if (sh18-exact-keys?
+         program
+         #{:kind :entry :functions :argument-count :stdout-label
+           :operations :source-span :origin-chain})
+      (if (= :argv-checked-sum (get program :kind))
+        (if (= :main (get program :entry))
+          (if (vector? (get program :functions))
+            (if
+             (sh18-sequence-equal?
+              [:main :gravity-parse-i64 :gravity-checked-add]
+              (get program :functions))
+              (if (= 2 (get program :argument-count))
+                (if (= "sum=" (get program :stdout-label))
+                  (if (vector? (get program :operations))
+                    (if
+                     (sh18-sequence-equal?
+                      (get policy :supported-operations)
+                      (get program :operations))
+                      (if
+                       (sh18-source-span-valid?
+                        (get program :source-span))
+                        (sh18-origin-chain-valid?
+                         (get program :origin-chain)
+                         (get (get program :source-span) :source-id))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+        false)
+      false))))
+
+(defn sh18-source-span-within? [inner outer]
+  (if (sh18-source-span-valid? inner)
+    (if (sh18-source-span-valid? outer)
+      (if (= (get inner :source-id) (get outer :source-id))
+        (if (>= (get inner :start-byte)
+                (get outer :start-byte))
+          (<= (get inner :end-byte)
+              (get outer :end-byte))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh18-source-map-entry-valid?
+  [entry target-symbol mir-operation program-span
+   program-origin-chain generated-helper]
+  (if
+   (sh18-exact-keys?
+    entry
+    #{:target-symbol :mir-operation :source-span
+      :origin-chain :generated-helper})
+    (if (= target-symbol (get entry :target-symbol))
+      (if (= mir-operation (get entry :mir-operation))
+        (if (= generated-helper (get entry :generated-helper))
+          (if
+           (sh18-source-span-within?
+            (get entry :source-span) program-span)
+            (if (= program-origin-chain
+                   (get entry :origin-chain))
+              true
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh18-source-map-valid? [request]
+  (let [source-map (get request :source-map)
+        program-span (get (get request :program) :source-span)
+        program-origin-chain
+        (get (get request :program) :origin-chain)]
+    (if (vector? source-map)
+      (if (= 3 (count source-map))
+        (let [first-entry (get source-map 0)
+              second-entry (get source-map 1)
+              third-entry (get source-map 2)]
+          (if
+           (sh18-source-map-entry-valid?
+            first-entry
+            :gravity-parse-i64 :mir/argv-parse
+            program-span program-origin-chain true)
+            (if
+             (sh18-source-map-entry-valid?
+              second-entry
+              :gravity-checked-add :mir/checked-add
+              program-span program-origin-chain true)
+              (sh18-source-map-entry-valid?
+               third-entry :main :mir/main
+               program-span program-origin-chain false)
+              false)
+            false))
+        false)
+      false)))
+
+(defn sh18-request-shape-valid? [request]
+  (if (sh18-exact-keys?
+       request
+       #{:artifact :schema-version :request-id :input :profile
+         :target :runtime :effects :capabilities :safety :program
+         :source-map :actual-source-path})
+    (if (= :gravity/sh18-native-c-request
+           (get request :artifact))
+      (if (= 1 (get request :schema-version))
+        (if (keyword? (get request :request-id))
+          (if (keyword? (get request :profile))
+            (if (string? (get request :actual-source-path))
+              (if (> (count (get request :actual-source-path)) 0)
+                (<=
+                 (count (get request :actual-source-path))
+                 (get
+                  (sh18-native-c-policy)
+                  :maximum-path-characters))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh18-diagnostic-mir-operation [request]
+  (let [mapped
+        (get
+         (get (get request :source-map) 2)
+         :mir-operation)]
+    (if (keyword? mapped)
+      mapped
+      (if (map? (get request :program))
+        :mir/main
+        nil))))
+
+(defn sh18-diagnostic [request rule reason remediation]
+  {:diagnostic-id rule
+   :rule rule
+   :severity :error
+   :stage :native-c-emission
+   :request-id (get request :request-id)
+   :input-artifact-id
+   (get (get request :input) :artifact-id)
+   :profile (get request :profile)
+   :target (get request :target)
+   :source-span
+   (get (get request :program) :source-span)
+   :origin-chain
+   (get (get request :program) :origin-chain)
+   :actual-source-path (get request :actual-source-path)
+   :mir-operation (sh18-diagnostic-mir-operation request)
+   :missing-fact reason
+   :fallback-status :rejected
+   :reason reason
+   :remediation remediation})
+
+(defn sh18-rejected [request rule reason remediation]
+  {:artifact :gravity/sh18-native-c-emission
+   :status :rejected
+   :request-id (get request :request-id)
+   :source nil
+   :manifest nil
+   :identity-input nil
+   :provenance
+   {:actual-source-path (get request :actual-source-path)}
+   :diagnostics
+   [(sh18-diagnostic request rule reason remediation)]})
+
+(defn sh18-helper-manifest []
+  [{:target-symbol :gravity-parse-i64
+    :kind :backend-internal-helper
+    :operation-family :argv-parse-i64
+    :runtime-service :runtime-checks
+    :failure-exits [65 66]}
+   {:target-symbol :gravity-checked-add
+    :kind :backend-internal-helper
+    :operation-family :checked-add-i64
+    :runtime-service :runtime-checks
+    :failure-exits [67]}])
+
+(defn sh18-failure-policies []
+  [{:condition :argument-count-mismatch
+    :behavior :stderr-and-exit
+    :exit-code 64}
+   {:condition :invalid-left-integer
+    :behavior :stderr-and-exit
+    :exit-code 65}
+   {:condition :invalid-right-integer
+    :behavior :stderr-and-exit
+    :exit-code 66}
+   {:condition :integer-addition-overflow
+    :behavior :stderr-and-exit
+    :exit-code 67}
+   {:condition :stdout-write-failure
+    :behavior :process-exit
+    :exit-code 68}])
+
+(defn sh18-function-graph []
+  {:functions [:main :gravity-parse-i64 :gravity-checked-add]
+   :entry :main
+   :edges
+   [[:main :gravity-parse-i64]
+    [:main :gravity-checked-add]]})
+
+(defn sh18-c-source []
+  (str
+   "#include <errno.h>\n"
+   "#include <inttypes.h>\n"
+   "#include <stdint.h>\n"
+   "#include <stdio.h>\n"
+   "#include <stdlib.h>\n"
+   "\n"
+   "static int gravity_checked_add(int64_t left, int64_t right, int64_t *out) {\n"
+   "  if ((right > 0 && left > INT64_MAX - right) ||\n"
+   "      (right < 0 && left < INT64_MIN - right)) {\n"
+   "    return 0;\n"
+   "  }\n"
+   "  *out = left + right;\n"
+   "  return 1;\n"
+   "}\n"
+   "\n"
+   "static int gravity_parse_i64(const char *text, int64_t *out) {\n"
+   "  char *end = NULL;\n"
+   "  intmax_t parsed = 0;\n"
+   "  errno = 0;\n"
+   "  parsed = strtoimax(text, &end, 10);\n"
+   "  if (errno != 0 || end == text || *end != '\\0' ||\n"
+   "      parsed < INT64_MIN || parsed > INT64_MAX) {\n"
+   "    return 0;\n"
+   "  }\n"
+   "  *out = (int64_t)parsed;\n"
+   "  return 1;\n"
+   "}\n"
+   "\n"
+   "int main(int argc, char **argv) {\n"
+   "  int64_t left = 0;\n"
+   "  int64_t right = 0;\n"
+   "  int64_t sum = 0;\n"
+   "  if (argc != 3) {\n"
+   "    fputs(\"expected two integer arguments\\n\", stderr);\n"
+   "    return 64;\n"
+   "  }\n"
+   "  if (!gravity_parse_i64(argv[1], &left)) {\n"
+   "    fputs(\"invalid left integer\\n\", stderr);\n"
+   "    return 65;\n"
+   "  }\n"
+   "  if (!gravity_parse_i64(argv[2], &right)) {\n"
+   "    fputs(\"invalid right integer\\n\", stderr);\n"
+   "    return 66;\n"
+   "  }\n"
+   "  if (!gravity_checked_add(left, right, &sum)) {\n"
+   "    fputs(\"integer addition overflow\\n\", stderr);\n"
+   "    return 67;\n"
+   "  }\n"
+   "  if (printf(\"sum=%\" PRId64 \"\\n\", sum) < 0) {\n"
+   "    return 68;\n"
+   "  }\n"
+   "  return 0;\n"
+   "}\n"))
+
+(defn sh18-identity-input [request]
+  {:artifact :gravity/sh18-native-c-identity-input
+   :schema-version 1
+   :request-id (get request :request-id)
+   :input (get request :input)
+   :profile (get request :profile)
+   :target (get request :target)
+   :runtime (get request :runtime)
+   :effects (get request :effects)
+   :capabilities (get request :capabilities)
+   :safety (get request :safety)
+   :program (get request :program)
+   :source-map (get request :source-map)})
+
+(defn sh18-accepted [request]
+  {:artifact :gravity/sh18-native-c-emission
+   :status :accepted
+   :request-id (get request :request-id)
+   :source (sh18-c-source)
+   :manifest
+   {:artifact :gravity/c-source-manifest
+    :schema-version 1
+    :kind :c-source
+    :backend :gravity.backend/c
+    :dialect :hosted-c11
+    :profile :native
+    :target (get request :target)
+    :runtime (get request :runtime)
+    :effects (get request :effects)
+    :capabilities (get request :capabilities)
+    :safety (get request :safety)
+    :input-artifact-id
+    (get (get request :input) :artifact-id)
+    :source-map (get request :source-map)
+    :function-graph (sh18-function-graph)
+    :helpers (sh18-helper-manifest)
+    :failure-policies (sh18-failure-policies)
+    :external-validation-required true}
+   :identity-input (sh18-identity-input request)
+   :provenance
+   {:actual-source-path (get request :actual-source-path)
+    :input-artifact-id
+    (get (get request :input) :artifact-id)
+    :generator :gravity.self-hosting.sh18/native-c-emitter}
+   :diagnostics []})
+
+(defn sh18-emit-native-c [request]
+  (let [preflight (sh18-carrier-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (if (sh18-request-shape-valid? request)
+        (if (sh18-input-valid? request)
+      (if (= :native (get request :profile))
+        (if (sh18-target-valid? request)
+          (if (sh18-runtime-valid? request)
+            (if (sh18-authority-valid? request)
+              (if (sh18-safety-valid? request)
+                (if (sh18-program-valid? request)
+                  (if (sh18-source-map-valid? request)
+                    (sh18-accepted request)
+                    (sh18-rejected
+                     request
+                     "B1-METADATA"
+                     :incomplete-source-map
+                     :provide-complete-source-map))
+                  (sh18-rejected
+                   request
+                   "B1-UNSUPPORTED"
+                   :unsupported-program-shape
+                   :lower-only-the-declared-operation-subset))
+                (sh18-rejected
+                 request
+                 "B2-UB"
+                 :unchecked-integer-arithmetic
+                 :supply-a-runtime-checked-overflow-outcome))
+              (sh18-rejected
+               request
+               "B1-CAPABILITY"
+               :missing-output-authority
+               :declare-exact-effects-and-capabilities))
+            (sh18-rejected
+             request
+             "B2-RUNTIME"
+             :runtime-service-mismatch
+             :select-the-declared-minimal-native-services))
+          (sh18-rejected
+           request
+           "B2-DIALECT"
+           :unsupported-c-target
+           :select-hosted-c11-and-c-main-abi))
+        (sh18-rejected
+         request
+         "B1-PROFILE"
+         :profile-ineligible
+         :select-the-native-profile))
+      (sh18-rejected
+       request
+       "B1-INPUT"
+       :unverified-or-malformed-mir
+       :supply-a-passed-c11-verifier-record))
+        (sh18-rejected
+         request
+         "B1-INPUT"
+         :malformed-request
+         :supply-the-native-c-request-schema))
+      (sh18-rejected
+       request
+       "B1-INPUT"
+       (get preflight :reason)
+       :supply-a-bounded-native-c-request))))
+
+(defn sh18-verify-native-c-emission [request candidate]
+  (let [candidate-preflight (sh18-carrier-preflight candidate)]
+    (if (= :accepted (get candidate-preflight :status))
+      (let [expected (sh18-emit-native-c request)]
+        (if (= expected candidate)
+          {:artifact :gravity/sh18-native-c-verification
+           :status :passed
+           :request-id (get request :request-id)
+           :checks
+           [:bounded-candidate-carrier
+            :request-recomputed
+            :input-binding
+            :target-binding
+            :safety-binding
+            :source-exact
+            :manifest-exact
+            :identity-exact
+            :provenance-exact]}
+          {:artifact :gravity/sh18-native-c-verification
+           :status :rejected
+           :request-id (get request :request-id)
+           :checks [:bounded-candidate-carrier]
+           :diagnostics
+           [(sh18-diagnostic
+             request
+             "SH18-VERIFY"
+             :emission-substitution
+             :recompute-the-emission-from-the-original-request)]}))
+      {:artifact :gravity/sh18-native-c-verification
+       :status :rejected
+       :request-id (get request :request-id)
+       :reason :candidate-result-carrier-bound
+       :checks [:bounded-candidate-carrier]
+       :candidate-preflight candidate-preflight
+       :candidate-echo :omitted
+       :diagnostics
+       [(sh18-diagnostic
+         request
+         "SH18-VERIFY"
+         :candidate-result-carrier-bound
+         :supply-a-bounded-emission-candidate)]})))
