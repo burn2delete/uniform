@@ -2,12 +2,13 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B23"
+ :coverage-milestone "SH-07-B24"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
+  "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
   "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md"
@@ -15,6 +16,7 @@
   "docs/phase-01-core-language/012-l2-core-language-semantics.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
   "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
+  "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
   "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
   "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
   "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md"
@@ -106,6 +108,8 @@
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
   :c15-diagnostics
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
+  :c16-incremental
+  "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -138,6 +142,7 @@
   :b12-mobile {:keyword-lookups 8}
   :c11-mir {:keyword-lookups 0}
   :c15-diagnostics {:keyword-lookups 0}
+  :c16-incremental {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -159,6 +164,7 @@
   :c4-adapter-retirement
   :c5-adapter-retirement
   :c15-diagnostic-runtime-authority
+  :c16-incremental-runtime-authority
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
