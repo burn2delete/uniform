@@ -434,9 +434,9 @@
     :content-hash
     "sha256:baf1d1c2d98b475ace5ce541662151ed03fdaa4ea544a8784d682393758e7007"}
    {:component-id :mir
-    :byte-count 112240
+    :byte-count 113008
     :content-hash
-    "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06"}
+    "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"}
    {:component-id :domain-ir
     :byte-count 43537
     :content-hash
