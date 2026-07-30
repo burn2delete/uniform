@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 20 of the 41
+`SH-07` remains partial. Its current executable evidence covers 21 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -382,10 +382,19 @@ keyword-lookup products. The cache-free proof passed with 57,611 request
 carrier nodes at depth 8, width 833, and 945,725 UTF-8 scalar bytes. This
 proves source-model representation only and grants no cache construction,
 storage, invalidation, revalidation, proof reuse, filesystem/network, or
-release-grade incremental authority. The B16 cohort remains unchanged. The
+release-grade incremental authority. The C17 plugin/pass API source adds 25,254
+authenticated bytes in 17 fragments containing 878 forms, 329 bindings
+including 67 local bindings, and 27 resolutions. It lowers to 603 canonical
+core nodes with 17 definitions: 12 data contracts and 5 quoted function bodies,
+with no calls, references, or keyword-lookup products. The cache-free proof
+passed with 59,392 request carrier nodes at depth 8, width 878, and 974,774
+UTF-8 scalar bytes. This proves source-model representation only: production
+plugin loading and pass execution remain disabled, central integration remains
+pending, and no sandbox, trust, whitelist, domain, cache, filesystem/network,
+or release authority is credited. The B16 cohort remains unchanged. The
 Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 21 compiler
+central routing, and final artifact construction. The remaining 20 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

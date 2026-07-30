@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B24" (:coverage-milestone contract)))
+    (is (= "SH-07-B25" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -207,6 +207,8 @@
             "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
             :c16-incremental
             "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+            :c17-plugin
+            "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
             :c3-compat
             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
             :c6-core
@@ -231,6 +233,7 @@
              :c5-adapter-retirement
              :c15-diagnostic-runtime-authority
              :c16-incremental-runtime-authority
+             :c17-plugin-runtime-authority
              :sh07-complete]]
       (is (contains? nonclaims nonclaim)))))
 

@@ -2,12 +2,19 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B24"
+ :coverage-milestone "SH-07-B25"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
+  "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+  "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+  "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+  "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
+  "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
+  "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
+  "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
@@ -15,8 +22,12 @@
   "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
   "docs/phase-01-core-language/012-l2-core-language-semantics.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+  "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+  "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
   "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+  "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+  "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
   "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
   "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
   "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md"
@@ -110,6 +121,8 @@
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
   :c16-incremental
   "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+  :c17-plugin
+  "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -143,6 +156,7 @@
   :c11-mir {:keyword-lookups 0}
   :c15-diagnostics {:keyword-lookups 0}
   :c16-incremental {:keyword-lookups 0}
+  :c17-plugin {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -165,6 +179,7 @@
   :c5-adapter-retirement
   :c15-diagnostic-runtime-authority
   :c16-incremental-runtime-authority
+  :c17-plugin-runtime-authority
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
