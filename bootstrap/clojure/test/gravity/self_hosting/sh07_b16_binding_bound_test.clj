@@ -63,7 +63,23 @@
     (is (= 2048 (:maximum-bindings bounds)))
     (is (= 1024 (:maximum-lexical-binding-records bounds)))
     (is (= 1024 (:maximum-loop-binding-records bounds)))
-    (is (= 65536 (:maximum-combined-lexical-loop-records bounds)))))
+    (is (= 65536 (:maximum-combined-lexical-loop-records bounds)))
+    (is (= 8388608 (:maximum-carrier-nodes bounds)))
+    (is (= 268435456 (:maximum-scalar-bytes bounds)))
+    (is (= 16777216 (:maximum-template-carrier-nodes bounds)))
+    (is (= 256 (:maximum-template-carrier-depth bounds)))
+    (is (= 65536 (:maximum-template-carrier-width bounds)))
+    (is (= 536870912 (:maximum-template-scalar-bytes bounds)))
+    (is (= 16777216 (:maximum-resolved-core-carrier-nodes bounds)))
+    (is (= 256 (:maximum-resolved-core-carrier-depth bounds)))
+    (is (= 65536 (:maximum-resolved-core-carrier-width bounds)))
+    (is (= 536870912
+           (:maximum-resolved-core-scalar-bytes bounds)))
+    (is (= 8388608 (:maximum-generated-digest-carrier-nodes bounds)))
+    (is (= 256 (:maximum-generated-digest-carrier-depth bounds)))
+    (is (= 65536 (:maximum-generated-digest-carrier-width bounds)))
+    (is (= 536870912
+           (:maximum-generated-digest-scalar-bytes bounds)))))
 
 (deftest sh07-b16-binding-preflight-is-inclusive-and-fails-closed
   (let [at-bound (vec (repeat 2048 nil))
@@ -98,6 +114,70 @@
     (is (true? (invoke 'sh07-binding-id-vector? [at-bound])))
     (is (false? (invoke 'sh07-binding-id-vector? [over-bound])))
     (is (false? (invoke 'sh07-binding-id-vector? [[:not-a-sha]])))))
+
+(deftest sh07-source-local-bindings-follow-authenticated-definition-syntax
+  (let [local-a (ordinal-sha 1)
+        local-b (ordinal-sha 2)
+        external (ordinal-sha 3)
+        syntax-a (ordinal-sha 11)
+        syntax-b (ordinal-sha 12)
+        external-syntax (ordinal-sha 13)
+        request
+        {:module {:namespace 'gravity.bootstrap.reader}
+         :forms [{:syntax-id syntax-a} {:syntax-id syntax-b}]
+         :binding-table
+         [{:binding-id local-a
+           :namespace 'gravity.bootstrap.reader
+           :definition-syntax-id syntax-a}
+          {:binding-id local-b
+           :namespace 'reader
+           :definition-syntax-id syntax-b}
+          {:binding-id external
+           :namespace 'gravity.core
+           :definition-syntax-id external-syntax}]}]
+    (testing "qualified definitions remain source-local after name normalization"
+      (is (= [local-a local-b]
+             (invoke 'sh07-b13-local-binding-ids [request]))))
+    (testing "binding-table order remains authoritative"
+      (is (= [local-b local-a]
+             (invoke
+              'sh07-b13-local-binding-ids
+              [(update request :binding-table
+                       #(vec [(second %) (first %) (nth % 2)]))]))))))
+
+(deftest sh07-template-carrier-limits-are-separate-and-inclusive
+  (let [preflight
+        #(invoke
+          'sh07-carrier-preflight-with-bounds
+          [%1 %2 %3 %4 %5])]
+    (is (= :accepted (:status (preflight [:a] 2 1 1 8))))
+    (is (= :carrier-node-bound
+           (:reason (preflight [:a] 1 1 1 8))))
+    (is (= :carrier-depth-bound
+           (:reason (preflight [:a] 2 0 1 8))))
+    (is (= :carrier-width-bound
+           (:reason (preflight [:a] 2 1 0 8))))
+    (is (= :carrier-scalar-byte-bound
+           (:reason (preflight [:a] 2 1 1 7))))))
+
+(deftest sh07-template-and-resolved-output-preflights-are-explicit
+  (let [value [:a]
+        template (invoke 'sh07-template-carrier-preflight [value])
+        resolved (invoke 'sh07-resolved-core-carrier-preflight [value])
+        digest
+        (invoke 'sh07-generated-digest-carrier-preflight [value])]
+    (is (= :accepted (:status template)))
+    (is (= :accepted (:status resolved)))
+    (is (= :accepted (:status digest)))
+    (is (= (select-keys template
+                        [:nodes :aggregate-nodes :component-nodes
+                         :scalar-bytes :maximum-depth :maximum-width])
+           (select-keys resolved
+                        [:nodes :aggregate-nodes :component-nodes
+                         :scalar-bytes :maximum-depth :maximum-width])
+           (select-keys digest
+                        [:nodes :aggregate-nodes :component-nodes
+                         :scalar-bytes :maximum-depth :maximum-width])))))
 
 (deftest sh07-b16-public-export-shapes-remain-stable
   (is (= :gravity/stage2-compiler-artifact-plan

@@ -232,6 +232,18 @@
    :maximum-carrier-depth 256
    :maximum-carrier-width 65536
    :maximum-scalar-bytes 268435456
+   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-depth 256
+   :maximum-template-carrier-width 65536
+   :maximum-template-scalar-bytes 536870912
+   :maximum-resolved-core-carrier-nodes 16777216
+   :maximum-resolved-core-carrier-depth 256
+   :maximum-resolved-core-carrier-width 65536
+   :maximum-resolved-core-scalar-bytes 536870912
+   :maximum-generated-digest-carrier-nodes 8388608
+   :maximum-generated-digest-carrier-depth 256
+   :maximum-generated-digest-carrier-width 65536
+   :maximum-generated-digest-scalar-bytes 536870912
    :maximum-digest-requests 65540
    :aggregate-limit-policy
    :effective-over-combined-carriers
@@ -308,6 +320,18 @@
    :maximum-carrier-depth 256
    :maximum-carrier-width 65536
    :maximum-scalar-bytes 268435456
+   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-depth 256
+   :maximum-template-carrier-width 65536
+   :maximum-template-scalar-bytes 536870912
+   :maximum-resolved-core-carrier-nodes 16777216
+   :maximum-resolved-core-carrier-depth 256
+   :maximum-resolved-core-carrier-width 65536
+   :maximum-resolved-core-scalar-bytes 536870912
+   :maximum-generated-digest-carrier-nodes 8388608
+   :maximum-generated-digest-carrier-depth 256
+   :maximum-generated-digest-carrier-width 65536
+   :maximum-generated-digest-scalar-bytes 536870912
    :maximum-digest-requests 65540
    :aggregate-limit-policy
    :effective-over-combined-carriers
@@ -433,19 +457,15 @@
 (defn sh07-max [left right]
   (if (> left right) left right))
 
-(defn sh07-carrier-preflight [value]
-  (let [bounds (sh07-bounds-value)
-        maximum-nodes (get bounds :maximum-carrier-nodes)
-        maximum-depth (get bounds :maximum-carrier-depth)
-        maximum-width (get bounds :maximum-carrier-width)
-        maximum-scalar-bytes (get bounds :maximum-scalar-bytes)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           aggregate-nodes 0
-           component-nodes 0
-           scalar-bytes 0
-           observed-depth 0
-           observed-width 0]
+(defn sh07-carrier-preflight-with-bounds
+  [value maximum-nodes maximum-depth maximum-width maximum-scalar-bytes]
+  (loop [frontier [[value 0]]
+         nodes 0
+         aggregate-nodes 0
+         component-nodes 0
+         scalar-bytes 0
+         observed-depth 0
+         observed-width 0]
       (if (= (count frontier) 0)
         {:status :accepted
          :nodes nodes
@@ -503,7 +523,43 @@
                      component-nodes
                      next-scalar-bytes
                      (sh07-max observed-depth depth)
-                     observed-width)))))))))))
+                     observed-width))))))))))
+
+(defn sh07-carrier-preflight [value]
+  (let [bounds (sh07-bounds-value)]
+    (sh07-carrier-preflight-with-bounds
+     value
+     (get bounds :maximum-carrier-nodes)
+     (get bounds :maximum-carrier-depth)
+     (get bounds :maximum-carrier-width)
+     (get bounds :maximum-scalar-bytes))))
+
+(defn sh07-template-carrier-preflight [value]
+  (let [bounds (sh07-bounds-value)]
+    (sh07-carrier-preflight-with-bounds
+     value
+     (get bounds :maximum-template-carrier-nodes)
+     (get bounds :maximum-template-carrier-depth)
+     (get bounds :maximum-template-carrier-width)
+     (get bounds :maximum-template-scalar-bytes))))
+
+(defn sh07-resolved-core-carrier-preflight [value]
+  (let [bounds (sh07-bounds-value)]
+    (sh07-carrier-preflight-with-bounds
+     value
+     (get bounds :maximum-resolved-core-carrier-nodes)
+     (get bounds :maximum-resolved-core-carrier-depth)
+     (get bounds :maximum-resolved-core-carrier-width)
+     (get bounds :maximum-resolved-core-scalar-bytes))))
+
+(defn sh07-generated-digest-carrier-preflight [value]
+  (let [bounds (sh07-bounds-value)]
+    (sh07-carrier-preflight-with-bounds
+     value
+     (get bounds :maximum-generated-digest-carrier-nodes)
+     (get bounds :maximum-generated-digest-carrier-depth)
+     (get bounds :maximum-generated-digest-carrier-width)
+     (get bounds :maximum-generated-digest-scalar-bytes))))
 
 (defn sh07-sha-vector? [values maximum]
   (if (sh07-bounded-vector? values maximum)
@@ -915,11 +971,19 @@
              (conj result (get (first remaining) :form-id))))))
 
 (defn sh07-b13-local-binding-ids [request]
-  (let [namespace (get (get request :module) :namespace)]
+  (let [definition-syntax-ids
+        (loop [remaining (get request :forms) result #{}]
+          (if (= (count remaining) 0)
+            result
+            (recur
+             (rest remaining)
+             (conj result (get (first remaining) :syntax-id)))))]
     (loop [remaining (get request :binding-table) result []]
       (if (= (count remaining) 0)
         result
-        (if (= namespace (get (first remaining) :namespace))
+        (if (contains?
+             definition-syntax-ids
+             (get (first remaining) :definition-syntax-id))
           (recur
            (rest remaining)
            (conj result (get (first remaining) :binding-id)))
@@ -1276,24 +1340,21 @@
 
 (defn sh07-b13-fragment-local-binding-ids
   [request indexes root-id]
-  (let [namespace (get (get request :module) :namespace)]
-    (loop [remaining (get request :binding-table) result []]
-      (if (= (count remaining) 0)
-        result
-        (let [binding (first remaining)
-              definition
-              (sh07-find-form-by-syntax
-               indexes (get binding :definition-syntax-id))]
-          (if (if (= (get binding :namespace) namespace)
-                (if (map? definition)
-                  (= (sh07-b13-form-root-id indexes definition)
-                     root-id)
-                  false)
-                false)
-            (recur
-             (rest remaining)
-             (conj result (get binding :binding-id)))
-            (recur (rest remaining) result)))))))
+  (loop [remaining (get request :binding-table) result []]
+    (if (= (count remaining) 0)
+      result
+      (let [binding (first remaining)
+            definition
+            (sh07-find-form-by-syntax
+             indexes (get binding :definition-syntax-id))]
+        (if (if (map? definition)
+              (= (sh07-b13-form-root-id indexes definition)
+                 root-id)
+              false)
+          (recur
+           (rest remaining)
+           (conj result (get binding :binding-id)))
+          (recur (rest remaining) result))))))
 
 (defn sh07-b13-fragment-resolution-records
   [request indexes root-id]
@@ -5875,25 +5936,44 @@
          :identity-preimage identity-preimage
          :provenance-binding-preimage provenance-preimage
          :provenance (get request :provenance)
-         :diagnostics []}]
-    {:artifact :gravity/sh07-core-template-result
-     :schema-version 15
-     :status :accepted
-     :core-template template
-     :digest-requests
-     (get (get provenance-added :state) :digest-requests)
-     :diagnostics []
-     :bounds (sh07-bounds-value)
-     :containment {:downstream-artifacts-forbidden false
-                   :host-exception-contained true}
-     :execution-boundary
-     {:source-language :gravity
-      :owner :gravity.checked-core
-      :entry 'sh07-build-core-template
-      :sh06-projection-authentication :clojure-stage0
-      :digest-resolution :clojure-stage0
-      :artifact-binding :clojure-stage0
-      :clojure-seed-boundary? true}}))
+         :diagnostics []}
+        digest-requests
+        (get (get provenance-added :state) :digest-requests)
+        template-carrier
+        (sh07-template-carrier-preflight template)
+        digest-carrier
+        (sh07-generated-digest-carrier-preflight digest-requests)]
+    (if (= (get template-carrier :status) :accepted)
+      (if (= (get digest-carrier :status) :accepted)
+        {:artifact :gravity/sh07-core-template-result
+         :schema-version 15
+         :status :accepted
+         :core-template template
+         :digest-requests digest-requests
+         :diagnostics []
+         :bounds (sh07-bounds-value)
+         :containment {:downstream-artifacts-forbidden false
+                       :host-exception-contained true}
+         :execution-boundary
+         {:source-language :gravity
+          :owner :gravity.checked-core
+          :entry 'sh07-build-core-template
+          :sh06-projection-authentication :clojure-stage0
+          :digest-resolution :clojure-stage0
+          :artifact-binding :clojure-stage0
+          :clojure-seed-boundary? true}}
+        (sh07-rejected-result
+         request
+         "C6-VERIFY"
+         nil
+         {:reason :generated-digest-output-carrier-bound
+          :carrier digest-carrier}))
+      (sh07-rejected-result
+       request
+       "C6-VERIFY"
+       nil
+       {:reason :template-output-carrier-bound
+        :carrier template-carrier}))))
 
 (defn sh07-build-core-template [request]
   (let [input-check (sh07-input-check request)]
@@ -5956,32 +6036,56 @@
     false))
 
 (defn sh07-verify-core-template [request template digest-requests]
-  (let [template-carrier (sh07-carrier-preflight template)
-        requests-carrier (sh07-carrier-preflight digest-requests)]
+  (let [template-carrier (sh07-template-carrier-preflight template)
+        requests-carrier
+        (sh07-generated-digest-carrier-preflight digest-requests)]
     (if (= (get template-carrier :status) :accepted)
       (if (= (get requests-carrier :status) :accepted)
         (let [rebuilt (sh07-build-core-template request)]
           (if (= (get rebuilt :status) :accepted)
-      (if (sh07-template-result-shape? rebuilt)
-        (if (sh07-digest-request-sequence? digest-requests)
-          (if (= template (get rebuilt :core-template))
-            (if (= digest-requests (get rebuilt :digest-requests))
+            (if (sh07-template-result-shape? rebuilt)
+              (if (sh07-digest-request-sequence? digest-requests)
+                (if (= template (get rebuilt :core-template))
+                  (if (= digest-requests (get rebuilt :digest-requests))
+                    {:artifact :gravity/sh07-core-template-verification
+                     :schema-version 15 :status :passed :rule nil
+                     :reason nil :details {}}
+                    {:artifact :gravity/sh07-core-template-verification
+                     :schema-version 15 :status :rejected
+                     :rule "C6-VERIFY"
+                     :reason :digest-request-replay
+                     :details {}})
+                  {:artifact :gravity/sh07-core-template-verification
+                   :schema-version 15 :status :rejected
+                   :rule "C6-VERIFY"
+                   :reason :template-replay
+                   :details {}})
+                {:artifact :gravity/sh07-core-template-verification
+                 :schema-version 15 :status :rejected
+                 :rule "C6-VERIFY"
+                 :reason :digest-request-sequence
+                 :details {}})
               {:artifact :gravity/sh07-core-template-verification
-               :schema-version 15 :status :passed :rule nil}
-              {:artifact :gravity/sh07-core-template-verification
-               :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+               :schema-version 15 :status :rejected
+               :rule "C6-VERIFY"
+               :reason :rebuilt-result-shape
+               :details {}})
             {:artifact :gravity/sh07-core-template-verification
-             :schema-version 15 :status :rejected :rule "C6-VERIFY"})
-          {:artifact :gravity/sh07-core-template-verification
-           :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+             :schema-version 15 :status :rejected
+             :rule "C6-VERIFY"
+             :reason :rebuilt-result-status
+             :details {:status (get rebuilt :status)
+                       :rule (get rebuilt :rule)}}))
         {:artifact :gravity/sh07-core-template-verification
-         :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 15 :status :rejected
+         :rule "C6-VERIFY"
+         :reason :digest-request-carrier
+         :details requests-carrier})
       {:artifact :gravity/sh07-core-template-verification
-       :schema-version 15 :status :rejected :rule "C6-VERIFY"}))
-        {:artifact :gravity/sh07-core-template-verification
-         :schema-version 15 :status :rejected :rule "C6-VERIFY"})
-      {:artifact :gravity/sh07-core-template-verification
-       :schema-version 15 :status :rejected :rule "C6-VERIFY"})))
+       :schema-version 15 :status :rejected
+       :rule "C6-VERIFY"
+       :reason :template-carrier
+       :details template-carrier})))
 
 (defn sh07-digest-reference? [value]
   (if (sh07-exact-keys?
@@ -6004,6 +6108,13 @@
 
 (defn sh07-resolution-success [value]
   {:status :accepted :value value})
+
+(defn sh07-resolved-core-success [value]
+  (let [carrier (sh07-resolved-core-carrier-preflight value)]
+    (if (= (get carrier :status) :accepted)
+      (sh07-resolution-success value)
+      (sh07-resolution-failure
+       :resolved-core-output-carrier-bound))))
 
 (defn sh07-resolve-controlled-reference [value resolved-digests]
   (if (sh07-digest-reference? value)
@@ -9463,7 +9574,7 @@
                                 (if (= (get source-map :status) :accepted)
                                   (if (= (get identity :status) :accepted)
                                     (if (= (get provenance :status) :accepted)
-                                      (sh07-resolution-success
+                                      (sh07-resolved-core-success
                                        (sh07-resolved-template-value
                                         (assoc
                                          template
@@ -9535,8 +9646,10 @@
 
 (defn sh07-verify-core-resolved
   [request resolved-core digest-requests resolved-digests]
-  (let [resolved-carrier (sh07-carrier-preflight resolved-core)
-        requests-carrier (sh07-carrier-preflight digest-requests)
+  (let [resolved-carrier
+        (sh07-resolved-core-carrier-preflight resolved-core)
+        requests-carrier
+        (sh07-generated-digest-carrier-preflight digest-requests)
         digests-carrier (sh07-carrier-preflight resolved-digests)]
     (if (= (get resolved-carrier :status) :accepted)
       (if (= (get requests-carrier :status) :accepted)

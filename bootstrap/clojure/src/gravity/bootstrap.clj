@@ -159045,25 +159045,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 402510)
+(def sh07-core-expected-source-byte-count 406758)
 (def sh07-core-expected-source-content-hash
-  "sha256:4607618874f1c0032c3e61bfa4b188e9045789339a7edfb2d520a04615be9671")
+  "sha256:583d8f194aee0588e22dc8e4d2882b5c5019167f9908b008e5be825a07f05b6b")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:bfbfc7e68ae3891284a9d7ba99a0c7eb361c603c1fa01ec2dd83f42dbc06e5a6")
+  "sha256:c1d15fb359a673fcfe7e9e560ecc7e4b0e23edb49f1da1a0991de1b1fd3f9f67")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:0373d4f50415119386a3170fe6d20e2c84b30cddacea8257d42959a63b6ee271")
-(def sh07-core-expected-function-count 269)
+  "sha256:e60ded17a73bc25d2bae95fa6015f9410d0be174e7e8e87a40ae9f1c264f8a8e")
+(def sh07-core-expected-function-count 274)
 (def sh07-core-expected-function-names-hash
-  "sha256:67239d92428037733b729f2705ea53dd740dbedfb490570ae2f12fb6645900fc")
+  "sha256:a7f23daf98ea3e8be0bf4ab562741bb538c1220401d6a450d986b98611933835")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:a42301c8946780b80ccfc40c145f2a36d5879871ba8a5184d08da99b111a2d51")
+  "sha256:210056984bad174006b1a74de2ba9cbb6cb71743b0f81e6ddece19e3101a7b96")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:c7d8ec5b2d4b123797878e4046d700b26a127370bbda95f48627ed0d79e8542c"
+   "sha256:f54b579ad1647cf020605bca95ed296bbe5744401c8b56c8806edc8180edf23b"
    'sh07-verify-core-resolved
-   "sha256:a9aa5548a3a8fc9c9f28dfb73ebbd6880c3425223f96695c539e049d4bda76b3"})
+   "sha256:729d28b08a3cb19dc1d22b70deb807c5b470c7a0bdcc48e83da8eb4a24c5ad6e"})
 
 (defn sh07-core-source-path
   []
@@ -160311,7 +160311,8 @@
                (range)
                trees))
         indexed (map-indexed vector bindings)
-        local? #(= (:namespace module) (:namespace %))]
+        local?
+        #(contains? fragment-by-syntax (:definition-syntax-id %))]
     (->> indexed
          (sort-by
           (fn [[index binding]]
@@ -160325,12 +160326,12 @@
 
 (defn sh07-b13-fragment-coverage
   [module forms bindings resolutions fragment-manifest]
-  (let [local-bindings
-        (filterv #(= (:namespace module) (:namespace %)) bindings)]
+  (let [local-binding-ids
+        (vec (mapcat :local-binding-ids fragment-manifest))]
     {:root-form-count
      (count (mapcat :root-form-ids fragment-manifest))
      :form-count (count forms)
-     :local-binding-count (count local-bindings)
+     :local-binding-count (count local-binding-ids)
      :resolution-count (count resolutions)
      :fragment-count (count fragment-manifest)
      :covered-root-form-ids
@@ -160338,7 +160339,7 @@
      :covered-form-ids
      (vec (mapcat :form-ids fragment-manifest))
      :covered-local-binding-ids
-     (vec (mapcat :local-binding-ids fragment-manifest))
+     local-binding-ids
      :covered-resolution-reference-syntax-ids
      (vec
       (mapcat
@@ -160952,7 +160953,10 @@
             (set? value) :set
             (sequential? value) :sequential
             (coll? value) :collection
-            :else :scalar))]
+            :else :scalar))
+        request-depth
+        (when (map? request)
+          (sh07-core-nested-depth request))]
     (cond
       (not (map? request))
       (sh07-core-request-diagnostic!
@@ -161014,6 +161018,13 @@
        {:reason :request-macro-trace-vector-required
         :observed-shape (value-shape trace-value)})
 
+      (> request-depth 256)
+      (sh07-core-request-diagnostic!
+       request
+       {:bound :maximum-carrier-depth
+        :maximum 256
+        :observed request-depth})
+
       (not=
        (:projection-binding request)
        (reader-canonical-hash
@@ -161041,8 +161052,7 @@
             origin-trace-count
             (if (vector? origin-traces-value)
               (count origin-traces-value)
-              0)
-            request-depth (sh07-core-nested-depth request)]
+              0)]
         (cond
       (not= 15 (:schema-version request))
       (sh07-core-request-diagnostic!
@@ -161122,14 +161132,73 @@
         :maximum 2048
         :observed origin-trace-count})
 
-      (> request-depth 256)
-      (sh07-core-request-diagnostic!
-       request
-       {:bound :maximum-carrier-depth
-        :maximum 256
-        :observed request-depth})
-
           :else :passed)))))
+
+(defn- sh07-core-template-carrier-census
+  [value]
+  (let [maximum-nodes (* 32 1024 1024)
+        maximum-scalar-bytes (* 8 268435456)
+        frontier (java.util.ArrayDeque.)]
+    (.addLast frontier [value 0])
+    (loop [nodes 0
+           aggregate-nodes 0
+           component-nodes 0
+           scalar-bytes 0
+           maximum-depth 0
+           maximum-width 0]
+      (if (.isEmpty frontier)
+        {:status :complete
+         :nodes nodes
+         :aggregate-nodes aggregate-nodes
+         :component-nodes component-nodes
+         :scalar-bytes scalar-bytes
+         :maximum-depth maximum-depth
+         :maximum-width maximum-width}
+        (let [[current depth] (.removeLast frontier)
+              next-nodes (inc nodes)
+              aggregate?
+              (or (map? current) (vector? current)
+                  (set? current) (seq? current))]
+          (cond
+            (> next-nodes maximum-nodes)
+            {:status :truncated
+             :reason :measurement-node-bound
+             :observed-at-least next-nodes
+             :maximum maximum-nodes}
+
+            aggregate?
+            (let [components
+                  (if (map? current)
+                    (mapcat (fn [[key item]] [key item]) current)
+                    current)
+                  width (if (map? current)
+                          (* 2 (count current))
+                          (count current))]
+              (doseq [component components]
+                (.addLast frontier [component (inc depth)]))
+              (recur
+               next-nodes
+               (inc aggregate-nodes)
+               (+ component-nodes width)
+               scalar-bytes
+               (max maximum-depth depth)
+               (max maximum-width width)))
+
+            :else
+            (let [next-scalar-bytes
+                  (+ scalar-bytes (* 4 (count (str current))))]
+              (if (> next-scalar-bytes maximum-scalar-bytes)
+                {:status :truncated
+                 :reason :measurement-scalar-byte-bound
+                 :observed-at-least next-scalar-bytes
+                 :maximum maximum-scalar-bytes}
+                (recur
+                 next-nodes
+                 aggregate-nodes
+                 component-nodes
+                 next-scalar-bytes
+                 (max maximum-depth depth)
+                 maximum-width)))))))))
 
 (defn sh07-core-run-structural-request-for-test
   "Test-only structural runner. It does not authenticate SH-06 membership;
@@ -161155,7 +161224,15 @@
                 (throw
                  (ex-info "Gravity SH-07 template replay failed"
                           {:id "C6-VERIFY" :stage :core-lowering
-                           :source-path source-path})))
+                           :source-path source-path
+                           :template-verification
+                           template-verification
+                           :template-carrier-census
+                           (sh07-core-template-carrier-census
+                            template)
+                           :digest-request-carrier-census
+                           (sh07-core-template-carrier-census
+                            digest-requests)})))
             resolved-digests
             (sh07-core-digest-requests source-path digest-requests)
             resolved-template
@@ -161170,7 +161247,9 @@
                 (throw
                  (ex-info "Gravity SH-07 resolved replay failed"
                           {:id "C6-VERIFY" :stage :core-lowering
-                           :source-path source-path})))]
+                           :source-path source-path
+                           :resolved-verification
+                           resolved-verification})))]
         {:raw-template-result result
          :canonical-core-artifact
          (sh07-core-canonical-artifact resolved-template)

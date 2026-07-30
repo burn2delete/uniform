@@ -78,6 +78,9 @@
     :reference-uses :var-references :calls :lexical-bindings
     :loop-bindings :recur-targets :recur-transfers :mutations
     :error-transfers :error-handlers :source-map
+    :fragment-manifest :fragment-coverage
+    :module-assembly-manifest :declared-alias-table
+    :keyword-lookups
     :match-branch-records :match-decision-skeletons
     :match-pattern-records
     :preserved-resolution :macro-expansion-trace
@@ -356,7 +359,8 @@
            (:remediation diagnostic)))
     (is (map? (:source-span diagnostic)))
     (is (= expected-path (get-in diagnostic [:source-span :source])))
-    (is (= :sh07-b11-core-lowering (:lowering-rule diagnostic)))
+    (is (= :sh07-b15-keyword-map-lookup
+           (:lowering-rule diagnostic)))
     (is (nil? (:core-node-id diagnostic)))
     (is (map? (:facts diagnostic)))
     diagnostic))

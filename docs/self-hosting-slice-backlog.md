@@ -303,6 +303,33 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
+`SH-07` remains partial. Its current executable evidence covers 13 of the 41
+authoritative compiler modules, including the complete bootstrap reader source.
+For that reader source, Gravity consumes the authentic SH-06 fragment,
+binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
+qualified definitions and 30 qualified calls, and preserves 24 quoted forms as
+data rather than executable references or calls. The measured authenticated
+request contains 1,446,007 carrier nodes at depth 25 and maximum width 22,209;
+its exact UTF-8 scalar payload is 24,579,750 bytes. The generated core template
+contains 9,172,831 nodes and 522,603,428 scalar bytes, and its generated digest
+requests contain 6,695,903 nodes and 372,860,236 scalar bytes. Request ingress
+is bounded at 8,388,608 nodes and 268,435,456 scalar bytes; template and
+resolved-core output are independently bounded at 16,777,216 nodes and
+536,870,912 scalar bytes; generated digest output is independently bounded at
+8,388,608 nodes and 536,870,912 scalar bytes. All four boundaries also enforce
+depth 256 and width 65,536. Request ingress is checked before lowering, and
+each generated product is checked before downstream recursive hashing,
+verification, or use. Stable path-neutral core identities, actual-path
+provenance, fresh digest resolution, replay, and altered input, graph, binding,
+resolution, template, digest, and resolved-product rejection are required by
+the authoritative proof. The
+Clojure stage0 boundary still owns initial source reads, compiler-plan
+execution, canonical digest resolution, authenticated-envelope assembly,
+central routing, and final artifact construction. The remaining 28 compiler
+modules and the complete core-form, mutation, recursion, exception, and pattern
+surface must pass the same executable gates before `SH-07` can receive
+completion credit.
+
 ## Beyond First Self-Hosting
 
 After `SH-29`, target expansion becomes a separate matrix. Each canonical

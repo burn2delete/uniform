@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B16"
+ :coverage-milestone "SH-07-B17"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"]
@@ -46,6 +46,18 @@
   :maximum-module-carrier-depth 256
   :maximum-module-carrier-width 65536
   :maximum-module-scalar-bytes 268435456
+  :maximum-template-carrier-nodes 16777216
+  :maximum-template-carrier-depth 256
+  :maximum-template-carrier-width 65536
+  :maximum-template-scalar-bytes 536870912
+  :maximum-resolved-core-carrier-nodes 16777216
+  :maximum-resolved-core-carrier-depth 256
+  :maximum-resolved-core-carrier-width 65536
+  :maximum-resolved-core-scalar-bytes 536870912
+  :maximum-generated-digest-carrier-nodes 8388608
+  :maximum-generated-digest-carrier-depth 256
+  :maximum-generated-digest-carrier-width 65536
+  :maximum-generated-digest-scalar-bytes 536870912
   :maximum-module-digest-requests 65540}
  :cache-key
  [:source-path
@@ -79,6 +91,8 @@
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
   :macro
   "bootstrap/gravity/src/gravity/macro.gravity"
+  :reader
+  "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
   :syntax
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
  :required-request-products

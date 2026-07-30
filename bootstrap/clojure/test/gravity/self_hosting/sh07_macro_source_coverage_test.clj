@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B16" (:coverage-milestone contract)))
+    (is (= "SH-07-B17" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -204,6 +204,8 @@
             :c11-mir
             "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
             :macro macro-relative-path
+            :reader
+            "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
             :syntax
             "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
            modules))
