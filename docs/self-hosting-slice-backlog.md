@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 23 of the 41
+`SH-07` remains partial. Its current executable evidence covers 24 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -419,10 +419,26 @@ provenance, replay, and altered-product containment. This proves source-model
 representation only: production verifier execution, schema enforcement,
 certificate and evidence checking, translation validation and replay, release
 decisions, and plugin/backend conformance execution remain pending. The B16
-cohort remains unchanged. The Clojure stage0 boundary still owns initial source
-reads, compiler-plan
+cohort remains unchanged. The C7 type-checker source adds 39,567 authenticated
+bytes in 47 fragments containing 3,320 forms, 480 bindings, and 1,205
+resolutions. It lowers to 2,656 canonical core nodes with 47 definitions, 39
+executable SH-08 functions, three quoted source-model functions, 466 calls, 928
+references, 133 conditionals, 24 `let` forms, 13 loops, and 15 recurs. Its
+159 `get` calls divide into 152 literal-key calls and seven dynamic-key calls;
+all are ordinary resolved calls rather than keyword-headed lookup forms, so
+the canonical keyword-lookup product count remains zero and B16 stays frozen.
+The cache-free proof passed with 229,955 request carrier nodes at depth 24,
+width 3,320, and 3,827,443 UTF-8 scalar bytes. The proof pins exact contracts,
+bounds, diagnostics, pending work, executable/quoted boundaries, structural
+limitations, co-canonical extension parity, path-neutral identity, actual-path
+provenance, replay, and altered-product containment. This proves bounded source
+execution and reconstruction only: production type-checker execution,
+authenticated coordinator adaptation, resolved typed-artifact identity,
+complete inference and constraint solving, dynamic/layout/schema/ownership
+legality, complete diagnostic execution, and SH-08 completion remain pending.
+The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 18 compiler
+central routing, and final artifact construction. The remaining 17 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

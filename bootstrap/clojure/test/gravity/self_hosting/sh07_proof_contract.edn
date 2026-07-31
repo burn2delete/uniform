@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B27"
+ :coverage-milestone "SH-07-B28"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -16,6 +16,19 @@
   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
   "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
   "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+  "docs/phase-01-core-language/015-l5-type-system-specification.md"
+  "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
+  "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md"
+  "docs/phase-01-core-language/019-l9-error-handling-specification.md"
+  "docs/phase-01-core-language/020-l10-memory-model-specification.md"
+  "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+  "docs/phase-02-safety/031-safe2-memory-safety-model.md"
+  "docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md"
+  "docs/phase-02-safety/033-safe4-region-and-arena-safety.md"
+  "docs/phase-02-safety/034-safe5-linear-resource-safety.md"
+  "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md"
+  "docs/phase-02-safety/038-safe9-numeric-safety.md"
+  "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
   "docs/phase-03-profile-system/048-p3-meta-profile-specification.md"
   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
@@ -24,6 +37,11 @@
   "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
   "docs/phase-01-core-language/012-l2-core-language-semantics.md"
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
+  "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+  "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+  "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md"
+  "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+  "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md"
   "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
   "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"
@@ -40,7 +58,11 @@
   "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"
   "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"
   "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md"
+  "docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md"
   "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
+  "docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md"
+  "docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md"
+  "docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md"
   "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md"
   "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md"]
  :ownership
@@ -136,6 +158,8 @@
   "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
   :c18-verification
   "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+  :c7-types
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -172,6 +196,7 @@
   :c17-plugin {:keyword-lookups 0}
   :sh21-meta {:keyword-lookups 0}
   :c18-verification {:keyword-lookups 0}
+  :c7-types {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -202,6 +227,13 @@
   :c18-translation-validation-and-replay-execution
   :c18-release-gate-decision-authority
   :c18-plugin-and-backend-conformance-execution
+  :c7-production-type-checker-execution
+  :c7-contract-and-diagnostic-schema-enforcement
+  :sh08-authenticated-coordinator-adapter
+  :sh08-resolved-typed-artifact-digest
+  :sh08-inference-constraints-generics-and-profile-legality
+  :sh08-dynamic-layout-schema-ownership-and-diagnostic-execution
+  :sh08-complete
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement

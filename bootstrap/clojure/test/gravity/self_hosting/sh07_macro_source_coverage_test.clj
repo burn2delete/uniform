@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B27" (:coverage-milestone contract)))
+    (is (= "SH-07-B28" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -213,6 +213,8 @@
             "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
             :c18-verification
             "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+            :c7-types
+            "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
             :c3-compat
             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
             :c6-core
@@ -245,6 +247,13 @@
              :c18-translation-validation-and-replay-execution
              :c18-release-gate-decision-authority
              :c18-plugin-and-backend-conformance-execution
+             :c7-production-type-checker-execution
+             :c7-contract-and-diagnostic-schema-enforcement
+             :sh08-authenticated-coordinator-adapter
+             :sh08-resolved-typed-artifact-digest
+             :sh08-inference-constraints-generics-and-profile-legality
+             :sh08-dynamic-layout-schema-ownership-and-diagnostic-execution
+             :sh08-complete
              :sh07-complete]]
       (is (contains? nonclaims nonclaim)))))
 
