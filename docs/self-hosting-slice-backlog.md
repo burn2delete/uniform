@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 21 of the 41
+`SH-07` remains partial. Its current executable evidence covers 22 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -392,9 +392,23 @@ UTF-8 scalar bytes. This proves source-model representation only: production
 plugin loading and pass execution remain disabled, central integration remains
 pending, and no sandbox, trust, whitelist, domain, cache, filesystem/network,
 or release authority is credited. The B16 cohort remains unchanged. The
+SH-21 meta-compiler-legality source adds 28,374 authenticated bytes in 42
+fragments containing 2,778 forms, 419 bindings, and 1,109 resolutions. It
+lowers to 2,292 canonical core nodes with 42 definitions, 459 calls, 848
+references, 151 conditionals, 26 local bindings, and 42 function forms. Its 161
+`get` calls divide into 139 literal-keyword calls and 22 dynamic-key or index
+calls; all are ordinary resolved calls, so the canonical keyword-lookup product
+count remains zero and the B16 cohort remains frozen at nine modules and 63
+lookups. The cache-free proof passed with 199,593 request carrier nodes at depth
+27, width 2,778, and 3,301,719 UTF-8 scalar bytes. It also proves exact
+forward/mutual-recursion binding identity, co-canonical extension parity,
+path-neutral identity, actual-path provenance, replay, and altered-product
+containment. This is bounded source execution evidence only: authenticated
+SH-15 diagnostics, SH-17 lowering, SH-19 runtime services, whole authoritative
+compiler execution under `:meta`, and seedless execution remain pending. The
 Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 20 compiler
+central routing, and final artifact construction. The remaining 19 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

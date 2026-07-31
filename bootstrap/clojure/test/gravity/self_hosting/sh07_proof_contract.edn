@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B25"
+ :coverage-milestone "SH-07-B26"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -15,6 +15,7 @@
   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
   "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
   "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+  "docs/phase-03-profile-system/048-p3-meta-profile-specification.md"
   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
@@ -123,6 +124,8 @@
   "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
   :c17-plugin
   "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+  :sh21-meta
+  "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -157,6 +160,7 @@
   :c15-diagnostics {:keyword-lookups 0}
   :c16-incremental {:keyword-lookups 0}
   :c17-plugin {:keyword-lookups 0}
+  :sh21-meta {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -180,6 +184,7 @@
   :c15-diagnostic-runtime-authority
   :c16-incremental-runtime-authority
   :c17-plugin-runtime-authority
+  :sh21-whole-compiler-meta-execution
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
