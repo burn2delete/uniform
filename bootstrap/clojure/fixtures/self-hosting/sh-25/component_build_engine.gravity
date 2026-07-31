@@ -422,9 +422,9 @@
     :content-hash
     "sha256:f63601c8ea2359f785f6e5cc06610e93529cac13ca8844c7219ef4575deb1822"}
    {:component-id :effect-checker
-    :byte-count 44080
+    :byte-count 44102
     :content-hash
-    "sha256:9174577132042d1772fb344023dd45566fe6a13f016be0425ab7f2628f776998"}
+    "sha256:8be72ed8adbe830992ee990ba0cb23bb06ce7d29859360afa7d937f0833e0096"}
    {:component-id :ownership-checker
     :byte-count 35870
     :content-hash

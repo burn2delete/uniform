@@ -286,6 +286,22 @@
            (get-in verification [:diagnostics 0 :reason])))
     (is (= result (check request)))))
 
+(deftest sh09-request-shape-rejects-invalid-source-lineage-containers
+  (let [base-request
+        (request accepted-gravity-plan 'sh09-compiler-read-request)
+        probes
+        [(assoc base-request :source-span [:not-a-source-span-map])
+         (assoc base-request :origin-chain {:not :an-origin-vector})]]
+    (doseq [probe probes]
+      (is (false?
+           (invoke-c8 'sh09-valid-request-shape? [probe])))
+      (let [result (check probe)]
+        (is (= :rejected (:status result)))
+        (is (= "C8-VERIFY"
+               (get-in result [:diagnostics 0 :rule])))
+        (is (= :malformed-normalized-effect-request
+               (get-in result [:diagnostics 0 :reason])))))))
+
 (defn- nested-vector
   [depth]
   (loop [remaining depth value :leaf]
