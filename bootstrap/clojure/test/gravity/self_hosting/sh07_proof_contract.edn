@@ -2,11 +2,12 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B26"
+ :coverage-milestone "SH-07-B27"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
   "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+  "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
@@ -25,12 +26,19 @@
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
   "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
   "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
+  "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md"
   "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md"
   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+  "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+  "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
+  "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
   "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
   "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
+  "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md"
+  "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"
+  "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"
   "docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md"
   "docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md"
   "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md"
@@ -126,6 +134,8 @@
   "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
   :sh21-meta
   "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
+  :c18-verification
+  "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -161,6 +171,7 @@
   :c16-incremental {:keyword-lookups 0}
   :c17-plugin {:keyword-lookups 0}
   :sh21-meta {:keyword-lookups 0}
+  :c18-verification {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -185,6 +196,12 @@
   :c16-incremental-runtime-authority
   :c17-plugin-runtime-authority
   :sh21-whole-compiler-meta-execution
+  :c18-production-verifier-execution
+  :c18-contract-and-artifact-schema-enforcement
+  :c18-proof-certificate-and-evidence-checker-execution
+  :c18-translation-validation-and-replay-execution
+  :c18-release-gate-decision-authority
+  :c18-plugin-and-backend-conformance-execution
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement

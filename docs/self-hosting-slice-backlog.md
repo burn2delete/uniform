@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 22 of the 41
+`SH-07` remains partial. Its current executable evidence covers 23 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -406,9 +406,23 @@ path-neutral identity, actual-path provenance, replay, and altered-product
 containment. This is bounded source execution evidence only: authenticated
 SH-15 diagnostics, SH-17 lowering, SH-19 runtime services, whole authoritative
 compiler execution under `:meta`, and seedless execution remain pending. The
-Clojure stage0 boundary still owns initial source reads, compiler-plan
+C18 compiler-verification source adds 30,982 authenticated bytes in 22
+fragments containing 1,148 forms, 394 bindings, and 42 resolutions. It lowers
+to 640 canonical core nodes with 22 definitions: 12 data contracts and 10
+quoted function bodies, with no calls, references, or keyword-lookup products.
+The cache-free proof passed with 75,762 request carrier nodes at depth 8, width
+1,148, and 1,266,488 UTF-8 scalar bytes. The proof pins all quoted artifact
+schemas, their actual omissions from declared required fields, the absent
+replay builder, the nine-entry diagnostic catalog, the source-owned verifier
+checklist, co-canonical extension parity, path-neutral identity, actual-path
+provenance, replay, and altered-product containment. This proves source-model
+representation only: production verifier execution, schema enforcement,
+certificate and evidence checking, translation validation and replay, release
+decisions, and plugin/backend conformance execution remain pending. The B16
+cohort remains unchanged. The Clojure stage0 boundary still owns initial source
+reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 19 compiler
+central routing, and final artifact construction. The remaining 18 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
