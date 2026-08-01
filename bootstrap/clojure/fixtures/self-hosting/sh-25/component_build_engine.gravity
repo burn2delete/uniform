@@ -430,9 +430,9 @@
     :content-hash
     "sha256:b4fdf1022eb6eb25d091f1c918332c7b1393b6850acf4bb6988d8b8dbb2269e0"}
    {:component-id :safety-analysis
-    :byte-count 66044
+    :byte-count 68327
     :content-hash
-    "sha256:baf1d1c2d98b475ace5ce541662151ed03fdaa4ea544a8784d682393758e7007"}
+    "sha256:62298cb3235db6a173e8051828edf91d80824b7c282e309b9cb1d206c2a0820b"}
    {:component-id :mir
     :byte-count 113008
     :content-hash

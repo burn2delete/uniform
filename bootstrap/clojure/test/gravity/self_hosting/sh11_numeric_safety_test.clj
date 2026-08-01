@@ -355,6 +355,101 @@
         (is (= (:target gravity-request) (:target diagnostic)))
         (is (keyword? (:remediation diagnostic)))))))
 
+(deftest sh11-contains-i64-overflow-and-binds-index-and-shift-domains
+  (let [overflow-base
+        (request accepted-gravity-plan 'sh11-proven-overflow-request)
+        i64-facts
+        (fn [operator left right]
+          (assoc (:facts overflow-base)
+                 :operator operator
+                 :left left
+                 :right right
+                 :bit-width 64
+                 :signedness :signed
+                 :result-min -9223372036854775808
+                 :result-max 9223372036854775807))
+        hostile-overflow-results
+        (mapv
+         #(classify (assoc overflow-base :facts %))
+         [(i64-facts :add 9223372036854775807 1)
+          (i64-facts :add -9223372036854775808 -1)
+          (i64-facts :subtract -9223372036854775808 1)
+          (i64-facts :subtract 9223372036854775807 -1)
+          (i64-facts :multiply 9223372036854775807 2)
+          (i64-facts :multiply 9223372036854775807 -2)
+          (i64-facts :multiply -9223372036854775808 2)
+          (i64-facts :multiply -9223372036854775808 -1)
+          (assoc (i64-facts :add 255 1)
+                 :bit-width 8 :signedness :unsigned
+                 :result-min 0 :result-max 255)])
+        boundary-safe-results
+        (mapv
+         #(classify (assoc overflow-base :facts %))
+         [(i64-facts :add 9223372036854775807 0)
+          (i64-facts :subtract -9223372036854775808 0)
+          (i64-facts :multiply -9223372036854775808 1)
+          (i64-facts :multiply 9223372036854775807 -1)
+          (i64-facts :multiply -9223372036854775808 0)
+          (assoc (i64-facts :multiply 255 1)
+                 :bit-width 8 :signedness :unsigned
+                 :result-min 0 :result-max 255)])
+        index
+        (request accepted-gravity-plan 'sh11-proven-index-request)
+        shift
+        (request accepted-gravity-plan 'sh11-proven-shift-request)
+        zero-divisor
+        (request rejected-gravity-plan 'sh11-zero-divisor-request)
+        runtime
+        (request accepted-gravity-plan 'sh11-runtime-division-request)
+        unsafe
+        (request accepted-gravity-plan 'sh11-unsafe-overflow-request)
+        support-without-check-results
+        (mapv
+         #(classify
+           (assoc %
+                  :runtime-check-support
+                  (:runtime-check-support runtime)))
+         [zero-divisor overflow-base unsafe])
+        domain-results
+        [(classify
+          (assoc index :facts
+                 (assoc (:facts index)
+                        :index 256 :length 300
+                        :index-width 8 :signedness :unsigned)))
+         (classify
+          (assoc index :facts
+                 (assoc (:facts index)
+                        :index 0 :length 256
+                        :index-width 8 :signedness :unsigned)))
+         (classify
+          (assoc shift :facts
+                 (assoc (:facts shift)
+                        :value 256 :bit-width 8
+                        :signedness :unsigned)))]]
+    (doseq [result hostile-overflow-results]
+      (is (= :rejected (:status result)))
+      (is (= :rejected (:outcome result)))
+      (is (= "C10-NUMERIC"
+             (get-in result [:diagnostics 0 :rule])))
+      (is (= :numeric-operation-lacks-proof-check-or-audit
+             (get-in result [:diagnostics 0 :reason]))))
+    (doseq [result boundary-safe-results]
+      (is (= :accepted (:status result)))
+      (is (= :proven-safe (:outcome result)))
+      (is (empty? (:diagnostics result))))
+    (doseq [result domain-results]
+      (is (= :rejected (:status result)))
+      (is (= "C10-NO-OUTCOME"
+             (get-in result [:diagnostics 0 :rule])))
+      (is (= :malformed-safety-operation
+             (get-in result [:diagnostics 0 :reason]))))
+    (doseq [result support-without-check-results]
+      (is (= :rejected (:status result)))
+      (is (= "C10-CHECK"
+             (get-in result [:diagnostics 0 :rule])))
+      (is (= :target-support-without-runtime-check
+             (get-in result [:diagnostics 0 :reason]))))))
+
 (deftest sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
   (let [base
         (request accepted-gravity-plan 'sh11-proven-overflow-request)

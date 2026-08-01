@@ -719,8 +719,23 @@
        (if (integer? (get facts :index))
          (if (sh11-nonnegative-integer? (get facts :length))
            (if (sh11-bounded-positive-width? (get facts :index-width))
-             (sh11-member?
-              #{:signed :unsigned} (get facts :signedness))
+             (if
+              (sh11-member?
+               #{:signed :unsigned} (get facts :signedness))
+              (if
+               (sh11-in-range?
+                (get facts :index)
+                (sh11-width-minimum
+                 (get facts :index-width) (get facts :signedness))
+                (sh11-width-maximum
+                 (get facts :index-width) (get facts :signedness)))
+               (sh11-in-range?
+                (get facts :length)
+                0
+                (sh11-width-maximum
+                 (get facts :index-width) (get facts :signedness)))
+               false)
+              false)
              false)
            false)
          false)
@@ -874,11 +889,19 @@
            (if (integer? (get facts :shift-count))
              (if (sh11-bounded-positive-width? (get facts :bit-width))
                (if
-                (sh11-member?
+               (sh11-member?
                  #{:signed :unsigned} (get facts :signedness))
-                (if (= :masked (get facts :shift-semantics))
-                  (= :wrapping (get facts :numeric-mode))
-                  (= :bounded (get facts :shift-semantics)))
+                (if
+                 (sh11-in-range?
+                  (get facts :value)
+                  (sh11-width-minimum
+                   (get facts :bit-width) (get facts :signedness))
+                  (sh11-width-maximum
+                   (get facts :bit-width) (get facts :signedness)))
+                 (if (= :masked (get facts :shift-semantics))
+                   (= :wrapping (get facts :numeric-mode))
+                   (= :bounded (get facts :shift-semantics)))
+                 false)
                 false)
                false)
              false)
@@ -940,11 +963,16 @@
                            (if
                             (sh11-operation-facts-valid?
                              (get request :kind)
-                             (get request :facts))
+                            (get request :facts))
                             (if (= nil (get request :runtime-check))
-                              (= nil
-                                 (get request
-                                      :runtime-check-support))
+                              (if
+                               (= nil
+                                  (get request
+                                       :runtime-check-support))
+                               true
+                               (map?
+                                (get request
+                                     :runtime-check-support)))
                               (map?
                                (get request
                                     :runtime-check-support)))
@@ -961,22 +989,62 @@
         false)
       false)
     false)
-   false)))
+   false)
+   false))
+
+(defn sh11-add-safe? [left right minimum maximum]
+  (if (> right 0)
+    (<= left (- maximum right))
+    (if (< right 0)
+      (>= left (- minimum right))
+      true)))
+
+(defn sh11-subtract-safe? [left right minimum maximum]
+  (if (> right 0)
+    (>= left (+ minimum right))
+    (if (< right 0)
+      (<= left (+ maximum right))
+      true)))
+
+(defn sh11-multiply-safe? [left right minimum maximum]
+  (if (= left 0)
+    true
+    (if (= right 0)
+      true
+      (if (> left 0)
+        (if (> right 0)
+          (<= left (quot maximum right))
+          (>= right (quot minimum left)))
+        (if (> right 0)
+          (>= left (quot minimum right))
+          (>= left (quot maximum right)))))))
+
+(defn sh11-overflow-operation-safe? [facts]
+  (let [operator (get facts :operator)
+        left (get facts :left)
+        right (get facts :right)
+        minimum (get facts :result-min)
+        maximum (get facts :result-max)]
+    (if (= operator :add)
+      (sh11-add-safe? left right minimum maximum)
+      (if (= operator :subtract)
+        (sh11-subtract-safe? left right minimum maximum)
+        (if (= operator :multiply)
+          (sh11-multiply-safe? left right minimum maximum)
+          false)))))
 
 (defn sh11-overflow-result [facts]
   (let [operator (get facts :operator)
         left (get facts :left)
         right (get facts :right)]
-    (if (number? left)
-      (if (number? right)
-        (if (= operator :add)
-          (+ left right)
-          (if (= operator :subtract)
-            (- left right)
-            (if (= operator :multiply)
-              (* left right)
-              nil)))
-        nil)
+    (if (sh11-overflow-operation-safe? facts)
+      (if (= operator :add)
+        (+ left right)
+        (if (= operator :subtract)
+          (- left right)
+          (if (= operator :multiply)
+            (* left right)
+            nil)))
       nil)))
 
 (defn sh11-static-safe? [request]
@@ -1384,7 +1452,8 @@
           false)
         false)
       false)
-    false))))
+    false)
+    false)))
 
 (defn sh11-evidence-count [request static-safe]
   (+
@@ -1585,55 +1654,56 @@
   (let [preflight (sh11-structural-preflight request)]
     (if (= :accepted (get preflight :status))
       (if (sh11-valid-request-shape? request)
-        (let [static-safe (sh11-static-safe? request)
-              evidence-count
-              (sh11-evidence-count request static-safe)
-              mode (get (get request :facts) :numeric-mode)]
-          (if (> evidence-count 1)
-            (sh11-rejected-result
-             request "C10-NO-OUTCOME" :multiple-outcome-evidence
-             :exclusive-safety-path
-             :retain-exactly-one-proof-check-or-unsafe-path)
-            (if (= mode :unsafe-unchecked)
-              (if (sh11-not (= nil (get request :runtime-check)))
-                (sh11-rejected-result
-                 request "C10-UNSAFE"
-                 :unsafe-mode-cannot-use-runtime-check
-                 :complete-policy-approved-unsafe-audit
-                 :use-an-unsafe-island-not-a-runtime-check)
-                (if
-                 (sh11-and
-                  (sh11-unsafe-mode? (get request :safety-mode))
-                  (sh11-unsafe-audit-valid? request))
-                 (sh11-unsafe-result request)
+        (if
+         (sh11-and
+          (= nil (get request :runtime-check))
+          (sh11-not (= nil (get request :runtime-check-support))))
+         (sh11-rejected-result
+          request "C10-CHECK"
+          :target-support-without-runtime-check
+          :runtime-check
+          :remove-unused-support-or-supply-a-check)
+         (let [static-safe (sh11-static-safe? request)
+               evidence-count
+               (sh11-evidence-count request static-safe)
+               mode (get (get request :facts) :numeric-mode)]
+           (if (> evidence-count 1)
+             (sh11-rejected-result
+              request "C10-NO-OUTCOME" :multiple-outcome-evidence
+              :exclusive-safety-path
+              :retain-exactly-one-proof-check-or-unsafe-path)
+             (if (= mode :unsafe-unchecked)
+               (if (sh11-not (= nil (get request :runtime-check)))
                  (sh11-rejected-result
                   request "C10-UNSAFE"
-                  :unsafe-island-policy-or-metadata-gap
+                  :unsafe-mode-cannot-use-runtime-check
                   :complete-policy-approved-unsafe-audit
-                  :supply-a-complete-audit-in-an-unsafe-capable-mode)))
-              (if static-safe
-                (sh11-proven-result request)
-                (if (sh11-not (= nil (get request :runtime-check)))
-                  (if (sh11-runtime-check-valid? request)
-                    (sh11-runtime-checked-result request)
-                    (sh11-rejected-result
-                     request "C10-CHECK" :invalid-runtime-check
-                     :defined-profile-legal-runtime-check
-                     :supply-an-exact-operand-bound-check))
-                  (if (sh11-not (= nil (get request :unsafe-audit)))
-                    (sh11-rejected-result
-                     request "C10-UNSAFE"
-                     :unsafe-island-without-unsafe-numeric-mode
-                     :unsafe-unchecked-numeric-mode
-                     :declare-the-unsafe-numeric-mode-explicitly)
-                    (if
-                     (sh11-not
-                      (= nil (get request :runtime-check-support)))
+                  :use-an-unsafe-island-not-a-runtime-check)
+                 (if
+                  (sh11-and
+                   (sh11-unsafe-mode? (get request :safety-mode))
+                   (sh11-unsafe-audit-valid? request))
+                  (sh11-unsafe-result request)
+                  (sh11-rejected-result
+                   request "C10-UNSAFE"
+                   :unsafe-island-policy-or-metadata-gap
+                   :complete-policy-approved-unsafe-audit
+                   :supply-a-complete-audit-in-an-unsafe-capable-mode)))
+               (if static-safe
+                 (sh11-proven-result request)
+                 (if (sh11-not (= nil (get request :runtime-check)))
+                   (if (sh11-runtime-check-valid? request)
+                     (sh11-runtime-checked-result request)
                      (sh11-rejected-result
-                      request "C10-CHECK"
-                      :target-support-without-runtime-check
-                      :runtime-check
-                      :remove-unused-support-or-supply-a-check)
+                      request "C10-CHECK" :invalid-runtime-check
+                      :defined-profile-legal-runtime-check
+                      :supply-an-exact-operand-bound-check))
+                   (if (sh11-not (= nil (get request :unsafe-audit)))
+                     (sh11-rejected-result
+                      request "C10-UNSAFE"
+                      :unsafe-island-without-unsafe-numeric-mode
+                      :unsafe-unchecked-numeric-mode
+                      :declare-the-unsafe-numeric-mode-explicitly)
                      (sh11-rejected-result
                       request "C10-NUMERIC"
                       :numeric-operation-lacks-proof-check-or-audit
