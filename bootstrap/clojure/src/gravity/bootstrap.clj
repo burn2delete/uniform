@@ -132713,13 +132713,13 @@
 (def p15-s23-b1-source-relative-path
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
 
-(def p15-s23-c13-source-byte-count 98822)
+(def p15-s23-c13-source-byte-count 98836)
 (def p15-s23-c13-expected-source-content-hash
-  "sha256:cbba8f7875a7d30de4a1a181b3324fc326cadf6aaa6e24dc2de0e9d35678ac28")
+  "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681")
 (def p15-s23-c13-expected-plan-semantic-hash
-  "sha256:7d9af5cb908d65d4d7c6fabe91e972e8dbaa66f8faffd0df9336704bd50d1084")
+  "sha256:840089668cb979b5ddceda17b6df586652655dd364d503a080d4c9d28372ea50")
 (def p15-s23-c13-expected-functions-semantic-hash
-  "sha256:ee8cda8569031050a1ada6132881089adfe5234ac2be6e8ed8a73a68f822e000")
+  "sha256:a511673fffd4888cd1f4b826d27e50adcf5b769cd7759a5dce88ad8b370de265")
 (def p15-s23-c13-expected-builder-semantic-hash
   "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3")
 (def p15-s23-c13-builder-function
@@ -132744,11 +132744,11 @@
 
 (def p15-s23-c14-source-byte-count 135835)
 (def p15-s23-c14-expected-source-content-hash
-  "sha256:09c139a2792d997cf4d13b7c7cc093192f80b62edbbc5475c6aba776d96612d8")
+  "sha256:107c7cc0c1f37c1354e641653af54ac1aa82c6da384c00d9a34734ec036809da")
 (def p15-s23-c14-expected-plan-semantic-hash
-  "sha256:3f13fb467ef98fe59b0248249e51dbc2d9c0b41894a4828808435528b86cc12c")
+  "sha256:c5808f0d4081b42f84bb54bf5f807108b64aaca6483becef3bcf6c19645e1eab")
 (def p15-s23-c14-expected-functions-semantic-hash
-  "sha256:68c023cf5a9ee44f9a6c91626d33142b27a8ccad4c515a2c241bdaf677b3f945")
+  "sha256:c1b63998d6d35bcad4d0f72644f3b4b891b096ab0d9a12ef799c960c60cbaf39")
 (def p15-s23-c14-expected-builder-semantic-hash
   "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7")
 (def p15-s23-c14-builder-function
@@ -132818,11 +132818,11 @@
 
 (def p15-s23-b1-source-byte-count 140340)
 (def p15-s23-b1-expected-source-content-hash
-  "sha256:cdfc6b3b14b8d750f33549a9966792874e08a0b4be5a5638f1155b2bfac790b4")
+  "sha256:325bc94bdab45371846dc4e3a386cf1bbc302d33f0eaecbae79a7397ce8f558e")
 (def p15-s23-b1-expected-plan-semantic-hash
-  "sha256:4549334f3dad8eda40e03b7502690759d8e8ab28c4f0132a9da2f3c4d148a186")
+  "sha256:afff9705e2536a26eb87c2897e1bf06a0b11fcc9784836fa8e394e9531d64c52")
 (def p15-s23-b1-expected-functions-semantic-hash
-  "sha256:26453ceb3e9e43ee6b0a3f42ccae111c4c7f01cd8fdb4f44b63451961313ae85")
+  "sha256:9ec7a03497037aa457e338c99aebe2859fc65a71c447336b06bc26afc1f2c03a")
 (def p15-s23-b1-expected-builder-semantic-hash
   "sha256:31424123c41b05344d022ab712ec1bcd95718711ea1f1a6787808914db62d7b4")
 (def p15-s23-b1-builder-function
@@ -141723,11 +141723,11 @@
 (def p15-s23-b4-wasm-builder-function 'b4-build-bounded-wasm32-core)
 (def p15-s23-b4-wasm-source-byte-count 117921)
 (def p15-s23-b4-wasm-expected-source-content-hash
-  "sha256:7b46e942175d3da6a1332370c336be27aceb3dfd6296312ab7819de95baba99f")
+  "sha256:dcc5d130f91bd85b7494d60359bcc1c403338486e94d76932250812b77c3199e")
 (def p15-s23-b4-wasm-expected-plan-semantic-hash
-  "sha256:b809c376597d2a8e5079a16ad43bda1deb173477c8d0cd88f0727d6f25fbd419")
+  "sha256:6066ef71aff393d018655d3d081a9ea02a0477881ef3e28b87669911a967d223")
 (def p15-s23-b4-wasm-expected-functions-semantic-hash
-  "sha256:b212a668e08cbef2df9f5e4e51c606eb6ca5348c76f6e318e9fd83617ebc8afe")
+  "sha256:ac93d23247f4257175c479a9242b0860163c90ee7d8d3b4a7f8309bce5f00205")
 (def p15-s23-b4-wasm-expected-builder-semantic-hash
   "sha256:f3e7c33fc18167ea5c3ae5da1aa8005cf7939feaaf60e9be5c488266cf1c16a9")
 (def p15-s23-b4-wasm-required-functions

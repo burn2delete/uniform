@@ -1564,10 +1564,10 @@
               (get rule :compiled-by) (get rule :executed-by)
               (get rule :self-hosted?)]
              [:gravity/pinned-gravity-source-rule
-              :gravity.compiler/c13-mir-optimization 98822
-              "sha256:cbba8f7875a7d30de4a1a181b3324fc326cadf6aaa6e24dc2de0e9d35678ac28"
-              "sha256:7d9af5cb908d65d4d7c6fabe91e972e8dbaa66f8faffd0df9336704bd50d1084"
-              "sha256:ee8cda8569031050a1ada6132881089adfe5234ac2be6e8ed8a73a68f822e000"
+              :gravity.compiler/c13-mir-optimization 98836
+              "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681"
+              "sha256:840089668cb979b5ddceda17b6df586652655dd364d503a080d4c9d28372ea50"
+              "sha256:a511673fffd4888cd1f4b826d27e50adcf5b769cd7759a5dce88ad8b370de265"
               (quote c13-build-bounded-identity-optimized-mir)
               "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
               :gravity-source :clojure-stage0-seed
@@ -1939,12 +1939,12 @@
              {:artifact :gravity/pinned-gravity-source-rule
               :owner :gravity.backend/b1-backend-interface
               :source-content-hash
-              "sha256:cdfc6b3b14b8d750f33549a9966792874e08a0b4be5a5638f1155b2bfac790b4"
+              "sha256:325bc94bdab45371846dc4e3a386cf1bbc302d33f0eaecbae79a7397ce8f558e"
               :source-byte-count 140340
               :plan-semantic-hash
-              "sha256:4549334f3dad8eda40e03b7502690759d8e8ab28c4f0132a9da2f3c4d148a186"
+              "sha256:afff9705e2536a26eb87c2897e1bf06a0b11fcc9784836fa8e394e9531d64c52"
               :functions-semantic-hash
-              "sha256:26453ceb3e9e43ee6b0a3f42ccae111c4c7f01cd8fdb4f44b63451961313ae85"
+              "sha256:9ec7a03497037aa457e338c99aebe2859fc65a71c447336b06bc26afc1f2c03a"
               :builder-function
               (quote b1-build-bounded-wasm-authenticated-packet)
               :builder-semantic-hash

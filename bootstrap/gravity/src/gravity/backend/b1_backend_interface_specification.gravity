@@ -865,10 +865,10 @@
         (get rule :executed-by) (get rule :self-hosted?)
         (get rule :function-shapes)]
        [:gravity/pinned-gravity-source-rule
-        :gravity.compiler/c13-mir-optimization 98822
-        "sha256:cbba8f7875a7d30de4a1a181b3324fc326cadf6aaa6e24dc2de0e9d35678ac28"
-        "sha256:7d9af5cb908d65d4d7c6fabe91e972e8dbaa66f8faffd0df9336704bd50d1084"
-        "sha256:ee8cda8569031050a1ada6132881089adfe5234ac2be6e8ed8a73a68f822e000"
+        :gravity.compiler/c13-mir-optimization 98836
+        "sha256:071511017d4f3f3816716cfa899ae0189e882e6be9d67dc34e794729ae105681"
+        "sha256:840089668cb979b5ddceda17b6df586652655dd364d503a080d4c9d28372ea50"
+        "sha256:a511673fffd4888cd1f4b826d27e50adcf5b769cd7759a5dce88ad8b370de265"
         'c13-build-bounded-identity-optimized-mir
         "sha256:91f68328307a940c1e1bc5c6ea9d5c0c2a90bedd057c55c49f0fc9955e8cdae3"
         :gravity-source :clojure-stage0-seed
@@ -1088,9 +1088,9 @@
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
           :gravity.compiler/c14-target-lowering 135835
-          "sha256:09c139a2792d997cf4d13b7c7cc093192f80b62edbbc5475c6aba776d96612d8"
-          "sha256:3f13fb467ef98fe59b0248249e51dbc2d9c0b41894a4828808435528b86cc12c"
-          "sha256:68c023cf5a9ee44f9a6c91626d33142b27a8ccad4c515a2c241bdaf677b3f945"
+          "sha256:107c7cc0c1f37c1354e641653af54ac1aa82c6da384c00d9a34734ec036809da"
+          "sha256:c5808f0d4081b42f84bb54bf5f807108b64aaca6483becef3bcf6c19645e1eab"
+          "sha256:c1b63998d6d35bcad4d0f72644f3b4b891b096ab0d9a12ef799c960c60cbaf39"
           'c14-build-bounded-llvm-lowering-record
           "sha256:982cf0d77a2026c55699d3ac44a0d0d9f0b29f1a214e2b54ab9bc2d97c5ab5b7"
           '{c14-bounded-optimized-input-valid?
@@ -1668,9 +1668,9 @@
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
           :gravity.compiler/c14-target-lowering 135835
-          "sha256:09c139a2792d997cf4d13b7c7cc093192f80b62edbbc5475c6aba776d96612d8"
-          "sha256:3f13fb467ef98fe59b0248249e51dbc2d9c0b41894a4828808435528b86cc12c"
-          "sha256:68c023cf5a9ee44f9a6c91626d33142b27a8ccad4c515a2c241bdaf677b3f945"
+          "sha256:107c7cc0c1f37c1354e641653af54ac1aa82c6da384c00d9a34734ec036809da"
+          "sha256:c5808f0d4081b42f84bb54bf5f807108b64aaca6483becef3bcf6c19645e1eab"
+          "sha256:c1b63998d6d35bcad4d0f72644f3b4b891b096ab0d9a12ef799c960c60cbaf39"
           'c14-build-bounded-c-lowering-record
           "sha256:3209bb1605d40c7a466a53eb01d6cf7a4d243210ce6a0c189ceb3b15564f09ee"
           '{c14-bounded-optimized-input-valid?
@@ -2691,9 +2691,9 @@
           (get rule :self-hosted?)]
          [:gravity/pinned-gravity-source-rule
           :gravity.compiler/c14-target-lowering 135835
-          "sha256:09c139a2792d997cf4d13b7c7cc093192f80b62edbbc5475c6aba776d96612d8"
-          "sha256:3f13fb467ef98fe59b0248249e51dbc2d9c0b41894a4828808435528b86cc12c"
-          "sha256:68c023cf5a9ee44f9a6c91626d33142b27a8ccad4c515a2c241bdaf677b3f945"
+          "sha256:107c7cc0c1f37c1354e641653af54ac1aa82c6da384c00d9a34734ec036809da"
+          "sha256:c5808f0d4081b42f84bb54bf5f807108b64aaca6483becef3bcf6c19645e1eab"
+          "sha256:c1b63998d6d35bcad4d0f72644f3b4b891b096ab0d9a12ef799c960c60cbaf39"
           'c14-build-bounded-wasm-lowering-record
           "sha256:fe20574f102acb55063e64223715adf2e2fa40a25e9e147616ee554f9989b3fa"
           '{c14-bounded-optimized-input-valid?
