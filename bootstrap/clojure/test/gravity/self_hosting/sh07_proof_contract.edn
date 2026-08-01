@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B28"
+ :coverage-milestone "SH-07-B29"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -17,6 +17,7 @@
   "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
   "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
   "docs/phase-01-core-language/015-l5-type-system-specification.md"
+  "docs/phase-01-core-language/016-l6-effect-system-specification.md"
   "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
   "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md"
   "docs/phase-01-core-language/019-l9-error-handling-specification.md"
@@ -30,6 +31,9 @@
   "docs/phase-02-safety/038-safe9-numeric-safety.md"
   "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
   "docs/phase-03-profile-system/048-p3-meta-profile-specification.md"
+  "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md"
+  "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md"
+  "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md"
   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
@@ -50,6 +54,10 @@
   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
   "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
+  "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
+  "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md"
+  "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md"
   "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
   "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
   "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
@@ -160,6 +168,8 @@
   "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
   :c7-types
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  :c8-effects
+  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -197,6 +207,7 @@
   :sh21-meta {:keyword-lookups 0}
   :c18-verification {:keyword-lookups 0}
   :c7-types {:keyword-lookups 0}
+  :c8-effects {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -234,6 +245,14 @@
   :sh08-inference-constraints-generics-and-profile-legality
   :sh08-dynamic-layout-schema-ownership-and-diagnostic-execution
   :sh08-complete
+  :c8-production-effect-checker-execution
+  :c8-contract-and-diagnostic-schema-enforcement
+  :sh09-authenticated-sh08-adapter
+  :sh09-effect-inference-and-transitive-call-effects
+  :sh09-handled-effects-and-module-summaries
+  :sh09-runtime-profile-policy
+  :sh09-mir-preservation
+  :sh09-complete
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement

@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 24 of the 41
+`SH-07` remains partial. Its current executable evidence covers 25 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -436,9 +436,25 @@ execution and reconstruction only: production type-checker execution,
 authenticated coordinator adaptation, resolved typed-artifact identity,
 complete inference and constraint solving, dynamic/layout/schema/ownership
 legality, complete diagnostic execution, and SH-08 completion remain pending.
+The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
+containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
+canonical core nodes with 40 definitions: 34 executable SH-09 functions and
+three quoted source-model functions. Its 178 `get` calls divide into 169
+literal-key calls and nine dynamic-key calls; all are ordinary resolved calls
+rather than keyword-headed lookup forms, so the canonical keyword-lookup
+product count remains zero and B16 stays frozen. The cache-free authoritative
+proof passed with exact source revision
+`sha256:8be72ed8adbe830992ee990ba0cb23bb06ce7d29859360afa7d937f0833e0096`,
+complete capability proof, and no failed checks. The bounded source recognizes
+`:error/raise` as a declared language-level effect with no capability,
+provider, grant, or resource subject. This does not establish a production
+effect checker, complete schema enforcement, an authenticated SH-08 adapter,
+effect inference, latent or transitive call effects, handlers, namespace or
+module summaries, complete runtime-profile policy, MIR preservation, or SH-09
+completion.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 17 compiler
+central routing, and final artifact construction. The remaining 16 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
