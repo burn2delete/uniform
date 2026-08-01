@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 28 of the 41
+`SH-07` remains partial. Its current executable evidence covers 29 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -508,9 +508,34 @@ candidate verification. Production domain-IR authority, complete C12 contract
 and diagnostic schema enforcement, authenticated SH-12 MIR input,
 target-specific layout, actual allocation, field-offset calculation, pointer
 and lifetime layouts, and SH-14 completion remain pending.
+The C13 MIR-optimization source adds 98,836 authenticated bytes in 114
+fragments containing 8,513 forms, 740 bindings, and 3,140 resolutions. Its
+calibrated lowering contains 7,036 canonical core nodes with 114 definitions:
+100 executable SH-16 functions and five quoted source-model functions. Its 493
+`get` calls divide into 445 literal-key calls and 48 dynamic-key or indexed
+calls; all are ordinary resolved calls rather than keyword-headed lookup forms,
+so the canonical keyword-lookup product count remains zero and B16 stays
+frozen. The SH-06 request contains 562,128 carrier nodes at depth 31, maximum
+width 8,513, and 9,490,546 exact UTF-8 scalar bytes; every unchanged B16 bound
+passes. The cache-free acceptance, core, and rejected proof passed in 1,744.16
+seconds with 4,345,921,536 maximum resident bytes and no swaps. The isolated
+C13-specific replay proof passed in 1,557.99 seconds with 4,643,569,664 maximum
+resident bytes and no swaps. The final cache-free authoritative process passed
+all contract checks in 2,588.82 seconds with artifact identity
+`sha256:78f6074f338f98f3241ea08e2d2c8f427db0aa71d4d7bb6057f8a5168244fba9`,
+6,019,416,064 maximum resident bytes, and no swaps. The bounded executable
+surface now applies constant folding, branch
+simplification, dead-code elimination, and proof-governed check retention or
+elision as a genuine sequential pipeline with conservative invalidation,
+signed-i64 containment, exact operation schemas, iterative structural
+preflight, path-neutral identity, post-pass verification, and exact
+recomputation. Authenticated SH-15 input, complete C11 MIR adaptation,
+remaining proof-class replay, whole-function translation validation,
+target-lowering proof preservation, a self-hosted certificate checker, and
+SH-16 completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 13 compiler
+central routing, and final artifact construction. The remaining 12 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
