@@ -95,6 +95,14 @@
   [request]
   (invoke-engine 'sh16-optimize [request]))
 
+(defn- nested-vector
+  [depth value]
+  (loop [remaining depth
+         result value]
+    (if (zero? remaining)
+      result
+      (recur (dec remaining) [result]))))
+
 (def ^:private rejected-cases
   {'sh16-unverified-request ["C13-CONTRACT" :contract]
    'sh16-duplicate-operation-request ["C13-VERIFY" :verify]
@@ -411,6 +419,20 @@
     (is (= "C13-VERIFY" (get-in result [:diagnostics 0 :rule])))
     (is (= :verify (get-in result [:diagnostics 0 :reason])))))
 
+(deftest sh16-dead-code-analysis-tracks-distinct-result-identities
+  (let [base
+        (request rejected-gravity-plan 'sh16-used-dead-operation-request)
+        candidate
+        (-> base
+            (assoc-in [:operations 0 :result] :value/live)
+            (assoc-in [:operations 1 :operands] [:value/live]))
+        result (optimize candidate)]
+    (is (not= (get-in candidate [:operations 0 :op-id])
+              (get-in candidate [:operations 0 :result])))
+    (is (= :rejected (:status result)))
+    (is (= "C13-PROOF" (get-in result [:diagnostics 0 :rule])))
+    (is (= :proof (get-in result [:diagnostics 0 :reason])))))
+
 (deftest sh16-verifier-recomputes-and-rejects-result-substitution
   (let [request
         (request accepted-gravity-plan 'sh16-mixed-optimization-request)
@@ -429,3 +451,198 @@
            (get-in verification [:diagnostics 0 :diagnostic-id])))
     (is (= :optimization-result-substitution
            (get-in verification [:diagnostics 0 :reason])))))
+
+(deftest sh16-runs-passes-sequentially-and-retains-stale-proof-checks
+  (let [proof-request
+        (request accepted-gravity-plan 'sh16-proof-elision-request)
+        mixed-request
+        (request accepted-gravity-plan 'sh16-mixed-optimization-request)
+        add (first (:operations mixed-request))
+        branch (second (:operations mixed-request))
+        check (first (:operations proof-request))
+        return (second (:operations proof-request))
+        candidate
+        (assoc proof-request :operations [branch check return])
+        data-flow-candidate
+        (assoc proof-request :operations [add check return])
+        result (optimize candidate)
+        data-flow-result (optimize data-flow-candidate)
+        branch-ledger (second (:invalidation-ledger result))
+        check-decision (last (:decision-log result))
+        retained-check (second (:optimized-operations result))]
+    (is (= :accepted (:status result)))
+    (is (= [:op/branch :op/proven-bounds :op/return]
+           (mapv :op-id (:optimized-operations result))))
+    (is (= :branch (:opcode (first (:optimized-operations result)))))
+    (is (= :runtime-check (:opcode retained-check)))
+    (is (false? (:elide-requested retained-check)))
+    (is (not (contains? retained-check :proof)))
+    (is (false? (:changed? check-decision)))
+    (is (= [:control-flow-graph :dominator-tree]
+           (:analysis-invalidated branch-ledger)))
+    (is (= [:proof/bounds-dominates]
+           (:proofs-invalidated branch-ledger)))
+    (is (= [:check/bounds-proven]
+           (get-in result
+                   [:residual-check-report :retained-runtime-checks])))
+    (is (empty?
+         (get-in result
+                 [:residual-check-report :elided-runtime-checks])))
+    (is (= :passed
+           (:status (invoke-engine 'sh16-verify [candidate result]))))
+    (is (= :accepted (:status data-flow-result)))
+    (is (= [:data-flow-facts :range-facts :safety-facts]
+           (get-in data-flow-result
+                   [:invalidation-ledger 0 :facts-invalidated])))
+    (is (= [:proof/bounds-dominates]
+           (get-in data-flow-result
+                   [:invalidation-ledger 0 :proofs-invalidated])))
+    (is (= [:check/bounds-proven]
+           (get-in data-flow-result
+                   [:residual-check-report :retained-runtime-checks])))
+    (is (empty?
+         (get-in data-flow-result
+                 [:residual-check-report :elided-runtime-checks])))))
+
+(deftest sh16-mutating-and-final-verifiers-gate-acceptance
+  (let [request
+        (request accepted-gravity-plan 'sh16-mixed-optimization-request)
+        pipeline
+        (invoke-engine 'sh16-sequential-pipeline [request])
+        bad-operation
+        (assoc (first (:operations pipeline)) :opcode :x86-add)
+        bad-final-state
+        (assoc-in pipeline [:operations 0] bad-operation)
+        bad-pass-state
+        (assoc-in pipeline
+                  [:pass-verifier-reports 0 :status]
+                  :rejected)
+        final-rejection
+        (invoke-engine
+         'sh16-finalize-pipeline [request bad-final-state])
+        pass-rejection
+        (invoke-engine
+         'sh16-finalize-pipeline [request bad-pass-state])]
+    (is (= :accepted (:status pipeline)))
+    (is (every? #(= :passed (:status %))
+                (:pass-verifier-reports pipeline)))
+    (doseq [result [final-rejection pass-rejection]]
+      (is (= :rejected (:status result)))
+      (is (= "C13-VERIFY" (get-in result [:diagnostics 0 :rule])))
+      (is (= :verify (get-in result [:diagnostics 0 :reason]))))))
+
+(deftest sh16-folds-only-representable-explicit-i64-addition
+  (let [base
+        (request accepted-gravity-plan 'sh16-mixed-optimization-request)
+        accepted
+        (assoc-in base
+                  [:operations 0 :operands]
+                  [Long/MAX_VALUE 0])
+        upper-overflow
+        (assoc-in base
+                  [:operations 0 :operands]
+                  [Long/MAX_VALUE 1])
+        lower-overflow
+        (assoc-in base
+                  [:operations 0 :operands]
+                  [Long/MIN_VALUE -1])
+        accepted-result (optimize accepted)
+        upper-result (optimize upper-overflow)
+        lower-result (optimize lower-overflow)
+        folded (first (:optimized-operations accepted-result))]
+    (is (= :accepted (:status accepted-result)))
+    (is (= [Long/MAX_VALUE] (:operands folded)))
+    (is (= :const (:opcode folded)))
+    (is (= #{:op-id :opcode :operands :result :type :effects :ordering
+             :source-span :origin-chain :safety-outcome}
+           (set (keys folded))))
+    (doseq [result [upper-result lower-result]]
+      (is (= :rejected (:status result)))
+      (is (= "C13-SAFETY" (get-in result [:diagnostics 0 :rule])))
+      (is (= :safety (get-in result [:diagnostics 0 :reason]))))))
+
+(deftest sh16-rejects-irrelevant-fields-and-noncanonical-identifiers
+  (let [base
+        (request accepted-gravity-plan 'sh16-no-change-request)
+        proof-request
+        (request accepted-gravity-plan 'sh16-proof-elision-request)
+        overlong-id (keyword (apply str (repeat 300 "a")))
+        candidates
+        [(assoc-in base [:operations 0 :condition] true)
+         (assoc-in base [:operations 0 :proof] {})
+         (assoc-in base [:operations 0 :result]
+                   "/checkout-private/value")
+         (assoc-in base [:operations 0 :ordering]
+                   {:path "/checkout-private/value"})
+         (assoc-in base [:operations 0 :origin-chain 0 :macro-id]
+                   :macro/unbound)
+         (assoc base :request-id overlong-id)
+         (assoc-in proof-request [:operations 0 :elide-requested] false)]]
+    (doseq [candidate candidates]
+      (let [result (optimize candidate)]
+        (is (= :rejected (:status result)))
+        (is (= "C13-CONTRACT"
+               (get-in result [:diagnostics 0 :rule])))))
+    (is (not
+         (str/includes?
+          (pr-str (:identity-input (optimize base)))
+          "/checkout-a/")))))
+
+(deftest sh16-structural-preflight-contains-deep-and-sequence-carriers
+  (let [base
+        (request accepted-gravity-plan 'sh16-no-change-request)
+        valid-result (optimize base)
+        deep-request
+        (assoc-in base [:operations 0 :result]
+                  (nested-vector 120 :op/deep))
+        sequence-request
+        (assoc base :operations (iterate vector nil))
+        unbounded-integer-request
+        (assoc-in base [:source-span :end]
+                  (bigint "9223372036854775808"))
+        deep-candidate
+        (assoc valid-result :diagnostics
+               (nested-vector 120 :deep-candidate))
+        sequence-candidate (iterate vector nil)
+        deep-request-result (optimize deep-request)
+        sequence-request-result (optimize sequence-request)
+        unbounded-integer-result (optimize unbounded-integer-request)
+        deep-verification
+        (invoke-engine 'sh16-verify [base deep-candidate])
+        sequence-verification
+        (invoke-engine 'sh16-verify [base sequence-candidate])]
+    (doseq [result [deep-request-result
+                    sequence-request-result
+                    unbounded-integer-result]]
+      (is (= :rejected (:status result)))
+      (is (= :request-structural-bound
+             (get-in result [:diagnostics 0 :reason]))))
+    (doseq [verification [deep-verification sequence-verification]]
+      (is (= :rejected (:status verification)))
+      (is (= "C13-VERIFY"
+             (get-in verification [:diagnostics 0 :rule])))
+      (is (= :candidate-structural-bound
+             (get-in verification [:diagnostics 0 :reason]))))))
+
+(deftest sh16-transformed-operations-have-exact-clean-schemas
+  (let [request
+        (request accepted-gravity-plan 'sh16-mixed-optimization-request)
+        result (optimize request)
+        folded (first (:optimized-operations result))
+        branch (second (:optimized-operations result))]
+    (is (= :accepted (:status result)))
+    (is (= #{:op-id :opcode :operands :result :type :effects :ordering
+             :source-span :origin-chain :safety-outcome}
+           (set (keys folded))))
+    (is (= (set (keys folded)) (set (keys branch))))
+    (is (not (contains? folded :numeric-mode)))
+    (is (not (contains? folded :constant-operands)))
+    (is (not (contains? branch :condition)))
+    (is (not (contains? branch :then-block)))
+    (is (not (contains? branch :else-block)))
+    (is (= :passed
+           (get-in result [:post-pass-verifier :status])))
+    (is (= 4
+           (count
+            (get-in result
+                    [:post-pass-verifier :pass-reports]))))))

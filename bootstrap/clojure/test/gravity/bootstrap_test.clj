@@ -25434,7 +25434,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:43c3af255b952c62101af6ae96585cf390ece010608e3a2812a7395a0bbe5e94"
+    (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.backend.b4-wasm-backend-design\n"

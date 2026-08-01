@@ -974,6 +974,17 @@
                 :dead-code-eliminate
                 :check-retention-or-elision]
    :maximum-operations 128
+   :integer-width-bits 64
+   :minimum-i64 -9223372036854775808
+   :maximum-i64 9223372036854775807
+   :maximum-identifier-units 256
+   :structural-bounds
+   {:maximum-nodes 8192
+    :maximum-depth 96
+    :maximum-width 1024
+    :maximum-collections 2048
+    :maximum-scalars 6144
+    :maximum-scalar-units 65536}
    :supported-opcodes #{:const :add :branch-if :branch
                         :compute :runtime-check :return}
    :elidable-check-classes
@@ -990,7 +1001,10 @@
              :remaining-check-class-proof-replay
              :whole-function-translation-validation
              :target-lowering-proof-preservation
-             :self-hosted-certificate-checker]})
+             :self-hosted-certificate-checker
+             :guarded-operation-dominance-authentication
+             :whole-c11-dead-code-analysis
+             :complete-structured-pass-diagnostics]})
 
 (defn sh16-member? [values value]
   (= (get values value) value))
@@ -1012,18 +1026,164 @@
     (= (count (keys value)) (count expected))
     false))
 
+(defn sh16-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh16-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (vec (keys value))
+           result []]
+      (if (= 0 (count remaining))
+        result
+        (let [key (first remaining)]
+          (recur (rest remaining)
+                 (conj (conj result key) (get value key))))))
+    (vec value)))
+
+(defn sh16-structural-scalar-valid? [value]
+  (if (= nil value)
+    true
+    (if (sh16-member? #{true false} value)
+      true
+      (if (integer? value)
+        (if (>= value -9223372036854775808)
+          (<= value 9223372036854775807)
+          false)
+        (if (keyword? value)
+          (<= (count (str value)) 256)
+          (if (symbol? value)
+            (<= (count (str value)) 256)
+            (if (string? value)
+              (<= (count value) 4096)
+              false)))))))
+
+(defn sh16-structural-preflight [value]
+  (let [bounds (get (sh16-optimization-policy) :structural-bounds)
+        maximum-nodes (get bounds :maximum-nodes)
+        maximum-depth (get bounds :maximum-depth)
+        maximum-width (get bounds :maximum-width)
+        maximum-collections (get bounds :maximum-collections)
+        maximum-scalars (get bounds :maximum-scalars)
+        maximum-scalar-units (get bounds :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           cursor 0
+           nodes 0
+           collections 0
+           scalars 0
+           scalar-units 0]
+      (if (= cursor (count frontier))
+        {:status :accepted
+         :nodes nodes
+         :collections collections
+         :scalars scalars
+         :scalar-units scalar-units}
+        (let [entry (get frontier cursor)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :structure-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :structure-depth-bound}
+              (if (sh16-aggregate? current)
+                (let [components (sh16-aggregate-components current)
+                      width (count components)
+                      next-collections (+ collections 1)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :structure-width-bound}
+                    (if (> next-collections maximum-collections)
+                      {:status :rejected
+                       :reason :structure-collection-bound}
+                      (let [next-frontier
+                            (loop [remaining components
+                                   result frontier]
+                              (if (= 0 (count remaining))
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining)
+                                        (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1)
+                               next-nodes next-collections
+                               scalars scalar-units)))))
+                (if (seq? current)
+                  {:status :rejected :reason :structure-sequence-carrier}
+                  (if (sh16-structural-scalar-valid? current)
+                    (let [next-scalars (+ scalars 1)
+                          units
+                          (if (string? current)
+                            (count current)
+                            (if (keyword? current)
+                              (count (str current))
+                              (if (symbol? current)
+                                (count (str current))
+                                1)))
+                          next-units (+ scalar-units units)]
+                      (if (> next-scalars maximum-scalars)
+                        {:status :rejected :reason :structure-scalar-bound}
+                        (if (> next-units maximum-scalar-units)
+                          {:status :rejected
+                           :reason :structure-scalar-unit-bound}
+                          (recur frontier (+ cursor 1) next-nodes
+                                 collections next-scalars next-units))))
+                    {:status :rejected
+                     :reason :structure-scalar-type-or-range}))))))))))
+
+(defn sh16-identifier-character? [character]
+  (loop [allowed
+         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/!?*+<>=:"
+         index 0]
+    (if (= index (count allowed))
+      false
+      (if (= character (get allowed index))
+        true
+        (recur allowed (+ index 1))))))
+
+(defn sh16-ascii-identifier-string? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (<= (count value)
+              (get (sh16-optimization-policy)
+                   :maximum-identifier-units))
+        (loop [index 0]
+          (if (= index (count value))
+            true
+            (if (sh16-identifier-character? (get value index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh16-canonical-identifier? [value]
+  (if (keyword? value)
+    (sh16-ascii-identifier-string? (str value))
+    (if (symbol? value)
+      (sh16-ascii-identifier-string? (str value))
+      false)))
+
+(defn sh16-i64? [value]
+  (if (integer? value)
+    (if (>= value -9223372036854775808)
+      (<= value 9223372036854775807)
+      false)
+    false))
+
 (defn sh16-bounded-scalar? [value]
   (if (= nil value)
     true
-    (if (integer? value)
+    (if (sh16-i64? value)
       true
       (if (sh16-member? #{true false} value)
         true
-        (if (keyword? value)
+        (if (sh16-canonical-identifier? value)
           true
-          (if (symbol? value)
-            true
-            (if (string? value) (<= (count value) 4096) false)))))))
+          (if (string? value) (<= (count value) 4096) false))))))
 
 (defn sh16-bounded-operands-from? [operands index]
   (if (= index (count operands))
@@ -1042,7 +1202,7 @@
 (defn sh16-keyword-vector-from? [values index]
   (if (= index (count values))
     true
-    (if (keyword? (get values index))
+    (if (sh16-canonical-identifier? (get values index))
       (sh16-keyword-vector-from? values (+ index 1))
       false)))
 
@@ -1072,7 +1232,7 @@
     (let [operation (get operations index)]
       (if (= :runtime-check (get operation :opcode))
         (let [check-id (get operation :runtime-check-id)]
-          (if (keyword? check-id)
+          (if (sh16-canonical-identifier? check-id)
             (if (contains? seen check-id)
               false
               (sh16-unique-runtime-check-ids?
@@ -1086,7 +1246,7 @@
   (if
    (sh16-exact-keys?
     source-span #{:source-id :actual-source-path :start :end})
-    (if (keyword? (get source-span :source-id))
+    (if (sh16-canonical-identifier? (get source-span :source-id))
       (if (string? (get source-span :actual-source-path))
         (if (> (count (get source-span :actual-source-path)) 0)
           (if (<= (count (get source-span :actual-source-path)) 4096)
@@ -1104,16 +1264,35 @@
       )
     false))
 
+(defn sh16-origin-entry-expected-keys [kind]
+  (if (= kind :source)
+    #{:kind :source-id}
+    (if (= kind :generated)
+      #{:kind :source-id :generator-id}
+      (if (= kind :macro)
+        #{:kind :source-id :macro-id}
+        (if (= kind :optimization)
+          #{:kind :source-id :operation-id}
+          #{})))))
+
 (defn sh16-origin-entry-valid? [entry]
-  (if
-   (sh16-keys-allowed?
-    entry #{:kind :source-id :generator-id :macro-id :operation-id})
-    (if (sh16-member? #{:source :generated :macro :optimization}
-                      (get entry :kind))
-      (if (keyword? (get entry :source-id))
-        true
-        false)
-      false)
+  (if (map? entry)
+    (let [kind (get entry :kind)
+          expected (sh16-origin-entry-expected-keys kind)]
+      (if (> (count expected) 0)
+        (if (sh16-exact-keys? entry expected)
+          (if (sh16-canonical-identifier? (get entry :source-id))
+            (if (= kind :source)
+              true
+              (if (= kind :generated)
+                (sh16-canonical-identifier? (get entry :generator-id))
+                (if (= kind :macro)
+                  (sh16-canonical-identifier? (get entry :macro-id))
+                  (sh16-canonical-identifier?
+                   (get entry :operation-id)))))
+            false)
+          false)
+        false))
     false))
 
 (defn sh16-origin-chain-valid-from? [origin-chain index]
@@ -1132,42 +1311,78 @@
       false)
     false))
 
+(defn sh16-operation-expected-keys [operation]
+  (let [base
+        #{:op-id :opcode :operands :result :type :effects :ordering
+          :source-span :origin-chain :safety-outcome}
+        opcode (get operation :opcode)
+        opcode-keys
+        (if (= opcode :add)
+          (conj (conj base :numeric-mode) :constant-operands)
+          (if (= opcode :branch-if)
+            (conj (conj (conj base :condition) :then-block) :else-block)
+            (if (= opcode :runtime-check)
+              (let [runtime-base
+                    (conj
+                     (conj (conj base :runtime-check-id) :check-class)
+                     :elide-requested)]
+                (if (= true (get operation :elide-requested))
+                  (conj runtime-base :proof)
+                  runtime-base))
+              base)))
+        safety-keys
+        (if (= :unsafe-island (get operation :safety-outcome))
+          (conj opcode-keys :unsafe-audit-id)
+          opcode-keys)]
+    (if (= true (get operation :dead))
+      (conj (conj safety-keys :dead) :dead-proof)
+      safety-keys)))
+
 (defn sh16-common-operation-valid? [operation]
-  (if
-   (sh16-keys-allowed?
-    operation
-    #{:op-id :opcode :operands :result :type :effects :ordering
-      :source-span :origin-chain :safety-outcome :numeric-mode
-      :unsafe-audit-id :runtime-check-id :check-class
-      :elide-requested :proof :dead :dead-proof
-      :constant-operands :condition :then-block :else-block})
-    (if (keyword? (get operation :op-id))
-      (if
-       (sh16-member?
-        #{:const :add :branch-if :branch
-          :compute :runtime-check :return}
-        (get operation :opcode))
-        (if (sh16-bounded-operands? (get operation :operands))
-          (if (sh16-bounded-keyword-set?
-               (get operation :effects) 32)
-              (if (keyword? (get operation :type))
-                (if (sh16-source-span-valid?
-                     (get operation :source-span))
+  (if (map? operation)
+    (if (sh16-exact-keys?
+         operation (sh16-operation-expected-keys operation))
+      (if (sh16-canonical-identifier? (get operation :op-id))
+        (if
+         (sh16-member?
+          #{:const :add :branch-if :branch
+            :compute :runtime-check :return}
+          (get operation :opcode))
+          (if (sh16-bounded-operands? (get operation :operands))
+            (if (sh16-canonical-identifier? (get operation :result))
+              (if (sh16-bounded-keyword-set?
+                   (get operation :effects) 32)
+                (if (sh16-canonical-identifier? (get operation :type))
                   (if
-                   (sh16-origin-chain-valid?
-                    (get operation :origin-chain))
-                    (sh16-member?
-                     #{:proven-safe :runtime-checked
-                       :rejected :unsafe-island}
-                     (get operation :safety-outcome))
+                   (sh16-member? #{nil :sequence}
+                                  (get operation :ordering))
+                    (if (sh16-source-span-valid?
+                         (get operation :source-span))
+                      (if
+                       (sh16-origin-chain-valid?
+                        (get operation :origin-chain))
+                        (if
+                         (sh16-member?
+                          #{:proven-safe :runtime-checked
+                            :rejected :unsafe-island}
+                          (get operation :safety-outcome))
+                          (if
+                           (= :unsafe-island
+                              (get operation :safety-outcome))
+                            (sh16-canonical-identifier?
+                             (get operation :unsafe-audit-id))
+                            true)
+                          false)
+                        false)
+                      false)
                     false)
                   false)
                 false)
               false)
+            false)
           false)
         false)
-      false
-      )
+      false)
     false))
 
 (defn sh16-proof-claim [check-class]
@@ -1226,8 +1441,8 @@
     #{:proof-id :certificate-id :claim :operation-id :check-id
       :proof-dominates-use :certificate-status :result :method
       :provider :assumptions :profile :target :invalidated-by})
-    (if (keyword? (get proof :proof-id))
-      (if (keyword? (get proof :certificate-id))
+    (if (sh16-canonical-identifier? (get proof :proof-id))
+      (if (sh16-canonical-identifier? (get proof :certificate-id))
         (if (= (get proof :operation-id) (get operation :op-id))
           (if (= (get proof :check-id)
                  (get operation :runtime-check-id))
@@ -1240,12 +1455,14 @@
                       false
                       (if (= nil (get proof :provider))
                         false
-                        (if (keyword? (get proof :method))
-                          (if (keyword? (get proof :provider))
-                            (if (set? (get proof :assumptions))
+                        (if (sh16-canonical-identifier?
+                             (get proof :method))
+                          (if (sh16-canonical-identifier?
+                               (get proof :provider))
+                            (if
+                             (sh16-bounded-keyword-set?
+                              (get proof :assumptions) 32)
                               (if (> (count (get proof :assumptions)) 0)
-                                (if (<=
-                                     (count (get proof :assumptions)) 32)
                                 (if (= (get request :profile)
                                        (get proof :profile))
                                   (if (= (get request :target)
@@ -1262,7 +1479,6 @@
                                       false)
                                     false)
                                   false)
-                                false)
                                 false)
                               false)
                             false)
@@ -1314,32 +1530,29 @@
         :contract)
       :contract)))
 
-(defn sh16-operation-id-used-from?
-  [operation-id operations index]
+(defn sh16-result-id-used-from?
+  [result-id operations index]
   (if (= index (count operations))
     false
     (let [operation (get operations index)]
-      (if (= operation-id (get operation :op-id))
-        (sh16-operation-id-used-from?
-         operation-id operations (+ index 1))
-        (if (contains? (set (get operation :operands)) operation-id)
-          true
-          (sh16-operation-id-used-from?
-           operation-id operations (+ index 1)))))))
+      (if (contains? (set (get operation :operands)) result-id)
+        true
+        (sh16-result-id-used-from?
+         result-id operations (+ index 1))))))
 
 (defn sh16-dead-proof-valid? [operation operations]
   (let [proof (get operation :dead-proof)]
     (if
      (sh16-exact-keys?
       proof #{:proof-id :operation-id :no-uses :effect-free :verified})
-      (if (keyword? (get proof :proof-id))
+      (if (sh16-canonical-identifier? (get proof :proof-id))
         (if (= (get operation :op-id) (get proof :operation-id))
           (if (= true (get proof :no-uses))
             (if (= true (get proof :effect-free))
               (if (= true (get proof :verified))
                 (if
-                 (sh16-operation-id-used-from?
-                  (get operation :op-id) operations 0)
+                 (sh16-result-id-used-from?
+                  (get operation :result) operations 0)
                   false
                   true)
                 false)
@@ -1364,6 +1577,33 @@
       (sh16-runtime-check-error request operation))))
 
 (defn sh16-operation-error [request operation operations]
+  (if (map? operation)
+    (if (= true (get operation :dead))
+      (if (set? (get operation :effects))
+        (if (> (count (get operation :effects)) 0)
+          :effect
+          (if (= nil (get operation :dead-proof))
+            :proof
+            (sh16-operation-error-valid-shape
+             request operation operations)))
+        :contract)
+      (if (= :add (get operation :opcode))
+        (if (= nil (get operation :numeric-mode))
+          :safety
+          (sh16-operation-error-valid-shape request operation operations))
+        (if (= :runtime-check (get operation :opcode))
+          (if (= true (get operation :elide-requested))
+            (if (= nil (get operation :proof))
+              :check-elision
+              (sh16-operation-error-valid-shape
+               request operation operations))
+            (sh16-operation-error-valid-shape
+             request operation operations))
+          (sh16-operation-error-valid-shape
+           request operation operations))))
+    :contract))
+
+(defn sh16-operation-error-valid-shape [request operation operations]
   (if (sh16-common-operation-valid? operation)
     (if (= :rejected (get operation :safety-outcome))
       :safety
@@ -1373,21 +1613,34 @@
           (sh16-effect-safety-error request operation operations))
         (if (= :add (get operation :opcode))
           (if (= :integer-exact (get operation :numeric-mode))
-            (if (= true (get operation :constant-operands))
-              (if (sh16-foldable-add? operation)
-                (sh16-effect-safety-error request operation operations)
-                :contract)
-              (sh16-effect-safety-error request operation operations))
+            (if (sh16-member? #{true false}
+                              (get operation :constant-operands))
+              (if (= true (get operation :constant-operands))
+                (if (sh16-foldable-add? operation)
+                  (sh16-effect-safety-error request operation operations)
+                  :safety)
+                (sh16-effect-safety-error request operation operations))
+              :contract)
             :safety)
           (if (= :branch-if (get operation :opcode))
             (if (sh16-member? #{true false} (get operation :condition))
-              (if (= nil (get operation :then-block))
-                :contract
-                (if (= nil (get operation :else-block))
-                  :contract
-                  (sh16-effect-safety-error request operation operations)))
+              (if (sh16-canonical-identifier?
+                   (get operation :then-block))
+                (if (sh16-canonical-identifier?
+                     (get operation :else-block))
+                  (sh16-effect-safety-error request operation operations)
+                  :contract)
+                :contract)
               :contract)
-            (sh16-effect-safety-error request operation operations)))))
+            (if (= :branch (get operation :opcode))
+              (if (= 1 (count (get operation :operands)))
+                (if (sh16-canonical-identifier?
+                     (get (get operation :operands) 0))
+                  (sh16-effect-safety-error request operation operations)
+                  :contract)
+                :contract
+                )
+              (sh16-effect-safety-error request operation operations))))))
     :contract))
 
 (defn sh16-operations-error [request operations index]
@@ -1410,8 +1663,8 @@
         :nondeterministic-choice :operations})
       (if (= :gravity/sh16-optimization-request (get request :artifact))
       (if (= true (get request :mir-verified))
-        (if (keyword? (get request :request-id))
-          (if (keyword? (get request :input-mir-id))
+        (if (sh16-canonical-identifier? (get request :request-id))
+          (if (sh16-canonical-identifier? (get request :input-mir-id))
             (if (= :native (get request :profile))
               (if (= :portable-mir (get request :target))
                 (if (sh16-source-span-valid? (get request :source-span))
@@ -1482,9 +1735,17 @@
   (if (= :add (get operation :opcode))
     (if (= true (get operation :constant-operands))
       (if (= 2 (count (get operation :operands)))
-        (if (integer? (get (get operation :operands) 0))
-          (integer? (get (get operation :operands) 1))
-          false)
+        (let [left (get (get operation :operands) 0)
+              right (get (get operation :operands) 1)]
+          (if (sh16-i64? left)
+            (if (sh16-i64? right)
+              (if (> right 0)
+                (<= left (- 9223372036854775807 right))
+                (if (< right 0)
+                  (>= left (- -9223372036854775808 right))
+                  true))
+              false)
+            false))
         false)
       false)
     false))
@@ -1499,33 +1760,41 @@
     (= true (get operation :elide-requested))
     false))
 
+(defn sh16-output-base-operation [operation opcode operands]
+  {:op-id (get operation :op-id)
+   :opcode opcode
+   :operands operands
+   :result (get operation :result)
+   :type (get operation :type)
+   :effects (get operation :effects)
+   :ordering (get operation :ordering)
+   :source-span (get operation :source-span)
+   :origin-chain (get operation :origin-chain)
+   :safety-outcome (get operation :safety-outcome)})
+
 (defn sh16-transform-operation [operation]
   (if (sh16-foldable-add? operation)
-    (assoc
-     (assoc operation :opcode :const)
-     :operands
+    (sh16-output-base-operation
+     operation :const
      [(+ (get (get operation :operands) 0)
          (get (get operation :operands) 1))])
     (if (sh16-simplifiable-branch? operation)
-      (assoc
-       (assoc operation :opcode :branch)
-       :operands
+      (sh16-output-base-operation
+       operation :branch
        [(if (= true (get operation :condition))
           (get operation :then-block)
           (get operation :else-block))])
       operation)))
 
-(defn sh16-optimized-operations [operations index result]
-  (if (= index (count operations))
-    result
-    (let [operation (get operations index)]
-      (if (= true (get operation :dead))
-        (sh16-optimized-operations operations (+ index 1) result)
-        (if (sh16-elidable-runtime-check? operation)
-          (sh16-optimized-operations operations (+ index 1) result)
-          (sh16-optimized-operations
-           operations (+ index 1)
-           (conj result (sh16-transform-operation operation))))))))
+(defn sh16-retained-runtime-check [operation]
+  (assoc
+   (assoc
+    (assoc
+     (sh16-output-base-operation
+      operation :runtime-check (get operation :operands))
+     :runtime-check-id (get operation :runtime-check-id))
+    :check-class (get operation :check-class))
+   :elide-requested false))
 
 (defn sh16-family-changed? [family operation]
   (if (= family :constant-fold)
@@ -1535,27 +1804,6 @@
       (if (= family :dead-code-eliminate)
         (= true (get operation :dead))
         (sh16-elidable-runtime-check? operation)))))
-
-(defn sh16-changed-operation-ids
-  [family operations index result]
-  (if (= index (count operations))
-    result
-    (let [operation (get operations index)]
-      (sh16-changed-operation-ids
-       family operations (+ index 1)
-       (if (sh16-family-changed? family operation)
-         (conj result (get operation :op-id))
-         result)))))
-
-(defn sh16-proof-ids [operations index result]
-  (if (= index (count operations))
-    result
-    (let [operation (get operations index)]
-      (sh16-proof-ids
-       operations (+ index 1)
-       (if (sh16-elidable-runtime-check? operation)
-         (conj result (get (get operation :proof) :proof-id))
-         result)))))
 
 (defn sh16-residual-checks [operations index result]
   (if (= index (count operations))
@@ -1567,44 +1815,6 @@
          (if (= true (get operation :elide-requested))
            result
            (conj result (get operation :runtime-check-id)))
-         result)))))
-
-(defn sh16-elision-records [request operations index result]
-  (if (= index (count operations))
-    result
-    (let [operation (get operations index)]
-      (sh16-elision-records
-       request operations (+ index 1)
-       (if (sh16-elidable-runtime-check? operation)
-         (conj
-          result
-          {:artifact :gravity/check-elision-record
-           :check-id (get operation :runtime-check-id)
-           :check-class (get operation :check-class)
-           :operation-id (get operation :op-id)
-           :pass-id :check-retention-or-elision
-           :proof-id (get (get operation :proof) :proof-id)
-           :certificate-id
-           (get (get operation :proof) :certificate-id)
-           :proof-dominates-use true
-           :certificate-status :verified
-           :proof-condition-replayed? true
-           :resulting-safety-outcome :proven-safe
-           :invalidated-by #{}
-           :residual-checks []
-           :profile (get request :profile)
-           :target (get request :target)
-           :source-span (get operation :source-span)})
-         result)))))
-
-(defn sh16-elided-check-ids [operations index result]
-  (if (= index (count operations))
-    result
-    (let [operation (get operations index)]
-      (sh16-elided-check-ids
-       operations (+ index 1)
-       (if (sh16-elidable-runtime-check? operation)
-         (conj result (get operation :runtime-check-id))
          result)))))
 
 (defn sh16-normalized-span [source-span]
@@ -1691,13 +1901,138 @@
    :operations
    (sh16-identity-operations (get request :operations) 0 [])})
 
-(defn sh16-pass-decision [request family]
-  (let [changed
-        (sh16-changed-operation-ids
-         family (get request :operations) 0 [])]
+(defn sh16-append-unique-from [result values index]
+  (if (= index (count values))
+    result
+    (let [value (get values index)]
+      (sh16-append-unique-from
+       (if (contains? (set result) value) result (conj result value))
+       values (+ index 1)))))
+
+(defn sh16-append-unique [result values]
+  (sh16-append-unique-from result values 0))
+
+(defn sh16-proof-invalidated-by-state? [invalidated]
+  (if (contains? (set invalidated) :control-flow-graph)
+    true
+    (if (contains? (set invalidated) :dominator-tree)
+      true
+      (if (contains? (set invalidated) :data-flow-facts)
+        true
+        (if (contains? (set invalidated) :range-facts)
+          true
+          (contains? (set invalidated) :use-def-facts))))))
+
+(defn sh16-operation-changed-in-state? [family operation invalidated]
+  (if (= family :check-retention-or-elision)
+    (if (sh16-elidable-runtime-check? operation)
+      (if (sh16-proof-invalidated-by-state? invalidated) false true)
+      false)
+    (sh16-family-changed? family operation)))
+
+(defn sh16-state-changed-operation-ids
+  [family operations invalidated index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-state-changed-operation-ids
+       family operations invalidated (+ index 1)
+       (if (sh16-operation-changed-in-state?
+            family operation invalidated)
+         (conj result (get operation :op-id))
+         result)))))
+
+(defn sh16-operation-id-selected? [operation selected]
+  (contains? (set selected) (get operation :op-id)))
+
+(defn sh16-apply-pass-from
+  [family operations selected invalidated index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (if (sh16-operation-id-selected? operation selected)
+        (if (= family :dead-code-eliminate)
+          (sh16-apply-pass-from
+           family operations selected invalidated (+ index 1) result)
+          (if (= family :check-retention-or-elision)
+            (sh16-apply-pass-from
+             family operations selected invalidated (+ index 1) result)
+            (sh16-apply-pass-from
+             family operations selected invalidated (+ index 1)
+             (conj result (sh16-transform-operation operation)))))
+        (if (= family :check-retention-or-elision)
+          (if (sh16-elidable-runtime-check? operation)
+            (sh16-apply-pass-from
+             family operations selected invalidated (+ index 1)
+             (conj result (sh16-retained-runtime-check operation)))
+            (sh16-apply-pass-from
+             family operations selected invalidated (+ index 1)
+             (conj result operation)))
+          (sh16-apply-pass-from
+           family operations selected invalidated (+ index 1)
+           (conj result operation)))))))
+
+(defn sh16-apply-pass [family operations selected invalidated]
+  (sh16-apply-pass-from family operations selected invalidated 0 []))
+
+(defn sh16-proof-ids-for-selected
+  [operations selected index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-proof-ids-for-selected
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (if (map? (get operation :proof))
+           (conj result (get (get operation :proof) :proof-id))
+           result)
+         result)))))
+
+(defn sh16-all-proof-ids [operations]
+  (sh16-proof-ids-for-selected
+   operations
+   (loop [index 0 result []]
+     (if (= index (count operations))
+       result
+       (recur (+ index 1)
+              (conj result (get (get operations index) :op-id)))))
+   0 []))
+
+(defn sh16-pass-analysis-invalidated [family changed]
+  (if (= 0 (count changed))
+    []
+    (if (= family :constant-fold)
+      [:data-flow-cache]
+      (if (= family :branch-simplify)
+        [:control-flow-graph :dominator-tree]
+        (if (= family :dead-code-eliminate)
+          [:data-flow-cache :control-flow-graph]
+          [:runtime-check-index])))))
+
+(defn sh16-pass-facts-invalidated [family changed]
+  (if (= 0 (count changed))
+    []
+    (if (= family :constant-fold)
+      [:data-flow-facts :range-facts :safety-facts]
+      (if (= family :branch-simplify)
+        [:control-flow-facts :dominance-facts :range-facts]
+        (if (= family :dead-code-eliminate)
+          [:use-def-facts :control-flow-facts :safety-facts]
+          [:runtime-check-table])))))
+
+(defn sh16-pass-facts-regenerated [family changed]
+  (if (= 0 (count changed))
+    []
+    (if (= family :check-retention-or-elision)
+      [:runtime-check-table :residual-check-report]
+      [:post-pass-verifier-report])))
+
+(defn sh16-pass-decision
+  [request family changed proof-ids verifier-status]
+  (let [changed-count (count changed)]
     {:artifact :gravity/optimization-decision
      :pass-id family
-     :changed? (> (count changed) 0)
+     :changed? (> changed-count 0)
      :changed-operations changed
      :input-mir-id (get request :input-mir-id)
      :output-mir-id
@@ -1705,24 +2040,21 @@
       (get request :request-id)]
      :decision-id [(get request :request-id) family]
      :reason
-     (if (> (count changed) 0)
+     (if (> changed-count 0)
        :legal-normalized-mir-transformation
        :no-legal-candidate)
      :preserved
      #{:types :effects :capabilities :ownership
-       :safety-outcomes :source-origins :generated-origins
+       :source-origins :generated-origins
        :profile :target-request}
-     :proofs-used
-     (if (= family :check-retention-or-elision)
-       (sh16-proof-ids (get request :operations) 0 [])
-       [])
-     :verifier-required? (> (count changed) 0)
-     :verifier-result :passed}))
+     :proofs-used proof-ids
+     :verifier-required? (> changed-count 0)
+     :verifier-result verifier-status}))
 
-(defn sh16-invalidation-entry [request family]
-  (let [changed
-        (sh16-changed-operation-ids
-         family (get request :operations) 0 [])]
+(defn sh16-invalidation-entry
+  [request family changed proof-ids]
+  (let [analysis (sh16-pass-analysis-invalidated family changed)
+        facts (sh16-pass-facts-invalidated family changed)]
     {:artifact :gravity/c13-invalidation-ledger-entry
      :pass-id family
      :decision-id [(get request :request-id) family]
@@ -1731,56 +2063,103 @@
      :output-mir-id
      [:sh16-optimized (get request :input-mir-id)
       (get request :request-id)]
-     :analysis-invalidated
-     (if (> (count changed) 0)
-       (if (= family :branch-simplify)
-         [:control-flow-graph :dominator-tree]
-         [:data-flow-cache])
-       [])
-     :facts-invalidated
-     (if (> (count changed) 0)
-       (if (= family :check-retention-or-elision)
-         [:runtime-check-table]
-         [])
-       [])
-     :facts-regenerated
-     (if (> (count changed) 0)
-       (if (= family :check-retention-or-elision)
-         [:runtime-check-table :residual-check-report]
-         [:post-pass-verifier-report])
-       [])
-     :proofs-invalidated []
+     :analysis-invalidated analysis
+     :facts-invalidated facts
+     :facts-regenerated (sh16-pass-facts-regenerated family changed)
+     :proofs-invalidated
+     (if (= family :check-retention-or-elision) [] proof-ids)
      :runtime-checks-restored []
      :caches-cleared
      (if (> (count changed) 0) [:analysis-cache] [])
      :profile (get request :profile)
      :target (get request :target)}))
 
-(defn sh16-mutating-passes [request]
-  (let [operations (get request :operations)
-        constant-changes
-        (sh16-changed-operation-ids :constant-fold operations 0 [])
-        branch-changes
-        (sh16-changed-operation-ids :branch-simplify operations 0 [])
-        dead-changes
-        (sh16-changed-operation-ids
-         :dead-code-eliminate operations 0 [])
-        check-changes
-        (sh16-changed-operation-ids
-         :check-retention-or-elision operations 0 [])
-        first-result
-        (if (> (count constant-changes) 0) [:constant-fold] [])
-        second-result
-        (if (> (count branch-changes) 0)
-          (conj first-result :branch-simplify)
-          first-result)
-        third-result
-        (if (> (count dead-changes) 0)
-          (conj second-result :dead-code-eliminate)
-          second-result)]
-    (if (> (count check-changes) 0)
-      (conj third-result :check-retention-or-elision)
-      third-result)))
+(defn sh16-pass-verifier-report
+  [family operations changed]
+  {:artifact :gravity/c13-pass-verifier-report
+   :pass-id family
+   :changed-operations changed
+   :scope :normalized-operation-local
+   :whole-c11-module? false
+   :status
+   (if (sh16-pass-output-valid-from? family operations 0 #{})
+     :passed
+     :rejected)})
+
+(defn sh16-run-pass [request state family]
+  (let [operations (get state :operations)
+        invalidated
+        (sh16-append-unique
+         (get state :invalidated-analysis)
+         (get state :invalidated-facts))
+        changed
+        (sh16-state-changed-operation-ids
+         family operations invalidated 0 [])
+        next-operations
+        (sh16-apply-pass family operations changed invalidated)
+        proof-ids
+        (if (= family :check-retention-or-elision)
+          (sh16-proof-ids-for-selected operations changed 0 [])
+          (sh16-all-proof-ids operations))
+        verifier
+        (sh16-pass-verifier-report family next-operations changed)
+        analysis-invalidated
+        (sh16-pass-analysis-invalidated family changed)
+        facts-invalidated
+        (sh16-pass-facts-invalidated family changed)
+        proofs-invalidated
+        (if (= family :check-retention-or-elision) [] proof-ids)]
+    {:status
+     (if (= :passed (get verifier :status))
+       (get state :status)
+       :rejected)
+     :operations next-operations
+     :decision-log
+     (conj
+      (get state :decision-log)
+      (sh16-pass-decision
+       request family changed
+       (if (= family :check-retention-or-elision) proof-ids [])
+       (get verifier :status)))
+     :invalidation-ledger
+     (conj
+      (get state :invalidation-ledger)
+      (sh16-invalidation-entry request family changed proof-ids))
+     :pass-verifier-reports
+     (conj (get state :pass-verifier-reports) verifier)
+     :mutating-passes
+     (if (> (count changed) 0)
+       (conj (get state :mutating-passes) family)
+       (get state :mutating-passes))
+     :invalidated-analysis
+     (sh16-append-unique
+      (get state :invalidated-analysis) analysis-invalidated)
+     :invalidated-facts
+     (sh16-append-unique
+      (get state :invalidated-facts) facts-invalidated)
+     :invalidated-proofs
+     (sh16-append-unique
+      (get state :invalidated-proofs) proofs-invalidated)}))
+
+(defn sh16-sequential-pipeline [request]
+  (let [initial
+        {:status :accepted
+         :operations (get request :operations)
+         :decision-log []
+         :invalidation-ledger []
+         :pass-verifier-reports []
+         :mutating-passes []
+         :invalidated-analysis []
+         :invalidated-facts []
+         :invalidated-proofs []}
+        constant-state
+        (sh16-run-pass request initial :constant-fold)
+        branch-state
+        (sh16-run-pass request constant-state :branch-simplify)
+        dead-state
+        (sh16-run-pass request branch-state :dead-code-eliminate)]
+    (sh16-run-pass
+     request dead-state :check-retention-or-elision)))
 
 (defn sh16-post-pass-operation-valid? [operation]
   (if (sh16-common-operation-valid? operation)
@@ -1790,6 +2169,29 @@
         false
         (if (= :branch-if (get operation :opcode)) false true)))
     false))
+
+(defn sh16-pass-output-operation-valid? [family operation]
+  (if (sh16-common-operation-valid? operation)
+    (if (= family :constant-fold)
+      (if (sh16-foldable-add? operation) false true)
+      (if (= family :branch-simplify)
+        (if (= :branch-if (get operation :opcode)) false true)
+        (if (= family :dead-code-eliminate)
+          (if (= true (get operation :dead)) false true)
+          (sh16-post-pass-operation-valid? operation))))
+    false))
+
+(defn sh16-pass-output-valid-from? [family operations index seen]
+  (if (= index (count operations))
+    true
+    (let [operation (get operations index)
+          operation-id (get operation :op-id)]
+      (if (contains? seen operation-id)
+        false
+        (if (sh16-pass-output-operation-valid? family operation)
+          (sh16-pass-output-valid-from?
+           family operations (+ index 1) (conj seen operation-id))
+          false)))))
 
 (defn sh16-post-pass-valid-from? [operations index seen]
   (if (= index (count operations))
@@ -1803,11 +2205,93 @@
            operations (+ index 1) (conj seen operation-id))
           false)))))
 
-(defn sh16-accepted-artifact [request]
-  (let [operations (get request :operations)
-        optimized (sh16-optimized-operations operations 0 [])
-        residual (sh16-residual-checks operations 0 [])
-        elisions (sh16-elision-records request operations 0 [])]
+(defn sh16-pass-reports-passed-from? [reports index]
+  (if (= index (count reports))
+    true
+    (if (= :passed (get (get reports index) :status))
+      (sh16-pass-reports-passed-from? reports (+ index 1))
+      false)))
+
+(defn sh16-pipeline-valid? [pipeline]
+  (if
+   (sh16-exact-keys?
+    pipeline
+    #{:status :operations :decision-log :invalidation-ledger
+      :pass-verifier-reports :mutating-passes
+      :invalidated-analysis :invalidated-facts :invalidated-proofs})
+    (if (= :accepted (get pipeline :status))
+      (if (= 4 (count (get pipeline :decision-log)))
+        (if (= 4 (count (get pipeline :invalidation-ledger)))
+          (if (= 4 (count (get pipeline :pass-verifier-reports)))
+            (if (sh16-pass-reports-passed-from?
+                 (get pipeline :pass-verifier-reports) 0)
+              (sh16-post-pass-valid-from?
+               (get pipeline :operations) 0 #{})
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh16-check-ids-for-selected
+  [operations selected index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-check-ids-for-selected
+       operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (conj result (get operation :runtime-check-id))
+         result)))))
+
+(defn sh16-elision-records-for-selected
+  [request operations selected index result]
+  (if (= index (count operations))
+    result
+    (let [operation (get operations index)]
+      (sh16-elision-records-for-selected
+       request operations selected (+ index 1)
+       (if (sh16-operation-id-selected? operation selected)
+         (conj
+          result
+          {:artifact :gravity/check-elision-record
+           :check-id (get operation :runtime-check-id)
+           :check-class (get operation :check-class)
+           :operation-id (get operation :op-id)
+           :pass-id :check-retention-or-elision
+           :proof-id (get (get operation :proof) :proof-id)
+           :certificate-id
+           (get (get operation :proof) :certificate-id)
+           :proof-dominates-use true
+           :certificate-status :verified
+           :proof-condition-replayed? true
+           :resulting-safety-outcome :proven-safe
+           :invalidated-by #{}
+           :residual-checks []
+           :profile (get request :profile)
+           :target (get request :target)
+           :source-span (get operation :source-span)})
+         result)))))
+
+(defn sh16-finalize-pipeline [request pipeline]
+  (if
+   (= :accepted (get (sh16-structural-preflight pipeline) :status))
+    (if
+     (if (sh16-pipeline-valid? pipeline)
+       (= pipeline (sh16-sequential-pipeline request))
+       false)
+    (let [operations (get request :operations)
+          optimized (get pipeline :operations)
+          check-decision (get (get pipeline :decision-log) 3)
+          elided-operation-ids (get check-decision :changed-operations)
+          residual (sh16-residual-checks optimized 0 [])
+          elisions
+          (sh16-elision-records-for-selected
+           request operations elided-operation-ids 0 [])
+          elided-check-ids
+          (sh16-check-ids-for-selected
+           operations elided-operation-ids 0 [])]
     {:artifact :gravity/sh16-optimized-mir
      :schema-version 1
      :status :accepted
@@ -1828,23 +2312,15 @@
       :nondeterministic-inputs []
       :target-instruction-selection :forbidden}
      :optimized-operations optimized
-     :decision-log
-     [(sh16-pass-decision request :constant-fold)
-      (sh16-pass-decision request :branch-simplify)
-      (sh16-pass-decision request :dead-code-eliminate)
-      (sh16-pass-decision request :check-retention-or-elision)]
-     :invalidation-ledger
-     [(sh16-invalidation-entry request :constant-fold)
-      (sh16-invalidation-entry request :branch-simplify)
-      (sh16-invalidation-entry request :dead-code-eliminate)
-      (sh16-invalidation-entry request :check-retention-or-elision)]
+     :decision-log (get pipeline :decision-log)
+     :invalidation-ledger (get pipeline :invalidation-ledger)
      :check-elision-records elisions
      :residual-check-report
      {:artifact :gravity/c13-residual-check-report
       :status :complete
       :retained-runtime-checks residual
       :elided-runtime-checks
-      (sh16-elided-check-ids operations 0 [])
+      elided-check-ids
       :open-proof-obligations []}
      :translation-validation
      {:artifact :gravity/bounded-local-translation-check
@@ -1861,19 +2337,25 @@
       :method :bounded-rule-replay
       :scope :normalized-operation-local
       :whole-function? false
-      :proofs (sh16-proof-ids operations 0 [])
+      :proofs
+      (sh16-proof-ids-for-selected
+       operations elided-operation-ids 0 [])
       :counterexamples []
       :result :accepted}
      :post-pass-verifier
      {:artifact :gravity/c13-post-pass-verifier-report
       :mutating-passes
-      (sh16-mutating-passes request)
+      (get pipeline :mutating-passes)
+      :pass-reports (get pipeline :pass-verifier-reports)
+      :unresolved-analysis-invalidations
+      (get pipeline :invalidated-analysis)
+      :unresolved-fact-invalidations
+      (get pipeline :invalidated-facts)
+      :invalidated-proofs
+      (get pipeline :invalidated-proofs)
       :scope :normalized-operation-local
       :whole-c11-module? false
-      :status
-      (if (sh16-post-pass-valid-from? optimized 0 #{})
-        :passed
-        :rejected)}
+      :status :passed}
      :identity-input (sh16-identity-input request)
      :provenance
      {:actual-source-path
@@ -1881,29 +2363,91 @@
       :source-span (get request :source-span)
       :origin-chain (get request :origin-chain)}
      :diagnostics []
-     :pending (get (sh16-optimization-policy) :pending)}))
-
-(defn sh16-optimize [request]
-  (let [error (sh16-request-error request)]
-    (if (= nil error)
-      (sh16-accepted-artifact request)
-      {:artifact :gravity/sh16-optimized-mir
-       :schema-version 1
-       :status :rejected
-       :request-id (get request :request-id)
-       :diagnostics [(sh16-diagnostic request error)]
-       :pending (get (sh16-optimization-policy) :pending)})))
-
-(defn sh16-verify [request candidate]
-  (if (= (sh16-optimize request) candidate)
-    {:artifact :gravity/sh16-optimization-verification
-     :status :passed
-     :request-id (get request :request-id)}
-    {:artifact :gravity/sh16-optimization-verification
+     :pending (get (sh16-optimization-policy) :pending)})
+    {:artifact :gravity/sh16-optimized-mir
+     :schema-version 1
      :status :rejected
      :request-id (get request :request-id)
-     :diagnostics
-     [{:artifact :gravity/sh16-optimization-diagnostic
-       :diagnostic-id "C13-VERIFY"
-       :rule "C13-VERIFY"
-       :reason :optimization-result-substitution}]}))
+     :diagnostics [(sh16-diagnostic request :verify)]
+     :pending (get (sh16-optimization-policy) :pending)})
+    {:artifact :gravity/sh16-optimized-mir
+     :schema-version 1
+     :status :rejected
+     :request-id (get request :request-id)
+     :diagnostics [(sh16-diagnostic request :verify)]
+     :pending (get (sh16-optimization-policy) :pending)}))
+
+(defn sh16-accepted-artifact [request]
+  (sh16-finalize-pipeline request (sh16-sequential-pipeline request)))
+
+(defn sh16-structural-rejection [request preflight reason]
+  {:artifact :gravity/sh16-optimized-mir
+   :schema-version 1
+   :status :rejected
+   :request-id
+   (if (map? request)
+     (if (sh16-canonical-identifier? (get request :request-id))
+       (get request :request-id)
+       nil)
+     nil)
+   :diagnostics
+   [{:artifact :gravity/sh16-optimization-diagnostic
+     :diagnostic-id "C13-CONTRACT"
+     :rule "C13-CONTRACT"
+     :reason reason
+     :stage :optimize-mir
+     :structural-preflight preflight
+     :remediation :supply-a-structurally-bounded-canonical-carrier}]
+   :pending (get (sh16-optimization-policy) :pending)})
+
+(defn sh16-optimize [request]
+  (let [preflight (sh16-structural-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (let [error (sh16-request-error request)]
+        (if (= nil error)
+          (sh16-accepted-artifact request)
+          {:artifact :gravity/sh16-optimized-mir
+           :schema-version 1
+           :status :rejected
+           :request-id (get request :request-id)
+           :diagnostics [(sh16-diagnostic request error)]
+           :pending (get (sh16-optimization-policy) :pending)}))
+      (sh16-structural-rejection
+       request preflight :request-structural-bound))))
+
+(defn sh16-verify [request candidate]
+  (let [request-preflight (sh16-structural-preflight request)
+        candidate-preflight (sh16-structural-preflight candidate)]
+    (if (= :accepted (get request-preflight :status))
+      (if (= :accepted (get candidate-preflight :status))
+        (if (= (sh16-optimize request) candidate)
+          {:artifact :gravity/sh16-optimization-verification
+           :status :passed
+           :request-id (get request :request-id)}
+          {:artifact :gravity/sh16-optimization-verification
+           :status :rejected
+           :request-id (get request :request-id)
+           :diagnostics
+           [{:artifact :gravity/sh16-optimization-diagnostic
+             :diagnostic-id "C13-VERIFY"
+             :rule "C13-VERIFY"
+             :reason :optimization-result-substitution}]})
+        {:artifact :gravity/sh16-optimization-verification
+         :status :rejected
+         :request-id
+         (if (map? request) (get request :request-id) nil)
+         :diagnostics
+         [{:artifact :gravity/sh16-optimization-diagnostic
+           :diagnostic-id "C13-VERIFY"
+           :rule "C13-VERIFY"
+           :reason :candidate-structural-bound
+           :structural-preflight candidate-preflight}]})
+      {:artifact :gravity/sh16-optimization-verification
+       :status :rejected
+       :request-id nil
+       :diagnostics
+       [{:artifact :gravity/sh16-optimization-diagnostic
+         :diagnostic-id "C13-VERIFY"
+         :rule "C13-VERIFY"
+         :reason :request-structural-bound
+         :structural-preflight request-preflight}]})))
