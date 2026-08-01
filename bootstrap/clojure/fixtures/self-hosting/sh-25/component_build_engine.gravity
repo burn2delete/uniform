@@ -426,9 +426,9 @@
     :content-hash
     "sha256:8be72ed8adbe830992ee990ba0cb23bb06ce7d29859360afa7d937f0833e0096"}
    {:component-id :ownership-checker
-    :byte-count 35870
+    :byte-count 35894
     :content-hash
-    "sha256:6127e0affc1f1e76616dac6295047fa3f5cb9221c0109d6258d1c231d3cfc0a0"}
+    "sha256:b4fdf1022eb6eb25d091f1c918332c7b1393b6850acf4bb6988d8b8dbb2269e0"}
    {:component-id :safety-analysis
     :byte-count 66044
     :content-hash

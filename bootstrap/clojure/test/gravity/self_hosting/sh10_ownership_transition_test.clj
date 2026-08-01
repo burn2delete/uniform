@@ -287,6 +287,10 @@
         (check (dissoc request :type-fact-id))
         malformed-effect-fact
         (check (assoc request :effect-fact-id "effect-fact-pure"))
+        malformed-source-span
+        (check (assoc request :source-span :not-a-map))
+        malformed-origin-chain
+        (check (assoc request :origin-chain :not-a-vector))
         duplicate-event-ids
         (check
          (assoc
@@ -376,6 +380,17 @@
       (is (= (:origin-chain request)
              (get-in candidate
                      [:diagnostics 0 :generated-origin-chain]))))
+    (doseq [candidate [malformed-source-span malformed-origin-chain]]
+      (is (= :rejected (:status candidate)))
+      (is (= "C9-UNSAFE"
+             (get-in candidate [:diagnostics 0 :rule])))
+      (is (= :malformed-normalized-ownership-request
+             (get-in candidate [:diagnostics 0 :reason]))))
+    (is (= {}
+           (get-in malformed-source-span [:diagnostics 0 :source-span])))
+    (is (= []
+           (get-in malformed-origin-chain
+                   [:diagnostics 0 :generated-origin-chain])))
     (is (= :rejected (:status malformed-event)))
     (is (= "C9-UNSAFE"
            (get-in malformed-event [:diagnostics 0 :rule])))

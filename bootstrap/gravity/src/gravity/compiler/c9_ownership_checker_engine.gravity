@@ -465,40 +465,38 @@
             false
             (if (= :owned-mutable
                    (get request :ownership-kind))
-              (if
-               (sh10-member?
-               #{:uninitialized :initialized}
-                (get request :initialization))
-               (if (= :available (get request :availability))
-                 (if (vector? (get request :events))
-                   (if (<= (count (get request :events)) 1024)
-                     (if (sh10-unique-event-ids?
-                          (get request :events) {})
-                       (if (number? (get request :owner-lifetime-end))
-                         (if
-                          (sh10-sha256-id?
-                           (get request :type-fact-id))
-                          (if
-                           (sh10-sha256-id?
-                            (get request :effect-fact-id))
-                           (if (map? (get request :source-span))
-                             (if (vector? (get request :origin-chain))
-                               (if (= nil (get request :profile))
-                                 false
-                                 (sh10-not
-                                  (= nil (get request :target))))
-                               false)
-                             false)
-                           false)
-                         false)
-                       false)
-                     false)
-                   false)
-                 false)
-               false)
+              (if (sh10-member?
+                   #{:uninitialized :initialized}
+                   (get request :initialization))
+                (if (= :available (get request :availability))
+                  (if (vector? (get request :events))
+                    (if (<= (count (get request :events)) 1024)
+                      (if (sh10-unique-event-ids?
+                           (get request :events) {})
+                        (if (number? (get request :owner-lifetime-end))
+                          (if (sh10-sha256-id?
+                               (get request :type-fact-id))
+                            (if (sh10-sha256-id?
+                                 (get request :effect-fact-id))
+                              (if (map? (get request :source-span))
+                                (if (vector? (get request :origin-chain))
+                                  (if (= nil (get request :profile))
+                                    false
+                                    (sh10-not
+                                     (= nil (get request :target))))
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
               false))))
       false)
-    false)))
+    false))
 
 (defn sh10-valid-event-shape? [event]
   (if (map? event)
