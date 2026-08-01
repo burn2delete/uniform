@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B29"
+ :coverage-milestone "SH-07-B30"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -28,6 +28,7 @@
   "docs/phase-02-safety/033-safe4-region-and-arena-safety.md"
   "docs/phase-02-safety/034-safe5-linear-resource-safety.md"
   "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md"
+  "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md"
   "docs/phase-02-safety/038-safe9-numeric-safety.md"
   "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
   "docs/phase-03-profile-system/048-p3-meta-profile-specification.md"
@@ -170,6 +171,8 @@
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
   :c8-effects
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+  :c9-ownership
+  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -208,6 +211,7 @@
   :c18-verification {:keyword-lookups 0}
   :c7-types {:keyword-lookups 0}
   :c8-effects {:keyword-lookups 0}
+  :c9-ownership {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -253,6 +257,14 @@
   :sh09-runtime-profile-policy
   :sh09-mir-preservation
   :sh09-complete
+  :c9-production-ownership-checker-execution
+  :c9-contract-and-diagnostic-schema-enforcement
+  :sh10-authenticated-sh08-sh09-adapter
+  :sh10-persistent-copy-and-field-range-splitting
+  :sh10-regions-arenas-and-linear-resources
+  :sh10-transfer-runtime-check-and-unsafe-audit
+  :sh10-mir-preservation
+  :sh10-complete
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement

@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 25 of the 41
+`SH-07` remains partial. Its current executable evidence covers 26 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -452,9 +452,30 @@ effect checker, complete schema enforcement, an authenticated SH-08 adapter,
 effect inference, latent or transitive call effects, handlers, namespace or
 module summaries, complete runtime-profile policy, MIR preservation, or SH-09
 completion.
+The C9 ownership-checker source adds 35,894 authenticated bytes in 31
+fragments containing 2,320 forms, 370 bindings, and 741 resolutions. It lowers
+to 1,964 canonical core nodes with 31 definitions: 21 executable SH-10
+functions and three quoted source-model functions. Its 134 `get` calls divide
+into 129 literal-key calls and five dynamic-key calls; all are ordinary
+resolved calls rather than keyword-headed lookup forms, so the canonical
+keyword-lookup product count remains zero and B16 stays frozen. The cache-free
+authoritative proof passed with exact source revision
+`sha256:b4fdf1022eb6eb25d091f1c918332c7b1393b6850acf4bb6988d8b8dbb2269e0`,
+complete capability proof, and no failed checks. The bounded executable surface
+covers owned-mutable initialization, read, immutable and mutable borrow,
+borrow end, move, consume, and one function-return escape policy with exact
+ordered facts and structured rejection reasons. Request and event maps remain
+shallow non-exact schemas; digest values are shape-checked only; whole-carrier
+cycle, depth, width, and scalar preflight is absent; the 1,024-event uniqueness
+and execution paths remain recursive; lifetime endpoints are generic numbers;
+the capability proof identifier is preserved but not authenticated; and the
+verifier is same-implementation recomputation. Persistent-copy semantics,
+field and range splitting, regions, arenas, linear resources, task, actor, and
+FFI transfer, runtime borrow checks, unsafe-audit execution, authenticated
+SH-08/SH-09 adaptation, MIR preservation, and SH-10 completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 16 compiler
+central routing, and final artifact construction. The remaining 15 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
