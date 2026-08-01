@@ -15,6 +15,11 @@
              c14-build-bounded-llvm-lowering-record
              c14-build-bounded-c-lowering-record
              c14-build-bounded-wasm-lowering-record
+             sh17-target-lowering-policy
+             sh17-current-c11-revision
+             sh17-structural-preflight
+             sh17-build-target-lowering
+             sh17-verify-target-lowering
              verify-c14-target-lowering])
   (:effects #{})
   (:capabilities #{})
@@ -571,110 +576,106 @@
       false)
     false))
 
+(defn c14-current-c11-function-shapes []
+  '{c11-nodes-before-id
+    {:arity 3 :params [nodes node-id result]}
+    c11-runtime-check-fact-id
+    {:arity 2 :params [check fact-kind]}
+    c11-build-runtime-check-operation
+    {:arity 3 :params [checked-core node block-id]}
+    c11-build-data-flow-for-node
+    {:arity 3 :params [node consumer-block result]}
+    c11-runtime-check-fact-record
+    {:arity 3 :params [checked-core node fact-kind]}
+    c11-build-runtime-check-table
+    {:arity 2 :params [nodes result]}
+    c11-build-conditional-mir
+    {:arity 4 :params [checked-core nodes if-node return-value-id]}
+    c11-build-source-map
+    {:arity 2 :params [nodes result]}
+    c11-build-data-flow
+    {:arity 10
+     :params [nodes if-id then-ids else-ids downstream-ids
+              entry-id then-id else-id join-id result]}
+    c11-build-values
+    {:arity 5 :params [nodes data-flow definitions terminator-uses result]}
+    c11-build-data-flow-for-operands
+    {:arity 5
+     :params [operands consumer consumer-block operand-index result]}
+    c11-build-profile-target-table
+    {:arity 3 :params [checked-core nodes result]}
+    c11-constant-payload
+    {:arity 1 :params [node]}
+    c11-build-linear-mir
+    {:arity 3 :params [checked-core nodes return-value-id]}
+    c11-build-capability-proof-table
+    {:arity 2 :params [proofs result]}
+    c11-build-definitions
+    {:arity 10
+     :params [nodes if-id then-ids else-ids downstream-ids
+              entry-id then-id else-id join-id result]}
+    c11-build-safety-proof-table
+    {:arity 2 :params [nodes result]}
+    verify-c11-mir-module
+    {:arity 1 :params [mir-module]}
+    c11-runtime-check-token-id
+    {:arity 1 :params [check]}
+    c11-add-runtime-check-facts
+    {:arity 4 :params [checked-core nodes fact-kind result]}
+    c11-operation-operands
+    {:arity 1 :params [node]}
+    c11-build-operation
+    {:arity 3 :params [checked-core node block-id]}
+    c11-build-mir-pass-contract
+    {:arity 0 :params []}
+    c11-build-target-independent-mir
+    {:arity 1 :params [checked-core]}
+    c11-nodes-from-id
+    {:arity 2 :params [nodes node-id]}
+    c11-build-fact-table-by-id
+    {:arity 5
+     :params [nodes source-table id-field generated-suffix result]}
+    c11-runtime-check-operation-id
+    {:arity 1 :params [check]}})
+
 (defn c14-c11-source-rule-valid?
   [rule]
   (if (map? rule)
     (if (= (set (keys rule))
            #{:artifact :owner :source-content-hash :source-byte-count
              :plan-semantic-hash :functions-semantic-hash
-             :builder-function :builder-semantic-hash :function-shapes
+             :builder-function :builder-semantic-hash
+             :verifier-function :verifier-semantic-hash :function-shapes
              :compiled-by :executed-by :clojure-seed-boundary?
              :self-hosted?})
       (if (= (get rule :artifact) :gravity/c11-pinned-source-rule)
         (if (= (get rule :owner) :gravity-source)
-          (if (= (get rule :source-byte-count) 112240)
+          (if (= (get rule :source-byte-count) 113008)
             (if (= (get rule :source-content-hash)
-                   "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06")
+                   "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3")
               (if (= (get rule :plan-semantic-hash)
-                     "sha256:7b2ebeb83629b52d2c0ed6030660eee0e797aebe705e8d3dbf48e523319eb5d4")
+                     "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae")
                 (if (= (get rule :functions-semantic-hash)
-                       "sha256:5b67f41f0ccbae3f331be74b68488e1fcec3ca43a9fa75f7765a2aa3320f8822")
+                       "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5")
                   (if (= (get rule :builder-function)
                          'c11-build-target-independent-mir)
                     (if (= (get rule :builder-semantic-hash)
                            "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8")
-                      (if (= (get rule :function-shapes)
-                             '{c11-nodes-before-id
-                               {:arity 3 :params [nodes node-id result]}
-                               c11-runtime-check-fact-id
-                               {:arity 2 :params [check fact-kind]}
-                               c11-build-runtime-check-operation
-                               {:arity 3
-                                :params [checked-core node block-id]}
-                               c11-build-data-flow-for-node
-                               {:arity 3
-                                :params [node consumer-block result]}
-                               c11-runtime-check-fact-record
-                               {:arity 3
-                                :params [checked-core node fact-kind]}
-                               c11-build-runtime-check-table
-                               {:arity 2 :params [nodes result]}
-                               c11-build-conditional-mir
-                               {:arity 4
-                                :params [checked-core nodes if-node
-                                         return-value-id]}
-                               c11-build-source-map
-                               {:arity 2 :params [nodes result]}
-                               c11-build-data-flow
-                               {:arity 10
-                                :params [nodes if-id then-ids else-ids
-                                         downstream-ids entry-id then-id
-                                         else-id join-id result]}
-                               c11-build-values
-                               {:arity 5
-                                :params [nodes data-flow definitions
-                                         terminator-uses result]}
-                               c11-build-data-flow-for-operands
-                               {:arity 5
-                                :params [operands consumer consumer-block
-                                         operand-index result]}
-                               c11-build-profile-target-table
-                               {:arity 3
-                                :params [checked-core nodes result]}
-                               c11-constant-payload
-                               {:arity 1 :params [node]}
-                               c11-build-linear-mir
-                               {:arity 3
-                                :params [checked-core nodes
-                                         return-value-id]}
-                               c11-build-capability-proof-table
-                               {:arity 2 :params [proofs result]}
-                               c11-build-definitions
-                               {:arity 10
-                                :params [nodes if-id then-ids else-ids
-                                         downstream-ids entry-id then-id
-                                         else-id join-id result]}
-                               c11-build-safety-proof-table
-                               {:arity 2 :params [nodes result]}
-                               c11-runtime-check-token-id
-                               {:arity 1 :params [check]}
-                               c11-add-runtime-check-facts
-                               {:arity 4
-                                :params [checked-core nodes fact-kind
-                                         result]}
-                               c11-operation-operands
-                               {:arity 1 :params [node]}
-                               c11-build-operation
-                               {:arity 3
-                                :params [checked-core node block-id]}
-                               c11-build-mir-pass-contract
-                               {:arity 0 :params []}
-                               c11-build-target-independent-mir
-                               {:arity 1 :params [checked-core]}
-                               c11-nodes-from-id
-                               {:arity 2 :params [nodes node-id]}
-                               c11-build-fact-table-by-id
-                               {:arity 5
-                                :params [nodes source-table id-field
-                                         generated-suffix result]}
-                               c11-runtime-check-operation-id
-                               {:arity 1 :params [check]}})
-                        (if (= (get rule :compiled-by)
-                               :clojure-stage0-seed)
-                          (if (= (get rule :executed-by)
-                                 :clojure-stage0-rule-runner)
-                            (if (= (get rule :clojure-seed-boundary?) true)
-                              (= (get rule :self-hosted?) false)
+                      (if (= (get rule :verifier-function)
+                             'verify-c11-mir-module)
+                        (if (= (get rule :verifier-semantic-hash)
+                               "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079")
+                          (if (= (get rule :function-shapes)
+                                 (c14-current-c11-function-shapes))
+                            (if (= (get rule :compiled-by)
+                                   :clojure-stage0-seed)
+                              (if (= (get rule :executed-by)
+                                     :clojure-stage0-rule-runner)
+                                (if (= (get rule :clojure-seed-boundary?)
+                                       true)
+                                  (= (get rule :self-hosted?) false)
+                                  false)
+                                false)
                               false)
                             false)
                           false)
@@ -1115,7 +1116,7 @@
                                   (= (get (get bindings :c13-optimization)
                                           :entry-count) 4)
                                   false)
-                              false)
+                                false)
                             false)
                           false)
                         false)
@@ -1127,7 +1128,8 @@
             false)
           false)
         false)
-      false))))
+      false)
+    false)))
 
 (defn c14-c13-envelope-valid?
   [optimized]
@@ -3061,3 +3063,905 @@
        :diagnostic "C14-INPUT"
        :missing-fact :verified-optimized-mir
        :diagnostics ["C14-INPUT"]})))
+
+; SH-17 bounded target-lowering boundary.  This API is additive to the three
+; historical bounded builders above.  It admits only a small, exact,
+; target-independent MIR surface after an iterative structural preflight.
+(defn sh17-target-lowering-policy []
+  {:artifact :gravity/sh17-target-lowering-policy
+   :schema-version 1
+   :backends [:llvm :c :wasm]
+   :profiles [:hosted]
+   :structural-bounds
+   {:maximum-nodes 8192
+    :maximum-depth 64
+    :maximum-width 512
+    :maximum-collections 4096
+    :maximum-scalars 8192
+    :maximum-scalar-units 65536
+    :maximum-functions 1
+    :maximum-blocks 32
+    :maximum-operations 128
+    :maximum-operands 16
+    :maximum-identifier-units 128
+    :maximum-string-units 4096}
+   :supported-opcodes
+   [:constant :integer-add :integer-eq :call :runtime-check :return]
+   :pending
+   [:complete-c11-operation-surface
+    :authenticated-sh16-envelope-ingress
+    :target-tool-execution
+    :object-and-executable-emission
+    :seed-retirement]})
+
+(defn sh17-current-c11-revision []
+  {:artifact :gravity/sh17-c11-revision
+   :source-byte-count 113008
+   :source-content-hash
+   "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"
+   :plan-semantic-hash
+   "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae"
+   :functions-semantic-hash
+   "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5"
+   :function-count 139
+   :builder-function 'c11-build-target-independent-mir
+   :builder-semantic-hash
+   "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
+   :verifier-function 'verify-c11-mir-module
+   :verifier-semantic-hash
+   "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
+   :function-shapes (c14-current-c11-function-shapes)})
+
+(defn sh17-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh17-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (vec (keys value))
+           result []]
+      (if (= (count remaining) 0)
+        result
+        (let [key (first remaining)]
+          (recur (rest remaining)
+                 (conj (conj result key) (get value key))))))
+    (vec value)))
+
+(defn sh17-ascii-identifier-character? [character]
+  (contains?
+   #{\a \b \c \d \e \f \g \h \i \j \k \l \m
+     \n \o \p \q \r \s \t \u \v \w \x \y \z
+     \A \B \C \D \E \F \G \H \I \J \K \L \M
+     \N \O \P \Q \R \S \T \U \V \W \X \Y \Z
+     \0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+     \. \_ \- \/ \! \? \* \+ \< \> \= \:}
+   character))
+
+(defn sh17-ascii-identifier? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (<= (count value) 128)
+        (loop [index 0]
+          (if (= index (count value))
+            true
+            (if (sh17-ascii-identifier-character? (get value index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh17-identifier? [value]
+  (if (keyword? value)
+    (sh17-ascii-identifier? (str value))
+    (if (symbol? value)
+      (sh17-ascii-identifier? (str value))
+      (if (string? value)
+        (sh17-ascii-identifier? value)
+        false))))
+
+(defn sh17-i64? [value]
+  (if (integer? value)
+    (if (>= value -9223372036854775808)
+      (<= value 9223372036854775807)
+      false)
+    false))
+
+(defn sh17-scalar-valid? [value]
+  (if (= nil value)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        (sh17-i64? value)
+        (if (string? value)
+          (<= (count value) 4096)
+          (if (keyword? value)
+            (sh17-identifier? value)
+            (if (symbol? value)
+              (sh17-identifier? value)
+              (char? value))))))))
+
+(defn sh17-scalar-units [value]
+  (if (string? value)
+    (count value)
+    (if (keyword? value)
+      (count (str value))
+      (if (symbol? value)
+        (count (str value))
+        1))))
+
+(defn sh17-structural-preflight [value]
+  (let [bounds (get (sh17-target-lowering-policy) :structural-bounds)
+        maximum-nodes (get bounds :maximum-nodes)
+        maximum-depth (get bounds :maximum-depth)
+        maximum-width (get bounds :maximum-width)
+        maximum-collections (get bounds :maximum-collections)
+        maximum-scalars (get bounds :maximum-scalars)
+        maximum-scalar-units (get bounds :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           cursor 0
+           nodes 0
+           collections 0
+           scalars 0
+           scalar-units 0]
+      (if (= cursor (count frontier))
+        {:status :accepted
+         :nodes nodes
+         :collections collections
+         :scalars scalars
+         :scalar-units scalar-units}
+        (let [entry (get frontier cursor)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :structure-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :structure-depth-bound}
+              (if (sh17-aggregate? current)
+                (let [components (sh17-aggregate-components current)
+                      width (count components)
+                      next-collections (+ collections 1)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :structure-width-bound}
+                    (if (> next-collections maximum-collections)
+                      {:status :rejected
+                       :reason :structure-collection-bound}
+                      (let [next-frontier
+                            (loop [remaining components
+                                   result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining) (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1)
+                               next-nodes next-collections
+                               scalars scalar-units)))))
+                (if (seq? current)
+                  {:status :rejected :reason :structure-sequence-carrier}
+                  (if (sh17-scalar-valid? current)
+                    (let [next-scalars (+ scalars 1)
+                          next-units
+                          (+ scalar-units (sh17-scalar-units current))]
+                      (if (> next-scalars maximum-scalars)
+                        {:status :rejected :reason :structure-scalar-bound}
+                        (if (> next-units maximum-scalar-units)
+                          {:status :rejected
+                           :reason :structure-scalar-unit-bound}
+                          (recur frontier (+ cursor 1) next-nodes
+                                 collections next-scalars next-units))))
+                    {:status :rejected
+                     :reason :structure-noncanonical-scalar}))))))))))
+
+(defn sh17-exact-map? [value expected-keys]
+  (if (map? value)
+    (= (set (keys value)) expected-keys)
+    false))
+
+(defn sh17-identifier-vector? [values maximum]
+  (if (vector? values)
+    (if (<= (count values) maximum)
+      (loop [index 0]
+        (if (= index (count values))
+          true
+          (if (sh17-identifier? (get values index))
+            (recur (+ index 1))
+            false)))
+      false)
+    false))
+
+(defn sh17-origin-valid? [origin]
+  (if (sh17-exact-map?
+       origin #{:generator-id :anchor-id :actual-source-path})
+    (if (c14-sha256-id? (get origin :generator-id))
+      (if (c14-sha256-id? (get origin :anchor-id))
+        (if (string? (get origin :actual-source-path))
+          (<= (count (get origin :actual-source-path)) 4096)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-origins-valid? [origins]
+  (if (vector? origins)
+    (if (<= (count origins) 32)
+      (loop [index 0]
+        (if (= index (count origins))
+          true
+          (if (sh17-origin-valid? (get origins index))
+            (recur (+ index 1))
+            false)))
+      false)
+    false))
+
+(defn sh17-span-valid? [span]
+  (if (sh17-exact-map?
+       span #{:source-id :start-byte :end-byte :actual-source-path})
+    (if (c14-sha256-id? (get span :source-id))
+      (if (sh17-i64? (get span :start-byte))
+        (if (>= (get span :start-byte) 0)
+          (if (sh17-i64? (get span :end-byte))
+            (if (>= (get span :end-byte) (get span :start-byte))
+              (if (string? (get span :actual-source-path))
+                (<= (count (get span :actual-source-path)) 4096)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-source-map-entry-valid? [entry]
+  (if (sh17-exact-map?
+       entry #{:operation-id :source-id :span :origin-chain})
+    (if (sh17-identifier? (get entry :operation-id))
+      (if (c14-sha256-id? (get entry :source-id))
+        (if (sh17-span-valid? (get entry :span))
+          (sh17-origins-valid? (get entry :origin-chain))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-source-map-valid? [source-map]
+  (if (vector? source-map)
+    (if (<= (count source-map) 128)
+      (loop [index 0]
+        (if (= index (count source-map))
+          true
+          (if (sh17-source-map-entry-valid? (get source-map index))
+            (recur (+ index 1))
+            false)))
+      false)
+    false))
+
+(defn sh17-provider-valid? [provider]
+  (if (sh17-exact-map?
+       provider #{:effect :capability :provider-id})
+    (if (sh17-identifier? (get provider :effect))
+      (if (sh17-identifier? (get provider :capability))
+        (c14-sha256-id? (get provider :provider-id))
+        false)
+      false)
+    false))
+
+(defn sh17-providers-valid? [providers]
+  (if (vector? providers)
+    (if (<= (count providers) 16)
+      (loop [index 0]
+        (if (= index (count providers))
+          true
+          (if (sh17-provider-valid? (get providers index))
+            (recur (+ index 1))
+            false)))
+      false)
+    false))
+
+(defn sh17-provider-bindings-valid?
+  [providers effects capabilities]
+  (if (= (count effects) (count (set effects)))
+    (if (= (count capabilities) (count (set capabilities)))
+      (if (= (count providers) (count effects))
+        (if (= (count providers) (count capabilities))
+          (loop [index 0 seen-effects #{} seen-capabilities #{}]
+            (if (= index (count providers))
+              (if (= seen-effects (set effects))
+                (= seen-capabilities (set capabilities))
+                false)
+              (let [provider (get providers index)
+                    effect (get provider :effect)
+                    capability (get provider :capability)]
+                (if (contains? seen-effects effect)
+                  false
+                  (if (contains? seen-capabilities capability)
+                    false
+                    (if (contains? (set effects) effect)
+                      (if (contains? (set capabilities) capability)
+                        (recur (+ index 1)
+                               (conj seen-effects effect)
+                               (conj seen-capabilities capability))
+                        false)
+                      false))))))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-proof-valid? [proof]
+  (if (sh17-exact-map?
+       proof #{:proof-id :operation-id :claim :status})
+    (if (c14-sha256-id? (get proof :proof-id))
+      (if (sh17-identifier? (get proof :operation-id))
+        (if (sh17-identifier? (get proof :claim))
+          (= (get proof :status) :verified)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-proofs-valid? [proofs]
+  (if (vector? proofs)
+    (if (<= (count proofs) 128)
+      (loop [index 0]
+        (if (= index (count proofs))
+          true
+          (if (sh17-proof-valid? (get proofs index))
+            (recur (+ index 1))
+            false)))
+      false)
+    false))
+
+(defn sh17-operation-valid? [operation]
+  (if (sh17-exact-map?
+       operation
+       #{:operation-id :opcode :operands :result-id :type
+         :effects :capabilities :source-id})
+    (if (sh17-identifier? (get operation :operation-id))
+      (if (contains? (set (get (sh17-target-lowering-policy)
+                               :supported-opcodes))
+                     (get operation :opcode))
+        (if (sh17-identifier-vector? (get operation :operands) 16)
+          (if (sh17-identifier? (get operation :result-id))
+            (if (sh17-identifier? (get operation :type))
+              (if (sh17-identifier-vector? (get operation :effects) 16)
+                (if (sh17-identifier-vector?
+                     (get operation :capabilities) 16)
+                  (c14-sha256-id? (get operation :source-id))
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-terminator-valid? [terminator]
+  (if (sh17-exact-map? terminator #{:kind :value-id})
+    (if (= (get terminator :kind) :return)
+      (sh17-identifier? (get terminator :value-id))
+      false)
+    false))
+
+(defn sh17-operations-valid? [operations]
+  (if (vector? operations)
+    (if (<= (count operations) 128)
+      (if (> (count operations) 0)
+        (loop [index 0 seen #{}]
+          (if (= index (count operations))
+            true
+            (let [operation (get operations index)
+                  operation-id (get operation :operation-id)]
+              (if (sh17-operation-valid? operation)
+                (if (contains? seen operation-id)
+                  false
+                  (recur (+ index 1) (conj seen operation-id)))
+                false))))
+        false)
+      false)
+    false))
+
+(defn sh17-block-valid? [block]
+  (if (sh17-exact-map? block #{:block-id :operations :terminator})
+    (if (sh17-identifier? (get block :block-id))
+      (if (sh17-operations-valid? (get block :operations))
+        (sh17-terminator-valid? (get block :terminator))
+        false)
+      false)
+    false))
+
+(defn sh17-blocks-valid? [blocks]
+  (if (vector? blocks)
+    (if (<= (count blocks) 32)
+      (if (> (count blocks) 0)
+        (loop [index 0 seen #{} total 0]
+          (if (= index (count blocks))
+            (<= total 128)
+            (let [block (get blocks index)
+                  block-id (get block :block-id)
+                  next-total (+ total (count (get block :operations)))]
+              (if (sh17-block-valid? block)
+                (if (contains? seen block-id)
+                  false
+                  (if (<= next-total 128)
+                    (recur (+ index 1) (conj seen block-id) next-total)
+                    false))
+                false))))
+        false)
+      false)
+    false))
+
+(defn sh17-function-valid? [function]
+  (if (sh17-exact-map?
+       function #{:function-id :entry-block :blocks :return-type})
+    (if (sh17-identifier? (get function :function-id))
+      (if (sh17-identifier? (get function :entry-block))
+        (if (sh17-blocks-valid? (get function :blocks))
+          (if (= (get function :entry-block)
+                 (get (first (get function :blocks)) :block-id))
+            (sh17-identifier? (get function :return-type))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-operands-defined? [operands defined-results]
+  (loop [index 0]
+    (if (= index (count operands))
+      true
+      (if (contains? defined-results (get operands index))
+        (recur (+ index 1))
+        false))))
+
+(defn sh17-mir-definition-order-valid? [mir]
+  (let [blocks (get (first (get mir :functions)) :blocks)]
+    (loop [block-index 0
+           operation-ids #{}
+           result-ids #{}]
+      (if (= block-index (count blocks))
+        true
+        (let [block (get blocks block-index)
+              operations (get block :operations)
+              state
+              (loop [operation-index 0
+                     seen-operations operation-ids
+                     seen-results result-ids]
+                (if (= operation-index (count operations))
+                  {:operation-ids seen-operations
+                   :result-ids seen-results}
+                  (let [operation (get operations operation-index)
+                        operation-id (get operation :operation-id)
+                        result-id (get operation :result-id)]
+                    (if (contains? seen-operations operation-id)
+                      nil
+                      (if (contains? seen-results result-id)
+                        nil
+                        (if (sh17-operands-defined?
+                             (get operation :operands) seen-results)
+                          (recur (+ operation-index 1)
+                                 (conj seen-operations operation-id)
+                                 (conj seen-results result-id))
+                          nil))))))]
+          (if (= state nil)
+            false
+            (if (contains? (get state :result-ids)
+                           (get (get block :terminator) :value-id))
+              (recur (+ block-index 1)
+                     (get state :operation-ids)
+                     (get state :result-ids))
+              false)))))))
+
+(defn sh17-mir-valid? [mir]
+  (if (sh17-exact-map?
+       mir #{:artifact :schema-version :verified? :mir-id
+             :entrypoint :functions})
+    (if (= (get mir :artifact) :gravity/verified-target-independent-mir)
+      (if (= (get mir :schema-version) 1)
+        (if (= (get mir :verified?) true)
+          (if (c14-sha256-id? (get mir :mir-id))
+            (if (sh17-identifier? (get mir :entrypoint))
+              (if (vector? (get mir :functions))
+                (if (= (count (get mir :functions)) 1)
+                  (if (sh17-function-valid? (first (get mir :functions)))
+                    (if (= (get mir :entrypoint)
+                           (get (first (get mir :functions)) :function-id))
+                      (sh17-mir-definition-order-valid? mir)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-target-valid? [backend target]
+  (if (sh17-exact-map?
+       target #{:backend :triple :architecture :object-format})
+    (if (= (get target :backend) backend)
+      (if (= backend :llvm)
+        (= target {:backend :llvm
+                   :triple "arm64-apple-macosx14.0.0"
+                   :architecture :arm64
+                   :object-format :mach-o})
+        (if (= backend :c)
+          (= target {:backend :c
+                     :triple "arm64-apple-macosx14.0.0"
+                     :architecture :arm64
+                     :object-format :c17-source})
+          (if (= backend :wasm)
+            (= target {:backend :wasm
+                       :triple "wasm32-unknown-unknown"
+                       :architecture :wasm32
+                       :object-format :wasm-module})
+            false)))
+      false)
+    false))
+
+(defn sh17-abi-valid? [backend abi]
+  (if (sh17-exact-map?
+       abi #{:calling-convention :pointer-width :endianness :layout-id})
+    (if (= (get abi :endianness) :little)
+      (if (c14-sha256-id? (get abi :layout-id))
+        (if (= backend :wasm)
+          (if (= (get abi :calling-convention) :wasm-core)
+            (= (get abi :pointer-width) 32)
+            false)
+          (if (= (get abi :calling-convention) :c)
+            (= (get abi :pointer-width) 64)
+            false))
+        false)
+      false)
+    false))
+
+(defn sh17-runtime-valid? [runtime]
+  (if (sh17-exact-map? runtime #{:family :services})
+    (if (= (get runtime :family) :minimal-native)
+      (sh17-identifier-vector? (get runtime :services) 16)
+      false)
+    false))
+
+(defn sh17-path-provenance-entry-valid? [entry]
+  (if (sh17-exact-map? entry #{:kind :path})
+    (if (= (get entry :kind) :actual-source-path)
+      (if (string? (get entry :path))
+        (<= (count (get entry :path)) 4096)
+        false)
+      false)
+    false))
+
+(defn sh17-path-provenance-valid? [provenance]
+  (if (vector? provenance)
+    (if (> (count provenance) 0)
+      (if (<= (count provenance) 32)
+        (loop [index 0]
+          (if (= index (count provenance))
+            true
+            (if (sh17-path-provenance-entry-valid?
+                 (get provenance index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh17-operation-summaries-valid? [request]
+  (let [blocks
+        (get (first (get (get request :mir) :functions)) :blocks)
+        summary
+        (loop [block-index 0 effects #{} capabilities #{}]
+          (if (= block-index (count blocks))
+            {:effects effects :capabilities capabilities}
+            (let [operations (get (get blocks block-index) :operations)
+                  block-summary
+                  (loop [operation-index 0
+                         block-effects effects
+                         block-capabilities capabilities]
+                    (if (= operation-index (count operations))
+                      {:effects block-effects
+                       :capabilities block-capabilities}
+                      (let [operation (get operations operation-index)]
+                        (recur
+                         (+ operation-index 1)
+                         (loop [index 0 result block-effects]
+                           (if (= index (count (get operation :effects)))
+                             result
+                             (recur (+ index 1)
+                                    (conj result
+                                          (get (get operation :effects)
+                                               index)))))
+                         (loop [index 0 result block-capabilities]
+                           (if (= index
+                                  (count (get operation :capabilities)))
+                             result
+                             (recur
+                              (+ index 1)
+                              (conj result
+                                    (get (get operation :capabilities)
+                                         index)))))))))]
+              (recur (+ block-index 1)
+                     (get block-summary :effects)
+                     (get block-summary :capabilities)))))]
+    (if (= (get summary :effects) (set (get request :effects)))
+      (= (get summary :capabilities)
+         (set (get request :capabilities)))
+      false)))
+
+(defn sh17-request-valid? [request]
+  (if (sh17-exact-map?
+       request
+       #{:artifact :schema-version :backend :profile :target :abi
+         :runtime :providers :effects :capabilities :c11-revision
+         :mir :proofs :source-map :actual-path-provenance})
+    (if (= (get request :artifact) :gravity/sh17-target-lowering-request)
+      (if (= (get request :schema-version) 1)
+        (if (contains? #{:llvm :c :wasm} (get request :backend))
+          (if (= (get request :profile) :hosted)
+            (if (sh17-target-valid? (get request :backend)
+                                    (get request :target))
+              (if (sh17-abi-valid? (get request :backend)
+                                   (get request :abi))
+                (if (sh17-runtime-valid? (get request :runtime))
+                  (if (sh17-providers-valid? (get request :providers))
+                    (if (sh17-identifier-vector?
+                         (get request :effects) 16)
+                      (if (sh17-identifier-vector?
+                           (get request :capabilities) 16)
+                        (if (sh17-provider-bindings-valid?
+                             (get request :providers)
+                             (get request :effects)
+                             (get request :capabilities))
+                          (if (= (get request :c11-revision)
+                                 (sh17-current-c11-revision))
+                            (if (sh17-mir-valid? (get request :mir))
+                              (if (sh17-operation-summaries-valid? request)
+                                (if (sh17-proofs-valid?
+                                     (get request :proofs))
+                                  (if (sh17-source-map-valid?
+                                       (get request :source-map))
+                                    (sh17-path-provenance-valid?
+                                     (get request :actual-path-provenance))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh17-operation-ids [mir]
+  (let [blocks (get (first (get mir :functions)) :blocks)]
+    (loop [block-index 0 result []]
+      (if (= block-index (count blocks))
+        result
+        (let [operations (get (get blocks block-index) :operations)]
+          (recur
+           (+ block-index 1)
+           (loop [operation-index 0 output result]
+             (if (= operation-index (count operations))
+               output
+               (recur (+ operation-index 1)
+                      (conj output
+                            (get (get operations operation-index)
+                                 :operation-id)))))))))))
+
+(defn sh17-operation-map [mir]
+  (let [blocks (get (first (get mir :functions)) :blocks)]
+    (loop [block-index 0 result {}]
+      (if (= block-index (count blocks))
+        result
+        (let [operations (get (get blocks block-index) :operations)]
+          (recur
+           (+ block-index 1)
+           (loop [operation-index 0 output result]
+             (if (= operation-index (count operations))
+               output
+               (let [operation (get operations operation-index)]
+                 (recur (+ operation-index 1)
+                        (assoc output
+                               (get operation :operation-id)
+                               operation)))))))))))
+
+(defn sh17-references-valid? [request]
+  (let [operation-ids (sh17-operation-ids (get request :mir))
+        operation-id-set (set operation-ids)
+        operation-map (sh17-operation-map (get request :mir))
+        source-map (get request :source-map)
+        proofs (get request :proofs)]
+    (if (= (count source-map) (count operation-ids))
+      (if (= (set (loop [index 0 result []]
+                    (if (= index (count source-map))
+                      result
+                      (recur (+ index 1)
+                             (conj result
+                                   (get (get source-map index)
+                                        :operation-id))))))
+             operation-id-set)
+        (if (loop [index 0]
+              (if (= index (count source-map))
+                true
+                (let [entry (get source-map index)
+                      operation-id (get entry :operation-id)]
+                  (if (= (get entry :source-id)
+                         (get (get operation-map operation-id) :source-id))
+                    (recur (+ index 1))
+                    false))))
+          (loop [index 0]
+            (if (= index (count proofs))
+              true
+              (if (contains? operation-id-set
+                             (get (get proofs index) :operation-id))
+                (recur (+ index 1))
+                false)))
+          false)
+        false)
+      false)))
+
+(defn sh17-neutral-span [span]
+  {:source-id (get span :source-id)
+   :start-byte (get span :start-byte)
+   :end-byte (get span :end-byte)})
+
+(defn sh17-neutral-origins [origins]
+  (loop [index 0 result []]
+    (if (= index (count origins))
+      result
+      (let [origin (get origins index)]
+        (recur (+ index 1)
+               (conj result
+                     {:generator-id (get origin :generator-id)
+                      :anchor-id (get origin :anchor-id)}))))))
+
+(defn sh17-neutral-source-map [source-map]
+  (loop [index 0 result []]
+    (if (= index (count source-map))
+      result
+      (let [entry (get source-map index)]
+        (recur
+         (+ index 1)
+         (conj result
+               {:operation-id (get entry :operation-id)
+                :source-id (get entry :source-id)
+                :span (sh17-neutral-span (get entry :span))
+                :origin-chain
+                (sh17-neutral-origins (get entry :origin-chain))}))))))
+
+(defn sh17-target-program [backend mir]
+  (let [blocks (get (first (get mir :functions)) :blocks)]
+    (loop [block-index 0 result []]
+      (if (= block-index (count blocks))
+        result
+        (let [block (get blocks block-index)
+              operations (get block :operations)
+              lowered
+              (loop [operation-index 0 output []]
+                (if (= operation-index (count operations))
+                  output
+                  (let [operation (get operations operation-index)]
+                    (recur
+                     (+ operation-index 1)
+                     (conj output
+                           {:operation-id (get operation :operation-id)
+                            :target-opcode
+                            [backend (get operation :opcode)]
+                            :operands (get operation :operands)
+                            :result-id (get operation :result-id)
+                            :type (get operation :type)
+                            :effects (get operation :effects)
+                            :capabilities (get operation :capabilities)
+                            :source-id (get operation :source-id)})))))]
+          (recur (+ block-index 1)
+                 (conj result
+                       {:block-id (get block :block-id)
+                        :operations lowered
+                        :terminator (get block :terminator)})))))))
+
+(defn sh17-identity-input [request target-program]
+  {:artifact :gravity/sh17-target-lowering-identity
+   :schema-version 1
+   :backend (get request :backend)
+   :profile (get request :profile)
+   :target (get request :target)
+   :abi (get request :abi)
+   :runtime (get request :runtime)
+   :providers (get request :providers)
+   :effects (get request :effects)
+   :capabilities (get request :capabilities)
+   :c11-revision (get request :c11-revision)
+   :mir-id (get (get request :mir) :mir-id)
+   :entrypoint (get (get request :mir) :entrypoint)
+   :target-program target-program
+   :proofs (get request :proofs)
+   :source-map (sh17-neutral-source-map (get request :source-map))})
+
+(defn sh17-provenance [request]
+  {:actual-path-provenance (get request :actual-path-provenance)
+   :source-map (get request :source-map)})
+
+(defn sh17-rejection [reason preflight]
+  {:artifact :gravity/sh17-target-lowering-result
+   :schema-version 1
+   :status :rejected
+   :diagnostics
+   [{:diagnostic-id "C14-INPUT"
+     :stage :target-lowering
+     :reason reason
+     :structural-preflight preflight}]
+   :pending (get (sh17-target-lowering-policy) :pending)})
+
+(defn sh17-build-target-lowering [request]
+  (let [preflight (sh17-structural-preflight request)]
+    (if (= (get preflight :status) :accepted)
+      (if (sh17-request-valid? request)
+        (if (sh17-references-valid? request)
+          (let [target-program
+                (sh17-target-program (get request :backend)
+                                     (get request :mir))]
+            {:artifact :gravity/sh17-target-lowering-result
+             :schema-version 1
+             :status :accepted
+             :backend (get request :backend)
+             :target-program target-program
+             :identity-input
+             (sh17-identity-input request target-program)
+             :provenance (sh17-provenance request)
+             :diagnostics []
+             :pending (get (sh17-target-lowering-policy) :pending)})
+          (sh17-rejection :cross-reference-mismatch preflight))
+        (sh17-rejection :invalid-normalized-request preflight))
+      (sh17-rejection (get preflight :reason) preflight))))
+
+(defn sh17-verify-target-lowering [request candidate]
+  (let [request-preflight (sh17-structural-preflight request)
+        candidate-preflight (sh17-structural-preflight candidate)]
+    (if (= (get request-preflight :status) :accepted)
+      (if (= (get candidate-preflight :status) :accepted)
+        (if (= (sh17-build-target-lowering request) candidate)
+          {:artifact :gravity/sh17-target-lowering-verification
+           :schema-version 1
+           :status :passed
+           :backend (get request :backend)
+           :diagnostics []}
+          {:artifact :gravity/sh17-target-lowering-verification
+           :schema-version 1
+           :status :rejected
+           :diagnostics
+           [{:diagnostic-id "C14-VERIFY"
+             :stage :target-lowering
+             :reason :result-substitution}]})
+        {:artifact :gravity/sh17-target-lowering-verification
+         :schema-version 1
+         :status :rejected
+         :diagnostics
+         [{:diagnostic-id "C14-VERIFY"
+           :stage :target-lowering
+           :reason :candidate-structural-bound
+           :structural-preflight candidate-preflight}]})
+      {:artifact :gravity/sh17-target-lowering-verification
+       :schema-version 1
+       :status :rejected
+       :diagnostics
+       [{:diagnostic-id "C14-VERIFY"
+         :stage :target-lowering
+         :reason :request-structural-bound
+         :structural-preflight request-preflight}]})))

@@ -1467,6 +1467,7 @@
            #{:artifact :owner :source-content-hash :source-byte-count
              :plan-semantic-hash :functions-semantic-hash
              :builder-function :builder-semantic-hash :function-shapes
+             :verifier-function :verifier-semantic-hash
              :compiled-by :executed-by :clojure-seed-boundary?
              :self-hosted?})
       (if (= [(get rule :artifact) (get rule :owner)
@@ -1476,15 +1477,19 @@
               (get rule :functions-semantic-hash)
               (get rule :builder-function)
               (get rule :builder-semantic-hash)
+              (get rule :verifier-function)
+              (get rule :verifier-semantic-hash)
               (get rule :compiled-by) (get rule :executed-by)
               (get rule :clojure-seed-boundary?)
               (get rule :self-hosted?)]
-             [:gravity/c11-pinned-source-rule :gravity-source 112240
-              "sha256:084a3ede14677ad2e914e0a113b86d25adf342fc98a00fc9b4df04f32c737a06"
-              "sha256:7b2ebeb83629b52d2c0ed6030660eee0e797aebe705e8d3dbf48e523319eb5d4"
-              "sha256:5b67f41f0ccbae3f331be74b68488e1fcec3ca43a9fa75f7765a2aa3320f8822"
+             [:gravity/c11-pinned-source-rule :gravity-source 113008
+              "sha256:95fd82d9484d0a1b7a93b3da10ed6c490c7b051e253da0eb1eb58f0f08334fe3"
+              "sha256:6012e4be9c87a786ae26cdcbc85a26eedae2c602e7a407932ec411e5634cd2ae"
+              "sha256:c6be9a17ccb1c6d160fcc2916ecf2ebba41ebf16259cf66cbf5ca6a004f59ef5"
               (quote c11-build-target-independent-mir)
               "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
+              (quote verify-c11-mir-module)
+              "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
               :clojure-stage0-seed :clojure-stage0-rule-runner true false])
         (= (get rule :function-shapes)
            (quote
@@ -1527,6 +1532,8 @@
                        entry-id then-id else-id join-id result]}
              c11-build-safety-proof-table
              {:arity 2 :params [nodes result]}
+             verify-c11-mir-module
+             {:arity 1 :params [mir-module]}
              c11-runtime-check-token-id {:arity 1 :params [check]}
              c11-add-runtime-check-facts
              {:arity 4 :params [checked-core nodes fact-kind result]}
@@ -1939,12 +1946,12 @@
              {:artifact :gravity/pinned-gravity-source-rule
               :owner :gravity.backend/b1-backend-interface
               :source-content-hash
-              "sha256:325bc94bdab45371846dc4e3a386cf1bbc302d33f0eaecbae79a7397ce8f558e"
-              :source-byte-count 140340
+              "sha256:afd3eda966529c2193fb08c67d998286d7a289989a3ea4b91fb6c63e43fd4d6e"
+              :source-byte-count 140646
               :plan-semantic-hash
-              "sha256:afff9705e2536a26eb87c2897e1bf06a0b11fcc9784836fa8e394e9531d64c52"
+              "sha256:8fb24efb351a238d0047c063949309be3912a88e75e49e0c7c0e78c77dee015f"
               :functions-semantic-hash
-              "sha256:9ec7a03497037aa457e338c99aebe2859fc65a71c447336b06bc26afc1f2c03a"
+              "sha256:1660ab0d6314a68ccd018e73c2cfa90692e383a658c59af063189a12e9d27d49"
               :builder-function
               (quote b1-build-bounded-wasm-authenticated-packet)
               :builder-semantic-hash
