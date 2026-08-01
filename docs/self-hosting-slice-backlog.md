@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 26 of the 41
+`SH-07` remains partial. Its current executable evidence covers 27 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -473,9 +473,27 @@ verifier is same-implementation recomputation. Persistent-copy semantics,
 field and range splitting, regions, arenas, linear resources, task, actor, and
 FFI transfer, runtime borrow checks, unsafe-audit execution, authenticated
 SH-08/SH-09 adaptation, MIR preservation, and SH-10 completion remain pending.
+The C10 safety-analysis source adds 68,327 authenticated bytes in 73 fragments
+containing 5,652 forms, 542 bindings, and 2,046 resolutions. Its calibrated
+lowering contains 4,709 canonical core nodes with 73 definitions: 63
+executable SH-11 functions and three quoted source-model functions. Its 337
+`get` calls divide into 334 literal-key calls and three dynamic-key calls; all
+are ordinary resolved calls rather than keyword-headed lookup forms, so the
+canonical keyword-lookup product count remains zero and B16 stays frozen. The
+SH-06 request contains 380,720 carrier nodes at depth 38, maximum width 5,652,
+and 6,314,034 exact UTF-8 scalar bytes; every unchanged B16 bound passes. The
+bounded executable surface classifies index bounds, integer overflow, division,
+numeric casts, and shifts into exactly one of `:proven-safe`,
+`:runtime-checked`, `:rejected`, or `:unsafe-island`, with structured reason
+surfaces and recomputing verification. Production safety-analysis authority,
+complete contract and diagnostic schema enforcement, memory and lifetime
+safety, regions, linear resources, FFI, concurrency, taint, generated-code
+safety, floating-point and elementary-function safety, optimization
+invalidation, authenticated SH-09/SH-10 convergence, MIR preservation, and
+SH-11 completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 15 compiler
+central routing, and final artifact construction. The remaining 14 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

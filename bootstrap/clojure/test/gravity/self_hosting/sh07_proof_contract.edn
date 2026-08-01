@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B30"
+ :coverage-milestone "SH-07-B31"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -28,8 +28,14 @@
   "docs/phase-02-safety/033-safe4-region-and-arena-safety.md"
   "docs/phase-02-safety/034-safe5-linear-resource-safety.md"
   "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md"
+  "docs/phase-02-safety/036-safe7-ffi-safety.md"
   "docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md"
   "docs/phase-02-safety/038-safe9-numeric-safety.md"
+  "docs/phase-02-safety/039-safe10-capability-security-model.md"
+  "docs/phase-02-safety/040-safe11-taint-tracking-and-input-safety.md"
+  "docs/phase-02-safety/041-safe12-macro-safety.md"
+  "docs/phase-02-safety/042-safe13-ai-tool-safety.md"
+  "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
   "docs/phase-03-profile-system/048-p3-meta-profile-specification.md"
   "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md"
@@ -58,8 +64,10 @@
   "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
   "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md"
   "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md"
   "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md"
   "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
+  "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"
   "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
   "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md"
   "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
@@ -173,6 +181,8 @@
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
   :c9-ownership
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+  :c10-safety
+  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -212,6 +222,7 @@
   :c7-types {:keyword-lookups 0}
   :c8-effects {:keyword-lookups 0}
   :c9-ownership {:keyword-lookups 0}
+  :c10-safety {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -265,6 +276,14 @@
   :sh10-transfer-runtime-check-and-unsafe-audit
   :sh10-mir-preservation
   :sh10-complete
+  :c10-production-safety-analysis-execution
+  :c10-contract-and-diagnostic-schema-enforcement
+  :sh11-memory-lifetime-region-and-linear-safety
+  :sh11-ffi-concurrency-taint-and-generated-code-safety
+  :sh11-floating-point-and-elementary-function-safety
+  :sh11-optimization-invalidation-and-mir-preservation
+  :sh11-authenticated-sh09-sh10-convergence
+  :sh11-complete
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
