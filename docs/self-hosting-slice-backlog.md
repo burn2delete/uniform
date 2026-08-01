@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 27 of the 41
+`SH-07` remains partial. Its current executable evidence covers 28 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -491,9 +491,26 @@ safety, regions, linear resources, FFI, concurrency, taint, generated-code
 safety, floating-point and elementary-function safety, optimization
 invalidation, authenticated SH-09/SH-10 convergence, MIR preservation, and
 SH-11 completion remain pending.
+The C12 domain-IR source adds 61,946 authenticated bytes in 85 fragments
+containing 5,711 forms, 569 bindings, and 2,073 resolutions. Its calibrated
+lowering contains 4,591 canonical core nodes with 85 definitions: 72
+executable SH-14 functions and four quoted source-model functions. Its 254
+`get` calls divide into 209 literal-key calls and 45 dynamic-key or indexed
+calls; all are ordinary resolved calls rather than keyword-headed lookup forms,
+so the canonical keyword-lookup product count remains zero and B16 stays
+frozen. The SH-06 request contains 383,280 carrier nodes at depth 23, maximum
+width 5,711, and 6,372,295 exact UTF-8 scalar bytes; every unchanged B16 bound
+passes. The bounded executable layout surface now enforces exact per-kind and
+nested schemas, canonical bounded identifiers and payloads, iterative
+structural preflight, bounded origin chains, portable ASCII symbol and keyword
+sizes, supported profile/target pairs, path-neutral identity, and contained
+candidate verification. Production domain-IR authority, complete C12 contract
+and diagnostic schema enforcement, authenticated SH-12 MIR input,
+target-specific layout, actual allocation, field-offset calculation, pointer
+and lifetime layouts, and SH-14 completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 14 compiler
+central routing, and final artifact construction. The remaining 13 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

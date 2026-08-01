@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B31"
+ :coverage-milestone "SH-07-B32"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -16,6 +16,7 @@
   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
   "docs/phase-01-core-language/024-l14-language-facet-system-specification.md"
   "docs/phase-01-core-language/025-l15-capability-provider-specification.md"
+  "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md"
   "docs/phase-01-core-language/015-l5-type-system-specification.md"
   "docs/phase-01-core-language/016-l6-effect-system-specification.md"
   "docs/phase-01-core-language/017-l7-pattern-matching-specification.md"
@@ -41,6 +42,9 @@
   "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md"
   "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md"
   "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md"
+  "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md"
+  "docs/phase-05-mathematical-and-elementary-function-system/071-math3-elementary-function-ir-efir-specification.md"
+  "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md"
   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
@@ -60,10 +64,14 @@
   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+  "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md"
+  "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md"
   "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
   "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
   "docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md"
+  "docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md"
   "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md"
+  "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md"
   "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md"
   "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md"
   "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
@@ -165,6 +173,8 @@
   "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
   :c11-mir
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+  :c12-domain-ir
+  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
   :c15-diagnostics
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
   :c16-incremental
@@ -214,6 +224,7 @@
   :b11-query {:keyword-lookups 8}
   :b12-mobile {:keyword-lookups 8}
   :c11-mir {:keyword-lookups 0}
+  :c12-domain-ir {:keyword-lookups 0}
   :c15-diagnostics {:keyword-lookups 0}
   :c16-incremental {:keyword-lookups 0}
   :c17-plugin {:keyword-lookups 0}
@@ -284,6 +295,14 @@
   :sh11-optimization-invalidation-and-mir-preservation
   :sh11-authenticated-sh09-sh10-convergence
   :sh11-complete
+  :c12-production-domain-ir-execution
+  :c12-contract-and-diagnostic-schema-enforcement
+  :sh14-authenticated-sh12-mir-input
+  :sh14-target-specific-layout
+  :sh14-actual-allocation
+  :sh14-field-offset-calculation
+  :sh14-pointer-and-lifetime-layouts
+  :sh14-complete
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
