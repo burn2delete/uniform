@@ -95,6 +95,36 @@
   [request]
   (invoke-engine 'sh14-build-layout [request]))
 
+(defn- generated-origin-chain
+  [depth actual-source-path]
+  (loop [remaining depth
+         origin nil]
+    (if (zero? remaining)
+      origin
+      (let [entry
+            {:generator-id
+             "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+             :anchor-id
+             "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+             :actual-source-path actual-source-path}]
+        (recur
+         (dec remaining)
+         (if (nil? origin)
+           entry
+           (assoc entry :parent-generated-origin origin)))))))
+
+(defn- generated-request
+  [request depth]
+  (assoc
+   request
+   :origin-chain
+   [{:kind :generated
+     :source-id :gravity.compiler/sh14-generated-hostile
+     :actual-source-path "/checkout-hostile/generated.gravity"
+     :generated-origin
+     (generated-origin-chain
+      depth "/checkout-hostile/generated.gravity")}]))
+
 (def ^:private accepted-functions
   '[sh14-string-request
     sh14-bytes-request
@@ -281,6 +311,162 @@
            (:status
             (invoke-engine
              'sh14-verify-layout [second-request second-layout]))))))
+
+(deftest sh14-rejects-unknown-noncanonical-and-path-bearing-identity-inputs
+  (let [record (request accepted-gravity-plan 'sh14-record-request)
+        vector-request
+        (request accepted-gravity-plan 'sh14-vector-request)
+        symbol-request
+        (request accepted-gravity-plan 'sh14-symbol-request)
+        variant-request
+        (request accepted-gravity-plan 'sh14-variant-request)
+        over-limit-name (apply str (repeat 300 "x"))
+        over-limit-keyword (keyword over-limit-name)
+        over-limit-symbol (symbol over-limit-name)
+        cases
+        [[(assoc record :unknown-layout-authority :filesystem)
+          "C12-SCHEMA" :unexpected-request-fields]
+         [(assoc vector-request :field-names [:irrelevant])
+          "C12-SCHEMA" :unexpected-request-fields]
+         [(assoc-in record
+                    [:source-span :start :actual-source-path]
+                    "/checkout-injected/source.gravity")
+          "C12-SCHEMA" :invalid-source-span]
+         [(assoc-in record [:source-span :source-id]
+                    "/checkout-injected/source.gravity")
+          "C12-SCHEMA" :invalid-source-span]
+         [(assoc-in record [:origin-chain 0 :source-id]
+                    "/checkout-injected/source.gravity")
+          "C12-SCHEMA" :invalid-origin-chain]
+         [(assoc record :value-id {:host :aggregate})
+          "C12-FACTS" :invalid-value-id]
+         [(assoc record :value-id over-limit-keyword)
+          "C12-FACTS" :invalid-value-id]
+         [(assoc-in record [:source-span :source-id]
+                    over-limit-keyword)
+          "C12-SCHEMA" :invalid-source-span]
+         [(assoc vector-request :payload [{:host :aggregate}]
+                                :capacity 1 :length 1 :size-bytes 8)
+          "C12-SCHEMA" :invalid-vector]
+         [(assoc vector-request :payload [over-limit-symbol]
+                                :capacity 1 :length 1 :size-bytes 8)
+          "C12-SCHEMA" :invalid-vector]
+         [(assoc vector-request :payload (list 1 2)
+                                :capacity 2 :length 2 :size-bytes 16)
+          "SAFE2-BOUNDS" :structure-sequence-carrier]
+         [(assoc record :field-names [over-limit-keyword :arity])
+          "C12-SCHEMA" :invalid-record-fields]
+         [(assoc variant-request
+                 :allowed-tags [over-limit-keyword]
+                 :variant-arities {over-limit-keyword 1}
+                 :tag over-limit-keyword)
+          "C12-SCHEMA" :invalid-variant-schema]
+         [(assoc record :profile :future/profile)
+          "C12-FACTS" :unsupported-profile-target]
+         [(assoc record :target :host/runtime)
+          "C12-FACTS" :unsupported-profile-target]
+         [(assoc symbol-request :payload "\u03bb" :capacity 1
+                                :length 1 :size-bytes 8)
+          "C12-SCHEMA" :invalid-symbol]
+         [(assoc symbol-request :payload over-limit-name)
+          "C12-SCHEMA" :invalid-symbol]]]
+    (doseq [[hostile rule reason] cases]
+      (let [result (build hostile)]
+        (is (= :rejected (:status result)))
+        (is (= rule (get-in result [:diagnostics 0 :rule])))
+        (is (= reason (get-in result [:diagnostics 0 :reason])))))
+    (let [meta-request
+          (assoc record :profile :meta :target :portable-mir)
+          result (build meta-request)]
+      (is (= :accepted (:status result)))
+      (is (= :meta (get-in result [:identity-input :profile])))
+      (is (= :portable-mir
+             (get-in result [:identity-input :target]))))))
+
+(deftest sh14-counts-keyword-and-symbol-serialized-structural-units
+  (let [base (request accepted-gravity-plan 'sh14-vector-request)
+        keyword-value (keyword (apply str (repeat 255 "k")))
+        symbol-value (symbol (apply str (repeat 256 "s")))
+        payload
+        (vec (concat (repeat 600 keyword-value)
+                     (repeat 600 symbol-value)))
+        hostile
+        (assoc base :payload payload :capacity 1200 :length 1200
+                    :element-size 8 :size-bytes 9600)
+        result (build hostile)]
+    (is (= 256 (count (str keyword-value))))
+    (is (= 256 (count (str symbol-value))))
+    (is (= :rejected (:status result)))
+    (is (= "SAFE2-BOUNDS"
+           (get-in result [:diagnostics 0 :rule])))
+    (is (= :structure-scalar-unit-bound
+           (get-in result [:diagnostics 0 :reason])))))
+
+(deftest sh14-contains-deep-origin-and-hostile-candidate-graphs
+  (let [record (request accepted-gravity-plan 'sh14-record-request)
+        deep-request (generated-request record 50000)
+        deep-result (build deep-request)
+        valid-layout (build record)
+        hostile-candidate
+        (assoc valid-layout
+               :hostile-padding
+               (generated-origin-chain
+                50000 "/checkout-hostile/candidate.gravity"))
+        verification
+        (invoke-engine
+         'sh14-verify-layout [record hostile-candidate])
+        sequence-verification
+        (invoke-engine
+         'sh14-verify-layout
+         [record (assoc valid-layout :hostile-padding (iterate inc 0))])
+        over-depth-result (build (generated-request record 65))
+        over-count-result
+        (build
+         (assoc record :origin-chain
+                (vec (repeat 65 (first (:origin-chain record))))))]
+    (is (= :rejected (:status deep-result)))
+    (is (= "SAFE2-BOUNDS"
+           (get-in deep-result [:diagnostics 0 :rule])))
+    (is (contains?
+         #{:structure-depth-bound :structure-node-bound}
+         (get-in deep-result [:diagnostics 0 :reason])))
+    (is (nil? (get-in deep-result [:diagnostics 0 :source-span])))
+    (is (empty?
+         (get-in deep-result [:diagnostics 0 :generated-origin-chain])))
+    (is (= :rejected (:status verification)))
+    (is (= "C12-VERIFY"
+           (get-in verification [:diagnostics 0 :rule])))
+    (is (= :candidate-structural-bound
+           (get-in verification [:diagnostics 0 :reason])))
+    (is (= :rejected (:status sequence-verification)))
+    (is (= :candidate-structural-bound
+           (get-in sequence-verification [:diagnostics 0 :reason])))
+    (is (= :structure-sequence-carrier
+           (get-in sequence-verification
+                   [:diagnostics 0 :structural-preflight :reason])))
+    (is (= :rejected (:status over-depth-result)))
+    (is (= :invalid-origin-chain
+           (get-in over-depth-result [:diagnostics 0 :reason])))
+    (is (= :rejected (:status over-count-result)))
+    (is (= :invalid-origin-chain
+           (get-in over-count-result [:diagnostics 0 :reason])))))
+
+(deftest sh14-accepts-the-complete-flat-payload-boundary
+  (let [base (request accepted-gravity-plan 'sh14-vector-request)
+        payload (vec (repeat 4096 1))
+        request (assoc base
+                       :payload payload
+                       :capacity 4096
+                       :length 4096
+                       :element-size 8
+                       :size-bytes 32768)
+        layout (build request)
+        verification
+        (invoke-engine 'sh14-verify-layout [request layout])]
+    (is (= :accepted (:status layout)))
+    (is (= 4096 (get-in layout [:layout :capacity])))
+    (is (= 4096 (count (get-in layout [:identity-input :payload]))))
+    (is (= :passed (:status verification)))))
 
 (deftest sh14-rejects-incomplete-and-unsafe-layouts-structurally
   (doseq [[function [rule reason]] rejected-cases]

@@ -390,6 +390,19 @@
    :maximum-capacity 4096
    :maximum-element-size 64
    :maximum-size-bytes 131072
+   :maximum-origin-count 64
+   :maximum-generated-origin-depth 64
+   :maximum-variant-tags 64
+   :maximum-identifier-units 256
+   :structural-bounds
+   {:maximum-nodes 32768
+    :maximum-depth 96
+    :maximum-width 8192
+    :maximum-collections 8192
+    :maximum-scalars 24576
+    :maximum-scalar-units 262144}
+   :supported-profile-target-pairs
+   #{[:safe :portable] [:meta :portable-mir]}
    :integer-width-bits 64
    :maximum-integer 9223372036854775807
    :size-policy :capacity-times-element-size-rounded-up-to-alignment
@@ -405,12 +418,14 @@
   (= (get values value) value))
 
 (defn sh14-unique-from? [values index seen]
-  (if (= index (count values))
-    true
-    (let [value (get values index)]
-      (if (contains? seen value)
-        false
-        (sh14-unique-from? values (+ index 1) (conj seen value))))))
+  (loop [cursor index
+         observed seen]
+    (if (= cursor (count values))
+      true
+      (let [value (get values cursor)]
+        (if (contains? observed value)
+          false
+          (recur (+ cursor 1) (conj observed value)))))))
 
 (defn sh14-unique? [values]
   (if (vector? values)
@@ -736,27 +751,393 @@
       false)
     false))
 
+(defn sh14-v3-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh14-v3-not [value]
+  (if value false true))
+
+(defn sh14-v3-request-keys [kind]
+  (if (= kind :string)
+    #{:artifact :value-id :kind :payload :encoding
+      :capacity :length :element-size :size-bytes :alignment
+      :allocation-regime :mutable :profile :target :source-span
+      :origin-chain :type-fact-id :effect-fact-id
+      :ownership-fact-id :safety-fact-id}
+    (if (= kind :record)
+      #{:artifact :value-id :kind :payload :field-names
+        :capacity :length :element-size :size-bytes :alignment
+        :allocation-regime :mutable :profile :target :source-span
+        :origin-chain :type-fact-id :effect-fact-id
+        :ownership-fact-id :safety-fact-id}
+      (if (= kind :variant)
+        #{:artifact :value-id :kind :payload :allowed-tags
+          :variant-arities :tag :capacity :length :element-size
+          :size-bytes :alignment :allocation-regime :mutable
+          :profile :target :source-span :origin-chain
+          :type-fact-id :effect-fact-id :ownership-fact-id
+          :safety-fact-id}
+        (if (= kind :map)
+          #{:artifact :value-id :kind :payload :keys
+            :capacity :length :element-size :size-bytes :alignment
+            :allocation-regime :mutable :profile :target :source-span
+            :origin-chain :type-fact-id :effect-fact-id
+            :ownership-fact-id :safety-fact-id}
+          #{:artifact :value-id :kind :payload
+            :capacity :length :element-size :size-bytes :alignment
+            :allocation-regime :mutable :profile :target :source-span
+            :origin-chain :type-fact-id :effect-fact-id
+            :ownership-fact-id :safety-fact-id})))))
+
+(defn sh14-v3-aggregate? [value]
+  (if (map? value)
+    true
+    (if (vector? value)
+      true
+      (set? value))))
+
+(defn sh14-v3-aggregate-components [value]
+  (if (map? value)
+    (loop [remaining (vec (keys value))
+           result []]
+      (if (= (count remaining) 0)
+        result
+        (let [key (first remaining)]
+          (recur
+           (rest remaining)
+           (conj (conj result key) (get value key))))))
+    (vec value)))
+
+(defn sh14-v3-structural-preflight [value]
+  (let [bounds (get (sh14-layout-policy) :structural-bounds)
+        maximum-nodes (get bounds :maximum-nodes)
+        maximum-depth (get bounds :maximum-depth)
+        maximum-width (get bounds :maximum-width)
+        maximum-collections (get bounds :maximum-collections)
+        maximum-scalars (get bounds :maximum-scalars)
+        maximum-scalar-units (get bounds :maximum-scalar-units)]
+    (loop [frontier [[value 0]]
+           cursor 0
+           nodes 0
+           collections 0
+           scalars 0
+           scalar-units 0]
+      (if (= cursor (count frontier))
+        {:status :accepted
+         :nodes nodes
+         :collections collections
+         :scalars scalars
+         :scalar-units scalar-units}
+        (let [entry (get frontier cursor)
+              current (first entry)
+              depth (second entry)
+              next-nodes (+ nodes 1)]
+          (if (> next-nodes maximum-nodes)
+            {:status :rejected :reason :structure-node-bound}
+            (if (> depth maximum-depth)
+              {:status :rejected :reason :structure-depth-bound}
+              (if (sh14-v3-aggregate? current)
+                (let [components (sh14-v3-aggregate-components current)
+                      width (count components)
+                      next-collections (+ collections 1)]
+                  (if (> width maximum-width)
+                    {:status :rejected :reason :structure-width-bound}
+                    (if (> next-collections maximum-collections)
+                      {:status :rejected
+                       :reason :structure-collection-bound}
+                      (let [next-frontier
+                            (loop [remaining components
+                                   result frontier]
+                              (if (= (count remaining) 0)
+                                result
+                                (recur
+                                 (rest remaining)
+                                 (conj result
+                                       [(first remaining)
+                                        (+ depth 1)]))))]
+                        (recur next-frontier (+ cursor 1)
+                               next-nodes next-collections
+                               scalars scalar-units)))))
+                (if (seq? current)
+                  {:status :rejected
+                   :reason :structure-sequence-carrier}
+                  (let [next-scalars (+ scalars 1)
+                        units
+                        (if (string? current)
+                          (count current)
+                          (if (keyword? current)
+                            (count (str current))
+                            (if (symbol? current)
+                              (count (str current))
+                              1)))
+                        next-units (+ scalar-units units)]
+                    (if (> next-scalars maximum-scalars)
+                      {:status :rejected :reason :structure-scalar-bound}
+                      (if (> next-units maximum-scalar-units)
+                        {:status :rejected
+                         :reason :structure-scalar-unit-bound}
+                        (recur frontier (+ cursor 1) next-nodes
+                               collections next-scalars next-units)))))))))))))
+
+(defn sh14-v3-identifier-character? [character]
+  (sh14-v2-character-member-from?
+   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/!?*+<>=:"
+   character 0))
+
+(defn sh14-v3-ascii-identifier? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (if (<= (count value) 256)
+        (loop [index 0]
+          (if (= index (count value))
+            true
+            (if (sh14-v3-identifier-character? (get value index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh14-v3-canonical-identifier? [value]
+  (if (keyword? value)
+    (sh14-v3-ascii-identifier? (str value))
+    (if (symbol? value)
+      (sh14-v3-ascii-identifier? (str value))
+      false)))
+
+(defn sh14-v3-canonical-scalar? [value]
+  (if (= nil value)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        (sh14-v2-range?
+         value -9223372036854775808 9223372036854775807)
+        (if (string? value)
+          (<= (count value) 4096)
+          (if (sh14-v3-canonical-identifier? value)
+            true
+            (char? value)))))))
+
+(defn sh14-v3-canonical-vector? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (if (sh14-v3-canonical-scalar? (get values index))
+          (recur (+ index 1))
+          false)))
+    false))
+
+(defn sh14-v3-keyword-vector? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (let [value (get values index)]
+          (if (keyword? value)
+            (if (sh14-v3-canonical-identifier? value)
+              (recur (+ index 1))
+              false)
+            false))))
+    false))
+
+(defn sh14-v3-canonical-key-vector? [values]
+  (if (sh14-v3-canonical-vector? values)
+    (sh14-unique? values)
+    false))
+
+(defn sh14-v3-byte-vector? [values]
+  (if (vector? values)
+    (loop [index 0]
+      (if (= index (count values))
+        true
+        (if (sh14-v2-byte? (get values index))
+          (recur (+ index 1))
+          false)))
+    false))
+
+(defn sh14-v3-utf8? [bytes]
+  (if (sh14-v3-byte-vector? bytes)
+    (loop [index 0]
+      (if (= index (count bytes))
+        true
+        (let [b0 (get bytes index)
+              remaining (- (count bytes) index)]
+          (if (sh14-v2-range? b0 0 127)
+            (recur (+ index 1))
+            (if (sh14-v2-range? b0 194 223)
+              (if (>= remaining 2)
+                (if (sh14-v2-continuation? (get bytes (+ index 1)))
+                  (recur (+ index 2))
+                  false)
+                false)
+              (if (sh14-v2-range? b0 224 239)
+                (if (>= remaining 3)
+                  (let [b1 (get bytes (+ index 1))
+                        b2 (get bytes (+ index 2))]
+                    (if (sh14-v2-continuation? b2)
+                      (if (= b0 224)
+                        (if (sh14-v2-range? b1 160 191)
+                          (recur (+ index 3))
+                          false)
+                        (if (= b0 237)
+                          (if (sh14-v2-range? b1 128 159)
+                            (recur (+ index 3))
+                            false)
+                          (if (sh14-v2-continuation? b1)
+                            (recur (+ index 3))
+                            false)))
+                      false))
+                  false)
+                (if (sh14-v2-range? b0 240 244)
+                  (if (>= remaining 4)
+                    (let [b1 (get bytes (+ index 1))
+                          b2 (get bytes (+ index 2))
+                          b3 (get bytes (+ index 3))]
+                      (if (sh14-v2-continuation? b2)
+                        (if (sh14-v2-continuation? b3)
+                          (if (= b0 240)
+                            (if (sh14-v2-range? b1 144 191)
+                              (recur (+ index 4))
+                              false)
+                            (if (= b0 244)
+                              (if (sh14-v2-range? b1 128 143)
+                                (recur (+ index 4))
+                                false)
+                              (if (sh14-v2-continuation? b1)
+                                (recur (+ index 4))
+                                false)))
+                          false)
+                        false))
+                    false)
+                  false)))))))
+    false))
+
+(defn sh14-v3-source-id? [value]
+  (if (keyword? value)
+    (sh14-v3-canonical-identifier? value)
+    false))
+
+(defn sh14-v3-point-valid? [point]
+  (if (sh14-v3-exact-keys? point #{:byte :line :column})
+    (sh14-v2-point-valid? point)
+    false))
+
+(defn sh14-v3-source-span-valid? [span]
+  (if
+   (sh14-v3-exact-keys?
+    span #{:source-id :actual-source-path :start :end})
+    (if (sh14-v3-source-id? (get span :source-id))
+      (if (string? (get span :actual-source-path))
+        (if (> (count (get span :actual-source-path)) 0)
+          (if (<= (count (get span :actual-source-path)) 4096)
+            (if (sh14-v3-point-valid? (get span :start))
+              (if (sh14-v3-point-valid? (get span :end))
+                (sh14-v2-source-span-valid? span)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh14-v3-generated-origin-valid-at? [origin depth]
+  (if (> depth 64)
+    false
+    (if (map? origin)
+      (let [parent (get origin :parent-generated-origin)
+            expected
+            (if (= nil parent)
+              #{:generator-id :anchor-id :actual-source-path}
+              #{:generator-id :anchor-id :actual-source-path
+                :parent-generated-origin})]
+        (if (sh14-v3-exact-keys? origin expected)
+          (if (sh14-v2-sha256-id? (get origin :generator-id))
+            (if (sh14-v2-sha256-id? (get origin :anchor-id))
+              (if (string? (get origin :actual-source-path))
+                (if (> (count (get origin :actual-source-path)) 0)
+                  (if (<= (count (get origin :actual-source-path)) 4096)
+                    (if (= nil parent)
+                      true
+                      (sh14-v3-generated-origin-valid-at?
+                       parent (+ depth 1)))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn sh14-v3-origin-entry-valid? [origin]
+  (if (map? origin)
+    (let [kind (get origin :kind)
+          expected
+          (if (= kind :source)
+            #{:kind :source-id :actual-source-path}
+            (if (= kind :generated)
+              #{:kind :source-id :actual-source-path :generated-origin}
+              #{}))]
+      (if (sh14-v3-exact-keys? origin expected)
+        (if (sh14-v3-source-id? (get origin :source-id))
+          (if (string? (get origin :actual-source-path))
+            (if (> (count (get origin :actual-source-path)) 0)
+              (if (<= (count (get origin :actual-source-path)) 4096)
+                (if (= kind :source)
+                  true
+                  (sh14-v3-generated-origin-valid-at?
+                   (get origin :generated-origin) 1))
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh14-v3-origin-chain-valid? [origins]
+  (if (vector? origins)
+    (if (> (count origins) 0)
+      (if (<= (count origins) 64)
+        (loop [index 0]
+          (if (= index (count origins))
+            true
+            (if (sh14-v3-origin-entry-valid? (get origins index))
+              (recur (+ index 1))
+              false)))
+        false)
+      false)
+    false))
+
+(defn sh14-v3-profile-target-valid? [request]
+  (sh14-member?
+   (get (sh14-layout-policy) :supported-profile-target-pairs)
+   [(get request :profile) (get request :target)]))
+
 (defn sh14-v2-common-error [request]
   (if (map? request)
     (if (= :gravity/sh14-data-layout-request (get request :artifact))
-      (if (= nil (get request :value-id))
-        :missing-value-id
+      (if
+       (sh14-member?
+        #{:string :bytes :symbol :keyword :tuple :record
+          :variant :vector :map :set :mutable-buffer}
+        (get request :kind))
         (if
-         (sh14-member?
-          #{:string :bytes :symbol :keyword :tuple :record
-            :variant :vector :map :set :mutable-buffer}
-          (get request :kind))
-          (if (integer? (get request :capacity))
-            (if (integer? (get request :length))
-              (if (integer? (get request :size-bytes))
-                (if (sh14-v2-source-span-valid?
-                     (get request :source-span))
-                  (if (sh14-v2-origin-chain-valid?
-                       (get request :origin-chain))
-                    (if (= nil (get request :profile))
-                      :missing-profile
-                      (if (= nil (get request :target))
-                        :missing-target
+         (sh14-v3-exact-keys?
+          request (sh14-v3-request-keys (get request :kind)))
+          (if
+           (sh14-v3-canonical-identifier? (get request :value-id))
+            (if (integer? (get request :capacity))
+              (if (integer? (get request :length))
+                (if (integer? (get request :size-bytes))
+                  (if (sh14-v3-source-span-valid?
+                       (get request :source-span))
+                    (if (sh14-v3-origin-chain-valid?
+                         (get request :origin-chain))
+                      (if (sh14-v3-profile-target-valid? request)
                         (if (sh14-v2-sha256-id?
                              (get request :type-fact-id))
                           (if (sh14-v2-sha256-id?
@@ -769,13 +1150,16 @@
                                 :invalid-safety-fact)
                               :invalid-ownership-fact)
                             :invalid-effect-fact)
-                          :invalid-type-fact)))
-                    :invalid-origin-chain)
-                  :invalid-source-span)
-                :invalid-size-bytes)
-              :invalid-length)
-            :invalid-capacity)
-          :unsupported-kind))
+                          :invalid-type-fact)
+                        :unsupported-profile-target)
+                      :invalid-origin-chain)
+                    :invalid-source-span)
+                  :invalid-size-bytes)
+                :invalid-length)
+              :invalid-capacity)
+            :invalid-value-id)
+          :unexpected-request-fields)
+        :unsupported-kind)
       :invalid-request-artifact)
     :request-not-map))
 
@@ -787,9 +1171,11 @@
       (if (keyword? tag)
         (if (= nil tag)
           false
-          (if (sh14-v2-range? arity 0 4096)
-            (sh14-v2-variant-schema-from?
-             tags arities (+ index 1))
+          (if (sh14-v3-canonical-identifier? tag)
+            (if (sh14-v2-range? arity 0 4096)
+              (sh14-v2-variant-schema-from?
+               tags arities (+ index 1))
+              false)
             false))
         false))))
 
@@ -800,16 +1186,20 @@
     (if (vector? payload)
       (if (vector? tags)
         (if (> (count tags) 0)
-          (if (sh14-unique? tags)
-            (if (map? arities)
-              (if (= (count tags) (count arities))
-                (if (sh14-v2-variant-schema-from? tags arities 0)
-                  (if (keyword? tag)
-                    (if (= nil tag)
-                      false
-                      (if (contains? arities tag)
-                        (= (count payload) (get arities tag))
-                        false))
+          (if (<= (count tags) 64)
+            (if (sh14-unique? tags)
+              (if (map? arities)
+                (if (= (count tags) (count arities))
+                  (if (sh14-v2-variant-schema-from? tags arities 0)
+                    (if (keyword? tag)
+                      (if (= nil tag)
+                        false
+                        (if (sh14-v3-canonical-identifier? tag)
+                          (if (contains? arities tag)
+                            (= (count payload) (get arities tag))
+                            false)
+                          false))
+                      false)
                     false)
                   false)
                 false)
@@ -824,20 +1214,26 @@
         payload (get request :payload)]
     (if (= kind :string)
       (if (= :utf-8 (get request :encoding))
-        (if (sh14-v2-utf8? payload) nil :invalid-utf8)
+        (if (sh14-v3-utf8? payload) nil :invalid-utf8)
         :invalid-string-encoding)
       (if (= kind :bytes)
-        (if (sh14-v2-byte-vector? payload) nil :invalid-byte-vector)
+        (if (sh14-v3-byte-vector? payload) nil :invalid-byte-vector)
         (if (= kind :symbol)
-          (if (string? payload) nil :invalid-symbol)
+          (if (sh14-v3-ascii-identifier? payload)
+            nil
+            :invalid-symbol)
           (if (= kind :keyword)
-            (if (string? payload) nil :invalid-keyword)
+            (if (sh14-v3-ascii-identifier? payload)
+              nil
+              :invalid-keyword)
             (if (= kind :tuple)
-              (if (vector? payload) nil :invalid-tuple)
+              (if (sh14-v3-canonical-vector? payload)
+                nil
+                :invalid-tuple)
               (if (= kind :record)
                 (let [fields (get request :field-names)]
-                  (if (vector? payload)
-                    (if (vector? fields)
+                  (if (sh14-v3-canonical-vector? payload)
+                    (if (sh14-v3-keyword-vector? fields)
                       (if (= (count fields) (count payload))
                         (if (sh14-unique? fields)
                           nil
@@ -846,13 +1242,15 @@
                       :invalid-record-fields)
                     :invalid-record-payload))
                 (if (= kind :variant)
-                  (if (sh14-v2-variant-valid? request payload)
-                    nil
-                    :invalid-variant-schema)
+                  (if (sh14-v3-canonical-vector? payload)
+                    (if (sh14-v2-variant-valid? request payload)
+                      nil
+                      :invalid-variant-schema)
+                    :invalid-variant-payload)
                   (if (= kind :map)
                     (let [keys (get request :keys)]
-                      (if (vector? payload)
-                        (if (vector? keys)
+                      (if (sh14-v3-canonical-vector? payload)
+                        (if (sh14-v3-canonical-vector? keys)
                           (if (= (count keys) (count payload))
                             (if (sh14-unique? keys)
                               nil
@@ -861,10 +1259,12 @@
                           :invalid-map-keys)
                         :invalid-map-payload))
                     (if (= kind :set)
-                      (if (sh14-unique? payload)
-                        nil
-                        :duplicate-set-value)
-                      (if (vector? payload)
+                      (if (sh14-v3-canonical-vector? payload)
+                        (if (sh14-unique? payload)
+                          nil
+                          :duplicate-set-value)
+                        :invalid-set-payload)
+                      (if (sh14-v3-canonical-vector? payload)
                         nil
                         :invalid-vector))))))))))))
 
@@ -886,6 +1286,13 @@
 (defn sh14-v2-aligned-size [raw-size alignment]
   (* alignment (quot (+ raw-size (- alignment 1)) alignment)))
 
+(defn sh14-v3-kind-element-size-valid? [request]
+  (if
+   (sh14-member?
+    #{:string :bytes :symbol :keyword} (get request :kind))
+    (= 1 (get request :element-size))
+    true))
+
 (defn sh14-v2-size-error [request]
   (let [element-size (get request :element-size)
         capacity (get request :capacity)
@@ -894,17 +1301,19 @@
       (if (integer? element-size)
         (if (> element-size 0)
           (if (<= element-size 64)
-            (if (<= capacity
-                    (quot 9223372036854775807 element-size))
-              (let [raw-size (* capacity element-size)
-                    aligned-size
-                    (sh14-v2-aligned-size raw-size alignment)]
-                (if (<= aligned-size 131072)
-                  (if (= (get request :size-bytes) aligned-size)
-                    nil
-                    :unaligned-size-mismatch)
-                  :total-size-over-limit))
-              :integer-overflow)
+            (if (sh14-v3-kind-element-size-valid? request)
+              (if (<= capacity
+                      (quot 9223372036854775807 element-size))
+                (let [raw-size (* capacity element-size)
+                      aligned-size
+                      (sh14-v2-aligned-size raw-size alignment)]
+                  (if (<= aligned-size 131072)
+                    (if (= (get request :size-bytes) aligned-size)
+                      nil
+                      :unaligned-size-mismatch)
+                    :total-size-over-limit))
+                :integer-overflow)
+              :kind-element-size)
             :element-size-over-limit)
           :nonpositive-element-size)
         :invalid-element-size)
@@ -930,7 +1339,8 @@
 (defn sh14-rule [error]
   (if
    (contains?
-    #{:missing-value-id :missing-profile :missing-target
+    #{:missing-value-id :invalid-value-id
+      :missing-profile :missing-target :unsupported-profile-target
       :invalid-type-fact :invalid-effect-fact
       :invalid-ownership-fact :invalid-safety-fact}
     error)
@@ -938,7 +1348,11 @@
     (if
      (contains?
       #{:negative-capacity :capacity-over-limit :negative-length
-        :length-over-capacity :payload-length-mismatch}
+        :length-over-capacity :payload-length-mismatch
+        :structure-node-bound :structure-depth-bound
+        :structure-width-bound :structure-collection-bound
+        :structure-scalar-bound :structure-scalar-unit-bound
+        :structure-sequence-carrier}
       error)
       "SAFE2-BOUNDS"
       (if (= error :allocation-regime)
@@ -947,6 +1361,7 @@
          (contains?
           #{:invalid-alignment :invalid-element-size
             :nonpositive-element-size :element-size-over-limit
+            :kind-element-size
             :integer-overflow :total-size-over-limit
             :unaligned-size-mismatch}
           error)
@@ -965,15 +1380,19 @@
           :data-schema)))))
 
 (defn sh14-missing-fact [error]
-  (if (= error :invalid-type-fact)
-    :type-fact-id
-    (if (= error :invalid-effect-fact)
-      :effect-fact-id
-      (if (= error :invalid-ownership-fact)
-        :ownership-fact-id
-        (if (= error :invalid-safety-fact)
-          :safety-fact-id
-          nil)))))
+  (if (= error :invalid-value-id)
+    :value-id
+    (if (= error :unsupported-profile-target)
+      :profile-target
+      (if (= error :invalid-type-fact)
+        :type-fact-id
+        (if (= error :invalid-effect-fact)
+          :effect-fact-id
+          (if (= error :invalid-ownership-fact)
+            :ownership-fact-id
+            (if (= error :invalid-safety-fact)
+              :safety-fact-id
+              nil)))))))
 
 (defn sh14-diagnostic [request error]
   {:artifact :gravity/sh14-layout-diagnostic
@@ -984,12 +1403,18 @@
    :missing-fact (sh14-missing-fact error)
    :stage :domain-ir-layout
    :domain :compiler-data-layout
-   :artifact-id (get request :value-id)
+   :artifact-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
    :semantic-anchor :normalized-data-operation-descriptor
    :owner-document "C12"
    :verifier
    :gravity.compiler.c12-domain-ir-architecture/sh14-verify-layout
-   :value-id (get request :value-id)
+   :value-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
    :kind (get request :kind)
    :profile (get request :profile)
    :target (get request :target)
@@ -997,10 +1422,15 @@
    :generated-origin-chain (get request :origin-chain)
    :remediation :supply-bounded-explicit-and-consistent-layout-facts})
 
+(defn sh14-identity-point [point]
+  {:byte (get point :byte)
+   :line (get point :line)
+   :column (get point :column)})
+
 (defn sh14-identity-source-span [source-span]
   {:source-id (get source-span :source-id)
-   :start (get source-span :start)
-   :end (get source-span :end)})
+   :start (sh14-identity-point (get source-span :start))
+   :end (sh14-identity-point (get source-span :end))})
 
 (defn sh14-identity-generated-origin [origin]
   (if (= nil origin)
@@ -1082,26 +1512,96 @@
    :diagnostics []
    :pending (get (sh14-layout-policy) :pending)})
 
+(defn sh14-v3-structural-diagnostic [request preflight]
+  {:artifact :gravity/sh14-layout-diagnostic
+   :diagnostic-id "SAFE2-BOUNDS"
+   :rule "SAFE2-BOUNDS"
+   :family :structural-bounds
+   :reason (get preflight :reason)
+   :missing-fact nil
+   :stage :domain-ir-layout
+   :domain :compiler-data-layout
+   :artifact-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
+   :semantic-anchor :normalized-data-operation-descriptor
+   :owner-document "C12"
+   :verifier
+   :gravity.compiler.c12-domain-ir-architecture/sh14-verify-layout
+   :value-id
+   (if (sh14-v3-canonical-identifier? (get request :value-id))
+     (get request :value-id)
+     nil)
+   :kind
+   (if (sh14-v3-canonical-identifier? (get request :kind))
+     (get request :kind)
+     nil)
+   :profile nil
+   :target nil
+   :source-span nil
+   :generated-origin-chain []
+   :structural-preflight preflight
+   :remediation :supply-a-structurally-bounded-layout-request})
+
 (defn sh14-build-layout [request]
-  (let [error (sh14-error request)]
-    (if (= nil error)
-      (sh14-layout request)
+  (let [preflight (sh14-v3-structural-preflight request)]
+    (if (= :accepted (get preflight :status))
+      (let [error (sh14-error request)]
+        (if (= nil error)
+          (sh14-layout request)
+          {:artifact :gravity/sh14-data-layout
+           :status :rejected
+           :value-id
+           (if (sh14-v3-canonical-identifier? (get request :value-id))
+             (get request :value-id)
+             nil)
+           :diagnostics [(sh14-diagnostic request error)]
+           :pending (get (sh14-layout-policy) :pending)}))
       {:artifact :gravity/sh14-data-layout
        :status :rejected
-       :value-id (get request :value-id)
-       :diagnostics [(sh14-diagnostic request error)]
+       :value-id
+       (if (sh14-v3-canonical-identifier? (get request :value-id))
+         (get request :value-id)
+         nil)
+       :diagnostics [(sh14-v3-structural-diagnostic request preflight)]
        :pending (get (sh14-layout-policy) :pending)})))
 
 (defn sh14-verify-layout [request candidate]
-  (if (= (sh14-build-layout request) candidate)
-    {:artifact :gravity/sh14-layout-verification
-     :status :passed
-     :value-id (get request :value-id)}
-    {:artifact :gravity/sh14-layout-verification
-     :status :rejected
-     :value-id (get request :value-id)
-     :diagnostics
-     [{:artifact :gravity/sh14-layout-diagnostic
-       :diagnostic-id "C12-VERIFY"
-       :rule "C12-VERIFY"
-       :reason :layout-result-substitution}]}))
+  (let [request-preflight (sh14-v3-structural-preflight request)
+        candidate-preflight (sh14-v3-structural-preflight candidate)]
+    (if (sh14-v3-not (= :accepted (get request-preflight :status)))
+      {:artifact :gravity/sh14-layout-verification
+       :status :rejected
+       :value-id nil
+       :diagnostics
+       [{:artifact :gravity/sh14-layout-diagnostic
+         :diagnostic-id "C12-VERIFY"
+         :rule "C12-VERIFY"
+         :reason :request-structural-bound
+         :structural-preflight request-preflight}]}
+      (if (sh14-v3-not (= :accepted (get candidate-preflight :status)))
+        {:artifact :gravity/sh14-layout-verification
+         :status :rejected
+         :value-id
+         (if (sh14-v3-canonical-identifier? (get request :value-id))
+           (get request :value-id)
+           nil)
+         :diagnostics
+         [{:artifact :gravity/sh14-layout-diagnostic
+           :diagnostic-id "C12-VERIFY"
+           :rule "C12-VERIFY"
+           :reason :candidate-structural-bound
+           :structural-preflight candidate-preflight}]}
+        (if (= (sh14-build-layout request) candidate)
+          {:artifact :gravity/sh14-layout-verification
+           :status :passed
+           :value-id (get request :value-id)}
+          {:artifact :gravity/sh14-layout-verification
+           :status :rejected
+           :value-id (get request :value-id)
+           :diagnostics
+           [{:artifact :gravity/sh14-layout-diagnostic
+             :diagnostic-id "C12-VERIFY"
+             :rule "C12-VERIFY"
+             :reason :layout-result-substitution}]})))))
