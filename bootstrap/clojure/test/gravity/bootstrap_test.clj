@@ -40164,6 +40164,21 @@
          :java-vm-name "OpenJDK 64-Bit Server VM"
          :java-version "26.0.1" :java-feature 26
          :os-name "Mac OS X" :os-arch "aarch64"}
+        expected-environment-policy
+        {:inherited-environment? false
+         :fixed-values
+         {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
+          "LC_ALL" "C" "LANG" "C"
+          "DEVELOPER_DIR" "/Library/Developer/CommandLineTools"}
+         :private-physical-values ["HOME" "TMPDIR"]
+         :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
+         :forbidden-names
+         ["SDKROOT" "MACOSX_DEPLOYMENT_TARGET" "CPATH" "LIBRARY_PATH"]}
+        expected-physical-tool-paths
+        {:clang "/Library/Developer/CommandLineTools/usr/bin/clang"
+         :ld "/Library/Developer/CommandLineTools/usr/bin/ld"
+         :otool "/Library/Developer/CommandLineTools/usr/bin/llvm-otool"
+         :sdk "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk"}
         wrapper-results
         (with-redefs
          [bootstrap/p15-s23-stage2-b2-c17-gate-b-verification-report
@@ -40176,6 +40191,18 @@
     (is (= 20 (- (:total after-right) (:total after-left))))
     (is (= 20 (- (:total after-verification) (:total after-right))))
     (is (= 20 (count (:tool-records toolchain))))
+    (is (= expected-environment-policy
+           bootstrap/p15-s23-b2-c17-gate-b-environment-policy
+           (get-in toolchain
+                   [:toolchain-fingerprint :environment-policy])))
+    (doseq [record (:tool-records toolchain)]
+      (is (= expected-environment-policy (:environment-policy record))
+          (:step record)))
+    (doseq [[tool expected-path] expected-physical-tool-paths]
+      (is (= expected-path
+             (get-in toolchain
+                     [:physical-tool-provenance tool :actual-path]))
+          tool))
     (is (= (:mir-id (:c11 left-upstream))
            (:mir-id (:c11 right-upstream))))
     (is (= (:artifact-id (:c11 left-upstream))

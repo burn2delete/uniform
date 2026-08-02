@@ -137579,15 +137579,19 @@
    :release? false
    :self-hosted? false})
 
+(def ^:private p15-s23-b2-c17-gate-b-developer-directory
+  "/Library/Developer/CommandLineTools")
+
 (def p15-s23-b2-c17-gate-b-environment-policy
   {:inherited-environment? false
    :fixed-values {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
                   "LC_ALL" "C"
-                  "LANG" "C"}
+                  "LANG" "C"
+                  "DEVELOPER_DIR"
+                  p15-s23-b2-c17-gate-b-developer-directory}
    :private-physical-values ["HOME" "TMPDIR"]
    :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
-   :forbidden-names ["DEVELOPER_DIR" "SDKROOT"
-                     "MACOSX_DEPLOYMENT_TARGET" "CPATH"
+   :forbidden-names ["SDKROOT" "MACOSX_DEPLOYMENT_TARGET" "CPATH"
                      "LIBRARY_PATH"]})
 
 (def ^:private p15-s23-b2-c17-gate-b-private-directory-permissions
@@ -138053,6 +138057,9 @@
         _ (.put environment "PATH" "/usr/bin:/bin:/usr/sbin:/sbin")
         _ (.put environment "LC_ALL" "C")
         _ (.put environment "LANG" "C")
+        _ (.put environment "DEVELOPER_DIR"
+                (get-in p15-s23-b2-c17-gate-b-environment-policy
+                        [:fixed-values "DEVELOPER_DIR"]))
         _ (.put environment "HOME" (.toString directory))
         _ (.put environment "TMPDIR" (.toString directory))
         _ (.redirectErrorStream builder false)
