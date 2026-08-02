@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B33"
+ :coverage-milestone "SH-07-B34"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -177,6 +177,8 @@
   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
   :c13-mir-optimization
   "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+  :c14-target-lowering
+  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
   :c15-diagnostics
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
   :c16-incremental
@@ -228,6 +230,7 @@
   :c11-mir {:keyword-lookups 0}
   :c12-domain-ir {:keyword-lookups 0}
   :c13-mir-optimization {:keyword-lookups 0}
+  :c14-target-lowering {:keyword-lookups 0}
   :c15-diagnostics {:keyword-lookups 0}
   :c16-incremental {:keyword-lookups 0}
   :c17-plugin {:keyword-lookups 0}
@@ -314,6 +317,12 @@
   :sh16-target-lowering-proof-preservation
   :sh16-self-hosted-certificate-checker
   :sh16-complete
+  :c14-production-target-lowering-authority
+  :c14-complete-target-matrix
+  :sh17-authenticated-sh16-input
+  :sh17-complete-mir-lowering
+  :sh17-proof-preserving-all-targets
+  :sh17-complete
   :downstream-c6-compilation
   :sh07-complete
   :seed-retirement
