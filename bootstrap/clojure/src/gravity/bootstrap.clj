@@ -107278,7 +107278,7 @@
     :requires :effects :safety :target :doc :metadata :profile :forms})
 
 (def p15-s23-reference-runtime-expected-plan-id
-  "sha256:d0b3edde952e5f2c4c0ba289087ebed05fb40620d5989894376611dc6838576f")
+  "sha256:633c590fef790e6f7c5727b4fce44b05ef49c2ecf2094158103f53f958f6e979")
 
 (def p15-s23-reference-runtime-expected-authoritative-module-hash
   "sha256:99128713ef7f6c2540239ebaf6f58f08fb42ee6f7a4d8ff1d39ef588b6354a32")
@@ -128034,15 +128034,18 @@
 (def p15-s23-b3-llvm-max-emitted-file-bytes (* 8 1024 1024))
 (def p15-s23-b3-llvm-tool-timeout-ms 30000)
 
+(def ^:private p15-s23-b3-llvm-developer-directory
+  "/Library/Developer/CommandLineTools")
+
 (def p15-s23-b3-llvm-environment-policy
   {:inherited-environment? false
    :fixed-values {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
                   "LC_ALL" "C"
-                  "LANG" "C"}
+                  "LANG" "C"
+                  "DEVELOPER_DIR" p15-s23-b3-llvm-developer-directory}
    :private-physical-values ["HOME" "TMPDIR"]
    :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
-   :forbidden-names ["DEVELOPER_DIR" "SDKROOT"
-                     "MACOSX_DEPLOYMENT_TARGET" "CPATH"
+   :forbidden-names ["SDKROOT" "MACOSX_DEPLOYMENT_TARGET" "CPATH"
                      "LIBRARY_PATH"]})
 
 (defn- p15-s23-b3-llvm-sha256-bytes
@@ -128160,6 +128163,9 @@
         _ (.put environment "PATH" "/usr/bin:/bin:/usr/sbin:/sbin")
         _ (.put environment "LC_ALL" "C")
         _ (.put environment "LANG" "C")
+        _ (.put environment "DEVELOPER_DIR"
+                (get-in p15-s23-b3-llvm-environment-policy
+                        [:fixed-values "DEVELOPER_DIR"]))
         _ (.put environment "HOME" (.toString directory))
         _ (.put environment "TMPDIR" (.toString directory))
         _ (.redirectErrorStream builder false)

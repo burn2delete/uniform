@@ -25418,7 +25418,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:5746e9d0f515fdeb7a33fb773b9c5c7dc1c5555c1c4acdbc87e9dcd19479c355"
+    (is (= "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.backend.b3-llvm-backend-design\n"
@@ -34743,12 +34743,14 @@
                    [:build])))
     (is (= {:inherited-environment? false
             :fixed-values {"PATH" "/usr/bin:/bin:/usr/sbin:/sbin"
-                           "LC_ALL" "C" "LANG" "C"}
+                           "LC_ALL" "C" "LANG" "C"
+                           "DEVELOPER_DIR"
+                           "/Library/Developer/CommandLineTools"}
             :private-physical-values ["HOME" "TMPDIR"]
             :forbidden-prefixes ["DYLD_" "CCC_" "LLVM_"]
             :forbidden-names
-            ["DEVELOPER_DIR" "SDKROOT" "MACOSX_DEPLOYMENT_TARGET"
-             "CPATH" "LIBRARY_PATH"]}
+            ["SDKROOT" "MACOSX_DEPLOYMENT_TARGET" "CPATH"
+             "LIBRARY_PATH"]}
            bootstrap/p15-s23-b3-llvm-environment-policy))
     (is (= :experimental
            (:tier bootstrap/p15-s23-b3-llvm-policy)))
@@ -36445,7 +36447,10 @@
         tool-records (get-in left-artifact
                              [:toolchain-evidence :tool-records])
         tool-record-by-step (into {} (map (juxt :step identity))
-                                  tool-records)]
+                                  tool-records)
+        physical-tool-record
+        (get-in left-artifact
+                [:actual-path-provenance :tool-installation-record])]
     (is (= :gravity/p15-s23-b3-authenticated-llvm-artifact
            (:kind left-artifact) (:kind right-artifact)))
     (is (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
@@ -36480,6 +36485,20 @@
       (is (false? (:raw-output-retained? record)) step)
       (is (= bootstrap/p15-s23-b3-llvm-environment-policy
              (:environment-policy record)) step))
+    (is (= "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+           (:sdk-locator-path physical-tool-record)))
+    (is (= "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk"
+           (:sdk-effective-path physical-tool-record)))
+    (is (= "/Library/Developer/CommandLineTools/usr/bin/clang"
+           (:clang-locator-path physical-tool-record)
+           (:clang-effective-path physical-tool-record)))
+    (is (= "/Library/Developer/CommandLineTools/usr/bin/ld"
+           (:ld-locator-path physical-tool-record)
+           (:ld-effective-path physical-tool-record)))
+    (is (= "/Library/Developer/CommandLineTools/usr/bin/otool"
+           (:otool-locator-path physical-tool-record)))
+    (is (= "/Library/Developer/CommandLineTools/usr/bin/llvm-otool"
+           (:otool-effective-path physical-tool-record)))
     (is (every? :candidate-identical? (:records transactions)))
     (is (every? :publication-intent? (:records transactions)))
     (is (apply = (map :payload-hashes (:records transactions))))
@@ -36731,9 +36750,15 @@
           gate-key))
     (is (not (contains? (:toolchain-evidence left-artifact)
                         :publication-payload)))
-    (is (not (str/includes?
-              (pr-str (:toolchain-evidence left-artifact))
-              "/Library/Developer")))
+    (let [toolchain-text (pr-str (:toolchain-evidence left-artifact))
+          path-neutral-toolchain-text
+          (str/replace toolchain-text
+                       "/Library/Developer/CommandLineTools"
+                       "<fixed-developer-directory>")]
+      (is (str/includes? toolchain-text
+                         "/Library/Developer/CommandLineTools"))
+      (is (not (str/includes? path-neutral-toolchain-text
+                              "/Library/Developer"))))
     (is (str/ends-with?
          (get-in left-artifact
                  [:actual-path-provenance :otool-path])
@@ -41521,10 +41546,12 @@
                           left-root %)
                         authenticated-binary-integer-llvm-cases)
                   mirror
-                  (authenticated-binary-integer-llvm-tool-free-row
-                   right-root
-                   (assoc (first authenticated-binary-integer-llvm-cases)
-                          :label :eq-true-mirror :extension ".qst"))
+                  (assoc
+                   (authenticated-binary-integer-llvm-tool-free-row
+                    right-root
+                    (assoc (first authenticated-binary-integer-llvm-cases)
+                           :extension ".qst"))
+                   :label :eq-true-mirror)
                   after
                   (bootstrap/p15-s23-b3-llvm-tool-execution-snapshot)]
               {:rows rows :mirror mirror :before before :after after})))))))
