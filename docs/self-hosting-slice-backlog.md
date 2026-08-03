@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 31 of the 41
+`SH-07` remains partial. Its current executable evidence covers 32 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -590,9 +590,40 @@ MIR and domain-IR coverage, production backend execution, object or executable
 emission, external target execution, backend conformance completion, public
 Gravity routing, Clojure seed retirement, SH-07 completion, and SH-17
 completion remain pending.
+The B3 LLVM backend source adds 86,185 authenticated bytes in 83 fragments
+containing 7,072 forms, 692 bindings, and 2,762 resolutions. Its calibrated
+lowering contains 5,940 canonical core nodes with 83 definitions: 72 executable
+functions and 11 data contracts. Its 372 `get` calls divide into 306 literal-key
+calls and 66 dynamic-key or indexed calls; all are ordinary resolved calls
+rather than keyword-headed lookup forms, so the canonical keyword-lookup
+product count remains zero and B16 stays frozen. The SH-06 request contains
+484,843 carrier nodes at depth 27, maximum width 7,072, 8,068,604 exact UTF-8
+scalar bytes, and a 32,257,096-byte conservative scalar charge; every unchanged
+B16 bound passes. The isolated exact census passed in 364.82 seconds with
+3,775,266,816 maximum resident bytes and no swaps. Fresh bounded B3 packet and
+final-artifact construction, contextual verification, independent lowering
+reconstruction, and altered-MIR/lowering rejection passed in 682.65 seconds
+with 3,973,185,536 maximum resident bytes and no swaps. The authentic source,
+core, altered-replay, and paired rejection proof passed in 1,545.84 seconds
+with 4,406,362,112 maximum resident bytes and no swaps. The independent
+cross-root `.gravity`/`.qst` parity proof passed in 2,411.56 seconds with
+4,782,587,904 maximum resident bytes and no swaps. The final cache-free
+authoritative process passed every contract check in 2,189.43 seconds with
+artifact identity
+`sha256:2c512aaad76cebe430fc2083310ad9699890e314c67467cf899c6e3f0aede59d`,
+4,721,672,192 maximum resident bytes, and no swaps. The bounded executable
+surface validates a pinned ARM64 macOS LLVM subset, constructs deterministic
+textual LLVM for supported scalar and control-flow MIR, preserves target and
+source lineage, and rejects malformed envelopes, unsupported operations,
+invalid data-flow or CFG structure, unsafe target assumptions, and altered
+artifacts through structured diagnostics and contextual verification. Complete
+B3 MIR and domain-IR coverage, production backend execution, object or
+executable emission, external target execution, backend conformance completion,
+public Gravity routing, Clojure seed retirement, SH-07 completion, SH-17
+completion, and self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 10 compiler
+central routing, and final artifact construction. The remaining 9 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
