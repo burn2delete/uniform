@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B34"
+ :coverage-milestone "SH-07-B35"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -155,6 +155,8 @@
  :authoritative-modules
  {:diagnostics
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+  :b1-backend-interface
+  "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
   :b5-jvm
   "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
   :b6-javascript-typescript
@@ -219,7 +221,8 @@
  [:fragment-manifest :fragment-coverage :module-assembly-manifest
   :keyword-lookups]
  :required-core-product-counts
- {:b5-jvm {:keyword-lookups 9}
+ {:b1-backend-interface {:keyword-lookups 0}
+  :b5-jvm {:keyword-lookups 9}
   :b6-javascript-typescript {:keyword-lookups 8}
   :b7-mlir {:keyword-lookups 5}
   :b8-gpu {:keyword-lookups 8}
@@ -318,6 +321,11 @@
   :sh16-self-hosted-certificate-checker
   :sh16-complete
   :c14-production-target-lowering-authority
+  :complete-b1-mir-and-domain-ir-surface
+  :b1-production-backend-execution
+  :b1-object-or-executable-emission
+  :b1-external-target-execution
+  :b1-backend-conformance-complete
   :c14-complete-target-matrix
   :sh17-authenticated-sh16-input
   :sh17-complete-mir-lowering

@@ -283,7 +283,7 @@
         (select-keys
          (:authoritative-modules contract)
          (keys expected-module-counts))]
-    (is (= "SH-07-B34" (:coverage-milestone contract)))
+    (is (= "SH-07-B35" (:coverage-milestone contract)))
     (is (= 9 (count cohort)))
     (is (= expected-module-counts
            (into {}

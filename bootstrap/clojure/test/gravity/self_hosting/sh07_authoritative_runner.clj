@@ -98,7 +98,7 @@
            :iteration-cache-non-authoritative?
            (false? (:iteration-cache-authoritative boundary))
            :coverage-milestone-current?
-           (= "SH-07-B34" (:coverage-milestone contract))
+           (= "SH-07-B35" (:coverage-milestone contract))
            :target-source-reread-disabled?
            (false?
             (get-in artifact

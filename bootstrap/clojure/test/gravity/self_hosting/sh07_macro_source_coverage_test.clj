@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B34" (:coverage-milestone contract)))
+    (is (= "SH-07-B35" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -185,6 +185,8 @@
            (:boundary contract)))
     (is (= {:diagnostics
             "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
+            :b1-backend-interface
+            "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
             :b5-jvm
             "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
             :b6-javascript-typescript
@@ -307,6 +309,11 @@
              :sh16-self-hosted-certificate-checker
              :sh16-complete
              :c14-production-target-lowering-authority
+             :complete-b1-mir-and-domain-ir-surface
+             :b1-production-backend-execution
+             :b1-object-or-executable-emission
+             :b1-external-target-execution
+             :b1-backend-conformance-complete
              :c14-complete-target-matrix
              :sh17-authenticated-sh16-input
              :sh17-complete-mir-lowering
