@@ -37000,7 +37000,7 @@
          #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
            "effectful-wasm.gravity" effectful :wasm))]
     (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
-    (is (= 118282 (alength (.getBytes
+    (is (= 118298 (alength (.getBytes
                            source java.nio.charset.StandardCharsets/UTF_8))))
     (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source))))

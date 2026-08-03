@@ -474,9 +474,9 @@
     :content-hash
     "sha256:4761712a845753d23f1bac381b38b8f59515dded1b75183d1f317567d173c6b3"}
    {:component-id :backend-wasm
-    :byte-count 118282
+    :byte-count 118298
     :content-hash
-    "sha256:3f40473e05b3a99d0d9f19d530710c07d5b33052887e8bf300777f9a57d4eba6"}
+    "sha256:9efc6cc91b77c73f2adcb8db89e1a7e74494a8512dda52fd4b226bb10591d87a"}
    {:component-id :backend-jvm
     :byte-count 23533
     :content-hash

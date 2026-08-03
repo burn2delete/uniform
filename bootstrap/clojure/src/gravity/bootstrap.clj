@@ -141734,13 +141734,13 @@
 (def p15-s23-b4-wasm-source-relative-path
   "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity")
 (def p15-s23-b4-wasm-builder-function 'b4-build-bounded-wasm32-core)
-(def p15-s23-b4-wasm-source-byte-count 118282)
+(def p15-s23-b4-wasm-source-byte-count 118298)
 (def p15-s23-b4-wasm-expected-source-content-hash
-  "sha256:3f40473e05b3a99d0d9f19d530710c07d5b33052887e8bf300777f9a57d4eba6")
+  "sha256:9efc6cc91b77c73f2adcb8db89e1a7e74494a8512dda52fd4b226bb10591d87a")
 (def p15-s23-b4-wasm-expected-plan-semantic-hash
-  "sha256:603d3649c1e912adf24af8208c18e9c3a43303d9f29ead31c5448aa2ecbeefcf")
+  "sha256:92ce064d699bba19407c91d38f65cf30ffafa33b5142d77b623b39258f602a8b")
 (def p15-s23-b4-wasm-expected-functions-semantic-hash
-  "sha256:82a704177cc87285945eee01821983e8e1a9cdee36caa48fbecddbc210c6cf5e")
+  "sha256:38ec4d254d654d450d4b8ad21afefaa408f91b8a00a5eea99e4fdd27007264fd")
 (def p15-s23-b4-wasm-expected-builder-semantic-hash
   "sha256:f3e7c33fc18167ea5c3ae5da1aa8005cf7939feaaf60e9be5c488266cf1c16a9")
 (def p15-s23-b4-wasm-required-functions
