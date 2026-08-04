@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B36" (:coverage-milestone contract)))
+    (is (= "SH-07-B37" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -189,6 +189,8 @@
             "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
             :b3-llvm
             "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+            :b4-wasm
+            "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
             :b5-jvm
             "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
             :b6-javascript-typescript
@@ -324,6 +326,21 @@
              :b3-public-gravity-routing
              :b3-complete
              :b3-release
+             :b4-complete-mir-and-domain-ir-surface
+             :b4-production-backend-execution
+             :b4-complete-component-model
+             :b4-complete-canonical-abi
+             :b4-complete-import-export-capability-surface
+             :b4-complete-linear-memory-and-table-surface
+             :b4-complete-wasi-async-surface
+             :b4-complete-simd-atomic-feature-surface
+             :b4-complete-runtime-binding-surface
+             :b4-complete-artifact-emission-surface
+             :b4-complete-external-target-matrix
+             :b4-backend-conformance-complete
+             :b4-public-gravity-routing
+             :b4-complete
+             :b4-release
              :c14-complete-target-matrix
              :sh17-authenticated-sh16-input
              :sh17-complete-mir-lowering

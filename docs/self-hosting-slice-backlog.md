@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 32 of the 41
+`SH-07` remains partial. Its current executable evidence covers 33 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -621,9 +621,37 @@ B3 MIR and domain-IR coverage, production backend execution, object or
 executable emission, external target execution, backend conformance completion,
 public Gravity routing, Clojure seed retirement, SH-07 completion, SH-17
 completion, and self-hosting completion remain pending.
+The B4 Wasm backend source adds 118,298 authenticated bytes in 72 fragments
+containing 8,189 forms, 629 bindings, and 2,900 resolutions. Its calibrated
+lowering contains 6,830 canonical core nodes with 72 definitions: 61 functions
+and 11 data contracts. All 349 `if` forms have normative four-element shape
+after the bounded source correction, and its 520 `get` calls divide into 471
+literal-key calls and 49 dynamic-key or indexed calls. All are ordinary
+resolved calls rather than keyword-headed lookup forms, so the canonical
+keyword-lookup product count remains zero and B16 stays frozen. The SH-06
+request contains 561,455 carrier nodes at depth 44, maximum width 8,189,
+9,056,474 exact UTF-8 scalar bytes, and a 36,208,772-byte conservative scalar
+charge; every unchanged B16 bound passes. The isolated exact census passed in
+420.52 seconds with 3,705,847,808 maximum resident bytes and no swaps. The
+authentic source, core, altered-replay, and paired rejection proof passed in
+1,731.80 seconds with 4,600,299,520 maximum resident bytes and no swaps. The
+independent cross-root `.gravity`/`.qst` parity proof passed in 2,612.74
+seconds with 4,819,746,816 maximum resident bytes and no swaps. Fresh bounded
+B4 construction, contextual verification, and altered-MIR, lowering, and raw
+Wasm rejection passed with 9 tests and 122 assertions; each alteration was
+contained by its owning B1, B4, or B13 diagnostic boundary before effects. The
+authenticated artifact identity is
+`sha256:334fe22fbd4367dca63e53b768ff0ef1ed26ef8d8937f8b605471d3fe60da739`.
+The bounded executable surface constructs and verifies deterministic Wasm32
+core lowering for its supported compiler slice while preserving path-neutral
+identity and actual-path provenance. Complete B4 MIR and domain-IR coverage,
+production backend execution, component-model and canonical-ABI support,
+complete import, export, memory, table, WASI, async, SIMD, atomic,
+runtime-binding, artifact-emission, external target-matrix, public-routing,
+conformance, release, and self-hosting authority remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 9 compiler
+central routing, and final artifact construction. The remaining 8 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

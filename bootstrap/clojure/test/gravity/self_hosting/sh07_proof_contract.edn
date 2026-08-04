@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B36"
+ :coverage-milestone "SH-07-B37"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -65,6 +65,7 @@
   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
   "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md"
+  "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md"
   "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md"
   "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
   "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md"
@@ -159,6 +160,8 @@
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
   :b3-llvm
   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+  :b4-wasm
+  "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
   :b5-jvm
   "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
   :b6-javascript-typescript
@@ -225,6 +228,7 @@
  :required-core-product-counts
  {:b1-backend-interface {:keyword-lookups 0}
   :b3-llvm {:keyword-lookups 0}
+  :b4-wasm {:keyword-lookups 0}
   :b5-jvm {:keyword-lookups 9}
   :b6-javascript-typescript {:keyword-lookups 8}
   :b7-mlir {:keyword-lookups 5}
@@ -337,6 +341,21 @@
   :b3-public-gravity-routing
   :b3-complete
   :b3-release
+  :b4-complete-mir-and-domain-ir-surface
+  :b4-production-backend-execution
+  :b4-complete-component-model
+  :b4-complete-canonical-abi
+  :b4-complete-import-export-capability-surface
+  :b4-complete-linear-memory-and-table-surface
+  :b4-complete-wasi-async-surface
+  :b4-complete-simd-atomic-feature-surface
+  :b4-complete-runtime-binding-surface
+  :b4-complete-artifact-emission-surface
+  :b4-complete-external-target-matrix
+  :b4-backend-conformance-complete
+  :b4-public-gravity-routing
+  :b4-complete
+  :b4-release
   :c14-complete-target-matrix
   :sh17-authenticated-sh16-input
   :sh17-complete-mir-lowering
