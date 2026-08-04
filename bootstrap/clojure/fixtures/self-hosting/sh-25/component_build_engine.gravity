@@ -556,8 +556,8 @@
    :effects #{}
    :capabilities #{}
    :diagnostics
-   ["BOOT1001" "BOOT1003" "BOOT3001" "BOOT3002"
-    "BOOT3003" "BOOT3004" "BOOT5002" "BOOT5003"]
+   ["BOOT1003" "BOOT3001" "BOOT3002" "BOOT3004"
+    "BOOT5003" "BOOT7005"]
    :runtime-boundary
    {:status :provisional-leaf-source
     :authoritative-ownership-record? false}
@@ -1641,19 +1641,6 @@
          :facts {:reason (get request-preflight :reason)}
          :remediation "Provide a bounded request carrier."}]})))
 
-(defn sh25-verified-sh26-from?
-  [templates index result]
-  (if (= index (count templates))
-    result
-    (sh25-verified-sh26-from?
-     templates (+ index 1)
-     (conj
-      result
-      (assoc
-       (assoc (get templates index)
-              :conformance-status :passed)
-       :sh25-verification-status :passed)))))
-
 (defn sh25-project-verified-sh26-components
   [request candidate verification]
   (let [request-preflight (sh25-carrier-preflight request)
@@ -1668,12 +1655,11 @@
               (if (= :passed (get verification :status))
                 {:artifact :gravity/sh25-sh26-component-projection
                  :schema-version 1
-                 :status :accepted
+                 :status :pending
                  :build-id (get request :build-id)
                  :verification verification
                  :components
-                 (sh25-verified-sh26-from?
-                  (get candidate :sh26-component-templates) 0 [])}
+                 (get candidate :sh26-component-templates)}
                 (sh25-rejection request :sh25-verification-not-passed))
               (sh25-rejection request :verification-record-altered)))
           (sh25-rejection

@@ -73,12 +73,16 @@ inventory. SH-21, SH-22, and SH-24 products are supplied descriptors rather
 than coordinator-routed authenticated artifacts.
 
 This is executable Gravity-owned validation and deterministic construction, not
-SH-25 completion. The emitted SH-26 templates remain `:pending` until
-`sh25-verify-component-build` passes and
-`sh25-project-verified-sh26-components` derives the final status from that
-verification. It does not claim a self-hosted compiler, complete component
-compilation, seed retirement, target support, independent output validation, or
-release readiness. The coordinator must connect genuine prerequisite products,
-rerun their owning verifiers, promote an authoritative runtime source, execute
-every action through the Gravity driver, and pass the uniform SH-25 gates
-before completion credit.
+SH-25 completion. `sh25-verify-component-build` proves exact reconstruction of
+the bounded supplied records only. The emitted SH-26 projection and every
+component in it remain `:pending`; exact reconstruction does not promote
+component conformance or SH-25 verification to `:passed`. The projection keeps
+the current SH-26 closed top-level schema; outstanding work remains explicit in
+the SH-25 policy and complete result. SH-26 must reject this bounded projection
+because its status is `:pending`. A future authoritative adapter may emit a
+passed projection only after it connects genuine prerequisite products, reruns
+their owning verifiers, promotes an authoritative runtime source, executes
+every action through the Gravity driver, independently validates the outputs,
+and passes the uniform SH-25 gates. This leaf does not claim a self-hosted
+compiler, complete component compilation, seed retirement, target support,
+independent output validation, or release readiness.

@@ -117,6 +117,9 @@
     (is (= :meta (:profile policy)))
     (is (= #{} (:effects policy)))
     (is (= #{} (:capabilities policy)))
+    (is (= ["BOOT1003" "BOOT3001" "BOOT3002" "BOOT3004"
+            "BOOT5003" "BOOT7005"]
+           (:diagnostics policy)))
     (is (= :provisional-leaf-source
            (get-in policy [:runtime-boundary :status])))
     (is (false? (:self-hosted? policy)))
@@ -184,10 +187,18 @@
     (is (every? #(= :pending (:sh25-verification-status %))
                 (:sh26-component-templates gravity)))
     (is (= :passed (:status verification)))
-    (is (= :accepted (:status projection)))
+    (is (= :pending (:status projection)))
+    (is (= #{:artifact :schema-version :status :build-id
+             :verification :components}
+           (set (keys projection))))
     (is (= 42 (count (:components projection))))
-    (is (every? #(= :passed (:sh25-verification-status %))
-                (:components projection)))))
+    (is (every? #(= :pending (:conformance-status %))
+                (:components projection)))
+    (is (every? #(= :pending (:sh25-verification-status %))
+                (:components projection)))
+    (is (some #{:gravity-driver-execution} (:pending gravity)))
+    (is (some #{:external-sh24-driver-recomputation}
+              (:pending gravity)))))
 
 (deftest sh25-identities-are-path-neutral-with-separate-provenance
   (let [left-request
@@ -223,7 +234,8 @@
 
 (deftest sh25-rejects-incomplete-or-illegal-component-inputs
   (let [base
-        (request accepted-gravity-plan 'sh25-component-build-request)]
+        (request accepted-gravity-plan 'sh25-component-build-request)
+        emitted-rules (atom #{})]
     (doseq [[function rule reason]
             [['sh25-incomplete-catalog-request
               "BOOT3001" :incomplete-catalog]
@@ -253,6 +265,8 @@
           (is (= gravity-request qst-request))
           (is (= gravity qst))
           (is (= :rejected (:status gravity)))
+          (swap! emitted-rules conj
+                 (get-in gravity [:diagnostics 0 :rule]))
           (is (= rule
                  (get-in gravity [:diagnostics 0 :rule])))
           (is (= reason
@@ -260,7 +274,11 @@
     (let [over-bound
           (assoc-in base [:components 1 :dependencies]
                     (vec (repeat 17 :authenticated-envelope)))]
-      (is (= :rejected (:status (build over-bound)))))))
+      (is (= :rejected (:status (build over-bound)))))
+    (is (= (set
+            (:diagnostics
+             (invoke engine-plan 'sh25-component-build-policy [])))
+           @emitted-rules))))
 
 (deftest sh25-result-alteration-fails-exact-verification
   (let [request
@@ -385,13 +403,24 @@
         (invoke sh26-engine-plan 'sh26-build-next-stage
                 [sh26-request trusted-context])]
     (is (= :passed (:status verification)))
-    (is (= :accepted (:status projection)))
+    (is (= :pending (:status projection)))
+    (is (= #{:artifact :schema-version :status :build-id
+             :verification :components}
+           (set (keys projection))))
+    (is (false?
+         (invoke sh26-engine-plan 'sh26-sh25-projection-valid?
+                 [base-request verification projection])))
+    (is (true?
+         (invoke sh26-engine-plan 'sh26-sh25-projection-valid?
+                 [base-request verification
+                  (assoc projection :status :accepted)])))
     (is (= base-request (:request ingress)))
     (is (= result (:complete-result ingress)))
     (is (= verification (:verification ingress)))
     (is (= projection (:projection ingress)))
-    (is (= :accepted (:status sh26-result)))
-    (is (= 42 (count (:actions sh26-result))))
+    (is (= :rejected (:status sh26-result)))
+    (is (= :invalid-sh25-ingress
+           (get-in sh26-result [:diagnostics 0 :facts :reason])))
     (is (= :passed
            (:status
             (invoke sh26-engine-plan 'sh26-verify-stage-rebuild
@@ -422,8 +451,15 @@
           :dependencies :profile :implementation-language
           :conformance-status :sh25-verification-status
           :actual-source-path}]
-    (is (= :accepted (:status projection)))
+    (is (= :pending (:status projection)))
+    (is (= #{:artifact :schema-version :status :build-id
+             :verification :components}
+           (set (keys projection))))
     (is (every? #(= expected-keys (set (keys %)))
+                (:components projection)))
+    (is (every? #(= :pending (:conformance-status %))
+                (:components projection)))
+    (is (every? #(= :pending (:sh25-verification-status %))
                 (:components projection)))
     (is (= (range 42)
            (map :topological-ordinal (:components projection))))))
