@@ -119995,6 +119995,12 @@
       (cond-> (dissoc origin :source-path :path)
         (contains? origin :source-id)
         (assoc :source-id private-source-id)
+        (= :reader (get-in origin [:producer :kind]))
+        (update :producer
+                (fn [producer]
+                  (cond-> (dissoc producer :identity)
+                    (contains? producer :source-id)
+                    (assoc :source-id private-source-id))))
         (contains? origin :span)
         (update :span #(p15-s23-c6c10-private-span
                         private-source-id %))
@@ -122334,9 +122340,10 @@
         c3-semantic-hash
         (p15-s23-c6c10-canonical-digest
          source-path
-         {:domain :gravity/c6-c10-authenticated-c3-pin-v1
+         {:domain :gravity/c6-c10-authenticated-c3-pin-v2
           :c2-semantic-hash c2-semantic-hash
-          :c3-artifact-id (:c3-artifact-id front-end)
+          :c3-syntax-ids
+          (mapv :syntax/id (:c3-syntax-object-stream front-end))
           :c3-capability-proof (:c3-capability-proof front-end)})
         plan-semantic-hash
         (p15-s23-c6c10-canonical-digest

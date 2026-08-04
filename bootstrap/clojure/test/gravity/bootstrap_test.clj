@@ -40347,6 +40347,114 @@
            checked-core context)]
       {:context context :checked-core checked-core :c11 c11})))
 
+(deftest checked-core-private-origin-rebinds-reader-instance-ids
+  (let [left
+        {:kind :reader-generated
+         :producer {:kind :reader
+                    :name :gravity.reader
+                    :identity "sha256:left-reader-result"
+                    :source-id "sha256:left-source"
+                    :version 1}
+         :source-id "sha256:left-source"
+         :source-path "/tmp/left.gravity"
+         :span {:source "/tmp/left.gravity" :start-byte 0 :end-byte 1}}
+        right
+        (-> left
+            (assoc :source-id "sha256:right-source"
+                   :source-path "/tmp/right.qst")
+            (assoc :span {:source "/tmp/right.qst"
+                          :start-byte 0 :end-byte 1})
+            (assoc-in [:producer :identity] "sha256:right-reader-result")
+            (assoc-in [:producer :source-id] "sha256:right-source"))
+        left-semantic
+        (bootstrap/p15-s23-c6c10-private-origin "sha256:private-source" left)
+        right-semantic
+        (bootstrap/p15-s23-c6c10-private-origin "sha256:private-source" right)
+        compiler-origin
+        {:kind :compiler-generated
+         :producer {:kind :compiler-pass
+                    :identity "sha256:compiler-pass"}}
+        compiler-semantic
+        (bootstrap/p15-s23-c6c10-private-origin
+         "sha256:private-source" compiler-origin)
+        legacy-reader
+        {:kind :source
+         :producer {:kind :reader :name :gravity.reader :version 1}}
+        legacy-reader-semantic
+        (bootstrap/p15-s23-c6c10-private-origin
+         "sha256:private-source" legacy-reader)]
+    (is (= left-semantic right-semantic))
+    (is (= {:kind :reader
+            :name :gravity.reader
+            :source-id "sha256:private-source"
+            :version 1}
+           (:producer left-semantic)))
+    (is (= {:start-byte 0 :end-byte 1} (:span left-semantic)))
+    (is (not= left right))
+    (is (= "sha256:left-reader-result" (get-in left [:producer :identity])))
+    (is (= "sha256:right-reader-result" (get-in right [:producer :identity])))
+    (is (= "sha256:compiler-pass"
+           (get-in compiler-semantic [:producer :identity])))
+    (is (not (contains? (:producer legacy-reader-semantic) :source-id)))))
+
+(deftest checked-core-c3-semantic-pin-excludes-physical-wrapper-id
+  (let [front-end
+        {:source-unit-id "sha256:private-source"
+         :incremental-reader-hashes {:status :stable}
+         :reader-product-integrity {:status :passed}
+         :c3-artifact-id "sha256:left-physical-wrapper"
+         :c3-syntax-object-stream [{:syntax/id "sha256:syntax-a"}
+                                   {:syntax/id "sha256:syntax-b"}]
+         :c3-capability-proof {:status :complete
+                               :syntax-ids ["sha256:syntax-a"
+                                            "sha256:syntax-b"]}}
+        ingress
+        {:source-content-hash "sha256:source"
+         :front-end-products front-end
+         :stage2-plan {:plan-id "sha256:plan"}}
+        source-binding
+        {:source-content-hash "sha256:builder-source"
+         :plan-semantic-hash "sha256:builder-plan"
+         :builder-semantic-hash "sha256:builder-function"}
+        left
+        (bootstrap/p15-s23-c6c10-binding-pins
+         "/tmp/left.gravity" ingress source-binding)
+        right
+        (bootstrap/p15-s23-c6c10-binding-pins
+         "/tmp/right.qst"
+         (assoc-in ingress [:front-end-products :c3-artifact-id]
+                   "sha256:right-physical-wrapper")
+         source-binding)
+        reversed-ingress
+        (-> ingress
+            (assoc-in [:front-end-products :c3-syntax-object-stream]
+                      [{:syntax/id "sha256:syntax-b"}
+                       {:syntax/id "sha256:syntax-a"}])
+            (assoc-in [:front-end-products :c3-capability-proof :syntax-ids]
+                      ["sha256:syntax-b" "sha256:syntax-a"]))
+        reversed
+        (bootstrap/p15-s23-c6c10-binding-pins
+         "/tmp/reversed.gravity" reversed-ingress source-binding)
+        changed-ingress
+        (-> ingress
+            (assoc-in [:front-end-products :c3-syntax-object-stream 1
+                       :syntax/id]
+                      "sha256:syntax-c")
+            (assoc-in [:front-end-products :c3-capability-proof :syntax-ids 1]
+                      "sha256:syntax-c"))
+        changed
+        (bootstrap/p15-s23-c6c10-binding-pins
+         "/tmp/changed.gravity" changed-ingress source-binding)]
+    (is (= left right))
+    (is (= (:c3-semantic-hash left) (:c3-semantic-hash right)))
+    (is (= (:plan-semantic-hash left) (:plan-semantic-hash right)))
+    (is (not= "sha256:left-physical-wrapper"
+              "sha256:right-physical-wrapper"))
+    (is (not= (:c3-semantic-hash left) (:c3-semantic-hash reversed)))
+    (is (not= (:plan-semantic-hash left) (:plan-semantic-hash reversed)))
+    (is (not= (:c3-semantic-hash left) (:c3-semantic-hash changed)))
+    (is (not= (:plan-semantic-hash left) (:plan-semantic-hash changed)))))
+
 (def ^:private authenticated-binary-integer-equality-gate-a-proof
   (delay
     (with-temp-directory
