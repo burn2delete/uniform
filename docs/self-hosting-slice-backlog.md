@@ -681,9 +681,37 @@ target coverage, runtime and library integration, release-grade object and
 executable emission, public routing, Clojure seed retirement, backend
 conformance completion, SH-07 completion, and self-hosting completion remain
 pending.
+The cache-free proof-transaction checkpoint preserves the construction and
+independent-audit boundary while reusing only thread-confined immutable
+verification receipts. All 34 then-authoritative modules were accepted, all
+verification and capability checks passed, and the process recorded 476
+receipt reuses without a persistent cache. It completed in 31,928.08 seconds
+with 7,959,691,264 maximum resident bytes and no swaps, reducing wall time by
+about 31 percent from the preceding 46,167-second B38 process. Maximum resident
+memory increased from 6,399,033,344 bytes, so this is a measured time-for-memory
+trade rather than a memory improvement. The closed receipt binds artifact,
+report, stage, mode, check-catalog, and exact verifier identities while
+retaining no carrier values after cleanup.
+The L1/C2 surface-reader source advances the authenticated compiler inventory
+to 35 of 41 modules. It adds 36,920 authenticated bytes in 32 fragments
+containing 2,892 forms and 1,019 resolutions; its source hash is
+`sha256:cb416baa7330fd7db5507fcd5fc1d78d5c9e848feb9020552d4c21b9e1c17fe0`.
+The isolated census passed 9 tests and 193 assertions in 183.00 seconds with
+4,021,829,632 maximum resident bytes and no swaps. Authentic replay passed 9
+tests and 194 assertions in 545.56 seconds with 4,021,174,272 maximum resident
+bytes and no swaps, preserving the genuine reader products and rejecting an
+altered token stream. Cross-root `.gravity`/`.qst` parity passed 9 tests and
+191 assertions in 989.77 seconds with 4,023,549,952 maximum resident bytes and
+no swaps; semantic identity stayed path-neutral while actual paths remained in
+provenance. The final cache-free authoritative process passed every contract
+check in 622.459 seconds with artifact identity
+`sha256:f27d7569ad0a06988241864fcb49ca1fc0df5d39993b55397e96a58524f050f9`,
+14 receipt reuses, 3,820,716,032 maximum resident bytes, and no swaps. Complete
+reader semantics, public routing, Clojure seed retirement, SH-07 completion,
+and self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 7 compiler
+central routing, and final artifact construction. The remaining 6 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

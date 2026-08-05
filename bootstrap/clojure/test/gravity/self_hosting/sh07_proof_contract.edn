@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B38"
+ :coverage-milestone "SH-07-B39"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -11,6 +11,7 @@
   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
+  "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"
   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
@@ -226,6 +227,8 @@
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
   :c10-safety
   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+  :l1-c2-surface-reader
+  "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -273,6 +276,7 @@
   :c8-effects {:keyword-lookups 0}
   :c9-ownership {:keyword-lookups 0}
   :c10-safety {:keyword-lookups 0}
+  :l1-c2-surface-reader {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
