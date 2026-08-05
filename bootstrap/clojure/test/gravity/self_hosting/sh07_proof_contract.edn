@@ -111,6 +111,25 @@
   :adapter :gravity/sh07-to-c6-core-products-v15
   :fresh-authoritative-process-required true
   :iteration-cache-authoritative false}
+ :proof-transaction
+ {:schema-version 1
+  :phase-order [:construction :independent-audit]
+  :thread-confined true
+  :nested-transactions-allowed false
+  :cross-epoch-reuse false
+  :failed-report-reuse false
+  :source-snapshot-recheck-required true
+  :checked-core-revision-recheck-required true
+  :upstream-gravity-source-rechecks [:sh05-macro :sh06-resolution]
+  :exact-verifier-root-identity-required true
+  :verification-check-catalog-binding-required true
+  :immutable-receipt-carriers-required true
+  :finally-cleanup-required true
+  :maximum-receipts-per-phase 64
+  :maximum-sh05-full-verifications 4
+  :minimum-independent-audit-executions
+  {:sh05 1 :sh06 1 :sh07 1}
+  :iteration-receipts-authoritative false}
  :bounds
  {:maximum-module-forms 65536
   :maximum-module-core-nodes 65536

@@ -156248,6 +156248,193 @@
                 :verified-run-count (count reports)}
      :runs reports}))
 
+;; SH-07 authoritative proof transactions remove repeated verification work
+;; inside one module without changing the public verifier contracts.  Receipts
+;; are private, thread-confined, phase-confined, identity-bound, and retained
+;; only for passed immutable reports.  Construction receipts are destroyed
+;; before the independent audit begins.
+(def ^:dynamic ^:private *sh07-proof-transaction-context* nil)
+(def ^:dynamic ^:private *sh07-proof-transaction-cleanup-observer* nil)
+
+(defn- sh07-proof-transaction-thread-id
+  []
+  (.getId (Thread/currentThread)))
+
+(defn- sh07-proof-transaction-artifact-root
+  [stage artifact]
+  (case stage
+    :sh05
+    {:artifact-id (:artifact-id artifact)
+     :stream-id (:expanded-syntax-stream-id artifact)
+     :trace-id (:macro-expansion-trace-id artifact)}
+
+    :sh06
+    {:artifact-id (:artifact-id artifact)
+     :semantic-projection-id (:semantic-projection-id artifact)
+     :alias-table-id (:alias-table-id artifact)}
+
+    :sh07
+    {:artifact-id (:artifact-id artifact)
+     :semantic-projection-id
+     (get-in artifact
+             [:gravity-core-boundary :canonical-core-artifact
+              :semantic-projection-id])}
+
+    {:artifact-id (:artifact-id artifact)}))
+
+(defn- sh07-proof-transaction-immutable-carrier?
+  [value]
+  (let [pending (java.util.ArrayDeque.)
+        push! (fn [entry]
+                (when-not (nil? entry) (.push pending entry)))]
+    (push! value)
+    (loop [visited 0]
+      (cond
+        (> visited 67108864) false
+        (.isEmpty pending) true
+        :else
+        (let [current (.pop pending)
+              metadata (when (instance? clojure.lang.IObj current)
+                         (meta current))]
+          (push! metadata)
+          (cond
+            (or (nil? current)
+                (boolean? current)
+                (instance? java.lang.Byte current)
+                (instance? java.lang.Short current)
+                (instance? java.lang.Integer current)
+                (instance? java.lang.Long current)
+                (instance? java.lang.Float current)
+                (instance? java.lang.Double current)
+                (instance? java.math.BigInteger current)
+                (instance? java.math.BigDecimal current)
+                (instance? clojure.lang.BigInt current)
+                (instance? clojure.lang.Ratio current)
+                (string? current)
+                (keyword? current)
+                (symbol? current)
+                (char? current))
+            (recur (inc visited))
+
+            (instance? clojure.lang.LazySeq current)
+            false
+
+            (map? current)
+            (do
+              (doseq [[key entry-value] current]
+                (push! key)
+                (push! entry-value))
+              (recur (inc visited)))
+
+            (or (vector? current) (set? current) (list? current)
+                (instance? clojure.lang.IMapEntry current))
+            (do
+              (doseq [entry current] (push! entry))
+              (recur (inc visited)))
+
+            :else false))))))
+
+(defn- sh07-proof-transaction-context!
+  []
+  (when-let [context *sh07-proof-transaction-context*]
+    (let [state @context]
+      (when-not (and (:open? state)
+                     (= (:owner-thread-id state)
+                        (sh07-proof-transaction-thread-id)))
+        (throw
+         (ex-info "SH-07 proof transaction is closed or thread-confined"
+                  {:id "C6-VERIFY"
+                   :stage :sh07-proof-transaction
+                   :reason (if (:open? state)
+                             :cross-thread-access
+                             :closed-transaction)})))
+      context)))
+
+(defn- sh07-proof-transaction-report
+  [stage mode verifier-epoch artifact verify]
+  (if-let [context (sh07-proof-transaction-context!)]
+    (let [state @context
+          phase (:phase state)
+          root (sh07-proof-transaction-artifact-root stage artifact)
+          catalog-key [stage mode]
+          expected-catalog (get-in state [:check-catalogs catalog-key])
+          receipt
+          (some
+           (fn [candidate]
+             (when (and (= phase (:phase candidate))
+                        (= stage (:stage candidate))
+                        (= mode (:mode candidate))
+                        (identical?
+                         (:verifier-root verifier-epoch)
+                         (get-in candidate [:verifier-epoch :verifier-root]))
+                        (= (dissoc verifier-epoch :verifier-root)
+                           (dissoc (:verifier-epoch candidate)
+                                   :verifier-root))
+                        (= expected-catalog
+                           {:check-catalog (:check-catalog candidate)
+                            :check-catalog-hash
+                            (:check-catalog-hash candidate)})
+                        (identical? artifact (:artifact candidate))
+                        (= root (:artifact-root candidate)))
+               candidate))
+           (:receipts state))]
+      (if receipt
+        (do
+          (swap! context update-in [:reuses stage] (fnil inc 0))
+          (:report receipt))
+        (let [report (verify)
+              check-catalog (set (keys (:checks report)))
+              check-catalog-hash
+              (reader-canonical-hash
+               {:domain (:check-catalog-domain verifier-epoch)
+                :schema-version (:report-schema-version verifier-epoch)
+                :checks (vec (sort check-catalog))})
+              observed-catalog
+              {:check-catalog check-catalog
+               :check-catalog-hash check-catalog-hash}]
+          (swap! context update-in [:executions stage] (fnil inc 0))
+          (when (and expected-catalog
+                     (not= expected-catalog observed-catalog))
+            (throw
+             (ex-info "SH-07 proof transaction verifier catalog changed"
+                      {:id "C6-VERIFY"
+                       :stage :sh07-proof-transaction
+                       :reason :check-catalog-changed
+                       :verifier-stage stage
+                       :verifier-mode mode})))
+          (swap! context update :check-catalogs
+                 #(if (contains? % catalog-key)
+                    %
+                    (assoc % catalog-key observed-catalog)))
+          (when-not (= :passed (:status report))
+            (swap! context update :failed-report-executions (fnil inc 0)))
+          (when (and (= :passed (:status report))
+                     (sh07-proof-transaction-immutable-carrier? artifact)
+                     (sh07-proof-transaction-immutable-carrier? report))
+            (swap!
+             context
+             (fn [current]
+               (when (>= (count (:receipts current))
+                         (:maximum-receipts current))
+                 (throw
+                  (ex-info "SH-07 proof transaction receipt bound exceeded"
+                           {:id "C6-VERIFY"
+                            :stage :sh07-proof-transaction
+                            :reason :maximum-receipts
+                            :maximum (:maximum-receipts current)})))
+               (update current :receipts conj
+                       {:phase phase
+                        :stage stage
+                        :mode mode
+                        :verifier-epoch verifier-epoch
+                        :artifact artifact
+                        :artifact-root root
+                        :check-catalog check-catalog
+                        :check-catalog-hash check-catalog-hash
+                        :report report}))))
+          report)))
+    (verify)))
+
 (defn sh05-macro-artifact-verification*
   [artifact allow-missing-proof?]
   (let [source-path (get-in artifact [:provenance :source-path])
@@ -156535,11 +156722,34 @@
 
 (defn sh05-macro-artifact-verification
   [artifact]
-  (sh05-macro-artifact-verification* artifact false))
+  (sh07-proof-transaction-report
+   :sh05 :final
+   {:verifier-root
+    (var-get #'sh05-macro-artifact-verification*)
+    :report-schema-version 1
+    :check-catalog-domain :gravity/sh05-final-verification-checks
+    :source-content-hash sh05-macro-expected-source-content-hash
+    :plan-semantic-hash sh05-macro-expected-plan-semantic-hash
+    :functions-semantic-hash
+    sh05-macro-expected-functions-semantic-hash}
+   artifact
+   #(sh05-macro-artifact-verification* artifact false)))
 
 (defn sh05-macro-capability-based-proof-for-construction
   [artifact]
-  (let [report (sh05-macro-artifact-verification* artifact true)
+  (let [report
+        (sh07-proof-transaction-report
+         :sh05 :construction
+         {:verifier-root
+          (var-get #'sh05-macro-artifact-verification*)
+          :report-schema-version 1
+          :check-catalog-domain :gravity/sh05-construction-verification-checks
+          :source-content-hash sh05-macro-expected-source-content-hash
+          :plan-semantic-hash sh05-macro-expected-plan-semantic-hash
+          :functions-semantic-hash
+          sh05-macro-expected-functions-semantic-hash}
+         artifact
+         #(sh05-macro-artifact-verification* artifact true))
         checks (:checks report)]
     (assoc checks
            :artifact :gravity/sh05-macro-capability-proof
@@ -158705,7 +158915,18 @@
 
 (defn sh06-resolution-artifact-verification
   [artifact]
-  (sh06-resolution-artifact-verification-contained artifact false))
+  (sh07-proof-transaction-report
+   :sh06 :final
+   {:verifier-root
+    (var-get #'sh06-resolution-artifact-verification-contained)
+    :report-schema-version 1
+    :check-catalog-domain :gravity/sh06-final-verification-checks
+    :source-content-hash sh06-resolution-expected-source-content-hash
+    :plan-semantic-hash sh06-resolution-expected-plan-semantic-hash
+    :functions-semantic-hash
+    sh06-resolution-expected-functions-semantic-hash}
+   artifact
+   #(sh06-resolution-artifact-verification-contained artifact false)))
 
 (defn- sh06-resolution-capability-based-proof-for-construction
   [artifact]
@@ -162261,7 +162482,7 @@
           [:gravity-core-boundary :canonical-core-artifact
            :identity-preimage]))
 
-(defn sh07-core-artifact-verification
+(defn- sh07-core-artifact-verification*
   [artifact]
   (let [source-path (or (get-in artifact [:provenance :source-path])
                         "<sh07-core-verification>")
@@ -162299,6 +162520,21 @@
      :resolved-verification (:resolved-verification boundary)
      :upstream-verification upstream-verification}))
 
+(defn sh07-core-artifact-verification
+  [artifact]
+  (sh07-proof-transaction-report
+   :sh07 :final
+   {:verifier-root
+    (var-get #'sh07-core-artifact-verification*)
+    :report-schema-version 1
+    :check-catalog-domain :gravity/sh07-final-verification-checks
+    :source-content-hash sh07-core-expected-source-content-hash
+    :plan-semantic-hash sh07-core-expected-plan-semantic-hash
+    :functions-semantic-hash
+    sh07-core-expected-functions-semantic-hash}
+   artifact
+   #(sh07-core-artifact-verification* artifact)))
+
 (defn sh07-core-capability-based-proof
   [artifact]
   (let [report (sh07-core-artifact-verification artifact)]
@@ -162307,6 +162543,276 @@
            :status (if (= :passed (:status report))
                      :complete :failed)
            :failed-checks (:failed-checks report))))
+
+(defn- sh07-core-proof-from-verification-report
+  [report]
+  (assoc (:checks report)
+         :artifact :gravity/sh07-core-capability-proof
+         :status (if (= :passed (:status report)) :complete :failed)
+         :failed-checks (:failed-checks report)))
+
+(defn- sh07-proof-transaction-source-snapshot
+  [source-path]
+  (let [bytes (java.nio.file.Files/readAllBytes
+               (.toPath (java.io.File. source-path)))]
+    {:source-path source-path
+     :source-byte-count (alength bytes)
+     :source-content-hash
+     (str "sha256:" (sha256-bytes-hex bytes))}))
+
+(defn- sh07-proof-transaction-core-snapshot
+  []
+  (let [sh05-binding @sh05-macro-cached-binding
+        sh05-source
+        (sh05-macro-read-pinned-source! "<sh07-proof-transaction>")
+        sh06-binding @sh06-resolution-cached-binding
+        sh06-source
+        (sh06-resolution-read-pinned-source! "<sh07-proof-transaction>")
+        binding
+        (select-keys
+         @sh07-core-cached-binding
+         [:source-byte-count :source-content-hash :plan-semantic-hash
+          :functions-semantic-hash :function-count :function-names-hash
+          :function-shapes-hash :public-function-hashes
+          :public-function-shapes])
+        source-path (sh07-core-source-path)
+        bytes (java.nio.file.Files/readAllBytes
+               (.toPath (java.io.File. source-path)))
+        observed
+        {:source-byte-count (alength bytes)
+         :source-content-hash
+         (str "sha256:" (sha256-bytes-hex bytes))}]
+    (when-not (= observed
+                 (select-keys binding
+                              [:source-byte-count :source-content-hash]))
+      (throw
+       (ex-info "SH-07 checked-core source differs from the active binding"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :checked-core-source-binding-changed})))
+    (when-not (= (select-keys sh05-binding
+                             [:source-byte-count :source-content-hash])
+                 (select-keys sh05-source
+                              [:source-byte-count :source-content-hash]))
+      (throw
+       (ex-info "SH-05 macro source differs from the active binding"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :sh05-source-binding-changed})))
+    (when-not (= (select-keys sh06-binding
+                             [:source-byte-count :source-content-hash])
+                 (select-keys sh06-source
+                              [:source-byte-count :source-content-hash]))
+      (throw
+       (ex-info "SH-06 resolution source differs from the active binding"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :sh06-source-binding-changed})))
+    (assoc binding
+           :observed-source-path source-path
+           :sh05-macro-revision
+           (assoc
+            (select-keys
+             sh05-binding
+             [:source-byte-count :source-content-hash :plan-semantic-hash
+              :functions-semantic-hash :function-count
+              :function-names-hash :function-shapes-hash
+              :public-function-hashes :public-function-shapes])
+            :observed-source-path (:source-path sh05-source))
+           :sh06-resolution-revision
+           (assoc
+            (select-keys
+             sh06-binding
+             [:source-byte-count :source-content-hash :plan-semantic-hash
+              :functions-semantic-hash :function-count
+              :function-names-hash :function-shapes-hash
+              :public-function-hashes :public-function-shapes])
+            :observed-source-path (:source-path sh06-source)))))
+
+(defn- sh07-proof-transaction-phase-summary
+  [state]
+  {:phase (:phase state)
+   :epoch (:epoch state)
+   :verification-executions (:executions state)
+   :verification-reuses (:reuses state)
+   :receipt-count (count (:receipts state))})
+
+(defn- sh07-proof-transaction-transition!
+  [context expected-source expected-core]
+  (let [source-after
+        (sh07-proof-transaction-source-snapshot
+         (:source-path expected-source))
+        core-after (sh07-proof-transaction-core-snapshot)]
+    (when-not (= expected-source source-after)
+      (throw
+       (ex-info "SH-07 source changed between proof phases"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :source-snapshot-changed})))
+    (when-not (= expected-core core-after)
+      (throw
+       (ex-info "SH-07 checked-core revision changed between proof phases"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :checked-core-revision-changed})))
+    (swap!
+     context
+     (fn [state]
+       (-> state
+           (update :completed-phases conj
+                   (sh07-proof-transaction-phase-summary state))
+           (assoc :phase :independent-audit
+                  :epoch (inc (:epoch state))
+                  :receipts []
+                  :executions {}
+                  :reuses {}
+                  :construction-receipts-cleared? true))))))
+
+(defn- sh07-proof-transaction-final-snapshot-check!
+  [context expected-source expected-core]
+  (let [source-after
+        (sh07-proof-transaction-source-snapshot
+         (:source-path expected-source))
+        core-after (sh07-proof-transaction-core-snapshot)]
+    (when-not (= expected-source source-after)
+      (throw
+       (ex-info "SH-07 source changed during independent audit"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :source-snapshot-changed-during-audit})))
+    (when-not (= expected-core core-after)
+      (throw
+       (ex-info "SH-07 checked-core revision changed during independent audit"
+                {:id "C6-VERIFY"
+                 :stage :sh07-proof-transaction
+                 :reason :checked-core-revision-changed-during-audit})))
+    (swap! context assoc :final-snapshot-rechecked? true)))
+
+(defn- sh07-proof-transaction-close!
+  [context status]
+  (let [closed
+        (swap!
+         context
+         (fn [state]
+           (-> state
+               (update :completed-phases conj
+                       (sh07-proof-transaction-phase-summary state))
+               (assoc :open? false
+                      :receipts []
+                      :cleanup-complete? true))))]
+    {:artifact :gravity/sh07-proof-transaction-receipt
+     :schema-version 1
+     :status status
+     :thread-confined? true
+     :owner-thread-id (:owner-thread-id closed)
+     :phase-order (mapv :phase (:completed-phases closed))
+     :phases (:completed-phases closed)
+     :source-snapshot (:source-snapshot closed)
+     :checked-core-revision (:checked-core-revision closed)
+     :check-catalog-bindings
+     (into (sorted-map)
+           (map (fn [[key catalog]]
+                  [key (:check-catalog-hash catalog)]))
+           (:check-catalogs closed))
+     :maximum-receipts (:maximum-receipts closed)
+     :artifact-id (:audited-artifact-id closed)
+     :verification-report-id (:verification-report-id closed)
+     :construction-receipts-cleared?
+     (:construction-receipts-cleared? closed)
+     :final-snapshot-rechecked? (:final-snapshot-rechecked? closed)
+     :cross-epoch-reuse-count (:cross-epoch-reuse-count closed)
+     :cross-epoch-reuse? (pos? (:cross-epoch-reuse-count closed))
+     :failed-report-executions (:failed-report-executions closed)
+     :failed-report-reuse-count (:failed-report-reuse-count closed)
+     :failed-report-reuse? (pos? (:failed-report-reuse-count closed))
+     :cleanup-complete? (:cleanup-complete? closed)
+     :retained-receipt-count (count (:receipts closed))}))
+
+(defn sh07-core-file-proof-transaction
+  "Build and independently audit one SH-07 module in a private proof epoch.
+
+  The returned receipt contains counters and identity snapshots only.  Cached
+  artifacts and reports are cleared before the function returns."
+  [source-path]
+  (when *sh07-proof-transaction-context*
+    (throw
+     (ex-info "Nested SH-07 proof transactions are not allowed"
+              {:id "C6-VERIFY"
+               :stage :sh07-proof-transaction
+               :reason :nested-transaction})))
+  (let [source-snapshot
+        (sh07-proof-transaction-source-snapshot source-path)
+        core-snapshot (sh07-proof-transaction-core-snapshot)
+        context
+        (atom
+         {:open? true
+          :owner-thread-id (sh07-proof-transaction-thread-id)
+          :phase :construction
+          :epoch 0
+          :maximum-receipts 64
+          :source-snapshot source-snapshot
+          :checked-core-revision core-snapshot
+          :receipts []
+          :check-catalogs {}
+          :executions {}
+          :reuses {}
+          :completed-phases []
+          :cross-epoch-reuse-count 0
+          :failed-report-executions 0
+          :failed-report-reuse-count 0
+          :construction-receipts-cleared? false
+          :final-snapshot-rechecked? false
+          :cleanup-complete? false})]
+    (try
+      (binding [*sh07-proof-transaction-context* context]
+        (try
+          (let [artifact (sh07-core-file-artifact source-path)
+                _ (sh07-proof-transaction-transition!
+                   context source-snapshot core-snapshot)
+                verification (sh07-core-artifact-verification artifact)
+                capability-proof
+                (sh07-core-proof-from-verification-report verification)
+                _
+                (sh07-proof-transaction-final-snapshot-check!
+                 context source-snapshot core-snapshot)
+                _
+                (swap! context assoc
+                       :audited-artifact-id (:artifact-id artifact)
+                       :verification-report-id
+                       (reader-canonical-hash verification))
+                transaction-status
+                (if (and (= :passed (:status verification))
+                         (= :complete (:status capability-proof)))
+                  :passed :failed)
+                receipt
+                (sh07-proof-transaction-close!
+                 context transaction-status)]
+            {:artifact artifact
+             :verification verification
+             :capability-proof capability-proof
+             :proof-transaction receipt})
+          (finally
+            (when (:open? @context)
+              (let [receipt-count-before-cleanup (count (:receipts @context))
+                    closed
+                    (swap! context assoc
+                           :open? false
+                           :receipts []
+                           :cleanup-complete? true)
+                    cleanup
+                    {:open? (:open? closed)
+                     :cleanup-complete? (:cleanup-complete? closed)
+                     :receipt-count-before-cleanup
+                     receipt-count-before-cleanup
+                     :retained-receipt-count (count (:receipts closed))
+                     :owner-thread-id (:owner-thread-id closed)}]
+                (when *sh07-proof-transaction-cleanup-observer*
+                  (try
+                    (*sh07-proof-transaction-cleanup-observer* cleanup)
+                    (catch Throwable _ nil))))))))
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted)))))
 
 (defn macro-file-artifact
   [path]

@@ -54,7 +54,10 @@
                  :available (module-names)})))
     (let [started (System/nanoTime)
           source-binding-before (source-bytes-sha256 path)
-          artifact (bootstrap/sh07-core-file-artifact path)
+          proof-run (bootstrap/sh07-core-file-proof-transaction path)
+          artifact (:artifact proof-run)
+          verification (:verification proof-run)
+          proof-transaction (:proof-transaction proof-run)
           request
           (get-in artifact
                   [:gravity-core-boundary
@@ -63,8 +66,7 @@
           (get-in artifact
                   [:gravity-core-boundary
                    :canonical-core-artifact])
-          capability-proof
-          (bootstrap/sh07-core-capability-based-proof artifact)
+          capability-proof (:capability-proof proof-run)
           required-request-products
           (:required-request-products contract)
           required-core-products
@@ -76,6 +78,12 @@
                   {})
           required-verification-checks
           (:required-verification-checks contract)
+          proof-transaction-contract (:proof-transaction contract)
+          phase-by-name
+          (into {} (map (juxt :phase identity))
+                (:phases proof-transaction))
+          independent-audit
+          (get phase-by-name :independent-audit)
           boundary (:boundary contract)
           source-binding-after (source-bytes-sha256 path)
           source-revision-id
@@ -131,7 +139,89 @@
            (and (= :gravity/sh07-core-capability-proof
                    (:artifact capability-proof))
                 (= :complete (:status capability-proof))
-                (empty? (:failed-checks capability-proof)))}
+                (empty? (:failed-checks capability-proof)))
+           :independent-verification-passed?
+           (and (= :gravity/sh07-core-artifact-verification
+                   (:artifact verification))
+                (= :passed (:status verification))
+                (empty? (:failed-checks verification)))
+           :proof-transaction-current?
+           (and (= :gravity/sh07-proof-transaction-receipt
+                   (:artifact proof-transaction))
+                (= :passed (:status proof-transaction))
+                (= (:schema-version proof-transaction-contract)
+                   (:schema-version proof-transaction))
+                (= (:phase-order proof-transaction-contract)
+                   (:phase-order proof-transaction))
+                (= (:maximum-receipts-per-phase
+                    proof-transaction-contract)
+                   (:maximum-receipts proof-transaction))
+                (true?
+                 (:exact-verifier-root-identity-required
+                  proof-transaction-contract))
+                (true?
+                 (:verification-check-catalog-binding-required
+                  proof-transaction-contract))
+                (true?
+                 (:immutable-receipt-carriers-required
+                  proof-transaction-contract))
+                (= #{[:sh05 :construction] [:sh05 :final]
+                     [:sh06 :final] [:sh07 :final]}
+                   (set (keys (:check-catalog-bindings
+                               proof-transaction))))
+                (every? string?
+                        (vals (:check-catalog-bindings
+                               proof-transaction)))
+                (true? (:thread-confined? proof-transaction))
+                (false? (:cross-epoch-reuse? proof-transaction))
+                (zero? (:cross-epoch-reuse-count proof-transaction))
+                (false? (:failed-report-reuse? proof-transaction))
+                (zero? (:failed-report-reuse-count proof-transaction))
+                (zero? (:failed-report-executions proof-transaction))
+                (true?
+                 (:construction-receipts-cleared? proof-transaction))
+                (true? (:final-snapshot-rechecked? proof-transaction))
+                (true? (:cleanup-complete? proof-transaction))
+                (zero? (:retained-receipt-count proof-transaction))
+                (= (:artifact-id artifact)
+                   (:artifact-id proof-transaction))
+                (= (bootstrap/reader-canonical-hash verification)
+                   (:verification-report-id proof-transaction))
+                (= {:source-byte-count (:byte-count source-binding-before)
+                    :source-content-hash (:sha256 source-binding-before)}
+                   (select-keys
+                    (:source-snapshot proof-transaction)
+                    [:source-byte-count :source-content-hash]))
+                (= [0 1]
+                   (mapv :epoch (:phases proof-transaction)))
+                (every?
+                 map?
+                 [(get-in proof-transaction
+                          [:checked-core-revision :sh05-macro-revision])
+                  (get-in proof-transaction
+                          [:checked-core-revision
+                           :sh06-resolution-revision])])
+                (every?
+                 (fn [[stage minimum]]
+                   (<= minimum
+                       (get-in independent-audit
+                               [:verification-executions stage]
+                               0)))
+                 (:minimum-independent-audit-executions
+                  proof-transaction-contract))
+                (every?
+                 #(<= (:receipt-count %)
+                      (:maximum-receipts-per-phase
+                       proof-transaction-contract))
+                 (:phases proof-transaction))
+                (<=
+                 (reduce + 0
+                         (map #(get-in %
+                                       [:verification-executions :sh05]
+                                       0)
+                              (:phases proof-transaction)))
+                 (:maximum-sh05-full-verifications
+                  proof-transaction-contract)))}
           failed-contract-checks
           (vec
            (for [[check passed?] contract-checks
@@ -156,6 +246,7 @@
        (if (= :complete (:status capability-proof))
          :passed :failed)
        :capability-proof-status (:status capability-proof)
+       :proof-transaction proof-transaction
        :failed-checks
        (vec
         (distinct
@@ -173,6 +264,13 @@
           [requested])
         started (System/nanoTime)
         results (mapv #(run-module contract %) selected)
+        proof-receipt-reuse-count
+        (reduce
+         + 0
+         (for [result results
+               phase (get-in result [:proof-transaction :phases])
+               [_ count] (:verification-reuses phase)]
+           count))
         passed?
         (every?
          #(and (= :accepted (:status %))
@@ -185,7 +283,9 @@
      :schema-version 1
      :status (if passed? :passed :failed)
      :fresh-process-required? true
-     :cache-used? false
+     :persistent-iteration-cache-used? false
+     :proof-receipt-reuse-used? (pos? proof-receipt-reuse-count)
+     :proof-receipt-reuse-count proof-receipt-reuse-count
      :modules results
      :elapsed-ms
      (long (/ (- (System/nanoTime) started) 1000000))}))
