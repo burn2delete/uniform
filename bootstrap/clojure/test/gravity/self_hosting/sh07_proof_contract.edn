@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B37"
+ :coverage-milestone "SH-07-B38"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -65,6 +65,7 @@
   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
   "docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md"
+  "docs/phase-07-backend-architecture/099-b2-c-backend-design.md"
   "docs/phase-07-backend-architecture/101-b4-wasm-backend-design.md"
   "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md"
   "docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md"
@@ -158,6 +159,8 @@
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
   :b1-backend-interface
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+  :b2-c
+  "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
   :b3-llvm
   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
   :b4-wasm
@@ -227,6 +230,7 @@
   :keyword-lookups]
  :required-core-product-counts
  {:b1-backend-interface {:keyword-lookups 0}
+  :b2-c {:keyword-lookups 0}
   :b3-llvm {:keyword-lookups 0}
   :b4-wasm {:keyword-lookups 0}
   :b5-jvm {:keyword-lookups 9}
@@ -333,6 +337,18 @@
   :b1-object-or-executable-emission
   :b1-external-target-execution
   :b1-backend-conformance-complete
+  :b2-complete-mir-and-domain-ir-surface
+  :b2-complete-operation-and-profile-surface
+  :b2-complete-c-dialect-target-and-abi-surface
+  :b2-production-backend-authority
+  :b2-complete-runtime-helper-and-ffi-surface
+  :b2-complete-pointer-memory-and-mmio-surface
+  :b2-complete-artifact-emission-surface
+  :b2-complete-external-target-matrix
+  :b2-backend-conformance-complete
+  :b2-public-gravity-routing
+  :b2-release
+  :b2-complete
   :b3-complete-mir-and-domain-ir-surface
   :b3-production-backend-execution
   :b3-object-or-executable-emission

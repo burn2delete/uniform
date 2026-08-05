@@ -303,7 +303,7 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 33 of the 41
+`SH-07` remains partial. Its current executable evidence covers 34 of the 41
 authoritative compiler modules, including the complete bootstrap reader source.
 For that reader source, Gravity consumes the authentic SH-06 fragment,
 binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
@@ -649,9 +649,41 @@ production backend execution, component-model and canonical-ABI support,
 complete import, export, memory, table, WASI, async, SIMD, atomic,
 runtime-binding, artifact-emission, external target-matrix, public-routing,
 conformance, release, and self-hosting authority remain pending.
+The B2 C backend source adds 122,488 authenticated bytes in 129 fragments
+containing 11,151 forms, 832 bindings, and 4,200 resolutions. Its calibrated
+lowering contains 129 definitions: 120 functions and nine data contracts. All
+441 `if` forms have normative four-element shape, and its 842 `get` calls
+divide into 792 literal-key calls and 50 dynamic-key or indexed calls. They are
+ordinary resolved calls rather than keyword-headed lookup forms, so the
+canonical keyword-lookup product count remains zero and B16 stays frozen. The
+SH-06 request contains 735,556 carrier nodes at depth 30, maximum width 11,151,
+12,379,536 exact UTF-8 scalar bytes, and a 49,502,752-byte conservative scalar
+charge; every unchanged B16 bound passes. The isolated exact census passed in
+542.06 seconds with 3,733,536,768 maximum resident bytes and no swaps. The
+authentic source, core, altered-replay, and paired rejection proof passed in
+2,349.54 seconds with 4,543,021,056 maximum resident bytes and no swaps. The
+independent cross-root `.gravity`/`.qst` parity proof passed in 3,801.31 seconds
+with 4,851,482,624 maximum resident bytes and no swaps. The cache-free
+authoritative process passed every contract check in 3,527.56 seconds with
+artifact identity
+`sha256:4a8e165324a492d57f6a3f7f5ce44ea291abd4ba2ebe424fd2206b6009406ed0`,
+5,726,076,928 maximum resident bytes, and no swaps. Fresh Gate A validation,
+construction, contextual verification, and altered-input rejection passed 11
+tests and 110 assertions in 377.18 seconds with 3,735,666,688 maximum resident
+bytes and no swaps. Fresh Gate B validation, construction, contextual
+verification, real bounded hosted-C17 source, header, object, and executable
+production, exact process records, exit-7 execution, cleanup evidence, and
+altered-input rejection passed 11 tests and 231 assertions in 441.10 seconds
+with 3,939,500,032 maximum resident bytes and no swaps. Semantic identities
+remain path-neutral while actual checkout paths remain in provenance. Complete
+B2 MIR and domain-IR coverage, production compiler authority, complete C17 and
+target coverage, runtime and library integration, release-grade object and
+executable emission, public routing, Clojure seed retirement, backend
+conformance completion, SH-07 completion, and self-hosting completion remain
+pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 8 compiler
+central routing, and final artifact construction. The remaining 7 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

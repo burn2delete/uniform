@@ -175,7 +175,7 @@
         (edn/read-string (slurp (path proof-contract-relative-path)))
         modules (:authoritative-modules contract)
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B37" (:coverage-milestone contract)))
+    (is (= "SH-07-B38" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
             :task "SH-07-B15"
             :scope :sh07-b15-keyword-map-lookup
@@ -187,6 +187,8 @@
             "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
             :b1-backend-interface
             "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+            :b2-c
+            "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
             :b3-llvm
             "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
             :b4-wasm
@@ -318,6 +320,18 @@
              :b1-object-or-executable-emission
              :b1-external-target-execution
              :b1-backend-conformance-complete
+             :b2-complete-mir-and-domain-ir-surface
+             :b2-complete-operation-and-profile-surface
+             :b2-complete-c-dialect-target-and-abi-surface
+             :b2-production-backend-authority
+             :b2-complete-runtime-helper-and-ffi-surface
+             :b2-complete-pointer-memory-and-mmio-surface
+             :b2-complete-artifact-emission-surface
+             :b2-complete-external-target-matrix
+             :b2-backend-conformance-complete
+             :b2-public-gravity-routing
+             :b2-release
+             :b2-complete
              :b3-complete-mir-and-domain-ir-surface
              :b3-production-backend-execution
              :b3-object-or-executable-emission
