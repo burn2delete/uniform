@@ -761,9 +761,26 @@ every contract check in 1,137.379 seconds with artifact identity
 signature authority, verifier-correctness proof, self-hosted envelope
 execution, whole-language coverage, public routing, Clojure seed retirement,
 SH-07 completion, and self-hosting completion remain pending.
+The Gravity resolution source advances the authenticated compiler inventory to
+39 of 41 modules. It adds 77,209 authenticated bytes in 97 fragments containing
+8,102 forms and 3,278 resolutions; its source hash is
+`sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56`.
+The isolated census passed 10 tests and 105 assertions in 583.21 seconds with
+4,082,614,272 maximum resident bytes and no swaps. Authentic replay passed 10
+tests and 106 assertions in 1,578.96 seconds with 5,026,824,192 maximum resident
+bytes and no swaps, preserving all 97 ordered source roots and definitions and
+rejecting altered binding identity. Cross-root `.gravity`/`.qst` parity passed
+10 tests and 103 assertions in 2,874.68 seconds with 5,472,419,840 maximum
+resident bytes and no swaps. The final cache-free authoritative process passed
+every contract check in 1,745.662 seconds with artifact identity
+`sha256:f58d88d1103ea2c72bf549ffdae0fac42272efc8dd5f7305ea85d269f68537fb`,
+14 receipt reuses, 5,455,511,552 maximum resident bytes, and no swaps. Package
+discovery, type and effect checking, self-hosted resolution execution,
+whole-language coverage, public routing, Clojure seed retirement, SH-07
+completion, and self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 3 compiler
+central routing, and final artifact construction. The remaining 2 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.

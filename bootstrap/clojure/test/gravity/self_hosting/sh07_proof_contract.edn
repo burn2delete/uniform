@@ -2,10 +2,12 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B42"
+ :coverage-milestone "SH-07-B43"
  :governing-documents
- ["docs/self-hosting-slice-backlog.md"
+  ["docs/self-hosting-slice-backlog.md"
+  "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+  "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
   "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
   "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
@@ -250,6 +252,8 @@
   "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
   :authenticated-envelope
   "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+  :resolution
+  "bootstrap/gravity/src/gravity/resolution.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -301,6 +305,7 @@
   :sh23-package-build {:keyword-lookups 0}
   :sh22-standard-library {:keyword-lookups 0}
   :authenticated-envelope {:keyword-lookups 0}
+  :resolution {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
