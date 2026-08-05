@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B41"
+ :coverage-milestone "SH-07-B42"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -25,6 +25,8 @@
   "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md"
   "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md"
   "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md"
+  "docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md"
+  "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md"
   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
@@ -246,6 +248,8 @@
   "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"
   :sh22-standard-library
   "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
+  :authenticated-envelope
+  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -296,6 +300,7 @@
   :l1-c2-surface-reader {:keyword-lookups 0}
   :sh23-package-build {:keyword-lookups 0}
   :sh22-standard-library {:keyword-lookups 0}
+  :authenticated-envelope {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}

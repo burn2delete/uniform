@@ -744,9 +744,26 @@ every contract check in 1,022.793 seconds with artifact identity
 Unicode and normalization, authenticated runtime services, the complete
 standard library, public routing, Clojure seed retirement, SH-07 completion,
 SH-22 completion, and self-hosting completion remain pending.
+The reusable authenticated-envelope source advances the authenticated compiler
+inventory to 38 of 41 modules. It adds 59,495 authenticated bytes in 74
+fragments containing 5,302 forms and 2,146 resolutions; its source hash is
+`sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71`.
+The isolated census passed 10 tests and 101 assertions in 318.15 seconds with
+4,025,204,736 maximum resident bytes and no swaps. Authentic replay passed 10
+tests and 102 assertions in 965.93 seconds with 4,868,505,600 maximum resident
+bytes and no swaps, preserving all 74 ordered source roots and definitions and
+rejecting altered binding identity. Cross-root `.gravity`/`.qst` parity passed
+10 tests and 99 assertions in 1,840.12 seconds with 4,610,244,608 maximum
+resident bytes and no swaps. The final cache-free authoritative process passed
+every contract check in 1,137.379 seconds with artifact identity
+`sha256:b2c8ec3ad2dcb1b73f6707914788baa72dc301fb7d3a2ca69f2d2195625a28ee`,
+14 receipt reuses, 4,585,766,912 maximum resident bytes, and no swaps. Release
+signature authority, verifier-correctness proof, self-hosted envelope
+execution, whole-language coverage, public routing, Clojure seed retirement,
+SH-07 completion, and self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 4 compiler
+central routing, and final artifact construction. The remaining 3 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
