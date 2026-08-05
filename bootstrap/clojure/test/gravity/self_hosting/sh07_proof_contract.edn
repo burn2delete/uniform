@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B40"
+ :coverage-milestone "SH-07-B41"
  :governing-documents
  ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
@@ -15,6 +15,16 @@
   "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md"
   "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md"
   "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md"
+  "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md"
+  "docs/phase-16-standard-library/211-std1-standard-library-architecture.md"
+  "docs/phase-16-standard-library/212-std2-core-library-specification.md"
+  "docs/phase-16-standard-library/213-std3-collections-library-specification.md"
+  "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md"
+  "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md"
+  "docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md"
+  "docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md"
+  "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md"
+  "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md"
   "docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md"
   "docs/phase-01-core-language/014-l4-macro-system-specification.md"
   "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md"
@@ -234,6 +244,8 @@
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
   :sh23-package-build
   "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"
+  :sh22-standard-library
+  "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -283,6 +295,7 @@
   :c10-safety {:keyword-lookups 0}
   :l1-c2-surface-reader {:keyword-lookups 0}
   :sh23-package-build {:keyword-lookups 0}
+  :sh22-standard-library {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}

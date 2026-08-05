@@ -727,9 +727,26 @@ every contract check in 776.594 seconds with artifact identity
 14 receipt reuses, 4,653,350,912 maximum resident bytes, and no swaps. General
 dependency solving, action execution, public routing, Clojure seed retirement,
 SH-07 completion, SH-23 completion, and self-hosting completion remain pending.
+The SH-22 bounded standard-library source advances the authenticated compiler
+inventory to 37 of 41 modules. It adds 45,717 authenticated bytes in 64
+fragments containing 4,896 forms and 1,944 resolutions; its source hash is
+`sha256:6198d87e19ee86f72d51aa1253c2d438da6af8dea495f2dd5eb0e64ca3eff1e4`.
+The isolated census passed 10 tests and 77 assertions in 255.76 seconds with
+4,108,025,856 maximum resident bytes and no swaps. Authentic replay passed 10
+tests and 78 assertions in 811.91 seconds with 4,749,508,608 maximum resident
+bytes and no swaps, preserving all 64 ordered source roots and definitions and
+rejecting altered binding identity. Cross-root `.gravity`/`.qst` parity passed
+10 tests and 75 assertions in 1,684.35 seconds with 4,326,227,968 maximum
+resident bytes and no swaps. The final cache-free authoritative process passed
+every contract check in 1,022.793 seconds with artifact identity
+`sha256:27748ea15b172858d829a0f6761b3ad0245e3a088c118a033d9ba678b7a8fe61`,
+14 receipt reuses, 4,632,182,784 maximum resident bytes, and no swaps. Complete
+Unicode and normalization, authenticated runtime services, the complete
+standard library, public routing, Clojure seed retirement, SH-07 completion,
+SH-22 completion, and self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 5 compiler
+central routing, and final artifact construction. The remaining 4 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
