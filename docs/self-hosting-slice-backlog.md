@@ -709,9 +709,27 @@ check in 622.459 seconds with artifact identity
 14 receipt reuses, 3,820,716,032 maximum resident bytes, and no swaps. Complete
 reader semantics, public routing, Clojure seed retirement, SH-07 completion,
 and self-hosting completion remain pending.
+The SH-23 hermetic package-build source advances the authenticated compiler
+inventory to 36 of 41 modules. It adds 39,872 authenticated bytes in 50
+fragments containing 3,757 forms and 1,428 resolutions; its source hash is
+`sha256:70649e49d7130cf33e1d11ac226452ea908fee6731e0e49ca8e003e14cbabe1e`.
+The isolated census passed 10 tests and 105 assertions in 204.16 seconds with
+4,076,879,872 maximum resident bytes and no swaps. Authentic replay passed 10
+tests and 106 assertions in 775.98 seconds with 4,549,574,656 maximum resident
+bytes and no swaps, preserving the genuine package-build products and rejecting
+altered core data. Cross-root `.gravity`/`.qst` parity passed 10 tests and 103
+assertions in 1,286.10 seconds with 4,366,024,704 maximum resident bytes and no
+swaps. The alternate-checkout proof preserved equal path-neutral identity while
+retaining distinct physical paths in component records, artifact requests,
+source maps, and provenance. The final cache-free authoritative process passed
+every contract check in 776.594 seconds with artifact identity
+`sha256:57811a49093fdc298005c42cebd9b42a089e4fa1b8fbb8009ee0080e3e4bac0c`,
+14 receipt reuses, 4,653,350,912 maximum resident bytes, and no swaps. General
+dependency solving, action execution, public routing, Clojure seed retirement,
+SH-07 completion, SH-23 completion, and self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 6 compiler
+central routing, and final artifact construction. The remaining 5 compiler
 modules and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
