@@ -778,10 +778,28 @@ every contract check in 1,745.662 seconds with artifact identity
 discovery, type and effect checking, self-hosted resolution execution,
 whole-language coverage, public routing, Clojure seed retirement, SH-07
 completion, and self-hosting completion remain pending.
+The bounded C6-C10 checked-core pipeline source advances the authenticated
+compiler inventory to 40 of 41 modules. It adds 141,562 authenticated bytes in
+144 fragments containing 13,318 forms and 5,210 resolutions; its source hash is
+`sha256:0299511c26c8b2a191309a4a4358528de397c88551ed98a2aed03d172067b2a5`.
+The isolated census passed 10 tests and 91 assertions in 739.56 seconds with
+4,070,670,336 maximum resident bytes and no swaps. Authentic replay passed 10
+tests and 92 assertions in 2,648.54 seconds with 6,381,010,944 maximum resident
+bytes and no swaps, preserving all 144 ordered source roots and definitions and
+rejecting altered binding identity. Cross-root `.gravity`/`.qst` parity passed
+10 tests and 89 assertions in 5,051.26 seconds with 5,924,700,160 maximum
+resident bytes and no swaps. The final cache-free authoritative process passed
+every contract check in 3,137.484 seconds with artifact identity
+`sha256:aae6f68bd91a2c8b9f0907b20b3a2ca3e68dc64b8fbedca1ed2db8710ae8f9b5`,
+14 receipt reuses, 6,959,955,968 maximum resident bytes, and no swaps. Calls,
+complete collection and numeric forms, mutation and resource semantics,
+runtime checks, unsafe islands, domain IR, backend lowering, whole-language
+coverage, public routing, Clojure seed retirement, SH-07 completion, and
+self-hosting completion remain pending.
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining 2 compiler
-modules and the complete core-form, mutation, recursion, exception, and pattern
+central routing, and final artifact construction. The remaining compiler module
+and the complete core-form, mutation, recursion, exception, and pattern
 surface must pass the same executable gates before `SH-07` can receive
 completion credit.
 
