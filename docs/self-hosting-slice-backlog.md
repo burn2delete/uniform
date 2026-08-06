@@ -303,10 +303,11 @@ receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
-`SH-07` remains partial. Its current executable evidence covers 34 of the 41
-authoritative compiler modules, including the complete bootstrap reader source.
-For that reader source, Gravity consumes the authentic SH-06 fragment,
-binding, and resolution products for 22,209 forms in 298 fragments, lowers 20
+`SH-07` remains partial. Its source-level authenticated evidence now covers all
+41 authoritative compiler modules, including the complete bootstrap reader
+source. For that reader source's earlier gate, Gravity consumes the authentic
+SH-06 fragment, binding, and resolution products for 22,209 forms in 298
+fragments, lowers 20
 qualified definitions and 30 qualified calls, and preserves 24 quoted forms as
 data rather than executable references or calls. The measured authenticated
 request contains 1,446,007 carrier nodes at depth 25 and maximum width 22,209;
@@ -315,8 +316,8 @@ contains 9,172,831 nodes and 522,603,428 scalar bytes, and its generated digest
 requests contain 6,695,903 nodes and 372,860,236 scalar bytes. Request ingress
 is bounded at 8,388,608 nodes and 268,435,456 scalar bytes; template and
 resolved-core output are independently bounded at 16,777,216 nodes and
-536,870,912 scalar bytes; generated digest output is independently bounded at
-8,388,608 nodes and 536,870,912 scalar bytes. All four boundaries also enforce
+1,073,741,824 scalar bytes; generated digest output is independently bounded at
+16,777,216 nodes and 1,073,741,824 scalar bytes. All four boundaries also enforce
 depth 256 and width 65,536. Request ingress is checked before lowering, and
 each generated product is checked before downstream recursive hashing,
 verification, or use. Stable path-neutral core identities, actual-path
@@ -796,12 +797,36 @@ complete collection and numeric forms, mutation and resource semantics,
 runtime checks, unsafe islands, domain IR, backend lowering, whole-language
 coverage, public routing, Clojure seed retirement, SH-07 completion, and
 self-hosting completion remain pending.
+The authoritative checked-core source advances the authenticated compiler
+inventory to 41 of 41 modules. Its exact revision is 407,721 bytes with source
+hash `sha256:c020a0344d42569577e8baa6e28a2ce210f3eb76f774ff25490ddb18390d93e0`,
+277 fragments, 33,956 forms, 2,197 module bindings, and 13,696 resolutions. The
+final isolated census found no violations in 1,967.48 seconds with
+6,435,946,496 maximum resident bytes and no swaps. Measured authentic carrier
+families contained 15,005,907 template nodes and 875,437,492 template scalar
+bytes, 10,901,467 generated-digest nodes and 623,328,452 scalar bytes, and
+11,426,697 resolved-core nodes and 810,611,392 scalar bytes. Those measurements
+support 16,777,216 node ceilings and 1,073,741,824 scalar-byte ceilings for the
+applicable template, generated-digest, and resolved-core products; rejection
+telemetry remains diagnostic-only and does not weaken acceptance. The final
+cache-free authoritative process passed every contract check in 11,493.47
+seconds with artifact identity
+`sha256:fceeeac37185c5eebec3a6de6b7979c3ec86e0616da46bb274d8caaec35d3189`,
+14 bounded proof-receipt reuses, 7,765,966,848 maximum resident bytes, and no
+swaps. Independent cross-root `.gravity`/`.qst` parity passed 11 tests and 117
+assertions in 17,169.57 seconds with 7,963,820,032 maximum resident bytes and no
+swaps. `SH-07` remains partial: 41-of-41 source coverage does not complete the
+required core-form, mutation, recursion, exception, pattern, public-routing, or
+seed-retirement surfaces. `SH-25` remains queued because its supplied component
+descriptors are bounded planning inputs rather than authentic `SH-24` build
+outputs.
+
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. The remaining compiler module
-and the complete core-form, mutation, recursion, exception, and pattern
-surface must pass the same executable gates before `SH-07` can receive
-completion credit.
+central routing, and final artifact construction. All authoritative compiler
+modules now pass the source-level authenticated gates, but the complete
+core-form, mutation, recursion, exception, and pattern surface must pass the
+remaining executable gates before `SH-07` can receive completion credit.
 
 ## Beyond First Self-Hosting
 

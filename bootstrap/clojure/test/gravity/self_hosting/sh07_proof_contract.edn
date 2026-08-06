@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B44"
+ :coverage-milestone "SH-07-B45"
  :governing-documents
   ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
@@ -156,6 +156,7 @@
   :maximum-fragment-forms 1024
   :maximum-form-children 1024
   :maximum-form-depth 256
+  :maximum-module-bindings 2197
   :maximum-bindings 2048
   :maximum-alias-records 256
   :maximum-fragment-resolutions 2048
@@ -172,15 +173,15 @@
   :maximum-template-carrier-nodes 16777216
   :maximum-template-carrier-depth 256
   :maximum-template-carrier-width 65536
-  :maximum-template-scalar-bytes 536870912
+  :maximum-template-scalar-bytes 1073741824
   :maximum-resolved-core-carrier-nodes 16777216
   :maximum-resolved-core-carrier-depth 256
   :maximum-resolved-core-carrier-width 65536
-  :maximum-resolved-core-scalar-bytes 536870912
-  :maximum-generated-digest-carrier-nodes 8388608
+  :maximum-resolved-core-scalar-bytes 1073741824
+  :maximum-generated-digest-carrier-nodes 16777216
   :maximum-generated-digest-carrier-depth 256
   :maximum-generated-digest-carrier-width 65536
-  :maximum-generated-digest-scalar-bytes 536870912
+  :maximum-generated-digest-scalar-bytes 1073741824
   :maximum-module-digest-requests 65540}
  :cache-key
  [:source-path
@@ -256,6 +257,8 @@
   "bootstrap/gravity/src/gravity/resolution.gravity"
   :c6-c10-pipeline
   "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+  :checked-core
+  "bootstrap/gravity/src/gravity/checked_core.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core
@@ -309,6 +312,7 @@
   :authenticated-envelope {:keyword-lookups 0}
   :resolution {:keyword-lookups 0}
   :c6-c10-pipeline {:keyword-lookups 0}
+  :checked-core {:keyword-lookups 0}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}

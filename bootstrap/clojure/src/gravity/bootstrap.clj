@@ -159308,13 +159308,13 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 406758)
+(def sh07-core-expected-source-byte-count 407721)
 (def sh07-core-expected-source-content-hash
-  "sha256:583d8f194aee0588e22dc8e4d2882b5c5019167f9908b008e5be825a07f05b6b")
+  "sha256:c020a0344d42569577e8baa6e28a2ce210f3eb76f774ff25490ddb18390d93e0")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:c1d15fb359a673fcfe7e9e560ecc7e4b0e23edb49f1da1a0991de1b1fd3f9f67")
+  "sha256:c4f79830786a206261f0526b2a225fe0772a6443e2b001c0da8118bf13bb9dd1")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:e60ded17a73bc25d2bae95fa6015f9410d0be174e7e8e87a40ae9f1c264f8a8e")
+  "sha256:49a446f8af1db428caf2f4722fae0f80a4a64cc9a5a99d9e2cda3eebe1950db7")
 (def sh07-core-expected-function-count 274)
 (def sh07-core-expected-function-names-hash
   "sha256:a7f23daf98ea3e8be0bf4ab562741bb538c1220401d6a450d986b98611933835")
@@ -161068,7 +161068,8 @@
        (ex-info "SH-07 controlled digest-slot resolution failed"
                 {:id "C6-VERIFY" :stage :core-lowering
                  :source-path source-path
-                 :reason (:reason resolution)})))
+                 :reason (:reason resolution)
+                 :resolution resolution})))
     (:value resolution)))
 
 (defn sh07-core-public-decimal-presentation
@@ -161360,11 +161361,11 @@
           :ordinal (:ordinal fragment)
           :observed (count (:form-ids fragment))}))
 
-      (> bindings 2048)
+      (> bindings 2197)
       (sh07-core-request-diagnostic!
        request
-       {:bound :maximum-bindings
-        :maximum 2048
+       {:bound :maximum-module-bindings
+        :maximum 2197
         :observed bindings})
 
       (> aliases 256)

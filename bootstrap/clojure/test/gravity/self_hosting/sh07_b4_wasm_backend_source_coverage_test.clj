@@ -179,15 +179,15 @@
    :maximum-module-scalar-bytes 268435456
    :maximum-template-carrier-nodes 16777216
    :maximum-template-carrier-depth 256 :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 536870912
+   :maximum-template-scalar-bytes 1073741824
    :maximum-resolved-core-carrier-nodes 16777216
    :maximum-resolved-core-carrier-depth 256
    :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 536870912
-   :maximum-generated-digest-carrier-nodes 8388608
+   :maximum-resolved-core-scalar-bytes 1073741824
+   :maximum-generated-digest-carrier-nodes 16777216
    :maximum-generated-digest-carrier-depth 256
    :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 536870912
+   :maximum-generated-digest-scalar-bytes 1073741824
    :maximum-module-digest-requests 65540})
 (def ^:private expected-b37-nonclaims
   #{:b4-complete-mir-and-domain-ir-surface

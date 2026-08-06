@@ -141,7 +141,7 @@
      :fragments :maximum-fragments
      :top-level-forms :maximum-top-level-forms
      :resolutions :maximum-module-resolutions
-     :bindings :maximum-bindings
+     :bindings :maximum-module-bindings
      :aliases :maximum-alias-records
      :maximum-fragment-forms :maximum-fragment-forms
      :maximum-fragment-root-forms :maximum-top-level-forms

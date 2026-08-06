@@ -184,6 +184,7 @@
    :maximum-form-children 1024
    :maximum-form-depth 256
    :maximum-bindings 2048
+   :maximum-module-bindings 2197
    :maximum-alias-records 256
    :maximum-resolutions 2048
    :maximum-module-resolutions 65536
@@ -235,15 +236,15 @@
    :maximum-template-carrier-nodes 16777216
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 536870912
+   :maximum-template-scalar-bytes 1073741824
    :maximum-resolved-core-carrier-nodes 16777216
    :maximum-resolved-core-carrier-depth 256
    :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 536870912
-   :maximum-generated-digest-carrier-nodes 8388608
+   :maximum-resolved-core-scalar-bytes 1073741824
+   :maximum-generated-digest-carrier-nodes 16777216
    :maximum-generated-digest-carrier-depth 256
    :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 536870912
+   :maximum-generated-digest-scalar-bytes 1073741824
    :maximum-digest-requests 65540
    :aggregate-limit-policy
    :effective-over-combined-carriers
@@ -272,6 +273,7 @@
    :maximum-form-children 1024
    :maximum-form-depth 256
    :maximum-bindings 2048
+   :maximum-module-bindings 2197
    :maximum-alias-records 256
    :maximum-resolutions 2048
    :maximum-module-resolutions 65536
@@ -323,15 +325,15 @@
    :maximum-template-carrier-nodes 16777216
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 536870912
+   :maximum-template-scalar-bytes 1073741824
    :maximum-resolved-core-carrier-nodes 16777216
    :maximum-resolved-core-carrier-depth 256
    :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 536870912
-   :maximum-generated-digest-carrier-nodes 8388608
+   :maximum-resolved-core-scalar-bytes 1073741824
+   :maximum-generated-digest-carrier-nodes 16777216
    :maximum-generated-digest-carrier-depth 256
    :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 536870912
+   :maximum-generated-digest-scalar-bytes 1073741824
    :maximum-digest-requests 65540
    :aggregate-limit-policy
    :effective-over-combined-carriers
@@ -394,21 +396,21 @@
 
 (defn sh07-binding-count-preflight [bindings]
   (let [maximum
-        (get (sh07-bounds-value) :maximum-bindings)]
+        (get (sh07-bounds-value) :maximum-module-bindings)]
     (if (vector? bindings)
       (if (<= (count bindings) maximum)
         {:status :accepted
-         :bound :maximum-bindings
+         :bound :maximum-module-bindings
          :maximum maximum
          :observed (count bindings)}
         {:status :rejected
-         :reason :maximum-bindings
-         :bound :maximum-bindings
+         :reason :maximum-module-bindings
+         :bound :maximum-module-bindings
          :maximum maximum
          :observed (count bindings)})
       {:status :rejected
        :reason :binding-vector-required
-       :bound :maximum-bindings
+       :bound :maximum-module-bindings
        :maximum maximum
        :observed nil})))
 
@@ -572,12 +574,9 @@
     false))
 
 (defn sh07-binding-id-vector? [bindings]
-  (if (= (get (sh07-binding-count-preflight bindings) :status)
-         :accepted)
-    (sh07-sha-vector?
-     bindings
-     (get (sh07-bounds-value) :maximum-bindings))
-    false))
+  (sh07-sha-vector?
+   bindings
+   (get (sh07-bounds-value) :maximum-bindings)))
 
 (defn sh07-lineage-shape? [lineage]
   (if (sh07-exact-keys?
@@ -1504,8 +1503,8 @@
               false)
             false)
           false)
-        false)
-      false))
+        false))
+      false)
     false))
 
 (defn sh07-alias-records-valid? [request indexes]
@@ -1708,8 +1707,7 @@
                              (get lineage
                                   :macro-expansion-trace-id))
                           false)
-                        false)
-                      false))
+                        false)))
                   false)
                 false)
               false)
@@ -5967,13 +5965,29 @@
          "C6-VERIFY"
          nil
          {:reason :generated-digest-output-carrier-bound
-          :carrier digest-carrier}))
+          :carrier digest-carrier
+          :measurement
+          (sh07-carrier-preflight-with-bounds
+           digest-requests
+           33554432
+           (get (sh07-bounds-value)
+                :maximum-generated-digest-carrier-depth)
+           (get (sh07-bounds-value)
+                :maximum-generated-digest-carrier-width)
+           2147483648)}))
       (sh07-rejected-result
        request
        "C6-VERIFY"
        nil
        {:reason :template-output-carrier-bound
-        :carrier template-carrier}))))
+        :carrier template-carrier
+        :measurement
+        (sh07-carrier-preflight-with-bounds
+         template
+         (get (sh07-bounds-value) :maximum-template-carrier-nodes)
+         (get (sh07-bounds-value) :maximum-template-carrier-depth)
+         (get (sh07-bounds-value) :maximum-template-carrier-width)
+         2147483648)}))))
 
 (defn sh07-build-core-template [request]
   (let [input-check (sh07-input-check request)]
@@ -6113,8 +6127,18 @@
   (let [carrier (sh07-resolved-core-carrier-preflight value)]
     (if (= (get carrier :status) :accepted)
       (sh07-resolution-success value)
-      (sh07-resolution-failure
-       :resolved-core-output-carrier-bound))))
+      {:status :rejected
+       :reason :resolved-core-output-carrier-bound
+       :carrier carrier
+       :measurement
+       (sh07-carrier-preflight-with-bounds
+        value
+        33554432
+        (get (sh07-bounds-value)
+             :maximum-resolved-core-carrier-depth)
+        (get (sh07-bounds-value)
+             :maximum-resolved-core-carrier-width)
+        2147483648)})))
 
 (defn sh07-resolve-controlled-reference [value resolved-digests]
   (if (sh07-digest-reference? value)
@@ -6238,7 +6262,8 @@
                   false)
                 false)
               false)
-            false))
+            false)
+          false)
         false)
       false)))
 
@@ -6343,7 +6368,8 @@
               false)
               false)
             false)
-          false)))
+          false)
+        false))
     true))
 
 (defn sh07-resolved-b6-node-valid? [node]
@@ -6463,7 +6489,8 @@
                 false)
               false)
             false)
-          false)))
+          false)
+        false))
     true))
 
 (defn sh07-resolved-b7-node-valid? [node]
