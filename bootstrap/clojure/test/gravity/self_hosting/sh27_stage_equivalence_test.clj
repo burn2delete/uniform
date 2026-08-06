@@ -167,9 +167,38 @@
     (is (= :accepted (:status left)))
     (is (= :accepted (:status right)))))
 
+(deftest sh27-stage-transition-binds-parent-output-to-child-compiler
+  (let [request
+        (request accepted-gravity-plan
+                 'sh27-equivalent-stage-request)
+        transition (:stage-transition request)
+        stage-a (:stage-a request)
+        stage-b (:stage-b request)
+        result (compare-request request)]
+    (is (= (:stage-id stage-a)
+           (:parent-stage-id transition)))
+    (is (= (:compiler-id stage-a)
+           (:parent-compiler-id transition)
+           (:child-compiler-parent-id transition)))
+    (is (= (:artifact-set-id stage-a)
+           (:parent-output-artifact-set-id transition)
+           (:child-compiler-input-artifact-set-id transition)))
+    (is (= (:stage-id stage-b)
+           (:child-stage-id transition)))
+    (is (= (:compiler-id stage-b)
+           (:child-compiler-id transition)))
+    (is (= (:compiler-lineage-id stage-b)
+           (:child-compiler-lineage-id transition)))
+    (is (= transition
+           (get-in result [:identity-input :stage-transition])))
+    (is (not (contains? transition :actual-artifact-root)))
+    (is (= :accepted (:status result)))))
+
 (deftest sh27-rejects-each-bounded-equivalence-family
   (doseq [[function rule reason]
           [['sh27-missing-lineage-request
+            "BOOT7001" :invalid-request]
+           ['sh27-mismatched-lineage-request
             "BOOT7001" :invalid-request]
            ['sh27-artifact-drift-request
             "BOOT7002" :artifact-drift]

@@ -2,6 +2,7 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [sh27-missing-lineage-request
+             sh27-mismatched-lineage-request
              sh27-artifact-drift-request
              sh27-diagnostic-drift-request
              sh27-unreviewed-delta-request
@@ -31,6 +32,15 @@
     :build-id "sha256:build-n-plus-one"
     :artifact-set-id "sha256:artifacts"
     :actual-artifact-root "/checkout-a/stage-n-plus-one"}
+   :stage-transition
+   {:parent-stage-id :stage/n
+    :parent-compiler-id "sha256:compiler-n"
+    :parent-output-artifact-set-id "sha256:artifacts"
+    :child-stage-id :stage/n-plus-one
+    :child-compiler-id "sha256:compiler-n-plus-one"
+    :child-compiler-lineage-id "sha256:lineage-n-plus-one"
+    :child-compiler-parent-id "sha256:compiler-n"
+    :child-compiler-input-artifact-set-id "sha256:artifacts"}
    :environment-a
    {:environment-id "sha256:environment-a"
     :toolchain-id
@@ -110,6 +120,16 @@
       (get request :stage-b)
       :compiler-lineage-id
       ""))))
+
+(defn sh27-mismatched-lineage-request []
+  (let [request (sh27-base-request)]
+    (assoc
+     request
+     :stage-transition
+     (assoc
+      (get request :stage-transition)
+      :child-compiler-input-artifact-set-id
+      "sha256:different-parent-output"))))
 
 (defn sh27-artifact-drift-request []
   (sh27-with-product

@@ -234,6 +234,36 @@
       false)
     false))
 
+(defn sh27-stage-transition-valid? [transition stage-a stage-b]
+  (if (map? transition)
+    (if (= 8 (count transition))
+      (if (= (get transition :parent-stage-id)
+             (get stage-a :stage-id))
+        (if (= (get transition :parent-compiler-id)
+               (get stage-a :compiler-id))
+          (if (= (get transition :parent-output-artifact-set-id)
+                 (get stage-a :artifact-set-id))
+            (if (= (get transition :child-stage-id)
+                   (get stage-b :stage-id))
+              (if (= (get transition :child-compiler-id)
+                     (get stage-b :compiler-id))
+                (if (= (get transition :child-compiler-lineage-id)
+                       (get stage-b :compiler-lineage-id))
+                  (if (= (get transition :child-compiler-parent-id)
+                         (get stage-a :compiler-id))
+                    (= (get transition
+                            :child-compiler-input-artifact-set-id)
+                       (get stage-a :artifact-set-id))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
 (defn sh27-environment-valid? [environment]
   (if (map? environment)
     (if (= 10 (count environment))
@@ -836,20 +866,24 @@
 
 (defn sh27-request-valid? [request]
   (if (map? request)
-    (if (= 13 (count request))
+    (if (= 14 (count request))
       (if (= :gravity/sh27-stage-equivalence-request
              (get request :artifact))
         (if (= 1 (get request :schema-version))
           (if (keyword? (get request :comparison-id))
             (if (sh27-stage-valid? (get request :stage-a))
               (if (sh27-stage-valid? (get request :stage-b))
-                (if
-                 (sh27-environment-valid?
-                  (get request :environment-a))
+                (if (sh27-stage-transition-valid?
+                     (get request :stage-transition)
+                     (get request :stage-a)
+                     (get request :stage-b))
                   (if
                    (sh27-environment-valid?
-                    (get request :environment-b))
-                    (if (sh27-modes-valid? (get request :modes))
+                    (get request :environment-a))
+                    (if
+                     (sh27-environment-valid?
+                      (get request :environment-b))
+                      (if (sh27-modes-valid? (get request :modes))
                       (if
                        (sh27-products-valid?
                         (get request :products))
@@ -885,6 +919,7 @@
                                 false)
                               false)
                             false)
+                        false)
                         false)
                       false)
                     false)
@@ -940,6 +975,7 @@
          {:comparison-id (get request :comparison-id)
           :stage-a (sh27-identity-stage (get request :stage-a))
           :stage-b (sh27-identity-stage (get request :stage-b))
+          :stage-transition (get request :stage-transition)
           :environment-a
           (sh27-identity-environment (get request :environment-a))
           :environment-b
@@ -989,7 +1025,7 @@
        :rejected)
      :checks
      [:exact-request-replay
-      :compiler-lineage-bound
+      :stage-output-to-child-compiler-lineage-bound
       :controlled-environments-bound
       :all-declared-modes-compared
       :stable-diagnostics-and-spans

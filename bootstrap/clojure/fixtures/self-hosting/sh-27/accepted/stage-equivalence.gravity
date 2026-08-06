@@ -98,29 +98,41 @@
     :right {:builder-note "stage-n-plus-one"}}])
 
 (defn sh27-request [checkout]
-  {:artifact :gravity/sh27-stage-equivalence-request
-   :schema-version 1
-   :comparison-id :comparison/stage-n-stage-n-plus-one
-   :stage-a
-   (sh27-stage
-    :stage/n "sha256:compiler-n" "sha256:lineage-n"
-    "sha256:build-n" (str checkout "/stage-n"))
-   :stage-b
-   (sh27-stage
-    :stage/n-plus-one "sha256:compiler-n-plus-one"
-    "sha256:lineage-n-plus-one" "sha256:build-n-plus-one"
-    (str checkout "/stage-n-plus-one"))
-   :environment-a (sh27-environment "sha256:environment-a")
-   :environment-b (sh27-environment "sha256:environment-b")
-   :modes
-   [:artifact :manifest :diagnostic :conformance
-    :runtime-output :ir-modulo-id :reviewed-delta]
-   :products (sh27-products)
-   :accepted-deltas (sh27-deltas)
-   :recipe-id "sha256:reproducible-build-recipe"
-   :lock-id "sha256:bootstrap-lock"
-   :actual-comparison-path
-   (str checkout "/reports/stage-equivalence.edn")})
+  (let [stage-a
+        (sh27-stage
+         :stage/n "sha256:compiler-n" "sha256:lineage-n"
+         "sha256:build-n" (str checkout "/stage-n"))
+        stage-b
+        (sh27-stage
+         :stage/n-plus-one "sha256:compiler-n-plus-one"
+         "sha256:lineage-n-plus-one" "sha256:build-n-plus-one"
+         (str checkout "/stage-n-plus-one"))]
+    {:artifact :gravity/sh27-stage-equivalence-request
+     :schema-version 1
+     :comparison-id :comparison/stage-n-stage-n-plus-one
+     :stage-a stage-a
+     :stage-b stage-b
+     :stage-transition
+     {:parent-stage-id (get stage-a :stage-id)
+      :parent-compiler-id (get stage-a :compiler-id)
+      :parent-output-artifact-set-id (get stage-a :artifact-set-id)
+      :child-stage-id (get stage-b :stage-id)
+      :child-compiler-id (get stage-b :compiler-id)
+      :child-compiler-lineage-id (get stage-b :compiler-lineage-id)
+      :child-compiler-parent-id (get stage-a :compiler-id)
+      :child-compiler-input-artifact-set-id
+      (get stage-a :artifact-set-id)}
+     :environment-a (sh27-environment "sha256:environment-a")
+     :environment-b (sh27-environment "sha256:environment-b")
+     :modes
+     [:artifact :manifest :diagnostic :conformance
+      :runtime-output :ir-modulo-id :reviewed-delta]
+     :products (sh27-products)
+     :accepted-deltas (sh27-deltas)
+     :recipe-id "sha256:reproducible-build-recipe"
+     :lock-id "sha256:bootstrap-lock"
+     :actual-comparison-path
+     (str checkout "/reports/stage-equivalence.edn")}))
 
 (defn sh27-equivalent-stage-request []
   (sh27-request "/checkout-a"))
