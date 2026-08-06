@@ -132,6 +132,7 @@ Usage:
   gravity --version
   gravity help
   gravity check <file.qst|file.gravity>
+  gravity sh07-core <file.qst|file.gravity>
   gravity run <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity> -o <executable>
@@ -220,7 +221,7 @@ case "${1:-}" in
     ;;
 esac
 
-if packaged_cli_selected && current_source_compile_requested "$@"; then
+if packaged_cli_selected && { [[ "${1:-}" == "sh07-core" ]] || current_source_compile_requested "$@"; }; then
   if ! command -v clojure >/dev/null 2>&1; then
     missing_clojure_diagnostic
     exit 1

@@ -78,6 +78,7 @@
    "  gravity --version\n"
    "  gravity help\n"
    "  gravity check <file.qst|file.gravity>\n"
+   "  gravity sh07-core <file.qst|file.gravity>\n"
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"

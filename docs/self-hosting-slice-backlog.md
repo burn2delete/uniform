@@ -821,6 +821,17 @@ seed-retirement surfaces. `SH-25` remains queued because its supplied component
 descriptors are bounded planning inputs rather than authentic `SH-24` build
 outputs.
 
+The additive bootstrap-hosted `sh07-core` command exposes the authenticated
+SH-07 artifact through the strict public source boundary without repointing the
+legacy `core` or compiler commands. Its dedicated executable gate passed 4
+tests and 72 assertions for accepted `.gravity` and `.qst` inputs, path-neutral
+identity, distinct actual-path provenance, deterministic repeats, unrelated
+working directories, bootstrap-only and default stale-package bypasses,
+structured C6 rejection, extension policy, and malformed UTF-8 containment.
+The route still declares the Clojure source-loading, plan-execution, digest,
+envelope, and final-assembly boundary; it does not provide package refresh,
+seed retirement, complete public compiler routing, or `SH-07` completion.
+
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
 central routing, and final artifact construction. All authoritative compiler
