@@ -1,4 +1,4 @@
-; SH-08-B48 rejection: lexical callable values remain unsupported.
+; SH-08 C7 acceptance: one capture-free named callable value hop.
 (ns self-hosting.sh08.function-call-nonlocal
   (:profile :meta)
   (:target :jvm)
@@ -9,13 +9,13 @@
   (:capabilities #{})
   (:safety :safe)
   (:metadata
-   {:slice :SH-08-B48
+   {:slice :SH-08-C7-HO1
     :fixture :function-call-nonlocal
     :required-products [:function-records :call-edges]
-    :scope :first-order-fixed-arity-functions-locals-calls
-    :expected-rejection :unsupported-nonlocal-call
+    :scope :capture-free-higher-order-fixed-arity-one-hop
     :non-claims
-    [:higher-order-functions
+    [:captures
+     :multi-hop
      :dynamic-callable-values
      :protocol-dispatch]}))
 

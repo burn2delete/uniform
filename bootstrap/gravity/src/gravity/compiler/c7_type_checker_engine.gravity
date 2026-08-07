@@ -2450,6 +2450,37 @@
      :remediation
      "Provide coherent B47 function, call, recursion, definition, binding, and lexical products with bounded first-order primitive types."}))
 
+(defn sh08-ft-render-inference-diagnostics [diagnostics nodes module]
+  (loop [remaining diagnostics values []]
+    (if (= (count remaining) 0)
+      values
+      (let [diagnostic (first remaining)
+            node
+            (if (map? (get diagnostic :call))
+              (get nodes (get (get diagnostic :call) :core-node-id))
+              (get diagnostic :node))]
+        (recur
+         (rest remaining)
+         (conj values
+               (sh08-ft-diagnostic
+                (get diagnostic :rule)
+                node
+                module
+                (get diagnostic :expected)
+                (get diagnostic :actual)
+                (get diagnostic :reason)
+                {:parameter-binding-id
+                 (get diagnostic :parameter-binding-id)
+                 :constraint-id
+                 (if (= (get diagnostic :rule) "C7-TYPE-MISMATCH")
+                   {:domain :gravity/sh08-function-type-constraint-v1
+                    :core-node-id (get node :node-id)
+                    :parameter-binding-id
+                    (get diagnostic :parameter-binding-id)
+                    :expected (get diagnostic :expected)
+                    :actual (get diagnostic :actual)}
+                   nil)})))))))
+
 (defn sh08-ft-unknown? [value]
   (if (= value nil)
     true
@@ -2530,6 +2561,557 @@
    :source-span nil
    :status :inferred})
 
+; The authoritative higher-order promotion is deliberately narrower than the
+; fixture adapters: it derives one capture-free named identity function and
+; one named apply-one function directly from the authenticated B47 core.  No
+; HO1/HO2 result is accepted as a type premise here.
+(defn sh08-ft-higher-order-reference?
+  [node binding-id owner-function-syntax-id]
+  (if (map? node)
+    (if (= :reference (get node :core-form))
+      (if (= binding-id (get (get node :attributes) :binding-id))
+        (= owner-function-syntax-id
+           (get (get node :evaluation) :owner-function-syntax-id))
+        false)
+      false)
+    false))
+
+(defn sh08-ft-higher-order-call-node-valid?
+  [call node expected-argument-count owner-function-syntax-id]
+  (if (map? call)
+    (if (map? node)
+      (if (= :call (get node :core-form))
+        (if (= expected-argument-count
+               (count (get call :argument-node-ids)))
+          (if (= (get call :ordered-evaluation-node-ids)
+                 (get node :children))
+            (if (= :operator-then-arguments
+                   (get call :evaluation-order))
+              (= owner-function-syntax-id
+                 (get (get node :evaluation)
+                      :owner-function-syntax-id))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh08-ft-higher-order-call-by-node-id
+  [calls node-id]
+  (if (= (count calls) 0)
+    nil
+    (if (= node-id (get (first calls) :core-node-id))
+      (first calls)
+      (sh08-ft-higher-order-call-by-node-id (rest calls) node-id))))
+
+(defn sh08-ft-higher-order-identity-candidates
+  [function-records nodes definitions]
+  (loop [remaining function-records values []]
+    (if (= (count remaining) 0)
+      values
+      (let [record (first remaining)
+            function-node (get nodes (get record :function-core-node-id))
+            definition
+            (sh08-ft-definition-by-binding-id
+             definitions (get record :definition-binding-id))
+            parameter-ids (get record :parameter-binding-ids)
+            body (get nodes (get record :body-core-node-id))]
+        (if (if (= :named-top-level (get record :definition-kind))
+              (if (= 1 (get record :fixed-arity))
+                (if (= 1 (count parameter-ids))
+                  (if (map? definition)
+                    (if (map? function-node)
+                      (if (= :fn (get function-node :core-form))
+                        (sh08-ft-higher-order-reference?
+                         body (first parameter-ids)
+                         (get record :function-syntax-id))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+          (recur (rest remaining)
+                 (conj values
+                       {:record record
+                        :definition definition
+                        :function-node function-node
+                        :body body
+                        :parameter-binding-id (first parameter-ids)}))
+          (recur (rest remaining) values))))))
+
+(defn sh08-ft-higher-order-outer-call
+  [calls nodes apply-definition identity-definition]
+  (if (= (count calls) 0)
+    nil
+    (let [call (first calls)
+          node (get nodes (get call :core-node-id))
+          argument-ids (get call :argument-node-ids)
+          children (get node :children)
+          function-value-node (get nodes (first argument-ids))
+          value-node (get nodes (first (rest argument-ids)))]
+      (if (if (= :call (get node :core-form))
+            (if (= nil (get (get node :evaluation)
+                            :owner-function-syntax-id))
+              (if (= 2 (count argument-ids))
+                (if (= (get call :operator-binding-id)
+                       (get apply-definition :binding-id))
+                  (if (= (get call :ordered-evaluation-node-ids)
+                         children)
+                    (if (= :operator-then-arguments
+                           (get call :evaluation-order))
+                      (if (= (get function-value-node :core-form)
+                             :reference)
+                        (if (= (get (get function-value-node :attributes)
+                                    :binding-id)
+                               (get identity-definition :binding-id))
+                          (if (= (get value-node :core-form) :literal)
+                            (= :integer
+                               (get (get value-node :attributes)
+                                    :literal-kind))
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+        call
+        (sh08-ft-higher-order-outer-call
+         (rest calls) nodes apply-definition identity-definition)))))
+
+(defn sh08-ft-higher-order-outer-edge-valid?
+  [edge call function-record bindings]
+  (let [definition-binding
+        (sh08-ft-binding-by-id
+         bindings (get function-record :definition-binding-id))]
+  (if (map? edge)
+    (if (= :local-function (get edge :classification))
+      (if (= (get edge :call-core-node-id)
+             (get call :core-node-id))
+        (if (= (get edge :callee-binding-id)
+               (get function-record :definition-binding-id))
+          (if (= (get edge :callee-definition-syntax-id)
+                 (get definition-binding :definition-syntax-id))
+            (if (= (get edge :callee-function-syntax-id)
+                   (get function-record :function-syntax-id))
+              (if (= (get edge :callee-function-core-node-id)
+                     (get function-record :function-core-node-id))
+                (if (= (get edge :argument-core-node-ids)
+                       (get call :argument-node-ids))
+                  (if (= (get edge :ordered-evaluation-node-ids)
+                         (get call :ordered-evaluation-node-ids))
+                    (if (= (get edge :evaluation-order)
+                           (get call :evaluation-order))
+                      (if (= (get edge :caller-function-syntax-id) nil)
+                        (= (get edge :caller-function-core-node-id) nil)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false)))
+
+(defn sh08-ft-higher-order-apply-candidates
+  [function-records nodes definitions bindings calls edges identity-candidate]
+  (let [identity-definition (get identity-candidate :definition)]
+    (loop [remaining function-records values []]
+      (if (= (count remaining) 0)
+        values
+        (let [record (first remaining)
+              parameter-ids (get record :parameter-binding-ids)
+              function-node (get nodes (get record :function-core-node-id))
+              definition
+              (sh08-ft-definition-by-binding-id
+               definitions (get record :definition-binding-id))
+              body (get nodes (get record :body-core-node-id))
+              body-call
+              (sh08-ft-higher-order-call-by-node-id
+               calls (get record :body-core-node-id))
+              argument-ids (if (map? body-call)
+                             (get body-call :argument-node-ids)
+                             [])
+              inner-argument (get nodes (first argument-ids))
+              inner-edge
+              (sh08-ft-edge-by-call-id
+               edges (get record :body-core-node-id))
+              outer-call
+              (if (map? definition)
+                (sh08-ft-higher-order-outer-call
+                 calls nodes definition identity-definition)
+                nil)
+              outer-edge
+              (if (map? outer-call)
+                (sh08-ft-edge-by-call-id
+                 edges (get outer-call :core-node-id))
+                nil)
+              outer-node
+              (if (map? outer-call)
+                (get nodes (get outer-call :core-node-id))
+                nil)
+              callable-binding
+              (sh08-ft-binding-by-id bindings (first parameter-ids))]
+          (if (if (= :named-top-level (get record :definition-kind))
+                (if (= 2 (get record :fixed-arity))
+                  (if (= 2 (count parameter-ids))
+                    (if (map? definition)
+                      (if (map? function-node)
+                        (if (= :fn (get function-node :core-form))
+                          (if (sh08-ft-higher-order-call-node-valid?
+                               body-call body 1
+                               (get record :function-syntax-id))
+                            (if (= (get body-call :operator-binding-id)
+                                   (first parameter-ids))
+                              (if (sh08-ft-higher-order-reference?
+                                   inner-argument
+                                   (first (rest parameter-ids))
+                                   (get record :function-syntax-id))
+                                (if (map? inner-edge)
+                                  (if (= :nonlocal-or-nonfunction
+                                         (get inner-edge :classification))
+                                    (if (= (get inner-edge :callee-binding-id)
+                                           (first parameter-ids))
+                                      (if (map? callable-binding)
+                                        (if (= (get inner-edge
+                                                   :callee-definition-syntax-id)
+                                               (get callable-binding
+                                                   :definition-syntax-id))
+                                          (if (= nil
+                                                 (get inner-edge
+                                                      :callee-function-syntax-id))
+                                            (if (= nil
+                                                 (get inner-edge
+                                                      :callee-function-core-node-id))
+                                              (if (sh08-ft-higher-order-outer-edge-valid?
+                                                   outer-edge outer-call record
+                                                   bindings)
+                                                true
+                                                false)
+                                              false)
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+            (recur (rest remaining)
+                   (conj values
+                         {:record record
+                          :definition definition
+                          :function-node function-node
+                          :body body
+                          :inner-call body-call
+                          :inner-node body
+                          :inner-argument inner-argument
+                          :inner-edge inner-edge
+                          :outer-call outer-call
+                          :outer-edge outer-edge
+                          :outer-node outer-node
+                          :callable-binding callable-binding
+                          :callable-binding-id (first parameter-ids)
+                          :value-binding-id (first (rest parameter-ids))}))
+            (recur (rest remaining) values)))))))
+
+(defn sh08-ft-higher-order-edge-projection [edge]
+  (if (map? edge)
+    {:ordinal (get edge :ordinal)
+     :call-core-node-id (get edge :call-core-node-id)
+     :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :caller-function-core-node-id (get edge :caller-function-core-node-id)
+     :callee-binding-id (get edge :callee-binding-id)
+     :callee-definition-syntax-id (get edge :callee-definition-syntax-id)
+     :callee-function-syntax-id (get edge :callee-function-syntax-id)
+     :callee-function-core-node-id (get edge :callee-function-core-node-id)
+     :argument-core-node-ids (get edge :argument-core-node-ids)
+     :ordered-evaluation-node-ids (get edge :ordered-evaluation-node-ids)
+     :evaluation-order (get edge :evaluation-order)
+     :classification (get edge :classification)}
+    nil))
+
+(defn sh08-ft-higher-order-proof
+  [nodes definitions bindings function-records calls edges module]
+  (let [node-index (sh08-ft-node-index nodes)
+        identity-candidates
+        (sh08-ft-higher-order-identity-candidates
+         function-records node-index definitions)]
+    (if (= 1 (count identity-candidates))
+      (let [identity (first identity-candidates)
+            apply-candidates
+            (sh08-ft-higher-order-apply-candidates
+             function-records node-index definitions bindings calls edges identity)]
+        (if (= 1 (count apply-candidates))
+          (let [apply (first apply-candidates)
+                identity-record (get identity :record)
+                apply-record (get apply :record)
+                identity-definition (get identity :definition)
+                apply-definition (get apply :definition)
+                identity-source
+                (get (get (get identity :function-node) :source) :semantic-span)
+                identity-syntax-id
+                (get (get (get identity :function-node) :source) :syntax-id)
+                identity-origin-chain
+                (get (get (get identity :function-node) :source) :origin-chain)
+                identity-generated-origin
+                (get (get (get identity :function-node) :source) :generated-origin)
+                apply-source
+                (get (get (get apply :function-node) :source) :semantic-span)
+                apply-syntax-id
+                (get (get (get apply :function-node) :source) :syntax-id)
+                apply-origin-chain
+                (get (get (get apply :function-node) :source) :origin-chain)
+                apply-generated-origin
+                (get (get (get apply :function-node) :source) :generated-origin)
+                identity-function-type
+                {:artifact :gravity/c7-function-type
+                 :function-id (get identity-record :function-syntax-id)
+                 :function-core-node-id
+                 (get identity-record :function-core-node-id)
+                 :body-core-node-id (get identity-record :body-core-node-id)
+                 :definition-name (get identity-record :definition-name)
+                 :parameter-binding-ids
+                 (get identity-record :parameter-binding-ids)
+                 :parameters
+                 [{:binding-id (get identity :parameter-binding-id)
+                   :type :gravity.type/integer}]
+                 :return :gravity.type/integer
+                 :return-conflict nil
+                 :fixed-arity (get identity-record :fixed-arity)
+                 :latent-effects (get module :effects)
+                 :capabilities (get module :capabilities)
+                 :ownership-constraints :pending-sh10
+                 :profile-constraints [(get module :profile)]
+                 :thrown-error-effects [:pending-sh09]
+                 :source-span identity-source
+                 :syntax-id identity-syntax-id
+                 :origin-chain identity-origin-chain
+                 :generated-origin identity-generated-origin
+                 :profile (get module :profile)
+                 :target (get module :target)
+                 :status :inferred}
+                apply-function-type
+                {:artifact :gravity/c7-function-type
+                 :function-id (get apply-record :function-syntax-id)
+                 :function-core-node-id
+                 (get apply-record :function-core-node-id)
+                 :body-core-node-id (get apply-record :body-core-node-id)
+                 :definition-name (get apply-record :definition-name)
+                 :parameter-binding-ids
+                 (get apply-record :parameter-binding-ids)
+                 :parameters
+                 [{:binding-id (get apply :callable-binding-id)
+                   :type identity-function-type}
+                  {:binding-id (get apply :value-binding-id)
+                   :type :gravity.type/integer}]
+                 :return :gravity.type/integer
+                 :return-conflict nil
+                 :fixed-arity (get apply-record :fixed-arity)
+                 :latent-effects (get module :effects)
+                 :capabilities (get module :capabilities)
+                 :ownership-constraints :pending-sh10
+                 :profile-constraints [(get module :profile)]
+                 :thrown-error-effects [:pending-sh09]
+                 :source-span apply-source
+                 :syntax-id apply-syntax-id
+                 :origin-chain apply-origin-chain
+                 :generated-origin apply-generated-origin
+                 :profile (get module :profile)
+                 :target (get module :target)
+                 :status :inferred}]
+            {:status :accepted
+             :identity identity
+             :apply apply
+             :identity-function-type identity-function-type
+             :apply-function-type apply-function-type
+             :identity-binding-id (get identity-definition :binding-id)
+             :identity-function-syntax-id
+             (get identity-record :function-syntax-id)
+             :apply-binding-id (get apply-definition :binding-id)
+             :apply-function-syntax-id
+             (get apply-record :function-syntax-id)
+             :identity-parameter-binding-id
+             (get identity :parameter-binding-id)
+             :apply-callable-binding-id (get apply :callable-binding-id)
+             :apply-value-binding-id (get apply :value-binding-id)
+             :inner-call-core-node-id
+             (get (get apply :inner-call) :core-node-id)
+             :outer-call-core-node-id
+             (get (get apply :outer-call) :core-node-id)
+             :inner-edge (get apply :inner-edge)
+             :outer-edge (get apply :outer-edge)
+             :identity-source
+             (get (get (get identity :function-node) :source)
+                  :semantic-span)
+             :apply-source
+             (get (get (get apply :function-node) :source)
+                  :semantic-span)
+             :inner-source
+             (get (get (get apply :inner-node) :source)
+                  :semantic-span)
+             :outer-source
+             (get (get (get apply :outer-node) :source)
+                  :semantic-span)
+             :callable-definition-syntax-id
+             (get (get apply :callable-binding) :definition-syntax-id)
+             :initial-binding-types
+             {(get identity-definition :binding-id) identity-function-type
+              (get identity :parameter-binding-id) :gravity.type/integer
+              (get apply-definition :binding-id) apply-function-type
+              (get apply :callable-binding-id) identity-function-type
+              (get apply :value-binding-id) :gravity.type/integer}})
+          {:status :not-applicable :reason :no-complete-identity-apply-shape}))
+      {:status :not-applicable :reason :no-complete-identity-shape})))
+
+(defn sh08-ft-higher-order-complete-function
+  [skeleton proof-type]
+  (let [updated
+        (assoc
+         (assoc
+          (assoc
+           (assoc
+            (assoc
+             (assoc skeleton
+                    :parameters (get proof-type :parameters))
+             :return (get proof-type :return))
+            :latent-effects (get proof-type :latent-effects))
+           :capabilities (get proof-type :capabilities))
+          :ownership-constraints (get proof-type :ownership-constraints))
+         :thrown-error-effects (get proof-type :thrown-error-effects))]
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (assoc updated :profile (get proof-type :profile))
+        :target (get proof-type :target))
+       :source-span (get proof-type :source-span))
+      :syntax-id (get proof-type :syntax-id))
+     :origin-chain (get proof-type :origin-chain)
+     :generated-origin (get proof-type :generated-origin))))
+
+(defn sh08-ft-higher-order-proof-input [proof]
+  (let [identity (get proof :identity)
+        apply (get proof :apply)
+        identity-record (get identity :record)
+        apply-record (get apply :record)
+        identity-definition (get identity :definition)
+        apply-definition (get apply :definition)
+        inner-call (get apply :inner-call)
+        outer-call (get apply :outer-call)]
+    {:domain :gravity/sh08-authoritative-higher-order-proof-v1
+     :identity-function-syntax-id (get identity-record :function-syntax-id)
+     :identity-function-core-node-id
+     (get identity-record :function-core-node-id)
+     :identity-definition-binding-id (get identity-definition :binding-id)
+     :identity-parameter-binding-id
+     (get proof :identity-parameter-binding-id)
+     :identity-body-core-node-id (get identity-record :body-core-node-id)
+     :apply-function-syntax-id (get apply-record :function-syntax-id)
+     :apply-function-core-node-id (get apply-record :function-core-node-id)
+     :apply-definition-binding-id (get apply-definition :binding-id)
+     :apply-callable-binding-id (get proof :apply-callable-binding-id)
+     :apply-value-binding-id (get proof :apply-value-binding-id)
+     :apply-body-core-node-id (get apply-record :body-core-node-id)
+     :inner-call-core-node-id (get inner-call :core-node-id)
+     :inner-operator-binding-id (get inner-call :operator-binding-id)
+     :inner-argument-node-ids (get inner-call :argument-node-ids)
+     :inner-evaluation-order (get inner-call :evaluation-order)
+     :inner-source-span (get proof :inner-source)
+     :inner-edge
+     (sh08-ft-higher-order-edge-projection (get proof :inner-edge))
+     :outer-call-core-node-id (get outer-call :core-node-id)
+     :outer-operator-binding-id (get outer-call :operator-binding-id)
+     :outer-argument-node-ids (get outer-call :argument-node-ids)
+     :outer-evaluation-order (get outer-call :evaluation-order)
+     :outer-source-span (get proof :outer-source)
+     :outer-edge
+     (sh08-ft-higher-order-edge-projection (get proof :outer-edge))
+     :outer-value-argument-node-id
+     (first (rest (get outer-call :argument-node-ids)))
+     :outer-value-literal-kind :integer
+     :identity-parameter-type :gravity.type/integer
+     :apply-callable-parameter-type (get proof :identity-function-type)
+     :apply-value-parameter-type :gravity.type/integer
+     :identity-function-type (get proof :identity-function-type)
+     :apply-function-type (get proof :apply-function-type)
+     :inner-result-type :gravity.type/integer
+     :outer-result-type :gravity.type/integer}))
+
+(defn sh08-ft-higher-order-call-proof-facts [proof]
+  (let [identity (get proof :identity)
+        apply (get proof :apply)
+        identity-record (get identity :record)
+        apply-record (get apply :record)
+        inner-call (get apply :inner-call)
+        outer-call (get apply :outer-call)]
+    [{:role :inner-indirect-call
+      :call-core-node-id (get inner-call :core-node-id)
+      :caller-function-syntax-id (get apply-record :function-syntax-id)
+      :callee-function-syntax-id (get (get proof :inner-edge)
+                                      :callee-function-syntax-id)
+      :selected-identity-function-syntax-id
+      (get identity-record :function-syntax-id)
+      :operator-binding-id (get inner-call :operator-binding-id)
+      :callable-parameter-binding-id
+      (get proof :apply-callable-binding-id)
+      :argument-node-ids (get inner-call :argument-node-ids)
+      :argument-value-binding-id (get proof :apply-value-binding-id)
+      :evaluation-order (get inner-call :evaluation-order)
+      :source-span (get proof :inner-source)
+      :b47-edge
+      (sh08-ft-higher-order-edge-projection (get proof :inner-edge))
+      :result-type :gravity.type/integer
+      :dispatch :indirect-function-value}
+     {:role :outer-direct-call
+      :call-core-node-id (get outer-call :core-node-id)
+      :caller-function-syntax-id nil
+      :callee-function-syntax-id (get apply-record :function-syntax-id)
+      :operator-binding-id (get outer-call :operator-binding-id)
+      :argument-node-ids (get outer-call :argument-node-ids)
+      :value-argument-node-id
+      (first (rest (get outer-call :argument-node-ids)))
+      :evaluation-order (get outer-call :evaluation-order)
+      :source-span (get proof :outer-source)
+      :outer-edge (get proof :outer-edge)
+      :b47-edge
+      (sh08-ft-higher-order-edge-projection (get proof :outer-edge))
+      :selected-apply-function-syntax-id
+      (get apply-record :function-syntax-id)
+      :result-type :gravity.type/integer
+      :dispatch :direct-local-function}]))
+
+(defn sh08-ft-higher-order-pending [base-pending]
+  (let [residuals
+        [:captures :lifetimes :aliases :multi-hop :polymorphism :overloads
+         :multi-arity :variadic-dispatch :protocol-dispatch :dynamic-dispatch
+         :reflection]]
+    (loop [remaining base-pending values []]
+      (if (= (count remaining) 0)
+        values
+        (if (= (first remaining) :higher-order-functions)
+          (recur
+           (rest remaining)
+           (loop [pending residuals result values]
+             (if (= (count pending) 0)
+               result
+               (recur (rest pending) (conj result (first pending))))))
+          (recur (rest remaining) (conj values (first remaining))))))))
+
 (defn sh08-ft-update-param-types [function-types binding-types]
   (loop [remaining (keys function-types)
          result function-types]
@@ -2581,8 +3163,8 @@
           function
           (recur (rest remaining)))))))
 
-(defn sh08-ft-infer-node
-  [node type-table binding-types function-types edges]
+(defn sh08-ft-infer-node-with-context
+  [node type-table binding-types function-types edges context]
   (let [core-form (get node :core-form)
         children (get node :children)]
     (if (= core-form :literal)
@@ -2629,8 +3211,18 @@
                           (get edge :callee-function-syntax-id))
                          :return
                          :gravity.type/unknown)
-                        :gravity.type/unknown))
+                        (if (if (= :accepted (get context :status))
+                              (= (get node :node-id)
+                                 (get context :inner-call-core-node-id))
+                              false)
+                          :gravity.type/integer
+                          :gravity.type/unknown)))
                     :gravity.type/unknown)))))))))))
+
+(defn sh08-ft-infer-node
+  [node type-table binding-types function-types edges]
+  (sh08-ft-infer-node-with-context
+   node type-table binding-types function-types edges {}))
 
 (defn sh08-ft-bind-lexical-types
   [lexical-bindings type-table binding-types]
@@ -2681,8 +3273,8 @@
         pair
         (sh08-ft-first-type-mismatch (rest pairs))))))
 
-(defn sh08-ft-call-constraints
-  [calls edges nodes type-table binding-types function-types]
+(defn sh08-ft-call-constraints-with-context
+  [calls edges nodes type-table binding-types function-types context]
   (loop [remaining calls
          remaining-edges edges
          next-bindings binding-types
@@ -2704,12 +3296,23 @@
                 values
                 (recur
                  (rest ids)
-                 (conj values
+                       (conj values
                        (get type-table (first ids)
                             :gravity.type/unknown)))))
-            parameters (if (map? callee) (get callee :parameters) [])
+            higher-order-call?
+            (if (= :accepted (get context :status))
+              (= (get call :core-node-id)
+                 (get context :inner-call-core-node-id))
+              false)
+            parameters
+            (if higher-order-call?
+              [{:binding-id (get context :apply-value-binding-id)
+                :type :gravity.type/integer}]
+              (if (map? callee) (get callee :parameters) []))
             arity-ok (= (count args) (count parameters))]
-        (if (= (get edge :classification) :local-function)
+        (if (if (= (get edge :classification) :local-function)
+              true
+              higher-order-call?)
           (if arity-ok
             (let [joined
                   (loop [ps parameters
@@ -2742,28 +3345,42 @@
                     (sh08-ft-first-type-mismatch
                      (get joined :pairs))]
               (if (= mismatch nil)
-                (recur
-                 (rest remaining)
-                 (rest remaining-edges)
-                 (get joined :bindings)
-                 (conj
-                  constraints
-                  {:constraint-id-request
-                   {:domain :gravity/sh08-function-call-constraint-v1
-                    :call-core-node-id (get call :core-node-id)
-                    :callee-function-syntax-id
-                    (get edge :callee-function-syntax-id)}
-                   :kind :equality
-                   :lhs (get edge :callee-function-syntax-id)
-                   :rhs (get joined :pairs)
-                   :origin (get (get (get nodes (get call :core-node-id))
-                                    :source)
-                                :origin-chain)
-                   :profile :meta
-                   :target :jvm
-                   :status :solved
-                   :diagnostics []})
-                 diagnostics)
+                (let [constraint-id-request
+                      {:domain :gravity/sh08-function-call-constraint-v1
+                       :call-core-node-id (get call :core-node-id)
+                       :callee-function-syntax-id
+                       (get edge :callee-function-syntax-id)}
+                      base-constraint
+                      {:constraint-id-request constraint-id-request
+                       :kind :equality
+                       :lhs (get edge :callee-function-syntax-id)
+                       :rhs (get joined :pairs)
+                       :origin (get (get (get nodes (get call :core-node-id))
+                                        :source)
+                                    :origin-chain)
+                       :profile :meta
+                       :target :jvm
+                       :status :solved
+                       :diagnostics []}
+                      constraint
+                      (if higher-order-call?
+                        (assoc
+                         (assoc
+                          (assoc
+                           (assoc base-constraint
+                                  :constraint-id-request
+                                  (assoc constraint-id-request
+                                         :higher-order-call? true))
+                           :kind :higher-order-function-call)
+                          :lhs (get context :apply-callable-binding-id))
+                         :higher-order-call? true)
+                        base-constraint)]
+                  (recur
+                   (rest remaining)
+                   (rest remaining-edges)
+                   (get joined :bindings)
+                   (conj constraints constraint)
+                   diagnostics))
                 {:binding-types next-bindings
                  :constraints constraints
                  :diagnostics
@@ -2794,9 +3411,14 @@
                   :expected :supported-local-first-order-call
                   :actual (get edge :classification)})})))))
 
-(defn sh08-ft-infer-pass
+(defn sh08-ft-call-constraints
+  [calls edges nodes type-table binding-types function-types]
+  (sh08-ft-call-constraints-with-context
+   calls edges nodes type-table binding-types function-types {}))
+
+(defn sh08-ft-infer-pass-with-context
   [nodes lexical-bindings definitions calls edges function-types
-   initial-binding-types]
+   initial-binding-types context]
   (loop [remaining nodes
          type-table {}
          binding-types initial-binding-types
@@ -2814,9 +3436,9 @@
             (sh08-ft-update-param-types
              function-result definition-types)
             call-result
-            (sh08-ft-call-constraints
+            (sh08-ft-call-constraints-with-context
              calls edges node-index type-table definition-types
-             function-with-params)]
+             function-with-params context)]
         {:type-table type-table
          :binding-types (get call-result :binding-types)
          :function-types function-with-params
@@ -2824,15 +3446,22 @@
          :diagnostics (get call-result :diagnostics)})
       (let [node (first remaining)
             node-type
-            (sh08-ft-infer-node
-             node type-table binding-types function-result edges)]
+            (sh08-ft-infer-node-with-context
+             node type-table binding-types function-result edges context)]
         (recur
          (rest remaining)
          (assoc type-table (get node :node-id) node-type)
          binding-types
-         (if (= (get (get node :core-form) :none) :none)
+                    (if (= (get (get node :core-form) :none) :none)
            function-result
            function-result))))))
+
+(defn sh08-ft-infer-pass
+  [nodes lexical-bindings definitions calls edges function-types
+   initial-binding-types]
+  (sh08-ft-infer-pass-with-context
+   nodes lexical-bindings definitions calls edges function-types
+   initial-binding-types {}))
 
 (defn sh08-ft-update-function-returns
   [function-types nodes type-table]
@@ -2895,9 +3524,9 @@
      (count calls)
      (count lexical-bindings)))
 
-(defn sh08-ft-infer-acyclic
+(defn sh08-ft-infer-acyclic-with-context
   [node-sequence node-table lexical-bindings definitions calls edges
-   function-types binding-types maximum-rounds]
+   function-types binding-types maximum-rounds context]
   (loop [rounds-left maximum-rounds
          round 1
          current-functions function-types
@@ -2917,9 +3546,9 @@
          :expected :fixed-point-within-declared-round-bound
          :actual maximum-rounds}]}
       (let [pass
-            (sh08-ft-infer-pass
+            (sh08-ft-infer-pass-with-context
              node-sequence lexical-bindings definitions calls edges
-             current-functions current-bindings)
+             current-functions current-bindings context)
             next-bindings (get pass :binding-types)
             next-functions
             (sh08-ft-update-function-returns
@@ -2951,7 +3580,7 @@
                  :convergence-status :type-conflict
                  :round-count round
                  :round-bound maximum-rounds
-                 :diagnostics
+                  :diagnostics
                  (conj
                   (get pass :diagnostics)
                   {:node (get return-conflict :node)
@@ -2959,6 +3588,13 @@
                    :reason :function-result-type-mismatch
                    :expected (get return-conflict :expected)
                    :actual (get return-conflict :actual)})))))))
+
+(defn sh08-ft-infer-acyclic
+  [node-sequence node-table lexical-bindings definitions calls edges
+   function-types binding-types maximum-rounds]
+  (sh08-ft-infer-acyclic-with-context
+   node-sequence node-table lexical-bindings definitions calls edges
+   function-types binding-types maximum-rounds {}))
 
 (defn sh08-ft-first-unknown-node [nodes type-table]
   (if (= (count nodes) 0)
@@ -3028,8 +3664,8 @@
                 :capabilities (get module :capabilities)
                 :status :inferred}))))))
 
-(defn sh08-ft-call-facts
-  [calls edges nodes type-table function-types module]
+(defn sh08-ft-call-facts-with-context
+  [calls edges nodes type-table function-types module context]
   (loop [remaining calls
          remaining-edges edges
          values []]
@@ -3040,6 +3676,22 @@
             node (get nodes (get call :core-node-id))
             callee
             (get function-types (get edge :callee-function-syntax-id))
+            higher-order-call?
+            (if (= :accepted (get context :status))
+              (= (get call :core-node-id)
+                 (get context :inner-call-core-node-id))
+              false)
+            higher-order-outer-call?
+            (if (= :accepted (get context :status))
+              (= (get call :core-node-id)
+                 (get context :outer-call-core-node-id))
+              false)
+            result-type
+            (if higher-order-call?
+              :gravity.type/integer
+              (if (map? callee)
+                (get callee :return)
+                :gravity.type/unknown))
             argument-types
             (loop [ids (get call :argument-node-ids) result []]
               (if (= (count ids) 0)
@@ -3048,46 +3700,87 @@
                  (rest ids)
                  (conj result
                        (get type-table (first ids)
-                            :gravity.type/unknown)))))]
+                            :gravity.type/unknown)))))
+            base-fact
+            {:artifact :gravity/c7-call-type-fact
+             :fact-id-request
+             {:domain :gravity/sh08-call-type-fact-v1
+              :call-core-node-id (get call :core-node-id)
+              :callee-function-syntax-id
+              (get edge :callee-function-syntax-id)
+              :argument-types argument-types
+              :result-type result-type}
+             :call-core-node-id (get call :core-node-id)
+             :caller-function-syntax-id
+             (get edge :caller-function-syntax-id)
+             :callee-function-syntax-id
+             (get edge :callee-function-syntax-id)
+             :argument-types argument-types
+             :result-type result-type
+             :evaluation-order (get call :evaluation-order)
+             :source-span (get (get node :source) :semantic-span)
+             :syntax-id (get (get node :source) :syntax-id)
+             :origin-chain (get (get node :source) :origin-chain)
+             :generated-origin
+             (get (get node :source) :generated-origin)
+             :profile (get module :profile)
+             :target (get module :target)
+             :effects (get module :effects)
+             :capabilities (get module :capabilities)
+             :status :inferred}
+            call-fact
+            (if higher-order-call?
+              (assoc
+               (assoc
+                (assoc
+                 (assoc
+                  (assoc
+                   (assoc base-fact
+                          :fact-id-request
+                          (assoc (get base-fact :fact-id-request)
+                                 :higher-order-call? true))
+                   :callable-parameter-binding-id
+                   (get context :apply-callable-binding-id))
+                  :dispatch :indirect-function-value)
+                 :higher-order-call? true)
+                :selected-identity-function-syntax-id
+                (get context :identity-function-syntax-id))
+               :b47-edge
+               (sh08-ft-higher-order-edge-projection edge))
+              (if higher-order-outer-call?
+                (assoc
+                 (assoc
+                  (assoc base-fact
+                         :dispatch :direct-local-function)
+                  :selected-apply-function-syntax-id
+                  (get context :apply-function-syntax-id))
+                 :b47-edge
+                 (sh08-ft-higher-order-edge-projection edge))
+                base-fact))]
         (recur
          (rest remaining)
          (rest remaining-edges)
-         (conj values
-               {:artifact :gravity/c7-call-type-fact
-                :fact-id-request
-                {:domain :gravity/sh08-call-type-fact-v1
-                 :call-core-node-id (get call :core-node-id)
-                 :callee-function-syntax-id
-                 (get edge :callee-function-syntax-id)
-                 :argument-types argument-types
-                 :result-type (if (map? callee)
-                                (get callee :return)
-                                :gravity.type/unknown)}
-                :call-core-node-id (get call :core-node-id)
-                :caller-function-syntax-id
-                (get edge :caller-function-syntax-id)
-                :callee-function-syntax-id
-                (get edge :callee-function-syntax-id)
-                :argument-types argument-types
-                :result-type (if (map? callee)
-                               (get callee :return)
-                               :gravity.type/unknown)
-                :evaluation-order (get call :evaluation-order)
-                :source-span (get (get node :source) :semantic-span)
-                :syntax-id (get (get node :source) :syntax-id)
-                :origin-chain (get (get node :source) :origin-chain)
-                :generated-origin
-                (get (get node :source) :generated-origin)
-                :profile (get module :profile)
-                :target (get module :target)
-                :effects (get module :effects)
-                :capabilities (get module :capabilities)
-                :status :inferred}))))))
+         (conj values call-fact))))))
+
+(defn sh08-ft-call-facts
+  [calls edges nodes type-table function-types module]
+  (sh08-ft-call-facts-with-context
+   calls edges nodes type-table function-types module {}))
 
 (defn sh08-ft-first-recursive-component [components]
   (if (= (count components) 0)
     nil
     (first components)))
+
+(defn sh08-ft-higher-order-result-fields [result proof]
+  (if (= :accepted (get proof :status))
+    (assoc
+     (assoc result
+            :higher-order-proof
+            (sh08-ft-higher-order-proof-input proof))
+     :higher-order-call-facts
+     (sh08-ft-higher-order-call-proof-facts proof))
+    result))
 
 (defn sh08-ft-function-type-core-artifact [core-artifact bindings]
   (if (map? core-artifact)
@@ -3098,7 +3791,16 @@
           products (sh08-ft-products-valid?
                     core-artifact shape bindings)]
       (if (= (get products :status) :accepted)
-        (if (> (count (get products :recursion-components)) 0)
+        (let [higher-order-proof
+              (sh08-ft-higher-order-proof
+               (get shape :nodes)
+               (get products :definitions)
+               bindings
+               (get products :function-records)
+               (get products :calls)
+               (get products :call-edges)
+               module)]
+          (if (> (count (get products :recursion-components)) 0)
           {:artifact :gravity/sh08-function-typed-core-template
            :schema-version 3
            :status :rejected
@@ -3117,7 +3819,7 @@
            :pending [:recursive-type-annotations
                      :higher-order-functions :records :unions
                      :protocols :generics :casts :dynamic-boundaries]}
-          (let [function-skeletons
+          (let [base-function-skeletons
                 (loop [remaining (get products :function-records)
                        result {}]
                   (if (= (count remaining) 0)
@@ -3127,11 +3829,45 @@
                        (rest remaining)
                        (assoc result
                               (get record :function-syntax-id)
-                              (sh08-ft-function-type-skeleton
+                               (sh08-ft-function-type-skeleton
                                record module))))))
                 nodes (get products :node-table)
+                higher-order?
+                (= :accepted (get higher-order-proof :status))
+                function-skeletons
+                (if higher-order?
+                  (loop [remaining (keys base-function-skeletons)
+                         result base-function-skeletons]
+                    (if (= (count remaining) 0)
+                      result
+                      (let [function-id (first remaining)
+                            function (get result function-id)]
+                        (if (= function-id
+                               (get (get (get higher-order-proof :identity)
+                                         :record)
+                                    :function-syntax-id))
+                          (recur
+                           (rest remaining)
+                           (assoc result function-id
+                                  (sh08-ft-higher-order-complete-function
+                                   function
+                                   (get higher-order-proof
+                                        :identity-function-type))))
+                          (if (= function-id
+                                 (get (get (get higher-order-proof :apply)
+                                           :record)
+                                      :function-syntax-id))
+                            (recur
+                             (rest remaining)
+                             (assoc result function-id
+                                    (sh08-ft-higher-order-complete-function
+                                     function
+                                     (get higher-order-proof
+                                          :apply-function-type))))
+                            (recur (rest remaining) result))))))
+                  base-function-skeletons)
                 raw-inference
-                (sh08-ft-infer-acyclic
+                (sh08-ft-infer-acyclic-with-context
                  (get shape :nodes)
                  nodes
                  (get products :lexical-bindings)
@@ -3139,12 +3875,15 @@
                  (get products :calls)
                  (get products :call-edges)
                  function-skeletons
-                 {}
+                 (if higher-order?
+                   (get higher-order-proof :initial-binding-types)
+                   {})
                  (sh08-ft-inference-round-bound
                   (get shape :nodes)
                   (get products :function-records)
                   (get products :calls)
-                  (get products :lexical-bindings)))
+                  (get products :lexical-bindings))
+                 higher-order-proof)
                 unknown-node
                 (if (= (get raw-inference :convergence-status)
                        :converged)
@@ -3202,49 +3941,8 @@
                :module module
                :sh07-shaped-artifact-id (get core-artifact :artifact-id)
                :diagnostics
-                 (loop [remaining (get inference :diagnostics) values []]
-                 (if (= (count remaining) 0)
-                   values
-                   (recur
-                    (rest remaining)
-                    (conj values
-                          (sh08-ft-diagnostic
-                           (get (first remaining) :rule)
-                           (if (map? (get (first remaining) :call))
-                             (get nodes
-                                  (get (get (first remaining) :call)
-                                       :core-node-id))
-                             (get (first remaining) :node))
-                           module
-                           (get (first remaining) :expected)
-                           (get (first remaining) :actual)
-                           (get (first remaining) :reason)
-                           {:parameter-binding-id
-                            (get (first remaining)
-                                 :parameter-binding-id)
-                            :constraint-id
-                            (if (= (get (first remaining) :rule)
-                                   "C7-TYPE-MISMATCH")
-                              {:domain
-                               :gravity/sh08-function-type-constraint-v1
-                               :core-node-id
-                               (get
-                                (if (map?
-                                     (get (first remaining) :call))
-                                  (get nodes
-                                       (get
-                                        (get (first remaining) :call)
-                                        :core-node-id))
-                                  (get (first remaining) :node))
-                                :node-id)
-                               :parameter-binding-id
-                               (get (first remaining)
-                                    :parameter-binding-id)
-                               :expected
-                               (get (first remaining) :expected)
-                               :actual
-                               (get (first remaining) :actual)}
-                              nil)})))))
+               (sh08-ft-render-inference-diagnostics
+                (get inference :diagnostics) nodes module)
                :pending [:recursive-type-annotations
                          :higher-order-functions :records :unions
                          :protocols :generics :casts :dynamic-boundaries]}
@@ -3261,20 +3959,21 @@
                        (get inference :binding-types)
                        nodes module)
                       call-facts
-                      (sh08-ft-call-facts
+                      (sh08-ft-call-facts-with-context
                        (get products :calls)
                        (get products :call-edges)
                        nodes
                        (get inference :type-table)
                        (get inference :function-types)
-                       module)
+                       module
+                       higher-order-proof)
                       convergence
                       {:status (get inference :convergence-status)
                        :round-count (get inference :round-count)
                        :round-bound (get inference :round-bound)
                        :proof
                        :monotone-finite-type-fact-propagation}
-                      identity-input
+                      identity-input-base
                       {:domain :gravity/sh08-function-typed-core-v3
                        :sh07-shaped-artifact-id
                        (get core-artifact :artifact-id)
@@ -3295,11 +3994,49 @@
                        :pending [:recursive-type-annotations
                                  :higher-order-functions :records :unions
                                  :protocols :generics :casts
-                                 :dynamic-boundaries]}]
-                  {:artifact :gravity/sh08-function-typed-core-template
+                                 :dynamic-boundaries]}
+                      identity-input
+                      (if higher-order?
+                        (assoc
+                         (assoc
+                          (assoc identity-input-base
+                                 :domain
+                                 :gravity/sh08-authoritative-higher-order-type-v1)
+                           :pending
+                           (sh08-ft-higher-order-pending
+                            (get identity-input-base :pending)))
+                         :higher-order-proof
+                         (sh08-ft-higher-order-proof-input
+                          higher-order-proof))
+                        identity-input-base)
+                      typed-core-base
+                      {:artifact :gravity/typed-core
+                       :core-input (get core-artifact :artifact-id)
+                       :module module
+                       :types (get inference :type-table)
+                       :constraints (get inference :constraints)
+                       :function-types final-functions
+                       :local-bindings local-facts
+                       :calls call-facts
+                       :diagnostics []}
+                      typed-core
+                      (if higher-order?
+                        (assoc
+                         (assoc typed-core-base
+                                :higher-order-proof
+                                (sh08-ft-higher-order-proof-input
+                                 higher-order-proof))
+                         :higher-order-call-facts
+                         (sh08-ft-higher-order-call-proof-facts
+                          higher-order-proof))
+                        typed-core-base)]
+                  (sh08-ft-higher-order-result-fields
+                   {:artifact :gravity/sh08-function-typed-core-template
                    :schema-version 3
                    :status :accepted
-                   :scope :first-order-fixed-arity-functions-locals-calls
+                   :scope (if higher-order?
+                            :capture-free-higher-order-fixed-arity-one-hop
+                            :first-order-fixed-arity-functions-locals-calls)
                    :authentication-status
                    :host-resolved-b47-verification-boundary
                    :module module
@@ -3318,22 +4055,14 @@
                    :constraint-ledger (get inference :constraints)
                    :type-table (get inference :type-table)
                    :convergence convergence
-                   :typed-core
-                   {:artifact :gravity/typed-core
-                    :core-input (get core-artifact :artifact-id)
-                    :module module
-                    :types (get inference :type-table)
-                    :constraints (get inference :constraints)
-                    :function-types final-functions
-                    :local-bindings local-facts
-                    :calls call-facts
-                    :diagnostics []}
+                   :typed-core typed-core
                    :diagnostics []
                    :artifact-id-request identity-input
                    :identity-input identity-input
                    :identity-resolution :coordinator-digest-required
                    :provenance (get core-artifact :provenance)
-                   :pending (get identity-input :pending)})
+                   :pending (get identity-input :pending)}
+                   higher-order-proof))
                 {:artifact :gravity/sh08-function-typed-core-template
                  :schema-version 3
                  :status :rejected
@@ -3350,7 +4079,7 @@
                    :unresolved-function-type {})]
                  :pending [:recursive-type-annotations
                            :higher-order-functions :records :unions
-                           :protocols :generics :casts :dynamic-boundaries]}))))
+                           :protocols :generics :casts :dynamic-boundaries]})))))
         {:artifact :gravity/sh08-function-typed-core-template
          :schema-version 3
          :status :rejected
@@ -3411,22 +4140,41 @@
                  :records :unions :protocols :generics :casts
                  :dynamic-boundaries]})))
 
+(defn sh08-ft-verification-checks [expected]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop
+         (get expected :scope))
+    [:coherent-b47-function-records
+     :coherent-b47-call-edges
+     :coherent-b47-recursion-components
+     :coherent-b47-lexical-bindings
+     :fixed-arity-first-order-inference
+     :capture-free-higher-order-one-hop-inference
+     :canonical-complete-function-signatures
+     :higher-order-proof
+     :higher-order-inner-and-outer-call-facts
+     :local-binding-facts
+     :call-type-facts
+     :constraint-ledger
+     :source-syntax-origin-generated-origin-links-preserved
+     :path-neutral-identity-input
+     :recursive-inference-rejected-without-annotation]
+    [:coherent-b47-function-records
+     :coherent-b47-call-edges
+     :coherent-b47-recursion-components
+     :coherent-b47-lexical-bindings
+     :fixed-arity-first-order-inference
+     :local-binding-facts
+     :call-type-facts
+     :constraint-ledger
+     :source-syntax-origin-generated-origin-links-preserved
+     :path-neutral-identity-input
+     :recursive-inference-rejected-without-annotation]))
+
 (defn sh08-verify-function-type-result [request candidate]
   (let [expected (sh08-function-type-core-artifact request)]
     {:artifact :gravity/sh08-function-type-verification
      :status (if (= expected candidate) :passed :rejected)
-     :checks
-     [:coherent-b47-function-records
-      :coherent-b47-call-edges
-      :coherent-b47-recursion-components
-      :coherent-b47-lexical-bindings
-      :fixed-arity-first-order-inference
-      :local-binding-facts
-      :call-type-facts
-      :constraint-ledger
-      :source-syntax-origin-generated-origin-links-preserved
-      :path-neutral-identity-input
-      :recursive-inference-rejected-without-annotation]
+     :checks (sh08-ft-verification-checks expected)
      :expected expected
      :candidate candidate}))
 

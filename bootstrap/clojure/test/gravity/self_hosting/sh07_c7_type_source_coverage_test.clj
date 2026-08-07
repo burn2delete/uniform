@@ -31,17 +31,17 @@
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 142136)
+(def ^:private expected-source-byte-count 176551)
 (def ^:private expected-source-revision-id
-  "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50")
+  "sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975")
 (def ^:private expected-plan-semantic-id
-  "sha256:bc00239c997b1ca3ab9fe2b9d1dd97852a7fcd448aec224e6972cf605abb2b13")
+  "sha256:b6543941a615c9b27ca9ca29bf7d610f2c97302a1a5f2c344592a894565d614f")
 (def ^:private expected-functions-semantic-id
-  "sha256:f0de89e9c1279c89b44ac06debcda259e101d82b368d8e93b8eaf6c0e9471afa")
+  "sha256:79d8dceb3c015fa1d347073d565f56cd11e8f7fb17b46ab08a0cb182d13f6192")
 (def ^:private expected-function-names-id
-  "sha256:6029d03c0787c83ecd74c8cfe15374b25fc8f4521129ae7295101537e2d0ae8c")
+  "sha256:34e6e6d6c20cd41a69e75f7879020b32dde2367634ab69bc4f6fa132feb93e8f")
 (def ^:private expected-function-shapes-id
-  "sha256:9d331601dc4e8ece5e862755781d1298897a9f26bd1701cc88c3b9831086518f")
+  "sha256:6ed5fd5725b46be20a3849179af23fccf3520b9171e535f76283c2cb8efe7717")
 (def ^:private expected-public-function-hashes
   {'sh08-type-core-artifact
    "sha256:9a6ce8c438e9126c44c8610e740909f1aa31381bded4e375cc8c48e6ea0cffdb"
@@ -52,7 +52,7 @@
    'sh08-function-type-core-artifact
    "sha256:79ac1e36aa8119f1f838d360c6fc25d45aa27c947ecf05cf25faac34989b091b"
    'sh08-verify-function-type-result
-   "sha256:63b1ca7fb356e1a7562d13cc53a0397b09fd32344ad7a7505f92eb634b5f4306"})
+   "sha256:8dc884ece47f4f039d81371aaf15bb65f33e689718a2545ce161f3caf69abe7f"})
 (def ^:private expected-coverage
   {:fragment-count 142
    :root-form-count 142
@@ -156,9 +156,9 @@
         'build-c7-function-type
         'verify-c7-type-checker))
 (def ^:private expected-definition-names-hash
-  "sha256:4fc318f7c38d3ac61403ca0e71e57165b06bb682c907e6e7673e9f60adbcd04e")
+  "sha256:deb6c04da96a79b8727efa47c51530df0c5ce40a2718aee2252fe685e9acb55d")
 (def ^:private expected-executable-names-hash
-  "sha256:e848d5ff25bbfdf249bc02aa17ecf174ea60fecd940968189cdd8a094fa3295b")
+  "sha256:14755c65b64284a3a5418d6035216633eb058eb073fdd554bd5f09fbf91bf964")
 (def ^:private expected-document-ids
   ["C7" "L5" "L7" "L8" "L9" "L10"
    "C5" "C6" "C8" "C9" "C10" "C11"
@@ -577,7 +577,7 @@
     (is (= :gravity/stage2-compiler-artifact-plan (:kind plan)))
     (is (= expected-plan-semantic-id (plan-semantic-id plan)))
     (is (= expected-functions-semantic-id (digest functions)))
-    (is (= 137 (count functions)))
+    (is (= 158 (count functions)))
     (is (= expected-function-names-id
            (digest (vec (sort (keys functions))))))
     (is (= expected-function-shapes-id
@@ -622,7 +622,7 @@
         core-shape-form (get definition-forms 'sh08-validate-core-shape)
         type-node-form (get definition-forms 'sh08-type-node)
         verifier-form (get definition-forms 'verify-c7-type-checker)]
-    (is (= 143 (count forms)))
+    (is (= 164 (count forms)))
     (is (= 'gravity.compiler.c7-type-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -671,16 +671,16 @@
              :clojure-c7-diagnostic-catalog]}
            (:lineage bootstrap-metadata)))
     (is (every? (set (keys definition-forms)) expected-definition-names))
-    (is (= 142 (count definition-forms)))
+    (is (= 163 (count definition-forms)))
     (is (= expected-definition-names-hash
            (gravity.bootstrap/p15-s23-c11-mir-digest
             (vec (sort (keys definition-forms))))))
     (is (= 5 (count (filter #(= 'def (first %))
                             (vals definition-forms)))))
-    (is (= 137 (count (filter #(= 'defn (first %))
+    (is (= 158 (count (filter #(= 'defn (first %))
                               (vals definition-forms)))))
     (is (every? executable-names expected-executable-sh08-names))
-    (is (= 134 (count executable-names)))
+    (is (= 155 (count executable-names)))
     (is (= expected-executable-names-hash
            (gravity.bootstrap/p15-s23-c11-mir-digest
             (vec (sort executable-names)))))

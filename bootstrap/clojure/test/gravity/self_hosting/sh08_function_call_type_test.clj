@@ -203,10 +203,10 @@
 (def ^:private rejected-type-qst
   (delay
     (fixture-artifact "rejected" "function-call-type-mismatch" ".qst")))
-(def ^:private rejected-nonlocal-gravity
-  (delay (fixture-artifact "rejected" "function-call-nonlocal" ".gravity")))
-(def ^:private rejected-nonlocal-qst
-  (delay (fixture-artifact "rejected" "function-call-nonlocal" ".qst")))
+(def ^:private accepted-nonlocal-gravity
+  (delay (fixture-artifact "accepted" "function-call-nonlocal" ".gravity")))
+(def ^:private accepted-nonlocal-qst
+  (delay (fixture-artifact "accepted" "function-call-nonlocal" ".qst")))
 (def ^:private recursive-b47-gravity
   (delay
     (bootstrap/sh07-core-file-artifact
@@ -482,8 +482,8 @@
          (slurp (fixture-path "rejected" "function-call-arity" ".qst"))))
   (is (= (slurp (fixture-path "accepted" "function-two-hop-call" ".gravity"))
          (slurp (fixture-path "accepted" "function-two-hop-call" ".qst"))))
-  (is (= (slurp (fixture-path "rejected" "function-call-nonlocal" ".gravity"))
-         (slurp (fixture-path "rejected" "function-call-nonlocal" ".qst"))))
+  (is (= (slurp (fixture-path "accepted" "function-call-nonlocal" ".gravity"))
+         (slurp (fixture-path "accepted" "function-call-nonlocal" ".qst"))))
   (is (= :gravity/stage2-compiler-artifact-plan (:kind @c7-plan)))
   (is (= :meta (get-in @c7-plan [:module :profile])))
   (is (= :jvm (get-in @c7-plan [:module :target])))
@@ -1114,7 +1114,7 @@
            (get-in result [:diagnostics 0 :actual-type])))))
 
 (deftest sh08-nonlocal-edge-uses-authoritative-binding-lineage
-  (let [artifact @rejected-nonlocal-gravity
+  (let [artifact @accepted-nonlocal-gravity
         core (canonical-core artifact)
         edge-index
         (first
@@ -1241,20 +1241,27 @@
          (get-in gravity [:diagnostics 0 :parameter-binding-id])))
     (is (= (:diagnostics gravity) (:diagnostics qst)))))
 
-(deftest sh08-nonlocal-call-is-diagnosed-after-sh07-lowering
-  (let [gravity (function-result @rejected-nonlocal-gravity)
-        qst (function-result @rejected-nonlocal-qst)]
+(deftest sh08-capture-free-one-hop-nonlocal-call-is-promoted
+  (let [gravity (function-result @accepted-nonlocal-gravity)
+        qst (function-result @accepted-nonlocal-qst)
+        gravity-verification
+        (verification-result @accepted-nonlocal-gravity gravity)
+        qst-verification (verification-result @accepted-nonlocal-qst qst)]
     (is (= :gravity/sh07-canonical-core-artifact
-           (:artifact (canonical-core @rejected-nonlocal-gravity))))
+           (:artifact (canonical-core @accepted-nonlocal-gravity))))
     (is (= :gravity/sh07-canonical-core-artifact
-           (:artifact (canonical-core @rejected-nonlocal-qst))))
-    (is (= :rejected (:status gravity) (:status qst)))
-    (is (= "C7-ANNOTATION"
-           (get-in gravity [:diagnostics 0 :rule])))
-    (is (= :unsupported-nonlocal-call
-           (get-in gravity [:diagnostics 0 :reason])))
-    (is (= :supported-local-first-order-call
-           (get-in gravity [:diagnostics 0 :expected-type])))
+           (:artifact (canonical-core @accepted-nonlocal-qst))))
+    (is (= :accepted (:status gravity) (:status qst)))
+    (is (= :capture-free-higher-order-fixed-arity-one-hop
+           (:scope gravity) (:scope qst)))
     (is (= :nonlocal-or-nonfunction
-           (get-in gravity [:diagnostics 0 :actual-type])))
-    (is (= (:diagnostics gravity) (:diagnostics qst)))))
+           (get-in gravity [:higher-order-proof :inner-edge :classification])))
+    (is (= :local-function
+           (get-in gravity [:higher-order-proof :outer-edge :classification])))
+    (is (= :gravity.type/integer
+           (get (:type-table gravity)
+                (get-in gravity
+                        [:higher-order-proof :outer-call-core-node-id]))))
+    (is (= (:identity-input gravity) (:identity-input qst)))
+    (is (= :passed (:status gravity-verification)
+           (:status qst-verification)))))
