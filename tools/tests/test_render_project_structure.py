@@ -4,6 +4,7 @@ import copy
 import contextlib
 import io
 import json
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -52,6 +53,154 @@ class ProjectStructureRendererTests(unittest.TestCase):
         self.assertEqual(18, len(first["canonical_pass_table"]))
         self.assertEqual(33, len(first["owner_path_view"]["policies"]))
         self.assertEqual([], first["changed_path_impact"]["changed_paths"])
+        self.assertIn("contract_identity", first)
+
+    def test_contract_identities_are_deterministic_canonical_and_ordered(self) -> None:
+        def reorder_keys(value):
+            if isinstance(value, dict):
+                return {
+                    key: reorder_keys(value[key])
+                    for key in reversed(list(value))
+                }
+            if isinstance(value, list):
+                return [reorder_keys(item) for item in value]
+            return value
+
+        first = renderer.contract_identity_view(self.manifest)
+        second = renderer.contract_identity_view(reorder_keys(copy.deepcopy(self.manifest)))
+        self.assertEqual(first, second)
+        self.assertEqual("sha256", first["algorithm"])
+        self.assertEqual("1", first["schema_version"])
+        self.assertEqual(
+            "gravity.project-structure.static-contract/v1", first["domain_version"]
+        )
+        self.assertEqual(
+            [item["id"] for item in self.manifest["canonical_passes"]],
+            [item["id"] for item in first["canonical_passes"]],
+        )
+        self.assertEqual(
+            sorted(item["id"] for item in self.manifest["artifacts"]),
+            [item["id"] for item in first["artifacts"]],
+        )
+        digests = (
+            [first["manifest"]["sha256"]]
+            + [item["sha256"] for item in first["canonical_passes"]]
+            + [first["canonical_passes_sha256"]]
+            + [item["sha256"] for item in first["artifacts"]]
+            + [first["artifacts_sha256"]]
+        )
+        self.assertTrue(all(re.fullmatch(r"[0-9a-f]{64}", digest) for digest in digests))
+
+    def test_artifact_list_reordering_does_not_change_contract_identities(self) -> None:
+        candidate = copy.deepcopy(self.manifest)
+        candidate["artifacts"].reverse()
+        self.assertEqual(
+            renderer.contract_identity_view(self.manifest),
+            renderer.contract_identity_view(candidate),
+        )
+
+    def test_field_local_mutations_change_only_the_relevant_entry_identity(self) -> None:
+        baseline = renderer.contract_identity_view(self.manifest)
+
+        pass_candidate = copy.deepcopy(self.manifest)
+        pass_candidate["canonical_passes"][0]["name"] += " revised"
+        pass_changed = renderer.contract_identity_view(pass_candidate)
+        self.assertNotEqual(baseline["manifest"], pass_changed["manifest"])
+        self.assertNotEqual(
+            baseline["canonical_passes"][0], pass_changed["canonical_passes"][0]
+        )
+        self.assertEqual(
+            baseline["canonical_passes"][1:], pass_changed["canonical_passes"][1:]
+        )
+        self.assertEqual(baseline["artifacts"], pass_changed["artifacts"])
+
+        artifact_candidate = copy.deepcopy(self.manifest)
+        artifact_id = artifact_candidate["artifacts"][0]["id"]
+        artifact_candidate["artifacts"][0]["name"] += " revised"
+        artifact_changed = renderer.contract_identity_view(artifact_candidate)
+        baseline_by_id = {item["id"]: item for item in baseline["artifacts"]}
+        changed_by_id = {item["id"]: item for item in artifact_changed["artifacts"]}
+        self.assertNotEqual(baseline["manifest"], artifact_changed["manifest"])
+        self.assertNotEqual(baseline_by_id[artifact_id], changed_by_id[artifact_id])
+        self.assertEqual(
+            {key: value for key, value in baseline_by_id.items() if key != artifact_id},
+            {key: value for key, value in changed_by_id.items() if key != artifact_id},
+        )
+        self.assertEqual(baseline["canonical_passes"], artifact_changed["canonical_passes"])
+
+    def test_identity_domains_are_separated(self) -> None:
+        value = {"id": "same", "value": [1, 2, 3]}
+        self.assertNotEqual(
+            renderer._canonical_json_sha256(value, "canonical-pass"),
+            renderer._canonical_json_sha256(value, "artifact"),
+        )
+
+    def test_identity_hashing_rejects_non_json_nonfinite_and_cyclic_data(self) -> None:
+        bad_values = [{"bad": {1, 2}}, {"bad": float("inf")}, {1: "bad-key"}]
+        cyclic = []
+        cyclic.append(cyclic)
+        bad_values.append(cyclic)
+        for value in bad_values:
+            with self.subTest(value=type(value).__name__):
+                with self.assertRaises(renderer.RenderError):
+                    renderer._canonical_json_sha256(value, "manifest")
+
+        # The structural validator intentionally ignores extension fields.
+        # Identity calculation still fails closed after that validation succeeds.
+        manifest_values = [{"bad": {1, 2}}, {"bad": float("nan")}]
+        cyclic_extension = []
+        cyclic_extension.append(cyclic_extension)
+        manifest_values.append(cyclic_extension)
+        for value in manifest_values:
+            candidate = copy.deepcopy(self.manifest)
+            candidate["identity_test_extension"] = value
+            with self.assertRaises(renderer.RenderError):
+                renderer.contract_identity_view(candidate)
+
+    def test_deep_valid_json_fails_with_stable_api_and_cli_diagnostics(self) -> None:
+        nested = []
+        cursor = nested
+        for _ in range(600):
+            child = []
+            cursor.append(child)
+            cursor = child
+        candidate = copy.deepcopy(self.manifest)
+        candidate["identity_test_extension"] = nested
+        encoded = json.dumps(candidate)
+        decoded = json.loads(encoded)
+        with self.assertRaisesRegex(renderer.RenderError, "nesting depth"):
+            renderer.contract_identity_view(decoded)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "deep-valid.json"
+            path.write_text(encoded, encoding="utf-8")
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                result = renderer.main([str(path), "--section", "identity"])
+        self.assertEqual(1, result)
+        self.assertEqual("", stdout.getvalue())
+        self.assertIn("project structure rendering failed", stderr.getvalue())
+        self.assertIn("nesting depth", stderr.getvalue())
+
+    def test_identities_do_not_change_existing_views_or_mutate_manifest(self) -> None:
+        candidate = copy.deepcopy(self.manifest)
+        before = copy.deepcopy(candidate)
+        expected = {
+            "summary": renderer.render_summary(candidate),
+            "passes": renderer.canonical_pass_table(candidate),
+            "waves": renderer.slice_topological_waves(candidate),
+            "owners": renderer.owner_path_view(candidate),
+        }
+        renderer.contract_identity_view(candidate)
+        actual = {
+            "summary": renderer.render_summary(candidate),
+            "passes": renderer.canonical_pass_table(candidate),
+            "waves": renderer.slice_topological_waves(candidate),
+            "owners": renderer.owner_path_view(candidate),
+        }
+        self.assertEqual(before, candidate)
+        self.assertEqual(expected, actual)
 
     def test_canonical_pass_table_preserves_d1_order(self) -> None:
         table = renderer.canonical_pass_table(self.manifest)
@@ -108,6 +257,53 @@ class ProjectStructureRendererTests(unittest.TestCase):
         view = renderer.owner_path_view(self.manifest, ["unclaimed/path.txt"])
         self.assertEqual(["unclaimed/path.txt"], view["unowned_paths"])
         self.assertTrue(view["paths"][0]["unowned"])
+        identity = impact["impact_identity"]
+        self.assertTrue(identity["non_authoritative"])
+        self.assertFalse(identity["authorizes_cache_reuse"])
+        self.assertFalse(identity["authorizes_verification"])
+        self.assertFalse(identity["authorizes_release"])
+        self.assertRegex(identity["base_manifest_sha256"], r"^[0-9a-f]{64}$")
+        self.assertRegex(identity["sha256"], r"^[0-9a-f]{64}$")
+        self.assertTrue(impact["blocking"])
+
+    def test_impact_identity_covers_complete_closure_and_impacted_contracts(self) -> None:
+        impact = renderer.changed_path_impact_closure(
+            self.manifest,
+            ["bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"],
+        )
+        identity = impact["impact_identity"]
+        closure = copy.deepcopy(impact)
+        del closure["impact_identity"]
+        expected = renderer._canonical_json_sha256(
+            {
+                "base_manifest_sha256": identity["base_manifest_sha256"],
+                "closure": closure,
+            },
+            "impact-closure",
+        )
+        self.assertEqual(expected, identity["sha256"])
+        self.assertEqual(
+            impact["impacted_passes"],
+            [item["id"] for item in identity["impacted_passes"]],
+        )
+        self.assertEqual(
+            impact["impacted_artifacts"],
+            [item["id"] for item in identity["impacted_artifacts"]],
+        )
+
+    def test_cli_identity_section_and_alias_are_equivalent(self) -> None:
+        outputs = []
+        for section in ("identity", "identities"):
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                result = renderer.main([str(MANIFEST_PATH), "--section", section])
+            self.assertEqual(0, result)
+            self.assertEqual("", stderr.getvalue())
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual({"manifest", "contract_identity"}, set(payload))
+            outputs.append(payload)
+        self.assertEqual(outputs[0], outputs[1])
 
     def test_coordinator_tooling_and_top_level_outputs_have_conservative_impact(self) -> None:
         for path in (
