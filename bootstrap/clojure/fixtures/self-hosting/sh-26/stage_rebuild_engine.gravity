@@ -129,8 +129,8 @@
   {:artifact :gravity/sh26-stage-rebuild-policy
    :schema-version 2
    :governing-documents [:BOOT1 :BOOT3 :BOOT6 :PKG7]
-   :required-component-count 42
-   :maximum-components 42
+   :required-component-count 43
+   :maximum-components 43
    :maximum-dependencies-per-component 16
    :carrier-limits
    {:nodes 1048576 :depth 128 :width 65536
@@ -166,6 +166,7 @@
    [:core-lowering [:core-semantics]]
    [:checked-core [:core-lowering :authenticated-envelope]]
    [:checked-core-pipeline [:checked-core]]
+   [:call-arity [:checked-core-pipeline]]
    [:type-checker [:checked-core-pipeline]]
    [:effect-checker [:type-checker]]
    [:ownership-checker [:type-checker]]
@@ -296,7 +297,7 @@
 (defn sh26-components-valid? [components]
   (let [catalog (sh26-authoritative-component-catalog)]
     (if (vector? components)
-      (if (= 42 (count components))
+      (if (= 43 (count components))
         (if (sh26-components-valid-from? components catalog 0)
           (sh26-component-identities-unique-from?
            components 0 [])
@@ -416,7 +417,7 @@
            (get request :artifact))
       (if (= 1 (get request :schema-version))
         (if (keyword? (get request :build-id))
-          (if (= 42 (count (get request :components)))
+          (if (= 43 (count (get request :components)))
             (if (= :meta (get request :profile))
               (if (= #{} (get request :effects))
                 (= #{} (get request :capabilities))
@@ -594,7 +595,7 @@
       (if (= 1 (get result :schema-version))
         (if (= :accepted (get result :status))
           (if (= (get request :build-id) (get result :build-id))
-            (if (= 42 (get result :component-count))
+            (if (= 43 (get result :component-count))
               (if (= (sh26-carrier-preflight request)
                      (get result :request-census))
                 (if (= (sh26-sh25-expected-identity request)
@@ -1838,9 +1839,9 @@
                           (if
                            (sh26-sh25-projection-valid?
                             request verification projection)
-                            (if (= 42 (get result :component-count))
-                    (if (= 42 (count actions))
-                      (if (= 42 (count templates))
+                            (if (= 43 (get result :component-count))
+                    (if (= 43 (count actions))
+                      (if (= 43 (count templates))
                         (if (sh26-components-valid? components)
                           (if
                            (sh26-components-match-templates-from?
@@ -2112,7 +2113,7 @@
   (if
    (sh26-exact-keys?
     logs #{:stdout :stderr :exit :action-count :execution-status})
-    (if (= 42 (get logs :action-count))
+    (if (= 43 (get logs :action-count))
       (if (= :pending (get logs :execution-status))
         (if
          (sh26-pending-stream-valid?
@@ -2413,7 +2414,7 @@
        :semantic-envelope-root)
       :trusted-context-id
       (get trusted-context :trusted-context-id)
-      :component-count 42
+      :component-count 43
       :execution-status :pending
       :candidate-language :gravity
       :effects #{}
@@ -2499,7 +2500,7 @@
               :exact-sh25-complete-result
               :exact-sh25-verification
               :exact-sh25-projection
-              :complete-42-component-catalog
+              :complete-43-component-catalog
               :component-source-output-binding
               :acyclic-stage-lineage
               :stage-transition-semantics

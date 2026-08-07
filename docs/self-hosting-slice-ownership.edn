@@ -77,6 +77,7 @@
   "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
   "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
   "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity" :master-coordinator
+  "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity" :sh-core
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity" :sh-core
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity" :sh-types
   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity" :sh-effects

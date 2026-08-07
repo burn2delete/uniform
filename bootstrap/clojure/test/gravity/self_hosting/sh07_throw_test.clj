@@ -249,8 +249,8 @@
         (is (= :sh07-b15-keyword-map-lookup
                (:scope (request gravity))
                (:scope (request qst))))
-        (is (= "SH-07-B15" (:task gravity) (:task qst)))
-        (is (= :c6-gravity-core-lowering-b15
+        (is (= "SH-07-B47" (:task gravity) (:task qst)))
+        (is (= :c6-gravity-core-lowering-b47
                (get-in gravity [:pass :name])
                (get-in qst [:pass :name])))))))
 
@@ -576,7 +576,7 @@
         (is (= :SH-07 (:slice artifact)))
         (is (= ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :gravity/sh07-to-c6-core-products-v15
+        (is (= :gravity/sh07-to-c6-core-products-v16
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

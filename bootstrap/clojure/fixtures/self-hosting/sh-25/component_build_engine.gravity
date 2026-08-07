@@ -217,6 +217,11 @@
     :source-path
     "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
     :dependencies [:checked-core]}
+   {:component-id :call-arity
+    :category :analyzer
+    :source-path
+    "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+    :dependencies [:checked-core-pipeline]}
    {:component-id :type-checker
     :category :analyzer
     :source-path
@@ -410,17 +415,21 @@
     :content-hash
     "sha256:d9d2acced4092f7e5c3244504351b6a4f6f2a90ce202400a48c3c1f690544afc"}
    {:component-id :checked-core
-    :byte-count 407721
+    :byte-count 444325
     :content-hash
-    "sha256:c020a0344d42569577e8baa6e28a2ce210f3eb76f774ff25490ddb18390d93e0"}
+    "sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092"}
    {:component-id :checked-core-pipeline
     :byte-count 141562
     :content-hash
     "sha256:0299511c26c8b2a191309a4a4358528de397c88551ed98a2aed03d172067b2a5"}
-   {:component-id :type-checker
-    :byte-count 39567
+   {:component-id :call-arity
+    :byte-count 56581
     :content-hash
-    "sha256:f63601c8ea2359f785f6e5cc06610e93529cac13ca8844c7219ef4575deb1822"}
+    "sha256:d101855439ef185727608ee696aacbfb41aff025ee8bbe0c62122f45f7c112ed"}
+   {:component-id :type-checker
+    :byte-count 142136
+    :content-hash
+    "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50"}
    {:component-id :effect-checker
     :byte-count 44102
     :content-hash
@@ -541,8 +550,8 @@
                          :BOOT7 :BOOT8 :TEST13]
    :ownership-inventory
    "docs/self-hosting-slice-ownership.edn"
-   :authoritative-owned-module-count 41
-   :required-component-count 42
+   :authoritative-owned-module-count 42
+   :required-component-count 43
    :maximum-components 64
    :maximum-dependencies-per-component 16
    :maximum-outputs-per-component 8

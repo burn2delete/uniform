@@ -1,4 +1,4 @@
-; Gravity-owned SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B15 core-form lowering leaf.
+; Gravity-owned SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B15/B47 core-form lowering leaf.
 (ns gravity.checked-core
   (:profile :meta)
   (:target :jvm)
@@ -43,6 +43,9 @@
                              :declared-alias-qualified-expression-and-operator-references
                              :symbol-headed-general-calls
                              :one-operand-keyword-map-lookup
+                             :bounded-function-records
+                             :bounded-call-edges
+                             :deterministic-recursion-components
                              :scalar-literals
                              :vector-map-set-literals
                              :stable-evaluation-order
@@ -68,7 +71,8 @@
                          :alias-qualified-set-mutations
                          :keyword-default-value-lookup
                          :general-callable-keywords
-                         :destructuring-bindings :recursion
+                         :destructuring-bindings
+                         :higher-order-and-cross-module-recursion
                          :var-profile-legality-sh09
                          :set-type-legality-sh08
                          :set-effect-profile-capability-legality-sh09
@@ -79,7 +83,8 @@
                          :throw-error-lowering-legality-sh09
                          :throw-ownership-legality-sh10
                          :throw-safety-classification-sh11]
-               :claim-boundary [:sh07-b15-keyword-map-lookup-subset-v15
+               :claim-boundary [:sh07-b47-function-call-recursion-products-v16
+                                :sh07-b15-keyword-map-lookup-subset-v15
                                 :coordinator-projected-sh06-input-required
                                 :not-complete-c6
                                 :not-checked-core
@@ -88,14 +93,14 @@
 
 (def sh07-core-contract
   {:artifact :gravity/sh07-core-contract
-   :schema-version 15
+   :schema-version 16
    :owner :gravity-source
    :governing-contracts ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
    :authenticated-dependencies ["SH-02" "SH-06"]
    :input :gravity/sh07-authenticated-sh06-core-request
    :output :gravity/sh07-core-template-result
    :resolved-output :gravity/sh07-canonical-core-artifact
-   :identity-domain :gravity/sh07-b15-core-v15
+   :identity-domain :gravity/sh07-b47-core-v16
    :authoritative-entry 'sh07-build-core-template
    :template-verifier-entry 'sh07-verify-core-template
    :resolved-verifier-entry 'sh07-verify-core-resolved
@@ -184,7 +189,7 @@
    :maximum-form-children 1024
    :maximum-form-depth 256
    :maximum-bindings 2048
-   :maximum-module-bindings 2197
+   :maximum-module-bindings 2440
    :maximum-alias-records 256
    :maximum-resolutions 2048
    :maximum-module-resolutions 65536
@@ -233,7 +238,7 @@
    :maximum-carrier-depth 256
    :maximum-carrier-width 65536
    :maximum-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-nodes 33554432
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
    :maximum-template-scalar-bytes 1073741824
@@ -273,7 +278,7 @@
    :maximum-form-children 1024
    :maximum-form-depth 256
    :maximum-bindings 2048
-   :maximum-module-bindings 2197
+   :maximum-module-bindings 2440
    :maximum-alias-records 256
    :maximum-resolutions 2048
    :maximum-module-resolutions 65536
@@ -322,7 +327,7 @@
    :maximum-carrier-depth 256
    :maximum-carrier-width 65536
    :maximum-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-nodes 33554432
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
    :maximum-template-scalar-bytes 1073741824
@@ -2041,7 +2046,7 @@
         generated-origin-chain
         (if (map? form) (get form :generated-origin) [])
         preimage
-        {:domain :gravity/sh07-b15-c6-diagnostic-v15
+        {:domain :gravity/sh07-b47-c6-diagnostic-v16
          :rule rule
          :syntax-id syntax-id
          :form-id form-id
@@ -2067,7 +2072,7 @@
       :namespace (get module :namespace)
       :profile (get module :profile)
       :target (get module :target)
-      :lowering-rule :sh07-b15-keyword-map-lookup
+      :lowering-rule :sh07-b47-function-call-recursion-products
       :facts {:reason (get facts :reason)
               :semantic-rule (get facts :semantic-rule)
               :rule-specific facts
@@ -2088,7 +2093,7 @@
 (defn sh07-rejected-result [request rule form facts]
   (let [built (sh07-diagnostic request rule form facts)]
     {:artifact :gravity/sh07-core-template-result
-     :schema-version 15
+     :schema-version 16
      :status :rejected
      :core-template nil
      :digest-requests [(get built :request)]
@@ -2120,6 +2125,9 @@
    :match-decision-skeletons []
    :match-pattern-records []
    :calls []
+   :function-records []
+   :call-edges []
+   :recursion-components []
    :keyword-lookups []
    :lexical-bindings []
    :loop-bindings []
@@ -5593,6 +5601,509 @@
           (get (first remaining) :reference-syntax-id)))
         (recur (rest remaining) values)))))
 
+(defn sh07-find-node-by-id [nodes node-id]
+  (loop [remaining nodes]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) :node-id) node-id)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn sh07-find-definition-by-value-node-id [definitions node-id]
+  (loop [remaining definitions]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) :value-node-id) node-id)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn sh07-find-definition-by-binding-id [definitions binding-id]
+  (loop [remaining definitions]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) :binding-id) binding-id)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn sh07-find-binding-record-by-id [bindings binding-id]
+  (loop [remaining bindings]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) :binding-id) binding-id)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn sh07-find-function-by-syntax-id [records syntax-id]
+  (loop [remaining records]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) :function-syntax-id) syntax-id)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn sh07-find-function-by-node-id [records node-id]
+  (loop [remaining records]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) :function-core-node-id) node-id)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn sh07-build-function-records [state]
+  (let [nodes (get state :nodes)
+        definitions (get state :definitions)]
+    (loop [remaining nodes ordinal 0 values []]
+      (if (= (count remaining) 0)
+        values
+        (let [node (first remaining)]
+          (if (= (get node :core-form) :fn)
+            (let [attributes (get node :attributes)
+                  source (get node :source)
+                  definition
+                  (sh07-find-definition-by-value-node-id
+                   definitions (get node :node-id))]
+              (recur
+               (rest remaining)
+               (+ ordinal 1)
+               (conj
+                values
+                {:ordinal ordinal
+                 :function-core-node-id (get node :node-id)
+                 :function-form-id (get source :form-id)
+                 :function-syntax-id (get source :syntax-id)
+                 :body-core-node-id (first (get node :children))
+                 :parameter-binding-ids
+                 (get node :resolved-binding-ids)
+                 :fixed-arity (get attributes :fixed-arity)
+                 :definition-kind
+                 (if (map? definition)
+                   :named-top-level
+                   :anonymous)
+                 :definition-binding-id
+                 (if (map? definition)
+                   (get definition :binding-id)
+                   nil)
+                 :definition-core-node-id
+                 (if (map? definition)
+                   (get definition :core-node-id)
+                   nil)
+                 :definition-name
+                 (if (map? definition)
+                   (get definition :name)
+                   nil)})))
+            (recur (rest remaining) ordinal values)))))))
+
+(defn sh07-build-call-edges [request state function-records]
+  (let [definitions (get state :definitions)
+        indexes (get request :internal-indexes)]
+    (loop [remaining (get state :calls) ordinal 0 values []]
+      (if (= (count remaining) 0)
+        values
+        (let [call (first remaining)
+              call-node
+              (sh07-find-node-by-id
+               (get state :nodes) (get call :core-node-id))
+              caller-syntax-id
+              (get (get call-node :evaluation)
+                   :owner-function-syntax-id)
+              caller
+              (sh07-find-function-by-syntax-id
+               function-records
+               caller-syntax-id)
+              binding
+              (sh07-find-binding
+               indexes (get call :operator-binding-id))
+              definition
+              (sh07-find-definition-by-binding-id
+               definitions (get call :operator-binding-id))
+              callee
+              (if (map? definition)
+                (sh07-find-function-by-node-id
+                 function-records (get definition :value-node-id))
+                nil)]
+          (recur
+           (rest remaining)
+           (+ ordinal 1)
+           (conj
+            values
+            {:ordinal ordinal
+             :call-core-node-id (get call :core-node-id)
+             :caller-function-syntax-id
+             (if (map? caller)
+               (get caller :function-syntax-id)
+               nil)
+             :caller-function-core-node-id
+             (if (map? caller)
+               (get caller :function-core-node-id)
+               nil)
+             :callee-binding-id (get call :operator-binding-id)
+             :callee-definition-syntax-id
+             (get binding :definition-syntax-id)
+             :callee-function-syntax-id
+             (if (map? callee)
+               (get callee :function-syntax-id)
+               nil)
+             :callee-function-core-node-id
+             (if (map? callee)
+               (get callee :function-core-node-id)
+               nil)
+             :argument-core-node-ids
+             (get call :argument-node-ids)
+             :ordered-evaluation-node-ids
+             (get call :ordered-evaluation-node-ids)
+             :evaluation-order :operator-then-arguments
+             :classification
+             (if (map? callee)
+               :local-function
+               :nonlocal-or-nonfunction)})))))))
+
+(defn sh07-call-edge-adjacency [edges direction]
+  (loop [remaining edges result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [edge (first remaining)]
+        (if (= (get edge :classification) :local-function)
+          (let [source
+                (if (= direction :forward)
+                  (get edge :caller-function-syntax-id)
+                  (get edge :callee-function-syntax-id))
+                target
+                (if (= direction :forward)
+                  (get edge :callee-function-syntax-id)
+                  (get edge :caller-function-syntax-id))
+                targets (get result source [])]
+            (if (contains? (set targets) target)
+              (recur (rest remaining) result)
+              (recur
+               (rest remaining)
+               (assoc result source (conj targets target)))))
+          (recur (rest remaining) result))))))
+
+(defn sh07-add-unvisited-call-targets [targets frontier visited]
+  (loop [remaining targets
+         next-frontier frontier
+         next-visited visited]
+    (if (= (count remaining) 0)
+      {:frontier next-frontier :visited next-visited}
+      (let [target (first remaining)]
+        (if (contains? next-visited target)
+          (recur (rest remaining) next-frontier next-visited)
+          (recur
+           (rest remaining)
+           (conj next-frontier target)
+           (conj next-visited target)))))))
+
+(defn sh07-reachable-function-syntax-ids [adjacency start]
+  (loop [frontier [start] visited #{start}]
+    (if (= (count frontier) 0)
+      visited
+      (let [current (first frontier)
+            targets (get adjacency current [])
+            added
+            (sh07-add-unvisited-call-targets
+             targets (vec (rest frontier)) visited)]
+        (recur (get added :frontier) (get added :visited))))))
+
+(defn sh07-self-call-edge? [edges function-syntax-id]
+  (loop [remaining edges]
+    (if (= (count remaining) 0)
+      false
+      (let [edge (first remaining)]
+        (if (if (= (get edge :classification) :local-function)
+              (if (= (get edge :caller-function-syntax-id)
+                     function-syntax-id)
+                (= (get edge :callee-function-syntax-id)
+                   function-syntax-id)
+                false)
+              false)
+          true
+          (recur (rest remaining)))))))
+
+(defn sh07-mutually-reachable-functions
+  [function-records outgoing incoming start-syntax-id]
+  (let [forward
+        (sh07-reachable-function-syntax-ids
+         outgoing start-syntax-id)
+        backward
+        (sh07-reachable-function-syntax-ids
+         incoming start-syntax-id)]
+    (loop [remaining function-records values []]
+      (if (= (count remaining) 0)
+        values
+        (let [record (first remaining)
+              candidate (get record :function-syntax-id)]
+          (if (if (= (get record :definition-kind) :named-top-level)
+                (if (contains? forward candidate)
+                  (contains? backward candidate)
+                  false)
+                false)
+            (recur (rest remaining) (conj values record))
+            (recur (rest remaining) values)))))))
+
+(defn sh07-component-edge-ordinals [edges syntax-ids]
+  (let [members (set syntax-ids)]
+    (loop [remaining edges values []]
+      (if (= (count remaining) 0)
+        values
+        (let [edge (first remaining)]
+          (if (if (= (get edge :classification) :local-function)
+                (if (contains?
+                     members (get edge :caller-function-syntax-id))
+                  (contains?
+                   members (get edge :callee-function-syntax-id))
+                  false)
+                false)
+            (recur
+             (rest remaining)
+             (conj values (get edge :ordinal)))
+            (recur (rest remaining) values)))))))
+
+(defn sh07-add-values-to-set [values target]
+  (loop [remaining values result target]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining) (conj result (first remaining))))))
+
+(defn sh07-build-recursion-components [function-records edges]
+  (let [outgoing (sh07-call-edge-adjacency edges :forward)
+        incoming (sh07-call-edge-adjacency edges :reverse)]
+  (loop [remaining function-records
+         assigned #{}
+         ordinal 0
+         values []]
+    (if (= (count remaining) 0)
+      values
+      (let [record (first remaining)
+            syntax-id (get record :function-syntax-id)]
+        (if (if (= (get record :definition-kind) :named-top-level)
+              (if (contains? assigned syntax-id) false true)
+              false)
+          (let [component
+                (sh07-mutually-reachable-functions
+                 function-records outgoing incoming syntax-id)
+                cyclic?
+                (if (> (count component) 1)
+                  true
+                  (sh07-self-call-edge? edges syntax-id))]
+            (if cyclic?
+              (let [syntax-ids
+                    (loop [members component result []]
+                      (if (= (count members) 0)
+                        result
+                        (recur
+                         (rest members)
+                         (conj
+                          result
+                          (get (first members)
+                               :function-syntax-id)))))
+                    node-ids
+                    (loop [members component result []]
+                      (if (= (count members) 0)
+                        result
+                        (recur
+                         (rest members)
+                         (conj
+                          result
+                          (get (first members)
+                               :function-core-node-id)))))]
+                (recur
+                 (rest remaining)
+                 (sh07-add-values-to-set syntax-ids assigned)
+                 (+ ordinal 1)
+                 (conj
+                  values
+                  {:ordinal ordinal
+                   :kind
+                   (if (= (count component) 1)
+                     :self-recursive
+                     :mutually-recursive)
+                   :function-syntax-ids syntax-ids
+                   :function-core-node-ids node-ids
+                   :internal-call-edge-ordinals
+                   (sh07-component-edge-ordinals
+                    edges syntax-ids)})))
+              (recur
+               (rest remaining) assigned ordinal values)))
+          (recur (rest remaining) assigned ordinal values)))))))
+
+(defn sh07-call-record-node-coherent? [call call-node]
+  (let [children (get call-node :children)
+        expected-arguments
+        (loop [remaining (rest children) values []]
+          (if (= (count remaining) 0)
+            values
+            (recur (rest remaining)
+                   (conj values (first remaining)))))]
+    (if (= (get call-node :core-form) :call)
+      (if (> (count children) 0)
+        (if (= (get call :operator-node-id) (first children))
+          (if (= (get call :argument-node-ids) expected-arguments)
+            (if (= (get call :ordered-evaluation-node-ids) children)
+              (= (get call-node :resolved-binding-ids)
+                 [(get call :operator-binding-id)])
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-call-node-ids [nodes]
+  (loop [remaining nodes values []]
+    (if (= (count remaining) 0)
+      values
+      (let [node (first remaining)]
+        (if (= (get node :core-form) :call)
+          (recur
+           (rest remaining)
+           (conj values (get node :node-id)))
+          (recur (rest remaining) values))))))
+
+(defn sh07-call-record-node-ids [calls]
+  (loop [remaining calls values []]
+    (if (= (count remaining) 0)
+      values
+      (recur
+       (rest remaining)
+       (conj values (get (first remaining) :core-node-id))))))
+
+(defn sh07-call-edge-coherent?
+  [nodes definitions bindings function-records call edge ordinal]
+  (let [call-node
+        (sh07-find-node-by-id nodes (get call :core-node-id))
+        caller-syntax-id
+        (get (get call-node :evaluation)
+             :owner-function-syntax-id)
+        caller
+        (sh07-find-function-by-syntax-id
+         function-records caller-syntax-id)
+        definition
+        (sh07-find-definition-by-binding-id
+         definitions (get call :operator-binding-id))
+        binding
+        (sh07-find-binding-record-by-id
+         bindings (get call :operator-binding-id))
+        callee
+        (if (map? definition)
+          (sh07-find-function-by-node-id
+           function-records (get definition :value-node-id))
+          nil)
+        expected-classification
+        (if (map? callee)
+          :local-function
+          :nonlocal-or-nonfunction)]
+    (if (= (get edge :ordinal) ordinal)
+      (if (sh07-call-record-node-coherent? call call-node)
+        (if (= (get edge :call-core-node-id)
+               (get call :core-node-id))
+          (if (= (get edge :callee-binding-id)
+                 (get call :operator-binding-id))
+            (if (= (get edge :argument-core-node-ids)
+                   (get call :argument-node-ids))
+              (if (= (get edge :ordered-evaluation-node-ids)
+                     (get call :ordered-evaluation-node-ids))
+                (if (= (get edge :evaluation-order)
+                       (get call :evaluation-order))
+                  (if (= (get edge :classification)
+                         expected-classification)
+                    (if (= (get edge :caller-function-syntax-id)
+                           (if (map? caller)
+                             (get caller :function-syntax-id)
+                             nil))
+                      (if (= (get edge :caller-function-core-node-id)
+                             (if (map? caller)
+                               (get caller :function-core-node-id)
+                               nil))
+                        (if (= (get edge :callee-function-syntax-id)
+                               (if (map? callee)
+                                 (get callee :function-syntax-id)
+                                 nil))
+                          (if (= (get edge :callee-function-core-node-id)
+                                 (if (map? callee)
+                                   (get callee :function-core-node-id)
+                                   nil))
+                            (if (map? binding)
+                              (= (get edge :callee-definition-syntax-id)
+                                 (get binding :definition-syntax-id))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-call-edges-coherent?
+  [nodes definitions bindings calls function-records call-edges]
+  (if (= (sh07-call-record-node-ids calls)
+         (sh07-call-node-ids nodes))
+    (if (= (count calls) (count call-edges))
+      (loop [remaining-calls calls
+             remaining-edges call-edges
+             ordinal 0]
+        (if (= (count remaining-calls) 0)
+          true
+          (if (sh07-call-edge-coherent?
+               nodes definitions bindings function-records
+               (first remaining-calls)
+               (first remaining-edges)
+               ordinal)
+            (recur
+             (rest remaining-calls)
+             (rest remaining-edges)
+             (+ ordinal 1))
+            false)))
+      false)
+    false))
+
+(defn sh07-function-products-coherent?
+  [nodes definitions bindings calls function-records call-edges
+   recursion-components]
+  (let [expected-functions
+        (sh07-build-function-records
+         {:nodes nodes :definitions definitions})]
+    (if (= expected-functions function-records)
+      (if (sh07-call-edges-coherent?
+           nodes definitions bindings calls function-records call-edges)
+        (= recursion-components
+           (sh07-build-recursion-components
+            function-records call-edges))
+        false)
+      false)))
+
+(defn sh07-finalize-function-products [request state]
+  (let [functions (sh07-build-function-records state)
+        edges (sh07-build-call-edges request state functions)
+        components
+        (sh07-build-recursion-components functions edges)]
+    (if (<= (count functions)
+            (get (sh07-bounds-value)
+                 :maximum-module-bindings))
+      (if (<= (count edges)
+              (get (sh07-bounds-value)
+                   :maximum-module-call-records))
+        (if (<= (count components)
+                (get (sh07-bounds-value)
+                     :maximum-module-bindings))
+          {:status :accepted
+           :state
+           (assoc
+            (assoc
+             (assoc state :function-records functions)
+             :call-edges edges)
+            :recursion-components components)}
+          {:status :rejected :rule "C6-VERIFY" :form nil
+           :facts {:reason :recursion-component-bound}})
+        {:status :rejected :rule "C6-VERIFY" :form nil
+         :facts {:reason :call-edge-record-bound}})
+      {:status :rejected :rule "C6-VERIFY" :form nil
+       :facts {:reason :function-record-bound}})))
+
 (defn sh07-finish-top-level [request state roots]
   (let [expected (sh07-resolution-syntax-ids request)
         observed (get state :used-reference-syntax-ids)]
@@ -5632,7 +6143,13 @@
                                      :maximum-module-recur-transfer-records))
                             false)
                           false)
-                      {:status :accepted :state state :roots roots}
+                      (let [finalized
+                            (sh07-finalize-function-products request state)]
+                        (if (= (get finalized :status) :accepted)
+                          {:status :accepted
+                           :state (get finalized :state)
+                           :roots roots}
+                          finalized))
                       {:status :rejected
                        :rule "C6-VERIFY"
                        :form nil
@@ -5828,7 +6345,7 @@
          (get request :fragment-manifest)
          (get lowered :roots))
         identity-preimage
-        {:domain :gravity/sh07-b15-canonical-core-v15
+        {:domain :gravity/sh07-b47-canonical-core-v16
          :lineage lineage
          :projection-binding (get request :projection-binding)
          :module module
@@ -5852,6 +6369,9 @@
          :match-pattern-records
          (get state :match-pattern-records)
          :calls (get state :calls)
+         :function-records (get state :function-records)
+         :call-edges (get state :call-edges)
+         :recursion-components (get state :recursion-components)
          :keyword-lookups (get state :keyword-lookups)
          :lexical-bindings (get state :lexical-bindings)
          :loop-bindings (get state :loop-bindings)
@@ -5872,7 +6392,7 @@
         added (sh07-add-digest-request
                state :sh07-core-artifact-id identity-preimage)
         provenance-preimage
-        {:domain :gravity/sh07-b15-core-provenance-binding-v15
+        {:domain :gravity/sh07-b47-core-provenance-binding-v16
          :core-artifact-id-request (get added :reference)
          :source-revision-id (get lineage :source-revision-id)
          :sh06-artifact-id (get lineage :sh06-artifact-id)
@@ -5885,7 +6405,7 @@
          provenance-preimage)
         template
         {:artifact :gravity/sh07-canonical-core-template
-         :schema-version 15
+         :schema-version 16
          :artifact-id-request (get added :reference)
          :provenance-binding-id-request
          (get provenance-added :reference)
@@ -5912,6 +6432,9 @@
          :match-pattern-records
          (get state :match-pattern-records)
          :calls (get state :calls)
+         :function-records (get state :function-records)
+         :call-edges (get state :call-edges)
+         :recursion-components (get state :recursion-components)
          :keyword-lookups (get state :keyword-lookups)
          :lexical-bindings (get state :lexical-bindings)
          :loop-bindings (get state :loop-bindings)
@@ -5944,7 +6467,7 @@
     (if (= (get template-carrier :status) :accepted)
       (if (= (get digest-carrier :status) :accepted)
         {:artifact :gravity/sh07-core-template-result
-         :schema-version 15
+         :schema-version 16
          :status :accepted
          :core-template template
          :digest-requests digest-requests
@@ -6022,7 +6545,7 @@
          :execution-boundary})
     (if (= (get result :artifact)
            :gravity/sh07-core-template-result)
-      (if (= (get result :schema-version) 15)
+      (if (= (get result :schema-version) 16)
         (if (= (get result :bounds) (sh07-bounds-value))
           (if (= (get result :status) :accepted)
             (map? (get result :core-template))
@@ -6062,41 +6585,41 @@
                 (if (= template (get rebuilt :core-template))
                   (if (= digest-requests (get rebuilt :digest-requests))
                     {:artifact :gravity/sh07-core-template-verification
-                     :schema-version 15 :status :passed :rule nil
+                     :schema-version 16 :status :passed :rule nil
                      :reason nil :details {}}
                     {:artifact :gravity/sh07-core-template-verification
-                     :schema-version 15 :status :rejected
+                     :schema-version 16 :status :rejected
                      :rule "C6-VERIFY"
                      :reason :digest-request-replay
                      :details {}})
                   {:artifact :gravity/sh07-core-template-verification
-                   :schema-version 15 :status :rejected
+                   :schema-version 16 :status :rejected
                    :rule "C6-VERIFY"
                    :reason :template-replay
                    :details {}})
                 {:artifact :gravity/sh07-core-template-verification
-                 :schema-version 15 :status :rejected
+                 :schema-version 16 :status :rejected
                  :rule "C6-VERIFY"
                  :reason :digest-request-sequence
                  :details {}})
               {:artifact :gravity/sh07-core-template-verification
-               :schema-version 15 :status :rejected
+               :schema-version 16 :status :rejected
                :rule "C6-VERIFY"
                :reason :rebuilt-result-shape
                :details {}})
             {:artifact :gravity/sh07-core-template-verification
-             :schema-version 15 :status :rejected
+             :schema-version 16 :status :rejected
              :rule "C6-VERIFY"
              :reason :rebuilt-result-status
              :details {:status (get rebuilt :status)
                        :rule (get rebuilt :rule)}}))
         {:artifact :gravity/sh07-core-template-verification
-         :schema-version 15 :status :rejected
+         :schema-version 16 :status :rejected
          :rule "C6-VERIFY"
          :reason :digest-request-carrier
          :details requests-carrier})
       {:artifact :gravity/sh07-core-template-verification
-       :schema-version 15 :status :rejected
+       :schema-version 16 :status :rejected
        :rule "C6-VERIFY"
        :reason :template-carrier
        :details template-carrier})))
@@ -8782,6 +9305,301 @@
             resolved))))
     (sh07-resolution-failure :call-vector-required)))
 
+(defn sh07-resolve-optional-controlled-reference
+  [value resolved-digests]
+  (if (= value nil)
+    (sh07-resolution-success nil)
+    (sh07-resolve-controlled-reference value resolved-digests)))
+
+(defn sh07-resolve-function-record [record resolved-digests]
+  (if (sh07-exact-keys?
+       record
+       #{:ordinal :function-core-node-id :function-form-id
+         :function-syntax-id :body-core-node-id
+         :parameter-binding-ids :fixed-arity :definition-kind
+         :definition-binding-id :definition-core-node-id
+         :definition-name})
+    (if (if (integer? (get record :ordinal))
+          (if (>= (get record :ordinal) 0)
+            (if (sh07-sha256-id? (get record :function-form-id))
+              (if (sh07-sha256-id?
+                   (get record :function-syntax-id))
+                (if (sh07-sha256-id-vector?
+                     (get record :parameter-binding-ids))
+                  (= (count (get record :parameter-binding-ids))
+                     (get record :fixed-arity))
+                  false)
+                false)
+              false)
+            false)
+          false)
+      (let [function-node
+            (sh07-resolve-controlled-reference
+             (get record :function-core-node-id) resolved-digests)
+            body-node
+            (sh07-resolve-controlled-reference
+             (get record :body-core-node-id) resolved-digests)
+            definition-node
+            (sh07-resolve-optional-controlled-reference
+             (get record :definition-core-node-id) resolved-digests)]
+        (if (= (get function-node :status) :accepted)
+          (if (= (get body-node :status) :accepted)
+            (if (= (get definition-node :status) :accepted)
+              (if (if (= (get record :definition-kind)
+                         :named-top-level)
+                  (if (sh07-sha256-id?
+                         (get record :definition-binding-id))
+                      (if (symbol? (get record :definition-name))
+                        (if (= (get definition-node :value) nil)
+                          false
+                          true)
+                        false)
+                      false)
+                    (if (= (get record :definition-kind) :anonymous)
+                      (if (= (get record :definition-binding-id) nil)
+                        (if (= (get record :definition-name) nil)
+                          (= (get definition-node :value) nil)
+                          false)
+                        false)
+                      false))
+                (sh07-resolution-success
+                 (assoc
+                  (assoc
+                   (assoc
+                    record
+                    :function-core-node-id (get function-node :value))
+                   :body-core-node-id (get body-node :value))
+                  :definition-core-node-id
+                  (get definition-node :value)))
+                (sh07-resolution-failure
+                 :function-record-definition-shape))
+              definition-node)
+            body-node)
+          function-node))
+      (sh07-resolution-failure :function-record-fields))
+    (sh07-resolution-failure :function-record-shape)))
+
+(defn sh07-resolve-function-vector [records resolved-digests]
+  (if (sh07-bounded-vector?
+       records
+       (get (sh07-bounds-value) :maximum-module-bindings))
+    (loop [remaining records ordinal 0 values []]
+      (if (= (count remaining) 0)
+        (sh07-resolution-success values)
+        (let [resolved
+              (sh07-resolve-function-record
+               (first remaining) resolved-digests)]
+          (if (= (get resolved :status) :accepted)
+            (if (= (get (get resolved :value) :ordinal) ordinal)
+              (recur
+               (rest remaining) (+ ordinal 1)
+               (conj values (get resolved :value)))
+              (sh07-resolution-failure :function-record-order))
+            resolved))))
+    (sh07-resolution-failure :function-record-vector-required)))
+
+(defn sh07-resolve-call-edge-record [record resolved-digests]
+  (if (sh07-exact-keys?
+       record
+       #{:ordinal :call-core-node-id
+         :caller-function-syntax-id :caller-function-core-node-id
+         :callee-binding-id :callee-definition-syntax-id
+         :callee-function-syntax-id :callee-function-core-node-id
+         :argument-core-node-ids :ordered-evaluation-node-ids
+         :evaluation-order :classification})
+    (if (if (integer? (get record :ordinal))
+          (if (>= (get record :ordinal) 0)
+            (if (sh07-sha256-id? (get record :callee-binding-id))
+              (if (sh07-sha256-id?
+                   (get record :callee-definition-syntax-id))
+                (if (= (get record :evaluation-order)
+                       :operator-then-arguments)
+                  (contains?
+                   #{:local-function :nonlocal-or-nonfunction}
+                   (get record :classification))
+                  false)
+                false)
+              false)
+            false)
+          false)
+      (let [call-node
+            (sh07-resolve-controlled-reference
+             (get record :call-core-node-id) resolved-digests)
+            caller-node
+            (sh07-resolve-optional-controlled-reference
+             (get record :caller-function-core-node-id)
+             resolved-digests)
+            callee-node
+            (sh07-resolve-optional-controlled-reference
+             (get record :callee-function-core-node-id)
+             resolved-digests)
+            arguments
+            (sh07-resolve-reference-vector
+             (get record :argument-core-node-ids) resolved-digests)
+            ordered
+            (sh07-resolve-reference-vector
+             (get record :ordered-evaluation-node-ids)
+             resolved-digests)]
+        (if (= (get call-node :status) :accepted)
+          (if (= (get caller-node :status) :accepted)
+            (if (= (get callee-node :status) :accepted)
+              (if (= (get arguments :status) :accepted)
+                (if (= (get ordered :status) :accepted)
+                  (if (if (= (get record :classification)
+                             :local-function)
+                        (if (sh07-sha256-id?
+                             (get record :callee-function-syntax-id))
+                          (if (= (get callee-node :value) nil)
+                            false
+                            (if (= (get record
+                                        :caller-function-syntax-id)
+                                   nil)
+                              (= (get caller-node :value) nil)
+                              (if (sh07-sha256-id?
+                                   (get record
+                                        :caller-function-syntax-id))
+                                (if (= (get caller-node :value) nil)
+                                  false
+                                  true)
+                                false)))
+                            false)
+                        (if (= (get record :callee-function-syntax-id) nil)
+                          (= (get callee-node :value) nil)
+                          false))
+                    (sh07-resolution-success
+                     (assoc
+                      (assoc
+                       (assoc
+                        (assoc
+                         (assoc record
+                                :call-core-node-id
+                                (get call-node :value))
+                         :caller-function-core-node-id
+                         (get caller-node :value))
+                        :callee-function-core-node-id
+                        (get callee-node :value))
+                       :argument-core-node-ids
+                       (get arguments :value))
+                      :ordered-evaluation-node-ids
+                      (get ordered :value)))
+                    (sh07-resolution-failure
+                     :call-edge-classification))
+                  ordered)
+                arguments)
+              callee-node)
+            caller-node)
+          call-node))
+      (sh07-resolution-failure :call-edge-fields))
+    (sh07-resolution-failure :call-edge-shape)))
+
+(defn sh07-resolve-call-edge-vector [records resolved-digests]
+  (if (sh07-bounded-vector?
+       records
+       (get (sh07-bounds-value) :maximum-module-call-records))
+    (loop [remaining records ordinal 0 values []]
+      (if (= (count remaining) 0)
+        (sh07-resolution-success values)
+        (let [resolved
+              (sh07-resolve-call-edge-record
+               (first remaining) resolved-digests)]
+          (if (= (get resolved :status) :accepted)
+            (if (= (get (get resolved :value) :ordinal) ordinal)
+              (recur
+               (rest remaining) (+ ordinal 1)
+               (conj values (get resolved :value)))
+              (sh07-resolution-failure :call-edge-order))
+            resolved))))
+    (sh07-resolution-failure :call-edge-vector-required)))
+
+(defn sh07-all-nonnegative-integers? [values]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      true
+      (if (integer? (first remaining))
+        (if (>= (first remaining) 0)
+          (recur (rest remaining))
+          false)
+        false))))
+
+(defn sh07-resolve-recursion-component-record
+  [record resolved-digests]
+  (if (sh07-exact-keys?
+       record
+       #{:ordinal :kind :function-syntax-ids
+         :function-core-node-ids :internal-call-edge-ordinals})
+    (if (if (integer? (get record :ordinal))
+          (if (>= (get record :ordinal) 0)
+            (if (contains?
+                 #{:self-recursive :mutually-recursive}
+                 (get record :kind))
+              (if (sh07-sha256-id-vector?
+                   (get record :function-syntax-ids))
+                (if (sh07-all-unique?
+                     (get record :function-syntax-ids))
+                  (sh07-bounded-vector?
+                   (get record :internal-call-edge-ordinals)
+                   (get (sh07-bounds-value)
+                        :maximum-module-call-records))
+                  false)
+                false)
+              false)
+            false)
+          false)
+      (let [nodes
+            (sh07-resolve-reference-vector
+             (get record :function-core-node-ids) resolved-digests)]
+        (if (= (get nodes :status) :accepted)
+          (if (= (count (get nodes :value))
+                 (count (get record :function-syntax-ids)))
+            (if (if (= (get record :kind) :self-recursive)
+                  (= (count (get nodes :value)) 1)
+                  (> (count (get nodes :value)) 1))
+              (if (sh07-all-unique? (get nodes :value))
+                (if (sh07-all-nonnegative-integers?
+                     (get record :internal-call-edge-ordinals))
+                  (if (sh07-all-unique?
+                       (get record :internal-call-edge-ordinals))
+                    (sh07-resolution-success
+                     (assoc
+                      record :function-core-node-ids
+                      (get nodes :value)))
+                    (sh07-resolution-failure
+                     :recursion-component-duplicate-edge))
+                  (sh07-resolution-failure
+                   :recursion-component-edge-ordinal))
+                (sh07-resolution-failure
+                 :recursion-component-duplicate-node))
+              (sh07-resolution-failure
+               :recursion-component-kind-count))
+            (sh07-resolution-failure
+             :recursion-component-member-count))
+          nodes))
+      (sh07-resolution-failure :recursion-component-fields))
+    (sh07-resolution-failure :recursion-component-shape)))
+
+(defn sh07-resolve-recursion-component-vector
+  [records resolved-digests]
+  (if (sh07-bounded-vector?
+       records
+       (get (sh07-bounds-value)
+            :maximum-module-bindings))
+    (loop [remaining records ordinal 0 values []]
+      (if (= (count remaining) 0)
+        (sh07-resolution-success values)
+        (let [resolved
+              (sh07-resolve-recursion-component-record
+               (first remaining) resolved-digests)]
+          (if (= (get resolved :status) :accepted)
+            (if (= (get (get resolved :value) :ordinal) ordinal)
+              (recur
+               (rest remaining) (+ ordinal 1)
+               (conj values (get resolved :value)))
+              (sh07-resolution-failure
+               :recursion-component-order))
+            resolved))))
+    (sh07-resolution-failure
+     :recursion-component-vector-required)))
+
 (defn sh07-resolve-keyword-lookup-record
   [record resolved-digests]
   (if (sh07-exact-keys?
@@ -9197,7 +10015,7 @@
 (defn sh07-resolved-identity-value
   [preimage roots definitions nodes evaluation control-flow
    reference-uses var-references mutations error-transfers error-handlers calls
-   keyword-lookups
+   function-records call-edges recursion-components keyword-lookups
    match-branch-records match-decision-skeletons match-pattern-records
    lexical-bindings loop-bindings
    recur-targets recur-transfers source-map]
@@ -9220,12 +10038,15 @@
         value-13
         (assoc value-12 :match-pattern-records match-pattern-records)
         value-14 (assoc value-13 :calls calls)
-        value-15 (assoc value-14 :keyword-lookups keyword-lookups)
-        value-16 (assoc value-15 :lexical-bindings lexical-bindings)
-        value-17 (assoc value-16 :loop-bindings loop-bindings)
-        value-18 (assoc value-17 :recur-targets recur-targets)
-        value-19 (assoc value-18 :recur-transfers recur-transfers)]
-    (assoc value-19 :source-map source-map)))
+        value-15 (assoc value-14 :function-records function-records)
+        value-16 (assoc value-15 :call-edges call-edges)
+        value-17 (assoc value-16 :recursion-components recursion-components)
+        value-18 (assoc value-17 :keyword-lookups keyword-lookups)
+        value-19 (assoc value-18 :lexical-bindings lexical-bindings)
+        value-20 (assoc value-19 :loop-bindings loop-bindings)
+        value-21 (assoc value-20 :recur-targets recur-targets)
+        value-22 (assoc value-21 :recur-transfers recur-transfers)]
+    (assoc value-22 :source-map source-map)))
 
 (defn sh07-resolve-identity-preimage [preimage resolved-digests]
   (if (if (sh07-exact-keys?
@@ -9236,6 +10057,7 @@
              :root-core-node-ids :definitions :nodes
              :evaluation-order :control-flow :reference-uses
              :var-references :mutations :error-transfers :error-handlers :calls
+             :function-records :call-edges :recursion-components
              :keyword-lookups
              :match-branch-records :match-decision-skeletons
              :match-pattern-records
@@ -9248,7 +10070,7 @@
              :macro-origin-expectation
              :pending-fact-families})
         (= (get preimage :domain)
-           :gravity/sh07-b15-canonical-core-v15)
+           :gravity/sh07-b47-canonical-core-v16)
         false)
     (let [fragments
           (sh07-resolve-b13-fragment-vector
@@ -9297,6 +10119,15 @@
           calls
           (sh07-resolve-call-vector
            (get preimage :calls) resolved-digests)
+          function-records
+          (sh07-resolve-function-vector
+           (get preimage :function-records) resolved-digests)
+          call-edges
+          (sh07-resolve-call-edge-vector
+           (get preimage :call-edges) resolved-digests)
+          recursion-components
+          (sh07-resolve-recursion-component-vector
+           (get preimage :recursion-components) resolved-digests)
           keyword-lookups
           (sh07-resolve-keyword-lookup-vector
            (get preimage :keyword-lookups) resolved-digests)
@@ -9333,44 +10164,64 @@
                               (if (= (get match-pattern-records :status)
                                      :accepted)
                           (if (= (get calls :status) :accepted)
+                          (if (= (get function-records :status) :accepted)
+                          (if (= (get call-edges :status) :accepted)
+                          (if (= (get recursion-components :status) :accepted)
                           (if (= (get keyword-lookups :status) :accepted)
                           (if (= (get lexical-bindings :status) :accepted)
                             (if (= (get loop-bindings :status) :accepted)
                               (if (= (get recur-targets :status) :accepted)
                                 (if (= (get recur-transfers :status) :accepted)
                                   (if (= (get source-map :status) :accepted)
-                                    (sh07-resolution-success
-                                     (sh07-resolved-identity-value
-                                      (assoc
-                                       preimage
-                                       :fragment-manifest
-                                       (get fragments :value))
-                                      (get roots :value)
-                                      (get definitions :value)
+                                    (if
+                                     (sh07-function-products-coherent?
                                       (get nodes :value)
-                                      (get evaluation :value)
-                                      (get control-flow :value)
-                                      (get reference-uses :value)
-                                      (get var-references :value)
-                                      (get mutations :value)
-                                      (get error-transfers :value)
-                                      (get error-handlers :value)
+                                      (get definitions :value)
+                                      (get preimage :binding-table)
                                       (get calls :value)
-                                      (get keyword-lookups :value)
-                                      (get match-branch-records :value)
-                                      (get match-decision-skeletons :value)
-                                      (get match-pattern-records :value)
-                                      (get lexical-bindings :value)
-                                      (get loop-bindings :value)
-                                      (get recur-targets :value)
-                                      (get recur-transfers :value)
-                                      (get source-map :value)))
+                                      (get function-records :value)
+                                      (get call-edges :value)
+                                      (get recursion-components :value))
+                                     (sh07-resolution-success
+                                      (sh07-resolved-identity-value
+                                       (assoc
+                                        preimage
+                                        :fragment-manifest
+                                        (get fragments :value))
+                                       (get roots :value)
+                                       (get definitions :value)
+                                       (get nodes :value)
+                                       (get evaluation :value)
+                                       (get control-flow :value)
+                                       (get reference-uses :value)
+                                       (get var-references :value)
+                                       (get mutations :value)
+                                       (get error-transfers :value)
+                                       (get error-handlers :value)
+                                       (get calls :value)
+                                       (get function-records :value)
+                                       (get call-edges :value)
+                                       (get recursion-components :value)
+                                       (get keyword-lookups :value)
+                                       (get match-branch-records :value)
+                                       (get match-decision-skeletons :value)
+                                       (get match-pattern-records :value)
+                                       (get lexical-bindings :value)
+                                       (get loop-bindings :value)
+                                       (get recur-targets :value)
+                                       (get recur-transfers :value)
+                                       (get source-map :value)))
+                                     (sh07-resolution-failure
+                                      :function-product-coherence))
                                     source-map)
                                   recur-transfers)
                                 recur-targets)
                               loop-bindings)
                             lexical-bindings)
                             keyword-lookups)
+                            recursion-components)
+                            call-edges)
+                            function-records)
                             calls)
                             match-pattern-records)
                           match-decision-skeletons)
@@ -9395,7 +10246,7 @@
            #{:domain :core-artifact-id-request :source-revision-id
              :sh06-artifact-id :actual-source-path})
         (= (get preimage :domain)
-           :gravity/sh07-b15-core-provenance-binding-v15)
+           :gravity/sh07-b47-core-provenance-binding-v16)
         false)
     (let [artifact-id
           (sh07-resolve-controlled-reference
@@ -9414,7 +10265,8 @@
 (defn sh07-resolved-template-value
   [template artifact-id provenance-id roots definitions nodes evaluation
    control-flow reference-uses var-references mutations error-transfers
-   error-handlers calls keyword-lookups
+   error-handlers calls function-records call-edges recursion-components
+   keyword-lookups
    match-branch-records match-decision-skeletons match-pattern-records
    lexical-bindings loop-bindings
    recur-targets recur-transfers source-map identity provenance]
@@ -9441,14 +10293,17 @@
         value-15
         (assoc value-14 :match-pattern-records match-pattern-records)
         value-16 (assoc value-15 :calls calls)
-        value-17 (assoc value-16 :keyword-lookups keyword-lookups)
-        value-18 (assoc value-17 :lexical-bindings lexical-bindings)
-        value-19 (assoc value-18 :loop-bindings loop-bindings)
-        value-20 (assoc value-19 :recur-targets recur-targets)
-        value-21 (assoc value-20 :recur-transfers recur-transfers)
-        value-22 (assoc value-21 :source-map source-map)
-        value-23 (assoc value-22 :identity-preimage identity)]
-    (assoc value-23 :provenance-binding-preimage provenance)))
+        value-17 (assoc value-16 :function-records function-records)
+        value-18 (assoc value-17 :call-edges call-edges)
+        value-19 (assoc value-18 :recursion-components recursion-components)
+        value-20 (assoc value-19 :keyword-lookups keyword-lookups)
+        value-21 (assoc value-20 :lexical-bindings lexical-bindings)
+        value-22 (assoc value-21 :loop-bindings loop-bindings)
+        value-23 (assoc value-22 :recur-targets recur-targets)
+        value-24 (assoc value-23 :recur-transfers recur-transfers)
+        value-25 (assoc value-24 :source-map source-map)
+        value-26 (assoc value-25 :identity-preimage identity)]
+    (assoc value-26 :provenance-binding-preimage provenance)))
 
 (defn sh07-resolve-core-template [template resolved-digests]
   (if (sh07-exact-keys?
@@ -9460,6 +10315,7 @@
          :root-core-node-ids :definitions
          :nodes :evaluation-order :control-flow :reference-uses
          :var-references :mutations :error-transfers :error-handlers :calls
+         :function-records :call-edges :recursion-components
          :keyword-lookups
          :match-branch-records :match-decision-skeletons
          :match-pattern-records
@@ -9473,7 +10329,7 @@
          :provenance-binding-preimage :provenance :diagnostics})
     (if (if (= (get template :artifact)
                :gravity/sh07-canonical-core-template)
-          (= (get template :schema-version) 15)
+          (= (get template :schema-version) 16)
           false)
       (let [artifact-id
             (sh07-resolve-controlled-reference
@@ -9541,6 +10397,18 @@
             (sh07-resolve-call-vector
              (get template :calls)
              resolved-digests)
+            function-records
+            (sh07-resolve-function-vector
+             (get template :function-records)
+             resolved-digests)
+            call-edges
+            (sh07-resolve-call-edge-vector
+             (get template :call-edges)
+             resolved-digests)
+            recursion-components
+            (sh07-resolve-recursion-component-vector
+             (get template :recursion-components)
+             resolved-digests)
             keyword-lookups
             (sh07-resolve-keyword-lookup-vector
              (get template :keyword-lookups)
@@ -9593,6 +10461,9 @@
                                     (if (= (get match-pattern-records :status)
                                            :accepted)
                                 (if (= (get calls :status) :accepted)
+                              (if (= (get function-records :status) :accepted)
+                              (if (= (get call-edges :status) :accepted)
+                              (if (= (get recursion-components :status) :accepted)
                               (if (= (get keyword-lookups :status) :accepted)
                               (if (= (get lexical-bindings :status) :accepted)
                                 (if (= (get loop-bindings :status) :accepted)
@@ -9601,36 +10472,51 @@
                                 (if (= (get source-map :status) :accepted)
                                   (if (= (get identity :status) :accepted)
                                     (if (= (get provenance :status) :accepted)
-                                      (sh07-resolved-core-success
-                                       (sh07-resolved-template-value
-                                        (assoc
-                                         template
-                                         :fragment-manifest
-                                         (get fragments :value))
-                                        (get artifact-id :value)
-                                        (get provenance-id :value)
-                                        (get roots :value)
-                                        (get definitions :value)
+                                      (if
+                                       (sh07-function-products-coherent?
                                         (get nodes :value)
-                                        (get evaluation :value)
-                                        (get control-flow :value)
-                                        (get reference-uses :value)
-                                        (get var-references :value)
-                                        (get mutations :value)
-                                        (get error-transfers :value)
-                                        (get error-handlers :value)
+                                        (get definitions :value)
+                                        (get (get identity :value)
+                                             :binding-table)
                                         (get calls :value)
-                                        (get keyword-lookups :value)
-                                        (get match-branch-records :value)
-                                        (get match-decision-skeletons :value)
-                                        (get match-pattern-records :value)
-                                        (get lexical-bindings :value)
-                                        (get loop-bindings :value)
-                                        (get recur-targets :value)
-                                        (get recur-transfers :value)
-                                        (get source-map :value)
-                                        (get identity :value)
-                                        (get provenance :value)))
+                                        (get function-records :value)
+                                        (get call-edges :value)
+                                        (get recursion-components :value))
+                                       (sh07-resolved-core-success
+                                        (sh07-resolved-template-value
+                                         (assoc
+                                          template
+                                          :fragment-manifest
+                                          (get fragments :value))
+                                         (get artifact-id :value)
+                                         (get provenance-id :value)
+                                         (get roots :value)
+                                         (get definitions :value)
+                                         (get nodes :value)
+                                         (get evaluation :value)
+                                         (get control-flow :value)
+                                         (get reference-uses :value)
+                                         (get var-references :value)
+                                         (get mutations :value)
+                                         (get error-transfers :value)
+                                         (get error-handlers :value)
+                                         (get calls :value)
+                                         (get function-records :value)
+                                         (get call-edges :value)
+                                         (get recursion-components :value)
+                                         (get keyword-lookups :value)
+                                         (get match-branch-records :value)
+                                         (get match-decision-skeletons :value)
+                                         (get match-pattern-records :value)
+                                         (get lexical-bindings :value)
+                                         (get loop-bindings :value)
+                                         (get recur-targets :value)
+                                         (get recur-transfers :value)
+                                         (get source-map :value)
+                                         (get identity :value)
+                                         (get provenance :value)))
+                                       (sh07-resolution-failure
+                                        :function-product-coherence))
                                       provenance)
                                     identity)
                                   source-map)
@@ -9639,6 +10525,9 @@
                                   loop-bindings)
                                 lexical-bindings)
                                 keyword-lookups)
+                                recursion-components)
+                                call-edges)
+                                function-records)
                                 calls)
                                 match-pattern-records)
                               match-decision-skeletons)
@@ -9694,22 +10583,22 @@
               (if (= (get expected :status) :accepted)
                 (if (= resolved-core (get expected :value))
                   {:artifact :gravity/sh07-core-resolved-verification
-                   :schema-version 15 :status :passed :rule nil}
+                   :schema-version 16 :status :passed :rule nil}
                   {:artifact :gravity/sh07-core-resolved-verification
-                   :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+                   :schema-version 16 :status :rejected :rule "C6-VERIFY"})
                 {:artifact :gravity/sh07-core-resolved-verification
-                 :schema-version 15 :status :rejected :rule "C6-VERIFY"}))
+                 :schema-version 16 :status :rejected :rule "C6-VERIFY"}))
             {:artifact :gravity/sh07-core-resolved-verification
-             :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+             :schema-version 16 :status :rejected :rule "C6-VERIFY"})
           {:artifact :gravity/sh07-core-resolved-verification
-           :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+           :schema-version 16 :status :rejected :rule "C6-VERIFY"})
         {:artifact :gravity/sh07-core-resolved-verification
-         :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 16 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-resolved-verification
-       :schema-version 15 :status :rejected :rule "C6-VERIFY"}))
+       :schema-version 16 :status :rejected :rule "C6-VERIFY"}))
           {:artifact :gravity/sh07-core-resolved-verification
-           :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+           :schema-version 16 :status :rejected :rule "C6-VERIFY"})
         {:artifact :gravity/sh07-core-resolved-verification
-         :schema-version 15 :status :rejected :rule "C6-VERIFY"})
+         :schema-version 16 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-resolved-verification
-       :schema-version 15 :status :rejected :rule "C6-VERIFY"})))
+       :schema-version 16 :status :rejected :rule "C6-VERIFY"})))

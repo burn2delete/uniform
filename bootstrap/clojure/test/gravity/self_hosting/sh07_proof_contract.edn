@@ -2,7 +2,7 @@
  :schema-version 1
  :status :active
  :scope :sh07-proof-orchestration
- :coverage-milestone "SH-07-B45"
+ :coverage-milestone "SH-07-B47"
  :governing-documents
   ["docs/self-hosting-slice-backlog.md"
   "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
@@ -124,9 +124,10 @@
    "tools"]}
  :boundary
  {:request-schema-version 15
-  :task "SH-07-B15"
+  :task "SH-07-B47"
+  :input-task "SH-07-B15"
   :scope :sh07-b15-keyword-map-lookup
-  :adapter :gravity/sh07-to-c6-core-products-v15
+  :adapter :gravity/sh07-to-c6-core-products-v16
   :fresh-authoritative-process-required true
   :iteration-cache-authoritative false}
  :proof-transaction
@@ -156,7 +157,7 @@
   :maximum-fragment-forms 1024
   :maximum-form-children 1024
   :maximum-form-depth 256
-  :maximum-module-bindings 2197
+  :maximum-module-bindings 2440
   :maximum-bindings 2048
   :maximum-alias-records 256
   :maximum-fragment-resolutions 2048
@@ -170,7 +171,7 @@
   :maximum-module-carrier-depth 256
   :maximum-module-carrier-width 65536
   :maximum-module-scalar-bytes 268435456
-  :maximum-template-carrier-nodes 16777216
+  :maximum-template-carrier-nodes 33554432
   :maximum-template-carrier-depth 256
   :maximum-template-carrier-width 65536
   :maximum-template-scalar-bytes 1073741824
@@ -257,6 +258,8 @@
   "bootstrap/gravity/src/gravity/resolution.gravity"
   :c6-c10-pipeline
   "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+  :c6-call-arity
+  "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
   :checked-core
   "bootstrap/gravity/src/gravity/checked_core.gravity"
   :c3-compat
@@ -309,7 +312,7 @@
  [:fragment-manifest :fragment-coverage :module-assembly-manifest]
  :required-core-products
  [:fragment-manifest :fragment-coverage :module-assembly-manifest
-  :keyword-lookups]
+  :keyword-lookups :function-records :call-edges :recursion-components]
  :required-core-product-counts
  {:b1-backend-interface {:keyword-lookups 0}
   :b2-c {:keyword-lookups 0}
@@ -342,7 +345,11 @@
   :authenticated-envelope {:keyword-lookups 0}
   :resolution {:keyword-lookups 0}
   :c6-c10-pipeline {:keyword-lookups 0}
-  :checked-core {:keyword-lookups 0}
+  :c6-call-arity {:keyword-lookups 0}
+  :checked-core {:keyword-lookups 0
+                 :function-records 305
+                 :call-edges 6547
+                 :recursion-components 6}
   :c3-compat {:keyword-lookups 0}
   :c4-compat {:keyword-lookups 0}
   :c5-compat {:keyword-lookups 0}
@@ -353,6 +360,9 @@
   :fragment-coverage-replay?
   :module-assembly-manifest-replay?
   :keyword-lookups-replay?
+  :function-records-replay?
+  :call-edges-replay?
+  :recursion-components-replay?
   :module-replay?]
  :nonclaims
  [:persistent-production-cache

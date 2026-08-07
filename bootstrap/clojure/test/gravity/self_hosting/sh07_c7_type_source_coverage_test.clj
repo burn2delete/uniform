@@ -31,34 +31,56 @@
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 39567)
+(def ^:private expected-source-byte-count 142136)
 (def ^:private expected-source-revision-id
-  "sha256:f63601c8ea2359f785f6e5cc06610e93529cac13ca8844c7219ef4575deb1822")
+  "sha256:ce4e48764a63a0e4240232364d05fa40c204e2153be1a56ffbb0f5d6b45baa50")
+(def ^:private expected-plan-semantic-id
+  "sha256:bc00239c997b1ca3ab9fe2b9d1dd97852a7fcd448aec224e6972cf605abb2b13")
+(def ^:private expected-functions-semantic-id
+  "sha256:f0de89e9c1279c89b44ac06debcda259e101d82b368d8e93b8eaf6c0e9471afa")
+(def ^:private expected-function-names-id
+  "sha256:6029d03c0787c83ecd74c8cfe15374b25fc8f4521129ae7295101537e2d0ae8c")
+(def ^:private expected-function-shapes-id
+  "sha256:9d331601dc4e8ece5e862755781d1298897a9f26bd1701cc88c3b9831086518f")
+(def ^:private expected-public-function-hashes
+  {'sh08-type-core-artifact
+   "sha256:9a6ce8c438e9126c44c8610e740909f1aa31381bded4e375cc8c48e6ea0cffdb"
+   'sh08-verify-type-result
+   "sha256:0494d7cafc0ff8651d1f5467f356286952033e9f406d4177fc180c0c96adf602"
+   'sh08-function-type-boundary-policy
+   "sha256:d887f147cda91b8bd6bb613808aa7d5fd574297cc801a1ea17496988962d605c"
+   'sh08-function-type-core-artifact
+   "sha256:79ac1e36aa8119f1f838d360c6fc25d45aa27c947ecf05cf25faac34989b091b"
+   'sh08-verify-function-type-result
+   "sha256:63b1ca7fb356e1a7562d13cc53a0397b09fd32344ad7a7505f92eb634b5f4306"})
 (def ^:private expected-coverage
-  {:fragment-count 47
-   :root-form-count 47
-   :form-count 3320
-   :binding-count 480
-   :local-binding-count 218
-   :resolution-count 1205})
+  {:fragment-count 142
+   :root-form-count 142
+   :form-count 12759
+   :binding-count 1114
+   :local-binding-count 852
+   :resolution-count 5221})
 (def ^:private expected-core-census
-  {:core-node-count 2656
-   :definition-count 47
-   :call-count 466
-   :reference-count 928
+  {:core-node-count 10405
+   :definition-count 142
+   :call-count 2069
+   :function-record-count 137
+   :call-edge-count 2069
+   :recursion-component-count 10
+   :reference-count 4117
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 885
-    :collection-literal 100
-    :def 47
-    :reference 928
-    :call 466
-    :if 133
-    :let 24
-    :loop 13
-    :recur 15
+   {:literal 2852
+    :collection-literal 263
+    :def 142
+    :reference 4117
+    :call 2069
+    :if 566
+    :let 98
+    :loop 73
+    :recur 85
     :quote 3
-    :fn 42}})
+    :fn 137}})
 (def ^:private expected-export-names
   '[c7-type-fact-contract
     c7-type-environment-contract
@@ -71,6 +93,9 @@
     sh08-primitive-type-from-collection-kind
     sh08-type-core-artifact
     sh08-verify-type-result
+    sh08-function-type-boundary-policy
+    sh08-function-type-core-artifact
+    sh08-verify-function-type-result
     verify-c7-type-checker])
 (def ^:private expected-definition-names
   '#{c7-type-fact-contract
@@ -130,6 +155,10 @@
         'build-c7-type-fact
         'build-c7-function-type
         'verify-c7-type-checker))
+(def ^:private expected-definition-names-hash
+  "sha256:4fc318f7c38d3ac61403ca0e71e57165b06bb682c907e6e7673e9f60adbcd04e")
+(def ^:private expected-executable-names-hash
+  "sha256:e848d5ff25bbfdf249bc02aa17ecf174ea60fecd940968189cdd8a094fa3295b")
 (def ^:private expected-document-ids
   ["C7" "L5" "L7" "L8" "L9" "L10"
    "C5" "C6" "C8" "C9" "C10" "C11"
@@ -268,7 +297,7 @@
   (or (ns-resolve 'gravity.bootstrap symbol)
       (throw
        (ex-info
-        "Required SH-07-B28 coordinator adapter is absent"
+        "Required SH-07-B47 coordinator adapter is absent"
         {:id "SH07-C7-COVERAGE-ADAPTER-ABSENT"
          :symbol symbol}))))
 
@@ -287,6 +316,31 @@
         (if (= ::eof form)
           forms
           (recur (conj forms form)))))))
+
+(def ^:private c7-plan
+  (delay
+    (let [source-path (path c7-relative-path)
+          source-text (slurp source-path)
+          emitter
+          (:emitter
+           (gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule!
+            source-path :jvm))]
+      (gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan
+       emitter source-path source-text))))
+
+(defn- plan-semantic-id
+  [plan]
+  (gravity.bootstrap/p15-s23-c11-mir-digest
+   (gravity.bootstrap/p15-s23-stage2-compiler-artifact-semantic-input plan)))
+
+(defn- function-shapes
+  [plan]
+  (into
+   (sorted-map)
+   (map
+    (fn [[name function]]
+      [name (select-keys function [:arity :params])]))
+   (:functions plan)))
 
 (defn- named-top-level-form
   [forms kind name]
@@ -370,6 +424,10 @@
     {:core-node-count (count nodes)
      :definition-count (count (:definitions core-artifact))
      :call-count (count (:calls core-artifact))
+     :function-record-count (count (:function-records core-artifact))
+     :call-edge-count (count (:call-edges core-artifact))
+     :recursion-component-count
+     (count (:recursion-components core-artifact))
      :reference-count (count (:reference-uses core-artifact))
      :keyword-lookup-count (count (:keyword-lookups core-artifact))
      :core-form-frequencies (frequencies (map :core-form nodes))}))
@@ -380,7 +438,7 @@
     (when-not (= (count records) (count index))
       (throw
        (ex-info
-        "SH-07-B28 records are not uniquely identifiable"
+        "SH-07-B47 records are not uniquely identifiable"
         {:id "SH07-C7-COVERAGE-AMBIGUOUS-INDEX"
          :key key-name
          :record-count (count records)
@@ -453,7 +511,7 @@
         source-text
         (String. (source-bytes (path c7-relative-path))
                  java.nio.charset.StandardCharsets/UTF_8)]
-    (is (= "SH-07-B28" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c7-relative-path
            (get-in contract [:authoritative-modules :c7-types])))
     (is (= {:keyword-lookups 0}
@@ -512,6 +570,22 @@
     (is (every? (set (:nonclaims contract)) expected-nonclaims))
     (is (contains? (set (:nonclaims contract)) :sh07-complete))))
 
+(deftest sh07-b47-c7-stage2-plan-identity-is-exact
+  (let [plan @c7-plan
+        functions (:functions plan)
+        digest gravity.bootstrap/p15-s23-c11-mir-digest]
+    (is (= :gravity/stage2-compiler-artifact-plan (:kind plan)))
+    (is (= expected-plan-semantic-id (plan-semantic-id plan)))
+    (is (= expected-functions-semantic-id (digest functions)))
+    (is (= 137 (count functions)))
+    (is (= expected-function-names-id
+           (digest (vec (sort (keys functions))))))
+    (is (= expected-function-shapes-id
+           (digest (function-shapes plan))))
+    (doseq [[name expected-hash] expected-public-function-hashes]
+      (is (contains? functions name))
+      (is (= expected-hash (digest (get functions name)))))))
+
 (deftest sh07-b28-c7-source-contracts-bounds-pending-and-limitations-are-exact
   (let [forms (source-forms)
         namespace-form (first forms)
@@ -522,10 +596,10 @@
         bootstrap-metadata (get-in namespace-clauses [:metadata :bootstrap])
         definition-forms
         (into {}
-              (for [name expected-definition-names]
-                [name
-                 (or (named-top-level-form forms 'def name)
-                     (named-top-level-form forms 'defn name))]))
+              (for [form forms
+                    :when (and (seq? form)
+                               (#{'def 'defn} (first form)))]
+                [(second form) form]))
         executable-names
         (set
          (for [[name form] definition-forms
@@ -548,7 +622,7 @@
         core-shape-form (get definition-forms 'sh08-validate-core-shape)
         type-node-form (get definition-forms 'sh08-type-node)
         verifier-form (get definition-forms 'verify-c7-type-checker)]
-    (is (= 48 (count forms)))
+    (is (= 143 (count forms)))
     (is (= 'gravity.compiler.c7-type-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -596,13 +670,20 @@
             [:clojure-c7-type-checker-contract-subset
              :clojure-c7-diagnostic-catalog]}
            (:lineage bootstrap-metadata)))
-    (is (= expected-definition-names (set (keys definition-forms))))
+    (is (every? (set (keys definition-forms)) expected-definition-names))
+    (is (= 142 (count definition-forms)))
+    (is (= expected-definition-names-hash
+           (gravity.bootstrap/p15-s23-c11-mir-digest
+            (vec (sort (keys definition-forms))))))
     (is (= 5 (count (filter #(= 'def (first %))
                             (vals definition-forms)))))
-    (is (= 42 (count (filter #(= 'defn (first %))
-                             (vals definition-forms)))))
-    (is (= expected-executable-sh08-names executable-names))
-    (is (= 39 (count executable-names)))
+    (is (= 137 (count (filter #(= 'defn (first %))
+                              (vals definition-forms)))))
+    (is (every? executable-names expected-executable-sh08-names))
+    (is (= 134 (count executable-names)))
+    (is (= expected-executable-names-hash
+           (gravity.bootstrap/p15-s23-c11-mir-digest
+            (vec (sort executable-names)))))
     (is (= 3 (count (filter quoted-body (vals definition-forms)))))
     (is (= expected-bounds (nth bounds-form 3)))
     (is (= expected-pending pending))
@@ -650,7 +731,7 @@
     (is (= :accepted (:status artifact)))
     (is (= :accepted
            (get-in artifact [:sh06-resolution-artifact :status])))
-    (is (= "SH-07-B15" (:task artifact)))
+    (is (= "SH-07-B47" (:task artifact)))
     (is (= 15 (:schema-version authenticated-request)))
     (is (= :sh07-b15-keyword-map-lookup
            (:scope authenticated-request)))
@@ -702,12 +783,16 @@
                      :attributes :value])))
          get-calls)
         quote-nodes (filterv #(= :quote (:core-form %)) nodes)]
-    (is (= expected-definition-names
+    (is (= (set
+            (map second
+                 (filter #(and (seq? %)
+                               (#{'def 'defn} (first %)))
+                         (source-forms))))
            (set (map :name (:definitions core-artifact)))))
-    (is (= 159 (count get-calls)))
-    (is (= 152 (count literal-keyword-get-calls)))
-    (is (= 7 (count dynamic-get-calls)))
-    (is (= {:call 2 :reference 5}
+    (is (= 833 (count get-calls)))
+    (is (= 774 (count literal-keyword-get-calls)))
+    (is (= 59 (count dynamic-get-calls)))
+    (is (= {:call 42 :reference 17}
            (frequencies
             (map
              #(get-in node-by-id

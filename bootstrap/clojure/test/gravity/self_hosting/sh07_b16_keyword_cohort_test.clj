@@ -307,7 +307,7 @@
             authenticated-request (request artifact)
             proof (:capability-based-proof artifact)]
         (is (= :accepted (:status artifact)))
-        (is (= "SH-07-B15" (:task artifact)))
+        (is (= "SH-07-B47" (:task artifact)))
         (is (= 15 (:schema-version authenticated-request)))
         (is (= :sh07-b15-keyword-map-lookup
                (:scope authenticated-request)))

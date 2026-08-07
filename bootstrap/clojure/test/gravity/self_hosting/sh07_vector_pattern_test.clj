@@ -307,11 +307,11 @@
         (is (= :sh07-b15-keyword-map-lookup
                (:scope (request direct))
                (:scope (request public))))
-        (is (= "SH-07-B15" (:task direct) (:task public)))
-        (is (= :c6-gravity-core-lowering-b15
+        (is (= "SH-07-B47" (:task direct) (:task public)))
+        (is (= :c6-gravity-core-lowering-b47
                (get-in direct [:pass :name])
                (get-in public [:pass :name])))
-        (is (= :gravity/sh07-to-c6-core-products-v15
+        (is (= :gravity/sh07-to-c6-core-products-v16
                (get-in direct
                        [:gravity-core-boundary :adapter-contract])
                (get-in public
@@ -814,7 +814,7 @@
         (is (= 64 (:maximum-match-pattern-depth bounds)))
         (is (= 256 (:maximum-match-pattern-width bounds)))
         (is (<= (count (:match-pattern-records canonical)) 1024))
-        (is (= :gravity/sh07-to-c6-core-products-v15
+        (is (= :gravity/sh07-to-c6-core-products-v16
                (:adapter-contract boundary)))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact proof)))

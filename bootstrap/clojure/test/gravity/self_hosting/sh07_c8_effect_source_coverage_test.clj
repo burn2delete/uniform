@@ -861,7 +861,7 @@
     (is (= :accepted (:status artifact)))
     (is (= :accepted
            (get-in artifact [:sh06-resolution-artifact :status])))
-    (is (= "SH-07-B15" (:task artifact)))
+    (is (= "SH-07-B47" (:task artifact)))
     (is (= 15 (:schema-version authenticated-request)))
     (is (= :sh07-b15-keyword-map-lookup
            (:scope authenticated-request)))

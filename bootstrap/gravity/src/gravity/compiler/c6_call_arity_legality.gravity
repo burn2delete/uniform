@@ -1,0 +1,1330 @@
+; SH-07-B48 direct-call arity and call-target legality.
+; This leaf consumes the authenticated B47 product vectors.  It does not
+; execute calls or infer types/effects; unresolved lexical and nonlocal calls
+; remain explicit pending records for the later callable/type slices.
+(ns gravity.compiler.c6-call-arity-legality
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh07-b48-call-arity-policy
+             sh07-b48-build-call-arity-result
+             sh07-b48-verify-call-arity-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B48
+    :owner :gravity-source
+    :input-domain :gravity/sh07-b47-canonical-core-v16
+    :non-claims [:variadic-calls
+                 :multi-arity-dispatch
+                 :closures
+                 :type-legality
+                 :effect-legality
+                 :call-execution
+                 :public-routing]}))
+
+(defn sh07-b48-member-from? [values value index]
+  (loop [position index]
+    (if (= position (count values))
+      false
+      (if (= value (get values position))
+        true
+        (recur (+ position 1))))))
+
+(defn sh07-b48-member? [values value]
+  (if (vector? values)
+    (sh07-b48-member-from? values value 0)
+    false))
+
+(defn sh07-b48-path-get [value path]
+  (loop [remaining path current value]
+    (if (= (count remaining) 0)
+      current
+      (recur (rest remaining)
+             (get current (first remaining))))))
+
+(defn sh07-b48-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh07-b48-id? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) 256)
+      false)
+    false))
+
+(defn sh07-b48-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn sh07-b48-nonempty-string? [value]
+  (if (string? value)
+    (if (> (count value) 0)
+      (<= (count value) 4096)
+      false)
+    false))
+
+(defn sh07-b48-bounded-vector? [value maximum]
+  (if (vector? value)
+    (<= (count value) maximum)
+    false))
+
+(defn sh07-b48-over-bound? [value maximum]
+  (if (vector? value)
+    (> (count value) maximum)
+    false))
+
+(defn sh07-b48-id-vector? [values maximum]
+  (if (sh07-b48-bounded-vector? values maximum)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (sh07-b48-id? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn sh07-b48-unique-from? [values index]
+  (loop [position index
+         seen #{}]
+    (if (= position (count values))
+      true
+      (let [value (get values position)]
+        (if (contains? seen value)
+          false
+          (recur (+ position 1) (conj seen value)))))))
+
+(defn sh07-b48-unique? [values]
+  (if (vector? values)
+    (sh07-b48-unique-from? values 0)
+    false))
+
+(defn sh07-b48-index-carrier-valid? [records key-name maximum]
+  (if (sh07-b48-bounded-vector? records maximum)
+    (loop [remaining records
+           seen #{}]
+      (if (= (count remaining) 0)
+        true
+        (let [record (first remaining)
+              record-id (if (map? record) (get record key-name) nil)]
+          (if (sh07-b48-id? record-id)
+            (if (contains? seen record-id)
+              false
+              (recur (rest remaining) (conj seen record-id)))
+            false))))
+    false))
+
+(defn sh07-b48-ordered-tail-valid? [record]
+  (let [arguments (get record :argument-node-ids)
+        ordered (get record :ordered-evaluation-node-ids)]
+    (if (= (+ 1 (count arguments)) (count ordered))
+      (loop [index 0]
+        (if (= index (count arguments))
+          true
+          (if (= (get arguments index)
+                 (get ordered (+ index 1)))
+            (recur (+ index 1))
+            false)))
+      false)))
+
+(defn sh07-b48-ordered-ordinals-from? [values index]
+  (loop [position index]
+    (if (= position (count values))
+      true
+      (if (= position (get (get values position) :ordinal))
+        (recur (+ position 1))
+        false))))
+
+(defn sh07-b48-function-record-valid? [record]
+  (if
+   (sh07-b48-exact-keys?
+    record
+    #{:ordinal :function-core-node-id :function-form-id
+      :function-syntax-id :body-core-node-id :parameter-binding-ids
+      :fixed-arity :definition-kind :definition-binding-id
+      :definition-core-node-id :definition-name})
+    (if (sh07-b48-nonnegative-integer? (get record :ordinal))
+      (if (sh07-b48-id? (get record :function-core-node-id))
+        (if (sh07-b48-id? (get record :function-form-id))
+          (if (sh07-b48-id? (get record :function-syntax-id))
+            (if (sh07-b48-id? (get record :body-core-node-id))
+              (if (sh07-b48-nonnegative-integer?
+                   (get record :fixed-arity))
+                (if (<= (get record :fixed-arity) 1024)
+                  (if (= (get record :fixed-arity)
+                         (count (get record :parameter-binding-ids)))
+                    (if (sh07-b48-id-vector?
+                         (get record :parameter-binding-ids) 1024)
+                      (if (sh07-b48-member?
+                           [:named-top-level :anonymous]
+                           (get record :definition-kind))
+                        (if (if (= (get record :definition-binding-id) nil)
+                              true
+                              (sh07-b48-id?
+                               (get record :definition-binding-id)))
+                          (if (if (= (get record :definition-core-node-id)
+                                     nil)
+                                true
+                                (sh07-b48-id?
+                                 (get record :definition-core-node-id)))
+                            (if (if (= (get record :definition-name) nil)
+                                  true
+                                  (symbol? (get record :definition-name)))
+                              true
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b48-function-records-valid? [records]
+  (if (sh07-b48-bounded-vector? records 4096)
+    (if (sh07-b48-ordered-ordinals-from? records 0)
+      (if (sh07-b48-unique?
+           (loop [remaining records values []]
+             (if (= (count remaining) 0)
+               values
+               (recur
+                (rest remaining)
+                (conj values (get (first remaining)
+                                  :function-core-node-id))))))
+        (if (sh07-b48-unique?
+             (loop [remaining records values []]
+               (if (= (count remaining) 0)
+                 values
+                 (recur
+                  (rest remaining)
+                  (conj values (get (first remaining)
+                                    :function-syntax-id))))))
+          (loop [remaining records]
+            (if (= (count remaining) 0)
+              true
+              (if (sh07-b48-function-record-valid? (first remaining))
+                (recur (rest remaining))
+                false)))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b48-call-record-valid? [record]
+  (if
+   (sh07-b48-exact-keys?
+    record
+    #{:core-node-id :operator-node-id :operator-binding-id
+      :argument-node-ids :ordered-evaluation-node-ids
+      :evaluation-order :result-policy})
+    (if (sh07-b48-id? (get record :core-node-id))
+      (if (sh07-b48-id? (get record :operator-node-id))
+        (if (sh07-b48-id? (get record :operator-binding-id))
+          (if (sh07-b48-id-vector?
+               (get record :argument-node-ids) 1024)
+            (if (= (+ 1 (count (get record :argument-node-ids)))
+                   (count (get record :ordered-evaluation-node-ids)))
+              (if (sh07-b48-id-vector?
+                   (get record :ordered-evaluation-node-ids) 1025)
+                (if (= (get record :operator-node-id)
+                       (first (get record :ordered-evaluation-node-ids)))
+                  (if (= :operator-then-arguments
+                         (get record :evaluation-order))
+                    (= :call-result (get record :result-policy))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b48-call-records-valid? [records]
+  (if (sh07-b48-bounded-vector? records 65536)
+    (if (sh07-b48-unique?
+         (loop [remaining records values []]
+           (if (= (count remaining) 0)
+             values
+             (recur
+              (rest remaining)
+              (conj values (get (first remaining) :core-node-id))))))
+      (loop [remaining records]
+        (if (= (count remaining) 0)
+          true
+          (if (sh07-b48-call-record-valid? (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh07-b48-edge-record-valid? [record]
+  (if
+   (sh07-b48-exact-keys?
+    record
+    #{:ordinal :call-core-node-id
+      :caller-function-syntax-id :caller-function-core-node-id
+      :callee-binding-id :callee-definition-syntax-id
+      :callee-function-syntax-id :callee-function-core-node-id
+      :argument-core-node-ids :ordered-evaluation-node-ids
+      :evaluation-order :classification})
+    (if (sh07-b48-nonnegative-integer? (get record :ordinal))
+      (if (sh07-b48-id? (get record :call-core-node-id))
+        (if (sh07-b48-id? (get record :callee-binding-id))
+          (if (if (= (get record :caller-function-syntax-id) nil)
+                true
+                (sh07-b48-id? (get record :caller-function-syntax-id)))
+            (if (if (= (get record :caller-function-core-node-id) nil)
+                  true
+                  (sh07-b48-id?
+                   (get record :caller-function-core-node-id)))
+              (if (if (= (get record :callee-definition-syntax-id) nil)
+                    true
+                    (sh07-b48-id?
+                     (get record :callee-definition-syntax-id)))
+                (if (if (= (get record :callee-function-syntax-id) nil)
+                      true
+                      (sh07-b48-id?
+                       (get record :callee-function-syntax-id)))
+                  (if (if (= (get record :callee-function-core-node-id) nil)
+                        true
+                        (sh07-b48-id?
+                         (get record :callee-function-core-node-id)))
+                    (if (sh07-b48-id-vector?
+                         (get record :argument-core-node-ids) 1024)
+                      (if (sh07-b48-id-vector?
+                           (get record :ordered-evaluation-node-ids) 1025)
+                        (if (= :operator-then-arguments
+                               (get record :evaluation-order))
+                          (sh07-b48-member?
+                           [:local-function :nonlocal-or-nonfunction]
+                           (get record :classification))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b48-edge-records-valid? [records]
+  (if (sh07-b48-bounded-vector? records 65536)
+    (if (sh07-b48-ordered-ordinals-from? records 0)
+      (loop [remaining records]
+        (if (= (count remaining) 0)
+          true
+          (if (sh07-b48-edge-record-valid? (first remaining))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh07-b48-edge-endpoints-valid?
+  [edge function-index]
+  (let [callee (get function-index (get edge :callee-function-syntax-id))
+        caller (get function-index (get edge :caller-function-syntax-id))]
+    (if (= (get edge :classification) :local-function)
+      (if (map? callee)
+        (if (= (get edge :callee-function-core-node-id)
+               (get callee :function-core-node-id))
+          (if (if (= (get edge :caller-function-syntax-id) nil)
+                (= (get edge :caller-function-core-node-id) nil)
+                (if (map? caller)
+                  (= (get edge :caller-function-core-node-id)
+                     (get caller :function-core-node-id))
+                  false))
+            true
+            false)
+          false)
+        false)
+      (if (= (get edge :classification) :nonlocal-or-nonfunction)
+        (if (= (get edge :callee-function-syntax-id) nil)
+          (if (= (get edge :callee-function-core-node-id) nil)
+            (if (if (= (get edge :caller-function-syntax-id) nil)
+                  (= (get edge :caller-function-core-node-id) nil)
+                  (if (map? caller)
+                    (= (get edge :caller-function-core-node-id)
+                       (get caller :function-core-node-id))
+                    false))
+              true
+              false)
+            false)
+          false)
+        false))))
+
+(defn sh07-b48-node-provenance [node-index node-id facts]
+  (let [node (get node-index node-id)
+        source (if (map? node) (get node :source) nil)]
+    (assoc facts
+           :core-node-id node-id
+           :syntax-id (if (map? source) (get source :syntax-id) nil)
+           :form-id (if (map? source) (get source :form-id) nil)
+           :source-span
+           (if (map? source)
+             (if (= (get source :source-span) nil)
+               (get source :span)
+               (get source :source-span))
+             nil)
+           :generated-origin-chain
+           (if (map? source)
+             (if (= (get source :generated-origin-chain) nil)
+               (if (= (get source :origin-chain) nil)
+                 (if (= (get source :generated-origin) nil)
+                   []
+                   (get source :generated-origin))
+                 (get source :origin-chain))
+               (get source :generated-origin-chain))
+             [])
+           :lowering-rule :sh07-b47-function-call-recursion-products)))
+
+(defn sh07-b48-call-results-from
+  [calls edges function-index node-index index values]
+  (loop [position index
+         results values]
+    (if (= position (count calls))
+      {:status :accepted :values results}
+      (let [call (get calls position)
+            edge (get edges position)]
+        (if (= position (get edge :ordinal))
+          (if (= (get call :core-node-id)
+                 (get edge :call-core-node-id))
+            (if (= (get call :argument-node-ids)
+                   (get edge :argument-core-node-ids))
+              (if (= (get call :ordered-evaluation-node-ids)
+                     (get edge :ordered-evaluation-node-ids))
+                (if (= (get call :evaluation-order)
+                       (get edge :evaluation-order))
+                  (if (= (get call :operator-binding-id)
+                         (get edge :callee-binding-id))
+                    (if (sh07-b48-edge-endpoints-valid?
+                         edge function-index)
+                      (if (= (get edge :classification) :local-function)
+                        (let [target
+                              (get function-index
+                                   (get edge :callee-function-syntax-id))]
+                          (if (map? target)
+                            (let [expected (get target :fixed-arity)
+                                  actual
+                                  (count (get call :argument-node-ids))]
+                              (if (= expected actual)
+                                 (recur
+                                 (+ position 1)
+                                 (conj
+                                  results
+                                  {:ordinal position
+                                   :call-core-node-id
+                                   (get call :core-node-id)
+                                   :classification :local-function
+                                   :callee-function-syntax-id
+                                   (get edge :callee-function-syntax-id)
+                                   :callee-function-core-node-id
+                                   (get edge :callee-function-core-node-id)
+                                   :caller-function-syntax-id
+                                   (get edge :caller-function-syntax-id)
+                                   :caller-function-core-node-id
+                                   (get edge :caller-function-core-node-id)
+                                   :callee-binding-id
+                                   (get edge :callee-binding-id)
+                                   :expected-arity expected
+                                   :actual-arity actual
+                                   :outcome :accepted
+                                   :argument-core-node-ids
+                                   (get call :argument-node-ids)
+                                   :ordered-evaluation-node-ids
+                                   (get call
+                                        :ordered-evaluation-node-ids)}))
+                                {:status :rejected
+                                 :reason
+                                 (if (< actual expected)
+                                   :too-few-arguments
+                                   :too-many-arguments)
+                                 :call-core-node-id
+                                 (get call :core-node-id)
+                                 :callee-function-syntax-id
+                                 (get edge :callee-function-syntax-id)
+                                 :expected-arity expected
+                                 :actual-arity actual
+                                 :facts
+                                 (sh07-b48-node-provenance
+                                  node-index
+                                  (get call :core-node-id)
+                                  {:expected-arity expected
+                                   :actual-arity actual})}))
+                            {:status :rejected
+                             :reason :missing-local-call-target
+                             :call-core-node-id
+                             (get call :core-node-id)
+                             :facts
+                             (sh07-b48-node-provenance
+                              node-index (get call :core-node-id) {})}))
+                        (if (= (get edge :classification)
+                               :nonlocal-or-nonfunction)
+                          (recur
+                           (+ position 1)
+                           (conj
+                            results
+                            {:ordinal position
+                             :call-core-node-id (get call :core-node-id)
+                             :classification :nonlocal-or-nonfunction
+                             :callee-function-syntax-id nil
+                             :callee-function-core-node-id nil
+                             :caller-function-syntax-id
+                             (get edge :caller-function-syntax-id)
+                             :caller-function-core-node-id
+                             (get edge :caller-function-core-node-id)
+                             :callee-binding-id
+                             (get edge :callee-binding-id)
+                             :expected-arity nil
+                             :actual-arity
+                             (count (get call :argument-node-ids))
+                           :outcome :pending-nonlocal
+                             :argument-core-node-ids
+                             (get call :argument-node-ids)
+                           :ordered-evaluation-node-ids
+                             (get call :ordered-evaluation-node-ids)}))
+                          {:status :rejected
+                           :reason :unknown-call-classification
+                           :call-core-node-id
+                           (get call :core-node-id)
+                           :facts
+                           (sh07-b48-node-provenance
+                            node-index (get call :core-node-id) {})}))
+                      {:status :rejected
+                       :reason :call-endpoint-mismatch
+                       :call-core-node-id (get call :core-node-id)
+                       :facts
+                       (sh07-b48-node-provenance
+                        node-index (get call :core-node-id) {})})
+                    {:status :rejected
+                     :reason :call-binding-mismatch
+                     :call-core-node-id (get call :core-node-id)
+                     :facts
+                     (sh07-b48-node-provenance
+                      node-index (get call :core-node-id) {})})
+                  {:status :rejected
+                   :reason :evaluation-order-mismatch
+                   :facts
+                   (sh07-b48-node-provenance
+                    node-index (get call :core-node-id) {})})
+                {:status :rejected
+                 :reason :evaluation-node-mismatch
+                 :facts
+                 (sh07-b48-node-provenance
+                  node-index (get call :core-node-id) {})})
+              {:status :rejected
+               :reason :argument-node-mismatch
+               :facts
+               (sh07-b48-node-provenance
+                node-index (get call :core-node-id) {})})
+            {:status :rejected
+             :reason :call-edge-target-mismatch
+             :facts
+             (sh07-b48-node-provenance
+              node-index (get call :core-node-id) {})})
+          {:status :rejected
+           :reason :call-edge-order-mismatch
+           :facts
+           (sh07-b48-node-provenance
+            node-index (get call :core-node-id) {})})))))
+
+(defn sh07-b48-lineage-valid? [lineage context]
+  (if (map? lineage)
+    (if (map? context)
+      (= lineage (get context :lineage))
+      false)
+    false))
+
+(defn sh07-b48-provenance-valid? [provenance source-unit-id]
+  (if (sh07-b48-exact-keys?
+       provenance #{:source-path :source-extension :source-artifact-id})
+    (if (sh07-b48-nonempty-string? (get provenance :source-path))
+      (if (sh07-b48-member? [".gravity" ".qst"]
+                            (get provenance :source-extension))
+        (= source-unit-id (get provenance :source-artifact-id))
+        false)
+      false)
+    false))
+
+(defn sh07-b48-index-records [records key-name]
+  (if (vector? records)
+    (loop [remaining records index {}]
+      (if (= (count remaining) 0)
+        index
+        (let [record (first remaining)]
+          (recur (rest remaining)
+                 (assoc index (get record key-name) record)))))
+    {}))
+
+(defn sh07-b48-all-true? [values]
+  (if (map? values)
+    (if (> (count values) 0)
+      (loop [remaining (keys values)]
+        (if (= (count remaining) 0)
+          true
+          (if (= true (get values (first remaining)))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh07-b48-b47-check-catalog []
+  #{:wrapper-schema-current? :wrapper-kind-current?
+    :upstream-verification-passed? :semantic-artifact-id-current?
+    :authenticated-request-replays? :gravity-template-replays?
+    :digest-sequence-replays? :resolved-digests-replay?
+    :canonical-core-replays? :fragment-manifest-replay?
+    :fragment-coverage-replay? :module-assembly-manifest-replay?
+    :module-replay? :declared-alias-table-replay?
+    :control-flow-replays? :reference-uses-replay?
+    :var-references-replay? :calls-replay? :function-records-replay?
+    :call-edges-replay? :recursion-components-replay?
+    :keyword-lookups-replay? :lexical-bindings-replay?
+    :loop-bindings-replay? :recur-targets-replay?
+    :recur-transfers-replay? :mutations-replay?
+    :error-transfers-replay? :error-handlers-replay?
+    :match-branch-records-replay? :match-decision-skeletons-replay?
+    :match-pattern-records-replay? :template-verification-passed?
+    :resolved-verification-passed? :authoritative-products-replay?
+    :stored-capability-proof-current? :provenance-retained?})
+
+(defn sh07-b48-verification-receipt-valid? [receipt]
+  (if (sh07-b48-exact-keys?
+       receipt
+       #{:status :checks :failed-checks :receipt-context
+         :opaque-provenance-binding-id :verification-digest})
+    (if (= :passed (get receipt :status))
+      (if (= (set (keys (get receipt :checks)))
+             (sh07-b48-b47-check-catalog))
+        (if (sh07-b48-all-true? (get receipt :checks))
+        (if (= [] (get receipt :failed-checks))
+          (if (= :gravity/sh07-b47-verification-v16
+                 (get receipt :receipt-context))
+            (if (sh07-b48-id? (get receipt :opaque-provenance-binding-id))
+              (sh07-b48-id? (get receipt :verification-digest))
+              false)
+            false)
+          false)
+        false)
+        false)
+      false)
+    false))
+
+(defn sh07-b48-verification-digest-preimage
+  [descriptor context source-unit-id]
+  {:domain :gravity/sh07-b48-b47-verification-binding-v1
+   :verified-artifact-id source-unit-id
+   :opaque-provenance-binding-id
+   (get descriptor :opaque-provenance-binding-id)
+   :authenticated-wrapper (get context :authenticated-wrapper)
+   :canonical-core-artifact (get context :canonical-core-artifact)
+   :authenticated-core-request (get context :authenticated-core-request)
+   :verification-report (get descriptor :report)})
+
+(defn sh07-b48-verification-digest-resolution-valid?
+  [descriptor context source-unit-id]
+  (let [resolution (get descriptor :verification-digest-resolution)
+        expected
+        (sh07-b48-verification-digest-preimage
+         descriptor context source-unit-id)]
+    (if (sh07-b48-exact-keys?
+         resolution #{:ordinal :purpose :preimage :digest})
+      (if (= 0 (get resolution :ordinal))
+        (if (= :sh07-b48-b47-verification-binding
+               (get resolution :purpose))
+          (if (= expected (get resolution :preimage))
+            (if (sh07-b48-id? (get resolution :digest))
+              (= (get resolution :digest)
+                 (get (get context :verification) :verification-digest))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-b48-provenance-binding-valid?
+  [descriptor context source-unit-id]
+  (let [core (get context :canonical-core-artifact)
+        wrapper (get context :authenticated-wrapper)
+        boundary (get wrapper :gravity-core-boundary)
+        lineage (get context :lineage)
+        provenance (get context :provenance)
+        binding-id (get core :provenance-binding-id)
+        binding-preimage (get core :provenance-binding-preimage)
+        envelope-descriptor
+        (get boundary :authenticated-envelope-descriptor)
+        envelope (get boundary :authenticated-envelope)
+        expected-preimage
+        {:domain :gravity/sh07-b47-core-provenance-binding-v16
+         :core-artifact-id-request source-unit-id
+         :source-revision-id (get lineage :source-revision-id)
+         :sh06-artifact-id (get lineage :sh06-artifact-id)
+         :actual-source-path (get provenance :source-path)}]
+    (if (sh07-b48-id? binding-id)
+      (if (= binding-id (get descriptor :opaque-provenance-binding-id))
+        (if (= binding-id
+               (get (get context :verification)
+                    :opaque-provenance-binding-id))
+          (if (= expected-preimage binding-preimage)
+            (if (= binding-preimage
+                   (get descriptor :provenance-binding-preimage))
+              (if (= envelope-descriptor
+                     (get descriptor :authenticated-envelope-descriptor))
+                (if (= envelope
+                       (get descriptor :authenticated-envelope))
+                  (if (= :gravity/sh07-authenticated-envelope-descriptor
+                         (get envelope-descriptor :artifact))
+                    (if (= source-unit-id
+                           (get envelope-descriptor :semantic-artifact-id))
+                      (if (= :gravity/sh07-authenticated-envelope
+                             (get envelope :artifact))
+                        (if (= source-unit-id
+                               (get envelope :semantic-artifact-id))
+                          (= (get provenance :source-path)
+                             (get envelope :actual-source-path))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-b48-local-binding-coherent?
+  [edge binding-index function-index]
+  (let [binding (get binding-index (get edge :callee-binding-id))
+        target (get function-index (get edge :callee-function-syntax-id))]
+    (if (map? binding)
+      (if (map? target)
+        (if (= (get edge :callee-definition-syntax-id)
+             (get binding :definition-syntax-id))
+          (if (= (get target :definition-binding-id)
+                 (get edge :callee-binding-id))
+            (if (= (get target :function-core-node-id)
+                   (get edge :callee-function-core-node-id))
+              true
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-b48-edge-binding-coherent?
+  [edge binding-index definition-index function-index function-node-index]
+  (let [binding (get binding-index (get edge :callee-binding-id))
+        definition (get definition-index (get edge :callee-binding-id))
+        derived-target
+        (if (map? definition)
+          (get function-node-index (get definition :value-node-id))
+          nil)
+        derived-classification
+        (if (map? derived-target)
+          :local-function
+          :nonlocal-or-nonfunction)]
+    (if (map? binding)
+      (if (= (get edge :callee-definition-syntax-id)
+             (get binding :definition-syntax-id))
+        (if (= derived-classification (get edge :classification))
+          (if (= derived-classification :local-function)
+            (if (= derived-target
+                   (get function-index
+                        (get edge :callee-function-syntax-id)))
+              (if (= (get derived-target :definition-core-node-id)
+                     (get definition :core-node-id))
+                (sh07-b48-local-binding-coherent?
+                 edge binding-index function-index)
+                false)
+              false)
+            (if (= nil (get edge :callee-function-syntax-id))
+              (= nil (get edge :callee-function-core-node-id))
+              false))
+          false)
+        false)
+      false)))
+
+(defn sh07-b48-coordinator-verification-valid?
+  [descriptor context source-unit-id]
+  (if (sh07-b48-exact-keys?
+       descriptor
+       #{:artifact :schema-version :boundary :verified-artifact-id
+         :verified-identity-input :verified-source-path
+         :verified-source-extension :report :check-catalog
+         :opaque-provenance-binding-id :provenance-binding-preimage
+         :authenticated-envelope-descriptor :authenticated-envelope
+         :verification-digest-resolution})
+    (let [report (get descriptor :report)]
+      (if (= :gravity/sh07-b47-coordinator-verification-v16
+             (get descriptor :artifact))
+        (if (= 16 (get descriptor :schema-version))
+          (if (= :clojure-coordinator-verifier (get descriptor :boundary))
+            (if (= source-unit-id (get descriptor :verified-artifact-id))
+              (if (= (get context :identity-input)
+                     (get descriptor :verified-identity-input))
+                (if (= (get (get context :provenance) :source-path)
+                       (get descriptor :verified-source-path))
+                  (if (sh07-b48-member? [".gravity" ".qst"]
+                                        (get descriptor
+                                             :verified-source-extension))
+                    (if (sh07-b48-provenance-binding-valid?
+                         descriptor context source-unit-id)
+                      (if (sh07-b48-verification-digest-resolution-valid?
+                           descriptor context source-unit-id)
+                      (if (= (set (get descriptor :check-catalog))
+                             (sh07-b48-b47-check-catalog))
+                        (if (map? report)
+                          (if (= :gravity/sh07-core-artifact-verification
+                                 (get report :artifact))
+                            (if (= :passed (get report :status))
+                              (if (= (get report :source-path)
+                                     (get descriptor :verified-source-path))
+                                (if (= (get report :checks)
+                                       (get (get context :verification) :checks))
+                                  (if (= (set (keys (get report :checks)))
+                                       (sh07-b48-b47-check-catalog))
+                                  (if (sh07-b48-all-true?
+                                       (get report :checks))
+                                    (= [] (get report :failed-checks))
+                                    false)
+                                  false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh07-b48-context-valid?
+  [context source-unit-id provenance functions calls edges]
+  (if (sh07-b48-exact-keys?
+       context
+       #{:artifact-id :artifact-status :artifact-kind :input-domain
+         :identity-input
+         :authenticated-core-request :canonical-core-artifact
+         :provenance :lineage :verification :authenticated-wrapper})
+    (let [core (get context :canonical-core-artifact)
+          authenticated-request
+          (get context :authenticated-core-request)
+          context-provenance (get context :provenance)
+          wrapper (get context :authenticated-wrapper)]
+      (if (= source-unit-id (get context :artifact-id))
+        (if (= :accepted (get context :artifact-status))
+          (if (= :gravity/sh07-core-artifact
+                 (get context :artifact-kind))
+            (if (= :gravity/sh07-b47-canonical-core-v16
+                   (get context :input-domain))
+              (if (map? (get context :identity-input))
+                (if (map? authenticated-request)
+                  (if (map? core)
+                    (if (map? context-provenance)
+                      (if (map? (get context :lineage))
+                        (if (= :gravity/sh07-canonical-core-artifact
+                               (get core :artifact))
+                          (if (= source-unit-id (get core :artifact-id))
+                            (if (= (get context :identity-input)
+                                   (get core :identity-preimage))
+                              (if (= (get context :lineage)
+                                     (get authenticated-request :lineage))
+                                (if (= (get context-provenance :source-path)
+                                       (get provenance :source-path))
+                                  (if (= context-provenance
+                                         (get wrapper :provenance))
+                                    (if (= source-unit-id
+                                           (get wrapper :artifact-id))
+                                      (if (= :gravity/sh07-core-artifact
+                                             (get wrapper :kind))
+                                        (if (= authenticated-request
+                                               (sh07-b48-path-get
+                                                wrapper
+                                                [:gravity-core-boundary
+                                                 :authenticated-core-request]))
+                                          (if (= core
+                                                 (sh07-b48-path-get
+                                                  wrapper
+                                                  [:gravity-core-boundary
+                                                   :canonical-core-artifact]))
+                                            (sh07-b48-verification-receipt-valid?
+                                             (get context :verification))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh07-b48-context-products-valid?
+  [context functions calls edges binding-index definition-index
+   function-index function-node-index]
+  (let [core (get context :canonical-core-artifact)]
+    (if (= (get core :function-records) functions)
+      (if (= (get core :calls) calls)
+        (if (= (get core :call-edges) edges)
+      (loop [remaining edges]
+        (if (= (count remaining) 0)
+          true
+          (if (sh07-b48-edge-binding-coherent?
+               (first remaining) binding-index definition-index
+               function-index function-node-index)
+            (recur (rest remaining))
+            false)))
+          false)
+        false)
+      false)))
+
+(defn sh07-b48-identity-input
+  [source-unit-id b47-identity-input verification functions calls edges]
+  {:source-unit-id source-unit-id
+   :b47-domain :gravity/sh07-b47-canonical-core-v16
+   :b47-identity-input b47-identity-input
+   :b47-verification
+   {:artifact (get verification :artifact)
+    :schema-version (get verification :schema-version)
+    :boundary (get verification :boundary)
+    :verified-artifact-id (get verification :verified-artifact-id)
+    :verified-identity-input (get verification :verified-identity-input)
+    :check-catalog (get verification :check-catalog)}
+   :function-records functions
+   :calls calls
+   :call-edges edges})
+
+(defn sh07-b48-identity-valid?
+  [identity-input source-unit-id b47-identity-input verification
+   functions calls edges]
+  (= identity-input
+     (sh07-b48-identity-input source-unit-id b47-identity-input verification
+                               functions calls edges)))
+
+(defn sh07-b48-remediation [code]
+  (if (= code "B48-ARITY")
+    "Match the direct call argument-node-ids to the authenticated fixed arity."
+    (if (= code "B48-LINEAGE")
+      "Replay the authenticated B47 v16 wrapper, core, lineage, and provenance receipt."
+      (if (= code "B48-BOUND")
+        "Reduce the product vector to the declared bounded SH-07 B48 limit."
+        (if (= code "B48-IDENTITY")
+          "Recompute the path-neutral B47/B48 identity inputs without checkout paths."
+          (if (= code "B48-PRODUCT")
+            "Replay the authenticated B47 product vectors and preserve ordered evaluation."
+            (if (= code "B48-VERIFY")
+              "Use the exact recomputed B48 result and retain all provenance fields."
+              (if (= code "B48-SCHEMA")
+                "Provide the complete B48 request schema with authenticated upstream products."
+                "Provide authenticated B47 products and their exact provenance."))))))))
+
+(defn sh07-b48-diagnostic [request code reason facts]
+  (let [nested (if (map? facts)
+                 (if (map? (get facts :facts))
+                   (get facts :facts)
+                   facts)
+                 facts)
+        source-path
+        (sh07-b48-path-get request
+                           [:coordinator-verification
+                            :verified-source-path])]
+    {:diagnostic-id code
+     :severity :error
+     :stage :c6-call-arity-legality
+     :scope :SH-07-B48
+     :reason reason
+     :source-unit-id (get request :source-unit-id)
+     :syntax-id (get nested :syntax-id)
+     :form-id (get nested :form-id)
+     :core-node-id (get nested :core-node-id)
+     :source-span
+     (if (= (get nested :source-span) nil)
+       {:source source-path}
+       (get nested :source-span))
+     :generated-origin-chain
+     (if (= (get nested :generated-origin-chain) nil)
+       []
+       (get nested :generated-origin-chain))
+     :lowering-rule
+     (if (= (get nested :lowering-rule) nil)
+       :sh07-b47-function-call-recursion-products
+       (get nested :lowering-rule))
+     :profile :meta
+     :target :jvm
+     :facts nested
+     :remediation (sh07-b48-remediation code)}
+    ))
+
+(defn sh07-b48-result
+  [request status identity provenance lineage call-results diagnostics pending]
+  {:artifact :gravity/sh07-b48-call-arity-result
+   :schema-version 1
+   :scope :SH-07-B48
+   :status status
+   :source-unit-id (get request :source-unit-id)
+   :identity-input identity
+   :provenance provenance
+   :b47-lineage lineage
+   :b47-context (get request :b47-context)
+   :call-results call-results
+   :checks [:b47-products-bound
+            :b47-context-bound
+            :ordered-arguments-preserved
+            :direct-fixed-arity-checked
+            :nonlocal-targets-pending]
+   :diagnostics diagnostics
+   :pending pending})
+
+(defn sh07-b48-rejected [request code reason facts]
+  (let [functions (get request :function-records)
+        calls (get request :calls)
+        edges (get request :call-edges)
+        source-unit-id (get request :source-unit-id)
+        b47-identity-input
+        (sh07-b48-path-get request [:b47-context :identity-input])
+        verification (get request :coordinator-verification)
+        trusted-provenance
+        {:source-path (get verification :verified-source-path)
+         :source-extension (get verification :verified-source-extension)
+         :source-artifact-id (get verification :verified-artifact-id)}
+        identity
+        (sh07-b48-identity-input
+         source-unit-id b47-identity-input verification functions calls edges)]
+    (sh07-b48-result
+     request :rejected identity trusted-provenance
+     (get request :b47-lineage) []
+     [(sh07-b48-diagnostic request code reason facts)]
+     [:call-target-legality :type-legality :effect-legality])))
+
+(defn sh07-b48-request-shape-valid? [request]
+  (sh07-b48-exact-keys?
+   request
+     #{:schema-version :scope :source-unit-id :identity-input
+     :provenance :b47-lineage :b47-context
+     :coordinator-verification
+     :function-records :calls :call-edges}))
+
+(defn sh07-b48-request-common-valid? [request]
+  (if (= 1 (get request :schema-version))
+    (if (= :SH-07-B48 (get request :scope))
+      (sh07-b48-id? (get request :source-unit-id))
+      false)
+    false))
+
+(defn sh07-b48-arity-reason? [reason]
+  (sh07-b48-member?
+   [:too-few-arguments :too-many-arguments]
+   reason))
+
+(defn sh07-b48-request-valid-basic? [request]
+  (if (sh07-b48-request-shape-valid? request)
+    (if (= 1 (get request :schema-version))
+      (if (= :SH-07-B48 (get request :scope))
+        (if (sh07-b48-id? (get request :source-unit-id))
+            (if (sh07-b48-lineage-valid?
+               (get request :b47-lineage)
+               (get request :b47-context))
+            (if (sh07-b48-provenance-valid?
+                 (get request :provenance)
+                 (get request :source-unit-id))
+              (if (sh07-b48-context-valid?
+                   (get request :b47-context)
+                   (get request :source-unit-id)
+                   (get request :provenance)
+                   (get request :function-records)
+                   (get request :calls)
+                   (get request :call-edges))
+                (sh07-b48-coordinator-verification-valid?
+                 (get request :coordinator-verification)
+                 (get request :b47-context)
+                 (get request :source-unit-id))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b48-index-carriers-preflight [context]
+  (let [binding-table (get (get context :authenticated-core-request)
+                           :binding-table)
+        definitions (get (get context :canonical-core-artifact) :definitions)
+        nodes (get (get context :canonical-core-artifact) :nodes)]
+    (if (sh07-b48-over-bound? binding-table 2440)
+      {:status :rejected :code "B48-BOUND" :reason :binding-table-bound
+       :maximum 2440 :observed (count binding-table)}
+      (if (sh07-b48-index-carrier-valid?
+           binding-table :binding-id 2440)
+        (if (sh07-b48-over-bound? definitions 1024)
+          {:status :rejected :code "B48-BOUND" :reason :definition-bound
+           :maximum 1024 :observed (count definitions)}
+          (if (sh07-b48-index-carrier-valid?
+               definitions :binding-id 1024)
+            (if (sh07-b48-over-bound? nodes 65536)
+              {:status :rejected :code "B48-BOUND" :reason :node-bound
+               :maximum 65536 :observed (count nodes)}
+              (if (sh07-b48-index-carrier-valid? nodes :node-id 65536)
+                {:status :accepted}
+                {:status :rejected :code "B48-PRODUCT"
+                 :reason :malformed-node-index-carrier}))
+            {:status :rejected :code "B48-PRODUCT"
+             :reason :malformed-definition-index-carrier}))
+        {:status :rejected :code "B48-PRODUCT"
+         :reason :malformed-binding-index-carrier}))))
+
+(defn sh07-b48-build-call-arity-result [request]
+  (if (sh07-b48-request-valid-basic? request)
+    (let [source-unit-id (get request :source-unit-id)
+          functions (get request :function-records)
+          calls (get request :calls)
+          edges (get request :call-edges)
+          identity (get request :identity-input)]
+      (if (sh07-b48-over-bound? functions 4096)
+        (sh07-b48-rejected
+         request "B48-BOUND" :function-record-bound
+         {:maximum 4096 :observed (count functions)})
+        (if (sh07-b48-function-records-valid? functions)
+          (if (sh07-b48-over-bound? calls 65536)
+            (sh07-b48-rejected
+             request "B48-BOUND" :call-record-bound
+             {:maximum 65536 :observed (count calls)})
+            (if (sh07-b48-call-records-valid? calls)
+              (if (sh07-b48-over-bound? edges 65536)
+                (sh07-b48-rejected
+                 request "B48-BOUND" :call-edge-bound
+                 {:maximum 65536 :observed (count edges)})
+                (if (sh07-b48-edge-records-valid? edges)
+                  (if (= (count calls) (count edges))
+                    (let [carrier-check
+                          (sh07-b48-index-carriers-preflight
+                           (get request :b47-context))]
+                      (if (= :accepted (get carrier-check :status))
+                       (let [function-index
+                          (sh07-b48-index-records
+                           functions :function-syntax-id)
+                          binding-index
+                          (sh07-b48-index-records
+                          (sh07-b48-path-get
+                           request [:b47-context
+                                    :authenticated-core-request
+                                    :binding-table])
+                           :binding-id)
+                          definition-index
+                          (sh07-b48-index-records
+                           (sh07-b48-path-get
+                            request [:b47-context
+                                     :canonical-core-artifact :definitions])
+                           :binding-id)
+                          function-node-index
+                          (sh07-b48-index-records
+                           functions :function-core-node-id)
+                          node-index
+                          (sh07-b48-index-records
+                          (sh07-b48-path-get
+                           request [:b47-context
+                                    :canonical-core-artifact :nodes])
+                           :node-id)]
+                      (if (sh07-b48-context-products-valid?
+                           (get request :b47-context)
+                           functions calls edges binding-index definition-index
+                           function-index function-node-index)
+                        (if (sh07-b48-identity-valid?
+                             identity source-unit-id
+                             (sh07-b48-path-get
+                             request [:b47-context :identity-input])
+                             (get request :coordinator-verification)
+                             functions calls edges)
+                          (let [outcomes
+                                (sh07-b48-call-results-from
+                                 calls edges function-index node-index 0 [])]
+                          (if (= (get outcomes :status) :accepted)
+                            (sh07-b48-result
+                             request :accepted identity
+                             {:source-path
+                              (sh07-b48-path-get
+                               request [:coordinator-verification
+                                        :verified-source-path])
+                              :source-extension
+                              (sh07-b48-path-get
+                               request [:coordinator-verification
+                                        :verified-source-extension])
+                              :source-artifact-id source-unit-id}
+                             (get request :b47-lineage)
+                             (get outcomes :values) []
+                             [:call-target-legality :type-legality
+                              :effect-legality])
+                            (sh07-b48-rejected
+                             request
+                             (if (sh07-b48-arity-reason?
+                                  (get outcomes :reason))
+                               "B48-ARITY"
+                               "B48-PRODUCT")
+                             (get outcomes :reason)
+                             outcomes)))
+                          (sh07-b48-rejected
+                           request "B48-IDENTITY" :stale-identity
+                           {:expected
+                            (sh07-b48-identity-input
+                             source-unit-id
+                             (sh07-b48-path-get
+                             request [:b47-context :identity-input])
+                             (get request :coordinator-verification)
+                             functions calls edges)}))
+                        (sh07-b48-rejected
+                         request "B48-LINEAGE" :lineage-mismatch
+                         {:facts
+                          {:core-node-id nil
+                           :product-boundary
+                           :gravity/sh07-b47-canonical-core-v16}})))
+                       (sh07-b48-rejected
+                        request (get carrier-check :code)
+                        (get carrier-check :reason) carrier-check)))
+                    (sh07-b48-rejected
+                     request "B48-PRODUCT" :call-edge-count-mismatch
+                     {:calls (count calls) :edges (count edges)}))
+                  (sh07-b48-rejected
+                   request "B48-PRODUCT" :malformed-call-edge-products {})))
+              (sh07-b48-rejected
+               request "B48-PRODUCT" :malformed-call-products {})))
+          (sh07-b48-rejected
+           request "B48-PRODUCT" :malformed-function-products {}))))
+    (sh07-b48-rejected
+     request
+     (if (sh07-b48-request-shape-valid? request)
+       (if (sh07-b48-request-common-valid? request)
+         (if (sh07-b48-lineage-valid?
+              (get request :b47-lineage)
+              (get request :b47-context))
+           (if (sh07-b48-provenance-valid?
+                (get request :provenance)
+                (get request :source-unit-id))
+             (if (sh07-b48-context-valid?
+                  (get request :b47-context)
+                  (get request :source-unit-id)
+                  (get request :provenance)
+                  (get request :function-records)
+                  (get request :calls)
+                  (get request :call-edges))
+               (if (sh07-b48-coordinator-verification-valid?
+                    (get request :coordinator-verification)
+                    (get request :b47-context)
+                    (get request :source-unit-id))
+                 "B48-SCHEMA"
+                 "B48-LINEAGE")
+               "B48-LINEAGE")
+             "B48-LINEAGE")
+           "B48-LINEAGE")
+         "B48-SCHEMA")
+       "B48-SCHEMA")
+     (if (sh07-b48-request-shape-valid? request)
+       (if (sh07-b48-request-common-valid? request)
+           (if (sh07-b48-lineage-valid?
+              (get request :b47-lineage)
+              (get request :b47-context))
+           (if (sh07-b48-provenance-valid?
+                (get request :provenance)
+                (get request :source-unit-id))
+             (if (sh07-b48-context-valid?
+                  (get request :b47-context)
+                  (get request :source-unit-id)
+                  (get request :provenance)
+                  (get request :function-records)
+                  (get request :calls)
+                  (get request :call-edges))
+               (if (sh07-b48-coordinator-verification-valid?
+                    (get request :coordinator-verification)
+                    (get request :b47-context)
+                    (get request :source-unit-id))
+                 :malformed-request
+                 :coordinator-verification-mismatch)
+               :lineage-mismatch)
+             :provenance-mismatch)
+           :lineage-mismatch)
+         :malformed-request)
+       :malformed-request)
+     {:required-keys
+     [:schema-version :scope :source-unit-id :identity-input
+       :provenance :b47-lineage :b47-context
+       :function-records :calls :call-edges]})))
+
+(defn sh07-b48-verify-call-arity-result [request candidate]
+  (let [expected (sh07-b48-build-call-arity-result request)
+        matches? (= expected candidate)]
+    {:artifact :gravity/sh07-b48-call-arity-verification
+     :schema-version 1
+     :status (if matches? :passed :failed)
+     :checks {:recomputed-result matches?
+              :request-bound matches?
+              :b47-context-bound matches?
+              :b47-lineage-bound matches?
+              :identity-bound matches?
+              :ordered-arguments-bound matches?}
+     :diagnostics (if matches? []
+                    [(sh07-b48-diagnostic
+                      request "B48-VERIFY"
+                      :candidate-result-mismatch {})])
+     :pending [:call-execution :type-legality :effect-legality
+               :public-routing] }))
+
+(defn sh07-b48-call-arity-policy []
+  {:artifact :gravity/sh07-b48-call-arity-policy
+   :schema-version 1
+   :governing-documents [:D1 :D2 :D3 :D8 :D9 :C6 :L2 :BOOT6]
+   :input-domain :gravity/sh07-b47-canonical-core-v16
+   :maximum-functions 4096
+   :maximum-calls 65536
+   :maximum-arguments 1024
+   :index-strategy :bounded-linear-indexes
+   :accepted-arity-kinds [:zero :one :fixed-multi]
+   :nonlocal-classification :pending-nonlocal
+   :verification-boundary
+   :host-validated-b47-report-and-opaque-provenance-digest
+   :independent-gravity-cryptographic-verification? false
+   :host-digest-authority-retained? true
+   :diagnostics ["B48-SCHEMA" "B48-LINEAGE" "B48-PRODUCT"
+                 "B48-BOUND" "B48-ARITY" "B48-IDENTITY"
+                 "B48-VERIFY"]
+   :preserves [:ordered-arguments :evaluation-order
+               :function-records :calls :call-edges
+               :source-identity :origin-provenance]
+   :pending [:variadic-calls :multi-arity-dispatch :closures
+             :type-legality :effect-legality :call-execution
+             :gravity-native-verification-report-hashing
+             :public-routing :seedless-execution]
+   :self-hosted? false
+   :clojure-seed-boundary? true})

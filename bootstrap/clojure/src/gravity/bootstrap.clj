@@ -159599,7 +159599,7 @@
     (sh06-resolution-source-artifact source-path source-text)
     (compiler-c5-stage0-legacy-source-artifact source-path source-text)))
 
-;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B13/B15 is the checked-core projection
+;; SH-07-A/B1/B2/B3/B4/B5/B6/B7/B8/B9/B10/B11/B12/B13/B15/B47 is the checked-core projection
 ;; owned by Gravity source.
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; bounded literal/function/control-flow subset, resolves declared digest
@@ -159608,7 +159608,7 @@
   "bootstrap/gravity/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract
-  :gravity/sh07-to-c6-core-products-v15)
+  :gravity/sh07-to-c6-core-products-v16)
 
 (def sh07-core-governing-document
   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md")
@@ -159621,25 +159621,25 @@
    {:arity 4
     :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 407721)
+(def sh07-core-expected-source-byte-count 444325)
 (def sh07-core-expected-source-content-hash
-  "sha256:c020a0344d42569577e8baa6e28a2ce210f3eb76f774ff25490ddb18390d93e0")
+  "sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:c4f79830786a206261f0526b2a225fe0772a6443e2b001c0da8118bf13bb9dd1")
+  "sha256:5bc9aeebb830350031c42814a3b47495205bd6108a617fcea977f8c0b918aebd")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:49a446f8af1db428caf2f4722fae0f80a4a64cc9a5a99d9e2cda3eebe1950db7")
-(def sh07-core-expected-function-count 274)
+  "sha256:6942122229f13d1bb14ae01ffdb37ca52cc555fd68f819cca76f30284fa791db")
+(def sh07-core-expected-function-count 305)
 (def sh07-core-expected-function-names-hash
-  "sha256:a7f23daf98ea3e8be0bf4ab562741bb538c1220401d6a450d986b98611933835")
+  "sha256:4e7bbfcd94db26a468920a87917005eee97a85f8f0448ba32cd689cafc9d02e5")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:210056984bad174006b1a74de2ba9cbb6cb71743b0f81e6ddece19e3101a7b96")
+  "sha256:61d6a743d65973ec4cb357c7285fae622c25f42b04a7de6aa8bf0fd0f1c02ee4")
 (def sh07-core-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:f54b579ad1647cf020605bca95ed296bbe5744401c8b56c8806edc8180edf23b"
+   "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791"
    'sh07-verify-core-resolved
-   "sha256:729d28b08a3cb19dc1d22b70deb807c5b470c7a0bdcc48e83da8eb4a24c5ad6e"})
+   "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba"})
 
 (defn sh07-core-source-path
   []
@@ -160697,42 +160697,42 @@
 (defn- sh07-core-lineage-with-semantic-trace
   [resolution-artifact semantic-trace]
   (let [boundary (:gravity-resolution-boundary resolution-artifact)
-         analysis (:resolved-analysis boundary)
-         sh05 (:sh05-macro-artifact resolution-artifact)
-         neutral sh05-path-neutral-semantic-value
-         source-unit
-         (get-in sh05
+        analysis (:resolved-analysis boundary)
+        sh05 (:sh05-macro-artifact resolution-artifact)
+        neutral sh05-path-neutral-semantic-value
+        source-unit
+        (get-in sh05
                 [:gravity-macro-boundary
                  :authenticated-sh04-artifact
                  :c2-reader-artifact :source-unit-record])
-         source-revision-id (:bytes-hash source-unit)
-         expanded-forms (mapv :form (:expanded-syntax-stream sh05))
-         neutral-expanded-forms (neutral expanded-forms)
-         semantic-module
-         (select-keys (:module-contract analysis)
+        source-revision-id (:bytes-hash source-unit)
+        expanded-forms (mapv :form (:expanded-syntax-stream sh05))
+        neutral-expanded-forms (neutral expanded-forms)
+        semantic-module
+        (select-keys (:module-contract analysis)
                      [:namespace :profile :target :safety
                       :effects :capabilities :exports])
-         binding-semantics
-         (mapv #(select-keys
+        binding-semantics
+        (mapv #(select-keys
                 %
                 [:name :kind :namespace :package
                  :binding-class :visibility
                  :profile-set :target-set :type-ref :effects
                  :capabilities :safety :semantic-span])
               (:binding-table analysis))
-         resolution-semantics
-         (mapv #(select-keys
+        resolution-semantics
+        (mapv #(select-keys
                 %
                 [:reference-syntax-id :symbol :position
                  :resolution-order :semantic-span :resolution-kind])
               (:resolution-table analysis))
-         alias-semantics (vec (:alias-table analysis))
-         sh05-artifact-id
-         (reader-canonical-hash
-          {:domain :gravity/sh07-semantic-sh05-artifact-v1
-           :source-revision-id source-revision-id
-           :expanded-forms neutral-expanded-forms
-           :macro-trace semantic-trace})]
+        alias-semantics (vec (:alias-table analysis))
+        sh05-artifact-id
+        (reader-canonical-hash
+         {:domain :gravity/sh07-semantic-sh05-artifact-v1
+          :source-revision-id source-revision-id
+          :expanded-forms neutral-expanded-forms
+          :macro-trace semantic-trace})]
     (let [semantic-projection-id
           (reader-canonical-hash
            {:domain :gravity/sh07-semantic-sh06-artifact-v1
@@ -161499,7 +161499,7 @@
          :namespace (:namespace module)
          :profile (:profile module)
          :target (:target module)
-         :lowering-rule :sh07-b15-keyword-map-lookup
+         :lowering-rule :sh07-b47-function-call-recursion-products
          :facts {:reason reason
                  :rule-specific rule-specific
                  :source-revision-id (:source-revision-id lineage)
@@ -161512,7 +161512,7 @@
          :remediation remediation
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-request-bound-diagnostic-v11
+          {:domain :gravity/sh07-request-bound-diagnostic-v16
            :source-revision-id (:source-revision-id lineage)
            :rule-specific rule-specific})}]
     (throw (ex-info "SH-07 authenticated request exceeded a bound"
@@ -161680,11 +161680,11 @@
           :ordinal (:ordinal fragment)
           :observed (count (:form-ids fragment))}))
 
-      (> bindings 2197)
+      (> bindings 2440)
       (sh07-core-request-diagnostic!
        request
        {:bound :maximum-module-bindings
-        :maximum 2197
+        :maximum 2440
         :observed bindings})
 
       (> aliases 256)
@@ -161884,7 +161884,7 @@
          (get-in resolution-artifact [:namespace-analysis :profile])
          :target
          (get-in resolution-artifact [:namespace-analysis :target])
-         :lowering-rule :sh07-b15-keyword-map-lookup
+         :lowering-rule :sh07-b47-function-call-recursion-products
          :facts {:reason reason
                  :rule-specific {:reason reason}
                  :source-revision-id
@@ -161900,7 +161900,7 @@
          "Replay the Gravity template and bind every digest ordinal exactly once."
          :diagnostic-id-request
          (reader-canonical-hash
-          {:domain :gravity/sh07-projection-diagnostic-v11
+          {:domain :gravity/sh07-projection-diagnostic-v16
            :reason reason
            :sh06-artifact-id (:artifact-id resolution-artifact)})}]
     (throw (ex-info "SH-07 projection authentication failed" diagnostic))))
@@ -162479,6 +162479,14 @@
      (replay-equal? (:var-references expected-core) (:var-references core))
      :calls-replay?
      (replay-equal? (:calls expected-core) (:calls core))
+     :function-records-replay?
+     (replay-equal? (:function-records expected-core)
+                    (:function-records core))
+     :call-edges-replay?
+     (replay-equal? (:call-edges expected-core) (:call-edges core))
+     :recursion-components-replay?
+     (replay-equal? (:recursion-components expected-core)
+                    (:recursion-components core))
      :keyword-lookups-replay?
      (replay-equal? (:keyword-lookups expected-core) (:keyword-lookups core))
      :lexical-bindings-replay?
@@ -162616,7 +162624,7 @@
           {:kind :gravity/sh07-core-artifact
            :status :accepted
            :slice :SH-07
-           :task "SH-07-B15"
+           :task "SH-07-B47"
            :document-set ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
            :governing-document sh07-core-governing-document
            :artifact-id (:artifact-id core)
@@ -162624,7 +162632,7 @@
            :gravity-core-boundary boundary
            :provenance {:source-path source-path}
            :pass
-           {:name :c6-gravity-core-lowering-b15
+           {:name :c6-gravity-core-lowering-b47
             :input :authenticated-sh06-resolution
             :output :canonical-core
             :owner :gravity.checked-core}
@@ -162636,6 +162644,12 @@
              :var-reference-construction
              :var-reference-verification
              :call-construction :call-verification
+             :function-record-construction
+             :function-record-verification
+             :call-edge-construction
+             :call-edge-verification
+             :recursion-component-construction
+             :recursion-component-verification
              :keyword-map-lookup-construction
              :keyword-map-lookup-verification
              :lexical-binding-construction
@@ -162685,7 +162699,7 @@
              :destructuring-bindings
              :variadic-function-recur
              :recur-type-compatibility
-             :general-recursion
+             :higher-order-and-cross-module-recursion
              :try-finally
              :try-protected-sequencing
              :try-handler-sequencing
@@ -162736,7 +162750,7 @@
                :core-node-id nil
                :source-span {:source source-path}
                :generated-origin-chain []
-               :lowering-rule :sh07-b15-keyword-map-lookup
+               :lowering-rule :sh07-b47-function-call-recursion-products
                :facts {:reason :source-read-failed
                        :fail-closed true}
                :remediation

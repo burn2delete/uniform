@@ -1,0 +1,33 @@
+; SH-08-B48 two-function acyclic convergence chain.
+(ns self-hosting.sh08.function-two-hop-call
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-two-leaf
+             sh08-two-root
+             sh08-two-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-B48
+    :fixture :function-two-hop-call
+    :required-products [:function-records :call-edges]
+    :scope :first-order-fixed-arity-functions-locals-calls
+    :non-claims
+    [:recursive-inference
+     :higher-order-functions
+     :records
+     :unions
+     :protocols
+     :generics
+     :casts
+     :dynamic-boundaries]}))
+
+(defn sh08-two-leaf [value]
+  value)
+
+(defn sh08-two-root [value]
+  (sh08-two-leaf value))
+
+(def sh08-two-result
+  (sh08-two-root 9))

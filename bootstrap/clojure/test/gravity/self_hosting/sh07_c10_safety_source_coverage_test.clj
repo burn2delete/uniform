@@ -386,7 +386,7 @@
    :maximum-module-carrier-depth 256
    :maximum-module-carrier-width 65536
    :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-nodes 33554432
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
    :maximum-template-scalar-bytes 1073741824
@@ -574,9 +574,9 @@
            (get-in contract [:required-core-product-counts :c10-safety])))
     (is (= expected-b16-bounds (:bounds contract)))
     (is (= {:request-schema-version 15
-            :task "SH-07-B15"
+            :task "SH-07-B47"
             :scope :sh07-b15-keyword-map-lookup
-            :adapter :gravity/sh07-to-c6-core-products-v15
+            :adapter :gravity/sh07-to-c6-core-products-v16
             :fresh-authoritative-process-required true
             :iteration-cache-authoritative false}
            (:boundary contract)))
@@ -763,7 +763,7 @@
         fragments (:fragment-manifest authenticated-request)]
     (is (= :accepted (:status artifact)))
     (is (= :accepted (get-in artifact [:sh06-resolution-artifact :status])))
-    (is (= "SH-07-B15" (:task artifact)))
+    (is (= "SH-07-B47" (:task artifact)))
     (is (= 15 (:schema-version authenticated-request)))
     (is (= :sh07-b15-keyword-map-lookup (:scope authenticated-request)))
     (is (= 'gravity.compiler.c10-safety-analysis-pipeline

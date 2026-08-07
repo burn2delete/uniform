@@ -564,10 +564,10 @@
         (is (= :gravity/sh07-core-artifact (:kind artifact)))
         (is (= :accepted (:status artifact)))
         (is (= :SH-07 (:slice artifact)))
-        (is (= "SH-07-B15" (:task artifact)))
+        (is (= "SH-07-B47" (:task artifact)))
         (is (= ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
                (:document-set artifact)))
-        (is (= :c6-gravity-core-lowering-b15
+        (is (= :c6-gravity-core-lowering-b47
                (get-in artifact [:pass :name])))
         (is (= :gravity/sh07-core-capability-proof
                (:artifact embedded-proof)))
@@ -659,7 +659,7 @@
                  (is (= (:rule oracle) (:rule diagnostic)))
                  (is (= :core-lowering (:stage diagnostic)))
                  (is (= :error (:severity diagnostic)))
-                 (is (= :sh07-b11-core-lowering
+                 (is (= :sh07-b47-function-call-recursion-products
                         (:lowering-rule diagnostic)))
                  (is (= (:reason oracle)
                         (get-in diagnostic [:facts :reason])))

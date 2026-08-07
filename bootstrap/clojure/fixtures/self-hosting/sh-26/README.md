@@ -7,7 +7,7 @@ It consumes the exact SH-25 request, complete result, fresh verification, and
 final projection as one contextual ingress. Canonical content identities for
 all four values are bound through the reusable SH-02 descriptor, digest-request
 resolution, sealing, replay, and contextual-verification path. It validates
-the authoritative 42-component catalog, output bindings, traversable
+the authoritative 43-component catalog, output bindings, traversable
 prior-stage lineage, controlled environment, physical provenance, typed
 pending process records, and structured stage manifest.
 
@@ -18,7 +18,7 @@ source-hash requirement for the adapter containing the pin.
 
 The SH-26 revision pin additionally binds the envelope verifier semantic hash
 and the exact shapes of all 72 envelope functions. Host digest resolution is
-bounded to the exact 47-request graph produced by this 42-component contract.
+bounded to the exact 47-request graph produced by this 43-component contract.
 Each request ordinal, purpose, preimage reference set, dependency edge, and
 resolved digest is paired one-to-one. The trusted Clojure seed computes a
 canonical root over those exact pairs before Gravity invocation. The
@@ -35,6 +35,14 @@ The caller is responsible for keeping `trusted-context` under coordinator
 control. Adversarial replacement of that argument is outside this leaf's trust
 model; malformed contexts fail closed, while cryptographic construction and
 custody remain explicit Clojure-seed authority.
+
+The focused integration harness converts SH-25's deliberately pending
+projection template into a supplied final projection by marking the projection
+and each component's conformance and SH-25 verification status as passed before
+computing any projection identity, envelope, seal, or trusted-context record.
+That conversion is explicit coordinator-owned test setup, not a Gravity-owned
+verification step or SH-25 completion evidence. SH-26 authenticates the exact
+converted value and rejects later replacement or alteration.
 
 The root is recomputed instead of hard-coded because the final provenance
 request intentionally binds checkout-specific physical paths. This is a

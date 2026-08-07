@@ -281,7 +281,7 @@ records, compiler self-hosting, seed retirement, packaged CLI refresh, and
 release readiness remain outside this credit.
 
 `SH-06` credit is bounded to the namespace and binding resolution subset
-executed across the 41-path authoritative compiler-source inventory and the
+executed across the measured 41-path authoritative compiler-source cohort and the
 co-canonical accepted/rejected fixture matrix. The Gravity
 `gravity.resolution` module owns namespace, alias, import, var, lexical
 binding, visibility, shadowing, dependency-cycle, profile, target, capability,
@@ -297,14 +297,16 @@ Per-component transport limits are 33,554,432 nodes, depth 64, and width
 and 1,073,741,824 serialized bytes. The Clojure stage0 boundary still owns initial
 source reads, compiler-plan execution, canonical digest resolution,
 authenticated-envelope binding, compatibility adaptation and central routing,
-and final artifact assembly. The 41-module inventory is the current bootstrap
-source set, not a broader full-language claim; the compatibility C5 facade
+and final artifact assembly. That 41-module cohort was the measured bootstrap
+source set at credit time; the current inventory contains 42 authoritative
+modules after the additive B48 source proof. Neither count is a broader
+full-language claim, and the compatibility C5 facade
 receives no implementation-authority credit. This slice does not claim overall
 C5 or C15 completion, full compiler self-hosting, Clojure seed retirement,
 packaged CLI refresh, or release readiness.
 
 `SH-07` remains partial. Its source-level authenticated evidence now covers all
-41 authoritative compiler modules, including the complete bootstrap reader
+42 authoritative compiler modules, including the complete bootstrap reader
 source. For that reader source's earlier gate, Gravity consumes the authentic
 SH-06 fragment, binding, and resolution products for 22,209 forms in 298
 fragments, lowers 20
@@ -420,23 +422,29 @@ provenance, replay, and altered-product containment. This proves source-model
 representation only: production verifier execution, schema enforcement,
 certificate and evidence checking, translation validation and replay, release
 decisions, and plugin/backend conformance execution remain pending. The B16
-cohort remains unchanged. The C7 type-checker source adds 39,567 authenticated
-bytes in 47 fragments containing 3,320 forms, 480 bindings, and 1,205
-resolutions. It lowers to 2,656 canonical core nodes with 47 definitions, 39
-executable SH-08 functions, three quoted source-model functions, 466 calls, 928
-references, 133 conditionals, 24 `let` forms, 13 loops, and 15 recurs. Its
-159 `get` calls divide into 152 literal-key calls and seven dynamic-key calls;
-all are ordinary resolved calls rather than keyword-headed lookup forms, so
-the canonical keyword-lookup product count remains zero and B16 stays frozen.
-The cache-free proof passed with 229,955 request carrier nodes at depth 24,
-width 3,320, and 3,827,443 UTF-8 scalar bytes. The proof pins exact contracts,
-bounds, diagnostics, pending work, executable/quoted boundaries, structural
-limitations, co-canonical extension parity, path-neutral identity, actual-path
-provenance, replay, and altered-product containment. This proves bounded source
-execution and reconstruction only: production type-checker execution,
-authenticated coordinator adaptation, resolved typed-artifact identity,
-complete inference and constraint solving, dynamic/layout/schema/ownership
-legality, complete diagnostic execution, and SH-08 completion remain pending.
+cohort remains unchanged. The C7 type-checker source now contributes 142,136
+authenticated bytes in 142 fragments containing 12,759 forms and 5,221
+resolutions. Its checked-core products contain 137 function records, 2,069 call
+edges, ten recursion components, and no keyword-lookup products. The recorded
+cache-free proof passed every contract check in 2,411.35 seconds in its
+then-current coordinator context, with artifact
+identity
+`sha256:fb44649cb56a696eb5132774ca4dd0100c9029e4c59bddc27791bbfb115a40f8`
+and verification report
+`sha256:7300876921f948fedbd2d9d723d1a4b7ec6827c4329777e167015db582937665`.
+The bounded function-typing integration then passed 24 tests and 244 assertions
+in 723.332 seconds with 3.627 GB sampled peak resident memory. It consumes
+the host-validated B47 report and digest boundary, reconstructs definitions,
+fixed-arity functions, direct calls, local bindings, and recursion products in
+Gravity, emits path-neutral type identities with retained provenance, and
+rejects altered lineage and results. This proves a first-order function, local,
+and call typing slice, not complete C7 or SH-08: higher-order functions, complete
+recursive annotation inference, records, unions, protocols, generics, casts,
+dynamic/layout/schema/ownership legality, public routing, native Gravity digest
+verification, and seed retirement remain pending. The later proof-traversal
+deduplication changed a shared bootstrap fingerprint without changing this C7
+source; a fresh checkpoint-v2 replay is therefore pending before completion or
+release evidence, and the recorded v1 receipt is not resumed as current proof.
 The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and
@@ -798,28 +806,50 @@ runtime checks, unsafe islands, domain IR, backend lowering, whole-language
 coverage, public routing, Clojure seed retirement, SH-07 completion, and
 self-hosting completion remain pending.
 The authoritative checked-core source advances the authenticated compiler
-inventory to 41 of 41 modules. Its exact revision is 407,721 bytes with source
-hash `sha256:c020a0344d42569577e8baa6e28a2ce210f3eb76f774ff25490ddb18390d93e0`,
-277 fragments, 33,956 forms, 2,197 module bindings, and 13,696 resolutions. The
-final isolated census found no violations in 1,967.48 seconds with
-6,435,946,496 maximum resident bytes and no swaps. Measured authentic carrier
-families contained 15,005,907 template nodes and 875,437,492 template scalar
-bytes, 10,901,467 generated-digest nodes and 623,328,452 scalar bytes, and
-11,426,697 resolved-core nodes and 810,611,392 scalar bytes. Those measurements
-support 16,777,216 node ceilings and 1,073,741,824 scalar-byte ceilings for the
-applicable template, generated-digest, and resolved-core products; rejection
-telemetry remains diagnostic-only and does not weaken acceptance. The final
-cache-free authoritative process passed every contract check in 11,493.47
-seconds with artifact identity
-`sha256:fceeeac37185c5eebec3a6de6b7979c3ec86e0616da46bb274d8caaec35d3189`,
-14 bounded proof-receipt reuses, 7,765,966,848 maximum resident bytes, and no
-swaps. Independent cross-root `.gravity`/`.qst` parity passed 11 tests and 117
-assertions in 17,169.57 seconds with 7,963,820,032 maximum resident bytes and no
-swaps. `SH-07` remains partial: 41-of-41 source coverage does not complete the
-required core-form, mutation, recursion, exception, pattern, public-routing, or
-seed-retirement surfaces. `SH-25` remains queued because its supplied component
+inventory to 41 of 41 modules. The measured B47 revision was 444,331 bytes with
+source hash `sha256:fd5c61348a8470650bb314542ad0ee04ff84099ed42fca05cbe72d0c0fc3ebdb`,
+308 fragments, 37,411 forms, 2,440 module bindings, and 15,247 resolutions. The
+authentic B47 census accepted after 5,397.56 seconds with 7,758,774,272 maximum
+resident bytes and no swaps. It emitted 31,428 core nodes, 308 definitions,
+12,282 references, 6,547 calls, 305 function records, 6,547 call edges, six
+recursion components, and 31,430 digest requests. The measured template carrier
+contained 17,681,671 nodes and 1,035,974,980 scalar bytes; the generated-digest
+carrier contained 12,572,396 nodes and 721,982,664 scalar bytes. Those results
+support the bounded 33,554,432-node template ceiling and the 16,777,216-node
+generated-digest ceiling, with the common 1,073,741,824 scalar-byte ceiling;
+rejection telemetry remains diagnostic-only and does not weaken acceptance.
+The subsequent semantics-preserving carrier preflight optimization advances
+the current source revision to 444,325 bytes with hash
+`sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092`;
+its source, plan, and function identities are pinned, while a fresh cache-free
+replay remains required before final B47 integration.
+The B47 census proves bounded construction of exact function, direct-call, and
+recursion products, but it is not the final cache-free authoritative replay or
+cross-root parity gate for this revision. `SH-07` remains partial: higher-order
+calls, closure capture, complete core-form coverage, public routing, and seed
+retirement remain pending. `SH-25` remains queued because its supplied component
 descriptors are bounded planning inputs rather than authentic `SH-24` build
 outputs.
+
+The additive B48 call-arity module advances the authenticated source inventory
+to 42 modules without changing the B47 v16 boundary task. Its 56,581-byte source
+has hash
+`sha256:d101855439ef185727608ee696aacbfb41aff025ee8bbe0c62122f45f7c112ed`.
+The recorded module proof passed every contract check in 772.462 seconds in its
+then-current coordinator context, lowering 4,849 forms in 52 fragments with
+1,953 resolutions, 52 function records, 796
+call edges, and no recursion components. It produced artifact identity
+`sha256:381630793764afa6adc0d7d7b4419397fcd06d1030897dc2520d03d2503a2023`
+and verification report
+`sha256:f34777f5923c2296d839281727317fb53855ac8b5ab79a1afc134e0f4fd25b53`.
+This proves bounded direct local fixed-arity legality, ordered argument lineage,
+explicitly pending nonlocal calls, path-neutral identity, retained provenance,
+and structured rejection. Variadic and multi-arity dispatch, closure capture,
+higher-order calls, type/effect legality, execution, public routing, and seed
+retirement remain pending, so `SH-07` receives no completion credit. The later
+shared proof-traversal deduplication requires a fresh checkpoint-v2 replay
+before completion or release evidence; the recorded v1 receipt remains bounded
+historical module evidence rather than current-context authority.
 
 The additive bootstrap-hosted `sh07-core` command exposes the authenticated
 SH-07 artifact through the strict public source boundary without repointing the

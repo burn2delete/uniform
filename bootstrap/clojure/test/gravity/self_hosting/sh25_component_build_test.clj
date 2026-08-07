@@ -112,8 +112,8 @@
     (is (= :gravity/stage2-compiler-artifact-plan (:kind @plan))))
   (let [policy
         (invoke engine-plan 'sh25-component-build-policy [])]
-    (is (= 41 (:authoritative-owned-module-count policy)))
-    (is (= 42 (:required-component-count policy)))
+    (is (= 42 (:authoritative-owned-module-count policy)))
+    (is (= 43 (:required-component-count policy)))
     (is (= :meta (:profile policy)))
     (is (= #{} (:effects policy)))
     (is (= #{} (:capabilities policy)))
@@ -138,10 +138,23 @@
         components
         (:components
          (request accepted-gravity-plan 'sh25-component-build-request))]
-    (is (= 42 (count catalog)))
+    (is (= 43 (count catalog)))
     (is (= owned-paths (disj catalog-paths runtime-path)))
     (is (contains? catalog-paths runtime-path))
-    (is (= 42 (count (set (map :component-id catalog)))))
+    (is (= 43 (count (set (map :component-id catalog)))))
+    (is (= {:component-id :checked-core-pipeline
+            :category :checked-core
+            :source-path
+            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+            :dependencies [:checked-core]}
+           (nth catalog 12)))
+    (is (= {:component-id :call-arity
+            :category :analyzer
+            :source-path
+            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+            :dependencies [:checked-core-pipeline]}
+           (nth catalog 13)))
+    (is (= :runtime-subset (:component-id (nth catalog 42))))
     (is (= #{:reader :syntax :macro :analyzer :checked-core :mir
              :optimizer :lowering :backend :diagnostic :runtime
              :standard-library :package-build :compiler}
@@ -175,9 +188,9 @@
     (is (= gravity-request qst-request))
     (is (= gravity qst))
     (is (= :accepted (:status gravity)))
-    (is (= 42 (:component-count gravity)))
-    (is (= 42 (count (:actions gravity))))
-    (is (= 42 (count (:sh26-component-templates gravity))))
+    (is (= 43 (:component-count gravity)))
+    (is (= 43 (count (:actions gravity))))
+    (is (= 43 (count (:sh26-component-templates gravity))))
     (is (= (mapv :component-id (:components gravity-request))
            (mapv :component-id (:actions gravity))))
     (is (every? #(= :gravity-sh24-driver (:executor %))
@@ -191,7 +204,7 @@
     (is (= #{:artifact :schema-version :status :build-id
              :verification :components}
            (set (keys projection))))
-    (is (= 42 (count (:components projection))))
+    (is (= 43 (count (:components projection))))
     (is (every? #(= :pending (:conformance-status %))
                 (:components projection)))
     (is (every? #(= :pending (:sh25-verification-status %))
@@ -417,10 +430,19 @@
     (is (= base-request (:request ingress)))
     (is (= result (:complete-result ingress)))
     (is (= verification (:verification ingress)))
-    (is (= projection (:projection ingress)))
-    (is (= :rejected (:status sh26-result)))
-    (is (= :invalid-sh25-ingress
-           (get-in sh26-result [:diagnostics 0 :facts :reason])))
+    (is (= :accepted (get-in ingress [:projection :status])))
+    (is (every? #(= :passed (:conformance-status %))
+                (get-in ingress [:projection :components])))
+    (is (every? #(= :passed (:sh25-verification-status %))
+                (get-in ingress [:projection :components])))
+    (is (=
+         (mapv #(dissoc % :conformance-status
+                        :sh25-verification-status)
+               (:components projection))
+         (mapv #(dissoc % :conformance-status
+                        :sh25-verification-status)
+               (get-in ingress [:projection :components]))))
+    (is (= :accepted (:status sh26-result)))
     (is (= :passed
            (:status
             (invoke sh26-engine-plan 'sh26-verify-stage-rebuild
@@ -461,7 +483,7 @@
                 (:components projection)))
     (is (every? #(= :pending (:sh25-verification-status %))
                 (:components projection)))
-    (is (= (range 42)
+    (is (= (range 43)
            (map :topological-ordinal (:components projection))))))
 
 (deftest sh25-fixture-pairs-are-byte-identical

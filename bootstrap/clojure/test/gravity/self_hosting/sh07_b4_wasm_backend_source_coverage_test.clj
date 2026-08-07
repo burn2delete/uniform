@@ -35,9 +35,9 @@
 (def ^:private expected-sh07-artifact-id
   "sha256:334fe22fbd4367dca63e53b768ff0ef1ed26ef8d8937f8b605471d3fe60da739")
 (def ^:private expected-request-routing
-  {:task "SH-07-B15"
+  {:task "SH-07-B47"
    :scope :sh07-b15-keyword-map-lookup
-   :adapter :gravity/sh07-to-c6-core-products-v15})
+   :adapter :gravity/sh07-to-c6-core-products-v16})
 (def ^:private expected-request-lineage
   {:authenticated-sh06-artifact-id
    "sha256:9549673401779907d2db548c44cce9edb757a96bc4525fd0115726587eb18f11"
@@ -177,7 +177,7 @@
    :maximum-module-carrier-nodes 8388608
    :maximum-module-carrier-depth 256 :maximum-module-carrier-width 65536
    :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-nodes 33554432
    :maximum-template-carrier-depth 256 :maximum-template-carrier-width 65536
    :maximum-template-scalar-bytes 1073741824
    :maximum-resolved-core-carrier-nodes 16777216

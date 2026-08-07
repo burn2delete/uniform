@@ -286,7 +286,7 @@
            :iteration-cache-non-authoritative?
            (false? (:iteration-cache-authoritative boundary))
            :coverage-milestone-current?
-           (= "SH-07-B45" (:coverage-milestone contract))
+           (= "SH-07-B47" (:coverage-milestone contract))
            :target-source-reread-disabled?
            (false?
             (get-in artifact
@@ -426,6 +426,9 @@
        :resolution-count
        (get-in core [:fragment-coverage :resolution-count])
        :keyword-lookup-count (count (:keyword-lookups core))
+       :function-record-count (count (:function-records core))
+       :call-edge-count (count (:call-edges core))
+       :recursion-component-count (count (:recursion-components core))
        :verification-status
        (if (= :complete (:status capability-proof))
          :passed :failed)

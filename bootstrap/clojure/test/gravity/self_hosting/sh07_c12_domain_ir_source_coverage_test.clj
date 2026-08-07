@@ -227,7 +227,7 @@
    :maximum-module-carrier-depth 256
    :maximum-module-carrier-width 65536
    :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-nodes 33554432
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
    :maximum-template-scalar-bytes 1073741824

@@ -1,0 +1,60 @@
+; SH-07-B47 bounded function, call, and recursion products.
+(ns self-hosting.sh07-b47.function-call-recursion
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [ordered-target
+             acyclic-caller
+             self-recursive-call
+             self-recursive-recur
+             mutual-left
+             mutual-right
+             namespace-target
+             lexical-shadow-call])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-07-B47
+    :fixture :function-call-recursion
+    :required-products
+    [:function-products :call-graph :recursion-products]
+    :non-claims
+    [:general-recursion-execution
+     :mutual-recursion-type-checking
+     :tail-call-optimization
+     :whole-program-call-graph]}))
+
+(defn ordered-target [left middle right]
+  [left middle right])
+
+(defn acyclic-caller [first-value second-value third-value]
+  (ordered-target
+   (do first-value)
+   (do second-value)
+   (do third-value)))
+
+(defn self-recursive-call [value]
+  (if false
+    (self-recursive-call value)
+    value))
+
+(defn self-recursive-recur [value]
+  (if false
+    (recur value)
+    value))
+
+(defn mutual-left [value]
+  (if false
+    (mutual-right value)
+    value))
+
+(defn mutual-right [value]
+  (if false
+    (mutual-left value)
+    value))
+
+(defn namespace-target [value]
+  value)
+
+(defn lexical-shadow-call [namespace-target value]
+  (namespace-target value))

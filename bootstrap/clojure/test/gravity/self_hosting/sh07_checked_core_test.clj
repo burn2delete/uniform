@@ -359,7 +359,7 @@
            (:remediation diagnostic)))
     (is (map? (:source-span diagnostic)))
     (is (= expected-path (get-in diagnostic [:source-span :source])))
-    (is (= :sh07-b15-keyword-map-lookup
+    (is (= :sh07-b47-function-call-recursion-products
            (:lowering-rule diagnostic)))
     (is (nil? (:core-node-id diagnostic)))
     (is (map? (:facts diagnostic)))

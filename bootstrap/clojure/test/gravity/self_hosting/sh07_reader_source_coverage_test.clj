@@ -110,7 +110,7 @@
    :maximum-carrier-depth 256
    :maximum-carrier-width 65536
    :maximum-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 16777216
+   :maximum-template-carrier-nodes 33554432
    :maximum-template-carrier-depth 256
    :maximum-template-carrier-width 65536
    :maximum-template-scalar-bytes 1073741824
@@ -403,7 +403,7 @@
            (get-in artifact
                    [:sh06-resolution-artifact
                     :capability-based-proof :status])))
-    (is (= "SH-07-B15" (:task artifact)))
+    (is (= "SH-07-B47" (:task artifact)))
     (is (= 15 (:schema-version authenticated-request)))
     (is (= :sh07-b15-keyword-map-lookup
            (:scope authenticated-request)))

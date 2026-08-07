@@ -112,7 +112,7 @@
         :schema-version 1
         :status :pending
         :exit-code nil}
-       :action-count 42
+       :action-count 43
        :execution-status :pending}
       :conformance
       {:catalog-status :passed

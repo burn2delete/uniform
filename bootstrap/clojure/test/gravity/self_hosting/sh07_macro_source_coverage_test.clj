@@ -177,9 +177,9 @@
         nonclaims (set (:nonclaims contract))]
     (is (= "SH-07-B38" (:coverage-milestone contract)))
     (is (= {:request-schema-version 15
-            :task "SH-07-B15"
+            :task "SH-07-B47"
             :scope :sh07-b15-keyword-map-lookup
-            :adapter :gravity/sh07-to-c6-core-products-v15
+            :adapter :gravity/sh07-to-c6-core-products-v16
             :fresh-authoritative-process-required true
             :iteration-cache-authoritative false}
            (:boundary contract)))
@@ -377,7 +377,7 @@
              (:namespace %))
          (:binding-table authenticated-request))]
     (is (= :accepted (:status artifact)))
-    (is (= "SH-07-B15" (:task artifact)))
+    (is (= "SH-07-B47" (:task artifact)))
     (is (= 15 (:schema-version authenticated-request)))
     (is (= :sh07-b15-keyword-map-lookup
            (:scope authenticated-request)))

@@ -1,15 +1,40 @@
-# SH-08 Primitive Type Slice Fixtures
+# SH-08 Bounded Type Slice Fixtures
 
 These paired `.gravity` and `.qst` fixtures exercise an executable
 Gravity-owned SH-08 local type template over structurally validated
-SH-07-shaped canonical core records. The leaf does not authenticate SH-07
-lineage, artifact identity, or an authenticated envelope. A coordinator-owned
-adapter remains required before the result can become authoritative.
+SH-07 B47 canonical core records. The primitive leaf remains structurally
+validated. The function/local/call leaf additionally requires the complete
+nodes, definitions, binding table, function records, calls, call edges,
+recursion components, and lexical bindings to match the B47 canonical identity
+preimage before inference. The C7 entry request also carries the complete B47
+wrapper, canonical core, authenticated core request, real B47 verification
+report, canonical identity preimage, authenticated-envelope records, and
+provenance-binding preimage under one exact coordinator-resolved digest
+preimage. Gravity validates that binder before typing. SHA-256 resolution and
+B47 report execution remain host-owned: this slice does not claim native
+Gravity cryptographic verification or remove host digest authority.
 
-The bounded slice covers primitive literals, vector/map/set literal
-descriptors, definitions, Gravity truthiness, and equal-type conditional
-joins. It preserves declared profile, target, effect, capability, source,
-origin, and generated-origin data. Digest preimages are deterministic, but
-digest resolution remains coordinator-owned. It does not claim list lowering,
-function, call, local, record, union, protocol, generic, cast, dynamic,
-ownership, layout, schema, authenticated input, or complete SH-08 support.
+The bounded slices cover primitive literals, vector/map/set literal
+descriptors, definitions, Gravity truthiness, equal-type conditional joins,
+fixed-arity first-order functions, immutable `let` locals, and direct local
+calls. Function inference uses a declared finite round bound. Recursive call
+components are covered by the qualified host-validated B47 evidence boundary
+and rejected pending annotations. Nonlocal or
+lexically supplied callable values remain explicit `C7-ANNOTATION` rejections.
+
+All accepted and rejected function fixtures first pass through the SH-07 B47
+canonical lowering path and are then consumed by the Gravity C7 leaf. This is
+distinct from asking the generic stage2 compiler planner to compile and execute
+the fixture as a standalone compiler module: in particular, the intentional
+`function-call-nonlocal` pair models a callable parameter for C7 rejection and
+does not claim that generic stage2-plan execution supports such calls.
+
+The slices preserve declared profile, target, effect, capability, source,
+origin, generated-origin, binding, ordered-argument, and B47 identity-preimage
+data. Digest preimages are deterministic and checked for exact equality, but
+their digest resolution remains coordinator-owned. They do not claim list
+lowering, higher-order calls,
+variadic or multi-arity functions, recursive inference, records, unions,
+protocols, generics, casts, dynamic boundaries, ownership, layout, schemas,
+effect legality, capability legality, native authenticated-envelope
+cryptographic verification, or complete SH-08 support.

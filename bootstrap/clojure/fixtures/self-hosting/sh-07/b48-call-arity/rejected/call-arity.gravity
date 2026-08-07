@@ -1,0 +1,17 @@
+; SH-07-B48 rejected direct-call arity controls.
+(ns self-hosting.sh07-b48.call-arity-rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [one-target pair-target too-few too-many]))
+
+(defn one-target [value]
+  value)
+
+(defn pair-target [left right]
+  [left right])
+
+(defn too-few []
+  (one-target))
+
+(defn too-many [value]
+  (one-target value value))

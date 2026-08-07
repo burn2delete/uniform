@@ -31,24 +31,24 @@
 (def ^:private accepted-fixture-relative-path
   (str "bootstrap/clojure/fixtures/self-hosting/sh-07/accepted/"
        "macro-def-fn-literals.gravity"))
-(def ^:private expected-source-byte-count 407721)
+(def ^:private expected-source-byte-count 444325)
 (def ^:private expected-source-revision-id
-  "sha256:c020a0344d42569577e8baa6e28a2ce210f3eb76f774ff25490ddb18390d93e0")
+  "sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092")
 (def ^:private expected-plan-semantic-id
-  "sha256:c4f79830786a206261f0526b2a225fe0772a6443e2b001c0da8118bf13bb9dd1")
+  "sha256:5bc9aeebb830350031c42814a3b47495205bd6108a617fcea977f8c0b918aebd")
 (def ^:private expected-functions-semantic-id
-  "sha256:49a446f8af1db428caf2f4722fae0f80a4a64cc9a5a99d9e2cda3eebe1950db7")
+  "sha256:6942122229f13d1bb14ae01ffdb37ca52cc555fd68f819cca76f30284fa791db")
 (def ^:private expected-function-names-id
-  "sha256:a7f23daf98ea3e8be0bf4ab562741bb538c1220401d6a450d986b98611933835")
+  "sha256:4e7bbfcd94db26a468920a87917005eee97a85f8f0448ba32cd689cafc9d02e5")
 (def ^:private expected-function-shapes-id
-  "sha256:210056984bad174006b1a74de2ba9cbb6cb71743b0f81e6ddece19e3101a7b96")
+  "sha256:61d6a743d65973ec4cb357c7285fae622c25f42b04a7de6aa8bf0fd0f1c02ee4")
 (def ^:private expected-public-function-hashes
   {'sh07-build-core-template
    "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
    'sh07-verify-core-template
-   "sha256:f54b579ad1647cf020605bca95ed296bbe5744401c8b56c8806edc8180edf23b"
+   "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791"
    'sh07-verify-core-resolved
-   "sha256:729d28b08a3cb19dc1d22b70deb807c5b470c7a0bdcc48e83da8eb4a24c5ad6e"})
+   "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba"})
 (def ^:private expected-public-function-shapes
   {'sh07-build-core-template {:arity 1 :params '[request]}
    'sh07-verify-core-template
@@ -138,6 +138,9 @@
     {:node-count (count (:nodes c))
      :definition-count (count (:definitions c))
      :call-count (count (:calls c))
+     :function-record-count (count (:function-records c))
+     :call-edge-count (count (:call-edges c))
+     :recursion-component-count (count (:recursion-components c))
      :reference-count (count (:reference-uses c))
      :keyword-lookup-count (count (:keyword-lookups c))}))
 (defn- delete-tree! [root-path]
@@ -194,10 +197,10 @@
         catalog (nth (get by-name 'sh07-core-diagnostic-catalog) 2)
         metadata (get-in clauses [:metadata :bootstrap])
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 278 (count forms)))
-    (is (= 277 (count definitions) (count by-name)))
+    (is (= 309 (count forms)))
+    (is (= 308 (count definitions) (count by-name)))
     (is (= 3 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 274 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 305 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.checked-core (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -217,18 +220,18 @@
     (is (= :gravity/sh07-authenticated-sh06-core-request (:input contract)))
     (is (= :gravity/sh07-canonical-core-artifact (:resolved-output contract)))
     (is (= 65536 (:maximum-forms bounds)))
-    (is (= 2197 (:maximum-module-bindings bounds)))
+    (is (= 2440 (:maximum-module-bindings bounds)))
     (is (= 2048 (:maximum-bindings bounds)))
     (is (= 1024 (:maximum-keyword-lookup-records bounds)))
     (is (= expected-diagnostic-ids (:diagnostics catalog)))
-    (is (= {4 1494}
+    (is (= {4 1663}
            (frequencies (map count if-calls))))
     (is (= expected-source-byte-count
            (alength (source-bytes (path source-relative-path)))))
     (is (= expected-source-revision-id
            (sha256-id (source-bytes (path source-relative-path)))))))
 
-(deftest sh07-b45-checked-core-lookups-and-recursion-boundaries-are-exact
+(deftest sh07-b47-checked-core-lookups-and-recursion-boundaries-are-exact
   (let [definitions (filter #(and (seq? %) (#{'def 'defn} (first %)))
                             (source-forms))
         functions (filter #(= 'defn (first %)) definitions)
@@ -242,11 +245,11 @@
                    :let [name (second definition)]
                    :when (seq (collect-calls name definition))]
                name))]
-    (is (= 2367 (count gets)))
-    (is (= 2336 (count literal)))
-    (is (= 31 (count dynamic)))
-    (is (= 124 (count loops)))
-    (is (= 141 (count recurs)))
+    (is (= 2598 (count gets)))
+    (is (= 2565 (count literal)))
+    (is (= 33 (count dynamic)))
+    (is (= 150 (count loops)))
+    (is (= 176 (count recurs)))
     (is (= 3 (count self-recursive)))
     (is (= 5 (reduce +
                      (map #(count (collect-calls (second %) %)) functions))))
@@ -263,7 +266,7 @@
     (is (= expected-functions-semantic-id
            (:functions-semantic-hash binding)
            bootstrap/sh07-core-expected-functions-semantic-hash))
-    (is (= 274 (:function-count binding)
+    (is (= 305 (:function-count binding)
            bootstrap/sh07-core-expected-function-count))
     (is (= expected-function-names-id (:function-names-hash binding)
            bootstrap/sh07-core-expected-function-names-hash))
@@ -408,12 +411,15 @@
     (let [contract (edn/read-string
                     (slurp (path proof-contract-relative-path)))
           product-counts (:required-core-product-counts contract)]
-      (is (= "SH-07-B45" (:coverage-milestone contract)))
-      (is (= 41 (count (:authoritative-modules contract))))
-      (is (= 37 (count product-counts)))
+      (is (= "SH-07-B47" (:coverage-milestone contract)))
+      (is (= 42 (count (:authoritative-modules contract))))
+      (is (= 38 (count product-counts)))
       (is (= source-relative-path
              (get-in contract [:authoritative-modules :checked-core])))
-      (is (= {:keyword-lookups 0}
+      (is (= {:keyword-lookups 0
+              :function-records 305
+              :call-edges 6547
+              :recursion-components 6}
              (get-in product-counts [:checked-core])))
       (is (= expected-b16-cohort-product-counts
              (select-keys product-counts
@@ -433,15 +439,15 @@
       (is (= :within-declared-bounds (:status result)))
       (is (= expected-source-revision-id
              (get-in result [:request :source-revision-id])))
-      (is (= 277 (:fragments measurements) (:top-level-forms measurements)))
+      (is (= 308 (:fragments measurements) (:top-level-forms measurements)))
       (is (<= (:maximum-fragment-forms measurements)
               (:maximum-fragment-forms bounds)))
       (is (<= (:carrier-nodes measurements)
               (:maximum-module-carrier-nodes bounds)))
       (is (empty? (:violations result)))
       (is (false? (:performed-sh07-lowering? result)))
-      (is (= 41 (count (:authoritative-modules contract))))
-      (is (= 37 (count (:required-core-product-counts contract)))))
+      (is (= 42 (count (:authoritative-modules contract))))
+      (is (= 38 (count (:required-core-product-counts contract)))))
     (is true "Set GRAVITY_SH07_B45_CENSUS=1 in an isolated 8 GiB JVM")))
 
 (deftest sh07-b45-checked-core-authentic-source-core-and-reduced-replay
@@ -467,10 +473,13 @@
       (is (= expected-source-revision-id
              (get-in request [:module :source-revision-id])
              (get-in request [:lineage :source-revision-id])))
-      (is (= 277 (:fragment-count (coverage artifact))
+      (is (= 308 (:fragment-count (coverage artifact))
              (:root-form-count (coverage artifact))
              (:definition-count census)))
       (is (= 0 (:keyword-lookup-count census)))
+      (is (= 305 (:function-record-count census)))
+      (is (= 6547 (:call-edge-count census)))
+      (is (= 6 (:recursion-component-count census)))
       (is (= (:top-level-form-ids request)
              (:covered-root-form-ids coverage-record)
              (vec (mapcat :root-form-ids fragments))))

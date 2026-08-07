@@ -1,0 +1,30 @@
+; SH-08-B48 rejection: fixed-arity call mismatch.
+(ns self-hosting.sh08.function-call-arity
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-arity-one
+             sh08-arity-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-B48
+    :fixture :function-call-arity
+    :required-products
+    [:function-records :call-edges :lexical-bindings]
+    :scope :first-order-fixed-arity-functions-locals-calls
+    :non-claims
+    [:recursive-inference
+     :higher-order-functions
+     :records
+     :unions
+     :protocols
+     :generics
+     :casts
+     :dynamic-boundaries]}))
+
+(defn sh08-arity-one [value]
+  value)
+
+(def sh08-arity-result
+  (sh08-arity-one))

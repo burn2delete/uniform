@@ -145,13 +145,13 @@
 (deftest sh07-b16-aggregate-binding-bound-is-isolated
   (let [bounds (invoke 'sh07-bounds-value [])]
     (is (= 2048 (:maximum-bindings bounds)))
-    (is (= 2197 (:maximum-module-bindings bounds)))
+    (is (= 2440 (:maximum-module-bindings bounds)))
     (is (= 1024 (:maximum-lexical-binding-records bounds)))
     (is (= 1024 (:maximum-loop-binding-records bounds)))
     (is (= 65536 (:maximum-combined-lexical-loop-records bounds)))
     (is (= 8388608 (:maximum-carrier-nodes bounds)))
     (is (= 268435456 (:maximum-scalar-bytes bounds)))
-    (is (= 16777216 (:maximum-template-carrier-nodes bounds)))
+    (is (= 33554432 (:maximum-template-carrier-nodes bounds)))
     (is (= 256 (:maximum-template-carrier-depth bounds)))
     (is (= 65536 (:maximum-template-carrier-width bounds)))
     (is (= 1073741824 (:maximum-template-scalar-bytes bounds)))
@@ -177,7 +177,7 @@
            (:maximum-generated-digest-scalar-bytes bounds)))))
 
 (deftest sh07-b16-binding-preflight-is-inclusive-and-fails-closed
-  (let [at-bound (vec (repeat 2197 nil))
+  (let [at-bound (vec (repeat 2440 nil))
         over-bound (conj at-bound nil)
         accepted (invoke 'sh07-binding-count-preflight [at-bound])
         rejected (invoke 'sh07-binding-count-preflight [over-bound])
@@ -185,21 +185,21 @@
     (testing "the module binding table accepts its exact aggregate ceiling"
       (is (= {:status :accepted
               :bound :maximum-module-bindings
-              :maximum 2197
-              :observed 2197}
+              :maximum 2440
+              :observed 2440}
              accepted)))
     (testing "boundary plus one is a structured fail-closed rejection"
       (is (= {:status :rejected
               :reason :maximum-module-bindings
               :bound :maximum-module-bindings
-              :maximum 2197
-              :observed 2198}
+              :maximum 2440
+              :observed 2441}
              rejected)))
     (testing "malformed ingress is rejected without host traversal failure"
       (is (= {:status :rejected
               :reason :binding-vector-required
               :bound :maximum-module-bindings
-              :maximum 2197
+              :maximum 2440
               :observed nil}
              malformed)))))
 
@@ -217,10 +217,10 @@
   (let [{:keys [module definitions core-bindings lexical-bindings binding-ids]}
         (checked-core-binding-decomposition)]
     (is (= 'gravity.checked-core (:module module)))
-    (is (= 277 (count definitions)))
+    (is (= 308 (count definitions)))
     (is (= 262 (count core-bindings)))
-    (is (= 1658 (count lexical-bindings)))
-    (is (= 2197 (+ (count definitions)
+    (is (= 1870 (count lexical-bindings)))
+    (is (= 2440 (+ (count definitions)
                    (count core-bindings)
                    (count lexical-bindings))
            (count binding-ids)))
@@ -229,7 +229,7 @@
                 binding-ids))))
 
 (deftest sh07-b16-coordinator-and-gravity-module-bounds-are-equal
-  (let [at-bound (vec (repeat 2197 nil))
+  (let [at-bound (vec (repeat 2440 nil))
         over-bound (conj at-bound nil)
         coordinator-accepted
         (bootstrap/sh07-core-request-preflight!
@@ -244,17 +244,17 @@
         (invoke 'sh07-binding-count-preflight [over-bound])]
     (is (= :passed coordinator-accepted))
     (is (= :accepted (:status gravity-accepted)))
-    (is (= 2197 (:maximum gravity-accepted)))
+    (is (= 2440 (:maximum gravity-accepted)))
     (is (= :maximum-module-bindings
            (get-in coordinator-rejected
                    [:facts :rule-specific :bound])
            (:reason gravity-rejected)
            (:bound gravity-rejected)))
-    (is (= 2197
+    (is (= 2440
            (get-in coordinator-rejected
                    [:facts :rule-specific :maximum])
            (:maximum gravity-rejected)))
-    (is (= 2198
+    (is (= 2441
            (get-in coordinator-rejected
                    [:facts :rule-specific :observed])
            (:observed gravity-rejected)))
@@ -262,7 +262,7 @@
 
 (deftest sh07-b16-over-bound-and-malformed-requests-prevent-lowering
   (let [lowering-called? (atom false)
-        at-bound (vec (repeat 2197 nil))
+        at-bound (vec (repeat 2440 nil))
         over-bound (conj at-bound nil)
         over-request (coordinator-request over-bound)
         malformed-request (assoc (coordinator-request at-bound)
@@ -282,7 +282,7 @@
     (is (= :gravity/sh07-core-diagnostic (:artifact over-diagnostic)))
     (is (= :maximum-module-bindings
            (get-in over-diagnostic [:facts :rule-specific :bound])))
-    (is (= 2198
+    (is (= 2441
            (get-in over-diagnostic [:facts :rule-specific :observed])))
     (is (not (contains? over-diagnostic :canonical-core-artifact)))
     (is (= :request-binding-table-vector-required

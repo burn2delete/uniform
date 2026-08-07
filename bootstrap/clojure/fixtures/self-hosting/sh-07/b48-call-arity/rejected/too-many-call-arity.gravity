@@ -1,0 +1,11 @@
+; SH-07-B48 authentic too-many direct-call arity control.
+(ns self-hosting.sh07-b48.too-many-call-arity
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [one-target too-many]))
+
+(defn one-target [value]
+  value)
+
+(defn too-many [value]
+  (one-target value value))

@@ -325,8 +325,8 @@
         (is (= 15 (:schema-version authenticated-request)))
         (is (= :sh07-b15-keyword-map-lookup
                (:scope authenticated-request)))
-        (is (= "SH-07-B15" (:task artifact)))
-        (is (= :gravity/sh07-to-c6-core-products-v15
+        (is (= "SH-07-B47" (:task artifact)))
+        (is (= :gravity/sh07-to-c6-core-products-v16
                @(required-var 'sh07-core-adapter-contract)
                (get-in artifact
                        [:gravity-core-boundary :adapter-contract])))

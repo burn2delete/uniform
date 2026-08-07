@@ -4,9 +4,9 @@ This fixture root exercises an early Gravity-owned SH-25 component-build
 contract governed by `D1`, `D3`, `D8`, `D9`, `BOOT1`, `BOOT3`, `BOOT5`,
 `BOOT7`, `BOOT8`, and `TEST13`.
 
-The Gravity engine freezes the complete 41-module authoritative source
+The Gravity engine freezes the complete 42-module authoritative source
 inventory in `docs/self-hosting-slice-ownership.edn` and adds the current
-provisional SH-19 runtime leaf, for 42 dependency-ordered component inputs. It
+provisional SH-19 runtime leaf, for 43 dependency-ordered component inputs. It
 validates:
 
 - the exact component identifier, category, source path, and dependency order;
@@ -35,7 +35,7 @@ against the Gravity-owned source revision catalog.
 ## Bounds
 
 - at most 64 components;
-- exactly 42 components for this inventory revision;
+- exactly 43 components for this inventory revision;
 - at most 16 dependencies per component;
 - at most 8 output kinds per component;
 - at most 16 diagnostic identifiers per component; and
@@ -57,7 +57,7 @@ string or byte vector.
 ## Honest Boundary
 
 This leaf validates and packages supplied component build products. It does not
-invoke the SH-24 compiler driver, compile the 42 sources, compute source or
+invoke the SH-24 compiler driver, compile the 43 sources, compute source or
 artifact digests, or independently establish the supplied conformance records.
 The focused Clojure test independently checks each frozen source revision
 against current repository bytes. Source loading, SHA-256, stage2 module

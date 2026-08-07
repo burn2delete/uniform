@@ -382,6 +382,31 @@
            :trusted-context-id (canonical-id trusted-preimage)}]
       {:observed observed :trusted trusted})))
 
+(defn- finalize-sh25-projection [projection verification]
+  (let [components (:components projection)]
+    (when-not
+     (and (= :passed (:status verification))
+          (= verification (:verification projection))
+          (= :pending (:status projection))
+          (vector? components)
+          (= 43 (count components))
+          (every? #(= :pending (:conformance-status %)) components)
+          (every? #(= :pending (:sh25-verification-status %))
+                  components))
+      (throw
+       (ex-info
+        "SH-25 projection is not eligible for SH-26 test finalization"
+        {:id "SH26-SH25-PROJECTION-NOT-ELIGIBLE"})))
+    (-> projection
+        (assoc :status :accepted)
+        (assoc
+         :components
+         (mapv
+          #(assoc %
+                  :conformance-status :passed
+                  :sh25-verification-status :passed)
+          components)))))
+
 (defn- sh25-ingress []
   (let [request
         (invoke sh25-accepted-plan 'sh25-component-build-request [])
@@ -392,9 +417,11 @@
         (invoke sh25-engine-plan
                 'sh25-verify-component-build [request result])
         projection
-        (invoke sh25-engine-plan
-                'sh25-project-verified-sh26-components
-                [request result verification])
+        (finalize-sh25-projection
+         (invoke sh25-engine-plan
+                 'sh25-project-verified-sh26-components
+                 [request result verification])
+         verification)
         request-id (canonical-id request)
         result-id (canonical-id result)
         verification-id (canonical-id verification)
@@ -509,10 +536,15 @@
         catalog
         (invoke engine-plan 'sh26-authoritative-component-catalog [])]
     (is (= 2 (:schema-version policy)))
-    (is (= 42 (:required-component-count policy)))
-    (is (= 42 (count catalog)))
+    (is (= 43 (:required-component-count policy)))
+    (is (= 43 (count catalog)))
     (is (= :authenticated-envelope (ffirst catalog)))
+    (is (= [:checked-core-pipeline [:checked-core]]
+           (nth catalog 12)))
+    (is (= [:call-arity [:checked-core-pipeline]]
+           (nth catalog 13)))
     (is (= :runtime-subset (first (last catalog))))
+    (is (= :runtime-subset (first (nth catalog 42))))
     (is (some #{:external-sh25-recomputation} (:pending policy)))
     (is (some #{:candidate-action-execution} (:pending policy)))
     (is (false? (:self-hosted? policy))))
@@ -892,14 +924,14 @@
            (get-in gravity-request
                    [:sh25-ingress :authentication
                     :contextual-verification :status])))
-    (is (= 42
+    (is (= 43
            (count
             (get-in gravity-request
                     [:sh25-ingress :projection :components]))))
     (is (= gravity-request qst-request))
     (is (= gravity qst))
     (is (= :accepted (:status gravity)))
-    (is (= 42 (count (:actions gravity))))
+    (is (= 43 (count (:actions gravity))))
     (is (= (mapv :component-id
                  (get-in gravity-request
                          [:sh25-ingress :projection :components]))
@@ -907,7 +939,7 @@
     (is (every? #(= :gravity (:executor %)) (:actions gravity)))
     (is (every? #(= :pending (:execution-status %))
                 (:actions gravity)))
-    (is (= 42
+    (is (= 43
            (count
             (get-in gravity
                     [:stage-manifest :component-output-ids]))))
@@ -916,7 +948,7 @@
     (is (= :passed (:status verification)))
     (is (some #{:exact-sh25-complete-result}
               (:checks verification)))
-    (is (some #{:complete-42-component-catalog}
+    (is (some #{:complete-43-component-catalog}
               (:checks verification)))))
 
 (deftest sh26-lineage-manifest-and-provenance-are-complete
@@ -934,7 +966,7 @@
     (is (= :compiled-by-prior-stage (:semantics transition)))
     (is (= (get-in lineage [1 :stage-output-id])
            (:input-stage-output-id transition)))
-    (is (= 42 (count paths)))
+    (is (= 43 (count paths)))
     (is (every? #(and (keyword? (:component-id %))
                       (seq (:actual-source-path %)))
                 paths))
@@ -944,7 +976,7 @@
     (is (= "sha256:sh26-target" (:target-hash manifest)))
     (is (= "sha256:stage-n-plus-one-output"
            (:output-hash manifest)))
-    (is (= 42 (get-in manifest [:build-logs :action-count])))
+    (is (= 43 (get-in manifest [:build-logs :action-count])))
     (is (= :pending
            (get-in manifest [:build-logs :execution-status])))))
 
@@ -957,7 +989,7 @@
           'sh26-stage-rebuild-alternate-path-request))]
     (is (= (:identity-input left) (:identity-input right)))
     (is (not= (:provenance left) (:provenance right)))
-    (is (= 42
+    (is (= 43
            (count
             (get-in left [:provenance :component-sources]))))))
 
