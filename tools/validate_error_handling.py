@@ -4,9 +4,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
+
+if __package__:
+    from .output_publication import atomic_write_json
+else:
+    from output_publication import atomic_write_json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,8 +71,7 @@ def main() -> int:
         return 1
 
     if args.artifact_out:
-        args.artifact_out.parent.mkdir(parents=True, exist_ok=True)
-        args.artifact_out.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        atomic_write_json(args.artifact_out, artifact)
 
     print(f"error handling validation passed: {len(artifact['function_thrown_error_effect_records'])} throw records, {len(diagnostics)} rejected fixtures")
     return 0

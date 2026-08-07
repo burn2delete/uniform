@@ -110,6 +110,25 @@ def _root_path(output_root: PathLike | None, repository_root: Path) -> Path:
     root = Path(raw)
     if not root.is_absolute():
         root = repository_root.joinpath(*parts)
+    elif root == Path("/tmp") or Path("/tmp") in root.parents:
+        # macOS exposes /tmp as a root-owned symlink to trusted sticky
+        # /private/tmp. Canonicalize only this conventional system alias;
+        # arbitrary selected-root symlinks remain forbidden below.
+        try:
+            canonical_tmp = Path(os.path.realpath("/tmp"))
+            info = canonical_tmp.stat()
+        except OSError as exc:
+            raise OutputPublicationError("cannot validate the system temporary directory") from exc
+        if (
+            not stat.S_ISDIR(info.st_mode)
+            or info.st_uid != 0
+            or not (info.st_mode & stat.S_ISVTX)
+            or not (info.st_mode & stat.S_IWOTH)
+        ):
+            raise OutputPublicationError(
+                "the system temporary directory is not trusted sticky storage"
+            )
+        root = canonical_tmp / root.relative_to("/tmp")
     # This remains lexical. The dirfd walk rejects every symlink component,
     # including an explicitly selected root which is itself a symlink.
     return root

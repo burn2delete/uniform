@@ -128,6 +128,21 @@ class OutputPublicationTests(unittest.TestCase):
             publication.atomic_write_text("result.txt", "unsafe", self.repository, linked)
         self.assertEqual(list(actual.iterdir()), [])
 
+    @unittest.skipUnless(Path("/tmp").is_symlink(), "system /tmp is not a symlink alias")
+    def test_trusted_system_tmp_alias_is_canonicalized(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gravity-output-", dir="/tmp") as temporary:
+            selected = Path(temporary) / "isolated"
+            result = publication.atomic_write_text(
+                "target/result.txt", "safe", self.repository, selected
+            )
+            expected = (
+                Path(os.path.realpath("/tmp"))
+                / selected.relative_to("/tmp")
+                / "target/result.txt"
+            )
+            self.assertEqual(result, expected)
+            self.assertEqual(result.read_text(encoding="utf-8"), "safe")
+
     def test_rejects_hardlink_victim(self) -> None:
         victim = self.base / "victim.txt"
         victim.write_text("victim", encoding="utf-8")
