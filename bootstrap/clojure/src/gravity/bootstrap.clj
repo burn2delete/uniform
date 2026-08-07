@@ -16,11 +16,11 @@
             [gravity.diagnostics :as diagnostics]
             [gravity.reader-cursor :as reader-cursor]
             [gravity.reader-diagnostic-policy :as reader-diagnostic-policy]
+            [gravity.reader-host-oracle :as reader-host-oracle]
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit])
-  (:import [clojure.lang LineNumberingPushbackReader]
-           [java.io StringReader]))
+  (:import [clojure.lang LineNumberingPushbackReader]))
 
 (def known-source-profiles #{:core :hardware :firmware :kernel :native :hosted
                              :distributed :ai :meta :gpu :formal})
@@ -115,49 +115,17 @@
 
 (defn read-source-form-records-host-oracle
   [source-path source-text]
-  (try
-    (let [eof (Object.)
-          line-starts (line-start-indices source-text)
-          rdr (LineNumberingPushbackReader. (StringReader. source-text))]
-      (loop [idx 0
-             records []]
-        (case (skip-ignored! rdr)
-          :eof records
-          :form
-          (let [start-line (.getLineNumber rdr)
-                start-column (.getColumnNumber rdr)
-                form (binding [*read-eval* false]
-                       (read {:eof eof} rdr))]
-            (if (identical? eof form)
-              records
-              (let [end-line (.getLineNumber rdr)
-                    end-column (.getColumnNumber rdr)
-                    span (source-span source-path source-text line-starts idx
-                                      start-line start-column end-line end-column)
-                    excerpt (safe-excerpt source-text span)
-                    abbreviation (abbreviation-kind excerpt)
-                    metadata (source-metadata form)]
-                (recur (inc idx)
-                       (conj records
-                             {:form form
-                              :span span
-                              :metadata metadata
-                              :reader-origin {:kind :source
-                                              :raw-form-kind (form-kind form)
-                                              :raw-excerpt excerpt
-                                              :abbreviation abbreviation}
-                              :generated-origin (if abbreviation
-                                                  [{:from span
-                                                    :reader-abbreviation abbreviation
-                                                    :expanded-form form}]
-                                                  [])}))))))))
-    (catch Exception ex
-      (let [[id message] (classify-reader-diagnostic source-text ex)]
-        (fail! id message
-               {:source-span {:source source-path}
-                :reader-state {:stage :read-source-forms}
-                :cause-message (.getMessage ex)
-                :remediation "Fix delimiter, string, collection, metadata, or reader-extension syntax before compilation."})))))
+  (reader-host-oracle/read-source-form-records-host-oracle
+   source-path source-text
+   {:line-start-indices line-start-indices
+    :skip-ignored! skip-ignored!
+    :source-span source-span
+    :safe-excerpt safe-excerpt
+    :abbreviation-kind abbreviation-kind
+    :source-metadata source-metadata
+    :form-kind form-kind
+    :classify-reader-diagnostic classify-reader-diagnostic
+    :fail! fail!}))
 
 (def ^:dynamic *authenticated-source-form-records* nil)
 
