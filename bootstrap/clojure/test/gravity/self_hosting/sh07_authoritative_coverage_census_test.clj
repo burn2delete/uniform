@@ -107,7 +107,7 @@
            (:coverage-census-policy contract)))
     (is (= {:source-byte-count 210220
             :source-bytes-sha256
-            "sha256:bfcaeb3eab70139a969add3f6697fabe12000238198048c064bcacee1d04e38d"}
+            "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}
            (:source-binding expectation)))
     (is (not (contains? expectation :request-counts)))
     (is (not (contains? expectation :core-counts)))

@@ -33,11 +33,11 @@
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count 210220)
 (def ^:private expected-source-revision-id
-  "sha256:bfcaeb3eab70139a969add3f6697fabe12000238198048c064bcacee1d04e38d")
+  "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4")
 (def ^:private expected-plan-semantic-id
-  "sha256:7dbe02f4adf0d29fd55421cdfa5b5fdef36bb62ca8e69f01ca84485135df5f3e")
+  "sha256:aa39464005e7abd3ab452020891aa7846753798300cb7587cb49f1a9a34678d4")
 (def ^:private expected-functions-semantic-id
-  "sha256:a18d6bca4d8d31e854edf203058e667e978fc3fe60b811abed210aed6f1fa329")
+  "sha256:64d0209402a9e567afe4103f943564b62684e09aae22e4be599e4c815b4e5d58")
 (def ^:private expected-function-names-id
   "sha256:a0c89a91b11de3851d39cac963b9dc307832d6d6a1e325ab05fd60e1fe19ec3a")
 (def ^:private expected-function-shapes-id
@@ -322,6 +322,17 @@
   [form]
   (count (tree-seq coll? seq form)))
 
+(defn- invalid-source-if-forms
+  [forms]
+  (vec
+   (for [form forms
+         node (tree-seq coll? seq form)
+         :when (and (seq? node)
+                    (= 'if (first node))
+                    (not= 4 (count node)))]
+     {:definition (second form)
+      :child-count (count node)})))
+
 ;; This is a conservative reader-tree admission check.  It is not the
 ;; authoritative C6 fragment form-id census, which the SH-07 request must
 ;; still validate independently.
@@ -594,6 +605,17 @@
     (doseq [[name expected-hash] expected-public-function-hashes]
       (is (contains? functions name))
       (is (= expected-hash (digest (get functions name)))))))
+
+(deftest sh07-b47-c7-source-control-form-arities-are-exact
+  (let [forms (source-forms)]
+    (is (empty? (invalid-source-if-forms forms)))
+    (is (= [{:definition 'invalid-if-example :child-count 2}]
+           (invalid-source-if-forms
+            ['(defn invalid-if-example [] (if true))])))
+    (is (= [{:definition 'invalid-if-example :child-count 5}]
+           (invalid-source-if-forms
+            ['(defn invalid-if-example []
+                (if true :then :else :extra))])))))
 
 (deftest sh07-b28-c7-source-contracts-bounds-pending-and-limitations-are-exact
   (let [forms (source-forms)

@@ -3786,8 +3786,8 @@
             (if (sh08-ft-known? then-type)
               then-type
               (get context :recursive-base-type :gravity.type/unknown))
-            :gravity.type/unknown)))
-        :gravity.type/unknown)))
+            :gravity.type/unknown))
+        :gravity.type/unknown))))
 
 (defn sh08-ft-infer-node-with-context
   [node type-table binding-types function-types edges context]
@@ -4543,9 +4543,9 @@
                      (conj result (get (first remaining) :return))
                      (recur
                       (rest params)
-                      (conj result (get (first params) :type)))))
+                      (conj result (get (first params) :type))))))
               true
-              false))]
+              false)]
         (if known?
           (recur (rest remaining) (conj values (first remaining)))
           (recur

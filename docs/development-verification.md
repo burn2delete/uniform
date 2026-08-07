@@ -311,7 +311,7 @@ and proof work changed, raw wall time increased 38.7%, and bytes per second fell
 about 10.4%. Profile that exact `5fe2013` proof phase before proposing another
 performance change; do not infer a speedup from interpreter microbenchmarks.
 The current 210,220-byte C7 source is a different candidate from that receipt,
-with source SHA `sha256:bfcaeb3eab70139a969add3f6697fabe12000238198048c064bcacee1d04e38d`.
+with source SHA `sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`.
 Its source-bound-derived contract has been refreshed for the exact bytes only;
 count maps remain absent and the 55.85-minute receipt must not be relabeled as
 current evidence for it. The cheap primitive-family and separate bool/string
