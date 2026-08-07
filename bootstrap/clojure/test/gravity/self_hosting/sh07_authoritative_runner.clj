@@ -30,6 +30,35 @@
   []
   (vec (keys (modules (proof-contract)))))
 
+(defn module-catalog
+  "Returns the deterministic module-to-source catalog used by --fresh.
+
+  The tab-delimited CLI representation is intentionally narrow so external
+  checkpoint tooling can validate paths without attempting to parse EDN."
+  []
+  (let [catalog (modules (proof-contract))
+        invalid
+        (vec
+         (for [[module path] catalog
+               :when (or (not (re-matches #"[A-Za-z0-9][A-Za-z0-9._-]*"
+                                          module))
+                         (not (string? path))
+                         (string/blank? path)
+                         (string/includes? path "\t")
+                         (string/includes? path "\n"))]
+           [module path]))
+        duplicate-paths
+        (->> catalog vals frequencies
+             (keep (fn [[path count]] (when (< 1 count) path)))
+             sort vec)]
+    (when (or (seq invalid) (seq duplicate-paths))
+      (throw
+       (ex-info "SH-07 authoritative module catalog is malformed"
+                {:id "SH07-AUTHORITATIVE-CATALOG"
+                 :invalid invalid
+                 :duplicate-paths duplicate-paths})))
+    catalog))
+
 (defn- source-bytes-sha256
   [path]
   (let [digest (java.security.MessageDigest/getInstance "SHA-256")
@@ -296,6 +325,10 @@
     (= ["--list"] (vec arguments))
     (doseq [name (module-names)] (println name))
 
+    (= ["--catalog"] (vec arguments))
+    (doseq [[module path] (module-catalog)]
+      (println (str module "\t" path)))
+
     (and (= 2 (count arguments))
          (= "--fresh" (first arguments))
          (contains? (set (conj (module-names) "all"))
@@ -308,7 +341,7 @@
     :else
     (throw
      (ex-info
-      (str "Expected --list or --fresh <module|all>; available modules: "
+      (str "Expected --list, --catalog, or --fresh <module|all>; available modules: "
            (string/join "|" (module-names)))
       {:id "SH07-AUTHORITATIVE-USAGE"
        :arguments (vec arguments)

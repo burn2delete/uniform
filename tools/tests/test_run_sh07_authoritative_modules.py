@@ -5,10 +5,12 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 
 TOOLS = Path(__file__).resolve().parents[1]
@@ -17,7 +19,13 @@ sys.path.insert(0, str(TOOLS))
 import run_sh07_authoritative_modules as runner  # noqa: E402
 
 
-def fixture_output_validator(module: str, path: Path) -> bool:
+def fixture_output_validator(
+    module: str,
+    source_path: str,
+    source_byte_count: int,
+    source_bytes_sha256: str,
+    path: Path,
+) -> bool:
     output = path.read_text(encoding="utf-8")
     return (
         output.startswith(
@@ -25,6 +33,9 @@ def fixture_output_validator(module: str, path: Path) -> bool:
             ":schema-version 1 :status :passed "
         )
         and f':module "{module}"' in output
+        and f':source-path "{source_path}"' in output
+        and f":source-byte-count {source_byte_count}" in output
+        and f':source-bytes-sha256 "{source_bytes_sha256}"' in output
         and ":verification-status :passed" in output
         and ":capability-proof-status :complete" in output
         and ":failed-checks []" in output
@@ -39,7 +50,7 @@ class FakeLauncher:
     def __call__(
         self,
         command: list[str],
-        _cwd: Path,
+        cwd: Path,
         stdout_path: Path,
         stderr_path: Path,
         _timeout_seconds: float,
@@ -48,12 +59,17 @@ class FakeLauncher:
         self.calls.append(module)
         outcome = self.outcomes.get(module, runner.ProcessOutcome(0, False, 0.01))
         if outcome.exit_code == 0 and not outcome.timed_out:
+            source_path = f"bootstrap/gravity/src/gravity/{module}.gravity"
+            source = cwd / source_path
             stdout_path.write_text(
                 "{:artifact :gravity/sh07-authoritative-proof-run "
                 ":schema-version 1 :status :passed "
                 ":fresh-process-required? true "
                 ":persistent-iteration-cache-used? false "
                 f':modules [{{:module "{module}" :status :accepted '
+                f':source-path "{source_path}" '
+                f":source-byte-count {source.stat().st_size} "
+                f':source-bytes-sha256 "{runner.sha256_file(source)}" '
                 ":verification-status :passed "
                 ":capability-proof-status :complete :failed-checks [] "
                 ":contract-checks {:ok true}}]}\n",
@@ -72,13 +88,25 @@ class FakeLauncher:
 
 
 class Sh07CheckpointTests(unittest.TestCase):
+    @staticmethod
+    def module_catalog() -> dict[str, str]:
+        return {
+            module: f"bootstrap/gravity/src/gravity/{module}.gravity"
+            for module in ["alpha", "beta", "gamma"]
+        }
+
     def make_repository(self, root: Path) -> None:
         files = {
             "deps.edn": "{:paths []}\n",
             "bootstrap/clojure/src/gravity/bootstrap.clj": "(ns gravity.bootstrap)\n",
             "bootstrap/gravity/p15_s23/compiler.gravity": "(ns gravity.p15-s23.compiler)\n",
             "bootstrap/gravity/p15_s23/emitter.gravity": "(ns gravity.p15-s23.emitter)\n",
+            "bootstrap/gravity/src/gravity/macro.gravity": "(ns gravity.macro)\n",
+            "bootstrap/gravity/src/gravity/resolution.gravity": "(ns gravity.resolution)\n",
             "bootstrap/gravity/src/gravity/checked_core.gravity": "(ns gravity.checked-core)\n",
+            "bootstrap/gravity/src/gravity/alpha.gravity": "(ns gravity.alpha)\n",
+            "bootstrap/gravity/src/gravity/beta.gravity": "(ns gravity.beta)\n",
+            "bootstrap/gravity/src/gravity/gamma.gravity": "(ns gravity.gamma)\n",
             "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn": "{:schema :test}\n",
             "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj": "(ns test.runner)\n",
         }
@@ -99,6 +127,7 @@ class Sh07CheckpointTests(unittest.TestCase):
             root=root,
             state_dir=root / "checkpoints",
             modules=modules,
+            module_catalog=self.module_catalog(),
             base_command=["fake-runner"],
             timeout_seconds=1,
             resume=resume,
@@ -134,15 +163,17 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.make_repository(root)
             launcher = FakeLauncher()
             _, first = self.run_in_repository(root, launcher, ["alpha", "beta"])
-            previous = first["context_fingerprint"]
+            previous = first["shared_context_fingerprint"]
             source = root / "bootstrap/gravity/src/gravity/checked_core.gravity"
             source.write_text("(ns gravity.checked-core)\n;; changed\n", encoding="utf-8")
 
             code, second = self.run_in_repository(root, launcher, ["alpha", "beta"])
             self.assertEqual(0, code)
             self.assertEqual(["alpha", "beta", "alpha", "beta"], launcher.calls)
-            self.assertNotEqual(previous, second["context_fingerprint"])
-            self.assertEqual(previous, second["invalidated_context_fingerprint"])
+            self.assertNotEqual(previous, second["shared_context_fingerprint"])
+            self.assertEqual(
+                previous, second["invalidated_shared_context_fingerprint"]
+            )
 
     def test_stage2_plan_source_changes_invalidate_every_checkpoint(self) -> None:
         for name in ["compiler.gravity", "emitter.gravity"]:
@@ -151,7 +182,7 @@ class Sh07CheckpointTests(unittest.TestCase):
                 self.make_repository(root)
                 launcher = FakeLauncher()
                 _, first = self.run_in_repository(root, launcher, ["alpha", "beta"])
-                previous = first["context_fingerprint"]
+                previous = first["shared_context_fingerprint"]
                 source = root / "bootstrap/gravity/p15_s23" / name
                 source.write_text(
                     source.read_text(encoding="utf-8") + "; changed\n",
@@ -165,9 +196,69 @@ class Sh07CheckpointTests(unittest.TestCase):
                 self.assertEqual(
                     ["alpha", "beta", "alpha", "beta"], launcher.calls
                 )
-                self.assertNotEqual(previous, second["context_fingerprint"])
+                self.assertNotEqual(
+                    previous, second["shared_context_fingerprint"]
+                )
                 self.assertEqual(
-                    previous, second["invalidated_context_fingerprint"]
+                    previous, second["invalidated_shared_context_fingerprint"]
+                )
+
+    def test_module_source_change_invalidates_only_its_checkpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            launcher = FakeLauncher()
+            self.run_in_repository(root, launcher, ["alpha", "beta"])
+            source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+            source.write_text("(ns gravity.alpha)\n; changed\n", encoding="utf-8")
+
+            code, manifest = self.run_in_repository(
+                root, launcher, ["alpha", "beta"]
+            )
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha", "beta", "alpha"], launcher.calls)
+            self.assertEqual(["beta"], manifest["resumed_modules"])
+            self.assertNotEqual(
+                manifest["modules"]["alpha"]["module_context_fingerprint"],
+                manifest["modules"]["beta"]["module_context_fingerprint"],
+            )
+
+    def test_unselected_module_source_change_does_not_invalidate_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            launcher = FakeLauncher()
+            self.run_in_repository(root, launcher, ["alpha", "beta"])
+            source = root / "bootstrap/gravity/src/gravity/gamma.gravity"
+            source.write_text("(ns gravity.gamma)\n; changed\n", encoding="utf-8")
+
+            code, manifest = self.run_in_repository(
+                root, launcher, ["alpha", "beta"]
+            )
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha", "beta"], launcher.calls)
+            self.assertEqual(["alpha", "beta"], manifest["resumed_modules"])
+
+    def test_pinned_gravity_source_changes_invalidate_every_checkpoint(self) -> None:
+        for relative in [
+            "bootstrap/gravity/src/gravity/macro.gravity",
+            "bootstrap/gravity/src/gravity/resolution.gravity",
+        ]:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                self.make_repository(root)
+                launcher = FakeLauncher()
+                self.run_in_repository(root, launcher, ["alpha", "beta"])
+                source = root / relative
+                source.write_text(
+                    source.read_text(encoding="utf-8") + "; changed\n",
+                    encoding="utf-8",
+                )
+
+                code, _ = self.run_in_repository(root, launcher, ["alpha", "beta"])
+                self.assertEqual(0, code)
+                self.assertEqual(
+                    ["alpha", "beta", "alpha", "beta"], launcher.calls
                 )
 
     def test_source_change_during_child_run_stops_the_sequence(self) -> None:
@@ -197,6 +288,10 @@ class Sh07CheckpointTests(unittest.TestCase):
                 root=root,
                 state_dir=root / "checkpoints",
                 modules=["alpha", "beta"],
+                module_catalog={
+                    "alpha": "bootstrap/gravity/src/gravity/alpha.gravity",
+                    "beta": "bootstrap/gravity/src/gravity/beta.gravity",
+                },
                 base_command=["fake-runner"],
                 timeout_seconds=1,
                 launcher=mutating_launcher,
@@ -207,6 +302,230 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.assertEqual(["alpha"], delegate.calls)
             self.assertEqual("context-changed", manifest["state"])
             self.assertFalse(manifest["modules"]["alpha"]["context_stable"])
+
+    def test_current_module_change_during_child_stops_the_sequence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            delegate = FakeLauncher()
+
+            def mutating_launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                outcome = delegate(
+                    command, cwd, stdout_path, stderr_path, timeout_seconds
+                )
+                if command[-1] == "alpha":
+                    source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+                    source.write_text("(ns gravity.alpha)\n; changed\n", encoding="utf-8")
+                return outcome
+
+            code, manifest = runner.run_modules(
+                root=root,
+                state_dir=root / "checkpoints",
+                modules=["alpha", "beta"],
+                module_catalog=self.module_catalog(),
+                base_command=["fake-runner"],
+                timeout_seconds=1,
+                launcher=mutating_launcher,
+                output_validator=fixture_output_validator,
+                lock_path=root / "heavy.lock",
+            )
+            self.assertEqual(75, code)
+            self.assertEqual(["alpha"], delegate.calls)
+            self.assertEqual(["alpha"], manifest["modules"]["alpha"]["stale_modules"])
+
+    def test_transient_module_bytes_change_and_restore_fails_output_binding(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            delegate = FakeLauncher()
+            source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+            original = source.read_bytes()
+
+            def transient_launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                source.write_bytes(b"(ns gravity.alpha)\n; transient\n")
+                try:
+                    return delegate(
+                        command, cwd, stdout_path, stderr_path, timeout_seconds
+                    )
+                finally:
+                    source.write_bytes(original)
+
+            code, manifest = runner.run_modules(
+                root=root,
+                state_dir=root / "checkpoints",
+                modules=["alpha"],
+                module_catalog=self.module_catalog(),
+                base_command=["fake-runner"],
+                timeout_seconds=1,
+                launcher=transient_launcher,
+                output_validator=fixture_output_validator,
+                lock_path=root / "heavy.lock",
+            )
+            self.assertEqual(1, code)
+            self.assertEqual("failed", manifest["state"])
+            self.assertTrue(manifest["modules"]["alpha"]["context_stable"])
+            self.assertFalse(manifest["modules"]["alpha"]["output_contract_checked"])
+
+    def test_catalog_discovery_is_bounded_for_fresh_and_resumed_sequences(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            launcher = FakeLauncher()
+            calls: list[int] = []
+
+            def provider() -> dict[str, str]:
+                calls.append(len(calls) + 1)
+                return self.module_catalog()
+
+            arguments = {
+                "root": root,
+                "state_dir": root / "checkpoints",
+                "modules": ["alpha", "beta", "gamma"],
+                "module_catalog": self.module_catalog(),
+                "catalog_provider": provider,
+                "base_command": ["fake-runner"],
+                "timeout_seconds": 1,
+                "launcher": launcher,
+                "output_validator": fixture_output_validator,
+                "lock_path": root / "heavy.lock",
+            }
+            code, _ = runner.run_modules(**arguments)
+            self.assertEqual(0, code)
+            self.assertEqual(2, len(calls))
+            self.assertEqual(["alpha", "beta", "gamma"], launcher.calls)
+
+            code, manifest = runner.run_modules(**arguments)
+            self.assertEqual(0, code)
+            self.assertEqual(4, len(calls))
+            self.assertEqual(["alpha", "beta", "gamma"], launcher.calls)
+            self.assertEqual(["alpha", "beta", "gamma"], manifest["resumed_modules"])
+
+    def test_later_module_change_during_current_child_uses_new_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            delegate = FakeLauncher()
+
+            def mutating_launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                outcome = delegate(
+                    command, cwd, stdout_path, stderr_path, timeout_seconds
+                )
+                if command[-1] == "alpha":
+                    source = root / "bootstrap/gravity/src/gravity/beta.gravity"
+                    source.write_text("(ns gravity.beta)\n; changed\n", encoding="utf-8")
+                return outcome
+
+            code, manifest = runner.run_modules(
+                root=root,
+                state_dir=root / "checkpoints",
+                modules=["alpha", "beta"],
+                module_catalog=self.module_catalog(),
+                base_command=["fake-runner"],
+                timeout_seconds=1,
+                launcher=mutating_launcher,
+                output_validator=fixture_output_validator,
+                lock_path=root / "heavy.lock",
+            )
+            self.assertEqual(0, code)
+            self.assertEqual(["alpha", "beta"], delegate.calls)
+            self.assertEqual("completed", manifest["state"])
+
+    def test_completed_module_change_during_later_child_fails_final_sweep(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            delegate = FakeLauncher()
+
+            def mutating_launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                outcome = delegate(
+                    command, cwd, stdout_path, stderr_path, timeout_seconds
+                )
+                if command[-1] == "beta":
+                    source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+                    source.write_text("(ns gravity.alpha)\n; changed\n", encoding="utf-8")
+                return outcome
+
+            code, manifest = runner.run_modules(
+                root=root,
+                state_dir=root / "checkpoints",
+                modules=["alpha", "beta"],
+                module_catalog=self.module_catalog(),
+                base_command=["fake-runner"],
+                timeout_seconds=1,
+                launcher=mutating_launcher,
+                output_validator=fixture_output_validator,
+                lock_path=root / "heavy.lock",
+            )
+            self.assertEqual(75, code)
+            self.assertEqual(["alpha", "beta"], delegate.calls)
+            self.assertEqual("context-changed", manifest["state"])
+            self.assertEqual(["alpha"], manifest["modules"]["beta"]["stale_modules"])
+
+    def test_catalog_mapping_change_during_child_stops_with_exit_75(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            delegate = FakeLauncher()
+            observed_catalog = self.module_catalog()
+            alternate = root / "bootstrap/gravity/src/gravity/alpha_v2.gravity"
+            alternate.write_text("(ns gravity.alpha-v2)\n", encoding="utf-8")
+
+            def mutating_launcher(
+                command: list[str],
+                cwd: Path,
+                stdout_path: Path,
+                stderr_path: Path,
+                timeout_seconds: float,
+            ) -> runner.ProcessOutcome:
+                outcome = delegate(
+                    command, cwd, stdout_path, stderr_path, timeout_seconds
+                )
+                observed_catalog["alpha"] = (
+                    "bootstrap/gravity/src/gravity/alpha_v2.gravity"
+                )
+                return outcome
+
+            code, manifest = runner.run_modules(
+                root=root,
+                state_dir=root / "checkpoints",
+                modules=["alpha"],
+                module_catalog=self.module_catalog(),
+                catalog_provider=lambda: dict(observed_catalog),
+                base_command=["fake-runner"],
+                timeout_seconds=1,
+                launcher=mutating_launcher,
+                output_validator=fixture_output_validator,
+                lock_path=root / "heavy.lock",
+            )
+            self.assertEqual(75, code)
+            self.assertEqual("context-changed", manifest["state"])
+            self.assertTrue(manifest["modules"]["alpha"]["context_stable"])
+            self.assertTrue(manifest["modules"]["alpha"]["output_contract_checked"])
+            self.assertIsNotNone(manifest["shared_context_fingerprint_after"])
 
     def test_tampered_output_invalidates_only_that_module_receipt(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -329,6 +648,9 @@ class Sh07CheckpointTests(unittest.TestCase):
                 root=root,
                 state_dir=root / "checkpoints",
                 modules=["alpha"],
+                module_catalog={
+                    "alpha": "bootstrap/gravity/src/gravity/alpha.gravity"
+                },
                 base_command=["fake-runner"],
                 timeout_seconds=1,
                 launcher=incomplete_output,
@@ -367,6 +689,9 @@ class Sh07CheckpointTests(unittest.TestCase):
                 root=root,
                 state_dir=root / "checkpoints",
                 modules=["alpha"],
+                module_catalog={
+                    "alpha": "bootstrap/gravity/src/gravity/alpha.gravity"
+                },
                 base_command=["fake-runner"],
                 timeout_seconds=1,
                 launcher=misleading_output,
@@ -382,6 +707,9 @@ class Sh07CheckpointTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.make_repository(root)
+            source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+            source_size = source.stat().st_size
+            source_sha = runner.sha256_file(source)
             output = root / "result.edn"
             output.write_text(
                 "{:artifact :gravity/sh07-authoritative-proof-run "
@@ -389,6 +717,9 @@ class Sh07CheckpointTests(unittest.TestCase):
                 ":fresh-process-required? true "
                 ":persistent-iteration-cache-used? false "
                 ":modules [{:module \"alpha\" :status :accepted "
+                ":source-path \"bootstrap/gravity/src/gravity/alpha.gravity\" "
+                f":source-byte-count {source_size} "
+                f':source-bytes-sha256 "{source_sha}" '
                 ":verification-status :passed "
                 ":capability-proof-status :complete :failed-checks [] "
                 ":contract-checks {:exact? true}}]}\n",
@@ -396,18 +727,66 @@ class Sh07CheckpointTests(unittest.TestCase):
             )
             self.assertTrue(
                 runner.output_contract_passed(
-                    "alpha", output, clojure_command="clojure", cwd=root
+                    "alpha",
+                    "bootstrap/gravity/src/gravity/alpha.gravity",
+                    source_size,
+                    source_sha,
+                    output,
+                    clojure_command="clojure",
+                    cwd=root,
                 )
             )
             output.write_text(
                 output.read_text(encoding="utf-8").replace(
-                    ":status :passed", ":status :failed", 1
+                    "gravity/alpha.gravity", "gravity/beta.gravity"
                 ),
                 encoding="utf-8",
             )
             self.assertFalse(
                 runner.output_contract_passed(
-                    "alpha", output, clojure_command="clojure", cwd=root
+                    "alpha",
+                    "bootstrap/gravity/src/gravity/alpha.gravity",
+                    source_size,
+                    source_sha,
+                    output,
+                    clojure_command="clojure",
+                    cwd=root,
+                )
+            )
+            output.write_text(
+                output.read_text(encoding="utf-8")
+                .replace("gravity/beta.gravity", "gravity/alpha.gravity")
+                .replace(str(source_size), str(source_size + 1), 1)
+                .replace(source_sha, "sha256:" + "0" * 64),
+                encoding="utf-8",
+            )
+            self.assertFalse(
+                runner.output_contract_passed(
+                    "alpha",
+                    "bootstrap/gravity/src/gravity/alpha.gravity",
+                    source_size,
+                    source_sha,
+                    output,
+                    clojure_command="clojure",
+                    cwd=root,
+                )
+            )
+            output.write_text(
+                output.read_text(encoding="utf-8")
+                .replace(str(source_size + 1), str(source_size), 1)
+                .replace("sha256:" + "0" * 64, source_sha)
+                .replace(":status :passed", ":status :failed", 1),
+                encoding="utf-8",
+            )
+            self.assertFalse(
+                runner.output_contract_passed(
+                    "alpha",
+                    "bootstrap/gravity/src/gravity/alpha.gravity",
+                    source_size,
+                    source_sha,
+                    output,
+                    clojure_command="clojure",
+                    cwd=root,
                 )
             )
 
@@ -417,6 +796,314 @@ class Sh07CheckpointTests(unittest.TestCase):
             self.make_repository(root)
             with self.assertRaisesRegex(runner.CheckpointError, "safe slugs"):
                 self.run_in_repository(root, FakeLauncher(), ["../escape"])
+
+    def test_catalog_paths_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            cases = [
+                {"alpha": "../escape.gravity"},
+                {"alpha": "bootstrap/gravity/src/gravity/absent.gravity"},
+                {
+                    "alpha": "bootstrap/gravity/src/gravity/alpha.gravity",
+                    "beta": "bootstrap/gravity/src/gravity/alpha.gravity",
+                },
+            ]
+            for catalog in cases:
+                with self.subTest(catalog=catalog), self.assertRaises(
+                    runner.CheckpointError
+                ):
+                    runner.run_modules(
+                        root=root,
+                        state_dir=root / "checkpoints",
+                        modules=["alpha"],
+                        module_catalog=catalog,
+                        base_command=["fake-runner"],
+                        timeout_seconds=1,
+                        launcher=FakeLauncher(),
+                        output_validator=fixture_output_validator,
+                        lock_path=root / "heavy.lock",
+                    )
+
+    def test_catalog_handshake_parses_exact_tab_delimited_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            output = (
+                "alpha\tbootstrap/gravity/src/gravity/alpha.gravity\n"
+                "beta\tbootstrap/gravity/src/gravity/beta.gravity\n"
+            )
+            completed = subprocess.CompletedProcess([], 0, output, "")
+            with mock.patch.object(runner.subprocess, "run", return_value=completed):
+                self.assertEqual(
+                    {
+                        "alpha": "bootstrap/gravity/src/gravity/alpha.gravity",
+                        "beta": "bootstrap/gravity/src/gravity/beta.gravity",
+                    },
+                    runner.discover_module_catalog(root, ["fake-runner"], 1),
+                )
+            malformed = subprocess.CompletedProcess([], 0, "alpha only\n", "")
+            with mock.patch.object(runner.subprocess, "run", return_value=malformed):
+                with self.assertRaisesRegex(runner.CheckpointError, "malformed"):
+                    runner.discover_module_catalog(root, ["fake-runner"], 1)
+
+    def test_symlinked_catalog_source_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            source = root / "bootstrap/gravity/src/gravity/alpha.gravity"
+            source.unlink()
+            source.symlink_to(root / "bootstrap/gravity/src/gravity/beta.gravity")
+            with self.assertRaisesRegex(runner.CheckpointError, "non-symlink"):
+                self.run_in_repository(root, FakeLauncher(), ["alpha"])
+
+    def test_v1_manifest_never_resumes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            state = root / "checkpoints"
+            state.mkdir()
+            (state / "manifest.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "gravity/sh07-authoritative-module-checkpoints-v1",
+                        "modules": {"alpha": {"state": "passed"}},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            launcher = FakeLauncher()
+            with self.assertRaisesRegex(runner.CheckpointError, "unsupported schema"):
+                self.run_in_repository(root, launcher, ["alpha"])
+            self.assertEqual([], launcher.calls)
+
+    def test_same_path_classpath_jar_replacement_invalidates_shared_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "repository"
+            root.mkdir()
+            self.make_repository(root)
+            dependency = parent / "dependency.jar"
+            dependency.write_bytes(b"first jar")
+
+            def capture(command: list[str], **_kwargs: object) -> dict[str, object]:
+                if command[-1] == "-Sdescribe":
+                    stdout = f'{{:config-files ["{root / "deps.edn"}"]}}'
+                elif command[-1] == "-Spath":
+                    stdout = os.pathsep.join(
+                        [str(root / "bootstrap/clojure/src"), str(dependency)]
+                    )
+                else:
+                    stdout = "runtime version"
+                return {
+                    "command": command,
+                    "exit_code": 0,
+                    "stdout": stdout,
+                    "stderr": "",
+                    "complete": True,
+                }
+
+            with mock.patch.object(runner, "command_capture", side_effect=capture), mock.patch.object(
+                runner.shutil, "which", return_value=sys.executable
+            ):
+                first = runner.shared_context_fingerprint(
+                    root,
+                    ["fake-runner"],
+                    module_catalog=self.module_catalog(),
+                    require_runtime_identity=True,
+                )
+                dependency.write_bytes(b"replacement jar")
+                second = runner.shared_context_fingerprint(
+                    root,
+                    ["fake-runner"],
+                    module_catalog=self.module_catalog(),
+                    require_runtime_identity=True,
+                )
+            self.assertNotEqual(first["sha256"], second["sha256"])
+            entries = second["runtime"]["clojure_classpath_entries"]
+            jar_entry = next(entry for entry in entries if entry["kind"] == "file")
+            self.assertEqual(str(dependency.resolve()), jar_entry["path"])
+            self.assertEqual(runner.sha256_file(dependency), jar_entry["sha256"])
+
+    def test_root_data_readers_content_invalidates_shared_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            resource = root / "bootstrap/clojure/test/data_readers.clj"
+            resource.write_text("{}\n", encoding="utf-8")
+
+            def capture(command: list[str], **_kwargs: object) -> dict[str, object]:
+                if command[-1] == "-Sdescribe":
+                    stdout = f'{{:config-files ["{root / "deps.edn"}"]}}'
+                elif command[-1] == "-Spath":
+                    stdout = str(root / "bootstrap/clojure/test")
+                else:
+                    stdout = "runtime version"
+                return {
+                    "command": command,
+                    "exit_code": 0,
+                    "stdout": stdout,
+                    "stderr": "",
+                    "complete": True,
+                }
+
+            with mock.patch.object(runner, "command_capture", side_effect=capture), mock.patch.object(
+                runner.shutil, "which", return_value=sys.executable
+            ):
+                first = runner.shared_context_fingerprint(
+                    root,
+                    ["fake-runner"],
+                    module_catalog=self.module_catalog(),
+                    require_runtime_identity=True,
+                )
+                resource.write_text("{foo/bar foo/read}\n", encoding="utf-8")
+                second = runner.shared_context_fingerprint(
+                    root,
+                    ["fake-runner"],
+                    module_catalog=self.module_catalog(),
+                    require_runtime_identity=True,
+                )
+            self.assertNotEqual(first["sha256"], second["sha256"])
+            directory_entry = second["runtime"]["clojure_classpath_entries"][0]
+            resource_entry = next(
+                entry for entry in directory_entry["files"]
+                if entry["path"] == "data_readers.clj"
+            )
+            self.assertEqual(runner.sha256_file(resource), resource_entry["sha256"])
+
+    def test_unrelated_test_source_does_not_invalidate_shared_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_repository(root)
+            unrelated = root / "bootstrap/clojure/test/unrelated_test.clj"
+            unrelated.write_text("(ns unrelated-test)\n", encoding="utf-8")
+
+            def capture(command: list[str], **_kwargs: object) -> dict[str, object]:
+                if command[-1] == "-Sdescribe":
+                    stdout = f'{{:config-files ["{root / "deps.edn"}"]}}'
+                elif command[-1] == "-Spath":
+                    stdout = str(root / "bootstrap/clojure/test")
+                else:
+                    stdout = "runtime version"
+                return {
+                    "command": command,
+                    "exit_code": 0,
+                    "stdout": stdout,
+                    "stderr": "",
+                    "complete": True,
+                }
+
+            with mock.patch.object(runner, "command_capture", side_effect=capture), mock.patch.object(
+                runner.shutil, "which", return_value=sys.executable
+            ):
+                first = runner.shared_context_fingerprint(
+                    root,
+                    ["fake-runner"],
+                    module_catalog=self.module_catalog(),
+                    require_runtime_identity=True,
+                )
+                unrelated.write_text("(ns unrelated-test)\n;; edit\n", encoding="utf-8")
+                second = runner.shared_context_fingerprint(
+                    root,
+                    ["fake-runner"],
+                    module_catalog=self.module_catalog(),
+                    require_runtime_identity=True,
+                )
+            self.assertEqual(first["sha256"], second["sha256"])
+
+    def test_root_classpath_directory_rejects_symlinks_and_special_files(self) -> None:
+        for kind in ["class", "symlink", "fifo"]:
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                self.make_repository(root)
+                entry = root / "bootstrap/clojure/test/shadow.class"
+                if kind == "class":
+                    entry.write_bytes(b"AOT shadow")
+                elif kind == "symlink":
+                    target = root / "target.class"
+                    target.write_bytes(b"target")
+                    entry.symlink_to(target)
+                else:
+                    os.mkfifo(entry)
+
+                def capture(
+                    command: list[str], **_kwargs: object
+                ) -> dict[str, object]:
+                    if command[-1] == "-Sdescribe":
+                        stdout = f'{{:config-files ["{root / "deps.edn"}"]}}'
+                    elif command[-1] == "-Spath":
+                        stdout = str(root / "bootstrap/clojure/test")
+                    else:
+                        stdout = "runtime version"
+                    return {
+                        "command": command,
+                        "exit_code": 0,
+                        "stdout": stdout,
+                        "stderr": "",
+                        "complete": True,
+                    }
+
+                with mock.patch.object(
+                    runner, "command_capture", side_effect=capture
+                ), mock.patch.object(
+                    runner.shutil, "which", return_value=sys.executable
+                ):
+                    with self.assertRaisesRegex(
+                        runner.CheckpointError, "runtime identity is incomplete"
+                    ):
+                        runner.runtime_identity(root, ["fake-runner"], True)
+                    identity = runner.runtime_identity(
+                        root, ["fake-runner"], False
+                    )
+                self.assertFalse(identity["complete"])
+                self.assertTrue(identity["clojure_classpath_errors"])
+
+    def test_external_or_missing_classpath_directory_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "repository"
+            root.mkdir()
+            self.make_repository(root)
+            external = parent / "external-classes"
+            external.mkdir()
+            missing = parent / "missing-classes"
+
+            for bad_entry, message in [
+                (external, "external classpath directory"),
+                (missing, "classpath entry is absent"),
+            ]:
+                with self.subTest(bad_entry=bad_entry):
+                    def capture(
+                        command: list[str], **_kwargs: object
+                    ) -> dict[str, object]:
+                        if command[-1] == "-Sdescribe":
+                            stdout = f'{{:config-files ["{root / "deps.edn"}"]}}'
+                        elif command[-1] == "-Spath":
+                            stdout = str(bad_entry)
+                        else:
+                            stdout = "runtime version"
+                        return {
+                            "command": command,
+                            "exit_code": 0,
+                            "stdout": stdout,
+                            "stderr": "",
+                            "complete": True,
+                        }
+
+                    with mock.patch.object(
+                        runner, "command_capture", side_effect=capture
+                    ), mock.patch.object(
+                        runner.shutil, "which", return_value=sys.executable
+                    ):
+                        with self.assertRaisesRegex(
+                            runner.CheckpointError, "runtime identity is incomplete"
+                        ):
+                            runner.runtime_identity(root, ["fake-runner"], True)
+                        identity = runner.runtime_identity(
+                            root, ["fake-runner"], False
+                        )
+                    self.assertFalse(identity["complete"])
+                    self.assertRegex(identity["clojure_classpath_errors"][0], message)
 
     def test_held_shared_lock_fails_before_launching_a_module(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

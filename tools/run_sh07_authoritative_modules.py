@@ -20,11 +20,12 @@ import subprocess
 import sys
 import time
 import uuid
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 
 
-SCHEMA = "gravity/sh07-authoritative-module-checkpoints-v1"
-TOOL_VERSION = 1
+SCHEMA = "gravity/sh07-authoritative-module-checkpoints-v2"
+TOOL_VERSION = 2
+FINGERPRINT_POLICY_VERSION = 1
 DEFAULT_LOCK = Path("/tmp/gravity-sh07-heavy.lock")
 RUNNER_NAMESPACE = "gravity.self-hosting.sh07-authoritative-runner"
 MODULE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -42,7 +43,8 @@ class ProcessOutcome:
 
 
 Launcher = Callable[[Sequence[str], Path, Path, Path, float], ProcessOutcome]
-OutputValidator = Callable[[str, Path], bool]
+OutputValidator = Callable[[str, str, int, str, Path], bool]
+CatalogProvider = Callable[[], Mapping[str, str]]
 
 
 def utc_now() -> str:
@@ -73,26 +75,31 @@ def sha256_file(path: Path) -> str:
     return f"sha256:{digest.hexdigest()}"
 
 
-def relevant_files(root: Path) -> list[Path]:
+SHARED_GRAVITY_FILES = (
+    "bootstrap/gravity/p15_s23/compiler.gravity",
+    "bootstrap/gravity/p15_s23/emitter.gravity",
+    "bootstrap/gravity/src/gravity/macro.gravity",
+    "bootstrap/gravity/src/gravity/resolution.gravity",
+    "bootstrap/gravity/src/gravity/checked_core.gravity",
+)
+
+
+def shared_files(root: Path) -> list[Path]:
     required = [
         root / "deps.edn",
-        # Every SH-07 proof compiles its stage2 plan emitter from these sources.
-        # They live outside bootstrap/gravity/src, so the source-tree scan below
-        # cannot discover them implicitly.
-        root / "bootstrap/gravity/p15_s23/compiler.gravity",
-        root / "bootstrap/gravity/p15_s23/emitter.gravity",
+        *(root / relative for relative in SHARED_GRAVITY_FILES),
         root / "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
         root / "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj",
         Path(__file__).resolve(),
     ]
-    for directory in [root / "bootstrap/clojure/src", root / "bootstrap/gravity/src"]:
+    for directory in [root / "bootstrap/clojure/src"]:
         if not directory.is_dir():
             raise CheckpointError(f"required fingerprint directory is absent: {directory}")
         required.extend(path for path in directory.rglob("*") if path.is_file())
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
         raise CheckpointError(f"required fingerprint files are absent: {missing}")
-    return sorted(set(path.resolve() for path in required), key=str)
+    return sorted(set(path.absolute() for path in required), key=str)
 
 
 def command_capture(
@@ -114,9 +121,92 @@ def command_capture(
     }
 
 
+def classpath_directory_manifest(
+    root: Path, directory: Path
+) -> tuple[list[dict[str, object]], list[str]]:
+    """Fingerprint only load-affecting resources and reject unsafe shadows."""
+    entries: list[dict[str, object]] = []
+    errors: list[str] = []
+    try:
+        resolved_directory = directory.resolve(strict=True)
+    except OSError:
+        return entries, [f"classpath directory is absent: {directory}"]
+
+    def walk_error(error: OSError) -> None:
+        errors.append(f"classpath directory cannot be traversed: {error}")
+
+    for current, directory_names, file_names in os.walk(
+        resolved_directory, topdown=True, onerror=walk_error, followlinks=False
+    ):
+        current_path = Path(current)
+        try:
+            current_metadata = os.lstat(current_path)
+            current_resolved = current_path.resolve(strict=True)
+        except OSError:
+            errors.append(f"classpath directory disappeared: {current_path}")
+            directory_names[:] = []
+            continue
+        if (
+            stat.S_ISLNK(current_metadata.st_mode)
+            or not stat.S_ISDIR(current_metadata.st_mode)
+            or not current_resolved.is_relative_to(root)
+            or not current_resolved.is_relative_to(resolved_directory)
+        ):
+            errors.append(f"classpath directory traversal escaped: {current_path}")
+            directory_names[:] = []
+            continue
+        for name in sorted(directory_names):
+            child = current_path / name
+            try:
+                metadata = os.lstat(child)
+                resolved = child.resolve(strict=True)
+            except OSError:
+                errors.append(f"classpath directory entry is absent: {child}")
+                continue
+            if stat.S_ISLNK(metadata.st_mode):
+                errors.append(f"classpath directory entry is a symlink: {child}")
+            elif not stat.S_ISDIR(metadata.st_mode):
+                errors.append(f"unsupported classpath directory entry: {child}")
+            elif not resolved.is_relative_to(root) or not resolved.is_relative_to(
+                resolved_directory
+            ):
+                errors.append(f"classpath directory entry escapes its root: {child}")
+        for name in sorted(file_names):
+            child = current_path / name
+            try:
+                metadata = os.lstat(child)
+                resolved = child.resolve(strict=True)
+            except OSError:
+                errors.append(f"classpath file is absent: {child}")
+                continue
+            if stat.S_ISLNK(metadata.st_mode):
+                errors.append(f"classpath file is a symlink: {child}")
+            elif not stat.S_ISREG(metadata.st_mode):
+                errors.append(f"unsupported classpath file type: {child}")
+            elif not resolved.is_relative_to(root) or not resolved.is_relative_to(
+                resolved_directory
+            ):
+                errors.append(f"classpath file escapes its directory: {child}")
+            elif child.suffix == ".class":
+                errors.append(f"AOT classpath shadow is forbidden: {child}")
+            elif (
+                current_resolved == resolved_directory
+                and child.name in {"data_readers.clj", "data_readers.cljc"}
+            ):
+                entries.append(
+                    {
+                        "path": resolved.relative_to(resolved_directory).as_posix(),
+                        "size": resolved.stat().st_size,
+                        "sha256": sha256_file(resolved),
+                    }
+                )
+    return sorted(entries, key=lambda entry: str(entry["path"])), errors
+
+
 def runtime_identity(
     root: Path, base_command: Sequence[str], required: bool
 ) -> dict[str, object]:
+    root = root.resolve()
     launcher = str(base_command[0])
     java_home = os.environ.get("JAVA_HOME")
     java_candidate = (
@@ -139,6 +229,51 @@ def runtime_identity(
                 "sha256": sha256_file(resolved) if resolved.is_file() else None,
             }
         )
+    classpath_capture = command_capture([launcher, "-Spath"], cwd=root)
+    classpath_entries: list[dict[str, object]] = []
+    classpath_errors: list[str] = []
+    if classpath_capture.get("complete"):
+        raw_classpath = str(classpath_capture.get("stdout", "")).strip()
+        if not raw_classpath:
+            classpath_errors.append("Clojure classpath is empty")
+        for raw_entry in raw_classpath.split(os.pathsep) if raw_classpath else []:
+            candidate = Path(raw_entry).expanduser()
+            path = candidate if candidate.is_absolute() else root / candidate
+            try:
+                metadata = os.lstat(path)
+                resolved = path.resolve(strict=True)
+            except OSError:
+                classpath_errors.append(f"classpath entry is absent: {path}")
+                continue
+            if stat.S_ISLNK(metadata.st_mode):
+                classpath_errors.append(f"classpath entry is a symlink: {path}")
+            elif stat.S_ISREG(metadata.st_mode):
+                classpath_entries.append(
+                    {
+                        "path": str(resolved),
+                        "kind": "file",
+                        "size": resolved.stat().st_size,
+                        "sha256": sha256_file(resolved),
+                    }
+                )
+            elif stat.S_ISDIR(metadata.st_mode) and resolved.is_relative_to(root):
+                files, errors = classpath_directory_manifest(root, resolved)
+                classpath_errors.extend(errors)
+                classpath_entries.append(
+                    {
+                        "path": str(resolved),
+                        "kind": "root-contained-directory",
+                        "files": files,
+                    }
+                )
+            elif stat.S_ISDIR(metadata.st_mode):
+                classpath_errors.append(
+                    f"external classpath directory is not fingerprintable: {resolved}"
+                )
+            else:
+                classpath_errors.append(f"unsupported classpath entry type: {path}")
+    elif not classpath_capture.get("error"):
+        classpath_errors.append("Clojure classpath command failed")
     identity = {
         "required": required,
         "operating_system": platform.system(),
@@ -148,7 +283,11 @@ def runtime_identity(
         "java_sha256": sha256_file(java_path) if java_path.is_file() else None,
         "java_version": command_capture([str(java_path), "-version"], cwd=root),
         "clojure_sdescribe": sdescribe,
-        "clojure_classpath": command_capture([launcher, "-Spath"], cwd=root),
+        "clojure_classpath": classpath_capture,
+        "clojure_classpath_entries": sorted(
+            classpath_entries, key=lambda entry: str(entry["path"])
+        ),
+        "clojure_classpath_errors": classpath_errors,
         "clojure_config_files": config_files,
     }
     complete = bool(
@@ -156,6 +295,7 @@ def runtime_identity(
         and identity["java_version"]["complete"]
         and identity["clojure_sdescribe"]["complete"]
         and identity["clojure_classpath"]["complete"]
+        and not classpath_errors
         and config_match is not None
         and all(entry["sha256"] for entry in config_files)
     )
@@ -165,29 +305,45 @@ def runtime_identity(
     return identity
 
 
-def context_fingerprint(
-    root: Path, base_command: Sequence[str], *, require_runtime_identity: bool
-) -> dict[str, object]:
-    root = root.resolve()
+def file_entries(root: Path, paths: Sequence[Path]) -> list[dict[str, object]]:
     entries: list[dict[str, object]] = []
-    combined = hashlib.sha256()
-    for path in relevant_files(root):
+    for path in paths:
+        if path.is_symlink() or not path.is_file():
+            raise CheckpointError(f"fingerprint input must be a regular non-symlink file: {path}")
         try:
             relative = path.relative_to(root).as_posix()
         except ValueError:
             relative = f"external:{path}"
-        content_hash = sha256_file(path)
-        size = path.stat().st_size
-        entries.append({"path": relative, "size": size, "sha256": content_hash})
-        combined.update(relative.encode("utf-8"))
-        combined.update(b"\0")
-        combined.update(content_hash.encode("ascii"))
-        combined.update(b"\0")
+        entries.append(
+            {
+                "path": relative,
+                "size": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+        )
+    return sorted(entries, key=lambda entry: str(entry["path"]))
+
+
+def fingerprint(value: object) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+
+
+def shared_context_fingerprint(
+    root: Path,
+    base_command: Sequence[str],
+    *,
+    module_catalog: Mapping[str, str],
+    require_runtime_identity: bool,
+) -> dict[str, object]:
+    root = root.resolve()
+    catalog = validated_module_catalog(root, module_catalog)
     command = [str(value) for value in base_command]
     executable = Path(shutil.which(command[0]) or command[0]).expanduser()
     executable_hash = sha256_file(executable.resolve()) if executable.is_file() else None
     context = {
         "tool_version": TOOL_VERSION,
+        "fingerprint_policy_version": FINGERPRINT_POLICY_VERSION,
         "command": command,
         "resolved_executable": str(executable),
         "resolved_executable_sha256": executable_hash,
@@ -204,10 +360,80 @@ def context_fingerprint(
             ]
         },
         "runtime": runtime_identity(root, command, require_runtime_identity),
-        "files": entries,
+        "authoritative_module_catalog": catalog,
+        "files": file_entries(root, shared_files(root)),
     }
-    combined.update(json.dumps(context, sort_keys=True, separators=(",", ":")).encode())
-    context["sha256"] = f"sha256:{combined.hexdigest()}"
+    context["sha256"] = fingerprint(context)
+    return context
+
+
+def validated_module_catalog(
+    root: Path, catalog: Mapping[str, str]
+) -> dict[str, str]:
+    root = root.resolve()
+    if not isinstance(catalog, Mapping) or not catalog:
+        raise CheckpointError("authoritative module catalog is empty")
+    validated: dict[str, str] = {}
+    resolved_paths: set[Path] = set()
+    for module, relative in sorted(catalog.items()):
+        if not valid_module_name(module) or not isinstance(relative, str):
+            raise CheckpointError("authoritative module catalog has an invalid entry")
+        relative_path = Path(relative)
+        if (
+            not relative
+            or "\t" in relative
+            or "\n" in relative
+            or relative_path.is_absolute()
+            or relative_path.as_posix() != relative
+            or ".." in relative_path.parts
+        ):
+            raise CheckpointError(f"module source path is not normalized and relative: {relative}")
+        path = root / relative_path
+        try:
+            metadata = os.lstat(path)
+            resolved = path.resolve(strict=True)
+        except OSError as error:
+            raise CheckpointError(f"module source is absent: {relative}") from error
+        if (
+            stat.S_ISLNK(metadata.st_mode)
+            or not stat.S_ISREG(metadata.st_mode)
+            or not resolved.is_relative_to(root)
+        ):
+            raise CheckpointError(
+                f"module source must be a root-contained regular non-symlink file: {relative}"
+            )
+        if resolved in resolved_paths:
+            raise CheckpointError(f"authoritative modules cannot share a source: {relative}")
+        resolved_paths.add(resolved)
+        validated[module] = relative
+    return validated
+
+
+def module_context_fingerprint(
+    root: Path, module: str, relative: str, shared_sha256: str
+) -> dict[str, object]:
+    root = root.resolve()
+    path = root / relative
+    try:
+        metadata = os.lstat(path)
+        resolved = path.resolve(strict=True)
+    except OSError as error:
+        raise CheckpointError(f"module source is absent: {relative}") from error
+    if (
+        stat.S_ISLNK(metadata.st_mode)
+        or not stat.S_ISREG(metadata.st_mode)
+        or not resolved.is_relative_to(root)
+    ):
+        raise CheckpointError(
+            f"module source must be a root-contained regular non-symlink file: {relative}"
+        )
+    context = {
+        "fingerprint_policy_version": FINGERPRINT_POLICY_VERSION,
+        "module": module,
+        "shared_context_sha256": shared_sha256,
+        "files": file_entries(root, [path]),
+    }
+    context["sha256"] = fingerprint(context)
     return context
 
 
@@ -320,6 +546,11 @@ EDN_OUTPUT_VALIDATOR = r"""
 (require '[clojure.edn :as edn] '[clojure.java.io :as io])
 (let [path (System/getenv "GRAVITY_SH07_OUTPUT_PATH")
       expected-module (System/getenv "GRAVITY_SH07_EXPECTED_MODULE")
+      expected-source-path (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_PATH")
+      expected-source-byte-count
+      (Long/parseLong (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_BYTE_COUNT"))
+      expected-source-bytes-sha256
+      (System/getenv "GRAVITY_SH07_EXPECTED_SOURCE_BYTES_SHA256")
       passed?
       (with-open [reader (java.io.PushbackReader. (io/reader path))]
         (let [value (edn/read {:eof ::eof} reader)
@@ -335,6 +566,9 @@ EDN_OUTPUT_VALIDATOR = r"""
                (false? (:persistent-iteration-cache-used? value))
                (vector? modules)
                (= expected-module (:module result))
+               (= expected-source-path (:source-path result))
+               (= expected-source-byte-count (:source-byte-count result))
+               (= expected-source-bytes-sha256 (:source-bytes-sha256 result))
                (= :accepted (:status result))
                (= :passed (:verification-status result))
                (= :complete (:capability-proof-status result))
@@ -347,7 +581,14 @@ EDN_OUTPUT_VALIDATOR = r"""
 
 
 def output_contract_passed(
-    module: str, stdout_path: Path, *, clojure_command: str, cwd: Path
+    module: str,
+    expected_source_path: str,
+    expected_source_byte_count: int,
+    expected_source_bytes_sha256: str,
+    stdout_path: Path,
+    *,
+    clojure_command: str,
+    cwd: Path,
 ) -> bool:
     try:
         result = subprocess.run(
@@ -363,6 +604,13 @@ def output_contract_passed(
                 **os.environ,
                 "GRAVITY_SH07_OUTPUT_PATH": str(stdout_path.resolve()),
                 "GRAVITY_SH07_EXPECTED_MODULE": module,
+                "GRAVITY_SH07_EXPECTED_SOURCE_PATH": expected_source_path,
+                "GRAVITY_SH07_EXPECTED_SOURCE_BYTE_COUNT": str(
+                    expected_source_byte_count
+                ),
+                "GRAVITY_SH07_EXPECTED_SOURCE_BYTES_SHA256": (
+                    expected_source_bytes_sha256
+                ),
             },
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -381,7 +629,7 @@ def valid_module_name(value: object) -> bool:
 def resumable(
     module: str,
     entry: object,
-    fingerprint: str,
+    module_fingerprint: str,
     command: Sequence[str],
     state_dir: Path,
 ) -> bool:
@@ -390,7 +638,7 @@ def resumable(
     if not (
         entry.get("state") == "passed"
         and entry.get("exit_code") == 0
-        and entry.get("context_fingerprint") == fingerprint
+        and entry.get("module_context_fingerprint") == module_fingerprint
         and entry.get("command") == list(command)
         and entry.get("output_contract_checked") is True
     ):
@@ -458,11 +706,13 @@ def run_modules(
     root: Path,
     state_dir: Path,
     modules: Sequence[str],
+    module_catalog: Mapping[str, str],
     base_command: Sequence[str] | None = None,
     timeout_seconds: float = 21600,
     resume: bool = True,
     launcher: Launcher = default_launcher,
     output_validator: OutputValidator | None = None,
+    catalog_provider: CatalogProvider | None = None,
     lock_path: Path | None = DEFAULT_LOCK,
 ) -> tuple[int, dict[str, object]]:
     if (
@@ -474,21 +724,56 @@ def run_modules(
     if timeout_seconds <= 0:
         raise CheckpointError("timeout must be positive")
     root = root.resolve()
+    catalog = validated_module_catalog(root, module_catalog)
+    unknown = sorted(set(modules) - set(catalog))
+    if unknown:
+        raise CheckpointError(f"selected modules are absent from the catalog: {unknown}")
     state_dir = Path(os.path.abspath(state_dir.expanduser()))
     ensure_owned_directory(state_dir)
     modules_dir = state_dir / "modules"
     ensure_owned_directory(modules_dir)
     manifest_path = state_dir / "manifest.json"
     base = list(base_command or default_base_command())
-    context = context_fingerprint(
-        root, base, require_runtime_identity=launcher is default_launcher
+    if catalog_provider is not None:
+        provider = catalog_provider
+    elif launcher is default_launcher:
+        def provider() -> Mapping[str, str]:
+            return discover_module_catalog(
+                root, base, min(timeout_seconds, 120)
+            )
+    else:
+        def provider() -> Mapping[str, str]:
+            return dict(catalog)
+    shared_context = shared_context_fingerprint(
+        root,
+        base,
+        module_catalog=catalog,
+        require_runtime_identity=launcher is default_launcher,
     )
-    fingerprint = str(context["sha256"])
+    shared_fingerprint = str(shared_context["sha256"])
     validator = output_validator or (
-        lambda module, output: output_contract_passed(
-            module, output, clojure_command=base[0], cwd=root
+        lambda module, source_path, source_size, source_sha, output: output_contract_passed(
+            module,
+            source_path,
+            source_size,
+            source_sha,
+            output,
+            clojure_command=base[0],
+            cwd=root,
         )
     )
+    try:
+        confirmed_catalog = validated_module_catalog(root, provider())
+        confirmed_context = shared_context_fingerprint(
+            root,
+            base,
+            module_catalog=confirmed_catalog,
+            require_runtime_identity=launcher is default_launcher,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise CheckpointError(f"startup catalog confirmation failed: {error}") from error
+    if confirmed_context["sha256"] != shared_fingerprint:
+        raise CheckpointError("startup catalog/shared context was not stable")
 
     lock_stream = None
     if lock_path is not None:
@@ -507,40 +792,124 @@ def run_modules(
 
     try:
         previous = load_manifest(manifest_path)
-        same_context = bool(previous and previous.get("context_fingerprint") == fingerprint)
-        previous_modules = previous.get("modules", {}) if same_context and resume else {}
+        same_shared_context = bool(
+            previous
+            and previous.get("shared_context_fingerprint") == shared_fingerprint
+        )
+        previous_modules = (
+            previous.get("modules", {}) if same_shared_context and resume else {}
+        )
         if not isinstance(previous_modules, dict):
             previous_modules = {}
         manifest: dict[str, object] = {
             "schema": SCHEMA,
             "tool_version": TOOL_VERSION,
+            "fingerprint_policy_version": FINGERPRINT_POLICY_VERSION,
             "state": "running",
-            "context_fingerprint": fingerprint,
-            "context": context,
+            "shared_context_fingerprint": shared_fingerprint,
+            "shared_context": shared_context,
             "selected_modules": list(modules),
+            "module_contexts": {},
             "modules": dict(previous_modules),
+            "resumed_modules": [],
             "aggregate_authoritative": False,
             "authority_scope": "individual-existing-runner-outputs-only",
             "started_at": utc_now(),
             "updated_at": utc_now(),
         }
-        if previous and not same_context:
-            manifest["invalidated_context_fingerprint"] = previous.get("context_fingerprint")
+        if previous and not same_shared_context:
+            manifest["invalidated_shared_context_fingerprint"] = previous.get(
+                "shared_context_fingerprint"
+            )
         atomic_json_write(manifest_path, manifest)
 
         records = manifest["modules"]
         assert isinstance(records, dict)
+        module_contexts = manifest["module_contexts"]
+        assert isinstance(module_contexts, dict)
+        completed_fingerprints: dict[str, str] = {}
+
+        def current_module_context(module: str) -> dict[str, object]:
+            return module_context_fingerprint(
+                root, module, catalog[module], shared_fingerprint
+            )
+
+        def stability(
+            *, rediscover_catalog: bool = False
+        ) -> tuple[bool, str | None, list[str], str | None]:
+            try:
+                observed_catalog = (
+                    validated_module_catalog(root, provider())
+                    if rediscover_catalog
+                    else catalog
+                )
+                observed_shared = shared_context_fingerprint(
+                    root,
+                    base,
+                    module_catalog=observed_catalog,
+                    require_runtime_identity=launcher is default_launcher,
+                )
+                observed_shared_sha = str(observed_shared["sha256"])
+                if observed_shared_sha != shared_fingerprint:
+                    return False, observed_shared_sha, [], None
+                stale = [
+                    completed
+                    for completed, expected in completed_fingerprints.items()
+                    if current_module_context(completed)["sha256"] != expected
+                ]
+                return not stale, observed_shared_sha, stale, None
+            except (CheckpointError, OSError, subprocess.TimeoutExpired) as error:
+                return False, None, [], str(error)
+
+        def stop_for_context_change(
+            module: str, observed_shared: str | None, stale: Sequence[str], error: str | None
+        ) -> tuple[int, dict[str, object]]:
+            manifest["state"] = "context-changed"
+            manifest["stopped_at_module"] = module
+            manifest["stale_modules"] = list(stale)
+            manifest["shared_context_fingerprint_after"] = observed_shared
+            if error:
+                manifest["context_error"] = error
+            manifest["finished_at"] = utc_now()
+            manifest["updated_at"] = utc_now()
+            atomic_json_write(manifest_path, manifest)
+            return 75, manifest
+
         for module in modules:
+            stable, observed_shared, stale, context_error = stability()
+            if not stable:
+                return stop_for_context_change(
+                    module, observed_shared, stale, context_error
+                )
+            module_context = current_module_context(module)
+            module_fingerprint = str(module_context["sha256"])
+            source_entry = module_context["files"][0]
+            assert isinstance(source_entry, dict)
+            source_size = int(source_entry["size"])
+            source_sha = str(source_entry["sha256"])
+            module_contexts[module] = module_context
             command = [*base, "--fresh", module]
             prior = records.get(module)
             if (
                 resume
-                and same_context
-                and resumable(module, prior, fingerprint, command, state_dir)
+                and same_shared_context
+                and resumable(
+                    module, prior, module_fingerprint, command, state_dir
+                )
                 and validator(
-                    module, state_dir / f"modules/{module}.stdout.log"
+                    module,
+                    catalog[module],
+                    source_size,
+                    source_sha,
+                    state_dir / f"modules/{module}.stdout.log",
                 )
             ):
+                completed_fingerprints[module] = module_fingerprint
+                resumed = manifest["resumed_modules"]
+                assert isinstance(resumed, list)
+                resumed.append(module)
+                manifest["updated_at"] = utc_now()
+                atomic_json_write(manifest_path, manifest)
                 continue
             stdout_path = modules_dir / f"{module}.stdout.log"
             stderr_path = modules_dir / f"{module}.stderr.log"
@@ -549,7 +918,8 @@ def run_modules(
             records[module] = {
                 "state": "running",
                 "command": command,
-                "context_fingerprint": fingerprint,
+                "module_context_fingerprint": module_fingerprint,
+                "module_context": module_context,
                 "stdout_path": relative_stdout,
                 "stderr_path": relative_stderr,
                 "started_at": utc_now(),
@@ -564,14 +934,18 @@ def run_modules(
                 stdout_path.touch(exist_ok=True)
                 stderr_path.write_text(str(error) + "\n", encoding="utf-8")
                 outcome = ProcessOutcome(127, False, 0.0)
-            context_after = context_fingerprint(
-                root, base, require_runtime_identity=launcher is default_launcher
-            )
-            context_stable = context_after["sha256"] == fingerprint
+            completed_fingerprints[module] = module_fingerprint
+            context_stable, shared_after, stale, context_error = stability()
             checked = (
                 context_stable
                 and outcome.exit_code == 0
-                and validator(module, stdout_path)
+                and validator(
+                    module,
+                    catalog[module],
+                    source_size,
+                    source_sha,
+                    stdout_path,
+                )
             )
             state = (
                 "context-changed"
@@ -597,9 +971,11 @@ def run_modules(
             records[module] = {
                 "state": state,
                 "command": command,
-                "context_fingerprint": fingerprint,
+                "module_context_fingerprint": module_fingerprint,
+                "module_context": module_context,
                 "context_stable": context_stable,
-                "context_fingerprint_after": context_after["sha256"],
+                "shared_context_fingerprint_after": shared_after,
+                "stale_modules": list(stale),
                 "stdout_path": relative_stdout,
                 "stderr_path": relative_stderr,
                 "stdout_sha256": sha256_file(stdout_path),
@@ -611,6 +987,8 @@ def run_modules(
                 "elapsed_seconds": round(outcome.elapsed_seconds, 3),
                 "finished_at": utc_now(),
             }
+            if context_error:
+                records[module]["context_error"] = context_error
             manifest["updated_at"] = utc_now()
             if state != "passed":
                 manifest["state"] = state
@@ -620,6 +998,13 @@ def run_modules(
                 return exit_code, manifest
             atomic_json_write(manifest_path, manifest)
 
+        stable, observed_shared, stale, context_error = stability(
+            rediscover_catalog=True
+        )
+        if not stable:
+            return stop_for_context_change(
+                modules[-1], observed_shared, stale, context_error
+            )
         manifest["state"] = "completed"
         manifest["finished_at"] = utc_now()
         manifest["updated_at"] = utc_now()
@@ -631,9 +1016,11 @@ def run_modules(
             lock_stream.close()
 
 
-def discover_modules(root: Path, base_command: Sequence[str], timeout: float) -> list[str]:
+def discover_module_catalog(
+    root: Path, base_command: Sequence[str], timeout: float
+) -> dict[str, str]:
     result = subprocess.run(
-        [*base_command, "--list"],
+        [*base_command, "--catalog"],
         cwd=root,
         capture_output=True,
         text=True,
@@ -641,15 +1028,21 @@ def discover_modules(root: Path, base_command: Sequence[str], timeout: float) ->
         check=False,
     )
     if result.returncode != 0:
-        raise CheckpointError(f"module listing failed: {result.stderr.strip()}")
-    modules = [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    if (
-        not modules
-        or len(set(modules)) != len(modules)
-        or not all(valid_module_name(module) for module in modules)
-    ):
-        raise CheckpointError("module listing was empty, duplicated, or unsafe")
-    return modules
+        raise CheckpointError(f"module catalog failed: {result.stderr.strip()}")
+    catalog: dict[str, str] = {}
+    for line in result.stdout.splitlines():
+        if not line or line.count("\t") != 1:
+            raise CheckpointError("module catalog output is malformed")
+        module, relative = line.split("\t")
+        if module in catalog:
+            raise CheckpointError("module catalog output contains duplicate modules")
+        catalog[module] = relative
+    return validated_module_catalog(root, catalog)
+
+
+def discover_modules(root: Path, base_command: Sequence[str], timeout: float) -> list[str]:
+    """Compatibility helper returning the strict catalog's ordered names."""
+    return list(discover_module_catalog(root, base_command, timeout))
 
 
 def parser() -> argparse.ArgumentParser:
@@ -674,7 +1067,10 @@ def main(arguments: list[str] | None = None) -> int:
     values = parser().parse_args(arguments)
     base = default_base_command()
     try:
-        available = discover_modules(values.cwd, base, min(values.timeout_seconds, 120))
+        catalog = discover_module_catalog(
+            values.cwd, base, min(values.timeout_seconds, 120)
+        )
+        available = list(catalog)
         if values.list:
             print("\n".join(available))
             return 0
@@ -687,9 +1083,13 @@ def main(arguments: list[str] | None = None) -> int:
             root=values.cwd,
             state_dir=values.state_dir,
             modules=selected,
+            module_catalog=catalog,
             base_command=base,
             timeout_seconds=values.timeout_seconds,
             resume=not values.no_resume,
+            catalog_provider=lambda: discover_module_catalog(
+                values.cwd, base, min(values.timeout_seconds, 120)
+            ),
             lock_path=values.lock,
         )
         print(json.dumps({

@@ -242,18 +242,42 @@ the shared lock path (the default is `/tmp/gravity-sh07-heavy.lock`). The lock
 is acquired non-blocking, so a concurrent memory-heavy or exclusive run fails
 without competing for the host.
 
-Resume is conservative: the tool fingerprints the relevant source trees,
-proof contract, authoritative runner, checkpoint tool, command, executable,
-tool version, Java binary/version, Clojure configuration and classpath, host
-OS/architecture, and selected JVM environment. A module is resumed only when
-the fingerprint and command match, the prior receipt passes a structural
-single-EDN output check for exactly that module, and the canonical non-symlink
-stdout/stderr files still match their SHA-256 hashes. Any context change
-invalidates prior module receipts; a context change detected across a running
-child stops the sequence before another module starts. Each child command is
-the existing authoritative runner with `--fresh <module>`, and the manifest
-records per-module status, elapsed time, normalized and raw exit codes, output
-paths, and output hashes.
+Resume is conservative and uses the v2 manifest's two-tier context. The shared
+context covers all bootstrap Clojure implementation sources, `deps.edn`, the proof contract,
+authoritative runner, checkpoint tool, command and launcher contents, tool
+version, Java binary/version, Clojure configuration, every regular external
+classpath file by content, host OS/architecture, selected JVM environment,
+the stage-2 compiler/emitter, and the shared macro, resolution, and checked-core
+Gravity sources. A root-local classpath directory contributes its path and only the
+root load resources that can affect this runner, such as `data_readers.clj` or
+`data_readers.cljc`; unrelated test sources do not invalidate checkpoints.
+Any `.class` shadow, symlink, special file, path escape, missing classpath
+entry, or external classpath directory makes the runtime identity unusable.
+The shared context also binds the complete validated module-to-source catalog.
+The module context adds exactly the source path, byte count, and content hash
+reported for that module by the catalog.
+Thus a shared-context change invalidates every receipt, while a module-local
+source change invalidates only that module; changing an unselected module does
+not invalidate the selected receipts.
+
+A module is resumed only when both context tiers and the command match, the
+prior receipt passes a structural single-EDN output check for exactly that
+module and its catalog source path, byte count, and SHA-256, and the canonical
+non-symlink stdout/stderr files still match their SHA-256 hashes. The tool
+performs a two-discovery catalog/shared-context handshake at startup and one
+final catalog rediscovery. Process-local source checks surround children; the
+receipt byte binding catches a transient current-module edit even if its bytes
+are restored before the final snapshot. A mutation stops the sequence with
+exit 75, or rejects the output when its source binding differs. Each child
+command is the existing authoritative runner with `--fresh <module>`, and the
+manifest records
+per-module status, elapsed time, normalized and raw exit codes, output paths,
+and output hashes.
+
+Version 1 checkpoint manifests are deliberately unsupported and never resume.
+After upgrading the tool, archive or delete the old `--state-dir` and rerun the
+selected modules to create a v2 manifest; using a new state directory is also
+safe.
 
 The checkpoint manifest and its summary are coordination records, not a new
 aggregate proof. They explicitly report `aggregate_authoritative: false` and
