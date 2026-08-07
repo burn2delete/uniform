@@ -448,7 +448,8 @@ verification, and seed retirement remain pending. The later proof-traversal
 deduplication changed a shared bootstrap fingerprint without changing this C7
 source; a fresh checkpoint-v2 replay is therefore pending before completion or
 release evidence, and the recorded v1 receipt is not resumed as current proof.
-The current stage-owned C7 source is 176,551 bytes with hash
+The stage-owned C7 source revision later proven at `5fe2013` is 176,551 bytes
+with hash
 `sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975`.
 It promotes exactly one capture-free named monomorphic fixed-arity function value
 through one `apply-one` hop, derives the authoritative integer signature from B47
@@ -476,6 +477,27 @@ accepted exact-context evidence for `5fe2013`, not current-context authority for
 those later commits. The 55.85-minute result is the new observational baseline:
 it is 38.7% slower than the 40.27-minute historical run while the source is
 24.2% larger, so it does not support a speedup claim or a controlled comparison.
+The current stage-owned C7 source is 205,845 bytes with hash
+`sha256:2b6f5dfa13c9de10514d7faa3cad3c422fda52a158284557bdf824ff38e5191a`.
+It retains the bounded one-hop higher-order result and adds one narrower
+self-recursive inference case: exactly one named, capture-free,
+positive-fixed-arity component with one direct positional parameter-forwarding
+self call, a direct primitive-literal sibling base, and concrete external call
+evidence. Its fixed-point context is node-order independent, its recursive and
+external B47 edges remain distinct and identity-bound, and recursive constraints
+are shared by the typed core, top-level result, and semantic identity. The final
+namespace gate passed 6 tests and 103 assertions in 65.406 seconds of test time
+with exactly one authenticated `.gravity` carrier and 4.263 GB sampled peak
+resident memory. Thirteen existing higher-order and first-order compatibility
+tests separately passed 130 assertions. These are current-runtime
+non-authoritative integration results. Zero-arity recursion, transformed or
+literal recursive arguments,
+nonliteral bases, multiple recursive calls or components, mutual recursion,
+recursive captures or higher-order values, and polymorphic, multi-arity,
+variadic, or nonconvergent recursion remain rejected or pending. The prior
+source-bound proof and census remain exact historical evidence for `5fe2013`;
+they do not authenticate this newer source, whose authority contract remains
+deliberately stale and fail-closed pending a separately reviewed fresh run.
 The C8 effect-checker source adds 44,102 authenticated bytes in 40 fragments
 containing 3,301 forms, 410 bindings, and 1,078 resolutions. It lowers to 2,788
 canonical core nodes with 40 definitions: 34 executable SH-09 functions and

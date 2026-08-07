@@ -18,10 +18,19 @@ The bounded slices cover primitive literals, vector/map/set literal
 descriptors, definitions, Gravity truthiness, equal-type conditional joins,
 fixed-arity first-order functions, immutable `let` locals, direct local calls,
 and one capture-free named callable value hop with a monomorphic integer
-signature. Function inference uses a declared finite round bound. Recursive
-call components are covered by the qualified host-validated B47 evidence
-boundary and rejected pending annotations. Other nonlocal or lexically supplied
-callable shapes remain explicit `C7-ANNOTATION` rejections.
+signature. Function inference uses a declared finite round bound. The
+`function-self-recursive-type` pair additionally admits exactly one named,
+capture-free, positive-fixed-arity self edge. Its recursive call must forward
+each positional parameter directly, in exact arity/order and binding lineage;
+its sibling branch must be a direct primitive literal; and a concrete external
+call must supply every parameter slot. The bounded monotone fixed point must
+converge. It emits an additive recursive proof, call fact, and constraint
+ledger while preserving the function skeleton's pending ownership and
+thrown-error obligations. Mutual SCCs, zero-arity/no-base cycles, captures,
+higher-order or polymorphic recursion, transformed/literal recursive
+arguments, multi-arity/variadic recursion, edge/order tampering, and
+nonconvergence remain explicit C7 diagnostics. Other nonlocal or lexically
+supplied callable shapes remain explicit `C7-ANNOTATION` rejections.
 
 All accepted and rejected function fixtures first pass through the SH-07 B47
 canonical lowering path and are then consumed by the Gravity C7 leaf. This is
@@ -36,7 +45,8 @@ origin, generated-origin, binding, ordered-argument, and B47 identity-preimage
 data. Digest preimages are deterministic and checked for exact equality, but
 their digest resolution remains coordinator-owned. They do not claim list
 lowering, general higher-order calls, captures, multi-hop callable flow,
-variadic or multi-arity functions, recursive inference, records, unions,
-protocols, generics, casts, dynamic boundaries, ownership, layout, schemas,
+variadic or multi-arity functions, general recursive inference beyond the
+single bounded self-edge rule, records, unions, protocols, generics, casts,
+dynamic boundaries, ownership, layout, schemas,
 effect legality, capability legality, native authenticated-envelope
 cryptographic verification, or complete SH-08 support.

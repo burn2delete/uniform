@@ -25194,7 +25194,7 @@
            (bootstrap/check-artifact-module-name artifact)))
     (is (= :meta (get-in artifact [:module-artifact :profile])))
     (is (= source-path (get-in artifact [:namespace-table 0 :source-path])))
-    (is (= "sha256:648c71d18f5b81649a8d6d755e1e73b5ba502d359e3a972e4a9341dff6dee975"
+    (is (= "sha256:2b6f5dfa13c9de10514d7faa3cad3c422fda52a158284557bdf824ff38e5191a"
            (get-in artifact [:module-artifact :source-hash])))
     (is (zero? (:exit cli-result)))
     (is (= "gravity stage0 check passed: gravity.compiler.c7-type-checker-engine\n"

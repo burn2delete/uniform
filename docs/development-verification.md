@@ -302,13 +302,17 @@ python3 tools/run_sh07_authoritative_modules.py \
 The attestation is checked against current source bytes, raw stdout, the
 proof-contract hash, artifact id, and census hash. It retains
 `individual-source-bound-derived` scope and never creates aggregate authority.
-The first current C7 source-bound run completed in 3,351.068 seconds (55.85
-minutes) for 176,551 source bytes. The older 142,136-byte revision completed in
+The first C7 source-bound run completed at exact proof commit `5fe2013` in
+3,351.068 seconds (55.85 minutes) for 176,551 source bytes. The older
+142,136-byte revision completed in
 2,416.213 seconds (40.27 minutes). This is a new observational planning
 baseline, not a controlled optimization benchmark: source semantics, schema,
 and proof work changed, raw wall time increased 38.7%, and bytes per second fell
-about 10.4%. Profile the exact current proof phase before proposing another
+about 10.4%. Profile that exact `5fe2013` proof phase before proposing another
 performance change; do not infer a speedup from interpreter microbenchmarks.
+The later 205,845-byte C7 source is a different candidate and deliberately
+fails the source-bound authority preflight until its contract is reviewed and
+updated; the 55.85-minute receipt must not be relabeled as current for it.
 `--fresh all` is the exhaustive SH-07 transaction and is reserved for the
 stable-candidate/release lane because of its measured runtime and memory cost.
 
