@@ -68,9 +68,10 @@ delegate to `:test` and therefore cannot widen into the broader suite.
 
 ## Stage1 SH-01 handoff and measured boundary
 
-On the integration host, the bounded alias ran 50 tests and 290 assertions in
-1.98 seconds of full-process wall time, including executor shutdown. That is an
-absolute observation of this revision's unit-gate cost, not a cold-start
+The bounded alias ran 50 tests and 290 assertions in 1.98 seconds in the clean
+integration worktree and 2.57 seconds in the active coordinator worktree,
+including executor shutdown. Those are absolute observations of this
+revision's unit-gate cost, not a cold-start
 comparison or a claim that the parallel runner uses fewer processes. The
 parallel runner still launches one JVM per selected namespace.
 
