@@ -94824,9 +94824,9 @@
   [plan]
   (and (true? (:compiler-artifact-plan? plan))
        (= :gravity/stage2-compiler-artifact-plan (:kind plan))
-       (= :meta (get-in plan [:module :profile]))
+       (= :meta (:profile (:module plan)))
        (= :p15-s23-stage2-expression-lowering
-          (get-in plan [:compiler :stage]))))
+          (:stage (:compiler plan)))))
 
 (defn- p15-s23-stage2-runtime-add
   [args]
