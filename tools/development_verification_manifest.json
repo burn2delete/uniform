@@ -1,12 +1,14 @@
 {
   "schema_version": 1,
   "name": "gravity-stage0-development-verification",
-  "description": "Stage 0 and Milestone 0 verification graph for fast, evidence-producing development loops.",
+  "description": "Stage 0 and Milestone 0 verification graph with a bounded Stage1 SH-01 unit handoff for fast, evidence-producing development loops.",
   "scope": {
     "stage": "stage0",
+    "stage1_handoff": "SH-01 planner and parallel-runner unit preflight",
     "milestones": ["M0-documentation-lock", "M1-hosted-hello-slice"],
     "included": [
       "foundation contract and documentation validators",
+      "the Stage1 SH-01 planner and parallel-runner unit preflight",
       "hosted reader validator",
       "first hosted hello and core application fixtures",
       "the existing Clojure bootstrap test surface"
@@ -204,6 +206,36 @@
         "tools/tests/test_verify_development.py"
       ],
       "depends_on": []
+    },
+    {
+      "id": "stage1-sh01-unit",
+      "lane": "preflight",
+      "cost": "cheap",
+      "lock": null,
+      "exclusive": false,
+      "authority": "none",
+      "daemonization": "forbidden",
+      "fresh": true,
+      "timeout_seconds": 120,
+      "command": [
+        "clojure",
+        "-M:sh01-test"
+      ],
+      "inputs": [
+        "docs/self-hosting-slice-backlog.md",
+        "docs/self-hosting-slice-ownership.edn",
+        "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner.clj",
+        "bootstrap/clojure/test/gravity/self_hosting/**/*_test.clj"
+      ],
+      "tool_inputs": [
+        "deps.edn"
+      ],
+      "depends_on": [
+        "stage0-orchestrator-unit"
+      ]
     },
     {
       "id": "stage0-reader",

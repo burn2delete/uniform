@@ -1077,11 +1077,37 @@ class VerifyDevelopmentTests(unittest.TestCase):
         self.assertTrue(all(item["cost"] == "heavy" and item["lock"] for item in heavy_candidates))
         self.assertTrue(all(item.get("fresh") is True for item in heavy_candidates))
         self.assertTrue(all(item.get("authority") == "none" for item in heavy_candidates))
-        clojure_checks = [item for item in manifest["checks"] if item["command"] and item["command"][0] == "clojure"]
-        self.assertTrue(clojure_checks)
-        self.assertTrue(all(item.get("fresh") is True for item in clojure_checks))
-        self.assertTrue(all("bin/gravity" in item["inputs"] for item in clojure_checks))
-        self.assertTrue(all("bootstrap/gravity/**" in item["inputs"] for item in clojure_checks))
+        stage0_clojure_checks = [
+            item
+            for item in manifest["checks"]
+            if item["id"].startswith("stage0-")
+            and item["command"]
+            and item["command"][0] == "clojure"
+        ]
+        self.assertTrue(stage0_clojure_checks)
+        self.assertTrue(all(item.get("fresh") is True for item in stage0_clojure_checks))
+        self.assertTrue(all("bin/gravity" in item["inputs"] for item in stage0_clojure_checks))
+        self.assertTrue(all("bootstrap/gravity/**" in item["inputs"] for item in stage0_clojure_checks))
+        sh01_unit = next(item for item in manifest["checks"] if item["id"] == "stage1-sh01-unit")
+        self.assertEqual(sh01_unit["lane"], "preflight")
+        self.assertEqual(sh01_unit["command"], ["clojure", "-M:sh01-test"])
+        self.assertIs(sh01_unit["fresh"], True)
+        self.assertEqual(sh01_unit["depends_on"], ["stage0-orchestrator-unit"])
+        self.assertEqual(sh01_unit["tool_inputs"], ["deps.edn"])
+        self.assertEqual(
+            set(sh01_unit["inputs"]),
+            {
+                "docs/self-hosting-slice-backlog.md",
+                "docs/self-hosting-slice-ownership.edn",
+                "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_runner.clj",
+                "bootstrap/clojure/test/gravity/self_hosting/**/*_test.clj",
+            },
+        )
+        self.assertNotIn("bin/gravity", sh01_unit["inputs"])
+        self.assertNotIn("bootstrap/gravity/**", sh01_unit["inputs"])
         full_suite = next(item for item in manifest["checks"] if item["id"] == "stage0-clojure-suite")
         self.assertIn("bin/gravity-bootstrap", full_suite["inputs"])
 

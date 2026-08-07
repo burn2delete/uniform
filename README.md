@@ -81,13 +81,28 @@ gravity self-host verify
 until final self-hosting and seed retirement are proven.
 
 For development, plan the smallest Stage 0 verification graph before running
-it, then use exact or related test vars in one JVM:
+it. The bounded Stage1 SH-01 handoff runs only the planner and parallel-runner
+unit namespaces in one JVM; use exact or related test vars for implementation
+work outside that unit boundary:
 
 ```bash
 python3 tools/verify_development.py --dry-run --explain --human
 python3 tools/verify_development.py --lane preflight --lane focused --resume --human
+clojure -M:sh01-test
 clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
 ```
+
+`:sh01-test` runs its two namespaces in a fixed order, emits an explicitly
+non-authoritative EDN result, and exits nonzero on a failure or error. It does
+not run the selected self-hosting implementation namespaces or replace exact,
+iteration, authoritative, or release verification.
+
+The SH-01 parallel runner treats every child timeout as containment-unproven
+and stops the scheduler even without `--fail-fast`: queued and exclusive jobs
+are skipped while work already in flight drains. Its `ProcessHandle` cleanup
+is best effort, not strict containment of arbitrary descendants. Stream-capture
+failure is also a nonzero fatal stop; stdout and stderr are fully drained with
+bounded byte/character retention and stateful UTF-8 accounting.
 
 `--resume` applies only to matching non-authoritative receipts. The
 `heavy-candidate` lane is always fresh and serialized, but its command results

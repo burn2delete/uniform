@@ -1,8 +1,9 @@
-# Stage 0 Development Verification Bridge
+# Stage 0 Development Verification and Stage1 SH-01 Bridge
 
 Status: supplemental rollout guide; outside the 240-document inventory
 
-This guide is an implementation bridge for the Stage 0 development runner. It
+This guide is an implementation bridge for the Stage 0 development runner and
+the bounded Stage1 SH-01 unit handoff. It
 does not replace or amend `docs/development-verification.md`, the phase
 README files, or the D0-D9, BOOT, TEST, and package contracts. Those documents
 remain the source of truth for verification, safety, provenance, authority,
@@ -19,23 +20,30 @@ receipt is development evidence only: it is non-authoritative until the
 normative artifact checks and an explicit authority-promotion decision are
 implemented.
 
+The first Stage1 handoff is deliberately smaller than a self-hosting slice
+run. `clojure -M:sh01-test` requires and runs only the SH-01 impact-planner and
+parallel-runner unit namespaces, in that fixed order and in one JVM. Its final
+EDN report states `:authority :non-authoritative`, and any test failure or error
+produces a nonzero exit. It validates selection and scheduling mechanics; it
+does not execute the namespaces selected by a plan.
+
 The bridge is intentionally subordinate. It records current implementation
 behavior and deferred work; it does not define a new language, backend,
 self-hosting, seed-retirement, or release contract.
 
 ## Implemented and deferred scope
 
-| Area | Implemented in the Stage 0 runner | Deferred until the governing contracts and artifacts are wired |
+| Area | Implemented in the current bridge | Deferred until the governing contracts and artifacts are wired |
 | --- | --- | --- |
-| Selection | Changed-path matching, lane filtering, explicit-check selection, dependency/downstream closure, and fail-closed unmatched/out-of-lane diagnostics | SH-01/SH-07 impact planning and later-stage graph migration |
+| Selection | Changed-path matching, lane filtering, explicit-check selection, dependency/downstream closure, fail-closed unmatched/out-of-lane diagnostics, and a fresh SH-01 planner/runner unit preflight | SH-01 selected-namespace execution, SH-07 proof integration, and later-stage graph migration |
 | Receipts | JSON plan and execution receipts with command, input, dependency, lock, mutation, timeout, and non-authoritative status | Promotion to an authority receipt or stage/release decision |
 | Lanes | `preflight`, `focused`, and fresh serialized `heavy-candidate`; all current results remain non-authoritative | Authority promotion and any destination lane that can publish authority |
-| Freshness | `fresh: true` checks always execute; heavy candidates use the shared lock | Memory admission and host-wide resource reservation |
+| Freshness | `fresh: true` checks always execute; the SH-01 unit preflight is fresh, and heavy candidates use the shared lock | Reusable JVM evidence, memory admission, and host-wide resource reservation |
 | Input/cache safety | Root-bound no-follow descriptor hashing, coherent fstat snapshots, complete redacted runtime/environment identity, conservative invalidation, and no cache write after mutation | Explicit output-artifact validation and authority promotion |
 | Mutation monitoring | Kernel vnode watches with final event drain on supported hosts; unsupported polling fallback is non-cacheable; glob roots and existing subtree directories are watched | Cross-platform FSEvents/inotify parity and a future artifact event protocol |
 | Lock safety | Shared safe open (`O_NOFOLLOW|O_CREAT|O_RDWR`, mode `0600`) with regular-file, owner, link-count, and parent-path checks; resource locks are direct children of trusted sticky `/private/tmp`, while cache locks hash the canonical resolved root/cache identity under `/private/tmp` | Bounded eviction and cache lifecycle policy |
 | Process safety | Every manifest check binds `daemonization: forbidden`; commands run in new process groups, ordinary descendants are cleaned before lock release, and one bounded host-wide `ps eww` environment census at command termination covers saved same-marker processes | Strict containment of arbitrary cross-session daemonization (including double-fork/`setsid`) is deferred to an OS job/container; private output isolation and atomic artifact publication are also deferred |
-| Stage rollout | Stage0 selection, receipts, cache/lock safety, and targeted verification commands | Stage1/Stage2 rollout, SH-01, SH-07, C7/HO2 integration, and later-stage claims |
+| Stage rollout | Stage0 selection, receipts, cache/lock safety, targeted verification commands, and the Stage1 `stage1-sh01-unit` preflight | Shared heavy-verifier identity, selected-namespace batching/chunking, Stage2 rollout, SH-07/C7 integration, and later-stage claims |
 
 The deferred column is a boundary, not an implied implementation. A passing
 command, warm cache hit, benchmark, or heavy-candidate receipt must not be
@@ -43,7 +51,8 @@ described as a proof, authority artifact, bootstrap claim, or release result.
 
 ## Stage 0 lane model
 
-- `preflight` contains cheap contract, documentation, and orchestrator checks.
+- `preflight` contains cheap contract, documentation, orchestrator, and fresh
+  Stage1 SH-01 planner/runner unit checks.
 - `focused` contains small reader, hosted, and selective Stage0 checks. Exact
   cache identities may be reused only after input, command, dependency, and
   environment revalidation.
@@ -54,7 +63,42 @@ described as a proof, authority artifact, bootstrap claim, or release result.
 The lane name describes scheduling cost and candidate freshness, not authority.
 The existing `:test` Clojure alias remains the broad self-hosting runner. The
 Stage0 manifest uses `:stage0-test` so a development check cannot accidentally
-launch that larger target.
+launch that larger target. The Stage1 preflight uses `:sh01-test`; it does not
+delegate to `:test` and therefore cannot widen into the broader suite.
+
+## Stage1 SH-01 handoff and measured boundary
+
+On the integration host, the bounded alias ran 50 tests and 290 assertions in
+1.98 seconds of full-process wall time, including executor shutdown. That is an
+absolute observation of this revision's unit-gate cost, not a cold-start
+comparison or a claim that the parallel runner uses fewer processes. The
+parallel runner still launches one JVM per selected namespace.
+
+The scheduler's current bounded benefits are narrower and explicit:
+
+- `--fail-fast` stops submitting queued work after the first observed failure;
+  already in-flight jobs are allowed to finish and are still reported.
+- Every child timeout is a containment-unproven fatal scheduler stop regardless
+  of `--fail-fast`. Queued work and the exclusive phase are skipped, while
+  already in-flight jobs drain and remain in the report. `ProcessHandle`
+  termination is best-effort cleanup of the observed tree, not proof of strict
+  arbitrary-descendant containment.
+- `--output-limit-bytes` and `--output-limit-chars` bound retained stdout and
+  stderr per child while the streams are fully drained. Both default to
+  1,048,576 for the current runner. Capture uses stateful UTF-8 decoding across
+  read boundaries and accounts for bounded wire bytes and decoded characters.
+- A stream-capture error, interruption, or drain timeout makes the child result
+  nonzero and fatally stops queued and exclusive work even without
+  `--fail-fast`; an incomplete capture cannot be reported as a complete run.
+- Results remain non-authoritative. Selection, scheduling, passing unit tests,
+  or bounded output do not create proof authority.
+
+Use exact `--namespace` selection for one known leaf and `--changed` with
+repeatable `--iteration-slice` for a bounded edit loop. Add `--fail-fast` when
+later queued diagnostics would be derivative, and set the output limits when a
+child may be noisy. Shared verifier identity and same-JVM selected-namespace
+batching/chunking remain deferred; the current process-per-namespace behavior
+must be included in any measurement.
 
 ## Selection and execution flow
 
@@ -115,19 +159,34 @@ swaps, and replacement races fail closed without modifying the victim.
 
 ## Commands and compatibility
 
-These examples are intentionally limited to existing Stage0 commands:
+These examples are limited to the Stage0 graph and the bounded Stage1 SH-01
+unit handoff:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/tests -p test_verify_development.py -v
 python3 tools/verify_development.py --lane preflight --lane focused --dry-run --explain --human
+python3 tools/verify_development.py --check stage1-sh01-unit --dry-run --human
 python3 tools/verify_development.py --lane heavy-candidate --dry-run --human
+clojure -M:sh01-test
 clojure -M:stage0-test
 ```
 
 The runner should be exercised with targeted checks and dry runs while this
 bridge is being integrated. Do not start the heavy/full suite merely to prove
-the planner. The manifest command is `clojure -M:stage0-test`; the existing
-`:test` alias remains untouched for its broader purpose.
+the planner. The Stage1 manifest command is `clojure -M:sh01-test`; it is a
+fresh, cheap preflight after `stage0-orchestrator-unit`. The Stage0 heavy
+command remains `clojure -M:stage0-test`, and the existing `:test` alias remains
+untouched for its broader purpose.
+
+For a bounded selected-namespace execution outside the manifest unit gate:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --namespace gravity.self-hosting.sh01-impact-test-planner-test --fail-fast --output-limit-bytes 1048576 --output-limit-chars 1048576
+```
+
+This command still starts one child JVM for the selected namespace. It is
+non-authoritative and is not a replacement for exact/iteration follow-up or a
+fresh authoritative verifier where the governing contract requires one.
 
 ## Dependencies
 
@@ -136,7 +195,10 @@ phase README/documents first. This bridge is informed by D0, D1, D2, D3, D6,
 D8, D9, BOOT, TEST, and package contracts, but it does not redefine them. The
 implementation files are `tools/verify_development.py`,
 `tools/development_verification_manifest.json`, and
-`tools/tests/test_verify_development.py`.
+`tools/tests/test_verify_development.py`. The Stage1 unit handoff also binds
+`deps.edn`, `gravity.self-hosting.sh01-development-test-runner`, the two SH-01
+unit namespaces and their planner/runner implementations, the self-hosting
+test catalog, and the SH-01 backlog/ownership records they read.
 
 ## Outputs and artifacts
 
@@ -146,12 +208,18 @@ timeout cleanup, and cache keys. These are development receipts and
 diagnostics. Required output artifact validation, provenance bundles,
 coverage-census authority, equivalence/conformance evidence, SBOMs, and
 release decisions remain deferred to the normative contracts and later work.
+The one-JVM SH-01 alias additionally emits a deterministic namespace-ordered
+unit summary with an explicit non-authority marker and pass/fail exit code; it
+does not emit a stage-advancement artifact.
 
 ## Conformance and acceptance
 
 - The manifest validates with exactly `preflight`, `focused`, and
   `heavy-candidate` lanes; all manifest checks currently declare
   `authority: none`.
+- `stage1-sh01-unit` depends on `stage0-orchestrator-unit`, runs fresh through
+  `clojure -M:sh01-test`, and binds only the SH-01 unit/catalog/backlog inputs
+  plus `deps.edn`; it does not bind the Stage0 runtime or full bootstrap tree.
 - A changed path owned only by an excluded lane, or a requested check outside
   the selected lane, produces a failed receipt with owner/lane details.
 - A declared input cannot escape the root, follow a symlink, or change during
@@ -171,5 +239,8 @@ release decisions remain deferred to the normative contracts and later work.
 The implementation is ready for the next stage only after targeted tests,
 manifest JSON parsing, dry-run receipts, and the repository documentation
 validator pass. Heavy/full verification, artifact validation, memory admission,
-private output publication, bounded eviction, SH-01/SH-07 integration, and
-later-stage rollout require their own contracts and evidence.
+private output publication, bounded eviction, SH-01 selected-namespace/SH-07
+proof integration, and later-stage rollout require their own contracts and
+evidence. Shared heavy verifier identity, same-JVM selected-namespace
+batching/chunking, and strict arbitrary cross-session containment remain
+deferred.
