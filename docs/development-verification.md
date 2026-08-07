@@ -185,6 +185,37 @@ memory-heavy pools drain and runs one job at a time. Never run `--fresh all`, a
 full `clojure -M:test`, or the release verifier concurrently with another
 memory-heavy or exclusive lane.
 
+## Durable long-running commands
+
+Wrap any command expected to outlive a task turn with the heartbeat runner.
+It launches the command without a shell, tees combined output to the requested
+log, and atomically refreshes a JSON status file with elapsed time, output
+bytes, process-tree RSS, CPU use, and the final exit code. This prevents a
+silent verifier result from being lost when a turn or terminal view changes.
+
+```bash
+python3 tools/run_with_heartbeat.py \
+  --log /tmp/gravity-sh07-authoritative.log \
+  --status /tmp/gravity-sh07-authoritative.status.json \
+  --heartbeat-seconds 60 \
+  --timeout-seconds 21600 \
+  -- clojure -J-Xmx8g \
+  -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-authoritative-runner --fresh diagnostics
+```
+
+Inspect the status without attaching to the running process:
+
+```bash
+python3 -m json.tool /tmp/gravity-sh07-authoritative.status.json
+tail -n 50 /tmp/gravity-sh07-authoritative.log
+```
+
+The status is telemetry, not proof authority. The wrapped verifier's proof
+artifact and exit status remain the evidence. Use a unique log/status pair per
+run, and do not use the wrapper to start a second memory-heavy verifier while
+another one is active.
+
 ## Benchmark record
 
 Record one row or EDN map for every lane that runs code. Keep the raw stdout,
