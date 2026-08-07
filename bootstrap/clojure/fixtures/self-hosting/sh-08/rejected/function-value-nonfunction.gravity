@@ -1,0 +1,20 @@
+; SH-08-HO1 rejection: a literal is not an immutable function value.
+(ns self-hosting.sh08.function-value-nonfunction
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh08-ho1-apply-one
+             sh08-ho1-result])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:slice :SH-08-HO1
+    :fixture :function-value-nonfunction
+    :expected-rejection :nonfunction-callable
+    :diagnostic "C7-TYPE-MISMATCH"}))
+
+(defn sh08-ho1-apply-one [callable value]
+  (callable value))
+
+(def sh08-ho1-result
+  (sh08-ho1-apply-one 9 7))
