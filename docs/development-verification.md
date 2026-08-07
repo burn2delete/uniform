@@ -180,6 +180,46 @@ empty `:failed-checks`. `--fresh all` is the exhaustive SH-07 transaction and
 is reserved for the stable-candidate/release lane because of its measured
 runtime and memory cost.
 
+For a durable, resumable sequence of selected modules, use the checkpoint
+runner. It starts one fresh child for each module, writes stdout/stderr logs
+and a JSON receipt under `--state-dir`, and stops at the first failed or timed
+out module:
+
+```bash
+python3 tools/run_sh07_authoritative_modules.py --list
+python3 tools/run_sh07_authoritative_modules.py \
+  --module diagnostics --module c11-mir \
+  --state-dir target/validation/sh07-authoritative-checkpoints \
+  --timeout-seconds 21600
+python3 tools/run_sh07_authoritative_modules.py \
+  --all --state-dir target/validation/sh07-authoritative-checkpoints
+```
+
+`--module` is repeatable and is mutually exclusive with `--all` and
+`--list`. `--timeout-seconds` applies to each child. `--no-resume` disables
+checkpoint reuse; `--cwd` selects the repository root and `--lock` overrides
+the shared lock path (the default is `/tmp/gravity-sh07-heavy.lock`). The lock
+is acquired non-blocking, so a concurrent memory-heavy or exclusive run fails
+without competing for the host.
+
+Resume is conservative: the tool fingerprints the relevant source trees,
+proof contract, authoritative runner, checkpoint tool, command, executable,
+tool version, Java binary/version, Clojure configuration and classpath, host
+OS/architecture, and selected JVM environment. A module is resumed only when
+the fingerprint and command match, the prior receipt passes a structural
+single-EDN output check for exactly that module, and the canonical non-symlink
+stdout/stderr files still match their SHA-256 hashes. Any context change
+invalidates prior module receipts; a context change detected across a running
+child stops the sequence before another module starts. Each child command is
+the existing authoritative runner with `--fresh <module>`, and the manifest
+records per-module status, elapsed time, normalized and raw exit codes, output
+paths, and output hashes.
+
+The checkpoint manifest and its summary are coordination records, not a new
+aggregate proof. They explicitly report `aggregate_authoritative: false` and
+`authority_scope: individual-existing-runner-outputs-only`; only the individual
+fresh runner outputs can satisfy module-scoped authoritative evidence.
+
 ### 6. Full release gate
 
 Run only after the candidate is stable, the selected authoritative modules
