@@ -14,6 +14,7 @@
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
+            [gravity.reader-cursor :as reader-cursor]
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit])
@@ -101,20 +102,11 @@
 
 (defn skip-line-comment!
   [^LineNumberingPushbackReader rdr]
-  (loop [ch (.read rdr)]
-    (when (and (not= -1 ch)
-               (not (line-terminator-char? (char ch))))
-      (recur (.read rdr)))))
+  (reader-cursor/skip-line-comment! rdr))
 
 (defn skip-ignored!
   [^LineNumberingPushbackReader rdr]
-  (loop []
-    (let [ch (.read rdr)]
-      (cond
-        (= -1 ch) :eof
-        (Character/isWhitespace (char ch)) (recur)
-        (= \; (char ch)) (do (skip-line-comment! rdr) (recur))
-        :else (do (.unread rdr ch) :form)))))
+  (reader-cursor/skip-ignored! rdr))
 
 (defn classify-reader-diagnostic
   [source-text ex]
